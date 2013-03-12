@@ -47,7 +47,7 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
             return _connection.Publish(topic, stream);
         }
 
-        private void OnMessage(string topicName, IEnumerable<BrokeredMessage> messages)
+        private void OnMessage(int topicIndex, IEnumerable<BrokeredMessage> messages)
         {
             foreach (var message in messages)
             {
@@ -55,7 +55,7 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
                 {
                     IList<Message> internalMessages = ServiceBusMessage.FromStream(message.GetBody<Stream>());
 
-                    OnReceived(topicName, (ulong)message.EnqueuedSequenceNumber, internalMessages);
+                    OnReceived(topicIndex, (ulong)message.EnqueuedSequenceNumber, internalMessages);
                 }
             }
         }

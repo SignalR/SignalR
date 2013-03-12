@@ -15,8 +15,8 @@ namespace Microsoft.AspNet.SignalR.SqlServer
     {
         private readonly string _connectionString;
         private readonly string _tableName;
-        private readonly string _streamId = "0";
-        private readonly Func<string, ulong, IList<Message>, Task> _onReceive;
+        private readonly int _streamId;
+        private readonly Func<int, ulong, IList<Message>, Task> _onReceive;
         private readonly TraceSource _trace;
         private readonly int[] _retryDelays = new[] { 0, 0, 0, 10, 10, 10, 50, 50, 100, 100, 200, 200, 200, 200, 1000, 1500, 3000 };
         private readonly int _retryErrorDelay = 5000;
@@ -27,10 +27,11 @@ namespace Microsoft.AspNet.SignalR.SqlServer
         private long _lastPayloadId = 0;
         private SqlCommand _receiveCommand;
 
-        public SqlReceiver(string connectionString, string tableName, Func<string, ulong, IList<Message>, Task> onReceive, TraceSource traceSource)
+        public SqlReceiver(string connectionString, string tableName, int streamId, Func<int, ulong, IList<Message>, Task> onReceive, TraceSource traceSource)
         {
             _connectionString = connectionString;
             _tableName = tableName;
+            _streamId = streamId;
             _onReceive = onReceive;
             _trace = traceSource;
 

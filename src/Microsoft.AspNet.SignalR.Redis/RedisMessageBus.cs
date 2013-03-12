@@ -4,7 +4,6 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using BookSleeve;
@@ -17,53 +16,43 @@ namespace Microsoft.AspNet.SignalR.Redis
         private const int DefaultBufferSize = 1000;
 
         private readonly int _db;
-        private readonly string[] _keys;
+        private readonly string _key;
         private readonly Func<RedisConnection> _connectionFactory;
 
         private RedisConnection _connection;
         private RedisSubscriberConnection _channel;
         private int _state;
 
-        public RedisMessageBus(string server, int port, string password, int db, IList<string> keys, IDependencyResolver resolver)
-            : this(GetConnectionFactory(server, port, password), db, keys, resolver)
+        public RedisMessageBus(string server, int port, string password, int db, string key, IDependencyResolver resolver)
+            : this(GetConnectionFactory(server, port, password), db, key, resolver)
         {
 
         }
 
         [SuppressMessage("Microsoft.Usage", "CA2214:DoNotCallOverridableMethodsInConstructors", Justification = "Reviewed")]
-        public RedisMessageBus(Func<RedisConnection> connectionFactory, int db, IList<string> keys, IDependencyResolver resolver)
+        public RedisMessageBus(Func<RedisConnection> connectionFactory, int db, string key, IDependencyResolver resolver)
             : base(resolver)
         {
             _connectionFactory = connectionFactory;
             _db = db;
-            _keys = keys.ToArray();
+            _key = key;
 
             ReconnectDelay = TimeSpan.FromSeconds(2);
             ConnectWithRetry();
-        }
-
-        protected override int StreamCount
-        {
-            get
-            {
-                return _keys.Length;
-            }
         }
 
         public TimeSpan ReconnectDelay { get; set; }
 
         protected override Task Send(int streamIndex, IList<Message> messages)
         {
-            string key = _keys[streamIndex];
-
             // Increment the channel number
-            return _connection.Strings.Increment(_db, key)
-                               .Then((id, k) =>
+            return _connection.Strings.Increment(_db, _key)
+                               .Then((id, key) =>
                                {
                                    byte[] data = RedisMessage.ToBytes(id, messages);
 
-                                   return _connection.Publish(k, data);
-                               }, key);
+                                   return _connection.Publish(key, data);
+                               }, _key);
         }
 
         private void OnConnectionClosed(object sender, EventArgs e)
@@ -95,7 +84,7 @@ namespace Microsoft.AspNet.SignalR.Redis
             // The key is the stream id (channel)
             var message = RedisMessage.FromBytes(data);
 
-            OnReceived(key, (ulong)message.Id, message.Messages);
+            OnReceived(0, (ulong)message.Id, message.Messages);
         }
 
         protected override void Dispose(bool disposing)
@@ -104,7 +93,7 @@ namespace Microsoft.AspNet.SignalR.Redis
             {
                 if (_channel != null)
                 {
-                    _channel.Unsubscribe(_keys);
+                    _channel.Unsubscribe(_key);
                     _channel.Close(abort: true);
                 }
 
@@ -177,7 +166,7 @@ namespace Microsoft.AspNet.SignalR.Redis
                     RedisSubscriberConnection channel = connection.GetOpenSubscriberChannel();
 
                     // Subscribe to the registered connections
-                    channel.Subscribe(_keys, OnMessage);
+                    channel.Subscribe(_key, OnMessage);
 
                     // Dirty hack but it seems like subscribe returns before the actual
                     // subscription is properly setup in some cases
@@ -186,7 +175,7 @@ namespace Microsoft.AspNet.SignalR.Redis
                         Thread.Sleep(500);
                     }
 
-                    Trace.TraceEvent(TraceEventType.Verbose, 0, "Subscribed to events " + String.Join(",", _keys));
+                    Trace.TraceEvent(TraceEventType.Verbose, 0, "Subscribed to events " + String.Join(",", _key));
 
                     _channel = channel;
                     _connection = connection;

@@ -169,15 +169,25 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
 
         private class TestScaleoutBus : ScaleoutMessageBus
         {
-            private long[] _topicsIndexes;
+            private long[] _ids;
 
             public TestScaleoutBus(IDependencyResolver resolver, int topicCount = 1)
                 : base(resolver)
             {
-                _topicsIndexes = new long[topicCount];
+                _ids = new long[topicCount];
+
+                Open();
             }
 
-            public Task SendMany(Message[] messages)
+            protected override int StreamCount
+            {
+                get
+                {
+                    return _ids.Length;
+                }
+            }
+
+            public Task SendMany(IList<Message> messages)
             {
                 return Send(messages);
             }
@@ -186,8 +196,8 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
             {
                 foreach (var g in messages.GroupBy(m => m.Source))
                 {
-                    int topic = Math.Abs(g.Key.GetHashCode()) % _topicsIndexes.Length;
-                    OnReceived(topic.ToString(), (ulong)Interlocked.Increment(ref _topicsIndexes[topic]), g.ToArray()).Wait();
+                    int topic = Math.Abs(g.Key.GetHashCode()) % _ids.Length;
+                    OnReceived(topic, (ulong)Interlocked.Increment(ref _ids[topic]), g.ToArray());
                 }
                 return TaskAsyncHelper.Empty;
             }

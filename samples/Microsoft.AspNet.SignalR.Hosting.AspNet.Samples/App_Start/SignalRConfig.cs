@@ -11,10 +11,10 @@ namespace Microsoft.AspNet.SignalR.Samples
             //dependencyResolver.UseSqlServer(System.Configuration.ConfigurationManager.ConnectionStrings["SignalRSamples"].ConnectionString, tableCount: 3);
 
             // Uncomment the following line to enable scale-out using Redis 
-            //dependencyResolver.UseRedis("127.0.0.1", 6379, "", new[] { "SignalRSamples" }); 
+            //dependencyResolver.UseRedis("127.0.0.1", 6379, "", "SignalRSamples");
 
             // Uncomment the following line to enable scale-out using service bus
-            //dependencyResolver.UseServiceBus2("connection string", "Microsoft.AspNet.SignalR.Samples", 1);
+            //dependencyResolver.UseServiceBus("connection string", "Microsoft.AspNet.SignalR.Samples", 1);
 
             hubPipeline.AddModule(new SamplePipelineModule());
         }

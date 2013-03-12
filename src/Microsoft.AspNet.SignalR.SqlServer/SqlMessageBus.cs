@@ -75,7 +75,7 @@ namespace Microsoft.AspNet.SignalR.SqlServer
             _receivers = new ReadOnlyCollection<SqlReceiver>(
                 Enumerable.Range(1, tableCount)
                     .Select(tableNumber => new SqlReceiver(connectionString,
-                        String.Format(CultureInfo.InvariantCulture, "{0}_{1}", _tableNamePrefix, tableNumber), OnReceived, Trace))
+                        String.Format(CultureInfo.InvariantCulture, "{0}_{1}", _tableNamePrefix, tableNumber), tableNumber, OnReceived, Trace))
                     .ToList()
             );
 

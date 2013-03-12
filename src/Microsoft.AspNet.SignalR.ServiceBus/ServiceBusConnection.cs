@@ -31,7 +31,7 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
         }
 
         [SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope", Justification = "The disposable is returned to the caller")]
-        public IDisposable Subscribe(IList<string> topicNames, Action<string, IEnumerable<BrokeredMessage>> handler)
+        public IDisposable Subscribe(IList<string> topicNames, Action<int, IEnumerable<BrokeredMessage>> handler)
         {
             if (topicNames == null)
             {
@@ -45,8 +45,10 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
 
             var subscriptions = new List<Subscription>();
 
-            foreach (var topicName in topicNames)
+            for (var topicIndex = 0; topicIndex < topicNames.Count; ++topicIndex)
             {
+                string topicName = topicNames[topicIndex];
+
                 if (!_namespaceManager.TopicExists(topicName))
                 {
                     _namespaceManager.CreateTopic(topicName);
@@ -65,7 +67,7 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
 
                 subscriptions.Add(new Subscription(topicName, subscriptionName, receiver));
 
-                PumpMessages(topicName, receiver, handler);
+                PumpMessages(topicIndex, receiver, handler);
             }
 
             return new DisposableAction(() =>
@@ -116,7 +118,7 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
             Dispose(true);
         }
 
-        private void PumpMessages(string topicPath, MessageReceiver receiver, Action<string, IEnumerable<BrokeredMessage>> handler)
+        private void PumpMessages(int topicIndex, MessageReceiver receiver, Action<int, IEnumerable<BrokeredMessage>> handler)
         {
         receive:
 
@@ -133,12 +135,12 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
 
                     var state = (ReceiveState)ar.AsyncState;
 
-                    if (ContinueReceiving(ar, state.TopicPath, state.Receiver, state.Handler))
+                    if (ContinueReceiving(ar, state.TopicIndex, state.Receiver, state.Handler))
                     {
-                        PumpMessages(state.TopicPath, state.Receiver, state.Handler);
+                        PumpMessages(state.TopicIndex, state.Receiver, state.Handler);
                     }
                 },
-                new ReceiveState(topicPath, receiver, handler));
+                new ReceiveState(topicIndex, receiver, handler));
             }
             catch (OperationCanceledException)
             {
@@ -148,20 +150,20 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
 
             if (result.CompletedSynchronously)
             {
-                if (ContinueReceiving(result, topicPath, receiver, handler))
+                if (ContinueReceiving(result, topicIndex, receiver, handler))
                 {
                     goto receive;
                 }
             }
         }
 
-        private bool ContinueReceiving(IAsyncResult asyncResult, string topicPath, MessageReceiver receiver, Action<string, IEnumerable<BrokeredMessage>> handler)
+        private bool ContinueReceiving(IAsyncResult asyncResult, int topicIndex, MessageReceiver receiver, Action<int, IEnumerable<BrokeredMessage>> handler)
         {
             bool backOff = false;
 
             try
             {
-                handler(topicPath, receiver.EndReceiveBatch(asyncResult));
+                handler(topicIndex, receiver.EndReceiveBatch(asyncResult));
             }
             catch (ServerBusyException)
             {
@@ -177,7 +179,7 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
             if (backOff)
             {
                 TaskAsyncHelper.Delay(BackoffAmount)
-                               .Then(() => PumpMessages(topicPath, receiver, handler));
+                               .Then(() => PumpMessages(topicIndex, receiver, handler));
             }
 
             // true -> continue reading normally
@@ -201,16 +203,16 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
 
         private class ReceiveState
         {
-            public ReceiveState(string topicPath, MessageReceiver receiver, Action<string, IEnumerable<BrokeredMessage>> handler)
+            public ReceiveState(int topicIndex, MessageReceiver receiver, Action<int, IEnumerable<BrokeredMessage>> handler)
             {
-                TopicPath = topicPath;
+                TopicIndex = topicIndex;
                 Receiver = receiver;
                 Handler = handler;
             }
 
-            public string TopicPath { get; private set; }
+            public int TopicIndex { get; private set; }
             public MessageReceiver Receiver { get; private set; }
-            public Action<string, IEnumerable<BrokeredMessage>> Handler { get; private set; }
+            public Action<int, IEnumerable<BrokeredMessage>> Handler { get; private set; }
         }
     }
 }

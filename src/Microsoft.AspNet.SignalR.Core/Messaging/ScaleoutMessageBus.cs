@@ -17,29 +17,16 @@ namespace Microsoft.AspNet.SignalR.Messaging
     /// </summary>
     public abstract class ScaleoutMessageBus : MessageBus
     {
-        private readonly ConcurrentDictionary<string, IndexedDictionary> _streams = new ConcurrentDictionary<string, IndexedDictionary>();
         private readonly SipHashBasedStringEqualityComparer _sipHashBasedComparer = new SipHashBasedStringEqualityComparer(0, 0);
         private readonly TraceSource _trace;
-        private readonly Lazy<TaskQueueWrapper[]> _sendQueues;
-        private readonly TaskQueue _receiveQueue;
+        private readonly Lazy<ScaleoutStreamManager> _streamManager;
 
         protected ScaleoutMessageBus(IDependencyResolver resolver)
             : base(resolver)
         {
             var traceManager = resolver.Resolve<ITraceManager>();
             _trace = traceManager["SignalR." + typeof(ScaleoutMessageBus).Name];
-            _sendQueues = new Lazy<TaskQueueWrapper[]>(() =>
-            {
-                var queue = new TaskQueueWrapper[StreamCount];
-                for (int i = 0; i < queue.Length; i++)
-                {
-                    queue[i] = new TaskQueueWrapper(_trace);
-                }
-
-                return queue;
-            });
-
-            _receiveQueue = new TaskQueue();
+            _streamManager = new Lazy<ScaleoutStreamManager>(() => new ScaleoutStreamManager(_trace, Send, OnReceivedCore, StreamCount));
         }
 
         protected override TraceSource Trace
@@ -61,11 +48,11 @@ namespace Microsoft.AspNet.SignalR.Messaging
             }
         }
 
-        private TaskQueueWrapper[] SendQueues
+        private ScaleoutStreamManager StreamManager
         {
             get
             {
-                return _sendQueues.Value;
+                return _streamManager.Value;
             }
         }
 
@@ -76,7 +63,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
         {
             for (int i = 0; i < StreamCount; i++)
             {
-                SendQueues[i].Open();
+                Open(i);
             }
         }
 
@@ -86,7 +73,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
         /// </summary>
         protected void Open(int streamIndex)
         {
-            SendQueues[streamIndex].Open();
+            StreamManager.Open(streamIndex);
         }
 
         /// <summary>
@@ -97,7 +84,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
         {
             for (int i = 0; i < StreamCount; i++)
             {
-                SendQueues[i].Close(exception);
+                Close(i, exception);
             }
         }
 
@@ -109,17 +96,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
         protected void Close(int streamIndex, Exception exception)
         {
             // Close the queue means that all further sends will fail
-            SendQueues[streamIndex].Close(exception);
-        }
-
-        /// <summary>
-        /// Buffers the specified queue up to the specified size before failing.
-        /// </summary>
-        /// <param name="streamIndex">The index of the stream to buffer.</param>
-        /// <param name="size">The maximum number of items to queue before failing to enqueue.</param>
-        protected void Buffer(int streamIndex, int size)
-        {
-            SendQueues[streamIndex].Buffer(size);
+            StreamManager.Close(streamIndex, exception);
         }
 
         /// <summary>
@@ -130,8 +107,18 @@ namespace Microsoft.AspNet.SignalR.Messaging
         {
             for (int i = 0; i < StreamCount; i++)
             {
-                SendQueues[i].Buffer(size);
+                Buffer(i, size);
             }
+        }
+
+        /// <summary>
+        /// Buffers the specified queue up to the specified size before failing.
+        /// </summary>
+        /// <param name="streamIndex">The index of the stream to buffer.</param>
+        /// <param name="size">The maximum number of items to queue before failing to enqueue.</param>
+        protected void Buffer(int streamIndex, int size)
+        {
+            StreamManager.Buffer(streamIndex, size);
         }
 
         /// <summary>
@@ -144,7 +131,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
             // If we're only using a single stream then just send
             if (StreamCount == 1)
             {
-                return SendQueues[0].Enqueue((state) => Send(0, (IList<Message>)state), messages);
+                return StreamManager.Send(0, messages);
             }
 
             var taskCompletionSource = new TaskCompletionSource<object>();
@@ -180,7 +167,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
 
                 Debug.Assert(index >= 0, "Hash function resulted in an index < 0.");
 
-                Task sendTask = SendQueues[index].Enqueue(state => Send(index, group.ToArray()), null).Catch();
+                Task sendTask = StreamManager.Send(index, group.ToArray()).Catch();
 
                 if (sendTask.IsCompleted)
                 {
@@ -207,23 +194,23 @@ namespace Microsoft.AspNet.SignalR.Messaging
         /// <summary>
         /// Invoked when a payload is received from the backplane. There should only be one active call at any time.
         /// </summary>
-        /// <param name="streamId">id of the stream</param>
+        /// <param name="streamIndex">id of the stream</param>
         /// <param name="id">id of the payload within that stream</param>
         /// <param name="messages">List of messages associated</param>
         /// <returns></returns>
-        protected Task OnReceived(string streamId, ulong id, IList<Message> messages)
+        protected Task OnReceived(int streamIndex, ulong id, IList<Message> messages)
         {
-            return _receiveQueue.Enqueue(() => OnReceivedCore(streamId, id, messages));
+            return StreamManager.OnReceived(streamIndex, id, messages);
         }
 
 
         [SuppressMessage("Microsoft.Design", "CA1062:Validate arguments of public methods", MessageId = "2", Justification = "Called from derived class")]
         [SuppressMessage("Microsoft.Design", "CA1062:Validate arguments of public methods", MessageId = "0", Justification = "Called from derived class")]
-        private Task OnReceivedCore(string streamId, ulong id, IList<Message> messages)
+        private Task OnReceivedCore(int streamIndex, ulong id, IList<Message> messages)
         {
             Counters.ScaleoutMessageBusMessagesReceivedPerSec.IncrementBy(messages.Count);
 
-            Trace.TraceInformation("OnReceived({0}, {1}, {2})", streamId, id, messages.Count);
+            Trace.TraceInformation("OnReceived({0}, {1}, {2})", streamIndex, id, messages.Count);
 
             // Create a local dictionary for this payload
             var dictionary = new ConcurrentDictionary<string, LocalEventKeyInfo>();
@@ -247,12 +234,12 @@ namespace Microsoft.AspNet.SignalR.Messaging
             var mapping = new ScaleoutMapping(dictionary);
 
             // Get the stream for this payload
-            var stream = _streams.GetOrAdd(streamId, _ => new IndexedDictionary());
+            var stream = StreamManager.Streams[streamIndex];
 
             // Publish only after we've setup the mapping fully
             if (!stream.TryAdd(id, mapping))
             {
-                Trace.TraceVerbose(Resources.Error_DuplicatePayloadsForStream, streamId);
+                Trace.TraceVerbose(Resources.Error_DuplicatePayloadsForStream, streamIndex);
 
                 stream.Clear();
 
@@ -280,92 +267,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
         [SuppressMessage("Microsoft.Design", "CA1062:Validate arguments of public methods", MessageId = "0", Justification = "Called from derived class")]
         protected override Subscription CreateSubscription(ISubscriber subscriber, string cursor, Func<MessageResult, object, Task<bool>> callback, int messageBufferSize, object state)
         {
-            return new ScaleoutSubscription(subscriber.Identity, subscriber.EventKeys, cursor, _streams, callback, messageBufferSize, Counters, state);
-        }
-
-        private class TaskQueueWrapper
-        {
-            private TaskCompletionSource<object> _taskCompletionSource;
-            private TaskQueue _sendQueue;
-
-            private readonly TraceSource _trace;
-
-            private static readonly Task _queueFullTask = TaskAsyncHelper.FromError(new InvalidOperationException(Resources.Error_TaskQueueFull));
-
-            public TaskQueueWrapper(TraceSource trace)
-            {
-                _trace = trace;
-
-                InitializeCore();
-            }
-
-            public void Open()
-            {
-                lock (this)
-                {
-                    _taskCompletionSource.TrySetResult(null);
-                }
-            }
-
-            public Task Enqueue(Func<object, Task> taskFunc, object state)
-            {
-                lock (this)
-                {
-                    // If Enqueue returns null it means the queue is full
-                    return _sendQueue.Enqueue(taskFunc, state) ?? _queueFullTask;
-                }
-            }
-
-            public void Buffer(int size)
-            {
-                lock (this)
-                {
-                    InitializeCore(size);
-                }
-            }
-
-            public void Close(Exception error)
-            {
-                lock (this)
-                {
-                    InitializeCore();
-
-                    _taskCompletionSource.TrySetException(error);
-                }
-            }
-
-            private void InitializeCore(int? size = null)
-            {
-                DrainQueue();
-
-                _taskCompletionSource = new TaskCompletionSource<object>();
-
-                if (size != null)
-                {
-                    _sendQueue = new TaskQueue(_taskCompletionSource.Task, size.Value);
-                }
-                else
-                {
-                    _sendQueue = new TaskQueue(_taskCompletionSource.Task);
-                }
-            }
-
-            [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "This method should never throw")]
-            private void DrainQueue()
-            {
-                if (_sendQueue != null)
-                {
-                    try
-                    {
-                        // Attempt to drain the queue before creating the new one
-                        _sendQueue.Drain().Wait();
-                    }
-                    catch (Exception ex)
-                    {
-                        _trace.TraceError("Draining failed: " + ex.GetBaseException());
-                    }
-                }
-            }
+            return new ScaleoutSubscription(subscriber.Identity, subscriber.EventKeys, cursor, StreamManager.Streams, callback, messageBufferSize, Counters, state);
         }
     }
 }
