@@ -293,6 +293,17 @@ namespace Microsoft.AspNet.SignalR.Client
         }
 
         /// <summary>
+        /// Starts the <see cref="Connection"/>
+        /// </summary>
+        /// <param name="webRequestFactory">The webrequest stack</param>
+        /// <returns></returns>
+        public Task Start(IWebRequestCreate webRequestFactory)
+        {
+            var client = new DefaultHttpClient(webRequestFactory);
+            return Start(new LongPollingTransport(client));
+        }
+
+        /// <summary>
         /// Starts the <see cref="Connection"/>.
         /// </summary>
         /// <param name="httpClient">The http client</param>

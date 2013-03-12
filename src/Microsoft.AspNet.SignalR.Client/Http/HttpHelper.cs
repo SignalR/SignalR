@@ -40,9 +40,9 @@ namespace Microsoft.AspNet.SignalR.Client.Http
             }
         }
 
-        public static Task<HttpWebResponse> GetAsync(string url, Action<HttpWebRequest> requestPreparer)
+        public static Task<HttpWebResponse> GetAsync(string url, Action<HttpWebRequest> requestPreparer, IWebRequestCreate webRequestFactory)
         {
-            HttpWebRequest request = CreateWebRequest(url);
+            HttpWebRequest request = CreateWebRequest(url, webRequestFactory);
             if (requestPreparer != null)
             {
                 requestPreparer(request);
@@ -50,9 +50,9 @@ namespace Microsoft.AspNet.SignalR.Client.Http
             return request.GetHttpResponseAsync();
         }
 
-        public static Task<HttpWebResponse> PostAsync(string url, Action<HttpWebRequest> requestPreparer, IDictionary<string, string> postData)
+        public static Task<HttpWebResponse> PostAsync(string url, Action<HttpWebRequest> requestPreparer, IDictionary<string, string> postData, IWebRequestCreate webRequestFactory)
         {
-            return PostInternal(url, requestPreparer, postData);
+            return PostInternal(url, requestPreparer, postData, webRequestFactory);
         }
 
 
@@ -83,9 +83,9 @@ namespace Microsoft.AspNet.SignalR.Client.Http
             }
         }
 
-        private static Task<HttpWebResponse> PostInternal(string url, Action<HttpWebRequest> requestPreparer, IDictionary<string, string> postData)
+        private static Task<HttpWebResponse> PostInternal(string url, Action<HttpWebRequest> requestPreparer, IDictionary<string, string> postData, IWebRequestCreate webRequestFactory)
         {
-            HttpWebRequest request = CreateWebRequest(url);
+            HttpWebRequest request = CreateWebRequest(url, webRequestFactory);
 
             if (requestPreparer != null)
             {
@@ -140,14 +140,14 @@ namespace Microsoft.AspNet.SignalR.Client.Http
             return Encoding.UTF8.GetBytes(sb.ToString());
         }
 
-        private static HttpWebRequest CreateWebRequest(string url)
+        private static HttpWebRequest CreateWebRequest(string url, IWebRequestCreate webRequestCreate)
         {
             HttpWebRequest request = null;
 #if WINDOWS_PHONE
             request = (HttpWebRequest)WebRequest.Create(url);
             request.AllowReadStreamBuffering = false;
 #elif SILVERLIGHT
-            request = (HttpWebRequest)System.Net.Browser.WebRequestCreator.ClientHttp.Create(new Uri(url));
+            request = (HttpWebRequest)webRequestCreate.Create(new Uri(url));
             request.AllowReadStreamBuffering = false;
 #else
             request = (HttpWebRequest)WebRequest.Create(url);

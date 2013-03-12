@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Net;
 using System.Threading.Tasks;
 
 namespace Microsoft.AspNet.SignalR.Client.Http
@@ -11,6 +12,24 @@ namespace Microsoft.AspNet.SignalR.Client.Http
     /// </summary>
     public class DefaultHttpClient : IHttpClient
     {
+        private readonly IWebRequestCreate _webRequestFactory;
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="DefaultHttpClient"/> class
+        /// </summary>
+        public DefaultHttpClient()
+        {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="DefaultHttpClient"/> class
+        /// </summary>
+        /// <param name="webRequestFactory">base interface for creating <see cref="WebRequest"/> instance </param>
+        public DefaultHttpClient(IWebRequestCreate webRequestFactory)
+        {
+            _webRequestFactory = webRequestFactory;
+        }
+
         /// <summary>
         /// Makes an asynchronous http GET request to the specified url.
         /// </summary>
@@ -24,7 +43,7 @@ namespace Microsoft.AspNet.SignalR.Client.Http
             {
                 req = new HttpWebRequestWrapper(request);
                 prepareRequest(req);
-            }
+            }, _webRequestFactory
             ).Then(response => (IResponse)new HttpWebResponseWrapper(response));
         }
 
@@ -43,7 +62,7 @@ namespace Microsoft.AspNet.SignalR.Client.Http
                 req = new HttpWebRequestWrapper(request);
                 prepareRequest(req);
             },
-            postData).Then(response => (IResponse)new HttpWebResponseWrapper(response));
+            postData, _webRequestFactory).Then(response => (IResponse)new HttpWebResponseWrapper(response));
         }
     }
 }
