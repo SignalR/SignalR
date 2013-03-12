@@ -745,7 +745,7 @@
         addQs: function (url, connection) {
             var appender = url.indexOf("?") !== -1 ? "&" : "?",
                 firstChar;
-            
+
             if (!connection.qs) {
                 return url;
             }
@@ -963,6 +963,13 @@
             return connection.state === signalR.connectionState.reconnecting;
         },
 
+        clearReconnectTimeout: function (connection) {
+            if (connection && connection._.reconnectTimeout) {
+                window.clearTimeout(connection._.reconnectTimeout);
+                delete connection._.reconnectTimeout;
+            }
+        },
+
         foreverFrame: {
             count: 0,
             connections: {}
@@ -988,10 +995,6 @@
         name: "webSockets",
 
         supportsKeepAlive: true,
-
-        attemptingReconnect: false,
-
-        currentSocketID: 0,
 
         send: function (connection, data) {
             connection.socket.send(data);
@@ -1021,14 +1024,11 @@
 
                 connection.log("Connecting to websocket endpoint '" + url + "'");
                 connection.socket = new window.WebSocket(url);
-                connection.socket.ID = ++that.currentSocketID;
                 connection.socket.onopen = function () {
                     opened = true;
                     connection.log("Websocket opened");
 
-                    if (that.attemptingReconnect) {
-                        that.attemptingReconnect = false;
-                    }
+                    transportLogic.clearReconnectTimeout(connection);
 
                     if (onSuccess) {
                         onSuccess();
@@ -1043,7 +1043,7 @@
                     // Only handle a socket close if the close is from the current socket.
                     // Sometimes on disconnect the server will push down an onclose event
                     // to an expired socket.
-                    if (this.ID === that.currentSocketID) {
+                    if (this === connection.socket) {
                         if (!opened) {
                             if (onFailed) {
                                 onFailed();
@@ -1088,20 +1088,16 @@
         reconnect: function (connection) {
             var that = this;
 
-            if (connection.state !== signalR.connectionState.disconnected) {
-                if (!that.attemptingReconnect) {
-                    that.attemptingReconnect = true;
-                }
-
-                window.setTimeout(function () {
-                    if (that.attemptingReconnect) {
-                        that.stop(connection);
-                    }
+            if (connection.state === signalR.connectionState.connected && !connection._.reconnectTimeout) {
+                connection._.reconnectTimeout = window.setTimeout(function () {
+                    that.stop(connection);
 
                     if (transportLogic.ensureReconnectingState(connection)) {
                         connection.log("Websocket reconnecting");
                         that.start(connection);
                     }
+
+                    transportLogic.clearReconnectTimeout(connection);
                 }, connection.reconnectDelay);
             }
         },
@@ -1112,6 +1108,8 @@
         },
 
         stop: function (connection) {
+            transportLogic.clearReconnectTimeout(connection);
+
             if (connection.socket !== null) {
                 connection.log("Closing the Websocket");
                 connection.socket.close();
@@ -1143,10 +1141,6 @@
 
         supportsKeepAlive: true,
 
-        reconnectTimeout: false,
-
-        currentEventSourceID: 0,
-
         timeOut: 3000,
 
         start: function (connection, onSuccess, onFailed) {
@@ -1175,7 +1169,6 @@
             try {
                 connection.log("Attempting to connect to SSE endpoint '" + url + "'");
                 connection.eventSource = new window.EventSource(url);
-                connection.eventSource.ID = ++that.currentEventSourceID;
             }
             catch (e) {
                 connection.log("EventSource failed trying to connect with error " + e.Message);
@@ -1226,9 +1219,7 @@
                     window.clearTimeout(connectTimeOut);
                 }
 
-                if (that.reconnectTimeout) {
-                    window.clearTimeout(that.reconnectTimeout);
-                }
+                transportLogic.clearReconnectTimeout(connection);
 
                 if (opened === false) {
                     opened = true;
@@ -1257,7 +1248,7 @@
                 // Only handle an error if the error is from the current Event Source.
                 // Sometimes on disconnect the server will push down an error event
                 // to an expired Event Source.
-                if (this.ID === that.currentEventSourceID) {
+                if (this === connection.eventSource) {
                     if (!opened) {
                         if (onFailed) {
                             onFailed();
@@ -1287,14 +1278,18 @@
         reconnect: function (connection) {
             var that = this;
 
-            that.reconnectTimeout = window.setTimeout(function () {
-                that.stop(connection);
+            if (connection.state === signalR.connectionState.connected && !connection._.reconnectTimeout) {
+                connection._.reconnectTimeout = window.setTimeout(function () {
+                    that.stop(connection);
 
-                if (transportLogic.ensureReconnectingState(connection)) {
-                    connection.log("EventSource reconnecting");
-                    that.start(connection);
-                }
-            }, connection.reconnectDelay);
+                    if (transportLogic.ensureReconnectingState(connection)) {
+                        connection.log("EventSource reconnecting");
+                        that.start(connection);
+                    }
+
+                    transportLogic.clearReconnectTimeout(connection);
+                }, connection.reconnectDelay);
+            }
         },
 
         lostConnection: function (connection) {
@@ -1306,14 +1301,16 @@
         },
 
         stop: function (connection) {
+            transportLogic.clearReconnectTimeout(connection);
+
             if (connection && connection.eventSource) {
                 connection.log("EventSource calling close()");
-                connection.eventSource.ID = null;
                 connection.eventSource.close();
                 connection.eventSource = null;
                 delete connection.eventSource;
             }
         },
+
         abort: function (connection, async) {
             transportLogic.ajaxAbort(connection, async);
         }

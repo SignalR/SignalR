@@ -91,7 +91,7 @@
         addQs: function (url, connection) {
             var appender = url.indexOf("?") !== -1 ? "&" : "?",
                 firstChar;
-            
+
             if (!connection.qs) {
                 return url;
             }
@@ -307,6 +307,13 @@
                 $(connection).triggerHandler(events.onReconnecting);
             }
             return connection.state === signalR.connectionState.reconnecting;
+        },
+
+        clearReconnectTimeout: function (connection) {
+            if (connection && connection._.reconnectTimeout) {
+                window.clearTimeout(connection._.reconnectTimeout);
+                delete connection._.reconnectTimeout;
+            }
         },
 
         foreverFrame: {
