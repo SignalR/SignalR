@@ -54,6 +54,9 @@ namespace Microsoft.AspNet.SignalR.Client
         // Used to synchronize state changes
         private readonly object _stateLock = new object();
 
+        // Used to synchronize starting and stopping specifically
+        private readonly object _startLock = new object();
+
         // Keeps track of when the last keep alive from the server was received
         private HeartbeatMonitor _monitor;
 
@@ -311,18 +314,22 @@ namespace Microsoft.AspNet.SignalR.Client
         /// <returns>A task that represents when the connection has started.</returns>
         public Task Start(IClientTransport transport)
         {
-            _connectTask = TaskAsyncHelper.Empty;
-            _disconnectCts = new CancellationTokenSource();
-
-            if (!ChangeState(ConnectionState.Disconnected, ConnectionState.Connecting))
+            lock (_startLock)
             {
-                return _connectTask;
+                _connectTask = TaskAsyncHelper.Empty;
+                _disconnectCts = new CancellationTokenSource();
+
+                if (!ChangeState(ConnectionState.Disconnected, ConnectionState.Connecting))
+                {
+                    return _connectTask;
+                }
+
+                _monitor = new HeartbeatMonitor(this);
+                _transport = transport;
+
+                _connectTask = Negotiate(transport);
             }
 
-            _monitor = new HeartbeatMonitor(this);
-            _transport = transport;
-
-            _connectTask = Negotiate(transport);
             return _connectTask;
         }
 
@@ -423,43 +430,46 @@ namespace Microsoft.AspNet.SignalR.Client
         [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "We don't want to raise the Start exception on Stop.")]
         public void Stop(TimeSpan timeout)
         {
-            // Wait for the connection to connect
-            if (_connectTask != null)
+            lock (_startLock)
             {
-                try
+                // Wait for the connection to connect
+                if (_connectTask != null)
                 {
-                    _connectTask.Wait(timeout);
-                }
-                catch (Exception ex)
-                {
-                    Trace.WriteLine("Error: {0}", ex.GetBaseException());
-                }
-            }
-
-            lock (_stateLock)
-            {
-                // Do nothing if the connection is offline
-                if (State != ConnectionState.Disconnected)
-                {
-                    string connectionId = ConnectionId;
-
-                    Trace.WriteLine("Stop({0})", ConnectionId);
-
-                    // Dispose the heart beat monitor so we don't fire notifications when waiting to abort
-                    _monitor.Dispose();
-
-                    _transport.Abort(this, timeout);
-
-                    Disconnect();
-
-                    _disconnectCts.Dispose();
-
-                    if (_transport != null)
+                    try
                     {
-                        Trace.WriteLine("Transport.Dispose({0})", connectionId);
+                        _connectTask.Wait(timeout);
+                    }
+                    catch (Exception ex)
+                    {
+                        Trace.WriteLine("Error: {0}", ex.GetBaseException());
+                    }
+                }
 
-                        _transport.Dispose();
-                        _transport = null;
+                lock (_stateLock)
+                {
+                    // Do nothing if the connection is offline
+                    if (State != ConnectionState.Disconnected)
+                    {
+                        string connectionId = ConnectionId;
+
+                        Trace.WriteLine("Stop({0})", ConnectionId);
+
+                        // Dispose the heart beat monitor so we don't fire notifications when waiting to abort
+                        _monitor.Dispose();
+
+                        _transport.Abort(this, timeout);
+
+                        Disconnect();
+
+                        _disconnectCts.Dispose();
+
+                        if (_transport != null)
+                        {
+                            Trace.WriteLine("Transport.Dispose({0})", connectionId);
+
+                            _transport.Dispose();
+                            _transport = null;
+                        }
                     }
                 }
             }
