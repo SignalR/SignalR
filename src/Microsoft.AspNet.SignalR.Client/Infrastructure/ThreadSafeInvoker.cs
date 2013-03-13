@@ -8,7 +8,7 @@ namespace Microsoft.AspNet.SignalR.Client.Infrastructure
     /// <summary>
     /// Allows for thread safe invocation of a delegate.
     /// </summary>
-    internal struct ThreadSafeInvoker
+    internal class ThreadSafeInvoker
     {
         private int _invoked;
 
