@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Data.SqlClient;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
@@ -63,6 +64,11 @@ namespace Microsoft.AspNet.SignalR.SqlServer
                 throw new ArgumentOutOfRangeException("queueSize", String.Format(CultureInfo.InvariantCulture, Resources.Error_ValueMustBeGreaterThan1, "queueSize"));
             }
 
+            if (!IsSqlEditionSupported(connectionString))
+            {
+                throw new PlatformNotSupportedException(Resources.Error_UnsupportedSqlEdition);
+            }
+
             _tableCount = tableCount;
             _queueSize = queueSize;
             var traceManager = dependencyResolver.Resolve<ITraceManager>();
@@ -114,6 +120,30 @@ namespace Microsoft.AspNet.SignalR.SqlServer
             }
 
             base.Dispose(disposing);
+        }
+
+        private bool IsSqlEditionSupported(string connectionString)
+        {
+            int edition;
+            using (var connection = new SqlConnection(connectionString))
+            {
+                connection.Open();
+                var cmd = connection.CreateCommand();
+                cmd.CommandText = "SELECT SERVERPROPERTY ( 'EngineEdition' )";
+                edition = (int)cmd.ExecuteScalar();
+            }
+
+            return edition >= SqlEngineEdition.Standard && edition <= SqlEngineEdition.Express;
+        }
+
+        private static class SqlEngineEdition
+        {
+            // See article http://msdn.microsoft.com/en-us/library/ee336261.aspx for details on EngineEdition
+            public static int Personal = 1;
+            public static int Standard = 2;
+            public static int Enterprise = 3;
+            public static int Express = 4;
+            public static int SqlAzure = 5;
         }
     }
 }
