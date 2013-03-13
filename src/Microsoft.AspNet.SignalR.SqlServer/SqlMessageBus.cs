@@ -122,7 +122,7 @@ namespace Microsoft.AspNet.SignalR.SqlServer
             base.Dispose(disposing);
         }
 
-        private bool IsSqlEditionSupported(string connectionString)
+        private static bool IsSqlEditionSupported(string connectionString)
         {
             int edition;
             using (var connection = new SqlConnection(connectionString))
@@ -139,10 +139,13 @@ namespace Microsoft.AspNet.SignalR.SqlServer
         private static class SqlEngineEdition
         {
             // See article http://msdn.microsoft.com/en-us/library/ee336261.aspx for details on EngineEdition
+            [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1823:AvoidUnusedPrivateFields", Justification="Reviewed")]
             public static int Personal = 1;
             public static int Standard = 2;
+            [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1823:AvoidUnusedPrivateFields", Justification = "Reviewed")]
             public static int Enterprise = 3;
             public static int Express = 4;
+            [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1823:AvoidUnusedPrivateFields", Justification = "Reviewed")]
             public static int SqlAzure = 5;
         }
     }
