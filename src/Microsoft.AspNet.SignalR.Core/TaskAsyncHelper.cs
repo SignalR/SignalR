@@ -178,37 +178,34 @@ namespace Microsoft.AspNet.SignalR
         [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode", Justification = "This is a shared file")]
         public static Task ContinueWithNotComplete(this Task task, Action action)
         {
-            if (task.IsCanceled)
+            switch (task.Status)
             {
-                action();
-            }
-            else if (task.IsFaulted)
-            {
-                action();
-            }
-            else if (!task.IsCompleted)
-            {
-                var tcs = new TaskCompletionSource<object>();
-
-                task.ContinueWith(t =>
-                {
+                case TaskStatus.Faulted:
+                case TaskStatus.Canceled:
                     action();
+                    return task;
+                case TaskStatus.RanToCompletion:
+                    return task;
+                default:
+                    var tcs = new TaskCompletionSource<object>();
 
-                    if (t.IsFaulted)
+                    task.ContinueWith(t =>
                     {
-                        tcs.TrySetUnwrappedException(t.Exception);
-                    }
-                    else
-                    {
-                        tcs.TrySetCanceled();
-                    }
-                },
-                TaskContinuationOptions.ExecuteSynchronously | TaskContinuationOptions.NotOnRanToCompletion);
+                        action();
 
-                return tcs.Task;
+                        if (t.IsFaulted)
+                        {
+                            tcs.TrySetUnwrappedException(t.Exception);
+                        }
+                        else
+                        {
+                            tcs.TrySetCanceled();
+                        }
+                    },
+                    TaskContinuationOptions.ExecuteSynchronously | TaskContinuationOptions.NotOnRanToCompletion);
+
+                    return tcs.Task;
             }
-
-            return task;
         }
 
         [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode", Justification = "This is a shared file")]
