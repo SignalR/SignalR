@@ -186,16 +186,26 @@ namespace Microsoft.AspNet.SignalR
             {
                 action();
             }
-            else
+            else if (!task.IsCompleted)
             {
+                var tcs = new TaskCompletionSource<object>();
+
                 task.ContinueWith(t =>
                 {
-                    if (t.IsFaulted || t.IsCanceled)
+                    action();
+
+                    if (t.IsFaulted)
                     {
-                        action();
+                        tcs.TrySetUnwrappedException(t.Exception);
+                    }
+                    else
+                    {
+                        tcs.TrySetCanceled();
                     }
                 },
                 TaskContinuationOptions.ExecuteSynchronously | TaskContinuationOptions.NotOnRanToCompletion);
+
+                return tcs.Task;
             }
 
             return task;
