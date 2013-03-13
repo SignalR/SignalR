@@ -894,8 +894,8 @@
                 this.updateGroups(connection, data.GroupsToken);
 
                 if (data.Messages) {
-                    $.each(data.Messages, function () {
-                        $connection.triggerHandler(events.onReceived, [this]);
+                    $.each(data.Messages, function (index, message) {
+                        $connection.triggerHandler(events.onReceived, [message]);
                     });
                 }
 
