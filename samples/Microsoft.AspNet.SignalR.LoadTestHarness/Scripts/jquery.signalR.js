@@ -974,9 +974,15 @@
             var transport = signalR.transports[transportName],
                 that = this;
 
+            function isConnectedOrReconnecting() {
+                return connection.state === signalR.connectionState.connected ||
+                       connection.state === signalR.connectionState.reconnecting;
+            }
+
             // We should only set a reconnectTimeout if we are currently connected
             // and a reconnectTimeout isn't already set.
-            if (connection.state === signalR.connectionState.connected && !connection._.reconnectTimeout) {
+            if (isConnectedOrReconnecting() && !connection._.reconnectTimeout) {
+
                 connection._.reconnectTimeout = window.setTimeout(function () {
                     transport.stop(connection);
 
@@ -984,9 +990,6 @@
                         connection.log(transportName + " reconnecting");
                         transport.start(connection);
                     }
-
-                    // Delete the reconnectTimeout so a new one can be created later if needed.
-                    delete connection._.reconnectTimeout;
                 }, connection.reconnectDelay);
             }
         },
