@@ -9,7 +9,10 @@ QUnit.asyncTimeoutTest("Can reconnect.", testUtilities.defaultTestTimeout, funct
         // Wire up the state changed (while connected) to detect if we connect again
         // In a later test we'll determine if reconnected gets called
         connection.stateChanged(function () {
-            if (connection.state == $.signalR.connectionState.connected) {
+            if (connection.state == $.signalR.connectionState.reconnecting) {
+                assert.ok(true, "Reconnecting");
+                $.network.connect();
+            } else if (connection.state == $.signalR.connectionState.connected) {
                 assert.ok(true, "Reconnected");
                 end();
             }
@@ -97,6 +100,11 @@ QUnit.asyncTimeoutTest("Triggers reconnected.", testUtilities.defaultTestTimeout
 
     // Need to have at least one client function in order to be subscribed to a hub
     demo.client.TestGuid = function () {
+        connection.reconnecting(function () {
+            assert.ok(true, "Reconnecting triggered!");
+            $.network.connect();
+        });
+
         // Wire up the state changed (while connected) to detect if we connect again
         // In a later test we'll determine if reconnected gets called
         connection.reconnected(function () {
