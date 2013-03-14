@@ -2,26 +2,37 @@
 (function ($, window) {
     var savedAjax = $.ajax,
         network = $.network,
-		ajaxData = {},
-		ajaxIds = 0,
+        ajaxData = {},
+        ajaxIds = 0,
         ignoringMessages = false,
-        fail = function (data, soft) {
-            // We must close the request prior to calling error so that we can pass our own
-            // reason for failing the request.
-            ignoringMessages = true;
-            data.Request.abort();
-            ignoringMessages = false;
+        failSoftly = false,
+        disableAbortError = false,
+        fail = function (id) {
+            var data = ajaxData[id];
+            if (data) {
+                // We must close the request prior to calling error so that we can pass our own
+                // reason for failing the request.
+                disableAbortError = true;
+                data.Request.abort();
+                disableAbortError = false;
 
-            if (!soft) {
-                data.Settings.error(data, "error");
+                data.Settings.error({ responseText: "NetworkMock: Disconnected." });
+
+                delete ajaxData[id];
             }
         };
 
+    function failAllOngoingRequests() {
+        $.each(ajaxData, function (id, _) {
+            fail(id);
+        });
+    }
+
     $.ajax = function (url, settings) {
         var request,
-			savedSuccess,
-			savedError,
-			id = ajaxIds++;
+            savedSuccess,
+            savedError,
+            id = ajaxIds++;
 
         if (!settings) {
             settings = url;
@@ -32,23 +43,23 @@
 
         settings.success = function () {
             // We only want to execute methods if the request is not ignoringMessages, we sleep to swallow jquery related actions
-            if (ignoringMessages === false) {
+            if (!ignoringMessages && ajaxData[id]) {
+                delete ajaxData[id];
                 if (savedSuccess) {
                     savedSuccess.apply(this, arguments);
                 }
-
-                delete ajaxData[id];
             }
         }
 
         settings.error = function () {
             // We only want to execute methods if the request is not ignoringMessages, we sleep to swallow jquery related actions
-            if (ignoringMessages === false) {
-                if (savedError) {
-                    savedError.apply(this, arguments);
-                }
-
+            if (ajaxData[id] && !disableAbortError) {
                 delete ajaxData[id];
+                if (!failSoftly) {
+                    if (savedError) {
+                        savedError.apply(this, arguments);
+                    }
+                }
             }
         }
 
@@ -62,7 +73,7 @@
         if (ignoringMessages) {
             // Act async for failure of request
             setTimeout(function () {
-                fail(ajaxData[id], false);
+                fail(id);
             }, 0);
         }
 
@@ -73,14 +84,16 @@
         disconnect: function (soft) {
             /// <summary>Disconnects the network so javascript transport methods are unable to communicate with a server.</summary>
             /// <param name="soft" type="Boolean">Whether the disconnect should be soft.  A soft disconnect indicates that transport methods are not notified of disconnect.</param>
-            for (var key in ajaxData) {
-                var data = ajaxData[key];
-
-                fail(data, soft);
-            }
+            ignoringMessages = true;
+            failSoftly = soft === true;
+            failAllOngoingRequests();
+            failSoftly = false;
         },
         connect: function () {
             /// <summary>Connects the network so javascript methods can continue utilizing the network.</summary>
+
+            // fail all ongoing requests synchronously so we don't have to worry about any requests failing unnecessarily after connect completes.
+            failAllOngoingRequests();
             ignoringMessages = false;
         }
     };
