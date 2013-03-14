@@ -18,12 +18,14 @@ namespace Microsoft.AspNet.SignalR.SqlServer
     {
         private readonly string _connectionString;
         private readonly ReadOnlyCollection<string> _insertSql;
+        private readonly Action<Exception> _onError;
         private readonly TraceSource _trace;
 
-        public SqlSender(string connectionString, string tablePrefix, int tableCount, TraceSource traceSource)
+        public SqlSender(string connectionString, string tablePrefix, int tableCount, Action<Exception> onError, TraceSource traceSource)
         {
             _connectionString = connectionString;
             _insertSql = BuildInsertStrings(tablePrefix, tableCount);
+            _onError = onError;
             _trace = traceSource;
         }
 
@@ -54,30 +56,30 @@ namespace Microsoft.AspNet.SignalR.SqlServer
                 return TaskAsyncHelper.Empty;
             }
 
-            SqlConnection connection = null;
-            SqlCommand cmd = null;
+            var sql = _insertSql[streamIndex];
+            var connection = new SqlConnection(_connectionString);
+            var cmd = new SqlCommand(sql, connection);
+            cmd.Parameters.Add(new SqlParameter("Payload", SqlDbType.VarBinary)
+            {
+                SqlValue = new SqlBinary(SqlPayload.ToBytes(messages))
+            });
+
+            _trace.TraceVerbose("Saving payload of {0} messages(s) to stream {1} in SQL server", messages.Count, streamIndex);
+            
             try
             {
-                var sql = _insertSql[streamIndex];
-                connection = new SqlConnection(_connectionString);
-                cmd = new SqlCommand(sql, connection);
-                cmd.Parameters.Add(new SqlParameter("Payload", SqlDbType.VarBinary)
-                {
-                    SqlValue = new SqlBinary(SqlPayload.ToBytes(messages))
-                });
-
-                _trace.TraceVerbose("Saving payload of {0} messages(s) to stream {1} in SQL server", messages.Count, streamIndex);
-
                 connection.Open();
                 return cmd.ExecuteNonQueryAsync()
                           .Then(c => c.Dispose(), connection) // close the connection if successful
-                          .Catch((_, c) => ((SqlConnection)c).Dispose(), connection); // close the connection if it explodes
+                          .Catch((ex, state) =>
+                          {
+                              ((SqlConnection)state).Dispose();
+                              
+                              _onError(ex);
+                          }, connection);
             }
-            catch (SqlException)
+            catch (Exception ex)
             {
-                // TODO: Call into base to start buffering here and kick off BG thread
-                //       to start pinging SQL server to detect when it comes back online
-
                 if (cmd != null)
                 {
                     cmd.Dispose();
@@ -88,6 +90,9 @@ namespace Microsoft.AspNet.SignalR.SqlServer
                     connection.Dispose();
                 }
 
+                _onError(ex);
+
+                // Sends are called inline so just throw this back to the caller
                 throw;
             }
         }

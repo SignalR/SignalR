@@ -69,6 +69,7 @@
     <Compile Include="SqlPayload.cs" />
     <Compile Include="SqlReceiver.cs" />
     <Compile Include="SqlSender.cs" />
+    <Compile Include="SqlMessageBusException.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Microsoft.AspNet.SignalR.Core\Microsoft.AspNet.SignalR.Core.csproj">

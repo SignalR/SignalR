@@ -18,6 +18,17 @@ namespace System.Diagnostics
         }
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly", MessageId = "msg")]
+        public static void TraceWarning(this TraceSource traceSource, string msg)
+        {
+            Trace(traceSource, TraceEventType.Warning, msg);
+        }
+
+        public static void TraceWarning(this TraceSource traceSource, string format, params object[] args)
+        {
+            Trace(traceSource, TraceEventType.Warning, format, args);
+        }
+
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly", MessageId = "msg")]
         public static void TraceError(this TraceSource traceSource, string msg)
         {
             Trace(traceSource, TraceEventType.Error, msg);

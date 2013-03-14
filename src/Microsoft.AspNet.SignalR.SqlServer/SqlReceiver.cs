@@ -16,31 +16,35 @@ namespace Microsoft.AspNet.SignalR.SqlServer
         private readonly string _connectionString;
         private readonly string _tableName;
         private readonly int _streamId;
+        private readonly string _tracePrefix;
         private readonly Func<int, ulong, IList<Message>, Task> _onReceive;
+        private readonly Action<Exception> _onError;
         private readonly TraceSource _trace;
         private readonly int[] _retryDelays = new[] { 0, 0, 0, 10, 10, 10, 50, 50, 100, 100, 200, 200, 200, 200, 1000, 1500, 3000 };
-        private readonly int _retryErrorDelay = 5000;
-        private readonly bool _queryNotificationsSupported;
-
-        private string _selectSql = "SELECT [PayloadId], [Payload] FROM [" + SqlMessageBus.SchemaName + "].[{0}] WHERE [PayloadId] > @PayloadId";
-        private string _maxIdSql = "SELECT COALESCE(MAX([PayloadId]), 0) FROM [" + SqlMessageBus.SchemaName + "].[{0}]";
+        
+        private string _selectSql = "SELECT [PayloadId], [Payload] FROM [{0}].[{1}] WHERE [PayloadId] > @PayloadId";
+        private string _maxIdSql = "SELECT [PayloadId] FROM [{0}].[{1}_Id]";
         private long _lastPayloadId = 0;
         private SqlCommand _receiveCommand;
+        private bool _useQueryNotifications;
 
-        public SqlReceiver(string connectionString, string tableName, int streamId, Func<int, ulong, IList<Message>, Task> onReceive, TraceSource traceSource)
+        public SqlReceiver(string connectionString, string tableName, int streamId, Func<int, ulong, IList<Message>, Task> onReceive, Action<Exception> onError, TraceSource traceSource)
         {
             _connectionString = connectionString;
             _tableName = tableName;
             _streamId = streamId;
+            _tracePrefix = "Stream " + _streamId + " : ";
             _onReceive = onReceive;
+            _onError = onError;
             _trace = traceSource;
 
-            _selectSql = String.Format(CultureInfo.InvariantCulture, _selectSql, _tableName);
-            _maxIdSql = String.Format(CultureInfo.InvariantCulture, _maxIdSql, _tableName);
+            _selectSql = String.Format(CultureInfo.InvariantCulture, _selectSql, SqlMessageBus.SchemaName, _tableName);
+            _maxIdSql = String.Format(CultureInfo.InvariantCulture, _maxIdSql, SqlMessageBus.SchemaName, _tableName);
 
-            _queryNotificationsSupported = InitializeSqlDependency();
+            _useQueryNotifications = InitializeSqlDependency();
             InitializeLastPayloadId();
-            ThreadPool.QueueUserWorkItem(Receive);
+
+            Receive();
         }
 
         public void Dispose()
@@ -48,14 +52,24 @@ namespace Microsoft.AspNet.SignalR.SqlServer
             Dispose(true);
         }
 
+        /// <summary>
+        /// Starts the receive loop on a new background thread
+        /// </summary>
+        public void Receive()
+        {
+            ThreadPool.QueueUserWorkItem(Receive);
+        }
+
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "Disposing")]
         protected virtual void Dispose(bool disposing)
         {
             if (disposing)
             {
-                if (_queryNotificationsSupported)
+                try
                 {
                     SqlDependency.Stop(_connectionString);
                 }
+                catch (Exception) { }
             }
         }
 
@@ -73,11 +87,14 @@ namespace Microsoft.AspNet.SignalR.SqlServer
             }
         }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "On a background thread with explicit error processing")]
         private void Receive(object state)
         {
+            // NOTE: This is called from a BG thread so any uncaught exceptions will crash the process
+
             for (var i = 0; i < _retryDelays.Length; i++)
             {
-                _trace.TraceVerbose("Checking for new messages, try {0} of {1}", i + 1, _retryDelays.Length);
+                TraceVerbose("Checking for new messages, try {0} of {1}", i + 1, _retryDelays.Length);
 
                 // Look for new messages until we find some or retry expires
                 bool foundMessages = false;
@@ -85,43 +102,35 @@ namespace Microsoft.AspNet.SignalR.SqlServer
                 {
                     foundMessages = CheckForMessages();
                 }
-                catch (SqlException ex)
+                catch (Exception ex)
                 {
-                    // TODO: Call into base to start buffering here and kick off BG thread
-                    //       to start pinging SQL server to detect when it comes back online
-
-                    _trace.TraceError("SQL error: {0}", ex);
-                    _trace.TraceVerbose("Waiting {0}ms before trying to get messages again.", _retryErrorDelay);
-
-                    Thread.Sleep(_retryErrorDelay);
-
-                    // Push to a new thread as this is recursive
-                    ThreadPool.QueueUserWorkItem(Receive);
+                    // Invoke the error handler and exit, if it recovers then Receive will be called again
+                    _onError(ex);
                     return;
                 }
 
                 if (foundMessages)
                 {
                     // We found messages so start the loop again
-                    _trace.TraceVerbose("Messages received, reset retry counter to 0");
+                    TraceVerbose("Messages received, reset retry counter to 0");
 
                     i = -1; // loop will increment this to 0
                     continue;
                 }
                 else
                 {
-                    _trace.TraceVerbose("No messages received");
+                    TraceVerbose("No messages received");
                 }
 
                 var retryDelay = _retryDelays[i];
                 if (retryDelay > 0)
                 {
-                    _trace.TraceVerbose("Waiting {0}ms before checking for messages again", retryDelay);
+                    TraceVerbose("Waiting {0}ms before checking for messages again", retryDelay);
 
                     Thread.Sleep(retryDelay);
                 }
 
-                if (i == _retryDelays.Length - 1 && !_queryNotificationsSupported)
+                if (i == _retryDelays.Length - 1 && !_useQueryNotifications)
                 {
                     // Just keep looping on the last retry delay as query notifications aren't supported
                     i = _retryDelays.Length - 2;  // loop will increment this to Length - 1
@@ -129,7 +138,7 @@ namespace Microsoft.AspNet.SignalR.SqlServer
             }
 
             // No messages found so set up query notification to callback when messages are available
-            _trace.TraceVerbose("Message checking max retries reached");
+            TraceVerbose("Message checking max retries reached");
 
             SetupQueryNotification();
         }
@@ -144,59 +153,98 @@ namespace Microsoft.AspNet.SignalR.SqlServer
             }
         }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1804:RemoveUnusedLocals", MessageId = "dummy", Justification = "Dummy value returned from lazy init routine.")]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "On a background thread with explicit error processing"),
+         System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1804:RemoveUnusedLocals", MessageId = "dummy", Justification = "Dummy value returned from lazy init routine.")]
         private void SetupQueryNotification()
         {
-            Debug.Assert(_queryNotificationsSupported, "The SQL notification listener has not been initialized or is not supported.");
+            Debug.Assert(_useQueryNotifications, "The SQL notification listener has not been initialized or is not supported.");
 
-            _trace.TraceVerbose("Setting up SQL notification");
+            TraceVerbose("Setting up SQL notification");
 
             using (var connection = new SqlConnection(_connectionString))
             {
                 UpdateQueryCommand(connection);
 
+                _receiveCommand.Notification = null;
+
                 var sqlDependency = new SqlDependency(_receiveCommand);
-                sqlDependency.OnChange += (sender, e) =>
-                    {
-                        _trace.TraceInformation("SqlDependency.OnChanged fired: {0}", e.Info);
-
-                        _receiveCommand.Notification = null;
-
-                        if (e.Type == SqlNotificationType.Change)
-                        {
-                            Receive(null);
-                        }
-                        else
-                        {
-                            // If the e.Info value here is 'Invalid', ensure the query SQL meets the requirements
-                            // for query notifications at http://msdn.microsoft.com/en-US/library/ms181122.aspx
-                            _trace.TraceError("SQL notification subscription error: {0}", e.Info);
-
-                            // TODO: Do we need to be more paticular about the type of error here?
-                            Thread.Sleep(_retryErrorDelay);
-                            Receive(null);
-                        }
-                    };
+                sqlDependency.OnChange += SqlDependency_OnChange;
 
                 try
                 {
                     connection.Open();
+                    
                     // Executing the query is required to set up the dependency
                     ProcessReader(_receiveCommand.ExecuteReader());
 
-                    _trace.TraceVerbose("SQL notification set up");
+                    TraceVerbose("SQL notification set up");
                 }
-                catch (SqlException ex)
+                catch (Exception ex)
                 {
-                    // TODO: Call into base to start buffering here and kick off BG thread
-                    //       to start pinging SQL server to detect when it comes back online
+                    // Invoke the error handler and exit, if it recovers then Receive will be called again
+                    _onError(ex);
+                }
+            }
+        }
 
-                    _trace.TraceError("SQL error: {0}", ex);
-                    _trace.TraceVerbose("Waiting {0}ms before trying to get messages again.", _retryErrorDelay);
-                    Thread.Sleep(_retryErrorDelay);
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "On a background thread with explicit error processing")]
+        private void SqlDependency_OnChange(object sender, SqlNotificationEventArgs args)
+        {
+            // NOTE: This is called from a ThreadPool thread
 
-                    // Push to a new thread as this is potentially recursive
-                    ThreadPool.QueueUserWorkItem(Receive);
+            TraceVerbose("SQL query notification received: Type={0}, Source={1}, Info={2}", args.Type, args.Source, args.Info);
+
+            _receiveCommand.Notification = null;
+
+            if (args.Type == SqlNotificationType.Change)
+            {
+                if (args.Info == SqlNotificationInfo.Insert
+                    || args.Info == SqlNotificationInfo.Expired
+                    || args.Info == SqlNotificationInfo.Resource)
+                {
+                    Receive(null);
+                }
+                else if (args.Info == SqlNotificationInfo.Restart)
+                {
+                    TraceWarning("SQL Server restarting, starting buffering");
+
+                    _onError(null);
+                }
+                else if (args.Info == SqlNotificationInfo.Error)
+                {
+                    TraceWarning("SQL notification error likely due to server becoming unavailable, starting buffering");
+
+                    _onError(null);
+                }
+                else
+                {
+                    TraceError("Unexpected SQL notification details: Type={0}, Source={1}, Info={2}", args.Type, args.Source, args.Info);
+
+                    _onError(new SqlMessageBusException(String.Format(CultureInfo.InvariantCulture, Resources.Error_UnexpectedSqlNotificationType, args.Type, args.Source, args.Info)));
+                }
+            }
+            else if (args.Type == SqlNotificationType.Subscribe)
+            {
+                Debug.Assert(args.Info != SqlNotificationInfo.Invalid, "Ensure the query SQL meets the requirements for query notifications at http://msdn.microsoft.com/en-US/library/ms181122.aspx");
+                
+                TraceError("SQL notification subscription error: Type={0}, Source={1}, Info={2}", args.Type, args.Source, args.Info);
+
+                if (args.Info == SqlNotificationInfo.TemplateLimit)
+                {
+                    // We've hit a subscription limit, let's back off for a bit
+                    _onError(null);
+                }
+                else
+                {
+                    // Unknown subscription error, let's stop using query notifications
+                    _useQueryNotifications = false;
+                    try
+                    {
+                        SqlDependency.Stop(_connectionString);
+                    }
+                    catch (Exception) { }
+
+                    Receive(null);
                 }
             }
         }
@@ -234,12 +282,12 @@ namespace Microsoft.AspNet.SignalR.SqlServer
                 if (id != _lastPayloadId + 1)
                 {
                     // TODO: This is not necessarily an error, identity columns can result in gaps in the sequence
-                    _trace.TraceError("Missed message(s) from SQL Server. Expected payload ID {0} but got {1}.", _lastPayloadId + 1, id);
+                    TraceError("Missed message(s) from SQL Server. Expected payload ID {0} but got {1}.", _lastPayloadId + 1, id);
                 }
 
                 if (id <= _lastPayloadId)
                 {
-                    _trace.TraceInformation("Duplicate message(s) or identity column reset from SQL Server. Last payload ID {0}, this payload ID {1}", _lastPayloadId, id);
+                    TraceInformation("Duplicate message(s) or identity column reset from SQL Server. Last payload ID {0}, this payload ID {1}", _lastPayloadId, id);
                 }
 
                 _lastPayloadId = id;
@@ -247,16 +295,16 @@ namespace Microsoft.AspNet.SignalR.SqlServer
                 // Pass to the underlying message bus
                 _onReceive(_streamId, (ulong)id, payload.Messages);
 
-                _trace.TraceVerbose("Payload {0} containing {1} message(s) received", id, payload.Messages.Count);
+                TraceVerbose("Payload {0} containing {1} message(s) received", id, payload.Messages.Count);
             }
 
-            _trace.TraceVerbose("{0} payloads processed, {1} message(s) received", payloadCount, messageCount);
+            TraceVerbose("{0} payloads processed, {1} message(s) received", payloadCount, messageCount);
             return payloadCount;
         }
 
         private bool InitializeSqlDependency()
         {
-            _trace.TraceVerbose("Starting SQL notification listener");
+            TraceVerbose("Starting SQL notification listener");
 
             bool result = false;
 
@@ -265,14 +313,44 @@ namespace Microsoft.AspNet.SignalR.SqlServer
                 SqlDependency.Start(_connectionString);
                 result = true;
 
-                _trace.TraceVerbose("SQL notification listener started");
+                TraceVerbose("SQL notification listener started");
             }
             catch (InvalidOperationException)
             {
-                _trace.TraceInformation("SQL Service Broker is disabled, disabling query notifications");
+                TraceInformation("SQL Service Broker is disabled, disabling query notifications");
             }
             
             return result;
+        }
+
+        private void TraceError(string msg, params object[] args)
+        {
+            _trace.TraceError(_tracePrefix + msg, args);
+        }
+
+        private void TraceWarning(string msg)
+        {
+            _trace.TraceWarning(_tracePrefix + msg);
+        }
+
+        private void TraceInformation(string msg)
+        {
+            _trace.TraceInformation(_tracePrefix + msg);
+        }
+
+        private void TraceInformation(string msg, params object[] args)
+        {
+            _trace.TraceInformation(_tracePrefix + msg, args);
+        }
+
+        private void TraceVerbose(string msg)
+        {
+            _trace.TraceVerbose(_tracePrefix + msg);
+        }
+
+        private void TraceVerbose(string msg, params object[] args)
+        {
+            _trace.TraceVerbose(_tracePrefix + msg, args);
         }
     }
 }
