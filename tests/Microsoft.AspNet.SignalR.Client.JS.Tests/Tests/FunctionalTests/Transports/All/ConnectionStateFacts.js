@@ -29,8 +29,8 @@ testUtilities.runWithAllTransports(function (transport) {
 
         // Cleanup
         return function () {
-            connection.stop();
             $.network.connect();
+            connection.stop();
         };
     });
 
@@ -67,8 +67,8 @@ testUtilities.runWithAllTransports(function (transport) {
 
         // Cleanup
         return function () {
-            connection.stop();
             $.network.connect();
+            connection.stop();
         };
     });
 
@@ -110,8 +110,8 @@ testUtilities.runWithAllTransports(function (transport) {
 
         // Cleanup
         return function () {
-            connection.stop();
             $.network.connect();
+            connection.stop();
         };
     });
 
@@ -168,17 +168,16 @@ testUtilities.runWithAllTransports(function (transport) {
             // FIX: The longPolling transport currently needs to receive a message with a message ID before it can "reconnect"
             if (transport === "longPolling") {
                 $.each(connections, function (_, connection) {
-                    connection.messageId = connection.messageId || "Fake message ID";
+                    connection.messageId = connection.messageId || "";
                 });
             }
 
             $.network.disconnect();
             return promise;
         }).pipe(function () {
-            var promise = createPromise("reconnected");
             verifyState("reconnecting");
             $.network.connect();
-            return promise;
+            return createPromise("reconnected");
         }).done(function () {
             verifyState("connected");
             end();
