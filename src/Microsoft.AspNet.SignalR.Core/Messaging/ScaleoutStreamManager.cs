@@ -26,18 +26,18 @@ namespace Microsoft.AspNet.SignalR.Messaging
             _receive = receive;
             _receiveQueue = new TaskQueue();
 
-            var receiveMapping = new IndexedDictionary[streamCount];
+            var receiveMapping = new ScaleoutMappingStore[streamCount];
 
             for (int i = 0; i < streamCount; i++)
             {
                 _sendQueues[i] = new ScaleoutTaskQueue(trace);
-                receiveMapping[i] = new IndexedDictionary();
+                receiveMapping[i] = new ScaleoutMappingStore();
             }
 
-            Streams = new ReadOnlyCollection<IndexedDictionary>(receiveMapping);
+            Streams = new ReadOnlyCollection<ScaleoutMappingStore>(receiveMapping);
         }
 
-        public IList<IndexedDictionary> Streams { get; private set; }
+        public IList<ScaleoutMappingStore> Streams { get; private set; }
 
         public void Open(int streamIndex)
         {

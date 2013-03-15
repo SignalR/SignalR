@@ -12,34 +12,34 @@ namespace Microsoft.AspNet.SignalR.Messaging
 {
     public class ScaleoutSubscription : Subscription
     {
-        private readonly IList<IndexedDictionary> _streams;
+        private readonly IList<ScaleoutMappingStore> _stores;
         private readonly List<Cursor> _cursors;
 
         public ScaleoutSubscription(string identity,
                                     IList<string> eventKeys,
                                     string cursor,
-                                    IList<IndexedDictionary> streams,
+                                    IList<ScaleoutMappingStore> stores,
                                     Func<MessageResult, object, Task<bool>> callback,
                                     int maxMessages,
                                     IPerformanceCounterManager counters,
                                     object state)
             : base(identity, eventKeys, callback, maxMessages, counters, state)
         {
-            if (streams == null)
+            if (stores == null)
             {
-                throw new ArgumentNullException("streams");
+                throw new ArgumentNullException("stores");
             }
 
-            _streams = streams;
+            _stores = stores;
 
             List<Cursor> cursors = null;
 
             if (String.IsNullOrEmpty(cursor))
             {
-                cursors = new List<Cursor>(streams.Count);
-                for (int i = 0; i < streams.Count; i++)
+                cursors = new List<Cursor>(stores.Count);
+                for (int i = 0; i < stores.Count; i++)
                 {
-                    cursors.Add(new Cursor(i.ToString(CultureInfo.InvariantCulture), streams[i].MaxKey));
+                    cursors.Add(new Cursor(i.ToString(CultureInfo.InvariantCulture), stores[i].MaxKey));
                 }
             }
             else
@@ -60,13 +60,13 @@ namespace Microsoft.AspNet.SignalR.Messaging
         protected override void PerformWork(IList<ArraySegment<Message>> items, out int totalCount, out object state)
         {
             // The list of cursors represent (streamid, payloadid)
-            var nextCursors = new ulong[_streams.Count];
+            var nextCursors = new ulong[_stores.Count];
             totalCount = 0;
 
-            for (var i = 0; i < _streams.Count; ++i)
+            for (var i = 0; i < _stores.Count; ++i)
             {
                 // Get the mapping for this stream
-                IndexedDictionary stream = _streams[i];
+                ScaleoutMappingStore store = _stores[i];
 
                 // See if we have a cursor for this key
                 Cursor cursor = _cursors[i];
@@ -75,14 +75,14 @@ namespace Microsoft.AspNet.SignalR.Messaging
                 bool consumed = true;
 
                 // Try to find a local mapping for this payload
-                LinkedListNode<KeyValuePair<ulong, ScaleoutMapping>> node = stream.GetMapping(cursor.Id);
+                ScaleoutMapping mapping = store.GetMapping(cursor.Id);
 
                 // If there's no node for this cursor id it's likely because we've
                 // had an app domain restart and the cursor position is now invalid.
-                if (node == null)
+                if (mapping == null)
                 {
-                    // Set it to the first id in this mapping                    
-                    node = stream.GetMapping(stream.MinKey);
+                    // Set it to the first id in this mapping
+                    mapping = store.GetMapping(store.MinKey);
 
                     // Mark this cursor as unconsumed
                     consumed = false;
@@ -90,14 +90,12 @@ namespace Microsoft.AspNet.SignalR.Messaging
                 else if (consumed)
                 {
                     // Skip this node since we've already consumed it
-                    node = node.Next;
+                    mapping = mapping.Next;
                 }
 
                 // Stop if we got more than max messages
-                while (totalCount < MaxMessages && node != null)
+                while (totalCount < MaxMessages && mapping != null)
                 {
-                    KeyValuePair<ulong, ScaleoutMapping> pair = node.Value;
-
                     // It should be ok to lock here since groups aren't modified that often
 
                     // For each of the event keys we care about, extract all of the messages
@@ -106,23 +104,26 @@ namespace Microsoft.AspNet.SignalR.Messaging
                     {
                         string eventKey = EventKeys[j];
 
-                        LocalEventKeyInfo info;
-                        if (pair.Value.EventKeyMappings.TryGetValue(eventKey, out info))
+                        for (int k = 0; k < mapping.LocalKeyInfo.Count; k++)
                         {
-                            int maxMessages = Math.Min(info.Count, MaxMessages);
-                            MessageStoreResult<Message> storeResult = info.Store.GetMessages(info.MinLocal, maxMessages);
+                            var info = mapping.LocalKeyInfo[k];
 
-                            if (storeResult.Messages.Count > 0)
+                            if (info.Key.Equals(eventKey, StringComparison.OrdinalIgnoreCase))
                             {
-                                items.Add(storeResult.Messages);
-                                totalCount += storeResult.Messages.Count;
+                                MessageStoreResult<Message> storeResult = info.Store.GetMessages(info.Id, 1);
+
+                                if (storeResult.Messages.Count > 0)
+                                {
+                                    items.Add(storeResult.Messages);
+                                    totalCount += storeResult.Messages.Count;
+                                }
                             }
                         }
                     }
 
                     // Update the cursor id
-                    nextCursors[i] = pair.Key;
-                    node = node.Next;
+                    nextCursors[i] = mapping.Id;
+                    mapping = mapping.Next;
                 }
             }
 

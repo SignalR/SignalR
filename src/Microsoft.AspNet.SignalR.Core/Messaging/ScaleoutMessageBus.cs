@@ -204,42 +204,29 @@ namespace Microsoft.AspNet.SignalR.Messaging
 
             _trace.TraceInformation("OnReceived({0}, {1}, {2})", streamIndex, id, messages.Count);
 
-            // Create a local dictionary for this payload
-            var dictionary = new ConcurrentDictionary<string, LocalEventKeyInfo>();
+            var localMapping = new LocalEventKeyInfo[messages.Count];
+            var keys = new HashSet<string>();
 
-            foreach (var m in messages)
+            for (var i = 0; i < messages.Count; ++i)
             {
-                // Get the payload info
-                var info = dictionary.GetOrAdd(m.Key, _ => new LocalEventKeyInfo());
+                Message message = messages[i];
 
-                // Save the min and max for this payload for later
-                ulong localId = Save(m);
+                keys.Add(message.Key);
+                
+                ulong localId = Save(message);
+                MessageStore<Message> messageStore = Topics[message.Key].Store;
 
-                // Set the topic pointer for this event key so we don't need to look it up later
-                info.Store = Topics[m.Key].Store;
-
-                info.MinLocal = Math.Min(localId, info.MinLocal);
-                info.Count++;
+                localMapping[i] = new LocalEventKeyInfo(message.Key, localId, messageStore);
             }
-
-            // Create the mapping for this payload
-            var mapping = new ScaleoutMapping(dictionary);
 
             // Get the stream for this payload
-            var stream = StreamManager.Streams[streamIndex];
+            ScaleoutMappingStore store = StreamManager.Streams[streamIndex];
 
             // Publish only after we've setup the mapping fully
-            if (!stream.TryAdd(id, mapping))
-            {
-                _trace.TraceVerbose(Resources.Error_DuplicatePayloadsForStream, streamIndex);
-
-                stream.Clear();
-
-                stream.TryAdd(id, mapping);
-            }
+            store.Add(id, localMapping);
 
             // Schedule after we're done
-            foreach (var eventKey in dictionary.Keys)
+            foreach (var eventKey in keys)
             {
                 ScheduleEvent(eventKey);
             }

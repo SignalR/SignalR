@@ -159,7 +159,7 @@
     <Compile Include="Messaging\Cursor.cs" />
     <Compile Include="Infrastructure\IStringMinifier.cs" />
     <Compile Include="Messaging\ISubscription.cs" />
-    <Compile Include="Messaging\IndexedDictionary.cs" />
+    <Compile Include="Messaging\ScaleoutMappingStore.cs" />
     <Compile Include="Messaging\LocalEventKeyInfo.cs" />
     <Compile Include="Messaging\MessageBroker.cs" />
     <Compile Include="Messaging\ScaleoutMapping.cs" />
