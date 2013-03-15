@@ -395,6 +395,7 @@
                 global: false,
                 cache: false,
                 type: "GET",
+                contentType: "application/json; charset=UTF-8",
                 data: {},
                 dataType: connection.ajaxDataType,
                 error: function (error) {
