@@ -7,22 +7,55 @@ namespace Microsoft.AspNet.SignalR.Messaging
 {
     public class ScaleoutMappingStore
     {
-        private readonly BoundedStoreManager _storeManager = new BoundedStoreManager();
+        private ScaleoutMapping _previousMapping;
+        private StoreLink _minimum;
+        private StoreLink _current;
+        // private ulong _seed;
+
+        public ScaleoutMappingStore()
+        {
+            _minimum = new StoreLink();
+            _current = _minimum;
+        }
 
         public void Add(ulong id, IList<LocalEventKeyInfo> localKeyInfo)
         {
-            _storeManager.Add(new ScaleoutMapping(id, localKeyInfo));
+            if (id <= _current.MaxValue)
+            {
+                var store = new StoreLink();
+                _current.Next = store;
+                _current = store;
+            }
+
+            var mapping = new ScaleoutMapping(id, localKeyInfo, _current);
+
+            // If the store is full then create a new one
+            if (!_current.Add(mapping))
+            {
+                var store = new StoreLink();
+                _current.Next = store;
+                _current = store;
+            }
+
+            if (_previousMapping != null)
+            {
+                // Set the link
+                _previousMapping.Next = mapping;
+            }
+
+            // Keep track of the previous mapping
+            _previousMapping = mapping;
         }
 
         public ulong MinKey
         {
             get
             {
-                if (!_storeManager.Minimum.MinValue.HasValue)
+                if (!_minimum.MinValue.HasValue)
                 {
-                    return 0;
+                    return UInt64.MinValue;
                 }
-                return _storeManager.Minimum.MinValue.Value;
+                return _minimum.MinValue.Value;
             }
         }
 
@@ -30,17 +63,17 @@ namespace Microsoft.AspNet.SignalR.Messaging
         {
             get
             {
-                if (!_storeManager.Current.MaxValue.HasValue)
+                if (!_current.MaxValue.HasValue)
                 {
-                    return 0;
+                    return UInt64.MaxValue;
                 }
-                return _storeManager.Current.MaxValue.Value;
+                return _current.MaxValue.Value;
             }
         }
 
-        public ScaleoutMapping GetMapping(ulong id)
+        public IScaleoutMapping GetMapping(ulong id)
         {
-            BoundedStore store = _storeManager.FindStore(id);
+            StoreLink store = FindStore(id);
 
             if (store == null)
             {
@@ -50,122 +83,21 @@ namespace Microsoft.AspNet.SignalR.Messaging
             return store.FindMapping(id);
         }
 
-        // TODO: Thread safety
-        private class BoundedStoreManager
+        private StoreLink FindStore(ulong id)
         {
-            public BoundedStore Minimum { get; private set; }
-            public BoundedStore Current { get; private set; }
+            StoreLink store = _minimum;
 
-            private ScaleoutMapping _previousMapping;
-
-            public BoundedStoreManager()
+            while (store != null)
             {
-                Minimum = new BoundedStore();
-                Current = Minimum;
-            }
-
-            public void Add(ScaleoutMapping mapping)
-            {
-                if (mapping.Id <= Current.MaxValue)
+                if (store.HasValue(id))
                 {
-                    var store = new BoundedStore();
-                    Minimum = store;
-                    Current = store;
+                    return store;
                 }
 
-                if (!Current.Add(mapping))
-                {
-                    var store = new BoundedStore();
-                    Current.Next = store;
-                    Current = store;
-                }
-
-                if (_previousMapping != null)
-                {
-                    // Set the link
-                    _previousMapping.Next = mapping;
-                }
-
-                // Keep track of the previous mapping
-                _previousMapping = mapping;
+                store = store.Next;
             }
 
-            public BoundedStore FindStore(ulong id)
-            {
-                BoundedStore store = Minimum;
-
-                while (store != null)
-                {
-                    if (store.HasValue(id))
-                    {
-                        return store;
-                    }
-
-                    store = store.Next;
-                }
-
-                return null;
-            }
-        }
-
-        private class BoundedStore
-        {
-            private const int MaxBufferSize = 1000;
-
-            private readonly ScaleoutMapping[] _data = new ScaleoutMapping[MaxBufferSize];
-            private int _offset;
-
-            public BoundedStore Next { get; set; }
-            public ulong? MinValue { get; private set; }
-            public ulong? MaxValue { get; private set; }
-
-            public bool Add(ScaleoutMapping mapping)
-            {
-                MinValue = Math.Min(mapping.Id, MinValue ?? UInt64.MaxValue);
-                MaxValue = Math.Max(mapping.Id, MaxValue ?? UInt64.MinValue);
-
-                _data[_offset++] = mapping;
-
-                if (_offset >= _data.Length)
-                {
-                    return false;
-                }
-
-                return true;
-            }
-
-            public bool HasValue(ulong id)
-            {
-                return id >= MinValue && id <= MaxValue;
-            }
-
-            public ScaleoutMapping FindMapping(ulong id)
-            {
-                int low = 0;
-                int high = _offset;
-
-                while (low <= high)
-                {
-                    int mid = (low + high) / 2;
-
-                    ScaleoutMapping mapping = _data[mid];
-
-                    if (id < mapping.Id)
-                    {
-                        high = mid - 1;
-                    }
-                    else if (id > mapping.Id)
-                    {
-                        low = mid + 1;
-                    }
-                    else if (id == mapping.Id)
-                    {
-                        return mapping;
-                    }
-                }
-
-                return null;
-            }
+            return null;
         }
     }
 }

@@ -10,11 +10,11 @@ namespace Microsoft.AspNet.SignalR.Messaging
         {
             Key = key;
             Id = id;
-            Store = store;
+            MessageStore = store;
         }
 
         public string Key { get; private set; }
         public ulong Id { get; private set; }
-        public MessageStore<Message> Store { get; private set; }
+        public MessageStore<Message> MessageStore { get; private set; }
     }
 }

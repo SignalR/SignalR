@@ -75,7 +75,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
                 bool consumed = true;
 
                 // Try to find a local mapping for this payload
-                ScaleoutMapping mapping = store.GetMapping(cursor.Id);
+                IScaleoutMapping mapping = store.GetMapping(cursor.Id);
 
                 // If there's no node for this cursor id it's likely because we've
                 // had an app domain restart and the cursor position is now invalid.
@@ -90,7 +90,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
                 else if (consumed)
                 {
                     // Skip this node since we've already consumed it
-                    mapping = mapping.Next;
+                    mapping = mapping.NextMapping();
                 }
 
                 // Stop if we got more than max messages
@@ -110,7 +110,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
 
                             if (info.Key.Equals(eventKey, StringComparison.OrdinalIgnoreCase))
                             {
-                                MessageStoreResult<Message> storeResult = info.Store.GetMessages(info.Id, 1);
+                                MessageStoreResult<Message> storeResult = info.MessageStore.GetMessages(info.Id, 1);
 
                                 if (storeResult.Messages.Count > 0)
                                 {
@@ -123,7 +123,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
 
                     // Update the cursor id
                     nextCursors[i] = mapping.Id;
-                    mapping = mapping.Next;
+                    mapping = mapping.NextMapping();
                 }
             }
 
