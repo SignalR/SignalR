@@ -16,12 +16,11 @@ BEGIN TRANSACTION;
 --SET @Payload = 0x2605260626402642;
 -- END: TEST DATA --
 
-DECLARE @LastPayloadId bigint;
 DECLARE @NewPayloadId bigint;
 DECLARE @NewPayloadIdTable table( [PayloadId] bigint );
 
 -- Update last payload id, this will return when an exclusive lock was taken
-UPDATE [SignalR].[Messages_1_Id] SET [PayloadID] = [PayloadID] + 1
+UPDATE [SignalR].[Messages_1_Id] SET [PayloadId] = [PayloadId] + 1
 OUTPUT INSERTED.[PayloadId] INTO @NewPayloadIdTable;
 
 SELECT @NewPayloadId = [PayloadId] FROM @NewPayloadIdTable;
