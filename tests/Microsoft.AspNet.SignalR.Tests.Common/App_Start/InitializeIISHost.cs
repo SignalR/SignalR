@@ -1,3 +1,4 @@
+using Microsoft.AspNet.SignalR.Tests.Common.Connections;
 using System;
 using System.Configuration;
 using System.Diagnostics;
@@ -62,7 +63,7 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure.IIS
             RouteTable.Routes.MapConnection<AddGroupOnConnectedConnection>("add-group", "add-group");
             RouteTable.Routes.MapConnection<UnusableProtectedConnection>("protected", "protected");
             RouteTable.Routes.MapConnection<FallbackToLongPollingConnection>("fall-back", "/fall-back");
-
+            RouteTable.Routes.MapConnection<ExamineRequestConnection>("examine-request", "/examine-request");
 
             RouteTable.Routes.Add("ping", new Route("ping", new PingHandler()));
             RouteTable.Routes.Add("gc", new Route("gc", new GCHandler()));

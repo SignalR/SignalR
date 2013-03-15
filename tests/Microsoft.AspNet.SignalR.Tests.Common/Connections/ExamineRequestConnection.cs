@@ -1,15 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 
-namespace Microsoft.AspNet.SignalR.Samples
+namespace Microsoft.AspNet.SignalR.Tests.Common.Connections
 {
-    public class TestConnection : PersistentConnection
+    public class ExamineRequestConnection : PersistentConnection
     {
-        public static string NegotiateRequestType { 
-            get; 
-            private set; }
-        public static string PingRequestType { get; private set; }
+        public string NegotiateRequestType { get; private set; }
+        public string PingRequestType { get; private set; }
 
         public override Task ProcessRequest(Hosting.HostContext context)
         {
