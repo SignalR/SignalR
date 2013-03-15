@@ -5,6 +5,11 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests
 {
     public class MyBadConnection : PersistentConnection
     {
+        public override Task ProcessRequest(Hosting.HostContext context)
+        {
+
+            return base.ProcessRequest(context);
+        }
         protected override Task OnConnected(IRequest request, string connectionId)
         {
             // Should throw 404

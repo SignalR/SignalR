@@ -1,0 +1,39 @@
+﻿<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <title></title>
+</head>
+<body>
+    <input type="button" id="sendmessage" value="Send" />
+    <script src="../Scripts/jquery-1.8.2.js"></script>
+    <script src="../Scripts/jquery.signalR.js"></script>
+    <script src="/signalr/hubs"></script>
+    <script>
+        $(function () {
+            // $.ajaxSetup({ contentType: "application/json; charset=utf-8" });
+            // var connection = $.connection('/test-connection');
+            // connection.start({ transport: 'longPolling' }).done(function () {
+            var statusProxy = $.connection.StatusHub;
+
+            $("#sendmessage").click(function () {
+                statusProxy.server.sendMessage("Hello");
+            });
+
+            $.connection.hub.start({ transport: "longPolling"}).done(function () {
+                alert("Connected successfully");
+            });
+
+            statusProxy.client.addMessage = function (msg) {
+                alert("Message Received: " + msg);
+            };
+
+            statusProxy.client.addPerson = function (arg) {
+                alert("Inside Add Person");
+                alert(arg.Name + " : " + arg.Age);
+            };
+
+            // connection.stop();
+        });
+    </script>
+</body>
+</html>

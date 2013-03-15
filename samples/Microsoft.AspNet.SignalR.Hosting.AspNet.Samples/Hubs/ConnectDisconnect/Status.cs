@@ -27,5 +27,19 @@ namespace Microsoft.AspNet.SignalR.Samples.Hubs.ConnectDisconnect
         {
             Clients.Caller.pong();
         }
+
+        public Task SendMessage(string msg)
+        {
+            // Clients.All.addMessage(msg).wait();
+            Person p = new Person(); 
+            p.Name = "John"; p.Age=12;
+            return Clients.All.addPerson(p);
+        }
+
+        class Person
+        {
+            public string Name { get; set; }
+            public int Age { get; set; }
+        }
     }
 }

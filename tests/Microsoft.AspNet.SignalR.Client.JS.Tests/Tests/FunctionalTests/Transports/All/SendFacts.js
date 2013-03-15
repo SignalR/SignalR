@@ -36,4 +36,20 @@ testUtilities.runWithAllTransports(function (transport) {
             connection.stop();
         };
     });
+
+    QUnit.asyncTimeoutTest(transport + " contentType set correctly ", testUtilities.defaultTestTimeout, function (end, assert, testName) {
+        var connection = testUtilities.createConnection("multisend", end, assert, testName);
+
+        connection.received(function (data) {
+            assert.equal(typeof (data), "string", "contentType set correctly in the reuqest");
+            end();
+        });
+
+        connection.start({ transport: transport });
+
+        // Cleanup
+        return function () {
+            connection.stop();
+        };
+    });
 });

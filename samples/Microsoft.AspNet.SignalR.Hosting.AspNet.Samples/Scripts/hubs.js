@@ -424,6 +424,12 @@
             ping: function () {
             /// <summary>Calls the Ping method on the server-side StatusHub hub.&#10;Returns a jQuery.Deferred() promise.</summary>
                 return proxies.StatusHub.invoke.apply(proxies.StatusHub, $.merge(["Ping"], $.makeArray(arguments)));
+             },
+
+            sendMessage: function (msg) {
+            /// <summary>Calls the SendMessage method on the server-side StatusHub hub.&#10;Returns a jQuery.Deferred() promise.</summary>
+            /// <param name=\"msg\" type=\"String\">Server side type is System.String</param>
+                return proxies.StatusHub.invoke.apply(proxies.StatusHub, $.merge(["SendMessage"], $.makeArray(arguments)));
              }
         };
 

@@ -163,6 +163,8 @@
     <Content Include="Hubs\ShapeShare\ShapeShare.js" />
     <Content Include="Hubs\ShapeShare\index.htm" />
     <Content Include="Raw\Default.aspx" />
+    <Content Include="Raw\TestPageHub.html" />
+    <Content Include="Raw\TestPagePC.html" />
     <Content Include="Raw\test\basic.htm" />
     <Content Include="Raw\crossdomain.htm" />
     <Content Include="Raw\eventSource.html" />
