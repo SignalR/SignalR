@@ -6,13 +6,15 @@
         webSocketData = {},
         webSocketIds = 0,
         ignoringMessages = false,
-        fail = function (data) {
+        fail = function (data, soft) {
             // Used to not trigger any methods from a resultant web socket completion event.
             ignoringMessages = true;
             data.close();
             ignoringMessages = false;
 
-            data.onclose({});
+            if (!soft) {
+                data.onclose({});
+            }
         };
 
     if (enabled) {
@@ -54,7 +56,7 @@
                         // If we're trying ot send while the network is down then we need to fail.
                         // Act async for failure of request
                         setTimeout(function () {
-                            fail(webSocketData[id]);
+                            fail(webSocketData[id], true);
                         }, 0);
                     }
                 });
@@ -105,16 +107,12 @@
         disconnect: function (soft) {
             /// <summary>Disconnects the network so javascript transport methods are unable to communicate with a server.</summary>
             /// <param name="soft" type="Boolean">Whether the disconnect should be soft.  A soft disconnect indicates that transport methods are not notified of disconnect.</param>
-            if (!soft) {
-                for (var key in webSocketData) {
-                    var data = webSocketData[key];
+            for (var key in webSocketData) {
+                var data = webSocketData[key];
 
-                    fail(data);
-                }
+                fail(data, soft);
             }
-            else {
-                ignoringMessages = true;
-            }
+            ignoringMessages = true;
         },
         connect: function () {
             /// <summary>Connects the network so javascript methods can continue utilizing the network.</summary>

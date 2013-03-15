@@ -62,7 +62,7 @@
         if (ignoringMessages) {
             // Act async for failure of request
             setTimeout(function () {
-                fail(ajaxData[id], false);
+                fail(ajaxData[id], true);
             }, 0);
         }
 
