@@ -3,8 +3,7 @@
     window.document.testUrl = /*URL*/'auto'/*URL*/;
     window.document.commandLineTest = /*CMDLineTest*/false/*CMDLineTest*/;
 
-    // Configure masks to help mock foreverFrame transports and ajaxSends to be used for network mocking
-    $.signalR.transports.foreverFrame.networkLoss = function () {
+    function failConnection() {
         $("iframe").each(function () {
             if (this.stop) {
                 this.stop();
@@ -21,8 +20,11 @@
             }
             $(this).triggerHandler("readystatechange");
         });
-    };
+    }
 
-    $.network.mask.create($.signalR.transports.foreverFrame, "networkLoss", "receive");
+    // Configure masks to help mock foreverFrame transports and ajaxSends to be used for network mocking
+    $.signalR.transports.foreverFrame.networkLoss = failConnection;
+    $.network.mask.create($.signalR.transports.foreverFrame, ["networkLoss"], ["receive"]);
+    $.network.mask.subscribe($.signalR.transports.foreverFrame, "started", failConnection);
 
 })($, window);

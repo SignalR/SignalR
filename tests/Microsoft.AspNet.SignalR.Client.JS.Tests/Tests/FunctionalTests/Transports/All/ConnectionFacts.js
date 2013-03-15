@@ -56,7 +56,7 @@ testUtilities.runWithAllTransports(function (transport) {
     });
 });
 
-QUnit.module("Hub Proxy Facts", !window.document.commandLineTest);
+QUnit.module("Connection Facts", !window.document.commandLineTest);
 
 // Replacing window.onerror will not capture uncaught errors originating from inside an iframe
 testUtilities.runWithTransports(["longPolling", "serverSentEvents", "webSockets"], function (transport) {
