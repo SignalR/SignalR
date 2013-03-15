@@ -10,7 +10,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
         private readonly BoundedStoreManager _storeManager = new BoundedStoreManager();
 
         public void Add(ulong id, IList<LocalEventKeyInfo> localKeyInfo)
-        {            
+        {
             _storeManager.Add(new ScaleoutMapping(id, localKeyInfo));
         }
 
@@ -73,23 +73,21 @@ namespace Microsoft.AspNet.SignalR.Messaging
                     Current = store;
                 }
 
-                if (Current.Add(mapping))
-                {
-                    if (_previousMapping != null)
-                    {
-                        // Set the link
-                        _previousMapping.Next = mapping;
-                    }
-
-                    // Keep track of the previous mapping
-                    _previousMapping = mapping;
-                }
-                else
+                if (!Current.Add(mapping))
                 {
                     var store = new BoundedStore();
                     Current.Next = store;
                     Current = store;
                 }
+
+                if (_previousMapping != null)
+                {
+                    // Set the link
+                    _previousMapping.Next = mapping;
+                }
+
+                // Keep track of the previous mapping
+                _previousMapping = mapping;
             }
 
             public BoundedStore FindStore(ulong id)
@@ -126,15 +124,14 @@ namespace Microsoft.AspNet.SignalR.Messaging
                 MinValue = Math.Min(mapping.Id, MinValue ?? UInt64.MaxValue);
                 MaxValue = Math.Max(mapping.Id, MaxValue ?? UInt64.MinValue);
 
-                _data[_offset] = mapping;
+                _data[_offset++] = mapping;
 
-                if ((_offset + 1) < _data.Length)
+                if (_offset >= _data.Length)
                 {
-                    _offset++;
-                    return true;
+                    return false;
                 }
 
-                return false;
+                return true;
             }
 
             public bool HasValue(ulong id)
