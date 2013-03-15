@@ -38,10 +38,11 @@ testUtilities.runWithAllTransports(function (transport) {
     });
 
     QUnit.asyncTimeoutTest(transport + " contentType set correctly ", testUtilities.defaultTestTimeout, function (end, assert, testName) {
-        var connection = testUtilities.createConnection("multisend", end, assert, testName);
+        var connection = testUtilities.createConnection("examine-request", end, assert, testName);
 
         connection.received(function (data) {
-            assert.equal(typeof (data), "string", "contentType set correctly in the reuqest");
+            // assert.equal(typeof (data), "string", "contentType set correctly in the reuqest");
+            assert.equal("application/json; charset=UTF-8", data, "Content Type set correctly");
             end();
         });
 

@@ -12,3 +12,8 @@ QUnit.test("Named Correctly", function () {
     var con = $.connection;
     QUnit.equal(con.transports.longPolling.name, "longPolling", "Verifies Long Polling is named correctly.");
 });
+
+QUnit.test("Content Type set correctly", function () {
+    var con = $.connection;
+    QUnit.equal(con.transports.longPolling.name, "longPolling", "Verifies Long Polling is named correctly.");
+});
