@@ -75,6 +75,7 @@
                 global: false,
                 cache: false,
                 type: "GET",
+                contentType: "application/json; charset=UTF-8",
                 data: {},
                 dataType: connection.ajaxDataType,
                 success: function (data) {
@@ -172,6 +173,7 @@
                 url: url,
                 global: false,
                 type: connection.ajaxDataType === "jsonp" ? "GET" : "POST",
+                contentType: connection.ajaxDataType === "jsonp" ? "text/html; charset=UTF-8" : "application/x-www-form-urlencoded; charset=UTF-8",
                 dataType: connection.ajaxDataType,
                 data: {
                     data: data
@@ -209,6 +211,7 @@
                 timeout: 1000,
                 global: false,
                 type: "POST",
+                contentType: "application/json; charset=UTF-8",
                 dataType: connection.ajaxDataType,
                 data: {}
             });
