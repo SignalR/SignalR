@@ -166,6 +166,7 @@ testUtilities.runWithAllTransports(function (transport) {
             verifyState("connected");
 
             // FIX: The longPolling transport currently needs to receive a message with a message ID before it can "reconnect"
+            // Issue #1700
             if (transport === "longPolling") {
                 $.each(connections, function (_, connection) {
                     connection.messageId = connection.messageId || "";
@@ -234,19 +235,21 @@ testUtilities.runWithAllTransports(function (transport) {
         connection.start({ transport: transport }).done(function () {
             assert.equal(connection.state, $.signalR.connectionState.connected, "Connection started.");
 
+            // Monkey patch reconnect functions so we can count how many reconnect attempts have been made
             if (transport === "longPolling") {
                 // FIX: The longPolling transport currently needs to receive a message with a message ID before it can "reconnect"
+                // Issue #1700
                 connection.messageId = connection.messageId || "";
                 $.connection.transports._logic.pingServer = function (connection, transport) {
                     return savedPingServer.call($.connection.transports._logic, connection, transport).fail(function () {
                         connectIfSecondReconnectAttempt();
                     });
-                }
+                };
             } else {
                 $.connection.transports[transport].reconnect = function (connection) {
                     savedReconnect.call($.connection.transports[transport], connection);
                     connectIfSecondReconnectAttempt();
-                }
+                };
             }
 
             $.network.disconnect();
@@ -261,6 +264,6 @@ testUtilities.runWithAllTransports(function (transport) {
 
             $.network.connect();
             connection.stop();
-        }
+        };
     });
 });

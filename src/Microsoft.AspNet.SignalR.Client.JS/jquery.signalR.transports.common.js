@@ -54,6 +54,11 @@
         }
     }
 
+    function isConnectedOrReconnecting(connection) {
+        return connection.state === signalR.connectionState.connected ||
+               connection.state === signalR.connectionState.reconnecting;
+    }
+
     signalR.transports._logic = {
         pingServer: function (connection, transport) {
             /// <summary>Pings the server</summary>
@@ -320,14 +325,9 @@
             var transport = signalR.transports[transportName],
                 that = this;
 
-            function isConnectedOrReconnecting() {
-                return connection.state === signalR.connectionState.connected ||
-                       connection.state === signalR.connectionState.reconnecting;
-            }
-
             // We should only set a reconnectTimeout if we are currently connected
             // and a reconnectTimeout isn't already set.
-            if (isConnectedOrReconnecting() && !connection._.reconnectTimeout) {
+            if (isConnectedOrReconnecting(connection) && !connection._.reconnectTimeout) {
 
                 connection._.reconnectTimeout = window.setTimeout(function () {
                     transport.stop(connection);

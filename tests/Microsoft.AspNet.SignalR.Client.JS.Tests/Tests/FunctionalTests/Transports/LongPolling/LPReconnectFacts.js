@@ -9,10 +9,10 @@ QUnit.asyncTimeoutTest("Can reconnect.", testUtilities.defaultTestTimeout, funct
         // Wire up the state changed (while connected) to detect if we connect again
         // In a later test we'll determine if reconnected gets called
         connection.stateChanged(function () {
-            if (connection.state == $.signalR.connectionState.reconnecting) {
+            if (connection.state === $.signalR.connectionState.reconnecting) {
                 assert.ok(true, "Reconnecting");
                 $.network.connect();
-            } else if (connection.state == $.signalR.connectionState.connected) {
+            } else if (connection.state === $.signalR.connectionState.connected) {
                 assert.ok(true, "Reconnected");
                 end();
             }
@@ -43,7 +43,7 @@ QUnit.asyncTimeoutTest("Shifts into reconnecting state.", testUtilities.defaultT
         // Wire up the state changed (while connected) to detect if we connect again
         // In a later test we'll determine if reconnected gets called
         connection.stateChanged(function () {
-            if (connection.state == $.signalR.connectionState.reconnecting) {
+            if (connection.state === $.signalR.connectionState.reconnecting) {
                 assert.ok(true, "Connection now in reconnecting state.");
                 end();
             }
@@ -141,7 +141,7 @@ QUnit.asyncTimeoutTest("Clears stop reconnecting timeout on stop inside of state
         // Wire up the state changed (while connected) to detect if we connect again
         // In a later test we'll determine if reconnected gets called
         connection.stateChanged(function () {
-            if (connection.state == $.signalR.connectionState.reconnecting) {
+            if (connection.state === $.signalR.connectionState.reconnecting) {
                 assert.ok(true, "Connection now in reconnecting state (via stateChanged), stopping the connection.");
                 connection.stop();
                 

@@ -22,21 +22,22 @@
             that._events = {};
 
             that.addEventListener = function (name, event) {
-                var fn = function () {
-                    if (eventSourceData[id]) {
-                        if (name === "error") {
-                            delete eventSourceData[id];
-                            return event.apply(that, arguments);
-                        } else if (!ignoringMessages) {
-                            return event.apply(that, arguments);
+                var isError = name === "error",
+                    fn = function () {
+                        if (eventSourceData[id]) {
+                            if (isError) {
+                                delete eventSourceData[id];
+                                return event.apply(that, arguments);
+                            } else if (!ignoringMessages) {
+                                return event.apply(that, arguments);
+                            }
                         }
-                    }
-                };
+                    };
 
                 that._events[name] = fn;
                 es.addEventListener(name, fn);
 
-                if (ignoringMessages && name === "error") {
+                if (ignoringMessages && isError) {
                     // We don't want to call the error listener synchronously
                     setTimeout(function () {
                         fn({ eventPhase: savedEventSource.CLOSED });
@@ -63,6 +64,9 @@
         disconnect: function (soft) {
             /// <summary>Disconnects the network so javascript transport methods are unable to communicate with a server.</summary>
             /// <param name="soft" type="Boolean">Whether the disconnect should be soft.  A soft disconnect indicates that transport methods are not notified of disconnect.</param>
+
+            // Ensure we don't set ignoringMessages to true after calling data._events.error,
+            // because we might call connect in connection.reconnecting which can run synchronously.
             ignoringMessages = true;
             if (!soft) {
                 for (var key in eventSourceData) {
