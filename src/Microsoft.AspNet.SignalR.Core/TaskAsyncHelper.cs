@@ -199,11 +199,7 @@ namespace Microsoft.AspNet.SignalR
 
                     task.ContinueWith(t =>
                     {
-                        if (t.IsCompleted)
-                        {
-                            tcs.TrySetResult(null);
-                        }
-                        else 
+                        if (t.IsFaulted || t.IsCanceled)
                         {
                             try
                             {
@@ -222,6 +218,10 @@ namespace Microsoft.AspNet.SignalR
                             {
                                 tcs.TrySetException(e);
                             }
+                        }
+                        else
+                        {
+                            tcs.TrySetResult(null);
                         }
                     },
                     TaskContinuationOptions.ExecuteSynchronously);
