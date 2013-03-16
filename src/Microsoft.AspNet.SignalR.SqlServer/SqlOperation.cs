@@ -9,8 +9,6 @@ namespace Microsoft.AspNet.SignalR.SqlServer
 {
     internal class SqlOperation
     {
-        public static readonly TimeSpan DefaultRetryDelay = TimeSpan.FromSeconds(3);
-
         private static readonly Action _noOp = () => { };
 
         private readonly string _connectionString;
@@ -30,7 +28,7 @@ namespace Microsoft.AspNet.SignalR.SqlServer
             _commandText = commandText;
             _onRetry = onRetry;
 
-            RetryDelay = DefaultRetryDelay;
+            RetryDelay = TimeSpan.FromSeconds(3);
         }
 
         public SqlOperation(string connectionString, string commandText, params SqlParameter[] parameters)
@@ -49,17 +47,46 @@ namespace Microsoft.AspNet.SignalR.SqlServer
 
         public object ExecuteScalar()
         {
-            return ExecuteWithRetry(cmd => cmd.ExecuteScalar());
+            return Execute(cmd => cmd.ExecuteScalar());
         }
 
         public int ExecuteNonQuery()
         {
-            return ExecuteWithRetry(cmd => cmd.ExecuteNonQuery());
+            return Execute(cmd => cmd.ExecuteNonQuery());
         }
 
-        public SqlDataReader ExecuteReader()
+        public int ExecuteReader(Action<SqlDataReader> processRecord)
         {
-            return ExecuteWithRetry(cmd => cmd.ExecuteReader());
+            return ExecuteReader(processRecord, null);
+        }
+
+        public int ExecuteReader(Action<SqlDataReader> processRecord, Action<SqlNotificationEventArgs> onChange)
+        {
+            return Execute(cmd =>
+            {
+                if (onChange != null)
+                {
+                    // Setup SQL notification
+                    var useNotifications = StartSqlDependencyListener();
+
+                }
+
+                var reader = cmd.ExecuteReader();
+                var count = 0;
+
+                if (!reader.HasRows)
+                {
+                    return count;
+                }
+
+                while (reader.Read())
+                {
+                    count++;
+                    processRecord(reader);
+                }
+
+                return count;
+            }, retryOnException: false);
         }
 
         public Task<int> ExecuteNonQueryAsync()
@@ -69,28 +96,16 @@ namespace Microsoft.AspNet.SignalR.SqlServer
             return tcs.Task;
         }
 
-        private void ExecuteWithRetry<T>(Func<SqlCommand, Task<T>> commandFunc, TaskCompletionSource<T> tcs)
+        private T Execute<T>(Func<SqlCommand, T> commandFunc)
         {
-            ExecuteWithRetry(commandFunc)
-                .Then(result => tcs.SetResult(result))
-                .Catch(ex =>
-                    {
-                        if (IsRecoverableException(ex.GetBaseException()))
-                        {
-                            _onRetry();
-                            TaskAsyncHelper.Delay(RetryDelay)
-                                           .Then(() => ExecuteWithRetry(commandFunc, tcs));
-                        }
-                        else
-                        {
-                            tcs.SetUnwrappedException(ex);
-                        }
-                    });
+            return Execute(commandFunc, true);
         }
-        
-        private T ExecuteWithRetry<T>(Func<SqlCommand, T> commandFunc)
+
+        private T Execute<T>(Func<SqlCommand, T> commandFunc, bool retryOnException)
         {
+            T result = default(T);
             SqlConnection connection = null;
+
             while (true)
             {
                 try
@@ -98,14 +113,22 @@ namespace Microsoft.AspNet.SignalR.SqlServer
                     connection = new SqlConnection(_connectionString);
                     var command = CreateCommand(connection);
                     connection.Open();
-                    return commandFunc(command);
+                    result = commandFunc(command);
+                    break;
                 }
                 catch (Exception ex)
                 {
                     if (IsRecoverableException(ex))
                     {
-                        _onRetry();
-                        Thread.Sleep(RetryDelay);
+                        if (retryOnException)
+                        {
+                            _onRetry();
+                            Thread.Sleep(RetryDelay);
+                        }
+                        else
+                        {
+                            break;
+                        }
                     }
                     else
                     {
@@ -120,6 +143,66 @@ namespace Microsoft.AspNet.SignalR.SqlServer
                     }
                 }
             }
+
+            return result;
+        }
+
+        private void ExecuteWithRetry<T>(Func<SqlCommand, Task<T>> commandFunc, TaskCompletionSource<T> tcs)
+        {
+            SqlConnection connection = null;
+            while (true)
+            {
+                try
+                {
+                    connection = new SqlConnection(_connectionString);
+                    var command = CreateCommand(connection);
+
+                    connection.Open();
+
+                    commandFunc(command)
+                        .Then(result => tcs.SetResult(result))
+                        .Catch(ex =>
+                        {
+                            if (IsRecoverableException(ex.GetBaseException()))
+                            {
+                                _onRetry();
+                                TaskAsyncHelper.Delay(RetryDelay)
+                                               .Then(() => ExecuteWithRetry(commandFunc, tcs));
+                            }
+                            else
+                            {
+                                tcs.SetUnwrappedException(ex);
+                            }
+                        })
+                        .Finally(state =>
+                        {
+                            var conn = (SqlConnection)state;
+                            if (conn != null)
+                            {
+                                conn.Dispose();
+                            }
+                        }, connection);
+                    
+                    break;
+                }
+                catch (Exception ex)
+                {
+                    if (connection != null)
+                    {
+                        connection.Dispose();
+                    }
+
+                    if (IsRecoverableException(ex))
+                    {
+                        _onRetry();
+                        Thread.Sleep(RetryDelay);
+                    }
+                    else
+                    {
+                        throw;
+                    }
+                }
+            };
         }
 
         private SqlCommand CreateCommand(SqlConnection connection)
@@ -130,6 +213,43 @@ namespace Microsoft.AspNet.SignalR.SqlServer
                 command.Parameters.AddRange(_parameters);
             }
             return command;
+        }
+
+        private bool StartSqlDependencyListener()
+        {
+            //TraceVerbose("Starting SQL notification listener");
+            while (true)
+            {
+                try
+                {
+                    // TODO: Handle SqlExceptions here and retry, etc.
+                    if (SqlDependency.Start(_connectionString))
+                    {
+                        //TraceVerbose("SQL notificatoin listener started");
+                    }
+                    else
+                    {
+                        //TraceVerbose("SQL notificatoin listener was already running");
+                    }
+                    return true;
+                }
+                catch (InvalidOperationException)
+                {
+                    //TraceInformation("SQL Service Broker is disabled, disabling query notifications");
+                    return false;
+                }
+                catch (Exception ex)
+                {
+                    if (IsRecoverableException(ex))
+                    {
+                        Thread.Sleep(RetryDelay);
+                    }
+                    else
+                    {
+                        throw;
+                    }
+                }
+            }
         }
 
         private static bool IsRecoverableException(Exception exception)

@@ -3,13 +3,12 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Globalization;
 using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR.Messaging;
 
 namespace Microsoft.AspNet.SignalR.SqlServer
 {
-    internal class SqlStream
+    internal class SqlStream : IDisposable
     {
         private readonly int _streamIndex;
         private readonly Action _onRetry;
@@ -17,14 +16,13 @@ namespace Microsoft.AspNet.SignalR.SqlServer
         private readonly SqlReceiver _receiver;
         private readonly TraceSource _trace;
 
-        public SqlStream(int streamIndex, string connectionString, string tableNamePrefix, Action onRetry, Func<int, ulong, IList<Message>, Task> onReceived, TraceSource trace)
+        public SqlStream(int streamIndex, string connectionString, string tableName, Action onRetry, Func<int, ulong, IList<Message>, Task> onReceived, TraceSource trace)
         {
             _streamIndex = streamIndex;
             _onRetry = onRetry;
             _trace = trace;
 
-            _sender = new SqlSender(connectionString, tableNamePrefix, _onRetry, _trace);
-            var tableName = String.Format(CultureInfo.InvariantCulture, "{0}_{1}", tableNamePrefix, _streamIndex + 1);
+            _sender = new SqlSender(connectionString, tableName, _onRetry, _trace);
             _receiver = new SqlReceiver(connectionString, tableName, _streamIndex, onReceived, _onRetry, _trace);
         }
 
@@ -33,6 +31,11 @@ namespace Microsoft.AspNet.SignalR.SqlServer
             _trace.TraceVerbose("Saving payload of {0} messages(s) to stream {1} in SQL server", messages.Count, _streamIndex);
 
             return _sender.Send(messages);
+        }
+
+        public void Dispose()
+        {
+            _receiver.Dispose();
         }
     }
 }

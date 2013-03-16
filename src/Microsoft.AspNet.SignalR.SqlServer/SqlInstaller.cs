@@ -51,14 +51,8 @@ namespace Microsoft.AspNet.SignalR.SqlServer
 
         private static bool IsSqlEditionSupported(string connectionString)
         {
-            int edition;
-            using (var connection = new SqlConnection(connectionString))
-            {
-                connection.Open();
-                var cmd = connection.CreateCommand();
-                cmd.CommandText = "SELECT SERVERPROPERTY ( 'EngineEdition' )";
-                edition = (int)cmd.ExecuteScalar();
-            }
+            var operation = new SqlOperation(connectionString, "SELECT SERVERPROPERTY ( 'EngineEdition' )");
+            var edition = (int)operation.ExecuteScalar();
 
             return edition >= SqlEngineEdition.Standard && edition <= SqlEngineEdition.Express;
         }

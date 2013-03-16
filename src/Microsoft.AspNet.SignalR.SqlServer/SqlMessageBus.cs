@@ -2,7 +2,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Data.SqlClient;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
@@ -42,7 +41,6 @@ namespace Microsoft.AspNet.SignalR.SqlServer
 
         }
 
-        [SuppressMessage("Microsoft.Usage", "CA2214:DoNotCallOverridableMethodsInConstructors", Justification = "Review")]
         internal SqlMessageBus(string connectionString, int tableCount, SqlInstaller sqlInstaller, IDependencyResolver dependencyResolver)
             : base(dependencyResolver)
         {
@@ -57,8 +55,8 @@ namespace Microsoft.AspNet.SignalR.SqlServer
             }
 
             _connectionString = connectionString;
-
             _tableCount = tableCount;
+
             var traceManager = dependencyResolver.Resolve<ITraceManager>();
             _trace = traceManager["SignalR." + typeof(SqlMessageBus).Name];
 
@@ -79,16 +77,16 @@ namespace Microsoft.AspNet.SignalR.SqlServer
 
         protected override Task Send(int streamIndex, IList<Message> messages)
         {
-            return _sender.Send(streamIndex, messages);
+            return _streams[streamIndex].Send(messages);
         }
 
         protected override void Dispose(bool disposing)
         {
             if (disposing)
             {
-                for (var i = 0; i < _receivers.Length; i++)
+                for (var i = 0; i < _streams.Length; i++)
                 {
-                    _receivers[i].Dispose();
+                    _streams[i].Dispose();
                 }
             }
 
@@ -103,25 +101,22 @@ namespace Microsoft.AspNet.SignalR.SqlServer
                 var installer = new SqlInstaller(_connectionString, _tableNamePrefix, _tableCount, _trace);
                 installer.Install();
 
-                _streams =
-                    Enumerable.Range(1, _tableCount)
-                        .Select(tableNumber => new SqlStream(tableNumber - 1, _connectionString,
-                            String.Format(CultureInfo.InvariantCulture, "{0}_{1}", _tableNamePrefix, tableNumber), _trace))
-                        .ToArray();
+                _streams = Enumerable.Range(0, _tableCount)
+                                     .Select(streamIndex => new SqlStream(streamIndex, _connectionString,
+                                         String.Format(CultureInfo.InvariantCulture, "{0}_{1}", _tableNamePrefix, streamIndex),
+                                         () => Buffer(streamIndex, DefaultBufferSize), OnReceived, _trace))
+                                     .ToArray();
 
                 Open();
             }
             catch (Exception ex)
             {
+                // Fatal exception while initializing, Close and call the error callback
+                Close(ex);
+                
+                // TODO: Invoke user defined error callback
 
             }
-        }
-
-        private void CloseAndInvokeErrorCallback(int streamIndex, Exception exception)
-        {
-            Close(streamIndex, exception);
-            
-            // TODO: Invoke user defined error callback
         }
     }
 }

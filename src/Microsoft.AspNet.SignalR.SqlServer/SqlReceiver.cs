@@ -76,15 +76,8 @@ namespace Microsoft.AspNet.SignalR.SqlServer
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Security", "CA2100:Review SQL queries for security vulnerabilities", Justification = "Reviewed")]
         private void InitializeLastPayloadId()
         {
-            using (var connection = new SqlConnection(_connectionString))
-            {
-                connection.Open();
-                using (var cmd = new SqlCommand(_maxIdSql, connection))
-                {
-                    var maxId = cmd.ExecuteScalar();
-                    _lastPayloadId = (long)maxId;
-                }
-            }
+            var operation = new SqlOperation(_connectionString, _maxIdSql);
+            _lastPayloadId = (int)operation.ExecuteScalar();
         }
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "On a background thread with explicit error processing")]
@@ -281,7 +274,6 @@ namespace Microsoft.AspNet.SignalR.SqlServer
 
                 if (id != _lastPayloadId + 1)
                 {
-                    // TODO: This is not necessarily an error, identity columns can result in gaps in the sequence
                     TraceError("Missed message(s) from SQL Server. Expected payload ID {0} but got {1}.", _lastPayloadId + 1, id);
                 }
 
