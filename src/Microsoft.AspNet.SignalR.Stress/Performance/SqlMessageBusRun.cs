@@ -18,7 +18,7 @@ namespace Microsoft.AspNet.SignalR.Stress.Performance
 
         protected override MessageBus CreateMessageBus()
         {
-            return new SqlMessageBus("Data Source=(local);Initial Catalog=SignalRSamples;Integrated Security=SSPI;MultipleActiveResultSets=true;Asynchronous Processing=True;", 3, SqlMessageBus.DefaultQueueSize, Resolver);
+            return new SqlMessageBus("Data Source=(local);Initial Catalog=SignalRSamples;Integrated Security=SSPI;MultipleActiveResultSets=true;Asynchronous Processing=True;", 3, Resolver);
         }
     }
 }
