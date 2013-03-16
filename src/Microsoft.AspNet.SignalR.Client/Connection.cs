@@ -486,13 +486,14 @@ namespace Microsoft.AspNet.SignalR.Client
                 // Do nothing if the connection is offline
                 if (State != ConnectionState.Disconnected)
                 {
+                    // Change state before doing anything else in case something later in the method throws
+                    State = ConnectionState.Disconnected;
+
                     Trace.WriteLine("Disconnect({0})", ConnectionId);
 
                     _disconnectTimeoutOperation.Dispose();
                     _disconnectCts.Cancel();
                     _monitor.Dispose();
-
-                    State = ConnectionState.Disconnected;
 
                     Trace.WriteLine("Closed({0})", ConnectionId);
 
