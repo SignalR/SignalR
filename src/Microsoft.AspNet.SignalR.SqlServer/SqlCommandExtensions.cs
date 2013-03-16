@@ -8,7 +8,7 @@ namespace Microsoft.AspNet.SignalR.SqlServer
 {
     internal static class SqlCommandExtensions
     {
-        public static Task ExecuteNonQueryAsync(this SqlCommand command)
+        public static Task<int> ExecuteNonQueryAsync(this SqlCommand command)
         {
             return Task.Factory.FromAsync(
                 (cb, state) => command.BeginExecuteNonQuery(cb, state),

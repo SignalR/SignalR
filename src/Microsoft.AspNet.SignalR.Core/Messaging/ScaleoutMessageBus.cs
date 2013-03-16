@@ -29,14 +29,6 @@ namespace Microsoft.AspNet.SignalR.Messaging
             _streamManager = new Lazy<ScaleoutStreamManager>(() => new ScaleoutStreamManager(_trace, Send, OnReceivedCore, StreamCount));
         }
 
-        protected override TraceSource Trace
-        {
-            get
-            {
-                return _trace;
-            }
-        }
-
         /// <summary>
         /// The number of streams can't change for the lifetime of this instance.
         /// </summary>
@@ -210,7 +202,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
         {
             Counters.ScaleoutMessageBusMessagesReceivedPerSec.IncrementBy(messages.Count);
 
-            Trace.TraceInformation("OnReceived({0}, {1}, {2})", streamIndex, id, messages.Count);
+            _trace.TraceInformation("OnReceived({0}, {1}, {2})", streamIndex, id, messages.Count);
 
             // Create a local dictionary for this payload
             var dictionary = new ConcurrentDictionary<string, LocalEventKeyInfo>();
@@ -239,7 +231,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
             // Publish only after we've setup the mapping fully
             if (!stream.TryAdd(id, mapping))
             {
-                Trace.TraceVerbose(Resources.Error_DuplicatePayloadsForStream, streamIndex);
+                _trace.TraceVerbose(Resources.Error_DuplicatePayloadsForStream, streamIndex);
 
                 stream.Clear();
 

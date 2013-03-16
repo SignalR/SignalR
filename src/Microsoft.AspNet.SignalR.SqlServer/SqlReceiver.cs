@@ -18,7 +18,7 @@ namespace Microsoft.AspNet.SignalR.SqlServer
         private readonly int _streamId;
         private readonly string _tracePrefix;
         private readonly Func<int, ulong, IList<Message>, Task> _onReceive;
-        private readonly Action<Exception> _onError;
+        private readonly Action _onRetry;
         private readonly TraceSource _trace;
         private readonly int[] _retryDelays = new[] { 0, 0, 0, 10, 10, 10, 50, 50, 100, 100, 200, 200, 200, 200, 1000, 1500, 3000 };
         
@@ -28,14 +28,14 @@ namespace Microsoft.AspNet.SignalR.SqlServer
         private SqlCommand _receiveCommand;
         private bool _useQueryNotifications;
 
-        public SqlReceiver(string connectionString, string tableName, int streamId, Func<int, ulong, IList<Message>, Task> onReceive, Action<Exception> onError, TraceSource traceSource)
+        public SqlReceiver(string connectionString, string tableName, int streamId, Func<int, ulong, IList<Message>, Task> onReceive, Action onRetry, TraceSource traceSource)
         {
             _connectionString = connectionString;
             _tableName = tableName;
             _streamId = streamId;
             _tracePrefix = "Stream " + _streamId + " : ";
             _onReceive = onReceive;
-            _onError = onError;
+            _onRetry = onRetry;
             _trace = traceSource;
 
             _selectSql = String.Format(CultureInfo.InvariantCulture, _selectSql, SqlMessageBus.SchemaName, _tableName);
@@ -177,7 +177,7 @@ namespace Microsoft.AspNet.SignalR.SqlServer
                     // Executing the query is required to set up the dependency
                     ProcessReader(_receiveCommand.ExecuteReader());
 
-                    TraceVerbose("SQL notification set up");
+                    TraceInformation("SQL notification set up");
                 }
                 catch (Exception ex)
                 {
@@ -192,7 +192,7 @@ namespace Microsoft.AspNet.SignalR.SqlServer
         {
             // NOTE: This is called from a ThreadPool thread
 
-            TraceVerbose("SQL query notification received: Type={0}, Source={1}, Info={2}", args.Type, args.Source, args.Info);
+            TraceInformation("SQL query notification received: Type={0}, Source={1}, Info={2}", args.Type, args.Source, args.Info);
 
             _receiveCommand.Notification = null;
 
@@ -232,7 +232,7 @@ namespace Microsoft.AspNet.SignalR.SqlServer
                 if (args.Info == SqlNotificationInfo.TemplateLimit)
                 {
                     // We've hit a subscription limit, let's back off for a bit
-                    _onError(null);
+                    _onError(_streamId, null);
                 }
                 else
                 {

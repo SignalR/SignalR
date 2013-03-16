@@ -2,13 +2,11 @@
 
 using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Data;
 using System.Data.SqlClient;
 using System.Data.SqlTypes;
 using System.Diagnostics;
 using System.Globalization;
-using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR.Messaging;
 
@@ -17,84 +15,40 @@ namespace Microsoft.AspNet.SignalR.SqlServer
     internal class SqlSender
     {
         private readonly string _connectionString;
-        private readonly ReadOnlyCollection<string> _insertSql;
-        private readonly Action<Exception> _onError;
+        private readonly string _insertDml;
+        private readonly Action _onRetry;
         private readonly TraceSource _trace;
 
-        public SqlSender(string connectionString, string tablePrefix, int tableCount, Action<Exception> onError, TraceSource traceSource)
+        public SqlSender(string connectionString, string tableName, Action onRetry, TraceSource traceSource)
         {
             _connectionString = connectionString;
-            _insertSql = BuildInsertStrings(tablePrefix, tableCount);
-            _onError = onError;
+            _insertDml = BuildInsertString(tableName);
+            _onRetry = onRetry;
             _trace = traceSource;
         }
 
-        private ReadOnlyCollection<string> BuildInsertStrings(string tablePrefix, int tableCount)
+        private string BuildInsertString(string tableName)
         {
             var insertDml = GetType().Assembly.StringResource("Microsoft.AspNet.SignalR.SqlServer.send.sql");
-            
-            return new ReadOnlyCollection<string>(
-                Enumerable.Range(1, tableCount)
-                    .Select(tableNumber =>
-                        insertDml.Replace("[SignalR]", String.Format(CultureInfo.InvariantCulture, "[{0}]", SqlMessageBus.SchemaName))
-                                 .Replace("[Messages_1", String.Format(CultureInfo.InvariantCulture, "[{0}_{1}", tablePrefix, tableNumber))
-                    )
-                    .ToList()
-            );
+
+            return insertDml.Replace("[SignalR]", String.Format(CultureInfo.InvariantCulture, "[{0}]", SqlMessageBus.SchemaName))
+                            .Replace("[Messages_1", String.Format(CultureInfo.InvariantCulture, "[{0}", tableName));
         }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope", Justification = "Reviewed"), System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Security", "CA2100:Review SQL queries for security vulnerabilities", Justification = "Reviewed")]
-        public Task Send(int streamIndex, IList<Message> messages)
+        public Task Send(IList<Message> messages)
         {
-            if (streamIndex > _insertSql.Count - 1)
-            {
-                throw new ArgumentOutOfRangeException("streamIndex", String.Format(CultureInfo.InvariantCulture, Resources.Error_StreamIndexOutOfRange, streamIndex, _insertSql.Count - 1));
-            }
-
             if (messages == null || messages.Count == 0)
             {
                 return TaskAsyncHelper.Empty;
             }
 
-            var sql = _insertSql[streamIndex];
-            var connection = new SqlConnection(_connectionString);
-            var cmd = new SqlCommand(sql, connection);
-            cmd.Parameters.Add(new SqlParameter("Payload", SqlDbType.VarBinary)
-            {
-                SqlValue = new SqlBinary(SqlPayload.ToBytes(messages))
-            });
-
-            _trace.TraceVerbose("Saving payload of {0} messages(s) to stream {1} in SQL server", messages.Count, streamIndex);
-            
-            try
-            {
-                connection.Open();
-                return cmd.ExecuteNonQueryAsync()
-                          .Then(c => c.Dispose(), connection) // close the connection if successful
-                          .Catch((ex, state) =>
-                          {
-                              ((SqlConnection)state).Dispose();
-                              
-                              _onError(ex);
-                          }, connection);
-            }
-            catch (Exception ex)
-            {
-                if (cmd != null)
+            var operation = new SqlOperation(_connectionString, _insertDml, _onRetry,
+                new SqlParameter("Payload", SqlDbType.VarBinary)
                 {
-                    cmd.Dispose();
-                }
+                    SqlValue = new SqlBinary(SqlPayload.ToBytes(messages))
+                });
 
-                if (connection != null && connection.State != ConnectionState.Closed)
-                {
-                    connection.Dispose();
-                }
-
-                _onError(ex);
-
-                // Sends are called inline so just throw this back to the caller
-                throw;
-            }
+            return operation.ExecuteNonQueryAsync();
         }
     }
 }

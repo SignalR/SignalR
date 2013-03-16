@@ -66,10 +66,12 @@
     <Compile Include="SqlCommandExtensions.cs" />
     <Compile Include="SqlInstaller.cs" />
     <Compile Include="SqlMessageBus.cs" />
+    <Compile Include="SqlOperation.cs" />
     <Compile Include="SqlPayload.cs" />
     <Compile Include="SqlReceiver.cs" />
     <Compile Include="SqlSender.cs" />
     <Compile Include="SqlMessageBusException.cs" />
+    <Compile Include="SqlStream.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Microsoft.AspNet.SignalR.Core\Microsoft.AspNet.SignalR.Core.csproj">

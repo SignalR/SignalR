@@ -26,10 +26,9 @@ namespace Microsoft.AspNet.SignalR.SqlServer
         
         private readonly string _connectionString;
         private readonly int _tableCount;
-        private readonly SqlInstaller _installer;
-        private readonly SqlSender _sender;
         private readonly TraceSource _trace;
-        private readonly SqlReceiver[] _receivers;
+        
+        private SqlStream[] _streams;
 
         /// <summary>
         /// Creates a new instance of the SqlMessageBus class.
@@ -59,39 +58,16 @@ namespace Microsoft.AspNet.SignalR.SqlServer
 
             _connectionString = connectionString;
 
-            if (!IsSqlEditionSupported(_connectionString))
-            {
-                throw new PlatformNotSupportedException(Resources.Error_UnsupportedSqlEdition);
-            }
-
             _tableCount = tableCount;
             var traceManager = dependencyResolver.Resolve<ITraceManager>();
             _trace = traceManager["SignalR." + typeof(SqlMessageBus).Name];
 
-            ReconnectDelay = TimeSpan.FromSeconds(2);
+            ReconnectDelay = TimeSpan.FromSeconds(3);
 
-            _installer = sqlInstaller ?? new SqlInstaller(_connectionString, _tableNamePrefix, _tableCount, Trace);
-            _installer.EnsureInstalled();
-
-            _sender = new SqlSender(_connectionString, _tableNamePrefix, tableCount, OnError, Trace);
-            _receivers = 
-                Enumerable.Range(1, tableCount)
-                    .Select(tableNumber => new SqlReceiver(_connectionString,
-                        String.Format(CultureInfo.InvariantCulture, "{0}_{1}", _tableNamePrefix, tableNumber), tableNumber - 1, OnReceived, OnError, Trace))
-                    .ToArray();
-
-            Open();
+            ThreadPool.QueueUserWorkItem(Initialize);
         }
 
         public TimeSpan ReconnectDelay { get; set; }
-
-        protected override TraceSource Trace
-        {
-            get
-            {
-                return _trace;
-            }
-        }
 
         protected override int StreamCount
         {
@@ -119,122 +95,33 @@ namespace Microsoft.AspNet.SignalR.SqlServer
             base.Dispose(disposing);
         }
 
-        private void OnError(Exception exception)
+        private void Initialize(object state)
         {
-            _trace.TraceError("SQL error: {0}", exception);
-
-            if (exception == null || IsRecoverableException(exception))
+            // NOTE: Called from ThreadPool thread
+            try
             {
-                Buffer(DefaultBufferSize);
+                var installer = new SqlInstaller(_connectionString, _tableNamePrefix, _tableCount, _trace);
+                installer.Install();
 
-                ThreadPool.QueueUserWorkItem(CheckForSqlAvailability);
-            }
-            else
-            {
-                CloseAndInvokeErrorCallback(exception);
-            }
-        }
+                _streams =
+                    Enumerable.Range(1, _tableCount)
+                        .Select(tableNumber => new SqlStream(tableNumber - 1, _connectionString,
+                            String.Format(CultureInfo.InvariantCulture, "{0}_{1}", _tableNamePrefix, tableNumber), _trace))
+                        .ToArray();
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "This is the intent")]
-        private void CheckForSqlAvailability(object state)
-        {
-            // NOTE: Invoked from a background thread
-            var available = false;
-            while (true)
-            {
-                Thread.Sleep(ReconnectDelay);
-
-                using (var connection = new SqlConnection(_connectionString))
-                {
-                    try
-                    {
-                        connection.Open();
-                        var cmd = connection.CreateCommand();
-                        cmd.CommandText = "SELECT GETDATE()";
-                        cmd.ExecuteScalar();
-                        available = true;
-                        break;      
-                    }
-                    catch (Exception ex)
-                    {
-                        if (!IsRecoverableException(ex))
-                        {
-                            // Can't recover, close the buffer and invoke the error callback
-                            CloseAndInvokeErrorCallback(ex);
-                            break;
-                        }
-                    }
-                }
-            }
-
-            if (available)
-            {
-                // We're back up, start receivers again and stop buffering
-                for (var i = 0; i < _receivers.Length; i++)
-                {
-                    _receivers[i].Receive();
-                }
                 Open();
             }
+            catch (Exception ex)
+            {
+
+            }
         }
 
-        private void CloseAndInvokeErrorCallback(Exception exception)
+        private void CloseAndInvokeErrorCallback(int streamIndex, Exception exception)
         {
-            Close(exception);
+            Close(streamIndex, exception);
             
             // TODO: Invoke user defined error callback
-        }
-
-        private static bool IsRecoverableException(Exception exception)
-        {
-            var sqlException = exception as SqlException;
-
-            return
-                (exception is InvalidOperationException &&
-                    String.Equals(exception.Source, "System.Data", StringComparison.OrdinalIgnoreCase) &&
-                    exception.Message.StartsWith("Timeout expired", StringComparison.OrdinalIgnoreCase))
-                ||
-                (sqlException != null && (
-                    sqlException.Number == SqlErrorNumbers.ConnectionTimeout ||
-                    sqlException.Number == SqlErrorNumbers.ServerNotFound ||
-                    sqlException.Number == SqlErrorNumbers.TransportLevelError ||
-                    // Failed to start a MARS session due to the server being unavailable
-                    (sqlException.Number == SqlErrorNumbers.Unknown && sqlException.Message.IndexOf("error: 19", StringComparison.OrdinalIgnoreCase) >= 0)
-                )
-            );
-        }
-
-        private static bool IsSqlEditionSupported(string connectionString)
-        {
-            int edition;
-            using (var connection = new SqlConnection(connectionString))
-            {
-                connection.Open();
-                var cmd = connection.CreateCommand();
-                cmd.CommandText = "SELECT SERVERPROPERTY ( 'EngineEdition' )";
-                edition = (int)cmd.ExecuteScalar();
-            }
-
-            return edition >= SqlEngineEdition.Standard && edition <= SqlEngineEdition.Express;
-        }
-
-        private static class SqlErrorNumbers
-        {
-            // SQL error numbers: http://msdn.microsoft.com/en-us/library/system.data.sqlclient.sqlerror.number.aspx/html
-            public const int Unknown = -1;
-            public const int ConnectionTimeout = -2;
-            public const int ServerNotFound = 2;
-            public const int TransportLevelError = 233;
-        }
-
-        private static class SqlEngineEdition
-        {
-            // See article http://technet.microsoft.com/en-us/library/ms174396.aspx for details on EngineEdition
-            public const int Personal = 1;
-            public const int Standard = 2;
-            public const int Enterprise = 3;
-            public const int Express = 4;
-            public const int SqlAzure = 5;
         }
     }
 }
