@@ -10,7 +10,6 @@ namespace Microsoft.AspNet.SignalR.Messaging
         private ScaleoutMapping _previousMapping;
         private StoreLink _minimum;
         private StoreLink _current;
-        // private ulong _seed;
 
         public ScaleoutMappingStore()
         {
