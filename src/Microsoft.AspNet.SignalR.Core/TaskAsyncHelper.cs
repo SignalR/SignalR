@@ -176,14 +176,22 @@ namespace Microsoft.AspNet.SignalR
         }
 
         [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode", Justification = "This is a shared file")]
+        [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "Exceptions are set in a tcs")]
         public static Task ContinueWithNotComplete(this Task task, Action action)
         {
             switch (task.Status)
             {
                 case TaskStatus.Faulted:
                 case TaskStatus.Canceled:
-                    action();
-                    return task;
+                    try
+                    {
+                        action();
+                        return task;
+                    }
+                    catch (Exception e)
+                    {
+                        return FromError(e);
+                    }
                 case TaskStatus.RanToCompletion:
                     return task;
                 default:
@@ -191,18 +199,32 @@ namespace Microsoft.AspNet.SignalR
 
                     task.ContinueWith(t =>
                     {
-                        action();
-
-                        if (t.IsFaulted)
+                        if (t.IsCompleted)
                         {
-                            tcs.TrySetUnwrappedException(t.Exception);
+                            tcs.TrySetResult(null);
                         }
-                        else
+                        else 
                         {
-                            tcs.TrySetCanceled();
+                            try
+                            {
+                                action();
+
+                                if (t.IsFaulted)
+                                {
+                                    tcs.TrySetUnwrappedException(t.Exception);
+                                }
+                                else
+                                {
+                                    tcs.TrySetCanceled();
+                                }
+                            }
+                            catch (Exception e)
+                            {
+                                tcs.TrySetException(e);
+                            }
                         }
                     },
-                    TaskContinuationOptions.ExecuteSynchronously | TaskContinuationOptions.NotOnRanToCompletion);
+                    TaskContinuationOptions.ExecuteSynchronously);
 
                     return tcs.Task;
             }

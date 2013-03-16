@@ -161,6 +161,25 @@ namespace Microsoft.AspNet.SignalR.Tests
                 connection.Start(transport.Object).Wait();
                 Assert.Equal(ConnectionState.Connected, connection.State);
             }
+
+            [Fact]
+            public void AsyncStartShouldBeConnected()
+            {
+                var connection = new Client.Connection("http://test");
+                var transport = new Mock<IClientTransport>();
+                transport.Setup(m => m.Negotiate(connection))
+                         .Returns(TaskAsyncHelper.FromResult(new NegotiationResponse
+                         {
+                             ProtocolVersion = "1.2",
+                             ConnectionId = "Something"
+                         }));
+
+                transport.Setup(m => m.Start(connection, null, It.IsAny<CancellationToken>()))
+                         .Returns(TaskAsyncHelper.Delay(TimeSpan.FromMilliseconds(100)));
+
+                Assert.True(connection.Start(transport.Object).Wait(TimeSpan.FromSeconds(5)), "Start hung.");
+                Assert.Equal(ConnectionState.Connected, connection.State);
+            }
         }
 
         protected virtual void Dispose(bool disposing)
