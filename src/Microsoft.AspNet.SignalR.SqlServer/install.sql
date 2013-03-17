@@ -93,8 +93,8 @@ IF @CURRENT_SCHEMA_VERSION IS NULL OR @CURRENT_SCHEMA_VERSION <= @TARGET_SCHEMA_
 				PRINT 'Installing schema version 1';
 				
                 DECLARE @counter int;
-				SET @counter = 1;
-				WHILE @counter <= @MESSAGE_TABLE_COUNT
+				SET @counter = 0;
+				WHILE @counter < @MESSAGE_TABLE_COUNT
 					BEGIN
 						DECLARE @table_name nvarchar(100);
 						DECLARE @ddl nvarchar(max);

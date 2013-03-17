@@ -1,9 +1,7 @@
 ﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.md in the project root for license information.
 
 using System;
-using System.Data.SqlClient;
 using System.Diagnostics;
-using System.Threading.Tasks;
 
 namespace Microsoft.AspNet.SignalR.SqlServer
 {
@@ -43,15 +41,15 @@ namespace Microsoft.AspNet.SignalR.SqlServer
             script = script.Replace("SET @MESSAGE_TABLE_COUNT = 3;", "SET @MESSAGE_TABLE_COUNT = " + _tableCount + ";");
             script = script.Replace("SET @MESSAGE_TABLE_NAME = 'Messages';", "SET @MESSAGE_TABLE_NAME = '" + _messagesTableNamePrefix + "';");
 
-            var operation = new SqlOperation(_connectionString, script);
+            var operation = new SqlOperation(_connectionString, script, _trace);
             operation.ExecuteNonQuery();
 
             _trace.TraceInformation("SignalR SQL objects installed");
         }
 
-        private static bool IsSqlEditionSupported(string connectionString)
+        private bool IsSqlEditionSupported(string connectionString)
         {
-            var operation = new SqlOperation(connectionString, "SELECT SERVERPROPERTY ( 'EngineEdition' )");
+            var operation = new SqlOperation(connectionString, "SELECT SERVERPROPERTY ( 'EngineEdition' )", _trace);
             var edition = (int)operation.ExecuteScalar();
 
             return edition >= SqlEngineEdition.Standard && edition <= SqlEngineEdition.Express;

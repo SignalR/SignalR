@@ -3,39 +3,39 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR.Messaging;
 
 namespace Microsoft.AspNet.SignalR.SqlServer
 {
-    internal class SqlStream : IDisposable
+    internal class SqlStream
     {
         private readonly int _streamIndex;
         private readonly Action _onRetry;
+        private readonly Action<Exception> _onError;
         private readonly SqlSender _sender;
         private readonly SqlReceiver _receiver;
         private readonly TraceSource _trace;
+        private readonly string _tracePrefix;
 
-        public SqlStream(int streamIndex, string connectionString, string tableName, Action onRetry, Func<int, ulong, IList<Message>, Task> onReceived, TraceSource trace)
+        public SqlStream(int streamIndex, string connectionString, string tableName, Func<int, ulong, IList<Message>, Task> onReceived, Action onRetry, Action<Exception> onError, TraceSource trace)
         {
             _streamIndex = streamIndex;
             _onRetry = onRetry;
+            _onError = onError;
             _trace = trace;
+            _tracePrefix = String.Format(CultureInfo.InvariantCulture, "Stream {0} : ", _streamIndex);
 
             _sender = new SqlSender(connectionString, tableName, _onRetry, _trace);
-            _receiver = new SqlReceiver(connectionString, tableName, _streamIndex, onReceived, _onRetry, _trace);
+            _receiver = new SqlReceiver(connectionString, tableName, (id, messages) => onReceived(_streamIndex, id, messages), _onRetry, _onError, _trace, _tracePrefix);
         }
 
         public Task Send(IList<Message> messages)
         {
-            _trace.TraceVerbose("Saving payload of {0} messages(s) to stream {1} in SQL server", messages.Count, _streamIndex);
+            _trace.TraceVerbose("{0}Saving payload with {1} messages(s) to SQL server", _tracePrefix, messages.Count, _streamIndex);
 
             return _sender.Send(messages);
-        }
-
-        public void Dispose()
-        {
-            _receiver.Dispose();
         }
     }
 }

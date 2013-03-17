@@ -3,7 +3,6 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq;
 using System.Threading;
@@ -80,19 +79,6 @@ namespace Microsoft.AspNet.SignalR.SqlServer
             return _streams[streamIndex].Send(messages);
         }
 
-        protected override void Dispose(bool disposing)
-        {
-            if (disposing)
-            {
-                for (var i = 0; i < _streams.Length; i++)
-                {
-                    _streams[i].Dispose();
-                }
-            }
-
-            base.Dispose(disposing);
-        }
-
         private void Initialize(object state)
         {
             // NOTE: Called from ThreadPool thread
@@ -101,11 +87,15 @@ namespace Microsoft.AspNet.SignalR.SqlServer
                 var installer = new SqlInstaller(_connectionString, _tableNamePrefix, _tableCount, _trace);
                 installer.Install();
 
-                _streams = Enumerable.Range(0, _tableCount)
-                                     .Select(streamIndex => new SqlStream(streamIndex, _connectionString,
-                                         String.Format(CultureInfo.InvariantCulture, "{0}_{1}", _tableNamePrefix, streamIndex),
-                                         () => Buffer(streamIndex, DefaultBufferSize), OnReceived, _trace))
-                                     .ToArray();
+                _streams = Enumerable.Range(0, _tableCount).Select(streamIndex =>
+                    new SqlStream(streamIndex, _connectionString,
+                        String.Format(CultureInfo.InvariantCulture, "{0}_{1}", _tableNamePrefix, streamIndex),
+                        OnReceived,
+                        () => Buffer(streamIndex, DefaultBufferSize),
+                        ex => Close(streamIndex, ex),
+                        _trace)
+                    )
+                    .ToArray();
 
                 Open();
             }

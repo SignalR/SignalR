@@ -42,7 +42,7 @@ namespace Microsoft.AspNet.SignalR.SqlServer
                 return TaskAsyncHelper.Empty;
             }
 
-            var operation = new SqlOperation(_connectionString, _insertDml, _onRetry,
+            var operation = new SqlOperation(_connectionString, _insertDml, _ => _onRetry(), null, _trace,
                 new SqlParameter("Payload", SqlDbType.VarBinary)
                 {
                     SqlValue = new SqlBinary(SqlPayload.ToBytes(messages))
