@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Net;
 using System.Threading.Tasks;
 
 namespace Microsoft.AspNet.SignalR.Client.Http
@@ -12,6 +13,8 @@ namespace Microsoft.AspNet.SignalR.Client.Http
     /// </summary>
     public interface IHttpClient
     {
+        IWebRequestCreate WebRequestFactory { get; set; }
+
         /// <summary>
         /// Makes an asynchronous http GET request to the specified url.
         /// </summary>

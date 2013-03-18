@@ -140,14 +140,21 @@ namespace Microsoft.AspNet.SignalR.Client.Http
             return Encoding.UTF8.GetBytes(sb.ToString());
         }
 
-        private static HttpWebRequest CreateWebRequest(string url, IWebRequestCreate webRequestCreate)
+        private static HttpWebRequest CreateWebRequest(string url, IWebRequestCreate webRequestFactory)
         {
             HttpWebRequest request = null;
 #if WINDOWS_PHONE
             request = (HttpWebRequest)WebRequest.Create(url);
             request.AllowReadStreamBuffering = false;
 #elif SILVERLIGHT
-            request = (HttpWebRequest)webRequestCreate.Create(new Uri(url));
+            if(webRequestFactory != null)
+            {
+                request = (HttpWebRequest)webRequestFactory.Create(new Uri(url));
+            }
+            else
+            {
+                request = (HttpWebRequest)System.Net.Browser.WebRequestCreator.ClientHttp.Create(new Uri(url));
+            }
             request.AllowReadStreamBuffering = false;
 #else
             request = (HttpWebRequest)WebRequest.Create(url);
