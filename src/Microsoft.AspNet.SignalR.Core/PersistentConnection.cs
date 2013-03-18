@@ -261,7 +261,7 @@ namespace Microsoft.AspNet.SignalR
         }
 
         [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "We want to prevent any failures in unprotecting")]
-        internal IList<string> VerifyGroups(HostContext context)
+        internal IList<string> VerifyGroups(HostContext context, string connectionId)
         {
             string groupsToken = context.Request.QueryString["groupsToken"];
 
@@ -272,18 +272,28 @@ namespace Microsoft.AspNet.SignalR
                 return ListHelper<string>.Empty;
             }
 
-            string groupsValue = null;
+            string unprotectedGroupsToken = null;
 
             try
             {
-                groupsValue = ProtectedData.Unprotect(groupsToken, Purposes.Groups);
+                unprotectedGroupsToken = ProtectedData.Unprotect(groupsToken, Purposes.Groups);
             }
             catch (Exception ex)
             {
                 Trace.TraceInformation("Failed to process groupsToken {0}: {1}", groupsToken, ex);
             }
 
-            if (String.IsNullOrEmpty(groupsValue))
+            if (String.IsNullOrEmpty(unprotectedGroupsToken))
+            {
+                return ListHelper<string>.Empty;
+            }
+
+            var tokens = unprotectedGroupsToken.Split(SplitChars, 2);
+
+            string groupConnectionId = tokens[0];
+            string groupsValue = tokens.Length > 1 ? tokens[1] : String.Empty;
+
+            if (!String.Equals(groupConnectionId, connectionId, StringComparison.OrdinalIgnoreCase))
             {
                 return ListHelper<string>.Empty;
             }
@@ -293,7 +303,7 @@ namespace Microsoft.AspNet.SignalR
 
         private IList<string> AppendGroupPrefixes(HostContext context, string connectionId)
         {
-            return (from g in OnRejoiningGroups(context.Request, VerifyGroups(context), connectionId)
+            return (from g in OnRejoiningGroups(context.Request, VerifyGroups(context, connectionId), connectionId)
                     select GroupPrefix + g).ToList();
         }
 

@@ -289,13 +289,14 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
 
         private void PopulateResponseState(PersistentResponse response)
         {
-            PopulateResponseState(response, _groups, _serializer, _protectedData);
+            PopulateResponseState(response, _groups, _serializer, _protectedData, _connectionId);
         }
 
         internal static void PopulateResponseState(PersistentResponse response,
                                                    DiffSet<string> groupSet,
                                                    IJsonSerializer serializer,
-                                                   IProtectedData protectedData)
+                                                   IProtectedData protectedData,
+                                                   string connectionId)
         {
             bool anyChanges = groupSet.DetectChanges();
 
@@ -308,7 +309,7 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
                 if (groups.Any())
                 {
                     // Remove group prefixes before any thing goes over the wire
-                    string groupsString = serializer.Stringify(PrefixHelper.RemoveGroupPrefixes(groups));
+                    string groupsString = connectionId + ':' + serializer.Stringify(PrefixHelper.RemoveGroupPrefixes(groups)); ;
 
                     // The groups token
                     response.GroupsToken = protectedData.Protect(groupsString, Purposes.Groups);
