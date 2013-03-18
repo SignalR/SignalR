@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -14,6 +13,71 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Server.Hubs
 {
     public class SecurityFacts
     {
+        [Fact]
+        public void GroupsTokenIsPerConnectionId()
+        {
+            using (var host = new MemoryHost())
+            {
+                IProtectedData protectedData = null;
+
+                host.Configure(app =>
+                {
+                    var config = new HubConfiguration
+                    {
+                        Resolver = new DefaultDependencyResolver()
+                    };
+
+                    app.MapConnection<MyGroupConnection>("/echo", config);
+
+                    protectedData = config.Resolver.Resolve<IProtectedData>();
+                });
+
+                var connection = new Client.Connection("http://memoryhost/echo");
+                var inGroup = new ManualResetEventSlim();
+
+                connection.Received += data =>
+                {
+                    if (data == "group")
+                    {
+                        inGroup.Set();
+                    }
+                };
+
+                connection.Start(host).Wait();
+
+                inGroup.Wait();
+
+                Assert.NotNull(connection.GroupsToken);
+
+                var spyWh = new ManualResetEventSlim();
+                var hackerConnection = new Client.Connection(connection.Url)
+                {
+                    ConnectionId = "hacker"
+                };
+
+                var url = GetUrl(protectedData, connection, connection.GroupsToken);
+                var response = host.Get(url).Result;
+                var reader = new EventSourceStreamReader(hackerConnection, response.GetResponseStream());
+
+                reader.Message = sseEvent =>
+                {
+                    if (sseEvent.EventType == EventType.Data &&
+                        sseEvent.Data != "initialized" &&
+                        sseEvent.Data != "{}")
+                    {
+                        spyWh.Set();
+                    }
+                };
+
+                reader.Start();
+                connection.Send("random").Wait();
+
+                Assert.False(spyWh.Wait(TimeSpan.FromSeconds(5)));
+
+                connection.Stop();
+            }
+        }
+
         [Fact]
         public void ConnectionIdsCantBeUsedAsGroups()
         {
@@ -59,7 +123,8 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Server.Hubs
                         reader.Message = sseEvent =>
                         {
                             if (sseEvent.EventType == EventType.Data &&
-                                sseEvent.Data != "initialized")
+                                sseEvent.Data != "initialized" &&
+                                sseEvent.Data != "{}")
                             {
                                 spyTcs.TrySetResult(sseEvent.Data);
                             }
@@ -89,12 +154,24 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Server.Hubs
         private string GetUrl(IProtectedData protectedData, Client.Connection connection)
         {
             // Generate a valid token
-            string token = protectedData.Protect(Guid.NewGuid().ToString("d") + ':', Purposes.ConnectionToken);
             string groupsToken = protectedData.Protect(JsonConvert.SerializeObject(new[] { connection.ConnectionToken }), Purposes.Groups);
 
-            var sb = new StringBuilder("http://memoryhost/echo/");
+            return GetUrl(protectedData, connection, groupsToken);
+        }
+
+        private string GetUrl(IProtectedData protectedData, Client.Connection connection, string groupsToken)
+        {
+            // Generate a valid token
+            string connectionToken = protectedData.Protect(Guid.NewGuid().ToString("d") + ':', Purposes.ConnectionToken);
+
+            return GetUrl(protectedData, connection, connectionToken, groupsToken);
+        }
+
+        private string GetUrl(IProtectedData protectedData, Client.Connection connection, string connectionToken, string groupsToken)
+        {
+            var sb = new StringBuilder(connection.Url);
             sb.Append("?connectionToken=")
-              .Append(Uri.EscapeDataString(token))
+              .Append(Uri.EscapeDataString(connectionToken))
               .Append("&transport=serverSentEvents")
               .Append("&groupsToken=")
               .Append(Uri.EscapeDataString(groupsToken));
@@ -107,6 +184,24 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Server.Hubs
             protected override Task OnReceived(IRequest request, string connectionId, string data)
             {
                 return Connection.Send(connectionId, data.Trim());
+            }
+        }
+
+        public class MyGroupConnection : PersistentConnection
+        {
+            protected override Task OnConnected(IRequest request, string connectionId)
+            {
+                Groups.Add(connectionId, "group").ContinueWith(task =>
+                {
+                    Connection.Send(connectionId, "group");
+                });
+
+                return base.OnConnected(request, connectionId);
+            }
+
+            protected override Task OnReceived(IRequest request, string connectionId, string data)
+            {
+                return Groups.Send("group", data);
             }
         }
     }
