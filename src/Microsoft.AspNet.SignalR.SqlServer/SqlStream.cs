@@ -15,6 +15,7 @@ namespace Microsoft.AspNet.SignalR.SqlServer
         private readonly Action _onRetry;
         private readonly Action<Exception> _onError;
         private readonly SqlSender _sender;
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1823:AvoidUnusedPrivateFields", Justification = "Keep it rooted with the SqlStream")]
         private readonly SqlReceiver _receiver;
         private readonly TraceSource _trace;
         private readonly string _tracePrefix;

@@ -11,6 +11,7 @@ using System.Threading.Tasks;
 namespace Microsoft.AspNet.SignalR.SqlServer
 {
     // TODO: Should we make this IDisposable and stop any in progress reader loops/notifications on Dispose?
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1001:TypesThatOwnDisposableFieldsShouldBeDisposable", Justification = "Needs review")]
     internal class SqlOperation
     {
         private static readonly Action<object> _noOp = _ => { };
@@ -41,12 +42,6 @@ namespace Microsoft.AspNet.SignalR.SqlServer
             _trace = traceSource;
 
             RetryDelay = TimeSpan.FromSeconds(3);
-        }
-
-        public SqlOperation(string connectionString, string commandText, TraceSource traceSource, params SqlParameter[] parameters)
-            : this(connectionString, commandText, _noOp, _noOp, traceSource, parameters)
-        {
-
         }
 
         public SqlOperation(string connectionString, string commandText, Action<SqlOperation> onRetry, Action<Exception> onError, TraceSource traceSource, params SqlParameter[] parameters)
@@ -176,6 +171,8 @@ namespace Microsoft.AspNet.SignalR.SqlServer
             }
         }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "On a background thread and we report exceptions asynchronously"),
+         System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA1801:ReviewUnusedParameters", MessageId = "sender", Justification = "Event handler")]
         private void SqlDependency_OnChange(object sender, SqlNotificationEventArgs e, Action<SqlDataReader, SqlOperation> processRecord)
         {
             // TODO: Could we do this without blocking with some fancy Interlocked gymnastics?
@@ -243,6 +240,7 @@ namespace Microsoft.AspNet.SignalR.SqlServer
             return Execute(commandFunc, true);
         }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2202:Do not dispose objects multiple times", Justification = "False positive?")]
         private T Execute<T>(Func<SqlCommand, T> commandFunc, bool retryOnException)
         {
             T result = default(T);
@@ -289,6 +287,8 @@ namespace Microsoft.AspNet.SignalR.SqlServer
             return result;
         }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2202:Do not dispose objects multiple times", Justification = "Disposed in async Finally block"),
+         System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope", Justification = "Disposed in async Finally block")]
         private void ExecuteWithRetry<T>(Func<SqlCommand, Task<T>> commandFunc, TaskCompletionSource<T> tcs)
         {
             SqlConnection connection = null;
@@ -348,6 +348,8 @@ namespace Microsoft.AspNet.SignalR.SqlServer
             };
         }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope", Justification = "It's the caller's responsibility to dispose as the command is returned"),
+         System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Security", "CA2100:Review SQL queries for security vulnerabilities", Justification = "General purpose SQL utility command")]
         private SqlCommand CreateCommand(SqlConnection connection)
         {
             var command = new SqlCommand(_commandText, connection);

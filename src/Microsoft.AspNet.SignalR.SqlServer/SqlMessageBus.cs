@@ -35,12 +35,6 @@ namespace Microsoft.AspNet.SignalR.SqlServer
         /// <param name="tableCount">The number of tables to use as "message tables".</param>
         /// <param name="dependencyResolver">The dependency resolver.</param>
         public SqlMessageBus(string connectionString, int tableCount, IDependencyResolver dependencyResolver)
-            : this(connectionString, tableCount, null, dependencyResolver)
-        {
-
-        }
-
-        internal SqlMessageBus(string connectionString, int tableCount, SqlInstaller sqlInstaller, IDependencyResolver dependencyResolver)
             : base(dependencyResolver)
         {
             if (String.IsNullOrWhiteSpace(connectionString))
@@ -79,6 +73,7 @@ namespace Microsoft.AspNet.SignalR.SqlServer
             return _streams[streamIndex].Send(messages);
         }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "On a background thread and we report exceptions asynchronously")]
         private void Initialize(object state)
         {
             // NOTE: Called from ThreadPool thread
