@@ -273,7 +273,7 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
                         if (EventKeyRemoved != null)
                         {
                             _groups.Remove(name);
-                            _signals.Add(name);
+                            _signals.Remove(name);
                             EventKeyRemoved(this, name);
                         }
                     }
