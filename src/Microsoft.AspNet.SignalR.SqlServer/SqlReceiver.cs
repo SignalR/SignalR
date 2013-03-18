@@ -21,7 +21,7 @@ namespace Microsoft.AspNet.SignalR.SqlServer
         private readonly TraceSource _trace;
         private readonly string _tracePrefix;
 
-        private long _lastPayloadId = 0;
+        private long? _lastPayloadId = null;
         private string _maxIdSql = "SELECT [PayloadId] FROM [{0}].[{1}_Id]";
         private string _selectSql = "SELECT [PayloadId], [Payload] FROM [{0}].[{1}] WHERE [PayloadId] > @PayloadId";
 
@@ -38,15 +38,6 @@ namespace Microsoft.AspNet.SignalR.SqlServer
             _maxIdSql = String.Format(CultureInfo.InvariantCulture, _maxIdSql, SqlMessageBus.SchemaName, _tableName);
             _selectSql = String.Format(CultureInfo.InvariantCulture, _selectSql, SqlMessageBus.SchemaName, _tableName);
 
-            InitializeLastPayloadId();
-            Receive();
-        }
-
-        /// <summary>
-        /// Starts the receive loop on a new background thread
-        /// </summary>
-        public void Receive()
-        {
             ThreadPool.QueueUserWorkItem(Receive);
         }
 
@@ -60,6 +51,11 @@ namespace Microsoft.AspNet.SignalR.SqlServer
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "On a background thread with explicit error processing")]
         private void Receive(object state)
         {
+            if (!_lastPayloadId.HasValue)
+            {
+                InitializeLastPayloadId();
+            }
+
             // NOTE: This is called from a BG thread so any uncaught exceptions will crash the process
             var operation = new SqlOperation(_connectionString, _selectSql,
                 onRetry: o =>
@@ -82,7 +78,7 @@ namespace Microsoft.AspNet.SignalR.SqlServer
 
             try
             {
-                operation.ExecuteReaderWithUpdates(rdr => ProcessRecord(rdr));
+                operation.ExecuteReaderWithUpdates((rdr, o) => ProcessRecord(rdr, o));
             }
             catch (Exception ex)
             {
@@ -90,7 +86,7 @@ namespace Microsoft.AspNet.SignalR.SqlServer
             }
         }
 
-        private void ProcessRecord(SqlDataReader reader)
+        private void ProcessRecord(SqlDataReader reader, SqlOperation sqlOperation)
         {
             var id = reader.GetInt64(0);
             var payload = SqlPayload.FromBytes(reader.GetSqlBinary(1).Value);
@@ -106,6 +102,9 @@ namespace Microsoft.AspNet.SignalR.SqlServer
             }
 
             _lastPayloadId = id;
+
+            // Update the SqlParameter with the new payload ID
+            sqlOperation.Parameters[0].SqlValue = _lastPayloadId;
 
             // Pass to the underlying message bus
             _onReceived((ulong)id, payload.Messages);

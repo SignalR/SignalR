@@ -81,12 +81,12 @@ namespace Microsoft.AspNet.SignalR.SqlServer
             return tcs.Task;
         }
 
-        public int ExecuteReader(Action<SqlDataReader> processRecord)
+        public int ExecuteReader(Action<SqlDataReader, SqlOperation> processRecord)
         {
             return ExecuteReader(processRecord, null);
         }
 
-        private int ExecuteReader(Action<SqlDataReader> processRecord, Action<SqlCommand> commandAction)
+        private int ExecuteReader(Action<SqlDataReader, SqlOperation> processRecord, Action<SqlCommand> commandAction)
         {
             return Execute(cmd =>
             {
@@ -106,14 +106,14 @@ namespace Microsoft.AspNet.SignalR.SqlServer
                 while (reader.Read())
                 {
                     count++;
-                    processRecord(reader);
+                    processRecord(reader, this);
                 }
 
                 return count;
             });
         }
 
-        public void ExecuteReaderWithUpdates(Action<SqlDataReader> processRecord)
+        public void ExecuteReaderWithUpdates(Action<SqlDataReader, SqlOperation> processRecord)
         {
             var useNotifications = StartSqlDependencyListener();
 
@@ -176,7 +176,7 @@ namespace Microsoft.AspNet.SignalR.SqlServer
             }
         }
 
-        private void SqlDependency_OnChange(object sender, SqlNotificationEventArgs e, Action<SqlDataReader> processRecord)
+        private void SqlDependency_OnChange(object sender, SqlNotificationEventArgs e, Action<SqlDataReader, SqlOperation> processRecord)
         {
             // TODO: Could we do this without blocking with some fancy Interlocked gymnastics?
             _mre.Wait();
@@ -349,13 +349,13 @@ namespace Microsoft.AspNet.SignalR.SqlServer
         }
 
         private SqlCommand CreateCommand(SqlConnection connection)
-        {   
+        {
             var command = new SqlCommand(_commandText, connection);
-            if (_parameters != null)
+            if (Parameters != null && Parameters.Count > 0)
             {
-                for (var i = 0; i < _parameters.Count; i++)
+                for (var i = 0; i < Parameters.Count; i++)
                 {
-                    var sourceParameter = _parameters[i];
+                    var sourceParameter = Parameters[i];
                     var newParameter = new SqlParameter
                     {
                         ParameterName = sourceParameter.ParameterName,
@@ -364,7 +364,7 @@ namespace Microsoft.AspNet.SignalR.SqlServer
                         Direction = sourceParameter.Direction,
                         IsNullable = sourceParameter.IsNullable
                     };
-                    Parameters.Add(newParameter);
+                    command.Parameters.Add(newParameter);
                 }
             }
             return command;

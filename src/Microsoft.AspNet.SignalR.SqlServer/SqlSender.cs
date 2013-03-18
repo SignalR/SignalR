@@ -32,7 +32,7 @@ namespace Microsoft.AspNet.SignalR.SqlServer
             var insertDml = GetType().Assembly.StringResource("Microsoft.AspNet.SignalR.SqlServer.send.sql");
 
             return insertDml.Replace("[SignalR]", String.Format(CultureInfo.InvariantCulture, "[{0}]", SqlMessageBus.SchemaName))
-                            .Replace("[Messages_1", String.Format(CultureInfo.InvariantCulture, "[{0}", tableName));
+                            .Replace("[Messages_0", String.Format(CultureInfo.InvariantCulture, "[{0}", tableName));
         }
 
         public Task Send(IList<Message> messages)

@@ -89,11 +89,11 @@ namespace Microsoft.AspNet.SignalR.SqlServer
 
                 _streams = Enumerable.Range(0, _tableCount).Select(streamIndex =>
                     new SqlStream(streamIndex, _connectionString,
-                        String.Format(CultureInfo.InvariantCulture, "{0}_{1}", _tableNamePrefix, streamIndex),
-                        OnReceived,
-                        () => Buffer(streamIndex, DefaultBufferSize),
-                        ex => Close(streamIndex, ex),
-                        _trace)
+                        tableName: String.Format(CultureInfo.InvariantCulture, "{0}_{1}", _tableNamePrefix, streamIndex),
+                        onReceived: OnReceived,
+                        onRetry: () => Buffer(streamIndex, DefaultBufferSize),
+                        onError: ex => Close(streamIndex, ex),
+                        traceSource: _trace)
                     )
                     .ToArray();
 
