@@ -54,6 +54,57 @@ testUtilities.runWithAllTransports(function (transport) {
             connection.stop();
         };
     });
+
+    QUnit.asyncTimeoutTest(transport + " transport throws an error if protocol version is incorrect", testUtilities.defaultTestTimeout, function (end, assert, testName) {
+        var connection = testUtilities.createConnection("multisend", end, assert, testName),
+            savedAjax = $.ajax;
+
+        function ajaxReplacement(url, settings) {
+            if (!settings) {
+                settings = url;
+                url = settings.url;
+            }
+
+            var savedSuccess;
+
+            // Check if it's the negotiate request;
+            if (url.indexOf("/negotiate") >= 0) {
+
+                // Let the ajax request finish out
+                savedSuccess = settings.success;
+                settings.success = function (res) {
+                    res.ProtocolVersion = "1.1";
+                    savedSuccess.apply(this, arguments);
+                }
+                setTimeout(end, 0);
+            }
+
+            // Persist the request through to the original ajax request
+            savedAjax.call(this, url, settings);
+        };
+
+        // Starting/Stopping a connection to have it instantiated with all the appropriate variables
+        connection.start({ transport: transport }).done(function () {
+            assert.ok(true, "Connected");
+            connection.stop();
+            $.ajax = ajaxReplacement;
+            connection.start({ transport: transport }).fail(function () {
+                assert.ok(true, "Protocol version error thrown");
+                end();
+            });
+        });
+
+        connection.error(function (err) {
+            assert.equal(err, "You are using a version of the client that isn't compatible with the server. Client version 1.2, server version 1.1.",
+                "Protocol version error message thrown");
+        });
+
+        // Cleanup
+        return function () {
+            $.ajax = savedAjax;
+            connection.stop();
+        };
+    });
 });
 
 QUnit.module("Connection Facts", !window.document.commandLineTest);
@@ -82,4 +133,6 @@ testUtilities.runWithTransports(["longPolling", "serverSentEvents", "webSockets"
             connection.stop();
         };
     });
+
 });
+
