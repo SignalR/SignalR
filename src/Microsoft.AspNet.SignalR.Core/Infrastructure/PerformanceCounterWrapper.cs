@@ -50,14 +50,14 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
 
         public void RemoveInstance()
         {
-			try
-			{
+            try
+            {
                 _counter.RemoveInstance();
-			}
-			catch(NotImplementedException)
-			{
-				// This happens on mono
-			}
+            }
+            catch(NotImplementedException)
+            {
+            	// This happens on mono
+            }
         }
 
         public CounterSample NextSample()
