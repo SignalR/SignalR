@@ -36,7 +36,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
 
         private Timer _gcTimer;
         private int _gcRunning;
-        private static readonly TimeSpan _gcInterval = TimeSpan.FromSeconds(15);
+        private static readonly TimeSpan _gcInterval = TimeSpan.FromSeconds(5);
 
         private readonly TimeSpan _topicTtl;
 
@@ -48,7 +48,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
         internal Action<string, Topic> AfterTopicMarkedSuccessfully;
         internal Action<string, Topic, int> AfterTopicMarked;
 
-        private const int DefaultMaxTopicsWithNoSubscriptions = 5000;
+        private const int DefaultMaxTopicsWithNoSubscriptions = 1000;
 
         private readonly Func<string, Topic> _createTopic;
         private readonly Action<ISubscriber, string> _addEvent;

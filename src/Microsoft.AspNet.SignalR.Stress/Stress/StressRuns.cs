@@ -181,22 +181,18 @@ namespace Microsoft.AspNet.SignalR.Stress
         private static void RunOne(MemoryHost host)
         {
             var connection = new Client.Hubs.HubConnection("http://foo");
-            var proxy = connection.CreateHubProxy("HubWithGroups");
-            var wh = new ManualResetEventSlim(false);
-
-            proxy.On<int>("Do", i => wh.Set());
+            var proxy = connection.CreateHubProxy("OnConnectedOnDisconnectedHub");
 
             try
             {
                 connection.Start(host).Wait();
 
-                proxy.Invoke("Join", "foo").Wait();
+                string guid = Guid.NewGuid().ToString();
+                string otherGuid = proxy.Invoke<string>("Echo", guid).Result;
 
-                proxy.Invoke("Send", "foo", 0).Wait();
-
-                if (!wh.Wait(TimeSpan.FromSeconds(10)))
+                if (!guid.Equals(otherGuid))
                 {
-                    Debugger.Break();
+                    throw new InvalidOperationException("Fail!");
                 }
             }
             finally
