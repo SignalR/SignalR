@@ -287,6 +287,30 @@ namespace Microsoft.AspNet.SignalR.Tests
         [InlineData(HostType.Memory, TransportType.ServerSentEvents)]
         [InlineData(HostType.IISExpress, TransportType.ServerSentEvents)]
         [InlineData(HostType.IISExpress, TransportType.Websockets)]
+        public void SynchronousException(HostType hostType, TransportType transportType)
+        {
+            using (var host = CreateHost(hostType, transportType))
+            {
+                host.Initialize();
+                HubConnection connection = CreateHubConnection(host);
+
+                var hub = connection.CreateHubProxy("demo");
+
+                connection.Start(host.Transport).Wait();
+
+                var ex = Assert.Throws<AggregateException>(() => hub.InvokeWithTimeout("SynchronousException"));
+
+                Assert.IsType<InvalidOperationException>(ex.GetBaseException());
+                Assert.Contains("System.Exception", ex.GetBaseException().Message);
+                connection.Stop();
+            }
+        }
+
+
+        [Theory]
+        [InlineData(HostType.Memory, TransportType.ServerSentEvents)]
+        [InlineData(HostType.IISExpress, TransportType.ServerSentEvents)]
+        [InlineData(HostType.IISExpress, TransportType.Websockets)]
         public void TaskWithException(HostType hostType, TransportType transportType)
         {
             using (var host = CreateHost(hostType, transportType))

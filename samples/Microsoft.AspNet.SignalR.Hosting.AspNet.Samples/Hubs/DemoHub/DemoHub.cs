@@ -103,6 +103,11 @@ namespace Microsoft.AspNet.SignalR.Samples.Hubs.DemoHub
         }
 #endif
 
+        public void SynchronousException()
+        {
+            throw new Exception();
+        }
+
         public Task CancelledTask()
         {
             var tcs = new TaskCompletionSource<object>();
