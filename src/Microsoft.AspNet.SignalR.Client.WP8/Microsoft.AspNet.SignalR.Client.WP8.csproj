@@ -107,6 +107,9 @@
     <Compile Include="..\Microsoft.AspNet.SignalR.Client\Transports\AsyncStreamReader.cs">
       <Link>Transports\AsyncStreamReader.cs</Link>
     </Compile>
+    <Compile Include="..\Microsoft.AspNet.SignalR.Client\Transports\LongPolling\PollingRequestHandler.cs">
+      <Link>Transports\LongPolling\PollingRequestHandler.cs</Link>
+    </Compile>
     <Compile Include="..\Microsoft.AspNet.SignalR.Core\Infrastructure\CancellationTokenExtensions.cs">
       <Link>Infrastructure\CancellationTokenExtensions.cs</Link>
     </Compile>
