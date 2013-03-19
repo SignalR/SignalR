@@ -83,6 +83,7 @@
     <Compile Include="Performance\ClientServerMemoryRun.cs" />
     <Compile Include="Performance\ConnectionRun.cs" />
     <Compile Include="Connections\StressConnection.cs" />
+    <Compile Include="Performance\MemoryHostHubInvocationRun.cs" />
     <Compile Include="Performance\EmptyProtectedData.cs" />
     <Compile Include="Hubs\EchoHub.cs" />
     <Compile Include="Hubs\HubWithGroups.cs" />

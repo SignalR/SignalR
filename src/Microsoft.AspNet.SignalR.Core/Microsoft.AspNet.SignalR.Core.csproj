@@ -62,6 +62,7 @@
     <Compile Include="Hubs\DynamicDictionary.cs" />
     <Compile Include="Hubs\EmptyJavaScriptProxyGenerator.cs" />
     <Compile Include="Hubs\GroupProxy.cs" />
+    <Compile Include="Hubs\Lookup\HubMethodDispatcher.cs" />
     <Compile Include="Infrastructure\AckHandler.cs" />
     <Compile Include="Configuration\DefaultConfigurationManager.cs" />
     <Compile Include="Infrastructure\ArraySegmentTextReader.cs" />
