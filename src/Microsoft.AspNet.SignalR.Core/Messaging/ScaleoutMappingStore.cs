@@ -22,6 +22,8 @@ namespace Microsoft.AspNet.SignalR.Messaging
             if (id <= _current.MaxValue)
             {
                 var store = new StoreLink();
+                // All existing readers lose messages right here (temporary)
+                _minimum = store;
                 _current.Next = store;
                 _current = store;
             }
