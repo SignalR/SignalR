@@ -31,7 +31,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports.ServerSentEvents
             _buffer = new ChunkBuffer();
 
             Data = ProcessBuffer;
-        }        
+        }
 
         private void ProcessBuffer(ArraySegment<byte> readBuffer)
         {

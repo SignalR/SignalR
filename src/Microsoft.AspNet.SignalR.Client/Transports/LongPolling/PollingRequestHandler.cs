@@ -1,4 +1,6 @@
-﻿using System;
+﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.md in the project root for license information.
+
+using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR.Client.Http;
@@ -28,7 +30,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
             OnAfterPoll = _ => TaskAsyncHelper.Empty;
             OnAbort = _ => { };
         }
-        
+
         /// <summary>
         /// Used to generate the Url that is posted to for the poll.
         /// </summary>
@@ -38,7 +40,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
         /// Allows modification of the IRequest parameter before using it in a poll.
         /// </summary>
         public Action<IRequest> PrepareRequest { get; set; }
-        
+
         /// <summary>
         /// Sends the string based message to the callback.
         /// </summary>
@@ -77,7 +79,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
             }
         }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification="Exceptions are flowed back to user.")]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "Exceptions are flowed back to user.")]
         private void Poll()
         {
             // This is to ensure that we do not accidently fire off another poll after being told to stop

@@ -1,10 +1,9 @@
-﻿using Microsoft.AspNet.SignalR.Client.Transports;
+﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.md in the project root for license information.
+
 using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.AspNet.SignalR.Client.Transports;
 
 namespace Microsoft.AspNet.SignalR.Client.Http
 {
@@ -35,7 +34,7 @@ namespace Microsoft.AspNet.SignalR.Client.Http
 
             reader.Start();
 
-            return resultTcs.Task;            
+            return resultTcs.Task;
         }
     }
 }

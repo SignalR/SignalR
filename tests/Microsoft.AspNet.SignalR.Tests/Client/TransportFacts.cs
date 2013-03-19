@@ -1,12 +1,12 @@
-﻿using Microsoft.AspNet.SignalR.Client;
+﻿using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Threading;
+using Microsoft.AspNet.SignalR.Client;
 using Microsoft.AspNet.SignalR.Client.Http;
 using Microsoft.AspNet.SignalR.Client.Transports;
 using Moq;
 using Newtonsoft.Json.Linq;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Threading;
 using Xunit;
 using Xunit.Extensions;
 

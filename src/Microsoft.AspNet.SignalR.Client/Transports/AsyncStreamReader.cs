@@ -1,9 +1,11 @@
-﻿using Microsoft.AspNet.SignalR.Infrastructure;
+﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.md in the project root for license information.
+
 using System;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNet.SignalR.Infrastructure;
 
 namespace Microsoft.AspNet.SignalR.Client.Transports
 {
@@ -15,7 +17,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
         private int _reading;
         private Action _setOpened;
 
-        protected object BufferLock 
+        protected object BufferLock
         {
             get
             {
@@ -24,7 +26,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
         }
 
         /// <summary>
-        /// Invoked when the connection is open.
+        /// Invoked when the stream is open.
         /// </summary>
         public Action Opened { get; set; }
 

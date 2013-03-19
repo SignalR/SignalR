@@ -2,7 +2,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Threading;
@@ -128,7 +127,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
                     {
                         // If there's an error making an http request set the reset event
                         ((ManualResetEvent)state).Set();
-                    }, 
+                    },
                     AbortResetEvent);
                 }
             }
