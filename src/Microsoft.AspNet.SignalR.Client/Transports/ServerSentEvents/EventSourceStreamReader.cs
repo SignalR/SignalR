@@ -35,7 +35,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports.ServerSentEvents
 
         private void ProcessBuffer(ArraySegment<byte> readBuffer)
         {
-            lock (_bufferLock)
+            lock (BufferLock)
             {
                 if (readBuffer != null)
                 {

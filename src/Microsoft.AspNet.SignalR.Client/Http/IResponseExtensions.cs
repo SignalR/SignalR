@@ -12,6 +12,11 @@ namespace Microsoft.AspNet.SignalR.Client.Http
     {
         public static Task<string> ReadAsString(this IResponse response)
         {
+            if (response == null)
+            {
+                throw new ArgumentNullException("response");
+            }
+
             var stream = response.GetStream();
             var reader = new AsyncStreamReader(stream);
             var result = new StringBuilder();

@@ -77,6 +77,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
             }
         }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification="Exceptions are flowed back to user.")]
         private void Poll()
         {
             // This is to ensure that we do not accidently fire off another poll after being told to stop

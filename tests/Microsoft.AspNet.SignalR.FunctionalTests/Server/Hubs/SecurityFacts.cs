@@ -57,7 +57,7 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Server.Hubs
 
                 var url = GetUrl(protectedData, connection, connection.GroupsToken);
                 var response = host.Get(url).Result;
-                var reader = new EventSourceStreamReader(hackerConnection, response.GetResponseStream());
+                var reader = new EventSourceStreamReader(hackerConnection, response.GetStream());
 
                 reader.Message = sseEvent =>
                 {

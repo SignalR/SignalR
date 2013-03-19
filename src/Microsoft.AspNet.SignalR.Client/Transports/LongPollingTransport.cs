@@ -55,7 +55,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
             }
         }
 
-        private bool IsReconnecting(IConnection connection)
+        private static bool IsReconnecting(IConnection connection)
         {
             return connection.State == ConnectionState.Reconnecting;
         }
@@ -261,7 +261,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
             }
         }
 
-        private void TryReconnect(IConnection connection, ThreadSafeInvoker reconnectInvoker)
+        private static void TryReconnect(IConnection connection, ThreadSafeInvoker reconnectInvoker)
         {
             // Fire the reconnect event after the delay.
             reconnectInvoker.Invoke((conn) => FireReconnected(conn), connection);

@@ -9,12 +9,19 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
 {
     public class AsyncStreamReader
     {
-        protected readonly object _bufferLock = new object();
-
+        private readonly object _bufferLock = new object();
         private readonly Stream _stream;
         private byte[] _readBuffer;
         private int _reading;
         private Action _setOpened;
+
+        protected object BufferLock 
+        {
+            get
+            {
+                return _bufferLock;
+            }
+        }
 
         /// <summary>
         /// Invoked when the connection is open.

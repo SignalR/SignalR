@@ -55,34 +55,6 @@ namespace Microsoft.AspNet.SignalR.Client.Http
             return PostInternal(url, requestPreparer, postData);
         }
 
-
-        [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "Callers check for null return.")]
-        public static string ReadAsString(this HttpWebResponse response)
-        {
-            try
-            {
-                using (response)
-                {
-                    using (Stream stream = response.GetResponseStream())
-                    {
-                        var reader = new StreamReader(stream);
-
-                        return reader.ReadToEnd();
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-#if NET35
-                Debug.WriteLine(String.Format(System.Globalization.CultureInfo.InvariantCulture, "Failed to read response: {0}", ex));
-#else
-                Debug.WriteLine("Failed to read response: {0}", ex);
-#endif
-                // Swallow exceptions when reading the response stream and just try again.
-                return null;
-            }
-        }
-
         private static Task<HttpWebResponse> PostInternal(string url, Action<HttpWebRequest> requestPreparer, IDictionary<string, string> postData)
         {
             HttpWebRequest request = CreateWebRequest(url);
