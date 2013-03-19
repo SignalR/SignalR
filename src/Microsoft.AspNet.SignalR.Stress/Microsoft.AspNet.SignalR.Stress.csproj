@@ -74,12 +74,6 @@
     <Compile Include="..\Common\CommonVersionInfo.cs">
       <Link>Properties\CommonVersionInfo.cs</Link>
     </Compile>
-    <Compile Include="..\Microsoft.AspNet.SignalR.Core\Infrastructure\DisposableAction.cs">
-      <Link>Infrastructure\DisposableAction.cs</Link>
-    </Compile>
-    <Compile Include="..\Microsoft.AspNet.SignalR.Core\TaskAsyncHelper.cs">
-      <Link>TaskAsyncHelper.cs</Link>
-    </Compile>
     <Compile Include="Performance\ClientServerMemoryRun.cs" />
     <Compile Include="Performance\ConnectionRun.cs" />
     <Compile Include="Connections\StressConnection.cs" />

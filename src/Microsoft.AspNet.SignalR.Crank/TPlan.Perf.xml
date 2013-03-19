@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="us-ascii"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns="http://www.microsoft.com/2011/12/aaptperffun#1">
+
+  <PerfRunConfiguration LoadProcessesPerClientMultiplier="1" LoadThreadsPerProcessMultiplier="1" SuicideTimeout="600" />
+  
+  <metadata testName="Crank" teamName="SignalR" description="SignalR Crank Tests">
+    <trackingVariation name="Crank-WebSockets">
+      <metric name="Connections Connected(loadtestharness)" selection="Max" units="Numeric">
+        <target value="100000" labConfig="XSPPERF8S_WIN8_X64" />
+      </metric>
+      <metric name="Allocated Bytes/Connection(crank)" selection="Median" units="Numeric">
+        <target value="35000" labConfig="XSPPERF8S_WIN8_X64" />
+      </metric>
+    </trackingVariation>
+  </metadata>
+  
+  <commands>
+    <command name="CopyWWW" wait="Exit">
+      {bin}\xcopy /ecyi Microsoft.AspNet.SignalR.LoadTestHarness \\{server-01}\perftestbits\www
+    </command>
+    <command name="SetupIIS" wait="Exit">
+      powershell -executionpolicy remotesigned -command "{bin}\RegisterIIS.ps1 {currentdir}\www
+    </command>
+    <command name="Crank-WebSockets" wait="Exit">
+      crank.exe /Url:http://{server-01}:81/TestConnection/connect /SiteName:testdefault /Clients:100000 /Transport:WebSockets /Timeout:300
+    </command>
+  </commands>
+
+  <plan>
+    <run command="CopyWWW" role="controller" output="true" profile="None" />
+    <run command="SetupIIS" role="server-01" output="true" profile="None" />
+    <run command="Crank-WebSockets" role="client-01" output="true" />
+  </plan>
+</config>

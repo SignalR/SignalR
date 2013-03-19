@@ -338,13 +338,13 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
 
         [SuppressMessage("Microsoft.Performance", "CA1822:MarkMembersAsStatic", Justification = "This file is shared")]
         [SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope", Justification = "Counters are disposed later")]
-        private IPerformanceCounter LoadCounter(string categoryName, string counterName, string instanceName)
+        internal IPerformanceCounter LoadCounter(string categoryName, string counterName, string instanceName, bool readOnly = false)
         {
             // See http://msdn.microsoft.com/en-us/library/356cx381.aspx for the list of exceptions
             // and when they are thrown. 
             try
             {
-                var counter = new PerformanceCounter(categoryName, counterName, instanceName, readOnly: false);
+                var counter = new PerformanceCounter(categoryName, counterName, instanceName, readOnly: readOnly);
 
                 // Initialize the counter sample
                 counter.NextSample();

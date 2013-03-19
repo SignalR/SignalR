@@ -88,9 +88,14 @@ namespace Microsoft.AspNet.SignalR.Stress
 
         public virtual void Record()
         {
+            long[] bytesPerSec = null;
+            long[] recvsPerSec = null;
+            long[] sendsPerSec = null;
+
             foreach (var item in _samples)
             {
-                var key = String.Format("Stress-{0};{1}", GetType().Name, item.Key.CounterName);
+                var counterName = item.Key.CounterName;
+                var key = String.Format("Stress-{0};{1}", GetType().Name, counterName);
                 var samplesList = item.Value;
 
                 long[] values = new long[samplesList.Count - 1];
@@ -101,29 +106,68 @@ namespace Microsoft.AspNet.SignalR.Stress
                     Microsoft.VisualStudio.Diagnostics.Measurement.MeasurementBlock.Mark((ulong)values[i], key);
 #endif
                 }
-                Array.Sort(values);
-                double median = values[values.Length / 2];
-                if (values.Length % 2 == 0)
-                {
-                    median = median + values[(values.Length / 2) - 1] / 2;
-                }
+                RecordAggregates(key, values);
 
-                var average = values.Average();
-                var sumOfSquaresDiffs = values.Select(v => (v - average) * (v - average)).Sum();
-                var stdDevP = Math.Sqrt(sumOfSquaresDiffs / values.Length) / average * 100;
-                Console.WriteLine("{0} (MEDIAN):  {1}", key, Math.Round(median));
-                Console.WriteLine("{0} (AVERAGE): {1}", key, Math.Round(average));
-                Console.WriteLine("{0} (STDDEV%): {1}%", key, Math.Round(stdDevP));
+                if (counterName.Contains("Bytes/sec"))
+                {
+                    bytesPerSec = values;
+                }
+                else if (counterName.Contains("Received/Sec"))
+                {
+                    recvsPerSec = values;
+                }
+                else if (counterName.Contains("Published/Sec"))
+                {
+                    sendsPerSec = values;
+                }
             }
+
+            if ((bytesPerSec != null) && (recvsPerSec != null) && (sendsPerSec != null))
+            {
+                long[] bytesPerMsg = new long[bytesPerSec.Length];
+                for (int i = 0; i < bytesPerSec.Length; i++)
+                {
+                    bytesPerMsg[i] = (long)Math.Round((double)bytesPerSec[i] / (recvsPerSec[i] + sendsPerSec[i]));
+                }
+                RecordAggregates("Allocated Bytes/Message", bytesPerMsg);
+            }
+        }
+
+        private void RecordAggregates(string key, long[] values)
+        {
+            Array.Sort(values);
+            double median = values[values.Length / 2];
+            if (values.Length % 2 == 0)
+            {
+                median = median + values[(values.Length / 2) - 1] / 2;
+            }
+
+            var average = values.Average();
+            var sumOfSquaresDiffs = values.Select(v => (v - average) * (v - average)).Sum();
+            var stdDevP = Math.Sqrt(sumOfSquaresDiffs / values.Length) / average * 100;
+            Console.WriteLine("{0} (MEDIAN):  {1}", key, Math.Round(median));
+            Console.WriteLine("{0} (AVERAGE): {1}", key, Math.Round(average));
+            Console.WriteLine("{0} (STDDEV%): {1}%", key, Math.Round(stdDevP));
         }
 
         protected virtual IPerformanceCounter[] GetPerformanceCounters(IPerformanceCounterManager counterManager)
         {
             return new IPerformanceCounter[]
             {
+                counterManager.ConnectionsConnected,
                 counterManager.MessageBusMessagesReceivedPerSec,
-                counterManager.MessageBusMessagesReceivedTotal
+                counterManager.MessageBusMessagesReceivedTotal,
+                counterManager.MessageBusMessagesPublishedPerSec,
+                counterManager.MessageBusMessagesPublishedTotal,
+                LoadCounter(counterManager, "Processor", "% Processor Time", "_Total"),
+                LoadCounter(counterManager, ".NET CLR Memory", "% Time in GC", "_Global_"),
+                LoadCounter(counterManager, ".NET CLR Memory", "Allocated Bytes/sec", "_Global_")
             };
+        }
+
+        private IPerformanceCounter LoadCounter(IPerformanceCounterManager counterManager, string category, string name, string instance)
+        {
+            return ((Microsoft.AspNet.SignalR.Infrastructure.PerformanceCounterManager)counterManager).LoadCounter(category, name, instance, readOnly: true);
         }
 
         protected virtual IDisposable CreateReceiver(int connectionIndex)
