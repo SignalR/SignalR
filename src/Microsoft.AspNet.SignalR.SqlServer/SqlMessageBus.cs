@@ -25,8 +25,7 @@ namespace Microsoft.AspNet.SignalR.SqlServer
         private readonly string _connectionString;
         private readonly int _tableCount;
         private readonly TraceSource _trace;
-        
-        private SqlStream[] _streams;
+        private readonly List<SqlStream> _streams = new List<SqlStream>();
 
         /// <summary>
         /// Creates a new instance of the SqlMessageBus class.
@@ -81,26 +80,38 @@ namespace Microsoft.AspNet.SignalR.SqlServer
             {
                 var installer = new SqlInstaller(_connectionString, _tableNamePrefix, _tableCount, _trace);
                 installer.Install();
-
-                _streams = Enumerable.Range(0, _tableCount).Select(streamIndex =>
-                    new SqlStream(streamIndex, _connectionString,
-                        tableName: String.Format(CultureInfo.InvariantCulture, "{0}_{1}", _tableNamePrefix, streamIndex),
-                        onReceived: OnReceived,
-                        onRetry: () => Buffer(streamIndex, DefaultBufferSize),
-                        onError: ex => Close(streamIndex, ex),
-                        traceSource: _trace)
-                    )
-                    .ToArray();
-
-                Open();
             }
             catch (Exception ex)
             {
                 // Fatal exception while initializing, Close and call the error callback
-                Close(ex);
+                for (var i = 0; i < _tableCount; i++)
+                {
+                    Close(i, ex); 
+                }
                 
                 // TODO: Invoke user defined error callback
 
+                return;
+            }
+
+            for (var i = 0; i < _tableCount; i++)
+            {
+                var streamIndex = i;
+
+                var stream = new SqlStream(streamIndex, _connectionString,
+                    tableName: String.Format(CultureInfo.InvariantCulture, "{0}_{1}", _tableNamePrefix, streamIndex),
+                    onReceived: OnReceived,
+                    onRetry: () =>Buffer(streamIndex, DefaultBufferSize),
+                    onError: ex => Close(streamIndex, ex),
+                    traceSource: _trace);
+                    
+                _streams.Add(stream);
+
+                stream.StartReceiving()
+                    // Open the stream once receiving has started
+                    .Then(si => Open(si), streamIndex)
+                    // Starting the receive loop failed
+                    .Catch(ex => Close(streamIndex, ex));
             }
         }
     }

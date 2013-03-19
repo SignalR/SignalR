@@ -4,7 +4,6 @@ using System;
 using System.Collections.Generic;
 using System.Data.SqlClient;
 using System.Diagnostics;
-using System.Globalization;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -14,50 +13,42 @@ namespace Microsoft.AspNet.SignalR.SqlServer
     [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1001:TypesThatOwnDisposableFieldsShouldBeDisposable", Justification = "Needs review")]
     internal class SqlOperation
     {
-        private static readonly Action<object> _noOp = _ => { };
-
-        private readonly string _connectionString;
-        private readonly string _commandText;
-        private readonly Action<SqlOperation> _onRetry;
-        private readonly Action<Exception> _onError;
-        private readonly TraceSource _trace;
-        private readonly int[] _updateLoopRetryDelays = new[] { 0, 0, 0, 10, 10, 10, 50, 50, 100, 100, 200, 200, 200, 200, 1000, 1500, 3000 };
-        private readonly ManualResetEventSlim _mre = new ManualResetEventSlim();
-
         private List<SqlParameter> _parameters = new List<SqlParameter>();
-        private bool _useQueryNotifications = true;
 
         public SqlOperation(string connectionString, string commandText, TraceSource traceSource)
-            : this(connectionString, commandText, _noOp, _noOp, traceSource)
         {
-
-        }
-
-        public SqlOperation(string connectionString, string commandText, Action<SqlOperation> onRetry, Action<Exception> onError, TraceSource traceSource)
-        {
-            _connectionString = connectionString;
-            _commandText = commandText;
-            _onRetry = onRetry;
-            _onError = onError;
-            _trace = traceSource;
+            ConnectionString = connectionString;
+            CommandText = commandText;
+            Trace = traceSource;
 
             RetryDelay = TimeSpan.FromSeconds(3);
         }
 
-        public SqlOperation(string connectionString, string commandText, Action<SqlOperation> onRetry, Action<Exception> onError, TraceSource traceSource, params SqlParameter[] parameters)
-            : this(connectionString, commandText, onRetry, onError, traceSource)
+        public SqlOperation(string connectionString, string commandText, TraceSource traceSource, params SqlParameter[] parameters)
+            : this(connectionString, commandText, traceSource)
         {
-            _parameters.AddRange(parameters);
+            if (parameters != null)
+            {
+                _parameters.AddRange(parameters);
+            }
         }
 
         public string TracePrefix { get; set; }
 
         public TimeSpan RetryDelay { get; set; }
 
+        public Action<SqlOperation> OnRetry { get; set; }
+
         public IList<SqlParameter> Parameters
         {
             get { return _parameters; }
         }
+
+        protected TraceSource Trace { get; private set; }
+
+        protected string ConnectionString { get; private set; }
+
+        protected string CommandText { get; private set; }
 
         public object ExecuteScalar()
         {
@@ -81,7 +72,7 @@ namespace Microsoft.AspNet.SignalR.SqlServer
             return ExecuteReader(processRecord, null);
         }
 
-        private int ExecuteReader(Action<SqlDataReader, SqlOperation> processRecord, Action<SqlCommand> commandAction)
+        protected int ExecuteReader(Action<SqlDataReader, SqlOperation> processRecord, Action<SqlCommand> commandAction)
         {
             return Execute(cmd =>
             {
@@ -108,131 +99,28 @@ namespace Microsoft.AspNet.SignalR.SqlServer
             });
         }
 
-        public void ExecuteReaderWithUpdates(Action<SqlDataReader, SqlOperation> processRecord)
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope", Justification = "It's the caller's responsibility to dispose as the command is returned"),
+         System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Security", "CA2100:Review SQL queries for security vulnerabilities", Justification = "General purpose SQL utility command")]
+        protected SqlCommand CreateCommand(SqlConnection connection)
         {
-            var useNotifications = StartSqlDependencyListener();
-
-            for (var i = 0; i < _updateLoopRetryDelays.Length; i++)
+            var command = new SqlCommand(CommandText, connection);
+            if (Parameters != null && Parameters.Count > 0)
             {
-                int recordCount;
-                try
+                for (var i = 0; i < Parameters.Count; i++)
                 {
-                    recordCount = ExecuteReader(processRecord);
-                }
-                catch (Exception)
-                {
-                    if (useNotifications)
+                    var sourceParameter = Parameters[i];
+                    var newParameter = new SqlParameter
                     {
-                        SqlDependency.Stop(_connectionString);
-                    }
-                    throw;
-                }
-
-                if (recordCount > 0)
-                {
-                    // We got records so reset the retry delay index
-                    i = -1;
-                    continue;
-                }
-                
-                var retryDelay = _updateLoopRetryDelays[i];
-                if (retryDelay > 0)
-                {
-                    _trace.TraceVerbose("{0}Waiting {1}ms before checking for messages again", TracePrefix, retryDelay);
-
-                    Thread.Sleep(retryDelay);
-                }
-
-                if (i == _updateLoopRetryDelays.Length - 1 && !useNotifications)
-                {
-                    // Not using notifications so just stay looping on the last retry delay
-                    i = i - 1;
+                        ParameterName = sourceParameter.ParameterName,
+                        SqlDbType = sourceParameter.SqlDbType,
+                        SqlValue = sourceParameter.SqlValue,
+                        Direction = sourceParameter.Direction,
+                        IsNullable = sourceParameter.IsNullable
+                    };
+                    command.Parameters.Add(newParameter);
                 }
             }
-
-            // No records after all retries, set up a SQL notification
-            try
-            {
-                // We need to ensure that the following ExecuteReader call completes before the 
-                // SqlDependency OnChange handler runs, otherwise we could have two readers being
-                // processed concurrently.
-                _mre.Reset();
-                ExecuteReader(processRecord, command =>
-                {
-                    var dependency = new SqlDependency(command);
-                    dependency.OnChange += (s, e) => SqlDependency_OnChange(s, e, processRecord);
-                });
-                _mre.Set();
-            }
-            catch (Exception)
-            {
-                SqlDependency.Stop(_connectionString);
-                throw;
-            }
-        }
-
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "On a background thread and we report exceptions asynchronously"),
-         System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA1801:ReviewUnusedParameters", MessageId = "sender", Justification = "Event handler")]
-        private void SqlDependency_OnChange(object sender, SqlNotificationEventArgs e, Action<SqlDataReader, SqlOperation> processRecord)
-        {
-            // TODO: Could we do this without blocking with some fancy Interlocked gymnastics?
-            _mre.Wait();
-
-            // Check notification args for issues
-            if (e.Type == SqlNotificationType.Change)
-            {
-                if (e.Info == SqlNotificationInfo.Insert
-                    || e.Info == SqlNotificationInfo.Expired
-                    || e.Info == SqlNotificationInfo.Resource)
-                {
-                    ExecuteReaderWithUpdates(processRecord);
-                }
-                else if (e.Info == SqlNotificationInfo.Restart)
-                {
-                    _trace.TraceWarning("{0}SQL Server restarting, starting buffering", TracePrefix);
-
-                    _onRetry(this);
-                    ExecuteReaderWithUpdates(processRecord);
-                }
-                else if (e.Info == SqlNotificationInfo.Error)
-                {
-                    _trace.TraceWarning("{0}SQL notification error likely due to server becoming unavailable, starting buffering", TracePrefix);
-
-                    _onRetry(this);
-                    ExecuteReaderWithUpdates(processRecord);
-                }
-                else
-                {
-                    _trace.TraceError("{0}Unexpected SQL notification details: Type={1}, Source={2}, Info={3}", TracePrefix, e.Type, e.Source, e.Info);
-                    
-                    _onError(new SqlMessageBusException(String.Format(CultureInfo.InvariantCulture, Resources.Error_UnexpectedSqlNotificationType, e.Type, e.Source, e.Info)));
-                }
-            }
-            else if (e.Type == SqlNotificationType.Subscribe)
-            {
-                Debug.Assert(e.Info != SqlNotificationInfo.Invalid, "Ensure the SQL query meets the requirements for query notifications at http://msdn.microsoft.com/en-US/library/ms181122.aspx");
-
-                _trace.TraceError("{0}SQL notification subscription error: Type={1}, Source={2}, Info={3}", TracePrefix, e.Type, e.Source, e.Info);
-
-                if (e.Info == SqlNotificationInfo.TemplateLimit)
-                {
-                    // We've hit a subscription limit, pause for a bit then start again
-                    Thread.Sleep(RetryDelay);
-                    ExecuteReaderWithUpdates(processRecord);
-                }
-                else
-                {
-                    // Unknown subscription error, let's stop using query notifications
-                    _useQueryNotifications = false;
-                    try
-                    {
-                        SqlDependency.Stop(_connectionString);
-                    }
-                    catch (Exception) { }
-
-                    ExecuteReaderWithUpdates(processRecord);
-                }
-            }
+            return command;
         }
 
         private T Execute<T>(Func<SqlCommand, T> commandFunc)
@@ -250,7 +138,7 @@ namespace Microsoft.AspNet.SignalR.SqlServer
             {
                 try
                 {
-                    connection = new SqlConnection(_connectionString);
+                    connection = new SqlConnection(ConnectionString);
                     command = CreateCommand(connection);
                     connection.Open();
                     result = commandFunc(command);
@@ -262,7 +150,10 @@ namespace Microsoft.AspNet.SignalR.SqlServer
                     {
                         if (retryOnException)
                         {
-                            _onRetry(this);
+                            if (OnRetry != null)
+                            {
+                                OnRetry(this);
+                            }
                             Thread.Sleep(RetryDelay);
                         }
                         else
@@ -297,7 +188,7 @@ namespace Microsoft.AspNet.SignalR.SqlServer
             {
                 try
                 {
-                    connection = new SqlConnection(_connectionString);
+                    connection = new SqlConnection(ConnectionString);
                     command = CreateCommand(connection);
 
                     connection.Open();
@@ -308,7 +199,10 @@ namespace Microsoft.AspNet.SignalR.SqlServer
                         {
                             if (IsRecoverableException(ex.GetBaseException()))
                             {
-                                _onRetry(this);
+                                if (OnRetry != null)
+                                {
+                                    OnRetry(this);
+                                }
                                 TaskAsyncHelper.Delay(RetryDelay)
                                                .Then(() => ExecuteWithRetry(commandFunc, tcs));
                             }
@@ -325,7 +219,7 @@ namespace Microsoft.AspNet.SignalR.SqlServer
                                 conn.Dispose();
                             }
                         }, connection);
-                    
+
                     break;
                 }
                 catch (Exception ex)
@@ -337,7 +231,10 @@ namespace Microsoft.AspNet.SignalR.SqlServer
 
                     if (IsRecoverableException(ex))
                     {
-                        _onRetry(this);
+                        if (OnRetry != null)
+                        {
+                            OnRetry(this);
+                        }
                         Thread.Sleep(RetryDelay);
                     }
                     else
@@ -348,72 +245,7 @@ namespace Microsoft.AspNet.SignalR.SqlServer
             };
         }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope", Justification = "It's the caller's responsibility to dispose as the command is returned"),
-         System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Security", "CA2100:Review SQL queries for security vulnerabilities", Justification = "General purpose SQL utility command")]
-        private SqlCommand CreateCommand(SqlConnection connection)
-        {
-            var command = new SqlCommand(_commandText, connection);
-            if (Parameters != null && Parameters.Count > 0)
-            {
-                for (var i = 0; i < Parameters.Count; i++)
-                {
-                    var sourceParameter = Parameters[i];
-                    var newParameter = new SqlParameter
-                    {
-                        ParameterName = sourceParameter.ParameterName,
-                        SqlDbType = sourceParameter.SqlDbType,
-                        SqlValue = sourceParameter.SqlValue,
-                        Direction = sourceParameter.Direction,
-                        IsNullable = sourceParameter.IsNullable
-                    };
-                    command.Parameters.Add(newParameter);
-                }
-            }
-            return command;
-        }
-
-        private bool StartSqlDependencyListener()
-        {
-            if (!_useQueryNotifications)
-            {
-                return false;
-            }
-
-            _trace.TraceVerbose("{0}: Starting SQL notification listener", TracePrefix);
-            while (true)
-            {
-                try
-                {
-                    if (SqlDependency.Start(_connectionString))
-                    {
-                        _trace.TraceVerbose("{0}SQL notificatoin listener started", TracePrefix);
-                    }
-                    else
-                    {
-                        _trace.TraceVerbose("{0}SQL notificatoin listener was already running", TracePrefix);
-                    }
-                    return true;
-                }
-                catch (InvalidOperationException)
-                {
-                    _trace.TraceInformation("{0}SQL Service Broker is disabled, disabling query notifications", TracePrefix);
-                    return false;
-                }
-                catch (Exception ex)
-                {
-                    if (IsRecoverableException(ex))
-                    {
-                        Thread.Sleep(RetryDelay);
-                    }
-                    else
-                    {
-                        throw;
-                    }
-                }
-            }
-        }
-
-        private static bool IsRecoverableException(Exception exception)
+        protected static bool IsRecoverableException(Exception exception)
         {
             var sqlException = exception as SqlException;
 
@@ -426,7 +258,7 @@ namespace Microsoft.AspNet.SignalR.SqlServer
                     sqlException.Number == SqlErrorNumbers.ConnectionTimeout ||
                     sqlException.Number == SqlErrorNumbers.ServerNotFound ||
                     sqlException.Number == SqlErrorNumbers.TransportLevelError ||
-                // Failed to start a MARS session due to the server being unavailable
+                    // Failed to start a MARS session due to the server being unavailable
                     (sqlException.Number == SqlErrorNumbers.Unknown && sqlException.Message.IndexOf("error: 19", StringComparison.OrdinalIgnoreCase) >= 0)
                 )
             );

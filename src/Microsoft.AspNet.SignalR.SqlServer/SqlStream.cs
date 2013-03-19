@@ -32,6 +32,11 @@ namespace Microsoft.AspNet.SignalR.SqlServer
             _receiver = new SqlReceiver(connectionString, tableName, (id, messages) => onReceived(_streamIndex, id, messages), _onRetry, _onError, _trace, _tracePrefix);
         }
 
+        public Task StartReceiving()
+        {
+            return _receiver.StartReceiving();
+        }
+
         public Task Send(IList<Message> messages)
         {
             _trace.TraceVerbose("{0}Saving payload with {1} messages(s) to SQL server", _tracePrefix, messages.Count, _streamIndex);

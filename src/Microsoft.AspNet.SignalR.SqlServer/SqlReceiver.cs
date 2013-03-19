@@ -37,53 +37,61 @@ namespace Microsoft.AspNet.SignalR.SqlServer
 
             _maxIdSql = String.Format(CultureInfo.InvariantCulture, _maxIdSql, SqlMessageBus.SchemaName, _tableName);
             _selectSql = String.Format(CultureInfo.InvariantCulture, _selectSql, SqlMessageBus.SchemaName, _tableName);
-
-            ThreadPool.QueueUserWorkItem(Receive);
         }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Security", "CA2100:Review SQL queries for security vulnerabilities", Justification = "Reviewed")]
-        private void InitializeLastPayloadId()
+        public Task StartReceiving()
         {
-            var operation = new SqlOperation(_connectionString, _maxIdSql, _trace) { TracePrefix = _tracePrefix };
-            _lastPayloadId = (long)operation.ExecuteScalar();
+            var tcs = new TaskCompletionSource<object>();
+
+            ThreadPool.QueueUserWorkItem(Receive, tcs);
+
+            return tcs.Task;
         }
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "On a background thread with explicit error processing")]
         private void Receive(object state)
         {
+            var tcs = (TaskCompletionSource<object>)state;
+
             if (!_lastPayloadId.HasValue)
             {
-                InitializeLastPayloadId();
+                var lastPayloadIdOperation = new SqlOperation(_connectionString, _maxIdSql, _trace)
+                {
+                    TracePrefix = _tracePrefix
+                };
+
+                try
+                {
+                    _lastPayloadId = (long)lastPayloadIdOperation.ExecuteScalar();
+                    // Complete the StartReceiving task as we've successfully initialized the payload ID
+                    tcs.TrySetResult(null);
+                }
+                catch (Exception ex)
+                {
+                    tcs.TrySetException(ex);
+                    return;
+                }
             }
 
             // NOTE: This is called from a BG thread so any uncaught exceptions will crash the process
-            var operation = new SqlOperation(_connectionString, _selectSql,
-                onRetry: o =>
+            var operation = new ObservableSqlOperation(_connectionString, _selectSql, _trace, new SqlParameter("PayloadId", _lastPayloadId))
+            {
+                OnRetry = o =>
                 {
                     // Recoverable error
                     o.Parameters.Clear();
                     o.Parameters.Add(new SqlParameter("PayloadId", _lastPayloadId));
                     _onRetry();
                 },
-                onError: ex =>
+                OnError = ex =>
                 {
                     // Fatal async error, e.g. from SQL notification update
                     _onError(ex);
                 },
-                traceSource: _trace,
-                parameters: new SqlParameter("PayloadId", _lastPayloadId))
-            {
                 TracePrefix = _tracePrefix
             };
 
-            try
-            {
-                operation.ExecuteReaderWithUpdates((rdr, o) => ProcessRecord(rdr, o));
-            }
-            catch (Exception ex)
-            {
-                _onError(ex);
-            }
+            operation.ExecuteReaderWithUpdates((rdr, o) => ProcessRecord(rdr, o));
         }
 
         private void ProcessRecord(SqlDataReader reader, SqlOperation sqlOperation)
