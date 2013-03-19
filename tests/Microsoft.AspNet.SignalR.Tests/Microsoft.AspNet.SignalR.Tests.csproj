@@ -81,6 +81,7 @@
     <Compile Include="Core\Hubs\HubContextFacts.cs" />
     <Compile Include="Core\Hubs\Lookup\DefaultHubManagerFacts.cs" />
     <Compile Include="Core\Hubs\Lookup\Descriptors\HubDescriptorFacts.cs" />
+    <Compile Include="Core\Hubs\Lookup\HubMethodDispatcherFacts.cs" />
     <Compile Include="Core\Hubs\TestHubs.cs" />
     <Compile Include="Core\Transports\ForeverFrameTransportFacts.cs" />
     <Compile Include="GroupManagerFacts.cs" />

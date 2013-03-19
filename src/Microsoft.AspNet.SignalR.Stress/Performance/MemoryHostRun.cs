@@ -23,6 +23,11 @@ namespace Microsoft.AspNet.SignalR.Stress
             Host = new MemoryHost();
         }
 
+        public virtual string Endpoint
+        {
+            get { return "echo"; }
+        }
+
         public string Transport { get; private set; }
 
         protected MemoryHost Host { get; private set; }
@@ -33,19 +38,20 @@ namespace Microsoft.AspNet.SignalR.Stress
 
         public override void Initialize()
         {
-            Host.Configure(app =>
-            {
-                var config = new ConnectionConfiguration
-                {
-                    Resolver = Resolver
-                };
-
-                app.MapConnection<StressConnection>("/echo", config);
-
-                config.Resolver.Register(typeof(IProtectedData), () => new EmptyProtectedData());
-            });
-
+            Host.Configure(ConfigureApp);
             base.Initialize();
+        }
+
+        protected virtual void ConfigureApp(IAppBuilder app)
+        {
+            var config = new ConnectionConfiguration
+            {
+                Resolver = Resolver
+            };
+
+            app.MapConnection<StressConnection>(Endpoint, config);
+
+            config.Resolver.Register(typeof(IProtectedData), () => new EmptyProtectedData());
         }
 
         public override void Dispose()
@@ -82,18 +88,18 @@ namespace Microsoft.AspNet.SignalR.Stress
 
         private Task ProcessRequest(string connectionToken)
         {
-            return Host.Get("http://foo/echo/connect?transport=" + Transport + "&connectionToken=" + connectionToken, disableWrites: true);
+            return Host.Get("http://foo/" + Endpoint + "/connect?transport=" + Transport + "&connectionToken=" + connectionToken, disableWrites: true);
         }
 
         private Task ProcessSendRequest(string connectionToken, string data)
         {
             var postData = new Dictionary<string, string> { { "data", data } };
-            return Host.Post("http://foo/echo/send?transport=" + Transport + "&connectionToken=" + connectionToken, postData);
+            return Host.Post("http://foo/" + Endpoint + "/send?transport=" + Transport + "&connectionToken=" + connectionToken, postData);
         }
 
         private Task Abort(string connectionToken)
         {
-            return Host.Post("http://foo/echo/abort?transport=" + Transport + "&connectionToken=" + connectionToken, null);
+            return Host.Post("http://foo/" + Endpoint + "/abort?transport=" + Transport + "&connectionToken=" + connectionToken, null);
         }
 
         private void LongPollingLoop(string connectionId)
