@@ -67,6 +67,7 @@
     <Compile Include="Connection.cs" />
     <Compile Include="ConnectionExtensions.cs" />
     <Compile Include="HeartBeatMonitor.cs" />
+    <Compile Include="Http\IResponseExtensions.cs" />
     <Compile Include="Hubs\HubInvocation.cs" />
     <Compile Include="ConnectionState.cs" />
     <Compile Include="Hubs\HubConnection.cs" />
@@ -89,6 +90,9 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
+    <Compile Include="Transports\AsyncStreamReader.cs" />
+    <Compile Include="Transports\LongPolling\NegotiateInitializer.cs" />
+    <Compile Include="Transports\LongPolling\PollingRequestHandler.cs" />
     <Compile Include="Transports\ServerSentEvents\ChunkBuffer.cs" />
     <Compile Include="Http\DefaultHttpClient.cs" />
     <Compile Include="Http\HttpHelper.cs" />

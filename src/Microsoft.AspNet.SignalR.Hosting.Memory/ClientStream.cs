@@ -80,8 +80,7 @@ namespace Microsoft.AspNet.SignalR.Hosting.Memory
 
         public override int Read(byte[] buffer, int offset, int count)
         {
-            // TODO: Change this to throw new NotImplementedException(), when we remove all sync reads
-            return ReadBuffer(buffer, offset, count);
+            throw new NotImplementedException();
         }
 
         public override IAsyncResult BeginRead(byte[] buffer, int offset, int count, AsyncCallback callback, object state)

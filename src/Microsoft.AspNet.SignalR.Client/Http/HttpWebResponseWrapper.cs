@@ -3,6 +3,7 @@
 using System;
 using System.IO;
 using System.Net;
+using System.Threading.Tasks;
 
 namespace Microsoft.AspNet.SignalR.Client.Http
 {
@@ -15,19 +16,22 @@ namespace Microsoft.AspNet.SignalR.Client.Http
             _response = response;
         }
 
-        public string ReadAsString()
-        {
-            return _response.ReadAsString();   
-        }
-
-        public Stream GetResponseStream()
+        public Stream GetStream()
         {
             return _response.GetResponseStream();
         }
 
-        public void Close()
+        protected virtual void Dispose(bool disposing)
         {
-            ((IDisposable)_response).Dispose();
+            if (disposing)
+            {
+                ((IDisposable)_response).Dispose();
+            }
+        }
+
+        public void Dispose()
+        {
+            Dispose(true);
         }
     }
 }
