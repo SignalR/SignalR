@@ -52,11 +52,6 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
             }
         }
 
-        private static bool IsReconnecting(IConnection connection)
-        {
-            return connection.State == ConnectionState.Reconnecting;
-        }
-
         protected override void OnStart(IConnection connection,
                                         string data,
                                         CancellationToken disconnectToken,
@@ -167,14 +162,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
             requestHandler.OnMessage += message =>
             {
                 var shouldReconnect = false;
-                var disconnectedReceived = false;
-
-                if (IsReconnecting(connection))
-                {
-                    // If the timeout for the reconnect hasn't fired as yet just fire the 
-                    // event here before any incoming messages are processed
-                    TryReconnect(connection, reconnectInvoker);
-                }
+                var disconnectedReceived = false;                
 
                 connection.Trace.WriteLine("LP: OnMessage({0}, {1})", connection.ConnectionId, message);
 
@@ -182,6 +170,13 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
                                                 message,
                                                 out shouldReconnect,
                                                 out disconnectedReceived);
+
+                if (IsReconnecting(connection))
+                {
+                    // If the timeout for the reconnect hasn't fired as yet just fire the 
+                    // event here before any incoming messages are processed
+                    TryReconnect(connection, reconnectInvoker);
+                }
 
                 if (shouldReconnect)
                 {
@@ -271,6 +266,11 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
             {
                 connection.OnReconnected();
             }
+        }
+
+        private static bool IsReconnecting(IConnection connection)
+        {
+            return connection.State == ConnectionState.Reconnecting;
         }
 
         public override void LostConnection(IConnection connection)

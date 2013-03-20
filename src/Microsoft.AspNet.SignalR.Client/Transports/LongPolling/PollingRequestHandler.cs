@@ -34,39 +34,39 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
         /// <summary>
         /// Used to generate the Url that is posted to for the poll.
         /// </summary>
-        public Func<string> ResolveUrl { get; set; }
+        public Func<string> ResolveUrl;
 
         /// <summary>
         /// Allows modification of the IRequest parameter before using it in a poll.
         /// </summary>
-        public Action<IRequest> PrepareRequest { get; set; }
+        public event Action<IRequest> PrepareRequest;
 
         /// <summary>
         /// Sends the string based message to the callback.
         /// </summary>
-        public Action<string> OnMessage { get; set; }
+        public event Action<string> OnMessage;
 
         /// <summary>
         /// If the poll errors OnError gets triggered and passes the exception.
         /// </summary>
-        public Action<Exception> OnError { get; set; }
+        public event Action<Exception> OnError;
 
         /// <summary>
         /// Triggers when the polling request is in flight
         /// </summary>
-        public Action OnPolling { get; set; }
+        public event Action OnPolling;
 
         /// <summary>
         /// Triggers before a new polling request is attempted.  
         /// Passes in an exception if the Poll errored, null otherwise.
         /// Expects the return as a task in order to allow modification of timing for subsequent polls.
         /// </summary>
-        public Func<Exception, Task> OnAfterPoll { get; set; }
+        public Func<Exception, Task> OnAfterPoll;
 
         /// <summary>
         /// Fired when the current poll request was aborted, passing in the soon to be aborted request.
         /// </summary>
-        public Action<IRequest> OnAbort { get; set; }
+        public event Action<IRequest> OnAbort;
 
         /// <summary>
         /// Starts the Polling Request Handler.
