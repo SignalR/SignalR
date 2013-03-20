@@ -9,13 +9,26 @@ using System.Threading;
 namespace Microsoft.AspNet.SignalR.SqlServer
 {
     // TODO: Should we make this IDisposable and stop any in progress reader loops/notifications on Dispose?
+    /// <summary>
+    /// A SqlOperation that continues to execute over and over as new results arrive.
+    /// Will attempt to use SQL Query Notifications, otherwise falls back to a polling receive loop.
+    /// </summary>
     [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1001:TypesThatOwnDisposableFieldsShouldBeDisposable", Justification = "Needs review")]
     internal class ObservableSqlOperation : SqlOperation
     {
-        private readonly int[] _updateLoopRetryDelays = new[] { 0, 0, 0, 10, 10, 10, 50, 50, 100, 100, 200, 200, 200, 200, 1000, 1500, 3000 };
-        private readonly ManualResetEventSlim _mre = new ManualResetEventSlim();
-
-        private bool _useQueryNotifications = true;
+        //private readonly int[] _updateLoopRetryDelays = new[] { 0, 0, 0, 10, 10, 10, 50, 50, 100, 100, 200, 200, 200, 200, 1000, 1500, 3000 };
+        private readonly int[][] _updateLoopRetryDelays = new[] {
+            new[] { 0, 3 },      // 0ms x 3
+            new[] { 10, 3 },     // 10ms x 3
+            new[] { 50, 2 },     // 50ms x 2
+            new[] { 100, 2 },    // 100ms x 2
+            new[] { 200, 2 },    // 200ms x 2
+            new [] { 1000, 2 },  // 1000ms x 2
+            new [] { 1500, 2 },  // 1500ms x 2
+            new [] { 3000, 1 }   // 3000ms x 1
+        };
+        
+        private int _notificationState;
 
         public ObservableSqlOperation(string connectionString, string commandText, TraceSource traceSource, params SqlParameter[] parameters)
             : base(connectionString, commandText, traceSource, parameters)
@@ -25,73 +38,107 @@ namespace Microsoft.AspNet.SignalR.SqlServer
 
         public Action<Exception> OnError { get; set; }
 
+        /// <summary>
+        /// Note this, blocks the calling thread until an unrecoverable occurs or a SQL Query Notification can be set up
+        /// </summary>
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "Errors are reported via the callback")]
         public void ExecuteReaderWithUpdates(Action<SqlDataReader, SqlOperation> processRecord)
         {
-            var useNotifications = StartSqlDependencyListener();
+            var useNotifications = false;
 
-            for (var i = 0; i < _updateLoopRetryDelays.Length; i++)
-            {
-                int recordCount;
-                try
-                {
-                    recordCount = ExecuteReader(processRecord);
-                }
-                catch (Exception ex)
-                {
-                    if (useNotifications)
-                    {
-                        SqlDependency.Stop(ConnectionString);
-                    }
-                    if (OnError != null)
-                    {
-                        OnError(ex);
-                    }
-                    return;
-                }
-
-                if (recordCount > 0)
-                {
-                    // We got records so reset the retry delay index
-                    i = -1;
-                    continue;
-                }
-
-                var retryDelay = _updateLoopRetryDelays[i];
-                if (retryDelay > 0)
-                {
-                    Trace.TraceVerbose("{0}Waiting {1}ms before checking for messages again", TracePrefix, retryDelay);
-
-                    Thread.Sleep(retryDelay);
-                }
-
-                if (i == _updateLoopRetryDelays.Length - 1 && !useNotifications)
-                {
-                    // Not using notifications so just stay looping on the last retry delay
-                    i = i - 1;
-                }
-            }
-
-            // No records after all retries, set up a SQL notification
             try
             {
-                // We need to ensure that the following ExecuteReader call completes before the 
-                // SqlDependency OnChange handler runs, otherwise we could have two readers being
-                // processed concurrently.
-                _mre.Reset();
-                ExecuteReader(processRecord, command =>
-                {
-                    var dependency = new SqlDependency(command);
-                    dependency.OnChange += (s, e) => SqlDependency_OnChange(s, e, processRecord);
-                });
-                _mre.Set();
+                useNotifications = StartSqlDependencyListener();
             }
             catch (Exception ex)
             {
-                SqlDependency.Stop(ConnectionString);
-                if (OnError != null)
+                OnError(ex);
+                return;
+            }
+
+            if (useNotifications)
+            {
+                _notificationState = NotificationState.ProcessingUpdates;
+            }
+
+            for (var i = 0; i < _updateLoopRetryDelays.Length; i++)
+            {
+                var retry = _updateLoopRetryDelays[i];
+                var retryDelay = retry[0];
+                var retryCount = retry[1];
+                
+                for (var j = 0; j < retryCount; j++)
                 {
-                    OnError(ex);
+                    int recordCount;
+                    try
+                    {
+                        recordCount = ExecuteReader(processRecord);
+                    }
+                    catch (Exception ex)
+                    {
+                        if (useNotifications)
+                        {
+                            SqlDependency.Stop(ConnectionString);
+                        }
+                        if (OnError != null)
+                        {
+                            OnError(ex);
+                        }
+                        return;
+                    }
+
+                    if (recordCount > 0)
+                    {
+                        // We got records so start the retry loop again
+                        i = -1;
+                        break;
+                    }
+
+                    if (retryDelay > 0)
+                    {
+                        Trace.TraceVerbose("{0}Waiting {1}ms before checking for messages again", TracePrefix, retryDelay);
+
+                        Thread.Sleep(retryDelay);
+                    }
+
+                    if (!useNotifications && i == _updateLoopRetryDelays.Length - 1 && j == retryCount - 1)
+                    {
+                        // Last retry loop and we're not using notifications so just stay looping on the last retry delay
+                        j = j - 1;
+                    }
+                    else
+                    {
+                        // No records after all retries, set up a SQL notification
+                        try
+                        {
+                            ExecuteReader(processRecord, command =>
+                            {
+                                var dependency = new SqlDependency(command);
+                                dependency.OnChange += (s, e) => SqlDependency_OnChange(s, e, processRecord);
+                            });
+
+                            if (Interlocked.CompareExchange(ref _notificationState,
+                                NotificationState.AwaitingNotification, NotificationState.ProcessingUpdates) == NotificationState.NotificationReceived)
+                            {
+                                // Updates were received while we were processing, start the receive loop again now
+                                i = -1;
+                                break;
+                            };
+                        }
+                        catch (Exception ex)
+                        {
+                            try
+                            {
+                                SqlDependency.Stop(ConnectionString);
+                            }
+                            catch (Exception) { }
+
+                            if (OnError != null)
+                            {
+                                OnError(ex);
+                            }
+                        }
+                    }
                 }
             }
         }
@@ -100,8 +147,12 @@ namespace Microsoft.AspNet.SignalR.SqlServer
          System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA1801:ReviewUnusedParameters", MessageId = "sender", Justification = "Event handler")]
         private void SqlDependency_OnChange(object sender, SqlNotificationEventArgs e, Action<SqlDataReader, SqlOperation> processRecord)
         {
-            // TODO: Could we do this without blocking with some fancy Interlocked gymnastics?
-            _mre.Wait();
+            if (Interlocked.CompareExchange(ref _notificationState,
+                NotificationState.NotificationReceived, NotificationState.ProcessingUpdates) == NotificationState.ProcessingUpdates)
+            {
+                // New updates will be retreived by the original reader thread
+                return;
+            }
 
             // Check notification args for issues
             if (e.Type == SqlNotificationType.Change)
@@ -134,7 +185,10 @@ namespace Microsoft.AspNet.SignalR.SqlServer
                 }
                 else
                 {
+                    // Fatal error, we don't expect to get here, end the receive loop
+
                     Trace.TraceError("{0}Unexpected SQL notification details: Type={1}, Source={2}, Info={3}", TracePrefix, e.Type, e.Source, e.Info);
+                    
                     if (OnError != null)
                     {
                         OnError(new SqlMessageBusException(String.Format(CultureInfo.InvariantCulture, Resources.Error_UnexpectedSqlNotificationType, e.Type, e.Source, e.Info)));
@@ -156,7 +210,7 @@ namespace Microsoft.AspNet.SignalR.SqlServer
                 else
                 {
                     // Unknown subscription error, let's stop using query notifications
-                    _useQueryNotifications = false;
+                    _notificationState = NotificationState.Disabled;
                     try
                     {
                         SqlDependency.Stop(ConnectionString);
@@ -170,7 +224,7 @@ namespace Microsoft.AspNet.SignalR.SqlServer
 
         private bool StartSqlDependencyListener()
         {
-            if (!_useQueryNotifications)
+            if (_notificationState == NotificationState.Disabled)
             {
                 return false;
             }
@@ -193,6 +247,8 @@ namespace Microsoft.AspNet.SignalR.SqlServer
                 catch (InvalidOperationException)
                 {
                     Trace.TraceInformation("{0}SQL Service Broker is disabled, disabling query notifications", TracePrefix);
+
+                    _notificationState = NotificationState.Disabled;
                     return false;
                 }
                 catch (Exception ex)
@@ -203,10 +259,20 @@ namespace Microsoft.AspNet.SignalR.SqlServer
                     }
                     else
                     {
+                        // Fatal error trying to start SQL notification listener
                         throw;
                     }
                 }
             }
+        }
+
+        private static class NotificationState
+        {
+            public const int Enabled = 0;
+            public const int ProcessingUpdates = 1;
+            public const int AwaitingNotification = 2;
+            public const int NotificationReceived = 3;
+            public const int Disabled = 4;
         }
     }
 }

@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Data.SqlClient;
 using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
@@ -52,12 +53,8 @@ namespace Microsoft.AspNet.SignalR.SqlServer
             var traceManager = dependencyResolver.Resolve<ITraceManager>();
             _trace = traceManager["SignalR." + typeof(SqlMessageBus).Name];
 
-            ReconnectDelay = TimeSpan.FromSeconds(3);
-
             ThreadPool.QueueUserWorkItem(Initialize);
         }
-
-        public TimeSpan ReconnectDelay { get; set; }
 
         protected override int StreamCount
         {
@@ -70,6 +67,17 @@ namespace Microsoft.AspNet.SignalR.SqlServer
         protected override Task Send(int streamIndex, IList<Message> messages)
         {
             return _streams[streamIndex].Send(messages);
+        }
+
+        protected override void Dispose(bool disposing)
+        {
+            try
+            {
+                SqlDependency.Stop(_connectionString);
+            }
+            catch (Exception) { }
+
+            base.Dispose(disposing);
         }
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "On a background thread and we report exceptions asynchronously")]
@@ -101,7 +109,7 @@ namespace Microsoft.AspNet.SignalR.SqlServer
                 var stream = new SqlStream(streamIndex, _connectionString,
                     tableName: String.Format(CultureInfo.InvariantCulture, "{0}_{1}", _tableNamePrefix, streamIndex),
                     onReceived: OnReceived,
-                    onRetry: () =>Buffer(streamIndex, DefaultBufferSize),
+                    onRetry: () => Buffer(streamIndex, DefaultBufferSize),
                     onError: ex => Close(streamIndex, ex),
                     traceSource: _trace);
                     
@@ -109,7 +117,7 @@ namespace Microsoft.AspNet.SignalR.SqlServer
 
                 stream.StartReceiving()
                     // Open the stream once receiving has started
-                    .Then(si => Open(si), streamIndex)
+                    .Then(() => Open(streamIndex))
                     // Starting the receive loop failed
                     .Catch(ex => Close(streamIndex, ex));
             }
