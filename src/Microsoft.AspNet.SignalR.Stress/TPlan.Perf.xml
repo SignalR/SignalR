@@ -3,16 +3,16 @@
 
   <metadata testName ="Stress" teamName ="SignalR" description="SignalR Stress Tests">
     <trackingVariation name="Stress-ConnectionRun">
-      <metric name="Message Bus Messages Received/Sec" selection="Median" units="Count">
+      <metric name="Message Bus Messages Received/Sec" selection="Median" units="Numeric">
         <target value="8000000" labConfig="XSPPERF8S_WIN8_X64" />
       </metric>
     </trackingVariation>
     <trackingVariation name="Stress-MemoryHost">
-      <metric name="Message Bus Messages Received/Sec" selection="Median" units="Count">
+      <metric name="Message Bus Messages Received/Sec" selection="Median" units="Numeric">
         <target value="4000000" labConfig="XSPPERF8S_WIN8_X64" />
       </metric>
       <trackingVariation name="Stress-MessageBus">
-        <metric name="Message Bus Messages Received/Sec" selection="Median" units="Count">
+        <metric name="Message Bus Messages Received/Sec" selection="Median" units="Numeric">
           <target value="8000000" labConfig="XSPPERF8S_WIN8_X64" />
         </metric>
       </trackingVariation>

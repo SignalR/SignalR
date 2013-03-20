@@ -18,6 +18,15 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
         void Initialize(string instanceName, CancellationToken hostShutdownToken);
 
         /// <summary>
+        /// Loads a performance counter.
+        /// </summary>
+        /// <param name="categoryName">The category name.</param>
+        /// <param name="counterName">The counter name.</param>
+        /// <param name="instanceName">The instance name.</param>
+        /// <param name="isReadOnly">Whether the counter is read-only.</param>
+        IPerformanceCounter LoadCounter(string categoryName, string counterName, string instanceName, bool isReadOnly);
+
+        /// <summary>
         /// Gets the performance counter representing the total number of connection Connect events since the application was started.
         /// </summary>
         IPerformanceCounter ConnectionsConnected { get; }
