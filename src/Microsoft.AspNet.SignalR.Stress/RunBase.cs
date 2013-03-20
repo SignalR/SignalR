@@ -124,7 +124,7 @@ namespace Microsoft.AspNet.SignalR.Stress
 
             if ((bytesPerSec != null) && (recvsPerSec != null) && (sendsPerSec != null))
             {
-                long[] bytesPerMsg = new long[bytesPerSec.Length];
+                var bytesPerMsg = new long[bytesPerSec.Length];
                 for (int i = 0; i < bytesPerSec.Length; i++)
                 {
                     bytesPerMsg[i] = (long)Math.Round((double)bytesPerSec[i] / (recvsPerSec[i] + sendsPerSec[i]));
@@ -159,15 +159,10 @@ namespace Microsoft.AspNet.SignalR.Stress
                 counterManager.MessageBusMessagesReceivedTotal,
                 counterManager.MessageBusMessagesPublishedPerSec,
                 counterManager.MessageBusMessagesPublishedTotal,
-                LoadCounter(counterManager, "Processor", "% Processor Time", "_Total"),
-                LoadCounter(counterManager, ".NET CLR Memory", "% Time in GC", "_Global_"),
-                LoadCounter(counterManager, ".NET CLR Memory", "Allocated Bytes/sec", "_Global_")
+                counterManager.LoadCounter("Processor", "% Processor Time", "_Total"),
+                counterManager.LoadCounter(".NET CLR Memory", "% Time in GC", "_Global_"),
+                counterManager.LoadCounter(".NET CLR Memory", "Allocated Bytes/sec", "_Global_")
             };
-        }
-
-        private IPerformanceCounter LoadCounter(IPerformanceCounterManager counterManager, string category, string name, string instance)
-        {
-            return ((Microsoft.AspNet.SignalR.Infrastructure.PerformanceCounterManager)counterManager).LoadCounter(category, name, instance, readOnly: true);
         }
 
         protected virtual IDisposable CreateReceiver(int connectionIndex)

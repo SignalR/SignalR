@@ -42,9 +42,9 @@ namespace Microsoft.AspNet.SignalR.Crank
             TaskScheduler.UnobservedTaskException += OnUnobservedTaskException;
 
             var connections = new ConcurrentBag<Connection>();
+            var endTime = TimeSpan.MaxValue;
+            var timeoutTime = TimeSpan.FromSeconds(arguments.Timeout);
             Stopwatch stopwatch = null;
-            TimeSpan endTime = TimeSpan.MaxValue;
-            TimeSpan timeoutTime = TimeSpan.FromSeconds(arguments.Timeout);
 
             InitializeCounters(arguments);
             Task.Run(async () =>
@@ -88,13 +88,13 @@ namespace Microsoft.AspNet.SignalR.Crank
 
         private static void InitializeCounters(CrankArguments arguments)
         {
-            _allocBytesPerSecCrank = new PerformanceCounter(".NET CLR Memory", "Allocated Bytes/sec", Process.GetCurrentProcess().ProcessName, readOnly:true);
+            _allocBytesPerSecCrank = new PerformanceCounter(".NET CLR Memory", "Allocated Bytes/sec", Process.GetCurrentProcess().ProcessName, readOnly: true);
             _allocBytesPerSecCrankSamples[1] = _allocBytesPerSecCrank.NextSample();
 
             var server = GetServerName(arguments.Url);
             if (!String.IsNullOrEmpty(server) && !String.IsNullOrEmpty(arguments.SiteName))
             {
-                _connectionsConnected = new PerformanceCounter("SignalR", "Connections Connected", arguments.SiteName, machineName:server);
+                _connectionsConnected = new PerformanceCounter("SignalR", "Connections Connected", arguments.SiteName, machineName: server);
                 _connectionsConnectedServer = new List<long>();
             }
         }
@@ -265,7 +265,7 @@ namespace Microsoft.AspNet.SignalR.Crank
                 {
                     var clientTransport = GetTransport(transport);
                     await (clientTransport == null ? connection.Start() : connection.Start(clientTransport));
-                    
+
                     if (_running)
                     {
                         connections.Add(connection);

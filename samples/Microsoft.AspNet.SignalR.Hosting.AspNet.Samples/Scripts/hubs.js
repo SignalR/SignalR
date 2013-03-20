@@ -231,6 +231,11 @@
                 return proxies.demo.invoke.apply(proxies.demo, $.merge(["SimpleArray"], $.makeArray(arguments)));
              },
 
+            synchronousException: function () {
+            /// <summary>Calls the SynchronousException method on the server-side demo hub.&#10;Returns a jQuery.Deferred() promise.</summary>
+                return proxies.demo.invoke.apply(proxies.demo, $.merge(["SynchronousException"], $.makeArray(arguments)));
+             },
+
             taskWithException: function () {
             /// <summary>Calls the TaskWithException method on the server-side demo hub.&#10;Returns a jQuery.Deferred() promise.</summary>
                 return proxies.demo.invoke.apply(proxies.demo, $.merge(["TaskWithException"], $.makeArray(arguments)));
