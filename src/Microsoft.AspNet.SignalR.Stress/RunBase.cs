@@ -159,9 +159,9 @@ namespace Microsoft.AspNet.SignalR.Stress
                 counterManager.MessageBusMessagesReceivedTotal,
                 counterManager.MessageBusMessagesPublishedPerSec,
                 counterManager.MessageBusMessagesPublishedTotal,
-                counterManager.LoadCounter("Processor", "% Processor Time", "_Total"),
-                counterManager.LoadCounter(".NET CLR Memory", "% Time in GC", "_Global_"),
-                counterManager.LoadCounter(".NET CLR Memory", "Allocated Bytes/sec", "_Global_")
+                counterManager.LoadCounter("Processor", "% Processor Time", "_Total", isReadOnly:true),
+                counterManager.LoadCounter(".NET CLR Memory", "% Time in GC", "_Global_", isReadOnly:true),
+                counterManager.LoadCounter(".NET CLR Memory", "Allocated Bytes/sec", "_Global_", isReadOnly:true)
             };
         }
 

@@ -306,7 +306,7 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
 
                 if (loadCounters)
                 {
-                    counter = LoadCounter(CategoryName, attribute.Name, instanceName);
+                    counter = LoadCounter(CategoryName, attribute.Name, instanceName, isReadOnly:false);
 
                     if (counter == null)
                     {
@@ -338,13 +338,13 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
 
         [SuppressMessage("Microsoft.Performance", "CA1822:MarkMembersAsStatic", Justification = "This file is shared")]
         [SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope", Justification = "Counters are disposed later")]
-        public IPerformanceCounter LoadCounter(string categoryName, string counterName, string instanceName, bool readOnly = false)
+        public IPerformanceCounter LoadCounter(string categoryName, string counterName, string instanceName, bool isReadOnly)
         {
             // See http://msdn.microsoft.com/en-us/library/356cx381.aspx for the list of exceptions
             // and when they are thrown. 
             try
             {
-                var counter = new PerformanceCounter(categoryName, counterName, instanceName, readOnly: readOnly);
+                var counter = new PerformanceCounter(categoryName, counterName, instanceName, isReadOnly);
 
                 // Initialize the counter sample
                 counter.NextSample();
