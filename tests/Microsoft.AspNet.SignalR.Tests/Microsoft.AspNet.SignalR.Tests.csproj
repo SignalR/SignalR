@@ -74,6 +74,7 @@
     <Compile Include="Client\TransportFacts.cs" />
     <Compile Include="ConfigurationManagerFacts.cs" />
     <Compile Include="Core\ConnectionExtensionsFacts.cs" />
+    <Compile Include="Core\Hubs\DefaultJavaScriptProxyGeneratorFacts.cs" />
     <Compile Include="Core\Hubs\Extensions\HubManagerExtensionsFacts.cs" />
     <Compile Include="Core\Hubs\Extensions\HubTypeExtensions.cs" />
     <Compile Include="Core\Hubs\Extensions\MethodExtensionsFacts.cs" />
