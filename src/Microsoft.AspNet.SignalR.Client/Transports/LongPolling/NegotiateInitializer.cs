@@ -6,15 +6,10 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
 {
     internal class NegotiateInitializer
     {
-        private ThreadSafeInvoker _callbackInvoker;
-        private Action _initializeCallback;
-        private Action<Exception> _errorCallback;
-        private TimeSpan _assumeSuccessAfter;
-
-        public NegotiateInitializer(Action initializeCallback, Action<Exception> errorCallback)
-            : this(initializeCallback, errorCallback, TimeSpan.Zero)
-        {
-        }
+        private readonly ThreadSafeInvoker _callbackInvoker;
+        private readonly Action _initializeCallback;
+        private readonly Action<Exception> _errorCallback;
+        private readonly TimeSpan _assumeSuccessAfter;
 
         public NegotiateInitializer(Action initializeCallback, Action<Exception> errorCallback, TimeSpan assumeSuccessAfter)
         {
@@ -31,21 +26,20 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
 
         public void Initialize()
         {
-            if (_assumeSuccessAfter != TimeSpan.Zero)
+            TaskAsyncHelper.Delay(_assumeSuccessAfter).Then(() =>
             {
-                TaskAsyncHelper.Delay(_assumeSuccessAfter).Then(() =>
+                _callbackInvoker.Invoke(() =>
                 {
-                    _callbackInvoker.Invoke(() => {
-                        Initialized();
-                        _initializeCallback();
-                    });
+                    Initialized();
+                    _initializeCallback();
                 });
-            }
+            });
         }
 
         public void Complete()
         {
-            _callbackInvoker.Invoke(() => {
+            _callbackInvoker.Invoke(() =>
+            {
                 Initialized();
                 _initializeCallback();
             });
@@ -53,7 +47,8 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
 
         public void Complete(Exception exception)
         {
-            _callbackInvoker.Invoke((cb, ex) => {
+            _callbackInvoker.Invoke((cb, ex) =>
+            {
                 Initialized();
                 cb(ex);
             }, _errorCallback, exception);

@@ -59,7 +59,6 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
                                         Action<Exception> errorCallback)
         {
             var requestHandler = new PollingRequestHandler(HttpClient);
-            var callbackInvoker = new ThreadSafeInvoker();
             var negotiateInitializer = new NegotiateInitializer(initializeCallback, errorCallback, ConnectDelay);
 
             // Save the success and abort cases so we can remove them after transport is initialized
