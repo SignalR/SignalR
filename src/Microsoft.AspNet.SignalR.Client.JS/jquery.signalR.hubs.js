@@ -15,20 +15,17 @@
         return event + eventNamespace;
     }
 
-    // Array.prototype.map
-    if (!Array.prototype.hasOwnProperty("map")) {
-        Array.prototype.map = function (fun, thisp) {
-            var arr = this,
-                i,
-                length = arr.length,
-                result = [];
-            for (i = 0; i < length; i += 1) {
-                if (arr.hasOwnProperty(i)) {
-                    result[i] = fun.call(thisp, arr[i], i, arr);
-                }
+    // Equivalent to Array.prototype.map
+    function map(arr, fun, thisp) {
+        var i,
+            length = arr.length,
+            result = [];
+        for (i = 0; i < length; i += 1) {
+            if (arr.hasOwnProperty(i)) {
+                result[i] = fun.call(thisp, arr[i], i, arr);
             }
-            return result;
-        };
+        }
+        return result;
     }
 
     function getArgValue(a) {
@@ -137,7 +134,7 @@
 
             var self = this,
                 args = $.makeArray(arguments).slice(1),
-                argValues = args.map(getArgValue),
+                argValues = map(args, getArgValue),
                 data = { H: self.hubName, M: methodName, A: argValues, I: callbackId },
                 d = $.Deferred(),
                 callback = function (minResult) {
