@@ -60,70 +60,31 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
         {
             var requestHandler = new PollingRequestHandler(HttpClient);
             var callbackInvoker = new ThreadSafeInvoker();
-            Action RemoveInitializationEvents = null;
+            var negotiateInitializer = new NegotiateInitializer(initializeCallback, errorCallback, ConnectDelay);
 
-            Action fireInitialize = () =>
+            // Save the success and abort cases so we can remove them after transport is initialized
+            Action<string> initializeSuccess = message => { negotiateInitializer.Complete(); };
+            Action<IRequest> initializeAbort = request => { negotiateInitializer.Abort(disconnectToken); };
+
+            requestHandler.OnMessage += initializeSuccess;
+            requestHandler.OnError += negotiateInitializer.Complete;
+            requestHandler.OnAbort += initializeAbort;
+
+            // Once we've initialized the connection we need to tear down the initializer functions
+            negotiateInitializer.Initialized += () =>
             {
-                callbackInvoker.Invoke(() =>
-                {
-                    initializeCallback();
-                    RemoveInitializationEvents();
-                });
+                requestHandler.OnMessage -= initializeSuccess;
+                requestHandler.OnError -= negotiateInitializer.Complete;
+                requestHandler.OnAbort -= initializeAbort;
             };
-
-            Action<string> onMessage = message =>
-            {
-                // If the timeout for connect hasn't fired as yet then just fire
-                // the event before any incoming messages are processed
-                fireInitialize();
-            };
-
-            Action<Exception> onError = exception =>
-            {
-                callbackInvoker.Invoke((cb, ex) => cb(ex), errorCallback, exception);
-
-                RemoveInitializationEvents();
-            };
-
-            Action onPolling = () =>
-            {
-                TaskAsyncHelper.Delay(ConnectDelay).Then(() =>
-                {
-                    fireInitialize();
-                });
-            };
-
-            Action<IRequest> onAbort = request =>
-            {
-                callbackInvoker.Invoke((cb, token) =>
-                {
-#if NET35 || WINDOWS_PHONE
-                        cb(new OperationCanceledException(Resources.Error_ConnectionCancelled));
-#else
-                    cb(new OperationCanceledException(Resources.Error_ConnectionCancelled, token));
-#endif
-                }, errorCallback, disconnectToken);
-
-                RemoveInitializationEvents();
-            };
-
-            RemoveInitializationEvents = () =>
-            {
-                requestHandler.OnMessage -= onMessage;
-                requestHandler.OnError -= onError;
-                requestHandler.OnPolling -= onPolling;
-                requestHandler.OnAbort -= onAbort;
-            };
-
-            requestHandler.OnMessage += onMessage;
-            requestHandler.OnError += onError;
-            requestHandler.OnPolling += onPolling;
-            requestHandler.OnAbort += onAbort;
 
             // Add additional actions to each of the PollingRequestHandler events
             PollingSetup(connection, data, disconnectToken, requestHandler);
 
             requestHandler.Start();
+            // Start initialization, essentially if we have an assume sucess clause in our negotiateInitializer
+            // then we will start the countdown from the point which we start initialization.
+            negotiateInitializer.Initialize();
         }
 
         [SuppressMessage("Microsoft.Maintainability", "CA1502:AvoidExcessiveComplexity", Justification = "We will refactor later.")]
