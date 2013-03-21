@@ -7,8 +7,10 @@ namespace Microsoft.AspNet.SignalR.Messaging
     {
         private const int MaxBufferSize = 1000;
 
-        private readonly IScaleoutMapping[] _data;
+        private readonly ScaleoutMapping[] _data;
         private int _offset;
+
+        private readonly object _lockObj = new object();
 
         public StoreLink()
             : this(MaxBufferSize)
@@ -16,12 +18,35 @@ namespace Microsoft.AspNet.SignalR.Messaging
 
         }
 
+        public StoreLink Next;
+
         public StoreLink(int size)
         {
-            _data = new IScaleoutMapping[size];
+            _data = new ScaleoutMapping[size];
         }
 
-        public StoreLink Next { get; set; }
+        public ArraySegment<ScaleoutMapping> GetSnapshot()
+        {
+            lock (_lockObj)
+            {
+                return new ArraySegment<ScaleoutMapping>(_data, 0, _offset);
+            }
+        }
+
+        public ArraySegment<ScaleoutMapping> GetSnapshot(ulong id)
+        {
+            lock (_lockObj)
+            {
+                int index = FindMapping(id);
+
+                if (index == -1)
+                {
+                    return new ArraySegment<ScaleoutMapping>();
+                }
+
+                return new ArraySegment<ScaleoutMapping>(_data, index, _offset - index);
+            }
+        }
 
         public ulong? MinValue
         {
@@ -41,35 +66,42 @@ namespace Microsoft.AspNet.SignalR.Messaging
         {
             get
             {
-                IScaleoutMapping mapping = null;
-                if (_offset == 0)
-                {
-                    mapping = _data[_offset];
-                }
-                else
-                {
-                    mapping = _data[_offset - 1];
-                }
+                ScaleoutMapping mapping = null;
 
-                if (mapping != null)
+                lock (_lockObj)
                 {
-                    return mapping.Id;
+                    if (_offset == 0)
+                    {
+                        mapping = _data[_offset];
+                    }
+                    else
+                    {
+                        mapping = _data[_offset - 1];
+                    }
+
+                    if (mapping != null)
+                    {
+                        return mapping.Id;
+                    }
                 }
 
                 return null;
             }
         }
 
-        public bool Add(IScaleoutMapping mapping)
+        public bool Add(ScaleoutMapping mapping)
         {
-            _data[_offset++] = mapping;
-
-            if (_offset >= _data.Length)
+            lock (_lockObj)
             {
-                return false;
-            }
+                _data[_offset++] = mapping;
 
-            return true;
+                if (_offset >= _data.Length)
+                {
+                    return false;
+                }
+
+                return true;
+            }
         }
 
         public bool HasValue(ulong id)
@@ -77,7 +109,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
             return id >= MinValue && id <= MaxValue;
         }
 
-        public IScaleoutMapping FindMapping(ulong id)
+        private int FindMapping(ulong id)
         {
             int low = 0;
             int high = _offset;
@@ -86,11 +118,11 @@ namespace Microsoft.AspNet.SignalR.Messaging
             if (MinValue.HasValue)
             {
                 var index = (int)(id - MinValue.Value);
-                IScaleoutMapping mapping = _data[index];
+                ScaleoutMapping mapping = _data[index];
 
                 if (mapping != null && mapping.Id == id)
                 {
-                    return mapping;
+                    return index;
                 }
             }
 
@@ -99,7 +131,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
             {
                 int mid = (low + high) / 2;
 
-                IScaleoutMapping mapping = _data[mid];
+                ScaleoutMapping mapping = _data[mid];
 
                 if (id < mapping.Id)
                 {
@@ -111,11 +143,11 @@ namespace Microsoft.AspNet.SignalR.Messaging
                 }
                 else if (id == mapping.Id)
                 {
-                    return mapping;
+                    return mid;
                 }
             }
 
-            return null;
+            return -1;
         }
     }
 }
