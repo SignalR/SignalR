@@ -21,6 +21,7 @@
     <ProductVersion>10.0.0</ProductVersion>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <TargetFrameworkProfile />
+    <SilverlightApplicationList>{1E14A334-4346-4C27-8D67-497632CF8974}|..\Microsoft.AspNet.SignalR.Client.Silverlight.Sample\Microsoft.AspNet.SignalR.Client.Silverlight.Sample.csproj|ClientBin|False</SilverlightApplicationList>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>True</DebugSymbols>
@@ -85,6 +86,7 @@
     <Reference Include="System.Xml.Linq" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="ClientBin\Microsoft.AspNet.SignalR.Client.Silverlight.Sample.xap" />
     <Content Include="Content\bg-body.jpg" />
     <Content Include="Content\bg.jpg" />
     <Content Include="Content\bootstrap-responsive.css" />
@@ -163,6 +165,7 @@
     <Content Include="Hubs\ShapeShare\ShapeShare.js" />
     <Content Include="Hubs\ShapeShare\index.htm" />
     <Content Include="Raw\Default.aspx" />
+    <Content Include="Raw\silverlight.html" />
     <Content Include="Raw\test\basic.htm" />
     <Content Include="Raw\crossdomain.htm" />
     <Content Include="Raw\eventSource.html" />
