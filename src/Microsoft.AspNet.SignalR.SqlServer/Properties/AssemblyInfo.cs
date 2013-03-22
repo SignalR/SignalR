@@ -5,4 +5,4 @@ using System.Runtime.CompilerServices;
 
 [assembly: AssemblyTitle("Microsoft.AspNet.SignalR.SqlServer")]
 [assembly: AssemblyDescription("Assembly containing components for scaling-out SignalR applications using SQL Server.")]
-[assembly: InternalsVisibleTo("Microsoft.AspNet.SignalR.Tests")]
+[assembly: InternalsVisibleTo("Microsoft.AspNet.SignalR.SqlServer.Tests")]

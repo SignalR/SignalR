@@ -5,18 +5,18 @@ using System.Data;
 using System.Data.Common;
 using System.Data.SqlClient;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Threading;
 
 namespace Microsoft.AspNet.SignalR.SqlServer
 {
-    // TODO: Should we make this IDisposable and stop any in progress reader loops/notifications on Dispose?
     /// <summary>
     /// A DbOperation that continues to execute over and over as new results arrive.
     /// Will attempt to use SQL Query Notifications, otherwise falls back to a polling receive loop.
     /// </summary>
-    [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1001:TypesThatOwnDisposableFieldsShouldBeDisposable", Justification = "Needs review")]
-    internal class ObservableDbOperation : DbOperation
+    [SuppressMessage("Microsoft.Design", "CA1001:TypesThatOwnDisposableFieldsShouldBeDisposable", Justification = "Needs review")]
+    internal class ObservableDbOperation : DbOperation, IDisposable
     {
         private readonly int[][] _updateLoopRetryDelays = new[] {
             new[] { 0, 3 },      // 0ms x 3
@@ -28,8 +28,10 @@ namespace Microsoft.AspNet.SignalR.SqlServer
             new [] { 1500, 2 },  // 1500ms x 2
             new [] { 3000, 1 }   // 3000ms x 1
         };
-        
-        private int _notificationState;
+        private readonly ManualResetEventSlim _stopHandle = new ManualResetEventSlim(true);
+
+        private volatile bool _stopRequested;
+        private long _notificationState;
 
         public ObservableDbOperation(string connectionString, string commandText, TraceSource traceSource, DbProviderFactory dbProviderFactory)
             : base(connectionString, commandText, traceSource, dbProviderFactory)
@@ -48,9 +50,16 @@ namespace Microsoft.AspNet.SignalR.SqlServer
         /// <summary>
         /// Note this blocks the calling thread until an unrecoverable occurs or a SQL Query Notification can be set up
         /// </summary>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "Errors are reported via the callback")]
+        [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "Errors are reported via the callback")]
         public void ExecuteReaderWithUpdates(Action<IDataRecord, DbOperation> processRecord)
         {
+            if (_stopRequested)
+            {
+                return;
+            }
+
+            _stopHandle.Reset();
+
             var useNotifications = false;
 
             try
@@ -59,7 +68,7 @@ namespace Microsoft.AspNet.SignalR.SqlServer
             }
             catch (Exception ex)
             {
-                OnError(ex);
+                Stop(ex);
                 return;
             }
 
@@ -76,6 +85,12 @@ namespace Microsoft.AspNet.SignalR.SqlServer
                 
                 for (var j = 0; j < retryCount; j++)
                 {
+                    if (_stopRequested)
+                    {
+                        Stop(null);
+                        return;
+                    }
+
                     int recordCount;
                     try
                     {
@@ -83,14 +98,7 @@ namespace Microsoft.AspNet.SignalR.SqlServer
                     }
                     catch (Exception ex)
                     {
-                        if (useNotifications)
-                        {
-                            SqlDependency.Stop(ConnectionString);
-                        }
-                        if (OnError != null)
-                        {
-                            OnError(ex);
-                        }
+                        Stop(ex);
                         return;
                     }
 
@@ -120,7 +128,7 @@ namespace Microsoft.AspNet.SignalR.SqlServer
                         {
                             ExecuteReader(processRecord, command =>
                             {
-                                command.AddSqlDependency(e => SqlDependency_OnChange(e, processRecord));
+                                AddSqlDependency(command, e => SqlDependency_OnChange(e, processRecord));
                             });
 
                             if (Interlocked.CompareExchange(ref _notificationState,
@@ -128,24 +136,34 @@ namespace Microsoft.AspNet.SignalR.SqlServer
                             {
                                 // Updates were received while we were processing, start the receive loop again now
                                 i = -1;
-                                break;
+                                break; // break the inner for loop
                             };
                         }
                         catch (Exception ex)
                         {
-                            try
-                            {
-                                SqlDependency.Stop(ConnectionString);
-                            }
-                            catch (Exception) { }
-
-                            if (OnError != null)
-                            {
-                                OnError(ex);
-                            }
+                            Stop(ex);
                         }
                     }
                 }
+            }
+        }
+
+        public void Dispose()
+        {
+            _stopRequested = true;
+
+            if (_notificationState != NotificationState.Disabled)
+            {
+                try
+                {
+                    SqlDependency.Stop(ConnectionString);
+                }
+                catch (Exception) { }
+            }
+
+            if (Interlocked.Read(ref _notificationState) == NotificationState.ProcessingUpdates)
+            {
+                _stopHandle.Wait();
             }
         }
 
@@ -157,8 +175,13 @@ namespace Microsoft.AspNet.SignalR.SqlServer
             }
         }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "On a background thread and we report exceptions asynchronously"),
-         System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA1801:ReviewUnusedParameters", MessageId = "sender", Justification = "Event handler")]
+        protected virtual void AddSqlDependency(IDbCommand command, Action<SqlNotificationEventArgs> callback)
+        {
+            command.AddSqlDependency(e => callback(e));
+        }
+
+        [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "On a background thread and we report exceptions asynchronously"),
+         SuppressMessage("Microsoft.Usage", "CA1801:ReviewUnusedParameters", MessageId = "sender", Justification = "Event handler")]
         protected virtual void SqlDependency_OnChange(SqlNotificationEventArgs e, Action<IDataRecord, DbOperation> processRecord)
         {
             if (Interlocked.CompareExchange(ref _notificationState,
@@ -202,11 +225,8 @@ namespace Microsoft.AspNet.SignalR.SqlServer
                     // Fatal error, we don't expect to get here, end the receive loop
 
                     Trace.TraceError("{0}Unexpected SQL notification details: Type={1}, Source={2}, Info={3}", TracePrefix, e.Type, e.Source, e.Info);
-                    
-                    if (OnError != null)
-                    {
-                        OnError(new SqlMessageBusException(String.Format(CultureInfo.InvariantCulture, Resources.Error_UnexpectedSqlNotificationType, e.Type, e.Source, e.Info)));
-                    }
+
+                    Stop(new SqlMessageBusException(String.Format(CultureInfo.InvariantCulture, Resources.Error_UnexpectedSqlNotificationType, e.Type, e.Source, e.Info)));
                 }
             }
             else if (e.Type == SqlNotificationType.Subscribe)
@@ -280,13 +300,35 @@ namespace Microsoft.AspNet.SignalR.SqlServer
             }
         }
 
+        protected virtual void Stop(Exception ex)
+        {
+            if (OnError != null)
+            {
+                OnError(ex);
+            }
+
+            if (_notificationState != NotificationState.Disabled)
+            {
+                try
+                {
+                    SqlDependency.Stop(ConnectionString);
+                }
+                catch (Exception) { }
+            }
+
+            if (_stopRequested)
+            {
+                _stopHandle.Set();
+            }
+        }
+
         private static class NotificationState
         {
-            public const int Enabled = 0;
-            public const int ProcessingUpdates = 1;
-            public const int AwaitingNotification = 2;
-            public const int NotificationReceived = 3;
-            public const int Disabled = 4;
+            public const long Enabled = 0;
+            public const long ProcessingUpdates = 1;
+            public const long AwaitingNotification = 2;
+            public const long NotificationReceived = 3;
+            public const long Disabled = 4;
         }
     }
 }
