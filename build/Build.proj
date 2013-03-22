@@ -82,6 +82,7 @@
 
   <ItemGroup>
     <UnitTestProjects Include="$(ProjectRoot)\tests\Microsoft.AspNet.SignalR.Tests\Microsoft.AspNet.SignalR.Tests.csproj"></UnitTestProjects>
+    <UnitTestProjects Include="$(ProjectRoot)\tests\Microsoft.AspNet.SignalR.SqlServer.Tests\Microsoft.AspNet.SignalR.SqlServer.Tests.csproj"></UnitTestProjects>
   </ItemGroup>
 
   <ItemGroup>
