@@ -2,6 +2,8 @@
 
 using System;
 using System.Collections.Generic;
+using System.Data;
+using System.Data.Common;
 using System.Data.SqlClient;
 using System.Diagnostics;
 using System.Threading;
@@ -11,20 +13,28 @@ namespace Microsoft.AspNet.SignalR.SqlServer
 {
     // TODO: Should we make this IDisposable and stop any in progress reader loops/notifications on Dispose?
     [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1001:TypesThatOwnDisposableFieldsShouldBeDisposable", Justification = "Needs review")]
-    internal class SqlOperation
+    internal class DbOperation
     {
-        private List<SqlParameter> _parameters = new List<SqlParameter>();
+        private List<IDataParameter> _parameters = new List<IDataParameter>();
+        private readonly DbProviderFactory _dbProviderFactory;
 
-        public SqlOperation(string connectionString, string commandText, TraceSource traceSource)
+        public DbOperation(string connectionString, string commandText, TraceSource traceSource)
+            : this (connectionString, commandText, traceSource, SqlClientFactory.Instance)
+        {
+            
+        }
+
+        public DbOperation(string connectionString, string commandText, TraceSource traceSource, DbProviderFactory dbProviderFactory)
         {
             ConnectionString = connectionString;
             CommandText = commandText;
             Trace = traceSource;
+            _dbProviderFactory = dbProviderFactory;
 
             RetryDelay = TimeSpan.FromSeconds(3);
         }
 
-        public SqlOperation(string connectionString, string commandText, TraceSource traceSource, params SqlParameter[] parameters)
+        public DbOperation(string connectionString, string commandText, TraceSource traceSource, params IDataParameter[] parameters)
             : this(connectionString, commandText, traceSource)
         {
             if (parameters != null)
@@ -37,9 +47,9 @@ namespace Microsoft.AspNet.SignalR.SqlServer
 
         public TimeSpan RetryDelay { get; set; }
 
-        public Action<SqlOperation> OnRetry { get; set; }
+        public Action<DbOperation> OnRetry { get; set; }
 
-        public IList<SqlParameter> Parameters
+        public IList<IDataParameter> Parameters
         {
             get { return _parameters; }
         }
@@ -50,29 +60,29 @@ namespace Microsoft.AspNet.SignalR.SqlServer
 
         protected string CommandText { get; private set; }
 
-        public object ExecuteScalar()
+        public virtual object ExecuteScalar()
         {
             return Execute(cmd => cmd.ExecuteScalar());
         }
 
-        public int ExecuteNonQuery()
+        public virtual int ExecuteNonQuery()
         {
             return Execute(cmd => cmd.ExecuteNonQuery());
         }
 
-        public Task<int> ExecuteNonQueryAsync()
+        public virtual Task<int> ExecuteNonQueryAsync()
         {
             var tcs = new TaskCompletionSource<int>();
             ExecuteWithRetry(cmd => cmd.ExecuteNonQueryAsync(), tcs);
             return tcs.Task;
         }
 
-        public int ExecuteReader(Action<SqlDataReader, SqlOperation> processRecord)
+        public virtual int ExecuteReader(Action<IDataRecord, DbOperation> processRecord)
         {
             return ExecuteReader(processRecord, null);
         }
 
-        protected int ExecuteReader(Action<SqlDataReader, SqlOperation> processRecord, Action<SqlCommand> commandAction)
+        protected virtual int ExecuteReader(Action<IDataRecord, DbOperation> processRecord, Action<IDbCommand> commandAction)
         {
             return Execute(cmd =>
             {
@@ -101,44 +111,39 @@ namespace Microsoft.AspNet.SignalR.SqlServer
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope", Justification = "It's the caller's responsibility to dispose as the command is returned"),
          System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Security", "CA2100:Review SQL queries for security vulnerabilities", Justification = "General purpose SQL utility command")]
-        protected SqlCommand CreateCommand(SqlConnection connection)
+        protected virtual DbCommand CreateCommand(DbConnection connection)
         {
-            var command = new SqlCommand(CommandText, connection);
+            var command = connection.CreateCommand();
+            command.CommandText = CommandText;
+
             if (Parameters != null && Parameters.Count > 0)
             {
                 for (var i = 0; i < Parameters.Count; i++)
                 {
-                    var sourceParameter = Parameters[i];
-                    var newParameter = new SqlParameter
-                    {
-                        ParameterName = sourceParameter.ParameterName,
-                        SqlDbType = sourceParameter.SqlDbType,
-                        SqlValue = sourceParameter.SqlValue,
-                        Direction = sourceParameter.Direction,
-                        IsNullable = sourceParameter.IsNullable
-                    };
-                    command.Parameters.Add(newParameter);
+                    command.Parameters.Add(Parameters[i].Clone(_dbProviderFactory));
                 }
             }
+
             return command;
         }
 
-        private T Execute<T>(Func<SqlCommand, T> commandFunc)
+        private T Execute<T>(Func<DbCommand, T> commandFunc)
         {
             return Execute(commandFunc, true);
         }
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2202:Do not dispose objects multiple times", Justification = "False positive?")]
-        private T Execute<T>(Func<SqlCommand, T> commandFunc, bool retryOnException)
+        private T Execute<T>(Func<DbCommand, T> commandFunc, bool retryOnException)
         {
             T result = default(T);
-            SqlConnection connection = null;
-            SqlCommand command = null;
+            DbConnection connection = null;
+            DbCommand command = null;
             while (true)
             {
                 try
                 {
-                    connection = new SqlConnection(ConnectionString);
+                    connection = _dbProviderFactory.CreateConnection();
+                    connection.ConnectionString = ConnectionString;
                     command = CreateCommand(connection);
                     connection.Open();
                     result = commandFunc(command);
@@ -180,15 +185,16 @@ namespace Microsoft.AspNet.SignalR.SqlServer
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2202:Do not dispose objects multiple times", Justification = "Disposed in async Finally block"),
          System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope", Justification = "Disposed in async Finally block")]
-        private void ExecuteWithRetry<T>(Func<SqlCommand, Task<T>> commandFunc, TaskCompletionSource<T> tcs)
+        private void ExecuteWithRetry<T>(Func<DbCommand, Task<T>> commandFunc, TaskCompletionSource<T> tcs)
         {
-            SqlConnection connection = null;
-            SqlCommand command = null;
+            DbConnection connection = null;
+            DbCommand command = null;
             while (true)
             {
                 try
                 {
-                    connection = new SqlConnection(ConnectionString);
+                    connection = _dbProviderFactory.CreateConnection();
+                    connection.ConnectionString = ConnectionString;
                     command = CreateCommand(connection);
 
                     connection.Open();
@@ -213,7 +219,7 @@ namespace Microsoft.AspNet.SignalR.SqlServer
                         })
                         .Finally(state =>
                         {
-                            var conn = (SqlConnection)state;
+                            var conn = (DbConnection)state;
                             if (conn != null)
                             {
                                 conn.Dispose();
