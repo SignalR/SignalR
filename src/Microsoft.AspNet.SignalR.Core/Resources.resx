@@ -207,6 +207,9 @@
   <data name="Error_UnableToAddModulePiplineAlreadyInvoked" xml:space="preserve">
     <value>Unable to add module. The HubPipeline has already been invoked.</value>
   </data>
+  <data name="Error_UnrecognizedUserIdentity" xml:space="preserve">
+    <value>Unrecognized user identity.  The user identity cannot change during an active SignalR connection.</value>
+  </data>
   <data name="Error_UsingHubInstanceNotCreatedUnsupported" xml:space="preserve">
     <value>Using a Hub instance not created by the HubPipeline is unsupported.</value>
   </data>

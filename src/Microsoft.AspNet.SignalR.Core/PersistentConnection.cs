@@ -254,7 +254,7 @@ namespace Microsoft.AspNet.SignalR
 
             if (!String.Equals(tokenUserName, userName, StringComparison.OrdinalIgnoreCase))
             {
-                throw new InvalidOperationException(String.Format(CultureInfo.CurrentCulture, Resources.Error_ConnectionIdIncorrectFormat));
+                throw new InvalidOperationException(String.Format(CultureInfo.CurrentCulture, Resources.Error_UnrecognizedUserIdentity));
             }
 
             return connectionId;
