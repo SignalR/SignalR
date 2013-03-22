@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Data.SqlClient;
 using System.Diagnostics;
 using System.Globalization;
@@ -55,7 +56,7 @@ namespace Microsoft.AspNet.SignalR.SqlServer
 
             if (!_lastPayloadId.HasValue)
             {
-                var lastPayloadIdOperation = new SqlOperation(_connectionString, _maxIdSql, _trace)
+                var lastPayloadIdOperation = new DbOperation(_connectionString, _maxIdSql, _trace)
                 {
                     TracePrefix = _tracePrefix
                 };
@@ -74,7 +75,7 @@ namespace Microsoft.AspNet.SignalR.SqlServer
             }
 
             // NOTE: This is called from a BG thread so any uncaught exceptions will crash the process
-            var operation = new ObservableSqlOperation(_connectionString, _selectSql, _trace, new SqlParameter("PayloadId", _lastPayloadId))
+            var operation = new ObservableDbOperation(_connectionString, _selectSql, _trace, new SqlParameter("PayloadId", _lastPayloadId))
             {
                 OnRetry = o =>
                 {
@@ -94,10 +95,10 @@ namespace Microsoft.AspNet.SignalR.SqlServer
             operation.ExecuteReaderWithUpdates((rdr, o) => ProcessRecord(rdr, o));
         }
 
-        private void ProcessRecord(SqlDataReader reader, SqlOperation sqlOperation)
+        private void ProcessRecord(IDataRecord record, DbOperation sqlOperation)
         {
-            var id = reader.GetInt64(0);
-            var payload = SqlPayload.FromBytes(reader.GetSqlBinary(1).Value);
+            var id = record.GetInt64(0);
+            var payload = SqlPayload.FromBytes(record.GetBinary(1));
 
             if (id != _lastPayloadId + 1)
             {
@@ -111,8 +112,8 @@ namespace Microsoft.AspNet.SignalR.SqlServer
 
             _lastPayloadId = id;
 
-            // Update the SqlParameter with the new payload ID
-            sqlOperation.Parameters[0].SqlValue = _lastPayloadId;
+            // Update the Parameter with the new payload ID
+            sqlOperation.Parameters[0].Value = _lastPayloadId;
 
             // Pass to the underlying message bus
             _onReceived((ulong)id, payload.Messages);

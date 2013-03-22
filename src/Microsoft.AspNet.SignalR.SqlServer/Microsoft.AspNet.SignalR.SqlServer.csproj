@@ -57,17 +57,19 @@
     </Compile>
     <Compile Include="AssemblyExtensions.cs" />
     <Compile Include="DependencyResolverExtensions.cs" />
-    <Compile Include="ObservableSqlOperation.cs" />
+    <Compile Include="IDataParameterExtensions.cs" />
+    <Compile Include="IDataRecordExtensions.cs" />
+    <Compile Include="IDbCommandExtensions.cs" />
+    <Compile Include="ObservableDbOperation.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Resources.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
-    <Compile Include="SqlCommandExtensions.cs" />
     <Compile Include="SqlInstaller.cs" />
     <Compile Include="SqlMessageBus.cs" />
-    <Compile Include="SqlOperation.cs" />
+    <Compile Include="DbOperation.cs" />
     <Compile Include="SqlPayload.cs" />
     <Compile Include="SqlReceiver.cs" />
     <Compile Include="SqlSender.cs" />

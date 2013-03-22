@@ -119,6 +119,7 @@
     <Compile Include="Server\Transports\ForeverTransportFacts.cs" />
     <Compile Include="Owin\WebSocketFacts.cs" />
     <Compile Include="SipHashBasedStringEqualityComparerFacts.cs" />
+    <Compile Include="SqlServer\ObservableSqlOperationFacts.cs" />
     <Compile Include="StringMinifierFacts.cs" />
     <Compile Include="TaskQueueFacts.cs" />
     <Compile Include="TestUtilities.cs" />
@@ -138,6 +139,10 @@
     <ProjectReference Include="..\..\src\Microsoft.AspNet.SignalR.Owin45\Microsoft.AspNet.SignalR.Owin45.csproj">
       <Project>{45892477-ef4e-4f45-a431-822755a38ea0}</Project>
       <Name>Microsoft.AspNet.SignalR.Owin45</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\src\Microsoft.AspNet.SignalR.SqlServer\Microsoft.AspNet.SignalR.SqlServer.csproj">
+      <Project>{efcf27ec-cb9b-4f3a-91be-154b8ab5b5e0}</Project>
+      <Name>Microsoft.AspNet.SignalR.SqlServer</Name>
     </ProjectReference>
     <ProjectReference Include="..\Microsoft.AspNet.SignalR.Tests.Common\Microsoft.AspNet.SignalR.Tests.Common.csproj">
       <Project>{f18a8896-10bd-469e-9aa1-aebacef4d7b7}</Project>
