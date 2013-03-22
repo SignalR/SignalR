@@ -46,7 +46,7 @@ namespace Microsoft.AspNet.SignalR.Owin
                 if (!String.IsNullOrEmpty(callback) || 
                     (!String.IsNullOrEmpty(origin) && !IsSameOrigin(serverRequest.Url, origin)))
                 {
-                    return EndResponse(environment, 403, "Forbidden");
+                    return EndResponse(environment, 403, Resources.Forbidden_CrossDomainIsDisabled);
                 }
             }
 
