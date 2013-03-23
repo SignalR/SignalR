@@ -9,141 +9,72 @@ namespace Microsoft.AspNet.SignalR.Messaging
 {
     public class ScaleoutMappingStore
     {
-        private StoreLink _minimum;
-        private StoreLink _current;
+        private const int MaxMessages = 1000000;
+        private ulong _maxKey = UInt64.MaxValue;
 
-        private int _size;
-
-        private object _lockObject = new object();
+        private ScaleoutStore _store;
 
         public ScaleoutMappingStore()
         {
-            _minimum = new StoreLink();
-            _current = _minimum;
+            _store = new ScaleoutStore(MaxMessages);
         }
 
         public void Add(ulong id, IList<LocalEventKeyInfo> localKeyInfo)
         {
-            if (id <= _current.MaxValue)
+            if (id < _maxKey)
             {
-                var store = new StoreLink();
-
-                lock (_lockObject)
-                {
-                    // All existing readers lose messages right here (temporary)
-                    _minimum = store;
-                    _current.Next = store;
-                    _current = store;
-                }
+                // Do something here
             }
 
-            var mapping = new ScaleoutMapping(id, localKeyInfo);
+            _store.Add(new ScaleoutMapping(id, localKeyInfo));
 
-            // If the store is full then create a new one
-            if (!_current.Add(mapping))
-            {
-                lock (_lockObject)
-                {
-                    var store = new StoreLink();
-                    _current.Next = store;
-                    _current = store;
-
-                    if (_size >= 1000)
-                    {
-                        _minimum = _minimum.Next;
-                    }
-                    else
-                    {
-                        _size++;
-                    }
-                }
-            }
+            _maxKey = id;
         }
 
         public ulong MaxKey
         {
             get
             {
-                lock (_lockObject)
-                {
-                    return _current.MaxValue ?? UInt64.MaxValue;
-                }
+                return _maxKey;
             }
         }
 
         [SuppressMessage("Microsoft.Design", "CA1024:UsePropertiesWhereAppropriate", Justification = "This does some work")]
         public IEnumerator<ScaleoutMapping> GetMinEnumerator()
         {
-            lock (_lockObject)
-            {
-                return new Enumerator(_minimum);
-            }
+            return new ArraySegmentEnumerator<ScaleoutMapping>(_store.GetMinimum());
         }
 
         public IEnumerator<ScaleoutMapping> GetEnumerator(ulong id)
         {
-            // TODO: Optimize this lookup
-            StoreLink store = FindStore(id);
-
-            if (store == null)
+            ArraySegment<ScaleoutMapping> segment;
+            if (_store.TryBinarySearch(id, out segment))
             {
-                return null;
+                return new ArraySegmentEnumerator<ScaleoutMapping>(segment);
             }
 
-            return new Enumerator(store, id);
+            return null;
         }
 
-        private StoreLink FindStore(ulong id)
+        private struct ArraySegmentEnumerator<T> : IEnumerator<T>, IEnumerator
         {
-            lock (_lockObject)
-            {
-                StoreLink store = _minimum;
-
-                while (store != null)
-                {
-                    if (store.HasValue(id))
-                    {
-                        return store;
-                    }
-
-                    store = store.Next;
-                }
-
-                return null;
-            }
-        }
-
-        private struct Enumerator : IEnumerator<ScaleoutMapping>, IEnumerator
-        {
-            private StoreLink _current;
-
-            private ArraySegment<ScaleoutMapping> _segment;
-            private int _segmentOffset;
+            private ArraySegment<T> _segment;
+            private int _offset;
             private int _length;
 
-            public Enumerator(StoreLink store)
+            public ArraySegmentEnumerator(ArraySegment<T> segment)
                 : this()
             {
-                _current = store;
-                _segment = store.GetSnapshot();
-                _segmentOffset = -1;
-                _length = _segment.Count;
-            }
-
-            public Enumerator(StoreLink store, ulong id)
-                : this()
-            {
-                _current = store;
-                _segment = store.GetSnapshot(id);
-                _segmentOffset = _segment.Offset - 1;
+                _segment = segment;
+                _offset = _segment.Offset - 1;
                 _length = _segment.Offset + _segment.Count;
             }
 
-            public ScaleoutMapping Current
+            public T Current
             {
                 get
                 {
-                    return _segment.Array[_segmentOffset];
+                    return _segment.Array[_offset];
                 }
             }
 
@@ -159,27 +90,11 @@ namespace Microsoft.AspNet.SignalR.Messaging
 
             public bool MoveNext()
             {
-                if (_current == null)
-                {
-                    return false;
-                }
+                _offset++;
 
-                _segmentOffset++;
-
-                if (_segmentOffset < _length)
+                if (_offset < _length)
                 {
                     return true;
-                }
-
-                _current = _current.Next;
-
-                if (_current != null)
-                {
-                    _segmentOffset = 0;
-                    _segment = _current.GetSnapshot();
-                    _length = _segment.Count;
-
-                    return _segmentOffset < _length;
                 }
 
                 return false;

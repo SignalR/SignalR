@@ -114,6 +114,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Server\MessageBusFacts.cs" />
     <Compile Include="Server\ScaleOutMessageBusFacts.cs" />
+    <Compile Include="Server\ScaleoutStoreFacts.cs" />
     <Compile Include="Server\TestSubscriber.cs" />
     <Compile Include="Server\TopicFacts.cs" />
     <Compile Include="Server\Transports\ForeverTransportFacts.cs" />
