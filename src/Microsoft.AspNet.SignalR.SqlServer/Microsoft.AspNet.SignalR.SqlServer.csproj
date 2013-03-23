@@ -59,6 +59,7 @@
     <Compile Include="DependencyResolverExtensions.cs" />
     <Compile Include="IDataParameterExtensions.cs" />
     <Compile Include="IDataRecordExtensions.cs" />
+    <Compile Include="IDbBehavior.cs" />
     <Compile Include="IDbCommandExtensions.cs" />
     <Compile Include="ObservableDbOperation.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
