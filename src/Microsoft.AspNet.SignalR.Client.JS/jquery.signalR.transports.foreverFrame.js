@@ -11,11 +11,11 @@
         changeState = $.signalR.changeState,
         transportLogic = signalR.transports._logic,
         // Used to prevent infinite loading icon spins in older versions of ie
-        // We build this object inside a closure so we don't polute the rest of   
+        // We build this object inside a closure so we don't pollute the rest of   
         // the foreverFrame transport with unnecessary functions/utilities.
         loadPreventer = (function () {
-            var iframeTrashIntervalId = null,
-                trashInterval = 3000,
+            var loadingFixIntervalId = null,
+                loadingFixInterval = 3000,
                 attachedTo = 0,
                 ieVersion = (function () {
                     var version,
@@ -36,25 +36,27 @@
 
             return {
                 prevent: function () {
-                    // Prevent additional iframe trash procedures from multiple connections and newer browsers
+                    // Prevent additional iframe removal procedures from newer browsers
                     if (ieVersion <= 8) {
-                        // We only ever want to set the interval one time, so on the first attachTo
-                        if (attachedTo++ === 0) {
+                        // We only ever want to set the interval one time, so on the first attachedTo
+                        if (attachedTo === 0) {
                             // Create and destroy iframe every 3 seconds to prevent loading icon, super hacky
-                            iframeTrashIntervalId = window.setInterval(function () {
-                                var garbageFrame = $("<iframe style='position:absolute;top:0;left:0;width:0;height:0;visibility:hidden;' src=''></iframe>");
+                            loadingFixIntervalId = window.setInterval(function () {
+                                var tempFrame = $("<iframe style='position:absolute;top:0;left:0;width:0;height:0;visibility:hidden;' src=''></iframe>");
 
-                                $("body").append(garbageFrame);
-                                $(garbageFrame).remove();
-                                garbageFrame = null;
-                            }, trashInterval);
+                                $("body").append(tempFrame);
+                                tempFrame.remove();
+                                tempFrame = null;
+                            }, loadingFixInterval);
                         }
+
+                        attachedTo++;
                     }
                 },
                 cancel: function () {                   
                     // Only clear the interval if there's only one more object that the loadPreventer is attachedTo
                     if (attachedTo === 1) {
-                        window.clearInterval(iframeTrashIntervalId);
+                        window.clearInterval(loadingFixIntervalId);
                     }
 
                     if (attachedTo > 0) {
