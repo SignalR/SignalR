@@ -56,11 +56,13 @@
       <Link>TaskAsyncHelper.cs</Link>
     </Compile>
     <Compile Include="AssemblyExtensions.cs" />
+    <Compile Include="DbProviderFactoryAdapter.cs" />
     <Compile Include="DependencyResolverExtensions.cs" />
     <Compile Include="IDataParameterExtensions.cs" />
     <Compile Include="IDataRecordExtensions.cs" />
     <Compile Include="IDbBehavior.cs" />
     <Compile Include="IDbCommandExtensions.cs" />
+    <Compile Include="IDbProviderFactory.cs" />
     <Compile Include="ObservableDbOperation.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Resources.Designer.cs">

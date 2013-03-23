@@ -11,25 +11,28 @@ using System.Threading.Tasks;
 
 namespace Microsoft.AspNet.SignalR.SqlServer
 {
-    // TODO: Should we make this IDisposable and stop any in progress reader loops/notifications on Dispose?
+    // TODO: Should we make this IDisposable and stop any in progress retries on Dispose?
     [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1001:TypesThatOwnDisposableFieldsShouldBeDisposable", Justification = "Needs review")]
-    internal class DbOperation
+    internal class DbOperation : IDbExceptionBehavior
     {
         private List<IDataParameter> _parameters = new List<IDataParameter>();
-        private readonly DbProviderFactory _dbProviderFactory;
+        private readonly IDbProviderFactory _dbProviderFactory;
+        private readonly IDbExceptionBehavior _dbExceptionBehavior;
 
         public DbOperation(string connectionString, string commandText, TraceSource traceSource)
-            : this (connectionString, commandText, traceSource, SqlClientFactory.Instance)
+            : this(connectionString, commandText, traceSource, SqlClientFactory.Instance.AsIDbProviderFactory(), null)
         {
             
         }
 
-        public DbOperation(string connectionString, string commandText, TraceSource traceSource, DbProviderFactory dbProviderFactory)
+        public DbOperation(string connectionString, string commandText, TraceSource traceSource, IDbProviderFactory dbProviderFactory, IDbExceptionBehavior dbExceptionBehavior)
         {
             ConnectionString = connectionString;
             CommandText = commandText;
             Trace = traceSource;
             _dbProviderFactory = dbProviderFactory;
+            _dbExceptionBehavior = dbExceptionBehavior ?? this;
+            DbExceptionBehavior = _dbExceptionBehavior;
 
             RetryDelay = TimeSpan.FromSeconds(3);
         }
@@ -59,6 +62,8 @@ namespace Microsoft.AspNet.SignalR.SqlServer
         protected string ConnectionString { get; private set; }
 
         protected string CommandText { get; private set; }
+
+        protected IDbExceptionBehavior DbExceptionBehavior { get; private set; }
 
         public virtual object ExecuteScalar()
         {
@@ -146,7 +151,7 @@ namespace Microsoft.AspNet.SignalR.SqlServer
                 }
                 catch (Exception ex)
                 {
-                    if (IsRecoverableException(ex))
+                    if (_dbExceptionBehavior.IsRecoverableException(ex))
                     {
                         if (retryOnException)
                         {
@@ -154,7 +159,10 @@ namespace Microsoft.AspNet.SignalR.SqlServer
                             {
                                 OnRetry(this);
                             }
-                            Thread.Sleep(RetryDelay);
+                            if (RetryDelay.TotalMilliseconds > 0)
+                            {
+                                Thread.Sleep(RetryDelay);
+                            }
                         }
                         else
                         {
@@ -198,7 +206,7 @@ namespace Microsoft.AspNet.SignalR.SqlServer
                         .Then(result => tcs.SetResult(result))
                         .Catch(ex =>
                         {
-                            if (IsRecoverableException(ex.GetBaseException()))
+                            if (_dbExceptionBehavior.IsRecoverableException(ex.GetBaseException()))
                             {
                                 if (OnRetry != null)
                                 {
@@ -230,7 +238,7 @@ namespace Microsoft.AspNet.SignalR.SqlServer
                         connection.Dispose();
                     }
 
-                    if (IsRecoverableException(ex))
+                    if (_dbExceptionBehavior.IsRecoverableException(ex))
                     {
                         if (OnRetry != null)
                         {
@@ -249,7 +257,7 @@ namespace Microsoft.AspNet.SignalR.SqlServer
             };
         }
 
-        protected virtual bool IsRecoverableException(Exception exception)
+        private static bool IsRecoverableException(Exception exception)
         {
             var sqlException = exception as SqlException;
 
@@ -275,6 +283,11 @@ namespace Microsoft.AspNet.SignalR.SqlServer
             public const int ConnectionTimeout = -2;
             public const int ServerNotFound = 2;
             public const int TransportLevelError = 233;
+        }
+
+        bool IDbExceptionBehavior.IsRecoverableException(Exception exception)
+        {
+            return IsRecoverableException(exception);
         }
     }
 }
