@@ -13,9 +13,4 @@ namespace Microsoft.AspNet.SignalR.SqlServer
         IList<Tuple<int, int>> UpdateLoopRetryDelays { get; }
         void AddSqlDependency(IDbCommand command, Action<SqlNotificationEventArgs> callback);
     }
-
-    public interface IDbExceptionBehavior
-    {
-        bool IsRecoverableException(Exception exception);
-    }
 }
