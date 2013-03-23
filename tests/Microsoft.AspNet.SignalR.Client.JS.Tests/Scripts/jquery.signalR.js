@@ -1362,7 +1362,6 @@
                 prevent: function () {
                     // Prevent additional iframe trash procedures from multiple connections and newer browsers
                     if (ieVersion <= 8) {
-
                         // We only ever want to set the interval one time, so on the first attachTo
                         if (attachedTo++ === 0) {
                             // Create and destroy iframe every 3 seconds to prevent loading icon, super hacky

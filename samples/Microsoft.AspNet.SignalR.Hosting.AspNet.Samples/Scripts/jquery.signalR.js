@@ -1340,7 +1340,7 @@
         loadPreventer = (function () {
             var iframeTrashIntervalId = null,
                 trashInterval = 3000,
-                attachedTo = null,
+                attachedTo = 0,
                 ieVersion = (function () {
                     var version,
                         matches;
@@ -1359,27 +1359,30 @@
                 })();
 
             return {
-                prevent: function (connection) {
-                    var garbageFrame;
-
+                prevent: function () {
                     // Prevent additional iframe trash procedures from multiple connections and newer browsers
-                    if (ieVersion <= 8 && attachedTo === null) {
-                        attachedTo = connection;
-                        garbageFrame = $("<iframe style='position:absolute;top:0;left:0;width:0;height:0;visibility:hidden;' src=''></iframe>");
+                    if (ieVersion <= 8) {
+                        // We only ever want to set the interval one time, so on the first attachTo
+                        if (attachedTo++ === 0) {
+                            // Create and destroy iframe every 3 seconds to prevent loading icon, super hacky
+                            iframeTrashIntervalId = window.setInterval(function () {
+                                var garbageFrame = $("<iframe style='position:absolute;top:0;left:0;width:0;height:0;visibility:hidden;' src=''></iframe>");
 
-                        // Create and destroy iframe every 3 seconds to prevent loading icon, super hacky
-                        iframeTrashIntervalId = window.setInterval(function () {
-                            $("body").append(garbageFrame);
-                            $(garbageFrame).remove();
-                        }, trashInterval);
+                                $("body").append(garbageFrame);
+                                $(garbageFrame).remove();
+                                garbageFrame = null;
+                            }, trashInterval);
+                        }
                     }
                 },
-                cancel: function (connection) {
-                    // Only the connection that the loadPreventer is attached to can cancel the loadPreventer
-                    // If a newer version of IE attachedTo will always = null so this will noop
-                    if (attachedTo === connection) {
+                cancel: function () {                   
+                    // Only clear the interval if there's only one more object that the loadPreventer is attachedTo
+                    if (attachedTo === 1) {
                         window.clearInterval(iframeTrashIntervalId);
-                        attachedTo = null;
+                    }
+
+                    if (attachedTo > 0) {
+                        attachedTo--;
                     }
                 }
             };
@@ -1409,7 +1412,7 @@
 
             // Start preventing loading icon
             // This will only perform work if the loadPreventer is not attached to another connection.
-            loadPreventer.prevent(connection);
+            loadPreventer.prevent();
 
             // Build the url
             url = transportLogic.getUrl(connection, this.name);
@@ -1490,7 +1493,7 @@
             var cw = null;
 
             // Stop attempting to prevent loading icon
-            loadPreventer.cancel(connection);
+            loadPreventer.cancel();
 
             if (connection.frame) {
                 if (connection.frame.stop) {
