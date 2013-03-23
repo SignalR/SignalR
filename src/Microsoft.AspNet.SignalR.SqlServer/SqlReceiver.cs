@@ -12,7 +12,7 @@ using Microsoft.AspNet.SignalR.Messaging;
 
 namespace Microsoft.AspNet.SignalR.SqlServer
 {
-    internal class SqlReceiver
+    internal class SqlReceiver : IDisposable
     {
         private readonly string _connectionString;
         private readonly string _tableName;
@@ -25,6 +25,7 @@ namespace Microsoft.AspNet.SignalR.SqlServer
         private long? _lastPayloadId = null;
         private string _maxIdSql = "SELECT [PayloadId] FROM [{0}].[{1}_Id]";
         private string _selectSql = "SELECT [PayloadId], [Payload] FROM [{0}].[{1}] WHERE [PayloadId] > @PayloadId";
+        private ObservableDbOperation _dbOperation;
 
         public SqlReceiver(string connectionString, string tableName, Func<ulong, IList<Message>, Task> onReceived, Action onRetry, Action<Exception> onError, TraceSource traceSource, string tracePrefix)
         {
@@ -47,6 +48,17 @@ namespace Microsoft.AspNet.SignalR.SqlServer
             ThreadPool.QueueUserWorkItem(Receive, tcs);
 
             return tcs.Task;
+        }
+
+        public void Dispose()
+        {
+            lock (this)
+            {
+                if (_dbOperation != null)
+                {
+                    _dbOperation.Dispose();
+                }
+            }
         }
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "On a background thread with explicit error processing")]
@@ -75,24 +87,26 @@ namespace Microsoft.AspNet.SignalR.SqlServer
             }
 
             // NOTE: This is called from a BG thread so any uncaught exceptions will crash the process
-            var operation = new ObservableDbOperation(_connectionString, _selectSql, _trace, new SqlParameter("PayloadId", _lastPayloadId))
+            lock (this)
             {
-                OnRetry = o =>
+                _dbOperation = new ObservableDbOperation(_connectionString, _selectSql, _trace, new SqlParameter("PayloadId", _lastPayloadId))
                 {
-                    // Recoverable error
-                    o.Parameters.Clear();
-                    o.Parameters.Add(new SqlParameter("PayloadId", _lastPayloadId));
-                    _onRetry();
-                },
-                OnError = ex =>
-                {
-                    // Fatal async error, e.g. from SQL notification update
-                    _onError(ex);
-                },
-                TracePrefix = _tracePrefix
-            };
+                    OnRetry = o =>
+                    {
+                        // Recoverable error
+                        o.Parameters[0].Value = _lastPayloadId;
+                        _onRetry();
+                    },
+                    OnError = ex =>
+                    {
+                        // Fatal async error, e.g. from SQL notification update
+                        _onError(ex);
+                    },
+                    TracePrefix = _tracePrefix
+                };
+            }
 
-            operation.ExecuteReaderWithUpdates((rdr, o) => ProcessRecord(rdr, o));
+            _dbOperation.ExecuteReaderWithUpdates((rdr, o) => ProcessRecord(rdr, o));
         }
 
         private void ProcessRecord(IDataRecord record, DbOperation sqlOperation)

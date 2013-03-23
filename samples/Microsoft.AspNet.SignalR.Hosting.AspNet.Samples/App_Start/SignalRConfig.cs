@@ -8,7 +8,7 @@ namespace Microsoft.AspNet.SignalR.Samples
         public static void ConfigureSignalR(IDependencyResolver dependencyResolver, IHubPipeline hubPipeline)
         {
             // Uncomment the following line to enable scale-out using SQL Server
-            //dependencyResolver.UseSqlServer(System.Configuration.ConfigurationManager.ConnectionStrings["SignalRSamples"].ConnectionString, tableCount: 3);
+            dependencyResolver.UseSqlServer(System.Configuration.ConfigurationManager.ConnectionStrings["SignalRSamples"].ConnectionString, tableCount: 3);
 
             // Uncomment the following line to enable scale-out using Redis 
             //dependencyResolver.UseRedis("127.0.0.1", 6379, "", "SignalRSamples");

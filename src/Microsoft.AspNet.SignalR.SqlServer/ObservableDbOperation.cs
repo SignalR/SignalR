@@ -16,7 +16,7 @@ namespace Microsoft.AspNet.SignalR.SqlServer
     /// Will attempt to use SQL Query Notifications, otherwise falls back to a polling receive loop.
     /// </summary>
     [SuppressMessage("Microsoft.Design", "CA1001:TypesThatOwnDisposableFieldsShouldBeDisposable", Justification = "Needs review")]
-    internal class ObservableDbOperation : DbOperation, IDisposable
+    internal class ObservableDbOperation : DbOperation, IDisposable, IDbBehavior
     {
         private readonly int[][] _updateLoopRetryDelays = new[] {
             new[] { 0, 3 },      // 0ms x 3
@@ -28,24 +28,28 @@ namespace Microsoft.AspNet.SignalR.SqlServer
             new [] { 1500, 2 },  // 1500ms x 2
             new [] { 3000, 1 }   // 3000ms x 1
         };
+        private readonly object _stopLocker = new object();
         private readonly ManualResetEventSlim _stopHandle = new ManualResetEventSlim(true);
+        private readonly IDbBehavior _dbBehavior;
 
-        private volatile bool _stopRequested;
+        private volatile bool _disposing;
         private long _notificationState;
 
-        public ObservableDbOperation(string connectionString, string commandText, TraceSource traceSource, DbProviderFactory dbProviderFactory)
+        public ObservableDbOperation(string connectionString, string commandText, TraceSource traceSource, DbProviderFactory dbProviderFactory, IDbBehavior dbBehavior)
             : base(connectionString, commandText, traceSource, dbProviderFactory)
         {
-
+            _dbBehavior = dbBehavior ?? this;
         }
 
         public ObservableDbOperation(string connectionString, string commandText, TraceSource traceSource, params SqlParameter[] parameters)
             : base(connectionString, commandText, traceSource, parameters)
         {
-            
+            _dbBehavior = this;
         }
 
         public Action<Exception> OnError { get; set; }
+
+        public Action OnRetryLoopIteration { get; set; }
 
         /// <summary>
         /// Note this blocks the calling thread until an unrecoverable occurs or a SQL Query Notification can be set up
@@ -53,18 +57,25 @@ namespace Microsoft.AspNet.SignalR.SqlServer
         [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "Errors are reported via the callback")]
         public void ExecuteReaderWithUpdates(Action<IDataRecord, DbOperation> processRecord)
         {
-            if (_stopRequested)
+            if (_disposing)
             {
                 return;
             }
 
-            _stopHandle.Reset();
+            lock (_stopLocker)
+            {
+                if (_disposing)
+                {
+                    return;
+                }
+                _stopHandle.Reset();
+            }
 
             var useNotifications = false;
 
             try
             {
-                useNotifications = StartSqlDependencyListener();
+                useNotifications = _dbBehavior.StartSqlDependencyListener();
             }
             catch (Exception ex)
             {
@@ -79,13 +90,13 @@ namespace Microsoft.AspNet.SignalR.SqlServer
 
             for (var i = 0; i < UpdateLoopRetryDelays.Length; i++)
             {
-                var retry = UpdateLoopRetryDelays[i];
+                var retry = _dbBehavior.UpdateLoopRetryDelays[i];
                 var retryDelay = retry[0];
                 var retryCount = retry[1];
                 
                 for (var j = 0; j < retryCount; j++)
                 {
-                    if (_stopRequested)
+                    if (_disposing)
                     {
                         Stop(null);
                         return;
@@ -94,6 +105,10 @@ namespace Microsoft.AspNet.SignalR.SqlServer
                     int recordCount;
                     try
                     {
+                        if (OnRetryLoopIteration != null)
+                        {
+                            OnRetryLoopIteration();
+                        }
                         recordCount = ExecuteReader(processRecord);
                     }
                     catch (Exception ex)
@@ -116,32 +131,36 @@ namespace Microsoft.AspNet.SignalR.SqlServer
                         Thread.Sleep(retryDelay);
                     }
 
-                    if (!useNotifications && i == UpdateLoopRetryDelays.Length - 1 && j == retryCount - 1)
+                    if (i == _dbBehavior.UpdateLoopRetryDelays.Length - 1 && j == retryCount - 1)
                     {
-                        // Last retry loop and we're not using notifications so just stay looping on the last retry delay
-                        j = j - 1;
-                    }
-                    else
-                    {
-                        // No records after all retries, set up a SQL notification
-                        try
+                        // Last retry loop iteration
+                        if (!useNotifications)
                         {
-                            ExecuteReader(processRecord, command =>
-                            {
-                                AddSqlDependency(command, e => SqlDependency_OnChange(e, processRecord));
-                            });
-
-                            if (Interlocked.CompareExchange(ref _notificationState,
-                                NotificationState.AwaitingNotification, NotificationState.ProcessingUpdates) == NotificationState.NotificationReceived)
-                            {
-                                // Updates were received while we were processing, start the receive loop again now
-                                i = -1;
-                                break; // break the inner for loop
-                            };
+                            // Last retry loop and we're not using notifications so just stay looping on the last retry delay
+                            j = j - 1;
                         }
-                        catch (Exception ex)
+                        else
                         {
-                            Stop(ex);
+                            // No records after all retries, set up a SQL notification
+                            try
+                            {
+                                ExecuteReader(processRecord, command =>
+                                {
+                                    _dbBehavior.AddSqlDependency(command, e => SqlDependency_OnChange(e, processRecord));
+                                });
+
+                                if (Interlocked.CompareExchange(ref _notificationState,
+                                    NotificationState.AwaitingNotification, NotificationState.ProcessingUpdates) == NotificationState.NotificationReceived)
+                                {
+                                    // Updates were received while we were processing, start the receive loop again now
+                                    i = -1;
+                                    break; // break the inner for loop
+                                };
+                            }
+                            catch (Exception ex)
+                            {
+                                Stop(ex);
+                            }
                         }
                     }
                 }
@@ -150,7 +169,10 @@ namespace Microsoft.AspNet.SignalR.SqlServer
 
         public void Dispose()
         {
-            _stopRequested = true;
+            lock (_stopLocker)
+            {
+                _disposing = true;
+            }
 
             if (_notificationState != NotificationState.Disabled)
             {
@@ -184,6 +206,14 @@ namespace Microsoft.AspNet.SignalR.SqlServer
          SuppressMessage("Microsoft.Usage", "CA1801:ReviewUnusedParameters", MessageId = "sender", Justification = "Event handler")]
         protected virtual void SqlDependency_OnChange(SqlNotificationEventArgs e, Action<IDataRecord, DbOperation> processRecord)
         {
+            lock (_stopLocker)
+            {
+                if (_disposing)
+                {
+                    return;
+                }
+            }
+
             if (Interlocked.CompareExchange(ref _notificationState,
                 NotificationState.NotificationReceived, NotificationState.ProcessingUpdates) == NotificationState.ProcessingUpdates)
             {
@@ -258,6 +288,14 @@ namespace Microsoft.AspNet.SignalR.SqlServer
 
         protected virtual bool StartSqlDependencyListener()
         {
+            lock (_stopLocker)
+            {
+                if (_disposing)
+                {
+                    return false;
+                }
+            }
+
             if (_notificationState == NotificationState.Disabled)
             {
                 return false;
@@ -316,9 +354,12 @@ namespace Microsoft.AspNet.SignalR.SqlServer
                 catch (Exception) { }
             }
 
-            if (_stopRequested)
+            lock (_stopLocker)
             {
-                _stopHandle.Set();
+                if (_disposing)
+                {
+                    _stopHandle.Set();
+                }
             }
         }
 
@@ -329,6 +370,26 @@ namespace Microsoft.AspNet.SignalR.SqlServer
             public const long AwaitingNotification = 2;
             public const long NotificationReceived = 3;
             public const long Disabled = 4;
+        }
+
+        bool IDbBehavior.StartSqlDependencyListener()
+        {
+            return StartSqlDependencyListener();
+        }
+
+        int[][] IDbBehavior.UpdateLoopRetryDelays
+        {
+            get { return UpdateLoopRetryDelays; }
+        }
+
+        void IDbBehavior.AddSqlDependency(IDbCommand command, Action<SqlNotificationEventArgs> callback)
+        {
+            AddSqlDependency(command, callback);
+        }
+
+        bool IDbBehavior.IsRecoverableException(Exception exception)
+        {
+            return IsRecoverableException(exception);
         }
     }
 }

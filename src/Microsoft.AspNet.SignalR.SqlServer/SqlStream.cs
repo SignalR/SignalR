@@ -9,7 +9,7 @@ using Microsoft.AspNet.SignalR.Messaging;
 
 namespace Microsoft.AspNet.SignalR.SqlServer
 {
-    internal class SqlStream
+    internal class SqlStream : IDisposable
     {
         private readonly int _streamIndex;
         private readonly Action _onRetry;
@@ -42,6 +42,11 @@ namespace Microsoft.AspNet.SignalR.SqlServer
             _trace.TraceVerbose("{0}Saving payload with {1} messages(s) to SQL server", _tracePrefix, messages.Count, _streamIndex);
 
             return _sender.Send(messages);
+        }
+
+        public void Dispose()
+        {
+            _receiver.Dispose();
         }
     }
 }

@@ -94,11 +94,6 @@ namespace Microsoft.AspNet.SignalR.SqlServer
                 var reader = cmd.ExecuteReader();
                 var count = 0;
 
-                if (!reader.HasRows)
-                {
-                    return count;
-                }
-
                 while (reader.Read())
                 {
                     count++;
@@ -111,7 +106,7 @@ namespace Microsoft.AspNet.SignalR.SqlServer
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope", Justification = "It's the caller's responsibility to dispose as the command is returned"),
          System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Security", "CA2100:Review SQL queries for security vulnerabilities", Justification = "General purpose SQL utility command")]
-        protected virtual DbCommand CreateCommand(DbConnection connection)
+        protected virtual IDbCommand CreateCommand(IDbConnection connection)
         {
             var command = connection.CreateCommand();
             command.CommandText = CommandText;
@@ -127,17 +122,17 @@ namespace Microsoft.AspNet.SignalR.SqlServer
             return command;
         }
 
-        private T Execute<T>(Func<DbCommand, T> commandFunc)
+        private T Execute<T>(Func<IDbCommand, T> commandFunc)
         {
             return Execute(commandFunc, true);
         }
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2202:Do not dispose objects multiple times", Justification = "False positive?")]
-        private T Execute<T>(Func<DbCommand, T> commandFunc, bool retryOnException)
+        private T Execute<T>(Func<IDbCommand, T> commandFunc, bool retryOnException)
         {
             T result = default(T);
-            DbConnection connection = null;
-            DbCommand command = null;
+            IDbConnection connection = null;
+            IDbCommand command = null;
             while (true)
             {
                 try
@@ -185,10 +180,10 @@ namespace Microsoft.AspNet.SignalR.SqlServer
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2202:Do not dispose objects multiple times", Justification = "Disposed in async Finally block"),
          System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope", Justification = "Disposed in async Finally block")]
-        private void ExecuteWithRetry<T>(Func<DbCommand, Task<T>> commandFunc, TaskCompletionSource<T> tcs)
+        private void ExecuteWithRetry<T>(Func<IDbCommand, Task<T>> commandFunc, TaskCompletionSource<T> tcs)
         {
-            DbConnection connection = null;
-            DbCommand command = null;
+            IDbConnection connection = null;
+            IDbCommand command = null;
             while (true)
             {
                 try
@@ -241,7 +236,10 @@ namespace Microsoft.AspNet.SignalR.SqlServer
                         {
                             OnRetry(this);
                         }
-                        Thread.Sleep(RetryDelay);
+                        if (RetryDelay.TotalMilliseconds > 0)
+                        {
+                            Thread.Sleep(RetryDelay);
+                        }
                     }
                     else
                     {
@@ -251,7 +249,7 @@ namespace Microsoft.AspNet.SignalR.SqlServer
             };
         }
 
-        protected static bool IsRecoverableException(Exception exception)
+        protected virtual bool IsRecoverableException(Exception exception)
         {
             var sqlException = exception as SqlException;
 
