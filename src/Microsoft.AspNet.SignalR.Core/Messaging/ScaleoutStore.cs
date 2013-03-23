@@ -164,7 +164,53 @@ namespace Microsoft.AspNet.SignalR.Messaging
             return false;
         }
 
-        public ArraySegment<ScaleoutMapping> GetMessages(ulong mappingId)
+        public MessageStoreResult<ScaleoutMapping> GetMessages(ulong firstMessageIdRequestedByClient)
+        {
+            ulong nextFreeMessageId = (ulong)Volatile.Read(ref _nextFreeMessageId);
+
+            // Case 1:
+            // The client is already up-to-date with the message store, so we return no data.
+            if (nextFreeMessageId <= firstMessageIdRequestedByClient)
+            {
+                return new MessageStoreResult<ScaleoutMapping>(firstMessageIdRequestedByClient, _emptyArraySegment, hasMoreData: false);
+            }
+
+            // look for the fragment containing the start of the data requested by the client
+            ulong fragmentNum;
+            int idxIntoFragmentsArray, idxIntoFragment;
+            GetFragmentOffsets(firstMessageIdRequestedByClient, out fragmentNum, out idxIntoFragmentsArray, out idxIntoFragment);
+            Fragment thisFragment = _fragments[idxIntoFragmentsArray];
+            ulong firstMessageIdInThisFragment = GetMessageId(thisFragment.FragmentNum, offset: 0);
+            ulong firstMessageIdInNextFragment = firstMessageIdInThisFragment + _fragmentSize;
+
+            // Case 2:
+            // This fragment contains the first part of the data the client requested.
+            if (firstMessageIdInThisFragment <= firstMessageIdRequestedByClient && firstMessageIdRequestedByClient < firstMessageIdInNextFragment)
+            {
+                int count = (int)(Math.Min(nextFreeMessageId, firstMessageIdInNextFragment) - firstMessageIdRequestedByClient);
+
+                var retMessages = new ArraySegment<ScaleoutMapping>(thisFragment.Data, idxIntoFragment, count);
+
+                return new MessageStoreResult<ScaleoutMapping>(firstMessageIdRequestedByClient, retMessages, hasMoreData: (nextFreeMessageId > firstMessageIdInNextFragment));
+            }
+
+            // Case 3:
+            // The client has missed messages, so we need to send him the earliest fragment we have.
+            while (true)
+            {
+                GetFragmentOffsets(nextFreeMessageId, out fragmentNum, out idxIntoFragmentsArray, out idxIntoFragment);
+                Fragment tailFragment = _fragments[(idxIntoFragmentsArray + 1) % _fragments.Length];
+                if (tailFragment.FragmentNum < fragmentNum)
+                {
+                    firstMessageIdInThisFragment = GetMessageId(tailFragment.FragmentNum, offset: 0);
+                    
+                    return new MessageStoreResult<ScaleoutMapping>(firstMessageIdInThisFragment, new ArraySegment<ScaleoutMapping>(tailFragment.Data, 0, tailFragment.Length), hasMoreData: true);
+                }
+                nextFreeMessageId = (ulong)Volatile.Read(ref _nextFreeMessageId);
+            }
+        }
+
+        public MessageStoreResult<ScaleoutMapping> GetMessagesByMappingId(ulong mappingId)
         {
             var nextFreeMessageId = (ulong)Volatile.Read(ref _nextFreeMessageId);
             var minMessageId = (ulong)Volatile.Read(ref _minMessageId);
@@ -183,7 +229,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
                 // The client is already up-to-date with the message store, so we return no data.
                 if (nextFreeMessageId <= firstMessageIdRequestedByClient)
                 {
-                    return _emptyArraySegment;
+                    return new MessageStoreResult<ScaleoutMapping>(firstMessageIdRequestedByClient, _emptyArraySegment, hasMoreData: false);
                 }
 
                 // Case 2:
@@ -192,7 +238,9 @@ namespace Microsoft.AspNet.SignalR.Messaging
                 {
                     int count = (int)(Math.Min(nextFreeMessageId, firstMessageIdInNextFragment) - firstMessageIdRequestedByClient);
 
-                    return new ArraySegment<ScaleoutMapping>(thisFragment.Data, idxIntoFragment, count);
+                    var messages = new ArraySegment<ScaleoutMapping>(thisFragment.Data, idxIntoFragment, count);
+
+                    return new MessageStoreResult<ScaleoutMapping>(firstMessageIdRequestedByClient, messages, hasMoreData: (nextFreeMessageId > firstMessageIdInNextFragment));
                 }
             }
 
@@ -209,7 +257,11 @@ namespace Microsoft.AspNet.SignalR.Messaging
                 // If we have the right data then return it
                 if (fragment.FragmentNum == fragmentNum)
                 {
-                    return new ArraySegment<ScaleoutMapping>(fragment.Data, 0, fragment.Length);
+                    var firstMessageIdInThisFragment = GetMessageId(fragment.FragmentNum, offset: 0);
+
+                    var messages = new ArraySegment<ScaleoutMapping>(fragment.Data, 0, fragment.Length);
+
+                    return new MessageStoreResult<ScaleoutMapping>(firstMessageIdInThisFragment, messages, hasMoreData: true);
                 }
 
                 minMessageId = (ulong)Volatile.Read(ref _minMessageId);

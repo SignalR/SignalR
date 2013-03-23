@@ -41,30 +41,31 @@ namespace Microsoft.AspNet.SignalR.Messaging
 
         public IEnumerator<ScaleoutMapping> GetEnumerator(ulong id)
         {
-            ArraySegment<ScaleoutMapping> segment = _store.GetMessages(id);
+            MessageStoreResult<ScaleoutMapping> result = _store.GetMessagesByMappingId(id);
 
-            return new ArraySegmentEnumerator<ScaleoutMapping>(segment);
+            return new ScaleoutStoreEnumerator(_store, result);
         }
 
-        private struct ArraySegmentEnumerator<T> : IEnumerator<T>, IEnumerator
+        private struct ScaleoutStoreEnumerator : IEnumerator<ScaleoutMapping>, IEnumerator
         {
-            private ArraySegment<T> _segment;
+            private readonly ScaleoutStore _store;
+            private MessageStoreResult<ScaleoutMapping> _result;
             private int _offset;
             private int _length;
+            private ulong _nextId;
 
-            public ArraySegmentEnumerator(ArraySegment<T> segment)
+            public ScaleoutStoreEnumerator(ScaleoutStore store, MessageStoreResult<ScaleoutMapping> result)
                 : this()
             {
-                _segment = segment;
-                _offset = _segment.Offset - 1;
-                _length = _segment.Offset + _segment.Count;
+                _store = store;
+                InitResult(result);
             }
 
-            public T Current
+            public ScaleoutMapping Current
             {
                 get
                 {
-                    return _segment.Array[_offset];
+                    return _result.Messages.Array[_offset];
                 }
             }
 
@@ -87,13 +88,32 @@ namespace Microsoft.AspNet.SignalR.Messaging
                     return true;
                 }
 
-                return false;
+                if (!_result.HasMoreData)
+                {
+                    return false;
+                }
+
+                var result = _store.GetMessages(_nextId);
+                InitResult(result);
+
+                _offset++;
+
+                return _offset < _length;
             }
 
             public void Reset()
             {
                 throw new NotSupportedException();
             }
+
+            private void InitResult(MessageStoreResult<ScaleoutMapping> result)
+            {
+                _result = result;
+                _offset = _result.Messages.Offset - 1;
+                _length = _result.Messages.Offset + _result.Messages.Count;
+                _nextId = _result.FirstMessageId + (ulong)_result.Messages.Count;
+            }
+
         }
     }
 }
