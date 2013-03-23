@@ -17,8 +17,8 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
                 store.Add(new ScaleoutMapping((ulong)i, new List<LocalEventKeyInfo>()));
             }
 
-            ArraySegment<ScaleoutMapping> mapping;
-            bool result = store.TryBinarySearch(0, out mapping);
+            ScaleoutStore.Fragment fragment;
+            bool result = store.TryGetFragmentFromMappingId(0, out fragment);
 
             Assert.True(result);
         }
@@ -33,8 +33,8 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
                 store.Add(new ScaleoutMapping((ulong)i, new List<LocalEventKeyInfo>()));
             }
 
-            ArraySegment<ScaleoutMapping> mapping;
-            bool result = store.TryBinarySearch(20, out mapping);
+            ScaleoutStore.Fragment fragment;
+            bool result = store.TryGetFragmentFromMappingId(20, out fragment);
 
             Assert.False(result);
         }
@@ -49,8 +49,8 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
                 store.Add(new ScaleoutMapping((ulong)i, new List<LocalEventKeyInfo>()));
             }
 
-            ArraySegment<ScaleoutMapping> mapping;
-            bool result = store.TryBinarySearch(0, out mapping);
+            ScaleoutStore.Fragment fragment;
+            bool result = store.TryGetFragmentFromMappingId(0, out fragment);
 
             Assert.False(result);
         }
@@ -70,8 +70,8 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
                 }
             }
 
-            ArraySegment<ScaleoutMapping> mapping;
-            bool result = store.TryBinarySearch(10, out mapping);
+            ScaleoutStore.Fragment fragment;
+            bool result = store.TryGetFragmentFromMappingId(10, out fragment);
 
             Assert.True(result);
         }
@@ -91,8 +91,8 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
                 }
             }
 
-            ArraySegment<ScaleoutMapping> mapping;
-            bool result = store.TryBinarySearch(0, out mapping);
+            ScaleoutStore.Fragment fragment;
+            bool result = store.TryGetFragmentFromMappingId(0, out fragment);
 
             Assert.False(result);
         }
@@ -112,8 +112,8 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
                 }
             }
 
-            ArraySegment<ScaleoutMapping> mapping;
-            bool result = store.TryBinarySearch(100, out mapping);
+            ScaleoutStore.Fragment fragment;
+            bool result = store.TryGetFragmentFromMappingId(100, out fragment);
 
             Assert.False(result);
         }

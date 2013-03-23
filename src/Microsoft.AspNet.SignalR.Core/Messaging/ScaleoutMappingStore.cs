@@ -39,21 +39,11 @@ namespace Microsoft.AspNet.SignalR.Messaging
             }
         }
 
-        [SuppressMessage("Microsoft.Design", "CA1024:UsePropertiesWhereAppropriate", Justification = "This does some work")]
-        public IEnumerator<ScaleoutMapping> GetMinEnumerator()
-        {
-            return new ArraySegmentEnumerator<ScaleoutMapping>(_store.GetMinimum());
-        }
-
         public IEnumerator<ScaleoutMapping> GetEnumerator(ulong id)
         {
-            ArraySegment<ScaleoutMapping> segment;
-            if (_store.TryBinarySearch(id, out segment))
-            {
-                return new ArraySegmentEnumerator<ScaleoutMapping>(segment);
-            }
+            ArraySegment<ScaleoutMapping> segment = _store.GetMessages(id);
 
-            return null;
+            return new ArraySegmentEnumerator<ScaleoutMapping>(segment);
         }
 
         private struct ArraySegmentEnumerator<T> : IEnumerator<T>, IEnumerator

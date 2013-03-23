@@ -9,6 +9,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
     {
         private const uint _minFragmentCount = 4;
         private static readonly uint _maxFragmentSize = (IntPtr.Size == 4) ? (uint)16384 : (uint)8192; // guarantees that fragments never end up in the LOH
+        private static readonly ArraySegment<ScaleoutMapping> _emptyArraySegment = new ArraySegment<ScaleoutMapping>(new ScaleoutMapping[0]);
 
         private Fragment[] _fragments;
         private readonly uint _fragmentSize;
@@ -163,11 +164,40 @@ namespace Microsoft.AspNet.SignalR.Messaging
             return false;
         }
 
-        [SuppressMessage("Microsoft.Design", "CA1024:UsePropertiesWhereAppropriate", Justification = "This does alot of work")]
-        public ArraySegment<ScaleoutMapping> GetMinimum()
+        public ArraySegment<ScaleoutMapping> GetMessages(ulong mappingId)
         {
+            var nextFreeMessageId = (ulong)Volatile.Read(ref _nextFreeMessageId);
             var minMessageId = (ulong)Volatile.Read(ref _minMessageId);
 
+            // look for the fragment containing the start of the data requested by the client
+            Fragment thisFragment;
+            if (TryGetFragmentFromMappingId(mappingId, out thisFragment))
+            {
+                ulong firstMessageIdInThisFragment = GetMessageId(thisFragment.FragmentNum, offset: 0);
+                ulong firstMessageIdInNextFragment = firstMessageIdInThisFragment + _fragmentSize;
+
+                int idxIntoFragment = thisFragment.BinarySearch(mappingId) + 1;
+                ulong firstMessageIdRequestedByClient = GetMessageId(thisFragment.FragmentNum, (uint)idxIntoFragment);
+
+                // Case 1:
+                // The client is already up-to-date with the message store, so we return no data.
+                if (nextFreeMessageId <= firstMessageIdRequestedByClient)
+                {
+                    return _emptyArraySegment;
+                }
+
+                // Case 2:
+                // This fragment contains the first part of the data the client requested.
+                if (firstMessageIdInThisFragment <= firstMessageIdRequestedByClient && firstMessageIdRequestedByClient < firstMessageIdInNextFragment)
+                {
+                    int count = (int)(Math.Min(nextFreeMessageId, firstMessageIdInNextFragment) - firstMessageIdRequestedByClient);
+
+                    return new ArraySegment<ScaleoutMapping>(thisFragment.Data, idxIntoFragment, count);
+                }
+            }
+
+            // Case 3:
+            // The client has missed messages, so we need to send him the earliest fragment we have.            
             while (true)
             {
                 ulong fragmentNum;
@@ -186,10 +216,8 @@ namespace Microsoft.AspNet.SignalR.Messaging
             }
         }
 
-        public bool TryBinarySearch(ulong mappingId, out ArraySegment<ScaleoutMapping> mapping)
+        internal bool TryGetFragmentFromMappingId(ulong mappingId, out Fragment fragment)
         {
-            mapping = new ArraySegment<ScaleoutMapping>();
-
             long low = _minMessageId;
             long high = _nextFreeMessageId;
 
@@ -199,7 +227,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
 
                 int midOffset = GetFragmentOffset(mid);
 
-                Fragment fragment = _fragments[midOffset];
+                fragment = _fragments[midOffset];
 
                 if (mappingId < fragment.MinValue)
                 {
@@ -211,19 +239,15 @@ namespace Microsoft.AspNet.SignalR.Messaging
                 }
                 else if (fragment.HasValue(mappingId))
                 {
-                    int index = fragment.BinarySearch(mappingId);
-
-                    // Return the mapping for this fragment
-                    mapping = new ArraySegment<ScaleoutMapping>(fragment.Data, index, fragment.Length - index);
-
                     return true;
                 }
             }
 
+            fragment = null;
             return false;
         }
 
-        private sealed class Fragment
+        internal sealed class Fragment
         {
             public readonly ulong FragmentNum;
             public readonly ScaleoutMapping[] Data;

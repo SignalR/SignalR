@@ -72,33 +72,13 @@ namespace Microsoft.AspNet.SignalR.Messaging
                 Cursor cursor = _cursors[i];
                 nextCursors[i] = cursor.Id;
 
-                bool consumed = true;
-
                 // Try to find a local mapping for this payload
                 IEnumerator<ScaleoutMapping> enumerator = store.GetEnumerator(cursor.Id);
-
-                // If there's no node for this cursor id it's likely because we've
-                // had an app domain restart and the cursor position is now invalid.
-                if (enumerator == null)
-                {
-                    // Set it to the first id in this mapping
-                    enumerator = store.GetMinEnumerator();
-
-                    // Mark this cursor as unconsumed
-                    consumed = false;
-                }
-                else if(consumed)
-                {
-                    // Skip this message since we consumed it already
-                    enumerator.MoveNext();
-                }
 
                 // Stop if we got more than max messages
                 while (totalCount < MaxMessages && enumerator.MoveNext())
                 {
                     ScaleoutMapping mapping = enumerator.Current;
-
-                    // It should be ok to lock here since groups aren't modified that often
 
                     // For each of the event keys we care about, extract all of the messages
                     // from the payload
@@ -108,7 +88,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
 
                         for (int k = 0; k < mapping.LocalKeyInfo.Count; k++)
                         {
-                            var info = mapping.LocalKeyInfo[k];
+                            LocalEventKeyInfo info = mapping.LocalKeyInfo[k];
 
                             if (info.Key.Equals(eventKey, StringComparison.OrdinalIgnoreCase))
                             {
