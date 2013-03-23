@@ -57,6 +57,7 @@
     </Compile>
     <Compile Include="AssemblyExtensions.cs" />
     <Compile Include="DbProviderFactoryAdapter.cs" />
+    <Compile Include="DbProviderFactoryExtensions.cs" />
     <Compile Include="DependencyResolverExtensions.cs" />
     <Compile Include="IDataParameterExtensions.cs" />
     <Compile Include="IDataRecordExtensions.cs" />

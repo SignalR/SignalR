@@ -24,12 +24,4 @@ namespace Microsoft.AspNet.SignalR.SqlServer
             return _dbProviderFactory.CreateParameter();
         }
     }
-
-    internal static class DbProviderFactoryExtensions
-    {
-        public static IDbProviderFactory AsIDbProviderFactory(this DbProviderFactory dbProviderFactory)
-        {
-            return new DbProviderFactoryAdapter(dbProviderFactory);
-        }
-    }
 }
