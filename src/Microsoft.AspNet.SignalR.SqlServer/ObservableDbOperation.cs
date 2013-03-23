@@ -1,8 +1,8 @@
 ﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.md in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Data;
-using System.Data.Common;
 using System.Data.SqlClient;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
@@ -15,18 +15,17 @@ namespace Microsoft.AspNet.SignalR.SqlServer
     /// A DbOperation that continues to execute over and over as new results arrive.
     /// Will attempt to use SQL Query Notifications, otherwise falls back to a polling receive loop.
     /// </summary>
-    [SuppressMessage("Microsoft.Design", "CA1001:TypesThatOwnDisposableFieldsShouldBeDisposable", Justification = "Needs review")]
     internal class ObservableDbOperation : DbOperation, IDisposable, IDbBehavior
     {
-        private readonly int[][] _updateLoopRetryDelays = new[] {
-            new[] { 0, 3 },      // 0ms x 3
-            new[] { 10, 3 },     // 10ms x 3
-            new[] { 50, 2 },     // 50ms x 2
-            new[] { 100, 2 },    // 100ms x 2
-            new[] { 200, 2 },    // 200ms x 2
-            new [] { 1000, 2 },  // 1000ms x 2
-            new [] { 1500, 2 },  // 1500ms x 2
-            new [] { 3000, 1 }   // 3000ms x 1
+        private readonly List<Tuple<int, int>> _updateLoopRetryDelays = new List<Tuple<int, int>> {
+            new Tuple<int, int>(0, 3),      // 0ms x 3
+            new Tuple<int, int>(10, 3),     // 10ms x 3
+            new Tuple<int, int>(50, 2),     // 50ms x 2
+            new Tuple<int, int>(100, 2),    // 100ms x 2
+            new Tuple<int, int>(200, 2),    // 200ms x 2
+            new Tuple<int, int>(1000, 2),  // 1000ms x 2
+            new Tuple<int, int>(1500, 2),  // 1500ms x 2
+            new Tuple<int, int>(3000, 1)   // 3000ms x 1
         };
         private readonly object _stopLocker = new object();
         private readonly ManualResetEventSlim _stopHandle = new ManualResetEventSlim(true);
@@ -35,8 +34,8 @@ namespace Microsoft.AspNet.SignalR.SqlServer
         private volatile bool _disposing;
         private long _notificationState;
 
-        public ObservableDbOperation(string connectionString, string commandText, TraceSource traceSource, DbProviderFactory dbProviderFactory, IDbBehavior dbBehavior)
-            : base(connectionString, commandText, traceSource, dbProviderFactory)
+        public ObservableDbOperation(string connectionString, string commandText, TraceSource traceSource, IDbProviderFactory dbProviderFactory, IDbBehavior dbBehavior, IDbExceptionBehavior dbExceptionBehavior)
+            : base(connectionString, commandText, traceSource, dbProviderFactory, dbExceptionBehavior)
         {
             _dbBehavior = dbBehavior ?? this;
         }
@@ -88,11 +87,11 @@ namespace Microsoft.AspNet.SignalR.SqlServer
                 _notificationState = NotificationState.ProcessingUpdates;
             }
 
-            for (var i = 0; i < UpdateLoopRetryDelays.Length; i++)
+            for (var i = 0; i < _dbBehavior.UpdateLoopRetryDelays.Count; i++)
             {
                 var retry = _dbBehavior.UpdateLoopRetryDelays[i];
-                var retryDelay = retry[0];
-                var retryCount = retry[1];
+                var retryDelay = retry.Item1;
+                var retryCount = retry.Item2;
                 
                 for (var j = 0; j < retryCount; j++)
                 {
@@ -131,7 +130,7 @@ namespace Microsoft.AspNet.SignalR.SqlServer
                         Thread.Sleep(retryDelay);
                     }
 
-                    if (i == _dbBehavior.UpdateLoopRetryDelays.Length - 1 && j == retryCount - 1)
+                    if (i == _dbBehavior.UpdateLoopRetryDelays.Count - 1 && j == retryCount - 1)
                     {
                         // Last retry loop iteration
                         if (!useNotifications)
@@ -156,6 +155,14 @@ namespace Microsoft.AspNet.SignalR.SqlServer
                                     i = -1;
                                     break; // break the inner for loop
                                 };
+
+                                lock (_stopLocker)
+                                {
+                                    if (_disposing)
+                                    {
+                                        _stopHandle.Set();
+                                    }
+                                }
                             }
                             catch (Exception ex)
                             {
@@ -167,6 +174,7 @@ namespace Microsoft.AspNet.SignalR.SqlServer
             }
         }
 
+        [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "Disposing")]
         public void Dispose()
         {
             lock (_stopLocker)
@@ -187,14 +195,7 @@ namespace Microsoft.AspNet.SignalR.SqlServer
             {
                 _stopHandle.Wait();
             }
-        }
-
-        protected virtual int[][] UpdateLoopRetryDelays
-        {
-            get
-            {
-                return _updateLoopRetryDelays;
-            }
+            _stopHandle.Dispose();
         }
 
         protected virtual void AddSqlDependency(IDbCommand command, Action<SqlNotificationEventArgs> callback)
@@ -268,7 +269,10 @@ namespace Microsoft.AspNet.SignalR.SqlServer
                 if (e.Info == SqlNotificationInfo.TemplateLimit)
                 {
                     // We've hit a subscription limit, pause for a bit then start again
-                    Thread.Sleep(RetryDelay);
+                    if (RetryDelay.TotalMilliseconds > 0)
+                    {
+                        Thread.Sleep(RetryDelay);
+                    }
                     ExecuteReaderWithUpdates(processRecord);
                 }
                 else
@@ -325,9 +329,12 @@ namespace Microsoft.AspNet.SignalR.SqlServer
                 }
                 catch (Exception ex)
                 {
-                    if (IsRecoverableException(ex))
+                    if (DbExceptionBehavior.IsRecoverableException(ex))
                     {
-                        Thread.Sleep(RetryDelay);
+                        if (RetryDelay.TotalMilliseconds > 0)
+                        {
+                            Thread.Sleep(RetryDelay);
+                        }
                     }
                     else
                     {
@@ -338,9 +345,10 @@ namespace Microsoft.AspNet.SignalR.SqlServer
             }
         }
 
+        [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "Stopping is a terminal state on a bg thread")]
         protected virtual void Stop(Exception ex)
         {
-            if (OnError != null)
+            if (ex != null && OnError != null)
             {
                 OnError(ex);
             }
@@ -377,19 +385,14 @@ namespace Microsoft.AspNet.SignalR.SqlServer
             return StartSqlDependencyListener();
         }
 
-        int[][] IDbBehavior.UpdateLoopRetryDelays
+        IList<Tuple<int, int>> IDbBehavior.UpdateLoopRetryDelays
         {
-            get { return UpdateLoopRetryDelays; }
+            get { return _updateLoopRetryDelays; }
         }
 
         void IDbBehavior.AddSqlDependency(IDbCommand command, Action<SqlNotificationEventArgs> callback)
         {
             AddSqlDependency(command, callback);
-        }
-
-        bool IDbBehavior.IsRecoverableException(Exception exception)
-        {
-            return IsRecoverableException(exception);
         }
     }
 }

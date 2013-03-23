@@ -4,16 +4,18 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
-using System.Linq;
-using System.Text;
 
 namespace Microsoft.AspNet.SignalR.SqlServer
 {
     public interface IDbBehavior
     {
         bool StartSqlDependencyListener();
-        int[][] UpdateLoopRetryDelays { get; }
+        IList<Tuple<int, int>> UpdateLoopRetryDelays { get; }
         void AddSqlDependency(IDbCommand command, Action<SqlNotificationEventArgs> callback);
+    }
+
+    public interface IDbExceptionBehavior
+    {
         bool IsRecoverableException(Exception exception);
     }
 }

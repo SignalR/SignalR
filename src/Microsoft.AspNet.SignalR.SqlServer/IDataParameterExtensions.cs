@@ -7,7 +7,7 @@ namespace Microsoft.AspNet.SignalR.SqlServer
 {
     internal static class IDataParameterExtensions
     {
-        public static IDataParameter Clone(this IDataParameter sourceParameter, DbProviderFactory dbProviderFactory)
+        public static IDataParameter Clone(this IDataParameter sourceParameter, IDbProviderFactory dbProviderFactory)
         {
             var newParameter = dbProviderFactory.CreateParameter();
 
