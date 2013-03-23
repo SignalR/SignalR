@@ -41,7 +41,7 @@ namespace Microsoft.AspNet.SignalR.SqlServer
             script = script.Replace("SET @MESSAGE_TABLE_COUNT = 3;", "SET @MESSAGE_TABLE_COUNT = " + _tableCount + ";");
             script = script.Replace("SET @MESSAGE_TABLE_NAME = 'Messages';", "SET @MESSAGE_TABLE_NAME = '" + _messagesTableNamePrefix + "';");
 
-            var operation = new SqlOperation(_connectionString, script, _trace);
+            var operation = new DbOperation(_connectionString, script, _trace);
             operation.ExecuteNonQuery();
 
             _trace.TraceInformation("SignalR SQL objects installed");
@@ -49,7 +49,7 @@ namespace Microsoft.AspNet.SignalR.SqlServer
 
         private bool IsSqlEditionSupported(string connectionString)
         {
-            var operation = new SqlOperation(connectionString, "SELECT SERVERPROPERTY ( 'EngineEdition' )", _trace);
+            var operation = new DbOperation(connectionString, "SELECT SERVERPROPERTY ( 'EngineEdition' )", _trace);
             var edition = (int)operation.ExecuteScalar();
 
             return edition >= SqlEngineEdition.Standard && edition <= SqlEngineEdition.Express;

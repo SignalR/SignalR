@@ -72,11 +72,10 @@ namespace Microsoft.AspNet.SignalR.SqlServer
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "Disposing")]
         protected override void Dispose(bool disposing)
         {
-            try
+            for (var i = 0; i < _streams.Count; i++)
             {
-                SqlDependency.Stop(_connectionString);
+                _streams[i].Dispose();
             }
-            catch (Exception) { }
 
             base.Dispose(disposing);
         }

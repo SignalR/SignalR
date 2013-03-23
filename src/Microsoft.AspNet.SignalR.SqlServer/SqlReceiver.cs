@@ -2,8 +2,10 @@
 
 using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Data.SqlClient;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Threading;
 using System.Threading.Tasks;
@@ -11,7 +13,7 @@ using Microsoft.AspNet.SignalR.Messaging;
 
 namespace Microsoft.AspNet.SignalR.SqlServer
 {
-    internal class SqlReceiver
+    internal class SqlReceiver : IDisposable
     {
         private readonly string _connectionString;
         private readonly string _tableName;
@@ -24,6 +26,7 @@ namespace Microsoft.AspNet.SignalR.SqlServer
         private long? _lastPayloadId = null;
         private string _maxIdSql = "SELECT [PayloadId] FROM [{0}].[{1}_Id]";
         private string _selectSql = "SELECT [PayloadId], [Payload] FROM [{0}].[{1}] WHERE [PayloadId] > @PayloadId";
+        private ObservableDbOperation _dbOperation;
 
         public SqlReceiver(string connectionString, string tableName, Func<ulong, IList<Message>, Task> onReceived, Action onRetry, Action<Exception> onError, TraceSource traceSource, string tracePrefix)
         {
@@ -48,14 +51,26 @@ namespace Microsoft.AspNet.SignalR.SqlServer
             return tcs.Task;
         }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "On a background thread with explicit error processing")]
+        public void Dispose()
+        {
+            lock (this)
+            {
+                if (_dbOperation != null)
+                {
+                    _dbOperation.Dispose();
+                }
+            }
+        }
+
+        [SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope", Justification = "Class level variable"),
+         SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "On a background thread with explicit error processing")]
         private void Receive(object state)
         {
             var tcs = (TaskCompletionSource<object>)state;
 
             if (!_lastPayloadId.HasValue)
             {
-                var lastPayloadIdOperation = new SqlOperation(_connectionString, _maxIdSql, _trace)
+                var lastPayloadIdOperation = new DbOperation(_connectionString, _maxIdSql, _trace)
                 {
                     TracePrefix = _tracePrefix
                 };
@@ -74,30 +89,32 @@ namespace Microsoft.AspNet.SignalR.SqlServer
             }
 
             // NOTE: This is called from a BG thread so any uncaught exceptions will crash the process
-            var operation = new ObservableSqlOperation(_connectionString, _selectSql, _trace, new SqlParameter("PayloadId", _lastPayloadId))
+            lock (this)
             {
-                OnRetry = o =>
+                _dbOperation = new ObservableDbOperation(_connectionString, _selectSql, _trace, new SqlParameter("PayloadId", _lastPayloadId))
                 {
-                    // Recoverable error
-                    o.Parameters.Clear();
-                    o.Parameters.Add(new SqlParameter("PayloadId", _lastPayloadId));
-                    _onRetry();
-                },
-                OnError = ex =>
-                {
-                    // Fatal async error, e.g. from SQL notification update
-                    _onError(ex);
-                },
-                TracePrefix = _tracePrefix
-            };
+                    OnRetry = o =>
+                    {
+                        // Recoverable error
+                        o.Parameters[0].Value = _lastPayloadId;
+                        _onRetry();
+                    },
+                    OnError = ex =>
+                    {
+                        // Fatal async error, e.g. from SQL notification update
+                        _onError(ex);
+                    },
+                    TracePrefix = _tracePrefix
+                };
+            }
 
-            operation.ExecuteReaderWithUpdates((rdr, o) => ProcessRecord(rdr, o));
+            _dbOperation.ExecuteReaderWithUpdates((rdr, o) => ProcessRecord(rdr, o));
         }
 
-        private void ProcessRecord(SqlDataReader reader, SqlOperation sqlOperation)
+        private void ProcessRecord(IDataRecord record, DbOperation sqlOperation)
         {
-            var id = reader.GetInt64(0);
-            var payload = SqlPayload.FromBytes(reader.GetSqlBinary(1).Value);
+            var id = record.GetInt64(0);
+            var payload = SqlPayload.FromBytes(record.GetBinary(1));
 
             if (id != _lastPayloadId + 1)
             {
@@ -111,8 +128,8 @@ namespace Microsoft.AspNet.SignalR.SqlServer
 
             _lastPayloadId = id;
 
-            // Update the SqlParameter with the new payload ID
-            sqlOperation.Parameters[0].SqlValue = _lastPayloadId;
+            // Update the Parameter with the new payload ID
+            sqlOperation.Parameters[0].Value = _lastPayloadId;
 
             // Pass to the underlying message bus
             _onReceived((ulong)id, payload.Messages);
