@@ -2,7 +2,6 @@
 
 using System;
 using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR.Infrastructure;
 
@@ -12,6 +11,8 @@ namespace Microsoft.AspNet.SignalR.Messaging
     {
         private TaskCompletionSource<object> _taskCompletionSource;
         private TaskQueue _sendQueue;
+        private Task _queueTask;
+        private QueueState _state;
 
         private readonly TraceSource _trace;
 
@@ -28,14 +29,32 @@ namespace Microsoft.AspNet.SignalR.Messaging
         {
             lock (this)
             {
-                _taskCompletionSource.TrySetResult(null);
+                if (ChangeState(QueueState.Open))
+                {
+                    _taskCompletionSource.TrySetResult(null);
+
+                    _queueTask = _sendQueue.Drain();
+
+                    _sendQueue = null;
+                }
             }
         }
-
+        
         public Task Enqueue(Func<object, Task> send, object state)
         {
             lock (this)
             {
+                if (_state == QueueState.Closed)
+                {
+                    // This will be faulted
+                    return _queueTask;
+                }
+
+                if (_queueTask != null)
+                {
+                    return _queueTask.Then((s, o) => s(o), send, state);
+                }
+
                 // If Enqueue returns null it means the queue is full
                 return _sendQueue.Enqueue(send, state) ?? _queueFullTask;
             }
@@ -45,7 +64,10 @@ namespace Microsoft.AspNet.SignalR.Messaging
         {
             lock (this)
             {
-                InitializeCore(size);
+                if (ChangeState(QueueState.Buffering))
+                {
+                    InitializeCore(size);
+                }
             }
         }
 
@@ -53,43 +75,63 @@ namespace Microsoft.AspNet.SignalR.Messaging
         {
             lock (this)
             {
-                InitializeCore();
+                if (ChangeState(QueueState.Closed))
+                {
+                    _sendQueue = null;
 
-                _taskCompletionSource.TrySetException(error);
+                    _queueTask = TaskAsyncHelper.FromError(error);
+                }
             }
         }
 
         private void InitializeCore(int? size = null)
         {
-            DrainQueue();
-
             _taskCompletionSource = new TaskCompletionSource<object>();
+
+            Task task = DrainQueue();
 
             if (size != null)
             {
-                _sendQueue = new TaskQueue(_taskCompletionSource.Task, size.Value);
+                _sendQueue = new TaskQueue(task, size.Value);
             }
             else
             {
-                _sendQueue = new TaskQueue(_taskCompletionSource.Task);
+                _sendQueue = new TaskQueue(task);
             }
         }
 
-        [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "This method should never throw")]
-        private void DrainQueue()
+        private Task DrainQueue()
         {
             if (_sendQueue != null)
             {
-                try
-                {
-                    // Attempt to drain the queue before creating the new one
-                    _sendQueue.Drain().Wait();
-                }
-                catch (Exception ex)
-                {
-                    _trace.TraceError("Draining failed: " + ex.GetBaseException());
-                }
+                // Attempt to drain the queue before creating the new one                
+                return new[] { AlwaysSucceed(_sendQueue.Drain()), _taskCompletionSource.Task }.Then(() => { });
             }
+
+            // Nothing to drain
+            return _taskCompletionSource.Task;
+        }
+
+        private bool ChangeState(QueueState queueState)
+        {
+            QueueState oldState = _state;
+            _state = queueState;
+            return oldState != queueState;
+        }
+
+        private Task AlwaysSucceed(Task task)
+        {            
+            var tcs = new TaskCompletionSource<object>();
+            task.Catch().Finally(state => ((TaskCompletionSource<object>)state).SetResult(null), tcs);
+            return tcs.Task;
+        }
+
+        private enum QueueState
+        {
+            Initial,
+            Open,
+            Buffering,
+            Closed,
         }
     }
 }
