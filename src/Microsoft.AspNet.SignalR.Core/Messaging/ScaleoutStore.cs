@@ -8,7 +8,10 @@ namespace Microsoft.AspNet.SignalR.Messaging
     public sealed class ScaleoutStore
     {
         private const uint _minFragmentCount = 4;
+
+        [SuppressMessage("Microsoft.Performance", "CA1802:UseLiteralsWhereAppropriate", Justification = "It's conditional based on architecture")]
         private static readonly uint _maxFragmentSize = (IntPtr.Size == 4) ? (uint)16384 : (uint)8192; // guarantees that fragments never end up in the LOH
+
         private static readonly ArraySegment<ScaleoutMapping> _emptyArraySegment = new ArraySegment<ScaleoutMapping>(new ScaleoutMapping[0]);
 
         private Fragment[] _fragments;
@@ -203,7 +206,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
                 if (tailFragment.FragmentNum < fragmentNum)
                 {
                     firstMessageIdInThisFragment = GetMessageId(tailFragment.FragmentNum, offset: 0);
-                    
+
                     return new MessageStoreResult<ScaleoutMapping>(firstMessageIdInThisFragment, new ArraySegment<ScaleoutMapping>(tailFragment.Data, 0, tailFragment.Length), hasMoreData: true);
                 }
                 nextFreeMessageId = (ulong)Volatile.Read(ref _nextFreeMessageId);
