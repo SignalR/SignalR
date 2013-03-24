@@ -23,7 +23,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
         {
             if (id < _maxKey)
             {
-                // Do something here
+                _store = new ScaleoutStore(MaxMessages);
             }
 
             _store.Add(new ScaleoutMapping(id, localKeyInfo));
@@ -48,7 +48,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
 
         private struct ScaleoutStoreEnumerator : IEnumerator<ScaleoutMapping>, IEnumerator
         {
-            private readonly ScaleoutStore _store;
+            private readonly WeakReference _storeReference;
             private MessageStoreResult<ScaleoutMapping> _result;
             private int _offset;
             private int _length;
@@ -57,7 +57,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
             public ScaleoutStoreEnumerator(ScaleoutStore store, MessageStoreResult<ScaleoutMapping> result)
                 : this()
             {
-                _store = store;
+                _storeReference = new WeakReference(store);
                 Initialize(result);
             }
 
@@ -93,8 +93,16 @@ namespace Microsoft.AspNet.SignalR.Messaging
                     return false;
                 }
 
+                // If the store falls out of scope
+                var store = (ScaleoutStore)_storeReference.Target;
+
+                if (store == null)
+                {
+                    return false;
+                }
+
                 // Get the next result
-                MessageStoreResult<ScaleoutMapping> result = _store.GetMessages(_nextId);
+                MessageStoreResult<ScaleoutMapping> result = store.GetMessages(_nextId);
                 Initialize(result);
 
                 _offset++;
