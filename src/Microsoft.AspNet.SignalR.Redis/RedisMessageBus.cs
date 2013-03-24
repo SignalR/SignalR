@@ -45,14 +45,17 @@ namespace Microsoft.AspNet.SignalR.Redis
 
         protected override Task Send(int streamIndex, IList<Message> messages)
         {
+            var context = new SendContext(_key, messages, _connection);
+
             // Increment the channel number
             return _connection.Strings.Increment(_db, _key)
-                               .Then((id, key) =>
+                               .Then((id, ctx) =>
                                {
-                                   byte[] data = RedisMessage.ToBytes(id, messages);
+                                   byte[] data = RedisMessage.ToBytes(id, ctx.Messages);
 
-                                   return _connection.Publish(key, data);
-                               }, _key);
+                                   return ctx.Connection.Publish(ctx.Key, data);
+                               }, 
+                               context);
         }
 
         private void OnConnectionClosed(object sender, EventArgs e)
@@ -192,6 +195,20 @@ namespace Microsoft.AspNet.SignalR.Redis
         private static Func<RedisConnection> GetConnectionFactory(string server, int port, string password)
         {
             return () => new RedisConnection(server, port: port, password: password);
+        }
+
+        private class SendContext
+        {
+            public string Key;
+            public IList<Message> Messages;
+            public RedisConnection Connection;
+
+            public SendContext(string key, IList<Message> messages, RedisConnection connection)
+            {
+                Key = key;
+                Messages = messages;
+                Connection = connection;
+            }
         }
 
         private static class State
