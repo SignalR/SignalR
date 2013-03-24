@@ -58,7 +58,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
                 : this()
             {
                 _store = store;
-                InitResult(result);
+                Initialize(result);
             }
 
             public ScaleoutMapping Current
@@ -93,8 +93,9 @@ namespace Microsoft.AspNet.SignalR.Messaging
                     return false;
                 }
 
-                var result = _store.GetMessages(_nextId);
-                InitResult(result);
+                // Get the next result
+                MessageStoreResult<ScaleoutMapping> result = _store.GetMessages(_nextId);
+                Initialize(result);
 
                 _offset++;
 
@@ -106,14 +107,13 @@ namespace Microsoft.AspNet.SignalR.Messaging
                 throw new NotSupportedException();
             }
 
-            private void InitResult(MessageStoreResult<ScaleoutMapping> result)
+            private void Initialize(MessageStoreResult<ScaleoutMapping> result)
             {
                 _result = result;
                 _offset = _result.Messages.Offset - 1;
                 _length = _result.Messages.Offset + _result.Messages.Count;
                 _nextId = _result.FirstMessageId + (ulong)_result.Messages.Count;
             }
-
         }
     }
 }
