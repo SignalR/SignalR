@@ -238,7 +238,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
                 Fragment fragment = _fragments[idxIntoFragmentsArray];
 
                 // If we have the right data then return it
-                if (fragment.FragmentNum == fragmentNum)
+                if (fragment != null && fragment.FragmentNum == fragmentNum)
                 {
                     var firstMessageIdInThisFragment = GetMessageId(fragment.FragmentNum, offset: 0);
 
@@ -263,6 +263,11 @@ namespace Microsoft.AspNet.SignalR.Messaging
                 int midOffset = GetFragmentOffset(mid);
 
                 fragment = _fragments[midOffset];
+
+                if (fragment == null)
+                {
+                    return false;
+                }
 
                 if (mappingId < fragment.MinValue)
                 {
