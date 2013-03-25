@@ -13,7 +13,7 @@ namespace Microsoft.AspNet.SignalR.SqlServer
             var sqlReader = reader as SqlDataReader;
             if (sqlReader == null)
             {
-                throw new InvalidOperationException("");
+                throw new NotSupportedException();
             }
 
             return sqlReader.GetSqlBinary(ordinalIndex).Value;
