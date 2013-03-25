@@ -41,7 +41,11 @@
                 var timeoutId,
                     testCleanup,
                     hasFinished = false,
+                    failOnTimeout = true,
                     assert = {
+                        expectTimeout: function() {
+                            failOnTimeout = false;
+                        },
                         deepEqual: function (actual, expected, message) {
                             if (!hasFinished) {
                                 QUnit.deepEqual(actual, expected, message);
@@ -97,6 +101,7 @@
                 function end() {
                     if (!hasFinished) {
                         clearTimeout(timeoutId);
+                        failOnTimeout = true;
                         hasFinished = true;
                         testCleanup();
                         QUnit.start();
@@ -104,7 +109,7 @@
                 }
 
                 timeoutId = setTimeout(function () {
-                    assert.ok(false, "Test timed out.");
+                    assert.ok(!failOnTimeout, "Test timed out.");
                     end();
                 }, timeout);
 
