@@ -13,8 +13,6 @@ namespace Microsoft.AspNet.SignalR.Client.Http
     /// </summary>
     public interface IHttpClient
     {
-        IWebRequestCreate WebRequestFactory { get; set; }
-
         /// <summary>
         /// Makes an asynchronous http GET request to the specified url.
         /// </summary>

@@ -147,14 +147,7 @@ namespace Microsoft.AspNet.SignalR.Client.Http
             request = (HttpWebRequest)WebRequest.Create(url);
             request.AllowReadStreamBuffering = false;
 #elif SILVERLIGHT
-            if(webRequestFactory != null)
-            {
-                request = (HttpWebRequest)webRequestFactory.Create(new Uri(url));
-            }
-            else
-            {
-                request = (HttpWebRequest)System.Net.Browser.WebRequestCreator.ClientHttp.Create(new Uri(url));
-            }
+            request = (HttpWebRequest)webRequestFactory.Create(new Uri(url));
             request.AllowReadStreamBuffering = false;
 #else
             request = (HttpWebRequest)WebRequest.Create(url);

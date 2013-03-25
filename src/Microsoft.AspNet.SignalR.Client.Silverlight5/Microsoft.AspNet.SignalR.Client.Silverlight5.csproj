@@ -99,7 +99,6 @@
     <Compile Include="..\Microsoft.AspNet.SignalR.Client\Transports\TransportHelper.cs">
       <Link>Transports\TransportHelper.cs</Link>
     </Compile>
-    <Compile Include="Http\ISilverlightHttpClientExtensions.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

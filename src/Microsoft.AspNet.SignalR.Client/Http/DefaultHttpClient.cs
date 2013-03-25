@@ -12,8 +12,20 @@ namespace Microsoft.AspNet.SignalR.Client.Http
     /// </summary>
     public class DefaultHttpClient : IHttpClient
     {
-        public IWebRequestCreate WebRequestFactory { get; set; }
-        
+        private readonly IWebRequestCreate _webRequestFactory;
+
+        public DefaultHttpClient()
+        {
+#if SILVERLIGHT
+            _webRequestFactory = System.Net.Browser.WebRequestCreator.ClientHttp;
+#endif
+        }
+
+        public DefaultHttpClient(IWebRequestCreate webRequestFactory)
+        {
+            _webRequestFactory = webRequestFactory;
+        }
+
         /// <summary>
         /// Makes an asynchronous http GET request to the specified url.
         /// </summary>
@@ -28,7 +40,7 @@ namespace Microsoft.AspNet.SignalR.Client.Http
                 req = new HttpWebRequestWrapper(request);
                 prepareRequest(req);
             },
-            WebRequestFactory).Then(response => (IResponse)new HttpWebResponseWrapper(response));
+            _webRequestFactory).Then(response => (IResponse)new HttpWebResponseWrapper(response));
         }
 
         /// <summary>
@@ -46,7 +58,7 @@ namespace Microsoft.AspNet.SignalR.Client.Http
                 req = new HttpWebRequestWrapper(request);
                 prepareRequest(req);
             },
-            postData, WebRequestFactory).Then(response => (IResponse)new HttpWebResponseWrapper(response));
+            postData, _webRequestFactory).Then(response => (IResponse)new HttpWebResponseWrapper(response));
         }
     }
 }
