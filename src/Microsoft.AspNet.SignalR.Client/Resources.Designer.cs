@@ -85,7 +85,7 @@ namespace Microsoft.AspNet.SignalR.Client {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Incompatible protocol version..
+        ///   Looks up a localized string similar to You are using a version of the client that isn&apos;t compatible with the server. Client version {0}, server version {1}..
         /// </summary>
         internal static string Error_IncompatibleProtocolVersion {
             get {
