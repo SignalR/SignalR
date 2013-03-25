@@ -9,7 +9,62 @@
     var signalR = $.signalR,
         events = $.signalR.events,
         changeState = $.signalR.changeState,
-        transportLogic = signalR.transports._logic;
+        transportLogic = signalR.transports._logic,
+        // Used to prevent infinite loading icon spins in older versions of ie
+        // We build this object inside a closure so we don't pollute the rest of   
+        // the foreverFrame transport with unnecessary functions/utilities.
+        loadPreventer = (function () {
+            var loadingFixIntervalId = null,
+                loadingFixInterval = 3000,
+                attachedTo = 0,
+                ieVersion = (function () {
+                    var version,
+                        matches;
+
+                    if (window.navigator.appName === 'Microsoft Internet Explorer') {
+                        // Check if the user agent has the pattern "MSIE (one or more numbers).(one or more numbers)";
+                        matches = /MSIE ([0-9]+\.[0-9]+)/.exec(window.navigator.userAgent);
+
+                        if (matches) {
+                            version = window.parseFloat(matches[1]);
+                        }
+                    }
+
+                    // undefined value means not IE
+                    return version;
+                })();
+
+            return {
+                prevent: function () {
+                    // Prevent additional iframe removal procedures from newer browsers
+                    if (ieVersion <= 8) {
+                        // We only ever want to set the interval one time, so on the first attachedTo
+                        if (attachedTo === 0) {
+                            // Create and destroy iframe every 3 seconds to prevent loading icon, super hacky
+                            loadingFixIntervalId = window.setInterval(function () {
+                                var tempFrame = $("<iframe style='position:absolute;top:0;left:0;width:0;height:0;visibility:hidden;' src=''></iframe>");
+
+                                $("body").append(tempFrame);
+                                tempFrame.remove();
+                                tempFrame = null;
+                            }, loadingFixInterval);
+                        }
+
+                        attachedTo++;
+                    }
+                },
+                cancel: function () {                   
+                    // Only clear the interval if there's only one more object that the loadPreventer is attachedTo
+                    if (attachedTo === 1) {
+                        window.clearInterval(loadingFixIntervalId);
+                    }
+
+                    if (attachedTo > 0) {
+                        attachedTo--;
+                    }
+                }
+            };
+        })();
 
     signalR.transports.foreverFrame = {
         name: "foreverFrame",
@@ -33,6 +88,9 @@
                 return;
             }
 
+            // Start preventing loading icon
+            // This will only perform work if the loadPreventer is not attached to another connection.
+            loadPreventer.prevent();
 
             // Build the url
             url = transportLogic.getUrl(connection, this.name);
@@ -111,6 +169,10 @@
 
         stop: function (connection) {
             var cw = null;
+
+            // Stop attempting to prevent loading icon
+            loadPreventer.cancel();
+
             if (connection.frame) {
                 if (connection.frame.stop) {
                     connection.frame.stop();
