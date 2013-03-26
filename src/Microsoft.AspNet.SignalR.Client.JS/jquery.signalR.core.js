@@ -119,6 +119,10 @@
         return new signalR.fn.init(url, qs, logging);
     };
 
+    signalR._ = {
+        defaultContentType: "application/x-www-form-urlencoded; charset=UTF-8"
+    };
+
     signalR.events = events;
 
     signalR.changeState = changeState;
@@ -333,7 +337,7 @@
                     }
                 }
 
-                connection.contentType = "application/x-www-form-urlencoded; charset=UTF-8";
+                connection.contentType = signalR._.defaultContentType;
             }
 
             connection.ajaxDataType = config.jsonp ? "jsonp" : "json";
