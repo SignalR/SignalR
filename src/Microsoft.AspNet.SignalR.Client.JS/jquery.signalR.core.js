@@ -224,6 +224,8 @@
 
         ajaxDataType: "json",
 
+        contentType: "application/json; charset=UTF-8",
+
         logging: false,
 
         state: signalR.connectionState.disconnected,
@@ -330,6 +332,8 @@
                         connection.log("Using jsonp because this browser doesn't support CORS");
                     }
                 }
+
+                connection.contentType = "application/x-www-form-urlencoded; charset=UTF-8";
             }
 
             connection.ajaxDataType = config.jsonp ? "jsonp" : "json";
@@ -395,7 +399,7 @@
                 global: false,
                 cache: false,
                 type: "GET",
-                contentType: "application/json; charset=UTF-8",
+                contentType: connection.contentType,
                 data: {},
                 dataType: connection.ajaxDataType,
                 error: function (error) {
