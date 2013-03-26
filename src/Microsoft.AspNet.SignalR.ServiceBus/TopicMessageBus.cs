@@ -21,6 +21,8 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
         readonly int nodeCount;
         readonly int nodeId;
 
+        readonly TimeSpan defaultTtl;
+
         readonly Func<string, ulong, Message[], Task> onReceivedAsync;
 
         readonly Dictionary<int, MessagingFactory> factories;
@@ -41,6 +43,7 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
             int nodeCount,
             int nodeId,
             string prefix,
+            TimeSpan defaultTtl,
             Func<string, ulong, Message[], Task> onReceivedAsync)
         {
             this.prefix = prefix;
@@ -48,6 +51,7 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
             this.partitionCount = partitionCount;
             this.nodeCount = nodeCount;
             this.nodeId = nodeId;
+            this.defaultTtl = defaultTtl;
 
             this.factories = new Dictionary<int, MessagingFactory>();
             this.pumps = new Dictionary<int, MessagePump>();
@@ -58,7 +62,7 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
             this.inputQueue = new InputQueue<InternalMessage>();
 
             this.initializeTask = Task.Factory.FromAsync(
-                (c, s) => new InitializeAsyncResult(this, c, s).Start(),
+                (c, s) => new InitializeAsyncResult(this, c, s, defaultTtl).Start(),
                 r => { InitializeAsyncResult.End(r); return true; },
                 null);
         }
@@ -107,15 +111,17 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
         {
             readonly static Action<AsyncResult, Exception> CompletingAction = Finally;
             readonly TopicMessageBus owner;
+            readonly TimeSpan defaultTtl;
 
             TopicDescription topicDescription;
             MessagingFactory factory;
 
-            public InitializeAsyncResult(TopicMessageBus owner, AsyncCallback callback, object state)
+            public InitializeAsyncResult(TopicMessageBus owner, AsyncCallback callback, object state, TimeSpan defaultTtl)
                 : base(TimeSpan.MaxValue, callback, state)
             {
                 this.owner = owner;
                 this.OnCompleting += CompletingAction;
+                this.defaultTtl = defaultTtl;
             }
 
             protected override IEnumerator<AsyncStep> GetAsyncSteps()
@@ -160,7 +166,8 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
                         {
                             SubscriptionDescription subscriptionDescription = new SubscriptionDescription(topicPath, subscriptionName)
                             {
-                                RequiresSession = false
+                                RequiresSession = false,
+                                DefaultMessageTimeToLive = defaultTtl
                             };
 
                             yield return this.CallAsync(

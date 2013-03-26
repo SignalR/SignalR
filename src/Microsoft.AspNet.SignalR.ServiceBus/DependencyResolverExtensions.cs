@@ -19,7 +19,7 @@ namespace Microsoft.AspNet.SignalR
         /// <returns>The dependency resolver.</returns>
         public static IDependencyResolver UseWindowsAzureServiceBus(this IDependencyResolver resolver, string connectionString, int instanceCount)
         {
-            return UseWindowsAzureServiceBus(resolver, connectionString, instanceCount, topicCount: 1);
+            return UseWindowsAzureServiceBus(resolver, connectionString, instanceCount, topicCount: 1, messageDefaultTtl: TimeSpan.MaxValue);
         }
 
         /// <summary>
@@ -29,8 +29,9 @@ namespace Microsoft.AspNet.SignalR
         /// <param name="connectionString">The service bus connection string.</param>
         /// <param name="instanceCount">The number of role instances in the deployment.</param>
         /// <param name="topicCount">The number of topics to use.</param>
+        /// <param name="messageDefaultTtl">The time to live of the message.</param>
         /// <returns>The dependency resolver.</returns>
-        public static IDependencyResolver UseWindowsAzureServiceBus(this IDependencyResolver resolver, string connectionString, int instanceCount, int topicCount)
+        public static IDependencyResolver UseWindowsAzureServiceBus(this IDependencyResolver resolver, string connectionString, int instanceCount, int topicCount, TimeSpan messageDefaultTtl)
         {
             AzureRoleInfo azureRole = null;
 
@@ -43,7 +44,7 @@ namespace Microsoft.AspNet.SignalR
                 throw new InvalidOperationException(string.Format(CultureInfo.CurrentCulture, Resources.Error_UnableToResolveIncaseIndexOfRole), ex);
             }
 
-            return UseServiceBus(resolver, connectionString, topicCount, instanceCount, azureRole.Index, azureRole.Name);
+            return UseServiceBus(resolver, connectionString, topicCount, instanceCount, azureRole.Index, azureRole.Name, messageDefaultTtl);
         }
 
         /// <summary>
@@ -55,10 +56,11 @@ namespace Microsoft.AspNet.SignalR
         /// <param name="instanceCount">The number of role instances in the deployment.</param>
         /// <param name="instanceIndex">The zero-based index of this role instance in the deployment.</param>
         /// <param name="topicPrefix">The topic prefix.</param>
+        /// <param name="messageDefaultTtl">The time to live of the message.</param>
         /// <returns>The dependency resolver.</returns>
-        public static IDependencyResolver UseServiceBus(this IDependencyResolver resolver, string connectionString, int topicCount, int instanceCount, int instanceIndex, string topicPrefix)
+        public static IDependencyResolver UseServiceBus(this IDependencyResolver resolver, string connectionString, int topicCount, int instanceCount, int instanceIndex, string topicPrefix, TimeSpan messageDefaultTtl)
         {
-            var bus = new Lazy<ServiceBusMessageBus>(() => new ServiceBusMessageBus(connectionString, topicCount, instanceCount, instanceIndex, topicPrefix, resolver));
+            var bus = new Lazy<ServiceBusMessageBus>(() => new ServiceBusMessageBus(connectionString, topicCount, instanceCount, instanceIndex, topicPrefix, resolver, messageDefaultTtl));
             resolver.Register(typeof(IMessageBus), () => bus.Value);
 
             return resolver;
