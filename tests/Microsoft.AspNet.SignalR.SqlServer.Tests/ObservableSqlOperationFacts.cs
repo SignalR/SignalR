@@ -98,12 +98,14 @@ namespace Microsoft.AspNet.SignalR.Tests.SqlServer
             Assert.Equal(retryLoopTotal, retryLoopCount);
         }
 
-        [Fact(Timeout = 1000)]
-        public void CallsOnErrorOnFatalException()
+        [Theory(Timeout = 1000)]
+        [InlineData("Fatal", true)]
+        [InlineData("Recoverable", false)]
+        public void CallsOnErrorOnlyOnFatalException(string exceptionMessage, bool shouldCallOnError)
         {
             // Arrange
             var mre = new ManualResetEventSlim(false);
-            var fatalExceptionThrown = false;
+            var onErrorCalled = false;
             var dbProviderFactory = new MockDbProviderFactory();
             var dbBehavior = new Mock<IDbBehavior>();
             var dbExceptionBehavior = new Mock<IDbExceptionBehavior>();
@@ -111,15 +113,22 @@ namespace Microsoft.AspNet.SignalR.Tests.SqlServer
                 .Returns<Exception>(ex => ex.Message.Equals("Recoverable", StringComparison.OrdinalIgnoreCase));
             dbBehavior.Setup(db => db.UpdateLoopRetryDelays).Returns(_defaultRetryDelays);
             dbBehavior.Setup(db => db.StartSqlDependencyListener()).Returns(false);
-            dbProviderFactory.MockDataReader.Setup(r => r.Read()).Throws(new ApplicationException("Fatal"));
-            
+            dbProviderFactory.MockDataReader.Setup(r => r.Read()).Throws(new ApplicationException(exceptionMessage));
+
             var operation = new ObservableDbOperation("test", "test", new TraceSource("test"), dbProviderFactory, dbBehavior.Object, dbExceptionBehavior.Object)
             {
                 RetryDelay = TimeSpan.FromMilliseconds(0),
                 OnError = ex =>
                 {
-                    fatalExceptionThrown = true;
+                    onErrorCalled = true;
                     mre.Set();
+                },
+                OnRetry = _ =>
+                {
+                    if (!shouldCallOnError)
+                    {
+                        mre.Set();
+                    }
                 }
             };
 
@@ -129,41 +138,7 @@ namespace Microsoft.AspNet.SignalR.Tests.SqlServer
             operation.Dispose();
 
             // Assert
-            Assert.True(fatalExceptionThrown);
-        }
-
-        [Fact(Timeout = 1000)]
-        public void ContinuesOnRecoverableExceptionInRetryLoop()
-        {
-            // Arrange
-            var mre = new ManualResetEventSlim(false);
-            var fatalExceptionThrown = false;
-            var dbProviderFactory = new MockDbProviderFactory();
-            var dbBehavior = new Mock<IDbBehavior>();
-            var dbExceptionBehavior = new Mock<IDbExceptionBehavior>();
-            dbExceptionBehavior.Setup(db => db.IsRecoverableException(It.IsAny<Exception>()))
-                .Returns<Exception>(ex => ex.Message.Equals("Recoverable", StringComparison.OrdinalIgnoreCase));
-            dbBehavior.Setup(db => db.UpdateLoopRetryDelays).Returns(_defaultRetryDelays);
-            dbBehavior.Setup(db => db.StartSqlDependencyListener()).Returns(false);
-            dbProviderFactory.MockDataReader.Setup(r => r.Read()).Throws(new ApplicationException("Recoverable"));
-            var operation = new ObservableDbOperation("test", "test", new TraceSource("test"), dbProviderFactory, dbBehavior.Object, dbExceptionBehavior.Object)
-            {
-                RetryDelay = TimeSpan.FromMilliseconds(0),
-                OnError = ex =>
-                {
-                    fatalExceptionThrown = true;
-                    mre.Set();
-                },
-                OnRetry = _ => mre.Set()
-            };
-
-            // Act
-            ThreadPool.QueueUserWorkItem(_ => operation.ExecuteReaderWithUpdates((record, o) => { }));
-            mre.Wait();
-            operation.Dispose();
-
-            // Assert
-            Assert.False(fatalExceptionThrown);
+            Assert.Equal(shouldCallOnError, onErrorCalled);
         }
 
         private class MockDbProviderFactory : IDbProviderFactory
