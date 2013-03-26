@@ -82,11 +82,11 @@
             if (args.which == 1) {
                 var line =  {
                     From: {
-                        X: data.lastCoords.X,
-                        Y: data.lastCoords.Y
+                        X: parseInt(data.lastCoords.X),
+                        Y: parseInt(data.lastCoords.Y)
                     }, To: {
-                        X: data.coords.X,
-                        Y: data.coords.Y
+                        X: parseInt(data.coords.X),
+                        Y: parseInt(data.coords.Y)
                     },
                     Color: settings.linecolor
                 };
