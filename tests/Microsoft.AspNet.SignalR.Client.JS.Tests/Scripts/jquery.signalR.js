@@ -120,6 +120,10 @@
         return new signalR.fn.init(url, qs, logging);
     };
 
+    signalR._ = {
+        defaultContentType: "application/x-www-form-urlencoded; charset=UTF-8"
+    };
+
     signalR.events = events;
 
     signalR.changeState = changeState;
@@ -334,7 +338,7 @@
                     }
                 }
 
-                connection.contentType = "application/x-www-form-urlencoded; charset=UTF-8";
+                connection.contentType = signalR._.defaultContentType;
             }
 
             connection.ajaxDataType = config.jsonp ? "jsonp" : "json";
@@ -666,6 +670,7 @@
     "use strict";
 
     var signalR = $.signalR,
+        signalRPrivate = $.signalR._,
         events = $.signalR.events,
         changeState = $.signalR.changeState;
 
@@ -832,7 +837,7 @@
                 url: url,
                 global: false,
                 type: connection.ajaxDataType === "jsonp" ? "GET" : "POST",
-                contentType: "application/x-www-form-urlencoded; charset=UTF-8",
+                contentType: signalRPrivate.defaultContentType,
                 dataType: connection.ajaxDataType,
                 data: {
                     data: data
