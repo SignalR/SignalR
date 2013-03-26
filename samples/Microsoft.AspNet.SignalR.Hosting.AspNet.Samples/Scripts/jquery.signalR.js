@@ -225,6 +225,8 @@
 
         ajaxDataType: "json",
 
+        contentType: "application/json; charset=UTF-8",
+
         logging: false,
 
         state: signalR.connectionState.disconnected,
@@ -331,6 +333,8 @@
                         connection.log("Using jsonp because this browser doesn't support CORS");
                     }
                 }
+
+                connection.contentType = "application/x-www-form-urlencoded; charset=UTF-8";
             }
 
             connection.ajaxDataType = config.jsonp ? "jsonp" : "json";
@@ -396,7 +400,7 @@
                 global: false,
                 cache: false,
                 type: "GET",
-                contentType: "application/json; charset=UTF-8",
+                contentType: connection.contentType,
                 data: {},
                 dataType: connection.ajaxDataType,
                 error: function (error) {
@@ -730,7 +734,7 @@
                 global: false,
                 cache: false,
                 type: "GET",
-                contentType: "application/json; charset=UTF-8",
+                contentType: connection.contentType,
                 data: {},
                 dataType: connection.ajaxDataType,
                 success: function (data) {
@@ -828,7 +832,7 @@
                 url: url,
                 global: false,
                 type: connection.ajaxDataType === "jsonp" ? "GET" : "POST",
-                contentType: connection.ajaxDataType === "jsonp" ? "text/html; charset=UTF-8" : "application/x-www-form-urlencoded; charset=UTF-8",
+                contentType: "application/x-www-form-urlencoded; charset=UTF-8",
                 dataType: connection.ajaxDataType,
                 data: {
                     data: data
@@ -866,7 +870,7 @@
                 timeout: 1000,
                 global: false,
                 type: "POST",
-                contentType: "application/json; charset=UTF-8",
+                contentType: connection.contentType,
                 dataType: connection.ajaxDataType,
                 data: {}
             });
@@ -1633,6 +1637,7 @@
                             cache: false,
                             type: "GET",
                             dataType: connection.ajaxDataType,
+                            contentType: connection.contentType,
                             success: function (minData) {
                                 var delay = 0,
                                     data;
