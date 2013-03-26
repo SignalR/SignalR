@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Globalization;
+using System.IO;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR.Client;
@@ -41,6 +43,52 @@ namespace Microsoft.AspNet.SignalR.Tests
             var secondInstance = connection.JsonSerializer;
 
             Assert.NotSame(firstInstance, secondInstance);
+        }
+
+        [Fact]
+        public void ConnectionTraceIsProperlyFiltered()
+        {
+            var traceNumber = 0;
+            var traceOutput = new StringBuilder();
+            var traceWriter = new StringWriter(traceOutput);
+            var connection = new Client.Connection("http://test");
+
+            Action traceAllLevels = () =>
+            {
+                connection.Trace(TraceLevels.Messages, "{0}: Message", ++traceNumber);
+                connection.Trace(TraceLevels.Events, "{0}: Event", ++traceNumber);
+                connection.Trace(TraceLevels.StateChanges, "{0}: State Change", ++traceNumber);
+            };
+
+            connection.TraceWriter = traceWriter;
+
+            traceAllLevels();
+            Assert.Equal("1: Message\r\n2: Event\r\n3: State Change\r\n", traceOutput.ToString());
+            traceOutput.Clear();
+
+            connection.TraceLevel = TraceLevels.All;
+            traceAllLevels();
+            Assert.Equal("4: Message\r\n5: Event\r\n6: State Change\r\n", traceOutput.ToString());
+            traceOutput.Clear();
+
+            connection.TraceLevel = TraceLevels.Messages;
+            traceAllLevels();
+            Assert.Equal("7: Message\r\n", traceOutput.ToString());
+            traceOutput.Clear();
+
+            connection.TraceLevel = TraceLevels.Events;
+            traceAllLevels();
+            Assert.Equal("11: Event\r\n", traceOutput.ToString());
+            traceOutput.Clear();
+
+            connection.TraceLevel = TraceLevels.StateChanges;
+            traceAllLevels();
+            Assert.Equal("15: State Change\r\n", traceOutput.ToString());
+            traceOutput.Clear();
+
+            connection.TraceLevel = TraceLevels.None;
+            traceAllLevels();
+            Assert.Equal(String.Empty, traceOutput.ToString());
         }
 
         public class Start

@@ -87,7 +87,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
 
             var url = (reconnecting ? connection.Url : connection.Url + "connect") + GetReceiveQueryString(connection, data);
 
-            connection.Trace.WriteLine("SSE: GET {0}", url);
+            connection.Trace(TraceLevels.Events, "SSE: GET {0}", url);
 
             HttpClient.Get(url, req =>
             {

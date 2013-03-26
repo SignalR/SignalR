@@ -85,6 +85,7 @@
     <Compile Include="Infrastructure\ExceptionHelper.cs" />
     <Compile Include="Infrastructure\ThreadSafeInvoker.cs" />
     <Compile Include="Infrastructure\UrlEncoder.cs" />
+    <Compile Include="TraceLevels.cs" />
     <Compile Include="Resources.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>

@@ -81,7 +81,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
             var builder = new UriBuilder(url);
             builder.Scheme = builder.Scheme == "https" ? "wss" : "ws";
 
-            _connectionInfo.Connection.Trace.WriteLine("WS: " + builder.Uri);
+            _connectionInfo.Connection.Trace(TraceLevels.Events, "WS: {0}", builder.Uri);
 
             var webSocket = new ClientWebSocket();
             _connectionInfo.Connection.PrepareRequest(new WebSocketWrapperRequest(webSocket));
@@ -104,7 +104,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
 
             if (!_abortEventSlim.Wait(timeout))
             {
-                _connectionInfo.Connection.Trace.WriteLine("WS: Abort never fired (" + _connectionInfo.Connection.ConnectionId + ")");
+                _connectionInfo.Connection.Trace(TraceLevels.Events, "WS: Abort never fired ({0})", _connectionInfo.Connection.ConnectionId);
             }
         }
 
@@ -115,7 +115,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
 
         public override void OnMessage(string message)
         {
-            _connectionInfo.Connection.Trace.WriteLine("WS: OnMessage({0}, {1})", _connectionInfo.Connection.ConnectionId, message);
+            _connectionInfo.Connection.Trace(TraceLevels.Messages, "WS: OnMessage({0}, {1})", _connectionInfo.Connection.ConnectionId, message);
 
             bool timedOut;
             bool disconnected;
@@ -142,7 +142,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
 
         public override void OnClose(bool clean)
         {
-            _connectionInfo.Connection.Trace.WriteLine("WS: OnClose({0}, {1})", _connectionInfo.Connection.ConnectionId, clean);
+            _connectionInfo.Connection.Trace(TraceLevels.Events, "WS: OnClose({0}, {1})", _connectionInfo.Connection.ConnectionId, clean);
 
             if (_disconnectToken.IsCancellationRequested)
             {
@@ -192,7 +192,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
 
         public void LostConnection(IConnection connection)
         {
-            _connectionInfo.Connection.Trace.WriteLine("WS: LostConnection({0})", _connectionInfo.Connection.ConnectionId);
+            _connectionInfo.Connection.Trace(TraceLevels.Events, "WS: LostConnection({0})", _connectionInfo.Connection.ConnectionId);
 
             Close();
         }

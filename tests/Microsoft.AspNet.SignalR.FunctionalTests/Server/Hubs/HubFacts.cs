@@ -367,7 +367,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                 SetHostData(host, query);
                 query["test"] = GetTestName();
                 var connection = new Client.Hubs.HubConnection(host.Url + "/signalr2/test", useDefaultUrl: false, queryString: query);
-                connection.Trace = host.ClientTraceOutput;
+                connection.TraceWriter = host.ClientTraceOutput;
 
                 var hub = connection.CreateHubProxy("demo");
 
@@ -550,7 +550,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                 SetHostData(host, query);
 
                 var connection = new Client.Hubs.HubConnection(host.Url + "/signalr2/test", useDefaultUrl: false, queryString: query);
-                connection.Trace = host.ClientTraceOutput;
+                connection.TraceWriter = host.ClientTraceOutput;
 
                 var hub = connection.CreateHubProxy("demo");
 
@@ -870,7 +870,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                 host.Initialize();
 
                 var connection = new Client.Hubs.HubConnection(host.Url, "a=b&test=" + GetTestName());
-                connection.Trace = host.ClientTraceOutput;
+                connection.TraceWriter = host.ClientTraceOutput;
 
                 var hub = connection.CreateHubProxy("CustomQueryHub");
 
@@ -897,7 +897,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                 qs["a"] = "b";
                 qs["test"] = GetTestName();
                 var connection = new Client.Hubs.HubConnection(host.Url, qs);
-                connection.Trace = host.ClientTraceOutput;
+                connection.TraceWriter = host.ClientTraceOutput;
 
                 var hub = connection.CreateHubProxy("CustomQueryHub");
 

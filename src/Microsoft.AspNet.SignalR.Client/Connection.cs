@@ -145,7 +145,8 @@ namespace Microsoft.AspNet.SignalR.Client
             _disconnectTimeoutOperation = DisposableAction.Empty;
             Items = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
             State = ConnectionState.Disconnected;
-            Trace = new DebugTextWriter();
+            TraceLevel = TraceLevels.All;
+            TraceWriter = new DebugTextWriter();
         }
 
         /// <summary>
@@ -163,7 +164,9 @@ namespace Microsoft.AspNet.SignalR.Client
             }
         }
 
-        public TextWriter Trace
+        public TraceLevels TraceLevel { get; set; }
+
+        public TextWriter TraceWriter
         {
             get
             {
@@ -389,7 +392,7 @@ namespace Microsoft.AspNet.SignalR.Client
                 // If we're in the expected old state then change state and return true
                 if (_state == oldState)
                 {
-                    Trace.WriteLine("ChangeState({0}, {1}, {2})", ConnectionId ?? "New connection", oldState, newState);
+                    Trace(TraceLevels.StateChanges, "ChangeState({0}, {1}, {2})", ConnectionId ?? "New connection", oldState, newState);
 
                     State = newState;
                     return true;
@@ -441,7 +444,7 @@ namespace Microsoft.AspNet.SignalR.Client
                     }
                     catch (Exception ex)
                     {
-                        Trace.WriteLine("Error: {0}", ex.GetBaseException());
+                        Trace(TraceLevels.Events, "Error: {0}", ex.GetBaseException());
                     }
                 }
 
@@ -452,7 +455,7 @@ namespace Microsoft.AspNet.SignalR.Client
                     {
                         string connectionId = ConnectionId;
 
-                        Trace.WriteLine("Stop({0})", ConnectionId);
+                        Trace(TraceLevels.Events, "Stop({0})", ConnectionId);
 
                         // Dispose the heart beat monitor so we don't fire notifications when waiting to abort
                         _monitor.Dispose();
@@ -465,7 +468,7 @@ namespace Microsoft.AspNet.SignalR.Client
 
                         if (_transport != null)
                         {
-                            Trace.WriteLine("Transport.Dispose({0})", connectionId);
+                            Trace(TraceLevels.Events, "Transport.Dispose({0})", connectionId);
 
                             _transport.Dispose();
                             _transport = null;
@@ -489,13 +492,13 @@ namespace Microsoft.AspNet.SignalR.Client
                     // Change state before doing anything else in case something later in the method throws
                     State = ConnectionState.Disconnected;
 
-                    Trace.WriteLine("Disconnect({0})", ConnectionId);
+                    Trace(TraceLevels.StateChanges, "Disconnect({0})", ConnectionId);
 
                     _disconnectTimeoutOperation.Dispose();
                     _disconnectCts.Cancel();
                     _monitor.Dispose();
 
-                    Trace.WriteLine("Closed({0})", ConnectionId);
+                    Trace(TraceLevels.Events, "Closed({0})", ConnectionId);
 
                     // Clear the state for this connection
                     ConnectionId = null;
@@ -542,6 +545,14 @@ namespace Microsoft.AspNet.SignalR.Client
             return Send(this.JsonSerializeObject(value));
         }
 
+        public void Trace(TraceLevels level, string format, params object[] args)
+        {
+            if (TraceLevel.HasFlag(level))
+            {
+                _traceWriter.WriteLine(format, args);
+            }
+        }
+
 
         [SuppressMessage("Microsoft.Design", "CA1062:Validate arguments of public methods", MessageId = "0", Justification = "This is called by the transport layer")]
         void IConnection.OnReceived(JToken message)
@@ -560,7 +571,7 @@ namespace Microsoft.AspNet.SignalR.Client
 
         void IConnection.OnError(Exception error)
         {
-            Trace.WriteLine("OnError({0})", error);
+            Trace(TraceLevels.Events, "OnError({0})", error);
 
             if (Error != null)
             {
@@ -597,7 +608,7 @@ namespace Microsoft.AspNet.SignalR.Client
 
         void IConnection.OnConnectionSlow()
         {
-            Trace.WriteLine("OnConnectionSlow({0})", ConnectionId);
+            Trace(TraceLevels.Events, "OnConnectionSlow({0})", ConnectionId);
 
             if (ConnectionSlow != null)
             {
