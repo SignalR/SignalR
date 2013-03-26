@@ -549,7 +549,9 @@ namespace Microsoft.AspNet.SignalR.Client
         {
             if (TraceLevel.HasFlag(level))
             {
-                _traceWriter.WriteLine(format, args);
+                _traceWriter.WriteLine(
+                    DateTime.UtcNow.ToString("HH:mm:ss.fffffff", CultureInfo.InvariantCulture) + " - " + format,
+                    args);
             }
         }
 

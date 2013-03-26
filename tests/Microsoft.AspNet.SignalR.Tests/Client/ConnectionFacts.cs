@@ -2,6 +2,7 @@
 using System.Globalization;
 using System.IO;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR.Client;
@@ -52,6 +53,10 @@ namespace Microsoft.AspNet.SignalR.Tests
             var traceOutput = new StringBuilder();
             var traceWriter = new StringWriter(traceOutput);
             var connection = new Client.Connection("http://test");
+            var timestampPattern = new Regex(@"^.* - ", RegexOptions.Multiline);
+
+            Func<string> traceWithoutTimestamps = () =>
+                timestampPattern.Replace(traceOutput.ToString(), String.Empty);
 
             Action traceAllLevels = () =>
             {
@@ -63,32 +68,32 @@ namespace Microsoft.AspNet.SignalR.Tests
             connection.TraceWriter = traceWriter;
 
             traceAllLevels();
-            Assert.Equal("1: Message\r\n2: Event\r\n3: State Change\r\n", traceOutput.ToString());
+            Assert.Equal("1: Message\r\n2: Event\r\n3: State Change\r\n", traceWithoutTimestamps());
             traceOutput.Clear();
 
             connection.TraceLevel = TraceLevels.All;
             traceAllLevels();
-            Assert.Equal("4: Message\r\n5: Event\r\n6: State Change\r\n", traceOutput.ToString());
+            Assert.Equal("4: Message\r\n5: Event\r\n6: State Change\r\n", traceWithoutTimestamps());
             traceOutput.Clear();
 
             connection.TraceLevel = TraceLevels.Messages;
             traceAllLevels();
-            Assert.Equal("7: Message\r\n", traceOutput.ToString());
+            Assert.Equal("7: Message\r\n", traceWithoutTimestamps());
             traceOutput.Clear();
 
             connection.TraceLevel = TraceLevels.Events;
             traceAllLevels();
-            Assert.Equal("11: Event\r\n", traceOutput.ToString());
+            Assert.Equal("11: Event\r\n", traceWithoutTimestamps());
             traceOutput.Clear();
 
             connection.TraceLevel = TraceLevels.StateChanges;
             traceAllLevels();
-            Assert.Equal("15: State Change\r\n", traceOutput.ToString());
+            Assert.Equal("15: State Change\r\n", traceWithoutTimestamps());
             traceOutput.Clear();
 
             connection.TraceLevel = TraceLevels.None;
             traceAllLevels();
-            Assert.Equal(String.Empty, traceOutput.ToString());
+            Assert.Equal(String.Empty, traceWithoutTimestamps());
         }
 
         public class Start
