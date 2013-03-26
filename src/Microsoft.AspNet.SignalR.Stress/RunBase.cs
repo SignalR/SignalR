@@ -95,7 +95,7 @@ namespace Microsoft.AspNet.SignalR.Stress
             foreach (var item in _samples)
             {
                 var counterName = item.Key.CounterName;
-                var key = String.Format("Stress-{0};{1}", GetType().Name, counterName);
+                var key = String.Format("{0};{1}", GetType().Name, counterName);
                 var samplesList = item.Value;
 
                 long[] values = new long[samplesList.Count - 1];
