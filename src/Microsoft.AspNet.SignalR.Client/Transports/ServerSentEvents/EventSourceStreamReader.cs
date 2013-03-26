@@ -58,7 +58,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports.ServerSentEvents
                         continue;
                     }
 
-                    _connection.Trace.WriteLine("SSE: OnMessage({0}, {1})", _connection.ConnectionId, sseEvent);
+                    _connection.Trace(TraceLevels.Messages, "SSE: OnMessage({0}, {1})", _connection.ConnectionId, sseEvent);
 
                     OnMessage(sseEvent);
                 }

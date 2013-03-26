@@ -28,7 +28,6 @@ namespace Microsoft.AspNet.SignalR.Tests
                 checkInterval: TimeSpan.FromSeconds(2)
             );
 
-            connection.Setup(m => m.Trace).Returns(new DummyTextWriter());
             connection.Setup(m => m.KeepAliveData).Returns(keepAliveData);
             connection.Setup(m => m.State).Returns(ConnectionState.Connected);
 
@@ -60,7 +59,6 @@ namespace Microsoft.AspNet.SignalR.Tests
                 checkInterval: TimeSpan.FromSeconds(2)
             );
 
-            connection.Setup(m => m.Trace).Returns(new DummyTextWriter());
             connection.Setup(m => m.KeepAliveData).Returns(keepAliveData);
             connection.Setup(m => m.State).Returns(ConnectionState.Connected);
             connection.Setup(m => m.Transport).Returns(transport.Object);
@@ -93,7 +91,6 @@ namespace Microsoft.AspNet.SignalR.Tests
                 checkInterval: TimeSpan.FromSeconds(2)
             );
 
-            connection.Setup(m => m.Trace).Returns(new DummyTextWriter());
             connection.Setup(m => m.KeepAliveData).Returns(keepAliveData);
             connection.Setup(m => m.State).Returns(ConnectionState.Connected);
             connection.Setup(m => m.Transport).Returns(transport.Object);

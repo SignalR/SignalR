@@ -77,7 +77,7 @@ namespace Microsoft.AspNet.SignalR.Client
                     if (!TimedOut)
                     {
                         // Connection has been lost
-                        _connection.Trace.WriteLine("Connection Timed-out : Transport Lost Connection {0}", DateTime.UtcNow);
+                        _connection.Trace(TraceLevels.Events, "Connection Timed-out : Transport Lost Connection {0}", DateTime.UtcNow);
                         TimedOut = true;
                         _connection.Transport.LostConnection(_connection);
                     }
@@ -87,7 +87,7 @@ namespace Microsoft.AspNet.SignalR.Client
                     if (!HasBeenWarned)
                     {
                         // Inform user and set HasBeenWarned to true
-                        _connection.Trace.WriteLine("Connection Timeout Warning : Notifying user {0}", DateTime.UtcNow);
+                        _connection.Trace(TraceLevels.Events, "Connection Timeout Warning : Notifying user {0}", DateTime.UtcNow);
                         HasBeenWarned = true;
                         _connection.OnConnectionSlow();
                     }

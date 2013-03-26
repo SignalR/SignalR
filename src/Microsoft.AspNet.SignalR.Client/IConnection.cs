@@ -30,7 +30,6 @@ namespace Microsoft.AspNet.SignalR.Client
 
         ICredentials Credentials { get; set; }
         CookieContainer CookieContainer { get; set; }
-        TextWriter Trace { get; }
         JsonSerializer JsonSerializer { get; }
 
         [SuppressMessage("Microsoft.Naming", "CA1716:IdentifiersShouldNotMatchKeywords", MessageId = "Stop", Justification = "Works in VB.NET.")]
@@ -45,5 +44,6 @@ namespace Microsoft.AspNet.SignalR.Client
         void OnConnectionSlow();
         void PrepareRequest(IRequest request);
         void UpdateLastKeepAlive();
+        void Trace(TraceLevels level, string format, params object[] args);
     }
 }
