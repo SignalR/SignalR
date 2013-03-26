@@ -91,7 +91,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
                               .Then(response => response.ReadAsString())
                               .Then(raw =>
                               {
-                                  connection.Trace(TraceLevels.Messages, "OnMessage({0}, {1})", connection.ConnectionId, raw);
+                                  connection.Trace(TraceLevels.Messages, "OnMessage({0})", raw);
 
                                   if (!String.IsNullOrEmpty(raw))
                                   {
@@ -134,7 +134,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
 
             if (!AbortResetEvent.WaitOne(timeout))
             {
-                connection.Trace(TraceLevels.Events, "Abort never fired ({0})", connection.ConnectionId);
+                connection.Trace(TraceLevels.Events, "Abort never fired");
             }
         }
 

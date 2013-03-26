@@ -94,7 +94,6 @@ namespace Microsoft.AspNet.SignalR.Tests
                                                  It.IsAny<IDictionary<string, string>>()))
                               .Returns(TaskAsyncHelper.FromResult(response.Object));
 
-                    connection.Setup(c => c.ConnectionId).Returns("someid");
                     connection.Setup(c => c.Trace(TraceLevels.Messages, It.IsAny<string>(), It.IsAny<object[]>()));
                     connection.SetupGet(c => c.Url).Returns("");
                     connection.SetupGet(c => c.QueryString).Returns("");

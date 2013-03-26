@@ -392,7 +392,7 @@ namespace Microsoft.AspNet.SignalR.Client
                 // If we're in the expected old state then change state and return true
                 if (_state == oldState)
                 {
-                    Trace(TraceLevels.StateChanges, "ChangeState({0}, {1}, {2})", ConnectionId ?? "New connection", oldState, newState);
+                    Trace(TraceLevels.StateChanges, "ChangeState({0}, {1})", oldState, newState);
 
                     State = newState;
                     return true;
@@ -455,7 +455,7 @@ namespace Microsoft.AspNet.SignalR.Client
                     {
                         string connectionId = ConnectionId;
 
-                        Trace(TraceLevels.Events, "Stop({0})", ConnectionId);
+                        Trace(TraceLevels.Events, "Stop");
 
                         // Dispose the heart beat monitor so we don't fire notifications when waiting to abort
                         _monitor.Dispose();
@@ -468,7 +468,7 @@ namespace Microsoft.AspNet.SignalR.Client
 
                         if (_transport != null)
                         {
-                            Trace(TraceLevels.Events, "Transport.Dispose({0})", connectionId);
+                            Trace(TraceLevels.Events, "Transport.Dispose({0}", connectionId);
 
                             _transport.Dispose();
                             _transport = null;
@@ -492,13 +492,13 @@ namespace Microsoft.AspNet.SignalR.Client
                     // Change state before doing anything else in case something later in the method throws
                     State = ConnectionState.Disconnected;
 
-                    Trace(TraceLevels.StateChanges, "Disconnect({0})", ConnectionId);
+                    Trace(TraceLevels.StateChanges, "Disconnect");
 
                     _disconnectTimeoutOperation.Dispose();
                     _disconnectCts.Cancel();
                     _monitor.Dispose();
 
-                    Trace(TraceLevels.Events, "Closed({0})", ConnectionId);
+                    Trace(TraceLevels.Events, "Closed");
 
                     // Clear the state for this connection
                     ConnectionId = null;
@@ -550,7 +550,9 @@ namespace Microsoft.AspNet.SignalR.Client
             if (TraceLevel.HasFlag(level))
             {
                 _traceWriter.WriteLine(
-                    DateTime.UtcNow.ToString("HH:mm:ss.fffffff", CultureInfo.InvariantCulture) + " - " + format,
+                    DateTime.UtcNow.ToString("HH:mm:ss.fffffff", CultureInfo.InvariantCulture) + " - " +
+                        (ConnectionId ?? "null") + " - " +
+                        format,
                     args);
             }
         }
@@ -610,7 +612,7 @@ namespace Microsoft.AspNet.SignalR.Client
 
         void IConnection.OnConnectionSlow()
         {
-            Trace(TraceLevels.Events, "OnConnectionSlow({0})", ConnectionId);
+            Trace(TraceLevels.Events, "OnConnectionSlow");
 
             if (ConnectionSlow != null)
             {
