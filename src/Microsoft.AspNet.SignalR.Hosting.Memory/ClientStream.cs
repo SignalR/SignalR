@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading;
+using Microsoft.AspNet.SignalR.Infrastructure;
 
 namespace Microsoft.AspNet.SignalR.Hosting.Memory
 {
@@ -13,7 +14,7 @@ namespace Microsoft.AspNet.SignalR.Hosting.Memory
 
         private readonly object _streamLock = new object();
         private readonly MemoryStream _ms = new MemoryStream();
-        private readonly CancellationTokenSource _cancelTokenSource = new CancellationTokenSource();
+        private readonly SafeCancellationTokenSource _cancelTokenSource = new SafeCancellationTokenSource();
         private readonly Reader _reader = new Reader();
 
         public ClientStream(INetworkObserver networkObserver)
