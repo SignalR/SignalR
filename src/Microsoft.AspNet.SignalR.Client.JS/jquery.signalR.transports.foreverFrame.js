@@ -15,7 +15,7 @@
         // the foreverFrame transport with unnecessary functions/utilities.
         loadPreventer = (function () {
             var loadingFixIntervalId = null,
-                loadingFixInterval = 3000,
+                loadingFixInterval = 1000,
                 attachedTo = 0,
                 ieVersion = (function () {
                     var version,
