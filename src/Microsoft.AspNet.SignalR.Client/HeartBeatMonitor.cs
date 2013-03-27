@@ -5,6 +5,10 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 
+#if NETFX_CORE
+using Windows.System.Threading;
+#endif
+
 namespace Microsoft.AspNet.SignalR.Client
 {
     public class HeartbeatMonitor : IDisposable
@@ -12,6 +16,8 @@ namespace Microsoft.AspNet.SignalR.Client
 #if !NETFX_CORE
         // Timer to determine when to notify the user and reconnect if required
         private Timer _timer;
+#else
+        private ThreadPoolTimer _timer;
 #endif
         // Variable to prevent race conditions with the timer
         private int _beatActive;
@@ -44,6 +50,8 @@ namespace Microsoft.AspNet.SignalR.Client
             TimedOut = false;
 #if !NETFX_CORE
             _timer = new Timer(_ => Beat(), state: null, dueTime: _connection.KeepAliveData.CheckInterval, period: _connection.KeepAliveData.CheckInterval);
+#else
+            _timer = ThreadPoolTimer.CreatePeriodicTimer((timer) => Beat(), period: _connection.KeepAliveData.CheckInterval);
 #endif
         }
 
@@ -119,13 +127,18 @@ namespace Microsoft.AspNet.SignalR.Client
         {
             if (disposing)
             {
-#if !NETFX_CORE
                 if (_timer != null)
                 {
+#if !NETFX_CORE
+                
                     _timer.Dispose();
                     _timer = null;
-                }
+#else
+                    _timer.Cancel();
+                    _timer = null;
 #endif
+                }
+
             }
         }
     }
