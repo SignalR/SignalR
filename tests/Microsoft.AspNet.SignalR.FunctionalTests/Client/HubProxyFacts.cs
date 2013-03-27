@@ -183,7 +183,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                 hubConnection.Start(host.Transport).Wait();
 
                 var ex = Assert.Throws<InvalidOperationException>(() => hubConnection.Headers.Add("test-header", "test-header"));
-                Assert.Equal("Request headers can only be set when the connection is disconnected.", ex.Message);
+                Assert.Equal("Request headers cannot be set after the connection has started.", ex.Message);
 
                 // Clean-up
                 hubConnection.Stop();

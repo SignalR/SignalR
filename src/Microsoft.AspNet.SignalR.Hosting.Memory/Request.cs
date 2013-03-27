@@ -75,12 +75,14 @@ namespace Microsoft.AspNet.SignalR.Hosting.Memory
 
         public void SetRequestHeaders(IDictionary<string, string> headers)
         {
-            if (headers != null)
+            if (headers == null)
             {
-                foreach (KeyValuePair<string, string> headerEntry in headers)
-                {
-                    _requestHeaders.SetHeader(headerEntry.Key, headerEntry.Value);
-                }
+                throw new ArgumentNullException("headers");
+            }
+
+            foreach (KeyValuePair<string, string> headerEntry in headers)
+            {
+                _requestHeaders.SetHeader(headerEntry.Key, headerEntry.Value);
             }
         }
     }

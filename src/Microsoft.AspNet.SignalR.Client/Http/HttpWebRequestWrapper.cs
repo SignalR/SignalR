@@ -19,7 +19,8 @@ namespace Microsoft.AspNet.SignalR.Client.Http
 #if (!WINDOWS_PHONE && !SILVERLIGHT)                                                                                                                                               
                                                                         { HttpRequestHeader.Connection.ToString(), (request, value) => { request.Connection = value; } },
                                                                         { HttpRequestHeader.Date.ToString(), (request, value) => {request.Date = DateTime.Parse(value, CultureInfo.CurrentCulture); } },
-                                                                        { HttpRequestHeader.Expect.ToString(), (request, value) => {request.Expect = value;} },                                                                                                                                             { HttpRequestHeader.Host.ToString(), (request, value) => {request.Host = value; }  },
+                                                                        { HttpRequestHeader.Expect.ToString(), (request, value) => {request.Expect = value;} },
+                                                                        { HttpRequestHeader.Host.ToString(), (request, value) => {request.Host = value; }  },                                                                     
                                                                         { HttpRequestHeader.IfModifiedSince.ToString(), (request, value) => {request.IfModifiedSince = DateTime.Parse(value, CultureInfo.CurrentCulture);} },
                                                                         { HttpRequestHeader.Referer.ToString(), (request, value) => { request.Referer = value; } },                                                                         
                                                                         { HttpRequestHeader.TransferEncoding.ToString(), (request, value) => { request.TransferEncoding = value; } },
@@ -100,25 +101,26 @@ namespace Microsoft.AspNet.SignalR.Client.Http
 
         public void SetRequestHeaders(IDictionary<string, string> headers)
         {
-            if (headers != null)
+            if (headers == null)
             {
-                foreach (KeyValuePair<string, string> headerEntry in headers)
-                {
-                    if (!_restrictedHeadersSet.Keys.Contains(headerEntry.Key))
-                    {
-#if (!WINDOWS_PHONE && !SILVERLIGHT)
-                        _request.Headers.Add(headerEntry.Key, headerEntry.Value);
-#endif
-                    }
-                    else
-                    {
-                        Action<HttpWebRequest, string> setHeaderAction;
-                        _restrictedHeadersSet.TryGetValue(headerEntry.Key, out setHeaderAction);
+                throw new ArgumentNullException("headers");
+            }
 
-                        if (setHeaderAction != null)
-                        {
-                            setHeaderAction.Invoke(_request, headerEntry.Value);
-                        }
+            foreach (KeyValuePair<string, string> headerEntry in headers)
+            {
+                if (!_restrictedHeadersSet.Keys.Contains(headerEntry.Key))
+                {
+#if (!WINDOWS_PHONE && !SILVERLIGHT)
+                    _request.Headers.Add(headerEntry.Key, headerEntry.Value);
+#endif
+                }
+                else
+                {
+                    Action<HttpWebRequest, string> setHeaderAction;
+
+                    if (_restrictedHeadersSet.TryGetValue(headerEntry.Key, out setHeaderAction))
+                    {
+                        setHeaderAction.Invoke(_request, headerEntry.Value);
                     }
                 }
             }
