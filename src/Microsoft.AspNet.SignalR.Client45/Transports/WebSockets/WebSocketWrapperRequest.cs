@@ -1,6 +1,9 @@
 ﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.md in the project root for license information.
 
+using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.Net;
+using System;
 using System.Net.WebSockets;
 using Microsoft.AspNet.SignalR.Client.Http;
 
@@ -72,6 +75,17 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
             set
             {
 
+            }
+        }
+
+        public void SetRequestHeaders(IDictionary<string, string> headers)
+        {
+            if (headers != null)
+            {
+                foreach (KeyValuePair<string, string> headerEntry in headers)
+                {
+                    _clientWebSocket.Options.SetRequestHeader(headerEntry.Key, headerEntry.Value);
+                }
             }
         }
 

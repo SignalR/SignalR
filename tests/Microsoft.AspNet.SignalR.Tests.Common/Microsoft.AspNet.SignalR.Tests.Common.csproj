@@ -103,6 +103,7 @@
       <Link>Hubs\DemoHub.cs</Link>
     </Compile>
     <Compile Include="App_Start\InitializeIISHost.cs" />
+    <Compile Include="Connections\ExamineHeadersConnection.cs" />
     <Compile Include="Handlers\GCHandler.cs" />
     <Compile Include="Handlers\PingHandler.cs" />
     <Compile Include="Build\StartIISTask.cs" />
@@ -120,6 +121,7 @@
     <Compile Include="Connections\UnusableProtectedConnection.cs" />
     <Compile Include="Hubs\ChatWithGroups.cs" />
     <Compile Include="Hubs\EchoHub.cs" />
+    <Compile Include="Hubs\ExamineHeadersHub.cs" />
     <Compile Include="Hubs\MyItemsHub.cs" />
     <Compile Include="Infrastructure\BasicAuthModule.cs" />
     <Compile Include="Infrastructure\ClientAssertExtensions.cs" />
