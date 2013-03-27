@@ -195,12 +195,17 @@ namespace Microsoft.AspNet.SignalR.Crank
             }
         }
 
+        private static string ExpandMachineName(string machineName)
+        {
+            return (machineName == ".") ? Environment.MachineName : machineName;
+        }
+
         private static void Record(CrankArguments arguments)
         {
             var maxConnections = 0;
             foreach (var sample in _samples)
             {
-                var instance = String.IsNullOrEmpty(sample.Key.InstanceName) ? sample.Key.MachineName : sample.Key.InstanceName;
+                var instance = String.IsNullOrEmpty(sample.Key.InstanceName) ? ExpandMachineName(sample.Key.MachineName) : sample.Key.InstanceName;
                 var key = String.Format("{0}({1})", sample.Key.CounterName, instance);
                 var samples = sample.Value;
 
