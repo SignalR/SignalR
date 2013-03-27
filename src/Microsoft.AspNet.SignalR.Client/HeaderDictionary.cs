@@ -5,26 +5,20 @@ using System.Text;
 
 namespace Microsoft.AspNet.SignalR.Client
 {
-    public class CustomHeaderDictionary : IDictionary<string, string>
+    public class HeaderDictionary : IDictionary<string, string>
     {
         private IDictionary<string, string> _dictionary = new Dictionary<string, string>();
-        private IConnection _conn;
+        private readonly IConnection _connection;
 
-        public CustomHeaderDictionary(IConnection connection)
+        public HeaderDictionary(IConnection connection)
         {
-            _conn = connection;
+            _connection = connection;
         }
 
         public void Add(string key, string value)
         {
-            if (_conn.State == ConnectionState.Disconnected)
-            {
-                _dictionary[key] = value;
-            }
-            else
-            {
-                throw new InvalidOperationException(Resources.Error_HeadersCanOnlyBeSetWhenDisconnected);
-            }
+            EnsureConnnectionDisconnected();
+            _dictionary.Add(key, value);
         }
 
         public bool ContainsKey(string key)
@@ -39,6 +33,7 @@ namespace Microsoft.AspNet.SignalR.Client
 
         public bool Remove(string key)
         {
+            EnsureConnnectionDisconnected();
             return _dictionary.Remove(key);
         }
 
@@ -60,24 +55,20 @@ namespace Microsoft.AspNet.SignalR.Client
             }
             set
             {
-                if (_conn.State == ConnectionState.Disconnected)
-                {
-                    _dictionary.Add(key, value);
-                }
-                else
-                {
-                    throw new InvalidOperationException(Resources.Error_HeadersCanOnlyBeSetWhenDisconnected);
-                }
+                EnsureConnnectionDisconnected();
+                _dictionary[key] = value;
             }
         }
 
         public void Add(KeyValuePair<string, string> item)
         {
+            EnsureConnnectionDisconnected();
             _dictionary.Add(item);
         }
 
         public void Clear()
         {
+            EnsureConnnectionDisconnected();
             _dictionary.Clear();
         }
 
@@ -98,11 +89,12 @@ namespace Microsoft.AspNet.SignalR.Client
 
         public bool IsReadOnly
         {
-            get { return _dictionary.IsReadOnly; }
+            get { return _connection.State != ConnectionState.Disconnected || _dictionary.IsReadOnly; }
         }
 
         public bool Remove(KeyValuePair<string, string> item)
         {
+            EnsureConnnectionDisconnected();
             return _dictionary.Remove(item);
         }
 
@@ -114,6 +106,14 @@ namespace Microsoft.AspNet.SignalR.Client
         System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
         {
             return _dictionary.GetEnumerator();
+        }
+
+        private void EnsureConnnectionDisconnected()
+        {
+            if (_connection.State != ConnectionState.Disconnected)
+            {
+                throw new InvalidOperationException(Resources.Error_HeadersCanOnlyBeSetWhenDisconnected);
+            }
         }
     }
 }

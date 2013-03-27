@@ -147,7 +147,7 @@ namespace Microsoft.AspNet.SignalR.Client
             State = ConnectionState.Disconnected;
             TraceLevel = TraceLevels.All;
             TraceWriter = new DebugTextWriter();
-            Headers = new CustomHeaderDictionary(this);
+            Headers = new HeaderDictionary(this);
         }
 
         /// <summary>
@@ -215,7 +215,7 @@ namespace Microsoft.AspNet.SignalR.Client
         public ICredentials Credentials { get; set; }
 
         /// <summary>
-        /// Gets and sets headers for the request
+        /// Gets and sets headers for the requests
         /// </summary>
         public IDictionary<string, string> Headers { get; private set; }
 

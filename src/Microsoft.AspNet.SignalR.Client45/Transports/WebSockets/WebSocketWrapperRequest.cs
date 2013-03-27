@@ -80,12 +80,14 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
 
         public void SetRequestHeaders(IDictionary<string, string> headers)
         {
-            if (headers != null)
+            if (headers == null)
             {
-                foreach (KeyValuePair<string, string> headerEntry in headers)
-                {
-                    _clientWebSocket.Options.SetRequestHeader(headerEntry.Key, headerEntry.Value);
-                }
+                throw new ArgumentNullException("headers");
+            }
+
+            foreach (KeyValuePair<string, string> headerEntry in headers)
+            {
+                _clientWebSocket.Options.SetRequestHeader(headerEntry.Key, headerEntry.Value);
             }
         }
 

@@ -15,6 +15,7 @@ namespace Microsoft.AspNet.SignalR.Client.WinRT.Http
     {
         private readonly Action<IRequest> _prepareRequest;
         private readonly Action _cancel;
+        private HttpRequestMessage _request;
 
         public DefaultHttpHandler(Action<IRequest> prepareRequest, Action cancel)
         {
@@ -25,6 +26,8 @@ namespace Microsoft.AspNet.SignalR.Client.WinRT.Http
         [SuppressMessage("Microsoft.Design", "CA1062:Validate arguments of public methods", MessageId = "0", Justification = "We call this method.")]
         protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
         {
+            _request = request;
+
             _prepareRequest(this);
 
             if (UserAgent != null)
@@ -55,6 +58,15 @@ namespace Microsoft.AspNet.SignalR.Client.WinRT.Http
 
         public void SetRequestHeaders(IDictionary<string, string> headers)
         {
+            if (headers == null)
+            {
+                throw new ArgumentNullException("headers");
+            }
+
+            foreach (KeyValuePair<string, string> headerEntry in headers)
+            {
+                _request.Headers.Add(headerEntry.Key, headerEntry.Value);
+            }
         }
 
         public void Abort()
