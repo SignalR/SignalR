@@ -58,6 +58,9 @@
     <Compile Include="..\Microsoft.AspNet.SignalR.Client\ConnectionState.cs">
       <Link>ConnectionState.cs</Link>
     </Compile>
+    <Compile Include="..\Microsoft.AspNet.SignalR.Client\HeaderDictionary.cs">
+      <Link>HeaderDictionary.cs</Link>
+    </Compile>
     <Compile Include="..\Microsoft.AspNet.SignalR.Client\HeartBeatMonitor.cs">
       <Link>HeartBeatMonitor.cs</Link>
     </Compile>

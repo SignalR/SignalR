@@ -1,5 +1,7 @@
 ﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.md in the project root for license information.
 
+using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.Net;
 
 namespace Microsoft.AspNet.SignalR.Client.Http
@@ -40,5 +42,11 @@ namespace Microsoft.AspNet.SignalR.Client.Http
         /// Aborts the request.
         /// </summary>
         void Abort();
+
+        /// <summary>
+        /// Set Request Headers
+        /// </summary>
+        /// <param name="headers">request headers</param>
+        void SetRequestHeaders(IDictionary<string, string> headers);
     }
 }
