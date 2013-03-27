@@ -468,7 +468,7 @@ namespace Microsoft.AspNet.SignalR.Client
 
                         if (_transport != null)
                         {
-                            Trace(TraceLevels.Events, "Transport.Dispose({0}", connectionId);
+                            Trace(TraceLevels.Events, "Transport.Dispose({0})", connectionId);
 
                             _transport.Dispose();
                             _transport = null;
