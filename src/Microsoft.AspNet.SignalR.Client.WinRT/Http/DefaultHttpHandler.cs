@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.md in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Net.Http;
 using System.Net.Http.Headers;
@@ -50,6 +51,10 @@ namespace Microsoft.AspNet.SignalR.Client.WinRT.Http
         {
             get;
             set;
+        }
+
+        public void SetRequestHeaders(IDictionary<string, string> headers)
+        {
         }
 
         public void Abort()

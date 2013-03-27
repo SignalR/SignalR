@@ -147,6 +147,7 @@ namespace Microsoft.AspNet.SignalR.Client
             State = ConnectionState.Disconnected;
             TraceLevel = TraceLevels.All;
             TraceWriter = new DebugTextWriter();
+            Headers = new CustomHeaderDictionary(this);
         }
 
         /// <summary>
@@ -212,6 +213,11 @@ namespace Microsoft.AspNet.SignalR.Client
         /// Gets or sets authentication information for the connection.
         /// </summary>
         public ICredentials Credentials { get; set; }
+
+        /// <summary>
+        /// Gets and sets headers for the request
+        /// </summary>
+        public IDictionary<string, string> Headers { get; private set; }
 
 #if !SILVERLIGHT
         /// <summary>
@@ -653,12 +659,14 @@ namespace Microsoft.AspNet.SignalR.Client
             {
                 request.CookieContainer = CookieContainer;
             }
+
 #if !SILVERLIGHT
             if (Proxy != null)
             {
                 request.Proxy = Proxy;
             }
 #endif
+            request.SetRequestHeaders(Headers);
         }
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode", Justification = "Can be called via other clients.")]

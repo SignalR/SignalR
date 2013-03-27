@@ -54,6 +54,7 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure.IIS
             RouteTable.Routes.MapConnection<MyGroupEchoConnection>("group-echo", "group-echo");
             RouteTable.Routes.MapConnection<MySendingConnection>("multisend", "multisend", new ConnectionConfiguration { EnableCrossDomain = true });
             RouteTable.Routes.MapConnection<MyReconnect>("my-reconnect", "my-reconnect");
+            RouteTable.Routes.MapConnection<ExamineHeadersConnection>("examine-request", "examine-request");
             RouteTable.Routes.MapConnection<MyGroupConnection>("groups", "groups");
             RouteTable.Routes.MapConnection<MyRejoinGroupsConnection>("rejoin-groups", "rejoin-groups");
             RouteTable.Routes.MapConnection<FilteredConnection>("filter", "filter");

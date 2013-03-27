@@ -12,7 +12,6 @@ namespace Microsoft.AspNet.SignalR.Client {
     using System;
     using System.Reflection;
     
-    
     /// <summary>
     ///   A strongly-typed resource class, for looking up localized strings, etc.
     /// </summary>
@@ -81,6 +80,15 @@ namespace Microsoft.AspNet.SignalR.Client {
         internal static string Error_ConnectionHasNotBeenEstablished {
             get {
                 return ResourceManager.GetString("Error_ConnectionHasNotBeenEstablished", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Request headers can only be set when the connection is disconnected..
+        /// </summary>
+        internal static string Error_HeadersCanOnlyBeSetWhenDisconnected {
+            get {
+                return ResourceManager.GetString("Error_HeadersCanOnlyBeSetWhenDisconnected", resourceCulture);
             }
         }
         

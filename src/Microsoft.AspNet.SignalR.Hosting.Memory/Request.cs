@@ -72,5 +72,16 @@ namespace Microsoft.AspNet.SignalR.Hosting.Memory
             object value;
             return environment.TryGetValue(key, out value) ? (T)value : default(T);
         }
+
+        public void SetRequestHeaders(IDictionary<string, string> headers)
+        {
+            if (headers != null)
+            {
+                foreach (KeyValuePair<string, string> headerEntry in headers)
+                {
+                    _requestHeaders.SetHeader(headerEntry.Key, headerEntry.Value);
+                }
+            }
+        }
     }
 }
