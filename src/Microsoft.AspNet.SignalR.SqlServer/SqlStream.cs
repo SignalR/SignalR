@@ -19,7 +19,7 @@ namespace Microsoft.AspNet.SignalR.SqlServer
         private readonly TraceSource _trace;
         private readonly string _tracePrefix;
 
-        public SqlStream(int streamIndex, string connectionString, string tableName, Func<int, ulong, IList<Message>, Task> onReceived, Action onRetry, Action<Exception> onError, TraceSource traceSource)
+        public SqlStream(int streamIndex, string connectionString, string tableName, Action<int, ulong, IList<Message>> onReceived, Action onRetry, Action<Exception> onError, TraceSource traceSource)
         {
             _streamIndex = streamIndex;
             _onRetry = onRetry;

@@ -26,7 +26,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
         {
             var traceManager = resolver.Resolve<ITraceManager>();
             _trace = traceManager["SignalR." + typeof(ScaleoutMessageBus).Name];
-            _streamManager = new Lazy<ScaleoutStreamManager>(() => new ScaleoutStreamManager(_trace, Send, OnReceivedCore, StreamCount));
+            _streamManager = new Lazy<ScaleoutStreamManager>(() => new ScaleoutStreamManager(Send, OnReceivedCore, StreamCount));
         }
 
         /// <summary>
@@ -190,15 +190,15 @@ namespace Microsoft.AspNet.SignalR.Messaging
         /// <param name="id">id of the payload within that stream</param>
         /// <param name="messages">List of messages associated</param>
         /// <returns></returns>
-        protected Task OnReceived(int streamIndex, ulong id, IList<Message> messages)
+        protected void OnReceived(int streamIndex, ulong id, IList<Message> messages)
         {
-            return StreamManager.OnReceived(streamIndex, id, messages);
+            StreamManager.OnReceived(streamIndex, id, messages);
         }
 
 
         [SuppressMessage("Microsoft.Design", "CA1062:Validate arguments of public methods", MessageId = "2", Justification = "Called from derived class")]
         [SuppressMessage("Microsoft.Design", "CA1062:Validate arguments of public methods", MessageId = "0", Justification = "Called from derived class")]
-        private Task OnReceivedCore(int streamIndex, ulong id, IList<Message> messages)
+        private void OnReceivedCore(int streamIndex, ulong id, IList<Message> messages)
         {
             Counters.ScaleoutMessageBusMessagesReceivedPerSec.IncrementBy(messages.Count);
 
@@ -212,7 +212,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
                 Message message = messages[i];
 
                 keys.Add(message.Key);
-                
+
                 ulong localId = Save(message);
                 MessageStore<Message> messageStore = Topics[message.Key].Store;
 
@@ -230,8 +230,6 @@ namespace Microsoft.AspNet.SignalR.Messaging
             {
                 ScheduleEvent(eventKey);
             }
-
-            return TaskAsyncHelper.Empty;
         }
 
         public override Task Publish(Message message)

@@ -10,17 +10,23 @@ namespace Microsoft.AspNet.SignalR.Messaging
     internal class ScaleoutTaskQueue
     {
         private TaskCompletionSource<object> _taskCompletionSource;
-        private TaskQueue _sendQueue;
-        private Task _queueTask;
+        private TaskQueue _queue;
+        private Task _closeTask;
         private QueueState _state;
+        private readonly int _size;
 
-        private readonly TraceSource _trace;
+        private const int DefaultQueueSize = 100000;
 
         private static readonly Task _queueFullTask = TaskAsyncHelper.FromError(new InvalidOperationException(Resources.Error_TaskQueueFull));
 
-        public ScaleoutTaskQueue(TraceSource trace)
+        public ScaleoutTaskQueue()
+            : this(DefaultQueueSize)
         {
-            _trace = trace;
+        }
+
+        public ScaleoutTaskQueue(int size)
+        {
+            _size = size;
 
             InitializeCore();
         }
@@ -32,14 +38,10 @@ namespace Microsoft.AspNet.SignalR.Messaging
                 if (ChangeState(QueueState.Open))
                 {
                     _taskCompletionSource.TrySetResult(null);
-
-                    _queueTask = _sendQueue.Drain();
-
-                    _sendQueue = null;
                 }
             }
         }
-        
+
         public Task Enqueue(Func<object, Task> send, object state)
         {
             lock (this)
@@ -47,16 +49,11 @@ namespace Microsoft.AspNet.SignalR.Messaging
                 if (_state == QueueState.Closed)
                 {
                     // This will be faulted
-                    return _queueTask;
-                }
-
-                if (_queueTask != null)
-                {
-                    return _queueTask.Then((s, o) => s(o), send, state);
+                    return _closeTask;
                 }
 
                 // If Enqueue returns null it means the queue is full
-                return _sendQueue.Enqueue(send, state) ?? _queueFullTask;
+                return _queue.Enqueue(send, state) ?? _queueFullTask;
             }
         }
 
@@ -76,51 +73,53 @@ namespace Microsoft.AspNet.SignalR.Messaging
             lock (this)
             {
                 if (ChangeState(QueueState.Closed))
-                {
-                    _sendQueue = null;
-
-                    _queueTask = TaskAsyncHelper.FromError(error);
+                {                   
+                    _closeTask = TaskAsyncHelper.FromError(error);
                 }
             }
         }
 
         private void InitializeCore(int? size = null)
         {
-            _taskCompletionSource = new TaskCompletionSource<object>();
-
             Task task = DrainQueue();
 
             if (size != null)
             {
-                _sendQueue = new TaskQueue(task, size.Value);
+                _queue = new TaskQueue(task, size.Value);
             }
             else
             {
-                _sendQueue = new TaskQueue(task);
+                _queue = new TaskQueue(task, _size);
             }
         }
 
         private Task DrainQueue()
         {
-            if (_sendQueue != null)
+            _taskCompletionSource = new TaskCompletionSource<object>();
+
+            if (_queue != null)
             {
-                // Attempt to drain the queue before creating the new one                
-                return new[] { AlwaysSucceed(_sendQueue.Drain()), _taskCompletionSource.Task }.Then(() => { });
+                // Attempt to drain the queue before creating the new one
+                return new[] { AlwaysSucceed(_queue.Drain()), _taskCompletionSource.Task }.Then(() => { });
             }
 
             // Nothing to drain
             return _taskCompletionSource.Task;
         }
 
-        private bool ChangeState(QueueState queueState)
+        private bool ChangeState(QueueState newState)
         {
-            QueueState oldState = _state;
-            _state = queueState;
-            return oldState != queueState;
+            if (_state != newState)
+            {
+                _state = newState;
+                return true;
+            }
+
+            return false;
         }
 
-        private Task AlwaysSucceed(Task task)
-        {            
+        private static Task AlwaysSucceed(Task task)
+        {
             var tcs = new TaskCompletionSource<object>();
             task.Catch().Finally(state => ((TaskCompletionSource<object>)state).SetResult(null), tcs);
             return tcs.Task;

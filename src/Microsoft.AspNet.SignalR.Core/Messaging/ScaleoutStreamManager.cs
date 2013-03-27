@@ -12,25 +12,22 @@ namespace Microsoft.AspNet.SignalR.Messaging
     internal class ScaleoutStreamManager
     {
         private readonly Func<int, IList<Message>, Task> _send;
-        private readonly Func<int, ulong, IList<Message>, Task> _receive;
+        private readonly Action<int, ulong, IList<Message>> _receive;
         private readonly ScaleoutTaskQueue[] _sendQueues;
-        private readonly TaskQueue _receiveQueue;
 
-        public ScaleoutStreamManager(TraceSource trace,
-                                    Func<int, IList<Message>, Task> send,
-                                    Func<int, ulong, IList<Message>, Task> receive,
-                                    int streamCount)
+        public ScaleoutStreamManager(Func<int, IList<Message>, Task> send,
+                                     Action<int, ulong, IList<Message>> receive,
+                                     int streamCount)
         {
             _sendQueues = new ScaleoutTaskQueue[streamCount];
             _send = send;
             _receive = receive;
-            _receiveQueue = new TaskQueue();
 
             var receiveMapping = new ScaleoutMappingStore[streamCount];
 
             for (int i = 0; i < streamCount; i++)
             {
-                _sendQueues[i] = new ScaleoutTaskQueue(trace);
+                _sendQueues[i] = new ScaleoutTaskQueue();
                 receiveMapping[i] = new ScaleoutMappingStore();
             }
 
@@ -61,18 +58,9 @@ namespace Microsoft.AspNet.SignalR.Messaging
             return _sendQueues[streamIndex].Enqueue(state => Send(state), context);
         }
 
-        public Task OnReceived(int streamIndex, ulong id, IList<Message> messages)
+        public void OnReceived(int streamIndex, ulong id, IList<Message> messages)
         {
-            var context = new ReceiveContext(this, streamIndex, id, messages);
-
-            return _receiveQueue.Enqueue(state => OnReceived(state), context);
-        }
-
-        private static Task OnReceived(object state)
-        {
-            var context = (ReceiveContext)state;
-
-            return context.QueueManager._receive(context.Index, context.Id, context.Messages);
+            _receive(streamIndex, id, messages);
         }
 
         private static Task Send(object state)
@@ -92,22 +80,6 @@ namespace Microsoft.AspNet.SignalR.Messaging
             {
                 QueueManager = scaleoutStream;
                 Index = index;
-                Messages = messages;
-            }
-        }
-
-        private class ReceiveContext
-        {
-            public ScaleoutStreamManager QueueManager;
-            public int Index;
-            public ulong Id;
-            public IList<Message> Messages;
-
-            public ReceiveContext(ScaleoutStreamManager scaleoutStream, int index, ulong id, IList<Message> messages)
-            {
-                QueueManager = scaleoutStream;
-                Index = index;
-                Id = id;
                 Messages = messages;
             }
         }

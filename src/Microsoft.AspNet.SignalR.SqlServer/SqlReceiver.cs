@@ -17,7 +17,7 @@ namespace Microsoft.AspNet.SignalR.SqlServer
     {
         private readonly string _connectionString;
         private readonly string _tableName;
-        private readonly Func<ulong, IList<Message>, Task> _onReceived;
+        private readonly Action<ulong, IList<Message>> _onReceived;
         private readonly Action _onRetry;
         private readonly Action<Exception> _onError;
         private readonly TraceSource _trace;
@@ -28,7 +28,7 @@ namespace Microsoft.AspNet.SignalR.SqlServer
         private string _selectSql = "SELECT [PayloadId], [Payload] FROM [{0}].[{1}] WHERE [PayloadId] > @PayloadId";
         private ObservableDbOperation _dbOperation;
 
-        public SqlReceiver(string connectionString, string tableName, Func<ulong, IList<Message>, Task> onReceived, Action onRetry, Action<Exception> onError, TraceSource traceSource, string tracePrefix)
+        public SqlReceiver(string connectionString, string tableName, Action<ulong, IList<Message>> onReceived, Action onRetry, Action<Exception> onError, TraceSource traceSource, string tracePrefix)
         {
             _connectionString = connectionString;
             _tableName = tableName;
