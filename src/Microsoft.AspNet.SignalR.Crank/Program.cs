@@ -21,14 +21,8 @@ namespace Microsoft.AspNet.SignalR.Crank
     {
         private static volatile bool _running = true;
         private static readonly SemaphoreSlim _batchLock = new SemaphoreSlim(1);
-
-        private static readonly string AllocatedBytesPerConnectionKey = "Allocated Bytes/Connection";
-        private static PerformanceCounter _connectionsConnected;
-        private static PerformanceCounter _allocBytesPerSecCrank;
-        private static CounterSample[] _allocBytesPerSecCrankSamples = new CounterSample[2];
-        private static List<long> _allocBytesPerConnCrank = new List<long>();
-        private static List<long> _connectionsConnectedServer;
-        private static int _lastConnectionsCount = 0;
+        private static PerformanceCounter[] _counters;
+        private static Dictionary<PerformanceCounter, List<CounterSample>> _samples;
 
         static void Main(string[] args)
         {
@@ -46,7 +40,6 @@ namespace Microsoft.AspNet.SignalR.Crank
             var timeoutTime = TimeSpan.FromSeconds(arguments.Timeout);
             Stopwatch stopwatch = null;
 
-            InitializeCounters(arguments);
             Task.Run(async () =>
             {
                 Console.WriteLine("Ramping up connections. Batch size {0}.", arguments.BatchSize);
@@ -62,8 +55,6 @@ namespace Microsoft.AspNet.SignalR.Crank
 
             while (true)
             {
-                Sample(arguments, connections);
-
                 if (stopwatch != null)
                 {
                     if ((stopwatch.Elapsed > endTime) || (stopwatch.Elapsed > timeoutTime))
@@ -71,67 +62,38 @@ namespace Microsoft.AspNet.SignalR.Crank
                         _running = false;
                         break;
                     }
-
-                    LogConnections(arguments, connections, stopwatch.Elapsed);
+                    Sample(arguments, connections, stopwatch.Elapsed);
                 }
-
                 Thread.Sleep(arguments.BatchInterval);
             }
 
             stopwatch.Stop();
 
             Console.WriteLine("Total Running time: {0}", stopwatch.Elapsed);
-            Record();
+            Record(arguments);
 
             Parallel.ForEach(connections, connection => connection.Stop());
         }
 
-        private static void InitializeCounters(CrankArguments arguments)
+        private static void Mark(CrankArguments arguments, ulong value, string metric)
         {
-            _allocBytesPerSecCrank = new PerformanceCounter(".NET CLR Memory", "Allocated Bytes/sec", Process.GetCurrentProcess().ProcessName, readOnly: true);
-            _allocBytesPerSecCrankSamples[1] = _allocBytesPerSecCrank.NextSample();
-
-            var server = GetServerName(arguments.Url);
-            if (!String.IsNullOrEmpty(server) && !String.IsNullOrEmpty(arguments.SiteName))
-            {
-                _connectionsConnected = new PerformanceCounter("SignalR", "Connections Connected", arguments.SiteName, machineName: server);
-                _connectionsConnectedServer = new List<long>();
-            }
+#if PERFRUN
+            Microsoft.VisualStudio.Diagnostics.Measurement.MeasurementBlock.Mark(value, String.Format("{0}-{1};{2}", arguments.Transport, arguments.NumClients, metric));
+#endif
         }
 
-        private static void Sample(CrankArguments arguments, ConcurrentBag<Connection> connections)
+        private static void Sample(CrankArguments arguments, ConcurrentBag<Connection> connections, TimeSpan elapsed)
         {
+            if (connections.Count == 0)
+            {
+                return;
+            }
+
             _batchLock.Wait();
             try
             {
-                if (connections.Count() > _lastConnectionsCount)
-                {
-                    var connectionsAdded = connections.Count() - _lastConnectionsCount;
-                    _lastConnectionsCount = connections.Count();
-
-                    _allocBytesPerSecCrankSamples[0] = _allocBytesPerSecCrankSamples[1];
-                    _allocBytesPerSecCrankSamples[1] = _allocBytesPerSecCrank.NextSample();
-                    var elapsed = new TimeSpan(_allocBytesPerSecCrankSamples[1].TimeStamp - _allocBytesPerSecCrankSamples[0].TimeStamp);
-                    var bytesAllocated = CounterSample.Calculate(_allocBytesPerSecCrankSamples[0], _allocBytesPerSecCrankSamples[1]) * elapsed.TotalSeconds;
-                    var value = (long)Math.Round(bytesAllocated / connectionsAdded);
-                    _allocBytesPerConnCrank.Add(value);
-
-                    long connectionsConnected = 0;
-                    if (_connectionsConnected != null)
-                    {
-                        connectionsConnected = (long)Math.Round(_connectionsConnected.NextValue());
-                        _connectionsConnectedServer.Add(connectionsConnected);
-                    }
-#if PERFRUN
-                    Microsoft.VisualStudio.Diagnostics.Measurement.MeasurementBlock.Mark((ulong)value, String.Format("Crank-{0};{1}({2})", arguments.Transport,
-                        AllocatedBytesPerConnectionKey, _allocBytesPerSecCrank.InstanceName));
-                    if (connectionsConnected > 0)
-                    {
-                        Microsoft.VisualStudio.Diagnostics.Measurement.MeasurementBlock.Mark((ulong)connectionsConnected, String.Format("Crank-{0};{1}({2})", arguments.Transport,
-                            "Connections Connected", _connectionsConnected.InstanceName));
-                    }
-#endif
-                }
+                SampleConnections(arguments, connections, elapsed);
+                SampleCounters(arguments, connections, elapsed);
             }
             finally
             {
@@ -139,30 +101,144 @@ namespace Microsoft.AspNet.SignalR.Crank
             }
         }
 
-        private static void Record()
+        private static void SampleConnections(CrankArguments arguments, ConcurrentBag<Connection> connections, TimeSpan elapsed)
         {
-            _allocBytesPerConnCrank.Sort();
-            var count = _allocBytesPerConnCrank.Count;
-            var trim = (int)(count * 0.1);
-            var trimmedValues = new long[count - 2 * trim];
-            Array.Copy(_allocBytesPerConnCrank.ToArray(), trim, trimmedValues, 0, trimmedValues.Length);
+            var connecting = connections.Where(c => c.State == ConnectionState.Connecting).Count();
+            var connected = connections.Where(c => c.State == ConnectionState.Connected).Count();
+            var reconnecting = connections.Where(c => c.State == ConnectionState.Reconnecting).Count();
+            var disconnected = connections.Where(c => c.State == ConnectionState.Disconnected).Count();
 
-            double median = trimmedValues[trimmedValues.Length / 2];
-            if (trimmedValues.Length % 2 == 0)
+            Mark(arguments, (ulong)connecting, "Connections Connecting");
+            Mark(arguments, (ulong)connected, "Connections Connected");
+            Mark(arguments, (ulong)reconnecting, "Connections Reconnecting");
+            Mark(arguments, (ulong)disconnected, "Connections Disconnected");
+
+            var transportState = "";
+            if (connections.First().Transport.GetType() == typeof(AutoTransport))
             {
-                median = median + trimmedValues[(trimmedValues.Length / 2) - 1] / 2;
+                transportState = String.Format(", Transport={0}ws|{1}ss|{2}lp",
+                    connections.Where(c => c.Transport.Name.Equals("webSockets", StringComparison.InvariantCultureIgnoreCase)).Count(),
+                    connections.Where(c => c.Transport.Name.Equals("serverSentEvents", StringComparison.InvariantCultureIgnoreCase)).Count(),
+                    connections.Where(c => c.Transport.Name.Equals("longPolling", StringComparison.InvariantCultureIgnoreCase)).Count());
             }
-            var average = trimmedValues.Average();
-            var sumOfSquaresDiffs = trimmedValues.Select(v => (v - average) * (v - average)).Sum();
-            var stdDevP = Math.Sqrt(sumOfSquaresDiffs / trimmedValues.Length) / average * 100;
+            Console.WriteLine(String.Format("[{0}] Connections: {1}/{2}, State={3}|{4}c|{5}r|{6}d",
+                    elapsed,
+                    connections.Count(),
+                    arguments.NumClients,
+                    connecting,
+                    connected,
+                    reconnecting,
+                    disconnected)
+                    + transportState);
+        }
 
-            Console.WriteLine("{0}({1}) (MEDIAN):  {2}", AllocatedBytesPerConnectionKey, _allocBytesPerSecCrank.InstanceName, Math.Round(median));
-            Console.WriteLine("{0}({1}) (AVERAGE): {2}", AllocatedBytesPerConnectionKey, _allocBytesPerSecCrank.InstanceName, Math.Round(average));
-            Console.WriteLine("{0}({1}) (STDDEV%): {2}%", AllocatedBytesPerConnectionKey, _allocBytesPerSecCrank.InstanceName, Math.Round(stdDevP));
-
-            if (_connectionsConnected != null)
+        private static void InitializeCounters(CrankArguments arguments)
+        {
+            var instance = Process.GetCurrentProcess().ProcessName;
+            _counters = new[]
             {
-                Console.WriteLine("Max Connections Connected ({0}): {1}", _connectionsConnected.InstanceName, _connectionsConnectedServer.Max());
+                new PerformanceCounter("Memory", "Available MBytes", null, readOnly: true),
+                new PerformanceCounter("Processor", "% Processor Time", "_Total", readOnly:true),
+                new PerformanceCounter("Process", "Private Bytes", instance, readOnly:true),
+                new PerformanceCounter("Process", "Virtual Bytes", instance, readOnly:true),
+                new PerformanceCounter("Process", "Working Set", instance, readOnly:true),
+                new PerformanceCounter("Process", "Thread Count", instance, readOnly:true),
+                new PerformanceCounter(".NET CLR Memory", "% Time in GC", instance, readOnly:true),
+                new PerformanceCounter(".NET CLR Memory", "Allocated Bytes/sec", instance, readOnly:true)
+            };
+
+            var serverInstance = "w3wp";
+            var server = GetServerName(arguments.Url);
+            if (!String.IsNullOrEmpty(server) && !String.IsNullOrEmpty(arguments.SiteName))
+            {
+                _counters = _counters.Concat(new[]
+                {
+                    new PerformanceCounter("SignalR", "Connections Connected", arguments.SiteName, machineName: server),
+                    new PerformanceCounter("SignalR", "Connections Current", arguments.SiteName, machineName: server),
+                    new PerformanceCounter("SignalR", "Connections Reconnected", arguments.SiteName, machineName: server),
+                    new PerformanceCounter("SignalR", "Connections Disconnected", arguments.SiteName, machineName: server),
+                    new PerformanceCounter("Memory", "Available MBytes", null, machineName: server),
+                    new PerformanceCounter("Processor", "% Processor Time", "_Total", machineName: server),
+                    new PerformanceCounter("Process", "Private Bytes", serverInstance, machineName: server),
+                    new PerformanceCounter("Process", "Virtual Bytes", serverInstance, machineName: server),
+                    new PerformanceCounter("Process", "Working Set", serverInstance, machineName: server),
+                    new PerformanceCounter("Process", "Thread Count", serverInstance, machineName: server),
+                    new PerformanceCounter(".NET CLR Memory", "% Time in GC", serverInstance, machineName: server),
+                    new PerformanceCounter(".NET CLR Memory", "Allocated Bytes/sec", serverInstance, machineName: server)
+                }).ToArray();
+            }
+
+            _samples = new Dictionary<PerformanceCounter, List<CounterSample>>(_counters.Length);
+            Parallel.ForEach(_counters, c =>
+            {
+                try
+                {
+                    _samples[c] = new List<CounterSample> { c.NextSample() };
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine("Failed to initilize counter '{0}\\{1}({2})': {3}", c.CategoryName, c.CounterName, c.InstanceName ?? c.MachineName, e.Message);
+                    throw;
+                }
+            });
+        }
+
+        private static void SampleCounters(CrankArguments arguments, ConcurrentBag<Connection> connections, TimeSpan elapsedd)
+        {
+            if (_counters == null)
+            {
+                InitializeCounters(arguments);
+            }
+            else
+            {
+                Parallel.ForEach(_counters, c => _samples[c].Add(c.NextSample()));
+            }
+        }
+
+        private static void Record(CrankArguments arguments)
+        {
+            var maxConnections = 0;
+            foreach (var sample in _samples)
+            {
+                var instance = String.IsNullOrEmpty(sample.Key.InstanceName) ? sample.Key.MachineName : sample.Key.InstanceName;
+                var key = String.Format("{0}({1})", sample.Key.CounterName, instance);
+                var samples = sample.Value;
+
+                var values = new long[samples.Count - 1];
+                for (int i = 0; i < values.Length; i++)
+                {
+                    values[i] = (long)Math.Round(CounterSample.Calculate(samples[i], samples[i + 1]));
+                    Mark(arguments, (ulong)values[i], key);
+                }
+
+                if (key.StartsWith("Connections Connected"))
+                {
+                    maxConnections = (int)values.Max();
+                }
+
+                RecordAggregates(key, values);
+            }
+            Console.WriteLine("Max Connections Connected: " + maxConnections);
+        }
+
+        private static void RecordAggregates(string key, long[] values)
+        {
+            Array.Sort(values);
+            double median = values[values.Length / 2];
+            if (values.Length % 2 == 0)
+            {
+                median = median + values[(values.Length / 2) - 1] / 2;
+            }
+            Console.WriteLine("{0} (MEDIAN):  {1}", key, Math.Round(median));
+
+            var average = values.Average();
+            Console.WriteLine("{0} (AVERAGE): {1}", key, Math.Round(average));
+
+            if (average != 0)
+            {
+                var sumOfSquaresDiffs = values.Select(v => (v - average) * (v - average)).Sum();
+                var stdDevP = Math.Sqrt(sumOfSquaresDiffs / values.Length) / average * 100;
+                Console.WriteLine("{0} (STDDEV%): {1}%", key, Math.Round(stdDevP));
             }
         }
 
@@ -174,42 +250,6 @@ namespace Microsoft.AspNet.SignalR.Crank
                 return match.Groups[1].Value;
             }
             return null;
-        }
-
-        private static void LogConnections(CrankArguments arguments, ConcurrentBag<Connection> connections, TimeSpan elapsed)
-        {
-            if (connections.Count == 0)
-            {
-                return;
-            }
-
-            var connected = connections.Where(c => c.State == ConnectionState.Connected).Count();
-#if PERFRUN
-            Microsoft.VisualStudio.Diagnostics.Measurement.MeasurementBlock.Mark((ulong)connected, String.Format("Crank-{0};Connections Connected", arguments.Transport));
-#endif
-            if (connections.First().Transport.GetType() == typeof(AutoTransport))
-            {
-                Console.WriteLine("[{0}] Connections: {1}/{2}, State={3}|{4}c|{5}r|{6}d, Transport={7}ws|{8}ss|{9}lp",
-                    elapsed,
-                    connections.Count(), arguments.NumClients,
-                    connections.Where(c => c.State == ConnectionState.Connecting).Count(),
-                    connected,
-                    connections.Where(c => c.State == ConnectionState.Reconnecting).Count(),
-                    connections.Where(c => c.State == ConnectionState.Disconnected).Count(),
-                    connections.Where(c => c.Transport.Name.Equals("webSockets", StringComparison.InvariantCultureIgnoreCase)).Count(),
-                    connections.Where(c => c.Transport.Name.Equals("serverSentEvents", StringComparison.InvariantCultureIgnoreCase)).Count(),
-                    connections.Where(c => c.Transport.Name.Equals("longPolling", StringComparison.InvariantCultureIgnoreCase)).Count());
-            }
-            else
-            {
-                Console.WriteLine("[{0}] Connections: {1}/{2}, State={3}|{4}c|{5}r|{6}d",
-                    elapsed,
-                    connections.Count(), arguments.NumClients,
-                    connections.Where(c => c.State == ConnectionState.Connecting).Count(),
-                    connections.Where(c => c.State == ConnectionState.Connected).Count(),
-                    connections.Where(c => c.State == ConnectionState.Reconnecting).Count(),
-                    connections.Where(c => c.State == ConnectionState.Disconnected).Count());
-            }
         }
 
         private static async Task ConnectBatches(string url, string transport, int clients, int batchSize, int batchInterval, ConcurrentBag<Connection> connections)
