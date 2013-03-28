@@ -16,28 +16,12 @@
         loadPreventer = (function () {
             var loadingFixIntervalId = null,
                 loadingFixInterval = 1000,
-                attachedTo = 0,
-                ieVersion = (function () {
-                    var version,
-                        matches;
-
-                    if (window.navigator.appName === 'Microsoft Internet Explorer') {
-                        // Check if the user agent has the pattern "MSIE (one or more numbers).(one or more numbers)";
-                        matches = /MSIE ([0-9]+\.[0-9]+)/.exec(window.navigator.userAgent);
-
-                        if (matches) {
-                            version = window.parseFloat(matches[1]);
-                        }
-                    }
-
-                    // undefined value means not IE
-                    return version;
-                })();
+                attachedTo = 0;
 
             return {
                 prevent: function () {
                     // Prevent additional iframe removal procedures from newer browsers
-                    if (ieVersion <= 8) {
+                    if (signalR._.ieVersion <= 8) {
                         // We only ever want to set the interval one time, so on the first attachedTo
                         if (attachedTo === 0) {
                             // Create and destroy iframe every 3 seconds to prevent loading icon, super hacky
