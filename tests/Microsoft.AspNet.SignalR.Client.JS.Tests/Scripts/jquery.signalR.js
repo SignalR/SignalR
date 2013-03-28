@@ -801,7 +801,11 @@
             } else {
                 if (appendReconnectUrl) {
                     url = url + "/reconnect";
+                } else {
+                    // A silent reconnect should only ever occur with the longPolling transport
+                    url = url + "/poll";
                 }
+
                 if (connection.messageId) {
                     qs += "&messageId=" + window.encodeURIComponent(connection.messageId);
                 }
