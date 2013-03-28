@@ -132,7 +132,8 @@ namespace Microsoft.AspNet.SignalR.SqlServer
             sqlOperation.Parameters[0].Value = _lastPayloadId;
 
             // Pass to the underlying message bus
-            _onReceived((ulong)id, payload.Messages);
+            // TODO: What is the contract here regarding the returned task?
+            _onReceived((ulong)id, payload.Messages).Wait();
 
             _trace.TraceVerbose("{0}Payload {1} containing {2} message(s) received", _tracePrefix, id, payload.Messages.Count);
         }

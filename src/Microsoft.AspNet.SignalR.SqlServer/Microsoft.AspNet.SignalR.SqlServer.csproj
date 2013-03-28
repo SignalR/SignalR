@@ -77,6 +77,7 @@
     <Compile Include="DbOperation.cs" />
     <Compile Include="SqlPayload.cs" />
     <Compile Include="SqlReceiver.cs" />
+    <Compile Include="SqlScaleOutConfiguration.cs" />
     <Compile Include="SqlSender.cs" />
     <Compile Include="SqlMessageBusException.cs" />
     <Compile Include="SqlStream.cs" />

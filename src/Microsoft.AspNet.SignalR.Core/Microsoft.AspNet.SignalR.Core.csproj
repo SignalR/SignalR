@@ -172,6 +172,7 @@
     <Compile Include="Messaging\MessageResult.cs" />
     <Compile Include="Messaging\MessageStore.cs" />
     <Compile Include="Messaging\MessageStoreResult.cs" />
+    <Compile Include="Messaging\ScaleOutConfiguration.cs" />
     <Compile Include="Messaging\ScaleoutStore.cs" />
     <Compile Include="Messaging\ScaleoutStreamManager.cs" />
     <Compile Include="Messaging\ScaleoutSubscription.cs" />
