@@ -18,7 +18,6 @@ namespace Microsoft.AspNet.SignalR.SqlServer
         private readonly string _connectionString;
         private readonly string _tableName;
         private readonly Action<ulong, IList<Message>> _onReceived;
-        private readonly Action _onRetry;
         private readonly Action<Exception> _onError;
         private readonly TraceSource _trace;
         private readonly string _tracePrefix;
@@ -28,13 +27,12 @@ namespace Microsoft.AspNet.SignalR.SqlServer
         private string _selectSql = "SELECT [PayloadId], [Payload] FROM [{0}].[{1}] WHERE [PayloadId] > @PayloadId";
         private ObservableDbOperation _dbOperation;
 
-        public SqlReceiver(string connectionString, string tableName, Action<ulong, IList<Message>> onReceived, Action onRetry, Action<Exception> onError, TraceSource traceSource, string tracePrefix)
+        public SqlReceiver(string connectionString, string tableName, Action<ulong, IList<Message>> onReceived, Action<Exception> onError, TraceSource traceSource, string tracePrefix)
         {
             _connectionString = connectionString;
             _tableName = tableName;
             _tracePrefix = tracePrefix;
             _onReceived = onReceived;
-            _onRetry = onRetry;
             _onError = onError;
             _trace = traceSource;
 
@@ -78,6 +76,7 @@ namespace Microsoft.AspNet.SignalR.SqlServer
                 try
                 {
                     _lastPayloadId = (long)lastPayloadIdOperation.ExecuteScalar();
+
                     // Complete the StartReceiving task as we've successfully initialized the payload ID
                     tcs.TrySetResult(null);
                 }
@@ -93,15 +92,9 @@ namespace Microsoft.AspNet.SignalR.SqlServer
             {
                 _dbOperation = new ObservableDbOperation(_connectionString, _selectSql, _trace, new SqlParameter("PayloadId", _lastPayloadId))
                 {
-                    OnRetry = o =>
-                    {
-                        // Recoverable error
-                        o.Parameters[0].Value = _lastPayloadId;
-                        _onRetry();
-                    },
                     OnError = ex =>
                     {
-                        // Fatal async error, e.g. from SQL notification update
+                        // Error in receive loop
                         _onError(ex);
                     },
                     TracePrefix = _tracePrefix
@@ -111,7 +104,7 @@ namespace Microsoft.AspNet.SignalR.SqlServer
             _dbOperation.ExecuteReaderWithUpdates((rdr, o) => ProcessRecord(rdr, o));
         }
 
-        private void ProcessRecord(IDataRecord record, DbOperation sqlOperation)
+        private void ProcessRecord(IDataRecord record, DbOperation dbOperation)
         {
             var id = record.GetInt64(0);
             var payload = SqlPayload.FromBytes(record.GetBinary(1));
@@ -129,11 +122,10 @@ namespace Microsoft.AspNet.SignalR.SqlServer
             _lastPayloadId = id;
 
             // Update the Parameter with the new payload ID
-            sqlOperation.Parameters[0].Value = _lastPayloadId;
+            dbOperation.Parameters[0].Value = _lastPayloadId;
 
             // Pass to the underlying message bus
-            // TODO: What is the contract here regarding the returned task?
-            _onReceived((ulong)id, payload.Messages).Wait();
+            _onReceived((ulong)id, payload.Messages);
 
             _trace.TraceVerbose("{0}Payload {1} containing {2} message(s) received", _tracePrefix, id, payload.Messages.Count);
         }

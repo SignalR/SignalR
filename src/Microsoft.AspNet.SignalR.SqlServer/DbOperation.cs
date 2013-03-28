@@ -6,35 +6,29 @@ using System.Data;
 using System.Data.Common;
 using System.Data.SqlClient;
 using System.Diagnostics;
-using System.Threading;
+using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
 
 namespace Microsoft.AspNet.SignalR.SqlServer
 {
-    // TODO: Should we make this IDisposable and stop any in progress retries on Dispose?
     [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1001:TypesThatOwnDisposableFieldsShouldBeDisposable", Justification = "Needs review")]
-    internal class DbOperation : IDbExceptionBehavior
+    internal class DbOperation
     {
         private List<IDataParameter> _parameters = new List<IDataParameter>();
         private readonly IDbProviderFactory _dbProviderFactory;
-        private readonly IDbExceptionBehavior _dbExceptionBehavior;
 
         public DbOperation(string connectionString, string commandText, TraceSource traceSource)
-            : this(connectionString, commandText, traceSource, SqlClientFactory.Instance.AsIDbProviderFactory(), null)
+            : this(connectionString, commandText, traceSource, SqlClientFactory.Instance.AsIDbProviderFactory())
         {
             
         }
 
-        public DbOperation(string connectionString, string commandText, TraceSource traceSource, IDbProviderFactory dbProviderFactory, IDbExceptionBehavior dbExceptionBehavior)
+        public DbOperation(string connectionString, string commandText, TraceSource traceSource, IDbProviderFactory dbProviderFactory)
         {
             ConnectionString = connectionString;
             CommandText = commandText;
             Trace = traceSource;
             _dbProviderFactory = dbProviderFactory;
-            _dbExceptionBehavior = dbExceptionBehavior ?? this;
-            DbExceptionBehavior = _dbExceptionBehavior;
-
-            RetryDelay = TimeSpan.FromSeconds(3);
         }
 
         public DbOperation(string connectionString, string commandText, TraceSource traceSource, params IDataParameter[] parameters)
@@ -48,10 +42,6 @@ namespace Microsoft.AspNet.SignalR.SqlServer
 
         public string TracePrefix { get; set; }
 
-        public TimeSpan RetryDelay { get; set; }
-
-        public Action<DbOperation> OnRetry { get; set; }
-
         public IList<IDataParameter> Parameters
         {
             get { return _parameters; }
@@ -62,8 +52,6 @@ namespace Microsoft.AspNet.SignalR.SqlServer
         protected string ConnectionString { get; private set; }
 
         protected string CommandText { get; private set; }
-
-        protected IDbExceptionBehavior DbExceptionBehavior { get; private set; }
 
         public virtual object ExecuteScalar()
         {
@@ -78,7 +66,7 @@ namespace Microsoft.AspNet.SignalR.SqlServer
         public virtual Task<int> ExecuteNonQueryAsync()
         {
             var tcs = new TaskCompletionSource<int>();
-            ExecuteWithRetry(cmd => cmd.ExecuteNonQueryAsync(), tcs);
+            Execute(cmd => cmd.ExecuteNonQueryAsync(), tcs);
             return tcs.Task;
         }
 
@@ -127,13 +115,8 @@ namespace Microsoft.AspNet.SignalR.SqlServer
             return command;
         }
 
+        [SuppressMessage("Microsoft.Usage", "CA2202:Do not dispose objects multiple times", Justification = "False positive?")]
         private T Execute<T>(Func<IDbCommand, T> commandFunc)
-        {
-            return Execute(commandFunc, true);
-        }
-
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2202:Do not dispose objects multiple times", Justification = "False positive?")]
-        private T Execute<T>(Func<IDbCommand, T> commandFunc, bool retryOnException)
         {
             T result = default(T);
             IDbConnection connection = null;
@@ -149,31 +132,6 @@ namespace Microsoft.AspNet.SignalR.SqlServer
                     result = commandFunc(command);
                     break;
                 }
-                catch (Exception ex)
-                {
-                    if (_dbExceptionBehavior.IsRecoverableException(ex))
-                    {
-                        if (retryOnException)
-                        {
-                            if (OnRetry != null)
-                            {
-                                OnRetry(this);
-                            }
-                            if (RetryDelay.TotalMilliseconds > 0)
-                            {
-                                Thread.Sleep(RetryDelay);
-                            }
-                        }
-                        else
-                        {
-                            break;
-                        }
-                    }
-                    else
-                    {
-                        throw;
-                    }
-                }
                 finally
                 {
                     if (connection != null)
@@ -186,108 +144,41 @@ namespace Microsoft.AspNet.SignalR.SqlServer
             return result;
         }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2202:Do not dispose objects multiple times", Justification = "Disposed in async Finally block"),
-         System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope", Justification = "Disposed in async Finally block")]
-        private void ExecuteWithRetry<T>(Func<IDbCommand, Task<T>> commandFunc, TaskCompletionSource<T> tcs)
+        [SuppressMessage("Microsoft.Usage", "CA2202:Do not dispose objects multiple times", Justification = "Disposed in async Finally block"),
+         SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope", Justification = "Disposed in async Finally block")]
+        private void Execute<T>(Func<IDbCommand, Task<T>> commandFunc, TaskCompletionSource<T> tcs)
         {
             IDbConnection connection = null;
             IDbCommand command = null;
-            while (true)
+           
+            try
             {
-                try
-                {
-                    connection = _dbProviderFactory.CreateConnection();
-                    connection.ConnectionString = ConnectionString;
-                    command = CreateCommand(connection);
+                connection = _dbProviderFactory.CreateConnection();
+                connection.ConnectionString = ConnectionString;
+                command = CreateCommand(connection);
 
-                    connection.Open();
+                connection.Open();
 
-                    commandFunc(command)
-                        .Then(result => tcs.SetResult(result))
-                        .Catch(ex =>
-                        {
-                            if (_dbExceptionBehavior.IsRecoverableException(ex.GetBaseException()))
-                            {
-                                if (OnRetry != null)
-                                {
-                                    OnRetry(this);
-                                }
-                                TaskAsyncHelper.Delay(RetryDelay)
-                                               .Then(() => ExecuteWithRetry(commandFunc, tcs));
-                            }
-                            else
-                            {
-                                tcs.SetUnwrappedException(ex);
-                            }
-                        })
-                        .Finally(state =>
-                        {
-                            var conn = (DbConnection)state;
-                            if (conn != null)
-                            {
-                                conn.Dispose();
-                            }
-                        }, connection);
-
-                    break;
-                }
-                catch (Exception ex)
-                {
-                    if (connection != null)
+                commandFunc(command)
+                    .Then(result => tcs.SetResult(result))
+                    .Catch(ex => tcs.SetUnwrappedException(ex))
+                    .Finally(state =>
                     {
-                        connection.Dispose();
-                    }
-
-                    if (_dbExceptionBehavior.IsRecoverableException(ex))
-                    {
-                        if (OnRetry != null)
+                        var conn = (DbConnection)state;
+                        if (conn != null)
                         {
-                            OnRetry(this);
+                            conn.Dispose();
                         }
-                        if (RetryDelay.TotalMilliseconds > 0)
-                        {
-                            Thread.Sleep(RetryDelay);
-                        }
-                    }
-                    else
-                    {
-                        throw;
-                    }
+                    }, connection);
+            }
+            catch (Exception)
+            {
+                if (connection != null)
+                {
+                    connection.Dispose();
                 }
-            };
-        }
-
-        private static bool IsRecoverableException(Exception exception)
-        {
-            var sqlException = exception as SqlException;
-
-            return
-                (exception is InvalidOperationException &&
-                    String.Equals(exception.Source, "System.Data", StringComparison.OrdinalIgnoreCase) &&
-                    exception.Message.StartsWith("Timeout expired", StringComparison.OrdinalIgnoreCase))
-                ||
-                (sqlException != null && (
-                    sqlException.Number == SqlErrorNumbers.ConnectionTimeout ||
-                    sqlException.Number == SqlErrorNumbers.ServerNotFound ||
-                    sqlException.Number == SqlErrorNumbers.TransportLevelError ||
-                    // Failed to start a MARS session due to the server being unavailable
-                    (sqlException.Number == SqlErrorNumbers.Unknown && sqlException.Message.IndexOf("error: 19", StringComparison.OrdinalIgnoreCase) >= 0)
-                )
-            );
-        }
-
-        private static class SqlErrorNumbers
-        {
-            // SQL error numbers: http://msdn.microsoft.com/en-us/library/system.data.sqlclient.sqlerror.number.aspx/html
-            public const int Unknown = -1;
-            public const int ConnectionTimeout = -2;
-            public const int ServerNotFound = 2;
-            public const int TransportLevelError = 233;
-        }
-
-        bool IDbExceptionBehavior.IsRecoverableException(Exception exception)
-        {
-            return IsRecoverableException(exception);
+                throw;
+            }
         }
     }
 }

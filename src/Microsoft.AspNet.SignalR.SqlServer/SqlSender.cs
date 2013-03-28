@@ -43,13 +43,10 @@ namespace Microsoft.AspNet.SignalR.SqlServer
             }
 
             var operation = new DbOperation(_connectionString, _insertDml, _trace,
-                new SqlParameter("Payload", SqlDbType.VarBinary)
+                new SqlParameter("Payload", DbType.Binary)
                 {
                     SqlValue = new SqlBinary(SqlPayload.ToBytes(messages))
-                })
-                {
-                    OnRetry = _=> _onRetry()
-                };
+                });
 
             return operation.ExecuteNonQueryAsync();
         }

@@ -16,7 +16,7 @@ namespace Microsoft.AspNet.SignalR
         /// <returns>The dependency resolver.</returns>
         public static IDependencyResolver UseSqlServer(this IDependencyResolver resolver, string connectionString)
         {
-            return UseSqlServer(resolver, connectionString, tableCount: 1);
+            return UseSqlServer(resolver, connectionString, null);
         }
 
         /// <summary>
@@ -24,16 +24,17 @@ namespace Microsoft.AspNet.SignalR
         /// </summary>
         /// <param name="resolver">The dependency resolver.</param>
         /// <param name="connectionString">The SQL Server connection string.</param>
-        /// <param name="tableCount">The number of tables to use as "message tables". Using more tables reduces lock contention and can increase throughput.</param>
+        /// <param name="configuration">The SQL scale-out configuration options.</param>
         /// <returns>The dependency resolver.</returns>
-        public static IDependencyResolver UseSqlServer(this IDependencyResolver resolver, string connectionString, int tableCount)
+        public static IDependencyResolver UseSqlServer(this IDependencyResolver resolver, string connectionString, SqlScaleOutConfiguration configuration)
         {
             if (resolver == null)
             {
                 throw new ArgumentNullException("resolver");
             }
 
-            var bus = new SqlMessageBus(connectionString, tableCount, resolver);
+            // TODO: Can this be Lazy<T> initialized again now?
+            var bus = new SqlMessageBus(connectionString, configuration, resolver);
             resolver.Register(typeof(IMessageBus), () => bus);
 
             return resolver;

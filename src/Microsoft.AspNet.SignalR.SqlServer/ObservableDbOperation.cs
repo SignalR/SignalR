@@ -34,8 +34,8 @@ namespace Microsoft.AspNet.SignalR.SqlServer
         private volatile bool _disposing;
         private long _notificationState;
 
-        public ObservableDbOperation(string connectionString, string commandText, TraceSource traceSource, IDbProviderFactory dbProviderFactory, IDbBehavior dbBehavior, IDbExceptionBehavior dbExceptionBehavior)
-            : base(connectionString, commandText, traceSource, dbProviderFactory, dbExceptionBehavior)
+        public ObservableDbOperation(string connectionString, string commandText, TraceSource traceSource, IDbProviderFactory dbProviderFactory, IDbBehavior dbBehavior)
+            : base(connectionString, commandText, traceSource, dbProviderFactory)
         {
             _dbBehavior = dbBehavior ?? this;
         }
@@ -51,7 +51,7 @@ namespace Microsoft.AspNet.SignalR.SqlServer
         public Action OnRetryLoopIteration { get; set; }
 
         /// <summary>
-        /// Note this blocks the calling thread until an unrecoverable occurs or a SQL Query Notification can be set up
+        /// Note this blocks the calling thread until a SQL Query Notification can be set up
         /// </summary>
         [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "Errors are reported via the callback")]
         public void ExecuteReaderWithUpdates(Action<IDataRecord, DbOperation> processRecord)
@@ -70,17 +70,7 @@ namespace Microsoft.AspNet.SignalR.SqlServer
                 _stopHandle.Reset();
             }
 
-            var useNotifications = false;
-
-            try
-            {
-                useNotifications = _dbBehavior.StartSqlDependencyListener();
-            }
-            catch (Exception ex)
-            {
-                Stop(ex);
-                return;
-            }
+            var useNotifications = _dbBehavior.StartSqlDependencyListener();
 
             if (useNotifications)
             {
@@ -101,7 +91,7 @@ namespace Microsoft.AspNet.SignalR.SqlServer
                         return;
                     }
 
-                    int recordCount;
+                    int recordCount = 0;
                     try
                     {
                         if (OnRetryLoopIteration != null)
@@ -112,8 +102,11 @@ namespace Microsoft.AspNet.SignalR.SqlServer
                     }
                     catch (Exception ex)
                     {
-                        Stop(ex);
-                        return;
+                        Trace.TraceError("{0}Error in SQL receive loop: {1}", TracePrefix, ex);
+                        if (OnError != null)
+                        {
+                            OnError(ex);
+                        }
                     }
 
                     if (recordCount > 0)
@@ -156,6 +149,7 @@ namespace Microsoft.AspNet.SignalR.SqlServer
                                     break; // break the inner for loop
                                 };
 
+                                // We're in a wait state for a notification now so check if we're disposing
                                 lock (_stopLocker)
                                 {
                                     if (_disposing)
@@ -166,7 +160,18 @@ namespace Microsoft.AspNet.SignalR.SqlServer
                             }
                             catch (Exception ex)
                             {
-                                Stop(ex);
+                                Trace.TraceError("{0}Error in SQL receive loop: {1}", TracePrefix, ex);
+                                OnError(ex);
+
+                                // Re-enter the loop on the last retry delay
+                                j = j - 1;
+
+                                if (retryDelay > 0)
+                                {
+                                    Trace.TraceVerbose("{0}Waiting {1}ms before checking for messages again", TracePrefix, retryDelay);
+
+                                    Thread.Sleep(retryDelay);
+                                }
                             }
                         }
                     }
@@ -225,39 +230,16 @@ namespace Microsoft.AspNet.SignalR.SqlServer
             // Check notification args for issues
             if (e.Type == SqlNotificationType.Change)
             {
-                if (e.Info == SqlNotificationInfo.Insert
+                if (!(e.Info == SqlNotificationInfo.Insert
                     || e.Info == SqlNotificationInfo.Expired
-                    || e.Info == SqlNotificationInfo.Resource)
+                    || e.Info == SqlNotificationInfo.Resource))
                 {
-                    ExecuteReaderWithUpdates(processRecord);
-                }
-                else if (e.Info == SqlNotificationInfo.Restart)
-                {
-                    Trace.TraceWarning("{0}SQL Server restarting, starting buffering", TracePrefix);
-
-                    if (OnRetry != null)
-                    {
-                        OnRetry(this);
-                    }
-                    ExecuteReaderWithUpdates(processRecord);
-                }
-                else if (e.Info == SqlNotificationInfo.Error)
-                {
-                    Trace.TraceWarning("{0}SQL notification error likely due to server becoming unavailable, starting buffering", TracePrefix);
-
-                    if (OnRetry != null)
-                    {
-                        OnRetry(this);
-                    }
-                    ExecuteReaderWithUpdates(processRecord);
-                }
-                else
-                {
-                    // Fatal error, we don't expect to get here, end the receive loop
-
                     Trace.TraceError("{0}Unexpected SQL notification details: Type={1}, Source={2}, Info={3}", TracePrefix, e.Type, e.Source, e.Info);
 
-                    Stop(new SqlMessageBusException(String.Format(CultureInfo.InvariantCulture, Resources.Error_UnexpectedSqlNotificationType, e.Type, e.Source, e.Info)));
+                    if (OnError != null)
+                    {
+                        OnError(new SqlMessageBusException(String.Format(CultureInfo.InvariantCulture, Resources.Error_UnexpectedSqlNotificationType, e.Type, e.Source, e.Info)));
+                    }
                 }
             }
             else if (e.Type == SqlNotificationType.Subscribe)
@@ -269,11 +251,7 @@ namespace Microsoft.AspNet.SignalR.SqlServer
                 if (e.Info == SqlNotificationInfo.TemplateLimit)
                 {
                     // We've hit a subscription limit, pause for a bit then start again
-                    if (RetryDelay.TotalMilliseconds > 0)
-                    {
-                        Thread.Sleep(RetryDelay);
-                    }
-                    ExecuteReaderWithUpdates(processRecord);
+                    Thread.Sleep(2000);
                 }
                 else
                 {
@@ -284,10 +262,10 @@ namespace Microsoft.AspNet.SignalR.SqlServer
                         SqlDependency.Stop(ConnectionString);
                     }
                     catch (Exception) { }
-
-                    ExecuteReaderWithUpdates(processRecord);
                 }
             }
+
+            ExecuteReaderWithUpdates(processRecord);
         }
 
         protected virtual bool StartSqlDependencyListener()
@@ -312,11 +290,11 @@ namespace Microsoft.AspNet.SignalR.SqlServer
                 {
                     if (SqlDependency.Start(ConnectionString))
                     {
-                        Trace.TraceVerbose("{0}SQL notificatoin listener started", TracePrefix);
+                        Trace.TraceVerbose("{0}SQL notification listener started", TracePrefix);
                     }
                     else
                     {
-                        Trace.TraceVerbose("{0}SQL notificatoin listener was already running", TracePrefix);
+                        Trace.TraceVerbose("{0}SQL notification listener was already running", TracePrefix);
                     }
                     return true;
                 }
@@ -329,18 +307,9 @@ namespace Microsoft.AspNet.SignalR.SqlServer
                 }
                 catch (Exception ex)
                 {
-                    if (DbExceptionBehavior.IsRecoverableException(ex))
-                    {
-                        if (RetryDelay.TotalMilliseconds > 0)
-                        {
-                            Thread.Sleep(RetryDelay);
-                        }
-                    }
-                    else
-                    {
-                        // Fatal error trying to start SQL notification listener
-                        throw;
-                    }
+                    Trace.TraceError("{0}Error starting SQL notification listener: {1}", TracePrefix, ex);
+
+                    return false;
                 }
             }
         }

@@ -2,10 +2,9 @@
 
 using System;
 using System.Collections.Generic;
-using System.Data.SqlClient;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR.Messaging;
@@ -20,7 +19,6 @@ namespace Microsoft.AspNet.SignalR.SqlServer
     {
         internal const string SchemaName = "SignalR";
 
-        private const int DefaultBufferSize = 1000;
         private const string _tableNamePrefix = "Messages";
         
         private readonly string _connectionString;
@@ -32,9 +30,9 @@ namespace Microsoft.AspNet.SignalR.SqlServer
         /// Creates a new instance of the SqlMessageBus class.
         /// </summary>
         /// <param name="connectionString">The SQL Server connection string.</param>
-        /// <param name="tableCount">The number of tables to use as "message tables".</param>
+        /// <param name="configuration">The SQL scale-out configuration options.</param>
         /// <param name="dependencyResolver">The dependency resolver.</param>
-        public SqlMessageBus(string connectionString, int tableCount, SqlScaleOutConfiguration configuration, IDependencyResolver dependencyResolver)
+        public SqlMessageBus(string connectionString, SqlScaleOutConfiguration configuration, IDependencyResolver dependencyResolver)
             : base(dependencyResolver)
         {
             if (String.IsNullOrWhiteSpace(connectionString))
@@ -64,7 +62,6 @@ namespace Microsoft.AspNet.SignalR.SqlServer
             return _streams[streamIndex].Send(messages);
         }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "Disposing")]
         protected override void Dispose(bool disposing)
         {
             for (var i = 0; i < _streams.Count; i++)
@@ -75,10 +72,10 @@ namespace Microsoft.AspNet.SignalR.SqlServer
             base.Dispose(disposing);
         }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "On a background thread and we report exceptions asynchronously")]
+        [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "On a background thread and we report exceptions asynchronously")]
         private void Initialize(object state)
         {
-            // NOTE: Called from ThreadPool thread
+            // NOTE: Called from a ThreadPool thread
             while (true)
             {
                 try
@@ -89,12 +86,13 @@ namespace Microsoft.AspNet.SignalR.SqlServer
                 }
                 catch (Exception ex)
                 {
-                    // Exception while initializing, Close and call the error callback
+                    // Exception while installing
                     for (var i = 0; i < _configuration.TableCount; i++)
                     {
                         OnError(i, ex);
                     }
-                    // TODO: Review what to do here
+
+                    // Try again in a little bit
                     Thread.Sleep(2000);
                 }
             }
@@ -111,12 +109,25 @@ namespace Microsoft.AspNet.SignalR.SqlServer
                     
                 _streams.Add(stream);
 
-                stream.StartReceiving()
-                    // Open the stream once receiving has started
-                    .Then(() => Open(streamIndex))
-                    // Starting the receive loop failed
-                    .Catch(ex => OnError(streamIndex, ex));
+                StartStream(streamIndex);
             }
+        }
+
+        private void StartStream(int streamIndex)
+        {
+            var stream = _streams[streamIndex];
+            stream.StartReceiving()
+                // Open the stream once receiving has started
+                .Then(() => Open(streamIndex))
+                // Starting the receive loop failed
+                .Catch(ex =>
+                {
+                    OnError(streamIndex, ex);
+
+                    // Try again in a little bit
+                    Thread.Sleep(2000);
+                    StartStream(streamIndex);
+                });
         }
     }
 }
