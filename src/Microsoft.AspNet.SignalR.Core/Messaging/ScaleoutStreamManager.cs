@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR.Infrastructure;
 
@@ -41,14 +42,9 @@ namespace Microsoft.AspNet.SignalR.Messaging
             _sendQueues[streamIndex].Open();
         }
 
-        public void Close(int streamIndex, Exception exception)
+        public void Buffer(int streamIndex)
         {
-            _sendQueues[streamIndex].Close(exception);
-        }
-
-        public void Buffer(int streamIndex, int bufferSize)
-        {
-            _sendQueues[streamIndex].Buffer(bufferSize);
+            _sendQueues[streamIndex].Buffer();   
         }
 
         public Task Send(int streamIndex, IList<Message> messages)
@@ -61,6 +57,9 @@ namespace Microsoft.AspNet.SignalR.Messaging
         public void OnReceived(int streamIndex, ulong id, IList<Message> messages)
         {
             _receive(streamIndex, id, messages);
+            
+            // We assume if a message has come in then the stream is open
+            Open(streamIndex);
         }
 
         private static Task Send(object state)

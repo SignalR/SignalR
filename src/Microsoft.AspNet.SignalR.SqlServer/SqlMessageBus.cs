@@ -24,7 +24,7 @@ namespace Microsoft.AspNet.SignalR.SqlServer
         private const string _tableNamePrefix = "Messages";
         
         private readonly string _connectionString;
-        private readonly int _tableCount;
+        private readonly SqlScaleOutConfiguration _configuration;
         private readonly TraceSource _trace;
         private readonly List<SqlStream> _streams = new List<SqlStream>();
 
@@ -34,7 +34,7 @@ namespace Microsoft.AspNet.SignalR.SqlServer
         /// <param name="connectionString">The SQL Server connection string.</param>
         /// <param name="tableCount">The number of tables to use as "message tables".</param>
         /// <param name="dependencyResolver">The dependency resolver.</param>
-        public SqlMessageBus(string connectionString, int tableCount, IDependencyResolver dependencyResolver)
+        public SqlMessageBus(string connectionString, int tableCount, SqlScaleOutConfiguration configuration, IDependencyResolver dependencyResolver)
             : base(dependencyResolver)
         {
             if (String.IsNullOrWhiteSpace(connectionString))
@@ -42,13 +42,8 @@ namespace Microsoft.AspNet.SignalR.SqlServer
                 throw new ArgumentNullException("connectionString");
             }
 
-            if (tableCount < 1)
-            {
-                throw new ArgumentOutOfRangeException("tableCount", String.Format(CultureInfo.InvariantCulture, Resources.Error_ValueMustBeGreaterThan1, "tableCount"));
-            }
-
             _connectionString = connectionString;
-            _tableCount = tableCount;
+            _configuration = configuration ?? new SqlScaleOutConfiguration();
 
             var traceManager = dependencyResolver.Resolve<ITraceManager>();
             _trace = traceManager["SignalR." + typeof(SqlMessageBus).Name];
@@ -60,7 +55,7 @@ namespace Microsoft.AspNet.SignalR.SqlServer
         {
             get
             {
-                return _tableCount;
+                return _configuration.TableCount;
             }
         }
 
@@ -84,33 +79,34 @@ namespace Microsoft.AspNet.SignalR.SqlServer
         private void Initialize(object state)
         {
             // NOTE: Called from ThreadPool thread
-            try
+            while (true)
             {
-                var installer = new SqlInstaller(_connectionString, _tableNamePrefix, _tableCount, _trace);
-                installer.Install();
-            }
-            catch (Exception ex)
-            {
-                // Fatal exception while initializing, Close and call the error callback
-                for (var i = 0; i < _tableCount; i++)
+                try
                 {
-                    Close(i, ex); 
+                    var installer = new SqlInstaller(_connectionString, _tableNamePrefix, _configuration.TableCount, _trace);
+                    installer.Install();
+                    break;
                 }
-                
-                // TODO: Invoke user defined error callback
-
-                return;
+                catch (Exception ex)
+                {
+                    // Exception while initializing, Close and call the error callback
+                    for (var i = 0; i < _configuration.TableCount; i++)
+                    {
+                        OnError(i, ex);
+                    }
+                    // TODO: Review what to do here
+                    Thread.Sleep(2000);
+                }
             }
 
-            for (var i = 0; i < _tableCount; i++)
+            for (var i = 0; i < _configuration.TableCount; i++)
             {
                 var streamIndex = i;
 
                 var stream = new SqlStream(streamIndex, _connectionString,
                     tableName: String.Format(CultureInfo.InvariantCulture, "{0}_{1}", _tableNamePrefix, streamIndex),
                     onReceived: OnReceived,
-                    onRetry: () => Buffer(streamIndex, DefaultBufferSize),
-                    onError: ex => Close(streamIndex, ex),
+                    onError: ex => OnError(streamIndex, ex),
                     traceSource: _trace);
                     
                 _streams.Add(stream);
@@ -119,7 +115,7 @@ namespace Microsoft.AspNet.SignalR.SqlServer
                     // Open the stream once receiving has started
                     .Then(() => Open(streamIndex))
                     // Starting the receive loop failed
-                    .Catch(ex => Close(streamIndex, ex));
+                    .Catch(ex => OnError(streamIndex, ex));
             }
         }
     }

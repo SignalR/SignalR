@@ -16,14 +16,14 @@ namespace Microsoft.AspNet.SignalR.SqlServer
     {
         private readonly string _connectionString;
         private readonly string _insertDml;
-        private readonly Action _onRetry;
+        private readonly Action<Exception> _onError;
         private readonly TraceSource _trace;
 
-        public SqlSender(string connectionString, string tableName, Action onRetry, TraceSource traceSource)
+        public SqlSender(string connectionString, string tableName, Action<Exception> onError, TraceSource traceSource)
         {
             _connectionString = connectionString;
             _insertDml = BuildInsertString(tableName);
-            _onRetry = onRetry;
+            _onError = onError;
             _trace = traceSource;
         }
 

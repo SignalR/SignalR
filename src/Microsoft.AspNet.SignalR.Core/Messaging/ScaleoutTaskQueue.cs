@@ -57,13 +57,13 @@ namespace Microsoft.AspNet.SignalR.Messaging
             }
         }
 
-        public void Buffer(int size)
+        public void Buffer()
         {
             lock (this)
             {
                 if (ChangeState(QueueState.Buffering))
                 {
-                    InitializeCore(size);
+                    InitializeCore();
                 }
             }
         }
@@ -79,18 +79,10 @@ namespace Microsoft.AspNet.SignalR.Messaging
             }
         }
 
-        private void InitializeCore(int? size = null)
+        private void InitializeCore()
         {
             Task task = DrainQueue();
-
-            if (size != null)
-            {
-                _queue = new TaskQueue(task, size.Value);
-            }
-            else
-            {
-                _queue = new TaskQueue(task, _size);
-            }
+            _queue = new TaskQueue(task, _size);
         }
 
         private Task DrainQueue()

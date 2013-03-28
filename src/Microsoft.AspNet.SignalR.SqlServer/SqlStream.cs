@@ -12,22 +12,20 @@ namespace Microsoft.AspNet.SignalR.SqlServer
     internal class SqlStream : IDisposable
     {
         private readonly int _streamIndex;
-        private readonly Action _onRetry;
         private readonly Action<Exception> _onError;
         private readonly SqlSender _sender;
         private readonly SqlReceiver _receiver;
         private readonly TraceSource _trace;
         private readonly string _tracePrefix;
 
-        public SqlStream(int streamIndex, string connectionString, string tableName, Action<int, ulong, IList<Message>> onReceived, Action onRetry, Action<Exception> onError, TraceSource traceSource)
+        public SqlStream(int streamIndex, string connectionString, string tableName, Action<int, ulong, IList<Message>> onReceived, Action<Exception> onError, TraceSource traceSource)
         {
             _streamIndex = streamIndex;
-            _onRetry = onRetry;
             _onError = onError;
             _trace = traceSource;
             _tracePrefix = String.Format(CultureInfo.InvariantCulture, "Stream {0} : ", _streamIndex);
 
-            _sender = new SqlSender(connectionString, tableName, _onRetry, _trace);
+            _sender = new SqlSender(connectionString, tableName, _onError, _trace);
             _receiver = new SqlReceiver(connectionString, tableName, (id, messages) => onReceived(_streamIndex, id, messages), _onRetry, _onError, _trace, _tracePrefix);
         }
 

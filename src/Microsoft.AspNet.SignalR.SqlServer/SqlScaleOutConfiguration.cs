@@ -19,6 +19,6 @@ namespace Microsoft.AspNet.SignalR
         /// The number of tables to store messages in. Using more tables reduces lock contention and can increase throughput.
         /// Defaults to 1.
         /// </summary>
-        public uint TableCount { get; set; }
+        public int TableCount { get; set; }
     }
 }

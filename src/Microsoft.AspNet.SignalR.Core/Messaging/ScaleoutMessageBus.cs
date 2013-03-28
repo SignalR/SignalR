@@ -18,12 +18,20 @@ namespace Microsoft.AspNet.SignalR.Messaging
     public abstract class ScaleoutMessageBus : MessageBus
     {
         private readonly SipHashBasedStringEqualityComparer _sipHashBasedComparer = new SipHashBasedStringEqualityComparer(0, 0);
+        private readonly ScaleOutConfiguration _configuration;
         private readonly TraceSource _trace;
         private readonly Lazy<ScaleoutStreamManager> _streamManager;
 
         protected ScaleoutMessageBus(IDependencyResolver resolver)
+            : this(resolver, null)
+        {
+
+        }
+
+        protected ScaleoutMessageBus(IDependencyResolver resolver, ScaleOutConfiguration configuation)
             : base(resolver)
         {
+            _configuration = configuation ?? new ScaleOutConfiguration();
             var traceManager = resolver.Resolve<ITraceManager>();
             _trace = traceManager["SignalR." + typeof(ScaleoutMessageBus).Name];
             _streamManager = new Lazy<ScaleoutStreamManager>(() => new ScaleoutStreamManager(Send, OnReceivedCore, StreamCount));
@@ -49,17 +57,6 @@ namespace Microsoft.AspNet.SignalR.Messaging
         }
 
         /// <summary>
-        /// Opens all queues for sending messages.
-        /// </summary>
-        protected void Open()
-        {
-            for (int i = 0; i < StreamCount; i++)
-            {
-                Open(i);
-            }
-        }
-
-        /// <summary>
         /// Opens the specified queue for sending messages.
         /// <param name="streamIndex">The index of the stream to open.</param>
         /// </summary>
@@ -69,50 +66,22 @@ namespace Microsoft.AspNet.SignalR.Messaging
         }
 
         /// <summary>
-        /// Closes all queues for sending messages making all sends fail asynchronously.
-        /// </summary>
-        /// <param name="exception">The error that occurred.</param>
-        protected void Close(Exception exception)
-        {
-            for (int i = 0; i < StreamCount; i++)
-            {
-                Close(i, exception);
-            }
-        }
-
-        /// <summary>
         /// Closes the specified queue for sending messages making all sends fail asynchronously.
         /// </summary>
         /// <param name="streamIndex">The index of the stream to close.</param>
         /// <param name="exception">The error that occurred.</param>
-        protected void Close(int streamIndex, Exception exception)
+        protected void OnError(int streamIndex, Exception exception)
         {
-            // Close the queue means that all further sends will fail
-            StreamManager.Close(streamIndex, exception);
-        }
-
-        /// <summary>
-        /// Queues up to the specified size before failing.
-        /// </summary>
-        /// <param name="size">The maximum number of items to queue before failing to enqueue.</param>
-        protected void Buffer(int size)
-        {
-            for (int i = 0; i < StreamCount; i++)
+            if (_configuration.RetryOnError)
             {
-                Buffer(i, size);
+                StreamManager.Buffer(streamIndex);
+            }
+            if (_configuration.OnError != null)
+            {
+                _configuration.OnError(exception);
             }
         }
-
-        /// <summary>
-        /// Buffers the specified queue up to the specified size before failing.
-        /// </summary>
-        /// <param name="streamIndex">The index of the stream to buffer.</param>
-        /// <param name="size">The maximum number of items to queue before failing to enqueue.</param>
-        protected void Buffer(int streamIndex, int size)
-        {
-            StreamManager.Buffer(streamIndex, size);
-        }
-
+        
         /// <summary>
         /// Sends messages to the backplane
         /// </summary>
@@ -195,7 +164,6 @@ namespace Microsoft.AspNet.SignalR.Messaging
             StreamManager.OnReceived(streamIndex, id, messages);
         }
 
-
         [SuppressMessage("Microsoft.Design", "CA1062:Validate arguments of public methods", MessageId = "2", Justification = "Called from derived class")]
         [SuppressMessage("Microsoft.Design", "CA1062:Validate arguments of public methods", MessageId = "0", Justification = "Called from derived class")]
         private void OnReceivedCore(int streamIndex, ulong id, IList<Message> messages)
@@ -237,7 +205,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
             Counters.MessageBusMessagesPublishedTotal.Increment();
             Counters.MessageBusMessagesPublishedPerSec.Increment();
 
-            // TODO: Buffer messages here and make it configurable
+            // TODO: Implement message batching here
             return Send(new[] { message });
         }
 

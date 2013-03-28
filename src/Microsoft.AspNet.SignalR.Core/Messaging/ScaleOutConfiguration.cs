@@ -17,9 +17,8 @@ namespace Microsoft.AspNet.SignalR.Messaging
         public bool RetryOnError { get; set; }
 
         /// <summary>
-        /// A callback to be invoked when an error occurs in a scale-out message bus and
-        /// <see cref="Microsoft.AspNet.SignalR.Messaging.ScaleOutConfiguration.RetryOnError">RetryOnError</see>
-        /// is true. The exception that caused the error is passed.
+        /// A callback to be invoked when an error occurs in a scale-out message bus.
+        /// The exception that caused the error is passed.
         /// </summary>
         public Action<Exception> OnError { get; set; }
         
