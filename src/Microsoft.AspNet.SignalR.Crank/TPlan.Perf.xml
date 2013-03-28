@@ -29,13 +29,13 @@
       powershell -executionpolicy remotesigned -command "{bin}\RegisterIIS.ps1 {currentdir}\www
     </command>
     <command name="WebSockets-100000" wait="Exit">
-      crank.exe /Url:http://{server-01}:81/TestConnection/connect /SiteName:testdefault /Clients:100000 /Transport:WebSockets /Timeout:300
+      crank.exe /Url:http://{server-01}:81/TestConnection/connect /Clients:100000 /Transport:WebSockets /Timeout:300
     </command>
     <command name="ServerSentEvents-100000" wait="Exit">
-      crank.exe /Url:http://{server-01}:81/TestConnection/connect /SiteName:testdefault /Clients:100000 /Transport:ServerSentEvents /Timeout:600
+      crank.exe /Url:http://{server-01}:81/TestConnection/connect /Clients:100000 /Transport:ServerSentEvents /Timeout:600
     </command>
     <command name="LongPolling-100000" wait="Exit">
-      crank.exe /Url:http://{server-01}:81/TestConnection/connect /SiteName:testdefault /Clients:100000 /Transport:LongPolling /Timeout:1800
+      crank.exe /Url:http://{server-01}:81/TestConnection/connect /Clients:100000 /Transport:LongPolling /Timeout:1800
     </command>
   </commands>
 

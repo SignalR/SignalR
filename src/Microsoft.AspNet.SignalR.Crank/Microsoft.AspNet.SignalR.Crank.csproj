@@ -74,6 +74,9 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="Counters.txt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <Content Include="TPlan.Perf.xml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
