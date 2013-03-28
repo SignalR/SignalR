@@ -120,7 +120,23 @@
     };
 
     signalR._ = {
-        defaultContentType: "application/x-www-form-urlencoded; charset=UTF-8"
+        defaultContentType: "application/x-www-form-urlencoded; charset=UTF-8",
+        ieVersion: (function () {
+            var version,
+                matches;
+
+            if (window.navigator.appName === 'Microsoft Internet Explorer') {
+                // Check if the user agent has the pattern "MSIE (one or more numbers).(one or more numbers)";
+                matches = /MSIE ([0-9]+\.[0-9]+)/.exec(window.navigator.userAgent);
+
+                if (matches) {
+                    version = window.parseFloat(matches[1]);
+                }
+            }
+
+            // undefined value means not IE
+            return version;
+        })()
     };
 
     signalR.events = events;
@@ -150,6 +166,7 @@
         /// <param name="requestedTransport" type="Object">The designated transports that the user has specified.</param>
         /// <param name="connection" type="signalR">The connection that will be using the requested transports.  Used for logging purposes.</param>
         /// <returns type="Object" />
+
         if ($.isArray(requestedTransport)) {
             // Go through transport array and remove an "invalid" tranports
             for (var i = requestedTransport.length - 1; i >= 0; i--) {
@@ -168,6 +185,12 @@
         } else if ($.type(requestedTransport) !== "object" && !signalR.transports[requestedTransport] && requestedTransport !== "auto") {
             connection.log("Invalid transport: " + requestedTransport.toString());
             requestedTransport = null;
+        }
+        else if (requestedTransport === "auto" && signalR._.ieVersion <= 8)
+        {
+            // If we're doing an auto transport and we're IE8 then force longPolling, #1764
+            return ["longPolling"];
+
         }
 
         return requestedTransport;
