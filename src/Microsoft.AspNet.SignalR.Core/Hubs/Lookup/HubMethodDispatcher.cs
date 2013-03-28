@@ -48,7 +48,7 @@ namespace Microsoft.AspNet.SignalR.Hubs
 
             // Call method
             UnaryExpression instanceCast = (!methodInfo.IsStatic) ? Expression.Convert(hubParameter, methodInfo.ReflectedType) : null;
-            MethodCallExpression methodCall = methodCall = Expression.Call(instanceCast, methodInfo, parameters);
+            MethodCallExpression methodCall = Expression.Call(instanceCast, methodInfo, parameters);
 
             // methodCall is "((TController) hub) method((T0) parameters[0], (T1) parameters[1], ...)"
             // Create function

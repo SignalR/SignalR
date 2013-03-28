@@ -37,10 +37,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports.ServerSentEvents
         {
             lock (BufferLock)
             {
-                if (readBuffer != null)
-                {
-                    _buffer.Add(readBuffer);
-                }
+                _buffer.Add(readBuffer);
 
                 while (_buffer.HasChunks)
                 {
