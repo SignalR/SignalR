@@ -7,7 +7,6 @@
     "use strict";
 
     var signalR = $.signalR,
-        signalRPrivate = $.signalR._,
         events = $.signalR.events,
         changeState = $.signalR.changeState;
 
@@ -174,7 +173,7 @@
                 url: url,
                 global: false,
                 type: connection.ajaxDataType === "jsonp" ? "GET" : "POST",
-                contentType: signalRPrivate.defaultContentType,
+                contentType: signalR._.defaultContentType,
                 dataType: connection.ajaxDataType,
                 data: {
                     data: data
