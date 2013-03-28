@@ -600,6 +600,47 @@ namespace Microsoft.AspNet.SignalR.Tests
             }
         }
 
+        [Theory]
+        [InlineData(HostType.IISExpress, TransportType.LongPolling)]
+        [InlineData(HostType.IISExpress, TransportType.ServerSentEvents)]
+        [InlineData(HostType.IISExpress, TransportType.Websockets)]
+        public void RemainsConnectedWithHubsAppendedToUrl(HostType hostType, TransportType transportType)
+        {
+            using (var host = CreateHost(hostType, transportType))
+            {
+                host.Initialize();
+                var connection = CreateHubConnection(host, host.Url + "/signalr/hubs", useDefaultUrl: false);
+
+                var hub = connection.CreateHubProxy("demo");
+
+                var tcs = new TaskCompletionSource<object>();
+                var testGuidInvocations = 0;
+
+                hub.On<Guid>("TestGuid", id =>
+                {
+                    testGuidInvocations++;
+                    if (testGuidInvocations < 2)
+                    {
+                        hub.Invoke("TestGuid").ContinueWithNotComplete(tcs);
+                    }
+                    else
+                    {
+                        tcs.SetResult(null);
+                    }
+                });
+
+                connection.Error += e => tcs.SetException(e);
+                connection.Reconnecting += () => tcs.SetCanceled();
+
+                connection.Start(host.Transport).Wait();
+
+                hub.InvokeWithTimeout("TestGuid");
+
+                Assert.True(tcs.Task.Wait(TimeSpan.FromSeconds(10)));
+                connection.Stop();
+            }
+        }
+
         [Fact]
         public void HubHasConnectionEvents()
         {
