@@ -139,7 +139,7 @@ namespace Microsoft.AspNet.SignalR.Tests
 
                 HubConnection hubConnection = CreateHubConnection(host);
                 IHubProxy proxy = hubConnection.CreateHubProxy("ExamineHeadersHub");
-                var wh = new ManualResetEventSlim(false);
+                var tcs = new TaskCompletionSource<object>();
 
                 proxy.On("sendHeader", (headers) =>
                 {
@@ -148,8 +148,10 @@ namespace Microsoft.AspNet.SignalR.Tests
                     {
                         Assert.Equal<string>("referer", (string)headers.refererHeader);
                     }
-                    wh.Set();
+                    tcs.SetResult(null);
                 });
+
+                hubConnection.Error += e => tcs.SetException(e);
 
                 hubConnection.Headers.Add("test-header", "test-header");
                 if (transportType != TransportType.Websockets)
@@ -160,7 +162,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                 hubConnection.Start(host.Transport).Wait();
                 proxy.Invoke("Send", "Hello");
 
-                Assert.True(wh.Wait(TimeSpan.FromSeconds(10)));
+                Assert.True(tcs.Task.Wait(TimeSpan.FromSeconds(10)));
                 hubConnection.Stop();
             }
         }

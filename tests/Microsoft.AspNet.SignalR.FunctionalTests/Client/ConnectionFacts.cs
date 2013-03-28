@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -19,7 +20,7 @@ namespace Microsoft.AspNet.SignalR.Tests
             using (var host = CreateHost(hostType, transportType))
             {
                 // Arrange
-                var mre = new ManualResetEventSlim(false);
+                var tcs = new TaskCompletionSource<object>();
                 host.Initialize();
                 var connection = CreateConnection(host, "/examine-request");
 
@@ -31,8 +32,10 @@ namespace Microsoft.AspNet.SignalR.Tests
                         Assert.Equal("referer", (string)headers["refererHeader"]);
                     }
                     Assert.Equal("test-header", (string)headers["testHeader"]);
-                    mre.Set();
+                    tcs.SetResult(null);
                 };
+
+                connection.Error += e => tcs.SetException(e);
 
                 connection.Headers.Add("test-header", "test-header");
                 if (transportType != TransportType.Websockets)
@@ -44,10 +47,9 @@ namespace Microsoft.AspNet.SignalR.Tests
                 connection.Send("Hello");
 
                 // Assert
-                Assert.True(mre.Wait(TimeSpan.FromSeconds(10)));
+                Assert.True(tcs.Task.Wait(TimeSpan.FromSeconds(10)));
 
                 // Clean-up
-                mre.Dispose();
                 connection.Stop();
             }
         }
