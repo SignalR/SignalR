@@ -21,7 +21,7 @@ namespace Microsoft.AspNet.SignalR.Crank
     {
         private static volatile bool _running = true;
         private static readonly SemaphoreSlim _batchLock = new SemaphoreSlim(1);
-        private static PerformanceCounter[] _counters;
+        private static List<PerformanceCounter> _counters;
         private static Dictionary<PerformanceCounter, List<CounterSample>> _samples;
 
         static void Main(string[] args)
@@ -103,10 +103,10 @@ namespace Microsoft.AspNet.SignalR.Crank
 
         private static void SampleConnections(CrankArguments arguments, ConcurrentBag<Connection> connections, TimeSpan elapsed)
         {
-            var connecting = connections.Where(c => c.State == ConnectionState.Connecting).Count();
-            var connected = connections.Where(c => c.State == ConnectionState.Connected).Count();
-            var reconnecting = connections.Where(c => c.State == ConnectionState.Reconnecting).Count();
-            var disconnected = connections.Where(c => c.State == ConnectionState.Disconnected).Count();
+            var connecting = connections.Count(c => c.State == ConnectionState.Connecting);
+            var connected = connections.Count(c => c.State == ConnectionState.Connected);
+            var reconnecting = connections.Count(c => c.State == ConnectionState.Reconnecting);
+            var disconnected = connections.Count(c => c.State == ConnectionState.Disconnected);
 
             Mark(arguments, (ulong)connecting, "Connections Connecting");
             Mark(arguments, (ulong)connected, "Connections Connected");
@@ -117,9 +117,9 @@ namespace Microsoft.AspNet.SignalR.Crank
             if (connections.First().Transport.GetType() == typeof(AutoTransport))
             {
                 transportState = String.Format(", Transport={0}ws|{1}ss|{2}lp",
-                    connections.Where(c => c.Transport.Name.Equals("webSockets", StringComparison.InvariantCultureIgnoreCase)).Count(),
-                    connections.Where(c => c.Transport.Name.Equals("serverSentEvents", StringComparison.InvariantCultureIgnoreCase)).Count(),
-                    connections.Where(c => c.Transport.Name.Equals("longPolling", StringComparison.InvariantCultureIgnoreCase)).Count());
+                    connections.Count(c => c.Transport.Name.Equals("webSockets", StringComparison.InvariantCultureIgnoreCase)),
+                    connections.Count(c => c.Transport.Name.Equals("serverSentEvents", StringComparison.InvariantCultureIgnoreCase)),
+                    connections.Count(c => c.Transport.Name.Equals("longPolling", StringComparison.InvariantCultureIgnoreCase)));
             }
             Console.WriteLine(String.Format("[{0}] Connections: {1}/{2}, State={3}|{4}c|{5}r|{6}d",
                     elapsed,
@@ -132,55 +132,53 @@ namespace Microsoft.AspNet.SignalR.Crank
                     + transportState);
         }
 
+        private static void LoadCounter(string category, string name, string instance, string machine = "localhost")
+        {
+            try
+            {
+                var counter = new PerformanceCounter(category, name, instance, machine);
+                _samples[counter] = new List<CounterSample> { counter.NextSample() };
+                _counters.Add(counter);
+            }
+            catch (Exception)
+            {
+                Console.WriteLine("Failed to load counter '{0}\\{1}({2})' for machine '{3}'", category, name, instance, machine);
+            }
+        }
+
         private static void InitializeCounters(CrankArguments arguments)
         {
-            var instance = Process.GetCurrentProcess().ProcessName;
-            _counters = new[]
-            {
-                new PerformanceCounter("Memory", "Available MBytes", null, readOnly: true),
-                new PerformanceCounter("Processor", "% Processor Time", "_Total", readOnly:true),
-                new PerformanceCounter("Process", "Private Bytes", instance, readOnly:true),
-                new PerformanceCounter("Process", "Virtual Bytes", instance, readOnly:true),
-                new PerformanceCounter("Process", "Working Set", instance, readOnly:true),
-                new PerformanceCounter("Process", "Thread Count", instance, readOnly:true),
-                new PerformanceCounter(".NET CLR Memory", "% Time in GC", instance, readOnly:true),
-                new PerformanceCounter(".NET CLR Memory", "Allocated Bytes/sec", instance, readOnly:true)
-            };
+            _counters = new List<PerformanceCounter>();
+            _samples = new Dictionary<PerformanceCounter, List<CounterSample>>();
 
-            var serverInstance = "w3wp";
-            var server = GetServerName(arguments.Url);
-            if (!String.IsNullOrEmpty(server) && !String.IsNullOrEmpty(arguments.SiteName))
+            try
             {
-                _counters = _counters.Concat(new[]
+                var server = GetServerName(arguments.Url);
+                foreach (var line in System.IO.File.ReadAllLines("Counters.txt"))
                 {
-                    new PerformanceCounter("SignalR", "Connections Connected", arguments.SiteName, machineName: server),
-                    new PerformanceCounter("SignalR", "Connections Current", arguments.SiteName, machineName: server),
-                    new PerformanceCounter("SignalR", "Connections Reconnected", arguments.SiteName, machineName: server),
-                    new PerformanceCounter("SignalR", "Connections Disconnected", arguments.SiteName, machineName: server),
-                    new PerformanceCounter("Memory", "Available MBytes", null, machineName: server),
-                    new PerformanceCounter("Processor", "% Processor Time", "_Total", machineName: server),
-                    new PerformanceCounter("Process", "Private Bytes", serverInstance, machineName: server),
-                    new PerformanceCounter("Process", "Virtual Bytes", serverInstance, machineName: server),
-                    new PerformanceCounter("Process", "Working Set", serverInstance, machineName: server),
-                    new PerformanceCounter("Process", "Thread Count", serverInstance, machineName: server),
-                    new PerformanceCounter(".NET CLR Memory", "% Time in GC", serverInstance, machineName: server),
-                    new PerformanceCounter(".NET CLR Memory", "Allocated Bytes/sec", serverInstance, machineName: server)
-                }).ToArray();
+                    var parts = line.Split('\\');
+                    if (parts.Length == 3)
+                    {
+                        var machine = parts[0].Trim();
+                        var category = parts[1].Trim();
+                        var name = parts[2].Trim();
+                        var instance = "";
+
+                        var i = name.IndexOf('(');
+                        if (i > 0)
+                        {
+                            instance = name.Substring(i + 1, name.Length - i - 2);
+                            name = name.Substring(0, i);
+                        }
+
+                        LoadCounter(category, name, instance, machine.Equals("server", StringComparison.InvariantCultureIgnoreCase) ? server : machine);
+                    }
+                }
             }
-
-            _samples = new Dictionary<PerformanceCounter, List<CounterSample>>(_counters.Length);
-            Parallel.ForEach(_counters, c =>
+            catch (Exception e)
             {
-                try
-                {
-                    _samples[c] = new List<CounterSample> { c.NextSample() };
-                }
-                catch (Exception e)
-                {
-                    Console.WriteLine("Failed to initilize counter '{0}\\{1}({2})': {3}", c.CategoryName, c.CounterName, c.InstanceName ?? c.MachineName, e.Message);
-                    throw;
-                }
-            });
+                Console.WriteLine("Failed to load counters: {0}", e);
+            }
         }
 
         private static void SampleCounters(CrankArguments arguments, ConcurrentBag<Connection> connections, TimeSpan elapsedd)
@@ -218,7 +216,7 @@ namespace Microsoft.AspNet.SignalR.Crank
 
                 if (key.StartsWith("Connections Connected"))
                 {
-                    maxConnections = (int)values.Max();
+                    maxConnections = (int)Math.Max(maxConnections, values.Max());
                 }
 
                 RecordAggregates(key, values);
@@ -249,6 +247,7 @@ namespace Microsoft.AspNet.SignalR.Crank
 
         private static string GetServerName(string url)
         {
+            // for example, captures 'myserver' from http://myserver:8080/
             var match = Regex.Match(url, @"^\w+://([^/]+):\d+?/");
             if (match.Success && match.Groups.Count >= 2)
             {
@@ -421,9 +420,6 @@ namespace Microsoft.AspNet.SignalR.Crank
 
             [CommandLineParameter(Command = "Timeout", Required = false, Default = 300, Description = "Timeout in seconds. Default: 300")]
             public int Timeout { get; set; }
-
-            [CommandLineParameter(Command = "SiteName", Required = false, Default = "", Description = "Site name, used as instance for SignalR counters. Defaults to not collecting server data.")]
-            public string SiteName { get; set; }
         }
 
     }
