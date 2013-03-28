@@ -57,6 +57,9 @@ namespace Microsoft.AspNet.SignalR.Client
         // Used to synchronize starting and stopping specifically
         private readonly object _startLock = new object();
 
+        // Used to ensure we don't write to the Trace TextWriter from multiple threads simultaneously 
+        private readonly object _traceLock = new object();
+
         // Keeps track of when the last keep alive from the server was received
         private HeartbeatMonitor _monitor;
 
@@ -333,7 +336,7 @@ namespace Microsoft.AspNet.SignalR.Client
                     return _connectTask;
                 }
 
-                _monitor = new HeartbeatMonitor(this);
+                _monitor = new HeartbeatMonitor(this, _stateLock);
                 _transport = transport;
 
                 _connectTask = Negotiate(transport);
@@ -553,13 +556,16 @@ namespace Microsoft.AspNet.SignalR.Client
 
         public void Trace(TraceLevels level, string format, params object[] args)
         {
-            if (TraceLevel.HasFlag(level))
+            lock (_traceLock)
             {
-                _traceWriter.WriteLine(
-                    DateTime.UtcNow.ToString("HH:mm:ss.fffffff", CultureInfo.InvariantCulture) + " - " +
-                        (ConnectionId ?? "null") + " - " +
-                        format,
-                    args);
+                if (TraceLevel.HasFlag(level))
+                {
+                    _traceWriter.WriteLine(
+                        DateTime.UtcNow.ToString("HH:mm:ss.fffffff", CultureInfo.InvariantCulture) + " - " +
+                            (ConnectionId ?? "null") + " - " +
+                            format,
+                        args);
+                }
             }
         }
 

@@ -19,8 +19,8 @@ namespace Microsoft.AspNet.SignalR.Client
 #else
         private ThreadPoolTimer _timer;
 #endif
-        // Variable to prevent race conditions with the timer
-        private int _beatActive;
+        // Used to ensure that the Beat only executes when the connection is in the Connected state
+        private readonly object _connectionStateLock;
 
         // Connection variable
         private readonly IConnection _connection;
@@ -35,9 +35,11 @@ namespace Microsoft.AspNet.SignalR.Client
         /// Initializes a new instance of the HeartBeatMonitor Class 
         /// </summary>
         /// <param name="connection"></param>
-        public HeartbeatMonitor(IConnection connection)
+        /// <param name="connectionStateLock"></param>
+        public HeartbeatMonitor(IConnection connection, object connectionStateLock)
         {
             _connection = connection;
+            _connectionStateLock = connectionStateLock;
         }
 
         /// <summary>
@@ -73,41 +75,37 @@ namespace Microsoft.AspNet.SignalR.Client
         /// <param name="timeElapsed"></param>
         public void Beat(TimeSpan timeElapsed)
         {
-            if (Interlocked.Exchange(ref _beatActive, 1) == 1)
+            lock (_connectionStateLock)
             {
-                return;
-            }
-
-            if (_connection.State == ConnectionState.Connected)
-            {
-                if (timeElapsed >= _connection.KeepAliveData.Timeout)
+                if (_connection.State == ConnectionState.Connected)
                 {
-                    if (!TimedOut)
+                    if (timeElapsed >= _connection.KeepAliveData.Timeout)
                     {
-                        // Connection has been lost
-                        _connection.Trace(TraceLevels.Events, "Connection Timed-out : Transport Lost Connection");
-                        TimedOut = true;
-                        _connection.Transport.LostConnection(_connection);
+                        if (!TimedOut)
+                        {
+                            // Connection has been lost
+                            _connection.Trace(TraceLevels.Events, "Connection Timed-out : Transport Lost Connection");
+                            TimedOut = true;
+                            _connection.Transport.LostConnection(_connection);
+                        }
+                    }
+                    else if (timeElapsed >= _connection.KeepAliveData.TimeoutWarning)
+                    {
+                        if (!HasBeenWarned)
+                        {
+                            // Inform user and set HasBeenWarned to true
+                            _connection.Trace(TraceLevels.Events, "Connection Timeout Warning : Notifying user");
+                            HasBeenWarned = true;
+                            _connection.OnConnectionSlow();
+                        }
+                    }
+                    else
+                    {
+                        HasBeenWarned = false;
+                        TimedOut = false;
                     }
                 }
-                else if (timeElapsed >= _connection.KeepAliveData.TimeoutWarning)
-                {
-                    if (!HasBeenWarned)
-                    {
-                        // Inform user and set HasBeenWarned to true
-                        _connection.Trace(TraceLevels.Events, "Connection Timeout Warning : Notifying user");
-                        HasBeenWarned = true;
-                        _connection.OnConnectionSlow();
-                    }
-                }
-                else
-                {
-                    HasBeenWarned = false;
-                    TimedOut = false;
-                }
             }
-
-            _beatActive = 0;
         }
 
         /// <summary>
