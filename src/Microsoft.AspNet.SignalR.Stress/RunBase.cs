@@ -187,11 +187,11 @@ namespace Microsoft.AspNet.SignalR.Stress
             _receivers.Clear();
         }
 
-        private void Sender(object state)
+        private async void Sender(object state)
         {
             while (!CancellationTokenSource.IsCancellationRequested)
             {
-                Send((int)state);
+                await Send((int)state);
             }
 
             _countDown.Signal();
