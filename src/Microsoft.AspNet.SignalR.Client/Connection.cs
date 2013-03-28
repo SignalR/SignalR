@@ -333,7 +333,7 @@ namespace Microsoft.AspNet.SignalR.Client
                     return _connectTask;
                 }
 
-                _monitor = new HeartbeatMonitor(this);
+                _monitor = new HeartbeatMonitor(this, _stateLock);
                 _transport = transport;
 
                 _connectTask = Negotiate(transport);

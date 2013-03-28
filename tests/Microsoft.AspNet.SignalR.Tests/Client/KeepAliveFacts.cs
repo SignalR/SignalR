@@ -18,7 +18,7 @@ namespace Microsoft.AspNet.SignalR.Tests
         {
             // Arrange
             var connection = new Mock<Client.IConnection>();
-            var monitor = new HeartbeatMonitor(connection.Object);
+            var monitor = new HeartbeatMonitor(connection.Object, new object());
 
             // Setting the values such that a warning is thrown almost instantly and a timeout doesn't occur
             var keepAliveData = new KeepAliveData(
@@ -48,7 +48,7 @@ namespace Microsoft.AspNet.SignalR.Tests
         {
             // Arrange
             var connection = new Mock<Client.IConnection>();
-            var monitor = new HeartbeatMonitor(connection.Object);
+            var monitor = new HeartbeatMonitor(connection.Object, new object());
             var transport = new Mock<IClientTransport>();
 
             // Setting the values such that a timeout happens almost instantly
@@ -80,7 +80,7 @@ namespace Microsoft.AspNet.SignalR.Tests
         {
             // Arrange
             var connection = new Mock<Client.IConnection>();
-            var monitor = new HeartbeatMonitor(connection.Object);
+            var monitor = new HeartbeatMonitor(connection.Object, new object());
             var transport = new Mock<IClientTransport>();
 
             // Setting the values such that a timeout or timeout warning isn't issued
