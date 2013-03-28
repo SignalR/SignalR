@@ -134,11 +134,15 @@
             }
 
             if (!reconnecting) {
-                url = url + "/connect";
+                url += "/connect";
             } else {
                 if (appendReconnectUrl) {
-                    url = url + "/reconnect";
+                    url += "/reconnect";
+                } else {
+                    // A silent reconnect should only ever occur with the longPolling transport
+                    url += "/poll";
                 }
+
                 if (connection.messageId) {
                     qs += "&messageId=" + window.encodeURIComponent(connection.messageId);
                 }

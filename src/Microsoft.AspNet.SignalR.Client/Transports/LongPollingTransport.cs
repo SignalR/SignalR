@@ -108,6 +108,10 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
                 {
                     url += "reconnect";
                 }
+                else
+                {
+                    url += "poll";
+                }
 
                 url += GetReceiveQueryString(connection, data);
 

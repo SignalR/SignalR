@@ -181,3 +181,40 @@ QUnit.asyncTimeoutTest("Clears stop reconnecting timeout on stop inside of state
         $.network.connect();
     };
 });
+
+QUnit.asyncTimeoutTest("Can remain connected to /signalr/hubs.", testUtilities.defaultTestTimeout, function (end, assert, testName) {
+    var connection = testUtilities.createHubConnection(end, assert, testName, "signalr/hubs"),
+        demo = connection.createHubProxies().demo,
+        testGuidInvocations = 0;
+
+    demo.client.TestGuid = function () {
+        testGuidInvocations++;
+        if (testGuidInvocations < 2) {
+            assert.ok(true, "First testGuid invocation succeeded.");
+            demo.server.testGuid();
+        } else {
+            assert.ok(true, "Second testGuid invocation succeeded.");
+            end();
+        }
+    };
+
+    connection.error(function (e) {
+        assert.ok(false, "Connection error: " + e);
+        end();
+    });
+
+    connection.reconnecting(function () {
+        assert.ok(false, "Reconnecting should not be triggered");
+        end();
+    });
+
+    connection.start({ transport: "longPolling" }).done(function () {
+        assert.ok(true, "Connected");
+        demo.server.testGuid();
+    });
+
+    // Cleanup
+    return function () {
+        connection.stop();
+    };
+});
