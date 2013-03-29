@@ -25,7 +25,7 @@ namespace Microsoft.AspNet.SignalR.SqlServer
             _trace = traceSource;
             _tracePrefix = String.Format(CultureInfo.InvariantCulture, "Stream {0} : ", _streamIndex);
 
-            _sender = new SqlSender(connectionString, tableName, _onError, _trace);
+            _sender = new SqlSender(connectionString, tableName, _trace);
             _receiver = new SqlReceiver(connectionString, tableName, (id, messages) => onReceived(_streamIndex, id, messages), _onError, _trace, _tracePrefix);
         }
 

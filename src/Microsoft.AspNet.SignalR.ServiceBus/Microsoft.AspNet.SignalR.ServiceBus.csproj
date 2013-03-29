@@ -55,7 +55,6 @@
     <Reference Include="System.IdentityModel" />
     <Reference Include="System.Runtime.Serialization" />
     <Reference Include="System.ServiceModel" />
-    <Reference Include="System.Web.Extensions" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Data" />
@@ -85,6 +84,7 @@
     </Compile>
     <Compile Include="ServiceBusConnection.cs" />
     <Compile Include="ServiceBusMessageBus.cs" />
+    <Compile Include="ServiceBusScaleoutConfiguration.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Microsoft.AspNet.SignalR.Core\Microsoft.AspNet.SignalR.Core.csproj">

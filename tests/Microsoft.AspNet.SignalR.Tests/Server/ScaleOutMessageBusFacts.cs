@@ -215,7 +215,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
             }
 
             public TestScaleoutBus(IDependencyResolver dr, int streams)
-                : base(dr)
+                : base(dr, new ScaleoutConfiguration())
             {
                 _streams = streams;
             }

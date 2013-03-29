@@ -20,30 +20,29 @@ namespace Microsoft.AspNet.SignalR.SqlServer
         internal const string SchemaName = "SignalR";
 
         private const string _tableNamePrefix = "Messages";
-        
+
         private readonly string _connectionString;
-        private readonly SqlScaleOutConfiguration _configuration;
+        private readonly SqlScaleoutConfiguration _configuration;
         private readonly TraceSource _trace;
         private readonly List<SqlStream> _streams = new List<SqlStream>();
 
         /// <summary>
         /// Creates a new instance of the SqlMessageBus class.
         /// </summary>
-        /// <param name="connectionString">The SQL Server connection string.</param>
+        /// <param name="resolver">The resolver to use.</param>
         /// <param name="configuration">The SQL scale-out configuration options.</param>
-        /// <param name="dependencyResolver">The dependency resolver.</param>
-        public SqlMessageBus(string connectionString, SqlScaleOutConfiguration configuration, IDependencyResolver dependencyResolver)
-            : base(dependencyResolver)
+        public SqlMessageBus(IDependencyResolver resolver, SqlScaleoutConfiguration configuration)
+            : base(resolver, configuration)
         {
-            if (String.IsNullOrWhiteSpace(connectionString))
+            if (configuration == null)
             {
-                throw new ArgumentNullException("connectionString");
+                throw new ArgumentNullException("configuration");
             }
 
-            _connectionString = connectionString;
-            _configuration = configuration ?? new SqlScaleOutConfiguration();
+            _connectionString = configuration.ConnectionString;
+            _configuration = configuration;
 
-            var traceManager = dependencyResolver.Resolve<ITraceManager>();
+            var traceManager = resolver.Resolve<ITraceManager>();
             _trace = traceManager["SignalR." + typeof(SqlMessageBus).Name];
 
             ThreadPool.QueueUserWorkItem(Initialize);
@@ -106,7 +105,7 @@ namespace Microsoft.AspNet.SignalR.SqlServer
                     onReceived: OnReceived,
                     onError: ex => OnError(streamIndex, ex),
                     traceSource: _trace);
-                    
+
                 _streams.Add(stream);
 
                 StartStream(streamIndex);

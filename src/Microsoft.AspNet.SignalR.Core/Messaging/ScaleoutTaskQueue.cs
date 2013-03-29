@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.md in the project root for license information.
 
 using System;
-using System.Diagnostics;
 using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR.Infrastructure;
 
@@ -9,23 +8,26 @@ namespace Microsoft.AspNet.SignalR.Messaging
 {
     internal class ScaleoutTaskQueue
     {
-        private TaskCompletionSource<object> _taskCompletionSource;
-        private TaskQueue _queue;
-        private Task _closeTask;
-        private QueueState _state;
-        private readonly int _size;
-
         private const int DefaultQueueSize = 100000;
 
-        private static readonly Task _queueFullTask = TaskAsyncHelper.FromError(new InvalidOperationException(Resources.Error_TaskQueueFull));
+        private TaskCompletionSource<object> _taskCompletionSource;
+        private TaskQueue _queue;
+        private QueueState _state;
+        private volatile Exception _error;
 
-        public ScaleoutTaskQueue()
-            : this(DefaultQueueSize)
+        private readonly int _size;
+        private readonly ScaleoutConfiguration _configuration;
+        private readonly bool _attachErrorHandler;
+
+        public ScaleoutTaskQueue(ScaleoutConfiguration configuration)
+            : this(configuration, DefaultQueueSize)
         {
         }
 
-        public ScaleoutTaskQueue(int size)
+        public ScaleoutTaskQueue(ScaleoutConfiguration configuration, int size)
         {
+            _attachErrorHandler = configuration.OnError == null && !configuration.RetryOnError;
+            _configuration = configuration;
             _size = size;
 
             InitializeCore();
@@ -37,6 +39,8 @@ namespace Microsoft.AspNet.SignalR.Messaging
             {
                 if (ChangeState(QueueState.Open))
                 {
+                    _error = null;
+
                     _taskCompletionSource.TrySetResult(null);
                 }
             }
@@ -46,35 +50,73 @@ namespace Microsoft.AspNet.SignalR.Messaging
         {
             lock (this)
             {
-                if (_state == QueueState.Closed)
+                if (_error != null)
                 {
-                    // This will be faulted
-                    return _closeTask;
+                    throw _error;
+                }
+
+
+                if (_state == QueueState.Initial)
+                {
+                    NotifyError(new InvalidOperationException());
                 }
 
                 // If Enqueue returns null it means the queue is full
-                return _queue.Enqueue(send, state) ?? _queueFullTask;
+                Task task = _queue.Enqueue(send, state);
+
+                if (task != null)
+                {
+                    if (_attachErrorHandler)
+                    {
+                        return task.Catch((ex, obj) => ((ScaleoutTaskQueue)obj).SetError(ex), this);
+                    }
+                    else
+                    {
+                        return task;
+                    }
+                }
+
+                // The task is null if the queue is full
+                throw new InvalidOperationException(Resources.Error_TaskQueueFull);
             }
         }
 
-        public void Buffer()
+        public void SetError(Exception error)
+        {
+            lock (this)
+            {
+                Buffer();
+                
+                if (_configuration.RetryOnError)
+                {
+                    _configuration.OnError(error);
+                }
+                else
+                {
+                    _error = error;
+                }
+            }
+        }
+
+        private void NotifyError(Exception error)
+        {
+            if (_configuration.RetryOnError)
+            {
+                throw error;
+            }
+            else if (_configuration.OnError != null)
+            {
+                _configuration.OnError(error);
+            }
+        }
+
+        private void Buffer()
         {
             lock (this)
             {
                 if (ChangeState(QueueState.Buffering))
                 {
                     InitializeCore();
-                }
-            }
-        }
-
-        public void Close(Exception error)
-        {
-            lock (this)
-            {
-                if (ChangeState(QueueState.Closed))
-                {                   
-                    _closeTask = TaskAsyncHelper.FromError(error);
                 }
             }
         }
@@ -121,8 +163,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
         {
             Initial,
             Open,
-            Buffering,
-            Closed,
+            Buffering
         }
     }
 }

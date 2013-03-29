@@ -18,18 +18,21 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
         private ServiceBusConnection _connection;
         private readonly string[] _topics;
 
-        public ServiceBusMessageBus(string connectionString, string topicPrefix, int numberOfTopics, IDependencyResolver resolver)
-            : base(resolver)
+        public ServiceBusMessageBus(IDependencyResolver resolver, ServiceBusScaleoutConfiguration configuration)
+            : base(resolver, configuration)
         {
-            _connection = new ServiceBusConnection(connectionString);
+            if (configuration == null)
+            {
+                throw new ArgumentNullException("configuration");
+            }
 
-            _topics = Enumerable.Range(0, numberOfTopics)
-                                .Select(topicIndex => SignalRTopicPrefix + "_" + topicPrefix + "_" + topicIndex)
+            _connection = new ServiceBusConnection(configuration.ConnectionString);
+
+            _topics = Enumerable.Range(0, configuration.TopicCount)
+                                .Select(topicIndex => SignalRTopicPrefix + "_" + configuration.TopicPrefix + "_" + topicIndex)
                                 .ToArray();
 
-            _subscription = _connection.Subscribe(_topics, OnMessage);
-
-            Open();
+            _subscription = _connection.Subscribe(_topics, OnMessage, Open);
         }
 
         protected override int StreamCount

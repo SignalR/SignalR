@@ -7,11 +7,11 @@ namespace Microsoft.AspNet.SignalR.Messaging
     /// <summary>
     /// Common settings for scale-out message bus implementations.
     /// </summary>
-    public class ScaleOutConfiguration
+    public class ScaleoutConfiguration
     {
         /// <summary>
         /// When set to true, the scale-out message bus will buffer outgoing messages until the backplane
-        /// is available again. Provide a callback via <see cref="Microsoft.AspNet.SignalR.Messaging.ScaleOutConfiguration.OnError">OnError</see>
+        /// is available again. Provide a callback via <see cref="Microsoft.AspNet.SignalR.Messaging.ScaleoutConfiguration.OnError">OnError</see>
         /// to be notified when an error occurs. Defaults to false.
         /// </summary>
         public bool RetryOnError { get; set; }

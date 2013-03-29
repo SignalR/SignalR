@@ -23,19 +23,18 @@ namespace Microsoft.AspNet.SignalR.Redis
         private RedisSubscriberConnection _channel;
         private int _state;
 
-        public RedisMessageBus(string server, int port, string password, int db, string key, IDependencyResolver resolver)
-            : this(GetConnectionFactory(server, port, password), db, key, resolver)
-        {
-
-        }
-
         [SuppressMessage("Microsoft.Usage", "CA2214:DoNotCallOverridableMethodsInConstructors", Justification = "Reviewed")]
-        public RedisMessageBus(Func<RedisConnection> connectionFactory, int db, string key, IDependencyResolver resolver)
-            : base(resolver)
+        public RedisMessageBus(IDependencyResolver resolver, RedisScaleoutConfiguration configuration)
+            : base(resolver, configuration)
         {
-            _connectionFactory = connectionFactory;
-            _db = db;
-            _key = key;
+            if (configuration == null)
+            {
+                throw new ArgumentNullException("configuration");
+            }
+
+            _connectionFactory = configuration.ConnectionFactory;
+            _db = configuration.Database;
+            _key = configuration.EventKey;
 
             ReconnectDelay = TimeSpan.FromSeconds(2);
             ConnectWithRetry();
@@ -75,7 +74,7 @@ namespace Microsoft.AspNet.SignalR.Redis
                                             State.Connected) == State.Connected)
             {
                 // Start buffering any sends that they are preserved
-                Buffer(DefaultBufferSize);
+                OnError(0, e.Exception);
 
                 // Retry until the connection reconnects
                 ConnectWithRetry();
@@ -133,7 +132,7 @@ namespace Microsoft.AspNet.SignalR.Redis
                 {
                     Interlocked.Exchange(ref _state, State.Connected);
 
-                    Open();
+                    Open(0);
                 }
             },
             TaskContinuationOptions.ExecuteSynchronously);
@@ -190,11 +189,6 @@ namespace Microsoft.AspNet.SignalR.Redis
 
                 return TaskAsyncHelper.FromError(ex);
             }
-        }
-
-        private static Func<RedisConnection> GetConnectionFactory(string server, int port, string password)
-        {
-            return () => new RedisConnection(server, port: port, password: password);
         }
 
         private class SendContext

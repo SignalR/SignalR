@@ -82,7 +82,7 @@ namespace Microsoft.AspNet.SignalR.SqlServer
                 var retry = _dbBehavior.UpdateLoopRetryDelays[i];
                 var retryDelay = retry.Item1;
                 var retryCount = retry.Item2;
-                
+
                 for (var j = 0; j < retryCount; j++)
                 {
                     if (_disposing)
@@ -268,6 +268,7 @@ namespace Microsoft.AspNet.SignalR.SqlServer
             ExecuteReaderWithUpdates(processRecord);
         }
 
+        [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "I need to")]
         protected virtual bool StartSqlDependencyListener()
         {
             lock (_stopLocker)

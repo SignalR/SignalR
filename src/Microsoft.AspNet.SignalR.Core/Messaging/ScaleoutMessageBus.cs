@@ -18,23 +18,20 @@ namespace Microsoft.AspNet.SignalR.Messaging
     public abstract class ScaleoutMessageBus : MessageBus
     {
         private readonly SipHashBasedStringEqualityComparer _sipHashBasedComparer = new SipHashBasedStringEqualityComparer(0, 0);
-        private readonly ScaleOutConfiguration _configuration;
         private readonly TraceSource _trace;
         private readonly Lazy<ScaleoutStreamManager> _streamManager;
 
-        protected ScaleoutMessageBus(IDependencyResolver resolver)
-            : this(resolver, null)
-        {
-
-        }
-
-        protected ScaleoutMessageBus(IDependencyResolver resolver, ScaleOutConfiguration configuation)
+        protected ScaleoutMessageBus(IDependencyResolver resolver, ScaleoutConfiguration configuration)
             : base(resolver)
         {
-            _configuration = configuation ?? new ScaleOutConfiguration();
+            if (configuration == null)
+            {
+                throw new ArgumentNullException("configuration");
+            }
+
             var traceManager = resolver.Resolve<ITraceManager>();
             _trace = traceManager["SignalR." + typeof(ScaleoutMessageBus).Name];
-            _streamManager = new Lazy<ScaleoutStreamManager>(() => new ScaleoutStreamManager(Send, OnReceivedCore, StreamCount));
+            _streamManager = new Lazy<ScaleoutStreamManager>(() => new ScaleoutStreamManager(Send, OnReceivedCore, StreamCount, configuration));
         }
 
         /// <summary>
@@ -72,16 +69,9 @@ namespace Microsoft.AspNet.SignalR.Messaging
         /// <param name="exception">The error that occurred.</param>
         protected void OnError(int streamIndex, Exception exception)
         {
-            if (_configuration.RetryOnError)
-            {
-                StreamManager.Buffer(streamIndex);
-            }
-            if (_configuration.OnError != null)
-            {
-                _configuration.OnError(exception);
-            }
+            StreamManager.OnError(streamIndex, exception);
         }
-        
+
         /// <summary>
         /// Sends messages to the backplane
         /// </summary>

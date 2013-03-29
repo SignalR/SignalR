@@ -18,7 +18,8 @@ namespace Microsoft.AspNet.SignalR.Messaging
 
         public ScaleoutStreamManager(Func<int, IList<Message>, Task> send,
                                      Action<int, ulong, IList<Message>> receive,
-                                     int streamCount)
+                                     int streamCount,
+                                     ScaleoutConfiguration configuration)
         {
             _sendQueues = new ScaleoutTaskQueue[streamCount];
             _send = send;
@@ -28,7 +29,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
 
             for (int i = 0; i < streamCount; i++)
             {
-                _sendQueues[i] = new ScaleoutTaskQueue();
+                _sendQueues[i] = new ScaleoutTaskQueue(configuration);
                 receiveMapping[i] = new ScaleoutMappingStore();
             }
 
@@ -41,10 +42,10 @@ namespace Microsoft.AspNet.SignalR.Messaging
         {
             _sendQueues[streamIndex].Open();
         }
-
-        public void Buffer(int streamIndex)
+        
+        public void OnError(int streamIndex, Exception exception)
         {
-            _sendQueues[streamIndex].Buffer();   
+            _sendQueues[streamIndex].SetError(exception);
         }
 
         public Task Send(int streamIndex, IList<Message> messages)
@@ -57,7 +58,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
         public void OnReceived(int streamIndex, ulong id, IList<Message> messages)
         {
             _receive(streamIndex, id, messages);
-            
+
             // We assume if a message has come in then the stream is open
             Open(streamIndex);
         }

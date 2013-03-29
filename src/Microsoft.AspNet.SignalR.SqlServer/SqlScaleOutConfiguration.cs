@@ -8,12 +8,17 @@ namespace Microsoft.AspNet.SignalR
     /// <summary>
     /// Settings for the SQL Server scale-out message bus implementation.
     /// </summary>
-    public class SqlScaleOutConfiguration : ScaleOutConfiguration
+    public class SqlScaleoutConfiguration : ScaleoutConfiguration
     {
-        public SqlScaleOutConfiguration()
+        public SqlScaleoutConfiguration()
         {
             TableCount = 1;
         }
+
+        /// <summary>
+        /// The connection string to use.
+        /// </summary>
+        public string ConnectionString { get; set; }
 
         /// <summary>
         /// The number of tables to store messages in. Using more tables reduces lock contention and can increase throughput.
