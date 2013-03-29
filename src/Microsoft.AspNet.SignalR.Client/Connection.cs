@@ -70,7 +70,7 @@ namespace Microsoft.AspNet.SignalR.Client
         private JsonSerializer _jsonSerializer = new JsonSerializer();
 
 #if (NET4 || NET45)
-        private X509CertificateCollection certCollection = new X509CertificateCollection();
+        private readonly X509CertificateCollection certCollection = new X509CertificateCollection();
 #endif
 
         /// <summary>
