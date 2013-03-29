@@ -4,6 +4,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Net;
 using System.Text.RegularExpressions;
@@ -153,8 +154,10 @@ namespace Microsoft.AspNet.SignalR.Crank
 
             try
             {
-                var server = GetServerName(arguments.Url);
-                foreach (var line in System.IO.File.ReadAllLines("Counters.txt"))
+                // Each line specifies a counter in the format: 'machine\category\counter(instance)'
+                // When machine is set to 'server' the hostname portion of the URL will be used
+                var server = new Uri(arguments.Url).Host;
+                foreach (var line in File.ReadAllLines("Counters.txt"))
                 {
                     var parts = line.Split('\\');
                     if (parts.Length == 3)
@@ -195,7 +198,11 @@ namespace Microsoft.AspNet.SignalR.Crank
 
         private static string ExpandMachineName(string machineName)
         {
-            return (machineName == ".") ? Environment.MachineName : machineName;
+            if (machineName.Equals(".") || machineName.Equals("localhost", StringComparison.InvariantCultureIgnoreCase))
+            {
+                return Environment.MachineName;
+            }
+            return machineName;
         }
 
         private static void Record(CrankArguments arguments)
@@ -203,8 +210,8 @@ namespace Microsoft.AspNet.SignalR.Crank
             var maxConnections = 0;
             foreach (var sample in _samples)
             {
-                var instance = String.IsNullOrEmpty(sample.Key.InstanceName) ? ExpandMachineName(sample.Key.MachineName) : sample.Key.InstanceName;
-                var key = String.Format("{0}({1})", sample.Key.CounterName, instance);
+                // metric simplified for reporting to reflect the counter name and machine where it was sampled
+                var key = String.Format("{0} ({1})", sample.Key.CounterName, ExpandMachineName(sample.Key.MachineName));
                 var samples = sample.Value;
 
                 var values = new long[samples.Count - 1];
@@ -243,17 +250,6 @@ namespace Microsoft.AspNet.SignalR.Crank
                 var stdDevP = Math.Sqrt(sumOfSquaresDiffs / values.Length) / average * 100;
                 Console.WriteLine("{0} (STDDEV%): {1}%", key, Math.Round(stdDevP));
             }
-        }
-
-        private static string GetServerName(string url)
-        {
-            // for example, captures 'myserver' from http://myserver:8080/
-            var match = Regex.Match(url, @"^\w+://([^/]+):\d+?/");
-            if (match.Success && match.Groups.Count >= 2)
-            {
-                return match.Groups[1].Value;
-            }
-            return null;
         }
 
         private static async Task ConnectBatches(string url, string transport, int clients, int batchSize, int batchInterval, ConcurrentBag<Connection> connections)
