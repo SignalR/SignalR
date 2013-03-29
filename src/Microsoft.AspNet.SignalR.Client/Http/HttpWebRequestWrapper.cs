@@ -4,6 +4,9 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Net;
+#if (NET4 || NET45)
+using System.Security.Cryptography.X509Certificates;
+#endif
 
 namespace Microsoft.AspNet.SignalR.Client.Http
 {
@@ -125,5 +128,17 @@ namespace Microsoft.AspNet.SignalR.Client.Http
                 }
             }
         }
+
+#if (NET4 || NET45)
+        public void AddClientCerts(X509CertificateCollection certificates)
+        {
+            if (certificates == null)
+            {
+                throw new ArgumentNullException("certificates");
+            }
+
+            _request.ClientCertificates = certificates;
+        }
+#endif
     }
 }
