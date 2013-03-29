@@ -11,6 +11,9 @@ using Microsoft.AspNet.SignalR.Client.Http;
 using Microsoft.AspNet.SignalR.Client.Transports;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+#if (NET4 || NET45)
+using System.Security.Cryptography.X509Certificates;
+#endif
 
 namespace Microsoft.AspNet.SignalR.Client
 {
@@ -46,6 +49,9 @@ namespace Microsoft.AspNet.SignalR.Client
         void OnConnectionSlow();
         void PrepareRequest(IRequest request);
         void UpdateLastKeepAlive();
+#if (NET4 || NET45)
+        void AddClientCertificate(X509Certificate certificate);
+#endif
         void Trace(TraceLevels level, string format, params object[] args);
     }
 }

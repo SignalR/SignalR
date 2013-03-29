@@ -66,6 +66,15 @@ namespace Microsoft.AspNet.SignalR.Client {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Client Certificates cannot be added after the connection has started..
+        /// </summary>
+        internal static string Error_CertsCanOnlyBeAddedWhenDisconnected {
+            get {
+                return ResourceManager.GetString("Error_CertsCanOnlyBeAddedWhenDisconnected", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to The connection was stopped before it could be started..
         /// </summary>
         internal static string Error_ConnectionCancelled {

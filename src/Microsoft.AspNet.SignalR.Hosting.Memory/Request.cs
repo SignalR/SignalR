@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Net;
+using System.Security.Cryptography.X509Certificates;
 using Microsoft.AspNet.SignalR.Owin;
 using Microsoft.AspNet.SignalR.Owin.Infrastructure;
 using IClientRequest = Microsoft.AspNet.SignalR.Client.Http.IRequest;
@@ -84,6 +85,10 @@ namespace Microsoft.AspNet.SignalR.Hosting.Memory
             {
                 _requestHeaders.SetHeader(headerEntry.Key, headerEntry.Value);
             }
+        }
+
+        public void AddClientCerts(X509CertificateCollection certificates)
+        {
         }
     }
 }

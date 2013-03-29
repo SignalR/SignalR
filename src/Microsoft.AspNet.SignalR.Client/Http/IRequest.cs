@@ -3,6 +3,9 @@
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Net;
+#if (NET4 || NET45)
+using System.Security.Cryptography.X509Certificates;
+#endif
 
 namespace Microsoft.AspNet.SignalR.Client.Http
 {
@@ -48,5 +51,13 @@ namespace Microsoft.AspNet.SignalR.Client.Http
         /// </summary>
         /// <param name="headers">request headers</param>
         void SetRequestHeaders(IDictionary<string, string> headers);
+
+#if (NET4 || NET45)
+        /// <summary>
+        /// Sets client certificates
+        /// </summary>
+        /// <param name="certificates">client certificates</param>
+        void AddClientCerts(X509CertificateCollection certificates);
+#endif
     }
 }

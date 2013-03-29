@@ -18,6 +18,9 @@ using Microsoft.AspNet.SignalR.Client.Transports;
 using Microsoft.AspNet.SignalR.Infrastructure;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+#if (NET4 || NET45)
+using System.Security.Cryptography.X509Certificates;
+#endif
 
 namespace Microsoft.AspNet.SignalR.Client
 {
@@ -65,6 +68,10 @@ namespace Microsoft.AspNet.SignalR.Client
 
         //The json serializer for the connections
         private JsonSerializer _jsonSerializer = new JsonSerializer();
+
+#if (NET4 || NET45)
+        private X509CertificateCollection certCollection = new X509CertificateCollection();
+#endif
 
         /// <summary>
         /// Occurs when the <see cref="Connection"/> has received data from the server.
@@ -554,6 +561,25 @@ namespace Microsoft.AspNet.SignalR.Client
             return Send(this.JsonSerializeObject(value));
         }
 
+#if (NET4 || NET45)
+        /// <summary>
+        /// Adds a client certificate to the request
+        /// </summary>
+        /// <param name="certificate">Client Certificate</param>
+        public void AddClientCertificate(X509Certificate certificate)
+        {
+            lock (_stateLock)
+            {
+                if (State != ConnectionState.Disconnected)
+                {
+                    throw new InvalidOperationException(Resources.Error_CertsCanOnlyBeAddedWhenDisconnected);
+                }
+
+                certCollection.Add(certificate);
+            }
+        }
+#endif
+
         public void Trace(TraceLevels level, string format, params object[] args)
         {
             lock (_traceLock)
@@ -673,6 +699,10 @@ namespace Microsoft.AspNet.SignalR.Client
             }
 #endif
             request.SetRequestHeaders(Headers);
+
+#if (NET4 || NET45)
+            request.AddClientCerts(certCollection);
+#endif
         }
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode", Justification = "Can be called via other clients.")]
