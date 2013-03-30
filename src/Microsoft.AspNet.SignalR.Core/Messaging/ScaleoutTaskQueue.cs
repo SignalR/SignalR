@@ -13,7 +13,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
         private TaskCompletionSource<object> _taskCompletionSource;
         private TaskQueue _queue;
         private QueueState _state;
-        private volatile Exception _error;
+        private Exception _error;
 
         private readonly int _size;
         private readonly ScaleoutConfiguration _configuration;
@@ -26,6 +26,11 @@ namespace Microsoft.AspNet.SignalR.Messaging
 
         public ScaleoutTaskQueue(ScaleoutConfiguration configuration, int size)
         {
+            if (configuration == null)
+            {
+                throw new ArgumentNullException("configuration");
+            }
+
             _attachErrorHandler = configuration.OnError == null && !configuration.RetryOnError;
             _configuration = configuration;
             _size = size;
@@ -55,29 +60,25 @@ namespace Microsoft.AspNet.SignalR.Messaging
                     throw _error;
                 }
 
-
                 if (_state == QueueState.Initial)
                 {
-                    NotifyError(new InvalidOperationException());
+                    NotifyError(new InvalidOperationException(Resources.Error_QueueNotOpen));
                 }
 
-                // If Enqueue returns null it means the queue is full
                 Task task = _queue.Enqueue(send, state);
 
-                if (task != null)
+                if (task == null)
                 {
-                    if (_attachErrorHandler)
-                    {
-                        return task.Catch((ex, obj) => ((ScaleoutTaskQueue)obj).SetError(ex), this);
-                    }
-                    else
-                    {
-                        return task;
-                    }
+                    // The task is null if the queue is full
+                    throw new InvalidOperationException(Resources.Error_TaskQueueFull);   
                 }
 
-                // The task is null if the queue is full
-                throw new InvalidOperationException(Resources.Error_TaskQueueFull);
+                if (_attachErrorHandler)
+                {
+                    return task.Catch((ex, obj) => ((ScaleoutTaskQueue)obj).SetError(ex), this);
+                }
+
+                return task;
             }
         }
 

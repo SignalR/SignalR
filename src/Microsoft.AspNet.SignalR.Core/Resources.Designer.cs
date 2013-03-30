@@ -304,6 +304,15 @@ namespace Microsoft.AspNet.SignalR {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The queue is not open..
+        /// </summary>
+        internal static string Error_QueueNotOpen {
+            get {
+                return ResourceManager.GetString("Error_QueueNotOpen", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to State has exceeded the maximum length of 4096 bytes..
         /// </summary>
         internal static string Error_StateExceededMaximumLength {
