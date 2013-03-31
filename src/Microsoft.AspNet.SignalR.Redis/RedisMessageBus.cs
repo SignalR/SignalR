@@ -22,7 +22,6 @@ namespace Microsoft.AspNet.SignalR.Redis
         private RedisConnection _connection;
         private RedisSubscriberConnection _channel;
         private int _state;
-        private Task _errorTask;
 
         [SuppressMessage("Microsoft.Usage", "CA2214:DoNotCallOverridableMethodsInConstructors", Justification = "Reviewed")]
         public RedisMessageBus(IDependencyResolver resolver, RedisScaleoutConfiguration configuration)
@@ -45,22 +44,17 @@ namespace Microsoft.AspNet.SignalR.Redis
 
         protected override Task Send(int streamIndex, IList<Message> messages)
         {
-            if (_state == State.Connected)
-            {
-                var context = new SendContext(_key, messages, _connection);
+            var context = new SendContext(_key, messages, _connection);
 
-                // Increment the channel number
-                return _connection.Strings.Increment(_db, _key)
-                                   .Then((id, ctx) =>
-                                   {
-                                       byte[] data = RedisMessage.ToBytes(id, ctx.Messages);
+            // Increment the channel number
+            return _connection.Strings.Increment(_db, _key)
+                               .Then((id, ctx) =>
+                               {
+                                   byte[] data = RedisMessage.ToBytes(id, ctx.Messages);
 
-                                       return ctx.Connection.Publish(ctx.Key, data);
-                                   },
-                                   context);
-            }
-
-            return _errorTask;
+                                   return ctx.Connection.Publish(ctx.Key, data);
+                               },
+                               context);
         }
 
         private void OnConnectionClosed(object sender, EventArgs e)
@@ -79,8 +73,6 @@ namespace Microsoft.AspNet.SignalR.Redis
                                             State.Closed,
                                             State.Connected) == State.Connected)
             {
-                _errorTask = TaskAsyncHelper.FromError(e.Exception);
-
                 // Start buffering any sends that they are preserved
                 OnError(0, e.Exception);
 
