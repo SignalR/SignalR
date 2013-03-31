@@ -65,12 +65,20 @@ namespace Microsoft.AspNet.SignalR.Messaging
                     NotifyError(new InvalidOperationException(Resources.Error_QueueNotOpen));
                 }
 
-                Task task = _queue.Enqueue(send, state);
+                // If the queue is closed then stop sending
+                if (_state == QueueState.Closed)
+                {
+                    return TaskAsyncHelper.Empty;
+                }
+
+                var context = new SendContext(send, state);
+
+                Task task = _queue.Enqueue(obj => QueueSend(obj), context);
 
                 if (task == null)
                 {
                     // The task is null if the queue is full
-                    throw new InvalidOperationException(Resources.Error_TaskQueueFull);   
+                    throw new InvalidOperationException(Resources.Error_TaskQueueFull);
                 }
 
                 if (_attachErrorHandler)
@@ -87,7 +95,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
             lock (this)
             {
                 Buffer();
-                
+
                 if (_configuration.RetryOnError)
                 {
                     // Raise the error handler if there's one specified
@@ -104,15 +112,54 @@ namespace Microsoft.AspNet.SignalR.Messaging
             }
         }
 
+        public void Close()
+        {
+            Task task = TaskAsyncHelper.Empty;
+
+            lock (this)
+            {
+                _state = QueueState.Closed;
+
+                // Drain the queue to stop all sends
+                if (_queue != null)
+                {
+                    task = _queue.Drain();
+                }
+            }
+
+            // Block until the queue is drained so no new work can be done
+            task.Wait();
+        }
+
+        private Task QueueSend(object state)
+        {
+            lock (this)
+            {
+                var context = (SendContext)state;
+
+                if (_state == QueueState.Initial ||
+                    _state == QueueState.Open)
+                {
+                    return context.Invoke();
+                }
+
+                // Should this be a faulted task?
+                return TaskAsyncHelper.Empty;
+            }
+        }
+
         private void NotifyError(Exception error)
         {
             if (_configuration.RetryOnError)
             {
-                throw error;
+                if (_configuration.OnError != null)
+                {
+                    _configuration.OnError(error);
+                }
             }
-            else if (_configuration.OnError != null)
+            else
             {
-                _configuration.OnError(error);
+                throw error;
             }
         }
 
@@ -165,11 +212,29 @@ namespace Microsoft.AspNet.SignalR.Messaging
             return tcs.Task;
         }
 
+        private class SendContext
+        {
+            private readonly Func<object, Task> _send;
+            private readonly object _state;
+
+            public SendContext(Func<object, Task> send, object state)
+            {
+                _send = send;
+                _state = state;
+            }
+
+            public Task Invoke()
+            {
+                return _send(_state);
+            }
+        }
+
         private enum QueueState
         {
             Initial,
             Open,
-            Buffering
+            Buffering,
+            Closed
         }
     }
 }

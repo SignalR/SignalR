@@ -63,6 +63,15 @@ namespace Microsoft.AspNet.SignalR.Messaging
         }
 
         /// <summary>
+        /// Closes the specified queue.
+        /// <param name="streamIndex">The index of the stream to close.</param>
+        /// </summary>
+        protected void Close(int streamIndex)
+        {
+            StreamManager.Close(streamIndex);
+        }
+
+        /// <summary>
         /// Closes the specified queue for sending messages making all sends fail asynchronously.
         /// </summary>
         /// <param name="streamIndex">The index of the stream to close.</param>
@@ -197,6 +206,17 @@ namespace Microsoft.AspNet.SignalR.Messaging
 
             // TODO: Implement message batching here
             return Send(new[] { message });
+        }
+
+        protected override void Dispose(bool disposing)
+        {
+            // Close all streams
+            for (int i = 0; i < StreamCount; i++)
+            {
+                Close(i);
+            }
+
+            base.Dispose(disposing);
         }
 
         [SuppressMessage("Microsoft.Design", "CA1062:Validate arguments of public methods", MessageId = "0", Justification = "Called from derived class")]
