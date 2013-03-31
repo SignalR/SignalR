@@ -90,10 +90,15 @@ namespace Microsoft.AspNet.SignalR.Messaging
                 
                 if (_configuration.RetryOnError)
                 {
-                    _configuration.OnError(error);
+                    // Raise the error handler if there's one specified
+                    if (_configuration.OnError != null)
+                    {
+                        _configuration.OnError(error);
+                    }
                 }
                 else
                 {
+                    // Set the error if we aren't retrying on error
                     _error = error;
                 }
             }
