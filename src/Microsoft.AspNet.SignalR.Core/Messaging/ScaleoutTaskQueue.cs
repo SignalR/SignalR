@@ -123,7 +123,8 @@ namespace Microsoft.AspNet.SignalR.Messaging
                 // Drain the queue to stop all sends
                 if (_queue != null)
                 {
-                    task = _queue.Drain();
+                    // We never want to throw here
+                    task = AlwaysSucceed(_queue.Drain());
                 }
             }
 
