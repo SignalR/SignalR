@@ -185,7 +185,7 @@ namespace Microsoft.AspNet.SignalR.Redis
                         Thread.Sleep(500);
                     }
 
-                    Trace.TraceVerbose("Subscribed to events " + String.Join(",", _key));
+                    Trace.TraceVerbose("Subscribed to event " + _key);
 
                     _channel = channel;
                     _connection = connection;
