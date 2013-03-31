@@ -9,19 +9,33 @@ namespace Microsoft.AspNet.SignalR.Redis
 {
     public class RedisScaleoutConfiguration : ScaleoutConfiguration
     {
+        public RedisScaleoutConfiguration(string server, int port, string password, string eventKey)
+            : this(MakeConnectionFactory(server, port, password), eventKey)
+        {
+
+        }
+
+        public RedisScaleoutConfiguration(Func<RedisConnection> connectionFactory, string eventKey)
+        {
+            if (connectionFactory == null)
+            {
+                throw new ArgumentNullException("connectionFactory");
+            }
+
+            if (eventKey == null)
+            {
+                throw new ArgumentNullException("eventKey");
+            }
+
+            ConnectionFactory = connectionFactory;
+            EventKey = eventKey;
+        }
+
         public Func<RedisConnection> ConnectionFactory { get; set; }
 
         public int Database { get; set; }
 
         public string EventKey { get; set; }
-
-        public static RedisScaleoutConfiguration Create(string server, int port, string password)
-        {
-            return new RedisScaleoutConfiguration
-            {
-                ConnectionFactory = MakeConnectionFactory(server, port, password)
-            };
-        }
 
         private static Func<RedisConnection> MakeConnectionFactory(string server, int port, string password)
         {

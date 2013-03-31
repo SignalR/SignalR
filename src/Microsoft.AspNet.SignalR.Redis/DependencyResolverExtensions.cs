@@ -20,8 +20,7 @@ namespace Microsoft.AspNet.SignalR
         /// <returns>The dependency resolver</returns>
         public static IDependencyResolver UseRedis(this IDependencyResolver resolver, string server, int port, string password, string eventKey)
         {
-            var configuration = RedisScaleoutConfiguration.Create(server, port, password);
-            configuration.EventKey = eventKey;
+            var configuration = new RedisScaleoutConfiguration(server, port, password, eventKey);
 
             return UseRedis(resolver, configuration);
         }
