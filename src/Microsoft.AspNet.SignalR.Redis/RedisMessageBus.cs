@@ -22,6 +22,7 @@ namespace Microsoft.AspNet.SignalR.Redis
         private RedisConnection _connection;
         private RedisSubscriberConnection _channel;
         private int _state;
+        private Task _errorTask;
 
         [SuppressMessage("Microsoft.Usage", "CA2214:DoNotCallOverridableMethodsInConstructors", Justification = "Reviewed")]
         public RedisMessageBus(IDependencyResolver resolver, RedisScaleoutConfiguration configuration)
@@ -44,17 +45,22 @@ namespace Microsoft.AspNet.SignalR.Redis
 
         protected override Task Send(int streamIndex, IList<Message> messages)
         {
-            var context = new SendContext(_key, messages, _connection);
+            if (_state == State.Connected)
+            {
+                var context = new SendContext(_key, messages, _connection);
 
-            // Increment the channel number
-            return _connection.Strings.Increment(_db, _key)
-                               .Then((id, ctx) =>
-                               {
-                                   byte[] data = RedisMessage.ToBytes(id, ctx.Messages);
+                // Increment the channel number
+                return _connection.Strings.Increment(_db, _key)
+                                   .Then((id, ctx) =>
+                                   {
+                                       byte[] data = RedisMessage.ToBytes(id, ctx.Messages);
 
-                                   return ctx.Connection.Publish(ctx.Key, data);
-                               }, 
-                               context);
+                                       return ctx.Connection.Publish(ctx.Key, data);
+                                   },
+                                   context);
+            }
+
+            return _errorTask;
         }
 
         private void OnConnectionClosed(object sender, EventArgs e)
@@ -66,13 +72,15 @@ namespace Microsoft.AspNet.SignalR.Redis
 
         private void OnConnectionError(object sender, ErrorEventArgs e)
         {
-            Trace.TraceEvent(TraceEventType.Error, 0, "OnConnectionError - " + e.Cause + ". " + e.Exception.GetBaseException());
+            Trace.TraceError("OnConnectionError - " + e.Cause + ". " + e.Exception.GetBaseException());
 
             // Change the state to closed and retry connecting
             if (Interlocked.CompareExchange(ref _state,
                                             State.Closed,
                                             State.Connected) == State.Connected)
             {
+                _errorTask = TaskAsyncHelper.FromError(e.Exception);
+
                 // Start buffering any sends that they are preserved
                 OnError(0, e.Exception);
 
@@ -177,7 +185,7 @@ namespace Microsoft.AspNet.SignalR.Redis
                         Thread.Sleep(500);
                     }
 
-                    Trace.TraceEvent(TraceEventType.Verbose, 0, "Subscribed to events " + String.Join(",", _key));
+                    Trace.TraceVerbose("Subscribed to events " + String.Join(",", _key));
 
                     _channel = channel;
                     _connection = connection;
@@ -185,7 +193,7 @@ namespace Microsoft.AspNet.SignalR.Redis
             }
             catch (Exception ex)
             {
-                Trace.TraceEvent(TraceEventType.Error, 0, "Error connecting to redis - " + ex.GetBaseException());
+                Trace.TraceError("Error connecting to redis - " + ex.GetBaseException());
 
                 return TaskAsyncHelper.FromError(ex);
             }

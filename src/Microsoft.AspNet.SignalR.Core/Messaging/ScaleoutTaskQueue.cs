@@ -139,8 +139,8 @@ namespace Microsoft.AspNet.SignalR.Messaging
 
             if (_queue != null)
             {
-                // Attempt to drain the queue before creating the new one
-                return new[] { AlwaysSucceed(_queue.Drain()), _taskCompletionSource.Task }.Then(() => { });
+                // Drain the queue when the new queue is open
+                return _taskCompletionSource.Task.Then(q => AlwaysSucceed(q.Drain()), _queue);
             }
 
             // Nothing to drain
