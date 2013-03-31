@@ -237,8 +237,13 @@ namespace Microsoft.AspNet.SignalR.Messaging
 
                 Fragment fragment = _fragments[idxIntoFragmentsArray];
 
+                if (fragment == null)
+                {
+                    return new MessageStoreResult<ScaleoutMapping>(minMessageId, _emptyArraySegment, hasMoreData: false);
+                }
+
                 // If we have the right data then return it
-                if (fragment != null && fragment.FragmentNum == fragmentNum)
+                if (fragment.FragmentNum == fragmentNum)
                 {
                     var firstMessageIdInThisFragment = GetMessageId(fragment.FragmentNum, offset: 0);
 
