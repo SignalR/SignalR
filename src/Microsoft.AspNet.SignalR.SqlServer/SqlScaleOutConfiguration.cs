@@ -8,7 +8,7 @@ namespace Microsoft.AspNet.SignalR
     /// <summary>
     /// Settings for the SQL Server scale-out message bus implementation.
     /// </summary>
-    public class SqlScaleoutConfiguration : ScaleoutConfiguration
+    public class SqlScaleoutConfiguration : ScaleoutConfiguration2
     {
         public SqlScaleoutConfiguration()
         {

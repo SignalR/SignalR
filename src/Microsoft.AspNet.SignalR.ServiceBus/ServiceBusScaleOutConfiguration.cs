@@ -6,7 +6,7 @@ using Microsoft.AspNet.SignalR.Messaging;
 
 namespace Microsoft.AspNet.SignalR.ServiceBus
 {
-    public class ServiceBusScaleoutConfiguration : ScaleoutConfiguration
+    public class ServiceBusScaleoutConfiguration : ScaleoutConfiguration2
     {
         public string ConnectionString { get; set; }
 

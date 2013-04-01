@@ -17,14 +17,14 @@ namespace Microsoft.AspNet.SignalR.Messaging
         private Exception _error;
 
         private readonly int _size;
-        private readonly ScaleoutConfiguration _configuration;
+        private readonly ScaleoutConfiguration2 _configuration;
 
-        public ScaleoutTaskQueue(ScaleoutConfiguration configuration)
+        public ScaleoutTaskQueue(ScaleoutConfiguration2 configuration)
             : this(configuration, DefaultQueueSize)
         {
         }
 
-        public ScaleoutTaskQueue(ScaleoutConfiguration configuration, int size)
+        public ScaleoutTaskQueue(ScaleoutConfiguration2 configuration, int size)
         {
             if (configuration == null)
             {

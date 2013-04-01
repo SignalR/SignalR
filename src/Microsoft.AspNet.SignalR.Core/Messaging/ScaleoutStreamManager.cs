@@ -19,7 +19,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
         public ScaleoutStreamManager(Func<int, IList<Message>, Task> send,
                                      Action<int, ulong, IList<Message>> receive,
                                      int streamCount,
-                                     ScaleoutConfiguration configuration)
+                                     ScaleoutConfiguration2 configuration)
         {
             _sendQueues = new ScaleoutTaskQueue[streamCount];
             _send = send;
