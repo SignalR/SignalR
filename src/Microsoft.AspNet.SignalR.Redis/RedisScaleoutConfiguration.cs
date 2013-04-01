@@ -7,15 +7,15 @@ using Microsoft.AspNet.SignalR.Messaging;
 
 namespace Microsoft.AspNet.SignalR.Redis
 {
-    public class RedisScaleoutConfiguration2 : ScaleoutConfiguration
+    public class RedisScaleoutConfiguration : ScaleoutConfiguration
     {
-        public RedisScaleoutConfiguration2(string server, int port, string password, string eventKey)
+        public RedisScaleoutConfiguration(string server, int port, string password, string eventKey)
             : this(MakeConnectionFactory(server, port, password), eventKey)
         {
 
         }
 
-        public RedisScaleoutConfiguration2(Func<RedisConnection> connectionFactory, string eventKey)
+        public RedisScaleoutConfiguration(Func<RedisConnection> connectionFactory, string eventKey)
         {
             if (connectionFactory == null)
             {

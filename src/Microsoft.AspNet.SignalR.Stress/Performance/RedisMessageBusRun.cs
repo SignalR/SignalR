@@ -18,7 +18,7 @@ namespace Microsoft.AspNet.SignalR.Stress.Performance
 
         protected override MessageBus CreateMessageBus()
         {
-            var configuration = new RedisScaleoutConfiguration2("127.0.0.1", 6379, "", "Stress");
+            var configuration = new RedisScaleoutConfiguration("127.0.0.1", 6379, "", "Stress");
             // configuration.RetryOnError = true;
 
             return new RedisMessageBus(Resolver, configuration);
