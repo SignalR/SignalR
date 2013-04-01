@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.md in the project root for license information.
 
 using System;
+using System.Diagnostics;
 using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR.Infrastructure;
 
@@ -17,7 +18,6 @@ namespace Microsoft.AspNet.SignalR.Messaging
 
         private readonly int _size;
         private readonly ScaleoutConfiguration _configuration;
-        private readonly bool _attachErrorHandler;
 
         public ScaleoutTaskQueue(ScaleoutConfiguration configuration)
             : this(configuration, DefaultQueueSize)
@@ -31,7 +31,6 @@ namespace Microsoft.AspNet.SignalR.Messaging
                 throw new ArgumentNullException("configuration");
             }
 
-            _attachErrorHandler = configuration.OnError == null && !configuration.RetryOnError;
             _configuration = configuration;
             _size = size;
 
@@ -42,6 +41,12 @@ namespace Microsoft.AspNet.SignalR.Messaging
         {
             lock (this)
             {
+                // Do nothing if the state is closed
+                if (_state == QueueState.Closed)
+                {
+                    return;
+                }
+
                 if (ChangeState(QueueState.Open))
                 {
                     _error = null;
@@ -60,20 +65,18 @@ namespace Microsoft.AspNet.SignalR.Messaging
                     throw _error;
                 }
 
+                // If the queue is closed then stop sending
+                if (_state == QueueState.Closed)
+                {
+                    throw new InvalidOperationException(Resources.Error_QueueClosed);
+                }
+
                 if (_state == QueueState.Initial)
                 {
                     NotifyError(new InvalidOperationException(Resources.Error_QueueNotOpen));
                 }
 
-                // If the queue is closed then stop sending
-                if (_state == QueueState.Closed)
-                {
-                    return TaskAsyncHelper.Empty;
-                }
-
-                var context = new SendContext(send, state);
-
-                Task task = _queue.Enqueue(obj => QueueSend(obj), context);
+                Task task = _queue.Enqueue(send, state);
 
                 if (task == null)
                 {
@@ -81,12 +84,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
                     throw new InvalidOperationException(Resources.Error_TaskQueueFull);
                 }
 
-                if (_attachErrorHandler)
-                {
-                    return task.Catch((ex, obj) => ((ScaleoutTaskQueue)obj).SetError(ex), this);
-                }
-
-                return task;
+                return task.Catch((ex, obj) => ((ScaleoutTaskQueue)obj).SetError(ex.InnerException), this);
             }
         }
 
@@ -118,31 +116,15 @@ namespace Microsoft.AspNet.SignalR.Messaging
 
             lock (this)
             {
-                _state = QueueState.Closed;
-
-                // Drain the queue to stop all sends
-                task = Drain(_queue);
+                if (ChangeState(QueueState.Closed))
+                {
+                    // Drain the queue to stop all sends
+                    task = Drain(_queue);
+                }
             }
 
             // Block until the queue is drained so no new work can be done
             task.Wait();
-        }
-
-        private Task QueueSend(object state)
-        {
-            lock (this)
-            {
-                var context = (SendContext)state;
-
-                if (_state == QueueState.Initial ||
-                    _state == QueueState.Open)
-                {
-                    return context.Invoke();
-                }
-
-                // Should this be a faulted task?
-                return TaskAsyncHelper.Empty;
-            }
         }
 
         private void NotifyError(Exception error)
@@ -209,26 +191,15 @@ namespace Microsoft.AspNet.SignalR.Messaging
                 return TaskAsyncHelper.Empty;
             }
 
+
             var tcs = new TaskCompletionSource<object>();
-            queue.Drain().Catch().Finally(state => ((TaskCompletionSource<object>)state).SetResult(null), tcs);
+
+            queue.Drain().Catch().ContinueWith(task =>
+            {
+                tcs.SetResult(null);
+            });
+
             return tcs.Task;
-        }
-
-        private class SendContext
-        {
-            private readonly Func<object, Task> _send;
-            private readonly object _state;
-
-            public SendContext(Func<object, Task> send, object state)
-            {
-                _send = send;
-                _state = state;
-            }
-
-            public Task Invoke()
-            {
-                return _send(_state);
-            }
         }
 
         private enum QueueState
