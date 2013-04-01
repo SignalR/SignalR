@@ -91,6 +91,10 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
                     return;
                 }
 
+                // This is called just prior to posting the request to ensure that any in-flight polling request
+                // is always executed before an OnAfterPoll
+                OnPolling();
+
                 // A url is required
                 string url = ResolveUrl();
 
@@ -130,11 +134,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
                     },
                     exception);
                 });
-            }
-
-            // This is called at the bottom since the above code is run async
-            // Represents when the PollingRequestHandler has a poll in flight
-            OnPolling();
+            }            
         }
 
         /// <summary>
