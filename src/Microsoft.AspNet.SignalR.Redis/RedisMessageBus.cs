@@ -24,7 +24,7 @@ namespace Microsoft.AspNet.SignalR.Redis
         private int _state;
 
         [SuppressMessage("Microsoft.Usage", "CA2214:DoNotCallOverridableMethodsInConstructors", Justification = "Reviewed")]
-        public RedisMessageBus(IDependencyResolver resolver, RedisScaleoutConfiguration configuration)
+        public RedisMessageBus(IDependencyResolver resolver, RedisScaleoutConfiguration2 configuration)
             : base(resolver, configuration)
         {
             if (configuration == null)

@@ -20,7 +20,7 @@ namespace Microsoft.AspNet.SignalR
         /// <returns>The dependency resolver</returns>
         public static IDependencyResolver UseRedis(this IDependencyResolver resolver, string server, int port, string password, string eventKey)
         {
-            var configuration = new RedisScaleoutConfiguration(server, port, password, eventKey);
+            var configuration = new RedisScaleoutConfiguration2(server, port, password, eventKey);
 
             return UseRedis(resolver, configuration);
         }
@@ -31,7 +31,7 @@ namespace Microsoft.AspNet.SignalR
         /// <param name="resolver">The dependency resolver</param>
         /// <param name="configuration">The scaleout configuration for redis.</param> 
         /// <returns></returns>
-        public static IDependencyResolver UseRedis(this IDependencyResolver resolver, RedisScaleoutConfiguration configuration)
+        public static IDependencyResolver UseRedis(this IDependencyResolver resolver, RedisScaleoutConfiguration2 configuration)
         {
             var bus = new Lazy<RedisMessageBus>(() => new RedisMessageBus(resolver, configuration));
             resolver.Register(typeof(IMessageBus), () => bus.Value);

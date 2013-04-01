@@ -17,7 +17,7 @@ namespace Microsoft.AspNet.SignalR
         /// <returns>The dependency resolver</returns>
         public static IDependencyResolver UseServiceBus(this IDependencyResolver resolver, string connectionString, string topicPrefix)
         {
-            var config = new ServiceBusScaleoutConfiguration
+            var config = new ServiceBusScaleoutConfiguration2
             {
                 TopicCount = 1,
                 TopicPrefix = topicPrefix,
@@ -33,7 +33,7 @@ namespace Microsoft.AspNet.SignalR
         /// <param name="resolver">The dependency resolver.</param>
         /// <param name="configuration">The configuration to use.</param>
         /// <returns>The dependency resolver</returns>
-        public static IDependencyResolver UseServiceBus(this IDependencyResolver resolver, ServiceBusScaleoutConfiguration configuration)
+        public static IDependencyResolver UseServiceBus(this IDependencyResolver resolver, ServiceBusScaleoutConfiguration2 configuration)
         {
             var bus = new Lazy<ServiceBusMessageBus>(() => new ServiceBusMessageBus(resolver, configuration));
             resolver.Register(typeof(IMessageBus), () => bus.Value);
