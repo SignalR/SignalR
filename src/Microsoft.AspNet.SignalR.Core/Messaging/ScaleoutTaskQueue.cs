@@ -121,11 +121,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
                 _state = QueueState.Closed;
 
                 // Drain the queue to stop all sends
-                if (_queue != null)
-                {
-                    // We never want to throw here
-                    task = AlwaysSucceed(_queue.Drain());
-                }
+                task = Drain(_queue);
             }
 
             // Block until the queue is drained so no new work can be done
@@ -188,7 +184,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
             if (_queue != null)
             {
                 // Drain the queue when the new queue is open
-                return _taskCompletionSource.Task.Then(q => AlwaysSucceed(q.Drain()), _queue);
+                return _taskCompletionSource.Task.Then(q => Drain(q), _queue);
             }
 
             // Nothing to drain
@@ -206,10 +202,15 @@ namespace Microsoft.AspNet.SignalR.Messaging
             return false;
         }
 
-        private static Task AlwaysSucceed(Task task)
+        private static Task Drain(TaskQueue queue)
         {
+            if (queue == null)
+            {
+                return TaskAsyncHelper.Empty;
+            }
+
             var tcs = new TaskCompletionSource<object>();
-            task.Catch().Finally(state => ((TaskCompletionSource<object>)state).SetResult(null), tcs);
+            queue.Drain().Catch().Finally(state => ((TaskCompletionSource<object>)state).SetResult(null), tcs);
             return tcs.Task;
         }
 
