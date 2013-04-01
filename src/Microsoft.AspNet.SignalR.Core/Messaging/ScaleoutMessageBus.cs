@@ -21,7 +21,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
         private readonly TraceSource _trace;
         private readonly Lazy<ScaleoutStreamManager> _streamManager;
 
-        protected ScaleoutMessageBus(IDependencyResolver resolver, ScaleoutConfiguration2 configuration)
+        protected ScaleoutMessageBus(IDependencyResolver resolver, ScaleoutConfiguration configuration)
             : base(resolver)
         {
             if (configuration == null)
