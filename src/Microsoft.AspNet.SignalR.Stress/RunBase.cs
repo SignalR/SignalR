@@ -191,7 +191,15 @@ namespace Microsoft.AspNet.SignalR.Stress
         {
             while (!CancellationTokenSource.IsCancellationRequested)
             {
-                await Send((int)state);
+                try
+                {
+                    await Send((int)state);
+                }
+                catch(Exception)
+                {
+                    // If a sender fails then continue
+                    continue;
+                }
             }
 
             _countDown.Signal();
