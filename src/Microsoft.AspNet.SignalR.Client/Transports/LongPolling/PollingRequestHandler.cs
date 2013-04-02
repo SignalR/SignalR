@@ -89,11 +89,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
                 if (_running == 0)
                 {
                     return;
-                }
-
-                // This is called just prior to posting the request to ensure that any in-flight polling request
-                // is always executed before an OnAfterPoll
-                OnPolling();
+                }                
 
                 // A url is required
                 string url = ResolveUrl();
@@ -102,6 +98,10 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
                 {
                     PrepareRequest(request);
                     _currentRequest = request;
+
+                    // This is called just prior to posting the request to ensure that any in-flight polling request
+                    // is always executed before an OnAfterPoll
+                    OnPolling();
                 })
                 .ContinueWith(task =>
                 {
