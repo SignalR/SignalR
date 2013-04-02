@@ -17,6 +17,7 @@ namespace Microsoft.AspNet.SignalR.SqlServer
     {
         private readonly string _connectionString;
         private readonly string _tableName;
+        private readonly Action _onQuery;
         private readonly Action<ulong, IList<Message>> _onReceived;
         private readonly Action<Exception> _onError;
         private readonly TraceSource _trace;
@@ -26,12 +27,14 @@ namespace Microsoft.AspNet.SignalR.SqlServer
         private string _maxIdSql = "SELECT [PayloadId] FROM [{0}].[{1}_Id]";
         private string _selectSql = "SELECT [PayloadId], [Payload] FROM [{0}].[{1}] WHERE [PayloadId] > @PayloadId";
         private ObservableDbOperation _dbOperation;
+        private volatile bool _disposed;
 
-        public SqlReceiver(string connectionString, string tableName, Action<ulong, IList<Message>> onReceived, Action<Exception> onError, TraceSource traceSource, string tracePrefix)
+        public SqlReceiver(string connectionString, string tableName, Action onQuery, Action<ulong, IList<Message>> onReceived, Action<Exception> onError, TraceSource traceSource, string tracePrefix)
         {
             _connectionString = connectionString;
             _tableName = tableName;
             _tracePrefix = tracePrefix;
+            _onQuery = onQuery;
             _onReceived = onReceived;
             _onError = onError;
             _trace = traceSource;
@@ -57,6 +60,15 @@ namespace Microsoft.AspNet.SignalR.SqlServer
                 {
                     _dbOperation.Dispose();
                 }
+                _disposed = true;
+            }
+        }
+
+        private void OnQuery()
+        {
+            if (_onQuery != null)
+            {
+                _onQuery();
             }
         }
 
@@ -76,6 +88,7 @@ namespace Microsoft.AspNet.SignalR.SqlServer
                 try
                 {
                     _lastPayloadId = (long)lastPayloadIdOperation.ExecuteScalar();
+                    OnQuery();
 
                     // Complete the StartReceiving task as we've successfully initialized the payload ID
                     tcs.TrySetResult(null);
@@ -90,6 +103,11 @@ namespace Microsoft.AspNet.SignalR.SqlServer
             // NOTE: This is called from a BG thread so any uncaught exceptions will crash the process
             lock (this)
             {
+                if (_disposed)
+                {
+                    return;
+                }
+
                 _dbOperation = new ObservableDbOperation(_connectionString, _selectSql, _trace, new SqlParameter("PayloadId", _lastPayloadId))
                 {
                     OnError = ex =>
@@ -97,6 +115,7 @@ namespace Microsoft.AspNet.SignalR.SqlServer
                         // Error in receive loop
                         _onError(ex);
                     },
+                    OnQuery = () => OnQuery(),
                     TracePrefix = _tracePrefix
                 };
             }

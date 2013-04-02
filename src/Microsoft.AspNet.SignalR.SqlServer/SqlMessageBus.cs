@@ -102,6 +102,7 @@ namespace Microsoft.AspNet.SignalR.SqlServer
 
                 var stream = new SqlStream(streamIndex, _connectionString,
                     tableName: String.Format(CultureInfo.InvariantCulture, "{0}_{1}", _tableNamePrefix, streamIndex),
+                    open: () => Open(streamIndex),
                     onReceived: OnReceived,
                     onError: ex => OnError(streamIndex, ex),
                     traceSource: _trace);
