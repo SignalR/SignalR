@@ -52,7 +52,7 @@ The release is then merged into master and deleted and the cycle continues until
 
 ### Submitting Pull requests
 
-You will need to submit a [Contributor License Agreement](http://www.microsoft.com/web/webpi/eula/MSOpenTech_CLA.rtf) form before submitting your pull request. This needs to only be done once for any Microsoft OSS project. Download the Contributor License Agreement (CLA). Please fill in, sign, scan and email it to msopentech-cla@microsoft.com.
+You will need to submit a [Contributor License Agreement](http://go.microsoft.com/fwlink/?LinkID=293426&clcid=0x409) form before submitting your pull request. This needs to only be done once for any Microsoft Open Technologies OSS project. Download the Contributor License Agreement (CLA). Please fill in, sign, scan and email it to msopentech-cla@microsoft.com.
 
 Make sure you can build the code. Familiarize yourself with the project workflow and our coding conventions. If you don't know what a pull request is
 read this https://help.github.com/articles/using-pull-requests.
