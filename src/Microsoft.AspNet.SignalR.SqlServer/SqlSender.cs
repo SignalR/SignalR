@@ -17,12 +17,14 @@ namespace Microsoft.AspNet.SignalR.SqlServer
         private readonly string _connectionString;
         private readonly string _insertDml;
         private readonly TraceSource _trace;
+        private readonly IDbProviderFactory _dbProviderFactory;
 
-        public SqlSender(string connectionString, string tableName, TraceSource traceSource)
+        public SqlSender(string connectionString, string tableName, TraceSource traceSource, IDbProviderFactory dbProviderFactory)
         {
             _connectionString = connectionString;
             _insertDml = BuildInsertString(tableName);
             _trace = traceSource;
+            _dbProviderFactory = dbProviderFactory;
         }
 
         private string BuildInsertString(string tableName)
@@ -40,11 +42,12 @@ namespace Microsoft.AspNet.SignalR.SqlServer
                 return TaskAsyncHelper.Empty;
             }
 
-            var operation = new DbOperation(_connectionString, _insertDml, _trace,
-                new SqlParameter("Payload", DbType.Binary)
-                {
-                    SqlValue = new SqlBinary(SqlPayload.ToBytes(messages))
-                });
+            var parameter = _dbProviderFactory.CreateParameter();
+            parameter.ParameterName = "Payload";
+            parameter.DbType = DbType.Binary;
+            parameter.Value = SqlPayload.ToBytes(messages);
+            
+            var operation = new DbOperation(_connectionString, _insertDml, _trace, parameter);
 
             return operation.ExecuteNonQueryAsync();
         }

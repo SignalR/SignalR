@@ -40,7 +40,7 @@ namespace Microsoft.AspNet.SignalR.SqlServer
             _dbBehavior = dbBehavior ?? this;
         }
 
-        public ObservableDbOperation(string connectionString, string commandText, TraceSource traceSource, params SqlParameter[] parameters)
+        public ObservableDbOperation(string connectionString, string commandText, TraceSource traceSource, params IDataParameter[] parameters)
             : base(connectionString, commandText, traceSource, parameters)
         {
             _dbBehavior = this;
@@ -137,15 +137,23 @@ namespace Microsoft.AspNet.SignalR.SqlServer
                             // No records after all retries, set up a SQL notification
                             try
                             {
+                                Trace.TraceVerbose("Setting up SQL notification");
+
                                 ExecuteReader(processRecord, command =>
                                 {
                                     _dbBehavior.AddSqlDependency(command, e => SqlDependency_OnChange(e, processRecord));
                                 });
 
+                                if (OnQuery != null)
+                                {
+                                    OnQuery();
+                                }
+
                                 if (Interlocked.CompareExchange(ref _notificationState,
                                     NotificationState.AwaitingNotification, NotificationState.ProcessingUpdates) == NotificationState.NotificationReceived)
                                 {
-                                    // Updates were received while we were processing, start the receive loop again now
+                                    Trace.TraceVerbose("Updates received from SQL notification while processing reader, starting the receive loop again");
+
                                     i = -1;
                                     break; // break the inner for loop
                                 };
@@ -178,6 +186,8 @@ namespace Microsoft.AspNet.SignalR.SqlServer
                     }
                 }
             }
+
+            Trace.TraceVerbose("Receive loop exiting");
         }
 
         [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "Disposing")]
@@ -213,6 +223,8 @@ namespace Microsoft.AspNet.SignalR.SqlServer
          SuppressMessage("Microsoft.Usage", "CA1801:ReviewUnusedParameters", MessageId = "sender", Justification = "Event handler")]
         protected virtual void SqlDependency_OnChange(SqlNotificationEventArgs e, Action<IDataRecord, DbOperation> processRecord)
         {
+            Trace.TraceInformation("SQL notification change fired");
+
             lock (_stopLocker)
             {
                 if (_disposing)
@@ -225,6 +237,8 @@ namespace Microsoft.AspNet.SignalR.SqlServer
                 NotificationState.NotificationReceived, NotificationState.ProcessingUpdates) == NotificationState.ProcessingUpdates)
             {
                 // New updates will be retreived by the original reader thread
+                Trace.TraceVerbose("Original reader processing is still in progress and will pick up the changes");
+
                 return;
             }
 
@@ -241,6 +255,10 @@ namespace Microsoft.AspNet.SignalR.SqlServer
                     {
                         OnError(new SqlMessageBusException(String.Format(CultureInfo.InvariantCulture, Resources.Error_UnexpectedSqlNotificationType, e.Type, e.Source, e.Info)));
                     }
+                }
+                else
+                {
+                    Trace.TraceVerbose("{0}SQL notification details: Type={1}, Source={2}, Info={3}", TracePrefix, e.Type, e.Source, e.Info);
                 }
             }
             else if (e.Type == SqlNotificationType.Subscribe)
@@ -265,6 +283,8 @@ namespace Microsoft.AspNet.SignalR.SqlServer
                     catch (Exception) { }
                 }
             }
+
+            Trace.TraceInformation("Starting receive loop again to process updates");
 
             ExecuteReaderWithUpdates(processRecord);
         }

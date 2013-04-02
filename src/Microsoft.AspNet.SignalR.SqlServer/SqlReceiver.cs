@@ -22,6 +22,7 @@ namespace Microsoft.AspNet.SignalR.SqlServer
         private readonly Action<Exception> _onError;
         private readonly TraceSource _trace;
         private readonly string _tracePrefix;
+        private readonly IDbProviderFactory _dbProviderFactory;
 
         private long? _lastPayloadId = null;
         private string _maxIdSql = "SELECT [PayloadId] FROM [{0}].[{1}_Id]";
@@ -29,7 +30,7 @@ namespace Microsoft.AspNet.SignalR.SqlServer
         private ObservableDbOperation _dbOperation;
         private volatile bool _disposed;
 
-        public SqlReceiver(string connectionString, string tableName, Action onQuery, Action<ulong, IList<Message>> onReceived, Action<Exception> onError, TraceSource traceSource, string tracePrefix)
+        public SqlReceiver(string connectionString, string tableName, Action onQuery, Action<ulong, IList<Message>> onReceived, Action<Exception> onError, TraceSource traceSource, string tracePrefix, IDbProviderFactory dbProviderFactory)
         {
             _connectionString = connectionString;
             _tableName = tableName;
@@ -38,6 +39,7 @@ namespace Microsoft.AspNet.SignalR.SqlServer
             _onReceived = onReceived;
             _onError = onError;
             _trace = traceSource;
+            _dbProviderFactory = dbProviderFactory;
 
             _maxIdSql = String.Format(CultureInfo.InvariantCulture, _maxIdSql, SqlMessageBus.SchemaName, _tableName);
             _selectSql = String.Format(CultureInfo.InvariantCulture, _selectSql, SqlMessageBus.SchemaName, _tableName);
@@ -87,7 +89,7 @@ namespace Microsoft.AspNet.SignalR.SqlServer
 
                 try
                 {
-                    _lastPayloadId = (long)lastPayloadIdOperation.ExecuteScalar();
+                    _lastPayloadId = (long?)lastPayloadIdOperation.ExecuteScalar();
                     OnQuery();
 
                     // Complete the StartReceiving task as we've successfully initialized the payload ID
@@ -108,19 +110,21 @@ namespace Microsoft.AspNet.SignalR.SqlServer
                     return;
                 }
 
-                _dbOperation = new ObservableDbOperation(_connectionString, _selectSql, _trace, new SqlParameter("PayloadId", _lastPayloadId))
+                var parameter = _dbProviderFactory.CreateParameter();
+                parameter.ParameterName = "PayloadId";
+                parameter.Value = _lastPayloadId.Value;
+
+                _dbOperation = new ObservableDbOperation(_connectionString, _selectSql, _trace, parameter)
                 {
-                    OnError = ex =>
-                    {
-                        // Error in receive loop
-                        _onError(ex);
-                    },
+                    OnError = ex => _onError(ex),
                     OnQuery = () => OnQuery(),
                     TracePrefix = _tracePrefix
                 };
             }
 
             _dbOperation.ExecuteReaderWithUpdates((rdr, o) => ProcessRecord(rdr, o));
+
+            _trace.TraceWarning("{0}Receive loop exited!", _tracePrefix);
         }
 
         private void ProcessRecord(IDataRecord record, DbOperation dbOperation)

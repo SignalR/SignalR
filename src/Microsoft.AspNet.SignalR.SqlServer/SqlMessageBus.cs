@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Data.SqlClient;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
@@ -24,6 +25,7 @@ namespace Microsoft.AspNet.SignalR.SqlServer
         private readonly string _connectionString;
         private readonly SqlScaleoutConfiguration _configuration;
         private readonly TraceSource _trace;
+        private readonly IDbProviderFactory _dbProviderFactory;
         private readonly List<SqlStream> _streams = new List<SqlStream>();
 
         /// <summary>
@@ -32,6 +34,12 @@ namespace Microsoft.AspNet.SignalR.SqlServer
         /// <param name="resolver">The resolver to use.</param>
         /// <param name="configuration">The SQL scale-out configuration options.</param>
         public SqlMessageBus(IDependencyResolver resolver, SqlScaleoutConfiguration configuration)
+            : this(resolver, configuration, SqlClientFactory.Instance.AsIDbProviderFactory())
+        {
+            
+        }
+
+        internal SqlMessageBus(IDependencyResolver resolver, SqlScaleoutConfiguration configuration, IDbProviderFactory dbProviderFactory)
             : base(resolver, configuration)
         {
             if (configuration == null)
@@ -41,6 +49,7 @@ namespace Microsoft.AspNet.SignalR.SqlServer
 
             _connectionString = configuration.ConnectionString;
             _configuration = configuration;
+            _dbProviderFactory = dbProviderFactory;
 
             var traceManager = resolver.Resolve<ITraceManager>();
             _trace = traceManager["SignalR." + typeof(SqlMessageBus).Name];
@@ -105,7 +114,8 @@ namespace Microsoft.AspNet.SignalR.SqlServer
                     open: () => Open(streamIndex),
                     onReceived: OnReceived,
                     onError: ex => OnError(streamIndex, ex),
-                    traceSource: _trace);
+                    traceSource: _trace,
+                    dbProviderFactory: _dbProviderFactory);
 
                 _streams.Add(stream);
 
