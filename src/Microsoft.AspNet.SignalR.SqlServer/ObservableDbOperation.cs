@@ -48,7 +48,7 @@ namespace Microsoft.AspNet.SignalR.SqlServer
 
         public Action<Exception> OnError { get; set; }
 
-        public Action OnRetryLoopIteration { get; set; }
+        public Action OnQuery { get; set; }
 
         /// <summary>
         /// Note this blocks the calling thread until a SQL Query Notification can be set up
@@ -91,14 +91,15 @@ namespace Microsoft.AspNet.SignalR.SqlServer
                         return;
                     }
 
-                    int recordCount = 0;
+                    var recordCount = 0;
                     try
                     {
-                        if (OnRetryLoopIteration != null)
-                        {
-                            OnRetryLoopIteration();
-                        }
                         recordCount = ExecuteReader(processRecord);
+
+                        if (OnQuery != null)
+                        {
+                            OnQuery();
+                        }
                     }
                     catch (Exception ex)
                     {
