@@ -11,7 +11,6 @@ using System.Threading.Tasks;
 
 namespace Microsoft.AspNet.SignalR.SqlServer
 {
-    [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1001:TypesThatOwnDisposableFieldsShouldBeDisposable", Justification = "Needs review")]
     internal class DbOperation
     {
         private List<IDataParameter> _parameters = new List<IDataParameter>();
@@ -97,8 +96,8 @@ namespace Microsoft.AspNet.SignalR.SqlServer
             });
         }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope", Justification = "It's the caller's responsibility to dispose as the command is returned"),
-         System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Security", "CA2100:Review SQL queries for security vulnerabilities", Justification = "General purpose SQL utility command")]
+        [SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope", Justification = "It's the caller's responsibility to dispose as the command is returned"),
+         SuppressMessage("Microsoft.Security", "CA2100:Review SQL queries for security vulnerabilities", Justification = "General purpose SQL utility command")]
         protected virtual IDbCommand CreateCommand(IDbConnection connection)
         {
             var command = connection.CreateCommand();

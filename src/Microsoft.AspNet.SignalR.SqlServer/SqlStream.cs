@@ -19,9 +19,9 @@ namespace Microsoft.AspNet.SignalR.SqlServer
         private readonly SqlReceiver _receiver;
         private readonly string _tracePrefix;
 
-        private volatile bool _errored = false;
+        private volatile bool _failed;
 
-        public SqlStream(int streamIndex, string connectionString, string tableName, Action open, Action<int, ulong, IList<Message>> onReceived, Action<Exception> onError, TraceSource traceSource)
+        public SqlStream(int streamIndex, string connectionString, string tableName, Action open, Action<int, ulong, IList<Message>> onReceived, Action<Exception> onError, TraceSource traceSource, IDbProviderFactory dbProviderFactory)
         {
             _streamIndex = streamIndex;
             _open = open;
@@ -29,36 +29,14 @@ namespace Microsoft.AspNet.SignalR.SqlServer
             _trace = traceSource;
             _tracePrefix = String.Format(CultureInfo.InvariantCulture, "Stream {0} : ", _streamIndex);
 
-            _sender = new SqlSender(connectionString, tableName, _trace);
+            _sender = new SqlSender(connectionString, tableName, _trace, dbProviderFactory);
             _receiver = new SqlReceiver(connectionString, tableName,
-                onQuery: () => Errored = false,
+                onQuery: () => ClearFailed(),
                 onReceived: (id, messages) => onReceived(_streamIndex, id, messages),
                 onError: _onError,
                 traceSource: _trace,
-                tracePrefix: _tracePrefix);
-        }
-
-        public bool Errored
-        {
-            get
-            {
-                return _errored;
-            }
-            private set
-            {
-                lock (this)
-                {
-                    if (_errored != value)
-                    {
-                        _errored = value;
-                        if (!value)
-                        {
-                            // Error flag was cleared so re-open the stream
-                            _open();
-                        }
-                    }
-                }
-            }
+                tracePrefix: _tracePrefix,
+                dbProviderFactory: dbProviderFactory);
         }
 
         public Task StartReceiving()
@@ -73,12 +51,18 @@ namespace Microsoft.AspNet.SignalR.SqlServer
             try
             {
                 return _sender.Send(messages)
-                    .Then(() => Errored = false)
-                    .Catch(_ => Errored = true);
+                    .Then(() =>
+                    {
+                        if (ClearFailed())
+                        {
+                            _receiver.StartReceiving();
+                        };
+                    })
+                    .Catch(_ => SetFailed());
             }
             catch (Exception)
             {
-                Errored = true;
+                SetFailed();
                 throw;
             }
         }
@@ -86,6 +70,33 @@ namespace Microsoft.AspNet.SignalR.SqlServer
         public void Dispose()
         {
             _receiver.Dispose();
+        }
+
+        private void SetFailed()
+        {
+            lock (this)
+            {
+                _trace.TraceWarning("{0}Stream set to failed", _tracePrefix);
+                
+                _failed = true;
+            }
+        }
+
+        private bool ClearFailed()
+        {
+            lock (this)
+            {
+                if (_failed)
+                {
+                    _failed = false;
+                    _open();
+
+                    _trace.TraceWarning("{0}Stream re-opened", _tracePrefix);
+
+                    return true;
+                }
+                return false;
+            }
         }
     }
 }
