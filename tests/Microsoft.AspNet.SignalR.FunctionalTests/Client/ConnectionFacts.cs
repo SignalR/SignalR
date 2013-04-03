@@ -32,10 +32,10 @@ namespace Microsoft.AspNet.SignalR.Tests
                         Assert.Equal("referer", (string)headers["refererHeader"]);
                     }
                     Assert.Equal("test-header", (string)headers["testHeader"]);
-                    tcs.SetResult(null);
+                    tcs.TrySetResult(null);
                 };
 
-                connection.Error += e => tcs.SetException(e);
+                connection.Error += e => tcs.TrySetException(e);
 
                 connection.Headers.Add("test-header", "test-header");
                 if (transportType != TransportType.Websockets)
