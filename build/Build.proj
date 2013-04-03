@@ -173,6 +173,10 @@
            Xml="$(TestResultsPath)\Microsoft.AspNet.SignalR.Tests.XunitResults.xml"
            Verbose="true" />
 
+    <xunit Assembly="$(ArtifactsDir)\Microsoft.AspNet.SignalR.SqlServer.Tests\Microsoft.AspNet.SignalR.SqlServer.Tests.dll"
+           Xml="$(TestResultsPath)\Microsoft.AspNet.SignalR.SqlServer.Tests.XunitResults.xml"
+           Verbose="true" />
+
     <CallTarget Targets="KillIISExpress" Condition=" '$(OS)' == 'Windows_NT'" />
     <OnError ExecuteTargets="KillIISExpress" Condition=" '$(OS)' == 'Windows_NT'" />
   </Target>
