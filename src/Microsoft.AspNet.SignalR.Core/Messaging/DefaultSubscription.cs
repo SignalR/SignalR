@@ -73,43 +73,55 @@ namespace Microsoft.AspNet.SignalR.Messaging
 
         public override bool AddEvent(string eventKey, Topic topic)
         {
-            // O(n), but small n and it's not common
-            var index = _cursors.FindIndex(c => c.Key == eventKey);
-            if (index == -1)
+            lock (_cursors)
             {
-                _cursors.Add(new Cursor(eventKey, GetMessageId(topic), _stringMinifier.Minify(eventKey)));
+                // O(n), but small n and it's not common
+                var index = _cursors.FindIndex(c => c.Key == eventKey);
+                if (index == -1)
+                {
+                    _cursors.Add(new Cursor(eventKey, GetMessageId(topic), _stringMinifier.Minify(eventKey)));
 
-                _cursorTopics.Add(topic);
+                    _cursorTopics.Add(topic);
 
-                return true;
+                    return true;
+                }
+
+                return false;
             }
-
-            return false;
         }
 
         public override void RemoveEvent(string eventKey)
         {
-            var index = _cursors.FindIndex(c => c.Key == eventKey);
-            if (index != -1)
+            lock (_cursors)
             {
-                _cursors.RemoveAt(index);
-                _cursorTopics.RemoveAt(index);
+                var index = _cursors.FindIndex(c => c.Key == eventKey);
+                if (index != -1)
+                {
+                    _cursors.RemoveAt(index);
+                    _cursorTopics.RemoveAt(index);
+                }
             }
         }
 
         public override void SetEventTopic(string eventKey, Topic topic)
         {
-            // O(n), but small n and it's not common
-            var index = _cursors.FindIndex(c => c.Key == eventKey);
-            if (index != -1)
+            lock (_cursors)
             {
-                _cursorTopics[index] = topic;
+                // O(n), but small n and it's not common
+                var index = _cursors.FindIndex(c => c.Key == eventKey);
+                if (index != -1)
+                {
+                    _cursorTopics[index] = topic;
+                }
             }
         }
 
         public override void WriteCursor(TextWriter textWriter)
         {
-            Cursor.WriteCursors(textWriter, _cursors);
+            lock (_cursors)
+            {
+                Cursor.WriteCursors(textWriter, _cursors);
+            }
         }
 
         [SuppressMessage("Microsoft.Design", "CA1062:Validate arguments of public methods", MessageId = "0", Justification = "It is called from the base class")]
@@ -117,44 +129,53 @@ namespace Microsoft.AspNet.SignalR.Messaging
         {
             totalCount = 0;
 
-            var cursors = new ulong[_cursors.Count];
-            for (int i = 0; i < _cursors.Count; i++)
+            lock (_cursors)
             {
-                MessageStoreResult<Message> storeResult = _cursorTopics[i].Store.GetMessages(_cursors[i].Id, MaxMessages);
-                cursors[i] = storeResult.FirstMessageId + (ulong)storeResult.Messages.Count;
-
-                if (storeResult.Messages.Count > 0)
+                var cursors = new ulong[_cursors.Count];
+                for (int i = 0; i < _cursors.Count; i++)
                 {
-                    items.Add(storeResult.Messages);
-                    totalCount += storeResult.Messages.Count;
-                }
-            }
+                    MessageStoreResult<Message> storeResult = _cursorTopics[i].Store.GetMessages(_cursors[i].Id, MaxMessages);
+                    cursors[i] = storeResult.FirstMessageId + (ulong)storeResult.Messages.Count;
 
-            // Return the state as a list of cursors
-            state = cursors;
+                    if (storeResult.Messages.Count > 0)
+                    {
+                        items.Add(storeResult.Messages);
+                        totalCount += storeResult.Messages.Count;
+                    }
+                }
+
+                // Return the state as a list of cursors
+                state = cursors;
+            }
         }
 
         protected override void BeforeInvoke(object state)
         {
-            // Update the list of cursors before invoking anything
-            var nextCursors = (ulong[])state;
-            for (int i = 0; i < _cursors.Count; i++)
+            lock (_cursors)
             {
-                _cursors[i].Id = nextCursors[i];
+                // Update the list of cursors before invoking anything
+                var nextCursors = (ulong[])state;
+                for (int i = 0; i < _cursors.Count; i++)
+                {
+                    _cursors[i].Id = nextCursors[i];
+                }
             }
         }
 
         private bool UpdateCursor(string key, ulong id)
         {
-            // O(n), but small n and it's not common
-            var index = _cursors.FindIndex(c => c.Key == key);
-            if (index != -1)
+            lock (_cursors)
             {
-                _cursors[index].Id = id;
-                return true;
-            }
+                // O(n), but small n and it's not common
+                var index = _cursors.FindIndex(c => c.Key == key);
+                if (index != -1)
+                {
+                    _cursors[index].Id = id;
+                    return true;
+                }
 
-            return false;
+                return false;
+            }
         }
 
         private List<Cursor> GetCursorsFromEventKeys(IList<string> eventKeys, TopicLookup topics)

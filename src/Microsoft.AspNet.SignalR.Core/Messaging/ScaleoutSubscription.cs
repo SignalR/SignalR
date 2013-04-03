@@ -82,22 +82,25 @@ namespace Microsoft.AspNet.SignalR.Messaging
 
                     // For each of the event keys we care about, extract all of the messages
                     // from the payload
-                    for (var j = 0; j < EventKeys.Count; ++j)
+                    lock (EventKeys)
                     {
-                        string eventKey = EventKeys[j];
-
-                        for (int k = 0; k < mapping.LocalKeyInfo.Count; k++)
+                        for (var j = 0; j < EventKeys.Count; ++j)
                         {
-                            LocalEventKeyInfo info = mapping.LocalKeyInfo[k];
+                            string eventKey = EventKeys[j];
 
-                            if (info.Key.Equals(eventKey, StringComparison.OrdinalIgnoreCase))
+                            for (int k = 0; k < mapping.LocalKeyInfo.Count; k++)
                             {
-                                MessageStoreResult<Message> storeResult = info.MessageStore.GetMessages(info.Id, 1);
+                                LocalEventKeyInfo info = mapping.LocalKeyInfo[k];
 
-                                if (storeResult.Messages.Count > 0)
+                                if (info.Key.Equals(eventKey, StringComparison.OrdinalIgnoreCase))
                                 {
-                                    items.Add(storeResult.Messages);
-                                    totalCount += storeResult.Messages.Count;
+                                    MessageStoreResult<Message> storeResult = info.MessageStore.GetMessages(info.Id, 1);
+
+                                    if (storeResult.Messages.Count > 0)
+                                    {
+                                        items.Add(storeResult.Messages);
+                                        totalCount += storeResult.Messages.Count;
+                                    }
                                 }
                             }
                         }
