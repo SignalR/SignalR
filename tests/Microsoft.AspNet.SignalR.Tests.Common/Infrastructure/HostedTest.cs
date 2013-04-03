@@ -74,10 +74,7 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure
                 }
             }
 
-            string testTracePath = Path.Combine(logBasePath, testName + ".test.trace.log");
-            var traceListener = new TextWriterTraceListener(testTracePath);
-            Trace.Listeners.Add(traceListener);
-            Trace.AutoFlush = true;
+            TraceListener traceListener = EnableTracing(testName, logBasePath);
 
             host.Disposables.Add(new DisposableAction(() =>
             {
@@ -99,6 +96,22 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure
             }));
 
             return host;
+        }
+
+        protected void EnableTracing()
+        {
+            string testName = GetTestName();            
+            string logBasePath = Path.Combine(Directory.GetCurrentDirectory(), "..");
+            EnableTracing(GetTestName(), logBasePath);
+        }
+
+        private TextWriterTraceListener EnableTracing(string testName, string logBasePath)
+        {
+            string testTracePath = Path.Combine(logBasePath, testName + ".test.trace.log");
+            var traceListener = new TextWriterTraceListener(testTracePath);
+            Trace.Listeners.Add(traceListener);
+            Trace.AutoFlush = true;
+            return traceListener;
         }
 
         private static StreamWriter CreateClientTraceWriter(string testName)

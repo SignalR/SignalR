@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Net;
 using System.Security.Cryptography.X509Certificates;
 using Microsoft.AspNet.SignalR.Owin;
@@ -65,6 +66,7 @@ namespace Microsoft.AspNet.SignalR.Hosting.Memory
 
         public void Abort()
         {
+            Trace.TraceInformation("Abort()");
             _abort();
         }
 

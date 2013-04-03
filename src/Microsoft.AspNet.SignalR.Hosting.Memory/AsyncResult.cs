@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.md in the project root for license information.
 
 using System;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 
@@ -37,6 +38,8 @@ namespace Microsoft.AspNet.SignalR.Hosting.Memory
         public void SetAsCompleted(
             Exception exception, Boolean completedSynchronously)
         {
+            Trace.TraceInformation("SetAsCompleted({0}, {1})", exception, completedSynchronously);
+
             // Passing null for exception means no error occurred. 
             // This is the common case
             m_exception = exception;
