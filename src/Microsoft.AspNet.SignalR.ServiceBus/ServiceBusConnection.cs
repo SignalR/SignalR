@@ -127,6 +127,7 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
             Dispose(true);
         }
 
+        [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "Exceptions are handled through the error handler callback")]
         private void PumpMessages(int topicIndex, MessageReceiver receiver, Action<int, IEnumerable<BrokeredMessage>> handler, Action<int, Exception> errorHandler)
         {
         receive:
@@ -170,6 +171,7 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
             }
         }
 
+        [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "Exceptions are handled through the error handler callback")]
         private bool ContinueReceiving(IAsyncResult asyncResult, int topicIndex, MessageReceiver receiver, Action<int, IEnumerable<BrokeredMessage>> handler, Action<int, Exception> errorHandler)
         {
             bool backOff = false;
