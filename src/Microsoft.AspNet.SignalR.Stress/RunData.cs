@@ -11,5 +11,15 @@ namespace Microsoft.AspNet.SignalR.Stress
         public string Payload { get; set; }
         public int Senders { get; set; }
         public int Connections { get; set; }
+
+        // Scaleout
+        public string RedisServer { get; set; }
+        public string RedisPassword { get; set; }
+        public int RedisPort { get; set; }       
+
+        public string SqlConnectionString { get; set; }
+        public string ServiceBusConnectionString { get; set; }
+
+        public int StreamCount { get; set; }
     }
 }

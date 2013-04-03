@@ -21,22 +21,19 @@ namespace Microsoft.AspNet.SignalR.Stress
 
         public RunBase(RunData runData)
         {
-            Duration = runData.Duration;
-            Warmup = runData.Warmup;
-            Connections = runData.Connections;
-            Senders = runData.Senders;
-            Payload = runData.Payload;
+            RunData = runData;
             Resolver = new DefaultDependencyResolver();
             CancellationTokenSource = new CancellationTokenSource();
 
             _countDown = new CountdownEvent(runData.Senders);
         }
 
-        public int Duration { get; private set; }
-        public int Warmup { get; private set; }
-        public int Connections { get; private set; }
-        public int Senders { get; private set; }
-        public string Payload { get; private set; }
+        public RunData RunData { get; private set; }
+        public int Duration { get { return RunData.Duration; } }
+        public int Warmup { get { return RunData.Warmup; } }
+        public int Connections { get { return RunData.Connections; } }
+        public int Senders { get { return RunData.Senders; } }
+        public string Payload { get { return RunData.Payload; } }
         public IDependencyResolver Resolver { get; private set; }
         public CancellationTokenSource CancellationTokenSource { get; private set; }
 
@@ -54,7 +51,10 @@ namespace Microsoft.AspNet.SignalR.Stress
             _samples = new Dictionary<IPerformanceCounter, List<CounterSample>>(_counters.Length);
             for (int i = 0; i < _counters.Length; i++)
             {
-                _samples[_counters[i]] = new List<CounterSample>();
+                if (_counters[i] != null)
+                {
+                    _samples[_counters[i]] = new List<CounterSample>();
+                }
             }
         }
 
@@ -82,7 +82,10 @@ namespace Microsoft.AspNet.SignalR.Stress
             for (int i = 0; i < _counters.Length; i++)
             {
                 var counter = _counters[i];
-                _samples[counter].Add(counter.NextSample());
+                if (counter != null)
+                {
+                    _samples[counter].Add(counter.NextSample());
+                }
             }
         }
 
@@ -195,7 +198,7 @@ namespace Microsoft.AspNet.SignalR.Stress
                 {
                     await Send((int)state);
                 }
-                catch(Exception)
+                catch (Exception)
                 {
                     // If a sender fails then continue
                     continue;

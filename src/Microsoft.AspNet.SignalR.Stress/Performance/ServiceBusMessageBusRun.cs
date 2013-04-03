@@ -3,14 +3,15 @@
 using System.ComponentModel.Composition;
 using Microsoft.AspNet.SignalR.Messaging;
 using Microsoft.AspNet.SignalR.Redis;
+using Microsoft.AspNet.SignalR.ServiceBus;
 
 namespace Microsoft.AspNet.SignalR.Stress.Performance
 {
-    [Export("RedisMessageBus", typeof(IRun))]
-    public class RedisMessageBusRun : MessageBusRun
+    [Export("ServiceBusMessageBus", typeof(IRun))]
+    public class ServiceBusMessageBusRun : MessageBusRun
     {
         [ImportingConstructor]
-        public RedisMessageBusRun(RunData runData)
+        public ServiceBusMessageBusRun(RunData runData)
             : base(runData)
         {
 
@@ -18,10 +19,10 @@ namespace Microsoft.AspNet.SignalR.Stress.Performance
 
         protected override MessageBus CreateMessageBus()
         {
-            var configuration = new RedisScaleoutConfiguration(RunData.RedisServer, RunData.RedisPort, RunData.RedisPassword, "Stress");
+            var configuration = new ServiceBusScaleoutConfiguration(RunData.ServiceBusConnectionString, "Stress");
             // configuration.RetryOnError = true;
 
-            return new RedisMessageBus(Resolver, configuration);
+            return new ServiceBusMessageBus(Resolver, configuration);
         }
     }
 }
