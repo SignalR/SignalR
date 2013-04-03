@@ -10,8 +10,9 @@ namespace Microsoft.AspNet.SignalR
     /// </summary>
     public class SqlScaleoutConfiguration : ScaleoutConfiguration
     {
-        public SqlScaleoutConfiguration()
+        public SqlScaleoutConfiguration(string connectionString)
         {
+            ConnectionString = connectionString;
             TableCount = 1;
         }
 

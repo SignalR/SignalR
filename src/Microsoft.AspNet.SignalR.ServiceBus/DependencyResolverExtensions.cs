@@ -17,12 +17,7 @@ namespace Microsoft.AspNet.SignalR
         /// <returns>The dependency resolver</returns>
         public static IDependencyResolver UseServiceBus(this IDependencyResolver resolver, string connectionString, string topicPrefix)
         {
-            var config = new ServiceBusScaleoutConfiguration
-            {
-                TopicCount = 1,
-                TopicPrefix = topicPrefix,
-                ConnectionString = connectionString
-            };
+            var config = new ServiceBusScaleoutConfiguration(connectionString, topicPrefix);
 
             return UseServiceBus(resolver, config);
         }

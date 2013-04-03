@@ -16,10 +16,7 @@ namespace Microsoft.AspNet.SignalR
         /// <returns>The dependency resolver.</returns>
         public static IDependencyResolver UseSqlServer(this IDependencyResolver resolver, string connectionString)
         {
-            var config = new SqlScaleoutConfiguration
-            {
-                ConnectionString = connectionString
-            };
+            var config = new SqlScaleoutConfiguration(connectionString);
 
             return UseSqlServer(resolver, config);
         }
