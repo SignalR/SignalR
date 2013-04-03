@@ -33,7 +33,7 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
         }
 
         [SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope", Justification = "The disposable is returned to the caller")]
-        public IDisposable Subscribe(IList<string> topicNames, Action<int, IEnumerable<BrokeredMessage>> handler, Action<int> open)
+        public IDisposable Subscribe(IList<string> topicNames, Action<int, IEnumerable<BrokeredMessage>> handler, Action<int, Exception> errorHandler, Action<int> open)
         {
             if (topicNames == null)
             {
@@ -76,7 +76,7 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
 
                 open(topicIndex);
 
-                PumpMessages(topicIndex, receiver, handler);
+                PumpMessages(topicIndex, receiver, handler, errorHandler);
             }
 
             return new DisposableAction(() =>
@@ -127,7 +127,7 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
             Dispose(true);
         }
 
-        private void PumpMessages(int topicIndex, MessageReceiver receiver, Action<int, IEnumerable<BrokeredMessage>> handler)
+        private void PumpMessages(int topicIndex, MessageReceiver receiver, Action<int, IEnumerable<BrokeredMessage>> handler, Action<int, Exception> errorHandler)
         {
         receive:
 
@@ -144,29 +144,33 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
 
                     var state = (ReceiveState)ar.AsyncState;
 
-                    if (ContinueReceiving(ar, state.TopicIndex, state.Receiver, state.Handler))
+                    if (ContinueReceiving(ar, state.TopicIndex, state.Receiver, state.Handler, state.ErrorHandler))
                     {
-                        PumpMessages(state.TopicIndex, state.Receiver, state.Handler);
+                        PumpMessages(state.TopicIndex, state.Receiver, state.Handler, state.ErrorHandler);
                     }
                 },
-                new ReceiveState(topicIndex, receiver, handler));
+                new ReceiveState(topicIndex, receiver, handler, errorHandler));
             }
             catch (OperationCanceledException)
             {
                 // This means the channel is closed
                 return;
             }
+            catch (Exception ex)
+            {
+                errorHandler(topicIndex, ex);
+            }
 
             if (result.CompletedSynchronously)
             {
-                if (ContinueReceiving(result, topicIndex, receiver, handler))
+                if (ContinueReceiving(result, topicIndex, receiver, handler, errorHandler))
                 {
                     goto receive;
                 }
             }
         }
 
-        private bool ContinueReceiving(IAsyncResult asyncResult, int topicIndex, MessageReceiver receiver, Action<int, IEnumerable<BrokeredMessage>> handler)
+        private bool ContinueReceiving(IAsyncResult asyncResult, int topicIndex, MessageReceiver receiver, Action<int, IEnumerable<BrokeredMessage>> handler, Action<int, Exception> errorHandler)
         {
             bool backOff = false;
 
@@ -174,21 +178,29 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
             {
                 handler(topicIndex, receiver.EndReceiveBatch(asyncResult));
             }
-            catch (ServerBusyException)
+            catch (ServerBusyException ex)
             {
+                errorHandler(topicIndex, ex);
+
                 // Too busy so back off
                 backOff = true;
             }
-            catch (OperationCanceledException)
+            catch (OperationCanceledException ex)
             {
+                errorHandler(topicIndex, ex);
+
                 // This means the channel is closed
                 return false;
+            }
+            catch (Exception ex)
+            {
+                errorHandler(topicIndex, ex);
             }
 
             if (backOff)
             {
                 TaskAsyncHelper.Delay(BackoffAmount)
-                               .Then(() => PumpMessages(topicIndex, receiver, handler));
+                               .Then(() => PumpMessages(topicIndex, receiver, handler, errorHandler));
             }
 
             // true -> continue reading normally
@@ -212,16 +224,18 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
 
         private class ReceiveState
         {
-            public ReceiveState(int topicIndex, MessageReceiver receiver, Action<int, IEnumerable<BrokeredMessage>> handler)
+            public ReceiveState(int topicIndex, MessageReceiver receiver, Action<int, IEnumerable<BrokeredMessage>> handler, Action<int, Exception> errorHandler)
             {
                 TopicIndex = topicIndex;
                 Receiver = receiver;
                 Handler = handler;
+                ErrorHandler = errorHandler;
             }
 
             public int TopicIndex { get; private set; }
             public MessageReceiver Receiver { get; private set; }
             public Action<int, IEnumerable<BrokeredMessage>> Handler { get; private set; }
+            public Action<int, Exception> ErrorHandler { get; private set; }
         }
     }
 }

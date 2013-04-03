@@ -32,7 +32,7 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
                                 .Select(topicIndex => SignalRTopicPrefix + "_" + configuration.TopicPrefix + "_" + topicIndex)
                                 .ToArray();
 
-            _subscription = _connection.Subscribe(_topics, OnMessage, Open);
+            _subscription = _connection.Subscribe(_topics, OnMessage, OnError, Open);
         }
 
         protected override int StreamCount
