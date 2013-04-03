@@ -187,10 +187,8 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
                 // Too busy so back off
                 backOff = true;
             }
-            catch (OperationCanceledException ex)
+            catch (OperationCanceledException)
             {
-                errorHandler(topicIndex, ex);
-
                 // This means the channel is closed
                 return false;
             }
