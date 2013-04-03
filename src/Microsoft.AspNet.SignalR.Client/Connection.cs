@@ -498,7 +498,12 @@ namespace Microsoft.AspNet.SignalR.Client
         /// Stops the <see cref="Connection"/> without sending an abort message to the server.
         /// This function is called after we receive a disconnect message from the server.
         /// </summary>
-        public void Disconnect()
+        void IConnection.Disconnect()
+        {
+            Disconnect();
+        }
+
+        private void Disconnect()
         {
             lock (_stateLock)
             {
