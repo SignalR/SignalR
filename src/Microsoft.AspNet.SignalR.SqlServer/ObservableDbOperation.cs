@@ -245,9 +245,15 @@ namespace Microsoft.AspNet.SignalR.SqlServer
             // Check notification args for issues
             if (e.Type == SqlNotificationType.Change)
             {
-                if (!(e.Info == SqlNotificationInfo.Insert
-                    || e.Info == SqlNotificationInfo.Expired
-                    || e.Info == SqlNotificationInfo.Resource))
+                if (e.Info == SqlNotificationInfo.Insert)
+                {
+                    Trace.TraceVerbose("{0}SQL notification details: Type={1}, Source={2}, Info={3}", TracePrefix, e.Type, e.Source, e.Info);
+                }
+                else if (e.Source == SqlNotificationSource.Timeout)
+                {
+                    Trace.TraceVerbose("{0}SQL notification timed out", TracePrefix);
+                }
+                else
                 {
                     Trace.TraceError("{0}Unexpected SQL notification details: Type={1}, Source={2}, Info={3}", TracePrefix, e.Type, e.Source, e.Info);
 
@@ -255,10 +261,6 @@ namespace Microsoft.AspNet.SignalR.SqlServer
                     {
                         OnError(new SqlMessageBusException(String.Format(CultureInfo.InvariantCulture, Resources.Error_UnexpectedSqlNotificationType, e.Type, e.Source, e.Info)));
                     }
-                }
-                else
-                {
-                    Trace.TraceVerbose("{0}SQL notification details: Type={1}, Source={2}, Info={3}", TracePrefix, e.Type, e.Source, e.Info);
                 }
             }
             else if (e.Type == SqlNotificationType.Subscribe)
@@ -305,34 +307,31 @@ namespace Microsoft.AspNet.SignalR.SqlServer
                 return false;
             }
 
-            Trace.TraceVerbose("{0}: Starting SQL notification listener", TracePrefix);
-            while (true)
+            Trace.TraceVerbose("{0}Starting SQL notification listener", TracePrefix);
+            try
             {
-                try
+                if (SqlDependency.Start(ConnectionString))
                 {
-                    if (SqlDependency.Start(ConnectionString))
-                    {
-                        Trace.TraceVerbose("{0}SQL notification listener started", TracePrefix);
-                    }
-                    else
-                    {
-                        Trace.TraceVerbose("{0}SQL notification listener was already running", TracePrefix);
-                    }
-                    return true;
+                    Trace.TraceVerbose("{0}SQL notification listener started", TracePrefix);
                 }
-                catch (InvalidOperationException)
+                else
                 {
-                    Trace.TraceInformation("{0}SQL Service Broker is disabled, disabling query notifications", TracePrefix);
+                    Trace.TraceVerbose("{0}SQL notification listener was already running", TracePrefix);
+                }
+                return true;
+            }
+            catch (InvalidOperationException)
+            {
+                Trace.TraceInformation("{0}SQL Service Broker is disabled, disabling query notifications", TracePrefix);
 
-                    _notificationState = NotificationState.Disabled;
-                    return false;
-                }
-                catch (Exception ex)
-                {
-                    Trace.TraceError("{0}Error starting SQL notification listener: {1}", TracePrefix, ex);
+                _notificationState = NotificationState.Disabled;
+                return false;
+            }
+            catch (Exception ex)
+            {
+                Trace.TraceError("{0}Error starting SQL notification listener: {1}", TracePrefix, ex);
 
-                    return false;
-                }
+                return false;
             }
         }
 

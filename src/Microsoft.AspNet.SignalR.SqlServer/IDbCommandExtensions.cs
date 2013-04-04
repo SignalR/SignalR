@@ -9,15 +9,17 @@ namespace Microsoft.AspNet.SignalR.SqlServer
 {
     internal static class IDbCommandExtensions
     {
+        private readonly static TimeSpan _dependencyTimeout = TimeSpan.FromSeconds(60);
+
         public static void AddSqlDependency(this IDbCommand command, Action<SqlNotificationEventArgs> callback)
         {
             var sqlCommand = command as SqlCommand;
             if (sqlCommand == null)
             {
-                throw new InvalidOperationException("");
+                throw new NotSupportedException();
             }
 
-            var dependency = new SqlDependency(sqlCommand);
+            var dependency = new SqlDependency(sqlCommand, null, (int)_dependencyTimeout.TotalSeconds);
             dependency.OnChange += (o, e) => callback(e);
         }
 
