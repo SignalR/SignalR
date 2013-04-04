@@ -33,7 +33,7 @@ namespace Microsoft.AspNet.SignalR.SqlServer
             _receiver = new SqlReceiver(connectionString, tableName,
                 onQuery: () => ClearFailed(),
                 onReceived: (id, messages) => onReceived(_streamIndex, id, messages),
-                onError: _onError,
+                onError: ex => SetFailed(ex),
                 traceSource: _trace,
                 tracePrefix: _tracePrefix,
                 dbProviderFactory: dbProviderFactory);
@@ -51,18 +51,12 @@ namespace Microsoft.AspNet.SignalR.SqlServer
             try
             {
                 return _sender.Send(messages)
-                    .Then(() =>
-                    {
-                        if (ClearFailed())
-                        {
-                            _receiver.StartReceiving();
-                        };
-                    })
-                    .Catch(_ => SetFailed());
+                    .Then(() => ClearFailed())
+                    .Catch(ex => SetFailed(ex));
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                SetFailed();
+                SetFailed(ex);
                 throw;
             }
         }
@@ -72,13 +66,18 @@ namespace Microsoft.AspNet.SignalR.SqlServer
             _receiver.Dispose();
         }
 
-        private void SetFailed()
+        private void SetFailed(Exception exception)
         {
             lock (this)
             {
-                _trace.TraceWarning("{0}Stream set to failed", _tracePrefix);
-                
-                _failed = true;
+                if (!_failed)
+                {
+                    _failed = true;
+                    _onError(exception);
+                    
+                    _trace.TraceWarning("{0}Stream set to failed", _tracePrefix);
+
+                }
             }
         }
 
