@@ -5,10 +5,11 @@ using System.Web.Routing;
 using Microsoft.AspNet.SignalR.Samples.Raw;
 using Microsoft.AspNet.SignalR.Samples.Streaming;
 using Owin;
-using AppFunc = System.Func<System.Collections.Generic.IDictionary<string, object>, System.Threading.Tasks.Task>;
 
 namespace Microsoft.AspNet.SignalR.Samples
 {
+    using AppFunc = System.Func<System.Collections.Generic.IDictionary<string, object>, System.Threading.Tasks.Task>;
+
     public static class RouteConfig
     {
         public static void RegisterRoutes(RouteCollection routes)
