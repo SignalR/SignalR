@@ -22,7 +22,7 @@ namespace Microsoft.AspNet.SignalR.Samples.Hubs.Auth
             }
             else
             {
-                throw new InvalidOperationException("Claims Principal Not Set");
+                return false;
             }
         }
     }

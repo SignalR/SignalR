@@ -1,20 +1,19 @@
 using System;
+using System.Collections.Generic;
 using System.Configuration;
 using System.Diagnostics;
 using System.IO;
+using System.Security.Claims;
 using System.Threading.Tasks;
 using System.Web;
 using System.Web.Routing;
 using Owin;
+using AppFunc = System.Func<System.Collections.Generic.IDictionary<string, object>, System.Threading.Tasks.Task>;
 
 [assembly: PreApplicationStartMethod(typeof(Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure.IIS.InitializeIISHost), "Start")]
 
 namespace Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure.IIS
 {
-    using System.Collections.Generic;
-    using System.Security.Claims;
-    using AppFunc = System.Func<System.Collections.Generic.IDictionary<string, object>, System.Threading.Tasks.Task>;
-
     public static class InitializeIISHost
     {
         public static void Start()

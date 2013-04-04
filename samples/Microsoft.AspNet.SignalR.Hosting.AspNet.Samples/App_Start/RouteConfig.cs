@@ -1,15 +1,14 @@
-﻿using System.Web.Routing;
+﻿using System;
+using System.Collections.Generic;
+using System.Security.Claims;
+using System.Web.Routing;
 using Microsoft.AspNet.SignalR.Samples.Raw;
 using Microsoft.AspNet.SignalR.Samples.Streaming;
 using Owin;
+using AppFunc = System.Func<System.Collections.Generic.IDictionary<string, object>, System.Threading.Tasks.Task>;
 
 namespace Microsoft.AspNet.SignalR.Samples
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Security.Claims;
-    using AppFunc = System.Func<System.Collections.Generic.IDictionary<string, object>, System.Threading.Tasks.Task>;
-
     public static class RouteConfig
     {
         public static void RegisterRoutes(RouteCollection routes)
@@ -20,10 +19,10 @@ namespace Microsoft.AspNet.SignalR.Samples
             routes.MapConnection<StreamingConnection>("streaming-connection", "streaming-connection");
 
             // Register the default hubs route /signalr
-            routes.MapHubs("/signalr", new HubConfiguration() { EnableDetailedErrors = true }, Middleware);
+            routes.MapHubs("/signalr", new HubConfiguration() { EnableDetailedErrors = true }, AuthMiddleware);
         }
 
-        private static void Middleware(IAppBuilder app)
+        private static void AuthMiddleware(IAppBuilder app)
         {
             Func<AppFunc, AppFunc> middleware = (next) =>
             {

@@ -27,8 +27,8 @@ namespace Microsoft.AspNet.SignalR.Client.Samples
         {
             var authHub = hubConnection.CreateHubProxy("HeaderAuthHub");
             hubConnection.Headers.Add("username", "john");
-            hubConnection.Start().Wait();
             authHub.On("display", (msg) => Console.WriteLine(msg));
+            hubConnection.Start().Wait();
         }
 
         private static void RunDemoHub(HubConnection hubConnection)

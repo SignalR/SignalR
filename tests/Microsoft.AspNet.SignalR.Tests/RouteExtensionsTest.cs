@@ -11,14 +11,15 @@ namespace Microsoft.AspNet.SignalR.Tests
         [Fact]
         public void TestMapHubs()
         {
-            var wh = new ManualResetEvent(false);
             RouteCollection routes = new RouteCollection();
+            bool delegateInvoked = false;
             routes.MapHubs("signalr", new HubConfiguration(), appbuilder =>
             {
                 appbuilder.Properties[ServerRequestFacts.OwinConstants.HostAppNameKey] = "test";
-                wh.Set();
+                delegateInvoked = true;
             });
-            Assert.True(wh.WaitOne(TimeSpan.FromSeconds(10)));
+            
+            Assert.True(delegateInvoked);
         }
     }
 }
