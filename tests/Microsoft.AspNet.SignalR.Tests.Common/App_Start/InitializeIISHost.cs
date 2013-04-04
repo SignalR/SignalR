@@ -8,12 +8,13 @@ using System.Threading.Tasks;
 using System.Web;
 using System.Web.Routing;
 using Owin;
-using AppFunc = System.Func<System.Collections.Generic.IDictionary<string, object>, System.Threading.Tasks.Task>;
 
 [assembly: PreApplicationStartMethod(typeof(Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure.IIS.InitializeIISHost), "Start")]
 
 namespace Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure.IIS
 {
+    using AppFunc = System.Func<System.Collections.Generic.IDictionary<string, object>, System.Threading.Tasks.Task>;
+
     public static class InitializeIISHost
     {
         public static void Start()
