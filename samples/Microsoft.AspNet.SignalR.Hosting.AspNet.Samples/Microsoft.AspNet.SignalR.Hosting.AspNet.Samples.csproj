@@ -227,6 +227,7 @@
     </Compile>
     <Compile Include="Hubs\Auth\AuthHub.cs" />
     <Compile Include="Hubs\Auth\AdminAuthHub.cs" />
+    <Compile Include="Hubs\Auth\HeaderAuthHub.cs" />
     <Compile Include="Hubs\Auth\InheritAuthHub.cs" />
     <Compile Include="Hubs\Auth\IncomingAuthHub.cs" />
     <Compile Include="Hubs\Auth\UserAndRoleAuthHub.cs" />
@@ -248,6 +249,7 @@
       <DependentUpon>Default.aspx</DependentUpon>
     </Compile>
     <Compile Include="Hubs\ConnectDisconnect\Status.cs" />
+    <Compile Include="Hubs\Auth\AuthorizeClaimsAttribute.cs" />
     <Compile Include="Hubs\DemoHub\Default.aspx.cs">
       <DependentUpon>Default.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>

@@ -45,6 +45,22 @@ namespace System.Web.Routing
         /// Maps a <see cref="PersistentConnection"/> with the default dependency resolver to the specified path.
         /// </summary>
         /// <param name="routes">The route table</param>
+        /// <typeparam name="T">The type of <see cref="PersistentConnection"/></typeparam>
+        /// <param name="name">The name of the route</param>
+        /// <param name="url">path of the route.</param>
+        /// <param name="configuration">Configuration options</param>
+        /// <param name="build">An action to further configure the owin pipeline</param>
+        /// <returns>The registered route</returns>
+        [SuppressMessage("Microsoft.Design", "CA1004:GenericMethodsShouldProvideTypeParameter", Justification = "The type parameter is syntactic sugar")]
+        public static RouteBase MapConnection<T>(this RouteCollection routes, string name, string url, ConnectionConfiguration configuration, Action<IAppBuilder> build) where T : PersistentConnection
+        {
+            return MapConnection(routes, name, url, typeof(T), configuration, build);
+        }
+
+        /// <summary>
+        /// Maps a <see cref="PersistentConnection"/> with the default dependency resolver to the specified path.
+        /// </summary>
+        /// <param name="routes">The route table</param>
         /// <param name="name">The name of the route</param>
         /// <param name="url">path of the route.</param>
         /// <param name="type">The type of <see cref="PersistentConnection"/></param>
@@ -55,6 +71,27 @@ namespace System.Web.Routing
             InitializeProtectedData(configuration);
 
             return routes.MapOwinPath(name, url, map => map.MapConnection(String.Empty, type, configuration));
+        }
+
+        /// <summary>
+        /// Maps a <see cref="PersistentConnection"/> with the default dependency resolver to the specified path.
+        /// </summary>
+        /// <param name="routes">The route table</param>
+        /// <param name="name">The name of the route</param>
+        /// <param name="url">path of the route.</param>
+        /// <param name="type">The type of <see cref="PersistentConnection"/></param>
+        /// <param name="configuration">Configuration options</param>
+        /// <param name="build">An action to further configure the owin pipeline</param>
+        /// <returns>The registered route</returns>
+        public static RouteBase MapConnection(this RouteCollection routes, string name, string url, Type type, ConnectionConfiguration configuration, Action<IAppBuilder> build)
+        {
+            InitializeProtectedData(configuration);
+
+            return routes.MapOwinPath(name, url, map =>
+            {
+                build(map);
+                map.MapConnection(String.Empty, type, configuration);
+            });
         }
 
         /// <summary>
@@ -97,7 +134,30 @@ namespace System.Web.Routing
                 throw new ArgumentNullException("configuration");
             }
 
-            return routes.MapHubs("signalr.hubs", path, configuration);
+            return routes.MapHubs("signalr.hubs", path, configuration, _ => { });
+        }
+
+        /// <summary>
+        /// Initializes the hub route using specified configuration.
+        /// </summary>
+        /// <param name="routes">The route table</param>
+        /// <param name="path">The path of the hubs route.</param>
+        /// <param name="configuration">Configuration options</param>
+        /// <param name="build">An action to further configure the owin pipeline</param>
+        /// <returns>The registered route</returns>
+        public static RouteBase MapHubs(this RouteCollection routes, string path, HubConfiguration configuration, Action<IAppBuilder> build)
+        {
+            if (routes == null)
+            {
+                throw new ArgumentNullException("routes");
+            }
+
+            if (configuration == null)
+            {
+                throw new ArgumentNullException("configuration");
+            }
+
+            return routes.MapHubs("signalr.hubs", path, configuration, build);
         }
 
         /// <summary>
@@ -107,15 +167,20 @@ namespace System.Web.Routing
         /// <param name="name">The name of the route</param>
         /// <param name="path">The path of the hubs route.</param>
         /// <param name="configuration">Configuration options</param>
+        /// <param name="build"></param>
         /// <returns>The registered route</returns>
-        internal static RouteBase MapHubs(this RouteCollection routes, string name, string path, HubConfiguration configuration)
+        internal static RouteBase MapHubs(this RouteCollection routes, string name, string path, HubConfiguration configuration, Action<IAppBuilder> build)
         {
             var locator = new Lazy<IAssemblyLocator>(() => new BuildManagerAssemblyLocator());
             configuration.Resolver.Register(typeof(IAssemblyLocator), () => locator.Value);
 
             InitializeProtectedData(configuration);
 
-            return routes.MapOwinPath(name, path, map => map.MapHubs(String.Empty, configuration));
+            return routes.MapOwinPath(name, path, map =>
+            {
+                build(map);
+                map.MapHubs(String.Empty, configuration);
+            });
         }
 
         private static void InitializeProtectedData(ConnectionConfiguration configuration)

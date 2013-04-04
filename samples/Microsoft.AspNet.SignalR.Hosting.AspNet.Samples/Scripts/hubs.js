@@ -268,6 +268,11 @@
              }
         };
 
+        proxies.headerAuthHub = this.createHubProxy('headerAuthHub'); 
+        proxies.headerAuthHub.client = { };
+        proxies.headerAuthHub.server = {
+        };
+
         proxies.hubBench = this.createHubProxy('hubBench'); 
         proxies.hubBench.client = { };
         proxies.hubBench.server = {
