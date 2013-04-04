@@ -1,12 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.md in the project root for license information.
+
+using System;
 using BookSleeve;
 using Microsoft.AspNet.SignalR.Messaging;
 
 namespace Microsoft.AspNet.SignalR.Redis
 {
+    /// <summary>
+    /// Settings for the Redis scale-out message bus implementation.
+    /// </summary>
     public class RedisScaleoutConfiguration : ScaleoutConfiguration
     {
         public RedisScaleoutConfiguration(string server, int port, string password, string eventKey)
@@ -31,10 +33,17 @@ namespace Microsoft.AspNet.SignalR.Redis
             EventKey = eventKey;
         }
 
-        public Func<RedisConnection> ConnectionFactory { get; set; }
+        internal Func<RedisConnection> ConnectionFactory { get; private set; }
 
+        /// <summary>
+        /// The Redis database instance to use.
+        /// Defaults to 0.
+        /// </summary>
         public int Database { get; set; }
 
+        /// <summary>
+        /// The Redis event key to use.
+        /// </summary>
         public string EventKey { get; set; }
 
         private static Func<RedisConnection> MakeConnectionFactory(string server, int port, string password)

@@ -1,11 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.md in the project root for license information.
+
 using Microsoft.AspNet.SignalR.Messaging;
 
 namespace Microsoft.AspNet.SignalR.ServiceBus
 {
+    /// <summary>
+    /// Settings for the Service Bus scale-out message bus implementation.
+    /// </summary>
     public class ServiceBusScaleoutConfiguration : ScaleoutConfiguration
     {
         public ServiceBusScaleoutConfiguration(string connectionString, string topicPrefix)
@@ -15,10 +16,22 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
             TopicCount = 1;
         }
 
+        /// <summary>
+        /// The Service Bus connection string to use.
+        /// </summary>
         public string ConnectionString { get; set; }
 
+        /// <summary>
+        /// The topic prefix to use. Typically represents the app name.
+        /// This must be consistent between all nodes in the web farm.
+        /// </summary>
         public string TopicPrefix { get; set; }
 
+        /// <summary>
+        /// The number of topics to send messages over. Using more topics reduces contention and may increase throughput.
+        /// This must be consistent between all nodes in the web farm.
+        /// Defaults to 1.
+        /// </summary>
         public int TopicCount { get; set; }
     }
 }
