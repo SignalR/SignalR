@@ -15,11 +15,11 @@ namespace System.Web.Routing
         /// <summary>
         /// Maps a <see cref="PersistentConnection"/> with the default dependency resolver to the specified path.
         /// </summary>
-        /// <param name="routes">The route table</param>
-        /// <typeparam name="T">The type of <see cref="PersistentConnection"/></typeparam>
-        /// <param name="name">The name of the route</param>
+        /// <param name="routes">The route table.</param>
+        /// <typeparam name="T">The type of <see cref="PersistentConnection"/>.</typeparam>
+        /// <param name="name">The name of the route.</param>
         /// <param name="url">path of the route.</param>
-        /// <returns>The registered route</returns>
+        /// <returns>The registered route.</returns>
         [SuppressMessage("Microsoft.Design", "CA1004:GenericMethodsShouldProvideTypeParameter", Justification = "The type parameter is syntactic sugar")]
         public static RouteBase MapConnection<T>(this RouteCollection routes, string name, string url) where T : PersistentConnection
         {
@@ -29,12 +29,12 @@ namespace System.Web.Routing
         /// <summary>
         /// Maps a <see cref="PersistentConnection"/> with the default dependency resolver to the specified path.
         /// </summary>
-        /// <param name="routes">The route table</param>
-        /// <typeparam name="T">The type of <see cref="PersistentConnection"/></typeparam>
-        /// <param name="name">The name of the route</param>
+        /// <param name="routes">The route table.</param>
+        /// <typeparam name="T">The type of <see cref="PersistentConnection"/>.</typeparam>
+        /// <param name="name">The name of the route.</param>
         /// <param name="url">path of the route.</param>
-        /// <param name="configuration">Configuration options</param>
-        /// <returns>The registered route</returns>
+        /// <param name="configuration">Configuration options.</param>
+        /// <returns>The registered route.</returns>
         [SuppressMessage("Microsoft.Design", "CA1004:GenericMethodsShouldProvideTypeParameter", Justification = "The type parameter is syntactic sugar")]
         public static RouteBase MapConnection<T>(this RouteCollection routes, string name, string url, ConnectionConfiguration configuration) where T : PersistentConnection
         {
@@ -44,12 +44,12 @@ namespace System.Web.Routing
         /// <summary>
         /// Maps a <see cref="PersistentConnection"/> with the default dependency resolver to the specified path.
         /// </summary>
-        /// <param name="routes">The route table</param>
-        /// <typeparam name="T">The type of <see cref="PersistentConnection"/></typeparam>
-        /// <param name="name">The name of the route</param>
+        /// <param name="routes">The route table.</param>
+        /// <typeparam name="T">The type of <see cref="PersistentConnection"/>.</typeparam>
+        /// <param name="name">The name of the route.</param>
         /// <param name="url">path of the route.</param>
-        /// <param name="configuration">Configuration options</param>
-        /// <param name="build">An action to further configure the owin pipeline</param>
+        /// <param name="configuration">Configuration options.</param>
+        /// <param name="build">An action to further configure the OWIN pipeline.</param>
         /// <returns>The registered route</returns>
         [SuppressMessage("Microsoft.Design", "CA1004:GenericMethodsShouldProvideTypeParameter", Justification = "The type parameter is syntactic sugar")]
         public static RouteBase MapConnection<T>(this RouteCollection routes, string name, string url, ConnectionConfiguration configuration, Action<IAppBuilder> build) where T : PersistentConnection
@@ -60,11 +60,11 @@ namespace System.Web.Routing
         /// <summary>
         /// Maps a <see cref="PersistentConnection"/> with the default dependency resolver to the specified path.
         /// </summary>
-        /// <param name="routes">The route table</param>
-        /// <param name="name">The name of the route</param>
+        /// <param name="routes">The route table.</param>
+        /// <param name="name">The name of the route.</param>
         /// <param name="url">path of the route.</param>
-        /// <param name="type">The type of <see cref="PersistentConnection"/></param>
-        /// <param name="configuration">Configuration options</param>
+        /// <param name="type">The type of <see cref="PersistentConnection"/>.</param>
+        /// <param name="configuration">Configuration options.</param>
         /// <returns>The registered route</returns>
         public static RouteBase MapConnection(this RouteCollection routes, string name, string url, Type type, ConnectionConfiguration configuration)
         {
@@ -76,12 +76,12 @@ namespace System.Web.Routing
         /// <summary>
         /// Maps a <see cref="PersistentConnection"/> with the default dependency resolver to the specified path.
         /// </summary>
-        /// <param name="routes">The route table</param>
-        /// <param name="name">The name of the route</param>
+        /// <param name="routes">The route table.</param>
+        /// <param name="name">The name of the route.</param>
         /// <param name="url">path of the route.</param>
-        /// <param name="type">The type of <see cref="PersistentConnection"/></param>
-        /// <param name="configuration">Configuration options</param>
-        /// <param name="build">An action to further configure the owin pipeline</param>
+        /// <param name="type">The type of <see cref="PersistentConnection"/>.</param>
+        /// <param name="configuration">Configuration options.</param>
+        /// <param name="build">An action to further configure the OWIN pipeline.</param>
         /// <returns>The registered route</returns>
         public static RouteBase MapConnection(this RouteCollection routes, string name, string url, Type type, ConnectionConfiguration configuration, Action<IAppBuilder> build)
         {
@@ -97,8 +97,8 @@ namespace System.Web.Routing
         /// <summary>
         /// Initializes the default hub route (/signalr).
         /// </summary>
-        /// <param name="routes">The route table</param>
-        /// <returns>The registered route</returns>
+        /// <param name="routes">The route table.</param>
+        /// <returns>The registered route.</returns>
         public static RouteBase MapHubs(this RouteCollection routes)
         {
             return routes.MapHubs(new HubConfiguration());
@@ -107,9 +107,9 @@ namespace System.Web.Routing
         /// <summary>
         /// Initializes the default hub route (/signalr).
         /// </summary>
-        /// <param name="routes">The route table</param>
-        /// <param name="configuration">Configuration options</param>
-        /// <returns>The registered route</returns>
+        /// <param name="routes">The route table.</param>
+        /// <param name="configuration">Configuration options.</param>
+        /// <returns>The registered route.</returns>
         public static RouteBase MapHubs(this RouteCollection routes, HubConfiguration configuration)
         {
             return routes.MapHubs("/signalr", configuration);
@@ -118,10 +118,10 @@ namespace System.Web.Routing
         /// <summary>
         /// Initializes the hub route using specified configuration.
         /// </summary>
-        /// <param name="routes">The route table</param>
+        /// <param name="routes">The route table.</param>
         /// <param name="path">The path of the hubs route.</param>
-        /// <param name="configuration">Configuration options</param>
-        /// <returns>The registered route</returns>
+        /// <param name="configuration">Configuration options.</param>
+        /// <returns>The registered route.</returns>
         public static RouteBase MapHubs(this RouteCollection routes, string path, HubConfiguration configuration)
         {
             if (routes == null)
@@ -140,11 +140,11 @@ namespace System.Web.Routing
         /// <summary>
         /// Initializes the hub route using specified configuration.
         /// </summary>
-        /// <param name="routes">The route table</param>
+        /// <param name="routes">The route table.</param>
         /// <param name="path">The path of the hubs route.</param>
-        /// <param name="configuration">Configuration options</param>
-        /// <param name="build">An action to further configure the owin pipeline</param>
-        /// <returns>The registered route</returns>
+        /// <param name="configuration">Configuration options.</param>
+        /// <param name="build">An action to further configure the OWIN pipeline.</param>
+        /// <returns>The registered route.</returns>
         public static RouteBase MapHubs(this RouteCollection routes, string path, HubConfiguration configuration, Action<IAppBuilder> build)
         {
             if (routes == null)
@@ -163,12 +163,12 @@ namespace System.Web.Routing
         /// <summary>
         /// Initializes the hub route using specified configuration.
         /// </summary>
-        /// <param name="routes">The route table</param>
-        /// <param name="name">The name of the route</param>
+        /// <param name="routes">The route table.</param>
+        /// <param name="name">The name of the route.</param>
         /// <param name="path">The path of the hubs route.</param>
-        /// <param name="configuration">Configuration options</param>
+        /// <param name="configuration">Configuration options.</param>
         /// <param name="build"></param>
-        /// <returns>The registered route</returns>
+        /// <returns>The registered route.</returns>
         internal static RouteBase MapHubs(this RouteCollection routes, string name, string path, HubConfiguration configuration, Action<IAppBuilder> build)
         {
             var locator = new Lazy<IAssemblyLocator>(() => new BuildManagerAssemblyLocator());
