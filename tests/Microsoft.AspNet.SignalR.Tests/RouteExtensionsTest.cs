@@ -1,0 +1,25 @@
+﻿using System;
+using System.Threading;
+using System.Web.Routing;
+using Microsoft.AspNet.SignalR.Tests.Owin;
+using Xunit;
+
+namespace Microsoft.AspNet.SignalR.Tests
+{
+    public class RouteExtensionsTest
+    {
+        [Fact]
+        public void TestMapHubs()
+        {
+            RouteCollection routes = new RouteCollection();
+            bool delegateInvoked = false;
+            routes.MapHubs("signalr", new HubConfiguration(), appbuilder =>
+            {
+                appbuilder.Properties[ServerRequestFacts.OwinConstants.HostAppNameKey] = "test";
+                delegateInvoked = true;
+            });
+            
+            Assert.True(delegateInvoked);
+        }
+    }
+}

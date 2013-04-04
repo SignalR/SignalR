@@ -97,7 +97,30 @@ namespace System.Web.Routing
                 throw new ArgumentNullException("configuration");
             }
 
-            return routes.MapHubs("signalr.hubs", path, configuration);
+            return routes.MapHubs("signalr.hubs", path, configuration, _ => { });
+        }
+
+        /// <summary>
+        /// Initializes the hub route using specified configuration.
+        /// </summary>
+        /// <param name="routes">The route table</param>
+        /// <param name="path">The path of the hubs route.</param>
+        /// <param name="configuration">Configuration options</param>
+        /// <param name="build">Action to add the middleware to the app</param>
+        /// <returns>The registered route</returns>
+        public static RouteBase MapHubs(this RouteCollection routes, string path, HubConfiguration configuration, Action<IAppBuilder> build)
+        {
+            if (routes == null)
+            {
+                throw new ArgumentNullException("routes");
+            }
+
+            if (configuration == null)
+            {
+                throw new ArgumentNullException("configuration");
+            }
+
+            return routes.MapHubs("signalr.hubs", path, configuration, build);
         }
 
         /// <summary>
@@ -107,15 +130,20 @@ namespace System.Web.Routing
         /// <param name="name">The name of the route</param>
         /// <param name="path">The path of the hubs route.</param>
         /// <param name="configuration">Configuration options</param>
+        /// <param name="build"></param>
         /// <returns>The registered route</returns>
-        internal static RouteBase MapHubs(this RouteCollection routes, string name, string path, HubConfiguration configuration)
+        internal static RouteBase MapHubs(this RouteCollection routes, string name, string path, HubConfiguration configuration, Action<IAppBuilder> build)
         {
             var locator = new Lazy<IAssemblyLocator>(() => new BuildManagerAssemblyLocator());
             configuration.Resolver.Register(typeof(IAssemblyLocator), () => locator.Value);
 
             InitializeProtectedData(configuration);
 
-            return routes.MapOwinPath(name, path, map => map.MapHubs(String.Empty, configuration));
+            return routes.MapOwinPath(name, path, map =>
+            {
+                build(map);
+                map.MapHubs(String.Empty, configuration);
+            });
         }
 
         private static void InitializeProtectedData(ConnectionConfiguration configuration)
