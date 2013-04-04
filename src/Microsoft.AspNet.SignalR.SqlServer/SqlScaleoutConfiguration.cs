@@ -17,12 +17,13 @@ namespace Microsoft.AspNet.SignalR
         }
 
         /// <summary>
-        /// The connection string to use.
+        /// The SQL Server connection string to use.
         /// </summary>
         public string ConnectionString { get; set; }
 
         /// <summary>
-        /// The number of tables to store messages in. Using more tables reduces lock contention and can increase throughput.
+        /// The number of tables to store messages in. Using more tables reduces lock contention and may increase throughput.
+        /// This must be consistent between all nodes in the web farm.
         /// Defaults to 1.
         /// </summary>
         public int TableCount { get; set; }

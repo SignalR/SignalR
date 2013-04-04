@@ -10,6 +10,9 @@ using Microsoft.ServiceBus.Messaging;
 
 namespace Microsoft.AspNet.SignalR.ServiceBus
 {
+    /// <summary>
+    /// Uses Windows Azure Service Bus topics to scale-out SignalR applications in web farms.
+    /// </summary>
     public class ServiceBusMessageBus : ScaleoutMessageBus
     {
         private const string SignalRTopicPrefix = "SIGNALR_TOPIC";

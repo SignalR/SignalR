@@ -9,7 +9,7 @@ namespace Microsoft.AspNet.SignalR
     public static class DependencyResolverExtensions
     {
         /// <summary>
-        /// Use SqlServer as the backplane for SignalR.
+        /// Use SQL Server as the messaging backplane for scaling out of ASP.NET SignalR applications in a web farm.
         /// </summary>
         /// <param name="resolver">The dependency resolver.</param>
         /// <param name="connectionString">The SQL Server connection string.</param>
@@ -22,7 +22,7 @@ namespace Microsoft.AspNet.SignalR
         }
 
         /// <summary>
-        /// Use SqlServer as the backplane for SignalR.
+        /// Use SQL Server as the messaging backplane for scaling out of ASP.NET SignalR applications in a web farm.
         /// </summary>
         /// <param name="resolver">The dependency resolver.</param>
         /// <param name="configuration">The SQL scale-out configuration options.</param>

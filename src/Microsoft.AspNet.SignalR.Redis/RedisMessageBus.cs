@@ -11,6 +11,9 @@ using Microsoft.AspNet.SignalR.Messaging;
 
 namespace Microsoft.AspNet.SignalR.Redis
 {
+    /// <summary>
+    /// Uses Redis pub-sub to scale-out SignalR applications in web farms.
+    /// </summary>
     public class RedisMessageBus : ScaleoutMessageBus
     {
         private const int DefaultBufferSize = 1000;
