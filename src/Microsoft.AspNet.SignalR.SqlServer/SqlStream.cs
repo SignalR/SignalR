@@ -76,12 +76,11 @@ namespace Microsoft.AspNet.SignalR.SqlServer
                     _onError(exception);
                     
                     _trace.TraceWarning("{0}Stream set to failed", _tracePrefix);
-
                 }
             }
         }
 
-        private bool ClearFailed()
+        private void ClearFailed()
         {
             lock (this)
             {
@@ -91,10 +90,7 @@ namespace Microsoft.AspNet.SignalR.SqlServer
                     _open();
 
                     _trace.TraceWarning("{0}Stream re-opened", _tracePrefix);
-
-                    return true;
                 }
-                return false;
             }
         }
     }
