@@ -4,10 +4,6 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
-using System.IO;
-using System.Threading.Tasks;
-using Microsoft.AspNet.SignalR.Infrastructure;
-using Microsoft.AspNet.SignalR.ServiceBus.Infrastructure;
 using Microsoft.ServiceBus;
 using Microsoft.ServiceBus.Messaging;
 
@@ -17,23 +13,24 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
     {
         private const int ReceiveBatchSize = 1000;
         private static readonly TimeSpan BackoffAmount = TimeSpan.FromSeconds(20);
-        private static readonly TimeSpan MessageTtl = TimeSpan.FromMinutes(1);
 
         private readonly NamespaceManager _namespaceManager;
         private readonly MessagingFactory _factory;
-        private readonly string _connectionString;
-
+        private readonly ServiceBusScaleoutConfiguration _configuration;
         private readonly ConcurrentDictionary<string, TopicClient> _clients = new ConcurrentDictionary<string, TopicClient>();
 
-        public ServiceBusConnection(string connectionString)
+        public ServiceBusConnection(ServiceBusScaleoutConfiguration configuration)
         {
-            _connectionString = connectionString;
-            _namespaceManager = NamespaceManager.CreateFromConnectionString(connectionString);
-            _factory = MessagingFactory.CreateFromConnectionString(connectionString);
+            _namespaceManager = NamespaceManager.CreateFromConnectionString(configuration.ConnectionString);
+            _factory = MessagingFactory.CreateFromConnectionString(configuration.ConnectionString);
+            _configuration = configuration;
         }
 
         [SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope", Justification = "The disposable is returned to the caller")]
-        public IDisposable Subscribe(IList<string> topicNames, Action<int, IEnumerable<BrokeredMessage>> handler, Action<int, Exception> errorHandler, Action<int> open)
+        public ServiceBusSubscription Subscribe(IList<string> topicNames,
+                                                Action<int, IEnumerable<BrokeredMessage>> handler,
+                                                Action<int, Exception> errorHandler,
+                                                Action<int> open)
         {
             if (topicNames == null)
             {
@@ -50,7 +47,8 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
                 throw new ArgumentNullException("open");
             }
 
-            var subscriptions = new List<Subscription>();
+            var subscriptions = new List<ServiceBusSubscription.SubscriptionContext>();
+            var clients = new ConcurrentDictionary<string, TopicClient>();
 
             for (var topicIndex = 0; topicIndex < topicNames.Count; ++topicIndex)
             {
@@ -58,59 +56,46 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
 
                 if (!_namespaceManager.TopicExists(topicName))
                 {
-                    _namespaceManager.CreateTopic(topicName);
+                    try
+                    {
+                        _namespaceManager.CreateTopic(topicName);
+                    }
+                    catch (MessagingEntityAlreadyExistsException)
+                    {
+                        // The entity already exists
+                    }
                 }
 
                 // Create a client for this topic
-                _clients.TryAdd(topicName, TopicClient.CreateFromConnectionString(_connectionString, topicName));
-
+                TopicClient client = TopicClient.CreateFromConnectionString(_configuration.ConnectionString, topicName);
+                clients.TryAdd(topicName, client);
+                
                 // Create a random subscription
                 string subscriptionName = Guid.NewGuid().ToString();
-                _namespaceManager.CreateSubscription(topicName, subscriptionName);
+
+                try
+                {
+                    _namespaceManager.CreateSubscription(topicName, subscriptionName);
+                }
+                catch (MessagingEntityAlreadyExistsException)
+                {
+                    // The entity already exists
+                }
 
                 // Create a receiver to get messages
                 string subscriptionEntityPath = SubscriptionClient.FormatSubscriptionPath(topicName, subscriptionName);
                 MessageReceiver receiver = _factory.CreateMessageReceiver(subscriptionEntityPath);
 
-                subscriptions.Add(new Subscription(topicName, subscriptionName, receiver));
+                subscriptions.Add(new ServiceBusSubscription.SubscriptionContext(topicName, subscriptionName, receiver));
+
+                var receiverContext = new ReceiverContext(topicIndex, receiver, handler, errorHandler);
 
                 open(topicIndex);
 
-                PumpMessages(topicIndex, receiver, handler, errorHandler);
+                ProcessMessages(receiverContext);
             }
 
-            return new DisposableAction(() =>
-            {
-                foreach (var subscription in subscriptions)
-                {
-                    subscription.Receiver.Close();
-
-                    _namespaceManager.DeleteSubscription(subscription.TopicPath, subscription.Name);
-
-                    TopicClient client;
-                    if (_clients.TryRemove(subscription.TopicPath, out client))
-                    {
-                        client.Close();
-                    }
-                }
-            });
-        }
-
-        public Task Publish(string topicName, Stream stream)
-        {
-            TopicClient client;
-            if (_clients.TryGetValue(topicName, out client))
-            {
-                var message = new BrokeredMessage(stream, ownsStream: true)
-                {
-                    TimeToLive = MessageTtl
-                };
-
-                return client.SendAsync(message);
-            }
-
-            // REVIEW: Should this return a faulted task?
-            return TaskAsyncHelper.Empty;
+            return new ServiceBusSubscription(_configuration, _namespaceManager, subscriptions, clients);
         }
 
         protected virtual void Dispose(bool disposing)
@@ -128,7 +113,7 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
         }
 
         [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "Exceptions are handled through the error handler callback")]
-        private void PumpMessages(int topicIndex, MessageReceiver receiver, Action<int, IEnumerable<BrokeredMessage>> handler, Action<int, Exception> errorHandler)
+        private void ProcessMessages(ReceiverContext receiverContext)
         {
         receive:
 
@@ -136,21 +121,21 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
 
             try
             {
-                result = receiver.BeginReceiveBatch(ReceiveBatchSize, ar =>
+                result = receiverContext.Receiver.BeginReceiveBatch(ReceiveBatchSize, ar =>
                 {
                     if (ar.CompletedSynchronously)
                     {
                         return;
                     }
 
-                    var state = (ReceiveState)ar.AsyncState;
+                    var ctx = (ReceiverContext)ar.AsyncState;
 
-                    if (ContinueReceiving(ar, state.TopicIndex, state.Receiver, state.Handler, state.ErrorHandler))
+                    if (ContinueReceiving(ar, ctx))
                     {
-                        PumpMessages(state.TopicIndex, state.Receiver, state.Handler, state.ErrorHandler);
+                        ProcessMessages(ctx);
                     }
                 },
-                new ReceiveState(topicIndex, receiver, handler, errorHandler));
+                receiverContext);
             }
             catch (OperationCanceledException)
             {
@@ -159,12 +144,12 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
             }
             catch (Exception ex)
             {
-                errorHandler(topicIndex, ex);
+                receiverContext.OnError(ex);
             }
 
             if (result.CompletedSynchronously)
             {
-                if (ContinueReceiving(result, topicIndex, receiver, handler, errorHandler))
+                if (ContinueReceiving(result, receiverContext))
                 {
                     goto receive;
                 }
@@ -172,17 +157,19 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
         }
 
         [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "Exceptions are handled through the error handler callback")]
-        private bool ContinueReceiving(IAsyncResult asyncResult, int topicIndex, MessageReceiver receiver, Action<int, IEnumerable<BrokeredMessage>> handler, Action<int, Exception> errorHandler)
+        private bool ContinueReceiving(IAsyncResult asyncResult, ReceiverContext receiverContext)
         {
             bool backOff = false;
 
             try
             {
-                handler(topicIndex, receiver.EndReceiveBatch(asyncResult));
+                IEnumerable<BrokeredMessage> messages = receiverContext.Receiver.EndReceiveBatch(asyncResult);
+
+                receiverContext.OnMessage(messages);
             }
             catch (ServerBusyException ex)
             {
-                errorHandler(topicIndex, ex);
+                receiverContext.OnError(ex);
 
                 // Too busy so back off
                 backOff = true;
@@ -194,13 +181,13 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
             }
             catch (Exception ex)
             {
-                errorHandler(topicIndex, ex);
+                receiverContext.OnError(ex);
             }
 
             if (backOff)
             {
                 TaskAsyncHelper.Delay(BackoffAmount)
-                               .Then(() => PumpMessages(topicIndex, receiver, handler, errorHandler));
+                               .Then(ctx => ProcessMessages(ctx), receiverContext);
             }
 
             // true -> continue reading normally
@@ -208,34 +195,34 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
             return !backOff;
         }
 
-        private class Subscription
+        private class ReceiverContext
         {
-            public Subscription(string topicPath, string subName, MessageReceiver receiver)
+            private readonly int _topicIndex;
+            private readonly Action<int, IEnumerable<BrokeredMessage>> _handler;
+            private readonly Action<int, Exception> _errorHandler;
+
+            public readonly MessageReceiver Receiver;
+
+            public ReceiverContext(int topicIndex,
+                                   MessageReceiver receiver,
+                                   Action<int, IEnumerable<BrokeredMessage>> handler,
+                                   Action<int, Exception> errorHandler)
             {
-                TopicPath = topicPath;
-                Name = subName;
+                _topicIndex = topicIndex;
                 Receiver = receiver;
+                _handler = handler;
+                _errorHandler = errorHandler;
             }
 
-            public string TopicPath { get; private set; }
-            public string Name { get; private set; }
-            public MessageReceiver Receiver { get; private set; }
-        }
-
-        private class ReceiveState
-        {
-            public ReceiveState(int topicIndex, MessageReceiver receiver, Action<int, IEnumerable<BrokeredMessage>> handler, Action<int, Exception> errorHandler)
+            public void OnError(Exception ex)
             {
-                TopicIndex = topicIndex;
-                Receiver = receiver;
-                Handler = handler;
-                ErrorHandler = errorHandler;
+                _errorHandler(_topicIndex, ex);
             }
 
-            public int TopicIndex { get; private set; }
-            public MessageReceiver Receiver { get; private set; }
-            public Action<int, IEnumerable<BrokeredMessage>> Handler { get; private set; }
-            public Action<int, Exception> ErrorHandler { get; private set; }
+            public void OnMessage(IEnumerable<BrokeredMessage> messages)
+            {
+                _handler(_topicIndex, messages);
+            }
         }
     }
 }
