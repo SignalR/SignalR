@@ -73,6 +73,8 @@ namespace Microsoft.AspNet.SignalR.Messaging
 
         public override bool AddEvent(string eventKey, Topic topic)
         {
+            base.AddEvent(eventKey, topic);
+
             lock (_cursors)
             {
                 // O(n), but small n and it's not common
@@ -92,6 +94,8 @@ namespace Microsoft.AspNet.SignalR.Messaging
 
         public override void RemoveEvent(string eventKey)
         {
+            base.RemoveEvent(eventKey);
+
             lock (_cursors)
             {
                 var index = _cursors.FindIndex(c => c.Key == eventKey);
@@ -105,6 +109,8 @@ namespace Microsoft.AspNet.SignalR.Messaging
 
         public override void SetEventTopic(string eventKey, Topic topic)
         {
+            base.SetEventTopic(eventKey, topic);
+
             lock (_cursors)
             {
                 // O(n), but small n and it's not common
