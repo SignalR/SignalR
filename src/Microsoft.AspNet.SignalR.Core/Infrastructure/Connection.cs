@@ -261,7 +261,13 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
                         if (EventKeyAdded != null)
                         {
                             _groups.Add(name);
-                            _signals.Add(name);
+
+                            // Don't add dupes
+                            if (!_signals.Contains(name))
+                            {
+                                _signals.Add(name);
+                            }
+
                             EventKeyAdded(this, name);
                         }
                     }

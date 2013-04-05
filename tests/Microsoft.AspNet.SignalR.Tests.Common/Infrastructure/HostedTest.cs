@@ -12,6 +12,7 @@ using Microsoft.AspNet.SignalR.Client.Hubs;
 using Microsoft.AspNet.SignalR.Client.Transports;
 using Microsoft.AspNet.SignalR.Hosting.Memory;
 using Microsoft.AspNet.SignalR.Infrastructure;
+using Microsoft.AspNet.SignalR.Messaging;
 using Microsoft.AspNet.SignalR.Tests.FunctionalTests.Infrastructure;
 using Xunit;
 using Xunit.Extensions;
@@ -98,9 +99,30 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure
             return host;
         }
 
+        protected void UseMessageBus(MessageBusType type, IDependencyResolver resolver, ScaleoutConfiguration configuration = null, int streams = 1)
+        {
+            switch (type)
+            {
+                case MessageBusType.Default:
+                    break;
+                case MessageBusType.Fake:
+                    var bus = new FakeScaleoutBus(resolver, streams);
+                    resolver.Register(typeof(IMessageBus), () => bus);
+                    break;
+                case MessageBusType.SqlServer:
+                    break;
+                case MessageBusType.ServiceBus:
+                    break;
+                case MessageBusType.Redis:
+                    break;
+                default:
+                    break;
+            }
+        }
+
         protected void EnableTracing()
         {
-            string testName = GetTestName();            
+            string testName = GetTestName();
             string logBasePath = Path.Combine(Directory.GetCurrentDirectory(), "..");
             EnableTracing(GetTestName(), logBasePath);
         }
@@ -236,6 +258,43 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure
         public virtual void Dispose()
         {
             Dispose(true);
+        }
+
+        private class FakeScaleoutBus : ScaleoutMessageBus
+        {
+            private int _streams;
+            private ulong _id;
+
+            public FakeScaleoutBus(IDependencyResolver resolver)
+                : this(resolver, streams: 1)
+            {
+            }
+
+            public FakeScaleoutBus(IDependencyResolver dr, int streams)
+                : base(dr, new ScaleoutConfiguration())
+            {
+                _streams = streams;
+
+                for (int i = 0; i < _streams; i++)
+                {
+                    Open(i);
+                }
+            }
+
+            protected override int StreamCount
+            {
+                get
+                {
+                    return _streams;
+                }
+            }
+
+            protected override Task Send(int streamIndex, IList<Message> messages)
+            {
+                OnReceived(streamIndex, _id++, messages);
+
+                return TaskAsyncHelper.Empty;
+            }
         }
     }
 }
