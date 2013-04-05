@@ -468,10 +468,11 @@ namespace Microsoft.AspNet.SignalR.Messaging
             Topic topic = GetTopic(eventKey);
 
             // Add or update the cursor (in case it already exists)
-            subscriber.Subscription.AddEvent(eventKey, topic);
-
-            // Add it to the list of subs
-            topic.AddSubscription(subscriber.Subscription);
+            if (subscriber.Subscription.AddEvent(eventKey, topic))
+            {
+                // Add it to the list of subs
+                topic.AddSubscription(subscriber.Subscription);
+            }
         }
 
         private void RemoveEvent(ISubscriber subscriber, string eventKey)
