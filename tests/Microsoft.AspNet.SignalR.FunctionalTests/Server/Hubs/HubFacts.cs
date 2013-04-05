@@ -12,6 +12,7 @@ using Microsoft.AspNet.SignalR.FunctionalTests.Owin;
 using Microsoft.AspNet.SignalR.Hosting.Memory;
 using Microsoft.AspNet.SignalR.Hubs;
 using Microsoft.AspNet.SignalR.Infrastructure;
+using Microsoft.AspNet.SignalR.Messaging;
 using Microsoft.AspNet.SignalR.Tests.Infrastructure;
 using Microsoft.AspNet.SignalR.Tests.Utilities;
 using Moq;
@@ -1082,6 +1083,51 @@ namespace Microsoft.AspNet.SignalR.Tests
         }
 
         [Theory]
+        [InlineData(MessageBusType.Default)]
+        [InlineData(MessageBusType.Fake)]
+        public void JoiningGroupMultipleTimesGetsMessageOnce(MessageBusType messagebusType)
+        {
+            using (var host = new MemoryHost())
+            {
+                host.Configure(app =>
+                {
+                    var config = new HubConfiguration
+                    {
+                        Resolver = new DefaultDependencyResolver()
+                    };
+
+                    UseMessageBus(messagebusType, config.Resolver);
+
+                    app.MapHubs(config);
+                });
+
+                var connection = new HubConnection("http://foo");
+
+                var hub = connection.CreateHubProxy("SendToSome");
+                int invocations = 0;
+
+                connection.Start(host).Wait();
+
+                hub.On("send", () =>
+                {
+                    invocations++;
+                });
+
+                // Join the group multiple times
+                hub.InvokeWithTimeout("JoinGroup", "a");
+                hub.InvokeWithTimeout("JoinGroup", "a");
+                hub.InvokeWithTimeout("JoinGroup", "a");
+                hub.InvokeWithTimeout("SendToGroup", "a");
+
+                Thread.Sleep(TimeSpan.FromSeconds(3));
+
+                Assert.Equal(1, invocations);
+
+                connection.Stop();
+            }
+        }
+
+        [Theory]
         [InlineData(HostType.Memory, TransportType.ServerSentEvents)]
         [InlineData(HostType.Memory, TransportType.LongPolling)]
         [InlineData(HostType.IISExpress, TransportType.ServerSentEvents)]
@@ -1383,6 +1429,11 @@ namespace Microsoft.AspNet.SignalR.Tests
             public Task JoinGroup(string group)
             {
                 return Groups.Add(Context.ConnectionId, group);
+            }
+
+            public Task SendToGroup(string group)
+            {
+                return Clients.Group(group).send();
             }
 
             public Task AllInGroupButCaller(string group)

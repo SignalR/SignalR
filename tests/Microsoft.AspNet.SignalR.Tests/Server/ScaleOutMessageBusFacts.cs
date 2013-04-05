@@ -160,51 +160,6 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
             }
         }
 
-        [Fact(Skip = "This isn't consistent yet")]
-        public void PayloadIdReset()
-        {
-            var dr = new DefaultDependencyResolver();
-            using (var bus = new TestScaleoutBus(dr))
-            {
-                var subscriber = new TestSubscriber(new[] { "key" });
-                IDisposable subscription = null;
-                var cd = new CountDownRange<int>(Enumerable.Range(1, 4));
-                var wh = new ManualResetEventSlim();
-
-                try
-                {
-                    subscription = bus.Subscribe(subscriber, null, (result, state) =>
-                    {
-                        if (!result.Terminal)
-                        {
-                            foreach (var m in result.GetMessages())
-                            {
-                                int n = Int32.Parse(m.GetString());
-                                Assert.True(cd.Mark(n));
-                            }
-                        }
-
-                        return TaskAsyncHelper.True;
-
-                    }, 10, null);
-
-                    bus.Publish(0, 0, new[] { new Message("test", "key", "1") });
-                    bus.Publish(0, 1, new[] { new Message("test", "key", "2") });
-                    bus.Publish(0, 2, new[] { new Message("test", "key", "3") });
-                    bus.Publish(0, 0, new[] { new Message("test", "key", "4") });
-
-                    Assert.True(cd.Wait(TimeSpan.FromSeconds(10)));
-                }
-                finally
-                {
-                    if (subscription != null)
-                    {
-                        subscription.Dispose();
-                    }
-                }
-            }
-        }
-
         private class TestScaleoutBus : ScaleoutMessageBus
         {
             private int _streams;
