@@ -72,7 +72,8 @@
                         var messageId = instance.messageId,
                             connect = (messageId === null),
                             reconnecting = !connect,
-                            url = transportLogic.getUrl(instance, that.name, reconnecting, raiseReconnect);
+                            polling = !raiseReconnect,
+                            url = transportLogic.getUrl(instance, that.name, reconnecting, polling);
 
                         // If we've disconnected during the time we've tried to re-instantiate the poll then stop.
                         if (isDisconnecting(instance) === true) {

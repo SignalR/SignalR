@@ -805,7 +805,7 @@
             throw new Error("Connections query string property must be either a string or object.");
         },
 
-        getUrl: function (connection, transport, reconnecting, appendReconnectUrl) {
+        getUrl: function (connection, transport, reconnecting, poll) {
             /// <summary>Gets the url for making a GET based connect request</summary>
             var baseUrl = transport === "webSockets" ? "" : connection.baseUrl,
                 url = baseUrl + connection.appRelativeUrl,
@@ -822,11 +822,11 @@
             if (!reconnecting) {
                 url += "/connect";
             } else {
-                if (appendReconnectUrl) {
-                    url += "/reconnect";
-                } else {
-                    // A silent reconnect should only ever occur with the longPolling transport
+                if (poll) {
+                    // longPolling transport specific
                     url += "/poll";
+                } else {
+                    url += "/reconnect";
                 }
 
                 if (connection.messageId) {
@@ -1638,7 +1638,8 @@
                         var messageId = instance.messageId,
                             connect = (messageId === null),
                             reconnecting = !connect,
-                            url = transportLogic.getUrl(instance, that.name, reconnecting, raiseReconnect);
+                            polling = !raiseReconnect,
+                            url = transportLogic.getUrl(instance, that.name, reconnecting, polling);
 
                         // If we've disconnected during the time we've tried to re-instantiate the poll then stop.
                         if (isDisconnecting(instance) === true) {
