@@ -5,7 +5,7 @@ The github issue list is for bugs, not discussions. If you have a question you w
 - [The JabbR chat room](https://jabbr.net/#/rooms/signalr)
 - [Stackoverflow](http://stackoverflow.com/questions/tagged/signalr)
 
-When filing issues, try to give as much details as possible. The best way to get your bug fixed is to be as detailed as you can be about the problem.
+When filing issues, please use our [bug filing templates](https://gist.github.com/signalrcoreteam/5317001). The best way to get your bug fixed is to be as detailed as you can be about the problem.
 Providing a minimal project with steps to reproduce the problem is ideal. Here are questions you can answer before you file a bug to make
 sure you're not missing any important information.
 
