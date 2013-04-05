@@ -9,7 +9,7 @@ using Microsoft.ServiceBus.Messaging;
 
 namespace Microsoft.AspNet.SignalR.ServiceBus
 {
-    public class ServiceBusConnection : IDisposable
+    internal class ServiceBusConnection : IDisposable
     {
         private const int ReceiveBatchSize = 1000;
         private static readonly TimeSpan BackoffAmount = TimeSpan.FromSeconds(20);
@@ -17,7 +17,6 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
         private readonly NamespaceManager _namespaceManager;
         private readonly MessagingFactory _factory;
         private readonly ServiceBusScaleoutConfiguration _configuration;
-        private readonly ConcurrentDictionary<string, TopicClient> _clients = new ConcurrentDictionary<string, TopicClient>();
 
         public ServiceBusConnection(ServiceBusScaleoutConfiguration configuration)
         {

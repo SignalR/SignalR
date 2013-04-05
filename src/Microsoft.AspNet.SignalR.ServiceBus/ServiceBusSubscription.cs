@@ -8,7 +8,7 @@ using Microsoft.ServiceBus.Messaging;
 
 namespace Microsoft.AspNet.SignalR.ServiceBus
 {
-    public class ServiceBusSubscription : IDisposable
+    internal class ServiceBusSubscription : IDisposable
     {
         private readonly NamespaceManager _namespaceManager;
         private readonly List<SubscriptionContext> _subscriptions;
@@ -43,20 +43,28 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
             return TaskAsyncHelper.Empty;
         }
 
-        public void Dispose()
+        protected virtual void Dispose(bool disposing)
         {
-            foreach (var subscription in _subscriptions)
+            if (disposing)
             {
-                subscription.Receiver.Close();
-
-                _namespaceManager.DeleteSubscription(subscription.TopicPath, subscription.Name);
-
-                TopicClient client;
-                if (_clients.TryRemove(subscription.TopicPath, out client))
+                foreach (var subscription in _subscriptions)
                 {
-                    client.Close();
+                    subscription.Receiver.Close();
+
+                    _namespaceManager.DeleteSubscription(subscription.TopicPath, subscription.Name);
+
+                    TopicClient client;
+                    if (_clients.TryRemove(subscription.TopicPath, out client))
+                    {
+                        client.Close();
+                    }
                 }
             }
+        }
+
+        public void Dispose()
+        {
+            Dispose(true);
         }
 
         public class SubscriptionContext
