@@ -131,7 +131,7 @@ QUnit.test("getUrl handles appendReconnectUrl parameter correctly", function () 
     $.each(testUtilities.transportNames, function () {
         var transport = this.toString();
 
-        url = $.signalR.transports._logic.getUrl(connection, transport, true, true);
+        url = $.signalR.transports._logic.getUrl(connection, transport, true, false);
         QUnit.ok(url.indexOf(expectedResult) >= 0, expectedResult + " was represented in the Url for " + transport);
     });
 });
@@ -182,7 +182,7 @@ QUnit.test("getUrl structures URL correctly", function () {
         QUnit.ok(url.indexOf(expectedResult) === 0, expectedResult + " was at the front of the Url for " + transport);
 
         expectedResult = connection.baseUrl + connection.appRelativeUrl + "/reconnect";
-        url = $.signalR.transports._logic.getUrl(connection, transport, true, true);
+        url = $.signalR.transports._logic.getUrl(connection, transport, true, false);
         QUnit.ok(url.indexOf(expectedResult) === 0, expectedResult + " was at the front of the Url for " + transport);
     });
 
@@ -191,7 +191,7 @@ QUnit.test("getUrl structures URL correctly", function () {
     QUnit.ok(url.indexOf(expectedResult) === 0, expectedResult + " was at the front of the Url for " + transport);
 
     expectedResult = connection.appRelativeUrl + "/reconnect";
-    url = $.signalR.transports._logic.getUrl(connection, transport, true, true);
+    url = $.signalR.transports._logic.getUrl(connection, transport, true, false);
     QUnit.ok(url.indexOf(expectedResult) === 0, expectedResult + " was at the front of the Url for " + transport);
 });
 
