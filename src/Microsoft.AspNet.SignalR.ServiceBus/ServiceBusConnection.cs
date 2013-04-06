@@ -28,8 +28,7 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
         [SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope", Justification = "The disposable is returned to the caller")]
         public ServiceBusSubscription Subscribe(IList<string> topicNames,
                                                 Action<int, IEnumerable<BrokeredMessage>> handler,
-                                                Action<int, Exception> errorHandler,
-                                                Action<int> open)
+                                                Action<int, Exception> errorHandler)
         {
             if (topicNames == null)
             {
@@ -39,11 +38,6 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
             if (handler == null)
             {
                 throw new ArgumentNullException("handler");
-            }
-
-            if (open == null)
-            {
-                throw new ArgumentNullException("open");
             }
 
             var subscriptions = new List<ServiceBusSubscription.SubscriptionContext>();
@@ -88,8 +82,6 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
                 subscriptions.Add(new ServiceBusSubscription.SubscriptionContext(topicName, subscriptionName, receiver));
 
                 var receiverContext = new ReceiverContext(topicIndex, receiver, handler, errorHandler);
-
-                open(topicIndex);
 
                 ProcessMessages(receiverContext);
             }
