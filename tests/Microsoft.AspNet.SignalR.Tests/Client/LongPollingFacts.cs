@@ -36,11 +36,13 @@ namespace Microsoft.AspNet.SignalR.Tests
             };
 
             requestHandler.OnPolling += verifyActive;
+
             requestHandler.OnAfterPoll += exception =>
             {
                 verifyActive();
                 return TaskAsyncHelper.Empty;
             };
+
             requestHandler.OnError += exception =>
             {
                 verifyActive();
@@ -64,7 +66,7 @@ namespace Microsoft.AspNet.SignalR.Tests
             requestHandler.Stop();
 
             // Let all requests finish to see if we get any unintended results
-            Thread.Sleep(TimeSpan.FromSeconds(3));
+            Thread.Sleep(TimeSpan.FromSeconds(1));
         }
 
         [Fact]
@@ -90,6 +92,8 @@ namespace Microsoft.AspNet.SignalR.Tests
             {
                 if (killRequest)
                 {
+                    // Execute the stop on a different thread so it does not share the lock
+                    // This is to simulate a real world situation in which the user requests the connection to stop
                     ThreadPool.QueueUserWorkItem(state =>
                     {
                         requestHandler.Stop();
@@ -100,6 +104,7 @@ namespace Microsoft.AspNet.SignalR.Tests
             };
 
             requestHandler.OnPolling += verifyActive;
+
             requestHandler.OnMessage += message =>
             {
                 verifyActive();
@@ -110,6 +115,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                 verifyActive();
                 return TaskAsyncHelper.Empty;
             };
+
             requestHandler.OnError += exception =>
             {
                 verifyActive();
@@ -128,7 +134,7 @@ namespace Microsoft.AspNet.SignalR.Tests
             killRequest = true;
 
             // Let all requests finish to see if we get any unintended results
-            Thread.Sleep(TimeSpan.FromSeconds(3));
+            Thread.Sleep(TimeSpan.FromSeconds(1));
         }
     }
 
