@@ -31,16 +31,18 @@ namespace Microsoft.AspNet.SignalR.Samples
                 {
                     var headers = (IDictionary<string, string[]>)env["owin.RequestHeaders"];
                     string[] username;
-                    headers.TryGetValue("username", out username);
-                    var authenticated = (username[0] == "john") ? "true" : "false";
-
-                    var claims = new List<Claim>
+                    if (headers.TryGetValue("username", out username))
                     {
-                        new Claim(ClaimTypes.Authentication, authenticated)
-                    };
+                        var authenticated = (username[0] == "john") ? "true" : "false";
 
-                    var claimsIdentity = new ClaimsIdentity(claims);
-                    env["server.User"] = new ClaimsPrincipal(claimsIdentity);
+                        var claims = new List<Claim>
+                        {
+                            new Claim(ClaimTypes.Authentication, authenticated)
+                        };
+
+                        var claimsIdentity = new ClaimsIdentity(claims);
+                        env["server.User"] = new ClaimsPrincipal(claimsIdentity);
+                    }
                     return next(env);
                 };
             };

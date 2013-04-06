@@ -17,8 +17,8 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
     {
         private const string SignalRTopicPrefix = "SIGNALR_TOPIC";
 
-        private IDisposable _subscription;
-        private ServiceBusConnection _connection;
+        private readonly ServiceBusSubscription _subscription;
+        private readonly ServiceBusConnection _connection;
         private readonly string[] _topics;
 
         public ServiceBusMessageBus(IDependencyResolver resolver, ServiceBusScaleoutConfiguration configuration)
@@ -29,7 +29,7 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
                 throw new ArgumentNullException("configuration");
             }
 
-            _connection = new ServiceBusConnection(configuration.ConnectionString);
+            _connection = new ServiceBusConnection(configuration);
 
             _topics = Enumerable.Range(0, configuration.TopicCount)
                                 .Select(topicIndex => SignalRTopicPrefix + "_" + configuration.TopicPrefix + "_" + topicIndex)
@@ -52,7 +52,7 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
 
             var stream = ServiceBusMessage.ToStream(messages);
 
-            return _connection.Publish(topic, stream);
+            return _subscription.Publish(topic, stream);
         }
 
         private void OnMessage(int topicIndex, IEnumerable<BrokeredMessage> messages)

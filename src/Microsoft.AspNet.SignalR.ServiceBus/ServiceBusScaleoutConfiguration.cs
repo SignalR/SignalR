@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.md in the project root for license information.
 
+using System;
 using Microsoft.AspNet.SignalR.Messaging;
 
 namespace Microsoft.AspNet.SignalR.ServiceBus
@@ -14,6 +15,7 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
             ConnectionString = connectionString;
             TopicPrefix = topicPrefix;
             TopicCount = 1;
+            TimeToLive = TimeSpan.FromMinutes(1);
         }
 
         /// <summary>
@@ -33,5 +35,14 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
         /// Defaults to 1.
         /// </summary>
         public int TopicCount { get; set; }
+
+        /// <summary>
+        /// Gets or sets the message’s time to live value. This is the duration after
+        /// which the message expires, starting from when the message is sent to the
+        /// Service Bus. Messages older than their TimeToLive value will expire and no
+        /// longer be retained in the message store. Subscribers will be unable to receive
+        /// expired messages.
+        /// </summary>
+        public TimeSpan TimeToLive { get; set; }
     }
 }
