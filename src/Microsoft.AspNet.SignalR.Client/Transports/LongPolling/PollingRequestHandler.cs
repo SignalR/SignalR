@@ -8,7 +8,7 @@ using Microsoft.AspNet.SignalR.Infrastructure;
 
 namespace Microsoft.AspNet.SignalR.Client.Transports
 {
-    internal class PollingRequestHandler
+    public class PollingRequestHandler
     {
         private IHttpClient _httpClient;
         private IRequest _currentRequest;
@@ -156,10 +156,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
         /// </summary>
         public void Abort()
         {
-            if (OnAbort != null)
-            {
-                OnAbort(_currentRequest);
-            }
+            OnAbort(_currentRequest);
 
             if (_currentRequest != null)
             {
