@@ -18,6 +18,7 @@ namespace Microsoft.AspNet.SignalR.Tests
             var httpClient = new CustomHttpClient();
             var requestHandler = new PollingRequestHandler(httpClient);
             var active = true;
+
             Action verifyActive = () =>
             {
                 Assert.True(active);
@@ -61,7 +62,7 @@ namespace Microsoft.AspNet.SignalR.Tests
             requestHandler.Start();
 
             // Let the request handler run for three seconds
-            Thread.Sleep(TimeSpan.FromSeconds(3));
+            Thread.Sleep(TimeSpan.FromSeconds(.1));
 
             requestHandler.Stop();
 
@@ -129,7 +130,7 @@ namespace Microsoft.AspNet.SignalR.Tests
             requestHandler.Start();
 
             // Let the request handler run for three seconds
-            Thread.Sleep(TimeSpan.FromSeconds(3));
+            Thread.Sleep(TimeSpan.FromSeconds(.1));
 
             killRequest = true;
 
@@ -148,7 +149,7 @@ namespace Microsoft.AspNet.SignalR.Tests
         public Task<IResponse> Post(string url, Action<Client.Http.IRequest> prepareRequest, IDictionary<string, string> postData)
         {
             var response = new Mock<IResponse>();
-
+            var request = new Mock<Client.Http.IRequest>();
             var mockStream = new MemoryStream();
             var sw = new StreamWriter(mockStream);
             sw.Write("{}");
@@ -156,6 +157,8 @@ namespace Microsoft.AspNet.SignalR.Tests
             mockStream.Position = 0;
 
             response.Setup(r => r.GetStream()).Returns(mockStream);
+
+            prepareRequest(request.Object);
 
             return TaskAsyncHelper.FromResult<IResponse>(response.Object);
         }
