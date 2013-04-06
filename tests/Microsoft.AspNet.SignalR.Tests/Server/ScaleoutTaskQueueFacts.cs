@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -13,7 +14,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
         [Fact]
         public void EnqueueWithoutOpenThrows()
         {
-            var queue = new ScaleoutTaskQueue(new ScaleoutConfiguration());
+            var queue = new ScaleoutTaskQueue(new TraceSource("Queue"), "0", new ScaleoutConfiguration());
             Assert.Throws<InvalidOperationException>(() => queue.Enqueue(_ => { throw new InvalidOperationException(); }, null));
         }
 
@@ -27,7 +28,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
                 OnError = ex => tcs.SetException(ex)
             };
 
-            var queue = new ScaleoutTaskQueue(config);
+            var queue = new ScaleoutTaskQueue(new TraceSource("Queue"), "0", config);
 
             queue.Enqueue(_ => { throw new InvalidOperationException(); }, null);
 
@@ -37,7 +38,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
         [Fact]
         public void ErrorOnSendThrowsNextTime()
         {
-            var queue = new ScaleoutTaskQueue(new ScaleoutConfiguration());
+            var queue = new ScaleoutTaskQueue(new TraceSource("Queue"), "0", new ScaleoutConfiguration());
             queue.Open();
             queue.Enqueue(_ => { throw new InvalidOperationException(); }, null);
             Assert.Throws<InvalidOperationException>(() => queue.Enqueue(_ => TaskAsyncHelper.Empty, null));
@@ -47,7 +48,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
         public void ErrorOnSendBuffers()
         {
             int x = 0;
-            var queue = new ScaleoutTaskQueue(new ScaleoutConfiguration() { RetryOnError = true });
+            var queue = new ScaleoutTaskQueue(new TraceSource("Queue"), "0", new ScaleoutConfiguration() { RetryOnError = true });
             queue.Open();
             queue.Enqueue(_ => { throw new InvalidOperationException(); }, null);
             queue.Enqueue(_ =>
@@ -71,7 +72,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
         public void OpenAfterErrorRunsBuffers()
         {
             int x = 0;
-            var queue = new ScaleoutTaskQueue(new ScaleoutConfiguration() { RetryOnError = true });
+            var queue = new ScaleoutTaskQueue(new TraceSource("Queue"), "0", new ScaleoutConfiguration() { RetryOnError = true });
             queue.Open();
             queue.Enqueue(_ => { throw new InvalidOperationException(); }, null);
             queue.Enqueue(_ =>
@@ -98,7 +99,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
         [Fact]
         public void CloseWhileQueueRuns()
         {
-            var queue = new ScaleoutTaskQueue(new ScaleoutConfiguration() { RetryOnError = true });
+            var queue = new ScaleoutTaskQueue(new TraceSource("Queue"), "0", new ScaleoutConfiguration() { RetryOnError = true });
             queue.Open();
             queue.Enqueue(_ => Task.Delay(50), null);
             queue.Enqueue(_ => Task.Delay(100), null);
@@ -109,7 +110,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
         [Fact]
         public void SendAfterCloseThenOpenRemainsClosed()
         {
-            var queue = new ScaleoutTaskQueue(new ScaleoutConfiguration() { RetryOnError = true });
+            var queue = new ScaleoutTaskQueue(new TraceSource("Queue"), "0", new ScaleoutConfiguration() { RetryOnError = true });
             queue.Open();
             queue.Enqueue(_ => Task.Delay(50), null);
             queue.Close();
