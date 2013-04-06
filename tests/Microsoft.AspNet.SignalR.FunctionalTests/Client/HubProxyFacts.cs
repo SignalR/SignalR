@@ -148,10 +148,10 @@ namespace Microsoft.AspNet.SignalR.Tests
                     {
                         Assert.Equal<string>("referer", (string)headers.refererHeader);
                     }
-                    tcs.SetResult(null);
+                    tcs.TrySetResult(null);
                 });
 
-                hubConnection.Error += e => tcs.SetException(e);
+                hubConnection.Error += e => tcs.TrySetException(e);
 
                 hubConnection.Headers.Add("test-header", "test-header");
                 if (transportType != TransportType.Websockets)
