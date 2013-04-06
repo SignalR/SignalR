@@ -4,7 +4,7 @@ using System;
 using BookSleeve;
 using Microsoft.AspNet.SignalR.Messaging;
 
-namespace Microsoft.AspNet.SignalR.Redis
+namespace Microsoft.AspNet.SignalR
 {
     /// <summary>
     /// Settings for the Redis scale-out message bus implementation.

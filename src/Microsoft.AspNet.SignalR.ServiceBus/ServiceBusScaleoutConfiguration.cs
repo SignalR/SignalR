@@ -3,7 +3,7 @@
 using System;
 using Microsoft.AspNet.SignalR.Messaging;
 
-namespace Microsoft.AspNet.SignalR.ServiceBus
+namespace Microsoft.AspNet.SignalR
 {
     /// <summary>
     /// Settings for the Service Bus scale-out message bus implementation.
