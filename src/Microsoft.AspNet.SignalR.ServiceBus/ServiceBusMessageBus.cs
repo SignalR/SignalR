@@ -63,6 +63,12 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
 
         private void OnMessage(int topicIndex, IEnumerable<BrokeredMessage> messages)
         {
+            if (!messages.Any())
+            {
+                // Force the topic to re-open if it was ever closed even if we didn't get any messages
+                Open(topicIndex);
+            }
+
             foreach (var message in messages)
             {
                 using (message)
