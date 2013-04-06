@@ -47,9 +47,12 @@ namespace Microsoft.AspNet.SignalR.Hosting.Memory
                 completedSynchronously
                     ? c_StateCompletedSynchronously
                     : c_StateCompletedAsynchronously);
+
             if (prevState != c_StatePending)
-                throw new InvalidOperationException(
-                    "You can set a result only once");
+            {
+                // Noop
+                return;
+            }
 
             // If the event exists, set it
             if (m_AsyncWaitHandle != null) m_AsyncWaitHandle.Set();
