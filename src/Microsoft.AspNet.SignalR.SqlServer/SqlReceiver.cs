@@ -124,7 +124,7 @@ namespace Microsoft.AspNet.SignalR.SqlServer
 
             _dbOperation.ExecuteReaderWithUpdates((rdr, o) => ProcessRecord(rdr, o));
 
-            _trace.TraceWarning("{0}Receive loop exited!", _tracePrefix);
+            _trace.TraceWarning("{0}SqlReceiver.Receive returned", _tracePrefix);
         }
 
         private void ProcessRecord(IDataRecord record, DbOperation dbOperation)

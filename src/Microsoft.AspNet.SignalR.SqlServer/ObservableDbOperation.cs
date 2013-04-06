@@ -53,14 +53,10 @@ namespace Microsoft.AspNet.SignalR.SqlServer
         /// <summary>
         /// Note this blocks the calling thread until a SQL Query Notification can be set up
         /// </summary>
-        [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "Errors are reported via the callback")]
+        [SuppressMessage("Microsoft.Maintainability", "CA1502:AvoidExcessiveComplexity", Justification = "Needs refactoring"),
+         SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "Errors are reported via the callback")]
         public void ExecuteReaderWithUpdates(Action<IDataRecord, DbOperation> processRecord)
         {
-            if (_disposing)
-            {
-                return;
-            }
-
             lock (_stopLocker)
             {
                 if (_disposing)
@@ -77,9 +73,11 @@ namespace Microsoft.AspNet.SignalR.SqlServer
                 _notificationState = NotificationState.ProcessingUpdates;
             }
 
-            for (var i = 0; i < _dbBehavior.UpdateLoopRetryDelays.Count; i++)
+            var delays = _dbBehavior.UpdateLoopRetryDelays;
+
+            for (var i = 0; i < delays.Count; i++)
             {
-                var retry = _dbBehavior.UpdateLoopRetryDelays[i];
+                Tuple<int, int> retry = delays[i];
                 var retryDelay = retry.Item1;
                 var retryCount = retry.Item2;
 
@@ -89,6 +87,13 @@ namespace Microsoft.AspNet.SignalR.SqlServer
                     {
                         Stop(null);
                         return;
+                    }
+
+                    if (retryDelay > 0)
+                    {
+                        Trace.TraceVerbose("{0}Waiting {1}ms before checking for messages again", TracePrefix, retryDelay);
+
+                        Thread.Sleep(retryDelay);
                     }
 
                     var recordCount = 0;
@@ -117,14 +122,11 @@ namespace Microsoft.AspNet.SignalR.SqlServer
                         break;
                     }
 
-                    if (retryDelay > 0)
-                    {
-                        Trace.TraceVerbose("{0}Waiting {1}ms before checking for messages again", TracePrefix, retryDelay);
+                    Trace.TraceVerbose("{0}No records received", TracePrefix);
 
-                        Thread.Sleep(retryDelay);
-                    }
+                    var isLastRetry = i == delays.Count - 1 && j == retryCount - 1;
 
-                    if (i == _dbBehavior.UpdateLoopRetryDelays.Count - 1 && j == retryCount - 1)
+                    if (isLastRetry)
                     {
                         // Last retry loop iteration
                         if (!useNotifications)
@@ -137,9 +139,9 @@ namespace Microsoft.AspNet.SignalR.SqlServer
                             // No records after all retries, set up a SQL notification
                             try
                             {
-                                Trace.TraceVerbose("Setting up SQL notification");
+                                Trace.TraceVerbose("{0}Setting up SQL notification", TracePrefix);
 
-                                ExecuteReader(processRecord, command =>
+                                recordCount = ExecuteReader(processRecord, command =>
                                 {
                                     _dbBehavior.AddSqlDependency(command, e => SqlDependency_OnChange(e, processRecord));
                                 });
@@ -149,14 +151,17 @@ namespace Microsoft.AspNet.SignalR.SqlServer
                                     OnQuery();
                                 }
 
-                                if (Interlocked.CompareExchange(ref _notificationState,
-                                    NotificationState.AwaitingNotification, NotificationState.ProcessingUpdates) == NotificationState.NotificationReceived)
+                                if (recordCount > 0 ||
+                                    Interlocked.CompareExchange(ref _notificationState, NotificationState.AwaitingNotification,
+                                        NotificationState.ProcessingUpdates) == NotificationState.NotificationReceived)
                                 {
-                                    Trace.TraceVerbose("Updates received from SQL notification while processing reader, starting the receive loop again");
+                                    Trace.TraceVerbose("{0}Records received while setting up SQL notification, restarting the recieve loop", TracePrefix);
 
                                     i = -1;
                                     break; // break the inner for loop
                                 };
+
+                                Trace.TraceVerbose("{0}No records received while setting up SQL notification", TracePrefix);
 
                                 // We're in a wait state for a notification now so check if we're disposing
                                 lock (_stopLocker)
@@ -170,7 +175,10 @@ namespace Microsoft.AspNet.SignalR.SqlServer
                             catch (Exception ex)
                             {
                                 Trace.TraceError("{0}Error in SQL receive loop: {1}", TracePrefix, ex);
-                                OnError(ex);
+                                if (OnError != null)
+                                {
+                                    OnError(ex);
+                                }
 
                                 // Re-enter the loop on the last retry delay
                                 j = j - 1;
@@ -187,7 +195,7 @@ namespace Microsoft.AspNet.SignalR.SqlServer
                 }
             }
 
-            Trace.TraceVerbose("Receive loop exiting");
+            Trace.TraceVerbose("{0}Receive loop exiting", TracePrefix);
         }
 
         [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "Disposing")]
