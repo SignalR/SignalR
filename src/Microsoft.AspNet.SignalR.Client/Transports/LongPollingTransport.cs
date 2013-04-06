@@ -186,7 +186,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
                 requestDisposer.Set(disconnectToken.SafeRegister(state =>
                 {
                     reconnectInvoker.Invoke();
-                    requestHandler.Abort();
+                    requestHandler.Stop();
                 }, null));
             };
 
