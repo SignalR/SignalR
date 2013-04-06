@@ -67,8 +67,6 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
             {
                 using (message)
                 {
-                    message.Complete();
-
                     IList<Message> internalMessages = ServiceBusMessage.FromStream(message.GetBody<Stream>());
 
                     OnReceived(topicIndex, (ulong)message.EnqueuedSequenceNumber, internalMessages);

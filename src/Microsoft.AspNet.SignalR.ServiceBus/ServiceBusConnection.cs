@@ -77,7 +77,7 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
 
                 // Create a receiver to get messages
                 string subscriptionEntityPath = SubscriptionClient.FormatSubscriptionPath(topicName, subscriptionName);
-                MessageReceiver receiver = _factory.CreateMessageReceiver(subscriptionEntityPath);
+                MessageReceiver receiver = _factory.CreateMessageReceiver(subscriptionEntityPath, ReceiveMode.ReceiveAndDelete);
 
                 subscriptions.Add(new ServiceBusSubscription.SubscriptionContext(topicName, subscriptionName, receiver));
 
