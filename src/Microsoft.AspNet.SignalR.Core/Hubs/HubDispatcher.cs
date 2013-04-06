@@ -166,15 +166,7 @@ namespace Microsoft.AspNet.SignalR.Hubs
                 //      Encapsulating it in the HubDispatcher prevents the error from bubbling up to the transport level.
                 //      Specifically this allows us to return a faulted task (call .fail on client) and to not cause the
                 //      transport to unintentionally fail.
-                methodDescriptor = new MethodDescriptor
-                {
-                    Invoker = (emptyHub, emptyParameters) =>
-                    {
-                        throw new InvalidOperationException(String.Format(CultureInfo.CurrentCulture, Resources.Error_MethodCouldNotBeResolved, hubRequest.Method));
-                    },
-                    Attributes = new List<Attribute>(),
-                    Parameters = new List<ParameterDescriptor>()
-                };
+                methodDescriptor = new NullMethodDescriptor(hubRequest.Method);
             }
 
             // Resolving the actual state object
