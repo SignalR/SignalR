@@ -81,7 +81,7 @@ namespace Microsoft.AspNet.SignalR.Stress
             return new DisposableAction(state => Abort((string)state), connectionId);
         }
 
-        protected override Task Send(int senderIndex)
+        protected override Task Send(int senderIndex, string source)
         {
             return ProcessSendRequest(senderIndex.ToString(), Payload);
         }

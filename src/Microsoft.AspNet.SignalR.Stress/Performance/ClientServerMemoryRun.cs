@@ -32,7 +32,7 @@ namespace Microsoft.AspNet.SignalR.Stress.Performance
             return Microsoft.AspNet.SignalR.Infrastructure.DisposableAction.Empty;
         }
 
-        protected override Task Send(int senderIndex)
+        protected override Task Send(int senderIndex, string source)
         {
             return _connections[senderIndex].Send(Payload);
         }
