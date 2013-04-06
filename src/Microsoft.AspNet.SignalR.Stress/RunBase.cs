@@ -73,7 +73,7 @@ namespace Microsoft.AspNet.SignalR.Stress
 
             for (var i = 0; i < Senders; i++)
             {
-                ThreadPool.QueueUserWorkItem(state => Sender(state), i);
+                ThreadPool.QueueUserWorkItem(state => Sender(state), Tuple.Create(i, Guid.NewGuid().ToString()));
             }
         }
 
@@ -173,7 +173,7 @@ namespace Microsoft.AspNet.SignalR.Stress
             return null;
         }
 
-        protected virtual Task Send(int senderIndex)
+        protected virtual Task Send(int senderIndex, string source)
         {
             return TaskAsyncHelper.Empty;
         }
@@ -192,11 +192,13 @@ namespace Microsoft.AspNet.SignalR.Stress
 
         private async void Sender(object state)
         {
+            var senderState = (Tuple<int, string>)state;
+
             while (!CancellationTokenSource.IsCancellationRequested)
             {
                 try
                 {
-                    await Send((int)state);
+                    await Send(senderState.Item1, senderState.Item2);
                 }
                 catch (Exception)
                 {

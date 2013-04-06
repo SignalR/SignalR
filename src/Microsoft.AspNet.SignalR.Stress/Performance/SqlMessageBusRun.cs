@@ -18,7 +18,7 @@ namespace Microsoft.AspNet.SignalR.Stress.Performance
 
         protected override MessageBus CreateMessageBus()
         {
-            var config = new SqlScaleoutConfiguration(RunData.SqlConnectionString);
+            var config = new SqlScaleoutConfiguration(RunData.SqlConnectionString) { TableCount = 1 };
 
             return new SqlMessageBus(Resolver, config);
         }
