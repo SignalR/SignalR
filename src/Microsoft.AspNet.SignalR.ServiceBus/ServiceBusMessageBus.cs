@@ -80,6 +80,8 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
 
         protected override void Dispose(bool disposing)
         {
+            base.Dispose(disposing);
+
             if (disposing)
             {
                 if (_subscription != null)
@@ -92,8 +94,6 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
                     _connection.Dispose();
                 }
             }
-
-            base.Dispose(disposing);
         }
     }
 }
