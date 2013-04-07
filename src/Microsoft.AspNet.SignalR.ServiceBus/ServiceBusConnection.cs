@@ -11,8 +11,11 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
 {
     internal class ServiceBusConnection : IDisposable
     {
-        private const int ReceiveBatchSize = 1000;
+        private const int DefaultReceiveBatchSize = 1000;
         private static readonly TimeSpan BackoffAmount = TimeSpan.FromSeconds(20);
+        private static readonly TimeSpan ErrorBackOffAmount = TimeSpan.FromSeconds(5);
+        private static readonly TimeSpan DefaultReadTimeout = TimeSpan.FromSeconds(60);
+        private static readonly TimeSpan ErrorReadTimeout = TimeSpan.FromSeconds(0.5);
 
         private readonly NamespaceManager _namespaceManager;
         private readonly MessagingFactory _factory;
@@ -40,8 +43,8 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
                 throw new ArgumentNullException("handler");
             }
 
-            var subscriptions = new List<ServiceBusSubscription.SubscriptionContext>();
-            var clients = new ConcurrentDictionary<string, TopicClient>();
+            var subscriptions = new ServiceBusSubscription.SubscriptionContext[topicNames.Count];
+            var clients = new TopicClient[topicNames.Count];
 
             for (var topicIndex = 0; topicIndex < topicNames.Count; ++topicIndex)
             {
@@ -60,9 +63,8 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
                 }
 
                 // Create a client for this topic
-                TopicClient client = TopicClient.CreateFromConnectionString(_configuration.ConnectionString, topicName);
-                clients.TryAdd(topicName, client);
-                
+                clients[topicIndex] = TopicClient.CreateFromConnectionString(_configuration.ConnectionString, topicName);
+
                 // Create a random subscription
                 string subscriptionName = Guid.NewGuid().ToString();
 
@@ -79,7 +81,7 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
                 string subscriptionEntityPath = SubscriptionClient.FormatSubscriptionPath(topicName, subscriptionName);
                 MessageReceiver receiver = _factory.CreateMessageReceiver(subscriptionEntityPath, ReceiveMode.ReceiveAndDelete);
 
-                subscriptions.Add(new ServiceBusSubscription.SubscriptionContext(topicName, subscriptionName, receiver));
+                subscriptions[topicIndex] = new ServiceBusSubscription.SubscriptionContext(topicName, subscriptionName, receiver);
 
                 var receiverContext = new ReceiverContext(topicIndex, receiver, handler, errorHandler);
 
@@ -108,11 +110,9 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
         {
         receive:
 
-            IAsyncResult result = null;
-
             try
             {
-                result = receiverContext.Receiver.BeginReceiveBatch(ReceiveBatchSize, ar =>
+                IAsyncResult result = receiverContext.Receiver.BeginReceiveBatch(receiverContext.ReceiveBatchSize, receiverContext.ReceiveTimeout, ar =>
                 {
                     if (ar.CompletedSynchronously)
                     {
@@ -127,6 +127,14 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
                     }
                 },
                 receiverContext);
+
+                if (result.CompletedSynchronously)
+                {
+                    if (ContinueReceiving(result, receiverContext))
+                    {
+                        goto receive;
+                    }
+                }
             }
             catch (OperationCanceledException)
             {
@@ -136,34 +144,32 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
             catch (Exception ex)
             {
                 receiverContext.OnError(ex);
-            }
 
-            if (result.CompletedSynchronously)
-            {
-                if (ContinueReceiving(result, receiverContext))
-                {
-                    goto receive;
-                }
+                // REVIEW: What should we do here?
             }
         }
 
         [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "Exceptions are handled through the error handler callback")]
         private bool ContinueReceiving(IAsyncResult asyncResult, ReceiverContext receiverContext)
         {
-            bool backOff = false;
+            bool shouldContinue = true;
+            TimeSpan backoffAmount = BackoffAmount;
 
             try
             {
                 IEnumerable<BrokeredMessage> messages = receiverContext.Receiver.EndReceiveBatch(asyncResult);
 
                 receiverContext.OnMessage(messages);
+
+                // Reset the receive timeout if it changed
+                receiverContext.ReceiveTimeout = DefaultReadTimeout;
             }
             catch (ServerBusyException ex)
             {
                 receiverContext.OnError(ex);
 
                 // Too busy so back off
-                backOff = true;
+                shouldContinue = false;
             }
             catch (OperationCanceledException)
             {
@@ -173,17 +179,26 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
             catch (Exception ex)
             {
                 receiverContext.OnError(ex);
+
+                shouldContinue = false;
+
+                // TODO: Exponential backoff
+                backoffAmount = ErrorBackOffAmount;
+
+                // After an error, we want to adjust the timeout so that we
+                // can recover as quickly as possible even if there's no message
+                receiverContext.ReceiveTimeout = ErrorReadTimeout;
             }
 
-            if (backOff)
+            if (!shouldContinue)
             {
-                TaskAsyncHelper.Delay(BackoffAmount)
+                TaskAsyncHelper.Delay(backoffAmount)
                                .Then(ctx => ProcessMessages(ctx), receiverContext);
+
+                return false;
             }
 
-            // true -> continue reading normally
-            // false -> Don't continue reading as we're backing off
-            return !backOff;
+            return true;
         }
 
         private class ReceiverContext
@@ -203,7 +218,12 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
                 Receiver = receiver;
                 _handler = handler;
                 _errorHandler = errorHandler;
+                ReceiveTimeout = DefaultReadTimeout;
+                ReceiveBatchSize = DefaultReceiveBatchSize;
             }
+
+            public TimeSpan ReceiveTimeout { get; set; }
+            public int ReceiveBatchSize { get; set; }
 
             public void OnError(Exception ex)
             {

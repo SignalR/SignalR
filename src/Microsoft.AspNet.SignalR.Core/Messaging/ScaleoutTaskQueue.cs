@@ -18,19 +18,28 @@ namespace Microsoft.AspNet.SignalR.Messaging
 
         private readonly int _size;
         private readonly ScaleoutConfiguration _configuration;
+        private readonly TraceSource _trace;
+        private readonly string _tracePrefix;
 
-        public ScaleoutTaskQueue(ScaleoutConfiguration configuration)
-            : this(configuration, DefaultQueueSize)
+        public ScaleoutTaskQueue(TraceSource trace, string tracePrefix, ScaleoutConfiguration configuration)
+            : this(trace, tracePrefix, configuration, DefaultQueueSize)
         {
         }
 
-        public ScaleoutTaskQueue(ScaleoutConfiguration configuration, int size)
+        public ScaleoutTaskQueue(TraceSource trace, string tracePrefix, ScaleoutConfiguration configuration, int size)
         {
+            if (trace == null)
+            {
+                throw new ArgumentNullException("trace");
+            }
+
             if (configuration == null)
             {
                 throw new ArgumentNullException("configuration");
             }
 
+            _trace = trace;
+            _tracePrefix = tracePrefix;
             _configuration = configuration;
             _size = size;
 
@@ -177,6 +186,8 @@ namespace Microsoft.AspNet.SignalR.Messaging
         {
             if (_state != newState)
             {
+                Trace("Changed state from {0} to {1}", _state, newState);
+
                 _state = newState;
                 return true;
             }
@@ -191,7 +202,6 @@ namespace Microsoft.AspNet.SignalR.Messaging
                 return TaskAsyncHelper.Empty;
             }
 
-
             var tcs = new TaskCompletionSource<object>();
 
             queue.Drain().Catch().ContinueWith(task =>
@@ -200,6 +210,11 @@ namespace Microsoft.AspNet.SignalR.Messaging
             });
 
             return tcs.Task;
+        }
+
+        private void Trace(string value, params object[] args)
+        {
+            _trace.TraceInformation(_tracePrefix + " - " + value, args);
         }
 
         private enum QueueState

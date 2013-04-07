@@ -54,15 +54,19 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
 
         protected override Task Send(int streamIndex, IList<Message> messages)
         {
-            string topic = _topics[streamIndex];
-
             var stream = ServiceBusMessage.ToStream(messages);
 
-            return _subscription.Publish(topic, stream);
+            return _subscription.Publish(streamIndex, stream);
         }
 
         private void OnMessage(int topicIndex, IEnumerable<BrokeredMessage> messages)
         {
+            if (!messages.Any())
+            {
+                // Force the topic to re-open if it was ever closed even if we didn't get any messages
+                Open(topicIndex);
+            }
+
             foreach (var message in messages)
             {
                 using (message)
@@ -76,6 +80,8 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
 
         protected override void Dispose(bool disposing)
         {
+            base.Dispose(disposing);
+
             if (disposing)
             {
                 if (_subscription != null)
@@ -88,8 +94,6 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
                     _connection.Dispose();
                 }
             }
-
-            base.Dispose(disposing);
         }
     }
 }
