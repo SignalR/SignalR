@@ -54,11 +54,9 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
 
         protected override Task Send(int streamIndex, IList<Message> messages)
         {
-            string topic = _topics[streamIndex];
-
             var stream = ServiceBusMessage.ToStream(messages);
 
-            return _subscription.Publish(topic, stream);
+            return _subscription.Publish(streamIndex, stream);
         }
 
         private void OnMessage(int topicIndex, IEnumerable<BrokeredMessage> messages)

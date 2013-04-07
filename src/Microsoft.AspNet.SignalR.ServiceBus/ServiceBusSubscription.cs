@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
@@ -11,14 +10,14 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
     internal class ServiceBusSubscription : IDisposable
     {
         private readonly NamespaceManager _namespaceManager;
-        private readonly List<SubscriptionContext> _subscriptions;
-        private readonly ConcurrentDictionary<string, TopicClient> _clients;
+        private readonly IList<SubscriptionContext> _subscriptions;
+        private readonly IList<TopicClient> _clients;
         private readonly ServiceBusScaleoutConfiguration _configuration;
 
         public ServiceBusSubscription(ServiceBusScaleoutConfiguration configuration,
                                       NamespaceManager namespaceManager,
-                                      List<SubscriptionContext> subscriptions, 
-                                      ConcurrentDictionary<string, TopicClient> clients)
+                                      IList<SubscriptionContext> subscriptions,
+                                      IList<TopicClient> clients)
         {
             _configuration = configuration;
             _namespaceManager = namespaceManager;
@@ -26,38 +25,28 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
             _clients = clients;
         }
 
-        public Task Publish(string topicName, Stream stream)
+        public Task Publish(int topicIndex, Stream stream)
         {
-            TopicClient client;
-            if (_clients.TryGetValue(topicName, out client))
+            var message = new BrokeredMessage(stream, ownsStream: true)
             {
-                var message = new BrokeredMessage(stream, ownsStream: true)
-                {
-                    TimeToLive = _configuration.TimeToLive
-                };
+                TimeToLive = _configuration.TimeToLive
+            };
 
-                return client.SendAsync(message);
-            }
-
-            // REVIEW: Should this return a faulted task?
-            return TaskAsyncHelper.Empty;
+            return _clients[topicIndex].SendAsync(message);
         }
 
         protected virtual void Dispose(bool disposing)
         {
             if (disposing)
             {
-                foreach (var subscription in _subscriptions)
+                for (int i = 0; i < _clients.Count; i++)
                 {
+                    var subscription = _subscriptions[i];
                     subscription.Receiver.Close();
 
-                    _namespaceManager.DeleteSubscription(subscription.TopicPath, subscription.Name);
+                    _clients[i].Close();
 
-                    TopicClient client;
-                    if (_clients.TryRemove(subscription.TopicPath, out client))
-                    {
-                        client.Close();
-                    }
+                    _namespaceManager.DeleteSubscription(subscription.TopicPath, subscription.Name);
                 }
             }
         }
