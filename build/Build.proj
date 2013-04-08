@@ -152,6 +152,10 @@
              Condition=" '$(OS)' == 'Windows_NT'"/>
   </Target>
 
+  <Target Name="AnalyzeLogs" DependsOnTargets="RunFunctionalTests">
+    <Exec Command='powershell -NoProfile -ExecutionPolicy Bypass $(ProjectRoot)\build\AnalyzeLogs.ps1 "$(TestResultsPath)"' ContinueOnError="true" />
+  </Target>
+  
   <Target Name="RunUnitTests" DependsOnTargets="BuildNetUnitTests">
     <MSBuild Projects="%(JsTestProjects.Identity)"
          Targets="pipelinePreDeployCopyAllFilesToOneFolder"
