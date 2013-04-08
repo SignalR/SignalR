@@ -2,6 +2,7 @@
 
 using System;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR.Infrastructure;
 
@@ -99,11 +100,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
 
                 if (_configuration.RetryOnError)
                 {
-                    // Raise the error handler if there's one specified
-                    if (_configuration.OnError != null)
-                    {
-                        _configuration.OnError(error);
-                    }
+                    OnError(error);
                 }
                 else
                 {
@@ -137,14 +134,28 @@ namespace Microsoft.AspNet.SignalR.Messaging
         {
             if (_configuration.RetryOnError)
             {
-                if (_configuration.OnError != null)
-                {
-                    _configuration.OnError(error);
-                }
+                OnError(error);
             }
             else
             {
                 throw error;
+            }
+        }
+
+        [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "Don't allow errors to kill the process")]
+        private void OnError(Exception error)
+        {
+            // Raise the error handler if there's one specified
+            if (_configuration.OnError != null)
+            {
+                try
+                {
+                    _configuration.OnError(error);
+                }
+                catch (Exception ex)
+                {
+                    Trace("OnError({0})", ex);
+                }
             }
         }
 
@@ -168,7 +179,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
         private Task DrainQueue()
         {
             // If the tcs is null or complete then create a new one
-            if (_taskCompletionSource == null || 
+            if (_taskCompletionSource == null ||
                 _taskCompletionSource.Task.IsCompleted)
             {
                 _taskCompletionSource = new TaskCompletionSource<object>();

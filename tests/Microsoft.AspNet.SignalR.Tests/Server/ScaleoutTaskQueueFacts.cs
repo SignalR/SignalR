@@ -208,5 +208,21 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
             queue.SetError(new Exception());
             Assert.Throws<InvalidOperationException>(() => queue.Enqueue(_ => TaskAsyncHelper.Empty, null));
         }
+
+        [Fact]
+        public void ThrowingFromErrorCallbackIsCaught()
+        {
+            var config = new ScaleoutConfiguration()
+            {
+                RetryOnError = true,
+                OnError = ex =>
+                {
+                    throw new Exception();
+                }
+            };
+
+            var queue = new ScaleoutTaskQueue(new TraceSource("Queue"), "0", config);
+            queue.SetError(new Exception());
+        }
     }
 }
