@@ -37,8 +37,8 @@ namespace Microsoft.AspNet.SignalR.Samples
                 {
                     var headers = (IDictionary<string, string[]>)env["owin.RequestHeaders"];
                     string[] username;
-					if (headers.TryGetValue("username", out username))
-					{
+                    if (headers.TryGetValue("username", out username))
+                    {
                         var authenticated = (username[0] == "john") ? "true" : "false";
 
                         var claims = new List<Claim>
