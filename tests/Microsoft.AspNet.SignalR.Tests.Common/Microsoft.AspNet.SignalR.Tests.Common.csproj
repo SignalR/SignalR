@@ -104,6 +104,7 @@
     </Compile>
     <Compile Include="App_Start\InitializeIISHost.cs" />
     <Compile Include="Connections\ExamineHeadersConnection.cs" />
+    <Compile Include="Connections\ExamineReconnectPath.cs" />
     <Compile Include="Handlers\GCHandler.cs" />
     <Compile Include="Handlers\PingHandler.cs" />
     <Compile Include="Build\StartIISTask.cs" />
