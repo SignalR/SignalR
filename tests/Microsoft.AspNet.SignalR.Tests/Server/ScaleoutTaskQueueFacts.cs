@@ -135,6 +135,55 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
             Assert.Equal(1, x);
         }
 
+        [Fact]
+        public void SendsDuringInitialThenBufferingShouldNotSend()
+        {
+            int x = 0;
+            var queue = new ScaleoutTaskQueue(new TraceSource("Queue"), "0", new ScaleoutConfiguration() { RetryOnError = true });
+
+            Task task = queue.Enqueue(_ =>
+            {
+                x++;
+                return TaskAsyncHelper.Empty;
+            },
+            null);
+
+            queue.SetError(new Exception());
+
+            task.Wait(TimeSpan.FromSeconds(0.5));
+
+            Assert.Equal(0, x);
+        }
+
+        [Fact(Timeout = 1000)]
+        public void SendsBeforeBufferingShouldBeCaptured()
+        {
+            int x = 0;
+            var queue = new ScaleoutTaskQueue(new TraceSource("Queue"), "0", new ScaleoutConfiguration() { RetryOnError = true });
+
+            queue.Enqueue(_ =>
+            {
+                x++;
+                return TaskAsyncHelper.Empty;
+            },
+            null);
+
+            queue.SetError(new Exception());
+
+            Task task = queue.Enqueue(_ =>
+            {
+                x++;
+                return TaskAsyncHelper.Empty;
+            },
+            null);
+
+            queue.Open();
+
+            task.Wait();
+
+            Assert.Equal(2, x);
+        }
+
         [Fact(Timeout = 1000)]
         public void InitialToClosed()
         {

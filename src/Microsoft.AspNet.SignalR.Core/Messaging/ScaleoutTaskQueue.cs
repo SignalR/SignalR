@@ -173,9 +173,12 @@ namespace Microsoft.AspNet.SignalR.Messaging
 
         private Task DrainQueue()
         {
-            EnsureQueueStarted();
-
-            _taskCompletionSource = new TaskCompletionSource<object>();
+            // If the tcs is null or complete then create a new one
+            if (_taskCompletionSource == null || 
+                _taskCompletionSource.Task.IsCompleted)
+            {
+                _taskCompletionSource = new TaskCompletionSource<object>();
+            }
 
             if (_queue != null)
             {
