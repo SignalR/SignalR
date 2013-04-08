@@ -117,5 +117,29 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
             queue.Open();
             Assert.Throws<InvalidOperationException>(() => queue.Enqueue(_ => TaskAsyncHelper.Empty, null));
         }
+
+        [Fact]
+        public void InitialToBufferingToOpenToSend()
+        {
+            int x = 0;
+            var queue = new ScaleoutTaskQueue(new TraceSource("Queue"), "0", new ScaleoutConfiguration() { RetryOnError = true });
+            queue.SetError(new Exception());
+            queue.Open();
+            queue.Enqueue(_ =>
+            {
+                x++;
+                return TaskAsyncHelper.Empty;
+            },
+            null).Wait();
+
+            Assert.Equal(1, x);
+        }
+
+        [Fact(Timeout = 1000)]
+        public void InitialToClosed()
+        {
+            var queue = new ScaleoutTaskQueue(new TraceSource("Queue"), "0", new ScaleoutConfiguration() { RetryOnError = true });
+            queue.Close();
+        }
     }
 }

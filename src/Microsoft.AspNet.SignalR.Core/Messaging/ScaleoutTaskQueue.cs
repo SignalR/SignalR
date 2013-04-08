@@ -127,6 +127,9 @@ namespace Microsoft.AspNet.SignalR.Messaging
             {
                 if (ChangeState(QueueState.Closed))
                 {
+                    // Ensure the queue is started
+                    EnsureQueueStarted();
+
                     // Drain the queue to stop all sends
                     task = Drain(_queue);
                 }
@@ -170,6 +173,8 @@ namespace Microsoft.AspNet.SignalR.Messaging
 
         private Task DrainQueue()
         {
+            EnsureQueueStarted();
+
             _taskCompletionSource = new TaskCompletionSource<object>();
 
             if (_queue != null)
@@ -180,6 +185,14 @@ namespace Microsoft.AspNet.SignalR.Messaging
 
             // Nothing to drain
             return _taskCompletionSource.Task;
+        }
+
+        private void EnsureQueueStarted()
+        {
+            if (_taskCompletionSource != null)
+            {
+                _taskCompletionSource.TrySetResult(null);
+            }
         }
 
         private bool ChangeState(QueueState newState)
