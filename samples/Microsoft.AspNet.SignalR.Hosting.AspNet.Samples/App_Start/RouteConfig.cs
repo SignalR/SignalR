@@ -20,7 +20,13 @@ namespace Microsoft.AspNet.SignalR.Samples
             routes.MapConnection<StreamingConnection>("streaming-connection", "streaming-connection");
 
             // Register the default hubs route /signalr
-            routes.MapHubs("/signalr", new HubConfiguration() { EnableDetailedErrors = true }, AuthMiddleware);
+            routes.MapHubs(
+                "/signalr",
+                new HubConfiguration() {
+                    EnableCrossDomain = true,
+                    EnableDetailedErrors = true
+                },
+                AuthMiddleware);
         }
 
         private static void AuthMiddleware(IAppBuilder app)
@@ -31,8 +37,8 @@ namespace Microsoft.AspNet.SignalR.Samples
                 {
                     var headers = (IDictionary<string, string[]>)env["owin.RequestHeaders"];
                     string[] username;
-                    if (headers.TryGetValue("username", out username))
-                    {
+					if (headers.TryGetValue("username", out username))
+					{
                         var authenticated = (username[0] == "john") ? "true" : "false";
 
                         var claims = new List<Claim>

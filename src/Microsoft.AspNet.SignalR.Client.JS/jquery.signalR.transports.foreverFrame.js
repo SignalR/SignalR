@@ -63,8 +63,12 @@
                 url,
                 frame = $("<iframe data-signalr-connection-id='" + connection.id + "' style='position:absolute;top:0;left:0;width:0;height:0;visibility:hidden;' src=''></iframe>");
 
-            if (window.EventSource) {
-                // If the browser supports SSE, don't use Forever Frame
+            // Build the url
+            url = transportLogic.getUrl(connection, this.name);
+            url += "&frameId=" + frameId;
+
+            if (window.EventSource && connection.host === window.location.host) {
+                // If the browser supports SSE and is Same Origin, don't use Forever Frame
                 if (onFailed) {
                     connection.log("This browser supports SSE, skipping Forever Frame.");
                     onFailed();
@@ -76,23 +80,20 @@
             // This will only perform work if the loadPreventer is not attached to another connection.
             loadPreventer.prevent();
 
-            // Build the url
-            url = transportLogic.getUrl(connection, this.name);
-            url += "&frameId=" + frameId;
-
             // Set body prior to setting URL to avoid caching issues.
             $("body").append(frame);
 
             frame.prop("src", url);
             transportLogic.foreverFrame.connections[frameId] = connection;
 
-            connection.log("Binding to iframe's readystatechange event.");
-            frame.bind("readystatechange", function () {
-                if ($.inArray(this.readyState, ["loaded", "complete"]) >= 0) {
-                    connection.log("Forever frame iframe readyState changed to " + this.readyState + ", reconnecting");
+            $(window).on('message', function (e) {
+                var originalEvent = e.originalEvent;
 
-                    that.reconnect(connection);
-                }
+                if (originalEvent.origin !== connection.baseUrl) return;
+
+                var data = JSON.parse(originalEvent.data);
+                if (data.foreverFrameId !== frameId) return;
+                that.receiveMessage(connection, data.method, data.data);
             });
 
             connection.frame = frame[0];
@@ -114,6 +115,10 @@
                     }
                 }
             }, that.timeOut);
+        },
+
+        receiveMessage: function (connection, method, data) {
+            this[method](connection, data);
         },
 
         reconnect: function (connection) {

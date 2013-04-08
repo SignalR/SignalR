@@ -53,6 +53,22 @@ namespace Microsoft.AspNet.SignalR.Transports
             }
         }
 
+        private string JsonpCallback
+        {
+            get
+            {
+                return Context.Request.QueryString["callback"];
+            }
+        }
+
+        private bool IsJsonp
+        {
+            get
+            {
+                return !String.IsNullOrEmpty(JsonpCallback);
+            }
+        }
+
         protected IJsonSerializer JsonSerializer
         {
             get { return _jsonSerializer; }
@@ -151,7 +167,7 @@ namespace Microsoft.AspNet.SignalR.Transports
 
         private Task ProcessSendRequest()
         {
-            string data = Context.Request.Form["data"];
+            string data = Context.Request.Form["data"] ?? Context.Request.QueryString["data"];
 
             if (Received != null)
             {
@@ -322,9 +338,21 @@ namespace Microsoft.AspNet.SignalR.Transports
                 return TaskAsyncHelper.Empty;
             }
 
-            context.Transport.Context.Response.ContentType = JsonUtility.JsonMimeType;
+            context.Transport.Context.Response.ContentType = context.Transport.IsJsonp ? JsonUtility.JavaScriptMimeType : JsonUtility.JsonMimeType;
 
-            context.Transport.JsonSerializer.Serialize(context.State, context.Transport.OutputWriter);
+            if (context.Transport.IsJsonp)
+            {
+                context.Transport.OutputWriter.Write(context.Transport.JsonpCallback);
+                context.Transport.OutputWriter.Write("(");
+            }
+
+            context.Transport._jsonSerializer.Serialize(context.State, context.Transport.OutputWriter);
+
+            if (context.Transport.IsJsonp)
+            {
+                context.Transport.OutputWriter.Write(");");
+            }
+
             context.Transport.OutputWriter.Flush();
 
             return context.Transport.Context.Response.End();

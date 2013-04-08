@@ -11,4 +11,5 @@
 }
 
 var activeTransport = getQueryVariable('transport') || 'auto';
+var demoHost = getQueryVariable('host') || null;
 var isJsonp = getQueryVariable('jsonp') === 'true';
