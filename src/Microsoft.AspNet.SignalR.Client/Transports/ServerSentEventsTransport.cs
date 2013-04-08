@@ -85,7 +85,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
             var callbackInvoker = new ThreadSafeInvoker();
             var requestDisposer = new Disposer();
 
-            var url = (reconnecting ? connection.Url : connection.Url + "connect") + GetReceiveQueryString(connection, data);
+            var url = connection.Url + (reconnecting ? "reconnect" : "connect") + GetReceiveQueryString(connection, data);
 
             connection.Trace(TraceLevels.Events, "SSE: GET {0}", url);
 
