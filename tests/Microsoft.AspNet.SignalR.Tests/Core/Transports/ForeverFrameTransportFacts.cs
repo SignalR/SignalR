@@ -17,13 +17,28 @@ namespace Microsoft.AspNet.SignalR.Tests.Core
         public void ForeverFrameTransportEscapesTags()
         {
             var request = new Mock<IRequest>();
+            var qs = new NameValueCollection { };
+            request.Setup(r => r.QueryString).Returns(qs);
             var response = new CustomResponse();
             var context = new HostContext(request.Object, response);
             var fft = new ForeverFrameTransport(context, new DefaultDependencyResolver());
 
-            AssertEscaped(fft, response, "</sCRiPT>", "\\u003c/sCRiPT\\u003e");
-            AssertEscaped(fft, response, "</SCRIPT dosomething='false'>", "\\u003c/SCRIPT dosomething='false'\\u003e");
-            AssertEscaped(fft, response, "<p>ELLO</p>", "\\u003cp\\u003eELLO\\u003c/p\\u003e");
+            AssertResponseContains(fft, response, "</sCRiPT>", "\\u003c/sCRiPT\\u003e");
+            AssertResponseContains(fft, response, "</SCRIPT dosomething='false'>", "\\u003c/SCRIPT dosomething='false'\\u003e");
+            AssertResponseContains(fft, response, "<p>ELLO</p>", "\\u003cp\\u003eELLO\\u003c/p\\u003e");
+        }
+        
+        [Fact]
+        public void ForeverFrameTransportWrapsResponseInCallback()
+        {
+            var request = new Mock<IRequest>();
+            var qs = new NameValueCollection { { "callback", "foo123" } };
+            request.Setup(r => r.QueryString).Returns(qs);
+            var response = new CustomResponse();
+            var context = new HostContext(request.Object, response);
+            var fft = new ForeverFrameTransport(context, new DefaultDependencyResolver());
+
+            AssertResponseContains(fft, response, "", "foo123(");
         }
 
         [Theory]
@@ -62,7 +77,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Core
             Assert.Equal("text/html; charset=UTF-8", response.ContentType);
         }
 
-        private static void AssertEscaped(ForeverFrameTransport fft, CustomResponse response, string input, string expectedOutput)
+        private static void AssertResponseContains(ForeverFrameTransport fft, CustomResponse response, string input, string expectedOutput)
         {
             fft.Send(input).Wait();
 
