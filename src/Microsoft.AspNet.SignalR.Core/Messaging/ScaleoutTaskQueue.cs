@@ -50,12 +50,6 @@ namespace Microsoft.AspNet.SignalR.Messaging
         {
             lock (this)
             {
-                // Do nothing if the state is closed
-                if (_state == QueueState.Closed)
-                {
-                    return;
-                }
-
                 if (ChangeState(QueueState.Open))
                 {
                     _error = null;
@@ -200,6 +194,12 @@ namespace Microsoft.AspNet.SignalR.Messaging
 
         private bool ChangeState(QueueState newState)
         {
+            // Do nothing if the state is closed
+            if (_state == QueueState.Closed)
+            {
+                return false;
+            }
+
             if (_state != newState)
             {
                 Trace("Changed state from {0} to {1}", _state, newState);

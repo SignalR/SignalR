@@ -69,7 +69,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
         }
 
         [Fact]
-        public void OpenAfterErrorRunsBuffers()
+        public void OpenAfterErrorRunsQueue()
         {
             int x = 0;
             var queue = new ScaleoutTaskQueue(new TraceSource("Queue"), "0", new ScaleoutConfiguration() { RetryOnError = true });
@@ -189,6 +189,24 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
         {
             var queue = new ScaleoutTaskQueue(new TraceSource("Queue"), "0", new ScaleoutConfiguration() { RetryOnError = true });
             queue.Close();
+        }
+
+        [Fact]
+        public void OpenAfterClosedEnqueueThrows()
+        {
+            var queue = new ScaleoutTaskQueue(new TraceSource("Queue"), "0", new ScaleoutConfiguration() { RetryOnError = true });
+            queue.Close();
+            queue.Open();
+            Assert.Throws<InvalidOperationException>(() => queue.Enqueue(_ => TaskAsyncHelper.Empty, null));
+        }
+
+        [Fact]
+        public void BufferAfterClosedEnqueueThrows()
+        {
+            var queue = new ScaleoutTaskQueue(new TraceSource("Queue"), "0", new ScaleoutConfiguration() { RetryOnError = true });
+            queue.Close();
+            queue.SetError(new Exception());
+            Assert.Throws<InvalidOperationException>(() => queue.Enqueue(_ => TaskAsyncHelper.Empty, null));
         }
     }
 }
