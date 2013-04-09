@@ -126,7 +126,7 @@
   <Target Name="CI" DependsOnTargets="RunCodeAnalysis; Build; RunUnitTests;">
   </Target>
 
-  <Target Name="FunctionalCI" DependsOnTargets="RunCodeAnalysis; Build; RunTests;">
+  <Target Name="FunctionalCI" DependsOnTargets="RunCodeAnalysis; Build; RunTests; AnalyzeLogs;">
   </Target>
 
   <Target Name="Go" DependsOnTargets="RunCodeAnalysis; Build; RunTests;">
@@ -153,7 +153,7 @@
   </Target>
 
   <Target Name="AnalyzeLogs" DependsOnTargets="RunFunctionalTests">
-    <Exec Command='powershell -NoProfile -ExecutionPolicy Bypass $(ProjectRoot)\build\AnalyzeLogs.ps1 "$(TestResultsPath)"' ContinueOnError="true" />
+    <Exec Command='powershell -NoProfile -ExecutionPolicy Bypass $(ProjectRoot)\build\AnalyzeLogs.ps1 "$(ArtifactsDir)"' ContinueOnError="true" />
   </Target>
   
   <Target Name="RunUnitTests" DependsOnTargets="BuildNetUnitTests">
