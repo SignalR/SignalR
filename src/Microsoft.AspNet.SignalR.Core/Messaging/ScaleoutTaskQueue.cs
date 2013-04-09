@@ -47,7 +47,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
             InitializeCore();
         }
 
-        public void Open()
+        public bool Open()
         {
             lock (this)
             {
@@ -56,7 +56,11 @@ namespace Microsoft.AspNet.SignalR.Messaging
                     _error = null;
 
                     _taskCompletionSource.TrySetResult(null);
+
+                    return true;
                 }
+
+                return false;
             }
         }
 
@@ -80,7 +84,8 @@ namespace Microsoft.AspNet.SignalR.Messaging
                     NotifyError(new InvalidOperationException(Resources.Error_QueueNotOpen));
                 }
 
-                Task task = _queue.Enqueue(send, state);
+                var context = new SendContext(this, send, state);
+                Task task = _queue.Enqueue(QueueSend, context);
 
                 if (task == null)
                 {
@@ -88,7 +93,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
                     throw new InvalidOperationException(Resources.Error_TaskQueueFull);
                 }
 
-                return task.Catch((ex, obj) => ((ScaleoutTaskQueue)obj).SetError(ex.InnerException), this);
+                return task;
             }
         }
 
@@ -128,6 +133,51 @@ namespace Microsoft.AspNet.SignalR.Messaging
 
             // Block until the queue is drained so no new work can be done
             task.Wait();
+        }
+
+        private static Task QueueSend(object state)
+        {
+            var context = (SendContext)state;
+
+            context.InvokeSend().Then(tcs =>
+            {
+                // Complete the task if the send is successful
+                tcs.TrySetResult(null);
+            },
+            context.TaskCompletionSource)
+            .Catch((ex, obj) =>
+            {
+                var ctx = (SendContext)obj;
+
+                // Set the queue into buffering state
+                ctx.Queue.SetError(ex.InnerException);
+
+                if (ctx.Queue._configuration.RetryOnError)
+                {
+                    ctx.Queue.Trace("Send failed: {0}", ex);
+
+                    // If this is a retry and we failed again, just set the TCS and ignore the error
+                    if (ctx.Invocations > 1)
+                    {
+                        // Let the other tasks continue
+                        ctx.TaskCompletionSource.TrySetResult(null);
+                    }
+                    else
+                    {                        
+                        // If we're retrying on error then re-queue the failed send to
+                        // re-run after the queue is re-opened
+                        ctx.Queue._taskCompletionSource.Task.Then(c => QueueSend(c), ctx);
+                    }
+                }
+                else
+                {
+                    // Otherwise just set this task as failed
+                    ctx.TaskCompletionSource.TrySetUnwrappedException(ex);
+                }
+            },
+            context);
+
+            return context.TaskCompletionSource.Task;
         }
 
         private void NotifyError(Exception error)
@@ -242,6 +292,37 @@ namespace Microsoft.AspNet.SignalR.Messaging
         private void Trace(string value, params object[] args)
         {
             _trace.TraceInformation(_tracePrefix + " - " + value, args);
+        }
+
+        private class SendContext
+        {            
+            private readonly Func<object, Task> _send;
+            private readonly object _state;
+
+            public int Invocations;
+            public readonly ScaleoutTaskQueue Queue;
+            public readonly TaskCompletionSource<object> TaskCompletionSource;
+
+            public SendContext(ScaleoutTaskQueue queue, Func<object, Task> send, object state)
+            {
+                Queue = queue;
+                TaskCompletionSource = new TaskCompletionSource<object>();
+                _send = send;
+                _state = state;
+            }
+
+            public Task InvokeSend()
+            {
+                try
+                {
+                    Invocations++;
+                    return _send(_state);
+                }
+                catch (Exception ex)
+                {
+                    return TaskAsyncHelper.FromError(ex);
+                }
+            }
         }
 
         private enum QueueState

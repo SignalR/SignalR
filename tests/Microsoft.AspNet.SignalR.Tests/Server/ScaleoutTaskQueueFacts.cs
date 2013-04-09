@@ -1,8 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
-using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR.Messaging;
 using Xunit;
@@ -44,7 +42,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
             Assert.Throws<InvalidOperationException>(() => queue.Enqueue(_ => TaskAsyncHelper.Empty, null));
         }
 
-        [Fact]
+        [Fact(Timeout = 1000)]
         public void ErrorOnSendBuffers()
         {
             int x = 0;
@@ -68,7 +66,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
             Assert.Equal(0, x);
         }
 
-        [Fact]
+        [Fact(Timeout = 1000)]
         public void OpenAfterErrorRunsQueue()
         {
             int x = 0;
@@ -99,12 +97,57 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
         [Fact]
         public void CloseWhileQueueRuns()
         {
+            int x = 0;
             var queue = new ScaleoutTaskQueue(new TraceSource("Queue"), "0", new ScaleoutConfiguration() { RetryOnError = true });
             queue.Open();
-            queue.Enqueue(_ => Task.Delay(50), null);
-            queue.Enqueue(_ => Task.Delay(100), null);
-            queue.Enqueue(_ => Task.Delay(150), null);
+            queue.Enqueue(async _ =>
+            {
+                await Task.Delay(50);
+                x++;
+            },
+            null);
+            queue.Enqueue(async _ =>
+            {
+                await Task.Delay(50);
+                x++;
+            },
+            null);
+            queue.Enqueue(async _ =>
+            {
+                await Task.Delay(50);
+                x++;
+            },
+            null);
             queue.Close();
+            Assert.Equal(3, x);
+        }
+
+        [Fact]
+        public void CloseWhileQueueRunsWithFailedTask()
+        {
+            int x = 0;
+            var queue = new ScaleoutTaskQueue(new TraceSource("Queue"), "0", new ScaleoutConfiguration() { RetryOnError = true });
+            queue.Open();
+            queue.Enqueue(async _ =>
+            {
+                await Task.Delay(50);
+                x++;
+            },
+            null);
+            queue.Enqueue(async _ =>
+            {
+                await Task.Delay(50);
+                await TaskAsyncHelper.FromError(new Exception());
+            },
+            null);
+            queue.Enqueue(async _ =>
+            {
+                await Task.Delay(50);
+                x++;
+            },
+            null);
+            queue.Close();
+            Assert.Equal(2, x);
         }
 
         [Fact]
@@ -125,10 +168,10 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
             var queue = new ScaleoutTaskQueue(new TraceSource("Queue"), "0", new ScaleoutConfiguration() { RetryOnError = true });
             queue.SetError(new Exception());
             queue.Open();
-            queue.Enqueue(_ =>
+            queue.Enqueue(async _ =>
             {
+                await Task.Delay(20);
                 x++;
-                return TaskAsyncHelper.Empty;
             },
             null).Wait();
 
@@ -141,10 +184,10 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
             int x = 0;
             var queue = new ScaleoutTaskQueue(new TraceSource("Queue"), "0", new ScaleoutConfiguration() { RetryOnError = true });
 
-            Task task = queue.Enqueue(_ =>
+            Task task = queue.Enqueue(async _ =>
             {
+                await Task.Delay(50);
                 x++;
-                return TaskAsyncHelper.Empty;
             },
             null);
 
@@ -161,19 +204,19 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
             int x = 0;
             var queue = new ScaleoutTaskQueue(new TraceSource("Queue"), "0", new ScaleoutConfiguration() { RetryOnError = true });
 
-            queue.Enqueue(_ =>
+            queue.Enqueue(async _ =>
             {
+                await Task.Delay(20);
                 x++;
-                return TaskAsyncHelper.Empty;
             },
             null);
 
             queue.SetError(new Exception());
 
-            Task task = queue.Enqueue(_ =>
+            Task task = queue.Enqueue(async _ =>
             {
+                await Task.Delay(20);
                 x++;
-                return TaskAsyncHelper.Empty;
             },
             null);
 
@@ -223,6 +266,52 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
 
             var queue = new ScaleoutTaskQueue(new TraceSource("Queue"), "0", config);
             queue.SetError(new Exception());
+        }
+
+        [Fact(Timeout = 100000)]
+        public void FirstFailedSendShouldNotBeLost()
+        {
+            int timesRun = 0;
+            int x = 0;
+            var queue = new ScaleoutTaskQueue(new TraceSource("Queue"), "0", new ScaleoutConfiguration() { RetryOnError = true });
+            queue.Open();
+
+            var wh = new ManualResetEventSlim();
+            queue.Enqueue(async _ =>
+            {
+                try
+                {
+                    switch (timesRun)
+                    {
+                        case 0:
+                            await Task.Delay(50);
+                            await TaskAsyncHelper.FromError(new Exception());
+                            break;
+                        default:
+                            x++;
+                            await Task.Delay(50);
+                            break;
+                    }
+                }
+                finally
+                {
+                    timesRun++;
+                }
+            },
+            null);
+
+            Task task = queue.Enqueue(_ =>
+            {
+                x++;
+                return TaskAsyncHelper.Empty;
+            },
+            null);
+
+            while (!queue.Open()) { }
+
+            task.Wait();
+
+            Assert.Equal(2, x);
         }
     }
 }
