@@ -117,6 +117,16 @@
              }
         };
 
+        proxies.countingHub = this.createHubProxy('countingHub'); 
+        proxies.countingHub.client = { };
+        proxies.countingHub.server = {
+            send: function (n) {
+            /// <summary>Calls the Send method on the server-side CountingHub hub.&#10;Returns a jQuery.Deferred() promise.</summary>
+            /// <param name=\"n\" type=\"Number\">Server side type is System.Int32</param>
+                return proxies.countingHub.invoke.apply(proxies.countingHub, $.merge(["Send"], $.makeArray(arguments)));
+             }
+        };
+
         proxies.demo = this.createHubProxy('demo'); 
         proxies.demo.client = { };
         proxies.demo.server = {
