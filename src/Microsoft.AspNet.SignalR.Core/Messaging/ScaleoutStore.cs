@@ -216,13 +216,15 @@ namespace Microsoft.AspNet.SignalR.Messaging
         public MessageStoreResult<ScaleoutMapping> GetMessagesByMappingId(ulong mappingId)
         {
             var minMessageId = (ulong)Volatile.Read(ref _minMessageId);
+            int idxIntoFragment;
 
             // look for the fragment containing the start of the data requested by the client
             Fragment thisFragment;
-            if (TryGetFragmentFromMappingId(mappingId, out thisFragment))
+            if (TryGetFragmentFromMappingId(mappingId, out thisFragment) && 
+                thisFragment.TrySearch(mappingId, out idxIntoFragment))
             {
                 // Skip the first message
-                int idxIntoFragment = thisFragment.Search(mappingId) + 1;
+                idxIntoFragment++;
                 ulong firstMessageIdRequestedByClient = GetMessageId(thisFragment.FragmentNum, (uint)idxIntoFragment);
 
                 return GetMessages(firstMessageIdRequestedByClient);
@@ -232,7 +234,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
             while (true)
             {
                 ulong fragmentNum;
-                int idxIntoFragmentsArray, idxIntoFragment;
+                int idxIntoFragmentsArray;
                 GetFragmentOffsets(minMessageId, out fragmentNum, out idxIntoFragmentsArray, out idxIntoFragment);
 
                 Fragment fragment = _fragments[idxIntoFragmentsArray];
@@ -349,7 +351,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
                 return id >= MinValue && id <= MaxValue;
             }
 
-            public int Search(ulong id)
+            public bool TrySearch(ulong id, out int index)
             {
                 int low = 0;
                 int high = Length;
@@ -370,11 +372,13 @@ namespace Microsoft.AspNet.SignalR.Messaging
                     }
                     else if (id == mapping.Id)
                     {
-                        return mid;
+                        index = mid;
+                        return true;
                     }
                 }
 
-                return -1;
+                index = -1;
+                return false;
             }
         }
     }
