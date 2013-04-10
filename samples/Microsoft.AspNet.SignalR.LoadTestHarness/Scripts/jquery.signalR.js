@@ -1621,6 +1621,20 @@
                     initialConnectedFired = true;
                     onSuccess();
                     connection.log("Longpolling connected");
+                },
+                reconnectErrors = 0,
+                reconnectTimeoutId = null,
+                fireReconnected = function (instance) {
+                    window.clearTimeout(reconnectTimeoutId);
+                    reconnectTimeoutId = null;
+
+                    if (changeState(connection,
+                                    signalR.connectionState.reconnecting,
+                                    signalR.connectionState.connected) === true) {
+                        // Successfully reconnected!
+                        connection.log("Raising the reconnect event");
+                        $(instance).triggerHandler(events.onReconnect);
+                    }
                 };
 
             if (connection.pollXhr) {
@@ -1658,6 +1672,15 @@
                                 var delay = 0,
                                     data;
 
+                                // Reset our reconnect errors so if we transition into a reconnecting state again we trigger
+                                // reconnected quickly
+                                reconnectErrors = 0;
+
+                                // If there's currently a timeout to trigger reconnect, fire it now before processing messages
+                                if (reconnectTimeoutId !== null) {
+                                    fireReconnected();
+                                }
+
                                 fireConnect();
 
                                 if (minData) {
@@ -1690,10 +1713,20 @@
                             },
 
                             error: function (data, textStatus) {
+                                // Stop trying to trigger reconnect, connection is in an error state
+                                // If we're not in the reconnect state this will noop
+                                window.clearTimeout(reconnectTimeoutId);
+                                reconnectTimeoutId = null;
+
                                 if (textStatus === "abort") {
                                     connection.log("Aborted xhr requst.");
                                     return;
                                 }
+
+                                // Increment our reconnect errors, we assume all errors to be reconnect errors
+                                // In the case that it's our first error this will cause Reconnect to be fired
+                                // after 1 second due to reconnectErrors being = 1.
+                                reconnectErrors++;
 
                                 if (connection.state !== signalR.connectionState.reconnecting) {
                                     connection.log("An error occurred using longPolling. Status = " + textStatus + ". " + data.responseText);
@@ -1712,15 +1745,14 @@
                             }
                         });
 
+
                         // This will only ever pass after an error has occured via the poll ajax procedure.
                         if (reconnecting && raiseReconnect === true) {
-                            if (changeState(connection,
-                                            signalR.connectionState.reconnecting,
-                                            signalR.connectionState.connected) === true) {
-                                // Successfully reconnected!
-                                connection.log("Raising the reconnect event");
-                                $(instance).triggerHandler(events.onReconnect);
-                            }
+                            // We wait to reconnect depending on how many times we've failed to reconnect.
+                            // This is essentially a heuristic that will progressively increase in wait time before
+                            // triggering reconnected.  This depends on the "error" handler of Poll to cancel this 
+                            // timeout if it triggers before the Reconnected event fires.
+                            reconnectTimeoutId = window.setTimeout(function () { fireReconnected(instance); }, 1000 * reconnectErrors);
                         }
                     }(connection));
 
@@ -2084,5 +2116,5 @@
 /*global window:false */
 /// <reference path="jquery.signalR.core.js" />
 (function ($) {
-    $.signalR.version = "1.1.0-beta1";
+    $.signalR.version = "1.1.0";
 }(window.jQuery));
