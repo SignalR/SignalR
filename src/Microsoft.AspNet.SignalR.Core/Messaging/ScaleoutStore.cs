@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 
@@ -216,23 +217,45 @@ namespace Microsoft.AspNet.SignalR.Messaging
         public MessageStoreResult<ScaleoutMapping> GetMessagesByMappingId(ulong mappingId)
         {
             var minMessageId = (ulong)Volatile.Read(ref _minMessageId);
+            int idxIntoFragment;
 
             // look for the fragment containing the start of the data requested by the client
             Fragment thisFragment;
             if (TryGetFragmentFromMappingId(mappingId, out thisFragment))
             {
-                // Skip the first message
-                int idxIntoFragment = thisFragment.Search(mappingId) + 1;
-                ulong firstMessageIdRequestedByClient = GetMessageId(thisFragment.FragmentNum, (uint)idxIntoFragment);
+                // Attempt a binary search for the mapping id
+                int lowIndex, highIndex;
+                if (thisFragment.TrySearch(mappingId, out idxIntoFragment, out lowIndex, out highIndex))
+                {
+                    // Skip the first message
+                    idxIntoFragment++;
+                }
+                else if (lowIndex <= highIndex)
+                {
+                    // This fragment has gaps in mapping ids. Since we know the value would have been in
+                    // this fragment, mimize the misses by picking the smallest index with a mapping
+                    // id bigger than the one passed in.
+                    idxIntoFragment = thisFragment.FindSmallest(mappingId, lowIndex, highIndex);
+                }
+                else
+                {
+                    // We failed to find anything
+                    idxIntoFragment = -1;
+                }
 
-                return GetMessages(firstMessageIdRequestedByClient);
+                if (idxIntoFragment >= 0)
+                {
+                    ulong firstMessageIdRequestedByClient = GetMessageId(thisFragment.FragmentNum, (uint)idxIntoFragment);
+
+                    return GetMessages(firstMessageIdRequestedByClient);
+                }
             }
 
             // The client has missed messages, so we need to send him the earliest fragment we have.            
             while (true)
             {
                 ulong fragmentNum;
-                int idxIntoFragmentsArray, idxIntoFragment;
+                int idxIntoFragmentsArray;
                 GetFragmentOffsets(minMessageId, out fragmentNum, out idxIntoFragmentsArray, out idxIntoFragment);
 
                 Fragment fragment = _fragments[idxIntoFragmentsArray];
@@ -349,13 +372,17 @@ namespace Microsoft.AspNet.SignalR.Messaging
                 return id >= MinValue && id <= MaxValue;
             }
 
-            public int Search(ulong id)
+            public bool TrySearch(ulong id, out int index, out int lowIndex, out int highIndex)
             {
                 int low = 0;
                 int high = Length;
 
+                var ranges = new Stack<Tuple<int, int>>();
+
                 while (low <= high)
                 {
+                    ranges.Push(Tuple.Create(low, high));
+
                     int mid = (low + high) / 2;
 
                     ScaleoutMapping mapping = Data[mid];
@@ -370,7 +397,43 @@ namespace Microsoft.AspNet.SignalR.Messaging
                     }
                     else if (id == mapping.Id)
                     {
-                        return mid;
+                        index = mid;
+
+                        lowIndex = low;
+                        highIndex = high;
+                        return true;
+                    }
+                }
+
+                if (ranges.Count > 1)
+                {
+                    ranges.Pop();
+
+                    // Use the second last low and high pair so that 
+                    // we can return the last valid search range
+                    Tuple<int, int> range = ranges.Pop();
+
+                    lowIndex = range.Item1;
+                    highIndex = range.Item2;
+                }
+                else
+                {
+                    // We should never get here but this isn't wrong
+                    lowIndex = low;
+                    highIndex = high;
+                }
+
+                index = -1;
+                return false;
+            }
+
+            public int FindSmallest(ulong mappingId, int lowIndex, int highIndex)
+            {
+                for (int i = lowIndex; i < highIndex; i++)
+                {
+                    if (Data[i].Id > mappingId)
+                    {
+                        return i;
                     }
                 }
 
