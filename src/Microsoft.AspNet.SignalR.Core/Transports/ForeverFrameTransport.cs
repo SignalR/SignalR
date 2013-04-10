@@ -5,6 +5,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.IO;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR.Hosting;
 using Microsoft.AspNet.SignalR.Infrastructure;
@@ -14,10 +15,8 @@ namespace Microsoft.AspNet.SignalR.Transports
     [SuppressMessage("Microsoft.Design", "CA1001:TypesThatOwnDisposableFieldsShouldBeDisposable", Justification = "Disposable fields are disposed from a different method")]
     public class ForeverFrameTransport : ForeverTransport
     {
-        private const string _initFormat = @"<!DOCTYPE html>
-                                             <html>
+        private const string _initFormat = @"<html>
                                              <head>
-                                             <title>SignalR Forever Frame Transport Stream</title>
                                              <script>
                                                  var frameId = {0},
                                                      ff = null,
@@ -32,7 +31,8 @@ namespace Microsoft.AspNet.SignalR.Transports
                                                     c = ff.getConnection(frameId);
 
                                                     m = function(method, data) {
-                                                        ff.receiveMessage(c, method, data)
+                                                        ff.receiveMessage(c, method, data);
+                                                        document.body.innerHTML = '';
                                                     };
                                                  } catch (err) {
                                                     m = function(method, data) {
@@ -43,14 +43,25 @@ namespace Microsoft.AspNet.SignalR.Transports
                                                             data : data });
 
                                                         window.parent.postMessage(dataString, '*');
+                                                        document.body.innerHTML = '';
                                                     };
                                                  }
 
+                                                 // the page should never fully load, if it does, we need to reconnect
                                                  window.onload = function(){ m('reconnect'); };
 
                                                  m('started');
                                              </script></head>
                                              <body>";
+
+        private static readonly Regex shrink_ray = new Regex(@"(^|\n|\r)+\s+|\s+(&|\n\r)+|//.*");
+
+        private static readonly string smaller_init = GetSmallerInit();
+
+        private static string GetSmallerInit()
+        {
+            return shrink_ray.Replace(_initFormat, "");
+        }
 
         private HTMLTextWriter _htmlOutputWriter;
 
@@ -116,7 +127,7 @@ namespace Microsoft.AspNet.SignalR.Transports
             }
 
             // string.Format doesn't like all of the braces in Javascript, this works for our purposes
-            string initScript = _initFormat.Replace("{0}", frameId.ToString(CultureInfo.InvariantCulture));
+            string initScript = smaller_init.Replace("{0}", frameId.ToString(CultureInfo.InvariantCulture));
 
             var context = new ForeverFrameTransportContext(this, initScript);
 

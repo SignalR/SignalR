@@ -142,40 +142,14 @@
         },
 
         receive: function (connection, data) {
-            var cw;
-
             transportLogic.processMessages(connection, data);
-            // Delete the script & div elements
-            connection.frameMessageCount = (connection.frameMessageCount || 0) + 1;
-            if (connection.frameMessageCount > 50) {
-                connection.frameMessageCount = 0;
-                cw = connection.frame.contentWindow || connection.frame.contentDocument;
-                if (cw && cw.document) {
-                    $("body", cw.document).empty();
-                }
-            }
         },
 
         stop: function (connection) {
-            var cw = null;
-
             // Stop attempting to prevent loading icon
             loadPreventer.cancel();
 
             if (connection.frame) {
-                if (connection.frame.stop) {
-                    connection.frame.stop();
-                } else {
-                    try {
-                        cw = connection.frame.contentWindow || connection.frame.contentDocument;
-                        if (cw.document && cw.document.execCommand) {
-                            cw.document.execCommand("Stop");
-                        }
-                    }
-                    catch (e) {
-                        connection.log("SignalR: Error occured when stopping foreverFrame transport. Message = " + e.message);
-                    }
-                }
                 $(connection.frame).remove();
                 delete transportLogic.foreverFrame.connections[connection.frameId];
                 connection.frame = null;
