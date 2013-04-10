@@ -148,11 +148,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
                     connection.EnsureReconnecting();
                 }
 
-                if (AbortResetEvent != null)
-                {
-                    AbortResetEvent.Set();
-                }
-                else if (disconnectedReceived)
+                if (!TryCompleteAbort() && disconnectedReceived)
                 {
                     connection.Disconnect();
                 }

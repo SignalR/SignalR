@@ -185,11 +185,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
                         esCancellationRegistration.Dispose();
                         response.Dispose();
 
-                        if (AbortResetEvent != null)
-                        {
-                            AbortResetEvent.Set();
-                        }
-                        else if (retry)
+                        if (!TryCompleteAbort() && retry)
                         {
                             Reconnect(connection, data, disconnectToken);
                         }
