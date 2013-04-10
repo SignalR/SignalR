@@ -7,6 +7,7 @@ using System.Globalization;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR.Client.Http;
+using Microsoft.AspNet.SignalR.Infrastructure;
 using Newtonsoft.Json.Linq;
 
 namespace Microsoft.AspNet.SignalR.Client.Transports
@@ -18,6 +19,17 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
 
         // The transport name
         private readonly string _transport;
+
+        // Used to complete the synchronous call to Abort()
+        private ManualResetEvent _abortResetEvent;
+        // Used to ensure that Abort() runs effectively only once
+        // The _abortLock subsumes the _disposeLock and can be held upwards of 30 seconds
+        private readonly object _abortLock = new object();
+
+        // Used to ensure the _abortResetEvent.Set() isn't called after disposal
+        private bool _disposed;
+        // Used to make checking _disposed and calling _abortResetEvent.Set() thread safe
+        private readonly object _disposeLock = new object();
 
         private readonly IHttpClient _httpClient;
 
@@ -34,8 +46,6 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
                 return _transport;
             }
         }
-
-        protected ManualResetEvent AbortResetEvent { get; private set; }
 
         /// <summary>
         /// Indicates whether or not the transport supports keep alive
@@ -109,11 +119,13 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
                 throw new ArgumentNullException("connection");
             }
 
-            lock (this)
+            // Abort should never complete before a previous calls to Abort
+            lock (_abortLock)
             {
-                if (AbortResetEvent == null)
+                // _abortResetEvent is checked to ensure that an abort request is only made once
+                if (!_disposed && _abortResetEvent == null)
                 {
-                    AbortResetEvent = new ManualResetEvent(initialState: false);
+                    _abortResetEvent = new ManualResetEvent(initialState: false);
 
                     string url = connection.Url + "abort" + String.Format(CultureInfo.InvariantCulture,
                                                                           _sendQueryString,
@@ -126,15 +138,37 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
                     _httpClient.Post(url, connection.PrepareRequest).Catch((ex, state) =>
                     {
                         // If there's an error making an http request set the reset event
-                        ((ManualResetEvent)state).Set();
+                        ((HttpBasedTransport)state).TryCompleteAbort();
                     },
-                    AbortResetEvent);
+                    this);
+
+                    if (!_abortResetEvent.WaitOne(timeout))
+                    {
+                        connection.Trace(TraceLevels.Events, "Abort never fired");
+                    }
                 }
             }
+        }
 
-            if (!AbortResetEvent.WaitOne(timeout))
+        protected bool TryCompleteAbort()
+        {
+            // Make sure we don't Set a disposed ManualResetEvent
+            lock (_disposeLock)
             {
-                connection.Trace(TraceLevels.Events, "Abort never fired");
+                if (_disposed)
+                {
+                    // Don't try to continue receiving messages if the transport is disposed
+                    return true;
+                }
+                else if (_abortResetEvent != null)
+                {
+                    _abortResetEvent.Set();
+                    return true;
+                }
+                else
+                {
+                    return false;
+                }
             }
         }
 
@@ -155,11 +189,19 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
         {
             if (disposing)
             {
-                if (AbortResetEvent != null)
+                // Wait for any ongoing aborts to complete
+                // In practice, any aborts should have finished by the time Dispose is called
+                lock (_abortLock)
+                lock (_disposeLock)
                 {
-                    AbortResetEvent.Dispose();
+                    if (_abortResetEvent != null)
+                    {
+                        _abortResetEvent.Dispose();
+                        _abortResetEvent = null;
+                    }
+                    _disposed = true;
                 }
-            }
+           }
         }
     }
 }
