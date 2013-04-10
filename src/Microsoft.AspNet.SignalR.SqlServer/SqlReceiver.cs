@@ -17,9 +17,6 @@ namespace Microsoft.AspNet.SignalR.SqlServer
     {
         private readonly string _connectionString;
         private readonly string _tableName;
-        private readonly Action _onQuery;
-        private readonly Action<ulong, IList<Message>> _onReceived;
-        private readonly Action<Exception> _onError;
         private readonly TraceSource _trace;
         private readonly string _tracePrefix;
         private readonly IDbProviderFactory _dbProviderFactory;
@@ -30,20 +27,23 @@ namespace Microsoft.AspNet.SignalR.SqlServer
         private ObservableDbOperation _dbOperation;
         private volatile bool _disposed;
 
-        public SqlReceiver(string connectionString, string tableName, Action onQuery, Action<ulong, IList<Message>> onReceived, Action<Exception> onError, TraceSource traceSource, string tracePrefix, IDbProviderFactory dbProviderFactory)
+        public SqlReceiver(string connectionString, string tableName, TraceSource traceSource, string tracePrefix, IDbProviderFactory dbProviderFactory)
         {
             _connectionString = connectionString;
             _tableName = tableName;
             _tracePrefix = tracePrefix;
-            _onQuery = onQuery;
-            _onReceived = onReceived;
-            _onError = onError;
             _trace = traceSource;
             _dbProviderFactory = dbProviderFactory;
 
             _maxIdSql = String.Format(CultureInfo.InvariantCulture, _maxIdSql, SqlMessageBus.SchemaName, _tableName);
             _selectSql = String.Format(CultureInfo.InvariantCulture, _selectSql, SqlMessageBus.SchemaName, _tableName);
         }
+
+        public event EventHandler Queried;
+        
+        public event EventHandler<SqlStreamErrrorEventArgs> Error;    
+
+        public event EventHandler<SqlStreamReceivedEventArgs> Received;
 
         public Task StartReceiving()
         {
@@ -66,20 +66,12 @@ namespace Microsoft.AspNet.SignalR.SqlServer
             }
         }
 
-        private void OnQuery()
-        {
-            if (_onQuery != null)
-            {
-                _onQuery();
-            }
-        }
-
         [SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope", Justification = "Class level variable"),
          SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "On a background thread with explicit error processing")]
         private void Receive(object state)
         {
             var tcs = (TaskCompletionSource<object>)state;
-
+            
             if (!_lastPayloadId.HasValue)
             {
                 var lastPayloadIdOperation = new DbOperation(_connectionString, _maxIdSql, _trace)
@@ -90,7 +82,7 @@ namespace Microsoft.AspNet.SignalR.SqlServer
                 try
                 {
                     _lastPayloadId = (long?)lastPayloadIdOperation.ExecuteScalar();
-                    OnQuery();
+                    OnQueried();
 
                     // Complete the StartReceiving task as we've successfully initialized the payload ID
                     tcs.TrySetResult(null);
@@ -116,13 +108,13 @@ namespace Microsoft.AspNet.SignalR.SqlServer
 
                 _dbOperation = new ObservableDbOperation(_connectionString, _selectSql, _trace, parameter)
                 {
-                    OnError = ex => _onError(ex),
-                    OnQuery = () => OnQuery(),
+                    OnError = ex => OnError(ex),
+                    OnQuery = () => OnQueried(),
                     TracePrefix = _tracePrefix
                 };
             }
 
-            _dbOperation.ExecuteReaderWithUpdates((rdr, o) => ProcessRecord(rdr, o));
+            _dbOperation.ExecuteReaderWithUpdates(ProcessRecord);
 
             _trace.TraceWarning("{0}SqlReceiver.Receive returned", _tracePrefix);
         }
@@ -148,9 +140,33 @@ namespace Microsoft.AspNet.SignalR.SqlServer
             dbOperation.Parameters[0].Value = _lastPayloadId;
 
             // Pass to the underlying message bus
-            _onReceived((ulong)id, payload.Messages);
+            OnReceived((ulong)id, payload.Messages);
 
             _trace.TraceVerbose("{0}Payload {1} containing {2} message(s) received", _tracePrefix, id, payload.Messages.Count);
+        }
+
+        private void OnError(Exception error)
+        {
+            if (Error != null)
+            {
+                Error(this, new SqlStreamErrrorEventArgs(error));
+            }
+        }
+
+        private void OnQueried()
+        {
+            if (Queried != null)
+            {
+                Queried(this, EventArgs.Empty);
+            }
+        }
+
+        private void OnReceived(ulong payloadId, IList<Message> messages)
+        {
+            if (Received != null)
+            {
+                Received(this, new SqlStreamReceivedEventArgs(payloadId, messages));
+            }
         }
     }
 }

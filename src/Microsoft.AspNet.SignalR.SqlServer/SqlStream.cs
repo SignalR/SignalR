@@ -12,32 +12,26 @@ namespace Microsoft.AspNet.SignalR.SqlServer
     internal class SqlStream : IDisposable
     {
         private readonly int _streamIndex;
-        private readonly Action _open;
-        private readonly Action<Exception> _onError;
         private readonly TraceSource _trace;
         private readonly SqlSender _sender;
         private readonly SqlReceiver _receiver;
         private readonly string _tracePrefix;
 
-        private volatile bool _failed;
-
-        public SqlStream(int streamIndex, string connectionString, string tableName, Action open, Action<int, ulong, IList<Message>> onReceived, Action<Exception> onError, TraceSource traceSource, IDbProviderFactory dbProviderFactory)
+        public SqlStream(int streamIndex, string connectionString, string tableName, TraceSource traceSource, IDbProviderFactory dbProviderFactory)
         {
             _streamIndex = streamIndex;
-            _open = open;
-            _onError = onError;
             _trace = traceSource;
             _tracePrefix = String.Format(CultureInfo.InvariantCulture, "Stream {0} : ", _streamIndex);
 
             _sender = new SqlSender(connectionString, tableName, _trace, dbProviderFactory);
-            _receiver = new SqlReceiver(connectionString, tableName,
-                onQuery: () => ClearFailed(),
-                onReceived: (id, messages) => onReceived(_streamIndex, id, messages),
-                onError: ex => SetFailed(ex),
-                traceSource: _trace,
-                tracePrefix: _tracePrefix,
-                dbProviderFactory: dbProviderFactory);
+            _receiver = new SqlReceiver(connectionString, tableName, _trace, _tracePrefix, dbProviderFactory);
         }
+
+        public event EventHandler Queried;
+
+        public event EventHandler<SqlStreamErrrorEventArgs> Error;
+
+        public event EventHandler<SqlStreamReceivedEventArgs> Received;
 
         public Task StartReceiving()
         {
@@ -48,17 +42,7 @@ namespace Microsoft.AspNet.SignalR.SqlServer
         {
             _trace.TraceVerbose("{0}Saving payload with {1} messages(s) to SQL server", _tracePrefix, messages.Count, _streamIndex);
 
-            try
-            {
-                return _sender.Send(messages)
-                    .Then(() => ClearFailed())
-                    .Catch(ex => SetFailed(ex));
-            }
-            catch (Exception ex)
-            {
-                SetFailed(ex);
-                throw;
-            }
+            return _sender.Send(messages);
         }
 
         public void Dispose()
@@ -66,31 +50,27 @@ namespace Microsoft.AspNet.SignalR.SqlServer
             _receiver.Dispose();
         }
 
-        private void SetFailed(Exception exception)
+        private void OnError(Exception error)
         {
-            lock (this)
+            if (Error != null)
             {
-                if (!_failed)
-                {
-                    _failed = true;
-                    _onError(exception);
-                    
-                    _trace.TraceWarning("{0}Stream set to failed", _tracePrefix);
-                }
+                Error(this, new SqlStreamErrrorEventArgs(error));
             }
         }
 
-        private void ClearFailed()
+        private void OnQueried()
         {
-            lock (this)
+            if (Queried != null)
             {
-                if (_failed)
-                {
-                    _failed = false;
-                    _open();
+                Queried(this, EventArgs.Empty);
+            }
+        }
 
-                    _trace.TraceWarning("{0}Stream re-opened", _tracePrefix);
-                }
+        private void OnReceived(ulong payloadId, IList<Message> messages)
+        {
+            if (Received != null)
+            {
+                Received(this, new SqlStreamReceivedEventArgs(payloadId, messages));
             }
         }
     }
