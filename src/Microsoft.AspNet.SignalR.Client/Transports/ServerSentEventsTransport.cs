@@ -123,11 +123,11 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
 
                     var eventSource = new EventSourceStreamReader(connection, stream);
 
-                    bool retry = true;
+                    bool stop = false;
 
                     var esCancellationRegistration = disconnectToken.SafeRegister(state =>
                     {
-                        retry = false;
+                        stop = true;
 
                         ((IRequest)state).Abort();
                     },
@@ -162,7 +162,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
 
                             if (disconnected)
                             {
-                                retry = false;
+                                stop = true;
                                 connection.Disconnect();
                             }
                         }
@@ -185,7 +185,15 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
                         esCancellationRegistration.Dispose();
                         response.Dispose();
 
-                        if (!TryCompleteAbort() && retry)
+                        if (stop)
+                        {
+                            CompleteAbort();
+                        }
+                        else if (TryCompleteAbort())
+                        {
+                            // Abort() was called, so don't reconnect
+                        }
+                        else
                         {
                             Reconnect(connection, data, disconnectToken);
                         }

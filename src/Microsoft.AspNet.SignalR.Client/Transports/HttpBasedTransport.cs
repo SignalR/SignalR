@@ -21,7 +21,10 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
         private readonly string _transport;
 
         // Used to complete the synchronous call to Abort()
-        private ManualResetEvent _abortResetEvent;
+        private ManualResetEvent _abortResetEvent = new ManualResetEvent(initialState: false);
+
+        // Used to indicate whether Abort() has been called
+        private bool _startedAbort;
         // Used to ensure that Abort() runs effectively only once
         // The _abortLock subsumes the _disposeLock and can be held upwards of 30 seconds
         private readonly object _abortLock = new object();
@@ -111,7 +114,6 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
                               .Catch(connection.OnError);
         }
 
-        [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "We don't want Stop to throw. IHttpClient.PostAsync could throw anything.")]
         public void Abort(IConnection connection, TimeSpan timeout)
         {
             if (connection == null)
@@ -119,13 +121,18 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
                 throw new ArgumentNullException("connection");
             }
 
-            // Abort should never complete before a previous calls to Abort
+            // Abort should never complete before any of its previous calls
             lock (_abortLock)
             {
-                // _abortResetEvent is checked to ensure that an abort request is only made once
-                if (!_disposed && _abortResetEvent == null)
+                if (_disposed)
                 {
-                    _abortResetEvent = new ManualResetEvent(initialState: false);
+                    throw new ObjectDisposedException(GetType().Name);
+                }
+
+                // Ensure that an abort request is only made once
+                if (!_startedAbort)
+                {
+                    _startedAbort = true;
 
                     string url = connection.Url + "abort" + String.Format(CultureInfo.InvariantCulture,
                                                                           _sendQueryString,
@@ -150,6 +157,21 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
             }
         }
 
+        protected void CompleteAbort()
+        {
+            lock (_disposeLock)
+            {
+                if (!_disposed)
+                {
+                    // Make any future calls to Abort() no-op
+                    // Abort might still run, but any ongoing aborts will immediately complete
+                    _startedAbort = true;
+                    // Ensure any ongoing calls to Abort() complete
+                    _abortResetEvent.Set();
+                }
+            }
+        }
+
         protected bool TryCompleteAbort()
         {
             // Make sure we don't Set a disposed ManualResetEvent
@@ -160,7 +182,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
                     // Don't try to continue receiving messages if the transport is disposed
                     return true;
                 }
-                else if (_abortResetEvent != null)
+                else if (_startedAbort)
                 {
                     _abortResetEvent.Set();
                     return true;
@@ -194,12 +216,11 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
                 lock (_abortLock)
                 lock (_disposeLock)
                 {
-                    if (_abortResetEvent != null)
+                    if (!_disposed)
                     {
                         _abortResetEvent.Dispose();
-                        _abortResetEvent = null;
+                        _disposed = true;
                     }
-                    _disposed = true;
                 }
            }
         }
