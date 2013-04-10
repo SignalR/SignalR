@@ -117,5 +117,61 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
 
             Assert.False(result);
         }
+
+        [Fact]
+        public void BinarySearchWithGaps()
+        {
+            var store = new ScaleoutStore(10);
+            ulong target = 7;
+
+            store.Add(new ScaleoutMapping(0, new List<LocalEventKeyInfo>()));
+            store.Add(new ScaleoutMapping(5, new List<LocalEventKeyInfo>()));
+            store.Add(new ScaleoutMapping(6, new List<LocalEventKeyInfo>()));
+            store.Add(new ScaleoutMapping(8, new List<LocalEventKeyInfo>()));
+            store.Add(new ScaleoutMapping(10, new List<LocalEventKeyInfo>()));
+
+            ScaleoutStore.Fragment fragment;
+            bool result = store.TryGetFragmentFromMappingId(target, out fragment);
+
+            int index, lowIndex, highIndex;
+            bool result2 = fragment.TrySearch(target, out index, out lowIndex, out highIndex);
+
+            Assert.True(result);
+            Assert.False(result2);
+
+            int subIndex = fragment.FindSmallest(target, lowIndex, highIndex);
+            Assert.Equal(3, subIndex);
+            Assert.Equal(8, (int)fragment.Data[subIndex].Id);
+        }
+
+        [Fact]
+        public void BinarySearchOverwriteAndGaps()
+        {
+            var store = new ScaleoutStore(10);
+            ulong target = 41;
+
+            int id = 0;
+            for (int i = 0; i < store.FragmentSize + 1; i++)
+            {
+                for (int j = 0; j < store.FragmentCount; j++)
+                {
+                    store.Add(new ScaleoutMapping((ulong)id * 5, new List<LocalEventKeyInfo>()));
+                    id++;
+                }
+            }
+
+            ScaleoutStore.Fragment fragment;
+            bool result = store.TryGetFragmentFromMappingId(target, out fragment);
+
+            int index, lowIndex, highIndex;
+            bool result2 = fragment.TrySearch(target, out index, out lowIndex, out highIndex);
+
+            Assert.True(result);
+            Assert.False(result2);
+
+            int subIndex = fragment.FindSmallest(target, lowIndex, highIndex);
+            Assert.Equal(1, subIndex);
+            Assert.Equal(45, (int)fragment.Data[subIndex].Id);
+        }
     }
 }
