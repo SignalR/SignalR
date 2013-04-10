@@ -27,8 +27,12 @@
     };
 
     $.connection.hub.logging = true;
-
-    $.connection.hub.start({ transport: activeTransport }, function () {
+    
+    if (demoHost) {
+        $.connection.hub.url = "//" + demoHost + "/signalr";
+    }
+    
+    $.connection.hub.start({ transport: activeTransport, jsonp:isJsonp }, function () {
 
         demo.server.getValue().done(function (value) {
             $('#value').html('The value is ' + value + ' after 5 seconds');

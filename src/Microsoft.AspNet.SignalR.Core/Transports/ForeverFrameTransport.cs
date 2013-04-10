@@ -5,6 +5,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.IO;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR.Hosting;
 using Microsoft.AspNet.SignalR.Infrastructure;
@@ -14,20 +15,53 @@ namespace Microsoft.AspNet.SignalR.Transports
     [SuppressMessage("Microsoft.Design", "CA1001:TypesThatOwnDisposableFieldsShouldBeDisposable", Justification = "Disposable fields are disposed from a different method")]
     public class ForeverFrameTransport : ForeverTransport
     {
-        private const string _initPrefix = "<!DOCTYPE html>" +
-                                           "<html>" +
-                                           "<head>" +
-                                           "<title>SignalR Forever Frame Transport Stream</title>\r\n" +
-                                           "<script>\r\n" + //"    debugger;\r\n"+
-                                           "    var $ = window.parent.jQuery,\r\n" +
-                                           "        ff = $ ? $.signalR.transports.foreverFrame : null,\r\n" +
-                                           "        c =  ff ? ff.getConnection('";
+        private const string _initFormat = @"<html>
+                                             <head>
+                                             <script>
+                                                 var frameId = {0},
+                                                     ff = null,
+                                                     c = null,
+                                                     m = null,
+                                                     r = function(data) { m('receive', data); }; 
 
-        private const string _initSuffix = "') : null,\r\n" +
-                                            "        r = ff ? ff.receive : function() {};\r\n" +
-                                            "    ff ? ff.started(c) : '';" +
-                                            "</script></head>" +
-                                            "<body>\r\n";
+                                                 // try to call methods directly, fall back to postMessage
+                                                 try {
+                                                    // this will throw an error if domains do not match
+                                                    ff = window.parent.jQuery.signalR.transports.foreverFrame;
+                                                    c = ff.getConnection(frameId);
+
+                                                    m = function(method, data) {
+                                                        ff.receiveMessage(c, method, data);
+                                                        document.body.innerHTML = '';
+                                                    };
+                                                 } catch (err) {
+                                                    m = function(method, data) {
+                                                        // IE 8,9 only support string messages
+                                                        var dataString = JSON.stringify({
+                                                            foreverFrameId : frameId,
+                                                            method : method,
+                                                            data : data });
+
+                                                        window.parent.postMessage(dataString, '*');
+                                                        document.body.innerHTML = '';
+                                                    };
+                                                 }
+
+                                                 // the page should never fully load, if it does, we need to reconnect
+                                                 window.onload = function(){ m('reconnect'); };
+
+                                                 m('started');
+                                             </script></head>
+                                             <body>";
+
+        private static readonly Regex shrink_ray = new Regex(@"(^|\n|\r)+\s+|\s+(&|\n\r)+|//.*");
+
+        private static readonly string smaller_init = GetSmallerInit();
+
+        private static string GetSmallerInit()
+        {
+            return shrink_ray.Replace(_initFormat, "");
+        }
 
         private HTMLTextWriter _htmlOutputWriter;
 
@@ -92,9 +126,8 @@ namespace Microsoft.AspNet.SignalR.Transports
                 throw new InvalidOperationException(Resources.Error_InvalidForeverFrameId);
             }
 
-            string initScript = _initPrefix +
-                                frameId.ToString(CultureInfo.InvariantCulture) +
-                                _initSuffix;
+            // string.Format doesn't like all of the braces in Javascript, this works for our purposes
+            string initScript = smaller_init.Replace("{0}", frameId.ToString(CultureInfo.InvariantCulture));
 
             var context = new ForeverFrameTransportContext(this, initScript);
 
@@ -128,7 +161,7 @@ namespace Microsoft.AspNet.SignalR.Transports
         {
             var context = (ForeverFrameTransportContext)state;
 
-            context.Transport.HTMLOutputWriter.WriteRaw("<script>r(c, ");
+            context.Transport.HTMLOutputWriter.WriteRaw("<script>r(");
             context.Transport.JsonSerializer.Serialize(context.State, context.Transport.HTMLOutputWriter);
             context.Transport.HTMLOutputWriter.WriteRaw(");</script>\r\n");
             context.Transport.HTMLOutputWriter.Flush();
@@ -140,7 +173,7 @@ namespace Microsoft.AspNet.SignalR.Transports
         {
             var transport = (ForeverFrameTransport)state;
 
-            transport.HTMLOutputWriter.WriteRaw("<script>r(c, {});</script>");
+            transport.HTMLOutputWriter.WriteRaw("<script>r({});</script>");
             transport.HTMLOutputWriter.WriteLine();
             transport.HTMLOutputWriter.WriteLine();
             transport.HTMLOutputWriter.Flush();

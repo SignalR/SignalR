@@ -20,7 +20,13 @@ namespace Microsoft.AspNet.SignalR.Samples
             routes.MapConnection<StreamingConnection>("streaming-connection", "streaming-connection");
 
             // Register the default hubs route /signalr
-            routes.MapHubs("/signalr", new HubConfiguration() { EnableDetailedErrors = true }, AuthMiddleware);
+            routes.MapHubs(
+                "/signalr",
+                new HubConfiguration() {
+                    EnableCrossDomain = true,
+                    EnableDetailedErrors = true
+                },
+                AuthMiddleware);
         }
 
         private static void AuthMiddleware(IAppBuilder app)
