@@ -80,8 +80,6 @@
     <Compile Include="SqlSender.cs" />
     <Compile Include="SqlMessageBusException.cs" />
     <Compile Include="SqlStream.cs" />
-    <Compile Include="SqlStreamErrrorEventArgs.cs" />
-    <Compile Include="SqlStreamReceivedEventArgs.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Microsoft.AspNet.SignalR.Core\Microsoft.AspNet.SignalR.Core.csproj">

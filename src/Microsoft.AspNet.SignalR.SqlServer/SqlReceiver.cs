@@ -39,11 +39,11 @@ namespace Microsoft.AspNet.SignalR.SqlServer
             _selectSql = String.Format(CultureInfo.InvariantCulture, _selectSql, SqlMessageBus.SchemaName, _tableName);
         }
 
-        public event EventHandler Queried;
+        public event Action Queried;
         
-        public event EventHandler<SqlStreamErrrorEventArgs> Error;    
+        public event Action<Exception> Error;    
 
-        public event EventHandler<SqlStreamReceivedEventArgs> Received;
+        public event Action<ulong, IList<Message>> Received;
 
         public Task StartReceiving()
         {
@@ -108,11 +108,18 @@ namespace Microsoft.AspNet.SignalR.SqlServer
 
                 _dbOperation = new ObservableDbOperation(_connectionString, _selectSql, _trace, parameter)
                 {
-                    OnError = ex => OnError(ex),
-                    OnQuery = () => OnQueried(),
                     TracePrefix = _tracePrefix
                 };
             }
+
+            _dbOperation.Queried += () => OnQueried();
+            _dbOperation.Error += ex => OnError(ex);
+            _dbOperation.Changed += () =>
+            {
+                Trace.TraceInformation("{0}Starting receive loop again to process updates", _tracePrefix);
+
+                _dbOperation.ExecuteReaderWithUpdates(ProcessRecord);
+            };
 
             _dbOperation.ExecuteReaderWithUpdates(ProcessRecord);
 
@@ -149,7 +156,7 @@ namespace Microsoft.AspNet.SignalR.SqlServer
         {
             if (Error != null)
             {
-                Error(this, new SqlStreamErrrorEventArgs(error));
+                Error(error);
             }
         }
 
@@ -157,7 +164,7 @@ namespace Microsoft.AspNet.SignalR.SqlServer
         {
             if (Queried != null)
             {
-                Queried(this, EventArgs.Empty);
+                Queried();
             }
         }
 
@@ -165,7 +172,7 @@ namespace Microsoft.AspNet.SignalR.SqlServer
         {
             if (Received != null)
             {
-                Received(this, new SqlStreamReceivedEventArgs(payloadId, messages));
+                Received(payloadId, messages);
             }
         }
     }

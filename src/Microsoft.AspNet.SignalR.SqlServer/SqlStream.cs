@@ -25,13 +25,16 @@ namespace Microsoft.AspNet.SignalR.SqlServer
 
             _sender = new SqlSender(connectionString, tableName, _trace, dbProviderFactory);
             _receiver = new SqlReceiver(connectionString, tableName, _trace, _tracePrefix, dbProviderFactory);
+            _receiver.Queried += () => OnQueried();
+            _receiver.Error += (ex) => OnError(ex);
+            _receiver.Received += (id, messages) => OnReceived(id, messages);
         }
 
-        public event EventHandler Queried;
+        public event Action Queried;
 
-        public event EventHandler<SqlStreamErrrorEventArgs> Error;
+        public event Action<Exception> Error;
 
-        public event EventHandler<SqlStreamReceivedEventArgs> Received;
+        public event Action<ulong, IList<Message>> Received;
 
         public Task StartReceiving()
         {
@@ -54,7 +57,7 @@ namespace Microsoft.AspNet.SignalR.SqlServer
         {
             if (Error != null)
             {
-                Error(this, new SqlStreamErrrorEventArgs(error));
+                Error(error);
             }
         }
 
@@ -62,7 +65,7 @@ namespace Microsoft.AspNet.SignalR.SqlServer
         {
             if (Queried != null)
             {
-                Queried(this, EventArgs.Empty);
+                Queried();
             }
         }
 
@@ -70,7 +73,7 @@ namespace Microsoft.AspNet.SignalR.SqlServer
         {
             if (Received != null)
             {
-                Received(this, new SqlStreamReceivedEventArgs(payloadId, messages));
+                Received(payloadId, messages);
             }
         }
     }

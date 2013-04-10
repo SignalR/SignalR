@@ -113,9 +113,9 @@ namespace Microsoft.AspNet.SignalR.SqlServer
                 var tableName = String.Format(CultureInfo.InvariantCulture, "{0}_{1}", _tableNamePrefix, streamIndex);
 
                 var stream = new SqlStream(streamIndex, _connectionString, tableName, _trace, _dbProviderFactory);
-                stream.Queried += (s, e) => Open(streamIndex);
-                stream.Error += (s, e) => OnError(streamIndex, e.Error);
-                stream.Received += (s, e) => OnReceived(streamIndex, e.PayloadId, e.Messages);
+                stream.Queried += () => Open(streamIndex);
+                stream.Error += (ex) => OnError(streamIndex, ex);
+                stream.Received += (id, messages) => OnReceived(streamIndex, id, messages);
 
                 _streams.Add(stream);
 
