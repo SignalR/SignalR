@@ -1,0 +1,174 @@
+﻿<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <title></title>    
+    <script src="../../Scripts/signalr.samples.js"></script>
+    <script src="../../Scripts/jquery-1.8.2.js"></script>
+    <script src="../../Scripts/jquery.signalr.js"></script>
+    <script src="../../Scripts/hubs.js"></script>
+    <script src="test.js"></script>    
+    <script type="text/javascript">        
+        var testHub = $.connection.testHub;
+        testHub.client.clientConnected = function (nodeEvent) {
+            $("#HubMessages").append("<li>clientConnected: " + JSON.stringify(nodeEvent) + "</li>");
+            $("#ConnectionsList").append("<option id=" + nodeEvent.Data + ">" + nodeEvent.Data + "</option>");
+        };
+        testHub.client.clientDisconnected = function (nodeEvent) {
+            $("#HubMessages").append("<li>clientDisconnected: " + JSON.stringify(nodeEvent) + "</li>");
+            $("#ConnectionsList option[id=" + nodeEvent.Data + "]").remove();
+        };
+        testHub.client.clientReconnected = function (nodeEvent) {
+            $("#HubMessages").append("<li>clientReconnected: " + JSON.stringify(nodeEvent) + "</li>");
+            $("#ConnectionsList").append("<option id=" + nodeEvent.Data + ">" + nodeEvent.Data + "</option>");
+        };
+        testHub.client.groupsAll = function (nodeEvent) {
+            $("#HubMessages").append("<li>groupsAll: " + JSON.stringify(nodeEvent) + "</li>");
+            $.each(nodeEvent.Data, function () {
+                $("#GroupsList").append("<option id=" + this + ">" + this + "</option>");
+            });
+        };
+        testHub.client.groupsAdd = function (nodeEvent) {
+            $("#HubMessages").append("<li>groupsAdd: " + JSON.stringify(nodeEvent) + "</li>");
+            $("#GroupsList").append("<option id=" + nodeEvent.Data + ">" + nodeEvent.Data + "</option>");
+        };
+        testHub.client.groupsRemove = function (nodeEvent) {
+            $("#HubMessages").append("<li>groupsRemove: " + JSON.stringify(nodeEvent) + "</li>");
+            $("#GroupsList option[id=" + nodeEvent.Data + "]").remove();
+        };
+        testHub.client.joinedGroupsAdd = function (nodeEvent) {
+            $("#HubMessages").append("<li>joinedGroupsAdd: " + JSON.stringify(nodeEvent) + "</li>");
+            $("#JoinedGroupsList").append("<option id=" + nodeEvent.Data + ">" + nodeEvent.Data + "</option>");
+        };
+        testHub.client.joinedGroupsRemove = function (nodeEvent) {
+            $("#HubMessages").append("<li>joinedGroupsRemove: " + JSON.stringify(nodeEvent) + "</li>");
+            $("#JoinedGroupsList option[id=" + nodeEvent.Data + "]").remove();
+        };
+        testHub.client.received = function (nodeEvent) {
+            $("#HubMessages").append("<li>received: " + JSON.stringify(nodeEvent) + "</li>");
+            $("#ReceivedTextArea").append(nodeEvent.Data + "\n");
+        };
+
+        hubConnection.start({ transport: activeTransport })
+            .done(function () {
+                hubConnectionStartDone();
+
+                $("#GroupsAddButton").click(function () {
+                    if (!isRequired("#GroupText", "Group")) {
+                        return;
+                    }
+                    testHub.server.groupsAdd($("#ConnectionText").val(), $("#GroupText").val());
+                    cleanInputs();
+                });
+
+                $("#GroupsRemoveButton").click(function () {
+                    if (!isRequired("#GroupText", "Group")) {
+                        return;
+                    }
+                    testHub.server.groupsRemove($("#ConnectionText").val(), $("#GroupText").val());
+                    cleanInputs();
+                });
+
+                $("#ClientsAllButton").click(function () {
+                    if (!isRequired("#MessageText", "Message")) {
+                        return;
+                    }
+                    testHub.server.clientsAll($("#MessageText").val());
+                    cleanInputs();
+                });
+
+                $("#ClientsCallerButton").click(function () {
+                    if (!isRequired("#MessageText", "Message")) {
+                        return;
+                    }
+                    testHub.server.clientsCaller($("#MessageText").val());
+                    cleanInputs();
+                });
+
+                $("#ClientsClientButton").click(function () {
+                    if (!isRequired("#ConnectionText", "ConnectionId") || !isRequired("#MessageText", "Message")) {
+                        return;
+                    }
+                    testHub.server.clientsCaller($("#MessageText").val());
+                    cleanInputs();
+                });
+
+                $("#ClientsGroupButton").click(function () {
+                    if (!isRequired("#GroupText", "Group") || !isRequired("#MessageText", "Message")) {
+                        return;
+                    }
+                    testHub.server.clientsGroup($("#GroupText").val(), $("#MessageText").val());
+                    cleanInputs();
+                });
+            })
+            .fail(function (error) {
+                hubConnectionStartError();
+            });
+
+        function cleanInputs() {
+            $("#ConnectionText").val("");
+            $("#GroupText").val("");
+            $("#MessageText").val("");
+        }
+
+        function isRequired(id, name) {
+            if ($(id).val() == "") {
+                $("#ClientMessages").append("<li>" + name + " is required!</li>");
+                return false;
+            }
+            return true;
+        }
+    </script>
+
+</head>
+<body>
+    <table>
+        <tr>
+            <td>Try other transports:</td>
+            <td><a href="chat.html?transport=webSockets">webSockets</a></td>
+            <td><a href="chat.html?transport=foreverFrame">foreverFrame</a></td>
+            <td><a href="chat.html?transport=serverSentEvents">serverSentEvents</a></td>
+            <td><a href="chat.html?transport=longPolling">longPolling</a></td>
+        </tr>
+    </table>
+    <table>
+        <tr>
+            <td>Connections</td>
+            <td>Groups</td>
+            <td>Joined Groups</td>
+            <td>Received Messages</td>
+        </tr>
+        <tr>
+            <td><select id="ConnectionsList" style="width:300px" size="10"></select></td>
+            <td><select id="GroupsList" style="width:200px" size="10"></select></td>
+            <td><select id="JoinedGroupsList" style="width:200px" size="10"></select></td>
+            <td><textarea id="ReceivedTextArea" style="width:600px; height:150px"></textarea></td>
+        </tr>
+        <tr>
+            <td colspan="4">
+                <label>ConnectionId:</label>
+                <input id="ConnectionText" type="text" />
+                <label>Group:</label>
+                <input id="GroupText" type="text" />
+                <label>Message:</label>
+                <input id="MessageText" type="text" size="100" />                
+            </td>
+        </tr>
+        <tr>
+            <td colspan="4">
+                <button id="GroupsAddButton">Join Group</button>
+                <button id="GroupsRemoveButton">Leave Group</button>
+                <button id="ClientsAllButton">ClientsAll</button>
+                <button id="ClientsCallerButton">ClientsCaller</button>
+                <button id="ClientsClientButton">ClientsClient</button>
+                <button id="ClientsGroupButton">ClientsGroup</button>
+            </td>
+        </tr>   
+    </table>
+    <h1>Client Validation</h1>
+    <ul id="ClientMessages">
+    </ul>
+    <h1>TestHub</h1>    
+    <ul id="HubMessages">
+    </ul>
+</body>
+</html>

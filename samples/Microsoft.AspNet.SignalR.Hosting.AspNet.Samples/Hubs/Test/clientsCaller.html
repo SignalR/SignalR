@@ -1,0 +1,66 @@
+﻿<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <title></title>    
+    <script src="../../Scripts/signalr.samples.js"></script>
+    <script src="../../Scripts/jquery-1.8.2.js"></script>
+    <script src="../../Scripts/jquery.signalr.js"></script>
+    <script src="../../Scripts/hubs.js"></script>
+    <script src="test.js"></script>
+    <script type="text/javascript">
+        var messages = new Array();
+        var testHub = $.connection.stressHub;
+        testHub.client.clientConnected = function (nodeEvent) {
+            $("#HubMessages").append("<li>clientConnected: " + JSON.stringify(nodeEvent) + "</li>");
+        };
+        testHub.client.clientDisconnected = function (nodeEvent) {
+            $("#HubMessages").append("<li>clientDisconnected: " + JSON.stringify(nodeEvent) + "</li>");
+        };
+        testHub.client.clientReconnected = function (nodeEvent) {
+            $("#HubMessages").append("<li>clientReconnected: " + JSON.stringify(nodeEvent) + "</li>");
+        };
+        testHub.client.clientsCaller = function (nodeEvent) {
+            incrementLabel("#ReceivedLabel");
+            var message = parseInt(nodeEvent.Data);
+            if (messages[message] == undefined) {
+                messages[message] = 1;
+            } else {
+                messages[message] = messages[message] + 1;
+                $("#HubMessages").append("<li style='color:red;'>Message " + message + " has been received " + messages[message] + " times</li>");
+            }
+            if (message < 2000) {
+                testHub.server.clientsCaller(incrementLabel("#SendLabel"));
+            }
+        };
+
+        hubConnection.start({ transport: activeTransport })
+            .done(function () {
+                hubConnectionStartDone();
+                testHub.server.clientsCaller(incrementLabel("#SendLabel"));
+            })
+            .fail(function (error) {
+                hubConnectionStartError();
+            });
+    </script>
+</head>
+<body>
+    <table>
+        <tr>
+            <td>Try other transports:</td>
+            <td><a href="clientsCaller.html?transport=webSockets">webSockets</a></td>
+            <td><a href="clientsCaller.html?transport=foreverFrame">foreverFrame</a></td>
+            <td><a href="clientsCaller.html?transport=serverSentEvents">serverSentEvents</a></td>
+            <td><a href="clientsCaller.html?transport=longPolling">longPolling</a></td>
+        </tr>
+    </table>
+    <table>
+        <tr>
+            <td>Send: <label id="SendLabel">0</label></td>
+            <td>Received: <label id="ReceivedLabel">0</label></td>
+        </tr> 
+    </table>
+    <h1>TestHub</h1>    
+    <ul id="HubMessages">
+    </ul>
+</body>
+</html>
