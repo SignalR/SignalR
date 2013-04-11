@@ -88,6 +88,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                     mockStream.Position = 0;
 
                     response.Setup(r => r.GetStream()).Returns(mockStream);
+                    response.Setup(r => r.Dispose());
 
                     httpClient.Setup(h => h.Post(It.IsAny<string>(),
                                                  It.IsAny<Action<Client.Http.IRequest>>(),
