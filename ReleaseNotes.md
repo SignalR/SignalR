@@ -1,5 +1,57 @@
 # SignalR Release Notes
 
+# 1.1.0beta
+
+### General Changes
+* Performance improvements in throughput and memory usage.
+* New scaleout provider infrastructure and providers for Redis, SqlServer and Azure Service Bus.
+
+### Known Issues
+* When the backplane goes offline (redis, sql, service bus) you may miss messages.
+
+### Features
+
+* Add overload to MapHubs and MapConnection to allow adding OWIN middleware ([#1800](https://github.com/SignalR/SignalR/issues/1800))
+* Removed Connection.Disconnect() ([#1798](https://github.com/SignalR/SignalR/issues/1798))
+* Force <= IE8 to use LongPolling ([#1764](https://github.com/SignalR/SignalR/issues/1764))
+* Support common scale-out message bus semantics in an abstract base class ([#1712](https://github.com/SignalR/SignalR/issues/1712))
+* Support SQL Server scale-out message bus ([#1711](https://github.com/SignalR/SignalR/issues/1711))
+* Make SQL message bus light up with query notifications only if service broker is available ([#1662](https://github.com/SignalR/SignalR/issues/1662))
+* Allow specifiying the JsonSerializer in the .NET Client ([#1373](https://github.com/SignalR/SignalR/issues/1373))
+* Allow specifying headers int the .NET client ([#1362](https://github.com/SignalR/SignalR/issues/1362))
+* Allow specifying client certificates in the .NET Client ([#1303](https://github.com/SignalR/SignalR/issues/1303))
+* Support client side keep alive for the .NET client ([#741](https://github.com/SignalR/SignalR/issues/741))
+* Add tracing to the .NET client ([#135](https://github.com/SignalR/SignalR/issues/135))
+* Add trace level to the .NET client ([#1746](https://github.com/SignalR/SignalR/issues/1746))
+
+### Bugs Fixed
+
+* ConnectDisconnect test failed due to a leak on w3wp.exe ([#1801](https://github.com/SignalR/SignalR/issues/1801))
+* Update error messages based on customer feedback ([#1734](https://github.com/SignalR/SignalR/issues/1734))
+* Hub script isn't minified ([#1710](https://github.com/SignalR/SignalR/issues/1710))
+* Specifying the hubs url for a connection url should fail ([#1707](https://github.com/SignalR/SignalR/issues/1707))
+* JS client webSockets and SSE transports only try request one time to connect during reconnect  ([#1684](https://github.com/SignalR/SignalR/issues/1684))
+* PerformanceCounter.RemoveInstance throws on mono ([#1678](https://github.com/SignalR/SignalR/issues/1678))
+* in HubContext Clients.Client(null).foo() doesn't throw ([#1660](https://github.com/SignalR/SignalR/issues/1660))
+* .NET client: Calling Stop before connecting fails ([#1650](https://github.com/SignalR/SignalR/issues/1650))
+* [WebSockets] AbortStopDisconnect scenario failing:  System.InvalidOperationException: Incorrect message type ([#1607](https://github.com/SignalR/SignalR/issues/1607))
+* .NET client: OnError can be raised when stopping SSE connection  ([#1600](https://github.com/SignalR/SignalR/issues/1600))
+* Get rid of all synchronous reads/writes on the client ([#1536](https://github.com/SignalR/SignalR/issues/1536))
+* Group tokens are not verified against the current connection ID on reconnect ([#1506](https://github.com/SignalR/SignalR/issues/1506))
+* Unhandled exceptions within service bus backplane ([#1504](https://github.com/SignalR/SignalR/issues/1504))
+* Optimize hub method invocation ([#1486](https://github.com/SignalR/SignalR/issues/1486))
+* IHubProxy client api problem ([#1426](https://github.com/SignalR/SignalR/issues/1426))
+* Extending javascript array potentially breaks other code ([#1392](https://github.com/SignalR/SignalR/issues/1392))
+* IE9 object serialization on persistant connection received ([#1388](https://github.com/SignalR/SignalR/issues/1388))
+* Hub Clients.Client(null).foo() should throw same as PersistentConnection Connection.Send(null, message) ([#1265](https://github.com/SignalR/SignalR/issues/1265))
+* Multiple connections don't work on the same page in some cases ([#1243](https://github.com/SignalR/SignalR/issues/1243))
+* Client infinitely receive same messages from server when publish message with same Id ([#948](https://github.com/SignalR/SignalR/issues/948))
+* jQuery $.ajaxSetup issue ([#947](https://github.com/SignalR/SignalR/issues/947))
+* SqlServer - Use real schema instead of deprecated "dbo" ([#943](https://github.com/SignalR/SignalR/issues/943))
+* SignalR Redis doesn't reconnect to Redis server after stop and re-start Redis server ([#916](https://github.com/SignalR/SignalR/issues/916))
+* Scaleout Bus mapping grows infinitely ([#723](https://github.com/SignalR/SignalR/issues/723))
+* Several browsers show infinite loading status (IE8) ([#215](https://github.com/SignalR/SignalR/issues/215))
+
 # 1.0.1
 
 ### Bugs Fixed
