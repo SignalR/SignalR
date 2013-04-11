@@ -145,7 +145,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
                     _httpClient.Post(url, connection.PrepareRequest).Catch((ex, state) =>
                     {
                         // If there's an error making an http request set the reset event
-                        ((HttpBasedTransport)state).TryCompleteAbort();
+                        ((HttpBasedTransport)state).CompleteAbort();
                     },
                     this);
 
