@@ -40,7 +40,6 @@
 * Group tokens are not verified against the current connection ID on reconnect ([#1506](https://github.com/SignalR/SignalR/issues/1506))
 * Unhandled exceptions within service bus backplane ([#1504](https://github.com/SignalR/SignalR/issues/1504))
 * Optimize hub method invocation ([#1486](https://github.com/SignalR/SignalR/issues/1486))
-* IHubProxy client api problem ([#1426](https://github.com/SignalR/SignalR/issues/1426))
 * Extending javascript array potentially breaks other code ([#1392](https://github.com/SignalR/SignalR/issues/1392))
 * IE9 object serialization on persistant connection received ([#1388](https://github.com/SignalR/SignalR/issues/1388))
 * Hub Clients.Client(null).foo() should throw same as PersistentConnection Connection.Send(null, message) ([#1265](https://github.com/SignalR/SignalR/issues/1265))
