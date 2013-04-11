@@ -1,0 +1,22 @@
+localhost\Memory\Available MBytes
+localhost\Memory\Committed Bytes
+localhost\Processor\% Processor Time(_Total)
+localhost\Process\Private Bytes(crank)
+localhost\Process\Virtual Bytes(crank)
+localhost\Process\Working Set(crank)
+localhost\Process\Thread Count(crank)
+localhost\.NET CLR Memory\% Time in GC(crank)
+localhost\.NET CLR Memory\Allocated Bytes/sec(crank)
+server\SignalR\Connections Connected(testdefault)
+server\SignalR\Connections Current(testdefault)
+server\SignalR\Connections Reconnected(testdefault)
+server\SignalR\Connections Disconnected(testdefault)
+server\Memory\Available MBytes
+server\Memory\Committed Bytes
+server\Processor\% Processor Time(_Total)
+server\Process\Private Bytes(w3wp)
+server\Process\Virtual Bytes(w3wp)
+server\Process\Working Set(w3wp)
+server\Process\Thread Count(w3wp)
+server\.NET CLR Memory\% Time in GC(w3wp)
+server\.NET CLR Memory\Allocated Bytes/sec(w3wp)

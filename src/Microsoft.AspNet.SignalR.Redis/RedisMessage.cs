@@ -1,37 +1,56 @@
 ﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.md in the project root for license information.
 
 using System;
-using System.Diagnostics.CodeAnalysis;
-using System.Text;
+using System.Collections.Generic;
+using System.IO;
 using Microsoft.AspNet.SignalR.Messaging;
-using Newtonsoft.Json;
 
 namespace Microsoft.AspNet.SignalR.Redis
 {
-    [Serializable]
     public class RedisMessage
     {
-        public RedisMessage(long id, Message[] message)
+        public long Id { get; private set; }
+
+        public IList<Message> Messages { get; private set; }
+
+        public static byte[] ToBytes(long id, IList<Message> messages)
         {
-            Id = id;
-            Messages = message;
+            if (messages == null)
+            {
+                throw new ArgumentNullException("messages");
+            }
+
+            using (var ms = new MemoryStream())
+            {
+                var binaryWriter = new BinaryWriter(ms);
+
+                binaryWriter.Write(id);
+                binaryWriter.Write(messages.Count);
+                for (int i = 0; i < messages.Count; i++)
+                {
+                    messages[i].WriteTo(ms);
+                }
+
+                return ms.ToArray();
+            }
         }
 
-        public long Id { get; set; }
-
-        [SuppressMessage("Microsoft.Performance", "CA1819:PropertiesShouldNotReturnArrays", Justification = "This type is used for seriaization")]
-        public Message[] Messages { get; set; }
-
-        public byte[] GetBytes()
+        public static RedisMessage FromBytes(byte[] data)
         {
-            var s = JsonConvert.SerializeObject(this);
-            return Encoding.UTF8.GetBytes(s);
-        }
+            using (var stream = new MemoryStream(data))
+            {
+                var binaryReader = new BinaryReader(stream);
+                var message = new RedisMessage();
+                message.Id = binaryReader.ReadInt64();
+                message.Messages = new List<Message>();
+                int count = binaryReader.ReadInt32();
+                for (int i = 0; i < count; i++)
+                {
+                    message.Messages.Add(Message.ReadFrom(stream));
+                }
 
-        public static RedisMessage Deserialize(byte[] data)
-        {
-            var s = Encoding.UTF8.GetString(data);
-            return JsonConvert.DeserializeObject<RedisMessage>(s);
+                return message;
+            }
         }
     }
 }

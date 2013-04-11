@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.md in the project root for license information.
 
+using System;
 using System.Diagnostics;
 
 namespace Microsoft.AspNet.SignalR.Infrastructure
@@ -11,6 +12,14 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
         public PerformanceCounterWrapper(PerformanceCounter counter)
         {
             _counter = counter;
+        }
+
+        public string CounterName
+        {
+            get
+            {
+                return _counter.CounterName;
+            }
         }
 
         public long RawValue
@@ -41,12 +50,19 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
 
         public void RemoveInstance()
         {
-            _counter.RemoveInstance();
+            try
+            {
+                _counter.RemoveInstance();
+            }
+            catch(NotImplementedException)
+            {
+            	// This happens on mono
+            }
         }
 
-        public void NextSample()
+        public CounterSample NextSample()
         {
-            _counter.NextSample();
+            return _counter.NextSample();
         }
     }
 }

@@ -7,6 +7,7 @@ using System.IO;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR.Hosting;
+using Microsoft.AspNet.SignalR.Infrastructure;
 
 namespace Microsoft.AspNet.SignalR.Transports
 {
@@ -52,7 +53,7 @@ namespace Microsoft.AspNet.SignalR.Transports
             {
                 if (_htmlOutputWriter == null)
                 {
-                    _htmlOutputWriter = new HTMLTextWriter(Context.Response.AsStream(), new UTF8Encoding());
+                    _htmlOutputWriter = new HTMLTextWriter(Context.Response);
                     _htmlOutputWriter.NewLine = "\n";
                 }
 
@@ -67,30 +68,18 @@ namespace Microsoft.AspNet.SignalR.Transports
                 return TaskAsyncHelper.Empty;
             }
 
-            return EnqueueOperation(() =>
-            {
-                HTMLOutputWriter.WriteRaw("<script>r(c, {});</script>");
-                HTMLOutputWriter.WriteLine();
-                HTMLOutputWriter.WriteLine();
-                HTMLOutputWriter.Flush();
-
-                return Context.Response.Flush();
-            });
+            // Ensure delegate continues to use the C# Compiler static delegate caching optimization.
+            return EnqueueOperation(state => PerformKeepAlive(state), this);
         }
 
         public override Task Send(PersistentResponse response)
         {
             OnSendingResponse(response);
 
-            return EnqueueOperation(() =>
-            {
-                HTMLOutputWriter.WriteRaw("<script>r(c, ");
-                JsonSerializer.Serialize(response, HTMLOutputWriter);
-                HTMLOutputWriter.WriteRaw(");</script>\r\n");
-                HTMLOutputWriter.Flush();
+            var context = new ForeverFrameTransportContext(this, response);
 
-                return Context.Response.Flush();
-            });
+            // Ensure delegate continues to use the C# Compiler static delegate caching optimization.
+            return EnqueueOperation(s => PerformSend(s), context);
         }
 
         protected internal override Task InitializeResponse(ITransportConnection connection)
@@ -103,26 +92,78 @@ namespace Microsoft.AspNet.SignalR.Transports
                 throw new InvalidOperationException(Resources.Error_InvalidForeverFrameId);
             }
 
-            return base.InitializeResponse(connection)
-                .Then(initScript =>
-                {
-                    return EnqueueOperation(() =>
-                    {
-                        Context.Response.ContentType = "text/html; charset=UTF-8";
+            string initScript = _initPrefix +
+                                frameId.ToString(CultureInfo.InvariantCulture) +
+                                _initSuffix;
 
-                        HTMLOutputWriter.WriteRaw(initScript);
-                        HTMLOutputWriter.Flush();
+            var context = new ForeverFrameTransportContext(this, initScript);
 
-                        return Context.Response.Flush();
-                    });
-                },
-                _initPrefix + frameId.ToString(CultureInfo.InvariantCulture) + _initSuffix);
+            // Ensure delegate continues to use the C# Compiler static delegate caching optimization.
+            return base.InitializeResponse(connection).Then(s => Initialize(s), context);
         }
 
-        private class HTMLTextWriter : StreamWriter
+        private static Task Initialize(object state)
         {
-            public HTMLTextWriter(Stream stream, Encoding encoding)
-                : base(stream, encoding)
+            var context = (ForeverFrameTransportContext)state;
+
+            var initContext = new ForeverFrameTransportContext(context.Transport, context.State);
+
+            // Ensure delegate continues to use the C# Compiler static delegate caching optimization.
+            return context.Transport.EnqueueOperation(s => WriteInit(s), initContext);
+        }
+
+        private static Task WriteInit(object state)
+        {
+            var context = (ForeverFrameTransportContext)state;
+
+            context.Transport.Context.Response.ContentType = "text/html; charset=UTF-8";
+
+            context.Transport.HTMLOutputWriter.WriteRaw((string)context.State);
+            context.Transport.HTMLOutputWriter.Flush();
+
+            return context.Transport.Context.Response.Flush();
+        }
+
+        private static Task PerformSend(object state)
+        {
+            var context = (ForeverFrameTransportContext)state;
+
+            context.Transport.HTMLOutputWriter.WriteRaw("<script>r(c, ");
+            context.Transport.JsonSerializer.Serialize(context.State, context.Transport.HTMLOutputWriter);
+            context.Transport.HTMLOutputWriter.WriteRaw(");</script>\r\n");
+            context.Transport.HTMLOutputWriter.Flush();
+
+            return context.Transport.Context.Response.Flush();
+        }
+
+        private static Task PerformKeepAlive(object state)
+        {
+            var transport = (ForeverFrameTransport)state;
+
+            transport.HTMLOutputWriter.WriteRaw("<script>r(c, {});</script>");
+            transport.HTMLOutputWriter.WriteLine();
+            transport.HTMLOutputWriter.WriteLine();
+            transport.HTMLOutputWriter.Flush();
+
+            return transport.Context.Response.Flush();
+        }
+
+        private class ForeverFrameTransportContext
+        {
+            public ForeverFrameTransport Transport;
+            public object State;
+
+            public ForeverFrameTransportContext(ForeverFrameTransport transport, object state)
+            {
+                Transport = transport;
+                State = state;
+            }
+        }
+
+        private class HTMLTextWriter : BufferTextWriter
+        {
+            public HTMLTextWriter(IResponse response)
+                : base(response)
             {
             }
 

@@ -1,11 +1,8 @@
 ﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.md in the project root for license information.
 
 using System;
-using System.Collections.Generic;
-using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
-using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR.Client.Http;
@@ -35,17 +32,17 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
 #endif
             negotiateUrl += AppendCustomQueryString(connection, negotiateUrl);
 
-            return httpClient.Get(negotiateUrl, connection.PrepareRequest).Then(response =>
-            {
-                string raw = response.ReadAsString();
+            return httpClient.Get(negotiateUrl, connection.PrepareRequest)
+                            .Then(response => response.ReadAsString())
+                            .Then(raw =>
+                            {
+                                if (String.IsNullOrEmpty(raw))
+                                {
+                                    throw new InvalidOperationException(String.Format(CultureInfo.CurrentCulture, Resources.Error_ServerNegotiationFailed));
+                                }
 
-                if (String.IsNullOrEmpty(raw))
-                {
-                    throw new InvalidOperationException(String.Format(CultureInfo.CurrentCulture, Resources.Error_ServerNegotiationFailed));
-                }
-
-                return JsonConvert.DeserializeObject<NegotiationResponse>(raw);
-            });
+                                return JsonConvert.DeserializeObject<NegotiationResponse>(raw);
+                            });
         }
 
         [SuppressMessage("Microsoft.Design", "CA1062:Validate arguments of public methods", MessageId = "0", Justification = "This is called by internally")]
@@ -103,7 +100,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
 
             string appender = "",
                    customQuery = connection.QueryString,
-                   qs = "";            
+                   qs = "";
 
             if (!String.IsNullOrEmpty(customQuery))
             {
@@ -136,6 +133,8 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
             {
                 throw new ArgumentNullException("connection");
             }
+
+            connection.UpdateLastKeepAlive();
 
             timedOut = false;
             disconnected = false;
@@ -181,12 +180,6 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
                         }
                         catch (Exception ex)
                         {
-#if NET35
-                            Debug.WriteLine(String.Format(CultureInfo.InvariantCulture, "Failed to process message: {0}", ex));
-#else
-                            Debug.WriteLine("Failed to process message: {0}", ex);
-#endif
-
                             connection.OnError(ex);
                         }
                     }
@@ -196,14 +189,10 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
             }
             catch (Exception ex)
             {
-#if NET35
-                Debug.WriteLine(String.Format(CultureInfo.InvariantCulture, "Failed to response: {0}", ex));
-#else
-                Debug.WriteLine("Failed to response: {0}", ex);
-#endif
                 connection.OnError(ex);
             }
         }
+
 
         private static void UpdateGroups(IConnection connection, JToken groupsToken)
         {

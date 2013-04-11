@@ -4,6 +4,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR.Client.Transports.ServerSentEvents;
+using Moq;
 using Xunit;
 
 namespace Microsoft.AspNet.SignalR.Tests
@@ -16,7 +17,8 @@ namespace Microsoft.AspNet.SignalR.Tests
             var memoryStream = MemoryStream("data:somedata\n\n");
             var wh = new ManualResetEvent(false);
             var tcs = new TaskCompletionSource<string>();
-            var eventSource = new EventSourceStreamReader(memoryStream);
+            var connection = new Mock<Client.IConnection>();
+            var eventSource = new EventSourceStreamReader(connection.Object, memoryStream);
 
             eventSource.Opened = () => wh.Set();
             eventSource.Message = sseEvent => tcs.TrySetResult(sseEvent.Data);
@@ -31,7 +33,8 @@ namespace Microsoft.AspNet.SignalR.Tests
         public void CloseThrowsSouldntTakeProcessDown()
         {
             var memoryStream = MemoryStream("");
-            var eventSource = new EventSourceStreamReader(memoryStream);
+            var connection = new Mock<Client.IConnection>();
+            var eventSource = new EventSourceStreamReader(connection.Object, memoryStream);
             var wh = new ManualResetEventSlim();
 
             eventSource.Closed = (ex) =>
@@ -63,6 +66,14 @@ namespace Microsoft.AspNet.SignalR.Tests
         private MemoryStream MemoryStream(string data)
         {
             return new MemoryStream(Encoding.UTF8.GetBytes(data));
+        }
+
+        private class DummyTextWriter : TextWriter
+        {
+            public override Encoding Encoding
+            {
+                get { return Encoding.UTF8; }
+            }
         }
     }
 }

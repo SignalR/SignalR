@@ -7,49 +7,77 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
 {
     internal static class CancellationTokenExtensions
     {
-        public static IDisposable SafeRegister<T>(this CancellationToken cancellationToken, Action<T> callback, T state)
+        public static IDisposable SafeRegister(this CancellationToken cancellationToken, Action<object> callback, object state)
         {
-            var callbackInvoked = 0;
+            var callbackWrapper = new CancellationCallbackWrapper(callback, state);
 
-            try
+            // Ensure delegate continues to use the C# Compiler static delegate caching optimization.
+            CancellationTokenRegistration registration = cancellationToken.Register(s => Cancel(s),
+                                                                                    callbackWrapper,
+                                                                                    useSynchronizationContext: false);
+
+            var disposeCancellationState = new DiposeCancellationState(callbackWrapper, registration);
+
+            // Ensure delegate continues to use the C# Compiler static delegate caching optimization.
+            return new DisposableAction(s => Dispose(s), disposeCancellationState);
+        }
+
+        private static void Cancel(object state)
+        {
+            ((CancellationCallbackWrapper)state).TryInvoke();
+        }
+
+        private static void Dispose(object state)
+        {
+            ((DiposeCancellationState)state).TryDispose();
+        }
+
+        private class DiposeCancellationState
+        {
+            private readonly CancellationCallbackWrapper _callbackWrapper;
+            private readonly CancellationTokenRegistration _registration;
+
+            public DiposeCancellationState(CancellationCallbackWrapper callbackWrapper, CancellationTokenRegistration registration)
             {
-                CancellationTokenRegistration registration = cancellationToken.Register(callbackState =>
-                {
-                    if (Interlocked.Exchange(ref callbackInvoked, 1) == 0)
-                    {
-                        callback((T)callbackState);
-                    }
-                },
-                state,
-                useSynchronizationContext: false);
-
-                return new DisposableAction(() =>
-                {
-                    // This normally waits until the callback is finished invoked but we don't care
-                    if (Interlocked.Exchange(ref callbackInvoked, 1) == 0)
-                    {
-                        try
-                        {
-                            registration.Dispose();
-                        }
-                        catch (ObjectDisposedException)
-                        {
-                            // Bug #1549, .NET 4.0 has a bug where this throws if the CTS
-                            // has been disposed
-                        }
-                    }
-                });
+                _callbackWrapper = callbackWrapper;
+                _registration = registration;
             }
-            catch (ObjectDisposedException)
+
+            public void TryDispose()
             {
-                if (Interlocked.Exchange(ref callbackInvoked, 1) == 0)
+                // This normally waits until the callback is finished invoked but we don't care
+                if (_callbackWrapper.TrySetInvoked())
                 {
-                    callback(state);
+                    // Bug #1549, .NET 4.0 has a bug where this throws if the CTS
+                    _registration.Dispose();
                 }
             }
+        }
 
-            // Noop
-            return new DisposableAction(() => { });
+        private class CancellationCallbackWrapper
+        {
+            private readonly Action<object> _callback;
+            private readonly object _state;
+            private int _callbackInvoked;
+
+            public CancellationCallbackWrapper(Action<object> callback, object state)
+            {
+                _callback = callback;
+                _state = state;
+            }
+
+            public bool TrySetInvoked()
+            {
+                return Interlocked.Exchange(ref _callbackInvoked, 1) == 0;
+            }
+
+            public void TryInvoke()
+            {
+                if (TrySetInvoked())
+                {
+                    _callback(_state);
+                }
+            }
         }
     }
 }

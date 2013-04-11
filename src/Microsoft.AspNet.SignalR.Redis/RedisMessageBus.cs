@@ -2,114 +2,94 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
+using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using System.Threading.Tasks;
 using BookSleeve;
-using Microsoft.AspNet.SignalR.Infrastructure;
 using Microsoft.AspNet.SignalR.Messaging;
 
 namespace Microsoft.AspNet.SignalR.Redis
 {
+    /// <summary>
+    /// Uses Redis pub-sub to scale-out SignalR applications in web farms.
+    /// </summary>
     public class RedisMessageBus : ScaleoutMessageBus
     {
+        private const int DefaultBufferSize = 1000;
+
         private readonly int _db;
-        private readonly string[] _keys;
+        private readonly string _key;
+        private readonly Func<RedisConnection> _connectionFactory;
+
         private RedisConnection _connection;
         private RedisSubscriberConnection _channel;
-        private Task _connectTask;
+        private int _state;
 
-        private readonly TaskQueue _publishQueue = new TaskQueue();
-
-        public RedisMessageBus(string server, int port, string password, int db, IEnumerable<string> keys, IDependencyResolver resolver)
-            : base(resolver)
+        [SuppressMessage("Microsoft.Usage", "CA2214:DoNotCallOverridableMethodsInConstructors", Justification = "Reviewed")]
+        public RedisMessageBus(IDependencyResolver resolver, RedisScaleoutConfiguration configuration)
+            : base(resolver, configuration)
         {
-            _db = db;
-            _keys = keys.ToArray();
-
-            _connection = new RedisConnection(host: server, port: port, password: password);
-
-            _connection.Closed += OnConnectionClosed;
-            _connection.Error += OnConnectionError;
-
-            // Start the connection
-            _connectTask = _connection.Open().Then(() =>
+            if (configuration == null)
             {
-                // Create a subscription channel in redis
-                _channel = _connection.GetOpenSubscriberChannel();
+                throw new ArgumentNullException("configuration");
+            }
 
-                // Subscribe to the registered connections
-                _channel.Subscribe(_keys, OnMessage);
+            _connectionFactory = configuration.ConnectionFactory;
+            _db = configuration.Database;
+            _key = configuration.EventKey;
 
-                // Dirty hack but it seems like subscribe returns before the actual
-                // subscription is properly setup in some cases
-                while (_channel.SubscriptionCount == 0)
-                {
-                    Thread.Sleep(500);
-                }
-            });
+            ReconnectDelay = TimeSpan.FromSeconds(2);
+            ConnectWithRetry();
         }
 
-        protected override Task Send(IList<Message> messages)
+        public TimeSpan ReconnectDelay { get; set; }
+
+        protected override Task Send(int streamIndex, IList<Message> messages)
         {
-            return _connectTask.Then(msgs =>
-            {
-                var taskCompletionSource = new TaskCompletionSource<object>();
+            var context = new SendContext(_key, messages, _connection);
 
-                // Group messages by source (connection id)
-                var messagesBySource = msgs.GroupBy(m => m.Source);
+            // Increment the channel number
+            return _connection.Strings.Increment(_db, _key)
+                               .Then((id, ctx) =>
+                               {
+                                   byte[] data = RedisMessage.ToBytes(id, ctx.Messages);
 
-                SendImpl(messagesBySource.GetEnumerator(), taskCompletionSource);
-
-                return taskCompletionSource.Task;
-            },
-            messages);
-        }
-
-        private void SendImpl(IEnumerator<IGrouping<string, Message>> enumerator, TaskCompletionSource<object> taskCompletionSource)
-        {
-            if (!enumerator.MoveNext())
-            {
-                taskCompletionSource.TrySetResult(null);
-            }
-            else
-            {
-                IGrouping<string, Message> group = enumerator.Current;
-
-                // Get the channel index we're going to use for this message
-                int index = Math.Abs(group.Key.GetHashCode()) % _keys.Length;
-
-                string key = _keys[index];
-
-                // Increment the channel number
-                _connection.Strings.Increment(_db, key)
-                                   .Then((id, k) =>
-                                   {
-                                       var message = new RedisMessage(id, group.ToArray());
-
-                                       return _connection.Publish(k, message.GetBytes());
-                                   }, key)
-                                   .Then((enumer, tcs) => SendImpl(enumer, tcs), enumerator, taskCompletionSource)
-                                   .ContinueWithNotComplete(taskCompletionSource);
-            }
+                                   return ctx.Connection.Publish(ctx.Key, data);
+                               },
+                               context);
         }
 
         private void OnConnectionClosed(object sender, EventArgs e)
         {
-            // Should we auto reconnect?
+            Interlocked.Exchange(ref _state, State.Disposed);
+
+            Trace.TraceInformation("OnConnectionClosed()");
         }
 
-        private void OnConnectionError(object sender, BookSleeve.ErrorEventArgs e)
+        private void OnConnectionError(object sender, ErrorEventArgs e)
         {
-            // How do we bubble errors?
+            Trace.TraceError("OnConnectionError - " + e.Cause + ". " + e.Exception.GetBaseException());
+
+            // Change the state to closed and retry connecting
+            if (Interlocked.CompareExchange(ref _state,
+                                            State.Closed,
+                                            State.Connected) == State.Connected)
+            {
+                // Start buffering any sends that they are preserved
+                OnError(0, e.Exception);
+
+                // Retry until the connection reconnects
+                ConnectWithRetry();
+            }
         }
 
         private void OnMessage(string key, byte[] data)
         {
             // The key is the stream id (channel)
-            var message = RedisMessage.Deserialize(data);
+            var message = RedisMessage.FromBytes(data);
 
-            _publishQueue.Enqueue(() => OnReceived(key, (ulong)message.Id, message.Messages));
+            OnReceived(0, (ulong)message.Id, message.Messages);
         }
 
         protected override void Dispose(bool disposing)
@@ -118,17 +98,122 @@ namespace Microsoft.AspNet.SignalR.Redis
             {
                 if (_channel != null)
                 {
-                    _channel.Unsubscribe(_keys);
+                    _channel.Unsubscribe(_key);
                     _channel.Close(abort: true);
                 }
 
                 if (_connection != null)
                 {
                     _connection.Close(abort: true);
-                }                
+                }
             }
 
             base.Dispose(disposing);
+        }
+
+        private void ConnectWithRetry()
+        {
+            // Attempt to change to connecting
+            if (Interlocked.CompareExchange(ref _state,
+                                            State.Connecting,
+                                            State.Connected) == State.Connecting)
+            {
+                // Already connected so bail
+                return;
+            }
+
+            Task connectTask = ConnectToRedis();
+
+            connectTask.ContinueWith(task =>
+            {
+                if (task.IsFaulted)
+                {
+                    TaskAsyncHelper.Delay(ReconnectDelay)
+                                   .Then(bus => bus.ConnectWithRetry(), this);
+                }
+                else
+                {
+                    Interlocked.Exchange(ref _state, State.Connected);
+
+                    Open(0);
+                }
+            },
+            TaskContinuationOptions.ExecuteSynchronously);
+        }
+
+        [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "Exceptions are caught")]
+        private Task ConnectToRedis()
+        {
+            if (_connection != null)
+            {
+                _connection.Closed -= OnConnectionClosed;
+                _connection.Error -= OnConnectionError;
+                _connection.Dispose();
+                _connection = null;
+            }
+
+            // Create a new connection to redis with the factory
+            RedisConnection connection = _connectionFactory();
+
+            connection.Closed += OnConnectionClosed;
+            connection.Error += OnConnectionError;
+
+            try
+            {
+                Trace.TraceInformation("Connecting...");
+
+                // Start the connection
+                return connection.Open().Then(() =>
+                {
+                    Trace.TraceInformation("Connection opened");
+
+                    // Create a subscription channel in redis
+                    RedisSubscriberConnection channel = connection.GetOpenSubscriberChannel();
+
+                    // Subscribe to the registered connections
+                    channel.Subscribe(_key, OnMessage);
+
+                    // Dirty hack but it seems like subscribe returns before the actual
+                    // subscription is properly setup in some cases
+                    while (channel.SubscriptionCount == 0)
+                    {
+                        Thread.Sleep(500);
+                    }
+
+                    Trace.TraceVerbose("Subscribed to event " + _key);
+
+                    _channel = channel;
+                    _connection = connection;
+                });
+            }
+            catch (Exception ex)
+            {
+                Trace.TraceError("Error connecting to redis - " + ex.GetBaseException());
+
+                return TaskAsyncHelper.FromError(ex);
+            }
+        }
+
+        private class SendContext
+        {
+            public string Key;
+            public IList<Message> Messages;
+            public RedisConnection Connection;
+
+            public SendContext(string key, IList<Message> messages, RedisConnection connection)
+            {
+                Key = key;
+                Messages = messages;
+                Connection = connection;
+            }
+        }
+
+        private static class State
+        {
+            public const int Closed = 0;
+            public const int Connecting = 1;
+            public const int Connected = 2;
+            public const int Disposed = 3;
         }
     }
 }

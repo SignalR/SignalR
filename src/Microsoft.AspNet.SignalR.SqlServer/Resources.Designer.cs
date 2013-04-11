@@ -68,5 +68,41 @@ namespace Microsoft.AspNet.SignalR.SqlServer {
                 return ResourceManager.GetString("Error_SignalRSQLScaleOutNewerThanCurrentVersion", resourceCulture);
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The streamIndex value {0} is higher than the maximum configured index {1}.
+        /// </summary>
+        internal static string Error_StreamIndexOutOfRange {
+            get {
+                return ResourceManager.GetString("Error_StreamIndexOutOfRange", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to An unexpected SQL notification type was received. Details: Type={0}, Source={1}, Info={2}.
+        /// </summary>
+        internal static string Error_UnexpectedSqlNotificationType {
+            get {
+                return ResourceManager.GetString("Error_UnexpectedSqlNotificationType", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The SQL Server edition of the target server is unsupported, e.g. SQL Azure..
+        /// </summary>
+        internal static string Error_UnsupportedSqlEdition {
+            get {
+                return ResourceManager.GetString("Error_UnsupportedSqlEdition", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Unsupported value for parameter &apos;{0}&apos;. The value must be greater than 1..
+        /// </summary>
+        internal static string Error_ValueMustBeGreaterThan1 {
+            get {
+                return ResourceManager.GetString("Error_ValueMustBeGreaterThan1", resourceCulture);
+            }
+        }
     }
 }

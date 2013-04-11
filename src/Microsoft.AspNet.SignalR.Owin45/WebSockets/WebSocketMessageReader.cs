@@ -11,6 +11,8 @@ namespace Microsoft.AspNet.SignalR.WebSockets
 {
     internal static class WebSocketMessageReader
     {
+        private static readonly ArraySegment<byte> _emptyArraySegment = new ArraySegment<byte>(new byte[0]);
+
         private static byte[] BufferSliceToByteArray(byte[] buffer, int count)
         {
             byte[] newArray = new byte[count];
@@ -23,32 +25,28 @@ namespace Microsoft.AspNet.SignalR.WebSockets
             return Encoding.UTF8.GetString(buffer, 0, count);
         }
 
-        public static async Task<WebSocketMessage> ReadMessageAsync(WebSocket webSocket, byte[] buffer, int maxMessageSize, CancellationToken disconnectToken)
+        public static async Task<WebSocketMessage> ReadMessageAsync(WebSocket webSocket, int bufferSize, int maxMessageSize, CancellationToken disconnectToken)
         {
-            var arraySegment = new ArraySegment<byte>(buffer);
+            WebSocketMessage message;
 
-            WebSocketReceiveResult receiveResult = await webSocket.ReceiveAsync(arraySegment, disconnectToken).ConfigureAwait(continueOnCapturedContext: false);
+            // Read the first time with an empty array
+            WebSocketReceiveResult receiveResult = await webSocket.ReceiveAsync(_emptyArraySegment, disconnectToken).ConfigureAwait(continueOnCapturedContext: false);
 
-            // special-case close messages since they might not have the EOF flag set
-            if (receiveResult.MessageType == WebSocketMessageType.Close)
+            if (TryGetMessage(receiveResult, null, out message))
             {
-                return new WebSocketMessage(null, WebSocketMessageType.Close);
+                return message;
             }
 
-            if (receiveResult.EndOfMessage)
+            var buffer = new byte[bufferSize];
+
+            // Now read with the real buffer
+            var arraySegment = new ArraySegment<byte>(buffer);
+
+            receiveResult = await webSocket.ReceiveAsync(arraySegment, disconnectToken).ConfigureAwait(continueOnCapturedContext: false);
+
+            if (TryGetMessage(receiveResult, buffer, out message))
             {
-                // we anticipate that single-fragment messages will be common, so we optimize for them
-                switch (receiveResult.MessageType)
-                {
-                    case WebSocketMessageType.Binary:
-                        return new WebSocketMessage(BufferSliceToByteArray(buffer, receiveResult.Count), WebSocketMessageType.Binary);
-
-                    case WebSocketMessageType.Text:
-                        return new WebSocketMessage(BufferSliceToString(buffer, receiveResult.Count), WebSocketMessageType.Text);
-
-                    default:
-                        throw new Exception("This code path should never be hit.");
-                }
+                return message;
             }
             else
             {
@@ -61,12 +59,19 @@ namespace Microsoft.AspNet.SignalR.WebSockets
                 {
                     // loop until an error occurs or we see EOF
                     receiveResult = await webSocket.ReceiveAsync(arraySegment, disconnectToken).ConfigureAwait(continueOnCapturedContext: false);
+
+                    if (receiveResult.MessageType == WebSocketMessageType.Close)
+                    {
+                        return WebSocketMessage.CloseMessage;
+                    }
+
                     if (receiveResult.MessageType != originalMessageType)
                     {
                         throw new InvalidOperationException("Incorrect message type");
                     }
 
                     bytebuffer.Append(BufferSliceToByteArray(buffer, receiveResult.Count));
+
                     if (receiveResult.EndOfMessage)
                     {
                         switch (receiveResult.MessageType)
@@ -78,12 +83,52 @@ namespace Microsoft.AspNet.SignalR.WebSockets
                                 return new WebSocketMessage(bytebuffer.GetString(), WebSocketMessageType.Text);
 
                             default:
-                                throw new Exception("This code path should never be hit.");
+                                throw new InvalidOperationException("Unknown message type");
                         }
                     }
                 }
             }
         }
 
+        private static bool TryGetMessage(WebSocketReceiveResult receiveResult, byte[] buffer, out WebSocketMessage message)
+        {
+            message = null;
+
+            if (receiveResult.MessageType == WebSocketMessageType.Close)
+            {
+                message = WebSocketMessage.CloseMessage;
+            }
+            else if (receiveResult.EndOfMessage)
+            {
+                // we anticipate that single-fragment messages will be common, so we optimize for them
+                switch (receiveResult.MessageType)
+                {
+                    case WebSocketMessageType.Binary:
+                        if (buffer == null)
+                        {
+                            message = WebSocketMessage.EmptyBinaryMessage;
+                        }
+                        else
+                        {
+                            message = new WebSocketMessage(BufferSliceToByteArray(buffer, receiveResult.Count), WebSocketMessageType.Binary);
+                        }
+                        break;
+                    case WebSocketMessageType.Text:
+                        if (buffer == null)
+                        {
+                            message = WebSocketMessage.EmptyTextMessage;
+                        }
+                        else
+                        {
+                            message = new WebSocketMessage(BufferSliceToString(buffer, receiveResult.Count), WebSocketMessageType.Text);
+                        }
+                        break;
+                    default:
+                        throw new InvalidOperationException("Unknown message type");
+                }
+            }
+
+            return message != null;
+        }
     }
 }

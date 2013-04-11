@@ -5,6 +5,17 @@
         rfcWebSockets = !!window.WebSocket,
         iosVersion;
 
+    function wrapConnectionStart(connection, end, assert) {
+        var savedConnectionStart = connection.start;
+
+        connection.start = function () {
+            return savedConnectionStart.apply(connection, arguments).fail(function (reason) {
+                assert.ok(false, "Failed to initiate signalr connection: " + window.JSON.stringify(reason));
+                end();
+            });
+        }
+    }
+
     if (ios && rfcWebSockets) {
         iosVersion = navigator.userAgent.match(/OS (\d+)/);
         if (iosVersion && iosVersion.length === 2) {
@@ -54,31 +65,33 @@
 
             return defaultTestTimeout;
         })(),
-        createHubConnection: function (testName) {
+        createHubConnection: function (end, assert, testName, url) {
             var connection,
-                qs = (testName ? "test=" + window.encodeURIComponent(testName) : "");
+                qs = (testName ? "test=" + window.encodeURIComponent(testName) : ""),
+                urlSet = !!url;
 
+            url = url ? url : 'signalr';
             if (window.document.testUrl !== 'auto') {
-                connection = $.hubConnection(window.document.testUrl, { qs: qs });
-            } else {
-                connection = $.hubConnection('signalr', { useDefaultPath: false, qs: qs });
+                url = window.document.testUrl + url;
             }
 
+            connection = $.hubConnection(url, { useDefaultPath: false, qs: qs })
             connection.logging = true;
+            wrapConnectionStart(connection, end, assert);
 
             return connection;
         },
-        createConnection: function (url, testName) {
+        createConnection: function (url, end, assert, testName) {
             var connection,
                 qs = (testName ? "test=" + window.encodeURIComponent(testName) : "");
 
             if (window.document.testUrl !== 'auto') {
-                connection = $.connection(window.document.testUrl + '/' + url, qs);
-            } else {
-                connection = $.connection(url, qs);
+                url = window.document.testUrl + url;
             }
 
+            connection = $.connection(url, qs);
             connection.logging = true;
+            wrapConnectionStart(connection, end, assert);
 
             return connection;
         }

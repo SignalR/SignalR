@@ -1,5 +1,6 @@
 ﻿using System.Diagnostics;
 using Microsoft.AspNet.SignalR.Hubs;
+using Microsoft.AspNet.SignalR.Redis;
 
 namespace Microsoft.AspNet.SignalR.Samples
 {
@@ -8,10 +9,16 @@ namespace Microsoft.AspNet.SignalR.Samples
         public static void ConfigureSignalR(IDependencyResolver dependencyResolver, IHubPipeline hubPipeline)
         {
             // Uncomment the following line to enable scale-out using SQL Server
-            // dependencyResolver.UseSqlServer(ConfigurationManager.ConnectionStrings["SignalRSamples"].ConnectionString);
+            //dependencyResolver.UseSqlServer(System.Configuration.ConfigurationManager.ConnectionStrings["SignalRSamples"].ConnectionString);
 
-            // Uncomment the following line to enable scale-out using Redis 
-            // dependencyResolver.UseRedis("127.0.0.1", 6379, "", new[] { "SignalRSamples" }); 
+            // Uncomment the following line to enable scale-out using Redis
+            //var config = new RedisScaleoutConfiguration("127.0.0.1", 6379, "", "SignalRSamples");
+            //config.RetryOnError = true;
+            //dependencyResolver.UseRedis(config);
+            //dependencyResolver.UseRedis("127.0.0.1", 6379, "", "SignalRSamples");
+
+            // Uncomment the following line to enable scale-out using service bus
+            //dependencyResolver.UseServiceBus("connection string", "Microsoft.AspNet.SignalR.Samples");
 
             hubPipeline.AddModule(new SamplePipelineModule());
         }

@@ -40,6 +40,17 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
             _transports = transports;
         }
 
+        /// <summary>
+        /// Indicates whether or not the active transport supports keep alive
+        /// </summary>
+        public bool SupportsKeepAlive
+        {
+            get
+            {
+                return _transport != null ? _transport.SupportsKeepAlive : false;
+            }
+        }
+
         public string Name
         {
             get
@@ -90,16 +101,10 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
             {
                 if (task.IsFaulted)
                 {
-#if !WINDOWS_PHONE && !SILVERLIGHT && !NETFX_CORE
                     // Make sure we observe the exception
-                    var ex = task.Exception;
-                    Trace.TraceError("SignalR exception thrown by Task: {0}", ex);
-#endif
-#if NET35
-                    Debug.WriteLine(System.String.Format(CultureInfo.InvariantCulture, "Auto: Failed to connect to using transport {0}", (object)transport.GetType().Name));
-#else
-                    Debug.WriteLine("Auto: Failed to connect to using transport {0}", (object)transport.GetType().Name);
-#endif
+                    var ex = task.Exception.GetBaseException();
+
+                    connection.Trace(TraceLevels.Events, "Auto: Failed to connect to using transport {0}. {1}", transport.Name, ex);
 
                     // If that transport fails to initialize then fallback
                     var next = index + 1;
@@ -132,11 +137,33 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
             return _transport.Send(connection, data);
         }
 
-        public void Abort(IConnection connection)
+        public void Abort(IConnection connection, TimeSpan timeout)
         {
             if (_transport != null)
             {
-                _transport.Abort(connection);
+                _transport.Abort(connection, timeout);
+            }
+        }
+
+        public void LostConnection(IConnection connection)
+        {
+            _transport.LostConnection(connection);
+        }
+
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                if (_transport != null)
+                {
+                    _transport.Dispose();
+                }
             }
         }
     }

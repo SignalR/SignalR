@@ -13,14 +13,16 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
         private readonly ConcurrentDictionary<string, string> _stringMaximizer = new ConcurrentDictionary<string, string>();
         private int _lastMinifiedKey = -1;
 
+        private readonly Func<string, string> _createMinifiedString;
+
+        public StringMinifier()
+        {
+            _createMinifiedString = CreateMinifiedString;
+        }
+
         public string Minify(string fullString)
         {
-            return _stringMinifier.GetOrAdd(fullString, _ =>
-            {
-                var minString = GetStringFromInt((uint)Interlocked.Increment(ref _lastMinifiedKey));
-                _stringMaximizer.TryAdd(minString, fullString);
-                return minString;
-            });
+            return _stringMinifier.GetOrAdd(fullString, _createMinifiedString);
         }
 
         public string Unminify(string minifiedString)
@@ -38,6 +40,13 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
                 string value;
                 _stringMaximizer.TryRemove(minifiedString, out value);
             }
+        }
+
+        private string CreateMinifiedString(string fullString)
+        {
+            var minString = GetStringFromInt((uint)Interlocked.Increment(ref _lastMinifiedKey));
+            _stringMaximizer.TryAdd(minString, fullString);
+            return minString;
         }
 
         [SuppressMessage("Microsoft.Usage", "CA2201:DoNotRaiseReservedExceptionTypes", Justification = "This is a valid exception to throw.")]

@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="us-ascii"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns="http://www.microsoft.com/2011/12/aaptperffun#1">
+
+  <metadata testName ="Stress" teamName ="SignalR" description="SignalR Stress Tests">
+    <trackingVariation name="ConnectionRun">
+      <metric name="Message Bus Messages Received/Sec" selection="Average" units="Numeric">
+        <target value="8000000" labConfig="XSPPERF8S_WIN8_X64" />
+      </metric>
+    </trackingVariation>
+    <trackingVariation name="MemoryHostRun">
+      <metric name="Message Bus Messages Received/Sec" selection="Average" units="Numeric">
+        <target value="4000000" labConfig="XSPPERF8S_WIN8_X64" />
+      </metric>
+    </trackingVariation>
+    <trackingVariation name="MessageBusRun">
+      <metric name="Message Bus Messages Received/Sec" selection="Average" units="Numeric">
+        <target value="8000000" labConfig="XSPPERF8S_WIN8_X64" />
+      </metric>
+    </trackingVariation>
+  </metadata>
+
+  <commands>
+    <command name="ConnectionRun" wait="Exit">
+      Microsoft.AspNet.SignalR.Stress.exe /Run:ConnectionRun /Senders:5
+    </command>
+    <command name="MemoryHostRun" wait="Exit">
+      Microsoft.AspNet.SignalR.Stress.exe /Run:MemoryHost /Senders:5
+    </command>
+    <command name="MessageBusRun" wait="Exit">
+      Microsoft.AspNet.SignalR.Stress.exe /Run:MessageBus /Senders:5
+    </command>
+  </commands>
+
+  <plan>
+    <run command="ConnectionRun" role="server-01" output="true" />
+    <run command="MemoryHostRun" role="server-01" output="true" />
+    <run command="MessageBusRun" role="server-01" output="true" />
+  </plan>
+</config>

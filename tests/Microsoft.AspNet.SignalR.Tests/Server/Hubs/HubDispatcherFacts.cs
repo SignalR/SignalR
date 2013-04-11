@@ -129,10 +129,9 @@ namespace Microsoft.AspNet.SignalR.Tests.Server.Hubs
 
             // Assert
             Assert.Equal("application/json; charset=UTF-8", contentType);
-            Assert.Equal(1, buffer.Count);
-            Assert.NotNull(buffer[0]);
+            Assert.True(buffer.Count > 0);
 
-            using (var reader = new StringReader(buffer[0]))
+            using (var reader = new StringReader(String.Join(String.Empty, buffer)))
             {
                 var hubResponse = (HubResponse)json.Deserialize(reader, typeof(HubResponse));
                 Assert.Contains("ErrorHub.Error", hubResponse.Error);
@@ -179,10 +178,9 @@ namespace Microsoft.AspNet.SignalR.Tests.Server.Hubs
 
             // Assert
             Assert.Equal("application/json; charset=UTF-8", contentType);
-            Assert.Equal(1, buffer.Count);
-            Assert.NotNull(buffer[0]);
-
-            using (var reader = new StringReader(buffer[0]))
+            Assert.True(buffer.Count > 0);
+            
+            using (var reader = new StringReader(String.Join(String.Empty, buffer)))
             {
                 var hubResponse = (HubResponse)json.Deserialize(reader, typeof(HubResponse));
                 Assert.Contains("ErrorHub.ErrorTask", hubResponse.Error);
@@ -229,10 +227,9 @@ namespace Microsoft.AspNet.SignalR.Tests.Server.Hubs
 
             // Assert
             Assert.Equal("application/json; charset=UTF-8", contentType);
-            Assert.Equal(1, buffer.Count);
-            Assert.NotNull(buffer[0]);
+            Assert.True(buffer.Count > 0);
 
-            using (var reader = new StringReader(buffer[0]))
+            using (var reader = new StringReader(String.Join(String.Empty, buffer)))
             {
                 var hubResponse = (HubResponse)json.Deserialize(reader, typeof(HubResponse));
                 Assert.Equal("Custom Error.", hubResponse.Error);
@@ -278,10 +275,9 @@ namespace Microsoft.AspNet.SignalR.Tests.Server.Hubs
 
             // Assert
             Assert.Equal("application/json; charset=UTF-8", contentType);
-            Assert.Equal(1, buffer.Count);
-            Assert.NotNull(buffer[0]);
+            Assert.True(buffer.Count > 0);
 
-            using (var reader = new StringReader(buffer[0]))
+            using (var reader = new StringReader(String.Join(String.Empty, buffer)))
             {
                 var hubResponse = (HubResponse)json.Deserialize(reader, typeof(HubResponse));
                 Assert.Equal("Custom Error from task.", hubResponse.Error);

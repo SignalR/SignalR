@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Threading;
 using Microsoft.AspNet.SignalR.Client;
 using Microsoft.AspNet.SignalR.Client.Http;
@@ -58,6 +59,7 @@ namespace Microsoft.AspNet.SignalR.Tests
             var connection = new Mock<Client.IConnection>(MockBehavior.Strict);
             connection.Setup(c => c.OnReceived(It.IsAny<JToken>())).Throws(ex);
             connection.Setup(c => c.OnError(ex));
+            connection.Setup(c => c.UpdateLastKeepAlive());
 
             // PersistentResponse
             TransportHelper.ProcessResponse(connection.Object, "{\"M\":{}}", out timedOut, out disconnected);
@@ -77,38 +79,50 @@ namespace Microsoft.AspNet.SignalR.Tests
             var httpClient = new Mock<IHttpClient>(MockBehavior.Strict);
             var connection = new Mock<Client.IConnection>(MockBehavior.Strict);
 
-            response.Setup(r => r.ReadAsString()).Returns("{}");
-
-            httpClient.Setup(h => h.Post(It.IsAny<string>(),
-                                         It.IsAny<Action<Client.Http.IRequest>>(),
-                                         It.IsAny<IDictionary<string, string>>()))
-                      .Returns(TaskAsyncHelper.FromResult(response.Object));
-
-            connection.SetupGet(c => c.Url).Returns("");
-            connection.SetupGet(c => c.QueryString).Returns("");
-            connection.SetupGet(c => c.ConnectionToken).Returns("");
-            connection.Setup(c => c.OnReceived(It.IsAny<JToken>())).Throws(ex);
-            connection.Setup(c => c.OnError(It.IsAny<AggregateException>())).Callback<Exception>(e =>
+            using (var mockStream = new MemoryStream())
             {
-                Assert.Equal(ex, e.InnerException);
-                wh.Set();
-            });
+                using (var sw = new StreamWriter(mockStream))
+                {
+                    sw.Write("{}");
+                    sw.Flush();
+                    mockStream.Position = 0;
 
-            var httpBasedTransport = new Mock<HttpBasedTransport>(httpClient.Object, "")
-            {
-                CallBase = true
-            };
+                    response.Setup(r => r.GetStream()).Returns(mockStream);
 
-            var sendTask = httpBasedTransport.Object.Send(connection.Object, "");
+                    httpClient.Setup(h => h.Post(It.IsAny<string>(),
+                                                 It.IsAny<Action<Client.Http.IRequest>>(),
+                                                 It.IsAny<IDictionary<string, string>>()))
+                              .Returns(TaskAsyncHelper.FromResult(response.Object));
 
-            Assert.True(sendTask.IsFaulted);
-            Assert.IsType(typeof(AggregateException), sendTask.Exception);
-            Assert.Equal(ex, sendTask.Exception.InnerException);
-            Assert.True(wh.Wait(TimeSpan.FromSeconds(1)));
+                    connection.Setup(c => c.Trace(TraceLevels.Messages, It.IsAny<string>(), It.IsAny<object[]>()));
+                    connection.SetupGet(c => c.Url).Returns("");
+                    connection.SetupGet(c => c.QueryString).Returns("");
+                    connection.SetupGet(c => c.ConnectionToken).Returns("");
+                    connection.Setup(c => c.OnReceived(It.IsAny<JToken>())).Throws(ex);
+                    connection.Setup(c => c.OnError(It.IsAny<AggregateException>())).Callback<Exception>(e =>
+                    {
+                        Assert.Equal(ex, e.InnerException);
+                        wh.Set();
+                    });
 
-            response.VerifyAll();
-            httpClient.VerifyAll();
-            connection.VerifyAll();
+                    var httpBasedTransport = new Mock<HttpBasedTransport>(httpClient.Object, "")
+                    {
+                        CallBase = true
+                    };
+
+                    httpBasedTransport.Object.Send(connection.Object, "").ContinueWith(sendTask =>
+                    {
+                        Assert.True(sendTask.IsFaulted);
+                        Assert.IsType(typeof(AggregateException), sendTask.Exception);
+                        Assert.Equal(ex, sendTask.Exception.InnerException);
+                        Assert.True(wh.Wait(TimeSpan.FromSeconds(1)));
+                    }).Wait();
+
+                    response.VerifyAll();
+                    httpClient.VerifyAll();
+                    connection.VerifyAll();
+                }
+            }
         }
     }
 }

@@ -69,14 +69,14 @@ namespace Microsoft.AspNet.SignalR.Client.Tests
             [InlineData(HostType.Memory, TransportType.ServerSentEvents)]
             [InlineData(HostType.Memory, TransportType.LongPolling)]
             [InlineData(HostType.IISExpress, TransportType.ServerSentEvents)]
-            // [InlineData(HostType.IIS, TransportType.LongPolling)]
+            // [InlineData(HostType.IISExpress, TransportType.LongPolling)] // Connect has issues with LP
             public void ThrownWebExceptionShouldBeUnwrapped(HostType hostType, TransportType transportType)
             {
                 using (var host = CreateHost(hostType, transportType))
                 {
                     host.Initialize();
 
-                    var connection = CreateConnection(host.Url + "/ErrorsAreFun");
+                    var connection = CreateConnection(host, "/ErrorsAreFun");
 
                     // Expecting 404
                     var aggEx = Assert.Throws<AggregateException>(() => connection.Start(host.Transport).Wait());
@@ -103,11 +103,11 @@ namespace Microsoft.AspNet.SignalR.Client.Tests
             [Fact]
             public void FallbackToLongPollingIIS()
             {
-                using (ITestHost host = new IISExpressTestHost())
+                using (ITestHost host = CreateHost(HostType.IISExpress))
                 {
                     host.Initialize();
 
-                    var connection = CreateConnection(host.Url + "/fall-back");
+                    var connection = CreateConnection(host, "/fall-back");
                     var tcs = new TaskCompletionSource<object>();
 
                     connection.StateChanged += change =>
@@ -261,12 +261,12 @@ namespace Microsoft.AspNet.SignalR.Client.Tests
 
                     for (int i = 0; i < 5; i++)
                     {
-                        connection.Start(host.Transport).Wait();
+                        connection.Start(host.TransportFactory()).Wait();
                         connection.Stop();
                     }
                     for (int i = 0; i < 10; i++)
                     {
-                        connection.Start(host.Transport);
+                        connection.Start(host.TransportFactory());
                         connection.Stop();
                     }
                     Assert.Equal(15, timesStopped);
@@ -303,8 +303,8 @@ namespace Microsoft.AspNet.SignalR.Client.Tests
                     connection.Start(host.Transport).Wait();
                     host.Shutdown();
 
-                    Assert.True(reconnectWh.Wait(TimeSpan.FromSeconds(15)));
-                    Assert.True(disconnectWh.Wait(TimeSpan.FromSeconds(15)));
+                    Assert.True(reconnectWh.Wait(TimeSpan.FromSeconds(25)), "Reconnect never fired");
+                    Assert.True(disconnectWh.Wait(TimeSpan.FromSeconds(25)), "Closed never fired");
                 }
             }
 
@@ -367,7 +367,7 @@ namespace Microsoft.AspNet.SignalR.Client.Tests
 
                     host.Initialize();
 
-                    var connection = new Connection(host.Url + "/multisend");
+                    var connection = CreateConnection(host, "/multisend");
 
                     connection.Received += _ =>
                     {

@@ -10,26 +10,6 @@ namespace Microsoft.AspNet.SignalR.Tests.Hosting
     public class ResponseExtensionsFacts
     {
         [Fact]
-        public void WrapperStreamOnlyImplementsWrite()
-        {
-            // Arrange
-            var response = new Mock<IResponse>();
-            response.Setup(m => m.Write(It.IsAny<ArraySegment<byte>>())).Verifiable();
-            Stream stream = response.Object.AsStream();
-            var buffer = Encoding.UTF8.GetBytes("Hello");
-
-            // Act
-            stream.Write(buffer, 0, buffer.Length);
-
-            // Assert
-            Assert.False(stream.CanRead);
-            Assert.False(stream.CanSeek);
-            Assert.False(stream.CanTimeout);
-            Assert.True(stream.CanWrite);
-            response.VerifyAll();
-        }
-
-        [Fact]
         public void EndAsyncWritesUtf8BufferToResponse()
         {
             // Arrange

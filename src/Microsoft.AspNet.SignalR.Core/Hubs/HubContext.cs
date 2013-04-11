@@ -44,11 +44,21 @@ namespace Microsoft.AspNet.SignalR.Hubs
 
             public dynamic Group(string groupName, params string[] exclude)
             {
+                if (string.IsNullOrEmpty(groupName))
+                {
+                    throw new ArgumentException(Resources.Error_ArgumentNullOrEmpty, "groupName");
+                }
+
                 return new GroupProxy(_send, groupName, _hubName, exclude);
             }
 
             public dynamic Client(string connectionId)
             {
+                if (string.IsNullOrEmpty(connectionId))
+                {
+                    throw new ArgumentException(Resources.Error_ArgumentNullOrEmpty, "connectionId");
+                }
+
                 return new ConnectionIdProxy(_send, connectionId, _hubName);
             }
         }

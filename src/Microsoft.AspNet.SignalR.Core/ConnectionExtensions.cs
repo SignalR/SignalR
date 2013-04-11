@@ -26,8 +26,13 @@ namespace Microsoft.AspNet.SignalR
                 throw new ArgumentNullException("connection");
             }
 
-            var message = new ConnectionMessage(PrefixHelper.GetConnectionId(connectionId), 
-                                                value, 
+            if (string.IsNullOrEmpty(connectionId))
+            {
+                throw new ArgumentException(Resources.Error_ArgumentNullOrEmpty, "connectionId");
+            }
+
+            var message = new ConnectionMessage(PrefixHelper.GetConnectionId(connectionId),
+                                                value,
                                                 PrefixHelper.GetPrefixedConnectionIds(excludeConnectionIds));
 
             return connection.Send(message);
@@ -47,8 +52,8 @@ namespace Microsoft.AspNet.SignalR
                 throw new ArgumentNullException("connection");
             }
 
-            var message = new ConnectionMessage(connection.DefaultSignal, 
-                                                value, 
+            var message = new ConnectionMessage(connection.DefaultSignal,
+                                                value,
                                                 PrefixHelper.GetPrefixedConnectionIds(excludeConnectionIds));
 
             return connection.Send(message);

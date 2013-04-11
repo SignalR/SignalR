@@ -48,5 +48,29 @@ namespace Microsoft.AspNet.SignalR.Tests.Owin
 
             webSocketHandler.Verify(wsh => wsh.OnClose(It.IsAny<bool>()), Times.AtLeastOnce());
         }
+
+        [Fact]
+        public void WebSocketHandlesClosedMessageGracefully()
+        {
+            var messageIndex = 0;
+            var webSocketMessages = new[] { new WebSocketReceiveResult(0, WebSocketMessageType.Text, endOfMessage: false),
+                                            new WebSocketReceiveResult(0, WebSocketMessageType.Text, endOfMessage: false),
+                                            new WebSocketReceiveResult(0, WebSocketMessageType.Close, endOfMessage: true)};
+
+            var webSocket = new Mock<WebSocket>(MockBehavior.Strict);
+            var webSocketHandler = new Mock<WebSocketHandler>(MockBehavior.Strict);
+
+            webSocket.Setup(w => w.ReceiveAsync(It.IsAny<ArraySegment<byte>>(), CancellationToken.None))
+                     .Returns(() => TaskAsyncHelper.FromResult(webSocketMessages[messageIndex++]));
+
+            webSocketHandler.Setup(h => h.OnOpen());
+            webSocketHandler.Setup(h => h.OnClose(true));
+            webSocketHandler.Setup(h => h.Close());
+
+            webSocketHandler.Object.ProcessWebSocketRequestAsync(webSocket.Object, CancellationToken.None).Wait();
+
+            webSocket.VerifyAll();
+            webSocketHandler.VerifyAll();
+        }
     }
 }

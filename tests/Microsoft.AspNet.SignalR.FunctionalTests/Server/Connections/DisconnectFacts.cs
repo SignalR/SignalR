@@ -18,10 +18,11 @@ using Xunit;
 using IClientRequest = Microsoft.AspNet.SignalR.Client.Http.IRequest;
 using IClientResponse = Microsoft.AspNet.SignalR.Client.Http.IResponse;
 using Owin;
+using Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure;
 
 namespace Microsoft.AspNet.SignalR.Tests
 {
-    public class DisconnectFacts : IDisposable
+    public class DisconnectFacts : HostedTest
     {
         [Fact]
         public void FailedWriteCompletesRequestAfterDisconnectTimeout()
@@ -150,6 +151,8 @@ namespace Microsoft.AspNet.SignalR.Tests
         [Fact]
         public void FarmDisconnectOnlyRaisesEventOnce()
         {
+            EnableTracing();
+
             // Each node shares the same bus but are indepenent servers
             var counters = new SignalR.Infrastructure.PerformanceCounterManager();
             var configurationManager = new DefaultConfigurationManager();
@@ -191,7 +194,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                     Thread.Sleep(TimeSpan.FromSeconds(1));
                 }
 
-                connection.Disconnect();
+                ((Client.IConnection)connection).Disconnect();
 
                 Thread.Sleep(TimeSpan.FromTicks(timeout.Ticks * nodes.Count));
 
@@ -322,20 +325,6 @@ namespace Microsoft.AspNet.SignalR.Tests
                 _disconnectWh.Set();
                 return base.OnDisconnected(request, connectionId);
             }
-        }
-
-        protected virtual void Dispose(bool disposing)
-        {
-            if (disposing)
-            {
-                GC.Collect();
-                GC.WaitForPendingFinalizers();
-            }
-        }
-
-        public void Dispose()
-        {
-            Dispose(true);
         }
     }
 }

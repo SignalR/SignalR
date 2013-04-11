@@ -11,6 +11,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "build", "build", "{1E4BA77C
 		build\Build.tasks = build\Build.tasks
 		src\Common\CodeAnalysisDictionary.xml = src\Common\CodeAnalysisDictionary.xml
 		src\Common\GlobalSuppressions.cs = src\Common\GlobalSuppressions.cs
+		build\Microsoft.AspNet.SignalR.OpenCover.targets = build\Microsoft.AspNet.SignalR.OpenCover.targets
+		build\Microsoft.AspNet.SignalR.OpenCover.xunit = build\Microsoft.AspNet.SignalR.OpenCover.xunit
 		src\Common\Microsoft.AspNet.SignalR.ruleset = src\Common\Microsoft.AspNet.SignalR.ruleset
 		src\Common\Microsoft.AspNet.SignalR.targets = src\Common\Microsoft.AspNet.SignalR.targets
 		Build\Microsoft.AspNet.SignalR.versions.targets = Build\Microsoft.AspNet.SignalR.versions.targets
@@ -29,6 +31,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "samples", "samples", "{7E3D
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNet.SignalR.Hosting.AspNet.Samples", "samples\Microsoft.AspNet.SignalR.Hosting.AspNet.Samples\Microsoft.AspNet.SignalR.Hosting.AspNet.Samples.csproj", "{1EA34A62-E03E-45CF-A9C9-82D2DA0FCD82}"
 	ProjectSection(ProjectDependencies) = postProject
+		{1E14A334-4346-4C27-8D67-497632CF8974} = {1E14A334-4346-4C27-8D67-497632CF8974}
 		{990B347D-F5BF-4F94-9967-D98D24ACEA43} = {990B347D-F5BF-4F94-9967-D98D24ACEA43}
 		{69771AF9-1BEE-48E6-98BC-78864231E239} = {69771AF9-1BEE-48E6-98BC-78864231E239}
 	EndProjectSection
@@ -39,6 +42,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".nuget", ".nuget", "{08B794
 	ProjectSection(SolutionItems) = preProject
 		.nuget\NuGet.exe = .nuget\NuGet.exe
 		.nuget\NuGet.targets = .nuget\NuGet.targets
+		.nuget\packages.config = .nuget\packages.config
 	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNet.SignalR.Client.JS", "src\Microsoft.AspNet.SignalR.Client.JS\Microsoft.AspNet.SignalR.Client.JS.csproj", "{69771AF9-1BEE-48E6-98BC-78864231E239}"
@@ -87,7 +91,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNet.Owin.Sampl
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNet.SignalR.Tests.Common", "tests\Microsoft.AspNet.SignalR.Tests.Common\Microsoft.AspNet.SignalR.Tests.Common.csproj", "{F18A8896-10BD-469E-9AA1-AEBACEF4D7B7}"
 EndProject
-Global
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNet.SignalR.SqlServer.Tests", "tests\Microsoft.AspNet.SignalR.SqlServer.Tests\Microsoft.AspNet.SignalR.SqlServer.Tests.csproj", "{0A4487F1-9374-4E7B-957F-99647319C540}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNet.SignalR.Client.Silverlight.Sample", "samples\Microsoft.AspNet.SignalR.Client.Silverlight.Sample\Microsoft.AspNet.SignalR.Client.Silverlight.Sample.csproj", "{1E14A334-4346-4C27-8D67-497632CF8974}"
+EndProjectGlobal
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
 		Debug|ARM = Debug|ARM
@@ -501,6 +508,34 @@ Global
 		{F18A8896-10BD-469E-9AA1-AEBACEF4D7B7}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{F18A8896-10BD-469E-9AA1-AEBACEF4D7B7}.Release|x64.ActiveCfg = Release|Any CPU
 		{F18A8896-10BD-469E-9AA1-AEBACEF4D7B7}.Release|x86.ActiveCfg = Release|Any CPU
+		{1E14A334-4346-4C27-8D67-497632CF8974}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1E14A334-4346-4C27-8D67-497632CF8974}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1E14A334-4346-4C27-8D67-497632CF8974}.Debug|ARM.ActiveCfg = Debug|Any CPU
+		{1E14A334-4346-4C27-8D67-497632CF8974}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{1E14A334-4346-4C27-8D67-497632CF8974}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{1E14A334-4346-4C27-8D67-497632CF8974}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{1E14A334-4346-4C27-8D67-497632CF8974}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{1E14A334-4346-4C27-8D67-497632CF8974}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1E14A334-4346-4C27-8D67-497632CF8974}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1E14A334-4346-4C27-8D67-497632CF8974}.Release|ARM.ActiveCfg = Release|Any CPU
+		{1E14A334-4346-4C27-8D67-497632CF8974}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{1E14A334-4346-4C27-8D67-497632CF8974}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{1E14A334-4346-4C27-8D67-497632CF8974}.Release|x64.ActiveCfg = Release|Any CPU
+		{1E14A334-4346-4C27-8D67-497632CF8974}.Release|x86.ActiveCfg = Release|Any CPU
+		{0A4487F1-9374-4E7B-957F-99647319C540}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0A4487F1-9374-4E7B-957F-99647319C540}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0A4487F1-9374-4E7B-957F-99647319C540}.Debug|ARM.ActiveCfg = Debug|Any CPU
+		{0A4487F1-9374-4E7B-957F-99647319C540}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{0A4487F1-9374-4E7B-957F-99647319C540}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{0A4487F1-9374-4E7B-957F-99647319C540}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{0A4487F1-9374-4E7B-957F-99647319C540}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{0A4487F1-9374-4E7B-957F-99647319C540}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0A4487F1-9374-4E7B-957F-99647319C540}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0A4487F1-9374-4E7B-957F-99647319C540}.Release|ARM.ActiveCfg = Release|Any CPU
+		{0A4487F1-9374-4E7B-957F-99647319C540}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{0A4487F1-9374-4E7B-957F-99647319C540}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{0A4487F1-9374-4E7B-957F-99647319C540}.Release|x64.ActiveCfg = Release|Any CPU
+		{0A4487F1-9374-4E7B-957F-99647319C540}.Release|x86.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -510,10 +545,12 @@ Global
 		{E965290E-278C-4B4D-8AE4-404976433BC3} = {505538C3-B34D-4B43-BDE6-C6E974AB03A6}
 		{819038AC-6770-48DB-B9FA-F1245C87C341} = {505538C3-B34D-4B43-BDE6-C6E974AB03A6}
 		{F18A8896-10BD-469E-9AA1-AEBACEF4D7B7} = {505538C3-B34D-4B43-BDE6-C6E974AB03A6}
+		{0A4487F1-9374-4E7B-957F-99647319C540} = {505538C3-B34D-4B43-BDE6-C6E974AB03A6}
 		{1EA34A62-E03E-45CF-A9C9-82D2DA0FCD82} = {7E3D992A-8F37-4C5D-AD42-E052522816C5}
 		{E0223FDC-0982-4D80-B6C2-BFAA6C6748C5} = {7E3D992A-8F37-4C5D-AD42-E052522816C5}
 		{B94E0027-2664-4DAC-BA32-7AA12BFCEE10} = {7E3D992A-8F37-4C5D-AD42-E052522816C5}
 		{2117F295-6451-4447-A646-614B2D8352EF} = {7E3D992A-8F37-4C5D-AD42-E052522816C5}
 		{5D69B6BE-062B-408D-913E-5CD2F21D5D17} = {7E3D992A-8F37-4C5D-AD42-E052522816C5}
+		{1E14A334-4346-4C27-8D67-497632CF8974} = {7E3D992A-8F37-4C5D-AD42-E052522816C5}
 	EndGlobalSection
 EndGlobal

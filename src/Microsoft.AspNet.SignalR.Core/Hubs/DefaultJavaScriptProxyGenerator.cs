@@ -81,9 +81,7 @@ namespace Microsoft.AspNet.SignalR.Hubs
 
             script = script.Replace("/*hubs*/", hubs.ToString());
 
-            javaScriptMinifier.Minify(script);
-
-            return script;
+            return javaScriptMinifier.Minify(script);
         }
 
         private static void GenerateType(IHubManager hubManager, StringBuilder sb, HubDescriptor descriptor, bool includeDocComments)

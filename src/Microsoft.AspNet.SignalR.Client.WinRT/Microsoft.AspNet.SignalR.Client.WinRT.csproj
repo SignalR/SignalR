@@ -117,8 +117,32 @@
     <Compile Include="..\Common\CommonVersionInfo.cs">
       <Link>Properties\CommonVersionInfo.cs</Link>
     </Compile>
+    <Compile Include="..\Microsoft.AspNet.SignalR.Client\HeaderDictionary.cs">
+      <Link>HeaderDictionary.cs</Link>
+    </Compile>
+    <Compile Include="..\Microsoft.AspNet.SignalR.Client\Http\IResponseExtensions.cs">
+      <Link>Http\IResponseExtensions.cs</Link>
+    </Compile>
     <Compile Include="..\Microsoft.AspNet.SignalR.Client\Resources.Designer.cs">
       <Link>Resources.Designer.cs</Link>
+    </Compile>
+    <Compile Include="..\Microsoft.AspNet.SignalR.Client\HeartBeatMonitor.cs">
+      <Link>HeartBeatMonitor.cs</Link>
+    </Compile>
+    <Compile Include="..\Microsoft.AspNet.SignalR.Client\KeepAliveData.cs">
+      <Link>KeepAliveData.cs</Link>
+    </Compile>
+    <Compile Include="..\Microsoft.AspNet.SignalR.Client\TraceLevels.cs">
+      <Link>TraceLevels.cs</Link>
+    </Compile>
+    <Compile Include="..\Microsoft.AspNet.SignalR.Client\Transports\AsyncStreamReader.cs">
+      <Link>Transports\AsyncStreamReader.cs</Link>
+    </Compile>
+    <Compile Include="..\Microsoft.AspNet.SignalR.Client\Transports\LongPolling\NegotiateInitializer.cs">
+      <Link>Transports\LongPolling\NegotiateInitializer.cs</Link>
+    </Compile>
+    <Compile Include="..\Microsoft.AspNet.SignalR.Client\Transports\LongPolling\PollingRequestHandler.cs">
+      <Link>Transports\LongPolling\PollingRequestHandler.cs</Link>
     </Compile>
     <Compile Include="..\Microsoft.AspNet.SignalR.Core\Infrastructure\CancellationTokenExtensions.cs">
       <Link>Infrastructure\CancellationTokenExtensions.cs</Link>
@@ -128,9 +152,6 @@
     </Compile>
     <Compile Include="..\Microsoft.AspNet.SignalR.Core\Infrastructure\Disposer.cs">
       <Link>Infrastructure\Disposer.cs</Link>
-    </Compile>
-    <Compile Include="..\Microsoft.AspNet.SignalR.Core\Infrastructure\SafeCancellationTokenSource.cs">
-      <Link>Infrastructure\SafeCancellationTokenSource.cs</Link>
     </Compile>
     <Compile Include="..\Microsoft.AspNet.SignalR.Client\Connection.cs">
       <Link>Connection.cs</Link>

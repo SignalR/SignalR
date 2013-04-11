@@ -6,49 +6,43 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
 {
     internal class DiffSet<T>
     {
-        private readonly SafeSet<T> _items;
+        private readonly HashSet<T> _items;
         private readonly HashSet<T> _addedItems;
         private readonly HashSet<T> _removedItems;
-        private readonly object _lock = new object();
 
         public DiffSet(IEnumerable<T> items)
         {
             _addedItems = new HashSet<T>(items);
             _removedItems = new HashSet<T>();
+
             // We don't want to re-enumerate items
-            _items = new SafeSet<T>(_addedItems);
+            _items = new HashSet<T>(_addedItems);
         }
 
         public bool Add(T item)
         {
-            lock (_lock)
+            if (_items.Add(item))
             {
-                if (_items.Add(item))
+                if (!_removedItems.Remove(item))
                 {
-                    if (!_removedItems.Remove(item))
-                    {
-                        _addedItems.Add(item);
-                    }
-                    return true;
+                    _addedItems.Add(item);
                 }
-                return false;
+                return true;
             }
+            return false;
         }
 
         public bool Remove(T item)
         {
-            lock (_lock)
+            if (_items.Remove(item))
             {
-                if (_items.Remove(item))
+                if (!_addedItems.Remove(item))
                 {
-                    if (!_addedItems.Remove(item))
-                    {
-                        _removedItems.Add(item);
-                    }
-                    return true;
+                    _removedItems.Add(item);
                 }
-                return false;
+                return true;
             }
+            return false;
         }
 
         public bool Contains(T item)
@@ -58,22 +52,27 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
 
         public ICollection<T> GetSnapshot()
         {
-            return _items.GetSnapshot();
+            return _items;
+        }
+
+        public bool DetectChanges()
+        {
+            bool anyChanges = _addedItems.Count > 0 || _removedItems.Count > 0;
+            _addedItems.Clear();
+            _removedItems.Clear();
+            return anyChanges;
         }
 
         public DiffPair<T> GetDiff()
         {
-            lock (_lock)
+            var pair = new DiffPair<T>
             {
-                var pair = new DiffPair<T>
-                {
-                    Added = new List<T>(_addedItems),
-                    Removed = new List<T>(_removedItems)
-                };
-                _addedItems.Clear();
-                _removedItems.Clear();
-                return pair;
-            }
+                Added = new List<T>(_addedItems),
+                Removed = new List<T>(_removedItems)
+            };
+            _addedItems.Clear();
+            _removedItems.Clear();
+            return pair;
         }
-}
+    }
 }

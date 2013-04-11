@@ -244,6 +244,8 @@ namespace Microsoft.AspNet.SignalR.Tests.Owin
             public const string RemotePort = "server.RemotePort";
             public const string LocalIpAddress = "server.LocalIpAddress";
             public const string LocalPort = "server.LocalPort";
+
+            public const string HostAppNameKey = "host.AppName";
         }
     }
 }

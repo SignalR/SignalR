@@ -2,9 +2,10 @@
 
 namespace Microsoft.AspNet.SignalR.Infrastructure
 {
+    // These need to change when the format changes
     public static class Purposes
     {
         public const string ConnectionToken = "SignalR.ConnectionToken";
-        public const string Groups = "SignalR.Groups";
+        public const string Groups = "SignalR.Groups.v1.1";
     }
 }

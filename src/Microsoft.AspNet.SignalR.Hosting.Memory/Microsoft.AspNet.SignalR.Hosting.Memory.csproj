@@ -56,14 +56,8 @@
     <Compile Include="..\Microsoft.AspNet.SignalR.Client\Infrastructure\UrlEncoder.cs">
       <Link>Infrastructure\UrlEncoder.cs</Link>
     </Compile>
-    <Compile Include="..\Microsoft.AspNet.SignalR.Core\Infrastructure\CancellationTokenExtensions.cs">
-      <Link>Infrastructure\CancellationTokenExtensions.cs</Link>
-    </Compile>
     <Compile Include="..\Microsoft.AspNet.SignalR.Core\Infrastructure\DisposableAction.cs">
       <Link>Infrastructure\DisposableAction.cs</Link>
-    </Compile>
-    <Compile Include="..\Microsoft.AspNet.SignalR.Core\Infrastructure\Disposer.cs">
-      <Link>Infrastructure\Disposer.cs</Link>
     </Compile>
     <Compile Include="..\Microsoft.AspNet.SignalR.Core\Infrastructure\SafeCancellationTokenSource.cs">
       <Link>Infrastructure\SafeCancellationTokenSource.cs</Link>
@@ -78,11 +72,15 @@
       <Link>Infrastructure\OwinConstants.cs</Link>
     </Compile>
     <Compile Include="AsyncResult.cs" />
+    <Compile Include="ClientStream.cs" />
+    <Compile Include="INetworkObserver.cs" />
     <Compile Include="Infrastructure\ProcessExtensions.cs" />
     <Compile Include="MemoryHost.cs" />
+    <Compile Include="NetworkObservable.cs" />
     <Compile Include="Request.cs" />
     <Compile Include="Response.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="ServerStream.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Microsoft.AspNet.SignalR.Client45\Microsoft.AspNet.SignalR.Client45.csproj">
@@ -103,7 +101,8 @@
   </ItemGroup>
   <Import Project="..\Common\Microsoft.AspNet.SignalR.targets" />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  <Import Project="$(SolutionDir).nuget\nuget.targets" />
+  <Import Project="$(SolutionDir)\.nuget\NuGet.targets" Condition="!HasTrailingSlash('$(SolutionDir)')" />
+  <Import Project="$(SolutionDir).nuget\NuGet.targets" Condition="HasTrailingSlash('$(SolutionDir)')" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">

@@ -43,7 +43,7 @@
                 var scriptTagHtml = '<script src="Scripts/jquery-{ver}.js"><\/script>',
                     jQueryVersion = queryString('jquery') || '1.6.4';
 
-                if (!inArray(['1.6.4', '1.7.2', '1.8.3', '1.9.0'], jQueryVersion)) {
+                if (!inArray(['1.6.4', '1.7.2', '1.8.3', '1.9.1'], jQueryVersion)) {
                     throw new Error(jQueryVersion + ' is not a supported jQuery version.');
                 } else {
                     document.write(scriptTagHtml.replace('{ver}', jQueryVersion));
@@ -56,6 +56,7 @@
         <script src="http://testswarm.cloudapp.net/js/inject.js"></script>        
         <script src="Scripts/jquery.signalR.js"></script>                
         <!-- ##SIGNALRHUBS## --><script type='text/javascript' src='signalr/hubs'></script><!-- ##SIGNALRHUBS## -->
+        <script src="Scripts/jquery.network.mock.js"></script>
         <script src="Build/test.config.js"></script>
         <script src="Scripts/test.utilities.js"></script>
         <script src="Build/disableCrossDomain.js"></script>
@@ -71,6 +72,7 @@
 <script type="text/javascript" src="Tests/FunctionalTests/Common/PingServerFacts.js"></script>
 <script type="text/javascript" src="Tests/FunctionalTests/Core/NegotiateFacts.js"></script>
 <script type="text/javascript" src="Tests/FunctionalTests/Hubs/HubEventHandlerFacts.js"></script>
+<script type="text/javascript" src="Tests/FunctionalTests/Hubs/HubGroupFacts.js"></script>
 <script type="text/javascript" src="Tests/FunctionalTests/Hubs/HubProxyFacts.js"></script>
 <script type="text/javascript" src="Tests/FunctionalTests/Transports/All/ConnectionFacts.js"></script>
 <script type="text/javascript" src="Tests/FunctionalTests/Transports/All/ConnectionStateFacts.js"></script>
@@ -78,6 +80,7 @@
 <script type="text/javascript" src="Tests/FunctionalTests/Transports/All/SendFacts.js"></script>
 <script type="text/javascript" src="Tests/FunctionalTests/Transports/Fallback/FallbackConnectionFacts.js"></script>
 <script type="text/javascript" src="Tests/FunctionalTests/Transports/Fallback/FallbackSendFacts.js"></script>
+<script type="text/javascript" src="Tests/FunctionalTests/Transports/ForeverFrame/TransportSelectionFacts.js"></script>
 <script type="text/javascript" src="Tests/FunctionalTests/Transports/LongPolling/LPReconnectFacts.js"></script>
 <script type="text/javascript" src="Tests/UnitTests/SignalRFacts.js"></script>
 <script type="text/javascript" src="Tests/UnitTests/Common/AjaxFacts.js"></script>

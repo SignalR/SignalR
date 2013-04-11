@@ -20,9 +20,9 @@ namespace Microsoft.AspNet.SignalR.Json
         /// <summary>
         /// Deserializes the JSON to a .NET object.
         /// </summary>
-        /// <param name="json">The JSON to deserialize.</param>
+        /// <param name="reader">The <see cref="System.IO.TextReader"/> to deserialize the object from.</param>
         /// <param name="targetType">The <see cref="System.Type"/> of object being deserialized.</param>
         /// <returns>The deserialized object from the JSON string.</returns>
-        object Parse(string json, Type targetType);
+        object Parse(TextReader reader, Type targetType);
     }
 }

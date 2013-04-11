@@ -3,7 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
-using System.Net;
+using System.IO;
 using System.Text;
 
 namespace Microsoft.AspNet.SignalR.Messaging
@@ -34,65 +34,22 @@ namespace Microsoft.AspNet.SignalR.Messaging
             _escapedKey = minifiedKey;
         }
 
-        public static string MakeCursor(IList<Cursor> cursors)
+        public static void WriteCursors(TextWriter textWriter, IList<Cursor> cursors)
         {
-            return MakeCursorFast(cursors) ?? MakeCursorSlow(cursors);
-        }
-
-        private static string MakeCursorSlow(IList<Cursor> cursors)
-        {
-            var serialized = new string[cursors.Count];
             for (int i = 0; i < cursors.Count; i++)
             {
-                serialized[i] = cursors[i]._escapedKey + ',' + cursors[i].Id.ToString("X", CultureInfo.InvariantCulture);
-            }
-
-            return String.Join("|", serialized);
-        }
-
-        private static string MakeCursorFast(IList<Cursor> cursors)
-        {
-            checked
-            {
-                const int MAX_CHARS = 8 * 1024;
-                char* pChars = stackalloc char[MAX_CHARS];
-                char* pNextChar = pChars;
-                int numCharsInBuffer = 0;
-
-                // Start shoving data into the buffer
-                for (int i = 0; i < cursors.Count; i++)
+                if (i > 0)
                 {
-                    Cursor cursor = cursors[i];
-                    string escapedKey = cursor._escapedKey;
-
-                    // comma + up to 16-char hex Id + pipe
-                    numCharsInBuffer += escapedKey.Length + 18;
-
-                    if (numCharsInBuffer > MAX_CHARS)
-                    {
-                        return null; // we will overrun the buffer
-                    }
-
-                    for (int j = 0; j < escapedKey.Length; j++)
-                    {
-                        *pNextChar++ = escapedKey[j];
-                    }
-
-                    *pNextChar++ = ',';
-                    int hexLength = WriteUlongAsHexToBuffer(cursor.Id, pNextChar);
-
-                    // Since we reserved 16 chars for the hex value, update numCharsInBuffer to reflect the actual number of
-                    // characters written by WriteUlongAsHexToBuffer.
-                    numCharsInBuffer += hexLength - 16;
-                    pNextChar += hexLength;
-                    *pNextChar++ = '|';
+                    textWriter.Write('|');
                 }
-
-                return (numCharsInBuffer == 0) ? String.Empty : new String(pChars, 0, numCharsInBuffer - 1); // -1 for final pipe
+                Cursor cursor = cursors[i];
+                textWriter.Write(cursor._escapedKey);
+                textWriter.Write(',');
+                WriteUlongAsHexToBuffer(cursor.Id, textWriter);
             }
         }
 
-        private static int WriteUlongAsHexToBuffer(ulong value, char* pBuffer)
+        private static void WriteUlongAsHexToBuffer(ulong value, TextWriter textWriter)
         {
             // This tracks the length of the output and serves as the index for the next character to be written into the pBuffer.
             // The length could reach up to 16 characters, so at least that much space should remain in the pBuffer.
@@ -102,25 +59,21 @@ namespace Microsoft.AspNet.SignalR.Messaging
             for (int i = 0; i < 16; i++)
             {
                 // Convert the first 4 bits of the value to a valid hex character.
-                pBuffer[length] = Int32ToHex((int)(value >> 60));
+                char hexChar = Int32ToHex((int)(value >> 60));
                 value <<= 4;
 
                 // Don't increment length if it would just add zero padding
-                if (length != 0 || pBuffer[length] != '0')
+                if (length != 0 || hexChar != '0')
                 {
+                    textWriter.Write(hexChar);
                     length++;
                 }
             }
 
-            // The final length will be 0 iff the original value was 0. In this case we want to add 1 character, '0', to pBuffer
-            // '0' will have already been written to pBuffer[0] 16 times, so it is safe to simply return that 1 character was
-            // written to the output.
             if (length == 0)
             {
-                return 1;
+                textWriter.Write('0');
             }
-
-            return length;
         }
 
         private static char Int32ToHex(int value)
@@ -162,12 +115,17 @@ namespace Microsoft.AspNet.SignalR.Messaging
             return sb.ToString();
         }
 
-        public static Cursor[] GetCursors(string cursor)
+        public static List<Cursor> GetCursors(string cursor)
         {
             return GetCursors(cursor, s => s);
         }
 
-        public static Cursor[] GetCursors(string cursor, Func<string, string> keyMaximizer)
+        public static List<Cursor> GetCursors(string cursor, Func<string, string> keyMaximizer)
+        {
+            return GetCursors(cursor, (key, state) => ((Func<string, string>)state).Invoke(key), keyMaximizer);
+        }
+
+        public static List<Cursor> GetCursors(string cursor, Func<string, object, string> keyMaximizer, object state)
         {
             // Technically GetCursors should never be called with a null value, so this is extra cautious
             if (String.IsNullOrEmpty(cursor))
@@ -220,7 +178,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
 
                         // For now String.Empty is an acceptable key, but this should change once we verify
                         // that empty keys cannot be created legitimately.
-                        currentKey = keyMaximizer(sb.ToString());
+                        currentKey = keyMaximizer(sb.ToString(), state);
 
                         // If the keyMap cannot find a key, we cannot create an array of cursors.
                         // This most likely means there was an AppDomain restart or a misbehaving client.
@@ -271,7 +229,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
             currentId = UInt64.Parse(sb.ToString(), NumberStyles.HexNumber, CultureInfo.InvariantCulture);
             cursors.Add(new Cursor(currentKey, currentId, currentEscapedKey));
 
-            return cursors.ToArray();
+            return cursors;
         }
 
         public override string ToString()

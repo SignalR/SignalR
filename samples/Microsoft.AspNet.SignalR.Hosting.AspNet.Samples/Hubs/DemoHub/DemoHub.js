@@ -78,6 +78,11 @@
             $('#genericTaskWithException').html(e);
         });
 
+
+        demo.server.synchronousException().fail(function (e) {
+            $('#synchronousException').html(e);
+        });
+
         demo.server.overload().done(function () {
             $('#overloads').html('Void Overload called');
 

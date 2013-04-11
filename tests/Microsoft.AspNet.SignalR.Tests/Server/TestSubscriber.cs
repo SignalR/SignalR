@@ -1,32 +1,35 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using Microsoft.AspNet.SignalR.Messaging;
 
 namespace Microsoft.AspNet.SignalR.Tests.Server
 {
     public class TestSubscriber : ISubscriber
     {
-        public TestSubscriber(IEnumerable<string> keys)
+        public TestSubscriber(IList<string> keys)
         {
-            EventKeys = keys;
+            EventKeys = new List<string>(keys);
             Identity = Guid.NewGuid().ToString();
         }
 
-        public IEnumerable<string> EventKeys { get; private set; }
+        public IList<string> EventKeys { get; private set; }
 
         public string Identity { get; private set; }
 
-        public event Action<string> EventKeyAdded;
+        public event Action<ISubscriber, string> EventKeyAdded;
 
-        public event Action<string> EventKeyRemoved;
+        public event Action<ISubscriber, string> EventKeyRemoved;
 
-        public Func<string> GetCursor { get; set; }
+        public Action<TextWriter> WriteCursor { get; set; }
+
+        public Subscription Subscription { get; set; }
 
         public void AddEvent(string eventName)
         {
             if (EventKeyAdded != null)
             {
-                EventKeyAdded(eventName);
+                EventKeyAdded(this, eventName);
             }
         }
 
@@ -34,7 +37,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
         {
             if (EventKeyRemoved != null)
             {
-                EventKeyRemoved(eventName);
+                EventKeyRemoved(this, eventName);
             }
         }
     }

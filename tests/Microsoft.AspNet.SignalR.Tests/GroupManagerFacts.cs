@@ -127,7 +127,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                 var groupManager = new GroupManager(connection.Object, "Prefix");
 
                 // Assert
-                Assert.Throws<ArgumentNullException>(() => groupManager.Send(null, "Way"));
+                Assert.Throws<ArgumentException>(() => groupManager.Send(null, "Way"));
             }
 
             [Fact]

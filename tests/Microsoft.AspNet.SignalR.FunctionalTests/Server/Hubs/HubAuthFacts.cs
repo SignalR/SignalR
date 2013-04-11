@@ -32,7 +32,7 @@ namespace Microsoft.AspNet.SignalR.Tests
 
                 });
 
-                var connection = new Client.Hubs.HubConnection("http://foo/");
+                var connection = CreateHubConnection("http://foo/");
 
                 var hub = connection.CreateHubProxy("NoAuthHub");
                 var wh = new ManualResetEvent(false);
@@ -66,7 +66,7 @@ namespace Microsoft.AspNet.SignalR.Tests
 
                 });
 
-                var connection = new Client.Hubs.HubConnection("http://foo/");
+                var connection = CreateHubConnection("http://foo/");
 
                 var hub = connection.CreateHubProxy("NoAuthHub");
                 var wh = new ManualResetEvent(false);
@@ -100,7 +100,7 @@ namespace Microsoft.AspNet.SignalR.Tests
 
                 });
 
-                var connection = new Client.Hubs.HubConnection("http://foo/");
+                var connection = CreateHubConnection("http://foo/");
 
                 var hub = connection.CreateHubProxy("NoAuthHub");
                 var wh = new ManualResetEvent(false);
@@ -136,7 +136,7 @@ namespace Microsoft.AspNet.SignalR.Tests
 
                 });
 
-                var connection = new Client.Hubs.HubConnection("http://foo/");
+                var connection = CreateHubConnection("http://foo/");
 
                 var hub = connection.CreateHubProxy("NoAuthHub");
                 var wh = new ManualResetEvent(false);
@@ -173,7 +173,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                     app.MapHubs("/signalr", configuration);
                 });
 
-                var connection = new Client.Hubs.HubConnection("http://foo/");                
+                var connection = CreateHubConnection("http://foo/");                
 
                 var hub = connection.CreateHubProxy("NoAuthHub");
                 var wh = new ManualResetEvent(false);
@@ -207,7 +207,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                     app.MapHubs("/signalr", configuration);
                 });
 
-                var connection = new Client.Hubs.HubConnection("http://foo/");
+                var connection = CreateHubConnection("http://foo/");
 
                 var hub = connection.CreateHubProxy("NoAuthHub");
                 var wh = new ManualResetEvent(false);
@@ -242,7 +242,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                     app.MapHubs("/signalr", configuration);
                 });
 
-                var connection = new Client.Hubs.HubConnection("http://foo/");
+                var connection = CreateHubConnection("http://foo/");
 
                 var hub = connection.CreateHubProxy("NoAuthHub");
                 var wh = new ManualResetEvent(false);
@@ -276,7 +276,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                     app.MapHubs("/signalr", configuration);
                 });
 
-                var connection = new Client.Hubs.HubConnection("http://foo/");
+                var connection = CreateHubConnection("http://foo/");
 
                 var hub = connection.CreateHubProxy("NoAuthHub");
                 var wh = new ManualResetEvent(false);
@@ -311,7 +311,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                     app.MapHubs("/signalr", configuration);
                 });
 
-                var connection = new Client.Hubs.HubConnection("http://foo/");
+                var connection = CreateHubConnection("http://foo/");
 
                 var hub = connection.CreateHubProxy("AuthHub");
                 var wh = new ManualResetEvent(false);
@@ -343,7 +343,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                     app.MapHubs("/signalr", configuration);
                 });
 
-                var connection = new Client.Hubs.HubConnection("http://foo/");
+                var connection = CreateHubConnection("http://foo/");
 
                 var hub = connection.CreateHubProxy("AuthHub");
                 var wh = new ManualResetEvent(false);
@@ -376,7 +376,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                     app.MapHubs("/signalr", configuration);
                 });
 
-                var connection = new Client.Hubs.HubConnection("http://foo/");
+                var connection = CreateHubConnection("http://foo/");
 
                 var hub = connection.CreateHubProxy("AuthHub");
                 var wh = new ManualResetEvent(false);
@@ -408,7 +408,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                     app.MapHubs("/signalr", configuration);
                 });
 
-                var connection = new Client.Hubs.HubConnection("http://foo/");
+                var connection = CreateHubConnection("http://foo/");
 
                 var hub = connection.CreateHubProxy("AuthHub");
                 var wh = new ManualResetEvent(false);
@@ -442,7 +442,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                     WithUser(app, new GenericPrincipal(new GenericIdentity(""), new string[] { }));
                     app.MapHubs("/signalr", configuration);
                 });
-                var connection = new Client.Hubs.HubConnection("http://foo/");
+                var connection = CreateHubConnection("http://foo/");
 
                 var hub = connection.CreateHubProxy("InheritAuthHub");
                 var wh = new ManualResetEvent(false);
@@ -474,7 +474,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                     app.MapHubs("/signalr", configuration);
                 });
 
-                var connection = new Client.Hubs.HubConnection("http://foo/");
+                var connection = CreateHubConnection("http://foo/");
 
                 var hub = connection.CreateHubProxy("InheritAuthHub");
                 var wh = new ManualResetEvent(false);
@@ -507,7 +507,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                     app.MapHubs("/signalr", configuration);
                 });
 
-                var connection = new Client.Hubs.HubConnection("http://foo/");
+                var connection = CreateHubConnection("http://foo/");
 
                 var hub = connection.CreateHubProxy("InheritAuthHub");
                 var wh = new ManualResetEvent(false);
@@ -539,7 +539,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                     app.MapHubs("/signalr", configuration);
                 });
 
-                var connection = new Client.Hubs.HubConnection("http://foo/");
+                var connection = CreateHubConnection("http://foo/");
 
                 var hub = connection.CreateHubProxy("InheritAuthHub");
                 var wh = new ManualResetEvent(false);
@@ -574,7 +574,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                     app.MapHubs("/signalr", configuration);
                 });
 
-                var connection = new Client.Hubs.HubConnection("http://foo/");
+                var connection = CreateHubConnection("http://foo/");
 
                 var hub = connection.CreateHubProxy("AdminAuthHub");
                 var wh = new ManualResetEvent(false);
@@ -606,7 +606,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                     app.MapHubs("/signalr", configuration);
                 });
 
-                var connection = new Client.Hubs.HubConnection("http://foo/");
+                var connection = CreateHubConnection("http://foo/");
 
                 var hub = connection.CreateHubProxy("AdminAuthHub");
                 var wh = new ManualResetEvent(false);
@@ -638,7 +638,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                     app.MapHubs("/signalr", configuration);
                 });
 
-                var connection = new Client.Hubs.HubConnection("http://foo/");
+                var connection = CreateHubConnection("http://foo/");
 
                 var hub = connection.CreateHubProxy("AdminAuthHub");
                 var wh = new ManualResetEvent(false);
@@ -670,7 +670,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                     app.MapHubs("/signalr", configuration);
                 });
 
-                var connection = new Client.Hubs.HubConnection("http://foo/");
+                var connection = CreateHubConnection("http://foo/");
 
                 var hub = connection.CreateHubProxy("AdminAuthHub");
                 var wh = new ManualResetEvent(false);
@@ -702,7 +702,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                     app.MapHubs("/signalr", configuration);
                 });
 
-                var connection = new Client.Hubs.HubConnection("http://foo/");
+                var connection = CreateHubConnection("http://foo/");
 
                 var hub = connection.CreateHubProxy("AdminAuthHub");
                 var wh = new ManualResetEvent(false);
@@ -735,7 +735,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                     app.MapHubs("/signalr", configuration);
                 });
 
-                var connection = new Client.Hubs.HubConnection("http://foo/");
+                var connection = CreateHubConnection("http://foo/");
 
                 var hub = connection.CreateHubProxy("AdminAuthHub");
                 var wh = new ManualResetEvent(false);
@@ -770,7 +770,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                     app.MapHubs("/signalr", configuration);
                 });
 
-                var connection = new Client.Hubs.HubConnection("http://foo/");
+                var connection = CreateHubConnection("http://foo/");
 
                 var hub = connection.CreateHubProxy("UserAndRoleAuthHub");
                 var wh = new ManualResetEvent(false);
@@ -802,7 +802,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                     app.MapHubs("/signalr", configuration);
                 });
 
-                var connection = new Client.Hubs.HubConnection("http://foo/");
+                var connection = CreateHubConnection("http://foo/");
 
                 var hub = connection.CreateHubProxy("UserAndRoleAuthHub");
                 var wh = new ManualResetEvent(false);
@@ -834,7 +834,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                     app.MapHubs("/signalr", configuration);
                 });
 
-                var connection = new Client.Hubs.HubConnection("http://foo/");
+                var connection = CreateHubConnection("http://foo/");
 
                 var hub = connection.CreateHubProxy("UserAndRoleAuthHub");
                 var wh = new ManualResetEvent(false);
@@ -867,7 +867,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                     app.MapHubs("/signalr", configuration);
                 });
 
-                var connection = new Client.Hubs.HubConnection("http://foo/");
+                var connection = CreateHubConnection("http://foo/");
 
                 var hub = connection.CreateHubProxy("UserAndRoleAuthHub");
                 var wh = new ManualResetEvent(false);
@@ -902,7 +902,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                     app.MapHubs("/signalr", configuration);
                 });
 
-                var connection = new Client.Hubs.HubConnection("http://foo/");
+                var connection = CreateHubConnection("http://foo/");
 
                 var hub = connection.CreateHubProxy("IncomingAuthHub");
                 var wh = new ManualResetEvent(false);
@@ -935,7 +935,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                     app.MapHubs("/signalr", configuration);
                 });
 
-                var connection = new Client.Hubs.HubConnection("http://foo/");
+                var connection = CreateHubConnection("http://foo/");
 
                 var hub = connection.CreateHubProxy("IncomingAuthHub");
                 var wh = new ManualResetEvent(false);
@@ -970,7 +970,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                     app.MapHubs("/signalr", configuration);
                 });
 
-                var connection = new Client.Hubs.HubConnection("http://foo/");
+                var connection = CreateHubConnection("http://foo/");
 
                 var hub = connection.CreateHubProxy("IncomingAuthHub");
                 var wh = new ManualResetEvent(false);
@@ -1003,7 +1003,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                     app.MapHubs("/signalr", configuration);
                 });
 
-                var connection = new Client.Hubs.HubConnection("http://foo/");
+                var connection = CreateHubConnection("http://foo/");
 
                 var hub = connection.CreateHubProxy("IncomingAuthHub");
                 var wh = new ManualResetEvent(false);
@@ -1038,7 +1038,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                     app.MapHubs("/signalr", configuration);
                 });
 
-                var connection = new Client.Hubs.HubConnection("http://foo/");
+                var connection = CreateHubConnection("http://foo/");
 
                 var hub = connection.CreateHubProxy("InvokeAuthHub");
                 var wh = new ManualResetEvent(false);
@@ -1073,7 +1073,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                     app.MapHubs("/signalr", configuration);
                 });
 
-                var connection = new Client.Hubs.HubConnection("http://foo/");
+                var connection = CreateHubConnection("http://foo/");
 
                 var hub = connection.CreateHubProxy("InvokeAuthHub");
                 var wh = new ManualResetEvent(false);
@@ -1108,7 +1108,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                     app.MapHubs("/signalr", configuration);
                 });
 
-                var connection = new Client.Hubs.HubConnection("http://foo/");
+                var connection = CreateHubConnection("http://foo/");
 
                 var hub = connection.CreateHubProxy("InvokeAuthHub");
                 var wh = new ManualResetEvent(false);

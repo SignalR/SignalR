@@ -108,6 +108,25 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
         public IPerformanceCounter ConnectionMessagesSentPerSec { get; private set; }
 
         /// <summary>
+        /// Gets the performance counter representing the total number of messages received by subscribers since the application was started.
+        /// </summary>
+        [PerformanceCounter(Name = "Message Bus Messages Received Total", Description = "The total number of messages received by subscribers since the application was started.", CounterType = PerformanceCounterType.NumberOfItems64)]
+        public IPerformanceCounter MessageBusMessagesReceivedTotal { get; private set; }
+
+        /// <summary>
+        /// Gets the performance counter representing the number of messages received by a subscribers per second.
+        /// </summary>
+        [PerformanceCounter(Name = "Message Bus Messages Received/Sec", Description = "The number of messages received by subscribers per second.", CounterType = PerformanceCounterType.RateOfCountsPerSecond32)]
+        public IPerformanceCounter MessageBusMessagesReceivedPerSec { get; private set; }
+
+        /// <summary>
+        /// Gets the performance counter representing the number of messages received by the scaleout message bus per second.
+        /// </summary>
+        [PerformanceCounter(Name = "Scaleout Message Bus Messages Received/Sec", Description = "The number of messages received by the scaleout message bus per second.", CounterType = PerformanceCounterType.RateOfCountsPerSecond32)]
+        public IPerformanceCounter ScaleoutMessageBusMessagesReceivedPerSec { get; private set; }
+
+
+        /// <summary>
         /// Gets the performance counter representing the total number of messages published to the message bus since the application was started.
         /// </summary>
         [PerformanceCounter(Name = "Messages Bus Messages Published Total", Description = "The total number of messages published to the message bus since the application was started.", CounterType = PerformanceCounterType.NumberOfItems64)]
@@ -287,7 +306,7 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
 
                 if (loadCounters)
                 {
-                    counter = LoadCounter(CategoryName, attribute.Name, instanceName);
+                    counter = LoadCounter(CategoryName, attribute.Name, instanceName, isReadOnly:false);
 
                     if (counter == null)
                     {
@@ -319,13 +338,13 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
 
         [SuppressMessage("Microsoft.Performance", "CA1822:MarkMembersAsStatic", Justification = "This file is shared")]
         [SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope", Justification = "Counters are disposed later")]
-        private IPerformanceCounter LoadCounter(string categoryName, string counterName, string instanceName)
+        public IPerformanceCounter LoadCounter(string categoryName, string counterName, string instanceName, bool isReadOnly)
         {
             // See http://msdn.microsoft.com/en-us/library/356cx381.aspx for the list of exceptions
             // and when they are thrown. 
             try
             {
-                var counter = new PerformanceCounter(categoryName, counterName, instanceName, readOnly: false);
+                var counter = new PerformanceCounter(categoryName, counterName, instanceName, isReadOnly);
 
                 // Initialize the counter sample
                 counter.NextSample();

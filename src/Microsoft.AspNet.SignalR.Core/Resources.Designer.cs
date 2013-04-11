@@ -79,6 +79,15 @@ namespace Microsoft.AspNet.SignalR {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Argument cannot be null or empty.
+        /// </summary>
+        internal static string Error_ArgumentNullOrEmpty {
+            get {
+                return ResourceManager.GetString("Error_ArgumentNullOrEmpty", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to The buffer size &apos;{0}&apos; is out of range..
         /// </summary>
         internal static string Error_BufferSizeOutOfRange {
@@ -147,6 +156,15 @@ namespace Microsoft.AspNet.SignalR {
         internal static string Error_DuplicateHubs {
             get {
                 return ResourceManager.GetString("Error_DuplicateHubs", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Duplicate payload id detected for stream &apos;{0}&apos;..
+        /// </summary>
+        internal static string Error_DuplicatePayloadsForStream {
+            get {
+                return ResourceManager.GetString("Error_DuplicatePayloadsForStream", resourceCulture);
             }
         }
         
@@ -286,6 +304,24 @@ namespace Microsoft.AspNet.SignalR {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The queue has been closed..
+        /// </summary>
+        internal static string Error_QueueClosed {
+            get {
+                return ResourceManager.GetString("Error_QueueClosed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The queue is not open..
+        /// </summary>
+        internal static string Error_QueueNotOpen {
+            get {
+                return ResourceManager.GetString("Error_QueueNotOpen", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to State has exceeded the maximum length of 4096 bytes..
         /// </summary>
         internal static string Error_StateExceededMaximumLength {
@@ -295,11 +331,29 @@ namespace Microsoft.AspNet.SignalR {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The queue is full..
+        /// </summary>
+        internal static string Error_TaskQueueFull {
+            get {
+                return ResourceManager.GetString("Error_TaskQueueFull", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Unable to add module. The HubPipeline has already been invoked..
         /// </summary>
         internal static string Error_UnableToAddModulePiplineAlreadyInvoked {
             get {
                 return ResourceManager.GetString("Error_UnableToAddModulePiplineAlreadyInvoked", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Unrecognized user identity.  The user identity cannot change during an active SignalR connection..
+        /// </summary>
+        internal static string Error_UnrecognizedUserIdentity {
+            get {
+                return ResourceManager.GetString("Error_UnrecognizedUserIdentity", resourceCulture);
             }
         }
         

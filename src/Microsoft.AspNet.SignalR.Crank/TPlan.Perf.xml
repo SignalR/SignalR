@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="us-ascii"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns="http://www.microsoft.com/2011/12/aaptperffun#1">
+
+  <PerfRunConfiguration LoadProcessesPerClientMultiplier="1" LoadThreadsPerProcessMultiplier="1" SuicideTimeout="2000" />
+  
+  <metadata testName="Crank" teamName="SignalR" description="SignalR Crank Tests">
+    <trackingVariation name="WebSockets-100000">
+      <metric name="Connections Connected(testdefault)" selection="Max" units="Numeric">
+        <target value="100000" labConfig="XSPPERF8S_WIN8_X64" />
+      </metric>
+    </trackingVariation>
+    <trackingVariation name="ServerSentEvents-100000">
+      <metric name="Connections Connected(testdefault)" selection="Max" units="Numeric">
+        <target value="100000" labConfig="XSPPERF8S_WIN8_X64" />
+      </metric>
+    </trackingVariation>
+    <trackingVariation name="LongPolling-100000">
+      <metric name="Connections Connected(testdefault)" selection="Max" units="Numeric">
+        <target value="100000" labConfig="XSPPERF8S_WIN8_X64" />
+      </metric>
+    </trackingVariation>
+  </metadata>
+  
+  <commands>
+    <command name="CopyWWW" wait="Exit">
+      {bin}\xcopy /ecyi Microsoft.AspNet.SignalR.LoadTestHarness \\{server-01}\perftestbits\www
+    </command>
+    <command name="SetupIIS" wait="Exit">
+      powershell -executionpolicy remotesigned -command "{bin}\RegisterIIS.ps1 {currentdir}\www
+    </command>
+    <command name="WebSockets-100000" wait="Exit">
+      crank.exe /Url:http://{server-01}:81/TestConnection/connect /Clients:100000 /Transport:WebSockets /Timeout:300
+    </command>
+    <command name="ServerSentEvents-100000" wait="Exit">
+      crank.exe /Url:http://{server-01}:81/TestConnection/connect /Clients:100000 /Transport:ServerSentEvents /Timeout:600
+    </command>
+    <command name="LongPolling-100000" wait="Exit">
+      crank.exe /Url:http://{server-01}:81/TestConnection/connect /Clients:100000 /Transport:LongPolling /Timeout:1800
+    </command>
+  </commands>
+
+  <plan>
+    <run command="CopyWWW" role="controller" output="true" profile="None" />
+    <run command="SetupIIS" role="server-01" output="true" profile="None" />
+    <run command="WebSockets-100000" role="client-01" output="true" />
+
+    <run command="SetupIIS" role="server-01" output="true" profile="None" />
+    <run command="ServerSentEvents-100000" role="client-01" output="true" />
+
+    <run command="SetupIIS" role="server-01" output="true" profile="None" />
+    <run command="LongPolling-100000" role="client-01" output="true" />
+  </plan>
+</config>

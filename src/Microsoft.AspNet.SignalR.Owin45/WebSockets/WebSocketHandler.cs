@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.md in the project root for license information.
 
 using System;
-using System.Diagnostics.CodeAnalysis;
 using System.Net.WebSockets;
 using System.Runtime.InteropServices;
 using System.Text;
@@ -13,36 +12,29 @@ namespace Microsoft.AspNet.SignalR.WebSockets
 {
     public class WebSocketHandler
     {
-        private static readonly TimeSpan _closeTimeout = TimeSpan.FromMilliseconds(250); // wait 250 ms before giving up on a Close
-        private const int _receiveLoopBufferSize = 8 * 1024; // 8K default fragment size (we expect most messages to be very short)
+        // Wait 250 ms before giving up on a Close
+        private static readonly TimeSpan _closeTimeout = TimeSpan.FromMilliseconds(250);
 
-        private int _maxIncomingMessageSize = 4 * 1024 * 1024; // 4MB default max incoming message size
-        private readonly TaskQueue _sendQueue = new TaskQueue(); // queue for sending messages
+        // 4K default fragment size (we expect most messages to be very short)
+        private const int _receiveLoopBufferSize = 4 * 1024;
+
+        // 4MB default max incoming message size
+        private int _maxIncomingMessageSize = 4 * 1024 * 1024;
+
+        // Queue for sending messages
+        private readonly TaskQueue _sendQueue = new TaskQueue();
 
         private volatile bool _isClosed;
 
-        /*
-         * USER OVERRIDES
-         */
-
-        // First method to be called when the socket becomes active; invoked 1 time per socket
         public virtual void OnOpen() { }
 
-        // Called when a text or binary message is received; invoked 0+ times per socket
-        // The developer must override the appropriate overload(s) depending on the type of message he anticipates, else the connection will close
         public virtual void OnMessage(string message) { throw new NotImplementedException(); }
+
         public virtual void OnMessage(byte[] message) { throw new NotImplementedException(); }
 
-        // Called when a fault occurs on the socket; invoked 0 or 1 time per socket
-        // The developer can look at the Error property to get the exception
         public virtual void OnError() { }
 
-        // Called when the socket is closed; invoked 1 time per socket
         public virtual void OnClose(bool clean) { }
-
-        /*
-         * NON-VIRTUAL HELPER METHODS
-         */
 
         // Sends a text message to the client
         public Task Send(string message)
@@ -57,25 +49,31 @@ namespace Microsoft.AspNet.SignalR.WebSockets
 
         internal Task SendAsync(string message)
         {
-            return SendAsync(Encoding.UTF8.GetBytes(message), WebSocketMessageType.Text);
+            var buffer = Encoding.UTF8.GetBytes(message);
+            return SendAsync(new ArraySegment<byte>(buffer), WebSocketMessageType.Text);
         }
 
-        internal Task SendAsync(byte[] message, WebSocketMessageType messageType)
+        internal Task SendAsync(ArraySegment<byte> message, WebSocketMessageType messageType, bool endOfMessage = true)
         {
             if (_isClosed)
             {
                 return TaskAsyncHelper.Empty;
             }
 
-            return _sendQueue.Enqueue(() =>
+            var sendContext = new SendContext(this, message, messageType, endOfMessage);
+
+            return _sendQueue.Enqueue(state =>
             {
-                if (_isClosed)
+                var context = (SendContext)state;
+
+                if (context.Handler._isClosed)
                 {
                     return TaskAsyncHelper.Empty;
                 }
 
-                return WebSocket.SendAsync(new ArraySegment<byte>(message), messageType, true /* endOfMessage */, CancellationToken.None);
-            });
+                return context.Handler.WebSocket.SendAsync(context.Message, context.MessageType, context.EndOfMessage, CancellationToken.None);
+            },
+            sendContext);
         }
 
         // Gracefully closes the connection
@@ -91,41 +89,22 @@ namespace Microsoft.AspNet.SignalR.WebSockets
                 return TaskAsyncHelper.Empty;
             }
 
-            return _sendQueue.Enqueue(() =>
+            var closeContext = new CloseContext(this);
+
+            return _sendQueue.Enqueue(state =>
             {
-                if (_isClosed)
+                var context = (CloseContext)state;
+
+                if (context.Handler._isClosed)
                 {
                     return TaskAsyncHelper.Empty;
                 }
 
-                _isClosed = true;
-                return WebSocket.CloseOutputAsync(WebSocketCloseStatus.NormalClosure, "", CancellationToken.None);
-            });
+                context.Handler._isClosed = true;
+                return context.Handler.WebSocket.CloseOutputAsync(WebSocketCloseStatus.NormalClosure, "", CancellationToken.None);
+            },
+            closeContext);
         }
-
-        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode", Justification = "This is a shared code")]
-        [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "We want to swallow exceptions that may have been thrown already")]
-        internal void Abort()
-        {
-            try
-            {
-                // Drain the queue
-                _sendQueue.Drain().Wait();
-            }
-            catch
-            {
-                // Swallow exceptions draining the queue
-            }
-            finally
-            {
-                // Then abort the socket
-                WebSocket.Abort();
-            }
-        }
-
-        /*
-         * CONFIGURATION PROPERTIES
-         */
 
         public int MaxIncomingMessageSize
         {
@@ -135,16 +114,9 @@ namespace Microsoft.AspNet.SignalR.WebSockets
             }
         }
 
-        /*
-         * MISC PROPERTIES
-         */
-
         public WebSocket WebSocket { get; set; }
-        public Exception Error { get; set; }
 
-        /*
-         * IMPLEMENTATION
-         */
+        public Exception Error { get; set; }
 
         public Task ProcessWebSocketRequestAsync(WebSocket webSocket, CancellationToken disconnectToken)
         {
@@ -153,11 +125,18 @@ namespace Microsoft.AspNet.SignalR.WebSockets
                 throw new ArgumentNullException("webSocket");
             }
 
-            byte[] buffer = new byte[_receiveLoopBufferSize];
-            return ProcessWebSocketRequestAsync(webSocket, disconnectToken, () => WebSocketMessageReader.ReadMessageAsync(webSocket, buffer, MaxIncomingMessageSize, disconnectToken));
+            var receiveContext = new ReceiveContext(webSocket, disconnectToken, MaxIncomingMessageSize, _receiveLoopBufferSize);
+
+            return ProcessWebSocketRequestAsync(webSocket, disconnectToken, state =>
+            {
+                var context = (ReceiveContext)state;
+
+                return WebSocketMessageReader.ReadMessageAsync(context.WebSocket, context.BufferSize, context.MaxIncomingMessageSize, context.DisconnectToken);
+            },
+            receiveContext);
         }
 
-        internal async Task ProcessWebSocketRequestAsync(WebSocket webSocket, CancellationToken disconnectToken, Func<Task<WebSocketMessage>> messageRetriever)
+        internal async Task ProcessWebSocketRequestAsync(WebSocket webSocket, CancellationToken disconnectToken, Func<object, Task<WebSocketMessage>> messageRetriever, object state)
         {
             bool cleanClose = true;
             try
@@ -171,7 +150,7 @@ namespace Microsoft.AspNet.SignalR.WebSockets
                 // dispatch incoming messages
                 while (!disconnectToken.IsCancellationRequested)
                 {
-                    WebSocketMessage incomingMessage = await messageRetriever();
+                    WebSocketMessage incomingMessage = await messageRetriever(state);
                     switch (incomingMessage.MessageType)
                     {
                         case WebSocketMessageType.Binary:
@@ -216,23 +195,11 @@ namespace Microsoft.AspNet.SignalR.WebSockets
             {
                 try
                 {
-                    try
-                    {
-                        Close();
-                    }
-                    finally
-                    {
-                        OnClose(cleanClose);
-                    }
+                    Close();
                 }
                 finally
                 {
-                    // call Dispose if it exists
-                    IDisposable disposable = this as IDisposable;
-                    if (disposable != null)
-                    {
-                        disposable.Dispose();
-                    }
+                    OnClose(cleanClose);
                 }
             }
         }
@@ -257,6 +224,48 @@ namespace Microsoft.AspNet.SignalR.WebSockets
 
             // unknown exception; treat as fatal
             return true;
+        }
+
+        private class CloseContext
+        {
+            public WebSocketHandler Handler;
+
+            public CloseContext(WebSocketHandler webSocketHandler)
+            {
+                Handler = webSocketHandler;
+            }
+        }
+
+        private class SendContext
+        {
+            public WebSocketHandler Handler;
+            public ArraySegment<byte> Message;
+            public WebSocketMessageType MessageType;
+            public bool EndOfMessage;
+
+            public SendContext(WebSocketHandler webSocketHandler, ArraySegment<byte> message, WebSocketMessageType messageType, bool endOfMessage)
+            {
+                Handler = webSocketHandler;
+                Message = message;
+                MessageType = messageType;
+                EndOfMessage = endOfMessage;
+            }
+        }
+
+        private class ReceiveContext
+        {
+            public WebSocket WebSocket;
+            public CancellationToken DisconnectToken;
+            public int MaxIncomingMessageSize;
+            public int BufferSize;
+
+            public ReceiveContext(WebSocket webSocket, CancellationToken disconnectToken, int maxIncomingMessageSize, int bufferSize)
+            {
+                WebSocket = webSocket;
+                DisconnectToken = disconnectToken;
+                MaxIncomingMessageSize = maxIncomingMessageSize;
+                BufferSize = bufferSize;
+            }
         }
     }
 }

@@ -111,6 +111,7 @@ namespace Microsoft.AspNet.SignalR.Hosting.Memory
             // Request specific setup
             var uri = new Uri(url);
 
+            env[OwinConstants.RequestProtocol] = "HTTP/1.1";
             env[OwinConstants.CallCancelled] = clientTokenSource.Token;
             env[OwinConstants.RequestMethod] = httpMethod;
             env[OwinConstants.RequestPathBase] = String.Empty;
@@ -129,9 +130,19 @@ namespace Microsoft.AspNet.SignalR.Hosting.Memory
             // Run the client function to initialize the request
             prepareRequest(new Request(env, clientTokenSource.Cancel));
 
-            Response response = null;
-            response = new Response(disableWrites, () => tcs.TrySetResult(response), clientTokenSource.Token);
-            env[OwinConstants.ResponseBody] = response.GetResponseStream();
+            var networkObservable = new NetworkObservable(disableWrites);
+            var clientStream = new ClientStream(networkObservable);
+            var serverStream = new ServerStream(networkObservable);
+
+            var response = new Response(clientStream);
+
+            // Trigger the tcs on flush. This mimicks the client side
+            networkObservable.OnFlush = () => tcs.TrySetResult(response);
+
+            // Cancel the network observable on cancellation of the token
+            clientTokenSource.Token.Register(networkObservable.Cancel);
+
+            env[OwinConstants.ResponseBody] = serverStream;
             env[OwinConstants.ResponseHeaders] = new Dictionary<string, string[]>();
 
             _appFunc(env).ContinueWith(task =>
@@ -155,7 +166,8 @@ namespace Microsoft.AspNet.SignalR.Hosting.Memory
                     tcs.TrySetResult(response);
                 }
 
-                response.Close();
+                // Close the server stream when the request has ended
+                serverStream.Close();
                 clientTokenSource.Dispose();
             });
 
@@ -168,7 +180,7 @@ namespace Microsoft.AspNet.SignalR.Hosting.Memory
             {
                 if (Interlocked.Exchange(ref _disposed, 1) == 0)
                 {
-                    _shutDownTokenSource.Cancel(throwOnFirstException: false);
+                    _shutDownTokenSource.Cancel();
 
                     _shutDownTokenSource.Dispose();
                 }

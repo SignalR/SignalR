@@ -86,6 +86,12 @@ Global
 		$2.TabsToSpaces = False
 		$2.inheritsSet = VisualStudio
 		$2.inheritsScope = text/plain
+		$0.TextStylePolicy = $3
+		$3.FileWidth = 120
+		$3.EolMarker = Windows
+		$3.inheritsSet = VisualStudio
+		$3.inheritsScope = text/plain
+		$3.scope = text/plain
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

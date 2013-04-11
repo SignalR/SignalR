@@ -25,7 +25,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                 protectedData.Setup(m => m.Unprotect(It.IsAny<string>(), It.IsAny<string>()))
                              .Returns<string, string>((value, purpose) => value);
 
-                Connection.PopulateResponseState(response, groupSet, serializer, protectedData.Object);
+                Connection.PopulateResponseState(response, groupSet, serializer, protectedData.Object, connectionId: null);
 
                 Assert.Null(response.GroupsToken);
             }
@@ -47,7 +47,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                 protectedData.Setup(m => m.Unprotect(It.IsAny<string>(), It.IsAny<string>()))
                              .Returns<string, string>((value, purpose) => value);
 
-                Connection.PopulateResponseState(response, groupSet, serializer, protectedData.Object);
+                Connection.PopulateResponseState(response, groupSet, serializer, protectedData.Object, connectionId: null);
 
                 Assert.Null(response.GroupsToken);
             }
@@ -56,7 +56,7 @@ namespace Microsoft.AspNet.SignalR.Tests
             public void GroupTokenIsNotNullWhenGroupsChange()
             {
                 var response = new PersistentResponse();
-                var groupSet = new DiffSet<string>(new string[] { "a", "b", "c", "d" });
+                var groupSet = new DiffSet<string>(new string[] { "a:1", "b:2", "c", "d" });
 
                 groupSet.GetDiff();
 
@@ -65,7 +65,8 @@ namespace Microsoft.AspNet.SignalR.Tests
                 var serializer = new Mock<IJsonSerializer>();
                 HashSet<string> results = null;
                 serializer.Setup(m => m.Serialize(It.IsAny<object>(), It.IsAny<TextWriter>()))
-                          .Callback<object, TextWriter>((obj, tw) => {
+                          .Callback<object, TextWriter>((obj, tw) =>
+                          {
                               results = new HashSet<string>((IEnumerable<string>)obj);
                               var jsonNet = new JsonNetSerializer();
                               jsonNet.Serialize(obj, tw);
@@ -77,11 +78,14 @@ namespace Microsoft.AspNet.SignalR.Tests
                 protectedData.Setup(m => m.Unprotect(It.IsAny<string>(), It.IsAny<string>()))
                              .Returns<string, string>((value, purpose) => value);
 
-                Connection.PopulateResponseState(response, groupSet, serializer.Object, protectedData.Object);
+                Connection.PopulateResponseState(response, groupSet, serializer.Object, protectedData.Object, connectionId: "myconnection");
 
                 Assert.NotNull(response.GroupsToken);
-                Assert.True(results.Contains("a"));
-                Assert.True(results.Contains("b"));
+                var parts = response.GroupsToken.Split(new[] { ':' }, 2);
+                Assert.Equal(2, parts.Length);
+                Assert.Equal("myconnection", parts[0]);
+                Assert.True(results.Contains("a:1"));
+                Assert.True(results.Contains("b:2"));
                 Assert.True(results.Contains("c"));
                 Assert.True(results.Contains("d"));
                 Assert.True(results.Contains("g"));

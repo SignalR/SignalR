@@ -1,116 +1,73 @@
 ﻿QUnit.module("Long Polling Facts", testUtilities.transports.longPolling.enabled);
 
 QUnit.asyncTimeoutTest("Can reconnect.", testUtilities.defaultTestTimeout, function (end, assert, testName) {
-    var connection = testUtilities.createHubConnection(testName),
-        demo = connection.createHubProxies().demo,
-        tryReconnect = function () {
-            // Verify that the polling connection is instantiated before trying to abort it. We want
-            // to cause the transport to error so it must be instantiated first.
-            if (connection.pollXhr.readyState !== 1) {
-                setTimeout(tryReconnect, 200);
-            }
-            else {
-                // Passing "foo" forces the longPolling's ajax connection to error and pass "foo" as the 
-                // reason, the default error (empty) is "abort" which we handle as do not attempt to 
-                // reconnect. So by passing foo we mimic the behavior of an unintended error occurring, 
-                // forcing the transport into reconnecting.
-                connection.pollXhr.abort("foo");
-            }
-        };
+    var connection = testUtilities.createHubConnection(end, assert, testName),
+        demo = connection.createHubProxies().demo;
 
     // Need to have at least one client function in order to be subscribed to a hub
     demo.client.TestGuid = function () {
         // Wire up the state changed (while connected) to detect if we connect again
         // In a later test we'll determine if reconnected gets called
         connection.stateChanged(function () {
-            if (connection.state == $.signalR.connectionState.connected) {
+            if (connection.state === $.signalR.connectionState.reconnecting) {
+                assert.ok(true, "Reconnecting");
+                $.network.connect();
+            } else if (connection.state === $.signalR.connectionState.connected) {
                 assert.ok(true, "Reconnected");
                 end();
             }
         });
 
-        tryReconnect();
+        $.network.disconnect();
     };
 
     connection.start({ transport: "longPolling" }).done(function () {
         assert.ok(true, "Connected");
         // Call a server function and request a message back in order to get a message ID so we can successfully reconnect
         demo.server.testGuid();
-    }).fail(function (reason) {
-        assert.ok(false, "Failed to initiate SignalR connection");
-        end();
     });
 
     // Cleanup
     return function () {
         connection.stop();
+        $.network.connect();
     };
 });
 
 QUnit.asyncTimeoutTest("Shifts into reconnecting state.", testUtilities.defaultTestTimeout, function (end, assert, testName) {
-    var connection = testUtilities.createHubConnection(testName),
-        demo = connection.createHubProxies().demo,
-        tryReconnect = function () {
-            // Verify that the polling connection is instantiated before trying to abort it. We want
-            // to cause the transport to error so it must be instantiated first.
-            if (connection.pollXhr.readyState !== 1) {
-                setTimeout(tryReconnect, 200);
-            }
-            else {
-                // Passing "foo" forces the longPolling's ajax connection to error and pass "foo" as the 
-                // reason, the default error (empty) is "abort" which we handle as do not attempt to 
-                // reconnect. So by passing foo we mimic the behavior of an unintended error occurring, 
-                // forcing the transport into reconnecting.
-                connection.pollXhr.abort("foo");
-            }
-        };
+    var connection = testUtilities.createHubConnection(end, assert, testName),
+        demo = connection.createHubProxies().demo;
 
     // Need to have at least one client function in order to be subscribed to a hub
     demo.client.TestGuid = function () {
         // Wire up the state changed (while connected) to detect if we connect again
         // In a later test we'll determine if reconnected gets called
         connection.stateChanged(function () {
-            if (connection.state == $.signalR.connectionState.reconnecting) {
+            if (connection.state === $.signalR.connectionState.reconnecting) {
                 assert.ok(true, "Connection now in reconnecting state.");
                 end();
             }
         });
 
-        tryReconnect();
+        $.network.disconnect();
     };
 
     connection.start({ transport: "longPolling" }).done(function () {
         assert.ok(true, "Connected");
         // Call a server function and request a message back in order to get a message ID so we can successfully reconnect
         demo.server.testGuid();
-    }).fail(function (reason) {
-        assert.ok(false, "Failed to initiate SignalR connection");
-        end();
     });
 
     // Cleanup
     return function () {
         connection.stop();
+        $.network.connect();
     };
 });
 
 QUnit.asyncTimeoutTest("Triggers reconnecting.", testUtilities.defaultTestTimeout, function (end, assert, testName) {
-    var connection = testUtilities.createHubConnection(testName),
-        demo = connection.createHubProxies().demo,
-        tryReconnect = function () {
-            // Verify that the polling connection is instantiated before trying to abort it. We want
-            // to cause the transport to error so it must be instantiated first.
-            if (connection.pollXhr.readyState !== 1) {
-                setTimeout(tryReconnect, 200);
-            }
-            else {
-                // Passing "foo" forces the longPolling's ajax connection to error and pass "foo" as the 
-                // reason, the default error (empty) is "abort" which we handle as do not attempt to 
-                // reconnect. So by passing foo we mimic the behavior of an unintended error occurring, 
-                // forcing the transport into reconnecting.
-                connection.pollXhr.abort("foo");
-            }
-        };
+    var connection = testUtilities.createHubConnection(end, assert, testName),
+        demo = connection.createHubProxies().demo;
 
     // Need to have at least one client function in order to be subscribed to a hub
     demo.client.TestGuid = function () {
@@ -121,44 +78,33 @@ QUnit.asyncTimeoutTest("Triggers reconnecting.", testUtilities.defaultTestTimeou
             end();
         });
 
-        tryReconnect();
+        $.network.disconnect();
     };
 
     connection.start({ transport: "longPolling" }).done(function () {
         assert.ok(true, "Connected");
         // Call a server function and request a message back in order to get a message ID so we can successfully reconnect
         demo.server.testGuid();
-    }).fail(function (reason) {
-        assert.ok(false, "Failed to initiate SignalR connection");
-        end();
     });
 
     // Cleanup
     return function () {
         connection.stop();
+        $.network.connect();
     };
 });
 
 QUnit.asyncTimeoutTest("Triggers reconnected.", testUtilities.defaultTestTimeout, function (end, assert, testName) {
-    var connection = testUtilities.createHubConnection(testName),
-        demo = connection.createHubProxies().demo,
-        tryReconnect = function () {
-            // Verify that the polling connection is instantiated before trying to abort it. We want
-            // to cause the transport to error so it must be instantiated first.
-            if (connection.pollXhr.readyState !== 1) {
-                setTimeout(tryReconnect, 200);
-            }
-            else {
-                // Passing "foo" forces the longPolling's ajax connection to error and pass "foo" as the 
-                // reason, the default error (empty) is "abort" which we handle as do not attempt to 
-                // reconnect. So by passing foo we mimic the behavior of an unintended error occurring, 
-                // forcing the transport into reconnecting.
-                connection.pollXhr.abort("foo");
-            }
-        };
+    var connection = testUtilities.createHubConnection(end, assert, testName),
+        demo = connection.createHubProxies().demo;
 
     // Need to have at least one client function in order to be subscribed to a hub
     demo.client.TestGuid = function () {
+        connection.reconnecting(function () {
+            assert.ok(true, "Reconnecting triggered!");
+            $.network.connect();
+        });
+
         // Wire up the state changed (while connected) to detect if we connect again
         // In a later test we'll determine if reconnected gets called
         connection.reconnected(function () {
@@ -166,52 +112,36 @@ QUnit.asyncTimeoutTest("Triggers reconnected.", testUtilities.defaultTestTimeout
             end();
         });
 
-        tryReconnect();
+        $.network.disconnect();
     };
 
     connection.start({ transport: "longPolling" }).done(function () {
         assert.ok(true, "Connected");
         // Call a server function and request a message back in order to get a message ID so we can successfully reconnect
         demo.server.testGuid();
-    }).fail(function (reason) {
-        assert.ok(false, "Failed to initiate SignalR connection");
-        end();
     });
 
     // Cleanup
     return function () {
         connection.stop();
+        $.network.connect();
     };
 });
 
 QUnit.asyncTimeoutTest("Clears stop reconnecting timeout on stop inside of stateChanged.", testUtilities.defaultTestTimeout, function (end, assert, testName) {
-    var connection = testUtilities.createHubConnection(testName),
+    var connection = testUtilities.createHubConnection(end, assert, testName),
         demo = connection.createHubProxies().demo,
         // Trigger disconnect timeout after X second of trying to reconnect.  This has to be a unique value because
         // we'll be using it to check if we've triggered the disconnect timeout.
         disconnectTimeout = 1.337,
-        timeoutId = -1,
-        tryReconnect = function () {
-            // Verify that the polling connection is instantiated before trying to abort it. We want
-            // to cause the transport to error so it must be instantiated first.
-            if (connection.pollXhr.readyState !== 1) {
-                setTimeout(tryReconnect, 200);
-            }
-            else {
-                // Passing "foo" forces the longPolling's ajax connection to error and pass "foo" as the 
-                // reason, the default error (empty) is "abort" which we handle as do not attempt to 
-                // reconnect. So by passing foo we mimic the behavior of an unintended error occurring, 
-                // forcing the transport into reconnecting.
-                connection.pollXhr.abort("foo");
-            }
-        };
+        timeoutId = -1;
 
     // Need to have at least one client function in order to be subscribed to a hub
     demo.client.TestGuid = function () {
         // Wire up the state changed (while connected) to detect if we connect again
         // In a later test we'll determine if reconnected gets called
         connection.stateChanged(function () {
-            if (connection.state == $.signalR.connectionState.reconnecting) {
+            if (connection.state === $.signalR.connectionState.reconnecting) {
                 assert.ok(true, "Connection now in reconnecting state (via stateChanged), stopping the connection.");
                 connection.stop();
                 
@@ -223,7 +153,7 @@ QUnit.asyncTimeoutTest("Clears stop reconnecting timeout on stop inside of state
             }
         });
 
-        tryReconnect();
+        $.network.disconnect();
     };
 
     // Replace log function to see if we trigger reconnectTimeout.  Need to look at the log itself because
@@ -242,14 +172,49 @@ QUnit.asyncTimeoutTest("Clears stop reconnecting timeout on stop inside of state
 
         // Call a server function and request a message back in order to get a message ID so we can successfully reconnect
         demo.server.testGuid();
-    }).fail(function (reason) {
-        assert.ok(false, "Failed to initiate SignalR connection");
-        end();
     });
 
     // Cleanup
     return function () {
         clearTimeout(timeoutId);
+        connection.stop();
+        $.network.connect();
+    };
+});
+
+QUnit.asyncTimeoutTest("Can remain connected to /signalr/hubs.", testUtilities.defaultTestTimeout, function (end, assert, testName) {
+    var connection = testUtilities.createHubConnection(end, assert, testName, "signalr/hubs"),
+        demo = connection.createHubProxies().demo,
+        testGuidInvocations = 0;
+
+    demo.client.TestGuid = function () {
+        testGuidInvocations++;
+        if (testGuidInvocations < 2) {
+            assert.ok(true, "First testGuid invocation succeeded.");
+            demo.server.testGuid();
+        } else {
+            assert.ok(true, "Second testGuid invocation succeeded.");
+            end();
+        }
+    };
+
+    connection.error(function (e) {
+        assert.ok(false, "Connection error: " + e);
+        end();
+    });
+
+    connection.reconnecting(function () {
+        assert.ok(false, "Reconnecting should not be triggered");
+        end();
+    });
+
+    connection.start({ transport: "longPolling" }).done(function () {
+        assert.ok(true, "Connected");
+        demo.server.testGuid();
+    });
+
+    // Cleanup
+    return function () {
         connection.stop();
     };
 });

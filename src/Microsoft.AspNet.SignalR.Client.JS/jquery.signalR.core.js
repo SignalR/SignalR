@@ -1,6 +1,6 @@
 /*global window:false */
 /*!
- * ASP.NET SignalR JavaScript Library v1.0.1
+ * ASP.NET SignalR JavaScript Library v1.1.0-beta1
  * http://signalr.net/
  *
  * Copyright Microsoft Open Technologies, Inc. All rights reserved.
@@ -119,6 +119,26 @@
         return new signalR.fn.init(url, qs, logging);
     };
 
+    signalR._ = {
+        defaultContentType: "application/x-www-form-urlencoded; charset=UTF-8",
+        ieVersion: (function () {
+            var version,
+                matches;
+
+            if (window.navigator.appName === 'Microsoft Internet Explorer') {
+                // Check if the user agent has the pattern "MSIE (one or more numbers).(one or more numbers)";
+                matches = /MSIE ([0-9]+\.[0-9]+)/.exec(window.navigator.userAgent);
+
+                if (matches) {
+                    version = window.parseFloat(matches[1]);
+                }
+            }
+
+            // undefined value means not IE
+            return version;
+        })()
+    };
+
     signalR.events = events;
 
     signalR.changeState = changeState;
@@ -146,6 +166,7 @@
         /// <param name="requestedTransport" type="Object">The designated transports that the user has specified.</param>
         /// <param name="connection" type="signalR">The connection that will be using the requested transports.  Used for logging purposes.</param>
         /// <returns type="Object" />
+
         if ($.isArray(requestedTransport)) {
             // Go through transport array and remove an "invalid" tranports
             for (var i = requestedTransport.length - 1; i >= 0; i--) {
@@ -164,6 +185,12 @@
         } else if ($.type(requestedTransport) !== "object" && !signalR.transports[requestedTransport] && requestedTransport !== "auto") {
             connection.log("Invalid transport: " + requestedTransport.toString());
             requestedTransport = null;
+        }
+        else if (requestedTransport === "auto" && signalR._.ieVersion <= 8)
+        {
+            // If we're doing an auto transport and we're IE8 then force longPolling, #1764
+            return ["longPolling"];
+
         }
 
         return requestedTransport;
@@ -223,6 +250,8 @@
         },
 
         ajaxDataType: "json",
+
+        contentType: "application/json; charset=UTF-8",
 
         logging: false,
 
@@ -330,6 +359,8 @@
                         connection.log("Using jsonp because this browser doesn't support CORS");
                     }
                 }
+
+                connection.contentType = signalR._.defaultContentType;
             }
 
             connection.ajaxDataType = config.jsonp ? "jsonp" : "json";
@@ -346,7 +377,7 @@
                 if (index >= transports.length) {
                     if (!connection.transport) {
                         // No transport initialized successfully
-                        $(connection).triggerHandler(events.onError, "SignalR: No transport could be initialized successfully. Try specifying a different transport or none at all for auto initialization.");
+                        $(connection).triggerHandler(events.onError, ["SignalR: No transport could be initialized successfully. Try specifying a different transport or none at all for auto initialization."]);
                         deferred.reject("SignalR: No transport could be initialized successfully. Try specifying a different transport or none at all for auto initialization.");
                         // Stop the connection if it has connected and move it into the disconnected state
                         connection.stop();
@@ -395,6 +426,7 @@
                 global: false,
                 cache: false,
                 type: "GET",
+                contentType: connection.contentType,
                 data: {},
                 dataType: connection.ajaxDataType,
                 error: function (error) {
@@ -435,7 +467,7 @@
                     }
 
                     if (!res.ProtocolVersion || res.ProtocolVersion !== "1.2") {
-                        $(connection).triggerHandler(events.onError, "You are using a version of the client that isn't compatible with the server. Client version 1.2, server version " + res.ProtocolVersion + ".");
+                        $(connection).triggerHandler(events.onError, ["You are using a version of the client that isn't compatible with the server. Client version 1.2, server version " + res.ProtocolVersion + "."]);
                         deferred.reject("You are using a version of the client that isn't compatible with the server. Client version 1.2, server version " + res.ProtocolVersion + ".");
                         return;
                     }

@@ -3,7 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
-using System.Linq;
+using System.IO;
 using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR.Infrastructure;
 
@@ -15,31 +15,30 @@ namespace Microsoft.AspNet.SignalR.Messaging
         private List<Topic> _cursorTopics;
 
         private readonly IStringMinifier _stringMinifier;
-        private readonly object _lockObj = new object();
 
         public DefaultSubscription(string identity,
-                                   IEnumerable<string> eventKeys,
+                                   IList<string> eventKeys,
                                    TopicLookup topics,
                                    string cursor,
-                                   Func<MessageResult, Task<bool>> callback,
+                                   Func<MessageResult, object, Task<bool>> callback,
                                    int maxMessages,
                                    IStringMinifier stringMinifier,
-                                   IPerformanceCounterManager counters) :
-            base(identity, eventKeys, callback, maxMessages, counters)
+                                   IPerformanceCounterManager counters,
+                                   object state) :
+            base(identity, eventKeys, callback, maxMessages, counters, state)
         {
             _stringMinifier = stringMinifier;
 
-            IEnumerable<Cursor> cursors;
-            if (cursor == null)
+            if (String.IsNullOrEmpty(cursor))
             {
-                cursors = GetCursorsFromEventKeys(EventKeys, topics);
+                _cursors = GetCursorsFromEventKeys(EventKeys, topics);
             }
             else
             {
-                cursors = Cursor.GetCursors(cursor, stringMinifier.Unminify) ?? GetCursorsFromEventKeys(EventKeys, topics);
+                // Ensure delegate continues to use the C# Compiler static delegate caching optimization.
+                _cursors = Cursor.GetCursors(cursor, (k, s) => UnminifyCursor(k, s), stringMinifier) ?? GetCursorsFromEventKeys(EventKeys, topics);
             }
 
-            _cursors = new List<Cursor>(cursors);
             _cursorTopics = new List<Topic>();
 
             if (!String.IsNullOrEmpty(cursor))
@@ -67,9 +66,16 @@ namespace Microsoft.AspNet.SignalR.Messaging
             }
         }
 
+        private static string UnminifyCursor(string key, object state)
+        {
+            return ((IStringMinifier)state).Unminify(key);
+        }
+
         public override bool AddEvent(string eventKey, Topic topic)
         {
-            lock (_lockObj)
+            base.AddEvent(eventKey, topic);
+
+            lock (_cursors)
             {
                 // O(n), but small n and it's not common
                 var index = _cursors.FindIndex(c => c.Key == eventKey);
@@ -88,7 +94,9 @@ namespace Microsoft.AspNet.SignalR.Messaging
 
         public override void RemoveEvent(string eventKey)
         {
-            lock (_lockObj)
+            base.RemoveEvent(eventKey);
+
+            lock (_cursors)
             {
                 var index = _cursors.FindIndex(c => c.Key == eventKey);
                 if (index != -1)
@@ -101,7 +109,9 @@ namespace Microsoft.AspNet.SignalR.Messaging
 
         public override void SetEventTopic(string eventKey, Topic topic)
         {
-            lock (_lockObj)
+            base.SetEventTopic(eventKey, topic);
+
+            lock (_cursors)
             {
                 // O(n), but small n and it's not common
                 var index = _cursors.FindIndex(c => c.Key == eventKey);
@@ -112,28 +122,26 @@ namespace Microsoft.AspNet.SignalR.Messaging
             }
         }
 
-        public override string GetCursor()
+        public override void WriteCursor(TextWriter textWriter)
         {
-            return Cursor.MakeCursor(_cursors);
+            lock (_cursors)
+            {
+                Cursor.WriteCursors(textWriter, _cursors);
+            }
         }
 
         [SuppressMessage("Microsoft.Design", "CA1062:Validate arguments of public methods", MessageId = "0", Justification = "It is called from the base class")]
         protected override void PerformWork(IList<ArraySegment<Message>> items, out int totalCount, out object state)
         {
-            var cursors = new List<Cursor>();
             totalCount = 0;
 
-            lock (_lockObj)
+            lock (_cursors)
             {
+                var cursors = new ulong[_cursors.Count];
                 for (int i = 0; i < _cursors.Count; i++)
                 {
-                    Cursor cursor = Cursor.Clone(_cursors[i]);
-                    cursors.Add(cursor);
-
-                    MessageStoreResult<Message> storeResult = _cursorTopics[i].Store.GetMessages(cursor.Id, MaxMessages);
-                    ulong next = storeResult.FirstMessageId + (ulong)storeResult.Messages.Count;
-
-                    cursor.Id = next;
+                    MessageStoreResult<Message> storeResult = _cursorTopics[i].Store.GetMessages(_cursors[i].Id, MaxMessages);
+                    cursors[i] = storeResult.FirstMessageId + (ulong)storeResult.Messages.Count;
 
                     if (storeResult.Messages.Count > 0)
                     {
@@ -149,16 +157,20 @@ namespace Microsoft.AspNet.SignalR.Messaging
 
         protected override void BeforeInvoke(object state)
         {
-            // Update the list of cursors before invoking anything
-            lock (_lockObj)
+            lock (_cursors)
             {
-                _cursors = (List<Cursor>)state;
+                // Update the list of cursors before invoking anything
+                var nextCursors = (ulong[])state;
+                for (int i = 0; i < _cursors.Count; i++)
+                {
+                    _cursors[i].Id = nextCursors[i];
+                }
             }
         }
 
         private bool UpdateCursor(string key, ulong id)
         {
-            lock (_lockObj)
+            lock (_cursors)
             {
                 // O(n), but small n and it's not common
                 var index = _cursors.FindIndex(c => c.Key == key);
@@ -172,10 +184,16 @@ namespace Microsoft.AspNet.SignalR.Messaging
             }
         }
 
-        private IEnumerable<Cursor> GetCursorsFromEventKeys(IEnumerable<string> eventKeys, TopicLookup topics)
+        private List<Cursor> GetCursorsFromEventKeys(IList<string> eventKeys, TopicLookup topics)
         {
-            return from key in eventKeys
-                   select new Cursor(key, GetMessageId(topics, key), _stringMinifier.Minify(key));
+            var list = new List<Cursor>(eventKeys.Count);
+            foreach (var eventKey in eventKeys)
+            {
+                var cursor = new Cursor(eventKey, GetMessageId(topics, eventKey), _stringMinifier.Minify(eventKey));
+                list.Add(cursor);
+            }
+
+            return list;
         }
 
         private static ulong GetMessageId(TopicLookup topics, string key)

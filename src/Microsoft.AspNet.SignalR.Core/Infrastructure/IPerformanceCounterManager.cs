@@ -18,6 +18,15 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
         void Initialize(string instanceName, CancellationToken hostShutdownToken);
 
         /// <summary>
+        /// Loads a performance counter.
+        /// </summary>
+        /// <param name="categoryName">The category name.</param>
+        /// <param name="counterName">The counter name.</param>
+        /// <param name="instanceName">The instance name.</param>
+        /// <param name="isReadOnly">Whether the counter is read-only.</param>
+        IPerformanceCounter LoadCounter(string categoryName, string counterName, string instanceName, bool isReadOnly);
+
+        /// <summary>
         /// Gets the performance counter representing the total number of connection Connect events since the application was started.
         /// </summary>
         IPerformanceCounter ConnectionsConnected { get; }
@@ -38,12 +47,12 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
         IPerformanceCounter ConnectionsCurrent { get; }
 
         /// <summary>
-        /// Gets the performance counter representing the toal number of messages received by connections (server to client) since the application was started.
+        /// Gets the performance counter representing the total number of messages received by connections (server to client) since the application was started.
         /// </summary>
         IPerformanceCounter ConnectionMessagesReceivedTotal { get; }
 
         /// <summary>
-        /// Gets the performance counter representing the toal number of messages received by connections (server to client) since the application was started.
+        /// Gets the performance counter representing the total number of messages received by connections (server to client) since the application was started.
         /// </summary>
         IPerformanceCounter ConnectionMessagesSentTotal { get; }
 
@@ -56,6 +65,21 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
         /// Gets the performance counter representing the number of messages sent by connections (client to server) per second.
         /// </summary>
         IPerformanceCounter ConnectionMessagesSentPerSec { get; }
+
+        /// <summary>
+        /// Gets the performance counter representing the total number of messages received by subscribers since the application was started.
+        /// </summary>
+        IPerformanceCounter MessageBusMessagesReceivedTotal { get; }
+
+        /// <summary>
+        /// Gets the performance counter representing the number of messages received by a subscribers per second.
+        /// </summary>
+        IPerformanceCounter MessageBusMessagesReceivedPerSec { get; }
+
+        /// <summary>
+        /// Gets the performance counter representing the number of messages received by the scaleout message bus per second.
+        /// </summary>
+        IPerformanceCounter ScaleoutMessageBusMessagesReceivedPerSec { get; }
 
         /// <summary>
         /// Gets the performance counter representing the total number of messages published to the message bus since the application was started.

@@ -85,6 +85,11 @@ namespace Microsoft.AspNet.SignalR.Hubs
         /// <returns>A dynamic representation of the specified group.</returns>
         public dynamic Group(string groupName, params string[] excludeConnectionIds)
         {
+            if (string.IsNullOrEmpty(groupName))
+            {
+                throw new ArgumentException(Resources.Error_ArgumentNullOrEmpty, "groupName");
+            }
+
             return new GroupProxy(_send, groupName, _hubName, PrefixHelper.GetPrefixedConnectionIds(excludeConnectionIds));
         }
 
@@ -95,6 +100,11 @@ namespace Microsoft.AspNet.SignalR.Hubs
         /// <returns>A dynamic representation of the specified client.</returns>
         public dynamic Client(string connectionId)
         {
+            if (string.IsNullOrEmpty(connectionId))
+            {
+                throw new ArgumentException(Resources.Error_ArgumentNullOrEmpty, "connectionId");
+            }
+
             return new ConnectionIdProxy(_send, connectionId, _hubName);
         }
     }
