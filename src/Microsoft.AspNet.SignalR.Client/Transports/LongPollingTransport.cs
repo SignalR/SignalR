@@ -148,11 +148,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
                     connection.EnsureReconnecting();
                 }
 
-                if (AbortResetEvent != null)
-                {
-                    AbortResetEvent.Set();
-                }
-                else if (disconnectedReceived)
+                if (disconnectedReceived)
                 {
                     connection.Disconnect();
                 }
@@ -173,7 +169,6 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
                 }
                 else
                 {
-                    // If we aborted purposely then we need to stop the request handler
                     requestHandler.Stop();
                 }
             };
@@ -193,16 +188,32 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
             requestHandler.OnAfterPoll = exception =>
             {
                 requestDisposer.Dispose();
-                requestDisposer = new Disposer();
-                reconnectInvoker = new ThreadSafeInvoker();
 
-                if (exception != null)
+                if (TryCompleteAbort())
                 {
-                    // Delay polling by the error delay
-                    return TaskAsyncHelper.Delay(ErrorDelay);
+                    // Abort() was called, so don't reconnect
+                    requestHandler.Stop();
+                }
+                else
+                {
+                    requestDisposer = new Disposer();
+                    reconnectInvoker = new ThreadSafeInvoker();
+
+                    if (exception != null)
+                    {
+                        // Delay polling by the error delay
+                        return TaskAsyncHelper.Delay(ErrorDelay);
+                    }
                 }
 
                 return TaskAsyncHelper.Empty;
+            };
+
+            requestHandler.OnAbort += _ =>
+            {
+                // Complete any ongoing calls to Abort()
+                // If someone calls Abort() later, have it no-op
+                CompleteAbort();
             };
         }
 

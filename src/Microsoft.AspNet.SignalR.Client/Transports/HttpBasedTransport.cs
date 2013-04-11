@@ -7,6 +7,7 @@ using System.Globalization;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR.Client.Http;
+using Microsoft.AspNet.SignalR.Infrastructure;
 using Newtonsoft.Json.Linq;
 
 namespace Microsoft.AspNet.SignalR.Client.Transports
@@ -18,6 +19,20 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
 
         // The transport name
         private readonly string _transport;
+
+        // Used to complete the synchronous call to Abort()
+        private ManualResetEvent _abortResetEvent = new ManualResetEvent(initialState: false);
+
+        // Used to indicate whether Abort() has been called
+        private bool _startedAbort;
+        // Used to ensure that Abort() runs effectively only once
+        // The _abortLock subsumes the _disposeLock and can be held upwards of 30 seconds
+        private readonly object _abortLock = new object();
+
+        // Used to ensure the _abortResetEvent.Set() isn't called after disposal
+        private bool _disposed;
+        // Used to make checking _disposed and calling _abortResetEvent.Set() thread safe
+        private readonly object _disposeLock = new object();
 
         private readonly IHttpClient _httpClient;
 
@@ -34,8 +49,6 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
                 return _transport;
             }
         }
-
-        protected ManualResetEvent AbortResetEvent { get; private set; }
 
         /// <summary>
         /// Indicates whether or not the transport supports keep alive
@@ -101,7 +114,6 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
                               .Catch(connection.OnError);
         }
 
-        [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "We don't want Stop to throw. IHttpClient.PostAsync could throw anything.")]
         public void Abort(IConnection connection, TimeSpan timeout)
         {
             if (connection == null)
@@ -109,11 +121,18 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
                 throw new ArgumentNullException("connection");
             }
 
-            lock (this)
+            // Abort should never complete before any of its previous calls
+            lock (_abortLock)
             {
-                if (AbortResetEvent == null)
+                if (_disposed)
                 {
-                    AbortResetEvent = new ManualResetEvent(initialState: false);
+                    throw new ObjectDisposedException(GetType().Name);
+                }
+
+                // Ensure that an abort request is only made once
+                if (!_startedAbort)
+                {
+                    _startedAbort = true;
 
                     string url = connection.Url + "abort" + String.Format(CultureInfo.InvariantCulture,
                                                                           _sendQueryString,
@@ -126,15 +145,52 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
                     _httpClient.Post(url, connection.PrepareRequest).Catch((ex, state) =>
                     {
                         // If there's an error making an http request set the reset event
-                        ((ManualResetEvent)state).Set();
+                        ((HttpBasedTransport)state).TryCompleteAbort();
                     },
-                    AbortResetEvent);
+                    this);
+
+                    if (!_abortResetEvent.WaitOne(timeout))
+                    {
+                        connection.Trace(TraceLevels.Events, "Abort never fired");
+                    }
                 }
             }
+        }
 
-            if (!AbortResetEvent.WaitOne(timeout))
+        protected void CompleteAbort()
+        {
+            lock (_disposeLock)
             {
-                connection.Trace(TraceLevels.Events, "Abort never fired");
+                if (!_disposed)
+                {
+                    // Make any future calls to Abort() no-op
+                    // Abort might still run, but any ongoing aborts will immediately complete
+                    _startedAbort = true;
+                    // Ensure any ongoing calls to Abort() complete
+                    _abortResetEvent.Set();
+                }
+            }
+        }
+
+        protected bool TryCompleteAbort()
+        {
+            // Make sure we don't Set a disposed ManualResetEvent
+            lock (_disposeLock)
+            {
+                if (_disposed)
+                {
+                    // Don't try to continue receiving messages if the transport is disposed
+                    return true;
+                }
+                else if (_startedAbort)
+                {
+                    _abortResetEvent.Set();
+                    return true;
+                }
+                else
+                {
+                    return false;
+                }
             }
         }
 
@@ -155,11 +211,18 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
         {
             if (disposing)
             {
-                if (AbortResetEvent != null)
+                // Wait for any ongoing aborts to complete
+                // In practice, any aborts should have finished by the time Dispose is called
+                lock (_abortLock)
+                lock (_disposeLock)
                 {
-                    AbortResetEvent.Dispose();
+                    if (!_disposed)
+                    {
+                        _abortResetEvent.Dispose();
+                        _disposed = true;
+                    }
                 }
-            }
+           }
         }
     }
 }
