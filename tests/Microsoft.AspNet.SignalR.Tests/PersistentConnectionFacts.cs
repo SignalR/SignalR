@@ -66,7 +66,7 @@ namespace Microsoft.AspNet.SignalR.Tests
             [Fact]
             public void MissingGroupTokenReturnsEmptyList()
             {
-                var groups = DoVerifyGroups(groupsToken: null, connectionId: null);
+                var groups = DoVerifyGroups(groupsToken: null);
 
                 Assert.Equal(0, groups.Count);
             }
@@ -74,15 +74,7 @@ namespace Microsoft.AspNet.SignalR.Tests
             [Fact]
             public void NullProtectedDataTokenReturnsEmptyList()
             {
-                var groups = DoVerifyGroups(groupsToken: "groups", connectionId: null, hasProtectedData: false);
-
-                Assert.Equal(0, groups.Count);
-            }
-
-            [Fact]
-            public void GroupsTokenWithInvalidConnectionIdReturnsEmptyList()
-            {
-                var groups = DoVerifyGroups(groupsToken: @"wrong:[""g1"",""g2""]", connectionId: "id");
+                var groups = DoVerifyGroups(groupsToken: "groups", hasProtectedData: false);
 
                 Assert.Equal(0, groups.Count);
             }
@@ -90,14 +82,14 @@ namespace Microsoft.AspNet.SignalR.Tests
             [Fact]
             public void GroupsAreParsedFromToken()
             {
-                var groups = DoVerifyGroups(groupsToken: @"id:[""g1"",""g2""]", connectionId: "id");
+                var groups = DoVerifyGroups(groupsToken: @"[""g1"",""g2""]");
 
                 Assert.Equal(2, groups.Count);
                 Assert.Equal("g1", groups[0]);
                 Assert.Equal("g2", groups[1]);
             }
 
-            private static IList<string> DoVerifyGroups(string groupsToken, string connectionId, bool hasProtectedData = true)
+            private static IList<string> DoVerifyGroups(string groupsToken, bool hasProtectedData = true)
             {
                 var connection = new Mock<PersistentConnection>() { CallBase = true };
                 var req = new Mock<IRequest>();
@@ -121,7 +113,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                 var context = new HostContext(req.Object, null);
                 connection.Object.Initialize(dr, context);
 
-                return connection.Object.VerifyGroups(context, connectionId);
+                return connection.Object.VerifyGroups(context);
             }
         }
 
@@ -132,7 +124,7 @@ namespace Microsoft.AspNet.SignalR.Tests
             {
                 var connection = new Mock<PersistentConnection>() { CallBase = true };
                 var req = new Mock<IRequest>();
-
+                
                 var protectedData = new Mock<IProtectedData>();
                 protectedData.Setup(m => m.Protect(It.IsAny<string>(), It.IsAny<string>()))
                     .Returns<string, string>((value, purpose) => value);
@@ -152,7 +144,7 @@ namespace Microsoft.AspNet.SignalR.Tests
             {
                 var connection = new Mock<PersistentConnection>() { CallBase = true };
                 var req = new Mock<IRequest>();
-
+                
                 var protectedData = new Mock<IProtectedData>();
                 protectedData.Setup(m => m.Protect(It.IsAny<string>(), It.IsAny<string>()))
                     .Returns<string, string>((value, purpose) => value);
@@ -171,7 +163,7 @@ namespace Microsoft.AspNet.SignalR.Tests
             {
                 var connection = new Mock<PersistentConnection>() { CallBase = true };
                 var req = new Mock<IRequest>();
-
+                
                 var protectedData = new Mock<IProtectedData>();
                 protectedData.Setup(m => m.Protect(It.IsAny<string>(), It.IsAny<string>()))
                     .Returns<string, string>((value, purpose) => value);

@@ -1,10 +1,11 @@
 ﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.md in the project root for license information.
 
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
-using System.Globalization;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR.Infrastructure;
 
@@ -12,42 +13,40 @@ namespace Microsoft.AspNet.SignalR.Messaging
 {
     public class ScaleoutSubscription : Subscription
     {
-        private readonly IList<ScaleoutMappingStore> _stores;
-        private readonly List<Cursor> _cursors;
+        private readonly ConcurrentDictionary<string, IndexedDictionary> _streams;
+        
+        private List<Cursor> _cursors;
 
         public ScaleoutSubscription(string identity,
                                     IList<string> eventKeys,
                                     string cursor,
-                                    IList<ScaleoutMappingStore> stores,
+                                    ConcurrentDictionary<string, IndexedDictionary> streamMappings,
                                     Func<MessageResult, object, Task<bool>> callback,
                                     int maxMessages,
                                     IPerformanceCounterManager counters,
                                     object state)
             : base(identity, eventKeys, callback, maxMessages, counters, state)
         {
-            if (stores == null)
+            if (streamMappings == null)
             {
-                throw new ArgumentNullException("stores");
+                throw new ArgumentNullException("streamMappings");
             }
 
-            _stores = stores;
+            _streams = streamMappings;
 
-            List<Cursor> cursors = null;
+            IEnumerable<Cursor> cursors = null;
 
-            if (String.IsNullOrEmpty(cursor))
+            if (cursor == null)
             {
-                cursors = new List<Cursor>(stores.Count);
-                for (int i = 0; i < stores.Count; i++)
-                {
-                    cursors.Add(new Cursor(i.ToString(CultureInfo.InvariantCulture), stores[i].MaxKey));
-                }
+                cursors = from key in _streams.Keys
+                          select new Cursor(key, GetCursorId(key));
             }
             else
             {
                 cursors = Cursor.GetCursors(cursor);
             }
 
-            _cursors = cursors;
+            _cursors = new List<Cursor>(cursors);
         }
 
         public override void WriteCursor(TextWriter textWriter)
@@ -60,68 +59,108 @@ namespace Microsoft.AspNet.SignalR.Messaging
         protected override void PerformWork(IList<ArraySegment<Message>> items, out int totalCount, out object state)
         {
             // The list of cursors represent (streamid, payloadid)
-            var nextCursors = new ulong[_stores.Count];
+            var cursors = new List<Cursor>();
             totalCount = 0;
 
-            for (var i = 0; i < _stores.Count; ++i)
+            foreach (var stream in _streams)
             {
                 // Get the mapping for this stream
-                ScaleoutMappingStore store = _stores[i];
+                IndexedDictionary mapping = stream.Value;
 
                 // See if we have a cursor for this key
-                Cursor cursor = _cursors[i];
-                nextCursors[i] = cursor.Id;
+                Cursor cursor = null;
+
+                // REVIEW: We should optimize this
+                int index = _cursors.FindIndex(c => c.Key == stream.Key);
+
+                bool consumed = true;
+
+                if (index != -1)
+                {
+                    cursor = Cursor.Clone(_cursors[index]);
+
+                    // If there's no node for this cursor id it's likely because we've
+                    // had an app domain restart and the cursor position is now invalid.
+                    if (mapping.GetMapping(cursor.Id) == null)
+                    {
+                        // Set it to the first id in this mapping
+                        cursor.Id = stream.Value.MinKey;
+
+                        // Mark this cursor as unconsumed
+                        consumed = false;
+                    }
+                }
+                else
+                {
+                    // Create a cursor and add it to the list.
+                    // Point the Id to the first value
+                    cursor = new Cursor(key: stream.Key, id: stream.Value.MinKey);
+
+                    consumed = false;
+                }
+
+                cursors.Add(cursor);
 
                 // Try to find a local mapping for this payload
-                IEnumerator<ScaleoutMapping> enumerator = store.GetEnumerator(cursor.Id);
+                LinkedListNode<KeyValuePair<ulong, ScaleoutMapping>> node = mapping.GetMapping(cursor.Id);
+
+                // Skip this node only if this isn't a new cursor
+                if (node != null && consumed)
+                {
+                    // Skip this node since we've already consumed it
+                    node = node.Next;
+                }
 
                 // Stop if we got more than max messages
-                while (totalCount < MaxMessages && enumerator.MoveNext())
+                while (totalCount < MaxMessages && node != null)
                 {
-                    ScaleoutMapping mapping = enumerator.Current;
+                    KeyValuePair<ulong, ScaleoutMapping> pair = node.Value;
+
+                    // It should be ok to lock here since groups aren't modified that often
 
                     // For each of the event keys we care about, extract all of the messages
                     // from the payload
-                    lock (EventKeys)
+                    for (var i = 0; i < EventKeys.Count; ++i)
                     {
-                        for (var j = 0; j < EventKeys.Count; ++j)
+                        string eventKey = EventKeys[i];
+ 
+                        LocalEventKeyInfo info;
+                        if (pair.Value.EventKeyMappings.TryGetValue(eventKey, out info))
                         {
-                            string eventKey = EventKeys[j];
+                            int maxMessages = Math.Min(info.Count, MaxMessages);
+                            MessageStoreResult<Message> storeResult = info.Store.GetMessages(info.MinLocal, maxMessages);
 
-                            for (int k = 0; k < mapping.LocalKeyInfo.Count; k++)
+                            if (storeResult.Messages.Count > 0)
                             {
-                                LocalEventKeyInfo info = mapping.LocalKeyInfo[k];
-
-                                if (info.Key.Equals(eventKey, StringComparison.OrdinalIgnoreCase))
-                                {
-                                    MessageStoreResult<Message> storeResult = info.MessageStore.GetMessages(info.Id, 1);
-
-                                    if (storeResult.Messages.Count > 0)
-                                    {
-                                        items.Add(storeResult.Messages);
-                                        totalCount += storeResult.Messages.Count;
-                                    }
-                                }
+                                items.Add(storeResult.Messages);
+                                totalCount += storeResult.Messages.Count;
                             }
                         }
                     }
 
                     // Update the cursor id
-                    nextCursors[i] = mapping.Id;
+                    cursor.Id = pair.Key;
+                    node = node.Next;
                 }
             }
 
-            state = nextCursors;
+            state = cursors;
         }
 
         protected override void BeforeInvoke(object state)
         {
-            // Update the list of cursors before invoking anything
-            var nextCursors = (ulong[])state;
-            for (int i = 0; i < _cursors.Count; i++)
+            _cursors = (List<Cursor>)state;
+        }
+
+        private ulong GetCursorId(string key)
+        {
+            IndexedDictionary mapping;
+            if (_streams.TryGetValue(key, out mapping))
             {
-                _cursors[i].Id = nextCursors[i];
+                return mapping.MaxKey;
             }
+
+            return 0;
         }
     }
 }

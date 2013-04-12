@@ -120,26 +120,6 @@
         return new signalR.fn.init(url, qs, logging);
     };
 
-    signalR._ = {
-        defaultContentType: "application/x-www-form-urlencoded; charset=UTF-8",
-        ieVersion: (function () {
-            var version,
-                matches;
-
-            if (window.navigator.appName === 'Microsoft Internet Explorer') {
-                // Check if the user agent has the pattern "MSIE (one or more numbers).(one or more numbers)";
-                matches = /MSIE ([0-9]+\.[0-9]+)/.exec(window.navigator.userAgent);
-
-                if (matches) {
-                    version = window.parseFloat(matches[1]);
-                }
-            }
-
-            // undefined value means not IE
-            return version;
-        })()
-    };
-
     signalR.events = events;
 
     signalR.changeState = changeState;
@@ -167,7 +147,6 @@
         /// <param name="requestedTransport" type="Object">The designated transports that the user has specified.</param>
         /// <param name="connection" type="signalR">The connection that will be using the requested transports.  Used for logging purposes.</param>
         /// <returns type="Object" />
-
         if ($.isArray(requestedTransport)) {
             // Go through transport array and remove an "invalid" tranports
             for (var i = requestedTransport.length - 1; i >= 0; i--) {
@@ -186,12 +165,6 @@
         } else if ($.type(requestedTransport) !== "object" && !signalR.transports[requestedTransport] && requestedTransport !== "auto") {
             connection.log("Invalid transport: " + requestedTransport.toString());
             requestedTransport = null;
-        }
-        else if (requestedTransport === "auto" && signalR._.ieVersion <= 8)
-        {
-            // If we're doing an auto transport and we're IE8 then force longPolling, #1764
-            return ["longPolling"];
-
         }
 
         return requestedTransport;
@@ -251,8 +224,6 @@
         },
 
         ajaxDataType: "json",
-
-        contentType: "application/json; charset=UTF-8",
 
         logging: false,
 
@@ -360,8 +331,6 @@
                         connection.log("Using jsonp because this browser doesn't support CORS");
                     }
                 }
-
-                connection.contentType = signalR._.defaultContentType;
             }
 
             connection.ajaxDataType = config.jsonp ? "jsonp" : "json";
@@ -378,7 +347,7 @@
                 if (index >= transports.length) {
                     if (!connection.transport) {
                         // No transport initialized successfully
-                        $(connection).triggerHandler(events.onError, ["SignalR: No transport could be initialized successfully. Try specifying a different transport or none at all for auto initialization."]);
+                        $(connection).triggerHandler(events.onError, "SignalR: No transport could be initialized successfully. Try specifying a different transport or none at all for auto initialization.");
                         deferred.reject("SignalR: No transport could be initialized successfully. Try specifying a different transport or none at all for auto initialization.");
                         // Stop the connection if it has connected and move it into the disconnected state
                         connection.stop();
@@ -427,7 +396,6 @@
                 global: false,
                 cache: false,
                 type: "GET",
-                contentType: connection.contentType,
                 data: {},
                 dataType: connection.ajaxDataType,
                 error: function (error) {
@@ -468,7 +436,7 @@
                     }
 
                     if (!res.ProtocolVersion || res.ProtocolVersion !== "1.2") {
-                        $(connection).triggerHandler(events.onError, ["You are using a version of the client that isn't compatible with the server. Client version 1.2, server version " + res.ProtocolVersion + "."]);
+                        $(connection).triggerHandler(events.onError, "You are using a version of the client that isn't compatible with the server. Client version 1.2, server version " + res.ProtocolVersion + ".");
                         deferred.reject("You are using a version of the client that isn't compatible with the server. Client version 1.2, server version " + res.ProtocolVersion + ".");
                         return;
                     }
@@ -740,11 +708,6 @@
         }
     }
 
-    function isConnectedOrReconnecting(connection) {
-        return connection.state === signalR.connectionState.connected ||
-               connection.state === signalR.connectionState.reconnecting;
-    }
-
     signalR.transports._logic = {
         pingServer: function (connection, transport) {
             /// <summary>Pings the server</summary>
@@ -761,7 +724,6 @@
                 global: false,
                 cache: false,
                 type: "GET",
-                contentType: connection.contentType,
                 data: {},
                 dataType: connection.ajaxDataType,
                 success: function (data) {
@@ -783,7 +745,7 @@
         addQs: function (url, connection) {
             var appender = url.indexOf("?") !== -1 ? "&" : "?",
                 firstChar;
-
+            
             if (!connection.qs) {
                 return url;
             }
@@ -820,15 +782,11 @@
             }
 
             if (!reconnecting) {
-                url += "/connect";
+                url = url + "/connect";
             } else {
                 if (appendReconnectUrl) {
-                    url += "/reconnect";
-                } else {
-                    // A silent reconnect should only ever occur with the longPolling transport
-                    url += "/poll";
+                    url = url + "/reconnect";
                 }
-
                 if (connection.messageId) {
                     qs += "&messageId=" + window.encodeURIComponent(connection.messageId);
                 }
@@ -863,7 +821,6 @@
                 url: url,
                 global: false,
                 type: connection.ajaxDataType === "jsonp" ? "GET" : "POST",
-                contentType: signalR._.defaultContentType,
                 dataType: connection.ajaxDataType,
                 data: {
                     data: data
@@ -901,7 +858,6 @@
                 timeout: 1000,
                 global: false,
                 type: "POST",
-                contentType: connection.contentType,
                 dataType: connection.ajaxDataType,
                 data: {}
             });
@@ -938,8 +894,8 @@
                 this.updateGroups(connection, data.GroupsToken);
 
                 if (data.Messages) {
-                    $.each(data.Messages, function (index, message) {
-                        $connection.triggerHandler(events.onReceived, [message]);
+                    $.each(data.Messages, function () {
+                        $connection.triggerHandler(events.onReceived, [this]);
                     });
                 }
 
@@ -1007,32 +963,6 @@
             return connection.state === signalR.connectionState.reconnecting;
         },
 
-        clearReconnectTimeout: function (connection) {
-            if (connection && connection._.reconnectTimeout) {
-                window.clearTimeout(connection._.reconnectTimeout);
-                delete connection._.reconnectTimeout;
-            }
-        },
-
-        reconnect: function (connection, transportName) {
-            var transport = signalR.transports[transportName],
-                that = this;
-
-            // We should only set a reconnectTimeout if we are currently connected
-            // and a reconnectTimeout isn't already set.
-            if (isConnectedOrReconnecting(connection) && !connection._.reconnectTimeout) {
-
-                connection._.reconnectTimeout = window.setTimeout(function () {
-                    transport.stop(connection);
-
-                    if (that.ensureReconnectingState(connection)) {
-                        connection.log(transportName + " reconnecting");
-                        transport.start(connection);
-                    }
-                }, connection.reconnectDelay);
-            }
-        },
-
         foreverFrame: {
             count: 0,
             connections: {}
@@ -1058,6 +988,10 @@
         name: "webSockets",
 
         supportsKeepAlive: true,
+
+        attemptingReconnect: false,
+
+        currentSocketID: 0,
 
         send: function (connection, data) {
             connection.socket.send(data);
@@ -1087,11 +1021,14 @@
 
                 connection.log("Connecting to websocket endpoint '" + url + "'");
                 connection.socket = new window.WebSocket(url);
+                connection.socket.ID = ++that.currentSocketID;
                 connection.socket.onopen = function () {
                     opened = true;
                     connection.log("Websocket opened");
 
-                    transportLogic.clearReconnectTimeout(connection);
+                    if (that.attemptingReconnect) {
+                        that.attemptingReconnect = false;
+                    }
 
                     if (onSuccess) {
                         onSuccess();
@@ -1106,7 +1043,7 @@
                     // Only handle a socket close if the close is from the current socket.
                     // Sometimes on disconnect the server will push down an onclose event
                     // to an expired socket.
-                    if (this === connection.socket) {
+                    if (this.ID === that.currentSocketID) {
                         if (!opened) {
                             if (onFailed) {
                                 onFailed();
@@ -1149,7 +1086,24 @@
         },
 
         reconnect: function (connection) {
-            transportLogic.reconnect(connection, this.name);
+            var that = this;
+
+            if (connection.state !== signalR.connectionState.disconnected) {
+                if (!that.attemptingReconnect) {
+                    that.attemptingReconnect = true;
+                }
+
+                window.setTimeout(function () {
+                    if (that.attemptingReconnect) {
+                        that.stop(connection);
+                    }
+
+                    if (transportLogic.ensureReconnectingState(connection)) {
+                        connection.log("Websocket reconnecting");
+                        that.start(connection);
+                    }
+                }, connection.reconnectDelay);
+            }
         },
 
         lostConnection: function (connection) {
@@ -1158,9 +1112,6 @@
         },
 
         stop: function (connection) {
-            // Don't trigger a reconnect after stopping
-            transportLogic.clearReconnectTimeout(connection);
-
             if (connection.socket !== null) {
                 connection.log("Closing the Websocket");
                 connection.socket.close();
@@ -1192,6 +1143,10 @@
 
         supportsKeepAlive: true,
 
+        reconnectTimeout: false,
+
+        currentEventSourceID: 0,
+
         timeOut: 3000,
 
         start: function (connection, onSuccess, onFailed) {
@@ -1220,6 +1175,7 @@
             try {
                 connection.log("Attempting to connect to SSE endpoint '" + url + "'");
                 connection.eventSource = new window.EventSource(url);
+                connection.eventSource.ID = ++that.currentEventSourceID;
             }
             catch (e) {
                 connection.log("EventSource failed trying to connect with error " + e.Message);
@@ -1270,7 +1226,9 @@
                     window.clearTimeout(connectTimeOut);
                 }
 
-                transportLogic.clearReconnectTimeout(connection);
+                if (that.reconnectTimeout) {
+                    window.clearTimeout(that.reconnectTimeout);
+                }
 
                 if (opened === false) {
                     opened = true;
@@ -1299,7 +1257,7 @@
                 // Only handle an error if the error is from the current Event Source.
                 // Sometimes on disconnect the server will push down an error event
                 // to an expired Event Source.
-                if (this === connection.eventSource) {
+                if (this.ID === that.currentEventSourceID) {
                     if (!opened) {
                         if (onFailed) {
                             onFailed();
@@ -1327,7 +1285,16 @@
         },
 
         reconnect: function (connection) {
-            transportLogic.reconnect(connection, this.name);
+            var that = this;
+
+            that.reconnectTimeout = window.setTimeout(function () {
+                that.stop(connection);
+
+                if (transportLogic.ensureReconnectingState(connection)) {
+                    connection.log("EventSource reconnecting");
+                    that.start(connection);
+                }
+            }, connection.reconnectDelay);
         },
 
         lostConnection: function (connection) {
@@ -1339,17 +1306,14 @@
         },
 
         stop: function (connection) {
-            // Don't trigger a reconnect after stopping
-            transportLogic.clearReconnectTimeout(connection);
-
             if (connection && connection.eventSource) {
                 connection.log("EventSource calling close()");
+                connection.eventSource.ID = null;
                 connection.eventSource.close();
                 connection.eventSource = null;
                 delete connection.eventSource;
             }
         },
-
         abort: function (connection, async) {
             transportLogic.ajaxAbort(connection, async);
         }
@@ -1368,46 +1332,7 @@
     var signalR = $.signalR,
         events = $.signalR.events,
         changeState = $.signalR.changeState,
-        transportLogic = signalR.transports._logic,
-        // Used to prevent infinite loading icon spins in older versions of ie
-        // We build this object inside a closure so we don't pollute the rest of   
-        // the foreverFrame transport with unnecessary functions/utilities.
-        loadPreventer = (function () {
-            var loadingFixIntervalId = null,
-                loadingFixInterval = 1000,
-                attachedTo = 0;
-
-            return {
-                prevent: function () {
-                    // Prevent additional iframe removal procedures from newer browsers
-                    if (signalR._.ieVersion <= 8) {
-                        // We only ever want to set the interval one time, so on the first attachedTo
-                        if (attachedTo === 0) {
-                            // Create and destroy iframe every 3 seconds to prevent loading icon, super hacky
-                            loadingFixIntervalId = window.setInterval(function () {
-                                var tempFrame = $("<iframe style='position:absolute;top:0;left:0;width:0;height:0;visibility:hidden;' src=''></iframe>");
-
-                                $("body").append(tempFrame);
-                                tempFrame.remove();
-                                tempFrame = null;
-                            }, loadingFixInterval);
-                        }
-
-                        attachedTo++;
-                    }
-                },
-                cancel: function () {                   
-                    // Only clear the interval if there's only one more object that the loadPreventer is attachedTo
-                    if (attachedTo === 1) {
-                        window.clearInterval(loadingFixIntervalId);
-                    }
-
-                    if (attachedTo > 0) {
-                        attachedTo--;
-                    }
-                }
-            };
-        })();
+        transportLogic = signalR.transports._logic;
 
     signalR.transports.foreverFrame = {
         name: "foreverFrame",
@@ -1431,9 +1356,6 @@
                 return;
             }
 
-            // Start preventing loading icon
-            // This will only perform work if the loadPreventer is not attached to another connection.
-            loadPreventer.prevent();
 
             // Build the url
             url = transportLogic.getUrl(connection, this.name);
@@ -1512,10 +1434,6 @@
 
         stop: function (connection) {
             var cw = null;
-
-            // Stop attempting to prevent loading icon
-            loadPreventer.cancel();
-
             if (connection.frame) {
                 if (connection.frame.stop) {
                     connection.frame.stop();
@@ -1652,7 +1570,6 @@
                             cache: false,
                             type: "GET",
                             dataType: connection.ajaxDataType,
-                            contentType: connection.contentType,
                             success: function (minData) {
                                 var delay = 0,
                                     data;
@@ -1775,17 +1692,20 @@
         return event + eventNamespace;
     }
 
-    // Equivalent to Array.prototype.map
-    function map(arr, fun, thisp) {
-        var i,
-            length = arr.length,
-            result = [];
-        for (i = 0; i < length; i += 1) {
-            if (arr.hasOwnProperty(i)) {
-                result[i] = fun.call(thisp, arr[i], i, arr);
+    // Array.prototype.map
+    if (!Array.prototype.hasOwnProperty("map")) {
+        Array.prototype.map = function (fun, thisp) {
+            var arr = this,
+                i,
+                length = arr.length,
+                result = [];
+            for (i = 0; i < length; i += 1) {
+                if (arr.hasOwnProperty(i)) {
+                    result[i] = fun.call(thisp, arr[i], i, arr);
+                }
             }
-        }
-        return result;
+            return result;
+        };
     }
 
     function getArgValue(a) {
@@ -1894,7 +1814,7 @@
 
             var self = this,
                 args = $.makeArray(arguments).slice(1),
-                argValues = map(args, getArgValue),
+                argValues = args.map(getArgValue),
                 data = { H: self.hubName, M: methodName, A: argValues, I: callbackId },
                 d = $.Deferred(),
                 callback = function (minResult) {

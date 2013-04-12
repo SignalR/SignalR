@@ -35,9 +35,9 @@ namespace Microsoft.AspNet.SignalR.Stress
                                   state: null);
         }
 
-        protected override Task Send(int senderIndex, string source)
+        protected override Task Send(int senderIndex)
         {
-            return _bus.Publish(source, "a", Payload);
+            return _bus.Publish(senderIndex.ToString(), "a", Payload);
         }
 
         public override void Dispose()

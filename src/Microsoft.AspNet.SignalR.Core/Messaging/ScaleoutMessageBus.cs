@@ -17,26 +17,29 @@ namespace Microsoft.AspNet.SignalR.Messaging
     /// </summary>
     public abstract class ScaleoutMessageBus : MessageBus
     {
+        private readonly ConcurrentDictionary<string, IndexedDictionary> _streams = new ConcurrentDictionary<string, IndexedDictionary>();
         private readonly SipHashBasedStringEqualityComparer _sipHashBasedComparer = new SipHashBasedStringEqualityComparer(0, 0);
         private readonly TraceSource _trace;
-        private readonly Lazy<ScaleoutStreamManager> _streamManager;
+        private readonly TaskQueueWrapper _sendQueue;
+        private readonly TaskQueue _receiveQueue;
 
-        protected ScaleoutMessageBus(IDependencyResolver resolver, ScaleoutConfiguration configuration)
+        protected ScaleoutMessageBus(IDependencyResolver resolver)
             : base(resolver)
         {
-            if (configuration == null)
-            {
-                throw new ArgumentNullException("configuration");
-            }
-
             var traceManager = resolver.Resolve<ITraceManager>();
             _trace = traceManager["SignalR." + typeof(ScaleoutMessageBus).Name];
-            _streamManager = new Lazy<ScaleoutStreamManager>(() => new ScaleoutStreamManager(Send, OnReceivedCore, StreamCount, configuration, _trace));
+            _sendQueue = new TaskQueueWrapper(_trace);
+            _receiveQueue = new TaskQueue();
         }
 
-        /// <summary>
-        /// The number of streams can't change for the lifetime of this instance.
-        /// </summary>
+        protected override TraceSource Trace
+        {
+            get
+            {
+                return _trace;
+            }
+        }
+
         protected virtual int StreamCount
         {
             get
@@ -45,40 +48,31 @@ namespace Microsoft.AspNet.SignalR.Messaging
             }
         }
 
-        private ScaleoutStreamManager StreamManager
+        /// <summary>
+        /// Opens the queue for sending messages
+        /// </summary>
+        protected void Open()
         {
-            get
-            {
-                return _streamManager.Value;
-            }
+            _sendQueue.Open();
         }
 
         /// <summary>
-        /// Opens the specified queue for sending messages.
-        /// <param name="streamIndex">The index of the stream to open.</param>
+        /// Closes the queue for sendnig messages making all sends fail asynchornously.
         /// </summary>
-        protected void Open(int streamIndex)
-        {
-            StreamManager.Open(streamIndex);
-        }
-
-        /// <summary>
-        /// Closes the specified queue.
-        /// <param name="streamIndex">The index of the stream to close.</param>
-        /// </summary>
-        protected void Close(int streamIndex)
-        {
-            StreamManager.Close(streamIndex);
-        }
-
-        /// <summary>
-        /// Closes the specified queue for sending messages making all sends fail asynchronously.
-        /// </summary>
-        /// <param name="streamIndex">The index of the stream to close.</param>
         /// <param name="exception">The error that occurred.</param>
-        protected void OnError(int streamIndex, Exception exception)
+        protected void Close(Exception exception)
         {
-            StreamManager.OnError(streamIndex, exception);
+            // Close the queue means that all further sends will fail
+            _sendQueue.Close(exception);
+        }
+
+        /// <summary>
+        /// Queues up to the specified size before failing.
+        /// </summary>
+        /// <param name="size">The maximum number of items to queue before failing to enqueue.</param>
+        protected void Buffer(int size)
+        {
+            _sendQueue.Buffer(size);
         }
 
         /// <summary>
@@ -91,7 +85,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
             // If we're only using a single stream then just send
             if (StreamCount == 1)
             {
-                return StreamManager.Send(0, messages);
+                return Send(0, messages);
             }
 
             var taskCompletionSource = new TaskCompletionSource<object>();
@@ -127,7 +121,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
 
                 Debug.Assert(index >= 0, "Hash function resulted in an index < 0.");
 
-                Task sendTask = StreamManager.Send(index, group.ToArray()).Catch();
+                Task sendTask = Send(index, group.ToArray()).Catch();
 
                 if (sendTask.IsCompleted)
                 {
@@ -154,49 +148,65 @@ namespace Microsoft.AspNet.SignalR.Messaging
         /// <summary>
         /// Invoked when a payload is received from the backplane. There should only be one active call at any time.
         /// </summary>
-        /// <param name="streamIndex">id of the stream</param>
+        /// <param name="streamId">id of the stream</param>
         /// <param name="id">id of the payload within that stream</param>
         /// <param name="messages">List of messages associated</param>
         /// <returns></returns>
-        protected void OnReceived(int streamIndex, ulong id, IList<Message> messages)
+        protected Task OnReceived(string streamId, ulong id, IList<Message> messages)
         {
-            StreamManager.OnReceived(streamIndex, id, messages);
+            return _receiveQueue.Enqueue(() => OnReceivedCore(streamId, id, messages));
         }
+
 
         [SuppressMessage("Microsoft.Design", "CA1062:Validate arguments of public methods", MessageId = "2", Justification = "Called from derived class")]
         [SuppressMessage("Microsoft.Design", "CA1062:Validate arguments of public methods", MessageId = "0", Justification = "Called from derived class")]
-        private void OnReceivedCore(int streamIndex, ulong id, IList<Message> messages)
+        private Task OnReceivedCore(string streamId, ulong id, IList<Message> messages)
         {
             Counters.ScaleoutMessageBusMessagesReceivedPerSec.IncrementBy(messages.Count);
 
-            _trace.TraceInformation("OnReceived({0}, {1}, {2})", streamIndex, id, messages.Count);
+            Trace.TraceInformation("OnReceived({0}, {1}, {2})", streamId, id, messages.Count);
 
-            var localMapping = new LocalEventKeyInfo[messages.Count];
-            var keys = new HashSet<string>();
+            // Create a local dictionary for this payload
+            var dictionary = new ConcurrentDictionary<string, LocalEventKeyInfo>();
 
-            for (var i = 0; i < messages.Count; ++i)
+            foreach (var m in messages)
             {
-                Message message = messages[i];
+                // Get the payload info
+                var info = dictionary.GetOrAdd(m.Key, _ => new LocalEventKeyInfo());
 
-                keys.Add(message.Key);
+                // Save the min and max for this payload for later
+                ulong localId = Save(m);
 
-                ulong localId = Save(message);
-                MessageStore<Message> messageStore = Topics[message.Key].Store;
+                // Set the topic pointer for this event key so we don't need to look it up later
+                info.Store = Topics[m.Key].Store;
 
-                localMapping[i] = new LocalEventKeyInfo(message.Key, localId, messageStore);
+                info.MinLocal = Math.Min(localId, info.MinLocal);
+                info.Count++;
             }
 
+            // Create the mapping for this payload
+            var mapping = new ScaleoutMapping(dictionary);
+
             // Get the stream for this payload
-            ScaleoutMappingStore store = StreamManager.Streams[streamIndex];
+            var stream = _streams.GetOrAdd(streamId, _ => new IndexedDictionary());
 
             // Publish only after we've setup the mapping fully
-            store.Add(id, localMapping);
+            if (!stream.TryAdd(id, mapping))
+            {
+                Trace.TraceVerbose(Resources.Error_DuplicatePayloadsForStream, streamId);
+
+                stream.Clear();
+
+                stream.TryAdd(id, mapping);
+            }
 
             // Schedule after we're done
-            foreach (var eventKey in keys)
+            foreach (var eventKey in dictionary.Keys)
             {
                 ScheduleEvent(eventKey);
             }
+
+            return TaskAsyncHelper.Empty;
         }
 
         public override Task Publish(Message message)
@@ -204,25 +214,99 @@ namespace Microsoft.AspNet.SignalR.Messaging
             Counters.MessageBusMessagesPublishedTotal.Increment();
             Counters.MessageBusMessagesPublishedPerSec.Increment();
 
-            // TODO: Implement message batching here
-            return Send(new[] { message });
-        }
-
-        protected override void Dispose(bool disposing)
-        {
-            // Close all streams
-            for (int i = 0; i < StreamCount; i++)
-            {
-                Close(i);
-            }
-
-            base.Dispose(disposing);
+            // TODO: Buffer messages here and make it configurable
+            return _sendQueue.Enqueue(state => Send(new[] { (Message)state }), message);
         }
 
         [SuppressMessage("Microsoft.Design", "CA1062:Validate arguments of public methods", MessageId = "0", Justification = "Called from derived class")]
         protected override Subscription CreateSubscription(ISubscriber subscriber, string cursor, Func<MessageResult, object, Task<bool>> callback, int messageBufferSize, object state)
         {
-            return new ScaleoutSubscription(subscriber.Identity, subscriber.EventKeys, cursor, StreamManager.Streams, callback, messageBufferSize, Counters, state);
+            return new ScaleoutSubscription(subscriber.Identity, subscriber.EventKeys, cursor, _streams, callback, messageBufferSize, Counters, state);
+        }
+
+        private class TaskQueueWrapper
+        {
+            private TaskCompletionSource<object> _taskCompletionSource;
+            private TaskQueue _sendQueue;
+
+            private readonly TraceSource _trace;
+
+            private static readonly Task _queueFullTask = TaskAsyncHelper.FromError(new InvalidOperationException(Resources.Error_TaskQueueFull));
+
+            public TaskQueueWrapper(TraceSource trace)
+            {
+                _trace = trace;
+
+                InitializeCore();
+            }
+
+            public void Open()
+            {
+                lock (this)
+                {
+                    _taskCompletionSource.TrySetResult(null);
+                }
+            }
+
+            public Task Enqueue(Func<object, Task> taskFunc, object state)
+            {
+                lock (this)
+                {
+                    // If Enqueue returns null it means the queue is full
+                    return _sendQueue.Enqueue(taskFunc, state) ?? _queueFullTask;
+                }
+            }
+
+            public void Buffer(int size)
+            {
+                lock (this)
+                {
+                    InitializeCore(size);
+                }
+            }
+
+            public void Close(Exception error)
+            {
+                lock (this)
+                {
+                    InitializeCore();
+
+                    _taskCompletionSource.TrySetException(error);
+                }
+            }
+
+            private void InitializeCore(int? size = null)
+            {
+                DrainQueue();
+
+                _taskCompletionSource = new TaskCompletionSource<object>();
+
+                if (size != null)
+                {
+                    _sendQueue = new TaskQueue(_taskCompletionSource.Task, size.Value);
+                }
+                else
+                {
+                    _sendQueue = new TaskQueue(_taskCompletionSource.Task);
+                }
+            }
+
+            [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "This method should never throw")]
+            private void DrainQueue()
+            {
+                if (_sendQueue != null)
+                {
+                    try
+                    {
+                        // Attempt to drain the queue before creating the new one
+                        _sendQueue.Drain().Wait();
+                    }
+                    catch (Exception ex)
+                    {
+                        _trace.TraceError("Draining failed: " + ex.GetBaseException());
+                    }
+                }
+            }
         }
     }
 }

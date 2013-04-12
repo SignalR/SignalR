@@ -18,7 +18,7 @@ namespace Microsoft.AspNet.SignalR.Tests
         {
             // Arrange
             var connection = new Mock<Client.IConnection>();
-            var monitor = new HeartbeatMonitor(connection.Object, new object());
+            var monitor = new HeartbeatMonitor(connection.Object);
 
             // Setting the values such that a warning is thrown almost instantly and a timeout doesn't occur
             var keepAliveData = new KeepAliveData(
@@ -28,6 +28,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                 checkInterval: TimeSpan.FromSeconds(2)
             );
 
+            connection.Setup(m => m.Trace).Returns(new DummyTextWriter());
             connection.Setup(m => m.KeepAliveData).Returns(keepAliveData);
             connection.Setup(m => m.State).Returns(ConnectionState.Connected);
 
@@ -48,7 +49,7 @@ namespace Microsoft.AspNet.SignalR.Tests
         {
             // Arrange
             var connection = new Mock<Client.IConnection>();
-            var monitor = new HeartbeatMonitor(connection.Object, new object());
+            var monitor = new HeartbeatMonitor(connection.Object);
             var transport = new Mock<IClientTransport>();
 
             // Setting the values such that a timeout happens almost instantly
@@ -59,6 +60,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                 checkInterval: TimeSpan.FromSeconds(2)
             );
 
+            connection.Setup(m => m.Trace).Returns(new DummyTextWriter());
             connection.Setup(m => m.KeepAliveData).Returns(keepAliveData);
             connection.Setup(m => m.State).Returns(ConnectionState.Connected);
             connection.Setup(m => m.Transport).Returns(transport.Object);
@@ -80,7 +82,7 @@ namespace Microsoft.AspNet.SignalR.Tests
         {
             // Arrange
             var connection = new Mock<Client.IConnection>();
-            var monitor = new HeartbeatMonitor(connection.Object, new object());
+            var monitor = new HeartbeatMonitor(connection.Object);
             var transport = new Mock<IClientTransport>();
 
             // Setting the values such that a timeout or timeout warning isn't issued
@@ -91,6 +93,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                 checkInterval: TimeSpan.FromSeconds(2)
             );
 
+            connection.Setup(m => m.Trace).Returns(new DummyTextWriter());
             connection.Setup(m => m.KeepAliveData).Returns(keepAliveData);
             connection.Setup(m => m.State).Returns(ConnectionState.Connected);
             connection.Setup(m => m.Transport).Returns(transport.Object);

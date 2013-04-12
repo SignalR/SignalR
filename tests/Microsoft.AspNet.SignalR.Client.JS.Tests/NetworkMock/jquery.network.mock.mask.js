@@ -6,63 +6,44 @@
         ignoringMessages = false;
 
     network.mask = {
-        create: function (maskBase, onErrorProperties, subscriptionProperties, destroyOnError) {
+        create: function (maskBase, onErrorProperty, onMessageProperty, destroyOnError) {
             /// <summary>Wires the maskBase's onError and onMessage properties to be affected by network loss</summary>
             /// <param name="maskBase" type="Object">An object with properties indicated by onErrorProperty and onMessageProperty</param>
-            /// <param name="onErrorProperties" type="Array">The array of string representation of the onError methods of the maskBase</param>
-            /// <param name="subscriptionProperties" type="Array">The array of string representation of the methods subscribed to network events on the maskBase</param>
+            /// <param name="onErrorProperty" type="String">The string representation of the onError method of the maskBase</param>
+            /// <param name="onMessageProperty" type="String">The string representation of the onMessage method of the maskBase</param>
             /// <param name="destroyOnError" type="Boolean">Represents if we destroy our created mask object onError.</param>
-            var savedOnErrors = {},
-                savedSubscriptions = {},
+            var savedOnError = maskBase[onErrorProperty],
+                savedOnMessage = maskBase[onMessageProperty],
                 id = maskIds++;
 
-            function resetMaskBase() {
-                $.extend(maskBase, savedOnErrors);
-                $.extend(maskBase, savedSubscriptions);
-                delete maskData[id];
+            if (!savedOnError || !savedOnMessage) {
+                throw new Error("maskBase must have an onErrorProperty AND an onMessageProperty property");
             }
 
-            maskData[id] = {
-                onError: [],
-                onMessage: []
+            maskBase[onErrorProperty] = function () {
+                if (!ignoringMessages) {
+                    return savedOnError.apply(this, arguments);
+                }
+
+                if (destroyOnError) {
+                    // Reset the maskBase to its original setup
+                    maskBase[onErrorProperty] = savedOnError;
+                    maskBase[onMessageProperty] = savedOnMessage;
+                    delete maskData[id];
+                }
             };
 
-            $.each(onErrorProperties, function (_, onErrorProperty) {
-                var saved = maskBase[onErrorProperty];
-
-                if (!saved) {
-                    throw new Error("maskBase must have each specified onError property.");
+            maskBase[onMessageProperty] = function () {
+                if (!ignoringMessages) {
+                    return savedOnMessage.apply(this, arguments);
                 }
+            };
 
-                maskBase[onErrorProperty] = function () {
-                    if (destroyOnError) {
-                        resetMaskBase();
-                    }
-
-                    return saved.apply(this, arguments);
-                }
-
-                maskData[id].onError.push(maskBase[onErrorProperty]);
-                savedOnErrors[onErrorProperty] = saved;
-            });
-
-            
-            $.each(subscriptionProperties, function (_, subscriptionProperty) {
-                var saved = maskBase[subscriptionProperty];
-
-                if (!saved) {
-                    throw new Error("maskBase must have each specified subscription property.");
-                }
-
-                maskBase[subscriptionProperty] = function () {
-                    if (!ignoringMessages) {
-                        return saved.apply(this, arguments);
-                    }
-                };
-
-                maskData[id].onMessage.push(maskBase[subscriptionProperty]);
-                savedSubscriptions[subscriptionProperty] = saved;
-            });
+            maskData[id] =
+            {
+                onError: maskBase[onErrorProperty],
+                onMessage: maskBase[onMessageProperty]
+            };
         },
         subscribe: function (maskBase, functionName, onBadAttempt) {
             /// <summary>Subscribes a function to only be called when the network is up</summary>
@@ -90,16 +71,15 @@
         disconnect: function (soft) {
             /// <summary>Disconnects the network so javascript transport methods are unable to communicate with a server.</summary>
             /// <param name="soft" type="Boolean">Whether the disconnect should be soft.  A soft disconnect indicates that transport methods are not notified of disconnect.</param>
-
-            // Ensure we don't set ignoringMessages to true after calling errorFunc, because we
-            // might call connect in connection.reconnecting which can run synchronously.
-            ignoringMessages = true;
             if (!soft) {
-                $.each(maskData, function (_, data) {
-                    $.each(data.onError, function (_, errorFunc) {
-                        errorFunc();
-                    });
-                });
+                for (var key in maskData) {
+                    var data = maskData[key];
+
+                    data.onError();
+                }
+            }
+            else {
+                ignoringMessages = true;
             }
         },
         connect: function () {

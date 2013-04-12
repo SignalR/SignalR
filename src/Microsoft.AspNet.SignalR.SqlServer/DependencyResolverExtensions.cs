@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.md in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using Microsoft.AspNet.SignalR.Messaging;
 using Microsoft.AspNet.SignalR.SqlServer;
 
@@ -9,34 +10,40 @@ namespace Microsoft.AspNet.SignalR
     public static class DependencyResolverExtensions
     {
         /// <summary>
-        /// Use SQL Server as the messaging backplane for scaling out of ASP.NET SignalR applications in a web farm.
+        /// Use SqlServer as the backplane for SignalR.
         /// </summary>
         /// <param name="resolver">The dependency resolver.</param>
         /// <param name="connectionString">The SQL Server connection string.</param>
         /// <returns>The dependency resolver.</returns>
         public static IDependencyResolver UseSqlServer(this IDependencyResolver resolver, string connectionString)
         {
-            var config = new SqlScaleoutConfiguration(connectionString);
-
-            return UseSqlServer(resolver, config);
+            return UseSqlServer(resolver, connectionString, 1);
         }
 
         /// <summary>
-        /// Use SQL Server as the messaging backplane for scaling out of ASP.NET SignalR applications in a web farm.
+        /// Use SqlServer as the backplane for SignalR.
         /// </summary>
         /// <param name="resolver">The dependency resolver.</param>
-        /// <param name="configuration">The SQL scale-out configuration options.</param>
+        /// <param name="connectionString">The SQL Server connection string.</param>
+        /// <param name="tableCount">The number of tables to use as "message tables".</param>
         /// <returns>The dependency resolver.</returns>
-        public static IDependencyResolver UseSqlServer(this IDependencyResolver resolver, SqlScaleoutConfiguration configuration)
+        public static IDependencyResolver UseSqlServer(this IDependencyResolver resolver, string connectionString, int tableCount)
         {
-            if (resolver == null)
-            {
-                throw new ArgumentNullException("resolver");
-            }
+            return UseSqlServer(resolver, connectionString, tableCount, SqlMessageBus.DefaultQueueSize);
+        }
 
-            // TODO: Can this be Lazy<T> initialized again now?
-            var bus = new SqlMessageBus(resolver, configuration);
-            resolver.Register(typeof(IMessageBus), () => bus);
+        /// <summary>
+        /// Use SqlServer as the backplane for SignalR.
+        /// </summary>
+        /// <param name="resolver">The dependency resolver.</param>
+        /// <param name="connectionString">The SQL Server connection string.</param>
+        /// <param name="tableCount">The number of tables to use as "message tables".</param>
+        /// <param name="queueSize">The max number of outgoing messages to queue in case SQL server goes offline.</param>
+        /// <returns>The dependency resolver</returns>
+        public static IDependencyResolver UseSqlServer(this IDependencyResolver resolver, string connectionString, int tableCount, int queueSize)
+        {
+            var bus = new Lazy<SqlMessageBus>(() => new SqlMessageBus(connectionString, tableCount, queueSize, resolver));
+            resolver.Register(typeof(IMessageBus), () => bus.Value);
 
             return resolver;
         }

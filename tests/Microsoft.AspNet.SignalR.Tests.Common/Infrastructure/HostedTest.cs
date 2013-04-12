@@ -12,7 +12,6 @@ using Microsoft.AspNet.SignalR.Client.Hubs;
 using Microsoft.AspNet.SignalR.Client.Transports;
 using Microsoft.AspNet.SignalR.Hosting.Memory;
 using Microsoft.AspNet.SignalR.Infrastructure;
-using Microsoft.AspNet.SignalR.Messaging;
 using Microsoft.AspNet.SignalR.Tests.FunctionalTests.Infrastructure;
 using Xunit;
 using Xunit.Extensions;
@@ -57,7 +56,9 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure
                     break;
             }
 
-            var writer = CreateClientTraceWriter(testName);
+            string clientTracePath = Path.Combine(logBasePath, testName + ".client.trace.log");
+            var writer = new StreamWriter(clientTracePath);
+            writer.AutoFlush = true;
             host.ClientTraceOutput = writer;
 
             if (hostType != HostType.Memory)
@@ -75,7 +76,10 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure
                 }
             }
 
-            TraceListener traceListener = EnableTracing(testName, logBasePath);
+            string testTracePath = Path.Combine(logBasePath, testName + ".test.trace.log");
+            var traceListener = new TextWriterTraceListener(testTracePath);
+            Trace.Listeners.Add(traceListener);
+            Trace.AutoFlush = true;
 
             host.Disposables.Add(new DisposableAction(() =>
             {
@@ -99,52 +103,6 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure
             return host;
         }
 
-        protected void UseMessageBus(MessageBusType type, IDependencyResolver resolver, ScaleoutConfiguration configuration = null, int streams = 1)
-        {
-            switch (type)
-            {
-                case MessageBusType.Default:
-                    break;
-                case MessageBusType.Fake:
-                    var bus = new FakeScaleoutBus(resolver, streams);
-                    resolver.Register(typeof(IMessageBus), () => bus);
-                    break;
-                case MessageBusType.SqlServer:
-                    break;
-                case MessageBusType.ServiceBus:
-                    break;
-                case MessageBusType.Redis:
-                    break;
-                default:
-                    break;
-            }
-        }
-
-        protected void EnableTracing()
-        {
-            string testName = GetTestName();
-            string logBasePath = Path.Combine(Directory.GetCurrentDirectory(), "..");
-            EnableTracing(GetTestName(), logBasePath);
-        }
-
-        private TextWriterTraceListener EnableTracing(string testName, string logBasePath)
-        {
-            string testTracePath = Path.Combine(logBasePath, testName + ".test.trace.log");
-            var traceListener = new TextWriterTraceListener(testTracePath);
-            Trace.Listeners.Add(traceListener);
-            Trace.AutoFlush = true;
-            return traceListener;
-        }
-
-        private static StreamWriter CreateClientTraceWriter(string testName)
-        {
-            string logBasePath = Path.Combine(Directory.GetCurrentDirectory(), "..");
-            string clientTracePath = Path.Combine(logBasePath, testName + ".client.trace.log");
-            var writer = new StreamWriter(clientTracePath);
-            writer.AutoFlush = true;
-            return writer;
-        }
-
         private IDisposable StartHttpSysTracing(string path)
         {
             var httpSysLoggingEnabledValue = ConfigurationManager.AppSettings["httpSysLoggingEnabled"];
@@ -165,23 +123,13 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure
             return null;
         }
 
-        protected HubConnection CreateHubConnection(string url)
-        {
-            string testName = GetTestName();
-            var query = new Dictionary<string, string>();
-            query["test"] = testName;
-            var connection = new HubConnection(url, query);
-            connection.TraceWriter = CreateClientTraceWriter(testName);
-            return connection;
-        }
-
-        protected HubConnection CreateHubConnection(ITestHost host, string url = null, bool useDefaultUrl = true)
+        protected HubConnection CreateHubConnection(ITestHost host)
         {
             var query = new Dictionary<string, string>();
             query["test"] = GetTestName();
             SetHostData(host, query);
-            var connection = new HubConnection(url ?? host.Url, query, useDefaultUrl);
-            connection.TraceWriter = host.ClientTraceOutput ?? connection.TraceWriter;
+            var connection = new HubConnection(host.Url, query);
+            connection.Trace = host.ClientTraceOutput ?? connection.Trace;
             return connection;
         }
 
@@ -191,7 +139,7 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure
             query["test"] = GetTestName();
             SetHostData(host, query);
             var connection = new Client.Connection(host.Url + path, query);
-            connection.TraceWriter = host.ClientTraceOutput ?? connection.TraceWriter;
+            connection.Trace = host.ClientTraceOutput ?? connection.Trace;
             return connection;
         }
 
@@ -258,43 +206,6 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure
         public virtual void Dispose()
         {
             Dispose(true);
-        }
-
-        private class FakeScaleoutBus : ScaleoutMessageBus
-        {
-            private int _streams;
-            private ulong _id;
-
-            public FakeScaleoutBus(IDependencyResolver resolver)
-                : this(resolver, streams: 1)
-            {
-            }
-
-            public FakeScaleoutBus(IDependencyResolver dr, int streams)
-                : base(dr, new ScaleoutConfiguration())
-            {
-                _streams = streams;
-
-                for (int i = 0; i < _streams; i++)
-                {
-                    Open(i);
-                }
-            }
-
-            protected override int StreamCount
-            {
-                get
-                {
-                    return _streams;
-                }
-            }
-
-            protected override Task Send(int streamIndex, IList<Message> messages)
-            {
-                OnReceived(streamIndex, _id++, messages);
-
-                return TaskAsyncHelper.Empty;
-            }
         }
     }
 }

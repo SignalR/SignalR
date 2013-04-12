@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using BookSleeve;
@@ -11,53 +12,58 @@ using Microsoft.AspNet.SignalR.Messaging;
 
 namespace Microsoft.AspNet.SignalR.Redis
 {
-    /// <summary>
-    /// Uses Redis pub-sub to scale-out SignalR applications in web farms.
-    /// </summary>
     public class RedisMessageBus : ScaleoutMessageBus
     {
         private const int DefaultBufferSize = 1000;
 
         private readonly int _db;
-        private readonly string _key;
+        private readonly string[] _keys;
         private readonly Func<RedisConnection> _connectionFactory;
 
         private RedisConnection _connection;
         private RedisSubscriberConnection _channel;
         private int _state;
 
-        [SuppressMessage("Microsoft.Usage", "CA2214:DoNotCallOverridableMethodsInConstructors", Justification = "Reviewed")]
-        public RedisMessageBus(IDependencyResolver resolver, RedisScaleoutConfiguration configuration)
-            : base(resolver, configuration)
+        public RedisMessageBus(string server, int port, string password, int db, IList<string> keys, IDependencyResolver resolver)
+            : this(GetConnectionFactory(server, port, password), db, keys, resolver)
         {
-            if (configuration == null)
-            {
-                throw new ArgumentNullException("configuration");
-            }
 
-            _connectionFactory = configuration.ConnectionFactory;
-            _db = configuration.Database;
-            _key = configuration.EventKey;
+        }
+
+        [SuppressMessage("Microsoft.Usage", "CA2214:DoNotCallOverridableMethodsInConstructors", Justification = "Reviewed")]
+        public RedisMessageBus(Func<RedisConnection> connectionFactory, int db, IList<string> keys, IDependencyResolver resolver)
+            : base(resolver)
+        {
+            _connectionFactory = connectionFactory;
+            _db = db;
+            _keys = keys.ToArray();
 
             ReconnectDelay = TimeSpan.FromSeconds(2);
             ConnectWithRetry();
+        }
+
+        protected override int StreamCount
+        {
+            get
+            {
+                return _keys.Length;
+            }
         }
 
         public TimeSpan ReconnectDelay { get; set; }
 
         protected override Task Send(int streamIndex, IList<Message> messages)
         {
-            var context = new SendContext(_key, messages, _connection);
+            string key = _keys[streamIndex];
 
             // Increment the channel number
-            return _connection.Strings.Increment(_db, _key)
-                               .Then((id, ctx) =>
+            return _connection.Strings.Increment(_db, key)
+                               .Then((id, k) =>
                                {
-                                   byte[] data = RedisMessage.ToBytes(id, ctx.Messages);
+                                   byte[] data = RedisMessage.ToBytes(id, messages);
 
-                                   return ctx.Connection.Publish(ctx.Key, data);
-                               },
-                               context);
+                                   return _connection.Publish(k, data);
+                               }, key);
         }
 
         private void OnConnectionClosed(object sender, EventArgs e)
@@ -69,7 +75,7 @@ namespace Microsoft.AspNet.SignalR.Redis
 
         private void OnConnectionError(object sender, ErrorEventArgs e)
         {
-            Trace.TraceError("OnConnectionError - " + e.Cause + ". " + e.Exception.GetBaseException());
+            Trace.TraceEvent(TraceEventType.Error, 0, "OnConnectionError - " + e.Cause + ". " + e.Exception.GetBaseException());
 
             // Change the state to closed and retry connecting
             if (Interlocked.CompareExchange(ref _state,
@@ -77,7 +83,7 @@ namespace Microsoft.AspNet.SignalR.Redis
                                             State.Connected) == State.Connected)
             {
                 // Start buffering any sends that they are preserved
-                OnError(0, e.Exception);
+                Buffer(DefaultBufferSize);
 
                 // Retry until the connection reconnects
                 ConnectWithRetry();
@@ -89,7 +95,7 @@ namespace Microsoft.AspNet.SignalR.Redis
             // The key is the stream id (channel)
             var message = RedisMessage.FromBytes(data);
 
-            OnReceived(0, (ulong)message.Id, message.Messages);
+            OnReceived(key, (ulong)message.Id, message.Messages);
         }
 
         protected override void Dispose(bool disposing)
@@ -98,7 +104,7 @@ namespace Microsoft.AspNet.SignalR.Redis
             {
                 if (_channel != null)
                 {
-                    _channel.Unsubscribe(_key);
+                    _channel.Unsubscribe(_keys);
                     _channel.Close(abort: true);
                 }
 
@@ -135,7 +141,7 @@ namespace Microsoft.AspNet.SignalR.Redis
                 {
                     Interlocked.Exchange(ref _state, State.Connected);
 
-                    Open(0);
+                    Open();
                 }
             },
             TaskContinuationOptions.ExecuteSynchronously);
@@ -171,7 +177,7 @@ namespace Microsoft.AspNet.SignalR.Redis
                     RedisSubscriberConnection channel = connection.GetOpenSubscriberChannel();
 
                     // Subscribe to the registered connections
-                    channel.Subscribe(_key, OnMessage);
+                    channel.Subscribe(_keys, OnMessage);
 
                     // Dirty hack but it seems like subscribe returns before the actual
                     // subscription is properly setup in some cases
@@ -180,7 +186,7 @@ namespace Microsoft.AspNet.SignalR.Redis
                         Thread.Sleep(500);
                     }
 
-                    Trace.TraceVerbose("Subscribed to event " + _key);
+                    Trace.TraceEvent(TraceEventType.Verbose, 0, "Subscribed to events " + String.Join(",", _keys));
 
                     _channel = channel;
                     _connection = connection;
@@ -188,24 +194,15 @@ namespace Microsoft.AspNet.SignalR.Redis
             }
             catch (Exception ex)
             {
-                Trace.TraceError("Error connecting to redis - " + ex.GetBaseException());
+                Trace.TraceEvent(TraceEventType.Error, 0, "Error connecting to redis - " + ex.GetBaseException());
 
                 return TaskAsyncHelper.FromError(ex);
             }
         }
 
-        private class SendContext
+        private static Func<RedisConnection> GetConnectionFactory(string server, int port, string password)
         {
-            public string Key;
-            public IList<Message> Messages;
-            public RedisConnection Connection;
-
-            public SendContext(string key, IList<Message> messages, RedisConnection connection)
-            {
-                Key = key;
-                Messages = messages;
-                Connection = connection;
-            }
+            return () => new RedisConnection(server, port: port, password: password);
         }
 
         private static class State

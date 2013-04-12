@@ -15,7 +15,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
         public void NewSubscriptionGetsAllMessages()
         {
             var dr = new DefaultDependencyResolver();
-            using (var bus = new TestScaleoutBus(dr))
+            using (var bus = new TestScaleoutBus(dr, topicCount: 5))
             {
                 var subscriber = new TestSubscriber(new[] { "key" });
                 var wh = new ManualResetEventSlim(initialState: false);
@@ -24,9 +24,9 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
                 try
                 {
                     var firstMessages = new[] { new Message("test1", "key", "1"),
-                                                new Message("test2", "key", "2") };
+                                            new Message("test2", "key", "2") };
 
-                    bus.Publish(0, 0, firstMessages);
+                    bus.SendMany(firstMessages);
 
                     subscription = bus.Subscribe(subscriber, null, (result, state) =>
                     {
@@ -49,10 +49,8 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
 
                     }, 10, null);
 
-                    var messages = new[] { new Message("test1", "key", "x"), 
-                                           new Message("test1", "key", "y") 
-                                         };
-                    bus.Publish(0, 1, messages);
+                    bus.SendMany(new[] { new Message("test1", "key", "x"), 
+                                     new Message("test1", "key", "y") });
 
                     Assert.True(wh.Wait(TimeSpan.FromSeconds(10)));
                 }
@@ -70,22 +68,28 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
         public void SubscriptionWithExistingCursor()
         {
             var dr = new DefaultDependencyResolver();
-            using (var bus = new TestScaleoutBus(dr, streams: 2))
+            using (var bus = new TestScaleoutBus(dr, topicCount: 2))
             {
                 var subscriber = new TestSubscriber(new[] { "key" });
                 var cd = new CountDownRange<int>(Enumerable.Range(2, 4));
                 IDisposable subscription = null;
 
-                bus.Publish(0, 0, new[] { 
-                    new Message("test", "key", "1"),
-                    new Message("test", "key", "50")
-                });
+                // test, test2 = 1
+                // test1, test3 = 0
+                // 
 
-                bus.Publish(1, 0, new[] {
-                    new Message("test1", "key", "51")
-                });
+                // Cursor 1, 1
+                bus.SendMany(new[] { 
+                 new Message("test", "key", "1"),
+                 new Message("test", "key", "50")
+            });
 
-                bus.Publish(1, 2, new[]{
+                // Cursor 0,1|1,1
+                bus.SendMany(new[] {
+                new Message("test1", "key", "51")
+            });
+
+                bus.SendMany(new[]{
                  new Message("test2", "key", "2"),
                  new Message("test3", "key", "3"),
                  new Message("test2", "key", "4"),
@@ -93,7 +97,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
 
                 try
                 {
-                    subscription = bus.Subscribe(subscriber, "0,00000000|1,00000000", (result, state) =>
+                    subscription = bus.Subscribe(subscriber, "0,00000001|1,00000001", (result, state) =>
                     {
                         foreach (var m in result.GetMessages())
                         {
@@ -105,7 +109,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
 
                     }, 10, null);
 
-                    bus.Publish(0, 2, new[] { new Message("test", "key", "5") });
+                    bus.SendMany(new[] { new Message("test", "key", "5") });
 
                     Assert.True(cd.Wait(TimeSpan.FromSeconds(10)));
                 }
@@ -123,11 +127,14 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
         public void SubscriptionPublishingAfter()
         {
             var dr = new DefaultDependencyResolver();
-            using (var bus = new TestScaleoutBus(dr))
+            using (var bus = new TestScaleoutBus(dr, topicCount: 5))
             {
                 var subscriber = new TestSubscriber(new[] { "key" });
                 IDisposable subscription = null;
                 var wh = new ManualResetEventSlim();
+
+                // test, test2 = 1
+                // test1, test3 = 0
 
                 try
                 {
@@ -146,7 +153,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
 
                     }, 10, null);
 
-                    bus.Publish(0, 0, new[] { new Message("test", "key", "connected") });
+                    bus.SendMany(new[] { new Message("test", "key", "connected") });
 
                     Assert.True(wh.Wait(TimeSpan.FromSeconds(10)));
                 }
@@ -162,30 +169,27 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
 
         private class TestScaleoutBus : ScaleoutMessageBus
         {
-            private int _streams;
+            private long[] _topicsIndexes;
 
-            public TestScaleoutBus(IDependencyResolver resolver)
-                : this(resolver, streams: 1)
+            public TestScaleoutBus(IDependencyResolver resolver, int topicCount = 1)
+                : base(resolver)
             {
+                _topicsIndexes = new long[topicCount];
             }
 
-            public TestScaleoutBus(IDependencyResolver dr, int streams)
-                : base(dr, new ScaleoutConfiguration())
+            public Task SendMany(Message[] messages)
             {
-                _streams = streams;
+                return Send(messages);
             }
 
-            protected override int StreamCount
+            protected override Task Send(IList<Message> messages)
             {
-                get
+                foreach (var g in messages.GroupBy(m => m.Source))
                 {
-                    return _streams;
+                    int topic = Math.Abs(g.Key.GetHashCode()) % _topicsIndexes.Length;
+                    OnReceived(topic.ToString(), (ulong)Interlocked.Increment(ref _topicsIndexes[topic]), g.ToArray()).Wait();
                 }
-            }
-
-            public void Publish(int streamIndex, ulong id, IList<Message> messages)
-            {
-                OnReceived(streamIndex, id, messages);
+                return TaskAsyncHelper.Empty;
             }
         }
     }

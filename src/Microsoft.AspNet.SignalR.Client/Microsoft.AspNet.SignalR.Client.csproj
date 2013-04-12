@@ -19,7 +19,7 @@
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
     <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>TRACE;DEBUG;CLIENT_NET4;NET4</DefineConstants>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <DocumentationFile>bin\Debug\Microsoft.AspNet.SignalR.Client.XML</DocumentationFile>
@@ -66,9 +66,7 @@
     </Compile>
     <Compile Include="Connection.cs" />
     <Compile Include="ConnectionExtensions.cs" />
-    <Compile Include="HeaderDictionary.cs" />
     <Compile Include="HeartBeatMonitor.cs" />
-    <Compile Include="Http\IResponseExtensions.cs" />
     <Compile Include="Hubs\HubInvocation.cs" />
     <Compile Include="ConnectionState.cs" />
     <Compile Include="Hubs\HubConnection.cs" />
@@ -86,15 +84,11 @@
     <Compile Include="Infrastructure\ExceptionHelper.cs" />
     <Compile Include="Infrastructure\ThreadSafeInvoker.cs" />
     <Compile Include="Infrastructure\UrlEncoder.cs" />
-    <Compile Include="TraceLevels.cs" />
     <Compile Include="Resources.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
-    <Compile Include="Transports\AsyncStreamReader.cs" />
-    <Compile Include="Transports\LongPolling\NegotiateInitializer.cs" />
-    <Compile Include="Transports\LongPolling\PollingRequestHandler.cs" />
     <Compile Include="Transports\ServerSentEvents\ChunkBuffer.cs" />
     <Compile Include="Http\DefaultHttpClient.cs" />
     <Compile Include="Http\HttpHelper.cs" />
@@ -124,7 +118,6 @@
     <EmbeddedResource Include="Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
-      <SubType>Designer</SubType>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>

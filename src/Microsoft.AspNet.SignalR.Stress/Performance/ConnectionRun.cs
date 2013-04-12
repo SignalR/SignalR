@@ -23,7 +23,7 @@ namespace Microsoft.AspNet.SignalR.Stress
             _transportConnection = (ITransportConnection)_context.Connection;
         }
 
-        protected override Task Send(int senderIndex, string source)
+        protected override Task Send(int senderIndex)
         {
             return _context.Connection.Broadcast(Payload);
         }

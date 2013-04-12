@@ -86,14 +86,5 @@ namespace Microsoft.AspNet.SignalR.Owin {
                 return ResourceManager.GetString("Error_NotWebSocketRequest", resourceCulture);
             }
         }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Forbidden: SignalR cross domain is disabled..
-        /// </summary>
-        internal static string Forbidden_CrossDomainIsDisabled {
-            get {
-                return ResourceManager.GetString("Forbidden_CrossDomainIsDisabled", resourceCulture);
-            }
-        }
     }
 }

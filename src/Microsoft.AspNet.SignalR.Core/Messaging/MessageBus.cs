@@ -36,7 +36,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
 
         private Timer _gcTimer;
         private int _gcRunning;
-        private static readonly TimeSpan _gcInterval = TimeSpan.FromSeconds(5);
+        private static readonly TimeSpan _gcInterval = TimeSpan.FromSeconds(15);
 
         private readonly TimeSpan _topicTtl;
 
@@ -48,7 +48,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
         internal Action<string, Topic> AfterTopicMarkedSuccessfully;
         internal Action<string, Topic, int> AfterTopicMarked;
 
-        private const int DefaultMaxTopicsWithNoSubscriptions = 1000;
+        private const int DefaultMaxTopicsWithNoSubscriptions = 5000;
 
         private readonly Func<string, Topic> _createTopic;
         private readonly Action<ISubscriber, string> _addEvent;
@@ -468,11 +468,10 @@ namespace Microsoft.AspNet.SignalR.Messaging
             Topic topic = GetTopic(eventKey);
 
             // Add or update the cursor (in case it already exists)
-            if (subscriber.Subscription.AddEvent(eventKey, topic))
-            {
-                // Add it to the list of subs
-                topic.AddSubscription(subscriber.Subscription);
-            }
+            subscriber.Subscription.AddEvent(eventKey, topic);
+
+            // Add it to the list of subs
+            topic.AddSubscription(subscriber.Subscription);
         }
 
         private void RemoveEvent(ISubscriber subscriber, string eventKey)

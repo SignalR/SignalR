@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.md in the project root for license information.
 
 using System;
-using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 
@@ -47,12 +46,9 @@ namespace Microsoft.AspNet.SignalR.Hosting.Memory
                 completedSynchronously
                     ? c_StateCompletedSynchronously
                     : c_StateCompletedAsynchronously);
-
             if (prevState != c_StatePending)
-            {
-                // Noop
-                return;
-            }
+                throw new InvalidOperationException(
+                    "You can set a result only once");
 
             // If the event exists, set it
             if (m_AsyncWaitHandle != null) m_AsyncWaitHandle.Set();
@@ -139,17 +135,10 @@ namespace Microsoft.AspNet.SignalR.Hosting.Memory
     {
         // Field set when operation completes
         TResult m_result = default(TResult);
-        IDisposable registration = null;
 
-        public AsyncResult(AsyncCallback asyncCallback, Object state, CancellationToken token) :
+        public AsyncResult(AsyncCallback asyncCallback, Object state) :
             base(asyncCallback, state)
         {
-            registration = token.Register(Cancel);
-        }
-
-        private void Cancel()
-        {
-            SetAsCompleted(new OperationCanceledException(), completedSynchronously: false);
         }
 
         public void SetAsCompleted(TResult result,
@@ -166,12 +155,6 @@ namespace Microsoft.AspNet.SignalR.Hosting.Memory
         public new TResult EndInvoke()
         {
             base.EndInvoke(); // Wait until operation has completed 
-            
-            if (registration != null)
-            {
-                registration.Dispose();
-            }
-
             return m_result; // Return the result (if above didn't throw)
         }
     }

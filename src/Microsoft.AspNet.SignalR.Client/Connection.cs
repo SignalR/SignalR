@@ -18,9 +18,6 @@ using Microsoft.AspNet.SignalR.Client.Transports;
 using Microsoft.AspNet.SignalR.Infrastructure;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-#if (NET4 || NET45)
-using System.Security.Cryptography.X509Certificates;
-#endif
 
 namespace Microsoft.AspNet.SignalR.Client
 {
@@ -57,21 +54,11 @@ namespace Microsoft.AspNet.SignalR.Client
         // Used to synchronize state changes
         private readonly object _stateLock = new object();
 
-        // Used to synchronize starting and stopping specifically
-        private readonly object _startLock = new object();
-
-        // Used to ensure we don't write to the Trace TextWriter from multiple threads simultaneously 
-        private readonly object _traceLock = new object();
-
         // Keeps track of when the last keep alive from the server was received
         private HeartbeatMonitor _monitor;
 
         //The json serializer for the connections
         private JsonSerializer _jsonSerializer = new JsonSerializer();
-
-#if (NET4 || NET45)
-        private readonly X509CertificateCollection certCollection = new X509CertificateCollection();
-#endif
 
         /// <summary>
         /// Occurs when the <see cref="Connection"/> has received data from the server.
@@ -155,9 +142,7 @@ namespace Microsoft.AspNet.SignalR.Client
             _disconnectTimeoutOperation = DisposableAction.Empty;
             Items = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
             State = ConnectionState.Disconnected;
-            TraceLevel = TraceLevels.All;
-            TraceWriter = new DebugTextWriter();
-            Headers = new HeaderDictionary(this);
+            Trace = new DebugTextWriter();
         }
 
         /// <summary>
@@ -175,9 +160,7 @@ namespace Microsoft.AspNet.SignalR.Client
             }
         }
 
-        public TraceLevels TraceLevel { get; set; }
-
-        public TextWriter TraceWriter
+        public TextWriter Trace
         {
             get
             {
@@ -223,11 +206,6 @@ namespace Microsoft.AspNet.SignalR.Client
         /// Gets or sets authentication information for the connection.
         /// </summary>
         public ICredentials Credentials { get; set; }
-
-        /// <summary>
-        /// Gets and sets headers for the requests
-        /// </summary>
-        public IDictionary<string, string> Headers { get; private set; }
 
 #if !SILVERLIGHT
         /// <summary>
@@ -333,22 +311,18 @@ namespace Microsoft.AspNet.SignalR.Client
         /// <returns>A task that represents when the connection has started.</returns>
         public Task Start(IClientTransport transport)
         {
-            lock (_startLock)
+            _connectTask = TaskAsyncHelper.Empty;
+            _disconnectCts = new CancellationTokenSource();
+
+            if (!ChangeState(ConnectionState.Disconnected, ConnectionState.Connecting))
             {
-                _connectTask = TaskAsyncHelper.Empty;
-                _disconnectCts = new CancellationTokenSource();
-
-                if (!ChangeState(ConnectionState.Disconnected, ConnectionState.Connecting))
-                {
-                    return _connectTask;
-                }
-
-                _monitor = new HeartbeatMonitor(this, _stateLock);
-                _transport = transport;
-
-                _connectTask = Negotiate(transport);
+                return _connectTask;
             }
 
+            _monitor = new HeartbeatMonitor(this);
+            _transport = transport;
+
+            _connectTask = Negotiate(transport);
             return _connectTask;
         }
 
@@ -408,7 +382,7 @@ namespace Microsoft.AspNet.SignalR.Client
                 // If we're in the expected old state then change state and return true
                 if (_state == oldState)
                 {
-                    Trace(TraceLevels.StateChanges, "ChangeState({0}, {1})", oldState, newState);
+                    Trace.WriteLine("ChangeState({0}, {1}, {2})", ConnectionId ?? "New connection", oldState, newState);
 
                     State = newState;
                     return true;
@@ -449,46 +423,43 @@ namespace Microsoft.AspNet.SignalR.Client
         [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "We don't want to raise the Start exception on Stop.")]
         public void Stop(TimeSpan timeout)
         {
-            lock (_startLock)
+            // Wait for the connection to connect
+            if (_connectTask != null)
             {
-                // Wait for the connection to connect
-                if (_connectTask != null)
+                try
                 {
-                    try
-                    {
-                        _connectTask.Wait(timeout);
-                    }
-                    catch (Exception ex)
-                    {
-                        Trace(TraceLevels.Events, "Error: {0}", ex.GetBaseException());
-                    }
+                    _connectTask.Wait(timeout);
                 }
-
-                lock (_stateLock)
+                catch (Exception ex)
                 {
-                    // Do nothing if the connection is offline
-                    if (State != ConnectionState.Disconnected)
+                    Trace.WriteLine("Error: {0}", ex.GetBaseException());
+                }
+            }
+
+            lock (_stateLock)
+            {
+                // Do nothing if the connection is offline
+                if (State != ConnectionState.Disconnected)
+                {
+                    string connectionId = ConnectionId;
+
+                    Trace.WriteLine("Stop({0})", ConnectionId);
+
+                    // Dispose the heart beat monitor so we don't fire notifications when waiting to abort
+                    _monitor.Dispose();
+
+                    _transport.Abort(this, timeout);
+
+                    Disconnect();
+
+                    _disconnectCts.Dispose();
+
+                    if (_transport != null)
                     {
-                        string connectionId = ConnectionId;
+                        Trace.WriteLine("Transport.Dispose({0})", connectionId);
 
-                        Trace(TraceLevels.Events, "Stop");
-
-                        // Dispose the heart beat monitor so we don't fire notifications when waiting to abort
-                        _monitor.Dispose();
-
-                        _transport.Abort(this, timeout);
-
-                        Disconnect();
-
-                        _disconnectCts.Dispose();
-
-                        if (_transport != null)
-                        {
-                            Trace(TraceLevels.Events, "Transport.Dispose({0})", connectionId);
-
-                            _transport.Dispose();
-                            _transport = null;
-                        }
+                        _transport.Dispose();
+                        _transport = null;
                     }
                 }
             }
@@ -498,28 +469,22 @@ namespace Microsoft.AspNet.SignalR.Client
         /// Stops the <see cref="Connection"/> without sending an abort message to the server.
         /// This function is called after we receive a disconnect message from the server.
         /// </summary>
-        void IConnection.Disconnect()
-        {
-            Disconnect();
-        }
-
-        private void Disconnect()
+        public void Disconnect()
         {
             lock (_stateLock)
             {
                 // Do nothing if the connection is offline
                 if (State != ConnectionState.Disconnected)
                 {
-                    // Change state before doing anything else in case something later in the method throws
-                    State = ConnectionState.Disconnected;
-
-                    Trace(TraceLevels.StateChanges, "Disconnect");
+                    Trace.WriteLine("Disconnect({0})", ConnectionId);
 
                     _disconnectTimeoutOperation.Dispose();
                     _disconnectCts.Cancel();
                     _monitor.Dispose();
 
-                    Trace(TraceLevels.Events, "Closed");
+                    State = ConnectionState.Disconnected;
+
+                    Trace.WriteLine("Closed({0})", ConnectionId);
 
                     // Clear the state for this connection
                     ConnectionId = null;
@@ -566,40 +531,6 @@ namespace Microsoft.AspNet.SignalR.Client
             return Send(this.JsonSerializeObject(value));
         }
 
-#if (NET4 || NET45)
-        /// <summary>
-        /// Adds a client certificate to the request
-        /// </summary>
-        /// <param name="certificate">Client Certificate</param>
-        public void AddClientCertificate(X509Certificate certificate)
-        {
-            lock (_stateLock)
-            {
-                if (State != ConnectionState.Disconnected)
-                {
-                    throw new InvalidOperationException(Resources.Error_CertsCanOnlyBeAddedWhenDisconnected);
-                }
-
-                certCollection.Add(certificate);
-            }
-        }
-#endif
-
-        public void Trace(TraceLevels level, string format, params object[] args)
-        {
-            lock (_traceLock)
-            {
-                if (TraceLevel.HasFlag(level))
-                {
-                    _traceWriter.WriteLine(
-                        DateTime.UtcNow.ToString("HH:mm:ss.fffffff", CultureInfo.InvariantCulture) + " - " +
-                            (ConnectionId ?? "null") + " - " +
-                            format,
-                        args);
-                }
-            }
-        }
-
 
         [SuppressMessage("Microsoft.Design", "CA1062:Validate arguments of public methods", MessageId = "0", Justification = "This is called by the transport layer")]
         void IConnection.OnReceived(JToken message)
@@ -618,7 +549,7 @@ namespace Microsoft.AspNet.SignalR.Client
 
         void IConnection.OnError(Exception error)
         {
-            Trace(TraceLevels.Events, "OnError({0})", error);
+            Trace.WriteLine("OnError({0})", error);
 
             if (Error != null)
             {
@@ -655,7 +586,7 @@ namespace Microsoft.AspNet.SignalR.Client
 
         void IConnection.OnConnectionSlow()
         {
-            Trace(TraceLevels.Events, "OnConnectionSlow");
+            Trace.WriteLine("OnConnectionSlow({0})", ConnectionId);
 
             if (ConnectionSlow != null)
             {
@@ -696,17 +627,11 @@ namespace Microsoft.AspNet.SignalR.Client
             {
                 request.CookieContainer = CookieContainer;
             }
-
 #if !SILVERLIGHT
             if (Proxy != null)
             {
                 request.Proxy = Proxy;
             }
-#endif
-            request.SetRequestHeaders(Headers);
-
-#if (NET4 || NET45)
-            request.AddClientCerts(certCollection);
 #endif
         }
 

@@ -252,24 +252,18 @@ namespace Microsoft.AspNet.SignalR.Messaging
 
         public virtual bool AddEvent(string key, Topic topic)
         {
-            lock (EventKeys)
+            if (EventKeys.Contains(key))
             {
-                if (EventKeys.Contains(key))
-                {
-                    return false;
-                }
-
-                EventKeys.Add(key);
-                return true;
+                return false;
             }
+
+            EventKeys.Add(key);
+            return true;
         }
 
         public virtual void RemoveEvent(string key)
         {
-            lock (EventKeys)
-            {
-                EventKeys.Remove(key);
-            }
+            EventKeys.Remove(key);
         }
 
         public virtual void SetEventTopic(string key, Topic topic)

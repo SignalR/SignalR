@@ -10,11 +10,10 @@ namespace Microsoft.AspNet.SignalR.Messaging
     public class Message
     {
         private static readonly byte[] _zeroByteBuffer = new byte[0];
-        private static readonly UTF8Encoding _encoding = new UTF8Encoding();
 
         public Message()
         {
-            Encoding = _encoding;
+            Encoding = new UTF8Encoding();
         }
 
         public Message(string source, string key, string value)
@@ -31,7 +30,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
 
             Source = source;
             Key = key;
-            Encoding = _encoding;
+            Encoding = new UTF8Encoding();
             Value = value == null ? new ArraySegment<byte>(_zeroByteBuffer) : new ArraySegment<byte>(Encoding.GetBytes(value));
         }
 

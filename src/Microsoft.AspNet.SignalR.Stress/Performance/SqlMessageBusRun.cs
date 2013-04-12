@@ -18,9 +18,7 @@ namespace Microsoft.AspNet.SignalR.Stress.Performance
 
         protected override MessageBus CreateMessageBus()
         {
-            var config = new SqlScaleoutConfiguration(RunData.SqlConnectionString) { TableCount = 1 };
-
-            return new SqlMessageBus(Resolver, config);
+            return new SqlMessageBus("Data Source=(local);Initial Catalog=SignalRSamples;Integrated Security=SSPI;MultipleActiveResultSets=true;Asynchronous Processing=True;", 3, SqlMessageBus.DefaultQueueSize, Resolver);
         }
     }
 }

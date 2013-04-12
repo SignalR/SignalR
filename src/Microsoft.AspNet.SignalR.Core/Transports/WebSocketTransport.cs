@@ -63,13 +63,7 @@ namespace Microsoft.AspNet.SignalR.Transports
 
         public override Task KeepAlive()
         {
-            // Ensure delegate continues to use the C# Compiler static delegate caching optimization.
-            return EnqueueOperation(state =>
-            {
-                var webSocket = (IWebSocket)state;
-                return webSocket.Send("{}");
-            },
-            _socket);
+            return Send(new object());
         }
 
         public override Task ProcessRequest(ITransportConnection connection)

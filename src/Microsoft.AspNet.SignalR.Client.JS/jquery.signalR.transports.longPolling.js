@@ -86,7 +86,6 @@
                             cache: false,
                             type: "GET",
                             dataType: connection.ajaxDataType,
-                            contentType: connection.contentType,
                             success: function (minData) {
                                 var delay = 0,
                                     data;

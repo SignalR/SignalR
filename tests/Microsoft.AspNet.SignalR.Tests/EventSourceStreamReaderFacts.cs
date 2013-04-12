@@ -18,6 +18,7 @@ namespace Microsoft.AspNet.SignalR.Tests
             var wh = new ManualResetEvent(false);
             var tcs = new TaskCompletionSource<string>();
             var connection = new Mock<Client.IConnection>();
+            connection.Setup(m => m.Trace).Returns(new DummyTextWriter());
             var eventSource = new EventSourceStreamReader(connection.Object, memoryStream);
 
             eventSource.Opened = () => wh.Set();
@@ -34,6 +35,7 @@ namespace Microsoft.AspNet.SignalR.Tests
         {
             var memoryStream = MemoryStream("");
             var connection = new Mock<Client.IConnection>();
+            connection.Setup(m => m.Trace).Returns(new DummyTextWriter());
             var eventSource = new EventSourceStreamReader(connection.Object, memoryStream);
             var wh = new ManualResetEventSlim();
 

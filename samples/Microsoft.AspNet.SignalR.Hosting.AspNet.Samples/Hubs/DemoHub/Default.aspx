@@ -26,9 +26,6 @@
         
         <dt>Generic Task With Exception</dt>
         <dd id="genericTaskWithException"></dd>
-
-        <dt>Synchronous Exception</dt>
-        <dd id="synchronousException"></dd>
         
         <dt>Dynamic Task</dt>
         <dd id="dynamicTask"></dd>

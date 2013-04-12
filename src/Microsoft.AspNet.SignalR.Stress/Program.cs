@@ -82,14 +82,7 @@ namespace Microsoft.AspNet.SignalR.Stress
                 Connections = args.Connections,
                 Payload = GetPayload(args.PayloadSize),
                 Senders = args.Senders,
-                Transport = args.Transport,
-
-                // Scaleout
-                RedisServer = args.RedisServer,
-                RedisPort = args.RedisPort,
-                RedisPassword = args.RedisPassword,
-                ServiceBusConnectionString = args.ServiceBusConnectionString,
-                SqlConnectionString = args.SqlConnectionString,
+                Transport = args.Transport
             });
 
             return compositionContainer.GetExportedValue<IRun>(args.RunName);
@@ -126,21 +119,6 @@ namespace Microsoft.AspNet.SignalR.Stress
 
             [CommandLineParameter(Command = "Warmup", Required = false, Default = 10, Description = "Warmup duration in seconds. Default: 10")]
             public int Warmup { get; set; }
-
-            [CommandLineParameter(Command = "RedisPassword", Required = false, Default = "", Description = "Redis password to use. Default: empty")]
-            public string RedisPassword { get; set; }
-
-            [CommandLineParameter(Command = "RedisServer", Required = false, Default = "127.0.0.1", Description = "Redis server to use. Default: 127.0.0.1")]
-            public string RedisServer { get; set; }
-
-            [CommandLineParameter(Command = "RedisPort", Required = false, Default = 6379, Description = "Redis port to use. Default: 6379")]
-            public int RedisPort { get; set; }
-
-            [CommandLineParameter(Command = "ServiceBusConnectionString", Required = false, Default = "", Description = "ServiceBus connection string to use. Default: empty")]
-            public string ServiceBusConnectionString { get; set; }
-
-            [CommandLineParameter(Command = "SqlConnectionString", Required = false, Default = "Data Source=(local);Initial Catalog=SignalRSamples;Integrated Security=SSPI;MultipleActiveResultSets=true;Asynchronous Processing=True;", Description = "Warmup duration in seconds. Default: Local sql server")]
-            public string SqlConnectionString { get; set; }
         }
     }
 }

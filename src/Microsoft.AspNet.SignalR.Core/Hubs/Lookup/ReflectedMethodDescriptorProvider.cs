@@ -59,7 +59,7 @@ namespace Microsoft.AspNet.SignalR.Hubs
                                       ReturnType = oload.ReturnType,
                                       Name = group.Key,
                                       NameSpecified = (GetMethodAttributeName(oload) != null),
-                                      Invoker = new HubMethodDispatcher(oload).Execute,
+                                      Invoker = oload.Invoke,
                                       Hub = hub,
                                       Attributes = oload.GetCustomAttributes(typeof(Attribute), inherit: true).Cast<Attribute>(),
                                       Parameters = oload.GetParameters()
@@ -78,7 +78,7 @@ namespace Microsoft.AspNet.SignalR.Hubs
         /// </summary>
         /// <remarks>
         /// In the case that there are multiple overloads of the specified <paramref name="method"/>, the <paramref name="parameters">parameter set</paramref> helps determine exactly which instance of the overload should be resolved. 
-        /// If there are multiple overloads found with the same number of matching parameters, none of the methods will be returned because it is not possible to determine which overload of the method was intended to be resolved.
+        /// If there are multiple overloads found with the same number of matching paramters, none of the methods will be returned because it is not possible to determine which overload of the method was intended to be resolved.
         /// </remarks>
         /// <param name="hub">Hub to search for the specified <paramref name="method"/> on.</param>
         /// <param name="method">The method name to search for.</param>
@@ -125,7 +125,7 @@ namespace Microsoft.AspNet.SignalR.Hubs
             }
             else
             {
-                // NOTE: we normalize a null parameter array to be the same as an empty (i.e. Length == 0) parameter array
+                // NOTE: we normailize a null parameter array to be the same as an empty (i.e. Length == 0) parameter array
                 normalizedParameterCountKeyPart = "0";
             }
 

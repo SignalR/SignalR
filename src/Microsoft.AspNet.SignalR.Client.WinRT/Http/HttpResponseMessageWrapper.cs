@@ -20,22 +20,14 @@ namespace Microsoft.AspNet.SignalR.Client.WinRT.Http
             return _httpResponseMessage.Content.ReadAsStringAsync().Result;
         }
 
-        public Stream GetStream()
+        public Stream GetResponseStream()
         {
             return _httpResponseMessage.Content.ReadAsStreamAsync().Result;
         }
 
-        protected virtual void Dispose(bool disposing)
+        public void Close()
         {
-            if (disposing)
-            {
-                _httpResponseMessage.Dispose();
-            }
-        }
-
-        public void Dispose()
-        {
-            Dispose(true);
+            _httpResponseMessage.Dispose();
         }
     }
 }

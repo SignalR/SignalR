@@ -1,9 +1,11 @@
 ﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.md in the project root for license information.
 
 using System;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR.Client.Http;
 using Microsoft.AspNet.SignalR.Client.Infrastructure;
 using Microsoft.AspNet.SignalR.Client.Transports.ServerSentEvents;
@@ -87,7 +89,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
 
             var url = (reconnecting ? connection.Url : connection.Url + "connect") + GetReceiveQueryString(connection, data);
 
-            connection.Trace(TraceLevels.Events, "SSE: GET {0}", url);
+            connection.Trace.WriteLine("SSE: GET {0}", url);
 
             HttpClient.Get(url, req =>
             {
@@ -119,7 +121,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
                 else
                 {
                     var response = task.Result;
-                    Stream stream = response.GetStream();
+                    Stream stream = response.GetResponseStream();
 
                     var eventSource = new EventSourceStreamReader(connection, stream);
 
@@ -183,7 +185,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
                         }
                         requestDisposer.Dispose();
                         esCancellationRegistration.Dispose();
-                        response.Dispose();
+                        response.Close();
 
                         if (AbortResetEvent != null)
                         {

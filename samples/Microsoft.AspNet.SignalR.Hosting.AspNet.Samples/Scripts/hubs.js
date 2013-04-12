@@ -231,11 +231,6 @@
                 return proxies.demo.invoke.apply(proxies.demo, $.merge(["SimpleArray"], $.makeArray(arguments)));
              },
 
-            synchronousException: function () {
-            /// <summary>Calls the SynchronousException method on the server-side demo hub.&#10;Returns a jQuery.Deferred() promise.</summary>
-                return proxies.demo.invoke.apply(proxies.demo, $.merge(["SynchronousException"], $.makeArray(arguments)));
-             },
-
             taskWithException: function () {
             /// <summary>Calls the TaskWithException method on the server-side demo hub.&#10;Returns a jQuery.Deferred() promise.</summary>
                 return proxies.demo.invoke.apply(proxies.demo, $.merge(["TaskWithException"], $.makeArray(arguments)));
@@ -266,11 +261,6 @@
             /// <summary>Calls the Join method on the server-side DrawingPad hub.&#10;Returns a jQuery.Deferred() promise.</summary>
                 return proxies.DrawingPad.invoke.apply(proxies.DrawingPad, $.merge(["Join"], $.makeArray(arguments)));
              }
-        };
-
-        proxies.headerAuthHub = this.createHubProxy('headerAuthHub'); 
-        proxies.headerAuthHub.client = { };
-        proxies.headerAuthHub.server = {
         };
 
         proxies.hubBench = this.createHubProxy('hubBench'); 

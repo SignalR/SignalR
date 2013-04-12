@@ -54,11 +54,6 @@
         }
     }
 
-    function isConnectedOrReconnecting(connection) {
-        return connection.state === signalR.connectionState.connected ||
-               connection.state === signalR.connectionState.reconnecting;
-    }
-
     signalR.transports._logic = {
         pingServer: function (connection, transport) {
             /// <summary>Pings the server</summary>
@@ -75,7 +70,6 @@
                 global: false,
                 cache: false,
                 type: "GET",
-                contentType: connection.contentType,
                 data: {},
                 dataType: connection.ajaxDataType,
                 success: function (data) {
@@ -97,7 +91,7 @@
         addQs: function (url, connection) {
             var appender = url.indexOf("?") !== -1 ? "&" : "?",
                 firstChar;
-
+            
             if (!connection.qs) {
                 return url;
             }
@@ -134,15 +128,11 @@
             }
 
             if (!reconnecting) {
-                url += "/connect";
+                url = url + "/connect";
             } else {
                 if (appendReconnectUrl) {
-                    url += "/reconnect";
-                } else {
-                    // A silent reconnect should only ever occur with the longPolling transport
-                    url += "/poll";
+                    url = url + "/reconnect";
                 }
-
                 if (connection.messageId) {
                     qs += "&messageId=" + window.encodeURIComponent(connection.messageId);
                 }
@@ -177,7 +167,6 @@
                 url: url,
                 global: false,
                 type: connection.ajaxDataType === "jsonp" ? "GET" : "POST",
-                contentType: signalR._.defaultContentType,
                 dataType: connection.ajaxDataType,
                 data: {
                     data: data
@@ -215,7 +204,6 @@
                 timeout: 1000,
                 global: false,
                 type: "POST",
-                contentType: connection.contentType,
                 dataType: connection.ajaxDataType,
                 data: {}
             });
@@ -252,8 +240,8 @@
                 this.updateGroups(connection, data.GroupsToken);
 
                 if (data.Messages) {
-                    $.each(data.Messages, function (index, message) {
-                        $connection.triggerHandler(events.onReceived, [message]);
+                    $.each(data.Messages, function () {
+                        $connection.triggerHandler(events.onReceived, [this]);
                     });
                 }
 
@@ -319,32 +307,6 @@
                 $(connection).triggerHandler(events.onReconnecting);
             }
             return connection.state === signalR.connectionState.reconnecting;
-        },
-
-        clearReconnectTimeout: function (connection) {
-            if (connection && connection._.reconnectTimeout) {
-                window.clearTimeout(connection._.reconnectTimeout);
-                delete connection._.reconnectTimeout;
-            }
-        },
-
-        reconnect: function (connection, transportName) {
-            var transport = signalR.transports[transportName],
-                that = this;
-
-            // We should only set a reconnectTimeout if we are currently connected
-            // and a reconnectTimeout isn't already set.
-            if (isConnectedOrReconnecting(connection) && !connection._.reconnectTimeout) {
-
-                connection._.reconnectTimeout = window.setTimeout(function () {
-                    transport.stop(connection);
-
-                    if (that.ensureReconnectingState(connection)) {
-                        connection.log(transportName + " reconnecting");
-                        transport.start(connection);
-                    }
-                }, connection.reconnectDelay);
-            }
         },
 
         foreverFrame: {

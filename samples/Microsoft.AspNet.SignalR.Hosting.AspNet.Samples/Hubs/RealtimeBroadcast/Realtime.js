@@ -99,9 +99,7 @@ $(function () {
         });
 
         $fps.change(function () {
-            var newFps = $fps.val();
-            fps = newFps;
-            hub.server.setFPS(newFps);
+            hub.server.setFPS($fps.val());
         });
     });
 });

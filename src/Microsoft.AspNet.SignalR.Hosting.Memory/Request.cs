@@ -2,9 +2,7 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Net;
-using System.Security.Cryptography.X509Certificates;
 using Microsoft.AspNet.SignalR.Owin;
 using Microsoft.AspNet.SignalR.Owin.Infrastructure;
 using IClientRequest = Microsoft.AspNet.SignalR.Client.Http.IRequest;
@@ -66,7 +64,6 @@ namespace Microsoft.AspNet.SignalR.Hosting.Memory
 
         public void Abort()
         {
-            Trace.TraceInformation("Abort()");
             _abort();
         }
 
@@ -74,23 +71,6 @@ namespace Microsoft.AspNet.SignalR.Hosting.Memory
         {
             object value;
             return environment.TryGetValue(key, out value) ? (T)value : default(T);
-        }
-
-        public void SetRequestHeaders(IDictionary<string, string> headers)
-        {
-            if (headers == null)
-            {
-                throw new ArgumentNullException("headers");
-            }
-
-            foreach (KeyValuePair<string, string> headerEntry in headers)
-            {
-                _requestHeaders.SetHeader(headerEntry.Key, headerEntry.Value);
-            }
-        }
-
-        public void AddClientCerts(X509CertificateCollection certificates)
-        {
         }
     }
 }

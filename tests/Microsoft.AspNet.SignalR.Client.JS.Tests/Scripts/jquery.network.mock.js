@@ -34,37 +34,26 @@
 (function ($, window) {
     var savedAjax = $.ajax,
         network = $.network,
-        ajaxData = {},
-        ajaxIds = 0,
+		ajaxData = {},
+		ajaxIds = 0,
         ignoringMessages = false,
-        failSoftly = false,
-        disableAbortError = false,
-        fail = function (id) {
-            var data = ajaxData[id];
-            if (data) {
-                // We must close the request prior to calling error so that we can pass our own
-                // reason for failing the request.
-                disableAbortError = true;
-                data.Request.abort();
-                disableAbortError = false;
+        fail = function (data, soft) {
+            // We must close the request prior to calling error so that we can pass our own
+            // reason for failing the request.
+            ignoringMessages = true;
+            data.Request.abort();
+            ignoringMessages = false;
 
-                data.Settings.error({ responseText: "NetworkMock: Disconnected." });
-
-                delete ajaxData[id];
+            if (!soft) {
+                data.Settings.error(data, "error");
             }
         };
 
-    function failAllOngoingRequests() {
-        $.each(ajaxData, function (id, _) {
-            fail(id);
-        });
-    }
-
     $.ajax = function (url, settings) {
         var request,
-            savedSuccess,
-            savedError,
-            id = ajaxIds++;
+			savedSuccess,
+			savedError,
+			id = ajaxIds++;
 
         if (!settings) {
             settings = url;
@@ -75,23 +64,23 @@
 
         settings.success = function () {
             // We only want to execute methods if the request is not ignoringMessages, we sleep to swallow jquery related actions
-            if (!ignoringMessages && ajaxData[id]) {
-                delete ajaxData[id];
+            if (ignoringMessages === false) {
                 if (savedSuccess) {
                     savedSuccess.apply(this, arguments);
                 }
+
+                delete ajaxData[id];
             }
         }
 
         settings.error = function () {
             // We only want to execute methods if the request is not ignoringMessages, we sleep to swallow jquery related actions
-            if (ajaxData[id] && !disableAbortError) {
-                delete ajaxData[id];
-                if (!failSoftly) {
-                    if (savedError) {
-                        savedError.apply(this, arguments);
-                    }
+            if (ignoringMessages === false) {
+                if (savedError) {
+                    savedError.apply(this, arguments);
                 }
+
+                delete ajaxData[id];
             }
         }
 
@@ -105,7 +94,7 @@
         if (ignoringMessages) {
             // Act async for failure of request
             setTimeout(function () {
-                fail(id);
+                fail(ajaxData[id], false);
             }, 0);
         }
 
@@ -116,19 +105,14 @@
         disconnect: function (soft) {
             /// <summary>Disconnects the network so javascript transport methods are unable to communicate with a server.</summary>
             /// <param name="soft" type="Boolean">Whether the disconnect should be soft.  A soft disconnect indicates that transport methods are not notified of disconnect.</param>
+            for (var key in ajaxData) {
+                var data = ajaxData[key];
 
-            // Ensure we don't set ignoringMessages to true after calling failAllOngoingRequests,
-            // because we might call connect in connection.reconnecting which can run synchronously.
-            ignoringMessages = true;
-            failSoftly = soft === true;
-            failAllOngoingRequests();
-            failSoftly = false;
+                fail(data, soft);
+            }
         },
         connect: function () {
             /// <summary>Connects the network so javascript methods can continue utilizing the network.</summary>
-
-            // fail all ongoing requests synchronously so we don't have to worry about any requests failing unnecessarily after connect completes.
-            failAllOngoingRequests();
             ignoringMessages = false;
         }
     };
@@ -143,6 +127,11 @@
         webSocketIds = 0,
         ignoringMessages = false,
         fail = function (data) {
+            // Used to not trigger any methods from a resultant web socket completion event.
+            ignoringMessages = true;
+            data.close();
+            ignoringMessages = false;
+
             data.onclose({});
         };
 
@@ -169,6 +158,7 @@
 
             that.close = function () {
                 tryExecute(function () {
+                    delete webSocketData[id];
                     return ws.close();
                 });
             };
@@ -177,7 +167,7 @@
                 var args = arguments;
 
                 tryExecute(function () {
-                    if (!ignoringMessages && webSocketData[id]) {
+                    if (!ignoringMessages) {
                         return ws.send.apply(ws, args)
                     }
                     else {
@@ -202,25 +192,24 @@
                 }
 
                 ws.onopen = function () {
-                    if (!ignoringMessages && webSocketData[id]) {
+                    if (!ignoringMessages) {
                         return that.onopen.apply(that, arguments);
                     }
                 };
                 ws.onmessage = function () {
-                    if (!ignoringMessages && webSocketData[id]) {
+                    if (!ignoringMessages) {
                         return that.onmessage.apply(that, arguments);
                     }
                 };
                 ws.onclose = function () {
-                    if (webSocketData[id]) {
-                        delete webSocketData[id];
+                    if (!ignoringMessages) {
                         return that.onclose.apply(that, arguments);
                     }
+
+                    delete webSocketData[id];
                 };
 
-                if (ignoringMessages) {
-                    fail(that);
-                }
+                webSocketData[id] = that;
 
                 // Cycle through queued commands and execute them all
                 while(queued.length > 0) {
@@ -229,9 +218,6 @@
             }, 0);
         };
 
-        // Copy constants like CLOSED, CLOSING, CONNECTING and OPEN
-        $.extend(CustomWebSocket, window.WebSocket);
-
         window.WebSocket = CustomWebSocket;
     }
 
@@ -239,15 +225,15 @@
         disconnect: function (soft) {
             /// <summary>Disconnects the network so javascript transport methods are unable to communicate with a server.</summary>
             /// <param name="soft" type="Boolean">Whether the disconnect should be soft.  A soft disconnect indicates that transport methods are not notified of disconnect.</param>
-
-            // Ensure we don't set ignoringMessages to true after calling fail, because we 
-            // might call connect in connection.reconnecting which can run synchronously.
-            ignoringMessages = true;
             if (!soft) {
                 for (var key in webSocketData) {
-                    fail(webSocketData[key]);
-                    delete webSocketData[key];
+                    var data = webSocketData[key];
+
+                    fail(data);
                 }
+            }
+            else {
+                ignoringMessages = true;
             }
         },
         connect: function () {
@@ -265,63 +251,44 @@
         ignoringMessages = false;
 
     network.mask = {
-        create: function (maskBase, onErrorProperties, subscriptionProperties, destroyOnError) {
+        create: function (maskBase, onErrorProperty, onMessageProperty, destroyOnError) {
             /// <summary>Wires the maskBase's onError and onMessage properties to be affected by network loss</summary>
             /// <param name="maskBase" type="Object">An object with properties indicated by onErrorProperty and onMessageProperty</param>
-            /// <param name="onErrorProperties" type="Array">The array of string representation of the onError methods of the maskBase</param>
-            /// <param name="subscriptionProperties" type="Array">The array of string representation of the methods subscribed to network events on the maskBase</param>
+            /// <param name="onErrorProperty" type="String">The string representation of the onError method of the maskBase</param>
+            /// <param name="onMessageProperty" type="String">The string representation of the onMessage method of the maskBase</param>
             /// <param name="destroyOnError" type="Boolean">Represents if we destroy our created mask object onError.</param>
-            var savedOnErrors = {},
-                savedSubscriptions = {},
+            var savedOnError = maskBase[onErrorProperty],
+                savedOnMessage = maskBase[onMessageProperty],
                 id = maskIds++;
 
-            function resetMaskBase() {
-                $.extend(maskBase, savedOnErrors);
-                $.extend(maskBase, savedSubscriptions);
-                delete maskData[id];
+            if (!savedOnError || !savedOnMessage) {
+                throw new Error("maskBase must have an onErrorProperty AND an onMessageProperty property");
             }
 
-            maskData[id] = {
-                onError: [],
-                onMessage: []
+            maskBase[onErrorProperty] = function () {
+                if (!ignoringMessages) {
+                    return savedOnError.apply(this, arguments);
+                }
+
+                if (destroyOnError) {
+                    // Reset the maskBase to its original setup
+                    maskBase[onErrorProperty] = savedOnError;
+                    maskBase[onMessageProperty] = savedOnMessage;
+                    delete maskData[id];
+                }
             };
 
-            $.each(onErrorProperties, function (_, onErrorProperty) {
-                var saved = maskBase[onErrorProperty];
-
-                if (!saved) {
-                    throw new Error("maskBase must have each specified onError property.");
+            maskBase[onMessageProperty] = function () {
+                if (!ignoringMessages) {
+                    return savedOnMessage.apply(this, arguments);
                 }
+            };
 
-                maskBase[onErrorProperty] = function () {
-                    if (destroyOnError) {
-                        resetMaskBase();
-                    }
-
-                    return saved.apply(this, arguments);
-                }
-
-                maskData[id].onError.push(maskBase[onErrorProperty]);
-                savedOnErrors[onErrorProperty] = saved;
-            });
-
-            
-            $.each(subscriptionProperties, function (_, subscriptionProperty) {
-                var saved = maskBase[subscriptionProperty];
-
-                if (!saved) {
-                    throw new Error("maskBase must have each specified subscription property.");
-                }
-
-                maskBase[subscriptionProperty] = function () {
-                    if (!ignoringMessages) {
-                        return saved.apply(this, arguments);
-                    }
-                };
-
-                maskData[id].onMessage.push(maskBase[subscriptionProperty]);
-                savedSubscriptions[subscriptionProperty] = saved;
-            });
+            maskData[id] =
+            {
+                onError: maskBase[onErrorProperty],
+                onMessage: maskBase[onMessageProperty]
+            };
         },
         subscribe: function (maskBase, functionName, onBadAttempt) {
             /// <summary>Subscribes a function to only be called when the network is up</summary>
@@ -349,16 +316,15 @@
         disconnect: function (soft) {
             /// <summary>Disconnects the network so javascript transport methods are unable to communicate with a server.</summary>
             /// <param name="soft" type="Boolean">Whether the disconnect should be soft.  A soft disconnect indicates that transport methods are not notified of disconnect.</param>
-
-            // Ensure we don't set ignoringMessages to true after calling errorFunc, because we
-            // might call connect in connection.reconnecting which can run synchronously.
-            ignoringMessages = true;
             if (!soft) {
-                $.each(maskData, function (_, data) {
-                    $.each(data.onError, function (_, errorFunc) {
-                        errorFunc();
-                    });
-                });
+                for (var key in maskData) {
+                    var data = maskData[key];
+
+                    data.onError();
+                }
+            }
+            else {
+                ignoringMessages = true;
             }
         },
         connect: function () {
@@ -392,27 +358,14 @@
             that._events = {};
 
             that.addEventListener = function (name, event) {
-                var isError = name === "error",
-                    fn = function () {
-                        if (eventSourceData[id]) {
-                            if (isError) {
-                                delete eventSourceData[id];
-                                return event.apply(that, arguments);
-                            } else if (!ignoringMessages) {
-                                return event.apply(that, arguments);
-                            }
-                        }
-                    };
+                var fn = function () {
+                    if (!ignoringMessages) {
+                        return event.apply(this, arguments);
+                    }
+                };
 
                 that._events[name] = fn;
                 es.addEventListener(name, fn);
-
-                if (ignoringMessages && isError) {
-                    // We don't want to call the error listener synchronously
-                    setTimeout(function () {
-                        fn({ eventPhase: savedEventSource.CLOSED });
-                    }, 0);
-                }
             };
 
             that.close = function () {
@@ -424,9 +377,6 @@
             eventSourceData[id] = that;
         };
 
-        // Copy constants like CLOSED, CONNECTING and OPEN
-        $.extend(CustomEventSource, window.EventSource);
-
         window.EventSource = CustomEventSource;
     }
 
@@ -434,21 +384,20 @@
         disconnect: function (soft) {
             /// <summary>Disconnects the network so javascript transport methods are unable to communicate with a server.</summary>
             /// <param name="soft" type="Boolean">Whether the disconnect should be soft.  A soft disconnect indicates that transport methods are not notified of disconnect.</param>
-
-            // Ensure we don't set ignoringMessages to true after calling data._events.error,
-            // because we might call connect in connection.reconnecting which can run synchronously.
-            ignoringMessages = true;
             if (!soft) {
                 for (var key in eventSourceData) {
                     var data = eventSourceData[key];
 
-                    if (typeof data._events.error === "function") {
-                        data._events.error({ eventPhase: savedEventSource.CLOSED });
-                    }
+                    data._events.error.call(data, savedEventSource.CLOSED);
 
                     // Used to not trigger any methods from a resultant event source completion event.
+                    ignoringMessages = true;
                     data.close();
+                    ignoringMessages = false;
                 }
+            }
+            else {
+                ignoringMessages = true;
             }
         },
         connect: function () {

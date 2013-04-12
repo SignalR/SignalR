@@ -7,6 +7,11 @@
         webSocketIds = 0,
         ignoringMessages = false,
         fail = function (data) {
+            // Used to not trigger any methods from a resultant web socket completion event.
+            ignoringMessages = true;
+            data.close();
+            ignoringMessages = false;
+
             data.onclose({});
         };
 
@@ -33,6 +38,7 @@
 
             that.close = function () {
                 tryExecute(function () {
+                    delete webSocketData[id];
                     return ws.close();
                 });
             };
@@ -41,7 +47,7 @@
                 var args = arguments;
 
                 tryExecute(function () {
-                    if (!ignoringMessages && webSocketData[id]) {
+                    if (!ignoringMessages) {
                         return ws.send.apply(ws, args)
                     }
                     else {
@@ -66,25 +72,24 @@
                 }
 
                 ws.onopen = function () {
-                    if (!ignoringMessages && webSocketData[id]) {
+                    if (!ignoringMessages) {
                         return that.onopen.apply(that, arguments);
                     }
                 };
                 ws.onmessage = function () {
-                    if (!ignoringMessages && webSocketData[id]) {
+                    if (!ignoringMessages) {
                         return that.onmessage.apply(that, arguments);
                     }
                 };
                 ws.onclose = function () {
-                    if (webSocketData[id]) {
-                        delete webSocketData[id];
+                    if (!ignoringMessages) {
                         return that.onclose.apply(that, arguments);
                     }
+
+                    delete webSocketData[id];
                 };
 
-                if (ignoringMessages) {
-                    fail(that);
-                }
+                webSocketData[id] = that;
 
                 // Cycle through queued commands and execute them all
                 while(queued.length > 0) {
@@ -93,9 +98,6 @@
             }, 0);
         };
 
-        // Copy constants like CLOSED, CLOSING, CONNECTING and OPEN
-        $.extend(CustomWebSocket, window.WebSocket);
-
         window.WebSocket = CustomWebSocket;
     }
 
@@ -103,15 +105,15 @@
         disconnect: function (soft) {
             /// <summary>Disconnects the network so javascript transport methods are unable to communicate with a server.</summary>
             /// <param name="soft" type="Boolean">Whether the disconnect should be soft.  A soft disconnect indicates that transport methods are not notified of disconnect.</param>
-
-            // Ensure we don't set ignoringMessages to true after calling fail, because we 
-            // might call connect in connection.reconnecting which can run synchronously.
-            ignoringMessages = true;
             if (!soft) {
                 for (var key in webSocketData) {
-                    fail(webSocketData[key]);
-                    delete webSocketData[key];
+                    var data = webSocketData[key];
+
+                    fail(data);
                 }
+            }
+            else {
+                ignoringMessages = true;
             }
         },
         connect: function () {

@@ -104,7 +104,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
                     // Make sure we observe the exception
                     var ex = task.Exception.GetBaseException();
 
-                    connection.Trace(TraceLevels.Events, "Auto: Failed to connect to using transport {0}. {1}", transport.Name, ex);
+                    connection.Trace.WriteLine("Auto: Failed to connect to using transport {0}. {1}", transport.Name, ex);
 
                     // If that transport fails to initialize then fallback
                     var next = index + 1;

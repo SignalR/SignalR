@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Threading;
@@ -88,10 +89,11 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
             };
 
             return _httpClient.Post(url, connection.PrepareRequest, postData)
-                              .Then(response => response.ReadAsString())
-                              .Then(raw =>
+                              .Then(response =>
                               {
-                                  connection.Trace(TraceLevels.Messages, "OnMessage({0})", raw);
+                                  string raw = response.ReadAsString();
+
+                                  connection.Trace.WriteLine("OnMessage({0}, {1})", connection.ConnectionId, raw);
 
                                   if (!String.IsNullOrEmpty(raw))
                                   {
@@ -127,14 +129,14 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
                     {
                         // If there's an error making an http request set the reset event
                         ((ManualResetEvent)state).Set();
-                    },
+                    }, 
                     AbortResetEvent);
                 }
             }
 
             if (!AbortResetEvent.WaitOne(timeout))
             {
-                connection.Trace(TraceLevels.Events, "Abort never fired");
+                connection.Trace.WriteLine("Abort never fired (" + connection.ConnectionId + ")");
             }
         }
 

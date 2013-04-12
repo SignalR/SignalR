@@ -54,56 +54,9 @@ testUtilities.runWithAllTransports(function (transport) {
             connection.stop();
         };
     });
-
-    QUnit.asyncTimeoutTest(transport + " transport throws an error if protocol version is incorrect", testUtilities.defaultTestTimeout, function (end, assert, testName) {
-        var connection = testUtilities.createConnection("multisend", $.noop, { ok: $.noop }, testName),
-            savedAjax = $.ajax;
-
-        function ajaxReplacement(url, settings) {
-            var savedSuccess;
-
-            if (!settings) {
-                settings = url;
-                url = settings.url;
-            }
-
-            // Check if it's the negotiate request
-            if (url.indexOf("/negotiate") >= 0) {
-                // Let the ajax request finish out
-                savedSuccess = settings.success;
-                settings.success = function (res) {
-                    res.ProtocolVersion = "1.1";
-                    savedSuccess.apply(this, arguments);
-                }
-            }
-
-            // Persist the request through to the original ajax request
-            savedAjax.call(this, url, settings);
-        };
-
-        $.ajax = ajaxReplacement;
-        var errorFired = false;
-
-        connection.start({ transport: transport }).fail(function () {
-            assert.ok(errorFired, "Protocol version error thrown");
-            end();
-        });
-
-        connection.error(function (err) {
-            errorFired = true;
-            assert.equal(err, "You are using a version of the client that isn't compatible with the server. Client version 1.2, server version 1.1.",
-                "Protocol version error message thrown");
-        });
-
-        // Cleanup
-        return function () {
-            $.ajax = savedAjax;
-            connection.stop();
-        };
-    });
 });
 
-QUnit.module("Connection Facts", !window.document.commandLineTest);
+QUnit.module("Hub Proxy Facts", !window.document.commandLineTest);
 
 // Replacing window.onerror will not capture uncaught errors originating from inside an iframe
 testUtilities.runWithTransports(["longPolling", "serverSentEvents", "webSockets"], function (transport) {
@@ -129,6 +82,4 @@ testUtilities.runWithTransports(["longPolling", "serverSentEvents", "webSockets"
             connection.stop();
         };
     });
-
 });
-

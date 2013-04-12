@@ -15,22 +15,16 @@ namespace Microsoft.AspNet.SignalR.Stress
     [Export("MemoryHost", typeof(IRun))]
     public class MemoryHostRun : RunBase
     {
+        private readonly MemoryHost _host = new MemoryHost();
+
         [ImportingConstructor]
         public MemoryHostRun(RunData runData)
             : base(runData)
         {
             Transport = runData.Transport;
-            Host = new MemoryHost();
-        }
-
-        public virtual string Endpoint
-        {
-            get { return "echo"; }
         }
 
         public string Transport { get; private set; }
-
-        protected MemoryHost Host { get; private set; }
 
         public override void InitializePerformanceCounters()
         {
@@ -38,27 +32,26 @@ namespace Microsoft.AspNet.SignalR.Stress
 
         public override void Initialize()
         {
-            Host.Configure(ConfigureApp);
-            base.Initialize();
-        }
-
-        protected virtual void ConfigureApp(IAppBuilder app)
-        {
-            var config = new ConnectionConfiguration
+            _host.Configure(app =>
             {
-                Resolver = Resolver
-            };
+                var config = new ConnectionConfiguration
+                {
+                    Resolver = Resolver
+                };
 
-            app.MapConnection<StressConnection>(Endpoint, config);
+                app.MapConnection<StressConnection>("/echo", config);
 
-            config.Resolver.Register(typeof(IProtectedData), () => new EmptyProtectedData());
+                config.Resolver.Register(typeof(IProtectedData), () => new EmptyProtectedData());
+            });
+
+            base.Initialize();
         }
 
         public override void Dispose()
         {
             base.Dispose();
 
-            Host.Dispose();
+            _host.Dispose();
         }
 
         protected override IDisposable CreateReceiver(int connectionIndex)
@@ -69,7 +62,7 @@ namespace Microsoft.AspNet.SignalR.Stress
                 ThreadPool.QueueUserWorkItem(state =>
                 {
                     LongPollingLoop((string)state);
-                },
+                }, 
                 connectionId);
             }
             else
@@ -81,25 +74,25 @@ namespace Microsoft.AspNet.SignalR.Stress
             return new DisposableAction(state => Abort((string)state), connectionId);
         }
 
-        protected override Task Send(int senderIndex, string source)
+        protected override Task Send(int senderIndex)
         {
             return ProcessSendRequest(senderIndex.ToString(), Payload);
         }
 
         private Task ProcessRequest(string connectionToken)
         {
-            return Host.Get("http://foo/" + Endpoint + "/connect?transport=" + Transport + "&connectionToken=" + connectionToken, disableWrites: true);
+            return _host.Get("http://foo/echo/connect?transport=" + Transport + "&connectionToken=" + connectionToken, disableWrites: true);
         }
 
         private Task ProcessSendRequest(string connectionToken, string data)
         {
             var postData = new Dictionary<string, string> { { "data", data } };
-            return Host.Post("http://foo/" + Endpoint + "/send?transport=" + Transport + "&connectionToken=" + connectionToken, postData);
+            return _host.Post("http://foo/echo/send?transport=" + Transport + "&connectionToken=" + connectionToken, postData);
         }
 
         private Task Abort(string connectionToken)
         {
-            return Host.Post("http://foo/" + Endpoint + "/abort?transport=" + Transport + "&connectionToken=" + connectionToken, null);
+            return _host.Post("http://foo/echo/abort?transport=" + Transport + "&connectionToken=" + connectionToken, null);
         }
 
         private void LongPollingLoop(string connectionId)

@@ -1,20 +1,15 @@
 using System;
-using System.Collections.Generic;
 using System.Configuration;
 using System.Diagnostics;
 using System.IO;
-using System.Security.Claims;
 using System.Threading.Tasks;
 using System.Web;
 using System.Web.Routing;
-using Owin;
 
 [assembly: PreApplicationStartMethod(typeof(Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure.IIS.InitializeIISHost), "Start")]
 
 namespace Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure.IIS
 {
-    using AppFunc = System.Func<System.Collections.Generic.IDictionary<string, object>, System.Threading.Tasks.Task>;
-
     public static class InitializeIISHost
     {
         public static void Start()
@@ -52,14 +47,13 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure.IIS
                 EnableDetailedErrors = true
             };
 
-            RouteTable.Routes.MapHubs("signalr.hubs2", "signalr2/test", new HubConfiguration(), _ => { });
+            RouteTable.Routes.MapHubs("signalr.hubs2", "signalr2/test", new HubConfiguration());
             RouteTable.Routes.MapHubs(config);
 
             RouteTable.Routes.MapConnection<MyBadConnection>("errors-are-fun", "ErrorsAreFun");
             RouteTable.Routes.MapConnection<MyGroupEchoConnection>("group-echo", "group-echo");
             RouteTable.Routes.MapConnection<MySendingConnection>("multisend", "multisend", new ConnectionConfiguration { EnableCrossDomain = true });
             RouteTable.Routes.MapConnection<MyReconnect>("my-reconnect", "my-reconnect");
-            RouteTable.Routes.MapConnection<ExamineHeadersConnection>("examine-request", "examine-request");
             RouteTable.Routes.MapConnection<MyGroupConnection>("groups", "groups");
             RouteTable.Routes.MapConnection<MyRejoinGroupsConnection>("rejoin-groups", "rejoin-groups");
             RouteTable.Routes.MapConnection<FilteredConnection>("filter", "filter");
@@ -85,31 +79,6 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure.IIS
             Trace.TraceError("Unobserved task exception: " + e.Exception.GetBaseException());
 
             e.SetObserved();
-        }
-
-        private static void Middleware(IAppBuilder app)
-        {
-            Func<AppFunc, AppFunc> middleware = (next) =>
-            {
-                return env =>
-                {
-                    var headers = (IDictionary<string, string[]>)env["owin.RequestHeaders"];
-                    string[] username;
-                    headers.TryGetValue("username", out username);
-                    var authenticated = (username[0] == "john") ? "true" : "false";
-
-                    var claims = new List<Claim>
-                    {
-                        new Claim(ClaimTypes.Authentication, authenticated)
-                    };
-
-                    var claimsIdentity = new ClaimsIdentity(claims);
-                    env["server.User"] = new ClaimsPrincipal(claimsIdentity);
-                    return next(env);
-                };
-            };
-
-            app.Use(middleware);
         }
     }
 }

@@ -60,11 +60,6 @@ namespace Microsoft.AspNet.SignalR.WebSockets
                     // loop until an error occurs or we see EOF
                     receiveResult = await webSocket.ReceiveAsync(arraySegment, disconnectToken).ConfigureAwait(continueOnCapturedContext: false);
 
-                    if (receiveResult.MessageType == WebSocketMessageType.Close)
-                    {
-                        return WebSocketMessage.CloseMessage;
-                    }
-
                     if (receiveResult.MessageType != originalMessageType)
                     {
                         throw new InvalidOperationException("Incorrect message type");

@@ -2,7 +2,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Collections.Specialized;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Net;
@@ -11,9 +10,6 @@ using Microsoft.AspNet.SignalR.Client.Http;
 using Microsoft.AspNet.SignalR.Client.Transports;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-#if (NET4 || NET45)
-using System.Security.Cryptography.X509Certificates;
-#endif
 
 namespace Microsoft.AspNet.SignalR.Client
 {
@@ -32,9 +28,9 @@ namespace Microsoft.AspNet.SignalR.Client
 
         bool ChangeState(ConnectionState oldState, ConnectionState newState);
 
-        IDictionary<string, string> Headers { get; }
         ICredentials Credentials { get; set; }
         CookieContainer CookieContainer { get; set; }
+        TextWriter Trace { get; }
         JsonSerializer JsonSerializer { get; }
 
         [SuppressMessage("Microsoft.Naming", "CA1716:IdentifiersShouldNotMatchKeywords", MessageId = "Stop", Justification = "Works in VB.NET.")]
@@ -49,9 +45,5 @@ namespace Microsoft.AspNet.SignalR.Client
         void OnConnectionSlow();
         void PrepareRequest(IRequest request);
         void UpdateLastKeepAlive();
-#if (NET4 || NET45)
-        void AddClientCertificate(X509Certificate certificate);
-#endif
-        void Trace(TraceLevels level, string format, params object[] args);
     }
 }

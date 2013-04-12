@@ -15,7 +15,6 @@
 
 *.cs text=auto diff=csharp 
 *.vb text=auto
-*.resx text=auto
 *.c text=auto
 *.cpp text=auto
 *.cxx text=auto

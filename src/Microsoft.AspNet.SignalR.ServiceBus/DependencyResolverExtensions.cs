@@ -9,30 +9,28 @@ namespace Microsoft.AspNet.SignalR
     public static class DependencyResolverExtensions
     {
         /// <summary>
-        /// Use Windows Azure Service Bus as the messaging backplane for scaling out of ASP.NET SignalR applications in a web farm.
+        /// Use the sErviceBus backplane for SignalR.
         /// </summary>
         /// <param name="resolver">The dependency resolver.</param>
-        /// <param name="connectionString">The Service Bus connection string to use.</param>
-        /// <param name="topicPrefix">The topic prefix to use. Typically represents the app name. This must be consistent between all nodes in the web farm.</param>
+        /// <param name="connectionString">The connection string</param>
+        /// <param name="topicPrefix">The topic prefix to use. Typically represents the app name.</param>
         /// <returns>The dependency resolver</returns>
-        /// <remarks>Note: Only Windows Azure Service Bus is supported. Service Bus for Windows Server (on-premise) is not supported.</remarks>
         public static IDependencyResolver UseServiceBus(this IDependencyResolver resolver, string connectionString, string topicPrefix)
         {
-            var config = new ServiceBusScaleoutConfiguration(connectionString, topicPrefix);
-
-            return UseServiceBus(resolver, config);
+            return UseServiceBus(resolver, connectionString, topicPrefix, 1);
         }
 
         /// <summary>
-        /// Use Windows Azure Service Bus as the messaging backplane for scaling out of ASP.NET SignalR applications in a web farm.
+        /// Use the Redis backplane for SignalR.
         /// </summary>
         /// <param name="resolver">The dependency resolver.</param>
-        /// <param name="configuration">The Service Bus scale-out configuration options.</param>
+        /// <param name="connectionString">The connection string</param>
+        /// <param name="topicPrefix">The topic prefix to use. Typically represents the app name.</param>
+        /// <param name="numberOfTopics">The number of topics to use.</param>
         /// <returns>The dependency resolver</returns>
-        /// <remarks>Note: Only Windows Azure Service Bus is supported. Service Bus for Windows Server (on-premise) is not supported.</remarks>
-        public static IDependencyResolver UseServiceBus(this IDependencyResolver resolver, ServiceBusScaleoutConfiguration configuration)
+        public static IDependencyResolver UseServiceBus(this IDependencyResolver resolver, string connectionString, string topicPrefix, int numberOfTopics)
         {
-            var bus = new Lazy<ServiceBusMessageBus>(() => new ServiceBusMessageBus(resolver, configuration));
+            var bus = new Lazy<ServiceBusMessageBus>(() => new ServiceBusMessageBus(connectionString, topicPrefix, numberOfTopics, resolver));
             resolver.Register(typeof(IMessageBus), () => bus.Value);
 
             return resolver;

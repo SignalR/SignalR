@@ -6,15 +6,13 @@ namespace Microsoft.AspNet.SignalR.Messaging
 {
     public class LocalEventKeyInfo
     {
-        public LocalEventKeyInfo(string key, ulong id, MessageStore<Message> store)
+        public LocalEventKeyInfo()
         {
-            Key = key;
-            Id = id;
-            MessageStore = store;
+            MinLocal = Int32.MaxValue;
         }
 
-        public string Key { get; private set; }
-        public ulong Id { get; private set; }
-        public MessageStore<Message> MessageStore { get; private set; }
+        public MessageStore<Message> Store { get; set; }
+        public ulong MinLocal { get; set; }
+        public int Count { get; set; }
     }
 }

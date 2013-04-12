@@ -26,7 +26,6 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
                 messages[i].WriteTo(ms);
             }
 
-            ms.Seek(0, SeekOrigin.Begin);
             return ms;
         }
 

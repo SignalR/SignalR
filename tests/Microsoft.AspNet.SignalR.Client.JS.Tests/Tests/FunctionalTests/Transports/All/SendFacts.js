@@ -20,20 +20,4 @@ testUtilities.runWithAllTransports(function (transport) {
             connection.stop();
         };
     });
-
-    QUnit.asyncTimeoutTest(transport + " can transmit primitive types correctly ", testUtilities.defaultTestTimeout, function (end, assert, testName) {
-        var connection = testUtilities.createConnection("multisend", end, assert, testName);
-
-        connection.received(function (data) {
-            assert.equal(typeof (data), "string", "Primitive type data received in the correct type at the client");
-            end();
-        });
-
-        connection.start({ transport: transport });
-
-        // Cleanup
-        return function () {
-            connection.stop();
-        };
-    });
 });

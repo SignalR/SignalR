@@ -176,58 +176,29 @@ namespace Microsoft.AspNet.SignalR
         }
 
         [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode", Justification = "This is a shared file")]
-        [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "Exceptions are set in a tcs")]
         public static Task ContinueWithNotComplete(this Task task, Action action)
         {
-            switch (task.Status)
+            if (task.IsCanceled)
             {
-                case TaskStatus.Faulted:
-                case TaskStatus.Canceled:
-                    try
+                action();
+            }
+            else if (task.IsFaulted)
+            {
+                action();
+            }
+            else
+            {
+                task.ContinueWith(t =>
+                {
+                    if (t.IsFaulted || t.IsCanceled)
                     {
                         action();
-                        return task;
                     }
-                    catch (Exception e)
-                    {
-                        return FromError(e);
-                    }
-                case TaskStatus.RanToCompletion:
-                    return task;
-                default:
-                    var tcs = new TaskCompletionSource<object>();
-
-                    task.ContinueWith(t =>
-                    {
-                        if (t.IsFaulted || t.IsCanceled)
-                        {
-                            try
-                            {
-                                action();
-
-                                if (t.IsFaulted)
-                                {
-                                    tcs.TrySetUnwrappedException(t.Exception);
-                                }
-                                else
-                                {
-                                    tcs.TrySetCanceled();
-                                }
-                            }
-                            catch (Exception e)
-                            {
-                                tcs.TrySetException(e);
-                            }
-                        }
-                        else
-                        {
-                            tcs.TrySetResult(null);
-                        }
-                    },
-                    TaskContinuationOptions.ExecuteSynchronously);
-
-                    return tcs.Task;
+                },
+                TaskContinuationOptions.ExecuteSynchronously | TaskContinuationOptions.NotOnRanToCompletion);
             }
+
+            return task;
         }
 
         [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode", Justification = "This is a shared file")]

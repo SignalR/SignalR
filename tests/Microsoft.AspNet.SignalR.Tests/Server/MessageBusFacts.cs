@@ -136,7 +136,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
         public void GettingTopicAfterNoSubscriptionsWhenGCStateSetsStateToHasSubscriptions()
         {
             var dr = new DefaultDependencyResolver();
-
+            
             using (var bus = new TestMessageBus(dr))
             {
                 var subscriber = new TestSubscriber(new[] { "key" });
@@ -200,12 +200,12 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
             dr.Register(typeof(IStringMinifier), () => passThroughMinfier);
             using (var bus = new MessageBus(dr))
             {
-                Func<TestSubscriber> subscriberFactory = () => new TestSubscriber(new[] { "key" });
+                var subscriber = new TestSubscriber(new[] { "key" });
                 var cd = new CountDownRange<int>(Enumerable.Range(2, 4));
                 IDisposable subscription = null;
 
                 // Pretend like we had an initial subscription
-                bus.Subscribe(subscriberFactory(), null, (result, state) => TaskAsyncHelper.True, 10, null)
+                bus.Subscribe(subscriber, null, (result, state) => TaskAsyncHelper.True, 10, null)
                    .Dispose();
 
                 bus.Publish("test", "key", "1").Wait();
@@ -215,7 +215,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
 
                 try
                 {
-                    subscription = bus.Subscribe(subscriberFactory(), "key,00000001", (result, state) =>
+                    subscription = bus.Subscribe(subscriber, "key,00000001", (result, state) =>
                     {
                         foreach (var m in result.GetMessages())
                         {
@@ -249,13 +249,13 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
             dr.Register(typeof(IStringMinifier), () => passThroughMinfier);
             using (var bus = new MessageBus(dr))
             {
-                Func<ISubscriber> subscriberFactory = () => new TestSubscriber(new[] { "key", "key2" });
+                var subscriber = new TestSubscriber(new[] { "key", "key2" });
                 var cdKey = new CountDownRange<int>(Enumerable.Range(2, 4));
                 var cdKey2 = new CountDownRange<int>(new[] { 1, 2, 10 });
                 IDisposable subscription = null;
 
                 // Pretend like we had an initial subscription
-                bus.Subscribe(subscriberFactory(), null, (result, state) => TaskAsyncHelper.True, 10, null)
+                bus.Subscribe(subscriber, null, (result, state) => TaskAsyncHelper.True, 10, null)
                     .Dispose();
 
                 // This simulates a reconnect
@@ -268,7 +268,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
 
                 try
                 {
-                    subscription = bus.Subscribe(subscriberFactory(), "key,00000001|key2,00000000", (result, state) =>
+                    subscription = bus.Subscribe(subscriber, "key,00000001|key2,00000000", (result, state) =>
                     {
                         foreach (var m in result.GetMessages())
                         {

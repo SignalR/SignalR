@@ -1,7 +1,10 @@
 ﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.md in the project root for license information.
 
 using System;
+using System.Data.SqlClient;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
+using System.IO;
 
 namespace Microsoft.AspNet.SignalR.SqlServer
 {
@@ -15,23 +18,27 @@ namespace Microsoft.AspNet.SignalR.SqlServer
         private readonly int _tableCount;
         private readonly TraceSource _trace;
 
+        private readonly Lazy<object> _initDummy;
+
         public SqlInstaller(string connectionString, string tableNamePrefix, int tableCount, TraceSource traceSource)
         {
             _connectionString = connectionString;
             _messagesTableNamePrefix = tableNamePrefix;
             _tableCount = tableCount;
+            _initDummy = new Lazy<object>(Install);
             _trace = traceSource;
         }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Security", "CA2100:Review SQL queries for security vulnerabilities", Justification = "Query doesn't come from user code")]
-        public void Install()
+        [SuppressMessage("Microsoft.Performance", "CA1804:RemoveUnusedLocals", MessageId = "dummy", Justification = "Need dummy variable to call _initDummy.Value.")]
+        public void EnsureInstalled()
+        {
+            var dummy = _initDummy.Value;
+        }
+
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Security", "CA2100:Review SQL queries for security vulnerabilities", Justification="Query doesn't come from user code")]
+        private object Install()
         {
             _trace.TraceInformation("Start installing SignalR SQL objects");
-
-            if (!IsSqlEditionSupported(_connectionString))
-            {
-                throw new PlatformNotSupportedException(Resources.Error_UnsupportedSqlEdition);
-            }
 
             var script = GetType().Assembly.StringResource("Microsoft.AspNet.SignalR.SqlServer.install.sql");
 
@@ -41,28 +48,19 @@ namespace Microsoft.AspNet.SignalR.SqlServer
             script = script.Replace("SET @MESSAGE_TABLE_COUNT = 3;", "SET @MESSAGE_TABLE_COUNT = " + _tableCount + ";");
             script = script.Replace("SET @MESSAGE_TABLE_NAME = 'Messages';", "SET @MESSAGE_TABLE_NAME = '" + _messagesTableNamePrefix + "';");
 
-            var operation = new DbOperation(_connectionString, script, _trace);
-            operation.ExecuteNonQuery();
+            using (var connection = new SqlConnection(_connectionString))
+            {
+                using (var command = connection.CreateCommand())
+                {
+                    command.CommandText = script;
+                    connection.Open();
+                    command.ExecuteNonQuery();
+                }
+            }
 
             _trace.TraceInformation("SignalR SQL objects installed");
-        }
 
-        private bool IsSqlEditionSupported(string connectionString)
-        {
-            var operation = new DbOperation(connectionString, "SELECT SERVERPROPERTY ( 'EngineEdition' )", _trace);
-            var edition = (int)operation.ExecuteScalar();
-
-            return edition >= SqlEngineEdition.Standard && edition <= SqlEngineEdition.Express;
-        }
-
-        private static class SqlEngineEdition
-        {
-            // See article http://technet.microsoft.com/en-us/library/ms174396.aspx for details on EngineEdition
-            public const int Personal = 1;
-            public const int Standard = 2;
-            public const int Enterprise = 3;
-            public const int Express = 4;
-            public const int SqlAzure = 5;
+            return new object();
         }
     }
 }

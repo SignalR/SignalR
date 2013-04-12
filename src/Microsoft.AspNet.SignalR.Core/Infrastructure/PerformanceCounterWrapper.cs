@@ -1,6 +1,5 @@
 ﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.md in the project root for license information.
 
-using System;
 using System.Diagnostics;
 
 namespace Microsoft.AspNet.SignalR.Infrastructure
@@ -50,14 +49,7 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
 
         public void RemoveInstance()
         {
-            try
-            {
-                _counter.RemoveInstance();
-            }
-            catch(NotImplementedException)
-            {
-            	// This happens on mono
-            }
+            _counter.RemoveInstance();
         }
 
         public CounterSample NextSample()

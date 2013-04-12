@@ -94,13 +94,6 @@ namespace Microsoft.AspNet.SignalR.Hubs
                     // Execute all hub level authorizers and short circuit if ANY deny authorization.
                     if (classLevelAuthorizers.All(a => a.AuthorizeHubMethodInvocation(context, appliesToMethod: false)))
                     {
-                        // If the MethodDescriptor is a NullMethodDescriptor, we don't want to cache it since a new one is created
-                        // for each invocation with an invalid method name. #1801
-                        if (context.MethodDescriptor is NullMethodDescriptor)
-                        {
-                            return invoke(context);
-                        }
-
                         // Get method attributes implementing IAuthorizeHubMethodInvocation from the cache
                         // If the attributes do not exist in the cache, retrieve them from the MethodDescriptor and add them to the cache
                         var methodLevelAuthorizers = _methodInvocationAuthorizersCache.GetOrAdd(context.MethodDescriptor,

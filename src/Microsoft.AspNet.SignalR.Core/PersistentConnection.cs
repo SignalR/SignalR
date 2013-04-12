@@ -254,14 +254,14 @@ namespace Microsoft.AspNet.SignalR
 
             if (!String.Equals(tokenUserName, userName, StringComparison.OrdinalIgnoreCase))
             {
-                throw new InvalidOperationException(String.Format(CultureInfo.CurrentCulture, Resources.Error_UnrecognizedUserIdentity));
+                throw new InvalidOperationException(String.Format(CultureInfo.CurrentCulture, Resources.Error_ConnectionIdIncorrectFormat));
             }
 
             return connectionId;
         }
 
         [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "We want to prevent any failures in unprotecting")]
-        internal IList<string> VerifyGroups(HostContext context, string connectionId)
+        internal IList<string> VerifyGroups(HostContext context)
         {
             string groupsToken = context.Request.QueryString["groupsToken"];
 
@@ -272,28 +272,18 @@ namespace Microsoft.AspNet.SignalR
                 return ListHelper<string>.Empty;
             }
 
-            string unprotectedGroupsToken = null;
+            string groupsValue = null;
 
             try
             {
-                unprotectedGroupsToken = ProtectedData.Unprotect(groupsToken, Purposes.Groups);
+                groupsValue = ProtectedData.Unprotect(groupsToken, Purposes.Groups);
             }
             catch (Exception ex)
             {
                 Trace.TraceInformation("Failed to process groupsToken {0}: {1}", groupsToken, ex);
             }
 
-            if (String.IsNullOrEmpty(unprotectedGroupsToken))
-            {
-                return ListHelper<string>.Empty;
-            }
-
-            var tokens = unprotectedGroupsToken.Split(SplitChars, 2);
-
-            string groupConnectionId = tokens[0];
-            string groupsValue = tokens.Length > 1 ? tokens[1] : String.Empty;
-
-            if (!String.Equals(groupConnectionId, connectionId, StringComparison.OrdinalIgnoreCase))
+            if (String.IsNullOrEmpty(groupsValue))
             {
                 return ListHelper<string>.Empty;
             }
@@ -303,7 +293,7 @@ namespace Microsoft.AspNet.SignalR
 
         private IList<string> AppendGroupPrefixes(HostContext context, string connectionId)
         {
-            return (from g in OnRejoiningGroups(context.Request, VerifyGroups(context, connectionId), connectionId)
+            return (from g in OnRejoiningGroups(context.Request, VerifyGroups(context), connectionId)
                     select GroupPrefix + g).ToList();
         }
 

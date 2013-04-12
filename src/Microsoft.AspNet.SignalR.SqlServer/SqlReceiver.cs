@@ -2,10 +2,8 @@
 
 using System;
 using System.Collections.Generic;
-using System.Data;
 using System.Data.SqlClient;
 using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Threading;
 using System.Threading.Tasks;
@@ -17,140 +15,263 @@ namespace Microsoft.AspNet.SignalR.SqlServer
     {
         private readonly string _connectionString;
         private readonly string _tableName;
-        private readonly Action _onQuery;
-        private readonly Action<ulong, IList<Message>> _onReceived;
-        private readonly Action<Exception> _onError;
+        private readonly string _streamId = "0";
+        private readonly Func<string, ulong, IList<Message>, Task> _onReceive;
         private readonly TraceSource _trace;
-        private readonly string _tracePrefix;
-        private readonly IDbProviderFactory _dbProviderFactory;
+        private readonly int[] _retryDelays = new[] { 0, 0, 0, 10, 10, 10, 50, 50, 100, 100, 200, 200, 200, 200, 1000, 1500, 3000 };
+        private readonly int _retryErrorDelay = 5000;
+        private readonly bool _queryNotificationsSupported;
 
-        private long? _lastPayloadId = null;
-        private string _maxIdSql = "SELECT [PayloadId] FROM [{0}].[{1}_Id]";
-        private string _selectSql = "SELECT [PayloadId], [Payload] FROM [{0}].[{1}] WHERE [PayloadId] > @PayloadId";
-        private ObservableDbOperation _dbOperation;
-        private volatile bool _disposed;
+        private string _selectSql = "SELECT [PayloadId], [Payload] FROM [" + SqlMessageBus.SchemaName + "].[{0}] WHERE [PayloadId] > @PayloadId";
+        private string _maxIdSql = "SELECT COALESCE(MAX([PayloadId]), 0) FROM [" + SqlMessageBus.SchemaName + "].[{0}]";
+        private long _lastPayloadId = 0;
+        private SqlCommand _receiveCommand;
 
-        public SqlReceiver(string connectionString, string tableName, Action onQuery, Action<ulong, IList<Message>> onReceived, Action<Exception> onError, TraceSource traceSource, string tracePrefix, IDbProviderFactory dbProviderFactory)
+        public SqlReceiver(string connectionString, string tableName, Func<string, ulong, IList<Message>, Task> onReceive, TraceSource traceSource)
         {
             _connectionString = connectionString;
             _tableName = tableName;
-            _tracePrefix = tracePrefix;
-            _onQuery = onQuery;
-            _onReceived = onReceived;
-            _onError = onError;
+            _onReceive = onReceive;
             _trace = traceSource;
-            _dbProviderFactory = dbProviderFactory;
 
-            _maxIdSql = String.Format(CultureInfo.InvariantCulture, _maxIdSql, SqlMessageBus.SchemaName, _tableName);
-            _selectSql = String.Format(CultureInfo.InvariantCulture, _selectSql, SqlMessageBus.SchemaName, _tableName);
-        }
+            _selectSql = String.Format(CultureInfo.InvariantCulture, _selectSql, _tableName);
+            _maxIdSql = String.Format(CultureInfo.InvariantCulture, _maxIdSql, _tableName);
 
-        public Task StartReceiving()
-        {
-            var tcs = new TaskCompletionSource<object>();
-
-            ThreadPool.QueueUserWorkItem(Receive, tcs);
-
-            return tcs.Task;
+            _queryNotificationsSupported = InitializeSqlDependency();
+            InitializeLastPayloadId();
+            ThreadPool.QueueUserWorkItem(Receive);
         }
 
         public void Dispose()
         {
-            lock (this)
-            {
-                if (_dbOperation != null)
-                {
-                    _dbOperation.Dispose();
-                }
-                _disposed = true;
-            }
+            Dispose(true);
         }
 
-        private void OnQuery()
+        protected virtual void Dispose(bool disposing)
         {
-            if (_onQuery != null)
+            if (disposing)
             {
-                _onQuery();
+                if (_queryNotificationsSupported)
+                {
+                    SqlDependency.Stop(_connectionString);
+                }
             }
         }
 
-        [SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope", Justification = "Class level variable"),
-         SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "On a background thread with explicit error processing")]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Security", "CA2100:Review SQL queries for security vulnerabilities", Justification = "Reviewed")]
+        private void InitializeLastPayloadId()
+        {
+            using (var connection = new SqlConnection(_connectionString))
+            {
+                connection.Open();
+                using (var cmd = new SqlCommand(_maxIdSql, connection))
+                {
+                    var maxId = cmd.ExecuteScalar();
+                    _lastPayloadId = (long)maxId;
+                }
+            }
+        }
+
         private void Receive(object state)
         {
-            var tcs = (TaskCompletionSource<object>)state;
-
-            if (!_lastPayloadId.HasValue)
+            for (var i = 0; i < _retryDelays.Length; i++)
             {
-                var lastPayloadIdOperation = new DbOperation(_connectionString, _maxIdSql, _trace)
+                _trace.TraceVerbose("Checking for new messages, try {0} of {1}", i + 1, _retryDelays.Length);
+
+                // Look for new messages until we find some or retry expires
+                bool foundMessages = false;
+                try
                 {
-                    TracePrefix = _tracePrefix
-                };
+                    foundMessages = CheckForMessages();
+                }
+                catch (SqlException ex)
+                {
+                    // TODO: Call into base to start buffering here and kick off BG thread
+                    //       to start pinging SQL server to detect when it comes back online
+
+                    _trace.TraceError("SQL error: {0}", ex);
+                    _trace.TraceVerbose("Waiting {0}ms before trying to get messages again.", _retryErrorDelay);
+
+                    Thread.Sleep(_retryErrorDelay);
+
+                    // Push to a new thread as this is recursive
+                    ThreadPool.QueueUserWorkItem(Receive);
+                    return;
+                }
+
+                if (foundMessages)
+                {
+                    // We found messages so start the loop again
+                    _trace.TraceVerbose("Messages received, reset retry counter to 0");
+
+                    i = -1; // loop will increment this to 0
+                    continue;
+                }
+                else
+                {
+                    _trace.TraceVerbose("No messages received");
+                }
+
+                var retryDelay = _retryDelays[i];
+                if (retryDelay > 0)
+                {
+                    _trace.TraceVerbose("Waiting {0}ms before checking for messages again", retryDelay);
+
+                    Thread.Sleep(retryDelay);
+                }
+
+                if (i == _retryDelays.Length - 1 && !_queryNotificationsSupported)
+                {
+                    // Just keep looping on the last retry delay as query notifications aren't supported
+                    i = _retryDelays.Length - 2;  // loop will increment this to Length - 1
+                }
+            }
+
+            // No messages found so set up query notification to callback when messages are available
+            _trace.TraceVerbose("Message checking max retries reached");
+
+            SetupQueryNotification();
+        }
+
+        private bool CheckForMessages()
+        {
+            using (var connection = new SqlConnection(_connectionString))
+            {
+                UpdateQueryCommand(connection);
+                connection.Open();
+                return ProcessReader(_receiveCommand.ExecuteReader()) > 0;
+            }
+        }
+
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1804:RemoveUnusedLocals", MessageId = "dummy", Justification = "Dummy value returned from lazy init routine.")]
+        private void SetupQueryNotification()
+        {
+            Debug.Assert(_queryNotificationsSupported, "The SQL notification listener has not been initialized or is not supported.");
+
+            _trace.TraceVerbose("Setting up SQL notification");
+
+            using (var connection = new SqlConnection(_connectionString))
+            {
+                UpdateQueryCommand(connection);
+
+                var sqlDependency = new SqlDependency(_receiveCommand);
+                sqlDependency.OnChange += (sender, e) =>
+                    {
+                        _trace.TraceInformation("SqlDependency.OnChanged fired: {0}", e.Info);
+
+                        _receiveCommand.Notification = null;
+
+                        if (e.Type == SqlNotificationType.Change)
+                        {
+                            Receive(null);
+                        }
+                        else
+                        {
+                            // If the e.Info value here is 'Invalid', ensure the query SQL meets the requirements
+                            // for query notifications at http://msdn.microsoft.com/en-US/library/ms181122.aspx
+                            _trace.TraceError("SQL notification subscription error: {0}", e.Info);
+
+                            // TODO: Do we need to be more paticular about the type of error here?
+                            Thread.Sleep(_retryErrorDelay);
+                            Receive(null);
+                        }
+                    };
 
                 try
                 {
-                    _lastPayloadId = (long?)lastPayloadIdOperation.ExecuteScalar();
-                    OnQuery();
+                    connection.Open();
+                    // Executing the query is required to set up the dependency
+                    ProcessReader(_receiveCommand.ExecuteReader());
 
-                    // Complete the StartReceiving task as we've successfully initialized the payload ID
-                    tcs.TrySetResult(null);
+                    _trace.TraceVerbose("SQL notification set up");
                 }
-                catch (Exception ex)
+                catch (SqlException ex)
                 {
-                    tcs.TrySetException(ex);
-                    return;
+                    // TODO: Call into base to start buffering here and kick off BG thread
+                    //       to start pinging SQL server to detect when it comes back online
+
+                    _trace.TraceError("SQL error: {0}", ex);
+                    _trace.TraceVerbose("Waiting {0}ms before trying to get messages again.", _retryErrorDelay);
+                    Thread.Sleep(_retryErrorDelay);
+
+                    // Push to a new thread as this is potentially recursive
+                    ThreadPool.QueueUserWorkItem(Receive);
                 }
             }
-
-            // NOTE: This is called from a BG thread so any uncaught exceptions will crash the process
-            lock (this)
-            {
-                if (_disposed)
-                {
-                    return;
-                }
-
-                var parameter = _dbProviderFactory.CreateParameter();
-                parameter.ParameterName = "PayloadId";
-                parameter.Value = _lastPayloadId.Value;
-
-                _dbOperation = new ObservableDbOperation(_connectionString, _selectSql, _trace, parameter)
-                {
-                    OnError = ex => _onError(ex),
-                    OnQuery = () => OnQuery(),
-                    TracePrefix = _tracePrefix
-                };
-            }
-
-            _dbOperation.ExecuteReaderWithUpdates((rdr, o) => ProcessRecord(rdr, o));
-
-            _trace.TraceWarning("{0}SqlReceiver.Receive returned", _tracePrefix);
         }
 
-        private void ProcessRecord(IDataRecord record, DbOperation dbOperation)
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Security", "CA2100:Review SQL queries for security vulnerabilities", Justification = "Reviewed")]
+        private void UpdateQueryCommand(SqlConnection connection)
         {
-            var id = record.GetInt64(0);
-            var payload = SqlPayload.FromBytes(record.GetBinary(1));
-
-            if (id != _lastPayloadId + 1)
+            if (_receiveCommand == null)
             {
-                _trace.TraceError("{0}Missed message(s) from SQL Server. Expected payload ID {1} but got {2}.", _tracePrefix, _lastPayloadId + 1, id);
+                _receiveCommand = connection.CreateCommand();
+                _receiveCommand.CommandText = _selectSql;
+            }
+            _receiveCommand.Connection = connection;
+            _receiveCommand.Parameters.Clear();
+            _receiveCommand.Parameters.AddWithValue("PayloadId", _lastPayloadId);
+        }
+
+        private int ProcessReader(SqlDataReader reader)
+        {
+            if (!reader.HasRows)
+            {
+                return 0;
             }
 
-            if (id <= _lastPayloadId)
+            var payloadCount = 0;
+            var messageCount = 0;
+            while (reader.Read())
             {
-                _trace.TraceInformation("{0}Duplicate message(s) or payload ID reset from SQL Server. Last payload ID {1}, this payload ID {2}", _tracePrefix, _lastPayloadId, id);
+                payloadCount++;
+                var id = reader.GetInt64(0);
+                var payload = SqlPayload.FromBytes(reader.GetSqlBinary(1).Value);
+
+                messageCount += payload.Messages.Count;
+
+                if (id != _lastPayloadId + 1)
+                {
+                    // TODO: This is not necessarily an error, identity columns can result in gaps in the sequence
+                    _trace.TraceError("Missed message(s) from SQL Server. Expected payload ID {0} but got {1}.", _lastPayloadId + 1, id);
+                }
+
+                if (id <= _lastPayloadId)
+                {
+                    _trace.TraceInformation("Duplicate message(s) or identity column reset from SQL Server. Last payload ID {0}, this payload ID {1}", _lastPayloadId, id);
+                }
+
+                _lastPayloadId = id;
+
+                // Pass to the underlying message bus
+                _onReceive(_streamId, (ulong)id, payload.Messages);
+
+                _trace.TraceVerbose("Payload {0} containing {1} message(s) received", id, payload.Messages.Count);
             }
 
-            _lastPayloadId = id;
+            _trace.TraceVerbose("{0} payloads processed, {1} message(s) received", payloadCount, messageCount);
+            return payloadCount;
+        }
 
-            // Update the Parameter with the new payload ID
-            dbOperation.Parameters[0].Value = _lastPayloadId;
+        private bool InitializeSqlDependency()
+        {
+            _trace.TraceVerbose("Starting SQL notification listener");
 
-            // Pass to the underlying message bus
-            _onReceived((ulong)id, payload.Messages);
+            bool result = false;
 
-            _trace.TraceVerbose("{0}Payload {1} containing {2} message(s) received", _tracePrefix, id, payload.Messages.Count);
+            try
+            {
+                SqlDependency.Start(_connectionString);
+                result = true;
+
+                _trace.TraceVerbose("SQL notification listener started");
+            }
+            catch (InvalidOperationException)
+            {
+                _trace.TraceInformation("SQL Service Broker is disabled, disabling query notifications");
+            }
+            
+            return result;
         }
     }
 }

@@ -56,30 +56,19 @@
       <Link>TaskAsyncHelper.cs</Link>
     </Compile>
     <Compile Include="AssemblyExtensions.cs" />
-    <Compile Include="DbProviderFactoryAdapter.cs" />
-    <Compile Include="DbProviderFactoryExtensions.cs" />
     <Compile Include="DependencyResolverExtensions.cs" />
-    <Compile Include="IDataParameterExtensions.cs" />
-    <Compile Include="IDataRecordExtensions.cs" />
-    <Compile Include="IDbBehavior.cs" />
-    <Compile Include="IDbCommandExtensions.cs" />
-    <Compile Include="IDbProviderFactory.cs" />
-    <Compile Include="ObservableDbOperation.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Resources.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
+    <Compile Include="SqlCommandExtensions.cs" />
     <Compile Include="SqlInstaller.cs" />
     <Compile Include="SqlMessageBus.cs" />
-    <Compile Include="DbOperation.cs" />
     <Compile Include="SqlPayload.cs" />
     <Compile Include="SqlReceiver.cs" />
-    <Compile Include="SqlScaleoutConfiguration.cs" />
     <Compile Include="SqlSender.cs" />
-    <Compile Include="SqlMessageBusException.cs" />
-    <Compile Include="SqlStream.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Microsoft.AspNet.SignalR.Core\Microsoft.AspNet.SignalR.Core.csproj">

@@ -21,7 +21,6 @@
     <ProductVersion>10.0.0</ProductVersion>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <TargetFrameworkProfile />
-    <SilverlightApplicationList>{1E14A334-4346-4C27-8D67-497632CF8974}|..\Microsoft.AspNet.SignalR.Client.Silverlight.Sample\Microsoft.AspNet.SignalR.Client.Silverlight.Sample.csproj|ClientBin|False</SilverlightApplicationList>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>True</DebugSymbols>
@@ -57,7 +56,7 @@
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="Microsoft.Owin.Host.SystemWeb, Version=1.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\packages\Microsoft.Owin.Host.SystemWeb.1.0.1\lib\net45\Microsoft.Owin.Host.SystemWeb.dll</HintPath>
+      <HintPath>..\..\packages\Microsoft.Owin.Host.SystemWeb.1.0.0\lib\net45\Microsoft.Owin.Host.SystemWeb.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.Web.Infrastructure, Version=1.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <Private>True</Private>
@@ -86,7 +85,6 @@
     <Reference Include="System.Xml.Linq" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="ClientBin\Microsoft.AspNet.SignalR.Client.Silverlight.Sample.xap" />
     <Content Include="Content\bg-body.jpg" />
     <Content Include="Content\bg.jpg" />
     <Content Include="Content\bootstrap-responsive.css" />
@@ -165,7 +163,6 @@
     <Content Include="Hubs\ShapeShare\ShapeShare.js" />
     <Content Include="Hubs\ShapeShare\index.htm" />
     <Content Include="Raw\Default.aspx" />
-    <Content Include="Raw\silverlight.html" />
     <Content Include="Raw\test\basic.htm" />
     <Content Include="Raw\crossdomain.htm" />
     <Content Include="Raw\eventSource.html" />
@@ -227,7 +224,6 @@
     </Compile>
     <Compile Include="Hubs\Auth\AuthHub.cs" />
     <Compile Include="Hubs\Auth\AdminAuthHub.cs" />
-    <Compile Include="Hubs\Auth\HeaderAuthHub.cs" />
     <Compile Include="Hubs\Auth\InheritAuthHub.cs" />
     <Compile Include="Hubs\Auth\IncomingAuthHub.cs" />
     <Compile Include="Hubs\Auth\UserAndRoleAuthHub.cs" />
@@ -249,7 +245,6 @@
       <DependentUpon>Default.aspx</DependentUpon>
     </Compile>
     <Compile Include="Hubs\ConnectDisconnect\Status.cs" />
-    <Compile Include="Hubs\Auth\AuthorizeClaimsAttribute.cs" />
     <Compile Include="Hubs\DemoHub\Default.aspx.cs">
       <DependentUpon>Default.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
