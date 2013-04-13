@@ -8,6 +8,7 @@ using Microsoft.AspNet.SignalR.Hosting;
 using Microsoft.AspNet.SignalR.Infrastructure;
 using Microsoft.AspNet.SignalR.Json;
 using Microsoft.AspNet.SignalR.Tracing;
+using Newtonsoft.Json;
 
 namespace Microsoft.AspNet.SignalR.Transports
 {
@@ -15,14 +16,14 @@ namespace Microsoft.AspNet.SignalR.Transports
     public abstract class ForeverTransport : TransportDisconnectBase, ITransport
     {
         private readonly IPerformanceCounterManager _counters;
-        private IJsonSerializer _jsonSerializer;
+        private JsonSerializer _jsonSerializer;
         private string _lastMessageId;
 
         private const int MaxMessages = 10;
 
         protected ForeverTransport(HostContext context, IDependencyResolver resolver)
             : this(context,
-                   resolver.Resolve<IJsonSerializer>(),
+                   resolver.Resolve<JsonSerializer>(),
                    resolver.Resolve<ITransportHeartbeat>(),
                    resolver.Resolve<IPerformanceCounterManager>(),
                    resolver.Resolve<ITraceManager>())
@@ -30,7 +31,7 @@ namespace Microsoft.AspNet.SignalR.Transports
         }
 
         protected ForeverTransport(HostContext context,
-                                   IJsonSerializer jsonSerializer,
+                                   JsonSerializer jsonSerializer,
                                    ITransportHeartbeat heartbeat,
                                    IPerformanceCounterManager performanceCounterWriter,
                                    ITraceManager traceManager)
@@ -53,7 +54,7 @@ namespace Microsoft.AspNet.SignalR.Transports
             }
         }
 
-        protected IJsonSerializer JsonSerializer
+        protected JsonSerializer JsonSerializer
         {
             get { return _jsonSerializer; }
         }

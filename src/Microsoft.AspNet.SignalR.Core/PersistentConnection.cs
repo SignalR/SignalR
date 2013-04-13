@@ -15,6 +15,7 @@ using Microsoft.AspNet.SignalR.Json;
 using Microsoft.AspNet.SignalR.Messaging;
 using Microsoft.AspNet.SignalR.Tracing;
 using Microsoft.AspNet.SignalR.Transports;
+using Newtonsoft.Json;
 
 namespace Microsoft.AspNet.SignalR
 {
@@ -49,7 +50,7 @@ namespace Microsoft.AspNet.SignalR
             }
 
             MessageBus = resolver.Resolve<IMessageBus>();
-            JsonSerializer = resolver.Resolve<IJsonSerializer>();
+            JsonSerializer = resolver.Resolve<JsonSerializer>();
             TraceManager = resolver.Resolve<ITraceManager>();
             Counters = resolver.Resolve<IPerformanceCounterManager>();
             AckHandler = resolver.Resolve<IAckHandler>();
@@ -79,7 +80,7 @@ namespace Microsoft.AspNet.SignalR
 
         protected IMessageBus MessageBus { get; private set; }
 
-        protected IJsonSerializer JsonSerializer { get; private set; }
+        protected JsonSerializer JsonSerializer { get; private set; }
 
         protected IAckHandler AckHandler { get; private set; }
 

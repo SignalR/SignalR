@@ -9,6 +9,7 @@ using Microsoft.AspNet.SignalR.Messaging;
 using Microsoft.AspNet.SignalR.Tracing;
 using Microsoft.AspNet.SignalR.Transports;
 using Moq;
+using Newtonsoft.Json;
 using Xunit;
 
 namespace Microsoft.AspNet.SignalR.Tests.Server.Transports
@@ -29,7 +30,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Server.Transports
             request.Setup(m => m.Url).Returns(new Uri("http://test/echo/send"));
             var counters = new Mock<IPerformanceCounterManager>();
             var heartBeat = new Mock<ITransportHeartbeat>();
-            var json = new JsonNetSerializer();
+            var json = JsonUtility.CreateDefaultSerializer();
             var hostContext = new HostContext(request.Object, null);
             var transportConnection = new Mock<ITransportConnection>();
             var traceManager = new Mock<ITraceManager>();
@@ -60,7 +61,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Server.Transports
             string abortedConnectionId = null;
             var counters = new Mock<IPerformanceCounterManager>();
             var heartBeat = new Mock<ITransportHeartbeat>();
-            var json = new JsonNetSerializer();
+            var json = JsonUtility.CreateDefaultSerializer();
             var hostContext = new HostContext(request.Object, null);
             var transportConnection = new Mock<ITransportConnection>();
             var traceManager = new Mock<ITraceManager>();
@@ -98,7 +99,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Server.Transports
             request.Setup(m => m.Url).Returns(new Uri("http://test/echo/connect"));
             var counters = new Mock<IPerformanceCounterManager>();
             var heartBeat = new Mock<ITransportHeartbeat>();
-            var json = new JsonNetSerializer();
+            var json = JsonUtility.CreateDefaultSerializer();
             var hostContext = new HostContext(request.Object, response.Object);
             var transportConnection = new Mock<ITransportConnection>();
             var traceManager = new Mock<ITraceManager>();
@@ -157,7 +158,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Server.Transports
             request.Setup(m => m.Url).Returns(new Uri("http://test/echo/connect"));
             var counters = new Mock<IPerformanceCounterManager>();
             var heartBeat = new Mock<ITransportHeartbeat>();
-            var json = new JsonNetSerializer();
+            var json = JsonUtility.CreateDefaultSerializer();
             var hostContext = new HostContext(request.Object, response.Object);
             var transportConnection = new Mock<ITransportConnection>();
             var traceManager = new Mock<ITraceManager>();
@@ -218,7 +219,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Server.Transports
             request.Setup(m => m.Url).Returns(new Uri("http://test/echo/connect"));
             var counters = new Mock<IPerformanceCounterManager>();
             var heartBeat = new Mock<ITransportHeartbeat>();
-            var json = new JsonNetSerializer();
+            var json = JsonUtility.CreateDefaultSerializer();
             var hostContext = new HostContext(request.Object, response.Object);
             var transportConnection = new Mock<ITransportConnection>();
             var traceManager = new Mock<ITraceManager>();
@@ -282,7 +283,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Server.Transports
             request.Setup(m => m.Url).Returns(new Uri("http://test/echo/connect"));
             var counters = new Mock<IPerformanceCounterManager>();
             var heartBeat = new Mock<ITransportHeartbeat>();
-            var json = new JsonNetSerializer();
+            var json = JsonUtility.CreateDefaultSerializer();
             var hostContext = new HostContext(request.Object, response.Object);
             var transportConnection = new Mock<ITransportConnection>();
             var traceManager = new Mock<ITraceManager>();
@@ -350,7 +351,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Server.Transports
             request.Setup(m => m.Url).Returns(new Uri("http://test/echo/connect"));
             var counters = new Mock<IPerformanceCounterManager>();
             var heartBeat = new Mock<ITransportHeartbeat>();
-            var json = new JsonNetSerializer();
+            var json = JsonUtility.CreateDefaultSerializer();
             var hostContext = new HostContext(request.Object, response.Object);
             var transportConnection = new Mock<ITransportConnection>();
             var traceManager = new Mock<ITraceManager>();

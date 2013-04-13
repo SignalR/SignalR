@@ -192,7 +192,6 @@
     <Compile Include="Hubs\DefaultHubActivator.cs" />
     <Compile Include="Hubs\HubNameAttribute.cs" />
     <Compile Include="Hubs\IHub.cs" />
-    <Compile Include="Json\IJsonSerializer.cs" />
     <Compile Include="Tracing\ITraceManager.cs" />
     <Compile Include="DependencyResolverExtensions.cs" />
     <Compile Include="Hubs\ReflectionHelper.cs" />
@@ -215,7 +214,6 @@
     <Compile Include="Tracing\TraceSourceExtensions.cs" />
     <Compile Include="Transports\TransportConnectionExtensions.cs" />
     <Compile Include="Transports\ITransportConnection.cs" />
-    <Compile Include="Json\JsonNetSerializer.cs" />
     <Compile Include="Json\JsonUtility.cs" />
     <Compile Include="GroupManager.cs" />
     <Compile Include="Infrastructure\ServerCommand.cs" />

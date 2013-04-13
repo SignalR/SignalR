@@ -13,13 +13,14 @@ using Microsoft.AspNet.SignalR.Json;
 using Microsoft.AspNet.SignalR.Messaging;
 using Microsoft.AspNet.SignalR.Tracing;
 using Microsoft.AspNet.SignalR.Transports;
+using Newtonsoft.Json;
 
 namespace Microsoft.AspNet.SignalR.Infrastructure
 {
     public class Connection : IConnection, ITransportConnection, ISubscriber
     {
         private readonly IMessageBus _bus;
-        private readonly IJsonSerializer _serializer;
+        private readonly JsonSerializer _serializer;
         private readonly string _baseSignal;
         private readonly string _connectionId;
         private readonly IList<string> _signals;
@@ -33,7 +34,7 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
         private readonly IProtectedData _protectedData;
 
         public Connection(IMessageBus newMessageBus,
-                          IJsonSerializer jsonSerializer,
+                          JsonSerializer jsonSerializer,
                           string baseSignal,
                           string connectionId,
                           IList<string> signals,
@@ -292,7 +293,7 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
 
         internal static void PopulateResponseState(PersistentResponse response,
                                                    DiffSet<string> groupSet,
-                                                   IJsonSerializer serializer,
+                                                   JsonSerializer serializer,
                                                    IProtectedData protectedData,
                                                    string connectionId)
         {
