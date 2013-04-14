@@ -103,7 +103,7 @@ namespace Microsoft.AspNet.SignalR.WebSockets
                 context.Handler._isClosed = true;
                 return context.Handler.WebSocket.CloseOutputAsync(WebSocketCloseStatus.NormalClosure, "", CancellationToken.None);
             },
-            closeContext);
+            closeContext).Catch();
         }
 
         public int MaxIncomingMessageSize
