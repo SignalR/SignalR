@@ -86,8 +86,21 @@
             <h3>Scenarios</h3>
             <p>Samples to validate system behavior while doing live modifications on network connectivity and scaleout</p>
             <p><a class="btn" href="Hubs/Test/">View sample &raquo;</a></p>
+            
+            <h3>Hub Connection API</h3>
+            <p>A sample that demonstrates Hub Connection API including starting and stopping, sending and receiving messages, and managing groups.</p>
+            <p><a class="btn" href="Hubs/HubConnectionAPI/">View sample &raquo;</a></p>
         </div>
     </div>
     
+    <div class="row">
+         <div class="span4">
+            <h3>Messages Loops</h3>
+            <p>A sample that demonstrates messages loops where client call the server method to broadcast message after the client successfully call the server method, and show missing and dup messages if happens.</p>
+            <p><a class="btn" href="Hubs/MesssagesLoops/">View sample &raquo;</a></p>
+        </div>
+        
+    </div>
+
     <div class="clear"></div>
 </asp:Content>
