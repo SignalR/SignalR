@@ -115,6 +115,44 @@ testUtilities.runWithAllTransports(function (transport) {
         };
     });
 
+    QUnit.asyncTimeoutTest(transport + " transport appends /reconnect to reconnect requests.", testUtilities.defaultTestTimeout, function (end, assert, testName) {
+        var connection = testUtilities.createHubConnection(end, assert, testName),
+        savedGetUrl = $.connection.transports._logic.getUrl,
+        getUrlCalled = false;
+
+        connection.reconnected(function () {
+            assert.ok(getUrlCalled, "Successfully reconnected");
+            end();
+        });
+
+        connection.start({ transport: transport }).done(function () {
+            // FIX: The longPolling transport currently needs to receive a message with a message ID before it can "reconnect"
+            // Issue #1700
+            if (transport === "longPolling") {
+                connection.messageId = connection.messageId || "";
+            }
+
+            $.connection.transports._logic.getUrl = function () {
+                var url = savedGetUrl.apply($.connection.transports._logic, arguments),
+                    urlWithoutQS = url.split("?", 1)[0];
+
+                getUrlCalled = true;
+                assert.ok(urlWithoutQS.match(/\/reconnect$/), "URL ends with reconnect");
+                return url;
+            };
+
+            $.network.disconnect();
+            $.network.connect();
+        });
+
+        // Cleanup
+        return function () {
+            $.connection.transports._logic.getUrl = savedGetUrl;
+            $.network.connect();
+            connection.stop();
+        };
+    });
+
     QUnit.asyncTimeoutTest(transport + " transport supports multiple simultaneous reconnecting connections.", testUtilities.defaultTestTimeout, function (end, assert, testName) {
         var numConnections = 2,
             connections = [],
