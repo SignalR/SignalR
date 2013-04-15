@@ -93,7 +93,7 @@
          <div class="span4">
             <h3>Messages Loops</h3>
             <p>A sample that demonstrates messages loops where client call the server method to broadcast message after the client successfully call the server method, and show missing and dup messages if happens.</p>
-            <p><a class="btn" href="Hubs/MesssagesLoops/">View sample &raquo;</a></p>
+            <p><a class="btn" href="Hubs/MessagesLoops/">View sample &raquo;</a></p>
         </div>
         
     </div>

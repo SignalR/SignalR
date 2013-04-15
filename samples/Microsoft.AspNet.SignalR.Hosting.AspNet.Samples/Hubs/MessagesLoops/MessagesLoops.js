@@ -1,7 +1,7 @@
 ﻿/// <reference path="../../Scripts/jquery-1.8.2.js" />
 $(function () {
     "use strict";
-    var myHub = $.connection.messagegsLoops;
+    var myHub = $.connection.messagesLoops;
     $.connection.hub.logging = true;
 
     var start = function () {          
