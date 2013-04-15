@@ -183,10 +183,10 @@
                         // This will only ever pass after an error has occured via the poll ajax procedure.
                         if (reconnecting && raiseReconnect === true) {
                             // We wait to reconnect depending on how many times we've failed to reconnect.
-                            // This is essentially a heuristic that will progressively increase in wait time before
+                            // This is essentially a heuristic that will exponentially increase in wait time before
                             // triggering reconnected.  This depends on the "error" handler of Poll to cancel this 
                             // timeout if it triggers before the Reconnected event fires.
-                            reconnectTimeoutId = window.setTimeout(function () { fireReconnected(instance); }, 1000 * reconnectErrors);
+                            reconnectTimeoutId = window.setTimeout(function () { fireReconnected(instance); }, 1000 * (Math.pow(2, reconnectErrors) - 1));
                         }
                     }(connection));
 
