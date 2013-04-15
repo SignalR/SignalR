@@ -83,8 +83,8 @@
             <p><a class="btn" href="Hubs/RealtimeBroadcast/">View sample &raquo;</a></p>
         </div>
         <div class="span4">
-            <h3>HubClients APIs</h3>
-            <p>A sample that demonstrates Hub.Clients APIs including starting and stopping, sending and receiving messages, and managing groups.</p>
+            <h3>Hub Clients APIs</h3>
+            <p>A sample that demonstrates Hub Clients APIs including starting and stopping, sending and receiving messages, and managing groups.</p>
             <p><a class="btn" href="Hubs/HubClientsAPIs/">View sample &raquo;</a></p>
         </div>
     </div>

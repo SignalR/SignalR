@@ -8,8 +8,8 @@
     </ul>
 
     <div class="page-header">
-        <h2>HubClients APIs </h2>
-        <p>Demonstrates Hub.Clients APIs including starting and stopping, sending and receiving messages, and managing groups.
+        <h2>Hub Clients APIs </h2>
+        <p>Demonstrates Hub Clients APIs including starting and stopping, sending and receiving messages, and managing groups.
         </p>
     </div>
            
