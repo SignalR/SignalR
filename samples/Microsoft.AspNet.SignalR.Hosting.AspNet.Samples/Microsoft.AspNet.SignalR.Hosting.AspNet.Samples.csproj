@@ -154,6 +154,10 @@
     <Content Include="Hubs\Chat\Chat.js" />
     <Content Include="Hubs\Chat\index.htm" />
     <Content Include="Hubs\DrawingPad\Default.aspx" />
+    <Content Include="Hubs\HubClientsAPIs\Default.aspx" />
+    <Content Include="Hubs\HubClientsAPIs\HubClientsAPIs.js" />
+    <Content Include="Hubs\MesssagesLoops\MessagesLoops.js" />
+    <Content Include="Hubs\MesssagesLoops\Default.aspx" />
     <Content Include="Hubs\MouseTracking\Default.aspx" />
     <Content Include="Hubs\MouseTracking\images\wand.png" />
     <Content Include="Hubs\MouseTracking\MouseTracking.css" />
@@ -272,6 +276,22 @@
       <DependentUpon>Default.aspx</DependentUpon>
     </Compile>
     <Compile Include="Hubs\DrawingPad\DrawingPad.cs" />
+    <Compile Include="Hubs\HubClientsAPIs\Default.aspx.cs">
+      <DependentUpon>Default.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Hubs\HubClientsAPIs\Default.aspx.designer.cs">
+      <DependentUpon>Default.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Hubs\HubClientsAPIs\HubClientsAPIs.cs" />
+    <Compile Include="Hubs\MesssagesLoops\Default.aspx.cs">
+      <DependentUpon>Default.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Hubs\MesssagesLoops\Default.aspx.designer.cs">
+      <DependentUpon>Default.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Hubs\MesssagesLoops\MesssagesLoops.cs" />
     <Compile Include="Hubs\MouseTracking\Default.aspx.cs">
       <DependentUpon>Default.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>

@@ -82,7 +82,21 @@
             <p>A sample that uses a high-frequency timer to deliver updates at a high rate (e.g. 25 Hz) as might be typical in a real-time, multi-user HTML5 game.</p>
             <p><a class="btn" href="Hubs/RealtimeBroadcast/">View sample &raquo;</a></p>
         </div>
+        <div class="span4">
+            <h3>HubClients APIs</h3>
+            <p>A sample that demonstrates Hub.Clients APIs including starting and stopping, sending and receiving messages, and managing groups.</p>
+            <p><a class="btn" href="Hubs/HubClientsAPIs/">View sample &raquo;</a></p>
+        </div>
     </div>
     
+    <div class="row">
+         <div class="span4">
+            <h3>Messages Loops</h3>
+            <p>A sample that demonstrates messages loops where client call the server method to broadcast message after the client successfully call the server method, and show missing and dup messages if happens.</p>
+            <p><a class="btn" href="Hubs/MesssagesLoops/">View sample &raquo;</a></p>
+        </div>
+        
+    </div>
+
     <div class="clear"></div>
 </asp:Content>
