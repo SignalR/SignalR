@@ -9,12 +9,13 @@ using Microsoft.AspNet.SignalR.Hosting;
 using Microsoft.AspNet.SignalR.Infrastructure;
 using Microsoft.AspNet.SignalR.Json;
 using Microsoft.AspNet.SignalR.Tracing;
+using Newtonsoft.Json;
 
 namespace Microsoft.AspNet.SignalR.Transports
 {
     public class LongPollingTransport : TransportDisconnectBase, ITransport
     {
-        private readonly IJsonSerializer _jsonSerializer;
+        private readonly JsonSerializer _jsonSerializer;
         private readonly IPerformanceCounterManager _counters;
 
         // This should be ok to do since long polling request never hang around too long
@@ -23,7 +24,7 @@ namespace Microsoft.AspNet.SignalR.Transports
 
         public LongPollingTransport(HostContext context, IDependencyResolver resolver)
             : this(context,
-                   resolver.Resolve<IJsonSerializer>(),
+                   resolver.Resolve<JsonSerializer>(),
                    resolver.Resolve<ITransportHeartbeat>(),
                    resolver.Resolve<IPerformanceCounterManager>(),
                    resolver.Resolve<ITraceManager>())
@@ -32,7 +33,7 @@ namespace Microsoft.AspNet.SignalR.Transports
         }
 
         public LongPollingTransport(HostContext context,
-                                    IJsonSerializer jsonSerializer,
+                                    JsonSerializer jsonSerializer,
                                     ITransportHeartbeat heartbeat,
                                     IPerformanceCounterManager performanceCounterManager,
                                     ITraceManager traceManager)

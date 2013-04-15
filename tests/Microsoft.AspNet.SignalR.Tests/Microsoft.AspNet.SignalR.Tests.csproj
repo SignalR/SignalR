@@ -96,7 +96,7 @@
     <Compile Include="Hosting\RequestExtensionsFacts.cs" />
     <Compile Include="Hosting\ResponseExtensionsFacts.cs" />
     <Compile Include="Json\JsonFacts.cs" />
-    <Compile Include="Json\JsonNetSerializerFacts.cs" />
+    <Compile Include="Json\JsonSerializerExtensionFacts.cs" />
     <Compile Include="Client\KeepAliveFacts.cs" />
     <Compile Include="Owin\ServerRequestFacts.cs" />
     <Compile Include="PersistentConnectionFactoryFacts.cs" />

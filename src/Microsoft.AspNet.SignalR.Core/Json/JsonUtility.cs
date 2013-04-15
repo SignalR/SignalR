@@ -6,6 +6,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq;
 using System.Text;
+using Newtonsoft.Json;
 
 namespace Microsoft.AspNet.SignalR.Json
 {
@@ -14,6 +15,8 @@ namespace Microsoft.AspNet.SignalR.Json
     /// </summary>
     public static class JsonUtility
     {
+        private const int DefaultMaxDepth = 20;
+
         // JavaScript keywords taken from http://www.ecma-international.org/publications/files/ECMA-ST/Ecma-262.pdf
         //   Sections: 7.6.1.1, 7.6.1.2
         // Plus the implicity globals "NaN", "undefined", "Infinity"
@@ -59,6 +62,24 @@ namespace Microsoft.AspNet.SignalR.Json
             }
             sb.AppendFormat("{0}(", callback).Append(payload).Append(");");
             return sb.ToString();
+        }
+
+        /// <summary>
+        /// Creates a default <see cref="T:Newtonsoft.Json.JsonSerializerSettings"/> instance.
+        /// </summary>
+        /// <returns>The newly created <see cref="T:Newtonsoft.Json.JsonSerializerSettings"/>.</returns>
+        public static JsonSerializerSettings CreateDefaultSerializerSettings()
+        {
+            return new JsonSerializerSettings() { MaxDepth = DefaultMaxDepth };
+        }
+
+        /// <summary>
+        /// Creates a <see cref="T:Newtonsoft.Json.JsonSerializer"/> instance with the default setting. 
+        /// </summary>
+        /// <returns>The newly created <see cref="T:Newtonsoft.Json.JsonSerializerSettings"/>.</returns>
+        public static JsonSerializer CreateDefaultSerializer()
+        {
+            return JsonSerializer.Create(CreateDefaultSerializerSettings());
         }
 
         internal static bool IsValidJavaScriptCallback(string callback)
