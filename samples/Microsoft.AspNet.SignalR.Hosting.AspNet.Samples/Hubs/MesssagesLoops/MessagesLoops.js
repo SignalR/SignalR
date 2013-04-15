@@ -35,7 +35,7 @@ $(function () {
         });
     };
                 
-    myHub.client.fooCount = function (value, connectionId) {
+    myHub.client.displayMessagesCount = function (value, connectionId) {
                
         var firstReceive = true;
         var preValureItem;

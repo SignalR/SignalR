@@ -15,10 +15,10 @@ namespace Microsoft.AspNet.SignalR.Samples.Hubs.DemoHub.MessagegsLoops
 {
     public class MessagegsLoops : Hub
 {  
-    public int sendMessageCount( int message, string connectionId)
+    public int SendMessageCount( int message, string connectionId)
     {
         Thread.Sleep(5000);
-        Clients.All.fooCount(++message, connectionId);
+        Clients.All.displayMessagesCount(++message, connectionId);
         return message;
     }
 }

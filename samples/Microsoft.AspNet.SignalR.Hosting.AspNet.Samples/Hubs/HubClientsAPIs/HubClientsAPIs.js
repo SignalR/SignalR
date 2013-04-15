@@ -6,7 +6,7 @@ $(function () {
     var myHub = $.connection.hubClientsAPIs;
     $.connection.hub.logging = true;
 
-    myHub.client.foo = function (value) {                    
+    myHub.client.displayMessage = function (value) {                    
         $("<li/>").html("[" + new Date().toTimeString() + "]: " + value).appendTo($("#messages"));
     }
                 

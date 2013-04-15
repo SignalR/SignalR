@@ -15,72 +15,72 @@ namespace Microsoft.AspNet.SignalR.Hosting.AspNet.Samples.Hubs.HubClientsAPIs
 {    
     public class HubClientsAPIs : Hub
     {             
-        public string getMessageAll(string connectionId, string message)
+        public string GetMessageAll(string connectionId, string message)
         {
-            Clients.All.foo("From Clients.All: " + message + " " + connectionId);
+            Clients.All.displayMessage("From Clients.All: " + message + " " + connectionId);
             return message;
         }
   
-        public void getMessageAllExcept(string connectionId,  string message, params string[] target_connectionId)
+        public void GetMessageAllExcept(string connectionId,  string message, params string[] target_connectionId)
         {
-            Clients.AllExcept(target_connectionId).foo("From Clients.AllExcept: " + message + " " + connectionId);
+            Clients.AllExcept(target_connectionId).displayMessage("From Clients.AllExcept: " + message + " " + connectionId);
         }
 
-        public void getMessageOther(string connectionId, string message)
+        public void GetMessageOther(string connectionId, string message)
         {
-            Clients.Others.foo("From Clients.Others: " + message + " " + connectionId);
+            Clients.Others.displayMessage("From Clients.Others: " + message + " " + connectionId);
         }
 
-        public string getMessageCaller(string connectionId, string message)
+        public string GetMessageCaller(string connectionId, string message)
         {
-            Clients.Caller.foo("From Clients.Caller: " + message + " " + connectionId );
+            Clients.Caller.displayMessage("From Clients.Caller: " + message + " " + connectionId );
             return message;
         }
 
-        public void getMessageSpecified(string connectionId, string target_connectionId, string message)
+        public void GetMessageSpecified(string connectionId, string target_connectionId, string message)
         {
-            Clients.Client(target_connectionId).foo("From Clients.Client: " + message + " " + connectionId); 
+            Clients.Client(target_connectionId).displayMessage("From Clients.Client: " + message + " " + connectionId); 
         }
 
-        public string joinGroup(string connectionId, string groupNme)
+        public string JoinGroup(string connectionId, string groupNme)
         {
             Groups.Add(connectionId, groupNme);
             return connectionId + " joined " + groupNme;;
         }
 
-        public string leaveGroup(string connectionId, string groupNme)
+        public string LeaveGroup(string connectionId, string groupNme)
         {
             Groups.Remove(connectionId, groupNme);
             return connectionId + " removed " + groupNme;
         }
 
-        public void getMessageGroup(string connectionId, string groupNme, string message)
+        public void GetMessageGroup(string connectionId, string groupNme, string message)
         {
-            Clients.Group(groupNme, "").foo("From Clients.Group: " + message + " " + connectionId);
+            Clients.Group(groupNme, "").displayMessage("From Clients.Group: " + message + " " + connectionId);
         }
 
 
-        public void getMessageOthersInGroup(string connectionId, string groupNme, string message)
+        public void GetMessageOthersInGroup(string connectionId, string groupNme, string message)
         {
-            Clients.OthersInGroup(groupNme).foo("From Clients.OthersInGroup: " + message + " " + connectionId);
+            Clients.OthersInGroup(groupNme).displayMessage("From Clients.OthersInGroup: " + message + " " + connectionId);
         }
 
 
         public override Task OnConnected()
         {
-            Clients.All.foo(Context.ConnectionId + " OnConnected");      
+            Clients.All.displayMessage(Context.ConnectionId + " OnConnected");      
             return null;
         }
 
         public override Task OnReconnected()
         {
-            Clients.Caller.foo(Context.ConnectionId + " OnReconnected" );   
+            Clients.Caller.displayMessage(Context.ConnectionId + " OnReconnected" );   
             return null;
         }
 
         public override Task OnDisconnected()
         {
-            Clients.All.foo( Context.ConnectionId + " OnDisconnected");
+            Clients.All.displayMessage( Context.ConnectionId + " OnDisconnected");
             return null;            
         }
 
