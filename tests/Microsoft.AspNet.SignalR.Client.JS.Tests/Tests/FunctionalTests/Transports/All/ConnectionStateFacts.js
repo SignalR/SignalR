@@ -116,27 +116,46 @@ testUtilities.runWithAllTransports(function (transport) {
     });
 
     QUnit.asyncTimeoutTest(transport + " transport appends /reconnect to reconnect requests.", testUtilities.defaultTestTimeout, function (end, assert, testName) {
-        var connection = testUtilities.createHubConnection(end, assert, testName),
-        savedGetUrl = $.connection.transports._logic.getUrl,
-        getUrlCalled = false;
+        var connections = [testUtilities.createConnection("multisend", end, assert, testName), testUtilities.createHubConnection(end, assert, testName)],
+            getUrlCalled = [false, false],
+            numConnections = 2,
+            numReconnects = 0,
+            savedGetUrl = $.connection.transports._logic.getUrl;
 
-        connection.reconnected(function () {
-            assert.ok(getUrlCalled, "Successfully reconnected");
-            end();
+        $.each(connections, function (i, connection) {
+            connection.reconnected(function () {
+                assert.ok(getUrlCalled[i], "Successfully reconnected");
+                numReconnects++;
+                if (numReconnects === numConnections) {
+                    end();
+                }
+            });
         });
 
-        connection.start({ transport: transport }).done(function () {
+        $.when.apply($,
+            $.map(connections, function (connection) {
+                return connection.start({ transport: transport });
+            })
+        ).done(function () {
             // FIX: The longPolling transport currently needs to receive a message with a message ID before it can "reconnect"
             // Issue #1700
             if (transport === "longPolling") {
-                connection.messageId = connection.messageId || "";
+                $.each(connections, function (_, connection) {
+                    connection.messageId = connection.messageId || "";
+                });
             }
 
-            $.connection.transports._logic.getUrl = function () {
+            $.connection.transports._logic.getUrl = function (connection) {
                 var url = savedGetUrl.apply($.connection.transports._logic, arguments),
                     urlWithoutQS = url.split("?", 1)[0];
 
-                getUrlCalled = true;
+                $.each(connections, function (i, conn) {
+                    if (conn === connection) {
+                        getUrlCalled[i] = true;
+                        return false; // Finish looping
+                    }
+                });
+
                 assert.ok(urlWithoutQS.match(/\/reconnect$/), "URL ends with reconnect");
                 return url;
             };
@@ -149,7 +168,9 @@ testUtilities.runWithAllTransports(function (transport) {
         return function () {
             $.connection.transports._logic.getUrl = savedGetUrl;
             $.network.connect();
-            connection.stop();
+            $.each(connections, function (_, connection) {
+                connection.stop();
+            });
         };
     });
 
