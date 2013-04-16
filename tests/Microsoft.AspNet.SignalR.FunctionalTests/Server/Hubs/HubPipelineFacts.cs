@@ -6,6 +6,7 @@ using Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure;
 using Microsoft.AspNet.SignalR.Hosting;
 using Microsoft.AspNet.SignalR.Hosting.Memory;
 using Microsoft.AspNet.SignalR.Hubs;
+using Microsoft.AspNet.SignalR.Client.Http;
 using Newtonsoft.Json;
 using Owin;
 using Xunit;
@@ -37,10 +38,14 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Server.Hubs
 
                 host.Get("http://foo/signalr/negotiate").Then(result =>
                 {
-                    var raw = JsonConvert.DeserializeObject<CustomNegotiationResponse>(result.ReadAsString());
+                    result.ReadAsString().Then(str =>
+                    {
+                        var raw = JsonConvert.DeserializeObject<CustomNegotiationResponse>(str);
 
-                    Assert.NotNull(raw.Foo);
-                    Assert.Equal(raw.Foo, valueForKey);
+                        Assert.NotNull(raw.Foo);
+                        Assert.Equal(raw.Foo, valueForKey);
+                    });
+                    
                 }).Wait();
             }
         }
