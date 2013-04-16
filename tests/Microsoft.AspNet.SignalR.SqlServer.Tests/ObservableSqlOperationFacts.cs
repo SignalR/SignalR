@@ -39,7 +39,8 @@ namespace Microsoft.AspNet.SignalR.Tests.SqlServer
             operation.Faulted += _ => mre.Set();
             operation.Queried += () =>
             {
-                if (++retryLoopCount > 1)
+                retryLoopCount++;
+                if (retryLoopCount > 1)
                 {
                     mre.Set();
                 }
