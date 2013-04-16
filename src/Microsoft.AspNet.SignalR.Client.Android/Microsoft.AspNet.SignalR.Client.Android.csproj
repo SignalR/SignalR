@@ -45,6 +45,7 @@
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Xml" />
+    <Reference Include="System.Net.Http" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="..\Microsoft.AspNet.SignalR.Client\ConnectionState.cs">
@@ -102,6 +103,15 @@
       <Link>Transports\TransportHelper.cs</Link>
     </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="..\Microsoft.AspNet.SignalR.Client.WinRT\Http\DefaultHttpClient.cs">
+      <Link>Http\DefaultHttpClient.cs</Link>
+    </Compile>
+    <Compile Include="..\Microsoft.AspNet.SignalR.Client.WinRT\Http\DefaultHttpHandler.cs">
+      <Link>Http\DefaultHttpHandler.cs</Link>
+    </Compile>
+    <Compile Include="..\Microsoft.AspNet.SignalR.Client.WinRT\Http\HttpResponseMessageWrapper.cs">
+      <Link>Http\HttpResponseMessageWrapper.cs</Link>
+    </Compile>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="..\Common\CommonAssemblyInfo.cs">
@@ -127,18 +137,6 @@
     </Compile>
     <Compile Include="..\Microsoft.AspNet.SignalR.Client\ConnectionExtensions.cs">
       <Link>ConnectionExtensions.cs</Link>
-    </Compile>
-    <Compile Include="..\Microsoft.AspNet.SignalR.Client\Http\DefaultHttpClient.cs">
-      <Link>Http\DefaultHttpClient.cs</Link>
-    </Compile>
-    <Compile Include="..\Microsoft.AspNet.SignalR.Client\Http\HttpHelper.cs">
-      <Link>Http\HttpHelper.cs</Link>
-    </Compile>
-    <Compile Include="..\Microsoft.AspNet.SignalR.Client\Http\HttpWebRequestWrapper.cs">
-      <Link>Http\HttpWebRequestWrapper.cs</Link>
-    </Compile>
-    <Compile Include="..\Microsoft.AspNet.SignalR.Client\Http\HttpWebResponseWrapper.cs">
-      <Link>Http\HttpWebResponseWrapper.cs</Link>
     </Compile>
     <Compile Include="..\Microsoft.AspNet.SignalR.Client\Http\IHttpClient.cs">
       <Link>Http\IHttpClient.cs</Link>
