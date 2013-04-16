@@ -12,9 +12,9 @@ namespace Microsoft.AspNet.SignalR.Hosting.AspNet.Samples.Hubs.HubClientsAPIs
             Clients.All.displayMessage("From Clients.All: " + message + " " + connectionId);
         }
 
-        public void DisplayMessageAllExcept(string connectionId, string message, params string[] target_connectionId)
+        public void DisplayMessageAllExcept(string connectionId, string message, params string[] targetConnectionId)
         {
-            Clients.AllExcept(target_connectionId).displayMessage("From Clients.AllExcept: " + message + " " + connectionId);
+            Clients.AllExcept(targetConnectionId).displayMessage("From Clients.AllExcept: " + message + " " + connectionId);
         }
 
         public void DisplayMessageOther(string connectionId, string message)
@@ -27,49 +27,46 @@ namespace Microsoft.AspNet.SignalR.Hosting.AspNet.Samples.Hubs.HubClientsAPIs
             Clients.Caller.displayMessage("From Clients.Caller: " + message + " " + connectionId);
         }
 
-        public void DisplayMessageSpecified(string connectionId, string target_connectionId, string message)
+        public void DisplayMessageSpecified(string connectionId, string targetConnectionId, string message)
         {
-            Clients.Client(target_connectionId).displayMessage("From Clients.Client: " + message + " " + connectionId);
+            Clients.Client(targetConnectionId).displayMessage("From Clients.Client: " + message + " " + connectionId);
         }
 
-        public string JoinGroup(string connectionId, string groupNme)
+        public string JoinGroup(string connectionId, string groupName)
         {
-            Groups.Add(connectionId, groupNme);
-            return connectionId + " joined " + groupNme;
+            Groups.Add(connectionId, groupName);
+            return connectionId + " joined " + groupName;
         }
 
-        public string LeaveGroup(string connectionId, string groupNme)
+        public string LeaveGroup(string connectionId, string groupName)
         {
-            Groups.Remove(connectionId, groupNme);
-            return connectionId + " removed " + groupNme;
+            Groups.Remove(connectionId, groupName);
+            return connectionId + " removed " + groupName;
         }
 
-        public void DisplayMessageGroup(string connectionId, string groupNme, string message)
+        public void DisplayMessageGroup(string connectionId, string groupName, string message)
         {
-            Clients.Group(groupNme, "").displayMessage("From Clients.Group: " + message + " " + connectionId);
+            Clients.Group(groupName, "").displayMessage("From Clients.Group: " + message + " " + connectionId);
         }
         
-        public void DisplayMessageOthersInGroup(string connectionId, string groupNme, string message)
+        public void DisplayMessageOthersInGroup(string connectionId, string groupName, string message)
         {
-            Clients.OthersInGroup(groupNme).displayMessage("From Clients.OthersInGroup: " + message + " " + connectionId);
+            Clients.OthersInGroup(groupName).displayMessage("From Clients.OthersInGroup: " + message + " " + connectionId);
         }
         
         public override Task OnConnected()
         {
-            Clients.All.displayMessage(Context.ConnectionId + " OnConnected");
-            return null;
+            return Clients.All.displayMessage(Context.ConnectionId + " OnConnected");
         }
 
         public override Task OnReconnected()
         {
-            Clients.Caller.displayMessage(Context.ConnectionId + " OnReconnected");
-            return null;
+            return Clients.Caller.displayMessage(Context.ConnectionId + " OnReconnected");
         }
 
         public override Task OnDisconnected()
         {
-            Clients.All.displayMessage(Context.ConnectionId + " OnDisconnected");
-            return null;
+            return Clients.All.displayMessage(Context.ConnectionId + " OnDisconnected");
         }
     }
 }

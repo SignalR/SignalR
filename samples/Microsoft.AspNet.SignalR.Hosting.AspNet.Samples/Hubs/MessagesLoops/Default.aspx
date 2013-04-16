@@ -19,9 +19,9 @@
 
     <button id="stopStart" class="btn btn-info btn-small" disabled="disabled"><i class="icon-stop icon-white"></i><span>Stop Connection</span></button>
 
-    <div id="message">
+    <div id="messagesLoops">
     </div>
-    <label id="missedMessagesCount">
+    <label id="missingMessagesCount">
     </label>
     <br />
     <ul id="messages">

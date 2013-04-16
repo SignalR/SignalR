@@ -1,14 +1,16 @@
 ﻿/// <reference path="../../Scripts/jquery-1.8.2.js" />
 $(function () {
     "use strict";
-    var myHub = $.connection.messagesLoops;
-    $.connection.hub.logging = true;
-
-    var preValures = [],
-        missiedMessageCount = 0,
+    var messagesLoopsHub = $.connection.messagesLoops,
+        stopStartBtn = $("#stopStart"),
+        start,
+        preValures = [],
+        missingMessageCount = 0,
         dupMessageCount = 0;
 
-    myHub.client.displayMessagesCount = function (value, connectionId) {
+    $.connection.hub.logging = true;
+
+    messagesLoopsHub.client.displayMessagesCount = function (value, connectionId) {
         var firstReceive = true,
             preValureItem;
 
@@ -21,10 +23,8 @@ $(function () {
 
         if (firstReceive === true) {
             preValures.push({ "connectionId": connectionId, "preValure": value });
-            $("#message").append("<label id=" + connectionId + ">" + " </label>");
-        }
-
-        if (firstReceive === false) {
+            $("#messagesLoops").append("<label id=" + connectionId + ">" + " </label>");
+        } else {
             if (value !== (preValureItem.preValure + 1)) {
                 if (value === preValureItem.preValure) {
                     $("<li/>").css("background-color", "yellow")
@@ -40,9 +40,9 @@ $(function () {
                             .html("Missing message in messages loops: pre value: " + preValureItem.preValure + " current value: " + value + " from connectionId: " + connectionId)
                             .appendTo($("#messages"));
 
-                    missiedMessageCount += value - (preValureItem.preValure + 1);
+                    missingMessageCount += value - (preValureItem.preValure + 1);
                 }
-                $("#missedMessagesCount").text("Duplicated messages count: " + dupMessageCount + ", missing messages count: " + missiedMessageCount);
+                $("#missingMessagesCount").text("Duplicated messages count: " + dupMessageCount + ", missing messages count: " + missingMessageCount);
             }
 
             preValureItem.preValure = value;
@@ -52,7 +52,7 @@ $(function () {
     }
 
     var sendMessageCountHandler = function (value, connectionId) {
-        myHub.server.sendMessageCount(value, connectionId).done(function (value) {
+        messagesLoopsHub.server.sendMessageCount(value, connectionId).done(function (value) {
             sendMessageCountHandler(value, connectionId)
         }).fail(function (e) {
             $("<li/>").html("Failed at sendMessageCount: " + e).appendTo($("#messages"));
@@ -75,8 +75,7 @@ $(function () {
     });
 
     $.connection.hub.disconnected(function () {
-        $("#stopStart")
-                    .prop("disabled", false)
+        stopStartBtn.prop("disabled", false)
                     .find("span")
                         .text("Start Connection")
                         .end()
@@ -86,27 +85,26 @@ $(function () {
     });
 
 
-    var start = function () {
+    start = function () {
         $.connection.hub.start({ transport: activeTransport, jsonp: isJsonp })
             .done(function () {
                 $("<li/>").html("Started transport: " + $.connection.hub.transport.name + " " + $.connection.hub.id)
                     .appendTo($("#messages"));
 
-                $("#stopStart")
-                       .prop("disabled", false)
-                       .find("span")
-                           .text("Stop Connection")
-                           .end()
-                       .find("i")
-                           .removeClass("icon-play")
-                           .addClass("icon-stop");
+                stopStartBtn.prop("disabled", false)
+                           .find("span")
+                               .text("Stop Connection")
+                               .end()
+                           .find("i")
+                               .removeClass("icon-play")
+                               .addClass("icon-stop");
             });
     };
     start();
 
     $("#sendMessageCount").click(function () {
         $("#sendMessageCount").prop("disabled", true);
-        myHub.server.sendMessageCount(0, $.connection.hub.id).done(function (value) {
+        messagesLoopsHub.server.sendMessageCount(0, $.connection.hub.id).done(function (value) {
             sendMessageCountHandler(value, $.connection.hub.id);
         }).fail(function (e) {
             $("<li/>").html("Failed at sendMessageCount: " + e).appendTo($("#messages"));
@@ -114,7 +112,7 @@ $(function () {
         });
     });
 
-    $("#stopStart").click(function () {
+    stopStartBtn.click(function () {
         var $el = $(this);
 
         $el.prop("disabled", true);
