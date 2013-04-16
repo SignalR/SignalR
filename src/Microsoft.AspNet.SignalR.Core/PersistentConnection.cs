@@ -79,7 +79,7 @@ namespace Microsoft.AspNet.SignalR
 
         protected IMessageBus MessageBus { get; private set; }
 
-        protected static JsonSerializer JsonSerializer { get; private set; }
+        protected JsonSerializer JsonSerializer { get; private set; }
 
         protected IAckHandler AckHandler { get; private set; }
 
@@ -473,6 +473,11 @@ namespace Microsoft.AspNet.SignalR
 
         protected Task ProcessNegotiationRequest(HostContext context)
         {
+            if (context == null)
+            {
+                throw new ArgumentNullException("context");
+            }
+
             var response = new Dictionary<string, object>();
             BuildNegotiateResponse(context, response);
 
@@ -487,6 +492,16 @@ namespace Microsoft.AspNet.SignalR
 
         protected virtual void BuildNegotiateResponse(HostContext context, Dictionary<string, object> response)
         {
+            if (context == null)
+            {
+                throw new ArgumentNullException("context");
+            }
+
+            if (response == null)
+            {
+                throw new ArgumentNullException("response");
+            }
+
             // Total amount of time without a keep alive before the client should attempt to reconnect in seconds.
             var keepAliveTimeout = _configurationManager.KeepAliveTimeout();
             string connectionId = Guid.NewGuid().ToString("d");
