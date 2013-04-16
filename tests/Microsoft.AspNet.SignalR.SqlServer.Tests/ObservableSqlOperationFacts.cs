@@ -35,15 +35,13 @@ namespace Microsoft.AspNet.SignalR.Tests.SqlServer
                     sqlDependencyAdded = true;
                     mre.Set();
                 });
-            var operation = new ObservableDbOperation("test", "test", new TraceSource("test"), dbProviderFactory, dbBehavior.Object)
+            var operation = new ObservableDbOperation("test", "test", new TraceSource("test"), dbProviderFactory, dbBehavior.Object);
+            operation.Faulted += _ => mre.Set();
+            operation.Queried += () =>
             {
-                OnError = ex => mre.Set(),
-                OnQuery = () =>
+                if (++retryLoopCount > 1)
                 {
-                    if (++retryLoopCount > 1)
-                    {
-                        mre.Set();
-                    }
+                    mre.Set();
                 }
             };
 
@@ -80,20 +78,18 @@ namespace Microsoft.AspNet.SignalR.Tests.SqlServer
                     sqlDependencyCreated = true;
                     mre.Set();
                 });
-            var operation = new ObservableDbOperation("test", "test", new TraceSource("test"), dbProviderFactory, dbBehavior.Object)
+            var operation = new ObservableDbOperation("test", "test", new TraceSource("test"), dbProviderFactory, dbBehavior.Object);
+            operation.Faulted += _ => mre.Set();
+            operation.Queried += () =>
             {
-                OnError = ex => mre.Set(),
-                OnQuery = () =>
+                if (!sqlDependencyCreated)
                 {
-                    if (!sqlDependencyCreated)
-                    {
-                        // Only update the loop count if the SQL dependency hasn't been created yet (we're still in the loop)
-                        retryLoopCount++;
-                    }
-                    if (retryLoopCount == retryLoopTotal)
-                    {
-                        mre.Set();
-                    }
+                    // Only update the loop count if the SQL dependency hasn't been created yet (we're still in the loop)
+                    retryLoopCount++;
+                }
+                if (retryLoopCount == retryLoopTotal)
+                {
+                    mre.Set();
                 }
             };
 
@@ -117,13 +113,11 @@ namespace Microsoft.AspNet.SignalR.Tests.SqlServer
             dbBehavior.Setup(db => db.UpdateLoopRetryDelays).Returns(_defaultRetryDelays);
             dbBehavior.Setup(db => db.StartSqlDependencyListener()).Returns(false);
             dbProviderFactory.MockDataReader.Setup(r => r.Read()).Throws(new ApplicationException("test"));
-            var operation = new ObservableDbOperation("test", "test", new TraceSource("test"), dbProviderFactory, dbBehavior.Object)
+            var operation = new ObservableDbOperation("test", "test", new TraceSource("test"), dbProviderFactory, dbBehavior.Object);
+            operation.Faulted += _ =>
             {
-                OnError = ex =>
-                {
-                    onErrorCalled = true;
-                    mre.Set();
-                }
+                onErrorCalled = true;
+                mre.Set();
             };
 
             // Act

@@ -120,23 +120,20 @@ namespace Microsoft.AspNet.SignalR.SqlServer
             T result = default(T);
             IDbConnection connection = null;
             IDbCommand command = null;
-            while (true)
+            
+            try
             {
-                try
+                connection = _dbProviderFactory.CreateConnection();
+                connection.ConnectionString = ConnectionString;
+                command = CreateCommand(connection);
+                connection.Open();
+                result = commandFunc(command);
+            }
+            finally
+            {
+                if (connection != null)
                 {
-                    connection = _dbProviderFactory.CreateConnection();
-                    connection.ConnectionString = ConnectionString;
-                    command = CreateCommand(connection);
-                    connection.Open();
-                    result = commandFunc(command);
-                    break;
-                }
-                finally
-                {
-                    if (connection != null)
-                    {
-                        connection.Dispose();
-                    }
+                    connection.Dispose();
                 }
             }
 
@@ -148,13 +145,12 @@ namespace Microsoft.AspNet.SignalR.SqlServer
         private void Execute<T>(Func<IDbCommand, Task<T>> commandFunc, TaskCompletionSource<T> tcs)
         {
             IDbConnection connection = null;
-            IDbCommand command = null;
            
             try
             {
                 connection = _dbProviderFactory.CreateConnection();
                 connection.ConnectionString = ConnectionString;
-                command = CreateCommand(connection);
+                var command = CreateCommand(connection);
 
                 connection.Open();
 
