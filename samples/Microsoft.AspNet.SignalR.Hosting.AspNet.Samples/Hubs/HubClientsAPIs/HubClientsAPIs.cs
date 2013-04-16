@@ -4,16 +4,16 @@ using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR.Hubs;
 
 namespace Microsoft.AspNet.SignalR.Hosting.AspNet.Samples.Hubs.HubClientsAPIs
-{    
+{
     public class HubClientsAPIs : Hub
-    {             
+    {
         public string GetMessageAll(string connectionId, string message)
         {
             Clients.All.displayMessage("From Clients.All: " + message + " " + connectionId);
             return message;
         }
-  
-        public void GetMessageAllExcept(string connectionId,  string message, params string[] target_connectionId)
+
+        public void GetMessageAllExcept(string connectionId, string message, params string[] target_connectionId)
         {
             Clients.AllExcept(target_connectionId).displayMessage("From Clients.AllExcept: " + message + " " + connectionId);
         }
@@ -25,19 +25,19 @@ namespace Microsoft.AspNet.SignalR.Hosting.AspNet.Samples.Hubs.HubClientsAPIs
 
         public string GetMessageCaller(string connectionId, string message)
         {
-            Clients.Caller.displayMessage("From Clients.Caller: " + message + " " + connectionId );
+            Clients.Caller.displayMessage("From Clients.Caller: " + message + " " + connectionId);
             return message;
         }
 
         public void GetMessageSpecified(string connectionId, string target_connectionId, string message)
         {
-            Clients.Client(target_connectionId).displayMessage("From Clients.Client: " + message + " " + connectionId); 
+            Clients.Client(target_connectionId).displayMessage("From Clients.Client: " + message + " " + connectionId);
         }
 
         public string JoinGroup(string connectionId, string groupNme)
         {
             Groups.Add(connectionId, groupNme);
-            return connectionId + " joined " + groupNme;;
+            return connectionId + " joined " + groupNme; 
         }
 
         public string LeaveGroup(string connectionId, string groupNme)
@@ -60,22 +60,22 @@ namespace Microsoft.AspNet.SignalR.Hosting.AspNet.Samples.Hubs.HubClientsAPIs
 
         public override Task OnConnected()
         {
-            Clients.All.displayMessage(Context.ConnectionId + " OnConnected");      
+            Clients.All.displayMessage(Context.ConnectionId + " OnConnected");
             return null;
         }
 
         public override Task OnReconnected()
         {
-            Clients.Caller.displayMessage(Context.ConnectionId + " OnReconnected" );   
+            Clients.Caller.displayMessage(Context.ConnectionId + " OnReconnected");
             return null;
         }
 
         public override Task OnDisconnected()
         {
-            Clients.All.displayMessage( Context.ConnectionId + " OnDisconnected");
-            return null;            
+            Clients.All.displayMessage(Context.ConnectionId + " OnDisconnected");
+            return null;
         }
 
     }
-        
+
 }
