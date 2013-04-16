@@ -28,7 +28,7 @@ $(function () {
             if (value !== (preValureItem.preValure + 1)) {
                 if (value === preValureItem.preValure) {
                     $("<li/>").css("background-color", "yellow")
-                    .css("color", "white")
+                    .css("color", "black")
                     .html("Duplicated message in messages loops: pre value: " + preValureItem.preValure + " current value: " + value + " from connectionId: " + connectionId)
                     .appendTo($("#messages"));
 

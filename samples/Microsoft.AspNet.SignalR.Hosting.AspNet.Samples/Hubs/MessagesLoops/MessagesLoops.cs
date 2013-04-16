@@ -4,7 +4,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR.Hubs;
 
-namespace Microsoft.AspNet.SignalR.Samples.Hubs.DemoHub.MessagegsLoops
+namespace Microsoft.AspNet.SignalR.Samples.Hubs.DemoHub.MessagesLoops
 {
     public class MessagesLoops : Hub
     {
