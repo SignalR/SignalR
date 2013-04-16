@@ -103,13 +103,13 @@ $(function () {
     };
     start();
 
-    $("#sendMessageCount").click(function () {
-        $("#sendMessageCount").prop("disabled", true);
+    $("#startMessagesLoops").click(function () {
+        $("#startMessagesLoops").prop("disabled", true);
         messagesLoopsHub.server.sendMessageCount(0, $.connection.hub.id).done(function (value) {
             sendMessageCountHandler(value, $.connection.hub.id);
         }).fail(function (e) {
             $("<li/>").html("Failed at sendMessageCount: " + e).appendTo($("#messages"));
-            $("#sendMessageCount").prop("disabled", false);
+            $("#startMessagesLoops").prop("disabled", false);
         });
     });
 

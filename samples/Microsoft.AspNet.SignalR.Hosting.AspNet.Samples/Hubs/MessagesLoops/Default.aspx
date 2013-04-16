@@ -14,7 +14,7 @@
         </p>
     </div>
 
-    <input type="button" id="sendMessageCount" value="Start messages loops" />
+    <input type="button" id="startMessagesLoops" value="Start messages loops" />
     <br />
 
     <button id="stopStart" class="btn btn-info btn-small" disabled="disabled"><i class="icon-stop icon-white"></i><span>Stop Connection</span></button>
