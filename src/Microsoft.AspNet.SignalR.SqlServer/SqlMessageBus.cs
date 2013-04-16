@@ -80,7 +80,8 @@ namespace Microsoft.AspNet.SignalR.SqlServer
             base.Dispose(disposing);
         }
 
-        [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "On a background thread and we report exceptions asynchronously")]
+        [SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope", Justification = "They're stored in a List and disposed in the Dispose method"),
+         SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "On a background thread and we report exceptions asynchronously")]
         private void Initialize(object state)
         {
             // NOTE: Called from a ThreadPool thread

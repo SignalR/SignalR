@@ -119,13 +119,12 @@ namespace Microsoft.AspNet.SignalR.SqlServer
         {
             T result = default(T);
             IDbConnection connection = null;
-            IDbCommand command = null;
             
             try
             {
                 connection = _dbProviderFactory.CreateConnection();
                 connection.ConnectionString = ConnectionString;
-                command = CreateCommand(connection);
+                var command = CreateCommand(connection);
                 connection.Open();
                 result = commandFunc(command);
             }
