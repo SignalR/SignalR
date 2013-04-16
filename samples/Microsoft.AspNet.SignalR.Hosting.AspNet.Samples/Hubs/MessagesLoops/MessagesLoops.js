@@ -4,6 +4,7 @@ $(function () {
     var messagesLoopsHub = $.connection.messagesLoops,
         stopStartBtn = $("#stopStart"),
         start,
+        sendMessageCountHandler,
         preValures = [],
         missingMessageCount = 0,
         dupMessageCount = 0;
@@ -51,7 +52,7 @@ $(function () {
         $("#" + connectionId).text("Messages loops " + value + " from connectionId: " + connectionId);
     }
 
-    var sendMessageCountHandler = function (value, connectionId) {
+    sendMessageCountHandler = function (value, connectionId) {
         messagesLoopsHub.server.sendMessageCount(value, connectionId).done(function (value) {
             sendMessageCountHandler(value, connectionId)
         }).fail(function (e) {
