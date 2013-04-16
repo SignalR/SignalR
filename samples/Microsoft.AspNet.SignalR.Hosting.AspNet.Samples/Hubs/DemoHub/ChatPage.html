@@ -1,0 +1,42 @@
+﻿<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <title></title>
+    <script src="../../Scripts/jquery-1.8.2.min.js"></script>
+    <script src="../../Scripts/jquery.signalR.min.js"></script>
+    <script type="text/javascript">
+        $(function () {
+            // var chat = $.connection.chatHub;
+            var connection = $.hubConnection();
+            var chatProxy = connection.createHubProxy("ChatHub");
+
+            // $.connection.hub.logging = true;
+
+            connection.start({ transport: 'webSockets' }).done(function () {
+                alert("Succesfully connected");
+                chatProxy.invoke("SendUserName");
+            });
+
+            //$.connection.hub.start({ transport: 'webSockets' }).done(function () {
+            //    alert("Succesfully connected");
+            //    chat.server.sendUserName();
+            //    chatProxy.server.sendUserName();
+            //});
+
+            chatProxy.on("ShowUserName", function (person) {
+                // alert(chat.state.UserName);
+                alert(connection.id + person.Name + " : " + person.Age);
+                //$.connection.hub.log("Person Id" + person.Id);
+                //$.connection.hub.log("Id from the Hub" + $.connection.hub.id);
+            });
+        });
+    </script>
+</head>
+<body>
+    <div id="message-area">
+        <ul id =" messages">
+
+        </ul>
+    </div>
+</body>
+</html>

@@ -153,6 +153,7 @@
     <Content Include="Hubs\Chat\Chat.css" />
     <Content Include="Hubs\Chat\Chat.js" />
     <Content Include="Hubs\Chat\index.htm" />
+    <Content Include="Hubs\DemoHub\ChatPage.html" />
     <Content Include="Hubs\DrawingPad\Default.aspx" />
     <Content Include="Hubs\MouseTracking\Default.aspx" />
     <Content Include="Hubs\MouseTracking\images\wand.png" />

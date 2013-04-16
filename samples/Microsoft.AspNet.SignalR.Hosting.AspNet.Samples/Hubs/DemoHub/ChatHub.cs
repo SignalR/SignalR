@@ -13,6 +13,12 @@ namespace Microsoft.AspNet.SignalR.Samples.Hubs.DemoHub
 {
     public class ChatHub : Hub
     {
+        private class Person
+        {
+            public string Name { get; set; }
+            public int Age { get; set; }
+            public string Id { get; set; }
+        }
         // User Names mapped to User objects
         private static readonly ConcurrentDictionary<string, ChatUser> _users = new ConcurrentDictionary<string, ChatUser>(StringComparer.OrdinalIgnoreCase);
 
@@ -22,6 +28,12 @@ namespace Microsoft.AspNet.SignalR.Samples.Hubs.DemoHub
         // Room names mapped to romm objects
         private static readonly ConcurrentDictionary<string, ChatRoom> _rooms = new ConcurrentDictionary<string, ChatRoom>(StringComparer.OrdinalIgnoreCase);
 
+        public override Task OnConnected()
+        {
+            Clients.Caller.UserName = "John Phillips";
+            return base.OnConnected();
+        }
+
         public void Send(string message)
         {
             // Call the broadcastMessage method to update clients.
@@ -29,6 +41,17 @@ namespace Microsoft.AspNet.SignalR.Samples.Hubs.DemoHub
             {
                 Clients.OthersInGroup(Clients.Caller.roomName).broadcastMessage(String.Format(" {0} : {1}", Clients.Caller.userName, message));
             }
+        }
+
+        public Task SendUserName()
+        {
+            Clients.Caller.UserName = "John Phillips";
+            Person p = new Person();
+            p.Name = "John Phillips";
+            p.Age = 30;
+            p.Id = Context.ConnectionId;
+            Clients.Caller.Id = Context.ConnectionId;
+            return Clients.Caller.showUserName(p);
         }
 
         public Task AddUser(string userName)
