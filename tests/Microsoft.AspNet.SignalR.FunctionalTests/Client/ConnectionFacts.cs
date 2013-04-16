@@ -106,7 +106,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                 connection.Start(host.Transport).Wait();
 
                 // Wait for reconnect
-                Assert.True(tcs.Task.Wait(TimeSpan.FromSeconds(5)));
+                Assert.True(tcs.Task.Wait(TimeSpan.FromSeconds(10)));
                 Assert.True(tcs.Task.Result);
 
                 // Clean-up
