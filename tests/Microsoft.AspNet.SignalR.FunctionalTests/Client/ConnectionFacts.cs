@@ -75,5 +75,43 @@ namespace Microsoft.AspNet.SignalR.Tests
                 connection.Stop();
             }
         }
+
+        [Theory]
+        [InlineData(HostType.IISExpress, TransportType.LongPolling)]
+        [InlineData(HostType.IISExpress, TransportType.ServerSentEvents)]
+        [InlineData(HostType.IISExpress, TransportType.Websockets)]
+        public void ReconnectRequestPathEndsInReconnect(HostType hostType, TransportType transportType)
+        {
+            using (var host = CreateHost(hostType, transportType))
+            {
+                // Arrange
+                var tcs = new TaskCompletionSource<bool>();
+                var receivedMessage = false;
+
+                host.Initialize(keepAlive: null,
+                                connectionTimeout: 2,
+                                disconnectTimeout: 6);
+
+                var connection = CreateConnection(host, "/examine-reconnect");
+
+                connection.Received += (reconnectEndsPath) =>
+                {
+                    if (!receivedMessage)
+                    {
+                        tcs.TrySetResult(reconnectEndsPath == "True");
+                        receivedMessage = true;
+                    }
+                };
+
+                connection.Start(host.Transport).Wait();
+
+                // Wait for reconnect
+                Assert.True(tcs.Task.Wait(TimeSpan.FromSeconds(5)));
+                Assert.True(tcs.Task.Result);
+
+                // Clean-up
+                connection.Stop();
+            }
+        }
     }
 }

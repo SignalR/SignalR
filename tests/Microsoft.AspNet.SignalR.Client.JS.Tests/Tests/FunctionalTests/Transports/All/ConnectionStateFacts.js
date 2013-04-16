@@ -115,6 +115,65 @@ testUtilities.runWithAllTransports(function (transport) {
         };
     });
 
+    QUnit.asyncTimeoutTest(transport + " transport appends /reconnect to reconnect requests.", testUtilities.defaultTestTimeout, function (end, assert, testName) {
+        var connections = [testUtilities.createConnection("multisend", end, assert, testName), testUtilities.createHubConnection(end, assert, testName)],
+            getUrlCalled = [false, false],
+            numConnections = 2,
+            numReconnects = 0,
+            savedGetUrl = $.connection.transports._logic.getUrl;
+
+        $.each(connections, function (i, connection) {
+            connection.reconnected(function () {
+                assert.ok(getUrlCalled[i], "Successfully reconnected");
+                numReconnects++;
+                if (numReconnects === numConnections) {
+                    end();
+                }
+            });
+        });
+
+        $.when.apply($,
+            $.map(connections, function (connection) {
+                return connection.start({ transport: transport });
+            })
+        ).done(function () {
+            // FIX: The longPolling transport currently needs to receive a message with a message ID before it can "reconnect"
+            // Issue #1700
+            if (transport === "longPolling") {
+                $.each(connections, function (_, connection) {
+                    connection.messageId = connection.messageId || "";
+                });
+            }
+
+            $.connection.transports._logic.getUrl = function (connection) {
+                var url = savedGetUrl.apply($.connection.transports._logic, arguments),
+                    urlWithoutQS = url.split("?", 1)[0];
+
+                $.each(connections, function (i, conn) {
+                    if (conn === connection) {
+                        getUrlCalled[i] = true;
+                        return false; // Finish looping
+                    }
+                });
+
+                assert.ok(urlWithoutQS.match(/\/reconnect$/), "URL ends with reconnect");
+                return url;
+            };
+
+            $.network.disconnect();
+            $.network.connect();
+        });
+
+        // Cleanup
+        return function () {
+            $.connection.transports._logic.getUrl = savedGetUrl;
+            $.network.connect();
+            $.each(connections, function (_, connection) {
+                connection.stop();
+            });
+        };
+    });
+
     QUnit.asyncTimeoutTest(transport + " transport supports multiple simultaneous reconnecting connections.", testUtilities.defaultTestTimeout, function (end, assert, testName) {
         var numConnections = 2,
             connections = [],
