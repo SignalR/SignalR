@@ -77,7 +77,7 @@ $(function () {
         var connectionIdToJoin = $.connection.hub.id;
 
         if ($("#connection").val())
-            var connectionIdToJoin = $("#connection").val();
+            connectionIdToJoin = $("#connection").val();
 
         clientsAPIsHub.server.joinGroup(connectionIdToJoin, $("#group").val()).done(function (value1) {
             $("<li/>").html("Succeeded at joinGroup: " + value1).appendTo(messages);
@@ -90,7 +90,7 @@ $(function () {
         var connectionIdToLeave = $.connection.hub.id;
 
         if ($("#connection").val())
-            var connectionIdToLeave = $("#connection").val();
+            connectionIdToLeave = $("#connection").val();
 
         clientsAPIsHub.server.leaveGroup(connectionIdToLeave, $("#group").val()).done(function (value1) {
             $("<li/>").html("Succeeded at leaveGroup: " + value1).appendTo(messages);
