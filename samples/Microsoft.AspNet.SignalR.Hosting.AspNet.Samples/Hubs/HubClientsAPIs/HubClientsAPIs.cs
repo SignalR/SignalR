@@ -7,27 +7,27 @@ namespace Microsoft.AspNet.SignalR.Hosting.AspNet.Samples.Hubs.HubClientsAPIs
 {
     public class HubClientsAPIs : Hub
     {
-        public void GetMessageAll(string connectionId, string message)
+        public void DisplayMessageAll(string connectionId, string message)
         {
             Clients.All.displayMessage("From Clients.All: " + message + " " + connectionId);
         }
 
-        public void GetMessageAllExcept(string connectionId, string message, params string[] target_connectionId)
+        public void DisplayMessageAllExcept(string connectionId, string message, params string[] target_connectionId)
         {
             Clients.AllExcept(target_connectionId).displayMessage("From Clients.AllExcept: " + message + " " + connectionId);
         }
 
-        public void GetMessageOther(string connectionId, string message)
+        public void DisplayMessageOther(string connectionId, string message)
         {
             Clients.Others.displayMessage("From Clients.Others: " + message + " " + connectionId);
         }
 
-        public void GetMessageCaller(string connectionId, string message)
+        public void DisplayMessageCaller(string connectionId, string message)
         {
             Clients.Caller.displayMessage("From Clients.Caller: " + message + " " + connectionId);
         }
 
-        public void GetMessageSpecified(string connectionId, string target_connectionId, string message)
+        public void DisplayMessageSpecified(string connectionId, string target_connectionId, string message)
         {
             Clients.Client(target_connectionId).displayMessage("From Clients.Client: " + message + " " + connectionId);
         }
@@ -44,12 +44,12 @@ namespace Microsoft.AspNet.SignalR.Hosting.AspNet.Samples.Hubs.HubClientsAPIs
             return connectionId + " removed " + groupNme;
         }
 
-        public void GetMessageGroup(string connectionId, string groupNme, string message)
+        public void DisplayMessageGroup(string connectionId, string groupNme, string message)
         {
             Clients.Group(groupNme, "").displayMessage("From Clients.Group: " + message + " " + connectionId);
         }
         
-        public void GetMessageOthersInGroup(string connectionId, string groupNme, string message)
+        public void DisplayMessageOthersInGroup(string connectionId, string groupNme, string message)
         {
             Clients.OthersInGroup(groupNme).displayMessage("From Clients.OthersInGroup: " + message + " " + connectionId);
         }

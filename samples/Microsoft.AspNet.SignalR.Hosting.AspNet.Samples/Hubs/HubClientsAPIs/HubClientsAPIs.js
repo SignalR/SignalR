@@ -103,46 +103,46 @@ $(function () {
     });
 
     $("#broadcast").click(function () {
-        myHub.server.getMessageAll($.connection.hub.id, $("#msg").val()).fail(function (e) {
+        myHub.server.displayMessageAll($.connection.hub.id, $("#msg").val()).fail(function (e) {
             $("<li/>").html("Failed at getMessage: " + e).appendTo($("#messages"));
         });
     });
 
     $("#broadcast-except-specified").click(function () {
-        myHub.server.getMessageAllExcept($.connection.hub.id, $("#msg").val(), $("#connection").val().split(",")).fail(function (e) {
+        myHub.server.displayMessageAllExcept($.connection.hub.id, $("#msg").val(), $("#connection").val().split(",")).fail(function (e) {
             $("<li/>").html("Failed at getMessageAllExcept: " + e).appendTo($("#messages"));
         });
     });
 
 
     $("#other").click(function () {
-        myHub.server.getMessageOther($.connection.hub.id, $("#msg").val()).fail(function (e) {
+        myHub.server.displayMessageOther($.connection.hub.id, $("#msg").val()).fail(function (e) {
             $("<li/>").html("Failed at getMessageOther: " + e).appendTo($("#messages"));
         });
     });
 
 
     $("#sendToMe").click(function () {
-        myHub.server.getMessageCaller($.connection.hub.id, $("#me").val()).fail(function (e) {
+        myHub.server.displayMessageCaller($.connection.hub.id, $("#me").val()).fail(function (e) {
             $("<li/>").html("Failed at getMessageCaller: " + e).appendTo($("#messages"));
         });
     });
 
 
     $("#specified").click(function () {
-        myHub.server.getMessageSpecified($.connection.hub.id, $("#connection").val(), $("#me").val()).fail(function (e) {
+        myHub.server.displayMessageSpecified($.connection.hub.id, $("#connection").val(), $("#me").val()).fail(function (e) {
             $("<li/>").html("Failed at getMessageSpecified: " + e).appendTo($("#messages"));
         });
     });
 
     $("#groupmsg").click(function () {
-        myHub.server.getMessageGroup($.connection.hub.id, $("#group").val(), $("#groupMessage").val()).fail(function (e) {
+        myHub.server.displayMessageGroup($.connection.hub.id, $("#group").val(), $("#groupMessage").val()).fail(function (e) {
             $("<li/>").html("Failed at getMessageGroup: " + e).appendTo($("#messages"));
         });
     });
 
     $("#otherInGroupmsg").click(function () {
-        myHub.server.getMessageOthersInGroup($.connection.hub.id, $("#group").val(), $("#groupMessage").val()).fail(function (e) {
+        myHub.server.displayMessageOthersInGroup($.connection.hub.id, $("#group").val(), $("#groupMessage").val()).fail(function (e) {
             $("<li/>").html("Failed at getMessageOthersInGroup: " + e).appendTo($("#messages"));
         });
     });
