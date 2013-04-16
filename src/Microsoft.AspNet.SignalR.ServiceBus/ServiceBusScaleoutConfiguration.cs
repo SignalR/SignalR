@@ -10,8 +10,20 @@ namespace Microsoft.AspNet.SignalR
     /// </summary>
     public class ServiceBusScaleoutConfiguration : ScaleoutConfiguration
     {
+        private int _topicCount;
+
         public ServiceBusScaleoutConfiguration(string connectionString, string topicPrefix)
         {
+            if (String.IsNullOrEmpty(connectionString))
+            {
+                throw new ArgumentNullException("connectionString");
+            }
+
+            if (String.IsNullOrEmpty(topicPrefix))
+            {
+                throw new ArgumentNullException("topicPrefix");
+            }
+
             ConnectionString = connectionString;
             TopicPrefix = topicPrefix;
             TopicCount = 1;
@@ -21,20 +33,35 @@ namespace Microsoft.AspNet.SignalR
         /// <summary>
         /// The Service Bus connection string to use.
         /// </summary>
-        public string ConnectionString { get; set; }
+        public string ConnectionString { get; private set; }
 
         /// <summary>
         /// The topic prefix to use. Typically represents the app name.
         /// This must be consistent between all nodes in the web farm.
         /// </summary>
-        public string TopicPrefix { get; set; }
+        public string TopicPrefix { get; private set; }
 
         /// <summary>
         /// The number of topics to send messages over. Using more topics reduces contention and may increase throughput.
         /// This must be consistent between all nodes in the web farm.
         /// Defaults to 1.
         /// </summary>
-        public int TopicCount { get; set; }
+        public int TopicCount
+        {
+            get
+            {
+                return _topicCount;
+            }
+            set
+            {
+                if (value < 1)
+                {
+                    throw new ArgumentOutOfRangeException("value");
+                }
+
+                _topicCount = value;
+            }
+        }
 
         /// <summary>
         /// Gets or sets the message’s time to live value. This is the duration after
