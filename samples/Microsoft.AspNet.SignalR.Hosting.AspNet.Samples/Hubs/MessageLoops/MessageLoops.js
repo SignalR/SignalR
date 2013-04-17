@@ -23,7 +23,7 @@ $(function () {
                 previousValueItem = previousValues[i];
             }
         }
-        
+
         if (firstReceive === true) {
             // if client receives message first time from the connectionId, then don't check missing /dup message
             previousValues.push({ "connectionId": connectionId, "previousValue": value });
@@ -34,7 +34,7 @@ $(function () {
                 if (value === previousValueItem.previousValue) {
                     $("<li/>").css("background-color", "yellow")
                     .css("color", "black")
-                    .html("Duplicated message in messages loops: pre value: " + previousValueItem.previousValue + " current value: " + value + " from connectionId: " + connectionId)
+                    .html("Duplicated message in message loops: pre value: " + previousValueItem.previousValue + " current value: " + value + " from connectionId: " + connectionId)
                     .appendTo(messages);
 
                     dupMessageCount++;
@@ -42,7 +42,7 @@ $(function () {
                 else {
                     $("<li/>").css("background-color", "red")
                             .css("color", "white")
-                            .html("Missing message in messages loops: pre value: " + previousValueItem.previousValue + " current value: " + value + " from connectionId: " + connectionId)
+                            .html("Missing message in message loops: pre value: " + previousValueItem.previousValue + " current value: " + value + " from connectionId: " + connectionId)
                             .appendTo(messages);
 
                     missingMessageCount += value - (previousValueItem.previousValue + 1);
@@ -53,7 +53,7 @@ $(function () {
             previousValueItem.previousValue = value;
         }
 
-        $("#" + connectionId).text("Messages loops " + value + " from connectionId: " + connectionId);
+        $("#" + connectionId).text("Message loops " + value + " from connectionId: " + connectionId);
     }
 
     sendMessageCountHandler = function (value, connectionId) {
