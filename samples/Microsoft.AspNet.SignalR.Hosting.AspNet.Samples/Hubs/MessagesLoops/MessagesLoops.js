@@ -23,9 +23,11 @@ $(function () {
         }
 
         if (firstReceive === true) {
+            // if client receives message first time from the connectionId, then don't check missing /dup message
             preValures.push({ "connectionId": connectionId, "preValure": value });
             $("#messagesLoops").append("<label id=" + connectionId + ">" + " </label>");
         } else {
+            // check missing /dup message, and display if happens
             if (value !== (preValureItem.preValure + 1)) {
                 if (value === preValureItem.preValure) {
                     $("<li/>").css("background-color", "yellow")
