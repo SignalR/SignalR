@@ -56,9 +56,9 @@ $(function () {
         $("#" + connectionId).text("Message loops " + value + " from connectionId: " + connectionId);
     }
 
-    sendMessageCountHandler = function (value, connectionId) {
-        messageLoopsHub.server.sendMessageCount(value, connectionId).done(function (value) {
-            sendMessageCountHandler(value, connectionId)
+    sendMessageCountHandler = function (value) {
+        messageLoopsHub.server.sendMessageCount(value).done(function (value) {
+            sendMessageCountHandler(value)
         }).fail(function (e) {
             $("<li/>").html("Failed at sendMessageCount: " + e).appendTo(messages);
         });
@@ -111,8 +111,8 @@ $(function () {
 
     startMessageLoopsBtn.click(function () {
         startMessageLoopsBtn.prop("disabled", true);
-        messageLoopsHub.server.sendMessageCount(0, $.connection.hub.id).done(function (value) {
-            sendMessageCountHandler(value, $.connection.hub.id);
+        messageLoopsHub.server.sendMessageCount(0).done(function (value) {
+            sendMessageCountHandler(value);
         }).fail(function (e) {
             $("<li/>").html("Failed at sendMessageCount: " + e).appendTo(messages);
             startMessageLoopsBtn.prop("disabled", false);
