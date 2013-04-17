@@ -610,7 +610,7 @@ namespace Microsoft.AspNet.SignalR.Tests
             using (var host = CreateHost(hostType, transportType))
             {
                 host.Initialize();
-                var connection = CreateHubConnection(host, host.Url + "/signalr/hubs", useDefaultUrl: false);
+                var connection = CreateHubConnection(host, host.Url + "/signalr/js", useDefaultUrl: false);
 
                 var hub = connection.CreateHubProxy("demo");
 

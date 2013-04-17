@@ -11,17 +11,31 @@ using Microsoft.AspNet.SignalR.Infrastructure;
 using Moq;
 using Newtonsoft.Json;
 using Xunit;
+using Xunit.Extensions;
 
 namespace Microsoft.AspNet.SignalR.Tests.Server.Hubs
 {
     public class HubDispatcherFacts
     {
-        [Fact]
-        public void RequestingSignalrHubsUrlReturnsProxy()
+        public static IEnumerable<string[]> JSProxyUrls
+        {
+            get
+            {
+                return new List<string[]>()
+                {
+                    new []{"http://something/signalr/hubs"},
+                    new []{"http://something/signalr/js"}
+                };
+            }
+        }
+
+        [Theory]
+        [PropertyData("JSProxyUrls")]
+        public void RequestingSignalrHubsUrlReturnsProxy(string proxyUrl)
         {
             // Arrange
             var dispatcher = new HubDispatcher(new HubConfiguration());
-            var request = GetRequestForUrl("http://something/signalr/hubs");
+            var request = GetRequestForUrl(proxyUrl);
             var response = new Mock<IResponse>();
             string contentType = null;
             var buffer = new List<string>();
@@ -41,12 +55,13 @@ namespace Microsoft.AspNet.SignalR.Tests.Server.Hubs
             Assert.False(buffer[0].StartsWith("throw new Error("));
         }
 
-        [Fact]
-        public void RequestingSignalrHubsUrlWithTrailingSlashReturnsProxy()
+        [Theory]
+        [PropertyData("JSProxyUrls")]
+        public void RequestingSignalrHubsUrlWithTrailingSlashReturnsProxy(string proxyUrl)
         {
             // Arrange
             var dispatcher = new HubDispatcher(new HubConfiguration());
-            var request = GetRequestForUrl("http://something/signalr/hubs/");
+            var request = GetRequestForUrl(proxyUrl);
             var response = new Mock<IResponse>();
             string contentType = null;
             var buffer = new List<string>();
@@ -66,12 +81,13 @@ namespace Microsoft.AspNet.SignalR.Tests.Server.Hubs
             Assert.False(buffer[0].StartsWith("throw new Error("));
         }
 
-        [Fact]
-        public void RequestingSignalrHubsUrlWithJavaScriptProxiesDesabledDoesNotReturnProxy()
+        [Theory]
+        [PropertyData("JSProxyUrls")]
+        public void RequestingSignalrHubsUrlWithJavaScriptProxiesDesabledDoesNotReturnProxy(string proxyUrl)
         {
             // Arrange
             var dispatcher = new HubDispatcher(new HubConfiguration() { EnableJavaScriptProxies = false });
-            var request = GetRequestForUrl("http://something/signalr/hubs");
+            var request = GetRequestForUrl(proxyUrl);
             var response = new Mock<IResponse>();
             string contentType = null;
             var buffer = new List<string>();

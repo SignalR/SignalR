@@ -20,6 +20,6 @@
     </ul>
 </asp:Content>
 <asp:Content ID="Content2" ContentPlaceHolderID="Scripts" runat="server">
-    <script src="<%: ResolveUrl("~/signalr/hubs") %>"></script>
+    <script src="<%: ResolveUrl("~/signalr/js") %>"></script>
     <script src="Status.js"></script>
 </asp:Content>
