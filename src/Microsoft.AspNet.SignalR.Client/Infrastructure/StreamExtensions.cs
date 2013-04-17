@@ -12,7 +12,7 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
         [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "Exceptions are flowed back to the caller.")]
         public static Task<int> ReadAsync(this Stream stream, byte[] buffer)
         {
-#if NETFX_CORE
+#if NETFX_CORE || NET45
             return stream.ReadAsync(buffer, 0, buffer.Length);
 #else
             try
@@ -30,7 +30,7 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
         [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "Exceptions are flowed back to the caller.")]
         public static Task WriteAsync(this Stream stream, byte[] buffer)
         {
-#if NETFX_CORE
+#if NETFX_CORE || NET45
             return stream.WriteAsync(buffer, 0, buffer.Length);
 #else
             try
