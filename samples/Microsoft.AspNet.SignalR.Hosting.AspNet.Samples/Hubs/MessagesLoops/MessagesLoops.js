@@ -5,7 +5,7 @@ $(function () {
         stopStartBtn = $("#stopStart"),
         start,
         sendMessageCountHandler,
-        preValures = [],
+        previousValues = [],
         missingMessageCount = 0,
         dupMessageCount = 0;
 
@@ -13,26 +13,26 @@ $(function () {
 
     messagesLoopsHub.client.displayMessagesCount = function (value, connectionId) {
         var firstReceive = true,
-            preValureItem;
+            previousValueItem;
 
-        for (var preValure in preValures) {
-            if (preValures[preValure].connectionId === connectionId) {
+        for (var previousValue in previousValues) {
+            if (previousValues[previousValue].connectionId === connectionId) {
                 firstReceive = false;
-                preValureItem = preValures[preValure];
+                previousValueItem = previousValues[previousValue];
             }
         }
 
         if (firstReceive === true) {
             // if client receives message first time from the connectionId, then don't check missing /dup message
-            preValures.push({ "connectionId": connectionId, "preValure": value });
+            previousValues.push({ "connectionId": connectionId, "previousValue": value });
             $("#messagesLoops").append("<label id=" + connectionId + ">" + " </label>");
         } else {
             // check missing /dup message, and display if happens
-            if (value !== (preValureItem.preValure + 1)) {
-                if (value === preValureItem.preValure) {
+            if (value !== (previousValueItem.previousValue + 1)) {
+                if (value === previousValueItem.previousValue) {
                     $("<li/>").css("background-color", "yellow")
                     .css("color", "black")
-                    .html("Duplicated message in messages loops: pre value: " + preValureItem.preValure + " current value: " + value + " from connectionId: " + connectionId)
+                    .html("Duplicated message in messages loops: pre value: " + previousValueItem.previousValue + " current value: " + value + " from connectionId: " + connectionId)
                     .appendTo($("#messages"));
 
                     dupMessageCount++;
@@ -40,15 +40,15 @@ $(function () {
                 else {
                     $("<li/>").css("background-color", "red")
                             .css("color", "white")
-                            .html("Missing message in messages loops: pre value: " + preValureItem.preValure + " current value: " + value + " from connectionId: " + connectionId)
+                            .html("Missing message in messages loops: pre value: " + previousValueItem.previousValue + " current value: " + value + " from connectionId: " + connectionId)
                             .appendTo($("#messages"));
 
-                    missingMessageCount += value - (preValureItem.preValure + 1);
+                    missingMessageCount += value - (previousValueItem.previousValue + 1);
                 }
                 $("#missingMessagesCount").text("Duplicated messages count: " + dupMessageCount + ", missing messages count: " + missingMessageCount);
             }
 
-            preValureItem.preValure = value;
+            previousValueItem.previousValue = value;
         }
 
         $("#" + connectionId).text("Messages loops " + value + " from connectionId: " + connectionId);
