@@ -34,13 +34,13 @@ namespace Microsoft.AspNet.SignalR.Hosting.AspNet.Samples.Hubs.HubClientsAPIs
 
         public string JoinGroup(string connectionId, string groupName)
         {
-            Groups.Add(connectionId, groupName);
+            Groups.Add(connectionId, groupName).Wait();
             return connectionId + " joined " + groupName;
         }
 
         public string LeaveGroup(string connectionId, string groupName)
         {
-            Groups.Remove(connectionId, groupName);
+            Groups.Remove(connectionId, groupName).Wait();
             return connectionId + " removed " + groupName;
         }
 
@@ -48,12 +48,12 @@ namespace Microsoft.AspNet.SignalR.Hosting.AspNet.Samples.Hubs.HubClientsAPIs
         {
             Clients.Group(groupName, "").displayMessage("From Clients.Group: " + message + " " + connectionId);
         }
-        
+
         public void DisplayMessageOthersInGroup(string connectionId, string groupName, string message)
         {
             Clients.OthersInGroup(groupName).displayMessage("From Clients.OthersInGroup: " + message + " " + connectionId);
         }
-        
+
         public override Task OnConnected()
         {
             return Clients.All.displayMessage(Context.ConnectionId + " OnConnected");

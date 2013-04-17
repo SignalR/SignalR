@@ -390,14 +390,14 @@
              }
         };
 
-        proxies.messagesLoops = this.createHubProxy('messagesLoops'); 
-        proxies.messagesLoops.client = { };
-        proxies.messagesLoops.server = {
+        proxies.messageLoops = this.createHubProxy('messageLoops'); 
+        proxies.messageLoops.client = { };
+        proxies.messageLoops.server = {
             sendMessageCount: function (message, connectionId) {
-            /// <summary>Calls the SendMessageCount method on the server-side MessagesLoops hub.&#10;Returns a jQuery.Deferred() promise.</summary>
+            /// <summary>Calls the SendMessageCount method on the server-side MessageLoops hub.&#10;Returns a jQuery.Deferred() promise.</summary>
             /// <param name=\"message\" type=\"Number\">Server side type is System.Int32</param>
             /// <param name=\"connectionId\" type=\"String\">Server side type is System.String</param>
-                return proxies.messagesLoops.invoke.apply(proxies.messagesLoops, $.merge(["SendMessageCount"], $.makeArray(arguments)));
+                return proxies.messageLoops.invoke.apply(proxies.messageLoops, $.merge(["SendMessageCount"], $.makeArray(arguments)));
              }
         };
 

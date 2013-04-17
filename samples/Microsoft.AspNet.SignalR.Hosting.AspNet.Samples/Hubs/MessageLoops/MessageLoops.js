@@ -1,7 +1,9 @@
 ﻿/// <reference path="../../Scripts/jquery-1.8.2.js" />
 $(function () {
     "use strict";
-    var messagesLoopsHub = $.connection.messagesLoops,
+    var messageLoopsHub = $.connection.messageLoops,
+        messages = $("#messages"),
+        startMessageLoopsBtn = $("#startMessageLoops"),
         stopStartBtn = $("#stopStart"),
         start,
         sendMessageCountHandler,
@@ -11,21 +13,21 @@ $(function () {
 
     $.connection.hub.logging = true;
 
-    messagesLoopsHub.client.displayMessagesCount = function (value, connectionId) {
+    messageLoopsHub.client.displayMessagesCount = function (value, connectionId) {
         var firstReceive = true,
             previousValueItem;
 
-        for (var previousValue in previousValues) {
-            if (previousValues[previousValue].connectionId === connectionId) {
+        for (var i = 0; i < previousValues.length; i++) {
+            if (previousValues[i].connectionId === connectionId) {
                 firstReceive = false;
-                previousValueItem = previousValues[previousValue];
+                previousValueItem = previousValues[i];
             }
         }
-
+        
         if (firstReceive === true) {
             // if client receives message first time from the connectionId, then don't check missing /dup message
             previousValues.push({ "connectionId": connectionId, "previousValue": value });
-            $("#messagesLoops").append("<label id=" + connectionId + ">" + " </label>");
+            $("#messageLoops").append("<label id=" + connectionId + ">" + " </label>");
         } else {
             // check missing /dup message, and display if happens
             if (value !== (previousValueItem.previousValue + 1)) {
@@ -33,7 +35,7 @@ $(function () {
                     $("<li/>").css("background-color", "yellow")
                     .css("color", "black")
                     .html("Duplicated message in messages loops: pre value: " + previousValueItem.previousValue + " current value: " + value + " from connectionId: " + connectionId)
-                    .appendTo($("#messages"));
+                    .appendTo(messages);
 
                     dupMessageCount++;
                 }
@@ -41,7 +43,7 @@ $(function () {
                     $("<li/>").css("background-color", "red")
                             .css("color", "white")
                             .html("Missing message in messages loops: pre value: " + previousValueItem.previousValue + " current value: " + value + " from connectionId: " + connectionId)
-                            .appendTo($("#messages"));
+                            .appendTo(messages);
 
                     missingMessageCount += value - (previousValueItem.previousValue + 1);
                 }
@@ -55,16 +57,17 @@ $(function () {
     }
 
     sendMessageCountHandler = function (value, connectionId) {
-        messagesLoopsHub.server.sendMessageCount(value, connectionId).done(function (value) {
+        messageLoopsHub.server.sendMessageCount(value, connectionId).done(function (value) {
             sendMessageCountHandler(value, connectionId)
         }).fail(function (e) {
-            $("<li/>").html("Failed at sendMessageCount: " + e).appendTo($("#messages"));
+            $("<li/>").html("Failed at sendMessageCount: " + e).appendTo(messages);
         });
     };
 
     $.connection.hub.stateChanged(function (change) {
         var oldState = null,
             newState = null;
+
         for (var p in $.signalR.connectionState) {
             if ($.signalR.connectionState[p] === change.oldState) {
                 oldState = p;
@@ -73,8 +76,9 @@ $(function () {
                 newState = p;
             }
         }
+
         $("<li/>").html("[" + new Date().toTimeString() + "]: " + oldState + " => " + newState + " " + $.connection.hub.id)
-                    .appendTo($("#messages"));
+                    .appendTo(messages);
     });
 
     $.connection.hub.disconnected(function () {
@@ -92,7 +96,7 @@ $(function () {
         $.connection.hub.start({ transport: activeTransport, jsonp: isJsonp })
             .done(function () {
                 $("<li/>").html("Started transport: " + $.connection.hub.transport.name + " " + $.connection.hub.id)
-                    .appendTo($("#messages"));
+                    .appendTo(messages);
 
                 stopStartBtn.prop("disabled", false)
                            .find("span")
@@ -105,13 +109,13 @@ $(function () {
     };
     start();
 
-    $("#startMessagesLoops").click(function () {
-        $("#startMessagesLoops").prop("disabled", true);
-        messagesLoopsHub.server.sendMessageCount(0, $.connection.hub.id).done(function (value) {
+    startMessageLoopsBtn.click(function () {
+        startMessageLoopsBtn.prop("disabled", true);
+        messageLoopsHub.server.sendMessageCount(0, $.connection.hub.id).done(function (value) {
             sendMessageCountHandler(value, $.connection.hub.id);
         }).fail(function (e) {
-            $("<li/>").html("Failed at sendMessageCount: " + e).appendTo($("#messages"));
-            $("#startMessagesLoops").prop("disabled", false);
+            $("<li/>").html("Failed at sendMessageCount: " + e).appendTo(messages);
+            startMessageLoopsBtn.prop("disabled", false);
         });
     });
 

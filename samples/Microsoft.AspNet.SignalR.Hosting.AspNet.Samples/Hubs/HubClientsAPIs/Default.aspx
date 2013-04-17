@@ -9,31 +9,25 @@
 
     <div class="page-header">
         <h2>Hub Clients APIs </h2>
-        <p>
-            Demonstrates Hub Clients APIs including starting and stopping, sending and receiving messages, and managing groups.
-        </p>
+        <p>Demonstrates Hub Clients APIs including starting and stopping, sending and receiving messages, and managing groups.</p>
     </div>
 
     <p>
-        <label for="group">
-            Group:
-        </label>
-        <input type="text" name="group" id="group" placeholder="Group name" />
+        <label for="group">Group: </label>
+        <input type="text" id="group" placeholder="Group name" />
         <input type="button" id="join-group" value="Join Group" />
         <input type="button" id="leave-group" value="Leave Group" />
     </p>
 
     <p>
-        <label for="connection">
-            Specified ConnectionID:
-        </label>
-        <input type="text" name="connection" id="connection" placeholder="connectionId" />
+        <label for="connection">Specified ConnectionID: </label>
+        <input type="text" id="connection" placeholder="connectionId" />
     </p>
 
     <div>
         <h4>To Everybody</h4>
         <form>
-            <input type="text" id="msg" placeholder="Message" />
+            <input type="text" id="message" placeholder="Message" />
             <input type="button" id="broadcast" value="Broadcast" />
             <input type="button" id="broadcast-except-specified" value="Broadcast (All Except specified Connection)" />
             <input type="button" id="other" value="Other (Everyone but me)" />
@@ -43,7 +37,7 @@
     <div>
         <h4>To Group</h4>
         <form>
-            <input type="text" name="message" id="groupMessage" placeholder="Message" />
+            <input type="text" id="groupMessage" placeholder="Message" />
             <input type="button" id="groupmsg" value="Send to group" />
             <input type="button" id="otherInGroupmsg" value="Send to Other In Group" />
         </form>
@@ -60,6 +54,7 @@
 
     <button id="stopStart" class="btn btn-info btn-small" disabled="disabled"><i class="icon-stop icon-white"></i><span>Stop Connection</span></button>
 
+    <h5>Messages</h5>
     <ul id="messages">
     </ul>
 
