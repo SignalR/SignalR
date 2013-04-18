@@ -19,18 +19,10 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
         [Fact]
         public void EnqueueWithoutOpenRaisesOnError()
         {
-            var tcs = new TaskCompletionSource<object>();
-            var config = new ScaleoutConfiguration()
-            {
-                RetryOnError = true,
-                OnError = ex => tcs.SetException(ex)
-            };
-
+            var config = new ScaleoutConfiguration();
             var queue = new ScaleoutTaskQueue(new TraceSource("Queue"), "0", config);
 
-            queue.Enqueue(_ => { throw new InvalidOperationException(); }, null);
-
-            Assert.Throws<AggregateException>(() => tcs.Task.Wait());
+            Assert.Throws<InvalidOperationException>(() => queue.Enqueue(_ => { throw new InvalidOperationException(); }, null));
         }
 
         [Fact]
@@ -38,41 +30,28 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
         {
             var queue = new ScaleoutTaskQueue(new TraceSource("Queue"), "0", new ScaleoutConfiguration());
             queue.Open();
-            queue.Enqueue(_ => { throw new InvalidOperationException(); }, null);
+
+            Task task = queue.Enqueue(_ =>
+            {
+                throw new InvalidOperationException();
+            },
+            null);
+
+            Assert.Throws<AggregateException>(() => task.Wait());
             Assert.Throws<InvalidOperationException>(() => queue.Enqueue(_ => TaskAsyncHelper.Empty, null));
         }
 
-        [Fact(Timeout = 1000)]
-        public void ErrorOnSendBuffers()
-        {
-            int x = 0;
-            var queue = new ScaleoutTaskQueue(new TraceSource("Queue"), "0", new ScaleoutConfiguration() { RetryOnError = true });
-            queue.Open();
-            queue.Enqueue(_ => { throw new InvalidOperationException(); }, null);
-            queue.Enqueue(_ =>
-            {
-                x++;
-                return TaskAsyncHelper.Empty;
-            },
-            null);
-
-            queue.Enqueue(_ =>
-            {
-                x++;
-                return TaskAsyncHelper.Empty;
-            },
-            null);
-
-            Assert.Equal(0, x);
-        }
 
         [Fact(Timeout = 1000)]
         public void OpenAfterErrorRunsQueue()
         {
             int x = 0;
-            var queue = new ScaleoutTaskQueue(new TraceSource("Queue"), "0", new ScaleoutConfiguration() { RetryOnError = true });
+            var queue = new ScaleoutTaskQueue(new TraceSource("Queue"), "0", new ScaleoutConfiguration());
             queue.Open();
             queue.Enqueue(_ => { throw new InvalidOperationException(); }, null);
+
+            queue.Open();
+
             queue.Enqueue(_ =>
             {
                 x++;
@@ -87,8 +66,6 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
             },
             null);
 
-            queue.Open();
-
             task.Wait();
 
             Assert.Equal(2, x);
@@ -98,7 +75,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
         public void CloseWhileQueueRuns()
         {
             int x = 0;
-            var queue = new ScaleoutTaskQueue(new TraceSource("Queue"), "0", new ScaleoutConfiguration() { RetryOnError = true });
+            var queue = new ScaleoutTaskQueue(new TraceSource("Queue"), "0", new ScaleoutConfiguration());
             queue.Open();
             queue.Enqueue(async _ =>
             {
@@ -126,7 +103,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
         public void CloseWhileQueueRunsWithFailedTask()
         {
             int x = 0;
-            var queue = new ScaleoutTaskQueue(new TraceSource("Queue"), "0", new ScaleoutConfiguration() { RetryOnError = true });
+            var queue = new ScaleoutTaskQueue(new TraceSource("Queue"), "0", new ScaleoutConfiguration() { });
             queue.Open();
             queue.Enqueue(async _ =>
             {
@@ -147,13 +124,48 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
             },
             null);
             queue.Close();
-            Assert.Equal(2, x);
+            Assert.Equal(1, x);
         }
 
         [Fact]
+        public void OpenQueueErrorOpenQueue()
+        {
+            int x = 0;
+            var queue = new ScaleoutTaskQueue(new TraceSource("Queue"), "0", new ScaleoutConfiguration() { });
+            queue.Open();
+            queue.Enqueue(async _ =>
+            {
+                await Task.Delay(50);
+                x++;
+            },
+            null);
+
+            Task t1 = queue.Enqueue(async _ =>
+            {
+                await Task.Delay(50);
+                await TaskAsyncHelper.FromError(new Exception());
+            },
+            null);
+
+            Assert.Throws<AggregateException>(() => t1.Wait());
+
+            queue.Open();
+
+            Task t2 = queue.Enqueue(async _ =>
+            {
+                await Task.Delay(50);
+                x++;
+            },
+            null);
+
+            t2.Wait();
+
+            Assert.Equal(2, x);
+        }
+        [Fact]
         public void SendAfterCloseThenOpenRemainsClosed()
         {
-            var queue = new ScaleoutTaskQueue(new TraceSource("Queue"), "0", new ScaleoutConfiguration() { RetryOnError = true });
+            var queue = new ScaleoutTaskQueue(new TraceSource("Queue"), "0", new ScaleoutConfiguration());
             queue.Open();
             queue.Enqueue(_ => Task.Delay(50), null);
             queue.Close();
@@ -165,7 +177,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
         public void InitialToBufferingToOpenToSend()
         {
             int x = 0;
-            var queue = new ScaleoutTaskQueue(new TraceSource("Queue"), "0", new ScaleoutConfiguration() { RetryOnError = true });
+            var queue = new ScaleoutTaskQueue(new TraceSource("Queue"), "0", new ScaleoutConfiguration());
             queue.SetError(new Exception());
             queue.Open();
             queue.Enqueue(async _ =>
@@ -178,66 +190,17 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
             Assert.Equal(1, x);
         }
 
-        [Fact]
-        public void SendsDuringInitialThenBufferingShouldNotSend()
-        {
-            int x = 0;
-            var queue = new ScaleoutTaskQueue(new TraceSource("Queue"), "0", new ScaleoutConfiguration() { RetryOnError = true });
-
-            Task task = queue.Enqueue(async _ =>
-            {
-                await Task.Delay(50);
-                x++;
-            },
-            null);
-
-            queue.SetError(new Exception());
-
-            task.Wait(TimeSpan.FromSeconds(0.5));
-
-            Assert.Equal(0, x);
-        }
-
-        [Fact(Timeout = 1000)]
-        public void SendsBeforeBufferingShouldBeCaptured()
-        {
-            int x = 0;
-            var queue = new ScaleoutTaskQueue(new TraceSource("Queue"), "0", new ScaleoutConfiguration() { RetryOnError = true });
-
-            queue.Enqueue(async _ =>
-            {
-                await Task.Delay(20);
-                x++;
-            },
-            null);
-
-            queue.SetError(new Exception());
-
-            Task task = queue.Enqueue(async _ =>
-            {
-                await Task.Delay(20);
-                x++;
-            },
-            null);
-
-            queue.Open();
-
-            task.Wait();
-
-            Assert.Equal(2, x);
-        }
-
         [Fact(Timeout = 1000)]
         public void InitialToClosed()
         {
-            var queue = new ScaleoutTaskQueue(new TraceSource("Queue"), "0", new ScaleoutConfiguration() { RetryOnError = true });
+            var queue = new ScaleoutTaskQueue(new TraceSource("Queue"), "0", new ScaleoutConfiguration());
             queue.Close();
         }
 
         [Fact]
         public void OpenAfterClosedEnqueueThrows()
         {
-            var queue = new ScaleoutTaskQueue(new TraceSource("Queue"), "0", new ScaleoutConfiguration() { RetryOnError = true });
+            var queue = new ScaleoutTaskQueue(new TraceSource("Queue"), "0", new ScaleoutConfiguration());
             queue.Close();
             queue.Open();
             Assert.Throws<InvalidOperationException>(() => queue.Enqueue(_ => TaskAsyncHelper.Empty, null));
@@ -246,72 +209,10 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
         [Fact]
         public void BufferAfterClosedEnqueueThrows()
         {
-            var queue = new ScaleoutTaskQueue(new TraceSource("Queue"), "0", new ScaleoutConfiguration() { RetryOnError = true });
+            var queue = new ScaleoutTaskQueue(new TraceSource("Queue"), "0", new ScaleoutConfiguration());
             queue.Close();
             queue.SetError(new Exception());
-            Assert.Throws<InvalidOperationException>(() => queue.Enqueue(_ => TaskAsyncHelper.Empty, null));
-        }
-
-        [Fact]
-        public void ThrowingFromErrorCallbackIsCaught()
-        {
-            var config = new ScaleoutConfiguration()
-            {
-                RetryOnError = true,
-                OnError = ex =>
-                {
-                    throw new Exception();
-                }
-            };
-
-            var queue = new ScaleoutTaskQueue(new TraceSource("Queue"), "0", config);
-            queue.SetError(new Exception());
-        }
-
-        [Fact(Timeout = 100000)]
-        public void FirstFailedSendShouldNotBeLost()
-        {
-            int timesRun = 0;
-            int x = 0;
-            var queue = new ScaleoutTaskQueue(new TraceSource("Queue"), "0", new ScaleoutConfiguration() { RetryOnError = true });
-            queue.Open();
-
-            var wh = new ManualResetEventSlim();
-            queue.Enqueue(async _ =>
-            {
-                try
-                {
-                    switch (timesRun)
-                    {
-                        case 0:
-                            await Task.Delay(50);
-                            await TaskAsyncHelper.FromError(new Exception());
-                            break;
-                        default:
-                            x++;
-                            await Task.Delay(50);
-                            break;
-                    }
-                }
-                finally
-                {
-                    timesRun++;
-                }
-            },
-            null);
-
-            Task task = queue.Enqueue(_ =>
-            {
-                x++;
-                return TaskAsyncHelper.Empty;
-            },
-            null);
-
-            while (!queue.Open()) { }
-
-            task.Wait();
-
-            Assert.Equal(2, x);
+            Assert.Throws<Exception>(() => queue.Enqueue(_ => TaskAsyncHelper.Empty, null));
         }
     }
 }

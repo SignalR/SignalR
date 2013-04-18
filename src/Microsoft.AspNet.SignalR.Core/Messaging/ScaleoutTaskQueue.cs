@@ -2,7 +2,6 @@
 
 using System;
 using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR.Infrastructure;
 
@@ -21,6 +20,8 @@ namespace Microsoft.AspNet.SignalR.Messaging
         private readonly ScaleoutConfiguration _configuration;
         private readonly TraceSource _trace;
         private readonly string _tracePrefix;
+
+        private readonly object _lockObj = new object();
 
         public ScaleoutTaskQueue(TraceSource trace, string tracePrefix, ScaleoutConfiguration configuration)
             : this(trace, tracePrefix, configuration, DefaultQueueSize)
@@ -47,26 +48,22 @@ namespace Microsoft.AspNet.SignalR.Messaging
             InitializeCore();
         }
 
-        public bool Open()
+        public void Open()
         {
-            lock (this)
+            lock (_lockObj)
             {
                 if (ChangeState(QueueState.Open))
                 {
                     _error = null;
 
                     _taskCompletionSource.TrySetResult(null);
-
-                    return true;
                 }
-
-                return false;
             }
         }
 
         public Task Enqueue(Func<object, Task> send, object state)
         {
-            lock (this)
+            lock (_lockObj)
             {
                 if (_error != null)
                 {
@@ -81,7 +78,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
 
                 if (_state == QueueState.Initial)
                 {
-                    NotifyError(new InvalidOperationException(Resources.Error_QueueNotOpen));
+                    throw new InvalidOperationException(Resources.Error_QueueNotOpen);
                 }
 
                 var context = new SendContext(this, send, state);
@@ -99,19 +96,11 @@ namespace Microsoft.AspNet.SignalR.Messaging
 
         public void SetError(Exception error)
         {
-            lock (this)
+            lock (_lockObj)
             {
                 Buffer();
 
-                if (_configuration.RetryOnError)
-                {
-                    OnError(error);
-                }
-                else
-                {
-                    // Set the error if we aren't retrying on error
-                    _error = error;
-                }
+                _error = error;
             }
         }
 
@@ -119,7 +108,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
         {
             Task task = TaskAsyncHelper.Empty;
 
-            lock (this)
+            lock (_lockObj)
             {
                 if (ChangeState(QueueState.Closed))
                 {
@@ -149,28 +138,13 @@ namespace Microsoft.AspNet.SignalR.Messaging
             {
                 var ctx = (SendContext)obj;
 
-                // Set the queue into buffering state
-                ctx.Queue.SetError(ex.InnerException);
+                ctx.Queue.Trace("Send failed: {0}", ex);
 
-                if (ctx.Queue._configuration.RetryOnError)
+                lock (ctx.Queue._lockObj)
                 {
-                    ctx.Queue.Trace("Send failed: {0}", ex);
+                    // Set the queue into buffering state
+                    ctx.Queue.SetError(ex.InnerException);
 
-                    // If this is a retry and we failed again, just set the TCS and ignore the error
-                    if (ctx.Invocations > 1)
-                    {
-                        // Let the other tasks continue
-                        ctx.TaskCompletionSource.TrySetResult(null);
-                    }
-                    else
-                    {                        
-                        // If we're retrying on error then re-queue the failed send to
-                        // re-run after the queue is re-opened
-                        ctx.Queue._taskCompletionSource.Task.Then(c => QueueSend(c), ctx);
-                    }
-                }
-                else
-                {
                     // Otherwise just set this task as failed
                     ctx.TaskCompletionSource.TrySetUnwrappedException(ex);
                 }
@@ -180,38 +154,9 @@ namespace Microsoft.AspNet.SignalR.Messaging
             return context.TaskCompletionSource.Task;
         }
 
-        private void NotifyError(Exception error)
-        {
-            if (_configuration.RetryOnError)
-            {
-                OnError(error);
-            }
-            else
-            {
-                throw error;
-            }
-        }
-
-        [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "Don't allow errors to kill the process")]
-        private void OnError(Exception error)
-        {
-            // Raise the error handler if there's one specified
-            if (_configuration.OnError != null)
-            {
-                try
-                {
-                    _configuration.OnError(error);
-                }
-                catch (Exception ex)
-                {
-                    Trace("OnError({0})", ex);
-                }
-            }
-        }
-
         private void Buffer()
         {
-            lock (this)
+            lock (_lockObj)
             {
                 if (ChangeState(QueueState.Buffering))
                 {
@@ -299,7 +244,6 @@ namespace Microsoft.AspNet.SignalR.Messaging
             private readonly Func<object, Task> _send;
             private readonly object _state;
 
-            public int Invocations;
             public readonly ScaleoutTaskQueue Queue;
             public readonly TaskCompletionSource<object> TaskCompletionSource;
 
@@ -315,7 +259,6 @@ namespace Microsoft.AspNet.SignalR.Messaging
             {
                 try
                 {
-                    Invocations++;
                     return _send(_state);
                 }
                 catch (Exception ex)
