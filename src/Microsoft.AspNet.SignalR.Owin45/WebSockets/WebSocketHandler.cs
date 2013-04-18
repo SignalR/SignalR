@@ -15,11 +15,11 @@ namespace Microsoft.AspNet.SignalR.WebSockets
         // Wait 250 ms before giving up on a Close
         private static readonly TimeSpan _closeTimeout = TimeSpan.FromMilliseconds(250);
 
-        // 4K default fragment size (we expect most messages to be very short)
+        // 4KB default fragment size (we expect most messages to be very short)
         private const int _receiveLoopBufferSize = 4 * 1024;
 
-        // 4MB default max incoming message size
-        private int _maxIncomingMessageSize = 4 * 1024 * 1024;
+        // 64KB default max incoming message size
+        private int _maxIncomingMessageSize = 64 * 1024;
 
         // Queue for sending messages
         private readonly TaskQueue _sendQueue = new TaskQueue();
