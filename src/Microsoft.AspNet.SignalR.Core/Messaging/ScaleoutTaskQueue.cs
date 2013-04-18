@@ -84,7 +84,8 @@ namespace Microsoft.AspNet.SignalR.Messaging
                     throw new InvalidOperationException(Resources.Error_TaskQueueFull);
                 }
 
-                return task;
+                // Always observe the task in case the user doesn't handle it
+                return task.Catch();
             }
         }
 
