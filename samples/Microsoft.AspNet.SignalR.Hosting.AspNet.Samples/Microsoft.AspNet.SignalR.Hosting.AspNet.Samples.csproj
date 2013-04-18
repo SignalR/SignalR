@@ -147,6 +147,8 @@
     <Content Include="Hubs\Chat\mobile.htm" />
     <Content Include="Hubs\ConnectDisconnect\Default.aspx" />
     <Content Include="Hubs\ConnectDisconnect\Status.js" />
+    <Content Include="Hubs\Counting\ClientAcks.js" />
+    <Content Include="Hubs\Counting\Default.aspx" />
     <Content Include="Hubs\DemoHub\crossdomain.htm" />
     <Content Include="Hubs\DemoHub\Default.aspx" />
     <Content Include="Hubs\DemoHub\DemoHub.js" />
@@ -250,6 +252,14 @@
     </Compile>
     <Compile Include="Hubs\ConnectDisconnect\Status.cs" />
     <Compile Include="Hubs\Auth\AuthorizeClaimsAttribute.cs" />
+    <Compile Include="Hubs\Counting\CountingHub.cs" />
+    <Compile Include="Hubs\Counting\Default.aspx.cs">
+      <DependentUpon>Default.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Hubs\Counting\Default.aspx.designer.cs">
+      <DependentUpon>Default.aspx</DependentUpon>
+    </Compile>
     <Compile Include="Hubs\DemoHub\Default.aspx.cs">
       <DependentUpon>Default.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>

@@ -18,30 +18,25 @@ namespace Microsoft.AspNet.SignalR.Messaging
         private Exception _error;
 
         private readonly int _size;
-        private readonly ScaleoutConfiguration _configuration;
         private readonly TraceSource _trace;
         private readonly string _tracePrefix;
 
-        public ScaleoutTaskQueue(TraceSource trace, string tracePrefix, ScaleoutConfiguration configuration)
-            : this(trace, tracePrefix, configuration, DefaultQueueSize)
+        private readonly object _lockObj = new object();
+
+        public ScaleoutTaskQueue(TraceSource trace, string tracePrefix)
+            : this(trace, tracePrefix, DefaultQueueSize)
         {
         }
 
-        public ScaleoutTaskQueue(TraceSource trace, string tracePrefix, ScaleoutConfiguration configuration, int size)
+        public ScaleoutTaskQueue(TraceSource trace, string tracePrefix, int size)
         {
             if (trace == null)
             {
                 throw new ArgumentNullException("trace");
             }
 
-            if (configuration == null)
-            {
-                throw new ArgumentNullException("configuration");
-            }
-
             _trace = trace;
             _tracePrefix = tracePrefix;
-            _configuration = configuration;
             _size = size;
 
             InitializeCore();
@@ -49,7 +44,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
 
         public void Open()
         {
-            lock (this)
+            lock (_lockObj)
             {
                 if (ChangeState(QueueState.Open))
                 {
@@ -62,7 +57,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
 
         public Task Enqueue(Func<object, Task> send, object state)
         {
-            lock (this)
+            lock (_lockObj)
             {
                 if (_error != null)
                 {
@@ -77,10 +72,11 @@ namespace Microsoft.AspNet.SignalR.Messaging
 
                 if (_state == QueueState.Initial)
                 {
-                    NotifyError(new InvalidOperationException(Resources.Error_QueueNotOpen));
+                    throw new InvalidOperationException(Resources.Error_QueueNotOpen);
                 }
 
-                Task task = _queue.Enqueue(send, state);
+                var context = new SendContext(this, send, state);
+                Task task = _queue.Enqueue(QueueSend, context);
 
                 if (task == null)
                 {
@@ -88,25 +84,18 @@ namespace Microsoft.AspNet.SignalR.Messaging
                     throw new InvalidOperationException(Resources.Error_TaskQueueFull);
                 }
 
-                return task.Catch((ex, obj) => ((ScaleoutTaskQueue)obj).SetError(ex.InnerException), this);
+                // Always observe the task in case the user doesn't handle it
+                return task.Catch();
             }
         }
 
         public void SetError(Exception error)
         {
-            lock (this)
+            lock (_lockObj)
             {
                 Buffer();
 
-                if (_configuration.RetryOnError)
-                {
-                    OnError(error);
-                }
-                else
-                {
-                    // Set the error if we aren't retrying on error
-                    _error = error;
-                }
+                _error = error;
             }
         }
 
@@ -114,7 +103,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
         {
             Task task = TaskAsyncHelper.Empty;
 
-            lock (this)
+            lock (_lockObj)
             {
                 if (ChangeState(QueueState.Closed))
                 {
@@ -130,38 +119,39 @@ namespace Microsoft.AspNet.SignalR.Messaging
             task.Wait();
         }
 
-        private void NotifyError(Exception error)
+        private static Task QueueSend(object state)
         {
-            if (_configuration.RetryOnError)
-            {
-                OnError(error);
-            }
-            else
-            {
-                throw error;
-            }
-        }
+            var context = (SendContext)state;
 
-        [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "Don't allow errors to kill the process")]
-        private void OnError(Exception error)
-        {
-            // Raise the error handler if there's one specified
-            if (_configuration.OnError != null)
+            context.InvokeSend().Then(tcs =>
             {
-                try
+                // Complete the task if the send is successful
+                tcs.TrySetResult(null);
+            },
+            context.TaskCompletionSource)
+            .Catch((ex, obj) =>
+            {
+                var ctx = (SendContext)obj;
+
+                ctx.Queue.Trace("Send failed: {0}", ex);
+
+                lock (ctx.Queue._lockObj)
                 {
-                    _configuration.OnError(error);
+                    // Set the queue into buffering state
+                    ctx.Queue.SetError(ex.InnerException);
+
+                    // Otherwise just set this task as failed
+                    ctx.TaskCompletionSource.TrySetUnwrappedException(ex);
                 }
-                catch (Exception ex)
-                {
-                    Trace("OnError({0})", ex);
-                }
-            }
+            },
+            context);
+
+            return context.TaskCompletionSource.Task;
         }
 
         private void Buffer()
         {
-            lock (this)
+            lock (_lockObj)
             {
                 if (ChangeState(QueueState.Buffering))
                 {
@@ -242,6 +232,36 @@ namespace Microsoft.AspNet.SignalR.Messaging
         private void Trace(string value, params object[] args)
         {
             _trace.TraceInformation(_tracePrefix + " - " + value, args);
+        }
+
+        private class SendContext
+        {
+            private readonly Func<object, Task> _send;
+            private readonly object _state;
+
+            public readonly ScaleoutTaskQueue Queue;
+            public readonly TaskCompletionSource<object> TaskCompletionSource;
+
+            public SendContext(ScaleoutTaskQueue queue, Func<object, Task> send, object state)
+            {
+                Queue = queue;
+                TaskCompletionSource = new TaskCompletionSource<object>();
+                _send = send;
+                _state = state;
+            }
+
+            [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "The exception flows to the caller")]
+            public Task InvokeSend()
+            {
+                try
+                {
+                    return _send(_state);
+                }
+                catch (Exception ex)
+                {
+                    return TaskAsyncHelper.FromError(ex);
+                }
+            }
         }
 
         private enum QueueState
