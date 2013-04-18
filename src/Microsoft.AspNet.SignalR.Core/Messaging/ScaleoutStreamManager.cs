@@ -19,7 +19,6 @@ namespace Microsoft.AspNet.SignalR.Messaging
         public ScaleoutStreamManager(Func<int, IList<Message>, Task> send,
                                      Action<int, ulong, IList<Message>> receive,
                                      int streamCount,
-                                     ScaleoutConfiguration configuration,
                                      TraceSource trace)
         {
             _sendQueues = new ScaleoutTaskQueue[streamCount];
@@ -30,7 +29,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
 
             for (int i = 0; i < streamCount; i++)
             {
-                _sendQueues[i] = new ScaleoutTaskQueue(trace, "Stream(" + i + ")", configuration);
+                _sendQueues[i] = new ScaleoutTaskQueue(trace, "Stream(" + i + ")");
                 receiveMapping[i] = new ScaleoutMappingStore();
             }
 
