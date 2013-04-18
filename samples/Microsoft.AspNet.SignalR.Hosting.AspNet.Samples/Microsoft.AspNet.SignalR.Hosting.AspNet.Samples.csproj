@@ -166,6 +166,16 @@
     <Content Include="Hubs\ShapeShare\ShapeShare.css" />
     <Content Include="Hubs\ShapeShare\ShapeShare.js" />
     <Content Include="Hubs\ShapeShare\index.htm" />
+    <Content Include="Hubs\Test\chat.aspx" />
+    <Content Include="Hubs\Test\chat.js" />
+    <Content Include="Hubs\Test\clientsCaller.aspx" />
+    <Content Include="Hubs\Test\clientsCaller.js" />
+    <Content Include="Hubs\Test\clientsGroupReceiver.aspx" />
+    <Content Include="Hubs\Test\clientsGroupReceiver.js" />
+    <Content Include="Hubs\Test\clientsGroupSender.aspx" />
+    <Content Include="Hubs\Test\clientsGroupSender.js" />
+    <Content Include="Hubs\Test\common.js" />
+    <Content Include="Hubs\Test\Default.aspx" />
     <Content Include="Raw\Default.aspx" />
     <Content Include="Raw\silverlight.html" />
     <Content Include="Raw\test\basic.htm" />
@@ -293,6 +303,16 @@
     <Compile Include="Hubs\RealtimeBroadcast\HighFrequencyTimer.cs" />
     <Compile Include="Hubs\RealtimeBroadcast\Realtime.cs" />
     <Compile Include="Hubs\ShapeShare\ShapeShare.cs" />
+    <Compile Include="Hubs\Test\Default.aspx.cs">
+      <DependentUpon>Default.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Hubs\Test\Default.aspx.designer.cs">
+      <DependentUpon>Default.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Hubs\Test\NodeEvent.cs" />
+    <Compile Include="Hubs\Test\StressHub.cs" />
+    <Compile Include="Hubs\Test\TestHub.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Raw\Default.aspx.cs">
       <DependentUpon>Default.aspx</DependentUpon>

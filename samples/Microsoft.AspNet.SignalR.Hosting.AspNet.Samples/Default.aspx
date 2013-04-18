@@ -82,6 +82,11 @@
             <p>A sample that uses a high-frequency timer to deliver updates at a high rate (e.g. 25 Hz) as might be typical in a real-time, multi-user HTML5 game.</p>
             <p><a class="btn" href="Hubs/RealtimeBroadcast/">View sample &raquo;</a></p>
         </div>
+        <div class="span4">
+            <h3>Scenarios</h3>
+            <p>Samples to validate system behavior while doing live modifications on network connectivity and scaleout</p>
+            <p><a class="btn" href="Hubs/Test/">View sample &raquo;</a></p>
+        </div>
     </div>
     
     <div class="clear"></div>
