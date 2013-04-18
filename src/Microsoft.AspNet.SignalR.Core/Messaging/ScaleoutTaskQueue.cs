@@ -2,6 +2,7 @@
 
 using System;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR.Infrastructure;
 
@@ -17,32 +18,25 @@ namespace Microsoft.AspNet.SignalR.Messaging
         private Exception _error;
 
         private readonly int _size;
-        private readonly ScaleoutConfiguration _configuration;
         private readonly TraceSource _trace;
         private readonly string _tracePrefix;
 
         private readonly object _lockObj = new object();
 
-        public ScaleoutTaskQueue(TraceSource trace, string tracePrefix, ScaleoutConfiguration configuration)
-            : this(trace, tracePrefix, configuration, DefaultQueueSize)
+        public ScaleoutTaskQueue(TraceSource trace, string tracePrefix)
+            : this(trace, tracePrefix, DefaultQueueSize)
         {
         }
 
-        public ScaleoutTaskQueue(TraceSource trace, string tracePrefix, ScaleoutConfiguration configuration, int size)
+        public ScaleoutTaskQueue(TraceSource trace, string tracePrefix, int size)
         {
             if (trace == null)
             {
                 throw new ArgumentNullException("trace");
             }
 
-            if (configuration == null)
-            {
-                throw new ArgumentNullException("configuration");
-            }
-
             _trace = trace;
             _tracePrefix = tracePrefix;
-            _configuration = configuration;
             _size = size;
 
             InitializeCore();
@@ -240,7 +234,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
         }
 
         private class SendContext
-        {            
+        {
             private readonly Func<object, Task> _send;
             private readonly object _state;
 
@@ -255,6 +249,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
                 _state = state;
             }
 
+            [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "The exception flows to the caller")]
             public Task InvokeSend()
             {
                 try
