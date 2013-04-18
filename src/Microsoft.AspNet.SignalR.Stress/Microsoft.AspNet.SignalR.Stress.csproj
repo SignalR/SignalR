@@ -43,7 +43,9 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Microsoft.VisualStudio.Diagnostics.Measurement" Condition="'$(PerfRun)'=='True'">
-      <HintPath>..\..\lib\Microsoft.VisualStudio.Diagnostics.Measurement.dll</HintPath>
+      <SpecificVersion>false</SpecificVersion>
+      <HintPath>$(PerfToolsBin)\Microsoft.VisualStudio.Diagnostics.Measurement.dll</HintPath>
+      <Private>true</Private>
     </Reference>
     <Reference Include="CmdLine">
       <HintPath>..\..\packages\CmdLine.1.0.7.509\lib\net40-Client\CmdLine.dll</HintPath>
