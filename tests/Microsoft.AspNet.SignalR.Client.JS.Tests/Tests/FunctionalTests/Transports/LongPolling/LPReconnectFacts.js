@@ -182,8 +182,8 @@ QUnit.asyncTimeoutTest("Clears stop reconnecting timeout on stop inside of state
     };
 });
 
-QUnit.asyncTimeoutTest("Can remain connected to /signalr/hubs.", testUtilities.defaultTestTimeout, function (end, assert, testName) {
-    var connection = testUtilities.createHubConnection(end, assert, testName, "signalr/hubs"),
+QUnit.asyncTimeoutTest("Can remain connected to /signalr/js.", testUtilities.defaultTestTimeout, function (end, assert, testName) {
+    var connection = testUtilities.createHubConnection(end, assert, testName, "signalr/js"),
         demo = connection.createHubProxies().demo,
         testGuidInvocations = 0;
 

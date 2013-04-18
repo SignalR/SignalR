@@ -31,7 +31,7 @@
 
 <asp:Content ContentPlaceHolderID="Scripts" runat="server">
     <script src="<%: ResolveUrl("~/Scripts/jcanvas.js") %>"></script>
-    <script src="<%: ResolveUrl("~/signalr/hubs") %>"></script>
+    <script src="<%: ResolveUrl("~/signalr/js") %>"></script>
     <script src="DrawingPad.js"></script>
     <script>
         $(function () {

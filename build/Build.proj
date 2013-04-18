@@ -163,8 +163,8 @@
          Condition=" '$(OS)' == 'Windows_NT'"/>
 
     <!-- Replaces files for -->
-    <FileUpdate Files="$(JSTestsPath)\default.html" Regex="&lt;!-- ##SIGNALRHUBS## --&gt;((.|\r|\n)*?)&lt;!-- ##SIGNALRHUBS## --&gt;" ReplacementText="&lt;!-- ##SIGNALRHUBS## --&gt;&lt;script type='text/javascript' src='/signalr/hubs'&gt;&lt;/script&gt;&lt;!-- ##SIGNALRHUBS## --&gt;"  Condition=" '$(OS)' == 'Windows_NT'" />
-    <FileUpdate Files="$(JSTestsPath)\default.html" Regex="&lt;!-- ##SIGNALRHUBS## --&gt;((.|\r|\n)*?)&lt;!-- ##SIGNALRHUBS## --&gt;" ReplacementText="&lt;!-- ##SIGNALRHUBS## --&gt;&lt;script type='text/javascript' src='$(JSTestsURL)signalr/hubs'&gt;&lt;/script&gt;&lt;!-- ##SIGNALRHUBS## --&gt;" Condition=" '$(OS)' == 'Windows_NT'" />
+    <FileUpdate Files="$(JSTestsPath)\default.html" Regex="&lt;!-- ##SIGNALRHUBS## --&gt;((.|\r|\n)*?)&lt;!-- ##SIGNALRHUBS## --&gt;" ReplacementText="&lt;!-- ##SIGNALRHUBS## --&gt;&lt;script type='text/javascript' src='/signalr/js'&gt;&lt;/script&gt;&lt;!-- ##SIGNALRHUBS## --&gt;"  Condition=" '$(OS)' == 'Windows_NT'" />
+    <FileUpdate Files="$(JSTestsPath)\default.html" Regex="&lt;!-- ##SIGNALRHUBS## --&gt;((.|\r|\n)*?)&lt;!-- ##SIGNALRHUBS## --&gt;" ReplacementText="&lt;!-- ##SIGNALRHUBS## --&gt;&lt;script type='text/javascript' src='$(JSTestsURL)signalr/js'&gt;&lt;/script&gt;&lt;!-- ##SIGNALRHUBS## --&gt;" Condition=" '$(OS)' == 'Windows_NT'" />
     <FileUpdate Files="$(JSTestsPath)\Build\test.config.js" Regex="/\*URL\*/(.*?)/\*URL\*/" ReplacementText="/*URL*/'$(JSTestsURL)'/*URL*/" Condition=" '$(OS)' == 'Windows_NT'" />
     <FileUpdate Files="$(JSTestsPath)\Build\test.config.js" Regex="/\*CMDLineTest\*/(.*?)/\*CMDLineTest\*/" ReplacementText="/*CMDLineTest*/true/*CMDLineTest*/" Condition=" '$(OS)' == 'Windows_NT'" />
 

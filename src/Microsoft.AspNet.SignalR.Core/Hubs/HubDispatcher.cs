@@ -23,6 +23,7 @@ namespace Microsoft.AspNet.SignalR.Hubs
     public class HubDispatcher : PersistentConnection
     {
         private const string HubsSuffix = "/hubs";
+        private const string JsSuffix = "/js";
 
         private readonly List<HubDescriptor> _hubs = new List<HubDescriptor>();
         private readonly bool _enableJavaScriptProxies;
@@ -231,10 +232,20 @@ namespace Microsoft.AspNet.SignalR.Hubs
             // Trim any trailing slashes
             string normalized = context.Request.Url.LocalPath.TrimEnd('/');
 
+            int suffixLength = -1;
             if (normalized.EndsWith(HubsSuffix, StringComparison.OrdinalIgnoreCase))
             {
-                // Generate the proper hub url
-                string hubUrl = normalized.Substring(0, normalized.Length - HubsSuffix.Length);
+                suffixLength = HubsSuffix.Length;
+            }
+            else if (normalized.EndsWith(JsSuffix, StringComparison.OrdinalIgnoreCase))
+            {
+                suffixLength = JsSuffix.Length;
+            }
+
+            if (suffixLength != -1)
+            {
+                // Generate the proper JS proxy url
+                string hubUrl = normalized.Substring(0, normalized.Length - suffixLength);
 
                 // Generate the proxy
                 context.Response.ContentType = JsonUtility.JavaScriptMimeType;
