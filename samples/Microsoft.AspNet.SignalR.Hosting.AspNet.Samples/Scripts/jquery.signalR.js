@@ -1752,7 +1752,8 @@
                             // This is essentially a heuristic that will exponentially increase in wait time before
                             // triggering reconnected.  This depends on the "error" handler of Poll to cancel this 
                             // timeout if it triggers before the Reconnected event fires.
-                            reconnectTimeoutId = window.setTimeout(function () { fireReconnected(instance); }, 1000 * (Math.pow(2, reconnectErrors) - 1));
+                            // The Math.min at the end is to ensure that the reconnect timeout does not overflow, we max out the reconnect time to an hour.
+                            reconnectTimeoutId = window.setTimeout(function () { fireReconnected(instance); }, Math.min(1000 * (Math.pow(2, reconnectErrors) - 1), 3600000));
                         }
                     }(connection));
 
