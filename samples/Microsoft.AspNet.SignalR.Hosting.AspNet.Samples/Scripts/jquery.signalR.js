@@ -1635,7 +1635,9 @@
                         connection.log("Raising the reconnect event");
                         $(instance).triggerHandler(events.onReconnect);
                     }
-                };
+                },
+                // 1 hour
+                maxFireReconnectedTimeout = 3600000;
 
             if (connection.pollXhr) {
                 connection.log("Polling xhr requests already exists, aborting.");
@@ -1752,8 +1754,8 @@
                             // This is essentially a heuristic that will exponentially increase in wait time before
                             // triggering reconnected.  This depends on the "error" handler of Poll to cancel this 
                             // timeout if it triggers before the Reconnected event fires.
-                            // The Math.min at the end is to ensure that the reconnect timeout does not overflow, we max out the reconnect time to an hour.
-                            reconnectTimeoutId = window.setTimeout(function () { fireReconnected(instance); }, Math.min(1000 * (Math.pow(2, reconnectErrors) - 1), 3600000));
+                            // The Math.min at the end is to ensure that the reconnect timeout does not overflow.
+                            reconnectTimeoutId = window.setTimeout(function () { fireReconnected(instance); }, Math.min(1000 * (Math.pow(2, reconnectErrors) - 1), maxFireReconnectedTimeout));
                         }
                     }(connection));
 
