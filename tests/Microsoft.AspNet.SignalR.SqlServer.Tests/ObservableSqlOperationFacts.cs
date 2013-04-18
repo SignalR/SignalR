@@ -16,7 +16,7 @@ namespace Microsoft.AspNet.SignalR.Tests.SqlServer
     {
         private static readonly List<Tuple<int, int>> _defaultRetryDelays = new List<Tuple<int, int>> { new Tuple<int, int>(0, 1) };
 
-        [Theory(Timeout = 1000)]
+        [Theory(Timeout = 1500)]
         [InlineData(true)]
         [InlineData(false)]
         public void UseSqlNotificationsIfAvailable(bool supportSqlNotifications)
@@ -55,7 +55,7 @@ namespace Microsoft.AspNet.SignalR.Tests.SqlServer
             Assert.Equal(supportSqlNotifications, sqlDependencyAdded);
         }
 
-        [Theory(Timeout = 1000)]
+        [Theory(Timeout = 1500)]
         [InlineData(1, null, null)]
         [InlineData(5, null, null)]
         [InlineData(10, null, null)]
@@ -103,7 +103,7 @@ namespace Microsoft.AspNet.SignalR.Tests.SqlServer
             Assert.Equal(retryLoopTotal, retryLoopCount);
         }
 
-        [Fact(Timeout = 1000)]
+        [Fact(Timeout = 1500)]
         public void CallsOnErrorOnException()
         {
             // Arrange
