@@ -9,7 +9,7 @@
 
     <div class="page-header">
         <h2>Message Loops </h2>
-        <p>Demonstrates message loops where client calls the server method to broadcast message after the client successfully calls the server method, and shows missing and dup messages if happens.</p>
+        <p>Demonstrates message loops where client calls the server method to broadcast message after the client successfully calls the server method once start, and shows missing and dup messages if happens.</p>
     </div>
 
     <p>

@@ -58,7 +58,7 @@ $(function () {
 
     sendMessageCountHandler = function (value) {
         messageLoopsHub.server.sendMessageCount(value).done(function (value) {
-            sendMessageCountHandler(value)
+            sendMessageCountHandler(value);
         }).fail(function (e) {
             $("<li/>").html("Failed at sendMessageCount: " + e).appendTo(messages);
         });
@@ -68,12 +68,12 @@ $(function () {
         var oldState = null,
             newState = null;
 
-        for (var p in $.signalR.connectionState) {
-            if ($.signalR.connectionState[p] === change.oldState) {
-                oldState = p;
+        for (var state in $.signalR.connectionState) {
+            if ($.signalR.connectionState[state] === change.oldState) {
+                oldState = state;
             }
-            if ($.signalR.connectionState[p] === change.newState) {
-                newState = p;
+            if ($.signalR.connectionState[state] === change.newState) {
+                newState = state;
             }
         }
 

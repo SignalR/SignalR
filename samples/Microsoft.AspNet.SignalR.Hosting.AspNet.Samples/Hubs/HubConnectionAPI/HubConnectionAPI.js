@@ -22,11 +22,11 @@ $(function () {
         var oldState = null,
             newState = null;
 
-        for (var p in $.signalR.connectionState) {
-            if ($.signalR.connectionState[p] === change.oldState) {
-                oldState = p;
-            } else if ($.signalR.connectionState[p] === change.newState) {
-                newState = p;
+        for (var state in $.signalR.connectionState) {
+            if ($.signalR.connectionState[state] === change.oldState) {
+                oldState = state;
+            } else if ($.signalR.connectionState[state] === change.newState) {
+                newState = state;
             }
         }
 
@@ -81,6 +81,7 @@ $(function () {
 
 
     $('#join-group').click(function () {
+        // Set the connection Id to the specified value or the generated SignalR value
         var connectionIdToJoin = connectionTextInput.val() || $.connection.hub.id;
 
         hubConnectionAPI.server.joinGroup(connectionIdToJoin, groupNameTextInput.val()).done(function (value1) {
@@ -91,6 +92,7 @@ $(function () {
     });
 
     $('#leave-group').click(function () {
+        // Set the connection Id to the specified value or the generated SignalR value
         var connectionIdToLeave = connectionTextInput.val() || $.connection.hub.id;
 
         hubConnectionAPI.server.leaveGroup(connectionIdToLeave, groupNameTextInput.val()).done(function (value1) {
