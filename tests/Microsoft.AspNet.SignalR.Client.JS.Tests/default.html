@@ -43,7 +43,7 @@
                 var scriptTagHtml = '<script src="Scripts/jquery-{ver}.js"><\/script>',
                     jQueryVersion = queryString('jquery') || '1.6.4';
 
-                if (!inArray(['1.6.4', '1.7.2', '1.8.3', '1.9.1'], jQueryVersion)) {
+                if (!inArray(['1.6.4', '1.7.2', '1.8.3', '1.9.1', '2.0.0'], jQueryVersion)) {
                     throw new Error(jQueryVersion + ' is not a supported jQuery version.');
                 } else {
                     document.write(scriptTagHtml.replace('{ver}', jQueryVersion));
