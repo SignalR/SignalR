@@ -26,30 +26,30 @@
 
     <div>
         <h4>To Everybody</h4>
-        <form>
+        <div>
             <input type="text" id="message" placeholder="Message" />
             <input type="button" id="broadcast" class="btn" value="Broadcast" />
             <input type="button" id="broadcast-except-specified" class="btn" value="Broadcast (All Except specified Connection)" />
             <input type="button" id="other" class="btn" value="Other (Everyone but me)" />
-        </form>
+        </div>
     </div>
 
     <div>
         <h4>To Group</h4>
-        <form>
+        <div>
             <input type="text" id="groupMessage" placeholder="Message" />
             <input type="button" id="groupmsg" class="btn" value="Send to group" />
             <input type="button" id="otherInGroupmsg" class="btn" value="Send to Other In Group" />
-        </form>
+        </div>
     </div>
 
     <div>
         <h4>To Me /specified</h4>
-        <form>
+        <div>
             <input type="text" id="me" placeholder="Message" />
             <input type="button" id="sendToMe" class="btn" value="Send to me" />
             <input type="button" id="specified" class="btn" value="Send to specified connection" />
-        </form>
+        </div>
     </div>
 
     <button id="stopStart" class="btn btn-info btn-small" disabled="disabled"><i class="icon-stop icon-white"></i><span>Stop Connection</span></button>
