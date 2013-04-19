@@ -8,6 +8,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using BookSleeve;
 using Microsoft.AspNet.SignalR.Messaging;
+using Microsoft.AspNet.SignalR.Tracing;
 
 namespace Microsoft.AspNet.SignalR.Redis
 {
@@ -21,6 +22,7 @@ namespace Microsoft.AspNet.SignalR.Redis
         private readonly int _db;
         private readonly string _key;
         private readonly Func<RedisConnection> _connectionFactory;
+        private readonly TraceSource _trace;
 
         private RedisConnection _connection;
         private RedisSubscriberConnection _channel;
@@ -38,6 +40,9 @@ namespace Microsoft.AspNet.SignalR.Redis
             _connectionFactory = configuration.ConnectionFactory;
             _db = configuration.Database;
             _key = configuration.EventKey;
+
+            var traceManager = resolver.Resolve<ITraceManager>();
+            _trace = traceManager["SignalR." + typeof(RedisMessageBus).Name];
 
             ReconnectDelay = TimeSpan.FromSeconds(2);
             ConnectWithRetry();
@@ -64,12 +69,12 @@ namespace Microsoft.AspNet.SignalR.Redis
         {
             Interlocked.Exchange(ref _state, State.Disposed);
 
-            Trace.TraceInformation("OnConnectionClosed()");
+            _trace.TraceInformation("OnConnectionClosed()");
         }
 
         private void OnConnectionError(object sender, ErrorEventArgs e)
         {
-            Trace.TraceError("OnConnectionError - " + e.Cause + ". " + e.Exception.GetBaseException());
+            _trace.TraceError("OnConnectionError - " + e.Cause + ". " + e.Exception.GetBaseException());
 
             // Change the state to closed and retry connecting
             if (Interlocked.CompareExchange(ref _state,
@@ -160,12 +165,12 @@ namespace Microsoft.AspNet.SignalR.Redis
 
             try
             {
-                Trace.TraceInformation("Connecting...");
+                _trace.TraceInformation("Connecting...");
 
                 // Start the connection
                 return connection.Open().Then(() =>
                 {
-                    Trace.TraceInformation("Connection opened");
+                    _trace.TraceInformation("Connection opened");
 
                     // Create a subscription channel in redis
                     RedisSubscriberConnection channel = connection.GetOpenSubscriberChannel();
@@ -180,7 +185,7 @@ namespace Microsoft.AspNet.SignalR.Redis
                         Thread.Sleep(500);
                     }
 
-                    Trace.TraceVerbose("Subscribed to event " + _key);
+                    _trace.TraceVerbose("Subscribed to event " + _key);
 
                     _channel = channel;
                     _connection = connection;
@@ -188,7 +193,7 @@ namespace Microsoft.AspNet.SignalR.Redis
             }
             catch (Exception ex)
             {
-                Trace.TraceError("Error connecting to redis - " + ex.GetBaseException());
+                _trace.TraceError("Error connecting to redis - " + ex.GetBaseException());
 
                 return TaskAsyncHelper.FromError(ex);
             }
