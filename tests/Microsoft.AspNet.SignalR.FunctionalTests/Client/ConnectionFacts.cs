@@ -12,6 +12,30 @@ namespace Microsoft.AspNet.SignalR.Tests
     public class ConnectionFacts : HostedTest
     {
         [Theory]
+        [InlineData(HostType.Memory, TransportType.ServerSentEvents)]
+        [InlineData(HostType.Memory, TransportType.LongPolling)]
+        [InlineData(HostType.IISExpress, TransportType.LongPolling)]
+        [InlineData(HostType.IISExpress, TransportType.ServerSentEvents)]
+        [InlineData(HostType.IISExpress, TransportType.Websockets)]
+        public void ConnectionDisposeTriggersStop(HostType hostType, TransportType transportType)
+        {
+            using (var host = CreateHost(hostType, transportType))
+            {
+                host.Initialize();
+                var connection = CreateConnection(host,"/signalr");
+
+                using (connection)
+                {
+                    connection.Start(host.Transport).Wait();
+                    Assert.Equal(connection.State, Client.ConnectionState.Connected);
+                }
+
+                Assert.Equal(connection.State, Client.ConnectionState.Disconnected);
+            }
+        }
+
+
+        [Theory]
         [InlineData(HostType.IISExpress, TransportType.LongPolling)]
         [InlineData(HostType.IISExpress, TransportType.ServerSentEvents)]
         [InlineData(HostType.IISExpress, TransportType.Websockets)]
