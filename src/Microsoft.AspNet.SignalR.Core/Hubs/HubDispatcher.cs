@@ -466,7 +466,7 @@ namespace Microsoft.AspNet.SignalR.Hubs
 
                 if (_enableDetailedErrors)
                 {
-                    var exception = error.Unwrap();
+                    var exception = error.InnerException ?? error;
                     hubResult.StackTrace = _isDebuggingEnabled ? exception.StackTrace : null;
                     hubResult.Error = exception.Message;
                 }
