@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Microsoft.AspNet.SignalR.Samples.Hubs.MesssagesLoops
+namespace Microsoft.AspNet.SignalR.Samples.Hubs.HubConnectionAPI
 {
     public partial class Default : System.Web.UI.Page
     {

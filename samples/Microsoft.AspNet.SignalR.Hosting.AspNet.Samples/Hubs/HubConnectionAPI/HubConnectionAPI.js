@@ -2,7 +2,7 @@
 $(function () {
     "use strict";
 
-    var clientsAPIsHub = $.connection.hubClientsAPIs,
+    var hubConnectionAPI = $.connection.hubConnectionAPI,
         messages = $("#messages"),
         groupNameTextInput = $("#group"),
         connectionTextInput = $("#connection"),
@@ -14,7 +14,7 @@ $(function () {
 
     $.connection.hub.logging = true;
 
-    clientsAPIsHub.client.displayMessage = function (value) {
+    hubConnectionAPI.client.displayMessage = function (value) {
         $("<li/>").html("[" + new Date().toTimeString() + "]: " + value).appendTo(messages);
     }
 
@@ -81,13 +81,9 @@ $(function () {
 
 
     $('#join-group').click(function () {
-        var connectionIdToJoin = $.connection.hub.id;
+        var connectionIdToJoin = connectionTextInput.val() || $.connection.hub.id;
 
-        if (connectionTextInput.val()) {
-            connectionIdToJoin = connectionTextInput.val();
-        }
-
-        clientsAPIsHub.server.joinGroup(connectionIdToJoin, groupNameTextInput.val()).done(function (value1) {
+        hubConnectionAPI.server.joinGroup(connectionIdToJoin, groupNameTextInput.val()).done(function (value1) {
             $("<li/>").html("Succeeded at joinGroup: " + value1).appendTo(messages);
         }).fail(function (e) {
             $("<li/>").html("Failed at joinGroup: " + e).appendTo(messages);
@@ -95,13 +91,9 @@ $(function () {
     });
 
     $('#leave-group').click(function () {
-        var connectionIdToLeave = $.connection.hub.id;
+        var connectionIdToLeave = connectionTextInput.val() || $.connection.hub.id;
 
-        if (connectionTextInput.val()) {
-            connectionIdToLeave = connectionTextInput.val();
-        }
-
-        clientsAPIsHub.server.leaveGroup(connectionIdToLeave, groupNameTextInput.val()).done(function (value1) {
+        hubConnectionAPI.server.leaveGroup(connectionIdToLeave, groupNameTextInput.val()).done(function (value1) {
             $("<li/>").html("Succeeded at leaveGroup: " + value1).appendTo(messages);
         }).fail(function (e) {
             $("<li/>").html("Failed at leaveGroup: " + e).appendTo(messages);
@@ -109,46 +101,46 @@ $(function () {
     });
 
     $("#broadcast").click(function () {
-        clientsAPIsHub.server.displayMessageAll($.connection.hub.id, messageTextInput.val()).fail(function (e) {
+        hubConnectionAPI.server.displayMessageAll(messageTextInput.val()).fail(function (e) {
             $("<li/>").html("Failed at getMessage: " + e).appendTo(messages);
         });
     });
 
     $("#broadcast-except-specified").click(function () {
-        clientsAPIsHub.server.displayMessageAllExcept($.connection.hub.id, messageTextInput.val(), connectionTextInput.val().split(",")).fail(function (e) {
+        hubConnectionAPI.server.displayMessageAllExcept(messageTextInput.val(), connectionTextInput.val().split(",")).fail(function (e) {
             $("<li/>").html("Failed at getMessageAllExcept: " + e).appendTo(messages);
         });
     });
 
 
     $("#other").click(function () {
-        clientsAPIsHub.server.displayMessageOther($.connection.hub.id, messageTextInput.val()).fail(function (e) {
+        hubConnectionAPI.server.displayMessageOther(messageTextInput.val()).fail(function (e) {
             $("<li/>").html("Failed at getMessageOther: " + e).appendTo(messages);
         });
     });
 
 
     $("#sendToMe").click(function () {
-        clientsAPIsHub.server.displayMessageCaller($.connection.hub.id, meTextInput.val()).fail(function (e) {
+        hubConnectionAPI.server.displayMessageCaller(meTextInput.val()).fail(function (e) {
             $("<li/>").html("Failed at getMessageCaller: " + e).appendTo(messages);
         });
     });
 
 
     $("#specified").click(function () {
-        clientsAPIsHub.server.displayMessageSpecified($.connection.hub.id, connectionTextInput.val(), meTextInput.val()).fail(function (e) {
+        hubConnectionAPI.server.displayMessageSpecified(connectionTextInput.val(), meTextInput.val()).fail(function (e) {
             $("<li/>").html("Failed at getMessageSpecified: " + e).appendTo(messages);
         });
     });
 
     $("#groupmsg").click(function () {
-        clientsAPIsHub.server.displayMessageGroup($.connection.hub.id, groupNameTextInput.val(), groupMessageTextInput.val()).fail(function (e) {
+        hubConnectionAPI.server.displayMessageGroup(groupNameTextInput.val(), groupMessageTextInput.val()).fail(function (e) {
             $("<li/>").html("Failed at getMessageGroup: " + e).appendTo(messages);
         });
     });
 
     $("#otherInGroupmsg").click(function () {
-        clientsAPIsHub.server.displayMessageOthersInGroup($.connection.hub.id, groupNameTextInput.val(), groupMessageTextInput.val()).fail(function (e) {
+        hubConnectionAPI.server.displayMessageOthersInGroup(groupNameTextInput.val(), groupMessageTextInput.val()).fail(function (e) {
             $("<li/>").html("Failed at getMessageOthersInGroup: " + e).appendTo(messages);
         });
     });

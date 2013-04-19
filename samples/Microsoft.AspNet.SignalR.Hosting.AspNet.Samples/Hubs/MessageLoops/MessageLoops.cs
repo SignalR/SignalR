@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Threading;
-using System.Threading.Tasks;
-using Microsoft.AspNet.SignalR.Hubs;
+﻿using System.Threading;
 
 namespace Microsoft.AspNet.SignalR.Samples.Hubs.DemoHub.MessageLoops
 {
