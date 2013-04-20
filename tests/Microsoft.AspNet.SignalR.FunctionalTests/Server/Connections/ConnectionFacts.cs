@@ -57,11 +57,12 @@ namespace Microsoft.AspNet.SignalR.Client.Tests
 
                     var connection = new Connection("http://foo/authenticatedConnection", "access_token=1234");
 
-                    connection.Start(host).Wait();
+                    using (connection)
+                    {
+                        connection.Start(host).Wait();
 
-                    Assert.Equal(connection.State, ConnectionState.Connected);
-
-                    connection.Stop();
+                        Assert.Equal(connection.State, ConnectionState.Connected);
+                    }
                 }
             }
 
@@ -108,31 +109,33 @@ namespace Microsoft.AspNet.SignalR.Client.Tests
                     host.Initialize();
 
                     var connection = CreateConnection(host, "/fall-back");
-                    var tcs = new TaskCompletionSource<object>();
 
-                    connection.StateChanged += change =>
+                    using (connection)
                     {
-                        if (change.NewState == ConnectionState.Reconnecting)
-                        {
-                            tcs.TrySetException(new Exception("The connection should not be reconnecting"));
-                        }
-                    };
+                        var tcs = new TaskCompletionSource<object>();
 
-                    var client = new DefaultHttpClient();
-                    var transports = new IClientTransport[]  {
+                        connection.StateChanged += change =>
+                        {
+                            if (change.NewState == ConnectionState.Reconnecting)
+                            {
+                                tcs.TrySetException(new Exception("The connection should not be reconnecting"));
+                            }
+                        };
+
+                        var client = new DefaultHttpClient();
+                        var transports = new IClientTransport[]  {
                         new ServerSentEventsTransport(client) { ConnectionTimeout = TimeSpan.Zero },
                         new LongPollingTransport(client)
                     };
 
-                    var transport = new AutoTransport(client, transports);
+                        var transport = new AutoTransport(client, transports);
 
-                    connection.Start(transport).Wait();
+                        connection.Start(transport).Wait();
 
-                    Assert.Equal(connection.Transport.Name, "longPolling");
+                        Assert.Equal(connection.Transport.Name, "longPolling");
 
-                    Assert.False(tcs.Task.Wait(TimeSpan.FromSeconds(5)));
-
-                    connection.Stop();
+                        Assert.False(tcs.Task.Wait(TimeSpan.FromSeconds(5)));
+                    }
                 }
             }
 
@@ -150,15 +153,18 @@ namespace Microsoft.AspNet.SignalR.Client.Tests
                     var tcs = new TaskCompletionSource<string>();
                     var connection = new Connection("http://foo/echo2");
 
-                    connection.Received += data =>
+                    using (connection)
                     {
-                        tcs.TrySetResult(data);
-                    };
+                        connection.Received += data =>
+                        {
+                            tcs.TrySetResult(data);
+                        };
 
-                    connection.Start(host).Wait();
-                    connection.Send("");
+                        connection.Start(host).Wait();
+                        connection.Send("");
 
-                    Assert.Equal("MyConnection2", tcs.Task.Result);
+                        Assert.Equal("MyConnection2", tcs.Task.Result);
+                    }
                 }
             }
 
@@ -176,15 +182,18 @@ namespace Microsoft.AspNet.SignalR.Client.Tests
                     var tcs = new TaskCompletionSource<string>();
                     var connection = new Connection("http://foo/echo2");
 
-                    connection.Received += data =>
+                    using (connection)
                     {
-                        tcs.TrySetResult(data);
-                    };
+                        connection.Received += data =>
+                        {
+                            tcs.TrySetResult(data);
+                        };
 
-                    connection.Start(host).Wait();
-                    connection.Send("");
+                        connection.Start(host).Wait();
+                        connection.Send("");
 
-                    Assert.Equal("MyConnection2", tcs.Task.Result);
+                        Assert.Equal("MyConnection2", tcs.Task.Result);
+                    }
                 }
             }
 
@@ -202,15 +211,18 @@ namespace Microsoft.AspNet.SignalR.Client.Tests
                     var tcs = new TaskCompletionSource<string>();
                     var connection = new Connection("http://foo/echo");
 
-                    connection.Received += data =>
+                    using (connection)
                     {
-                        tcs.TrySetResult(data);
-                    };
+                        connection.Received += data =>
+                        {
+                            tcs.TrySetResult(data);
+                        };
 
-                    connection.Start(host).Wait();
-                    connection.Send("");
+                        connection.Start(host).Wait();
+                        connection.Send("");
 
-                    Assert.Equal("MyConnection", tcs.Task.Result);
+                        Assert.Equal("MyConnection", tcs.Task.Result);
+                    }
                 }
             }
 
@@ -285,26 +297,30 @@ namespace Microsoft.AspNet.SignalR.Client.Tests
                 {
                     host.Initialize(disconnectTimeout: 6);
                     var connection = CreateHubConnection(host);
-                    var reconnectWh = new ManualResetEventSlim();
-                    var disconnectWh = new ManualResetEventSlim();
 
-                    connection.Reconnecting += () =>
+                    using (connection)
                     {
-                        reconnectWh.Set();
-                        Assert.Equal(ConnectionState.Reconnecting, connection.State);
-                    };
+                        var reconnectWh = new ManualResetEventSlim();
+                        var disconnectWh = new ManualResetEventSlim();
 
-                    connection.Closed += () =>
-                    {
-                        disconnectWh.Set();
-                        Assert.Equal(ConnectionState.Disconnected, connection.State);
-                    };
+                        connection.Reconnecting += () =>
+                        {
+                            reconnectWh.Set();
+                            Assert.Equal(ConnectionState.Reconnecting, connection.State);
+                        };
 
-                    connection.Start(host.Transport).Wait();
-                    host.Shutdown();
+                        connection.Closed += () =>
+                        {
+                            disconnectWh.Set();
+                            Assert.Equal(ConnectionState.Disconnected, connection.State);
+                        };
 
-                    Assert.True(reconnectWh.Wait(TimeSpan.FromSeconds(25)), "Reconnect never fired");
-                    Assert.True(disconnectWh.Wait(TimeSpan.FromSeconds(25)), "Closed never fired");
+                        connection.Start(host.Transport).Wait();
+                        host.Shutdown();
+
+                        Assert.True(reconnectWh.Wait(TimeSpan.FromSeconds(25)), "Reconnect never fired");
+                        Assert.True(disconnectWh.Wait(TimeSpan.FromSeconds(25)), "Closed never fired");
+                    }
                 }
             }
 
@@ -323,32 +339,35 @@ namespace Microsoft.AspNet.SignalR.Client.Tests
                                     disconnectTimeout: 6);
 
                     var connection = CreateHubConnection(host);
-                    var reconnectingWh = new ManualResetEventSlim();
-                    var reconnectedWh = new ManualResetEventSlim();
 
-                    connection.Reconnecting += () =>
+
+                    using (connection)
                     {
-                        reconnectingWh.Set();
-                        Assert.Equal(ConnectionState.Reconnecting, connection.State);
-                    };
+                        var reconnectingWh = new ManualResetEventSlim();
+                        var reconnectedWh = new ManualResetEventSlim();
 
-                    connection.Reconnected += () =>
-                    {
-                        reconnectedWh.Set();
-                        Assert.Equal(ConnectionState.Connected, connection.State);
-                    };
+                        connection.Reconnecting += () =>
+                        {
+                            reconnectingWh.Set();
+                            Assert.Equal(ConnectionState.Reconnecting, connection.State);
+                        };
 
-                    connection.Start(host.Transport).Wait();
+                        connection.Reconnected += () =>
+                        {
+                            reconnectedWh.Set();
+                            Assert.Equal(ConnectionState.Connected, connection.State);
+                        };
 
-                    // Force reconnect
-                    Thread.Sleep(TimeSpan.FromSeconds(5));
+                        connection.Start(host.Transport).Wait();
 
-                    Assert.True(reconnectingWh.Wait(TimeSpan.FromSeconds(30)));
-                    Assert.True(reconnectedWh.Wait(TimeSpan.FromSeconds(30)));
-                    Thread.Sleep(TimeSpan.FromSeconds(15));
-                    Assert.NotEqual(ConnectionState.Disconnected, connection.State);
+                        // Force reconnect
+                        Thread.Sleep(TimeSpan.FromSeconds(5));
 
-                    connection.Stop();
+                        Assert.True(reconnectingWh.Wait(TimeSpan.FromSeconds(30)));
+                        Assert.True(reconnectedWh.Wait(TimeSpan.FromSeconds(30)));
+                        Thread.Sleep(TimeSpan.FromSeconds(15));
+                        Assert.NotEqual(ConnectionState.Disconnected, connection.State);
+                    }
                 }
             }
 
@@ -369,24 +388,27 @@ namespace Microsoft.AspNet.SignalR.Client.Tests
 
                     var connection = CreateConnection(host, "/multisend");
 
-                    connection.Received += _ =>
+                    using (connection)
                     {
-                        throw thrown;
-                    };
-
-                    connection.Error += e =>
-                    {
-                        caught = e;
-                        if (Interlocked.Increment(ref errorsCaught) == 2)
+                        connection.Received += _ =>
                         {
-                            wh.Set();
-                        }
-                    };
+                            throw thrown;
+                        };
 
-                    connection.Start(host.Transport).Wait();
+                        connection.Error += e =>
+                        {
+                            caught = e;
+                            if (Interlocked.Increment(ref errorsCaught) == 2)
+                            {
+                                wh.Set();
+                            }
+                        };
 
-                    Assert.True(wh.Wait(TimeSpan.FromSeconds(5)));
-                    Assert.Equal(thrown, caught);
+                        connection.Start(host.Transport).Wait();
+
+                        Assert.True(wh.Wait(TimeSpan.FromSeconds(5)));
+                        Assert.Equal(thrown, caught);
+                    }
                 }
             }
 
@@ -416,23 +438,26 @@ namespace Microsoft.AspNet.SignalR.Client.Tests
 
                         var connection = new Connection("http://foo/transport-response");
 
-                        connection.Received += data =>
+                        using (connection)
                         {
-                            throw thrown;
-                        };
+                            connection.Received += data =>
+                            {
+                                throw thrown;
+                            };
 
-                        connection.Error += e =>
-                        {
-                            caught = e;
-                            wh.Set();
-                        };
+                            connection.Error += e =>
+                            {
+                                caught = e;
+                                wh.Set();
+                            };
 
-                        connection.Start(transport).Wait();
-                        connection.Send("");
+                            connection.Start(transport).Wait();
+                            connection.Send("");
 
-                        Assert.True(wh.Wait(TimeSpan.FromSeconds(5)));
-                        Assert.IsType(typeof(AggregateException), caught);
-                        Assert.Equal(thrown, caught.InnerException);
+                            Assert.True(wh.Wait(TimeSpan.FromSeconds(5)));
+                            Assert.IsType(typeof(AggregateException), caught);
+                            Assert.Equal(thrown, caught.InnerException);
+                        }
                     }
                 }
             }
