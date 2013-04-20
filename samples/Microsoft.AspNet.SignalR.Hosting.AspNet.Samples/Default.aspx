@@ -4,7 +4,7 @@
 </asp:Content>
 
 <asp:Content runat="server" ContentPlaceHolderID="MainContent">
-    
+
     <div class="hero-unit">
         <h1>ASP.NET SignalR</h1>
         <p>Real-time web library for ASP.NET with a simple API, broad reaching client support and incredible performance.</p>
@@ -12,15 +12,17 @@
     </div>
 
     <div class="page-header">
-      <h2>Samples</h2>
+        <h2>Samples</h2>
     </div>
 
     <!-- Samples -->
     <div class="row">
         <div class="span4">
             <h3>Connection API</h3>
-            <p>Demonstrates all features of the lower-level connection API including starting and stopping, sending and
-               receiving messages, and managing groups.</p>
+            <p>
+                Demonstrates all features of the lower-level connection API including starting and stopping, sending and
+               receiving messages, and managing groups.
+            </p>
             <p><a class="btn" href="Raw/">View sample &raquo;</a></p>
         </div>
         <div class="span4">
@@ -34,7 +36,7 @@
             <p><a class="btn" href="Hubs/ConnectDisconnect/">View sample &raquo;</a></p>
         </div>
     </div>
-    
+
     <div class="row">
         <div class="span4">
             <h3>Demo Hub</h3>
@@ -92,14 +94,14 @@
             <p><a class="btn" href="Hubs/HubConnectionAPI/">View sample &raquo;</a></p>
         </div>
     </div>
-    
+
     <div class="row">
-         <div class="span4">
-            <h3>Messages Loops</h3>
-            <p>A sample that demonstrates messages loops where client call the server method to broadcast message after the client successfully call the server method, and show missing and dup messages if happens.</p>
-            <p><a class="btn" href="Hubs/MesssagesLoops/">View sample &raquo;</a></p>
+        <div class="span4">
+            <h3>Message Loops</h3>
+            <p>A sample that demonstrates message loops where client calls the server method to broadcast message after the client successfully calls the server method once start, and shows missing and dup messages if happens.</p>
+            <p><a class="btn" href="Hubs/MessageLoops/">View sample &raquo;</a></p>
         </div>
-        
+
     </div>
 
     <div class="clear"></div>
