@@ -22,21 +22,23 @@ namespace Microsoft.AspNet.SignalR.Tests
                 host.Initialize(keepAlive: null);
                 var connection = CreateConnection(host, "/my-reconnect");
 
-                ((Client.IConnection)connection).KeepAliveData = new KeepAliveData(TimeSpan.FromSeconds(2));
-
-                connection.Reconnected += () =>
+                using (connection)
                 {
-                    mre.Set();
-                };
+                    ((Client.IConnection)connection).KeepAliveData = new KeepAliveData(TimeSpan.FromSeconds(2));
 
-                connection.Start(host.Transport).Wait();
+                    connection.Reconnected += () =>
+                    {
+                        mre.Set();
+                    };
 
-                // Assert
-                Assert.True(mre.Wait(TimeSpan.FromSeconds(10)));
+                    connection.Start(host.Transport).Wait();
 
-                // Clean-up
-                mre.Dispose();
-                connection.Stop();
+                    // Assert
+                    Assert.True(mre.Wait(TimeSpan.FromSeconds(10)));
+
+                    // Clean-up
+                    mre.Dispose();
+                }
             }
         }
 
@@ -54,25 +56,27 @@ namespace Microsoft.AspNet.SignalR.Tests
                 host.Initialize(keepAlive: null);
                 var connection = CreateConnection(host, "/my-reconnect");
 
-                ((Client.IConnection)connection).KeepAliveData = new KeepAliveData(TimeSpan.FromSeconds(2));
-
-                connection.Reconnected += () =>
+                using (connection)
                 {
-                    mre.Set();
-                };
+                    ((Client.IConnection)connection).KeepAliveData = new KeepAliveData(TimeSpan.FromSeconds(2));
 
-                connection.Start(host.Transport).Wait();
+                    connection.Reconnected += () =>
+                    {
+                        mre.Set();
+                    };
 
-                // Assert that Reconnected is called
-                Assert.True(mre.Wait(TimeSpan.FromSeconds(10)));
+                    connection.Start(host.Transport).Wait();
 
-                // Assert that Reconnected is called again
-                mre.Reset();
-                Assert.True(mre.Wait(TimeSpan.FromSeconds(10)));
+                    // Assert that Reconnected is called
+                    Assert.True(mre.Wait(TimeSpan.FromSeconds(10)));
 
-                // Clean-up
-                mre.Dispose();
-                connection.Stop();
+                    // Assert that Reconnected is called again
+                    mre.Reset();
+                    Assert.True(mre.Wait(TimeSpan.FromSeconds(10)));
+
+                    // Clean-up
+                    mre.Dispose();
+                }
             }
         }
 
@@ -89,21 +93,23 @@ namespace Microsoft.AspNet.SignalR.Tests
                 host.Initialize(keepAlive: null);
                 var connection = CreateConnection(host, "/my-reconnect");
 
-                ((Client.IConnection)connection).KeepAliveData = new KeepAliveData(TimeSpan.FromSeconds(2));
-
-                connection.ConnectionSlow += () =>
+                using (connection)
                 {
-                    mre.Set();
-                };
+                    ((Client.IConnection)connection).KeepAliveData = new KeepAliveData(TimeSpan.FromSeconds(2));
 
-                connection.Start(host.Transport).Wait();
+                    connection.ConnectionSlow += () =>
+                    {
+                        mre.Set();
+                    };
 
-                // Assert
-                Assert.True(mre.Wait(TimeSpan.FromSeconds(10)));
+                    connection.Start(host.Transport).Wait();
 
-                // Clean-up
-                mre.Dispose();
-                connection.Stop();
+                    // Assert
+                    Assert.True(mre.Wait(TimeSpan.FromSeconds(10)));
+
+                    // Clean-up
+                    mre.Dispose();
+                }
             }
         }
     }

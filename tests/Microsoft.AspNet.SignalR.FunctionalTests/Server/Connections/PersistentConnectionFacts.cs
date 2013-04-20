@@ -112,22 +112,23 @@ namespace Microsoft.AspNet.SignalR.Tests
 
                     var connection1 = new Client.Connection("http://foo/echo");
 
-                    var wh1 = new ManualResetEventSlim(initialState: false);
-
-                    connection1.Start(host).Wait();
-
-                    connection1.Received += data =>
+                    using (connection1)
                     {
-                        Assert.Equal("yay", data);
-                        wh1.Set();
-                    };
+                        var wh1 = new ManualResetEventSlim(initialState: false);
 
-                    connectionContext.Groups.Add(connection1.ConnectionId, "Foo").Wait();
-                    connectionContext.Groups.Send("Foo", "yay");
+                        connection1.Start(host).Wait();
 
-                    Assert.True(wh1.Wait(TimeSpan.FromSeconds(10)));
+                        connection1.Received += data =>
+                        {
+                            Assert.Equal("yay", data);
+                            wh1.Set();
+                        };
 
-                    connection1.Stop();
+                        connectionContext.Groups.Add(connection1.ConnectionId, "Foo").Wait();
+                        connectionContext.Groups.Send("Foo", "yay");
+
+                        Assert.True(wh1.Wait(TimeSpan.FromSeconds(10)));
+                    }
                 }
             }
 
@@ -145,9 +146,10 @@ namespace Microsoft.AspNet.SignalR.Tests
 
                     var connection = CreateConnection(host, "/protected");
 
-                    Assert.Throws<AggregateException>(() => connection.Start(host.Transport).Wait());
-
-                    connection.Stop();
+                    using (connection)
+                    {
+                        Assert.Throws<AggregateException>(() => connection.Start(host.Transport).Wait());
+                    }
                 }
             }
 
@@ -164,18 +166,20 @@ namespace Microsoft.AspNet.SignalR.Tests
                     host.Initialize();
 
                     var connection = CreateConnection(host, "/add-group");
-                    connection.Received += data =>
+
+                    using (connection)
                     {
-                        Assert.Equal("hey", data);
-                        wh.Set();
-                    };
+                        connection.Received += data =>
+                        {
+                            Assert.Equal("hey", data);
+                            wh.Set();
+                        };
 
-                    connection.Start(host.Transport).Wait();
-                    connection.SendWithTimeout("");
+                        connection.Start(host.Transport).Wait();
+                        connection.SendWithTimeout("");
 
-                    Assert.True(wh.Wait(TimeSpan.FromSeconds(5)));
-
-                    connection.Stop();
+                        Assert.True(wh.Wait(TimeSpan.FromSeconds(5)));
+                    }
                 }
             }
 
@@ -270,15 +274,17 @@ namespace Microsoft.AspNet.SignalR.Tests
                     host.Initialize();
 
                     var connection = CreateConnection(host, "/my-reconnect");
-                    connection.Start(host.Transport).Wait();
 
-                    host.Shutdown();
+                    using (connection)
+                    {
+                        connection.Start(host.Transport).Wait();
 
-                    Thread.Sleep(TimeSpan.FromSeconds(5));
+                        host.Shutdown();
 
-                    Assert.Equal(Client.ConnectionState.Reconnecting, connection.State);
+                        Thread.Sleep(TimeSpan.FromSeconds(5));
 
-                    connection.Stop();
+                        Assert.Equal(Client.ConnectionState.Reconnecting, connection.State);
+                    }
                 }
             }
 
@@ -424,23 +430,24 @@ namespace Microsoft.AspNet.SignalR.Tests
 
                     var connection1 = CreateConnection(host, "/filter");
                     var connection2 = CreateConnection(host, "/filter");
+                 
+                    using(connection1)
+                    using (connection2)
+                    {
+                        var wh1 = new ManualResetEventSlim(initialState: false);
+                        var wh2 = new ManualResetEventSlim(initialState: false);
 
-                    var wh1 = new ManualResetEventSlim(initialState: false);
-                    var wh2 = new ManualResetEventSlim(initialState: false);
+                        connection1.Received += data => wh1.Set();
+                        connection2.Received += data => wh2.Set();
 
-                    connection1.Received += data => wh1.Set();
-                    connection2.Received += data => wh2.Set();
+                        connection1.Start(host.TransportFactory()).Wait();
+                        connection2.Start(host.TransportFactory()).Wait();
 
-                    connection1.Start(host.TransportFactory()).Wait();
-                    connection2.Start(host.TransportFactory()).Wait();
+                        connection1.SendWithTimeout("test");
 
-                    connection1.SendWithTimeout("test");
-
-                    Assert.False(wh1.WaitHandle.WaitOne(TimeSpan.FromSeconds(5)));
-                    Assert.True(wh2.WaitHandle.WaitOne(TimeSpan.FromSeconds(5)));
-
-                    connection1.Stop();
-                    connection2.Stop();
+                        Assert.False(wh1.WaitHandle.WaitOne(TimeSpan.FromSeconds(5)));
+                        Assert.True(wh2.WaitHandle.WaitOne(TimeSpan.FromSeconds(5)));
+                    }
                 }
             }
 
@@ -457,11 +464,12 @@ namespace Microsoft.AspNet.SignalR.Tests
 
                     var connection = CreateConnection(host, "/sync-error");
 
-                    connection.Start(host.Transport).Wait();
+                    using (connection)
+                    {
+                        connection.Start(host.Transport).Wait();
 
-                    Assert.Throws<AggregateException>(() => connection.SendWithTimeout("test"));
-
-                    connection.Stop();
+                        Assert.Throws<AggregateException>(() => connection.SendWithTimeout("test"));
+                    }
                 }
             }
         }

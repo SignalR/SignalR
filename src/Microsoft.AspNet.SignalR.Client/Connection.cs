@@ -28,7 +28,7 @@ namespace Microsoft.AspNet.SignalR.Client
     /// Provides client connections for SignalR services.
     /// </summary>
     [SuppressMessage("Microsoft.Design", "CA1001:TypesThatOwnDisposableFieldsShouldBeDisposable", Justification = "_disconnectCts is disposed on disconnect.")]
-    public class Connection : IConnection
+    public class Connection : IConnection, IDisposable
     {
         internal static readonly TimeSpan DefaultAbortTimeout = TimeSpan.FromSeconds(30);
 
@@ -790,6 +790,27 @@ namespace Microsoft.AspNet.SignalR.Client
             public override Encoding Encoding
             {
                 get { return Encoding.UTF8; }
+            }
+        }
+
+        /// <summary>
+        /// Stop the connection, equivalent to calling connection.stop
+        /// </summary>
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        /// <summary>
+        /// Stop the connection, equivalent to calling connection.stop
+        /// </summary>
+        /// <param name="disposing">Set this to true to perform the dispose, false to do nothing</param>
+        protected virtual void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                Stop();
             }
         }
     }
