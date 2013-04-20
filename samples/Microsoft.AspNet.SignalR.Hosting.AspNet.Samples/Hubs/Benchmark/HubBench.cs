@@ -1,7 +1,7 @@
-﻿using Microsoft.AspNet.SignalR.Hubs;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNet.SignalR.Hubs;
 
 namespace Microsoft.AspNet.SignalR.Samples.Hubs.Benchmark
 {

@@ -302,74 +302,67 @@
              }
         };
 
-        proxies.hubClientsAPIs = this.createHubProxy('hubClientsAPIs'); 
-        proxies.hubClientsAPIs.client = { };
-        proxies.hubClientsAPIs.server = {
-            getMessageAll: function (connectionId, message) {
-            /// <summary>Calls the getMessageAll method on the server-side HubClientsAPIs hub.&#10;Returns a jQuery.Deferred() promise.</summary>
-            /// <param name=\"connectionId\" type=\"String\">Server side type is System.String</param>
+        proxies.hubConnectionAPI = this.createHubProxy('hubConnectionAPI'); 
+        proxies.hubConnectionAPI.client = { };
+        proxies.hubConnectionAPI.server = {
+            displayMessageAll: function (message) {
+            /// <summary>Calls the DisplayMessageAll method on the server-side HubConnectionAPI hub.&#10;Returns a jQuery.Deferred() promise.</summary>
             /// <param name=\"message\" type=\"String\">Server side type is System.String</param>
-                return proxies.hubClientsAPIs.invoke.apply(proxies.hubClientsAPIs, $.merge(["getMessageAll"], $.makeArray(arguments)));
+                return proxies.hubConnectionAPI.invoke.apply(proxies.hubConnectionAPI, $.merge(["DisplayMessageAll"], $.makeArray(arguments)));
              },
 
-            getMessageAllExcept: function (connectionId, message, target_connectionId) {
-            /// <summary>Calls the getMessageAllExcept method on the server-side HubClientsAPIs hub.&#10;Returns a jQuery.Deferred() promise.</summary>
-            /// <param name=\"connectionId\" type=\"String\">Server side type is System.String</param>
+            displayMessageAllExcept: function (message, targetConnectionId) {
+            /// <summary>Calls the DisplayMessageAllExcept method on the server-side HubConnectionAPI hub.&#10;Returns a jQuery.Deferred() promise.</summary>
             /// <param name=\"message\" type=\"String\">Server side type is System.String</param>
-            /// <param name=\"target_connectionId\" type=\"Object\">Server side type is System.String[]</param>
-                return proxies.hubClientsAPIs.invoke.apply(proxies.hubClientsAPIs, $.merge(["getMessageAllExcept"], $.makeArray(arguments)));
+            /// <param name=\"targetConnectionId\" type=\"Object\">Server side type is System.String[]</param>
+                return proxies.hubConnectionAPI.invoke.apply(proxies.hubConnectionAPI, $.merge(["DisplayMessageAllExcept"], $.makeArray(arguments)));
              },
 
-            getMessageCaller: function (connectionId, message) {
-            /// <summary>Calls the getMessageCaller method on the server-side HubClientsAPIs hub.&#10;Returns a jQuery.Deferred() promise.</summary>
-            /// <param name=\"connectionId\" type=\"String\">Server side type is System.String</param>
+            displayMessageCaller: function (message) {
+            /// <summary>Calls the DisplayMessageCaller method on the server-side HubConnectionAPI hub.&#10;Returns a jQuery.Deferred() promise.</summary>
             /// <param name=\"message\" type=\"String\">Server side type is System.String</param>
-                return proxies.hubClientsAPIs.invoke.apply(proxies.hubClientsAPIs, $.merge(["getMessageCaller"], $.makeArray(arguments)));
+                return proxies.hubConnectionAPI.invoke.apply(proxies.hubConnectionAPI, $.merge(["DisplayMessageCaller"], $.makeArray(arguments)));
              },
 
-            getMessageGroup: function (connectionId, groupNme, message) {
-            /// <summary>Calls the getMessageGroup method on the server-side HubClientsAPIs hub.&#10;Returns a jQuery.Deferred() promise.</summary>
-            /// <param name=\"connectionId\" type=\"String\">Server side type is System.String</param>
-            /// <param name=\"groupNme\" type=\"String\">Server side type is System.String</param>
+            displayMessageGroup: function (groupName, message) {
+            /// <summary>Calls the DisplayMessageGroup method on the server-side HubConnectionAPI hub.&#10;Returns a jQuery.Deferred() promise.</summary>
+            /// <param name=\"groupName\" type=\"String\">Server side type is System.String</param>
             /// <param name=\"message\" type=\"String\">Server side type is System.String</param>
-                return proxies.hubClientsAPIs.invoke.apply(proxies.hubClientsAPIs, $.merge(["getMessageGroup"], $.makeArray(arguments)));
+                return proxies.hubConnectionAPI.invoke.apply(proxies.hubConnectionAPI, $.merge(["DisplayMessageGroup"], $.makeArray(arguments)));
              },
 
-            getMessageOther: function (connectionId, message) {
-            /// <summary>Calls the getMessageOther method on the server-side HubClientsAPIs hub.&#10;Returns a jQuery.Deferred() promise.</summary>
-            /// <param name=\"connectionId\" type=\"String\">Server side type is System.String</param>
+            displayMessageOther: function (message) {
+            /// <summary>Calls the DisplayMessageOther method on the server-side HubConnectionAPI hub.&#10;Returns a jQuery.Deferred() promise.</summary>
             /// <param name=\"message\" type=\"String\">Server side type is System.String</param>
-                return proxies.hubClientsAPIs.invoke.apply(proxies.hubClientsAPIs, $.merge(["getMessageOther"], $.makeArray(arguments)));
+                return proxies.hubConnectionAPI.invoke.apply(proxies.hubConnectionAPI, $.merge(["DisplayMessageOther"], $.makeArray(arguments)));
              },
 
-            getMessageOthersInGroup: function (connectionId, groupNme, message) {
-            /// <summary>Calls the getMessageOthersInGroup method on the server-side HubClientsAPIs hub.&#10;Returns a jQuery.Deferred() promise.</summary>
-            /// <param name=\"connectionId\" type=\"String\">Server side type is System.String</param>
-            /// <param name=\"groupNme\" type=\"String\">Server side type is System.String</param>
+            displayMessageOthersInGroup: function (groupName, message) {
+            /// <summary>Calls the DisplayMessageOthersInGroup method on the server-side HubConnectionAPI hub.&#10;Returns a jQuery.Deferred() promise.</summary>
+            /// <param name=\"groupName\" type=\"String\">Server side type is System.String</param>
             /// <param name=\"message\" type=\"String\">Server side type is System.String</param>
-                return proxies.hubClientsAPIs.invoke.apply(proxies.hubClientsAPIs, $.merge(["getMessageOthersInGroup"], $.makeArray(arguments)));
+                return proxies.hubConnectionAPI.invoke.apply(proxies.hubConnectionAPI, $.merge(["DisplayMessageOthersInGroup"], $.makeArray(arguments)));
              },
 
-            getMessageSpecified: function (connectionId, target_connectionId, message) {
-            /// <summary>Calls the getMessageSpecified method on the server-side HubClientsAPIs hub.&#10;Returns a jQuery.Deferred() promise.</summary>
-            /// <param name=\"connectionId\" type=\"String\">Server side type is System.String</param>
-            /// <param name=\"target_connectionId\" type=\"String\">Server side type is System.String</param>
+            displayMessageSpecified: function (targetConnectionId, message) {
+            /// <summary>Calls the DisplayMessageSpecified method on the server-side HubConnectionAPI hub.&#10;Returns a jQuery.Deferred() promise.</summary>
+            /// <param name=\"targetConnectionId\" type=\"String\">Server side type is System.String</param>
             /// <param name=\"message\" type=\"String\">Server side type is System.String</param>
-                return proxies.hubClientsAPIs.invoke.apply(proxies.hubClientsAPIs, $.merge(["getMessageSpecified"], $.makeArray(arguments)));
+                return proxies.hubConnectionAPI.invoke.apply(proxies.hubConnectionAPI, $.merge(["DisplayMessageSpecified"], $.makeArray(arguments)));
              },
 
-            joinGroup: function (connectionId, groupNme) {
-            /// <summary>Calls the joinGroup method on the server-side HubClientsAPIs hub.&#10;Returns a jQuery.Deferred() promise.</summary>
+            joinGroup: function (connectionId, groupName) {
+            /// <summary>Calls the JoinGroup method on the server-side HubConnectionAPI hub.&#10;Returns a jQuery.Deferred() promise.</summary>
             /// <param name=\"connectionId\" type=\"String\">Server side type is System.String</param>
-            /// <param name=\"groupNme\" type=\"String\">Server side type is System.String</param>
-                return proxies.hubClientsAPIs.invoke.apply(proxies.hubClientsAPIs, $.merge(["joinGroup"], $.makeArray(arguments)));
+            /// <param name=\"groupName\" type=\"String\">Server side type is System.String</param>
+                return proxies.hubConnectionAPI.invoke.apply(proxies.hubConnectionAPI, $.merge(["JoinGroup"], $.makeArray(arguments)));
              },
 
-            leaveGroup: function (connectionId, groupNme) {
-            /// <summary>Calls the leaveGroup method on the server-side HubClientsAPIs hub.&#10;Returns a jQuery.Deferred() promise.</summary>
+            leaveGroup: function (connectionId, groupName) {
+            /// <summary>Calls the LeaveGroup method on the server-side HubConnectionAPI hub.&#10;Returns a jQuery.Deferred() promise.</summary>
             /// <param name=\"connectionId\" type=\"String\">Server side type is System.String</param>
-            /// <param name=\"groupNme\" type=\"String\">Server side type is System.String</param>
-                return proxies.hubClientsAPIs.invoke.apply(proxies.hubClientsAPIs, $.merge(["leaveGroup"], $.makeArray(arguments)));
+            /// <param name=\"groupName\" type=\"String\">Server side type is System.String</param>
+                return proxies.hubConnectionAPI.invoke.apply(proxies.hubConnectionAPI, $.merge(["LeaveGroup"], $.makeArray(arguments)));
              }
         };
 
@@ -400,14 +393,13 @@
              }
         };
 
-        proxies.messagegsLoops = this.createHubProxy('messagegsLoops'); 
-        proxies.messagegsLoops.client = { };
-        proxies.messagegsLoops.server = {
-            sendMessageCount: function (message, connectionId) {
-            /// <summary>Calls the sendMessageCount method on the server-side MessagegsLoops hub.&#10;Returns a jQuery.Deferred() promise.</summary>
+        proxies.messageLoops = this.createHubProxy('messageLoops'); 
+        proxies.messageLoops.client = { };
+        proxies.messageLoops.server = {
+            sendMessageCount: function (message) {
+            /// <summary>Calls the SendMessageCount method on the server-side MessageLoops hub.&#10;Returns a jQuery.Deferred() promise.</summary>
             /// <param name=\"message\" type=\"Number\">Server side type is System.Int32</param>
-            /// <param name=\"connectionId\" type=\"String\">Server side type is System.String</param>
-                return proxies.messagegsLoops.invoke.apply(proxies.messagegsLoops, $.merge(["sendMessageCount"], $.makeArray(arguments)));
+                return proxies.messageLoops.invoke.apply(proxies.messageLoops, $.merge(["SendMessageCount"], $.makeArray(arguments)));
              }
         };
 

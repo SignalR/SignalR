@@ -7,7 +7,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace Microsoft.AspNet.SignalR.Samples.Hubs.HubClientsAPIs {
+namespace Microsoft.AspNet.SignalR.Samples.Hubs.HubConnectionAPI {
     
     
     public partial class Default {
