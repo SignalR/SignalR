@@ -58,55 +58,29 @@
     <Compile Include="..\Microsoft.AspNet.SignalR.Core\TaskAsyncHelper.cs">
       <Link>Infrastructure\TaskAsyncHelper.cs</Link>
     </Compile>
-    <Compile Include="..\Microsoft.AspNet.SignalR.Owin\Handlers\CallHandler.cs">
-      <Link>Handlers\CallHandler.cs</Link>
-    </Compile>
-    <Compile Include="..\Microsoft.AspNet.SignalR.Owin\Handlers\HubDispatcherHandler.cs">
-      <Link>Handlers\HubDispatcherHandler.cs</Link>
-    </Compile>
-    <Compile Include="..\Microsoft.AspNet.SignalR.Owin\Handlers\PersistentConnectionHandler.cs">
-      <Link>Handlers\PersistentConnectionHandler.cs</Link>
-    </Compile>
-    <Compile Include="..\Microsoft.AspNet.SignalR.Owin\Infrastructure\Headers.cs">
-      <Link>Infrastructure\Headers.cs</Link>
-    </Compile>
-    <Compile Include="..\Microsoft.AspNet.SignalR.Owin\Infrastructure\OwinConstants.cs">
-      <Link>Infrastructure\OwinConstants.cs</Link>
-    </Compile>
-    <Compile Include="..\Microsoft.AspNet.SignalR.Owin\Infrastructure\OwinEnvironmentExtensions.cs">
-      <Link>Infrastructure\OwinEnvironmentExtensions.cs</Link>
-    </Compile>
-    <Compile Include="..\Microsoft.AspNet.SignalR.Owin\Infrastructure\ParamDictionary.cs">
-      <Link>Infrastructure\ParamDictionary.cs</Link>
-    </Compile>
-    <Compile Include="..\Microsoft.AspNet.SignalR.Owin\Infrastructure\PrefixMatcher.cs">
-      <Link>Infrastructure\PrefixMatcher.cs</Link>
-    </Compile>
-    <Compile Include="..\Microsoft.AspNet.SignalR.Owin\Infrastructure\UrlDecoder.cs">
-      <Link>Infrastructure\UrlDecoder.cs</Link>
-    </Compile>
-    <Compile Include="..\Microsoft.AspNet.SignalR.Owin\OwinExtensions.cs">
-      <Link>OwinExtensions.cs</Link>
-    </Compile>
-    <Compile Include="..\Microsoft.AspNet.SignalR.Owin\RequestExtensions.cs">
-      <Link>RequestExtensions.cs</Link>
-    </Compile>
-    <Compile Include="..\Microsoft.AspNet.SignalR.Owin\Resources.Designer.cs">
-      <Link>Resource.Designer.cs</Link>
-    </Compile>
-    <Compile Include="..\Microsoft.AspNet.SignalR.Owin\ServerRequest.cs">
-      <Link>ServerRequest.cs</Link>
-    </Compile>
-    <Compile Include="..\Microsoft.AspNet.SignalR.Owin\ServerRequest.Owin.cs">
-      <Link>ServerRequest.Owin.cs</Link>
-    </Compile>
-    <Compile Include="..\Microsoft.AspNet.SignalR.Owin\ServerResponse.cs">
-      <Link>ServerResponse.cs</Link>
-    </Compile>
+    <Compile Include="Handlers\CallHandler.cs" />
+    <Compile Include="Handlers\HubDispatcherHandler.cs" />
+    <Compile Include="Handlers\PersistentConnectionHandler.cs" />
     <Compile Include="Infrastructure\ByteBuffer.cs" />
+    <Compile Include="Infrastructure\Headers.cs" />
+    <Compile Include="Infrastructure\OwinConstants.cs" />
+    <Compile Include="Infrastructure\OwinEnvironmentExtensions.cs" />
+    <Compile Include="Infrastructure\ParamDictionary.cs" />
+    <Compile Include="Infrastructure\PrefixMatcher.cs" />
+    <Compile Include="Infrastructure\UrlDecoder.cs" />
+    <Compile Include="OwinExtensions.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="OwinWebSocketHandler.cs" />
     <Compile Include="Infrastructure\WebSocketConstants.cs" />
+    <Compile Include="RequestExtensions.cs" />
+    <Compile Include="Resources.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
+    <Compile Include="ServerRequest.cs" />
+    <Compile Include="ServerRequest.Owin.cs" />
+    <Compile Include="ServerResponse.cs" />
     <Compile Include="WebSockets\DefaultWebSocketHandler.cs" />
     <Compile Include="WebSockets\WebSocketHandler.cs" />
     <Compile Include="WebSockets\WebSocketMessage.cs" />
@@ -122,8 +96,9 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="..\Microsoft.AspNet.SignalR.Owin\Resources.resx">
-      <Link>Resources.resx</Link>
+    <EmbeddedResource Include="Resources.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
       <SubType>Designer</SubType>
     </EmbeddedResource>
   </ItemGroup>

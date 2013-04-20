@@ -65,10 +65,10 @@
     <Compile Include="..\Microsoft.AspNet.SignalR.Core\TaskAsyncHelper.cs">
       <Link>Infrastructure\TaskAsyncHelper.cs</Link>
     </Compile>
-    <Compile Include="..\Microsoft.AspNet.SignalR.Owin\Infrastructure\Headers.cs">
+    <Compile Include="..\Microsoft.AspNet.SignalR.Owin45\Infrastructure\Headers.cs">
       <Link>Infrastructure\Headers.cs</Link>
     </Compile>
-    <Compile Include="..\Microsoft.AspNet.SignalR.Owin\Infrastructure\OwinConstants.cs">
+    <Compile Include="..\Microsoft.AspNet.SignalR.Owin45\Infrastructure\OwinConstants.cs">
       <Link>Infrastructure\OwinConstants.cs</Link>
     </Compile>
     <Compile Include="AsyncResult.cs" />
