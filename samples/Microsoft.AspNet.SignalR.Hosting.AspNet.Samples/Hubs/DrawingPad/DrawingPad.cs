@@ -1,6 +1,6 @@
-﻿using Microsoft.AspNet.SignalR.Hubs;
-using System.Threading;
+﻿using System.Threading;
 using System.Collections.Generic;
+using Microsoft.AspNet.SignalR.Hubs;
 
 namespace Microsoft.AspNet.SignalR.Hosting.AspNet.Samples.Hubs.DrawingPad
 {
