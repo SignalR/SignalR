@@ -35,38 +35,16 @@ namespace Microsoft.AspNet.SignalR.Samples.Hubs.DemoHub
             return Clients.All.signal(Guid.NewGuid());
         }
 
-#if NET45
         public async Task PlainTask()
         {
             await Task.Delay(500);
         }
-#else
-        public Task PlainTask()
-        {
-            return Task.Factory.StartNew(() =>
-            {
-                Thread.Sleep(500);
-            });
-        }
-#endif
 
-#if NET45
         public async Task<int> GenericTaskWithContinueWith()
         {
             return await Task.Run(() => 2 + 2).ContinueWith(task => task.Result);
         }
-#else
-        public Task<int> GenericTaskWithContinueWith()
-        {
-            return Task.Factory.StartNew(() =>
-            {
-                return 2 + 2;
-            })
-            .ContinueWith(task => task.Result);
-        }
-#endif
 
-#if NET45
         public async Task TaskWithException()
         {
             await Task.Factory.StartNew(() =>
@@ -74,17 +52,7 @@ namespace Microsoft.AspNet.SignalR.Samples.Hubs.DemoHub
                 throw new Exception();
             });
         }
-#else
-        public Task TaskWithException()
-        {
-            return Task.Factory.StartNew(() =>
-            {
-                throw new Exception();
-            });
-        }
-#endif
 
-#if NET45
         public async Task<int> GenericTaskWithException()
         {
             return await Task<int>.Factory.StartNew(() =>
@@ -92,16 +60,6 @@ namespace Microsoft.AspNet.SignalR.Samples.Hubs.DemoHub
                 throw new Exception();
             });
         }
-
-#else
-        public Task<int> GenericTaskWithException()
-        {
-            return Task<int>.Factory.StartNew(() =>
-            {
-                throw new Exception();
-            });
-        }
-#endif
 
         public void SynchronousException()
         {

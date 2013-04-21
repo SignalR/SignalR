@@ -12,12 +12,8 @@ using Microsoft.AspNet.SignalR.Hosting;
 namespace Microsoft.AspNet.SignalR.Owin
 {
     using WebSocketFunc = Func<IDictionary<string, object>, Task>;
-    public partial class ServerRequest : 
-#if NET45
-        IWebSocketRequest
-#else
-        IRequest
-#endif
+
+    public partial class ServerRequest : IWebSocketRequest
     {
         private static readonly char[] CommaSemicolon = new[] { ',', ';' };
 
@@ -138,7 +134,6 @@ namespace Microsoft.AspNet.SignalR.Owin
             private set;
         }
 
-#if NET45
         public Task AcceptWebSocketRequest(Func<IWebSocket, Task> callback)
         {
             var accept = _environment.Get<Action<IDictionary<string, object>, WebSocketFunc>>(OwinConstants.WebSocketAccept);
@@ -151,6 +146,5 @@ namespace Microsoft.AspNet.SignalR.Owin
             accept(null, handler.ProcessRequestAsync);
             return TaskAsyncHelper.Empty;
         }
-#endif
     }
 }
