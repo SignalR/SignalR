@@ -66,6 +66,8 @@ namespace Microsoft.AspNet.SignalR.Redis
 
             if (disposing)
             {
+                _trace.TraceInformation("Dispose()");
+
                 if (_channel != null)
                 {
                     _channel.Unsubscribe(_key);
@@ -247,10 +249,13 @@ namespace Microsoft.AspNet.SignalR.Redis
         private void AttemptReconnect(Exception exception)
         {
             // Change the state to closed and retry connecting
-            if (Interlocked.CompareExchange(ref _state,
-                                            State.Closed,
-                                            State.Connected) == State.Connected)
+            var oldState = Interlocked.CompareExchange(ref _state,
+                                                       State.Closed,
+                                                       State.Connected);
+            if (oldState == State.Connected)
             {
+                _trace.TraceInformation("Attempting reconnect...");
+
                 // Let the base class know that an error occurred
                 OnError(0, exception);
 
@@ -274,31 +279,23 @@ namespace Microsoft.AspNet.SignalR.Redis
 
         private void ConnectWithRetry()
         {
-            // Attempt to change to connecting
-            if (Interlocked.CompareExchange(ref _state,
-                                            State.Connecting,
-                                            State.Connected) == State.Connecting)
-            {
-                // Already connected so bail
-                return;
-            }
-
             Task connectTask = ConnectToRedis();
 
             connectTask.ContinueWith(task =>
             {
                 if (task.IsFaulted)
                 {
+                    _trace.TraceError("Error connecting to Redis - " + task.Exception.GetBaseException());
+
                     TaskAsyncHelper.Delay(ReconnectDelay)
                                    .Then(bus => bus.ConnectWithRetry(), this);
                 }
                 else
                 {
                     var oldState = Interlocked.CompareExchange(ref _state,
-                                                             State.Connected,
-                                                             State.Connecting);
-                    if (oldState == State.Connecting || 
-                        oldState == State.Closed)
+                                                               State.Connected,
+                                                               State.Closed);
+                    if (oldState == State.Closed)
                     {
                         Open(0);
                     }
@@ -349,7 +346,7 @@ namespace Microsoft.AspNet.SignalR.Redis
             }
             catch (Exception ex)
             {
-                _trace.TraceError("Error connecting to redis - " + ex.GetBaseException());
+                _trace.TraceError("Error connecting to Redis - " + ex.GetBaseException());
 
                 return TaskAsyncHelper.FromError(ex);
             }
@@ -358,9 +355,8 @@ namespace Microsoft.AspNet.SignalR.Redis
         private static class State
         {
             public const int Closed = 0;
-            public const int Connecting = 1;
-            public const int Connected = 2;
-            public const int Disposed = 3;
+            public const int Connected = 1;
+            public const int Disposed = 2;
         }
     }
 }
