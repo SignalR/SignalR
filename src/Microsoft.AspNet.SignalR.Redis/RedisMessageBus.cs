@@ -287,6 +287,11 @@ namespace Microsoft.AspNet.SignalR.Redis
                 {
                     _trace.TraceError("Error connecting to Redis - " + task.Exception.GetBaseException());
 
+                    if (_state == State.Disposed)
+                    {
+                        return;
+                    }
+
                     TaskAsyncHelper.Delay(ReconnectDelay)
                                    .Then(bus => bus.ConnectWithRetry(), this);
                 }
