@@ -62,25 +62,46 @@ namespace Microsoft.AspNet.SignalR.Redis
 
         protected override void Dispose(bool disposing)
         {
-            Interlocked.Exchange(ref _state, State.Disposed);
-
             if (disposing)
             {
-                _trace.TraceInformation("Dispose()");
+                var oldState = Interlocked.Exchange(ref _state, State.Disposing);
 
-                if (_channel != null)
+                switch (oldState)
                 {
-                    _channel.Unsubscribe(_key);
-                    _channel.Close(abort: true);
-                }
-
-                if (_connection != null)
-                {
-                    _connection.Close(abort: true);
+                    case State.Connected:
+                        Shutdown();
+                        break;
+                    case State.Closed:
+                    case State.Disposing:
+                        // No-op
+                        break;
+                    case State.Disposed:
+                        Interlocked.Exchange(ref _state, State.Disposed);
+                        break;
+                    default:
+                        break;
                 }
             }
 
             base.Dispose(disposing);
+        }
+
+        private void Shutdown()
+        {
+            _trace.TraceInformation("Shutdown()");
+
+            if (_channel != null)
+            {
+                _channel.Unsubscribe(_key);
+                _channel.Close(abort: true);
+            }
+
+            if (_connection != null)
+            {
+                _connection.Close(abort: true);
+            }
+
+            Interlocked.Exchange(ref _state, State.Disposed);
         }
 
         [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "The exception is set in the tcs")]
@@ -287,8 +308,9 @@ namespace Microsoft.AspNet.SignalR.Redis
                 {
                     _trace.TraceError("Error connecting to Redis - " + task.Exception.GetBaseException());
 
-                    if (_state == State.Disposed)
+                    if (_state == State.Disposing)
                     {
+                        Shutdown();
                         return;
                     }
 
@@ -303,6 +325,10 @@ namespace Microsoft.AspNet.SignalR.Redis
                     if (oldState == State.Closed)
                     {
                         Open(0);
+                    }
+                    else if (oldState == State.Disposing)
+                    {
+                        Shutdown();
                     }
                 }
             },
@@ -361,7 +387,8 @@ namespace Microsoft.AspNet.SignalR.Redis
         {
             public const int Closed = 0;
             public const int Connected = 1;
-            public const int Disposed = 2;
+            public const int Disposing = 2;
+            public const int Disposed = 3;
         }
     }
 }
