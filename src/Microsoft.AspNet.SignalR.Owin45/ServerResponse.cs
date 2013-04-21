@@ -40,11 +40,7 @@ namespace Microsoft.AspNet.SignalR.Owin
 
         public Task Flush()
         {
-#if NET45
             return ResponseBody.FlushAsync();
-#else
-            return TaskAsyncHelper.FromMethod(() => ResponseBody.Flush());
-#endif
         }
 
         public Task End()

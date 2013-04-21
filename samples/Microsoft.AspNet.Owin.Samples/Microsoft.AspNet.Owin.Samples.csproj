@@ -9,7 +9,7 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>Microsoft.AspNet.Owin.Samples</RootNamespace>
     <AssemblyName>Microsoft.AspNet.Owin.Samples</AssemblyName>
-    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <TargetFrameworkProfile />
     <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\..\</SolutionDir>
@@ -25,6 +25,7 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -34,6 +35,7 @@
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Microsoft.Owin.Host.HttpListener, Version=0.21.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
@@ -74,9 +76,9 @@
       <Project>{1b9a82c4-bca1-4834-a33e-226f17be070b}</Project>
       <Name>Microsoft.AspNet.SignalR.Core</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\src\Microsoft.AspNet.SignalR.Owin\Microsoft.AspNet.SignalR.Owin.csproj">
-      <Project>{2b8c6dad-4d85-41b1-83fd-248d9f347522}</Project>
-      <Name>Microsoft.AspNet.SignalR.Owin</Name>
+    <ProjectReference Include="..\..\src\Microsoft.AspNet.SignalR.Owin45\Microsoft.AspNet.SignalR.Owin45.csproj">
+      <Project>{45892477-ef4e-4f45-a431-822755a38ea0}</Project>
+      <Name>Microsoft.AspNet.SignalR.Owin45</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

@@ -60,17 +60,11 @@
     <Compile Include="..\Common\CommonVersionInfo.cs">
       <Link>Properties\CommonVersionInfo.cs</Link>
     </Compile>
-    <Compile Include="..\Microsoft.AspNet.SignalR.SystemWeb\Infrastructure\BuildManagerAssemblyLocator.cs">
-      <Link>Infrastructure\BuildManagerAssemblyLocator.cs</Link>
-    </Compile>
-    <Compile Include="..\Microsoft.AspNet.SignalR.SystemWeb\RequestExtensions.cs">
-      <Link>RequestExtensions.cs</Link>
-    </Compile>
-    <Compile Include="..\Microsoft.AspNet.SignalR.SystemWeb\SignalRRouteExtensions.cs">
-      <Link>SignalRRouteExtensions.cs</Link>
-    </Compile>
+    <Compile Include="Infrastructure\BuildManagerAssemblyLocator.cs" />
     <Compile Include="Infrastructure\MachineKeyProtectedData.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="RequestExtensions.cs" />
+    <Compile Include="SignalRRouteExtensions.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Microsoft.AspNet.SignalR.Core\Microsoft.AspNet.SignalR.Core.csproj">
