@@ -88,14 +88,15 @@
             <h3>Scenarios</h3>
             <p>Samples to validate system behavior while doing live modifications on network connectivity and scaleout</p>
             <p><a class="btn" href="Hubs/Test/">View sample &raquo;</a></p>
-            
-            <h3>Hub Connection API</h3>
-            <p>A sample that demonstrates Hub Connection API including starting and stopping, sending and receiving messages, and managing groups.</p>
-            <p><a class="btn" href="Hubs/HubConnectionAPI/">View sample &raquo;</a></p>
         </div>
     </div>
 
     <div class="row">
+        <div class="span4">
+            <h3>Hub Connection API</h3>
+            <p>A sample that demonstrates Hub Connection API including starting and stopping, sending and receiving messages, and managing groups.</p>
+            <p><a class="btn" href="Hubs/HubConnectionAPI/">View sample &raquo;</a></p>
+        </div>
         <div class="span4">
             <h3>Message Loops</h3>
             <p>A sample that demonstrates message loops where client calls the server method to broadcast message after the client successfully calls the server method once start, and shows missing and dup messages if happens.</p>
