@@ -84,10 +84,11 @@
             <p>A sample that uses a high-frequency timer to deliver updates at a high rate (e.g. 25 Hz) as might be typical in a real-time, multi-user HTML5 game.</p>
             <p><a class="btn" href="Hubs/RealtimeBroadcast/">View sample &raquo;</a></p>
         </div>
-            
+        <div class="span4">
             <h3>Hub Connection API</h3>
             <p>A sample that demonstrates Hub Connection API including starting and stopping, sending and receiving messages, and managing groups.</p>
             <p><a class="btn" href="Hubs/HubConnectionAPI/">View sample &raquo;</a></p>
+        </div>
     </div>
 
     <div class="row">
@@ -96,7 +97,6 @@
             <p>A sample that demonstrates message loops where client calls the server method to broadcast message after the client successfully calls the server method once start, and shows missing and dup messages if happens.</p>
             <p><a class="btn" href="Hubs/MessageLoops/">View sample &raquo;</a></p>
         </div>
-
     </div>
 
     <div class="clear"></div>
