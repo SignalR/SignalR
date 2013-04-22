@@ -204,25 +204,25 @@
     <Compile Include="..\Microsoft.AspNet.SignalR.Core\Infrastructure\TaskQueue.cs">
       <Link>Infrastructure\TaskQueue.cs</Link>
     </Compile>
-    <Compile Include="..\Microsoft.AspNet.SignalR.Core\TaskAsyncHelper.cs">
-      <Link>Infrastructure\TaskAsyncHelper.cs</Link>
-    </Compile>
-    <Compile Include="..\Microsoft.AspNet.SignalR.Owin45\Infrastructure\ByteBuffer.cs">
+    <Compile Include="..\Microsoft.AspNet.SignalR.Core\Owin\Infrastructure\ByteBuffer.cs">
       <Link>Infrastructure\ByteBuffer.cs</Link>
     </Compile>
-    <Compile Include="..\Microsoft.AspNet.SignalR.Owin45\WebSockets\WebSocketHandler.cs">
+    <Compile Include="..\Microsoft.AspNet.SignalR.Core\Owin\WebSockets\WebSocketHandler.cs">
       <Link>Transports\WebSockets\WebSocketHandler.cs</Link>
     </Compile>
-    <Compile Include="..\Microsoft.AspNet.SignalR.Owin45\WebSockets\WebSocketMessage.cs">
+    <Compile Include="..\Microsoft.AspNet.SignalR.Core\Owin\WebSockets\WebSocketMessage.cs">
       <Link>Transports\WebSockets\WebSocketMessage.cs</Link>
     </Compile>
-    <Compile Include="..\Microsoft.AspNet.SignalR.Owin45\WebSockets\WebSocketMessageReader.cs">
+    <Compile Include="..\Microsoft.AspNet.SignalR.Core\Owin\WebSockets\WebSocketMessageReader.cs">
       <Link>Transports\WebSockets\WebSocketMessageReader.cs</Link>
     </Compile>
     <Compile Include="Http\HttpRequestMessageWrapper.cs" />
     <Compile Include="Http\DefaultHttpClient.cs" />
     <Compile Include="Http\DefaultHttpHandler.cs" />
     <Compile Include="Http\HttpResponseMessageWrapper.cs" />
+    <Compile Include="..\Microsoft.AspNet.SignalR.Core\TaskAsyncHelper.cs">
+      <Link>Infrastructure\TaskAsyncHelper.cs</Link>
+    </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Transports\WebSockets\WebSocketWrapperRequest.cs" />
     <Compile Include="Transports\WebSocketTransport.cs" />

@@ -32,8 +32,9 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Microsoft.Owin.Hosting">
-      <HintPath>..\..\packages\Microsoft.Owin.Hosting.0.18.0-alpha\lib\net40\Microsoft.Owin.Hosting.dll</HintPath>
+    <Reference Include="Microsoft.Owin.Hosting, Version=0.22.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\packages\Microsoft.Owin.Hosting.1.1.0-alpha1-20421-219\lib\net40\Microsoft.Owin.Hosting.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.Web.Administration, Version=7.9.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
@@ -75,34 +76,40 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="..\..\samples\microsoft.aspnet.signalr.hosting.aspnet.samples\hubs\auth\AdminAuthHub.cs">
+    <Compile Include="..\..\samples\Microsoft.AspNet.SignalR.Samples\Hubs\Auth\AdminAuthHub.cs">
       <Link>Hubs\AdminAuthHub.cs</Link>
     </Compile>
-    <Compile Include="..\..\samples\microsoft.aspnet.signalr.hosting.aspnet.samples\hubs\auth\AuthHub.cs">
+    <Compile Include="..\..\samples\Microsoft.AspNet.SignalR.Samples\Hubs\Auth\AuthHub.cs">
       <Link>Hubs\AuthHub.cs</Link>
     </Compile>
-    <Compile Include="..\..\samples\microsoft.aspnet.signalr.hosting.aspnet.samples\hubs\auth\IncomingAuthHub.cs">
+    <Compile Include="..\..\samples\Microsoft.AspNet.SignalR.Samples\Hubs\Auth\AuthorizeClaimsAttribute.cs">
+      <Link>Hubs\AuthorizeClaimsAttribute.cs</Link>
+    </Compile>
+    <Compile Include="..\..\samples\Microsoft.AspNet.SignalR.Samples\Hubs\Auth\HeaderAuthHub.cs">
+      <Link>Hubs\HeaderAuthHub.cs</Link>
+    </Compile>
+    <Compile Include="..\..\samples\Microsoft.AspNet.SignalR.Samples\Hubs\Auth\IncomingAuthHub.cs">
       <Link>Hubs\IncomingAuthHub.cs</Link>
     </Compile>
-    <Compile Include="..\..\samples\microsoft.aspnet.signalr.hosting.aspnet.samples\hubs\auth\InheritAuthHub.cs">
+    <Compile Include="..\..\samples\Microsoft.AspNet.SignalR.Samples\Hubs\Auth\InheritAuthHub.cs">
       <Link>Hubs\InheritAuthHub.cs</Link>
     </Compile>
-    <Compile Include="..\..\samples\microsoft.aspnet.signalr.hosting.aspnet.samples\hubs\auth\InvokeAuthHub.cs">
+    <Compile Include="..\..\samples\Microsoft.AspNet.SignalR.Samples\Hubs\Auth\InvokeAuthHub.cs">
       <Link>Hubs\InvokeAuthHub.cs</Link>
     </Compile>
-    <Compile Include="..\..\samples\microsoft.aspnet.signalr.hosting.aspnet.samples\hubs\auth\NoAuthHub.cs">
+    <Compile Include="..\..\samples\Microsoft.AspNet.SignalR.Samples\Hubs\Auth\NoAuthHub.cs">
       <Link>Hubs\NoAuthHub.cs</Link>
     </Compile>
-    <Compile Include="..\..\samples\microsoft.aspnet.signalr.hosting.aspnet.samples\hubs\auth\UserAndRoleAuthHub.cs">
+    <Compile Include="..\..\samples\Microsoft.AspNet.SignalR.Samples\Hubs\Auth\UserAndRoleAuthHub.cs">
       <Link>Hubs\UserAndRoleAuthHub.cs</Link>
     </Compile>
-    <Compile Include="..\..\samples\Microsoft.AspNet.SignalR.Hosting.AspNet.Samples\Hubs\ConnectDisconnect\Status.cs">
+    <Compile Include="..\..\samples\Microsoft.AspNet.SignalR.Samples\Hubs\ConnectDisconnect\Status.cs">
       <Link>Hubs\Status.cs</Link>
     </Compile>
-    <Compile Include="..\..\samples\microsoft.aspnet.signalr.hosting.aspnet.samples\hubs\demohub\DemoHub.cs">
+    <Compile Include="..\..\samples\Microsoft.AspNet.SignalR.Samples\Hubs\DemoHub\DemoHub.cs">
       <Link>Hubs\DemoHub.cs</Link>
     </Compile>
-    <Compile Include="App_Start\InitializeIISHost.cs" />
+    <Compile Include="App_Start\Initializer.cs" />
     <Compile Include="Connections\ExamineHeadersConnection.cs" />
     <Compile Include="Connections\ExamineReconnectPath.cs" />
     <Compile Include="Handlers\GCHandler.cs" />
@@ -158,18 +165,6 @@
     <ProjectReference Include="..\..\src\Microsoft.AspNet.SignalR.Hosting.Memory\Microsoft.AspNet.SignalR.Hosting.Memory.csproj">
       <Project>{055f2118-fe29-4219-a28a-3d6f0889652e}</Project>
       <Name>Microsoft.AspNet.SignalR.Hosting.Memory</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\src\Microsoft.AspNet.SignalR.Owin45\Microsoft.AspNet.SignalR.Owin45.csproj">
-      <Project>{45892477-ef4e-4f45-a431-822755a38ea0}</Project>
-      <Name>Microsoft.AspNet.SignalR.Owin45</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\src\Microsoft.AspNet.SignalR.StressServer\Microsoft.AspNet.SignalR.StressServer.csproj">
-      <Project>{9ac65ed5-48c2-4c5c-8498-dc340b313fdf}</Project>
-      <Name>Microsoft.AspNet.SignalR.StressServer</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\src\Microsoft.AspNet.SignalR.SystemWeb45\Microsoft.AspNet.SignalR.SystemWeb45.csproj">
-      <Project>{202fa02d-cc05-40d2-a574-4bd34e47f575}</Project>
-      <Name>Microsoft.AspNet.SignalR.SystemWeb45</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

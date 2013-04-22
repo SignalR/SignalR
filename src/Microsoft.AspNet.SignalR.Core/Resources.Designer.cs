@@ -277,6 +277,33 @@ namespace Microsoft.AspNet.SignalR {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to A configuration object must be specified..
+        /// </summary>
+        internal static string Error_NoConfiguration {
+            get {
+                return ResourceManager.GetString("Error_NoConfiguration", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to A dependency resolver must be specified..
+        /// </summary>
+        internal static string Error_NoDepenendeyResolver {
+            get {
+                return ResourceManager.GetString("Error_NoDepenendeyResolver", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Not a valid web socket request..
+        /// </summary>
+        internal static string Error_NotWebSocketRequest {
+            get {
+                return ResourceManager.GetString("Error_NotWebSocketRequest", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Unexpected end when reading object..
         /// </summary>
         internal static string Error_ParseObjectFailed {
@@ -372,6 +399,15 @@ namespace Microsoft.AspNet.SignalR {
         internal static string Error_WebSocketsNotSupported {
             get {
                 return ResourceManager.GetString("Error_WebSocketsNotSupported", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Forbidden: SignalR cross domain is disabled..
+        /// </summary>
+        internal static string Forbidden_CrossDomainIsDisabled {
+            get {
+                return ResourceManager.GetString("Forbidden_CrossDomainIsDisabled", resourceCulture);
             }
         }
     }

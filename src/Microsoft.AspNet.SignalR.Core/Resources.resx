@@ -189,6 +189,15 @@
   <data name="Error_MultipleActivatorsAreaRegisteredCallGetServices" xml:space="preserve">
     <value>Multiple activators for type {0} are registered. Please call GetServices instead.</value>
   </data>
+  <data name="Error_NoConfiguration" xml:space="preserve">
+    <value>A configuration object must be specified.</value>
+  </data>
+  <data name="Error_NoDepenendeyResolver" xml:space="preserve">
+    <value>A dependency resolver must be specified.</value>
+  </data>
+  <data name="Error_NotWebSocketRequest" xml:space="preserve">
+    <value>Not a valid web socket request.</value>
+  </data>
   <data name="Error_ParseObjectFailed" xml:space="preserve">
     <value>Unexpected end when reading object.</value>
   </data>
@@ -221,5 +230,8 @@
   </data>
   <data name="Error_WebSocketsNotSupported" xml:space="preserve">
     <value>WebSockets is not supported.</value>
+  </data>
+  <data name="Forbidden_CrossDomainIsDisabled" xml:space="preserve">
+    <value>Forbidden: SignalR cross domain is disabled.</value>
   </data>
 </root>

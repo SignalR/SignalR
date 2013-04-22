@@ -14,6 +14,8 @@
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\..\</SolutionDir>
     <RestorePackages>true</RestorePackages>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -25,6 +27,7 @@
     <WarningLevel>4</WarningLevel>
     <DocumentationFile>bin\Debug\Microsoft.AspNet.SignalR.Core.XML</DocumentationFile>
     <DocumentationFile>bin\Debug\Microsoft.AspNet.SignalR.Core.XML</DocumentationFile>
+    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -34,11 +37,15 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <DocumentationFile>bin\Release\Microsoft.AspNet.SignalR.Core.XML</DocumentationFile>
+    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Newtonsoft.Json, Version=4.5.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\packages\Newtonsoft.Json.4.5.11\lib\net40\Newtonsoft.Json.dll</HintPath>
+    </Reference>
+    <Reference Include="Owin">
+      <HintPath>..\..\packages\Owin.1.0\lib\net40\Owin.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -193,6 +200,27 @@
     <Compile Include="Hubs\DefaultHubActivator.cs" />
     <Compile Include="Hubs\HubNameAttribute.cs" />
     <Compile Include="Hubs\IHub.cs" />
+    <Compile Include="Owin\Handlers\CallHandler.cs" />
+    <Compile Include="Owin\Handlers\HubDispatcherHandler.cs" />
+    <Compile Include="Owin\Handlers\PersistentConnectionHandler.cs" />
+    <Compile Include="Owin\Infrastructure\ByteBuffer.cs" />
+    <Compile Include="Owin\Infrastructure\Headers.cs" />
+    <Compile Include="Owin\Infrastructure\OwinConstants.cs" />
+    <Compile Include="Owin\Infrastructure\OwinEnvironmentExtensions.cs" />
+    <Compile Include="Owin\Infrastructure\ParamDictionary.cs" />
+    <Compile Include="Owin\Infrastructure\PrefixMatcher.cs" />
+    <Compile Include="Owin\Infrastructure\UrlDecoder.cs" />
+    <Compile Include="Owin\Infrastructure\WebSocketConstants.cs" />
+    <Compile Include="Owin\OwinExtensions.cs" />
+    <Compile Include="Owin\OwinWebSocketHandler.cs" />
+    <Compile Include="Owin\RequestExtensions.cs" />
+    <Compile Include="Owin\ServerRequest.cs" />
+    <Compile Include="Owin\ServerRequest.Owin.cs" />
+    <Compile Include="Owin\ServerResponse.cs" />
+    <Compile Include="Owin\WebSockets\DefaultWebSocketHandler.cs" />
+    <Compile Include="Owin\WebSockets\WebSocketHandler.cs" />
+    <Compile Include="Owin\WebSockets\WebSocketMessage.cs" />
+    <Compile Include="Owin\WebSockets\WebSocketMessageReader.cs" />
     <Compile Include="Tracing\ITraceManager.cs" />
     <Compile Include="DependencyResolverExtensions.cs" />
     <Compile Include="Hubs\ReflectionHelper.cs" />
