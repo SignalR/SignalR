@@ -13,4 +13,6 @@ call \PerfRuns\SignalR-Env.cmd
 
 cmd /c build-ci Release 1 true
 
+if %ERRORLEVEL% neq 0 exit /b %ERRORLEVEL%
+
 cmd /c %PerfToolsBin%\PerfRun /TeamName:SignalR /LabConfigPath:%PerfLabConfig% /RemotePasswordFile:%PerfPasswordFile% /UpdateMetadata:true /Import:true /Branch:%branch% /Build:%build% /Run:artifacts\Release\Microsoft.AspNet.SignalR.Stress

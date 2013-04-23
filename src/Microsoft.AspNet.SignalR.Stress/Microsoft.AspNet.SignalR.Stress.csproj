@@ -136,6 +136,9 @@
   <ItemGroup>
     <None Include="app.config" />
     <None Include="packages.config" />
+    <None Include="CreateStressDatabase.sql">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Include="TPlan.Perf.xml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
