@@ -656,6 +656,9 @@
                 // Remove the ID and the deferral on stop, this is to ensure that if a connection is restarted it takes on a new id/deferral.
                 delete connection.id;
                 delete connection._deferral;
+
+                // Clear out our message buffer
+                connection._.incomingMessageBuffer = [];
             }
             finally {
                 changeState(connection, connection.state, signalR.connectionState.disconnected);
