@@ -219,7 +219,9 @@
         init: function (url, qs, logging) {
             this.url = url;
             this.qs = qs;
-            this._ = {};
+            this._ = {
+                incomingMessageBuffer: []
+            };
             if (typeof (logging) === "boolean") {
                 this.logging = logging;
             }            
@@ -407,7 +409,11 @@
 
                     $(connection).triggerHandler(events.onStart);
 
-                    _pageWindow.unload(function () { // failure
+                    // Drain any incoming buffered messages (messages that came in prior to connect)
+                    signalR.transports._logic.drainIncomingMessageBuffer(connection);
+
+                    // wire the stop handler for when the user leaves the page
+                    _pageWindow.unload(function () {
                         connection.stop(false /* async */);
                     });
 

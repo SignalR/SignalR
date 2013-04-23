@@ -223,6 +223,31 @@
             connection.log("Fired ajax abort async = " + async);
         },
 
+        drainIncomingMessageBuffer: function (connection) {
+            var incomingMessageBuffer = connection._.incomingMessageBuffer;
+
+            while (incomingMessageBuffer.length > 0) {
+                // Check isDisconnecting for each message, a message can cause the connection to stop
+                if (!isDisconnecting(connection)) {
+                    signalR.transports._logic.processMessages(connection, incomingMessageBuffer.shift());
+                }
+                else {
+                    // If we're disconnecting, reset the message buffer and stop drain
+                    connection._.incomingMessageBuffer = [];
+                    return;
+                }
+            }
+        },
+
+        tryPreConnectBuffer: function (connection, message) {
+            // Check if we need to buffer message
+            if (connection.state === signalR.connectionState.connecting) {
+                connection._.incomingMessageBuffer.push(message);
+                return true;
+            }
+
+            return false;
+        },
         processMessages: function (connection, minData) {
             var data;
             // Transport can be null if we've just closed the connection
