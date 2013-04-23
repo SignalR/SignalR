@@ -268,10 +268,10 @@ namespace Microsoft.AspNet.SignalR.Stress
 
             try
             {
+                connection.Start(new Client.Transports.LongPollingTransport(host)).Wait();
+
                 while (true)
                 {
-                    connection.Start(new Client.Transports.LongPollingTransport(host)).Wait();
-
                     proxy.Invoke("Echo", "foo").Wait();
 
                     if (!wh.Wait(TimeSpan.FromSeconds(10)))
