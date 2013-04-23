@@ -38,7 +38,7 @@ namespace Microsoft.AspNet.SignalR.SqlServer
             script = script.Replace("SET @SCHEMA_NAME = 'SignalR';", "SET @SCHEMA_NAME = '" + SqlMessageBus.SchemaName + "';");
             script = script.Replace("SET @SCHEMA_TABLE_NAME = 'Schema';", "SET @SCHEMA_TABLE_NAME = '" + SchemaTableName + "';");
             script = script.Replace("SET @TARGET_SCHEMA_VERSION = 1;", "SET @TARGET_SCHEMA_VERSION = " + SchemaVersion + ";");
-            script = script.Replace("SET @MESSAGE_TABLE_COUNT = 3;", "SET @MESSAGE_TABLE_COUNT = " + _tableCount + ";");
+            script = script.Replace("SET @MESSAGE_TABLE_COUNT = 1;", "SET @MESSAGE_TABLE_COUNT = " + _tableCount + ";");
             script = script.Replace("SET @MESSAGE_TABLE_NAME = 'Messages';", "SET @MESSAGE_TABLE_NAME = '" + _messagesTableNamePrefix + "';");
 
             var operation = new DbOperation(_connectionString, script, _trace);
