@@ -4,17 +4,27 @@
   <metadata testName ="Stress" teamName ="SignalR" description="SignalR Stress Tests">
     <trackingVariation name="ConnectionRun">
       <metric name="Message Bus Messages Received/Sec" selection="Average" units="Numeric">
-        <target value="8000000" labConfig="XSPPERF8S_WIN8_X64" />
+        <target value="11954417.38" labConfig="XSPPERF8S_WIN8_X64" />
       </metric>
     </trackingVariation>
     <trackingVariation name="MemoryHostRun">
       <metric name="Message Bus Messages Received/Sec" selection="Average" units="Numeric">
-        <target value="4000000" labConfig="XSPPERF8S_WIN8_X64" />
+        <target value="5719925.40" labConfig="XSPPERF8S_WIN8_X64" />
       </metric>
     </trackingVariation>
     <trackingVariation name="MessageBusRun">
       <metric name="Message Bus Messages Received/Sec" selection="Average" units="Numeric">
-        <target value="8000000" labConfig="XSPPERF8S_WIN8_X64" />
+        <target value="13816648.43" labConfig="XSPPERF8S_WIN8_X64" />
+      </metric>
+    </trackingVariation>
+    <trackingVariation name="RedisMessageBusRun">
+      <metric name="Message Bus Messages Received/Sec" selection="Average" units="Numeric">
+        <target value="1492096.12" labConfig="XSPPERF8S_WIN8_X64" />
+      </metric>
+    </trackingVariation>
+    <trackingVariation name="SqlMessageBusRun">
+      <metric name="Message Bus Messages Received/Sec" selection="Average" units="Numeric">
+        <target value="418655.70" labConfig="XSPPERF8S_WIN8_X64" />
       </metric>
     </trackingVariation>
   </metadata>
@@ -29,11 +39,25 @@
     <command name="MessageBusRun" wait="Exit">
       Microsoft.AspNet.SignalR.Stress.exe /Run:MessageBus /Senders:5
     </command>
+    <command name="SetupSqlServer" wait="Exit">
+      sqlcmd -i CreateStressDatabase.sql
+    </command>
+    <command name="SqlMessageBusRun" wait="Exit">
+      Microsoft.AspNet.SignalR.Stress.exe /Run:SqlMessageBus /Senders:5 /SqlConnectionString:"Data Source={dbserver-01};Initial Catalog=Stress;User ID=sqluser;Password={remotePassword}"
+    </command>
+    <command name="RedisMessageBusRun" wait="Exit">
+      Microsoft.AspNet.SignalR.Stress.exe /Run:RedisMessageBus /Senders:5 /RedisServer:{dbserver-01} /RedisPort:6379
+    </command>
   </commands>
 
   <plan>
     <run command="ConnectionRun" role="server-01" output="true" />
     <run command="MemoryHostRun" role="server-01" output="true" />
     <run command="MessageBusRun" role="server-01" output="true" />
+    
+    <run command="SetupSqlServer" role="dbserver-01" output="true" profile="None" />
+    <run command="SqlMessageBusRun" role="server-01" output="true" />
+    
+    <run command="RedisMessageBusRun" role="server-01" output="true" />
   </plan>
 </config>
