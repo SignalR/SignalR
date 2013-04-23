@@ -1,7 +1,4 @@
-﻿using Microsoft.Security.Application;
-using Microsoft.AspNet.SignalR.Hubs;
-using Microsoft.AspNet.SignalR.Samples.Hubs.Chat.ContentProviders;
-using System;
+﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -12,6 +9,9 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using Microsoft.Security.Application;
+using Microsoft.AspNet.SignalR.Hubs;
+using Microsoft.AspNet.SignalR.Samples.Hubs.Chat.ContentProviders;
 
 namespace Microsoft.AspNet.SignalR.Samples.Hubs.Chat
 {
