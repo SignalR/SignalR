@@ -2,10 +2,12 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR.Messaging;
+using Microsoft.AspNet.SignalR.Tracing;
 using Microsoft.ServiceBus.Messaging;
 
 namespace Microsoft.AspNet.SignalR.ServiceBus
@@ -20,7 +22,7 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
         private readonly ServiceBusSubscription _subscription;
         private readonly ServiceBusConnection _connection;
         private readonly string[] _topics;
-
+        
         public ServiceBusMessageBus(IDependencyResolver resolver, ServiceBusScaleoutConfiguration configuration)
             : base(resolver, configuration)
         {
@@ -29,7 +31,11 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
                 throw new ArgumentNullException("configuration");
             }
 
-            _connection = new ServiceBusConnection(configuration);
+            // Retrieve the trace manager
+            var traceManager = resolver.Resolve<ITraceManager>();
+            TraceSource trace = traceManager["SignalR." + typeof(ServiceBusMessageBus).Name];
+
+            _connection = new ServiceBusConnection(configuration, trace);
 
             _topics = Enumerable.Range(0, configuration.TopicCount)
                                 .Select(topicIndex => SignalRTopicPrefix + "_" + configuration.TopicPrefix + "_" + topicIndex)
