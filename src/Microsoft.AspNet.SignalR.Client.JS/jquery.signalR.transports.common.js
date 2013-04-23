@@ -8,7 +8,8 @@
 
     var signalR = $.signalR,
         events = $.signalR.events,
-        changeState = $.signalR.changeState;
+        changeState = $.signalR.changeState,
+        isDisconnecting = $.signalR.isDisconnecting;
 
     signalR.transports = {};
 
@@ -157,6 +158,7 @@
             return {
                 MessageId: minPersistentResponse.C,
                 Messages: minPersistentResponse.M,
+                Initialized: typeof (minPersistentResponse.Z) !== "undefined" ? true : false,
                 Disconnect: typeof (minPersistentResponse.D) !== "undefined" ? true : false,
                 TimedOut: typeof (minPersistentResponse.T) !== "undefined" ? true : false,
                 LongPollDelay: minPersistentResponse.L,
@@ -248,6 +250,16 @@
 
             return false;
         },
+
+        tryInitialize: function (persistentResponse, onInitialized) {
+            if (persistentResponse.Initialized) {
+                onInitialized();
+                return true;
+            }
+
+            return false;
+        },
+
         processMessages: function (connection, minData) {
             var data;
             // Transport can be null if we've just closed the connection
