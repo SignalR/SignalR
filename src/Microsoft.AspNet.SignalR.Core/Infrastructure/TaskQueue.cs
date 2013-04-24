@@ -35,6 +35,8 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
             _maxSize = maxSize;
         }
 
+        public IPerformanceCounter QueueSizeCounter { get; set; }
+
         [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode", Justification = "This is shared code")]
         public bool IsDrained
         {
@@ -68,6 +70,12 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
 
                     // Increment the size if the queue
                     Interlocked.Increment(ref _size);
+                    
+                    var counter = QueueSizeCounter;
+                    if (counter != null)
+                    {
+                        counter.Increment();
+                    }
                 }
 
                 Task newTask = _lastQueuedTask.Then((next, nextState) =>
@@ -79,6 +87,12 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
                         {
                             // Decrement the number of items left in the queue
                             Interlocked.Decrement(ref queue._size);
+
+                            var counter = QueueSizeCounter;
+                            if (counter != null)
+                            {
+                                counter.Decrement();
+                            }
                         }
                     },
                     this);

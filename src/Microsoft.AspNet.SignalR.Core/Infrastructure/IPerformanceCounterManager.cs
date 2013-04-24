@@ -160,5 +160,35 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
         /// Gets the performance counter representing the number of transport errors per second.
         /// </summary>
         IPerformanceCounter ErrorsTransportPerSec { get; }
+
+        /// <summary>
+        /// Gets the performance counter representing the number of logical streams in the currently configured scaleout message bus provider.
+        /// </summary>
+        IPerformanceCounter ScaleoutStreamCountTotal { get; }
+
+        /// <summary>
+        /// Gets the performance counter representing the number of logical streams in the currently configured scaleout message bus provider that are in the open state.
+        /// </summary>
+        IPerformanceCounter ScaleoutStreamCountOpen { get; }
+
+        /// <summary>
+        /// Gets the performance counter representing the number of logical streams in the currently configured scaleout message bus provider that are in the faulted state.
+        /// </summary>
+        IPerformanceCounter ScaleoutStreamCountClosed { get; }
+
+        /// <summary>
+        /// Gets the performance counter representing the total number of scaleout errors since the application was started.
+        /// </summary>
+        IPerformanceCounter ScaleoutErrorsTotal { get; }
+
+        /// <summary>
+        /// Gets the performance counter representing the number of scaleout errors per second.
+        /// </summary>
+        IPerformanceCounter ScaleoutErrorsPerSec { get; }
+
+        /// <summary>
+        /// Gets the performance counter representing the current scaleout send queue length.
+        /// </summary>
+        IPerformanceCounter ScaleoutSendQueueLength { get; }
     }
 }

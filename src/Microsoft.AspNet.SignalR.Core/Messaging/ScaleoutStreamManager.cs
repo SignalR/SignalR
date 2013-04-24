@@ -19,7 +19,8 @@ namespace Microsoft.AspNet.SignalR.Messaging
         public ScaleoutStreamManager(Func<int, IList<Message>, Task> send,
                                      Action<int, ulong, IList<Message>> receive,
                                      int streamCount,
-                                     TraceSource trace)
+                                     TraceSource trace,
+                                     IPerformanceCounterManager performanceCounters)
         {
             _sendQueues = new ScaleoutTaskQueue[streamCount];
             _send = send;
@@ -29,7 +30,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
 
             for (int i = 0; i < streamCount; i++)
             {
-                _sendQueues[i] = new ScaleoutTaskQueue(trace, "Stream(" + i + ")");
+                _sendQueues[i] = new ScaleoutTaskQueue(trace, "Stream(" + i + ")", performanceCounters);
                 receiveMapping[i] = new ScaleoutMappingStore();
             }
 
@@ -38,14 +39,14 @@ namespace Microsoft.AspNet.SignalR.Messaging
 
         public IList<ScaleoutMappingStore> Streams { get; private set; }
 
-        public void Open(int streamIndex)
+        public bool Open(int streamIndex)
         {
-            _sendQueues[streamIndex].Open();
+            return _sendQueues[streamIndex].Open();
         }
 
-        public void Close(int streamIndex)
+        public bool Close(int streamIndex)
         {
-            _sendQueues[streamIndex].Close();
+            return _sendQueues[streamIndex].Close();
         }
 
         public void OnError(int streamIndex, Exception exception)

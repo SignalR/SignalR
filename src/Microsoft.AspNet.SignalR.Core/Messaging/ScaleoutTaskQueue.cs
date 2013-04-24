@@ -20,15 +20,16 @@ namespace Microsoft.AspNet.SignalR.Messaging
         private readonly int _size;
         private readonly TraceSource _trace;
         private readonly string _tracePrefix;
+        private readonly IPerformanceCounterManager _performanceCounters;
 
         private readonly object _lockObj = new object();
 
-        public ScaleoutTaskQueue(TraceSource trace, string tracePrefix)
-            : this(trace, tracePrefix, DefaultQueueSize)
+        public ScaleoutTaskQueue(TraceSource trace, string tracePrefix, IPerformanceCounterManager performanceCounters)
+            : this(trace, tracePrefix, DefaultQueueSize, performanceCounters)
         {
         }
 
-        public ScaleoutTaskQueue(TraceSource trace, string tracePrefix, int size)
+        public ScaleoutTaskQueue(TraceSource trace, string tracePrefix, int size, IPerformanceCounterManager performanceCounters)
         {
             if (trace == null)
             {
@@ -38,11 +39,12 @@ namespace Microsoft.AspNet.SignalR.Messaging
             _trace = trace;
             _tracePrefix = tracePrefix;
             _size = size;
+            _performanceCounters = performanceCounters;
 
             InitializeCore();
         }
 
-        public void Open()
+        public bool Open()
         {
             lock (_lockObj)
             {
@@ -51,7 +53,10 @@ namespace Microsoft.AspNet.SignalR.Messaging
                     _error = null;
 
                     _taskCompletionSource.TrySetResult(null);
+
+                    return true;
                 }
+                return false;
             }
         }
 
@@ -99,8 +104,9 @@ namespace Microsoft.AspNet.SignalR.Messaging
             }
         }
 
-        public void Close()
+        public bool Close()
         {
+            var closed = false;
             Task task = TaskAsyncHelper.Empty;
 
             lock (_lockObj)
@@ -112,11 +118,15 @@ namespace Microsoft.AspNet.SignalR.Messaging
 
                     // Drain the queue to stop all sends
                     task = Drain(_queue);
+
+                    closed = true;
                 }
             }
 
             // Block until the queue is drained so no new work can be done
             task.Wait();
+
+            return closed;
         }
 
         private static Task QueueSend(object state)
@@ -164,6 +174,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
         {
             Task task = DrainQueue();
             _queue = new TaskQueue(task, _size);
+            _queue.QueueSizeCounter = _performanceCounters.ScaleoutSendQueueLength;
         }
 
         private Task DrainQueue()
