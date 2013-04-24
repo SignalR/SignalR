@@ -14,16 +14,16 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
         [Fact]
         public void EnqueueWithoutOpenThrows()
         {
-            var perfCounters = new Mock<IPerformanceCounterManager>();
-            var queue = new ScaleoutTaskQueue(new TraceSource("Queue"), "0", perfCounters.Object);
+            var perfCounters = new Microsoft.AspNet.SignalR.Infrastructure.PerformanceCounterManager();
+            var queue = new ScaleoutTaskQueue(new TraceSource("Queue"), "0", perfCounters);
             Assert.Throws<InvalidOperationException>(() => queue.Enqueue(_ => { throw new InvalidOperationException(); }, null));
         }
 
         [Fact]
         public void EnqueueWithoutOpenRaisesOnError()
         {
-            var perfCounters = new Mock<IPerformanceCounterManager>();
-            var queue = new ScaleoutTaskQueue(new TraceSource("Queue"), "0", perfCounters.Object);
+            var perfCounters = new Microsoft.AspNet.SignalR.Infrastructure.PerformanceCounterManager();
+            var queue = new ScaleoutTaskQueue(new TraceSource("Queue"), "0", perfCounters);
 
             Assert.Throws<InvalidOperationException>(() => queue.Enqueue(_ => { throw new InvalidOperationException(); }, null));
         }
@@ -31,8 +31,8 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
         [Fact]
         public void ErrorOnSendThrowsNextTime()
         {
-            var perfCounters = new Mock<IPerformanceCounterManager>();
-            var queue = new ScaleoutTaskQueue(new TraceSource("Queue"), "0", perfCounters.Object);
+            var perfCounters = new Microsoft.AspNet.SignalR.Infrastructure.PerformanceCounterManager();
+            var queue = new ScaleoutTaskQueue(new TraceSource("Queue"), "0", perfCounters);
             queue.Open();
 
             Task task = queue.Enqueue(_ =>
@@ -50,8 +50,8 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
         public void OpenAfterErrorRunsQueue()
         {
             int x = 0;
-            var perfCounters = new Mock<IPerformanceCounterManager>();
-            var queue = new ScaleoutTaskQueue(new TraceSource("Queue"), "0", perfCounters.Object);
+            var perfCounters = new Microsoft.AspNet.SignalR.Infrastructure.PerformanceCounterManager();
+            var queue = new ScaleoutTaskQueue(new TraceSource("Queue"), "0", perfCounters);
             queue.Open();
             queue.Enqueue(_ => { throw new InvalidOperationException(); }, null);
 
@@ -80,8 +80,8 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
         public void CloseWhileQueueRuns()
         {
             int x = 0;
-            var perfCounters = new Mock<IPerformanceCounterManager>();
-            var queue = new ScaleoutTaskQueue(new TraceSource("Queue"), "0", perfCounters.Object);
+            var perfCounters = new Microsoft.AspNet.SignalR.Infrastructure.PerformanceCounterManager();
+            var queue = new ScaleoutTaskQueue(new TraceSource("Queue"), "0", perfCounters);
             queue.Open();
             queue.Enqueue(async _ =>
             {
@@ -109,8 +109,8 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
         public void CloseWhileQueueRunsWithFailedTask()
         {
             int x = 0;
-            var perfCounters = new Mock<IPerformanceCounterManager>();
-            var queue = new ScaleoutTaskQueue(new TraceSource("Queue"), "0", perfCounters.Object);
+            var perfCounters = new Microsoft.AspNet.SignalR.Infrastructure.PerformanceCounterManager();
+            var queue = new ScaleoutTaskQueue(new TraceSource("Queue"), "0", perfCounters);
             queue.Open();
             queue.Enqueue(async _ =>
             {
@@ -138,8 +138,8 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
         public void OpenQueueErrorOpenQueue()
         {
             int x = 0;
-            var perfCounters = new Mock<IPerformanceCounterManager>();
-            var queue = new ScaleoutTaskQueue(new TraceSource("Queue"), "0", perfCounters.Object);
+            var perfCounters = new Microsoft.AspNet.SignalR.Infrastructure.PerformanceCounterManager();
+            var queue = new ScaleoutTaskQueue(new TraceSource("Queue"), "0", perfCounters);
             queue.Open();
             queue.Enqueue(async _ =>
             {
@@ -173,8 +173,8 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
         [Fact]
         public void SendAfterCloseThenOpenRemainsClosed()
         {
-            var perfCounters = new Mock<IPerformanceCounterManager>();
-            var queue = new ScaleoutTaskQueue(new TraceSource("Queue"), "0", perfCounters.Object);
+            var perfCounters = new Microsoft.AspNet.SignalR.Infrastructure.PerformanceCounterManager();
+            var queue = new ScaleoutTaskQueue(new TraceSource("Queue"), "0", perfCounters);
             queue.Open();
             queue.Enqueue(_ => Task.Delay(50), null);
             queue.Close();
@@ -186,8 +186,8 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
         public void InitialToBufferingToOpenToSend()
         {
             int x = 0;
-            var perfCounters = new Mock<IPerformanceCounterManager>();
-            var queue = new ScaleoutTaskQueue(new TraceSource("Queue"), "0", perfCounters.Object);
+            var perfCounters = new Microsoft.AspNet.SignalR.Infrastructure.PerformanceCounterManager();
+            var queue = new ScaleoutTaskQueue(new TraceSource("Queue"), "0", perfCounters);
             queue.SetError(new Exception());
             queue.Open();
             queue.Enqueue(async _ =>
@@ -203,16 +203,16 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
         [Fact(Timeout = 1000)]
         public void InitialToClosed()
         {
-            var perfCounters = new Mock<IPerformanceCounterManager>();
-            var queue = new ScaleoutTaskQueue(new TraceSource("Queue"), "0", perfCounters.Object);
+            var perfCounters = new Microsoft.AspNet.SignalR.Infrastructure.PerformanceCounterManager();
+            var queue = new ScaleoutTaskQueue(new TraceSource("Queue"), "0", perfCounters);
             queue.Close();
         }
 
         [Fact]
         public void OpenAfterClosedEnqueueThrows()
         {
-            var perfCounters = new Mock<IPerformanceCounterManager>();
-            var queue = new ScaleoutTaskQueue(new TraceSource("Queue"), "0", perfCounters.Object);
+            var perfCounters = new Microsoft.AspNet.SignalR.Infrastructure.PerformanceCounterManager();
+            var queue = new ScaleoutTaskQueue(new TraceSource("Queue"), "0", perfCounters);
             queue.Close();
             queue.Open();
             Assert.Throws<InvalidOperationException>(() => queue.Enqueue(_ => TaskAsyncHelper.Empty, null));
@@ -221,8 +221,8 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
         [Fact]
         public void BufferAfterClosedEnqueueThrows()
         {
-            var perfCounters = new Mock<IPerformanceCounterManager>();
-            var queue = new ScaleoutTaskQueue(new TraceSource("Queue"), "0", perfCounters.Object);
+            var perfCounters = new Microsoft.AspNet.SignalR.Infrastructure.PerformanceCounterManager();
+            var queue = new ScaleoutTaskQueue(new TraceSource("Queue"), "0", perfCounters);
             queue.Close();
             queue.SetError(new Exception());
             Assert.Throws<Exception>(() => queue.Enqueue(_ => TaskAsyncHelper.Empty, null));
