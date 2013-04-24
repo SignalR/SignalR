@@ -11,12 +11,19 @@ namespace Microsoft.AspNet.SignalR.Stress
     public class MessageBusRun : RunBase
     {
         private const int MessageBufferSize = 10;
-        private readonly MessageBus _bus;
+        private MessageBus _bus;
 
         [ImportingConstructor]
         public MessageBusRun(RunData runData)
             : base(runData)
         {
+
+        }
+
+        public override void Initialize()
+        {
+            base.Initialize();
+
             _bus = CreateMessageBus();
         }
 
