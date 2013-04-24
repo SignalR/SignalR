@@ -1,8 +1,8 @@
 ﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.md in the project root for license information.
 
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.ServiceBus;
 using Microsoft.ServiceBus.Messaging;
@@ -20,12 +20,14 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
         private readonly NamespaceManager _namespaceManager;
         private readonly MessagingFactory _factory;
         private readonly ServiceBusScaleoutConfiguration _configuration;
+        private readonly TraceSource _trace;
 
-        public ServiceBusConnection(ServiceBusScaleoutConfiguration configuration)
+        public ServiceBusConnection(ServiceBusScaleoutConfiguration configuration, TraceSource traceSource)
         {
             _namespaceManager = NamespaceManager.CreateFromConnectionString(configuration.ConnectionString);
             _factory = MessagingFactory.CreateFromConnectionString(configuration.ConnectionString);
             _configuration = configuration;
+            _trace = traceSource;
         }
 
         [SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope", Justification = "The disposable is returned to the caller")]
@@ -43,6 +45,8 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
                 throw new ArgumentNullException("handler");
             }
 
+            _trace.TraceInformation("Subscribing to {0} topic(s) in the service bus...", topicNames.Count);
+
             var subscriptions = new ServiceBusSubscription.SubscriptionContext[topicNames.Count];
             var clients = new TopicClient[topicNames.Count];
 
@@ -54,16 +58,23 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
                 {
                     try
                     {
+                        _trace.TraceInformation("Creating a new topic {0} in the service bus...", topicName);
+
                         _namespaceManager.CreateTopic(topicName);
+
+                        _trace.TraceInformation("Creation of a new topic {0} in the service bus completed successfully.", topicName);
                     }
                     catch (MessagingEntityAlreadyExistsException)
                     {
                         // The entity already exists
+                        _trace.TraceInformation("Creation of a new topic {0} threw an MessagingEntityAlreadyExistsException.", topicName);
                     }
                 }
 
                 // Create a client for this topic
                 clients[topicIndex] = TopicClient.CreateFromConnectionString(_configuration.ConnectionString, topicName);
+
+                _trace.TraceInformation("Creation of a new topic client {0} completed successfully.", topicName);
 
                 // Create a random subscription
                 string subscriptionName = Guid.NewGuid().ToString();
@@ -71,15 +82,20 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
                 try
                 {
                     _namespaceManager.CreateSubscription(topicName, subscriptionName);
+
+                    _trace.TraceInformation("Creation of a new subscription {0} for topic {1} in the service bus completed successfully.", subscriptionName, topicName);
                 }
                 catch (MessagingEntityAlreadyExistsException)
                 {
                     // The entity already exists
+                    _trace.TraceInformation("Creation of a new subscription {0} for topic {1} threw an MessagingEntityAlreadyExistsException.", subscriptionName, topicName);
                 }
 
                 // Create a receiver to get messages
                 string subscriptionEntityPath = SubscriptionClient.FormatSubscriptionPath(topicName, subscriptionName);
                 MessageReceiver receiver = _factory.CreateMessageReceiver(subscriptionEntityPath, ReceiveMode.ReceiveAndDelete);
+
+                _trace.TraceInformation("Creation of a message receive for subscription entity path {0} in the service bus completed successfully.", subscriptionEntityPath);
 
                 subscriptions[topicIndex] = new ServiceBusSubscription.SubscriptionContext(topicName, subscriptionName, receiver);
 
@@ -87,6 +103,8 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
 
                 ProcessMessages(receiverContext);
             }
+
+            _trace.TraceInformation("Subscription to {0} topics in the service bus Topic service completed successfully.", topicNames.Count);
 
             return new ServiceBusSubscription(_configuration, _namespaceManager, subscriptions, clients);
         }
@@ -139,6 +157,8 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
             catch (OperationCanceledException)
             {
                 // This means the channel is closed
+                _trace.TraceError("OperationCanceledException was thrown in trying to receive the message from the service bus.");
+
                 return;
             }
             catch (Exception ex)
@@ -174,6 +194,8 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
             catch (OperationCanceledException)
             {
                 // This means the channel is closed
+                _trace.TraceError("Receiving messages from the service bus threw an OperationCanceledException, most likely due to a closed channel.");
+
                 return false;
             }
             catch (Exception ex)
