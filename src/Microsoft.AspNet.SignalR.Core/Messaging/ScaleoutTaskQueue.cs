@@ -91,6 +91,8 @@ namespace Microsoft.AspNet.SignalR.Messaging
 
         public void SetError(Exception error)
         {
+            Trace("Error has happened with the following exception: {0}.", error);
+
             lock (_lockObj)
             {
                 Buffer();
