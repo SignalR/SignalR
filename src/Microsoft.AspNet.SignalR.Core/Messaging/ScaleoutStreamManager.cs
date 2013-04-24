@@ -44,9 +44,9 @@ namespace Microsoft.AspNet.SignalR.Messaging
             return _sendQueues[streamIndex].Open();
         }
 
-        public bool Close(int streamIndex)
+        public void Close(int streamIndex)
         {
-            return _sendQueues[streamIndex].Close();
+            _sendQueues[streamIndex].Close();
         }
 
         public bool OnError(int streamIndex, Exception exception)

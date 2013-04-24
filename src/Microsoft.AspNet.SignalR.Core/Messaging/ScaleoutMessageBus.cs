@@ -81,10 +81,9 @@ namespace Microsoft.AspNet.SignalR.Messaging
         /// </summary>
         protected void Close(int streamIndex)
         {
-            if (StreamManager.Close(streamIndex))
-            {
-                _perfCounters.ScaleoutStreamCountOpen.Decrement();
-            }
+            StreamManager.Close(streamIndex);
+            
+            _perfCounters.ScaleoutStreamCountOpen.Decrement();    
         }
 
         /// <summary>
