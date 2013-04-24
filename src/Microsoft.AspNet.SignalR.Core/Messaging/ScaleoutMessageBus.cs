@@ -36,7 +36,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
             _streamManager = new Lazy<ScaleoutStreamManager>(() =>
             {
                 _perfCounters.ScaleoutStreamCountTotal.RawValue = StreamCount;
-                _perfCounters.ScaleoutStreamCountClosed.RawValue = StreamCount;
+                _perfCounters.ScaleoutStreamCountBuffering.RawValue = StreamCount;
                 _perfCounters.ScaleoutStreamCountOpen.RawValue = 0;
 
                 return new ScaleoutStreamManager(Send, OnReceivedCore, StreamCount, _trace, _perfCounters);
@@ -71,7 +71,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
             if (StreamManager.Open(streamIndex))
             {
                 _perfCounters.ScaleoutStreamCountOpen.Increment();
-                _perfCounters.ScaleoutStreamCountClosed.Decrement();
+                _perfCounters.ScaleoutStreamCountBuffering.Decrement();
             }
         }
 
@@ -84,7 +84,6 @@ namespace Microsoft.AspNet.SignalR.Messaging
             if (StreamManager.Close(streamIndex))
             {
                 _perfCounters.ScaleoutStreamCountOpen.Decrement();
-                _perfCounters.ScaleoutStreamCountClosed.Increment();
             }
         }
 
@@ -95,10 +94,14 @@ namespace Microsoft.AspNet.SignalR.Messaging
         /// <param name="exception">The error that occurred.</param>
         protected void OnError(int streamIndex, Exception exception)
         {
-            StreamManager.OnError(streamIndex, exception);
-
             _perfCounters.ScaleoutErrorsTotal.Increment();
             _perfCounters.ScaleoutErrorsPerSec.Increment();
+
+            if (StreamManager.OnError(streamIndex, exception))
+            {
+                _perfCounters.ScaleoutStreamCountOpen.Decrement();
+                _perfCounters.ScaleoutStreamCountBuffering.Increment();
+            }
         }
 
         /// <summary>
@@ -180,7 +183,11 @@ namespace Microsoft.AspNet.SignalR.Messaging
         /// <returns></returns>
         protected void OnReceived(int streamIndex, ulong id, IList<Message> messages)
         {
-            StreamManager.OnReceived(streamIndex, id, messages);
+            if (StreamManager.OnReceived(streamIndex, id, messages))
+            {
+                _perfCounters.ScaleoutStreamCountOpen.Increment();
+                _perfCounters.ScaleoutStreamCountBuffering.Decrement();
+            }
         }
 
         [SuppressMessage("Microsoft.Design", "CA1062:Validate arguments of public methods", MessageId = "2", Justification = "Called from derived class")]

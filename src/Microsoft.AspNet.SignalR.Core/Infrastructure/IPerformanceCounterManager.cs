@@ -172,9 +172,9 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
         IPerformanceCounter ScaleoutStreamCountOpen { get; }
 
         /// <summary>
-        /// Gets the performance counter representing the number of logical streams in the currently configured scaleout message bus provider that are in the faulted state.
+        /// Gets the performance counter representing the number of logical streams in the currently configured scaleout message bus provider that are in the buffering state.
         /// </summary>
-        IPerformanceCounter ScaleoutStreamCountClosed { get; }
+        IPerformanceCounter ScaleoutStreamCountBuffering { get; }
 
         /// <summary>
         /// Gets the performance counter representing the total number of scaleout errors since the application was started.

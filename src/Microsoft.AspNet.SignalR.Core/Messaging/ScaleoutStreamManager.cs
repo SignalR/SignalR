@@ -49,9 +49,9 @@ namespace Microsoft.AspNet.SignalR.Messaging
             return _sendQueues[streamIndex].Close();
         }
 
-        public void OnError(int streamIndex, Exception exception)
+        public bool OnError(int streamIndex, Exception exception)
         {
-            _sendQueues[streamIndex].SetError(exception);
+            return _sendQueues[streamIndex].SetError(exception);
         }
 
         public Task Send(int streamIndex, IList<Message> messages)
@@ -61,12 +61,12 @@ namespace Microsoft.AspNet.SignalR.Messaging
             return _sendQueues[streamIndex].Enqueue(state => Send(state), context);
         }
 
-        public void OnReceived(int streamIndex, ulong id, IList<Message> messages)
+        public bool OnReceived(int streamIndex, ulong id, IList<Message> messages)
         {
             _receive(streamIndex, id, messages);
 
             // We assume if a message has come in then the stream is open
-            Open(streamIndex);
+            return Open(streamIndex);
         }
 
         private static Task Send(object state)

@@ -236,10 +236,10 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
         public IPerformanceCounter ScaleoutStreamCountOpen { get; private set; }
 
         /// <summary>
-        /// Gets the performance counter representing the number of logical streams in the currently configured scaleout message bus provider that are in the closed state.
+        /// Gets the performance counter representing the number of logical streams in the currently configured scaleout message bus provider that are in the buffering state.
         /// </summary>
-        [PerformanceCounter(Name = "Scaleout Streams Closed", Description = "The number of logical streams in the currently configured scaleout message bus provider that are in the closed state", CounterType = PerformanceCounterType.NumberOfItems32)]
-        public IPerformanceCounter ScaleoutStreamCountClosed { get; private set; }
+        [PerformanceCounter(Name = "Scaleout Streams Closed", Description = "The number of logical streams in the currently configured scaleout message bus provider that are in the buffering state", CounterType = PerformanceCounterType.NumberOfItems32)]
+        public IPerformanceCounter ScaleoutStreamCountBuffering { get; private set; }
 
         /// <summary>
         /// Gets the performance counter representing the total number of scaleout errors since the application was started.
