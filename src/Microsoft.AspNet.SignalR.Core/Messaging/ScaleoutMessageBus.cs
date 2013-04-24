@@ -33,14 +33,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
             var traceManager = resolver.Resolve<ITraceManager>();
             _trace = traceManager["SignalR." + typeof(ScaleoutMessageBus).Name];
             _perfCounters = resolver.Resolve<IPerformanceCounterManager>();
-            _streamManager = new Lazy<ScaleoutStreamManager>(() =>
-            {
-                _perfCounters.ScaleoutStreamCountTotal.RawValue = StreamCount;
-                _perfCounters.ScaleoutStreamCountBuffering.RawValue = StreamCount;
-                _perfCounters.ScaleoutStreamCountOpen.RawValue = 0;
-
-                return new ScaleoutStreamManager(Send, OnReceivedCore, StreamCount, _trace, _perfCounters);
-            });
+            _streamManager = new Lazy<ScaleoutStreamManager>(() => new ScaleoutStreamManager(Send, OnReceivedCore, StreamCount, _trace, _perfCounters));
         }
 
         /// <summary>
@@ -68,11 +61,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
         /// </summary>
         protected void Open(int streamIndex)
         {
-            if (StreamManager.Open(streamIndex))
-            {
-                _perfCounters.ScaleoutStreamCountOpen.Increment();
-                _perfCounters.ScaleoutStreamCountBuffering.Decrement();
-            }
+            StreamManager.Open(streamIndex);
         }
 
         /// <summary>
@@ -81,9 +70,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
         /// </summary>
         protected void Close(int streamIndex)
         {
-            StreamManager.Close(streamIndex);
-            
-            _perfCounters.ScaleoutStreamCountOpen.Decrement();    
+            StreamManager.Close(streamIndex);   
         }
 
         /// <summary>
@@ -93,14 +80,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
         /// <param name="exception">The error that occurred.</param>
         protected void OnError(int streamIndex, Exception exception)
         {
-            _perfCounters.ScaleoutErrorsTotal.Increment();
-            _perfCounters.ScaleoutErrorsPerSec.Increment();
-
-            if (StreamManager.OnError(streamIndex, exception))
-            {
-                _perfCounters.ScaleoutStreamCountOpen.Decrement();
-                _perfCounters.ScaleoutStreamCountBuffering.Increment();
-            }
+            StreamManager.OnError(streamIndex, exception);
         }
 
         /// <summary>
@@ -182,11 +162,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
         /// <returns></returns>
         protected void OnReceived(int streamIndex, ulong id, IList<Message> messages)
         {
-            if (StreamManager.OnReceived(streamIndex, id, messages))
-            {
-                _perfCounters.ScaleoutStreamCountOpen.Increment();
-                _perfCounters.ScaleoutStreamCountBuffering.Decrement();
-            }
+            StreamManager.OnReceived(streamIndex, id, messages);
         }
 
         [SuppressMessage("Microsoft.Design", "CA1062:Validate arguments of public methods", MessageId = "2", Justification = "Called from derived class")]

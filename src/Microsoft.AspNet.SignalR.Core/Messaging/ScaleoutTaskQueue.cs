@@ -44,19 +44,19 @@ namespace Microsoft.AspNet.SignalR.Messaging
             InitializeCore();
         }
 
-        public bool Open()
+        public void Open()
         {
             lock (_lockObj)
             {
                 if (ChangeState(QueueState.Open))
                 {
+                    _perfCounters.ScaleoutStreamCountOpen.Increment();
+                    _perfCounters.ScaleoutStreamCountBuffering.Decrement();
+
                     _error = null;
 
                     _taskCompletionSource.TrySetResult(null);
-
-                    return true;
                 }
-                return false;
             }
         }
 
@@ -80,7 +80,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
                     throw new InvalidOperationException(Resources.Error_QueueNotOpen);
                 }
 
-                var context = new SendContext(this, send, _perfCounters, state);
+                var context = new SendContext(this, send, state);
                 Task task = _queue.Enqueue(QueueSend, context);
 
                 if (task == null)
@@ -94,15 +94,16 @@ namespace Microsoft.AspNet.SignalR.Messaging
             }
         }
 
-        public bool SetError(Exception error)
+        public void SetError(Exception error)
         {
             lock (_lockObj)
             {
-                var buffering = Buffer();
+                _perfCounters.ScaleoutErrorsTotal.Increment();
+                _perfCounters.ScaleoutErrorsPerSec.Increment();
+
+                Buffer();
 
                 _error = error;
-
-                return buffering;
             }
         }
 
@@ -114,6 +115,9 @@ namespace Microsoft.AspNet.SignalR.Messaging
             {
                 if (ChangeState(QueueState.Closed))
                 {
+                    _perfCounters.ScaleoutStreamCountOpen.RawValue = 0;
+                    _perfCounters.ScaleoutStreamCountBuffering.RawValue = 0;
+
                     // Ensure the queue is started
                     EnsureQueueStarted();
 
@@ -145,11 +149,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
                 lock (ctx.Queue._lockObj)
                 {
                     // Set the queue into buffering state
-                    if (ctx.Queue.SetError(ex.InnerException))
-                    {        
-                        ctx.PerformanceCounters.ScaleoutStreamCountOpen.Decrement();
-                        ctx.PerformanceCounters.ScaleoutStreamCountBuffering.Increment();   
-                    };
+                    ctx.Queue.SetError(ex.InnerException);
 
                     // Otherwise just set this task as failed
                     ctx.TaskCompletionSource.TrySetUnwrappedException(ex);
@@ -160,17 +160,17 @@ namespace Microsoft.AspNet.SignalR.Messaging
             return context.TaskCompletionSource.Task;
         }
 
-        private bool Buffer()
+        private void Buffer()
         {
             lock (_lockObj)
             {
                 if (ChangeState(QueueState.Buffering))
                 {
-                    InitializeCore();
+                    _perfCounters.ScaleoutStreamCountOpen.Decrement();
+                    _perfCounters.ScaleoutStreamCountBuffering.Increment();
 
-                    return true;
+                    InitializeCore();
                 }
-                return false;
             }
         }
 
@@ -256,14 +256,12 @@ namespace Microsoft.AspNet.SignalR.Messaging
             
             public readonly ScaleoutTaskQueue Queue;
             public readonly TaskCompletionSource<object> TaskCompletionSource;
-            public readonly IPerformanceCounterManager PerformanceCounters;
 
-            public SendContext(ScaleoutTaskQueue queue, Func<object, Task> send, IPerformanceCounterManager performanceCounters, object state)
+            public SendContext(ScaleoutTaskQueue queue, Func<object, Task> send, object state)
             {
                 Queue = queue;
                 TaskCompletionSource = new TaskCompletionSource<object>();
                 _send = send;
-                PerformanceCounters = performanceCounters;
                 _state = state;
             }
 

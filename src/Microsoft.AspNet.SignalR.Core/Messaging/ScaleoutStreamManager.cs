@@ -28,6 +28,10 @@ namespace Microsoft.AspNet.SignalR.Messaging
 
             var receiveMapping = new ScaleoutMappingStore[streamCount];
 
+            performanceCounters.ScaleoutStreamCountTotal.RawValue = streamCount;
+            performanceCounters.ScaleoutStreamCountBuffering.RawValue = streamCount;
+            performanceCounters.ScaleoutStreamCountOpen.RawValue = 0;
+
             for (int i = 0; i < streamCount; i++)
             {
                 _sendQueues[i] = new ScaleoutTaskQueue(trace, "Stream(" + i + ")", performanceCounters);
@@ -39,9 +43,9 @@ namespace Microsoft.AspNet.SignalR.Messaging
 
         public IList<ScaleoutMappingStore> Streams { get; private set; }
 
-        public bool Open(int streamIndex)
+        public void Open(int streamIndex)
         {
-            return _sendQueues[streamIndex].Open();
+            _sendQueues[streamIndex].Open();
         }
 
         public void Close(int streamIndex)
@@ -49,9 +53,9 @@ namespace Microsoft.AspNet.SignalR.Messaging
             _sendQueues[streamIndex].Close();
         }
 
-        public bool OnError(int streamIndex, Exception exception)
+        public void OnError(int streamIndex, Exception exception)
         {
-            return _sendQueues[streamIndex].SetError(exception);
+            _sendQueues[streamIndex].SetError(exception);
         }
 
         public Task Send(int streamIndex, IList<Message> messages)
@@ -61,12 +65,12 @@ namespace Microsoft.AspNet.SignalR.Messaging
             return _sendQueues[streamIndex].Enqueue(state => Send(state), context);
         }
 
-        public bool OnReceived(int streamIndex, ulong id, IList<Message> messages)
+        public void OnReceived(int streamIndex, ulong id, IList<Message> messages)
         {
             _receive(streamIndex, id, messages);
 
             // We assume if a message has come in then the stream is open
-            return Open(streamIndex);
+            Open(streamIndex);
         }
 
         private static Task Send(object state)
