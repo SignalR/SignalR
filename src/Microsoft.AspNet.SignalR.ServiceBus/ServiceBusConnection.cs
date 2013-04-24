@@ -16,6 +16,7 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
         private static readonly TimeSpan ErrorBackOffAmount = TimeSpan.FromSeconds(5);
         private static readonly TimeSpan DefaultReadTimeout = TimeSpan.FromSeconds(60);
         private static readonly TimeSpan ErrorReadTimeout = TimeSpan.FromSeconds(0.5);
+        private static readonly TimeSpan IdleSubscriptionTimeout = TimeSpan.FromMinutes(5);
 
         private readonly NamespaceManager _namespaceManager;
         private readonly MessagingFactory _factory;
@@ -81,7 +82,12 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
 
                 try
                 {
-                    _namespaceManager.CreateSubscription(topicName, subscriptionName);
+                    var subscriptionDescription = new SubscriptionDescription(topicName, subscriptionName);
+
+                    // This cleans up the subscription while if it's been idle for more than the timeout.
+                    subscriptionDescription.AutoDeleteOnIdle = IdleSubscriptionTimeout;
+
+                    _namespaceManager.CreateSubscription(subscriptionDescription);
 
                     _trace.TraceInformation("Creation of a new subscription {0} for topic {1} in the service bus completed successfully.", subscriptionName, topicName);
                 }
