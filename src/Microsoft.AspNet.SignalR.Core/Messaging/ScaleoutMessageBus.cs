@@ -13,13 +13,14 @@ using Microsoft.AspNet.SignalR.Tracing;
 namespace Microsoft.AspNet.SignalR.Messaging
 {
     /// <summary>
-    /// 
+    /// Common base class for scaleout message bus implementations.
     /// </summary>
     public abstract class ScaleoutMessageBus : MessageBus
     {
         private readonly SipHashBasedStringEqualityComparer _sipHashBasedComparer = new SipHashBasedStringEqualityComparer(0, 0);
         private readonly TraceSource _trace;
         private readonly Lazy<ScaleoutStreamManager> _streamManager;
+        private readonly IPerformanceCounterManager _perfCounters;
 
         protected ScaleoutMessageBus(IDependencyResolver resolver, ScaleoutConfiguration configuration)
             : base(resolver)
@@ -31,7 +32,8 @@ namespace Microsoft.AspNet.SignalR.Messaging
 
             var traceManager = resolver.Resolve<ITraceManager>();
             _trace = traceManager["SignalR." + typeof(ScaleoutMessageBus).Name];
-            _streamManager = new Lazy<ScaleoutStreamManager>(() => new ScaleoutStreamManager(Send, OnReceivedCore, StreamCount, _trace));
+            _perfCounters = resolver.Resolve<IPerformanceCounterManager>();
+            _streamManager = new Lazy<ScaleoutStreamManager>(() => new ScaleoutStreamManager(Send, OnReceivedCore, StreamCount, _trace, _perfCounters));
         }
 
         /// <summary>
@@ -68,7 +70,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
         /// </summary>
         protected void Close(int streamIndex)
         {
-            StreamManager.Close(streamIndex);
+            StreamManager.Close(streamIndex);   
         }
 
         /// <summary>
