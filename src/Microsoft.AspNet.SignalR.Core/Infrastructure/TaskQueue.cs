@@ -36,6 +36,7 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
         }
 
 #if !CLIENT_NET45
+        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode", Justification = "This is shared code.")]
         public IPerformanceCounter QueueSizeCounter { get; set; }
 #endif
 
