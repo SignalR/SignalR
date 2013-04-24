@@ -20,15 +20,16 @@ namespace Microsoft.AspNet.SignalR.Messaging
         private readonly int _size;
         private readonly TraceSource _trace;
         private readonly string _tracePrefix;
+        private readonly IPerformanceCounterManager _perfCounters;
 
         private readonly object _lockObj = new object();
 
-        public ScaleoutTaskQueue(TraceSource trace, string tracePrefix)
-            : this(trace, tracePrefix, DefaultQueueSize)
+        public ScaleoutTaskQueue(TraceSource trace, string tracePrefix, IPerformanceCounterManager performanceCounters)
+            : this(trace, tracePrefix, DefaultQueueSize, performanceCounters)
         {
         }
 
-        public ScaleoutTaskQueue(TraceSource trace, string tracePrefix, int size)
+        public ScaleoutTaskQueue(TraceSource trace, string tracePrefix, int size, IPerformanceCounterManager performanceCounters)
         {
             if (trace == null)
             {
@@ -38,6 +39,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
             _trace = trace;
             _tracePrefix = tracePrefix;
             _size = size;
+            _perfCounters = performanceCounters;
 
             InitializeCore();
         }
@@ -48,6 +50,9 @@ namespace Microsoft.AspNet.SignalR.Messaging
             {
                 if (ChangeState(QueueState.Open))
                 {
+                    _perfCounters.ScaleoutStreamCountOpen.Increment();
+                    _perfCounters.ScaleoutStreamCountBuffering.Decrement();
+
                     _error = null;
 
                     _taskCompletionSource.TrySetResult(null);
@@ -93,6 +98,9 @@ namespace Microsoft.AspNet.SignalR.Messaging
         {
             lock (_lockObj)
             {
+                _perfCounters.ScaleoutErrorsTotal.Increment();
+                _perfCounters.ScaleoutErrorsPerSec.Increment();
+
                 Buffer();
 
                 _error = error;
@@ -107,6 +115,9 @@ namespace Microsoft.AspNet.SignalR.Messaging
             {
                 if (ChangeState(QueueState.Closed))
                 {
+                    _perfCounters.ScaleoutStreamCountOpen.RawValue = 0;
+                    _perfCounters.ScaleoutStreamCountBuffering.RawValue = 0;
+
                     // Ensure the queue is started
                     EnsureQueueStarted();
 
@@ -155,6 +166,9 @@ namespace Microsoft.AspNet.SignalR.Messaging
             {
                 if (ChangeState(QueueState.Buffering))
                 {
+                    _perfCounters.ScaleoutStreamCountOpen.Decrement();
+                    _perfCounters.ScaleoutStreamCountBuffering.Increment();
+
                     InitializeCore();
                 }
             }
@@ -164,6 +178,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
         {
             Task task = DrainQueue();
             _queue = new TaskQueue(task, _size);
+            _queue.QueueSizeCounter = _perfCounters.ScaleoutSendQueueLength;
         }
 
         private Task DrainQueue()
@@ -238,7 +253,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
         {
             private readonly Func<object, Task> _send;
             private readonly object _state;
-
+            
             public readonly ScaleoutTaskQueue Queue;
             public readonly TaskCompletionSource<object> TaskCompletionSource;
 
