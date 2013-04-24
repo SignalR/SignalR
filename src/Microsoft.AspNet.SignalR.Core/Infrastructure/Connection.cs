@@ -201,6 +201,7 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
                 response.Aborted = _aborted;
                 response.TotalCount = result.TotalCount;
                 response.Initializing = _initializing;
+                _initializing = false;
             }
             
             PopulateResponseState(response);
