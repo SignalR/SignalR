@@ -8,10 +8,8 @@ using Microsoft.AspNet.SignalR.Infrastructure;
 
 namespace Microsoft.AspNet.SignalR.Messaging
 {
-    internal class ScaleoutTaskQueue
+    internal class ScaleoutStream
     {
-        private const int DefaultQueueSize = 100000;
-
         private TaskCompletionSource<object> _taskCompletionSource;
         private TaskQueue _queue;
         private QueueState _state;
@@ -24,12 +22,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
 
         private readonly object _lockObj = new object();
 
-        public ScaleoutTaskQueue(TraceSource trace, string tracePrefix, IPerformanceCounterManager performanceCounters)
-            : this(trace, tracePrefix, DefaultQueueSize, performanceCounters)
-        {
-        }
-
-        public ScaleoutTaskQueue(TraceSource trace, string tracePrefix, int size, IPerformanceCounterManager performanceCounters)
+        public ScaleoutStream(TraceSource trace, string tracePrefix, int size, IPerformanceCounterManager performanceCounters)
         {
             if (trace == null)
             {
@@ -44,6 +37,14 @@ namespace Microsoft.AspNet.SignalR.Messaging
             InitializeCore();
         }
 
+        private bool UsingTaskQueue
+        {
+            get
+            {
+                return _size > 0;
+            }
+        }
+
         public void Open()
         {
             lock (_lockObj)
@@ -55,12 +56,15 @@ namespace Microsoft.AspNet.SignalR.Messaging
 
                     _error = null;
 
-                    _taskCompletionSource.TrySetResult(null);
+                    if (UsingTaskQueue)
+                    {
+                        _taskCompletionSource.TrySetResult(null);
+                    }
                 }
             }
         }
 
-        public Task Enqueue(Func<object, Task> send, object state)
+        public Task Send(Func<object, Task> send, object state)
         {
             lock (_lockObj)
             {
@@ -81,16 +85,27 @@ namespace Microsoft.AspNet.SignalR.Messaging
                 }
 
                 var context = new SendContext(this, send, state);
-                Task task = _queue.Enqueue(QueueSend, context);
 
-                if (task == null)
+                if (UsingTaskQueue)
                 {
-                    // The task is null if the queue is full
-                    throw new InvalidOperationException(Resources.Error_TaskQueueFull);
+                    Task task = _queue.Enqueue(Send, context);
+
+                    if (task == null)
+                    {
+                        // The task is null if the queue is full
+                        throw new InvalidOperationException(Resources.Error_TaskQueueFull);
+                    }
+
+                    // Always observe the task in case the user doesn't handle it
+                    return task.Catch();
                 }
 
-                // Always observe the task in case the user doesn't handle it
-                return task.Catch();
+                _perfCounters.ScaleoutSendQueueLength.Increment();
+                return Send(context).Finally(qState =>
+                {
+                    ((IPerformanceCounter)qState).Decrement();
+                }, 
+                _perfCounters.ScaleoutSendQueueLength);
             }
         }
 
@@ -120,11 +135,14 @@ namespace Microsoft.AspNet.SignalR.Messaging
                     _perfCounters.ScaleoutStreamCountOpen.RawValue = 0;
                     _perfCounters.ScaleoutStreamCountBuffering.RawValue = 0;
 
-                    // Ensure the queue is started
-                    EnsureQueueStarted();
+                    if (UsingTaskQueue)
+                    {
+                        // Ensure the queue is started
+                        EnsureQueueStarted();
 
-                    // Drain the queue to stop all sends
-                    task = Drain(_queue);
+                        // Drain the queue to stop all sends
+                        task = Drain(_queue);
+                    }
                 }
             }
 
@@ -132,7 +150,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
             task.Wait();
         }
 
-        private static Task QueueSend(object state)
+        private static Task Send(object state)
         {
             var context = (SendContext)state;
 
@@ -146,12 +164,12 @@ namespace Microsoft.AspNet.SignalR.Messaging
             {
                 var ctx = (SendContext)obj;
 
-                ctx.Queue.Trace("Send failed: {0}", ex);
+                ctx.Stream.Trace("Send failed: {0}", ex);
 
-                lock (ctx.Queue._lockObj)
+                lock (ctx.Stream._lockObj)
                 {
                     // Set the queue into buffering state
-                    ctx.Queue.SetError(ex.InnerException);
+                    ctx.Stream.SetError(ex.InnerException);
 
                     // Otherwise just set this task as failed
                     ctx.TaskCompletionSource.TrySetUnwrappedException(ex);
@@ -178,9 +196,12 @@ namespace Microsoft.AspNet.SignalR.Messaging
 
         private void InitializeCore()
         {
-            Task task = DrainQueue();
-            _queue = new TaskQueue(task, _size);
-            _queue.QueueSizeCounter = _perfCounters.ScaleoutSendQueueLength;
+            if (UsingTaskQueue)
+            {
+                Task task = DrainQueue();
+                _queue = new TaskQueue(task, _size);
+                _queue.QueueSizeCounter = _perfCounters.ScaleoutSendQueueLength;
+            }
         }
 
         private Task DrainQueue()
@@ -255,13 +276,13 @@ namespace Microsoft.AspNet.SignalR.Messaging
         {
             private readonly Func<object, Task> _send;
             private readonly object _state;
-            
-            public readonly ScaleoutTaskQueue Queue;
+
+            public readonly ScaleoutStream Stream;
             public readonly TaskCompletionSource<object> TaskCompletionSource;
 
-            public SendContext(ScaleoutTaskQueue queue, Func<object, Task> send, object state)
+            public SendContext(ScaleoutStream queue, Func<object, Task> send, object state)
             {
-                Queue = queue;
+                Stream = queue;
                 TaskCompletionSource = new TaskCompletionSource<object>();
                 _send = send;
                 _state = state;

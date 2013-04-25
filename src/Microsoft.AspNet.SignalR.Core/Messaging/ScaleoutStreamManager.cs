@@ -14,15 +14,16 @@ namespace Microsoft.AspNet.SignalR.Messaging
     {
         private readonly Func<int, IList<Message>, Task> _send;
         private readonly Action<int, ulong, IList<Message>> _receive;
-        private readonly ScaleoutTaskQueue[] _sendQueues;
+        private readonly ScaleoutStream[] _sendQueues;
 
         public ScaleoutStreamManager(Func<int, IList<Message>, Task> send,
                                      Action<int, ulong, IList<Message>> receive,
                                      int streamCount,
                                      TraceSource trace,
-                                     IPerformanceCounterManager performanceCounters)
+                                     IPerformanceCounterManager performanceCounters,
+                                     ScaleoutConfiguration configuration)
         {
-            _sendQueues = new ScaleoutTaskQueue[streamCount];
+            _sendQueues = new ScaleoutStream[streamCount];
             _send = send;
             _receive = receive;
 
@@ -34,7 +35,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
 
             for (int i = 0; i < streamCount; i++)
             {
-                _sendQueues[i] = new ScaleoutTaskQueue(trace, "Stream(" + i + ")", performanceCounters);
+                _sendQueues[i] = new ScaleoutStream(trace, "Stream(" + i + ")", configuration.MaxQueueLength, performanceCounters);
                 receiveMapping[i] = new ScaleoutMappingStore();
             }
 
@@ -62,7 +63,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
         {
             var context = new SendContext(this, streamIndex, messages);
 
-            return _sendQueues[streamIndex].Enqueue(state => Send(state), context);
+            return _sendQueues[streamIndex].Send(state => Send(state), context);
         }
 
         public void OnReceived(int streamIndex, ulong id, IList<Message> messages)
@@ -77,18 +78,18 @@ namespace Microsoft.AspNet.SignalR.Messaging
         {
             var context = (SendContext)state;
 
-            return context.QueueManager._send(context.Index, context.Messages);
+            return context.StreamManager._send(context.Index, context.Messages);
         }
 
         private class SendContext
         {
-            public ScaleoutStreamManager QueueManager;
+            public ScaleoutStreamManager StreamManager;
             public int Index;
             public IList<Message> Messages;
 
             public SendContext(ScaleoutStreamManager scaleoutStream, int index, IList<Message> messages)
             {
-                QueueManager = scaleoutStream;
+                StreamManager = scaleoutStream;
                 Index = index;
                 Messages = messages;
             }

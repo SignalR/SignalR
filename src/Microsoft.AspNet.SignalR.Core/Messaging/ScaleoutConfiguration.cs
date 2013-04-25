@@ -9,6 +9,8 @@ namespace Microsoft.AspNet.SignalR.Messaging
     /// </summary>
     public class ScaleoutConfiguration
     {
+        public static readonly int DisableQueuing = 0;
+
         /// <summary>
         /// The number of messages to include in a batch before delivering to the scale-out message bus.
         /// Use in conjunction with the BatchTimeout property to configure message batching.
@@ -21,5 +23,13 @@ namespace Microsoft.AspNet.SignalR.Messaging
         /// Use in conjunction with the BatchSize property to configure message batching.
         /// </summary>
         public TimeSpan BatchTimeout { get; set; }
+
+        /// <summary>
+        /// The maximum length of the outgoing send queue. Messages being sent to the backplane are queued
+        /// up to this length. After the max length is reached, further sends will throw an <see cref="System.InvalidOperationException">InvalidOperationException</see>.
+        /// Set to <see cref="Microsoft.AspNet.SignalR.Messaging.ScaleoutConfiguration.DisableQueuing">ScaleoutConfiguration.DisableQueuing</see> to disable queing.
+        /// Defaults to disabled.
+        /// </summary>
+        public virtual int MaxQueueLength { get; set; }
     }
 }
