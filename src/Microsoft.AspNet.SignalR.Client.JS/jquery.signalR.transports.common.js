@@ -9,7 +9,8 @@
     var signalR = $.signalR,
         events = $.signalR.events,
         changeState = $.signalR.changeState,
-        isDisconnecting = $.signalR.isDisconnecting;
+        isDisconnecting = $.signalR.isDisconnecting,
+        transportLogic;
 
     signalR.transports = {};
 
@@ -60,7 +61,7 @@
                connection.state === signalR.connectionState.reconnecting;
     }
 
-    signalR.transports._logic = {
+    transportLogic = signalR.transports._logic = {
         pingServer: function (connection, transport) {
             /// <summary>Pings the server</summary>
             /// <param name="connection" type="signalr">Connection associated with the server ping</param>
@@ -149,7 +150,7 @@
                 }
             }
             url += "?" + qs;
-            url = this.addQs(url, connection);
+            url = transportLogic.addQs(url, connection);
             url += "&tid=" + Math.floor(Math.random() * 11);
             return url;
         },
@@ -231,7 +232,7 @@
             while (incomingMessageBuffer.length > 0) {
                 // Check isDisconnecting for each message, a message can cause the connection to stop
                 if (!isDisconnecting(connection)) {
-                    signalR.transports._logic.processMessages(connection, incomingMessageBuffer.shift());
+                    transportLogic.processMessages(connection, incomingMessageBuffer.shift());
                 }
                 else {
                     // If we're disconnecting, reset the message buffer and stop drain
@@ -260,8 +261,24 @@
             return false;
         },
 
-        processMessages: function (connection, minData) {
+        processMessages: function (connection, minData, onInitialize) {
             var data;
+
+            if (minData) {
+                data = this.maximizePersistentResponse(minData);
+
+                // If we did not initialize (we could already be initialized)
+                if (!transportLogic.tryInitialize(data, onInitialize)) {
+                    // Try to buffer only if we're still trying to connect to the server.
+                    // Protects against server race where data can come to the client faster
+                    // than the initialize message.
+                    if (transportLogic.tryPreConnectBuffer(connection, minData)) {
+                        // We've successfully buffered a message so abort current message execution
+                        return;
+                    }
+                }
+            }
+
             // Transport can be null if we've just closed the connection
             if (connection.transport) {
                 var $connection = $(connection);
@@ -275,8 +292,6 @@
                 if (!minData) {
                     return;
                 }
-
-                data = this.maximizePersistentResponse(minData);
 
                 if (data.Disconnect) {
                     connection.log("Disconnect command received from server");

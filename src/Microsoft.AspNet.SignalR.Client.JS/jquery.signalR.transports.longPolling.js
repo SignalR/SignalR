@@ -89,20 +89,7 @@
                                 data = transportLogic.maximizePersistentResponse(minData);
                             }
 
-                            // If we did not initialize (we could already be initialized)
-                            if (!transportLogic.tryInitialize(data, fireConnect)) {
-                                // Try to buffer only if we're still trying to connect to the server.
-                                // Protects against server race where data can come to the client faster
-                                // than the initialize message.
-                                if (transportLogic.tryPreConnectBuffer(instance, minData)) {
-                                    // We've successfully buffered a message so re-start poll to wait for 
-                                    // the initialize message
-                                    poll(instance, false);
-                                    return;
-                                }
-                            }
-
-                            transportLogic.processMessages(instance, minData);
+                            transportLogic.processMessages(instance, minData, fireConnect);
 
                             if (data &&
                                 $.type(data.LongPollDelay) === "number") {
@@ -168,7 +155,7 @@
                         // The Math.min at the end is to ensure that the reconnect timeout does not overflow.
                         reconnectTimeoutId = window.setTimeout(function () { fireReconnected(instance); }, Math.min(1000 * (Math.pow(2, reconnectErrors) - 1), maxFireReconnectedTimeout));
                     }
-                }(connection, false));
+                }(connection));
             }, 250); // Have to delay initial poll so Chrome doesn't show loader spinner in tab
         },
 
