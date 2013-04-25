@@ -69,6 +69,31 @@
   </ItemGroup>
 
   <ItemGroup>
+    <!--Requires just VS2012-->
+    <CAProjects Include="$(ProjectRoot)\src\Microsoft.AspNet.SignalR.Core\Microsoft.AspNet.SignalR.Core.csproj"></CAProjects>
+
+    <CAProjects Include="$(ProjectRoot)\src\Microsoft.AspNet.SignalR.Client\Microsoft.AspNet.SignalR.Client.csproj"></CAProjects>
+    <CAProjects Include="$(ProjectRoot)\src\Microsoft.AspNet.SignalR.Client45\Microsoft.AspNet.SignalR.Client45.csproj"></CAProjects>
+    <CAProjects Include="$(ProjectRoot)\src\Microsoft.AspNet.SignalR.Client.JS\Microsoft.AspNet.SignalR.Client.JS.csproj"></CAProjects>
+
+    <CAProjects Include="$(ProjectRoot)\src\Microsoft.AspNet.SignalR.Hosting.Memory\Microsoft.AspNet.SignalR.Hosting.Memory.csproj"></CAProjects>
+    <CAProjects Include="$(ProjectRoot)\src\Microsoft.AspNet.SignalR.Owin\Microsoft.AspNet.SignalR.Owin.csproj"></CAProjects>
+    <CAProjects Include="$(ProjectRoot)\src\Microsoft.AspNet.SignalR.Owin45\Microsoft.AspNet.SignalR.Owin45.csproj"></CAProjects>
+    <CAProjects Include="$(ProjectRoot)\src\Microsoft.AspNet.SignalR.SystemWeb\Microsoft.AspNet.SignalR.SystemWeb.csproj"></CAProjects>
+    <CAProjects Include="$(ProjectRoot)\src\Microsoft.AspNet.SignalR.SystemWeb45\Microsoft.AspNet.SignalR.SystemWeb45.csproj"></CAProjects>
+
+    <CAProjects Include="$(ProjectRoot)\src\Microsoft.AspNet.SignalR.Redis\Microsoft.AspNet.SignalR.Redis.csproj"></CAProjects>
+    <CAProjects Include="$(ProjectRoot)\src\Microsoft.AspNet.SignalR.SqlServer\Microsoft.AspNet.SignalR.SqlServer.csproj"></CAProjects>
+    <CAProjects Include="$(ProjectRoot)\src\Microsoft.AspNet.SignalR.ServiceBus\Microsoft.AspNet.SignalR.ServiceBus.csproj"></CAProjects>
+
+    <CAProjects Include="$(ProjectRoot)\src\Microsoft.AspNet.SignalR.Utils\Microsoft.AspNet.SignalR.Utils.csproj"></CAProjects>
+
+    <!--Requires SDKs-->
+    <CAProjects Include="$(ProjectRoot)\src\Microsoft.AspNet.SignalR.Client.WinRT\Microsoft.AspNet.SignalR.Client.WinRT.csproj"
+                  Condition="Exists('$(MSBuildExtensionsPath)\Microsoft\WindowsXaml')"></CAProjects>
+  </ItemGroup>
+  
+  <ItemGroup>
     <BuildProjects Include="@(CoreProjects)"></BuildProjects>
     
     <!--Performance projects-->
@@ -236,7 +261,7 @@
   </Target>
 
   <Target Name="RunCodeAnalysis" DependsOnTargets="CreateOutputDir" Condition="Exists('$(MSBuildExtensionsPath)\Microsoft\VisualStudio\v11.0\CodeAnalysis\fxcoptask.dll')">
-    <MSBuild Projects="%(CoreProjects.Identity)"
+    <MSBuild Projects="%(CAProjects.Identity)"
              Targets="ReBuild"
              Properties="RunCodeAnalysis=true;Configuration=$(Configuration);ArtifactsDir=$(ArtifactsDir);SolutionDir=$(ProjectRoot)\;$(ExtraProperties)" />
   </Target>

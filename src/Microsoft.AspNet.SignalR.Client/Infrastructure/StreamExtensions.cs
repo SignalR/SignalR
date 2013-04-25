@@ -30,6 +30,7 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
         }
 
 #if !(NETFX_CORE || NET45)
+        [SuppressMessage("Microsoft.Performance", "CA1811:No upstream protected or public callers", Justification = "Keeping the method for future use")]
         private static Func<IAsyncResult, object> WrapEndWrite(Stream stream)
         {
             return ar =>

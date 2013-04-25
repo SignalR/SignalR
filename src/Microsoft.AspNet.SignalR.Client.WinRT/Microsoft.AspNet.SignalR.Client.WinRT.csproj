@@ -120,8 +120,20 @@
     <Compile Include="..\Microsoft.AspNet.SignalR.Client\HeaderDictionary.cs">
       <Link>HeaderDictionary.cs</Link>
     </Compile>
+    <Compile Include="..\Microsoft.AspNet.SignalR.Client\Http\DefaultHttpClient.cs">
+      <Link>Http\DefaultHttpClient.cs</Link>
+    </Compile>
+    <Compile Include="..\Microsoft.AspNet.SignalR.Client\Http\DefaultHttpHandler.cs">
+      <Link>Http\DefaultHttpHandler.cs</Link>
+    </Compile>
+    <Compile Include="..\Microsoft.AspNet.SignalR.Client\Http\HttpResponseMessageWrapper.cs">
+      <Link>Http\HttpResponseMessageWrapper.cs</Link>
+    </Compile>
     <Compile Include="..\Microsoft.AspNet.SignalR.Client\Http\IResponseExtensions.cs">
       <Link>Http\IResponseExtensions.cs</Link>
+    </Compile>
+    <Compile Include="..\Microsoft.AspNet.SignalR.Client\Infrastructure\HttpClientException.cs">
+      <Link>Infrastructure\HttpClientException.cs</Link>
     </Compile>
     <Compile Include="..\Microsoft.AspNet.SignalR.Client\Resources.Designer.cs">
       <Link>Resources.Designer.cs</Link>
@@ -261,9 +273,6 @@
     <Compile Include="..\Microsoft.AspNet.SignalR.Core\TaskAsyncHelper.cs">
       <Link>TaskAsyncHelper.cs</Link>
     </Compile>
-    <Compile Include="Http\DefaultHttpClient.cs" />
-    <Compile Include="Http\DefaultHttpHandler.cs" />
-    <Compile Include="Http\HttpResponseMessageWrapper.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

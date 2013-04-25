@@ -53,9 +53,6 @@
     <Compile Include="..\Common\CommonVersionInfo.cs">
       <Link>Properties\CommonVersionInfo.cs</Link>
     </Compile>
-    <Compile Include="..\Microsoft.AspNet.SignalR.Client\Infrastructure\UrlEncoder.cs">
-      <Link>Infrastructure\UrlEncoder.cs</Link>
-    </Compile>
     <Compile Include="..\Microsoft.AspNet.SignalR.Core\Infrastructure\DisposableAction.cs">
       <Link>Infrastructure\DisposableAction.cs</Link>
     </Compile>
@@ -75,6 +72,7 @@
     <Compile Include="ClientStream.cs" />
     <Compile Include="INetworkObserver.cs" />
     <Compile Include="Infrastructure\ProcessExtensions.cs" />
+    <Compile Include="Infrastructure\UrlEncoder.cs" />
     <Compile Include="MemoryHost.cs" />
     <Compile Include="NetworkObservable.cs" />
     <Compile Include="Request.cs" />

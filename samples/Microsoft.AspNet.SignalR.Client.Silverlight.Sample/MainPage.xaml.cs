@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
@@ -45,14 +46,48 @@ namespace Microsoft.AspNet.SignalR.Client.Silverlight.Sample
             };
 
             var scheduler = TaskScheduler.FromCurrentSynchronizationContext();
+            connection.TraceWriter = new Writer(val =>
+            {
+                Dispatcher.BeginInvoke(() =>
+                {
+                    App.ViewModel.Items.Add(val);
+                });
+            });
+
             connection.Start().ContinueWith(task =>
             {
-                var ex = task.Exception.InnerExceptions[0];
-                App.ViewModel.Items.Add(ex.Message);
+                if (task.IsFaulted)
+                {
+                    var ex = task.Exception.InnerExceptions[0];
+                    App.ViewModel.Items.Add(ex.Message);
+                }
+                else
+                {
+                    App.ViewModel.Items.Add("Connected with transport " + connection.Transport.Name);
+                }
             },
             CancellationToken.None,
-            TaskContinuationOptions.OnlyOnFaulted,
+            TaskContinuationOptions.None,
             scheduler);
+        }
+
+        private class Writer : TextWriter
+        {
+            private readonly Action<string> _log;
+            public Writer(Action<string> log)
+            {
+                _log = log;
+            }
+
+            public override void WriteLine(string value)
+            {
+                _log(value);
+            }
+
+            public override System.Text.Encoding Encoding
+            {
+                get { return System.Text.Encoding.UTF8; }
+            }
         }
     }
 }

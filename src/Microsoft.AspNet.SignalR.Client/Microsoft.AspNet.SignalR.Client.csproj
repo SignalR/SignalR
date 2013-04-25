@@ -41,6 +41,12 @@
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Net.Http, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Microsoft.Net.Http.2.0.20710.0\lib\net40\System.Net.Http.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Net.Http.WebRequest, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Microsoft.Net.Http.2.0.20710.0\lib\net40\System.Net.Http.WebRequest.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="..\Common\CommonAssemblyInfo.cs">
@@ -68,6 +74,9 @@
     <Compile Include="ConnectionExtensions.cs" />
     <Compile Include="HeaderDictionary.cs" />
     <Compile Include="HeartBeatMonitor.cs" />
+    <Compile Include="Http\DefaultHttpHandler.cs" />
+    <Compile Include="Http\HttpResponseMessageWrapper.cs" />
+    <Compile Include="Infrastructure\HttpClientException.cs" />
     <Compile Include="Http\IResponseExtensions.cs" />
     <Compile Include="Hubs\HubInvocation.cs" />
     <Compile Include="ConnectionState.cs" />
@@ -85,7 +94,6 @@
     <Compile Include="Infrastructure\SignalRError.cs" />
     <Compile Include="Infrastructure\ExceptionHelper.cs" />
     <Compile Include="Infrastructure\ThreadSafeInvoker.cs" />
-    <Compile Include="Infrastructure\UrlEncoder.cs" />
     <Compile Include="TraceLevels.cs" />
     <Compile Include="Resources.Designer.cs">
       <AutoGen>True</AutoGen>
@@ -97,9 +105,6 @@
     <Compile Include="Transports\LongPolling\PollingRequestHandler.cs" />
     <Compile Include="Transports\ServerSentEvents\ChunkBuffer.cs" />
     <Compile Include="Http\DefaultHttpClient.cs" />
-    <Compile Include="Http\HttpHelper.cs" />
-    <Compile Include="Http\HttpWebRequestWrapper.cs" />
-    <Compile Include="Http\HttpWebResponseWrapper.cs" />
     <Compile Include="Http\IHttpClient.cs" />
     <Compile Include="Http\IHttpClientExtensions.cs" />
     <Compile Include="Http\IRequest.cs" />
@@ -128,6 +133,7 @@
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
+    <None Include="app.config" />
     <None Include="packages.config" />
   </ItemGroup>
   <Import Project="..\Common\Microsoft.AspNet.SignalR.targets" />

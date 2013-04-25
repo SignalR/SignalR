@@ -101,8 +101,17 @@
     <Compile Include="..\Microsoft.AspNet.SignalR.Client\HeartBeatMonitor.cs">
       <Link>HeartBeatMonitor.cs</Link>
     </Compile>
+    <Compile Include="..\Microsoft.AspNet.SignalR.Client\Http\DefaultHttpHandler.cs">
+      <Link>Http\DefaultHttpHandler.cs</Link>
+    </Compile>
+    <Compile Include="..\Microsoft.AspNet.SignalR.Client\Http\HttpResponseMessageWrapper.cs">
+      <Link>Http\HttpResponseMessageWrapper.cs</Link>
+    </Compile>
     <Compile Include="..\Microsoft.AspNet.SignalR.Client\Http\IResponseExtensions.cs">
       <Link>Http\IResponseExtensions.cs</Link>
+    </Compile>
+    <Compile Include="..\Microsoft.AspNet.SignalR.Client\Infrastructure\HttpClientException.cs">
+      <Link>Infrastructure\HttpClientException.cs</Link>
     </Compile>
     <Compile Include="..\Microsoft.AspNet.SignalR.Client\KeepAliveData.cs">
       <Link>KeepAliveData.cs</Link>
@@ -139,15 +148,6 @@
     </Compile>
     <Compile Include="..\Microsoft.AspNet.SignalR.Client\Http\DefaultHttpClient.cs">
       <Link>Http\DefaultHttpClient.cs</Link>
-    </Compile>
-    <Compile Include="..\Microsoft.AspNet.SignalR.Client\Http\HttpHelper.cs">
-      <Link>Http\HttpHelper.cs</Link>
-    </Compile>
-    <Compile Include="..\Microsoft.AspNet.SignalR.Client\Http\HttpWebRequestWrapper.cs">
-      <Link>Http\HttpWebRequestWrapper.cs</Link>
-    </Compile>
-    <Compile Include="..\Microsoft.AspNet.SignalR.Client\Http\HttpWebResponseWrapper.cs">
-      <Link>Http\HttpWebResponseWrapper.cs</Link>
     </Compile>
     <Compile Include="..\Microsoft.AspNet.SignalR.Client\Http\IHttpClient.cs">
       <Link>Http\IHttpClient.cs</Link>
@@ -199,9 +199,6 @@
     </Compile>
     <Compile Include="..\Microsoft.AspNet.SignalR.Client\Infrastructure\ThreadSafeInvoker.cs">
       <Link>Infrastructure\ThreadSafeInvoker.cs</Link>
-    </Compile>
-    <Compile Include="..\Microsoft.AspNet.SignalR.Client\Infrastructure\UrlEncoder.cs">
-      <Link>Infrastructure\UrlEncoder.cs</Link>
     </Compile>
     <Compile Include="..\Microsoft.AspNet.SignalR.Client\NegotiationResponse.cs">
       <Link>NegotiationResponse.cs</Link>
@@ -260,6 +257,15 @@
     <Reference Include="Newtonsoft.Json, Version=4.5.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\packages\Newtonsoft.Json.4.5.11\lib\sl3-wp\Newtonsoft.Json.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Net.Http">
+      <HintPath>..\..\packages\Microsoft.Net.Http.2.1.3-beta\lib\sl4-windowsphone71\System.Net.Http.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Net.Http.Extensions">
+      <HintPath>..\..\packages\Microsoft.Net.Http.2.1.3-beta\lib\sl4-windowsphone71\System.Net.Http.Extensions.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Net.Http.Primitives">
+      <HintPath>..\..\packages\Microsoft.Net.Http.2.1.3-beta\lib\sl4-windowsphone71\System.Net.Http.Primitives.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>

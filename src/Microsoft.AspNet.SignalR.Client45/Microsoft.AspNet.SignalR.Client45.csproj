@@ -41,6 +41,8 @@
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Net.Http" />
+    <Reference Include="System.Net.Http.WebRequest" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="..\Common\CommonAssemblyInfo.cs">
@@ -67,14 +69,11 @@
     <Compile Include="..\Microsoft.AspNet.SignalR.Client\Http\DefaultHttpClient.cs">
       <Link>Http\DefaultHttpClient.cs</Link>
     </Compile>
-    <Compile Include="..\Microsoft.AspNet.SignalR.Client\Http\HttpHelper.cs">
-      <Link>Http\HttpHelper.cs</Link>
+    <Compile Include="..\Microsoft.AspNet.SignalR.Client\Http\DefaultHttpHandler.cs">
+      <Link>Http\DefaultHttpHandler.cs</Link>
     </Compile>
-    <Compile Include="..\Microsoft.AspNet.SignalR.Client\Http\HttpWebRequestWrapper.cs">
-      <Link>Http\HttpWebRequestWrapper.cs</Link>
-    </Compile>
-    <Compile Include="..\Microsoft.AspNet.SignalR.Client\Http\HttpWebResponseWrapper.cs">
-      <Link>Http\HttpWebResponseWrapper.cs</Link>
+    <Compile Include="..\Microsoft.AspNet.SignalR.Client\Http\HttpResponseMessageWrapper.cs">
+      <Link>Http\HttpResponseMessageWrapper.cs</Link>
     </Compile>
     <Compile Include="..\Microsoft.AspNet.SignalR.Client\Http\IHttpClient.cs">
       <Link>Http\IHttpClient.cs</Link>
@@ -124,6 +123,9 @@
     <Compile Include="..\Microsoft.AspNet.SignalR.Client\IConnection.cs">
       <Link>IConnection.cs</Link>
     </Compile>
+    <Compile Include="..\Microsoft.AspNet.SignalR.Client\Infrastructure\HttpClientException.cs">
+      <Link>Infrastructure\HttpClientException.cs</Link>
+    </Compile>
     <Compile Include="..\Microsoft.AspNet.SignalR.Client\KeepAliveData.cs">
       <Link>KeepAliveData.cs</Link>
     </Compile>
@@ -162,9 +164,6 @@
     </Compile>
     <Compile Include="..\Microsoft.AspNet.SignalR.Client\Infrastructure\StreamExtensions.cs">
       <Link>Infrastructure\StreamExtensions.cs</Link>
-    </Compile>
-    <Compile Include="..\Microsoft.AspNet.SignalR.Client\Infrastructure\UrlEncoder.cs">
-      <Link>Infrastructure\UrlEncoder.cs</Link>
     </Compile>
     <Compile Include="..\Microsoft.AspNet.SignalR.Client\NegotiationResponse.cs">
       <Link>NegotiationResponse.cs</Link>
@@ -239,6 +238,7 @@
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
+    <None Include="app.config" />
     <None Include="packages.config" />
   </ItemGroup>
   <Import Project="..\Common\Microsoft.AspNet.SignalR.targets" />

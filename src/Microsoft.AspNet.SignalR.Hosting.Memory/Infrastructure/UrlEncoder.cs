@@ -1,7 +1,8 @@
-﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.md in the project root for license information.
-
-using System;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace Microsoft.AspNet.SignalR.Infrastructure
 {
@@ -120,7 +121,7 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
 
             return false;
         }
-        
+
         private static bool ValidateUrlEncodingParameters(byte[] bytes, int offset, int count)
         {
             if (bytes == null && count == 0)
