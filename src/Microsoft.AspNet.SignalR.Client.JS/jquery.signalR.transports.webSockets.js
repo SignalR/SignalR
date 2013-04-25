@@ -50,11 +50,9 @@
 
                     transportLogic.clearReconnectTimeout(connection);
 
-                    if (onSuccess) {
-                        onSuccess();
-                    } else if (changeState(connection,
-                                         signalR.connectionState.reconnecting,
-                                         signalR.connectionState.connected) === true) {
+                    if (changeState(connection,
+                                    signalR.connectionState.reconnecting,
+                                    signalR.connectionState.connected) === true) {
                         $connection.triggerHandler(events.onReconnect);
                     }
                 };
@@ -94,7 +92,7 @@
                     if (data) {
                         // data.M is PersistentResponse.Messages
                         if ($.isEmptyObject(data) || data.M) {
-                            transportLogic.processMessages(connection, data);
+                            transportLogic.processMessages(connection, data, onSuccess);
                         } else {
                             // For websockets we need to trigger onReceived
                             // for callbacks to outgoing hub calls.
