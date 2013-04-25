@@ -48,7 +48,7 @@ namespace Microsoft.AspNet.SignalR.Client
 
                 if (response != null)
                 {
-                    error.SetHttpWebResponse(response);
+                    error.SetResponse(response);
                     error.StatusCode = response.StatusCode;
                     Stream originStream = response.GetResponseStream();
 
@@ -82,7 +82,7 @@ namespace Microsoft.AspNet.SignalR.Client
 
                 if (response != null)
                 {
-                    error.SetResponseMessage(response);
+                    error.SetResponse(response);
                     error.StatusCode = response.StatusCode;
                     error.ResponseBody = response.Content.ReadAsStringAsync().Result;
                 }

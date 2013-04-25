@@ -11,8 +11,7 @@ namespace Microsoft.AspNet.SignalR.Client
     /// </summary>
     public class SignalRError : IDisposable
     {
-        private HttpWebResponse _responseWeb;
-        private HttpResponseMessage _responseMessage;
+        private IDisposable _response;
 
         /// <summary>
         /// Create custom SignalR based error.
@@ -23,14 +22,9 @@ namespace Microsoft.AspNet.SignalR.Client
             Exception = exception;
         }
 
-        internal void SetHttpWebResponse(HttpWebResponse response)
+        internal void SetResponse(IDisposable response)
         {
-            _responseWeb = response;
-        }
-
-        internal void SetResponseMessage(HttpResponseMessage response)
-        {
-            _responseMessage = response;
+            _response = response;
         }
 
         /// <summary>
@@ -61,14 +55,9 @@ namespace Microsoft.AspNet.SignalR.Client
         {
             if (disposing)
             {
-                if (_responseWeb != null)
+                if (_response != null)
                 {
-                    _responseWeb.Close();
-                }
-
-                if (_responseMessage != null)
-                {
-                    _responseMessage.Dispose();
+                    _response.Dispose();
                 }
             }
         }
