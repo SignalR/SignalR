@@ -68,6 +68,7 @@
                   Condition="Exists('$(MSBuildExtensionsPath)\Microsoft\WindowsXaml')"></CoreProjects>
   </ItemGroup>
 
+  <!--Removing SL5 and WP8 from Code Analysis-->
   <ItemGroup>
     <!--Requires just VS2012-->
     <CAProjects Include="$(ProjectRoot)\src\Microsoft.AspNet.SignalR.Core\Microsoft.AspNet.SignalR.Core.csproj"></CAProjects>

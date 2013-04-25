@@ -78,6 +78,15 @@
     <Reference Include="System.Windows.Browser" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="..\Microsoft.AspNet.SignalR.Client45\Http\DefaultHttpClient.cs">
+      <Link>Http\DefaultHttpClient.cs</Link>
+    </Compile>
+    <Compile Include="..\Microsoft.AspNet.SignalR.Client45\Http\DefaultHttpHandler.cs">
+      <Link>Http\DefaultHttpHandler.cs</Link>
+    </Compile>
+    <Compile Include="..\Microsoft.AspNet.SignalR.Client45\Http\HttpResponseMessageWrapper.cs">
+      <Link>Http\HttpResponseMessageWrapper.cs</Link>
+    </Compile>
     <Compile Include="..\Microsoft.AspNet.SignalR.Client\ConnectionState.cs">
       <Link>ConnectionState.cs</Link>
     </Compile>
@@ -87,14 +96,17 @@
     <Compile Include="..\Microsoft.AspNet.SignalR.Client\HeartBeatMonitor.cs">
       <Link>HeartBeatMonitor.cs</Link>
     </Compile>
-    <Compile Include="..\Microsoft.AspNet.SignalR.Client\Http\DefaultHttpClient.cs">
-      <Link>Http\DefaultHttpClient.cs</Link>
+    <Compile Include="..\Microsoft.AspNet.SignalR.Client\Http\IHttpClient.cs">
+      <Link>Http\IHttpClient.cs</Link>
     </Compile>
-    <Compile Include="..\Microsoft.AspNet.SignalR.Client\Http\DefaultHttpHandler.cs">
-      <Link>Http\DefaultHttpHandler.cs</Link>
+    <Compile Include="..\Microsoft.AspNet.SignalR.Client\Http\IHttpClientExtensions.cs">
+      <Link>Http\IHttpClientExtensions.cs</Link>
     </Compile>
-    <Compile Include="..\Microsoft.AspNet.SignalR.Client\Http\HttpResponseMessageWrapper.cs">
-      <Link>Http\HttpResponseMessageWrapper.cs</Link>
+    <Compile Include="..\Microsoft.AspNet.SignalR.Client\Http\IRequest.cs">
+      <Link>Http\IRequest.cs</Link>
+    </Compile>
+    <Compile Include="..\Microsoft.AspNet.SignalR.Client\Http\IResponse.cs">
+      <Link>Http\IResponse.cs</Link>
     </Compile>
     <Compile Include="..\Microsoft.AspNet.SignalR.Client\Http\IResponseExtensions.cs">
       <Link>Http\IResponseExtensions.cs</Link>
@@ -170,18 +182,6 @@
     </Compile>
     <Compile Include="..\Microsoft.AspNet.SignalR.Client\ConnectionExtensions.cs">
       <Link>ConnectionExtensions.cs</Link>
-    </Compile>
-    <Compile Include="..\Microsoft.AspNet.SignalR.Client\Http\IHttpClient.cs">
-      <Link>Http\IHttpClient.cs</Link>
-    </Compile>
-    <Compile Include="..\Microsoft.AspNet.SignalR.Client\Http\IHttpClientExtensions.cs">
-      <Link>Http\IHttpClientExtensions.cs</Link>
-    </Compile>
-    <Compile Include="..\Microsoft.AspNet.SignalR.Client\Http\IRequest.cs">
-      <Link>Http\IRequest.cs</Link>
-    </Compile>
-    <Compile Include="..\Microsoft.AspNet.SignalR.Client\Http\IResponse.cs">
-      <Link>Http\IResponse.cs</Link>
     </Compile>
     <Compile Include="..\Microsoft.AspNet.SignalR.Client\Hubs\HubConnection.cs">
       <Link>Hubs\HubConnection.cs</Link>

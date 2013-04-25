@@ -84,7 +84,7 @@ namespace Microsoft.AspNet.SignalR.Client
                 {
                     error.SetResponseMessage(response);
                     error.StatusCode = response.StatusCode;
-                    error.ResponseBody = response.Content.ToString();
+                    error.ResponseBody = response.Content.ReadAsStringAsync().Result;
                 }
             }
 

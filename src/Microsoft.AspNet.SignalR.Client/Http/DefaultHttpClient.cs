@@ -2,11 +2,7 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
-using System.Net.Http;
-using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.AspNet.SignalR.Infrastructure;
 
 namespace Microsoft.AspNet.SignalR.Client.Http
 {
@@ -21,35 +17,15 @@ namespace Microsoft.AspNet.SignalR.Client.Http
         /// <param name="url">The url to send the request to.</param>
         /// <param name="prepareRequest">A callback that initializes the request with default values.</param>
         /// <returns>A <see cref="T:Task{IResponse}"/>.</returns>
-        [SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope", Justification = "Handler cannot be disposed before response is disposed")]
         public Task<IResponse> Get(string url, Action<IRequest> prepareRequest)
         {
-            var disposerResponse = new Disposer();
-            var cts = new CancellationTokenSource();
-
-            var handler = new DefaultHttpHandler(prepareRequest, () =>
+            IRequest req = null;
+            return HttpHelper.GetAsync(url, request =>
             {
-                cts.Cancel();
-                disposerResponse.Dispose();
-            });
-
-            var client = new HttpClient(handler);
-
-            return client.GetAsync(new Uri(url), HttpCompletionOption.ResponseHeadersRead, cts.Token)
-                 .Then(responseMessage =>
-                 {
-                     try
-                     {
-                         responseMessage.EnsureSuccessStatusCode();
-                         disposerResponse.Set(responseMessage);
-                     }
-                     catch
-                     {
-                         throw new HttpClientException(responseMessage);
-                     }
-
-                     return (IResponse)new HttpResponseMessageWrapper(responseMessage, client);
-                 });
+                req = new HttpWebRequestWrapper(request);
+                prepareRequest(req);
+            }
+            ).Then(response => (IResponse)new HttpWebResponseWrapper(response));
         }
 
         /// <summary>
@@ -59,45 +35,15 @@ namespace Microsoft.AspNet.SignalR.Client.Http
         /// <param name="prepareRequest">A callback that initializes the request with default values.</param>
         /// <param name="postData">form url encoded data.</param>
         /// <returns>A <see cref="T:Task{IResponse}"/>.</returns>
-        [SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope", Justification = "Handler cannot be disposed before response is disposed")]
         public Task<IResponse> Post(string url, Action<IRequest> prepareRequest, IDictionary<string, string> postData)
         {
-            var disposerResponse = new Disposer();
-            var cts = new CancellationTokenSource();
-
-            var handler = new DefaultHttpHandler(prepareRequest, () =>
+            IRequest req = null;
+            return HttpHelper.PostAsync(url, request =>
             {
-                cts.Cancel();
-                disposerResponse.Dispose();
-            });
-
-            var client = new HttpClient(handler);
-            var request = new HttpRequestMessage(HttpMethod.Post, new Uri(url));
-
-            if (postData == null)
-            {
-                request.Content = new StringContent(String.Empty);
-            }
-            else
-            {
-                request.Content = new FormUrlEncodedContent(postData);
-            }
-
-            return client.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, cts.Token).
-                Then(responseMessage =>
-                {
-                    try
-                    {
-                        responseMessage.EnsureSuccessStatusCode();
-                        disposerResponse.Set(responseMessage);
-                    }
-                    catch
-                    {
-                        throw new HttpClientException(responseMessage);
-                    }
-
-                    return (IResponse)new HttpResponseMessageWrapper(responseMessage, client);
-                });
+                req = new HttpWebRequestWrapper(request);
+                prepareRequest(req);
+            },
+            postData).Then(response => (IResponse)new HttpWebResponseWrapper(response));
         }
     }
 }
