@@ -137,31 +137,26 @@ testUtilities.runWithAllTransports(function (transport) {
                 return connection.start({ transport: transport });
             })
         ).done(function () {
-            // FIX: The longPolling transport currently needs to receive a message with a message ID before it can "reconnect"
-            // Issue #1700
-            if (transport === "longPolling") {
-                $.each(connections, function (_, connection) {
-                    connection.messageId = connection.messageId || "";
-                });
-            }
+            // We wait 1 second before wiring up the getUrl to ensure that no more requests go through
+            window.setTimeout(function () {
+                $.connection.transports._logic.getUrl = function (connection) {
+                    var url = savedGetUrl.apply($.connection.transports._logic, arguments),
+                        urlWithoutQS = url.split("?", 1)[0];
 
-            $.connection.transports._logic.getUrl = function (connection) {
-                var url = savedGetUrl.apply($.connection.transports._logic, arguments),
-                    urlWithoutQS = url.split("?", 1)[0];
+                    $.each(connections, function (i, conn) {
+                        if (conn === connection) {
+                            getUrlCalled[i] = true;
+                            return false; // Finish looping
+                        }
+                    });
 
-                $.each(connections, function (i, conn) {
-                    if (conn === connection) {
-                        getUrlCalled[i] = true;
-                        return false; // Finish looping
-                    }
-                });
+                    assert.ok(urlWithoutQS.match(/\/reconnect$/), "URL ends with reconnect");
+                    return url;
+                };
 
-                assert.ok(urlWithoutQS.match(/\/reconnect$/), "URL ends with reconnect");
-                return url;
-            };
-
-            $.network.disconnect();
-            $.network.connect();
+                $.network.disconnect();
+                $.network.connect();
+            }, 1000);
         });
 
         // Cleanup
@@ -224,14 +219,6 @@ testUtilities.runWithAllTransports(function (transport) {
             var promise = createPromise("reconnecting");
             verifyState("connected");
 
-            // FIX: The longPolling transport currently needs to receive a message with a message ID before it can "reconnect"
-            // Issue #1700
-            if (transport === "longPolling") {
-                $.each(connections, function (_, connection) {
-                    connection.messageId = connection.messageId || "";
-                });
-            }
-
             $.network.disconnect();
             return promise;
         }).pipe(function () {
@@ -258,8 +245,7 @@ testUtilities.runWithAllTransports(function (transport) {
             reconnectAttempts = 0,
             savedConnectionReconnectDelay = connection.reconnectDelay,
             savedLongPollingReconnectDelay = $.connection.transports.longPolling.reconnectDelay,
-            savedReconnect = $.connection.transports[transport].reconnect,
-            savedPingServer = $.connection.transports._logic.pingServer;
+            savedGetUrl = $.connection.transports._logic.getUrl;
 
         function connectIfSecondReconnectAttempt() {
             if (++reconnectAttempts === 2) {
@@ -294,21 +280,14 @@ testUtilities.runWithAllTransports(function (transport) {
         connection.start({ transport: transport }).done(function () {
             assert.equal(connection.state, $.signalR.connectionState.connected, "Connection started.");
 
-            // Monkey patch reconnect functions so we can count how many reconnect attempts have been made
-            if (transport === "longPolling") {
-                // FIX: The longPolling transport currently needs to receive a message with a message ID before it can "reconnect"
-                // Issue #1700
-                connection.messageId = connection.messageId || "";
-                $.connection.transports._logic.pingServer = function (connection, transport) {
-                    return savedPingServer.call($.connection.transports._logic, connection, transport).fail(function () {
-                        connectIfSecondReconnectAttempt();
-                    });
-                };
-            } else {
-                $.connection.transports[transport].reconnect = function (connection) {
-                    savedReconnect.call($.connection.transports[transport], connection);
+            $.connection.transports._logic.getUrl = function () {
+                var url = savedGetUrl.apply(this, arguments);
+
+                if (url.indexOf("/reconnect") >= 0) {
                     connectIfSecondReconnectAttempt();
-                };
+                }
+
+                return url;
             }
 
             $.network.disconnect();
@@ -318,8 +297,7 @@ testUtilities.runWithAllTransports(function (transport) {
             connection.reconnectDelay = savedConnectionReconnectDelay;
             $.connection.transports.longPolling.reconnectDelay = savedLongPollingReconnectDelay;
 
-            $.connection.transports[transport].reconnect = savedReconnect;
-            $.connection.transports._logic.pingServer = savedPingServer;
+            $.connection.transports._logic.getUrl = savedGetUrl;
 
             $.network.connect();
             connection.stop();
