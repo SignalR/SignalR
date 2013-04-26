@@ -7,9 +7,9 @@ $(function () {
         stopStartBtn = $("#stopStart"),
         //default groupName
         groupName = "group++1",
-        radioAll = $("#radio_all"),
-        radioGroup = $("#radio_group"),
-        radioCaller = $("#radio_caller"),
+        radioAll = $("#radioAll"),
+        radioGroup = $("#radioGroup"),
+        radioCaller = $("#radioCaller"),
         sendMessgeTo,
         start,
         sendMessageCountHandler,
@@ -97,7 +97,7 @@ $(function () {
             radioCaller.prop("disabled", false);
         }
     }
-    
+
     $.connection.hub.stateChanged(function (change) {
         var oldState = null,
             newState = null;
@@ -126,7 +126,7 @@ $(function () {
 
         disableButtonsForMessageLoops(false);
     });
-        
+
 
     start = function () {
         $.connection.hub.start({ transport: activeTransport, jsonp: isJsonp })
@@ -141,7 +141,7 @@ $(function () {
                            .find("i")
                                .removeClass("icon-play")
                                .addClass("icon-stop");
-                
+
                 if (radioGroup.prop("checked") === true) {
                     messageLoopsHub.server.joinGroup($.connection.hub.id, groupName).done(function (value) {
                         $("<li/>").html("Succeeded at joinGroup: " + value).appendTo(messages);
@@ -180,7 +180,7 @@ $(function () {
 
     startMessageLoopsBtn.click(function () {
         disableButtonsForMessageLoops(true);
-        
+
         if (radioAll.prop("checked") === true) {
             sendMessgeTo = "all";
             messageLoopsHub.server.sendMessageCountToAll(0).done(function (value) {

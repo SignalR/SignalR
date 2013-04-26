@@ -13,11 +13,11 @@
     </div>
 
     <p>
-        <input type="radio" id="radio_all" name="group1" value="all" checked>
+        <input type="radio" id="radioAll" name="group1" value="all" checked="checked">
         Send message to all<br>
-        <input type="radio" id="radio_group" name="group1" value="group">
+        <input type="radio" id="radioGroup" name="group1" value="group">
         Send message to group<br>
-        <input type="radio" id="radio_caller" name="group1" value="value">
+        <input type="radio" id="radioCaller" name="group1" value="value">
         Send message to caller<br>
     </p>
 

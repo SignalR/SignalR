@@ -410,21 +410,21 @@
                 return proxies.messageLoops.invoke.apply(proxies.messageLoops, $.merge(["LeaveGroup"], $.makeArray(arguments)));
              },
 
-            sendMessageCountToAll: function (message) {
+            sendMessageCountToAll: function (messageCount) {
             /// <summary>Calls the SendMessageCountToAll method on the server-side MessageLoops hub.&#10;Returns a jQuery.Deferred() promise.</summary>
-            /// <param name=\"message\" type=\"Number\">Server side type is System.Int32</param>
+            /// <param name=\"messageCount\" type=\"Number\">Server side type is System.Int32</param>
                 return proxies.messageLoops.invoke.apply(proxies.messageLoops, $.merge(["SendMessageCountToAll"], $.makeArray(arguments)));
              },
 
-            sendMessageCountToCaller: function (message) {
+            sendMessageCountToCaller: function (messageCount) {
             /// <summary>Calls the SendMessageCountToCaller method on the server-side MessageLoops hub.&#10;Returns a jQuery.Deferred() promise.</summary>
-            /// <param name=\"message\" type=\"Number\">Server side type is System.Int32</param>
+            /// <param name=\"messageCount\" type=\"Number\">Server side type is System.Int32</param>
                 return proxies.messageLoops.invoke.apply(proxies.messageLoops, $.merge(["SendMessageCountToCaller"], $.makeArray(arguments)));
              },
 
-            sendMessageCountToGroup: function (message, groupName) {
+            sendMessageCountToGroup: function (messageCount, groupName) {
             /// <summary>Calls the SendMessageCountToGroup method on the server-side MessageLoops hub.&#10;Returns a jQuery.Deferred() promise.</summary>
-            /// <param name=\"message\" type=\"Number\">Server side type is System.Int32</param>
+            /// <param name=\"messageCount\" type=\"Number\">Server side type is System.Int32</param>
             /// <param name=\"groupName\" type=\"String\">Server side type is System.String</param>
                 return proxies.messageLoops.invoke.apply(proxies.messageLoops, $.merge(["SendMessageCountToGroup"], $.makeArray(arguments)));
              }
