@@ -9,40 +9,40 @@ using Xunit;
 
 namespace Microsoft.AspNet.SignalR.Tests.Server
 {
-    public class ScaleoutTaskQueueFacts
+    public class ScaleoutStreamFacts
     {
         [Fact]
         public void EnqueueWithoutOpenThrows()
         {
             var perfCounters = new Microsoft.AspNet.SignalR.Infrastructure.PerformanceCounterManager();
-            var queue = new ScaleoutStream(new TraceSource("Queue"), "0", 1000, perfCounters);
-            Assert.Throws<InvalidOperationException>(() => queue.Send(_ => { throw new InvalidOperationException(); }, null));
+            var stream = new ScaleoutStream(new TraceSource("Queue"), "0", 1000, perfCounters);
+            Assert.Throws<InvalidOperationException>(() => stream.Send(_ => { throw new InvalidOperationException(); }, null));
         }
 
         [Fact]
         public void EnqueueWithoutOpenRaisesOnError()
         {
             var perfCounters = new Microsoft.AspNet.SignalR.Infrastructure.PerformanceCounterManager();
-            var queue = new ScaleoutStream(new TraceSource("Queue"), "0", 1000, perfCounters);
+            var stream = new ScaleoutStream(new TraceSource("Queue"), "0", 1000, perfCounters);
 
-            Assert.Throws<InvalidOperationException>(() => queue.Send(_ => { throw new InvalidOperationException(); }, null));
+            Assert.Throws<InvalidOperationException>(() => stream.Send(_ => { throw new InvalidOperationException(); }, null));
         }
 
         [Fact]
         public void ErrorOnSendThrowsNextTime()
         {
             var perfCounters = new Microsoft.AspNet.SignalR.Infrastructure.PerformanceCounterManager();
-            var queue = new ScaleoutStream(new TraceSource("Queue"), "0", 1000, perfCounters);
-            queue.Open();
+            var stream = new ScaleoutStream(new TraceSource("Queue"), "0", 1000, perfCounters);
+            stream.Open();
 
-            Task task = queue.Send(_ =>
+            Task task = stream.Send(_ =>
             {
                 throw new InvalidOperationException();
             },
             null);
 
             Assert.Throws<AggregateException>(() => task.Wait());
-            Assert.Throws<InvalidOperationException>(() => queue.Send(_ => TaskAsyncHelper.Empty, null));
+            Assert.Throws<InvalidOperationException>(() => stream.Send(_ => TaskAsyncHelper.Empty, null));
         }
 
 
@@ -51,20 +51,20 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
         {
             int x = 0;
             var perfCounters = new Microsoft.AspNet.SignalR.Infrastructure.PerformanceCounterManager();
-            var queue = new ScaleoutStream(new TraceSource("Queue"), "0", 1000, perfCounters);
-            queue.Open();
-            queue.Send(_ => { throw new InvalidOperationException(); }, null);
+            var stream = new ScaleoutStream(new TraceSource("Queue"), "0", 1000, perfCounters);
+            stream.Open();
+            stream.Send(_ => { throw new InvalidOperationException(); }, null);
 
-            queue.Open();
+            stream.Open();
 
-            queue.Send(_ =>
+            stream.Send(_ =>
             {
                 x++;
                 return TaskAsyncHelper.Empty;
             },
             null);
 
-            var task = queue.Send(_ =>
+            var task = stream.Send(_ =>
             {
                 x++;
                 return TaskAsyncHelper.Empty;
@@ -81,27 +81,27 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
         {
             int x = 0;
             var perfCounters = new Microsoft.AspNet.SignalR.Infrastructure.PerformanceCounterManager();
-            var queue = new ScaleoutStream(new TraceSource("Queue"), "0", 1000, perfCounters);
-            queue.Open();
-            queue.Send(async _ =>
+            var stream = new ScaleoutStream(new TraceSource("Queue"), "0", 1000, perfCounters);
+            stream.Open();
+            stream.Send(async _ =>
             {
                 await Task.Delay(50);
                 x++;
             },
             null);
-            queue.Send(async _ =>
+            stream.Send(async _ =>
             {
                 await Task.Delay(50);
                 x++;
             },
             null);
-            queue.Send(async _ =>
+            stream.Send(async _ =>
             {
                 await Task.Delay(50);
                 x++;
             },
             null);
-            queue.Close();
+            stream.Close();
             Assert.Equal(3, x);
         }
 
@@ -110,27 +110,27 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
         {
             int x = 0;
             var perfCounters = new Microsoft.AspNet.SignalR.Infrastructure.PerformanceCounterManager();
-            var queue = new ScaleoutStream(new TraceSource("Queue"), "0", 1000, perfCounters);
-            queue.Open();
-            queue.Send(async _ =>
+            var stream = new ScaleoutStream(new TraceSource("Queue"), "0", 1000, perfCounters);
+            stream.Open();
+            stream.Send(async _ =>
             {
                 await Task.Delay(50);
                 x++;
             },
             null);
-            queue.Send(async _ =>
+            stream.Send(async _ =>
             {
                 await Task.Delay(50);
                 await TaskAsyncHelper.FromError(new Exception());
             },
             null);
-            queue.Send(async _ =>
+            stream.Send(async _ =>
             {
                 await Task.Delay(50);
                 x++;
             },
             null);
-            queue.Close();
+            stream.Close();
             Assert.Equal(1, x);
         }
 
@@ -139,16 +139,16 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
         {
             int x = 0;
             var perfCounters = new Microsoft.AspNet.SignalR.Infrastructure.PerformanceCounterManager();
-            var queue = new ScaleoutStream(new TraceSource("Queue"), "0", 1000, perfCounters);
-            queue.Open();
-            queue.Send(async _ =>
+            var stream = new ScaleoutStream(new TraceSource("Queue"), "0", 1000, perfCounters);
+            stream.Open();
+            stream.Send(async _ =>
             {
                 await Task.Delay(50);
                 x++;
             },
             null);
 
-            Task t1 = queue.Send(async _ =>
+            Task t1 = stream.Send(async _ =>
             {
                 await Task.Delay(50);
                 await TaskAsyncHelper.FromError(new Exception());
@@ -157,9 +157,9 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
 
             Assert.Throws<AggregateException>(() => t1.Wait());
 
-            queue.Open();
+            stream.Open();
 
-            Task t2 = queue.Send(async _ =>
+            Task t2 = stream.Send(async _ =>
             {
                 await Task.Delay(50);
                 x++;
@@ -174,12 +174,12 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
         public void SendAfterCloseThenOpenRemainsClosed()
         {
             var perfCounters = new Microsoft.AspNet.SignalR.Infrastructure.PerformanceCounterManager();
-            var queue = new ScaleoutStream(new TraceSource("Queue"), "0", 1000, perfCounters);
-            queue.Open();
-            queue.Send(_ => Task.Delay(50), null);
-            queue.Close();
-            queue.Open();
-            Assert.Throws<InvalidOperationException>(() => queue.Send(_ => TaskAsyncHelper.Empty, null));
+            var stream = new ScaleoutStream(new TraceSource("Queue"), "0", 1000, perfCounters);
+            stream.Open();
+            stream.Send(_ => Task.Delay(50), null);
+            stream.Close();
+            stream.Open();
+            Assert.Throws<InvalidOperationException>(() => stream.Send(_ => TaskAsyncHelper.Empty, null));
         }
 
         [Fact]
@@ -187,10 +187,10 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
         {
             int x = 0;
             var perfCounters = new Microsoft.AspNet.SignalR.Infrastructure.PerformanceCounterManager();
-            var queue = new ScaleoutStream(new TraceSource("Queue"), "0", 1000, perfCounters);
-            queue.SetError(new Exception());
-            queue.Open();
-            queue.Send(async _ =>
+            var stream = new ScaleoutStream(new TraceSource("Queue"), "0", 1000, perfCounters);
+            stream.SetError(new Exception());
+            stream.Open();
+            stream.Send(async _ =>
             {
                 await Task.Delay(20);
                 x++;
@@ -204,28 +204,28 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
         public void InitialToClosed()
         {
             var perfCounters = new Microsoft.AspNet.SignalR.Infrastructure.PerformanceCounterManager();
-            var queue = new ScaleoutStream(new TraceSource("Queue"), "0", 1000, perfCounters);
-            queue.Close();
+            var stream = new ScaleoutStream(new TraceSource("Queue"), "0", 1000, perfCounters);
+            stream.Close();
         }
 
         [Fact]
         public void OpenAfterClosedEnqueueThrows()
         {
             var perfCounters = new Microsoft.AspNet.SignalR.Infrastructure.PerformanceCounterManager();
-            var queue = new ScaleoutStream(new TraceSource("Queue"), "0", 1000, perfCounters);
-            queue.Close();
-            queue.Open();
-            Assert.Throws<InvalidOperationException>(() => queue.Send(_ => TaskAsyncHelper.Empty, null));
+            var stream = new ScaleoutStream(new TraceSource("Queue"), "0", 1000, perfCounters);
+            stream.Close();
+            stream.Open();
+            Assert.Throws<InvalidOperationException>(() => stream.Send(_ => TaskAsyncHelper.Empty, null));
         }
 
         [Fact]
         public void BufferAfterClosedEnqueueThrows()
         {
             var perfCounters = new Microsoft.AspNet.SignalR.Infrastructure.PerformanceCounterManager();
-            var queue = new ScaleoutStream(new TraceSource("Queue"), "0", 1000, perfCounters);
-            queue.Close();
-            queue.SetError(new Exception());
-            Assert.Throws<Exception>(() => queue.Send(_ => TaskAsyncHelper.Empty, null));
+            var stream = new ScaleoutStream(new TraceSource("Queue"), "0", 1000, perfCounters);
+            stream.Close();
+            stream.SetError(new Exception());
+            Assert.Throws<Exception>(() => stream.Send(_ => TaskAsyncHelper.Empty, null));
         }
     }
 }

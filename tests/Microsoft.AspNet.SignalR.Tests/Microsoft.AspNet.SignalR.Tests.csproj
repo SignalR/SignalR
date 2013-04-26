@@ -122,7 +122,7 @@
     <Compile Include="Server\MessageBusFacts.cs" />
     <Compile Include="Server\ScaleOutMessageBusFacts.cs" />
     <Compile Include="Server\ScaleoutStoreFacts.cs" />
-    <Compile Include="Server\ScaleoutTaskQueueFacts.cs" />
+    <Compile Include="Server\ScaleoutStreamFacts.cs" />
     <Compile Include="Server\ScaleoutConfigurationFacts.cs" />
     <Compile Include="Server\TestSubscriber.cs" />
     <Compile Include="Server\TopicFacts.cs" />

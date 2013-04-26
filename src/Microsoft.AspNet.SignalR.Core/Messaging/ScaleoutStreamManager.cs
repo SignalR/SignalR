@@ -14,7 +14,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
     {
         private readonly Func<int, IList<Message>, Task> _send;
         private readonly Action<int, ulong, IList<Message>> _receive;
-        private readonly ScaleoutStream[] _sendQueues;
+        private readonly ScaleoutStream[] _streams;
 
         public ScaleoutStreamManager(Func<int, IList<Message>, Task> send,
                                      Action<int, ulong, IList<Message>> receive,
@@ -23,7 +23,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
                                      IPerformanceCounterManager performanceCounters,
                                      ScaleoutConfiguration configuration)
         {
-            _sendQueues = new ScaleoutStream[streamCount];
+            _streams = new ScaleoutStream[streamCount];
             _send = send;
             _receive = receive;
 
@@ -35,7 +35,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
 
             for (int i = 0; i < streamCount; i++)
             {
-                _sendQueues[i] = new ScaleoutStream(trace, "Stream(" + i + ")", configuration.MaxQueueLength, performanceCounters);
+                _streams[i] = new ScaleoutStream(trace, "Stream(" + i + ")", configuration.MaxQueueLength, performanceCounters);
                 receiveMapping[i] = new ScaleoutMappingStore();
             }
 
@@ -46,24 +46,24 @@ namespace Microsoft.AspNet.SignalR.Messaging
 
         public void Open(int streamIndex)
         {
-            _sendQueues[streamIndex].Open();
+            _streams[streamIndex].Open();
         }
 
         public void Close(int streamIndex)
         {
-            _sendQueues[streamIndex].Close();
+            _streams[streamIndex].Close();
         }
 
         public void OnError(int streamIndex, Exception exception)
         {
-            _sendQueues[streamIndex].SetError(exception);
+            _streams[streamIndex].SetError(exception);
         }
 
         public Task Send(int streamIndex, IList<Message> messages)
         {
             var context = new SendContext(this, streamIndex, messages);
 
-            return _sendQueues[streamIndex].Send(state => Send(state), context);
+            return _streams[streamIndex].Send(state => Send(state), context);
         }
 
         public void OnReceived(int streamIndex, ulong id, IList<Message> messages)

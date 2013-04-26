@@ -12,7 +12,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
     {
         private TaskCompletionSource<object> _taskCompletionSource;
         private TaskQueue _queue;
-        private QueueState _state;
+        private StreamState _state;
         private Exception _error;
 
         private readonly int _size;
@@ -49,7 +49,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
         {
             lock (_lockObj)
             {
-                if (ChangeState(QueueState.Open))
+                if (ChangeState(StreamState.Open))
                 {
                     _perfCounters.ScaleoutStreamCountOpen.Increment();
                     _perfCounters.ScaleoutStreamCountBuffering.Decrement();
@@ -74,14 +74,14 @@ namespace Microsoft.AspNet.SignalR.Messaging
                 }
 
                 // If the queue is closed then stop sending
-                if (_state == QueueState.Closed)
+                if (_state == StreamState.Closed)
                 {
-                    throw new InvalidOperationException(Resources.Error_QueueClosed);
+                    throw new InvalidOperationException(Resources.Error_StreamClosed);
                 }
 
-                if (_state == QueueState.Initial)
+                if (_state == StreamState.Initial)
                 {
-                    throw new InvalidOperationException(Resources.Error_QueueNotOpen);
+                    throw new InvalidOperationException(Resources.Error_StreamNotOpen);
                 }
 
                 var context = new SendContext(this, send, state);
@@ -101,9 +101,9 @@ namespace Microsoft.AspNet.SignalR.Messaging
                 }
 
                 _perfCounters.ScaleoutSendQueueLength.Increment();
-                return Send(context).Finally(qState =>
+                return Send(context).Finally(counter =>
                 {
-                    ((IPerformanceCounter)qState).Decrement();
+                    ((IPerformanceCounter)counter).Decrement();
                 }, 
                 _perfCounters.ScaleoutSendQueueLength);
             }
@@ -130,7 +130,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
 
             lock (_lockObj)
             {
-                if (ChangeState(QueueState.Closed))
+                if (ChangeState(StreamState.Closed))
                 {
                     _perfCounters.ScaleoutStreamCountOpen.RawValue = 0;
                     _perfCounters.ScaleoutStreamCountBuffering.RawValue = 0;
@@ -146,8 +146,11 @@ namespace Microsoft.AspNet.SignalR.Messaging
                 }
             }
 
-            // Block until the queue is drained so no new work can be done
-            task.Wait();
+            if (UsingTaskQueue)
+            {
+                // Block until the queue is drained so no new work can be done
+                task.Wait();
+            }
         }
 
         private static Task Send(object state)
@@ -184,7 +187,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
         {
             lock (_lockObj)
             {
-                if (ChangeState(QueueState.Buffering))
+                if (ChangeState(StreamState.Buffering))
                 {
                     _perfCounters.ScaleoutStreamCountOpen.Decrement();
                     _perfCounters.ScaleoutStreamCountBuffering.Increment();
@@ -231,10 +234,10 @@ namespace Microsoft.AspNet.SignalR.Messaging
             }
         }
 
-        private bool ChangeState(QueueState newState)
+        private bool ChangeState(StreamState newState)
         {
             // Do nothing if the state is closed
-            if (_state == QueueState.Closed)
+            if (_state == StreamState.Closed)
             {
                 return false;
             }
@@ -280,9 +283,9 @@ namespace Microsoft.AspNet.SignalR.Messaging
             public readonly ScaleoutStream Stream;
             public readonly TaskCompletionSource<object> TaskCompletionSource;
 
-            public SendContext(ScaleoutStream queue, Func<object, Task> send, object state)
+            public SendContext(ScaleoutStream stream, Func<object, Task> send, object state)
             {
-                Stream = queue;
+                Stream = stream;
                 TaskCompletionSource = new TaskCompletionSource<object>();
                 _send = send;
                 _state = state;
@@ -302,7 +305,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
             }
         }
 
-        private enum QueueState
+        private enum StreamState
         {
             Initial,
             Open,
