@@ -18,6 +18,7 @@ namespace Microsoft.AspNet.SignalR.Stress
         private readonly List<IDisposable> _receivers = new List<IDisposable>();
         private IPerformanceCounter[] _counters;
         private Dictionary<IPerformanceCounter, List<CounterSample>> _samples;
+        private string _contractName;
 
         public RunBase(RunData runData)
         {
@@ -36,6 +37,14 @@ namespace Microsoft.AspNet.SignalR.Stress
         public string Payload { get { return RunData.Payload; } }
         public IDependencyResolver Resolver { get; private set; }
         public CancellationTokenSource CancellationTokenSource { get; private set; }
+
+        protected virtual string ScenarioName
+        {
+            get
+            {
+                return GetContractName();
+            }
+        }
 
         public virtual void InitializePerformanceCounters()
         {
@@ -98,7 +107,7 @@ namespace Microsoft.AspNet.SignalR.Stress
             foreach (var item in _samples)
             {
                 var counterName = item.Key.CounterName;
-                var key = String.Format("{0};{1}", GetScenarioName(), counterName);
+                var key = String.Format("{0};{1}", ScenarioName, counterName);
                 var samplesList = item.Value;
 
                 long[] values = new long[samplesList.Count - 1];
@@ -153,9 +162,15 @@ namespace Microsoft.AspNet.SignalR.Stress
             Console.WriteLine("{0} (STDDEV%): {1}%", key, Math.Round(stdDevP));
         }
 
-        protected virtual string GetScenarioName()
+        protected string GetContractName()
         {
-            return GetType().Name;
+            if (String.IsNullOrEmpty(_contractName))
+            {
+                var type = GetType();
+                var export = (ExportAttribute)type.GetCustomAttributes(typeof(ExportAttribute), true).FirstOrDefault();
+                _contractName = (export == null) ? type.Name : export.ContractName;
+            }
+            return _contractName;
         }
 
         protected virtual IPerformanceCounter[] GetPerformanceCounters(IPerformanceCounterManager counterManager)

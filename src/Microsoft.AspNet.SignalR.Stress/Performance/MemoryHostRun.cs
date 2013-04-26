@@ -23,6 +23,14 @@ namespace Microsoft.AspNet.SignalR.Stress
             Host = new MemoryHost();
         }
 
+        protected override string ScenarioName
+        {
+            get
+            {
+                return base.ScenarioName + "-" + RunData.Transport;
+            }
+        }
+
         public virtual string Endpoint
         {
             get { return "echo"; }
@@ -79,11 +87,6 @@ namespace Microsoft.AspNet.SignalR.Stress
 
             // Abort the request on dispose
             return new DisposableAction(state => Abort((string)state), connectionId);
-        }
-
-        protected override string GetScenarioName()
-        {
-            return base.GetScenarioName() + "-" + RunData.Transport;
         }
 
         protected override Task Send(int senderIndex, string source)

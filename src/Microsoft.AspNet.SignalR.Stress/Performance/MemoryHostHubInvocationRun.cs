@@ -20,10 +20,12 @@ namespace Microsoft.AspNet.SignalR.Stress
         {
         }
 
-        // todo - do we need transport variants here?
-        protected override string GetScenarioName()
+        protected override string ScenarioName
         {
-            return GetType().Name;
+            get
+            {
+                return GetContractName();
+            }
         }
 
         public override string Endpoint
