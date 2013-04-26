@@ -26,7 +26,7 @@ namespace Microsoft.AspNet.SignalR.Samples.Hubs.DemoHub.MessageLoops
         public int SendMessageCountToGroup(int message, string groupName)
         {
             Thread.Sleep(5000);
-            Clients.Group(groupName, "").displayMessagesCount(++message, Context.ConnectionId);
+            Clients.Group(groupName).displayMessagesCount(++message, Context.ConnectionId);
             return message;
         }
 
