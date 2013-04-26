@@ -26,7 +26,7 @@
     </p>
 
     <p>
-        <button id="stopStart" class="btn btn-info btn-small" disabled="disabled"><i class="icon-stop icon-white"></i><span>Stop Connection</span></button>
+        <button id="stopStart" class="btn" disabled="disabled"><span>Stop Connection</span></button>
     </p>
 
     <h5>Messages: </h5>

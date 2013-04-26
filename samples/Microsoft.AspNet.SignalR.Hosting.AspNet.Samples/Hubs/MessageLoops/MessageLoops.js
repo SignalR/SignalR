@@ -142,6 +142,8 @@ $(function () {
                                .removeClass("icon-play")
                                .addClass("icon-stop");
 
+                disableButtonsForMessageLoops(false);
+
                 if (radioGroup.prop("checked") === true) {
                     messageLoopsHub.server.joinGroup($.connection.hub.id, groupName).done(function (value) {
                         $("<li/>").html("Succeeded at joinGroup: " + value).appendTo(messages);
