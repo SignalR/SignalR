@@ -8,6 +8,10 @@
         },
         runModule = true;
 
+    QUnit.comment = function (message) {
+        return QUnit.ok(true, message);
+    };
+
     QUnit.isTrue = function (result, message) {
         return QUnit.ok(result === true, message);
     };
@@ -53,6 +57,11 @@
                     assert = {
                         expectTimeout: function() {
                             failOnTimeout = false;
+                        },
+                        comment: function (message) {
+                            if (!hasFinished) {
+                                QUnit.comment(message);
+                            }
                         },
                         isTrue: function (result, message) {
                             if (!hasFinished) {
