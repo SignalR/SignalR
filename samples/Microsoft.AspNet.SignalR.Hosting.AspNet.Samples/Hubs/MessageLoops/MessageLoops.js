@@ -115,6 +115,18 @@ $(function () {
                     .appendTo(messages);
     });
 
+    $.connection.hub.reconnected(function () {
+        $("<li/>").css("background-color", "green")
+                  .css("color", "white")
+                  .html("[" + new Date().toTimeString() + "]: Connection re-established")
+                  .appendTo(messages);
+    });
+
+    $.connection.hub.error(function (err) {
+        $("<li/>").html("Error occurred: " + (err.responseText || err))
+                  .appendTo(messages);
+    });
+    
     $.connection.hub.disconnected(function () {
         stopStartBtn.prop("disabled", false)
                     .find("span")
