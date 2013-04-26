@@ -9,7 +9,6 @@
     var signalR = $.signalR,
         events = $.signalR.events,
         changeState = $.signalR.changeState,
-        isDisconnecting = $.signalR.isDisconnecting,
         transportLogic;
 
     signalR.transports = {};
@@ -227,18 +226,10 @@
         },
 
         drainIncomingMessageBuffer: function (connection) {
-            var incomingMessageBuffer = connection._.incomingMessageBuffer;
-
-            while (incomingMessageBuffer.length > 0) {
-                // Check isDisconnecting for each message, a message can cause the connection to stop
-                if (!isDisconnecting(connection)) {
-                    transportLogic.processMessages(connection, incomingMessageBuffer.shift());
-                }
-                else {
-                    // If we're disconnecting, reset the message buffer and stop drain
-                    connection._.incomingMessageBuffer = [];
-                    return;
-                }
+            while (connection._.incomingMessageBuffer.length > 0) {
+                // Do not need to check if we're still connected at this point because in connection.stop
+                // we clear the message buffer which will result in the next iteration of the loop not executing
+                transportLogic.processMessages(connection, connection._.incomingMessageBuffer.shift());
             }
         },
 
