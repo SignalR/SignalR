@@ -21,15 +21,15 @@ namespace Microsoft.AspNet.SignalR.Client.WP8.Sample
             DataContext = App.ViewModel;
             this.Loaded += new RoutedEventHandler(MainPage_Loaded);
 
-            var connection = new HubConnection("http://signalr-sample.azurewebsites.net");
+            var connection = new HubConnection("http://localhost:40476/");
 
             var hub = connection.CreateHubProxy("statushub");
 
-            hub.On<string>("joined", data =>
+            hub.On<string,string>("joined", (connectionId,date) =>
             {
                 Dispatcher.BeginInvoke(() =>
                 {
-                    App.ViewModel.Items.Add(new ItemViewModel { LineOne = data });
+                    App.ViewModel.Items.Add(new ItemViewModel { LineOne = date });
                 });
             });
 
@@ -37,8 +37,7 @@ namespace Microsoft.AspNet.SignalR.Client.WP8.Sample
             {
                 Dispatcher.BeginInvoke(() =>
                 {
-                    var aggEx = (AggregateException)ex;
-                    App.ViewModel.Items.Add(new ItemViewModel { LineOne = aggEx.InnerExceptions[0].Message });
+                    App.ViewModel.Items.Add(new ItemViewModel { LineOne = ex.InnerException.Message });
                 });
             };
 

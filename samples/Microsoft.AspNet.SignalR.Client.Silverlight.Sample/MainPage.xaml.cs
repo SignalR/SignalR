@@ -32,6 +32,7 @@ namespace Microsoft.AspNet.SignalR.Client.Silverlight.Sample
             {
                 Dispatcher.BeginInvoke(() =>
                 {
+                    connection.Trace(TraceLevels.Events, ex.ToString());
                     var aggEx = (AggregateException)ex;
                     App.ViewModel.Items.Add(aggEx.InnerExceptions[0].Message);
                 });
