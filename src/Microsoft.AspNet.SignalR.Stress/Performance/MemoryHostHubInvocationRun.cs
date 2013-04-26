@@ -20,6 +20,14 @@ namespace Microsoft.AspNet.SignalR.Stress
         {
         }
 
+        protected override string ScenarioName
+        {
+            get
+            {
+                return GetContractName();
+            }
+        }
+
         public override string Endpoint
         {
             get { return "signalr"; }
