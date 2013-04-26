@@ -20,6 +20,12 @@ namespace Microsoft.AspNet.SignalR.Stress
         {
         }
 
+        // todo - do we need transport variants here?
+        protected override string GetScenarioName()
+        {
+            return GetType().Name;
+        }
+
         public override string Endpoint
         {
             get { return "signalr"; }

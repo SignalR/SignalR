@@ -81,6 +81,11 @@ namespace Microsoft.AspNet.SignalR.Stress
             return new DisposableAction(state => Abort((string)state), connectionId);
         }
 
+        protected override string GetScenarioName()
+        {
+            return base.GetScenarioName() + "-" + RunData.Transport;
+        }
+
         protected override Task Send(int senderIndex, string source)
         {
             return ProcessSendRequest(senderIndex.ToString(), Payload);

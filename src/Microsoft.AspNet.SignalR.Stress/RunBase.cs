@@ -98,7 +98,7 @@ namespace Microsoft.AspNet.SignalR.Stress
             foreach (var item in _samples)
             {
                 var counterName = item.Key.CounterName;
-                var key = String.Format("{0};{1}", GetType().Name, counterName);
+                var key = String.Format("{0};{1}", GetScenarioName(), counterName);
                 var samplesList = item.Value;
 
                 long[] values = new long[samplesList.Count - 1];
@@ -151,6 +151,11 @@ namespace Microsoft.AspNet.SignalR.Stress
             Console.WriteLine("{0} (MEDIAN):  {1}", key, Math.Round(median));
             Console.WriteLine("{0} (AVERAGE): {1}", key, Math.Round(average));
             Console.WriteLine("{0} (STDDEV%): {1}%", key, Math.Round(stdDevP));
+        }
+
+        protected virtual string GetScenarioName()
+        {
+            return GetType().Name;
         }
 
         protected virtual IPerformanceCounter[] GetPerformanceCounters(IPerformanceCounterManager counterManager)

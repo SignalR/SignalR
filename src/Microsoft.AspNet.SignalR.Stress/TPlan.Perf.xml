@@ -7,9 +7,24 @@
         <target value="11954417.38" labConfig="XSPPERF8S_WIN8_X64" />
       </metric>
     </trackingVariation>
-    <trackingVariation name="MemoryHostRun">
+    <trackingVariation name="MemoryHostRun-ForeverFrame">
+      <metric name="Message Bus Messages Received/Sec" selection="Average" units="Numeric">
+        <target value="7037431.38" labConfig="XSPPERF8S_WIN8_X64" />
+      </metric>
+    </trackingVariation>
+    <trackingVariation name="MemoryHostRun-LongPolling">
+      <metric name="Message Bus Messages Received/Sec" selection="Average" units="Numeric">
+        <target value="18676.65" labConfig="XSPPERF8S_WIN8_X64" />
+      </metric>
+    </trackingVariation>
+    <trackingVariation name="MemoryHostRun-ServerSentEvents">
       <metric name="Message Bus Messages Received/Sec" selection="Average" units="Numeric">
         <target value="5719925.40" labConfig="XSPPERF8S_WIN8_X64" />
+      </metric>
+    </trackingVariation>
+    <trackingVariation name="MemoryHostHubInvocationRun">
+      <metric name="Message Bus Messages Published/Sec" selection="Average" units="Numeric">
+        <target value="17323.64" labConfig="XSPPERF8S_WIN8_X64" />
       </metric>
     </trackingVariation>
     <trackingVariation name="MessageBusRun">
@@ -33,8 +48,17 @@
     <command name="ConnectionRun" wait="Exit">
       Microsoft.AspNet.SignalR.Stress.exe /Run:ConnectionRun /Senders:5
     </command>
-    <command name="MemoryHostRun" wait="Exit">
-      Microsoft.AspNet.SignalR.Stress.exe /Run:MemoryHost /Senders:5
+    <command name="MemoryHostRun-ForeverFrame" wait="Exit">
+      Microsoft.AspNet.SignalR.Stress.exe /Run:MemoryHost /Senders:5 /Transport:ForeverFrame
+    </command>
+    <command name="MemoryHostRun-LongPolling" wait="Exit">
+      Microsoft.AspNet.SignalR.Stress.exe /Run:MemoryHost /Senders:5 /Transport:LongPolling
+    </command>
+    <command name="MemoryHostRun-ServerSentEvents" wait="Exit">
+      Microsoft.AspNet.SignalR.Stress.exe /Run:MemoryHost /Senders:5 /Transport:ServerSentEvents
+    </command>
+    <command name="MemoryHostHubInvocationRun" wait="Exit">
+      Microsoft.AspNet.SignalR.Stress.exe /Run:MemoryHostHubInvocation /Senders:5
     </command>
     <command name="MessageBusRun" wait="Exit">
       Microsoft.AspNet.SignalR.Stress.exe /Run:MessageBus /Senders:5
@@ -52,7 +76,13 @@
 
   <plan>
     <run command="ConnectionRun" role="server-01" output="true" />
-    <run command="MemoryHostRun" role="server-01" output="true" />
+
+    <run command="MemoryHostRun-ForeverFrame" role="server-01" output="true" />
+    <run command="MemoryHostRun-LongPolling" role="server-01" output="true" />
+    <run command="MemoryHostRun-ServerSentEvents" role="server-01" output="true" />
+    
+    <run command="MemoryHostHubInvocationRun" role="server-01" output="true" />
+    
     <run command="MessageBusRun" role="server-01" output="true" />
     
     <run command="SetupSqlServer" role="dbserver-01" output="true" profile="None" />
