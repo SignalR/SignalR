@@ -1,0 +1,27 @@
+﻿<?xml version="1.0"?>
+<package>
+    <metadata>
+        <id>Microsoft.AspNet.SignalR.SelfHost</id>
+        <title>Microsoft ASP.NET SignalR Self Host</title>
+        <version>__KATANADEV_PACKAGE_VERSION__</version>
+        <authors>Microsoft</authors>
+        <owners>Microsoft</owners>
+        <licenseUrl>http://www.microsoft.com/web/webpi/eula/signalr_prerelease.htm</licenseUrl>
+        <projectUrl>http://www.asp.net/signalr</projectUrl>
+        <requireLicenseAcceptance>true</requireLicenseAcceptance>
+        <description>A client and server side library for .NET that provides messaging and an abstraction over a persistent connection. This package pulls in the required dependencies for self-hosting SignalR in a process outside of IIS using OWIN and HTTPListener.</description>
+        <language>en-US</language>
+        <tags>Microsoft AspNet SignalR AspNetSignalR SelfHost</tags>
+        <dependencies>
+            <dependency id="Microsoft.AspNet.SignalR.Owin" version="__SIGNALR_PACKAGE_VERSION__" />
+            <dependency id="Microsoft.Owin.Host.HttpListener" version="__KATANADEV_PACKAGE_VERSION__" />
+            <dependency id="Microsoft.Owin.Hosting" version="__KATANADEV_PACKAGE_VERSION__" />
+        </dependencies>
+        <frameworkAssemblies>
+            <frameworkAssembly assemblyName="System" targetFramework="net40" />
+        </frameworkAssemblies>
+    </metadata>
+    <files>
+        <file src="content\selfhostreadme.txt" target="readme.txt" />
+    </files>
+</package>

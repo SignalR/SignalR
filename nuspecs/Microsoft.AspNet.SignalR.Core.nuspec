@@ -1,0 +1,23 @@
+﻿<?xml version="1.0"?>
+<package>
+    <metadata>
+        <id>Microsoft.AspNet.SignalR.Core</id>
+        <title>Microsoft ASP.NET SignalR Core Components</title>
+        <version>__SIGNALR_PACKAGE_VERSION__</version>
+        <authors>Microsoft</authors>
+        <owners>Microsoft</owners>
+        <licenseUrl>http://www.microsoft.com/web/webpi/eula/signalr_prerelease.htm</licenseUrl>
+        <projectUrl>http://www.asp.net/signalr</projectUrl>
+        <requireLicenseAcceptance>true</requireLicenseAcceptance>
+        <description>Core server components for ASP.NET SignalR.</description>
+        <language>en-US</language>
+        <tags>Microsoft AspNet SignalR AspNetSignalR Core</tags>
+        <dependencies>
+            <dependency id="Newtonsoft.Json" version="4.5.11" />
+        </dependencies>
+    </metadata>
+    <files>
+        <file src="Net40\Microsoft.AspNet.SignalR.Core.dll" target="lib\net40" />
+        <file src="Intellisense\Net40\Microsoft.AspNet.SignalR.Core.xml" target="lib\net40" />
+    </files>
+</package>

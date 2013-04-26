@@ -226,7 +226,8 @@
     <BuildScriptTags ProjectDirectory="$(MSBuildProjectDirectory)" RelativePath="$(QUnitTestsFolder)">
       <Output PropertyName="JSTests" TaskParameter="ScriptTagsOutput" />
     </BuildScriptTags>
-    <Copy SourceFiles="$(SolutionDir)src\Microsoft.AspNet.SignalR.Client.JS\bin\jquery.signalR.js" DestinationFiles="Scripts\jquery.signalR.js" Condition=" '$(OS)' == 'Windows_NT' " />
+    <Copy Condition="'$(ArtifactsDir)' == '' And '$(OS)' == 'Windows_NT'" SourceFiles="$(SolutionDir)src\Microsoft.AspNet.SignalR.Client.JS\bin\jquery.signalR.js" DestinationFiles="Scripts\jquery.signalR.js" />
+    <Copy Condition="'$(ArtifactsDir)' != '' And '$(OS)' == 'Windows_NT'" SourceFiles="$(ArtifactsDir)\Microsoft.AspNet.SignalR.Client.JS\jquery.signalR.js" DestinationFiles="Scripts\jquery.signalR.js" />
     <!-- Update the default.html file with tests that need to run. -->
     <FileUpdate Files="default.html" Regex="&lt;!-- ##JS## --&gt;((.|\r|\n)*?)&lt;!-- ##JS## --&gt;" ReplacementText="&lt;!-- ##JS## --&gt;$(JSTests)&lt;!-- ##JS## --&gt;" Condition=" '$(OS)' == 'Windows_NT'" />
     <Exec Command="powershell -NoProfile -ExecutionPolicy Bypass .\build.ps1" WorkingDirectory="$(ProjectDir)\Build" Condition=" '$(OS)' == 'Windows_NT'" />

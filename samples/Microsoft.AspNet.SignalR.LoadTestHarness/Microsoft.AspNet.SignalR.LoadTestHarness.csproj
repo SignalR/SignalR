@@ -224,7 +224,6 @@
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>
     <VSToolsPath Condition="'$(VSToolsPath)' == ''">$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)</VSToolsPath>
   </PropertyGroup>
-  <Import Project="..\..\src\Common\Microsoft.AspNet.SignalR.targets" />
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <Import Project="$(VSToolsPath)\WebApplications\Microsoft.WebApplication.targets" Condition="'$(VSToolsPath)' != ''" />
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v10.0\WebApplications\Microsoft.WebApplication.targets" Condition="false" />
@@ -255,8 +254,8 @@
   </Target>
   -->
   <Target Name="BeforeBuild">
-    <Copy SourceFiles="..\..\src\Microsoft.AspNet.SignalR.Client.JS\bin\jquery.signalR.js" DestinationFiles="Scripts\jquery.signalR.js" Condition=" '$(OS)' == 'Windows_NT' " />
-    <Copy SourceFiles="..\..\src\Microsoft.AspNet.SignalR.Client.JS\bin\jquery.signalR.min.js" DestinationFiles="Scripts\jquery.signalR.min.js" Condition=" '$(OS)' == 'Windows_NT' " />
+    <Copy Condition="'$(ArtifactsDir)' == '' And '$(OS)' == 'Windows_NT'" SourceFiles="$(SolutionDir)src\Microsoft.AspNet.SignalR.Client.JS\bin\jquery.signalR.js" DestinationFiles="Scripts\jquery.signalR.js" />
+    <Copy Condition="'$(ArtifactsDir)' != '' And '$(OS)' == 'Windows_NT'" SourceFiles="$(ArtifactsDir)\Microsoft.AspNet.SignalR.Client.JS\jquery.signalR.js" DestinationFiles="Scripts\jquery.signalR.js" />
   </Target>
   <!--<Target Name="RestoreSignalR" BeforeTargets="RestorePackages">
     <PropertyGroup>

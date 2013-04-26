@@ -435,8 +435,10 @@
   </Target>
   -->
   <Target Name="BeforeBuild">
-    <Copy SourceFiles="$(SolutionDir)src\Microsoft.AspNet.SignalR.Client.JS\bin\jquery.signalR.js" DestinationFiles="Scripts\jquery.signalR.js" Condition=" '$(OS)' == 'Windows_NT' " />
-    <Copy SourceFiles="$(SolutionDir)src\Microsoft.AspNet.SignalR.Client.JS\bin\jquery.signalR.min.js" DestinationFiles="Scripts\jquery.signalR.min.js" Condition=" '$(OS)' == 'Windows_NT' " />
+    <Copy Condition="'$(ArtifactsDir)' == '' And '$(OS)' == 'Windows_NT'" SourceFiles="$(SolutionDir)src\Microsoft.AspNet.SignalR.Client.JS\bin\jquery.signalR.js" DestinationFiles="Scripts\jquery.signalR.js" />
+    <Copy Condition="'$(ArtifactsDir)' != '' And '$(OS)' == 'Windows_NT'" SourceFiles="$(ArtifactsDir)\Microsoft.AspNet.SignalR.Client.JS\jquery.signalR.js" DestinationFiles="Scripts\jquery.signalR.js" />
+    <Copy Condition="'$(ArtifactsDir)' == '' And '$(OS)' == 'Windows_NT'" SourceFiles="$(SolutionDir)src\Microsoft.AspNet.SignalR.Client.JS\bin\jquery.signalR.min.js" DestinationFiles="Scripts\jquery.signalR.min.js" />
+    <Copy Condition="'$(ArtifactsDir)' != '' And '$(OS)' == 'Windows_NT'" SourceFiles="$(ArtifactsDir)\Microsoft.AspNet.SignalR.Client.JS\jquery.signalR.min.js" DestinationFiles="Scripts\jquery.signalR.min.js" />
   </Target>
   <Target Name="AfterBuild">
     <Exec Condition="'$(ArtifactsDir)' == '' AND '$(OS)' == 'Windows_NT' AND $(KeyFile) == ''" Command="&quot;$(SolutionDir)src\Microsoft.AspNet.SignalR.Utils\bin\$(Configuration)\signalr.exe&quot; ghp /o:&quot;$(SolutionDir)samples\Microsoft.AspNet.SignalR.Hosting.AspNet.Samples\Scripts\hubs.js&quot;" WorkingDirectory="$(OutputPath)" />
