@@ -43,7 +43,12 @@ namespace Microsoft.AspNet.SignalR.Hosting.AspNet.Samples.Hubs.HubConnectionAPI
 
         public void DisplayMessageGroup(string groupName, string message)
         {
-            Clients.Group(groupName, "").displayMessage("Clients.Group: " + message + " from " + Context.ConnectionId);
+            Clients.Group(groupName).displayMessage("Clients.Group: " + message + " from " + Context.ConnectionId);
+        }
+
+        public void DisplayMessageGroupExcept(string groupName, string message, params string[] targetConnectionId)
+        {
+            Clients.Group(groupName, targetConnectionId).displayMessage("Clients.Group: " + message + " from " + Context.ConnectionId);
         }
 
         public void DisplayMessageOthersInGroup(string groupName, string message)

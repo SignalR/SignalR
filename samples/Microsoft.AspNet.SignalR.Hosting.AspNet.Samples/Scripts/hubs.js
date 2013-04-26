@@ -331,6 +331,14 @@
                 return proxies.hubConnectionAPI.invoke.apply(proxies.hubConnectionAPI, $.merge(["DisplayMessageGroup"], $.makeArray(arguments)));
              },
 
+            displayMessageGroupExcept: function (groupName, message, targetConnectionId) {
+            /// <summary>Calls the DisplayMessageGroupExcept method on the server-side HubConnectionAPI hub.&#10;Returns a jQuery.Deferred() promise.</summary>
+            /// <param name=\"groupName\" type=\"String\">Server side type is System.String</param>
+            /// <param name=\"message\" type=\"String\">Server side type is System.String</param>
+            /// <param name=\"targetConnectionId\" type=\"Object\">Server side type is System.String[]</param>
+                return proxies.hubConnectionAPI.invoke.apply(proxies.hubConnectionAPI, $.merge(["DisplayMessageGroupExcept"], $.makeArray(arguments)));
+             },
+
             displayMessageOther: function (message) {
             /// <summary>Calls the DisplayMessageOther method on the server-side HubConnectionAPI hub.&#10;Returns a jQuery.Deferred() promise.</summary>
             /// <param name=\"message\" type=\"String\">Server side type is System.String</param>
