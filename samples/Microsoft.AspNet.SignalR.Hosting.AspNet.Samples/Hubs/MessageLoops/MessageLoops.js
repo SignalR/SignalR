@@ -10,6 +10,7 @@ $(function () {
         radioAll = $("#radioAll"),
         radioGroup = $("#radioGroup"),
         radioCaller = $("#radioCaller"),
+        sleepInput = $("#sleep"),
         sendMessgeTo,
         start,
         sendMessageCountHandler,
@@ -64,19 +65,19 @@ $(function () {
 
     sendMessageCountHandler = function (value) {
         if (sendMessgeTo === "all") {
-            messageLoopsHub.server.sendMessageCountToAll(value).done(function (value) {
+            messageLoopsHub.server.sendMessageCountToAll(value, parseInt(sleepInput.val())).done(function (value) {
                 sendMessageCountHandler(value);
             }).fail(function (e) {
                 $("<li/>").html("Failed at sendMessageCountToAll: " + e).appendTo(messages);
             });
         } else if (sendMessgeTo === "group") {
-            messageLoopsHub.server.sendMessageCountToGroup(value, groupName).done(function (value) {
+            messageLoopsHub.server.sendMessageCountToGroup(value, groupName, parseInt(sleepInput.val())).done(function (value) {
                 sendMessageCountHandler(value);
             }).fail(function (e) {
                 $("<li/>").html("Failed at sendMessageCountToGroup: " + e).appendTo(messages);
             });
         } else if (sendMessgeTo === "caller") {
-            messageLoopsHub.server.sendMessageCountToCaller(value).done(function (value) {
+            messageLoopsHub.server.sendMessageCountToCaller(value, parseInt(sleepInput.val())).done(function (value) {
                 sendMessageCountHandler(value);
             }).fail(function (e) {
                 $("<li/>").html("Failed at sendMessageCountToCaller: " + e).appendTo(messages);
@@ -90,11 +91,13 @@ $(function () {
             radioAll.prop("disabled", true);
             radioGroup.prop("disabled", true);
             radioCaller.prop("disabled", true);
+            sleepInput.prop("disabled", true);
         } else {
             startMessageLoopsBtn.prop("disabled", false);
             radioAll.prop("disabled", false);
             radioGroup.prop("disabled", false);
             radioCaller.prop("disabled", false);
+            sleepInput.prop("disabled", false);
         }
     }
 
@@ -126,7 +129,7 @@ $(function () {
         $("<li/>").html("Error occurred: " + (err.responseText || err))
                   .appendTo(messages);
     });
-    
+
     $.connection.hub.disconnected(function () {
         stopStartBtn.prop("disabled", false)
                     .find("span")
@@ -197,7 +200,7 @@ $(function () {
 
         if (radioAll.prop("checked") === true) {
             sendMessgeTo = "all";
-            messageLoopsHub.server.sendMessageCountToAll(0).done(function (value) {
+            messageLoopsHub.server.sendMessageCountToAll(0, parseInt(sleepInput.val())).done(function (value) {
                 sendMessageCountHandler(value);
             }).fail(function (e) {
                 $("<li/>").html("Failed at sendMessageCount: " + e).appendTo(messages);
@@ -205,7 +208,7 @@ $(function () {
             });
         } else if (radioGroup.prop("checked") === true) {
             sendMessgeTo = "group";
-            messageLoopsHub.server.sendMessageCountToGroup(0, groupName).done(function (value) {
+            messageLoopsHub.server.sendMessageCountToGroup(0, groupName, parseInt(sleepInput.val())).done(function (value) {
                 sendMessageCountHandler(value);
             }).fail(function (e) {
                 $("<li/>").html("Failed at SendMessageCountToGroup: " + e).appendTo(messages);
@@ -213,7 +216,7 @@ $(function () {
             });
         } else if (radioCaller.prop("checked") === true) {
             sendMessgeTo = "caller";
-            messageLoopsHub.server.sendMessageCountToCaller(0).done(function (value) {
+            messageLoopsHub.server.sendMessageCountToCaller(0, parseInt(sleepInput.val())).done(function (value) {
                 sendMessageCountHandler(value);
             }).fail(function (e) {
                 $("<li/>").html("Failed at SendMessageCountToCaller: " + e).appendTo(messages);

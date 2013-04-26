@@ -16,24 +16,30 @@ namespace Microsoft.AspNet.SignalR.Samples.Hubs.DemoHub.MessageLoops
             return connectionId + " removed from " + groupName;
         }
 
-        public int SendMessageCountToAll(int messageCount)
+        public int SendMessageCountToAll(int messageCount, int sleep)
         {
-            Thread.Sleep(5000);
+            if (sleep > 0)
+                Thread.Sleep(sleep * 1000);
+
             Clients.All.displayMessagesCount(++messageCount, Context.ConnectionId);
             return messageCount;
         }
 
-        public int SendMessageCountToGroup(int messageCount, string groupName)
+        public int SendMessageCountToGroup(int messageCount, string groupName, int sleep)
         {
-            Thread.Sleep(5000);
+            if (sleep > 0)
+                Thread.Sleep(sleep * 1000);
+
             Clients.Group(groupName).displayMessagesCount(++messageCount, Context.ConnectionId);
             return messageCount;
         }
 
 
-        public int SendMessageCountToCaller(int messageCount)
+        public int SendMessageCountToCaller(int messageCount, int sleep)
         {
-            Thread.Sleep(5000);
+            if (sleep > 0)
+                Thread.Sleep(sleep * 1000);
+
             Clients.Caller.displayMessagesCount(++messageCount, Context.ConnectionId);
             return messageCount;
         }
