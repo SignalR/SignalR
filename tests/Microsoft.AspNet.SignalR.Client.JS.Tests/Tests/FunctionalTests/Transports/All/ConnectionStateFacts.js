@@ -1,6 +1,113 @@
 ﻿QUnit.module("Connection State Facts");
 
 testUtilities.runWithAllTransports(function (transport) {
+
+    QUnit.asyncTimeoutTest(transport + " transport triggers start after initialize message.", testUtilities.defaultTestTimeout, function (end, assert, testName) {
+        var connections = [testUtilities.createHubConnection(end, assert, testName), testUtilities.createConnection("signalr", end, assert, testName)],
+            savedProcessMessage = $.signalR.transports._logic.processMessages,
+            runWith = function (connection) {
+                var initialized = false,
+                    deferred = $.Deferred();
+
+                $.signalR.transports._logic.processMessages = function (connection, minData, onInitialize) {
+                    // We could be buffering so ensure that we have the initialize message
+                    if (minData.Z) {
+                        assert.ok(onInitialize, "On initialize passed to process messages.");
+                        assert.ok(true, "Initialized");
+                        initialized = true;
+                    }
+
+                    savedProcessMessage.apply(this, arguments);
+                }
+
+                connection.start({ transport: transport }).done(function () {
+                    assert.isTrue(initialized, "Start triggered after initialization.");
+                    connection.stop();
+                    deferred.resolve();
+                });
+
+                return deferred.promise();
+            };
+
+        runWith(connections[0]).done(function () {
+            runWith(connections[1]).done(function () {
+                end();
+            });
+        });
+
+        // Cleanup
+        return function () {
+            $.signalR.transports._logic.processMessages = savedProcessMessage;
+            $.each(connections, function (_, connection) {
+                connection.stop();
+            });
+        };
+    });
+
+    QUnit.asyncTimeoutTest(transport + " transport drains buffered messages on start.", testUtilities.defaultTestTimeout*100, function (end, assert, testName) {
+        var connections = [testUtilities.createHubConnection(end, assert, testName), testUtilities.createConnection("signalr", end, assert, testName)],
+            savedProcessMessage = $.signalR.transports._logic.processMessages,
+            messagesToBuffer = [{
+                C: 1234,
+                M: [{ I: false, uno: 1, dos: 2 }, { I: false, tres: 3, quatro: 4 }],
+                L: 1337,
+                G: "foo"
+            },
+            {
+                C: 12345678,
+                M: [{ I: false, something: true }],
+                L: 1338,
+                G: "bar"
+            }],
+            runWith = function (connection) {
+                var deferred = $.Deferred(),
+                    replayedMessageCount = 0;
+
+                connection.state = $.signalR.connectionState.connecting;
+                $.signalR.transports._logic.processMessages(connection, messagesToBuffer[0]);
+                $.signalR.transports._logic.processMessages(connection, messagesToBuffer[1]);
+                connection.state = $.signalR.connectionState.disconnected;
+
+                $.signalR.transports._logic.processMessages = function (connection, minData, onInitialize) {
+                    // Do not want to do any assertions when we are reading the initialize message
+                    if (!minData.Z) {
+                        QUnit.equal(minData, messagesToBuffer[replayedMessageCount++], "Messages that are drained are equivalent to the original messages buffered.");
+                    }
+
+                    savedProcessMessage.apply(this, arguments);
+                }
+
+                connection.start({ transport: transport }).done(function () {
+                    assert.equal(replayedMessageCount, 0, "Number of messages drained when start called is 0.");
+
+                    // Let start unwind and then see if we've replayed buffered messages
+                    window.setTimeout(function () {
+                        assert.equal(replayedMessageCount, messagesToBuffer.length, "Number of messages drained equal number of messages buffered.");
+
+                        $.signalR.transports._logic.processMessages = savedProcessMessage;
+                        connection.stop();
+                        deferred.resolve();
+                    }, 0);
+                });
+
+                return deferred.promise();
+            };
+
+        runWith(connections[0]).done(function () {
+            runWith(connections[1]).done(function () {
+                end();
+            });
+        });
+
+        // Cleanup
+        return function () {
+            $.signalR.transports._logic.processMessages = savedProcessMessage;
+            $.each(connections, function (_, connection) {
+                connection.stop();
+            });
+        };
+    });
+
     QUnit.asyncTimeoutTest(transport + " transport connection shifts into appropriate states.", testUtilities.defaultTestTimeout, function (end, assert, testName) {
         var connection = testUtilities.createHubConnection(end, assert, testName),
             demo = connection.createHubProxies().demo;
@@ -197,7 +304,7 @@ testUtilities.runWithAllTransports(function (transport) {
                 promises = [];
 
             $.each(connections, function (key, connection) {
-                deferreds[key] = $.Deferred(); 
+                deferreds[key] = $.Deferred();
                 promises[key] = deferreds[key].promise();
                 connection[eventName](function () {
                     deferreds[key].resolve();
