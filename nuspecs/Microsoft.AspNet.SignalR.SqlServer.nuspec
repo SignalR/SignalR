@@ -1,0 +1,24 @@
+﻿<?xml version="1.0"?>
+<package>
+    <metadata>
+        <id>Microsoft.AspNet.SignalR.SqlServer</id>
+        <title>Microsoft ASP.NET SignalR SQL Server Messaging Backplane</title>
+        <version>__SIGNALR_PACKAGE_VERSION__</version>
+        <authors>Microsoft</authors>
+        <owners>Microsoft</owners>
+        <licenseUrl>http://www.microsoft.com/web/webpi/eula/signalr_prerelease.htm</licenseUrl>
+        <projectUrl>http://www.asp.net/signalr</projectUrl>
+        <requireLicenseAcceptance>true</requireLicenseAcceptance>
+        <description>SQL Server messaging backplane for scaling out of ASP.NET SignalR applications in a web-farm.</description>
+        <language>en-US</language>
+        <tags>Microsoft AspNet SignalR AspNetSignalR SqlServer</tags>
+        <dependencies>
+            <dependency id="Microsoft.AspNet.SignalR.Core" version="__SIGNALR_PACKAGE_VERSION__" />
+        </dependencies>
+    </metadata>
+    <files>
+        <file src="Net40\Microsoft.AspNet.SignalR.SqlServer.dll" target="lib\net40" />
+        <file src="Intellisense\Net40\Microsoft.AspNet.SignalR.SqlServer.xml" target="lib\net40" />
+        <file src="Content\install.sql" target="tools" />
+    </files>
+</package>

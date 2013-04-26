@@ -1,0 +1,26 @@
+﻿<?xml version="1.0"?>
+<package>
+    <metadata>
+        <id>Microsoft.AspNet.SignalR.SystemWeb</id>
+        <title>Microsoft ASP.NET SignalR System.Web Components</title>
+        <version>__SIGNALR_PACKAGE_VERSION__</version>
+        <authors>Microsoft</authors>
+        <owners>Microsoft</owners>
+        <licenseUrl>http://www.microsoft.com/web/webpi/eula/signalr_prerelease.htm</licenseUrl>
+        <projectUrl>http://www.asp.net/signalr</projectUrl>
+        <requireLicenseAcceptance>true</requireLicenseAcceptance>
+        <description>Components for using ASP.NET SignalR in applications hosted on System.Web.</description>
+        <language>en-US</language>
+        <tags>Microsoft AspNet SignalR AspNetSignalR SystemWeb</tags>
+        <dependencies>
+            <dependency id="Microsoft.AspNet.SignalR.Owin" version="__SIGNALR_PACKAGE_VERSION__" />
+            <dependency id="Microsoft.Owin.Host.SystemWeb" version="__KATANARELEASE_PACKAGE_VERSION__" />
+        </dependencies>
+    </metadata>
+    <files>
+        <file src="Net40\Microsoft.AspNet.SignalR.SystemWeb.dll" target="lib\net40" />
+        <file src="Intellisense\Net40\Microsoft.AspNet.SignalR.SystemWeb.xml" target="lib\net40" />
+        <file src="Net45\Microsoft.AspNet.SignalR.SystemWeb.dll" target="lib\net45" />
+        <file src="Intellisense\Net45\Microsoft.AspNet.SignalR.SystemWeb.xml" target="lib\net45" />
+    </files>
+</package>
