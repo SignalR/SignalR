@@ -8,6 +8,14 @@
         },
         runModule = true;
 
+    QUnit.isTrue = function (result, message) {
+        return QUnit.ok(result === true, message);
+    };
+
+    QUnit.isFalse = function (result, message) {
+        return QUnit.ok(result === false, message);
+    };
+
     QUnit.isSet = function (actual, message) {
         return QUnit.notEqual(typeof (actual), "undefined", message);
     };
@@ -45,6 +53,16 @@
                     assert = {
                         expectTimeout: function() {
                             failOnTimeout = false;
+                        },
+                        isTrue: function (result, message) {
+                            if (!hasFinished) {
+                                QUnit.isTrue(result, message);
+                            }
+                        },
+                        isFalse: function (result, message) {
+                            if (!hasFinished) {
+                                QUnit.isFalse(result, message);
+                            }
                         },
                         deepEqual: function (actual, expected, message) {
                             if (!hasFinished) {
