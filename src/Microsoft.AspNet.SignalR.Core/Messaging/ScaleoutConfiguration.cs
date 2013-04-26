@@ -11,13 +11,15 @@ namespace Microsoft.AspNet.SignalR.Messaging
     {
         public static readonly int DisableQueuing = 0;
 
+        private int _maxQueueLength;
+
         /// <summary>
         /// The number of messages to include in a batch before delivering to the scale-out message bus.
         /// Use in conjunction with the BatchTimeout property to configure message batching.
         /// Set this property to 0 to disable batching (the default).
         /// </summary>
         public uint BatchSize { get; set; }
-        
+
         /// <summary>
         /// The amount of time to wait before delivering a batch of messages to the scale-out message bus.
         /// Use in conjunction with the BatchSize property to configure message batching.
@@ -30,6 +32,21 @@ namespace Microsoft.AspNet.SignalR.Messaging
         /// Set to <see cref="Microsoft.AspNet.SignalR.Messaging.ScaleoutConfiguration.DisableQueuing">ScaleoutConfiguration.DisableQueuing</see> to disable queing.
         /// Defaults to disabled.
         /// </summary>
-        public virtual int MaxQueueLength { get; set; }
+        public virtual int MaxQueueLength
+        {
+            get
+            {
+                return _maxQueueLength;
+            }
+            set
+            {
+                if (value < 0)
+                {
+                    throw new ArgumentOutOfRangeException("value");
+                }
+
+                _maxQueueLength = value;
+            }
+        }
     }
 }
