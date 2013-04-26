@@ -5,6 +5,12 @@ $(function () {
         messages = $("#messages"),
         startMessageLoopsBtn = $("#startMessageLoops"),
         stopStartBtn = $("#stopStart"),
+        //default groupName
+        groupName = "group++1",
+        radio_all = $("#radio_all"),
+        radio_group = $("#radio_group"),
+        radio_caller = $("#radio_caller"),
+        sendMessgeTo,
         start,
         sendMessageCountHandler,
         previousValues = [],
@@ -57,13 +63,41 @@ $(function () {
     }
 
     sendMessageCountHandler = function (value) {
-        messageLoopsHub.server.sendMessageCount(value).done(function (value) {
-            sendMessageCountHandler(value);
-        }).fail(function (e) {
-            $("<li/>").html("Failed at sendMessageCount: " + e).appendTo(messages);
-        });
+        if (sendMessgeTo === "all") {
+            messageLoopsHub.server.sendMessageCountToAll(value).done(function (value) {
+                sendMessageCountHandler(value);
+            }).fail(function (e) {
+                $("<li/>").html("Failed at sendMessageCountToAll: " + e).appendTo(messages);
+            });
+        } else if (sendMessgeTo === "group") {
+            messageLoopsHub.server.sendMessageCountToGroup(value, groupName).done(function (value) {
+                sendMessageCountHandler(value);
+            }).fail(function (e) {
+                $("<li/>").html("Failed at sendMessageCountToGroup: " + e).appendTo(messages);
+            });
+        } else if (sendMessgeTo === "caller") {
+            messageLoopsHub.server.sendMessageCountToCaller(value).done(function (value) {
+                sendMessageCountHandler(value);
+            }).fail(function (e) {
+                $("<li/>").html("Failed at sendMessageCountToCaller: " + e).appendTo(messages);
+            });
+        }
     };
 
+    function disableButtonsForMessageLoops(disable) {
+        if (disable === true) {
+            startMessageLoopsBtn.prop("disabled", true);
+            radio_all.prop("disabled", true);
+            radio_group.prop("disabled", true);
+            radio_caller.prop("disabled", true);
+        } else {
+            startMessageLoopsBtn.prop("disabled", false);
+            radio_all.prop("disabled", false);
+            radio_group.prop("disabled", false);
+            radio_caller.prop("disabled", false);
+        }
+    }
+    
     $.connection.hub.stateChanged(function (change) {
         var oldState = null,
             newState = null;
@@ -89,8 +123,10 @@ $(function () {
                     .find("i")
                         .removeClass("icon-stop")
                         .addClass("icon-play");
-    });
 
+        disableButtonsForMessageLoops(false);
+    });
+        
 
     start = function () {
         $.connection.hub.start({ transport: activeTransport, jsonp: isJsonp })
@@ -105,18 +141,71 @@ $(function () {
                            .find("i")
                                .removeClass("icon-play")
                                .addClass("icon-stop");
+                
+                if (radio_group.prop("checked") === true) {
+                    messageLoopsHub.server.joinGroup($.connection.hub.id, groupName).done(function (value) {
+                        $("<li/>").html("Succeeded at joinGroup: " + value).appendTo(messages);
+                    }).fail(function (e) {
+                        $("<li/>").html("Failed at joinGroup: " + e).appendTo(messages);
+                    });
+                };
+
             });
     };
     start();
 
-    startMessageLoopsBtn.click(function () {
-        startMessageLoopsBtn.prop("disabled", true);
-        messageLoopsHub.server.sendMessageCount(0).done(function (value) {
-            sendMessageCountHandler(value);
+    radio_all.click(function () {
+        messageLoopsHub.server.leaveGroup($.connection.hub.id, groupName).done(function (value) {
+            $("<li/>").html("Succeeded at leaveGroup: " + value).appendTo(messages);
         }).fail(function (e) {
-            $("<li/>").html("Failed at sendMessageCount: " + e).appendTo(messages);
-            startMessageLoopsBtn.prop("disabled", false);
+            $("<li/>").html("Failed at leaveGroup: " + e).appendTo(messages);
         });
+    });
+
+    radio_group.click(function () {
+        messageLoopsHub.server.joinGroup($.connection.hub.id, groupName).done(function (value) {
+            $("<li/>").html("Succeeded at joinGroup: " + value).appendTo(messages);
+        }).fail(function (e) {
+            $("<li/>").html("Failed at joinGroup: " + e).appendTo(messages);
+        });
+    });
+
+    radio_caller.click(function () {
+        messageLoopsHub.server.leaveGroup($.connection.hub.id, groupName).done(function (value) {
+            $("<li/>").html("Succeeded at leaveGroup: " + value).appendTo(messages);
+        }).fail(function (e) {
+            $("<li/>").html("Failed at leaveGroup: " + e).appendTo(messages);
+        });
+    });
+
+    startMessageLoopsBtn.click(function () {
+        disableButtonsForMessageLoops(true);
+        
+        if (radio_all.prop("checked") === true) {
+            sendMessgeTo = "all";
+            messageLoopsHub.server.sendMessageCountToAll(0).done(function (value) {
+                sendMessageCountHandler(value);
+            }).fail(function (e) {
+                $("<li/>").html("Failed at sendMessageCount: " + e).appendTo(messages);
+                disableButtonsForMessageLoops(false);
+            });
+        } else if (radio_group.prop("checked") === true) {
+            sendMessgeTo = "group";
+            messageLoopsHub.server.sendMessageCountToGroup(0, groupName).done(function (value) {
+                sendMessageCountHandler(value);
+            }).fail(function (e) {
+                $("<li/>").html("Failed at SendMessageCountToGroup: " + e).appendTo(messages);
+                disableButtonsForMessageLoops(false);
+            });
+        } else if (radio_caller.prop("checked") === true) {
+            sendMessgeTo = "caller";
+            messageLoopsHub.server.sendMessageCountToCaller(0).done(function (value) {
+                sendMessageCountHandler(value);
+            }).fail(function (e) {
+                $("<li/>").html("Failed at SendMessageCountToCaller: " + e).appendTo(messages);
+                disableButtonsForMessageLoops(false);
+            });
+        }
     });
 
     stopStartBtn.click(function () {

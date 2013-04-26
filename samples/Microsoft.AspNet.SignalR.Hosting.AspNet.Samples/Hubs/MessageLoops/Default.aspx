@@ -13,6 +13,15 @@
     </div>
 
     <p>
+        <input type="radio" id="radio_all" name="group1" value="all" checked>
+        Send message to all<br>
+        <input type="radio" id="radio_group" name="group1" value="group">
+        Send message to group<br>
+        <input type="radio" id="radio_caller" name="group1" value="value">
+        Send message to caller<br>
+    </p>
+
+    <p>
         <input type="button" id="startMessageLoops" class="btn" value="Start Message Loops" />
     </p>
 
