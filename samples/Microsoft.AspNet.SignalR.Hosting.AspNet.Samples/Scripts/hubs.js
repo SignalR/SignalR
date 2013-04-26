@@ -311,10 +311,10 @@
                 return proxies.hubConnectionAPI.invoke.apply(proxies.hubConnectionAPI, $.merge(["DisplayMessageAll"], $.makeArray(arguments)));
              },
 
-            displayMessageAllExcept: function (message, targetConnectionId) {
+            displayMessageAllExcept: function (message, excludeConnectionIds) {
             /// <summary>Calls the DisplayMessageAllExcept method on the server-side HubConnectionAPI hub.&#10;Returns a jQuery.Deferred() promise.</summary>
             /// <param name=\"message\" type=\"String\">Server side type is System.String</param>
-            /// <param name=\"targetConnectionId\" type=\"Object\">Server side type is System.String[]</param>
+            /// <param name=\"excludeConnectionIds\" type=\"Object\">Server side type is System.String[]</param>
                 return proxies.hubConnectionAPI.invoke.apply(proxies.hubConnectionAPI, $.merge(["DisplayMessageAllExcept"], $.makeArray(arguments)));
              },
 
@@ -331,11 +331,11 @@
                 return proxies.hubConnectionAPI.invoke.apply(proxies.hubConnectionAPI, $.merge(["DisplayMessageGroup"], $.makeArray(arguments)));
              },
 
-            displayMessageGroupExcept: function (groupName, message, targetConnectionId) {
+            displayMessageGroupExcept: function (groupName, message, excludeConnectionIds) {
             /// <summary>Calls the DisplayMessageGroupExcept method on the server-side HubConnectionAPI hub.&#10;Returns a jQuery.Deferred() promise.</summary>
             /// <param name=\"groupName\" type=\"String\">Server side type is System.String</param>
             /// <param name=\"message\" type=\"String\">Server side type is System.String</param>
-            /// <param name=\"targetConnectionId\" type=\"Object\">Server side type is System.String[]</param>
+            /// <param name=\"excludeConnectionIds\" type=\"Object\">Server side type is System.String[]</param>
                 return proxies.hubConnectionAPI.invoke.apply(proxies.hubConnectionAPI, $.merge(["DisplayMessageGroupExcept"], $.makeArray(arguments)));
              },
 

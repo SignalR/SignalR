@@ -21,7 +21,7 @@ namespace Microsoft.AspNet.SignalR.Samples.Hubs.DemoHub.MessageLoops
             if (sleep > 0)
                 Thread.Sleep(sleep * 1000);
 
-            Clients.All.displayMessagesCount(++messageCount, Context.ConnectionId);
+            Clients.All.displayMessagesCount(++messageCount, Context.ConnectionId).Wait();
             return messageCount;
         }
 
@@ -30,7 +30,7 @@ namespace Microsoft.AspNet.SignalR.Samples.Hubs.DemoHub.MessageLoops
             if (sleep > 0)
                 Thread.Sleep(sleep * 1000);
 
-            Clients.Group(groupName).displayMessagesCount(++messageCount, Context.ConnectionId);
+            Clients.Group(groupName).displayMessagesCount(++messageCount, Context.ConnectionId).Wait();
             return messageCount;
         }
 
@@ -40,7 +40,7 @@ namespace Microsoft.AspNet.SignalR.Samples.Hubs.DemoHub.MessageLoops
             if (sleep > 0)
                 Thread.Sleep(sleep * 1000);
 
-            Clients.Caller.displayMessagesCount(++messageCount, Context.ConnectionId);
+            Clients.Caller.displayMessagesCount(++messageCount, Context.ConnectionId).Wait();
             return messageCount;
         }
     }
