@@ -19,7 +19,7 @@ namespace Microsoft.AspNet.SignalR.Stress.Performance
         protected override MessageBus CreateMessageBus()
         {
             var configuration = new RedisScaleoutConfiguration(RunData.RedisServer, RunData.RedisPort, RunData.RedisPassword, "Stress");
-            // configuration.RetryOnError = true;
+            // configuration.MaxQueueLength = 1000;
 
             return new RedisMessageBus(Resolver, configuration);
         }

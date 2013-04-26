@@ -106,6 +106,7 @@
     <Compile Include="BufferTextWriterFacts.cs" />
     <Compile Include="RouteExtensionsTest.cs" />
     <Compile Include="Server\AckHandlerFacts.cs" />
+    <Compile Include="Server\ServiceBusConfigurationFacts.cs" />
     <Compile Include="Server\DiffSetFacts.cs" />
     <Compile Include="Server\Hubs\HubDispatcherFacts.cs" />
     <Compile Include="Server\MessageResultExtensions.cs" />
@@ -121,8 +122,8 @@
     <Compile Include="Server\MessageBusFacts.cs" />
     <Compile Include="Server\ScaleOutMessageBusFacts.cs" />
     <Compile Include="Server\ScaleoutStoreFacts.cs" />
-    <Compile Include="Server\ScaleoutTaskQueueFacts.cs" />
-    <Compile Include="Server\ServiceBusConfigurationFacts.cs" />
+    <Compile Include="Server\ScaleoutStreamFacts.cs" />
+    <Compile Include="Server\ScaleoutConfigurationFacts.cs" />
     <Compile Include="Server\TestSubscriber.cs" />
     <Compile Include="Server\TopicFacts.cs" />
     <Compile Include="Server\Transports\ForeverTransportFacts.cs" />

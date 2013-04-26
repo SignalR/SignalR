@@ -304,29 +304,29 @@ namespace Microsoft.AspNet.SignalR {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The queue has been closed..
-        /// </summary>
-        internal static string Error_QueueClosed {
-            get {
-                return ResourceManager.GetString("Error_QueueClosed", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to The queue is not open..
-        /// </summary>
-        internal static string Error_QueueNotOpen {
-            get {
-                return ResourceManager.GetString("Error_QueueNotOpen", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to State has exceeded the maximum length of 4096 bytes..
         /// </summary>
         internal static string Error_StateExceededMaximumLength {
             get {
                 return ResourceManager.GetString("Error_StateExceededMaximumLength", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The stream has been closed..
+        /// </summary>
+        internal static string Error_StreamClosed {
+            get {
+                return ResourceManager.GetString("Error_StreamClosed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The stream is not open..
+        /// </summary>
+        internal static string Error_StreamNotOpen {
+            get {
+                return ResourceManager.GetString("Error_StreamNotOpen", resourceCulture);
             }
         }
         
