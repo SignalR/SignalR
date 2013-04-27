@@ -22,16 +22,29 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
         // List of transports in fallback order
         private readonly IList<IClientTransport> _transports;
 
+        private static Type type = Type.GetType("System.Net.Browser.WebRequestCreator,System.Windows, Version=5.0.5.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e", false);
+
         public AutoTransport(IHttpClient httpClient)
         {
             _httpClient = httpClient;
-            _transports = new IClientTransport[] { 
+
+            if (type == null)
+            {
+                _transports = new IClientTransport[] { 
 #if NET45
                 new WebSocketTransport(httpClient),
 #endif
                 new ServerSentEventsTransport(httpClient), 
                 new LongPollingTransport(httpClient) 
-            };
+                };
+            }
+
+            else
+            {
+                _transports = new IClientTransport[] {
+                    new LongPollingTransport(httpClient)
+                };
+            }
         }
 
         public AutoTransport(IHttpClient httpClient, IList<IClientTransport> transports)
