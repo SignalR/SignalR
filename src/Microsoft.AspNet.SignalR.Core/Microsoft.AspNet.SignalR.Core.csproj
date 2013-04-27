@@ -179,7 +179,7 @@
     <Compile Include="Messaging\ScaleoutSubscription.cs" />
     <Compile Include="Messaging\DefaultSubscription.cs" />
     <Compile Include="Infrastructure\StringMinifier.cs" />
-    <Compile Include="Messaging\ScaleoutTaskQueue.cs" />
+    <Compile Include="Messaging\ScaleoutStream.cs" />
     <Compile Include="Messaging\Subscription.cs" />
     <Compile Include="Messaging\Topic.cs" />
     <Compile Include="Messaging\TopicLookup.cs" />
