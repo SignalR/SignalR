@@ -380,7 +380,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
                 }
 
                 // We want to remove the overflow but oldest first
-                candidates.Sort((leftPair, rightPair) => rightPair.Value.LastUsed.CompareTo(leftPair.Value.LastUsed));
+                candidates.Sort((leftPair, rightPair) => leftPair.Value.LastUsed.CompareTo(rightPair.Value.LastUsed));
 
                 // Clear up to the overflow and stay within bounds
                 for (int i = 0; i < overflow && i < candidates.Count; i++)
@@ -388,10 +388,12 @@ namespace Microsoft.AspNet.SignalR.Messaging
                     var pair = candidates[i];
 
                     // Mark it as dead
-                    Interlocked.Exchange(ref pair.Value.State, TopicState.Dead);
-
-                    // Kill it
-                    DestroyTopicCore(pair.Key, pair.Value);
+                    if (Interlocked.CompareExchange(ref pair.Value.State, TopicState.Dead, TopicState.NoSubscriptions)
+                        == TopicState.NoSubscriptions)
+                    {
+                        // Kill it
+                        DestroyTopicCore(pair.Key, pair.Value);
+                    }
                 }
             }
 
