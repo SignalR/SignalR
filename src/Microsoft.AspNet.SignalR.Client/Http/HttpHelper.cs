@@ -67,10 +67,9 @@ namespace Microsoft.AspNet.SignalR.Client.Http
 
             request.Method = "POST";
             request.ContentType = "application/x-www-form-urlencoded";
-#if !WINDOWS_PHONE && !SILVERLIGHT
+
             // Set the content length if the buffer is non-null
             request.ContentLength = buffer != null ? buffer.LongLength : 0;
-#endif
 
             if (buffer == null)
             {
@@ -114,15 +113,7 @@ namespace Microsoft.AspNet.SignalR.Client.Http
         private static HttpWebRequest CreateWebRequest(string url)
         {
             HttpWebRequest request = null;
-#if WINDOWS_PHONE
             request = (HttpWebRequest)WebRequest.Create(url);
-            request.AllowReadStreamBuffering = false;
-#elif SILVERLIGHT
-            request = (HttpWebRequest)System.Net.Browser.WebRequestCreator.ClientHttp.Create(new Uri(url));
-            request.AllowReadStreamBuffering = false;
-#else
-            request = (HttpWebRequest)WebRequest.Create(url);
-#endif
             return request;
         }
     }
