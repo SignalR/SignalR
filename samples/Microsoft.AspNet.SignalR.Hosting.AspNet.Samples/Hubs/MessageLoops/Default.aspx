@@ -13,11 +13,22 @@
     </div>
 
     <p>
-        <input type="button" id="startMessageLoops" class="btn" value="Start Message Loops" />
+        <input type="radio" id="radioAll" name="group1" value="all" checked="checked">
+        Send message to all<br>
+        <input type="radio" id="radioGroup" name="group1" value="group">
+        Send message to group<br>
+        <input type="radio" id="radioCaller" name="group1" value="value">
+        Send message to caller<br>
     </p>
 
     <p>
-        <button id="stopStart" class="btn btn-info btn-small" disabled="disabled"><i class="icon-stop icon-white"></i><span>Stop Connection</span></button>
+        <input type="button" id="startMessageLoops" class="btn" value="Start Message Loops" />
+        send each message in
+        <input type="text" id="sleep" value="5" style="width: 26px;" />seconds
+    </p>
+
+    <p>
+        <button id="stopStart" class="btn" disabled="disabled"><span>Stop Connection</span></button>
     </p>
 
     <h5>Messages: </h5>
