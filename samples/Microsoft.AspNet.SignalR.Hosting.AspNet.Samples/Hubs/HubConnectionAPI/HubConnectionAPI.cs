@@ -21,9 +21,9 @@ namespace Microsoft.AspNet.SignalR.Hosting.AspNet.Samples.Hubs.HubConnectionAPI
             Clients.All.displayMessage("Clients.All: " + message + " from " + Context.ConnectionId);
         }
 
-        public void DisplayMessageAllExcept(string message, params string[] targetConnectionId)
+        public void DisplayMessageAllExcept(string message, params string[] excludeConnectionIds)
         {
-            Clients.AllExcept(targetConnectionId).displayMessage("Clients.AllExcept: " + message + " from " + Context.ConnectionId);
+            Clients.AllExcept(excludeConnectionIds).displayMessage("Clients.AllExcept: " + message + " from " + Context.ConnectionId);
         }
 
         public void DisplayMessageOther(string message)
@@ -43,7 +43,12 @@ namespace Microsoft.AspNet.SignalR.Hosting.AspNet.Samples.Hubs.HubConnectionAPI
 
         public void DisplayMessageGroup(string groupName, string message)
         {
-            Clients.Group(groupName, "").displayMessage("Clients.Group: " + message + " from " + Context.ConnectionId);
+            Clients.Group(groupName).displayMessage("Clients.Group: " + message + " from " + Context.ConnectionId);
+        }
+
+        public void DisplayMessageGroupExcept(string groupName, string message, params string[] excludeConnectionIds)
+        {
+            Clients.Group(groupName, excludeConnectionIds).displayMessage("Clients.Group: " + message + " from " + Context.ConnectionId);
         }
 
         public void DisplayMessageOthersInGroup(string groupName, string message)

@@ -15,13 +15,13 @@
     <p>
         <label for="group">Group: </label>
         <input type="text" id="group" placeholder="Group Name" />
-        <input type="button" id="join-group" class="btn" value="Join Group" />
-        <input type="button" id="leave-group" class="btn" value="Leave Group" />
+        <input type="button" id="joinGroup" class="btn" value="Join Group" />
+        <input type="button" id="leaveGroup" class="btn" value="Leave Group" />
     </p>
 
     <p>
         <label for="connection">Specified ConnectionID: </label>
-        <input type="text" id="connection" placeholder="connectionId" />
+        <input type="text" id="connection" style="width: 460px" placeholder="connectionId" />
     </p>
 
     <div>
@@ -29,7 +29,7 @@
         <div>
             <input type="text" id="message" placeholder="Message" />
             <input type="button" id="broadcast" class="btn" value="Broadcast" />
-            <input type="button" id="broadcast-except-specified" class="btn" value="Broadcast (All Except specified Connection)" />
+            <input type="button" id="broadcastExceptSpecified" class="btn" value="Broadcast (All Except specified Connection)" />
             <input type="button" id="other" class="btn" value="Other (Everyone but me)" />
         </div>
     </div>
@@ -39,6 +39,7 @@
         <div>
             <input type="text" id="groupMessage" placeholder="Message" />
             <input type="button" id="groupmsg" class="btn" value="Send to group" />
+            <input type="button" id="groupmsgExceptSpecified" class="btn" value="Send to group (Except specified Connection)" />
             <input type="button" id="otherInGroupmsg" class="btn" value="Send to Other In Group" />
         </div>
     </div>
