@@ -65,19 +65,19 @@ $(function () {
 
     sendMessageCountHandler = function (value) {
         if (sendMessgeTo === "all") {
-            messageLoopsHub.server.sendMessageCountToAll(value, sleepInput.val()).done(function (value) {
+            messageLoopsHub.server.sendMessageCountToAll(value, parseFloat(sleepInput.val())).done(function (value) {
                 sendMessageCountHandler(value);
             }).fail(function (e) {
                 $("<li/>").html("Failed at sendMessageCountToAll: " + e).appendTo(messages);
             });
         } else if (sendMessgeTo === "group") {
-            messageLoopsHub.server.sendMessageCountToGroup(value, groupName, sleepInput.val()).done(function (value) {
+            messageLoopsHub.server.sendMessageCountToGroup(value, groupName, parseFloat(sleepInput.val())).done(function (value) {
                 sendMessageCountHandler(value);
             }).fail(function (e) {
                 $("<li/>").html("Failed at sendMessageCountToGroup: " + e).appendTo(messages);
             });
         } else if (sendMessgeTo === "caller") {
-            messageLoopsHub.server.sendMessageCountToCaller(value, sleepInput.val()).done(function (value) {
+            messageLoopsHub.server.sendMessageCountToCaller(value, parseFloat(sleepInput.val())).done(function (value) {
                 sendMessageCountHandler(value);
             }).fail(function (e) {
                 $("<li/>").html("Failed at sendMessageCountToCaller: " + e).appendTo(messages);
@@ -200,7 +200,7 @@ $(function () {
 
         if (radioAll.prop("checked") === true) {
             sendMessgeTo = "all";
-            messageLoopsHub.server.sendMessageCountToAll(0, sleepInput.val()).done(function (value) {
+            messageLoopsHub.server.sendMessageCountToAll(0, parseFloat(sleepInput.val())).done(function (value) {
                 sendMessageCountHandler(value);
             }).fail(function (e) {
                 $("<li/>").html("Failed at sendMessageCount: " + e).appendTo(messages);
@@ -208,7 +208,7 @@ $(function () {
             });
         } else if (radioGroup.prop("checked") === true) {
             sendMessgeTo = "group";
-            messageLoopsHub.server.sendMessageCountToGroup(0, groupName, sleepInput.val()).done(function (value) {
+            messageLoopsHub.server.sendMessageCountToGroup(0, groupName, parseFloat(sleepInput.val())).done(function (value) {
                 sendMessageCountHandler(value);
             }).fail(function (e) {
                 $("<li/>").html("Failed at SendMessageCountToGroup: " + e).appendTo(messages);
@@ -216,7 +216,7 @@ $(function () {
             });
         } else if (radioCaller.prop("checked") === true) {
             sendMessgeTo = "caller";
-            messageLoopsHub.server.sendMessageCountToCaller(0, sleepInput.val()).done(function (value) {
+            messageLoopsHub.server.sendMessageCountToCaller(0, parseFloat(sleepInput.val())).done(function (value) {
                 sendMessageCountHandler(value);
             }).fail(function (e) {
                 $("<li/>").html("Failed at SendMessageCountToCaller: " + e).appendTo(messages);
