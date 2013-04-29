@@ -60,10 +60,6 @@
     <CoreProjects Include="$(ProjectRoot)\src\Microsoft.AspNet.SignalR.Utils\Microsoft.AspNet.SignalR.Utils.csproj"></CoreProjects>
 
     <!--Requires SDKs-->
-    <CoreProjects Include="$(ProjectRoot)\src\Microsoft.AspNet.SignalR.Client.Silverlight5\Microsoft.AspNet.SignalR.Client.Silverlight5.csproj"
-                  Condition="Exists('$(MSBuildExtensionsPath)\Microsoft\Silverlight\v5.0\Microsoft.Silverlight.CSharp.targets')"></CoreProjects>
-    <CoreProjects Include="$(ProjectRoot)\src\Microsoft.AspNet.SignalR.Client.WP8\Microsoft.AspNet.SignalR.Client.WP8.csproj"
-                  Condition="Exists('$(MSBuildExtensionsPath)\Microsoft\WindowsPhone\v8.0\Microsoft.WindowsPhone.v8.0.Overrides.targets')"></CoreProjects>
     <CoreProjects Include="$(ProjectRoot)\src\Microsoft.AspNet.SignalR.Client.WinRT\Microsoft.AspNet.SignalR.Client.WinRT.csproj"
                   Condition="Exists('$(MSBuildExtensionsPath)\Microsoft\WindowsXaml')"></CoreProjects>
   </ItemGroup>
@@ -81,6 +77,11 @@
     <BuildProjects Include="$(ProjectRoot)\samples\Microsoft.AspNet.SignalR.Client.Samples\Microsoft.AspNet.SignalR.Client.Samples.csproj"></BuildProjects>
     <BuildProjects Include="$(ProjectRoot)\samples\Microsoft.AspNet.SignalR.Client.WP8.Sample\Microsoft.AspNet.SignalR.Client.WP8.Sample.csproj"
                    Condition="Exists('$(MSBuildExtensionsPath)\Microsoft\WindowsPhone\v8.0\Microsoft.WindowsPhone.v8.0.Overrides.targets')"></BuildProjects>
+    <BuildProjects Include="$(ProjectRoot)\src\Microsoft.AspNet.SignalR.Client.Silverlight5\Microsoft.AspNet.SignalR.Client.Silverlight5.csproj"
+              Condition="Exists('$(MSBuildExtensionsPath)\Microsoft\Silverlight\v5.0\Microsoft.Silverlight.CSharp.targets')"></BuildProjects>
+    <BuildProjects Include="$(ProjectRoot)\src\Microsoft.AspNet.SignalR.Client.WP8\Microsoft.AspNet.SignalR.Client.WP8.csproj"
+                  Condition="Exists('$(MSBuildExtensionsPath)\Microsoft\WindowsPhone\v8.0\Microsoft.WindowsPhone.v8.0.Overrides.targets')"></BuildProjects>
+
   </ItemGroup>
 
   <ItemGroup>
@@ -236,7 +237,7 @@
   </Target>
 
   <Target Name="RunCodeAnalysis" DependsOnTargets="CreateOutputDir" Condition="Exists('$(MSBuildExtensionsPath)\Microsoft\VisualStudio\v11.0\CodeAnalysis\fxcoptask.dll')">
-    <MSBuild Projects="%(CoreProjects.Identity)"
+    <MSBuild Projects="%(CAProjects.Identity)"
              Targets="ReBuild"
              Properties="RunCodeAnalysis=true;Configuration=$(Configuration);ArtifactsDir=$(ArtifactsDir);SolutionDir=$(ProjectRoot)\;$(ExtraProperties)" />
   </Target>

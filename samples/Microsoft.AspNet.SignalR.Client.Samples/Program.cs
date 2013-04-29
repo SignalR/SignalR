@@ -18,9 +18,26 @@ namespace Microsoft.AspNet.SignalR.Client.Samples
 
             // RunDemoHub(hubConnection);
 
-            RunStreamingSample();
+            // RunStreamingSample();
+
+            RunStatusHub();
 
             Console.ReadKey();
+        }
+
+        private static void RunStatusHub()
+        {
+            var hubConnection = new HubConnection("http://localhost:40476/");
+            var proxy = hubConnection.CreateHubProxy("statushub");
+
+            proxy.On<string,string>("joined", (connectionId, date) =>
+            {
+                 Console.WriteLine(connectionId + " joined on "+date);   
+            });
+
+            Console.Read();
+
+            hubConnection.Start().Wait();
         }
 
         private static void RunHeaderAuthSample(HubConnection hubConnection)

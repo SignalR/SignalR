@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
@@ -31,6 +32,7 @@ namespace Microsoft.AspNet.SignalR.Client.Silverlight.Sample
             {
                 Dispatcher.BeginInvoke(() =>
                 {
+                    connection.Trace(TraceLevels.Events, ex.ToString());
                     var aggEx = (AggregateException)ex;
                     App.ViewModel.Items.Add(aggEx.InnerExceptions[0].Message);
                 });
@@ -45,14 +47,48 @@ namespace Microsoft.AspNet.SignalR.Client.Silverlight.Sample
             };
 
             var scheduler = TaskScheduler.FromCurrentSynchronizationContext();
+            connection.TraceWriter = new ActionBasedWriter(val =>
+            {
+                Dispatcher.BeginInvoke(() =>
+                {
+                    App.ViewModel.Items.Add(val);
+                });
+            });
+
             connection.Start().ContinueWith(task =>
             {
-                var ex = task.Exception.InnerExceptions[0];
-                App.ViewModel.Items.Add(ex.Message);
+                if (task.IsFaulted)
+                {
+                    var ex = task.Exception.InnerExceptions[0];
+                    App.ViewModel.Items.Add(ex.Message);
+                }
+                else
+                {
+                    App.ViewModel.Items.Add("Connected with transport " + connection.Transport.Name);
+                }
             },
             CancellationToken.None,
-            TaskContinuationOptions.OnlyOnFaulted,
+            TaskContinuationOptions.None,
             scheduler);
+        }
+
+        private class ActionBasedWriter : TextWriter
+        {
+            private readonly Action<string> _log;
+            public ActionBasedWriter(Action<string> log)
+            {
+                _log = log;
+            }
+
+            public override void WriteLine(string value)
+            {
+                _log(value);
+            }
+
+            public override System.Text.Encoding Encoding
+            {
+                get { return System.Text.Encoding.UTF8; }
+            }
         }
     }
 }
