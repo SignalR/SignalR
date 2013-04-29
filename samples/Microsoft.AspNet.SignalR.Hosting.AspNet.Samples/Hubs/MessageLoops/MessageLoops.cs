@@ -20,7 +20,9 @@ namespace Microsoft.AspNet.SignalR.Samples.Hubs.DemoHub.MessageLoops
         public int SendMessageCountToAll(int messageCount, int sleepTime)
         {
             if (sleepTime > 0)
+            {
                 Thread.Sleep(sleepTime);
+            }
 
             Clients.All.displayMessagesCount(++messageCount, Context.ConnectionId).Wait();
             return messageCount;
@@ -29,7 +31,9 @@ namespace Microsoft.AspNet.SignalR.Samples.Hubs.DemoHub.MessageLoops
         public int SendMessageCountToGroup(int messageCount, string groupName, int sleepTime)
         {
             if (sleepTime > 0)
+            {
                 Thread.Sleep(sleepTime);
+            }
 
             Clients.Group(groupName).displayMessagesCount(++messageCount, Context.ConnectionId).Wait();
             return messageCount;
@@ -39,7 +43,9 @@ namespace Microsoft.AspNet.SignalR.Samples.Hubs.DemoHub.MessageLoops
         public int SendMessageCountToCaller(int messageCount, int sleepTime)
         {
             if (sleepTime > 0)
+            {
                 Thread.Sleep(sleepTime);
+            }
 
             Clients.Caller.displayMessagesCount(++messageCount, Context.ConnectionId).Wait();
             return messageCount;
