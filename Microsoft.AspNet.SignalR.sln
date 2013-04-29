@@ -95,6 +95,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNet.SignalR.Sq
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNet.SignalR.Client.Silverlight.Sample", "samples\Microsoft.AspNet.SignalR.Client.Silverlight.Sample\Microsoft.AspNet.SignalR.Client.Silverlight.Sample.csproj", "{1E14A334-4346-4C27-8D67-497632CF8974}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNet.SignalR.StressServer", "src\Microsoft.AspNet.SignalR.StressServer\Microsoft.AspNet.SignalR.StressServer.csproj", "{9AC65ED5-48C2-4C5C-8498-DC340B313FDF}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -537,6 +539,20 @@ Global
 		{1E14A334-4346-4C27-8D67-497632CF8974}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{1E14A334-4346-4C27-8D67-497632CF8974}.Release|x64.ActiveCfg = Release|Any CPU
 		{1E14A334-4346-4C27-8D67-497632CF8974}.Release|x86.ActiveCfg = Release|Any CPU
+		{9AC65ED5-48C2-4C5C-8498-DC340B313FDF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9AC65ED5-48C2-4C5C-8498-DC340B313FDF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9AC65ED5-48C2-4C5C-8498-DC340B313FDF}.Debug|ARM.ActiveCfg = Debug|Any CPU
+		{9AC65ED5-48C2-4C5C-8498-DC340B313FDF}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{9AC65ED5-48C2-4C5C-8498-DC340B313FDF}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{9AC65ED5-48C2-4C5C-8498-DC340B313FDF}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{9AC65ED5-48C2-4C5C-8498-DC340B313FDF}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{9AC65ED5-48C2-4C5C-8498-DC340B313FDF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9AC65ED5-48C2-4C5C-8498-DC340B313FDF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9AC65ED5-48C2-4C5C-8498-DC340B313FDF}.Release|ARM.ActiveCfg = Release|Any CPU
+		{9AC65ED5-48C2-4C5C-8498-DC340B313FDF}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{9AC65ED5-48C2-4C5C-8498-DC340B313FDF}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{9AC65ED5-48C2-4C5C-8498-DC340B313FDF}.Release|x64.ActiveCfg = Release|Any CPU
+		{9AC65ED5-48C2-4C5C-8498-DC340B313FDF}.Release|x86.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -553,5 +569,8 @@ Global
 		{2117F295-6451-4447-A646-614B2D8352EF} = {7E3D992A-8F37-4C5D-AD42-E052522816C5}
 		{5D69B6BE-062B-408D-913E-5CD2F21D5D17} = {7E3D992A-8F37-4C5D-AD42-E052522816C5}
 		{1E14A334-4346-4C27-8D67-497632CF8974} = {7E3D992A-8F37-4C5D-AD42-E052522816C5}
+	EndGlobalSection
+	GlobalSection(Performance) = preSolution
+		HasPerformanceSessions = true
 	EndGlobalSection
 EndGlobal

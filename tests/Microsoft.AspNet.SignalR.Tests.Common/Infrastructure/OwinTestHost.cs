@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR.Client.Transports;
 using Microsoft.Owin.Hosting;
 
@@ -50,6 +51,8 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure
             private set;
         }
 
+        public IDependencyResolver Resolver { get; set; }
+
         public IDictionary<string, string> ExtraData
         {
             get;
@@ -92,6 +95,16 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure
             //{
             //    _resolver.Resolve<IHubPipeline>().EnableAutoRejoiningGroups();
             //}
+        }
+
+        public Task Get(string uri, bool disableWrites)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task Post(string uri, IDictionary<string, string> data)
+        {
+            throw new NotImplementedException();
         }
 
         public void Shutdown()

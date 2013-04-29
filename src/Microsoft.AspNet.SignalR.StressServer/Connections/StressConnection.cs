@@ -2,7 +2,7 @@
 
 using System.Threading.Tasks;
 
-namespace Microsoft.AspNet.SignalR.Stress.Connections
+namespace Microsoft.AspNet.SignalR.StressServer.Connections
 {
     public class StressConnection : PersistentConnection
     {

@@ -1,8 +1,10 @@
-﻿using Newtonsoft.Json;
+﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.md in the project root for license information.
+
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Newtonsoft.Json;
 
 namespace Microsoft.AspNet.SignalR.Samples.Raw
 {
@@ -155,7 +157,7 @@ namespace Microsoft.AspNet.SignalR.Samples.Raw
         private static string GetClientIP(IRequest request)
         {
             var env = Get<IDictionary<string, object>>(request.Items, "owin.environment");
-            
+
             if (env == null)
             {
                 return null;

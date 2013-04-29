@@ -70,6 +70,7 @@
     <!--Performance projects-->
     <BuildProjects Include="$(ProjectRoot)\src\Microsoft.AspNet.SignalR.Crank\Microsoft.AspNet.SignalR.Crank.csproj"></BuildProjects>
     <BuildProjects Include="$(ProjectRoot)\src\Microsoft.AspNet.SignalR.Stress\Microsoft.AspNet.SignalR.Stress.csproj"></BuildProjects>
+    <BuildProjects Include="$(ProjectRoot)\src\Microsoft.AspNet.SignalR.StressServer\Microsoft.AspNet.SignalR.StressServer.csproj"></BuildProjects>
         
     <!--Sample projects-->
     <BuildProjects Include="$(ProjectRoot)\samples\Microsoft.AspNet.SignalR.Hosting.AspNet.Samples\Microsoft.AspNet.SignalR.Hosting.AspNet.Samples.csproj"></BuildProjects>

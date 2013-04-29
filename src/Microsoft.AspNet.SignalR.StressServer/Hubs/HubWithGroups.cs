@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR.Hubs;
 
-namespace Microsoft.AspNet.SignalR.Stress.Hubs
+namespace Microsoft.AspNet.SignalR.StressServer.Hubs
 {
     public class HubWithGroups : Hub
     {

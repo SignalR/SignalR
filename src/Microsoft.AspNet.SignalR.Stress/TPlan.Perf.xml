@@ -2,31 +2,42 @@
 <config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns="http://www.microsoft.com/2011/12/aaptperffun#1">
 
   <metadata testName ="Stress" teamName ="SignalR" description="SignalR Stress Tests">
+    
+    <!-- Connection Based Tests -->
     <trackingVariation name="ConnectionRun">
       <metric name="Message Bus Messages Received/Sec" selection="Average" units="Numeric">
         <target value="11954417.38" labConfig="XSPPERF8S_WIN8_X64" />
       </metric>
     </trackingVariation>
-    <trackingVariation name="MemoryHost-ForeverFrame">
-      <metric name="Message Bus Messages Received/Sec" selection="Average" units="Numeric">
-        <target value="7037431.38" labConfig="XSPPERF8S_WIN8_X64" />
-      </metric>
-    </trackingVariation>
-    <trackingVariation name="MemoryHost-LongPolling">
+    <trackingVariation name="SendReceive-LongPolling">
       <metric name="Message Bus Messages Received/Sec" selection="Average" units="Numeric">
         <target value="18676.65" labConfig="XSPPERF8S_WIN8_X64" />
       </metric>
     </trackingVariation>
-    <trackingVariation name="MemoryHost-ServerSentEvents">
+    <trackingVariation name="SendReceive-ServerSentEvents">
       <metric name="Message Bus Messages Received/Sec" selection="Average" units="Numeric">
         <target value="5719925.40" labConfig="XSPPERF8S_WIN8_X64" />
       </metric>
     </trackingVariation>
-    <trackingVariation name="MemoryHostHubInvocation">
+    
+    <!--Memory Host with Hubs-->
+    <trackingVariation name="HubInvocation">
       <metric name="Message Bus Messages Published/Sec" selection="Average" units="Numeric">
         <target value="17323.64" labConfig="XSPPERF8S_WIN8_X64" />
       </metric>
     </trackingVariation>
+    <trackingVariation name="SimpleEchoHub-LongPolling">
+      <metric name="Latency In Milliseconds" selection="Average" units="Numeric">
+        <target value="0" labConfig="XSPPERF8S_WIN8_X64" />
+      </metric>
+    </trackingVariation>
+    <trackingVariation name="SimpleEchoHub-ServerSentEvents">
+      <metric name="Latency In Milliseconds" selection="Average" units="Numeric">
+        <target value="0" labConfig="XSPPERF8S_WIN8_X64" />
+      </metric>
+    </trackingVariation>
+
+    <!-- Message Bus related-->
     <trackingVariation name="MessageBus">
       <metric name="Message Bus Messages Received/Sec" selection="Average" units="Numeric">
         <target value="13816648.43" labConfig="XSPPERF8S_WIN8_X64" />
@@ -42,23 +53,34 @@
         <target value="418655.70" labConfig="XSPPERF8S_WIN8_X64" />
       </metric>
     </trackingVariation>
+  
+    <!-- External Host-->
+    <trackingVariation name="SimpleEchoHub-LongPolling-External">
+      <metric name="Latency In Milliseconds" selection="Average" units="Numeric">
+        <target value="0" labConfig="XSPPERF8S_WIN8_X64" />
+      </metric>
+    </trackingVariation>
+    
   </metadata>
 
   <commands>
     <command name="ConnectionRun" wait="Exit">
       Microsoft.AspNet.SignalR.Stress.exe /Run:ConnectionRun /Senders:5
     </command>
-    <command name="MemoryHost-ForeverFrame" wait="Exit">
-      Microsoft.AspNet.SignalR.Stress.exe /Run:MemoryHost /Senders:5 /Transport:ForeverFrame
+    <command name="SendReceive-LongPolling" wait="Exit">
+      Microsoft.AspNet.SignalR.Stress.exe /Run:SendReceive /Transport:LongPolling /Senders:5
     </command>
-    <command name="MemoryHost-LongPolling" wait="Exit">
-      Microsoft.AspNet.SignalR.Stress.exe /Run:MemoryHost /Senders:5 /Transport:LongPolling
+    <command name="SendReceive-ServerSentEvents" wait="Exit">
+      Microsoft.AspNet.SignalR.Stress.exe /Run:SendReceive /Transport:ServerSentEvents /Senders:5
     </command>
-    <command name="MemoryHost-ServerSentEvents" wait="Exit">
-      Microsoft.AspNet.SignalR.Stress.exe /Run:MemoryHost /Senders:5 /Transport:ServerSentEvents
+    <command name="HubInvocation" wait="Exit">
+      Microsoft.AspNet.SignalR.Stress.exe /Run:HubInvocation /Senders:5
     </command>
-    <command name="MemoryHostHubInvocation" wait="Exit">
-      Microsoft.AspNet.SignalR.Stress.exe /Run:MemoryHostHubInvocation /Senders:5
+    <command name="SimpleEchoHub-LongPolling" wait="Exit">
+      Microsoft.AspNet.SignalR.Stress.exe /Run:SimpleEchoHub /Transport:LongPolling /Senders:5
+    </command>
+    <command name="SimpleEchoHub-ServerSentEvents" wait="Exit">
+      Microsoft.AspNet.SignalR.Stress.exe /Run:SimpleEchoHub /Transport:ServerSentEvents /Senders:5
     </command>
     <command name="MessageBus" wait="Exit">
       Microsoft.AspNet.SignalR.Stress.exe /Run:MessageBus /Senders:5
@@ -72,22 +94,43 @@
     <command name="RedisMessageBus" wait="Exit">
       Microsoft.AspNet.SignalR.Stress.exe /Run:RedisMessageBus /Senders:5 /RedisServer:{dbserver-01} /RedisPort:6379
     </command>
+  
+    <!-- external host-->
+    <command name="CopyWWW" wait="Exit">
+      {bin}\xcopy /ecyi artifacts\Release\Microsoft.AspNet.SignalR.LoadTestHarness \\{server-01}\perftestbits\www
+    </command>
+    <command name="SetupIIS" wait="Exit">
+      powershell -executionpolicy remotesigned -command "{bin}\RegisterIIS.ps1 {currentdir}\www
+    </command>
+    <command name="SimpleEchoHub-LongPolling-External" wait="Exit">
+      Microsoft.AspNet.SignalR.Stress.exe /Run:SimpleEchoHub /Transport:LongPolling /Host:External /Connections:5 /Url:http://{server-01}:81/
+    </command>
+  
   </commands>
-
+  
   <plan>
     <run command="ConnectionRun" role="server-01" output="true" />
 
-    <run command="MemoryHost-ForeverFrame" role="server-01" output="true" />
-    <run command="MemoryHost-LongPolling" role="server-01" output="true" />
-    <run command="MemoryHost-ServerSentEvents" role="server-01" output="true" />
+    <run command="SendReceive-LongPolling" role="server-01" output="true" />
+    <run command="SendReceive-ServerSentEvents" role="server-01" output="true" />
     
-    <run command="MemoryHostHubInvocation" role="server-01" output="true" />
-    
+    <run command="HubInvocation" role="server-01" output="true" />
+
+    <!-- End to end hub invocation tests -->
+    <run command="SimpleEchoHub-LongPolling" role="server-01" output="true" />
+    <run command="SimpleEchoHub-ServerSentEvents" role="server-01" output="true" />
+
+    <!--Message bus tests -->
     <run command="MessageBus" role="server-01" output="true" />
     
     <run command="SetupSqlServer" role="dbserver-01" output="true" profile="None" />
     <run command="SqlMessageBus" role="server-01" output="true" />
     
     <run command="RedisMessageBus" role="server-01" output="true" />
+  
+    <!--External host hub tests-->
+    <run command="CopyWWW" role="controller" output="true" profile="None" />
+    <run command="SetupIIS" role="server-01" output="true" profile="None" />
+    <run command="SimpleEchoHub-LongPolling-External" role="client-01" output="true" />
   </plan>
 </config>
