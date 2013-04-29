@@ -1,4 +1,5 @@
-﻿using System.Threading;
+﻿using System;
+using System.Threading;
 
 namespace Microsoft.AspNet.SignalR.Samples.Hubs.DemoHub.MessageLoops
 {
@@ -16,29 +17,35 @@ namespace Microsoft.AspNet.SignalR.Samples.Hubs.DemoHub.MessageLoops
             return connectionId + " removed from " + groupName;
         }
 
-        public int SendMessageCountToAll(int messageCount, int sleep)
+        public int SendMessageCountToAll(int messageCount, int sleepTime)
         {
-            if (sleep > 0)
-                Thread.Sleep(sleep * 1000);
+            if (sleepTime > 0)
+            {
+                Thread.Sleep(sleepTime);
+            }
 
             Clients.All.displayMessagesCount(++messageCount, Context.ConnectionId).Wait();
             return messageCount;
         }
 
-        public int SendMessageCountToGroup(int messageCount, string groupName, int sleep)
+        public int SendMessageCountToGroup(int messageCount, string groupName, int sleepTime)
         {
-            if (sleep > 0)
-                Thread.Sleep(sleep * 1000);
+            if (sleepTime > 0)
+            {
+                Thread.Sleep(sleepTime);
+            }
 
             Clients.Group(groupName).displayMessagesCount(++messageCount, Context.ConnectionId).Wait();
             return messageCount;
         }
 
 
-        public int SendMessageCountToCaller(int messageCount, int sleep)
+        public int SendMessageCountToCaller(int messageCount, int sleepTime)
         {
-            if (sleep > 0)
-                Thread.Sleep(sleep * 1000);
+            if (sleepTime > 0)
+            {
+                Thread.Sleep(sleepTime);
+            }
 
             Clients.Caller.displayMessagesCount(++messageCount, Context.ConnectionId).Wait();
             return messageCount;

@@ -24,7 +24,7 @@
     <p>
         <input type="button" id="startMessageLoops" class="btn" value="Start Message Loops" />
         send each message in
-        <input type="text" id="sleep" value="5" style="width: 26px;" />seconds
+        <input type="text" id="sleep" value="5000" style="width: 40px;" />milliseconds
     </p>
 
     <p>
