@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR.Client.Transports;
 using Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure.IIS;
 
@@ -57,6 +58,8 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure
         public TextWriter ClientTraceOutput { get; set; }
 
         public IDictionary<string, string> ExtraData { get; private set; }
+
+        public IDependencyResolver Resolver { get; set; }
         
         public IList<IDisposable> Disposables
         {
@@ -92,6 +95,16 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure
             {
                 d.Dispose();
             }
+        }
+
+        public Task Get(string uri, bool disableWrites)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task Post(string uri, IDictionary<string, string> data)
+        {
+            throw new NotImplementedException();
         }
 
         public void Shutdown()

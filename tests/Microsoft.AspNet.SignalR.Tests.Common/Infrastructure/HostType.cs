@@ -4,6 +4,7 @@
     {
         IISExpress,
         Memory,
-        Owin
+        Owin,
+        External,
     }
 }

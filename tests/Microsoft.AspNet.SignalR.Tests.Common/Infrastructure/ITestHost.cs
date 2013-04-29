@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR.Client.Transports;
 
 namespace Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure
@@ -19,10 +20,16 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure
 
         Func<IClientTransport> TransportFactory { get; set; }
 
+        IDependencyResolver Resolver { get; set; }
+
         void Initialize(int? keepAlive = -1,
                         int? connectionTimeout = 110,
                         int? disconnectTimeout = 30,
                         bool enableAutoRejoiningGroups = false);
+
+        Task Get(string uri, bool disableWrites);
+
+        Task Post(string uri, IDictionary<string, string> data);
 
         void Shutdown();
     }
