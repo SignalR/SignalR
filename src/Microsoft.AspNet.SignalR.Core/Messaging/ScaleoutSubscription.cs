@@ -60,55 +60,21 @@ namespace Microsoft.AspNet.SignalR.Messaging
         protected override void PerformWork(IList<ArraySegment<Message>> items, out int totalCount, out object state)
         {
             // The list of cursors represent (streamid, payloadid)
-            var nextCursors = new ulong[_stores.Count];
+            var nextCursors = new ulong?[_stores.Count];
             totalCount = 0;
 
-            for (var i = 0; i < _stores.Count; ++i)
+            // Get the enumerator so that we can extract messages for this subscription
+            IEnumerator<Tuple<ScaleoutMapping, int>> enumerator = GetStoreEnumerable().GetEnumerator();
+
+            while (totalCount < MaxMessages && enumerator.MoveNext())
             {
-                // Get the mapping for this stream
-                ScaleoutMappingStore store = _stores[i];
+                ScaleoutMapping mapping = enumerator.Current.Item1;
+                int streamIndex = enumerator.Current.Item2;
 
-                // See if we have a cursor for this key
-                Cursor cursor = _cursors[i];
-                nextCursors[i] = cursor.Id;
+                ExtractMessages(mapping, items, ref totalCount);
 
-                // Try to find a local mapping for this payload
-                IEnumerator<ScaleoutMapping> enumerator = store.GetEnumerator(cursor.Id);
-
-                // Stop if we got more than max messages
-                while (totalCount < MaxMessages && enumerator.MoveNext())
-                {
-                    ScaleoutMapping mapping = enumerator.Current;
-
-                    // For each of the event keys we care about, extract all of the messages
-                    // from the payload
-                    lock (EventKeys)
-                    {
-                        for (var j = 0; j < EventKeys.Count; ++j)
-                        {
-                            string eventKey = EventKeys[j];
-
-                            for (int k = 0; k < mapping.LocalKeyInfo.Count; k++)
-                            {
-                                LocalEventKeyInfo info = mapping.LocalKeyInfo[k];
-
-                                if (info.Key.Equals(eventKey, StringComparison.OrdinalIgnoreCase))
-                                {
-                                    MessageStoreResult<Message> storeResult = info.MessageStore.GetMessages(info.Id, 1);
-
-                                    if (storeResult.Messages.Count > 0)
-                                    {
-                                        items.Add(storeResult.Messages);
-                                        totalCount += storeResult.Messages.Count;
-                                    }
-                                }
-                            }
-                        }
-                    }
-
-                    // Update the cursor id
-                    nextCursors[i] = mapping.Id;
-                }
+                // Update the cursor id
+                nextCursors[streamIndex] = mapping.Id;
             }
 
             state = nextCursors;
@@ -117,10 +83,64 @@ namespace Microsoft.AspNet.SignalR.Messaging
         protected override void BeforeInvoke(object state)
         {
             // Update the list of cursors before invoking anything
-            var nextCursors = (ulong[])state;
+            var nextCursors = (ulong?[])state;
             for (int i = 0; i < _cursors.Count; i++)
             {
-                _cursors[i].Id = nextCursors[i];
+                // Only update non-null cursors
+                ulong? nextId = nextCursors[i];
+                
+                if (nextId != null)
+                {
+                    _cursors[i].Id = nextId.Value;
+                }
+            }
+        }
+
+        private IEnumerable<Tuple<ScaleoutMapping, int>> GetStoreEnumerable()
+        {
+            for (var i = 0; i < _stores.Count; ++i)
+            {
+                // Get the mapping for this stream
+                ScaleoutMappingStore store = _stores[i];
+
+                Cursor cursor = _cursors[i];
+
+                // Try to find a local mapping for this payload
+                IEnumerator<ScaleoutMapping> enumerator = store.GetEnumerator(cursor.Id);
+
+                while (enumerator.MoveNext())
+                {
+                    yield return Tuple.Create(enumerator.Current, i);
+                }
+            }
+        }
+
+        private void ExtractMessages(ScaleoutMapping mapping, IList<ArraySegment<Message>> items, ref int totalCount)
+        {
+            // For each of the event keys we care about, extract all of the messages
+            // from the payload
+            lock (EventKeys)
+            {
+                for (var i = 0; i < EventKeys.Count; ++i)
+                {
+                    string eventKey = EventKeys[i];
+
+                    for (int j = 0; j < mapping.LocalKeyInfo.Count; j++)
+                    {
+                        LocalEventKeyInfo info = mapping.LocalKeyInfo[j];
+
+                        if (info.Key.Equals(eventKey, StringComparison.OrdinalIgnoreCase))
+                        {
+                            MessageStoreResult<Message> storeResult = info.MessageStore.GetMessages(info.Id, 1);
+
+                            if (storeResult.Messages.Count > 0)
+                            {
+                                items.Add(storeResult.Messages);
+                                totalCount += storeResult.Messages.Count;
+                            }
+                        }
+                    }
+                }
             }
         }
     }
