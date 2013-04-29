@@ -215,6 +215,10 @@
       <Project>{45892477-ef4e-4f45-a431-822755a38ea0}</Project>
       <Name>Microsoft.AspNet.SignalR.Owin45</Name>
     </ProjectReference>
+    <ProjectReference Include="..\..\src\Microsoft.AspNet.SignalR.StressServer\Microsoft.AspNet.SignalR.StressServer.csproj">
+      <Project>{9ac65ed5-48c2-4c5c-8498-dc340b313fdf}</Project>
+      <Name>Microsoft.AspNet.SignalR.StressServer</Name>
+    </ProjectReference>
     <ProjectReference Include="..\..\src\Microsoft.AspNet.SignalR.SystemWeb45\Microsoft.AspNet.SignalR.SystemWeb45.csproj">
       <Project>{202fa02d-cc05-40d2-a574-4bd34e47f575}</Project>
       <Name>Microsoft.AspNet.SignalR.SystemWeb45</Name>

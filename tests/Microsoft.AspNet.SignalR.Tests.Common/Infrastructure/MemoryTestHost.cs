@@ -2,9 +2,13 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR.Client.Transports;
 using Microsoft.AspNet.SignalR.Configuration;
 using Microsoft.AspNet.SignalR.Hosting.Memory;
+using Microsoft.AspNet.SignalR.Infrastructure;
+using Microsoft.AspNet.SignalR.StressServer.Connections;
+using Microsoft.AspNet.SignalR.Tests;
 using Microsoft.AspNet.SignalR.Tracing;
 using Owin;
 
@@ -111,7 +115,22 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure
                 app.MapConnection<SyncErrorConnection>("/sync-error", config);
                 app.MapConnection<AddGroupOnConnectedConnection>("/add-group", config);
                 app.MapConnection<UnusableProtectedConnection>("/protected", config);
+
+                // perf test related
+                app.MapHubs(new HubConfiguration { Resolver = dr });
+                app.MapConnection<StressConnection>("/signalr", config);
+                config.Resolver.Register(typeof(IProtectedData), () => new EmptyProtectedData());
             });
+        }
+
+        public Task Get(string uri, bool disableWrites)
+        {
+            return _host.Get(uri, disableWrites);
+        }
+
+        public Task Post(string uri, IDictionary<string, string> data)
+        {
+            return _host.Post(uri, data);
         }
 
         public void Dispose()
