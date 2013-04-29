@@ -21,10 +21,10 @@ namespace Microsoft.AspNet.SignalR.Client
         {
             ex = ex.Unwrap();
 
-            var customEx = ex as HttpClientException;
+            var httpClientException = ex as HttpClientException;
             SignalRError error;
 
-            if (customEx != null)
+            if (httpClientException != null)
             {
                 error = GetHttpClientException(ex);
             }

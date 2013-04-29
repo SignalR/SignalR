@@ -28,8 +28,8 @@ namespace Microsoft.AspNet.SignalR.Client.Http
         {
             if (disposing)
             {
-                _httpResponseMessage.Dispose();
                 _httpResponseMessage.RequestMessage.Dispose();
+                _httpResponseMessage.Dispose();
                 _client.Dispose();
             }
         }

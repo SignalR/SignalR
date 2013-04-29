@@ -24,13 +24,13 @@ namespace Microsoft.AspNet.SignalR.Client.Http
         [SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope", Justification = "Handler cannot be disposed before response is disposed")]
         public Task<IResponse> Get(string url, Action<IRequest> prepareRequest)
         {
-            var disposerResponse = new Disposer();
+            var responseDisposer = new Disposer();
             var cts = new CancellationTokenSource();
 
             var handler = new DefaultHttpHandler(prepareRequest, () =>
             {
                 cts.Cancel();
-                disposerResponse.Dispose();
+                responseDisposer.Dispose();
             });
 
             var client = new HttpClient(handler);
@@ -40,7 +40,7 @@ namespace Microsoft.AspNet.SignalR.Client.Http
                  {
                      if (responseMessage.IsSuccessStatusCode)
                      {
-                         disposerResponse.Set(responseMessage);
+                         responseDisposer.Set(responseMessage);
                      }
                      else
                      {
@@ -61,13 +61,13 @@ namespace Microsoft.AspNet.SignalR.Client.Http
         [SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope", Justification = "Handler cannot be disposed before response is disposed")]
         public Task<IResponse> Post(string url, Action<IRequest> prepareRequest, IDictionary<string, string> postData)
         {
-            var disposerResponse = new Disposer();
+            var responseDisposer = new Disposer();
             var cts = new CancellationTokenSource();
 
             var handler = new DefaultHttpHandler(prepareRequest, () =>
             {
                 cts.Cancel();
-                disposerResponse.Dispose();
+                responseDisposer.Dispose();
             });
 
             var client = new HttpClient(handler);
@@ -87,7 +87,7 @@ namespace Microsoft.AspNet.SignalR.Client.Http
                 {
                     if (responseMessage.IsSuccessStatusCode)
                     {
-                        disposerResponse.Set(responseMessage);
+                        responseDisposer.Set(responseMessage);
                     }
                     else
                     {

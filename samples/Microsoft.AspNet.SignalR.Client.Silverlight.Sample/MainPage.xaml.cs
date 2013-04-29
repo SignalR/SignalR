@@ -47,7 +47,7 @@ namespace Microsoft.AspNet.SignalR.Client.Silverlight.Sample
             };
 
             var scheduler = TaskScheduler.FromCurrentSynchronizationContext();
-            connection.TraceWriter = new Writer(val =>
+            connection.TraceWriter = new ActionBasedWriter(val =>
             {
                 Dispatcher.BeginInvoke(() =>
                 {
@@ -72,10 +72,10 @@ namespace Microsoft.AspNet.SignalR.Client.Silverlight.Sample
             scheduler);
         }
 
-        private class Writer : TextWriter
+        private class ActionBasedWriter : TextWriter
         {
             private readonly Action<string> _log;
-            public Writer(Action<string> log)
+            public ActionBasedWriter(Action<string> log)
             {
                 _log = log;
             }
