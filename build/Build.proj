@@ -60,40 +60,10 @@
     <CoreProjects Include="$(ProjectRoot)\src\Microsoft.AspNet.SignalR.Utils\Microsoft.AspNet.SignalR.Utils.csproj"></CoreProjects>
 
     <!--Requires SDKs-->
-    <CoreProjects Include="$(ProjectRoot)\src\Microsoft.AspNet.SignalR.Client.Silverlight5\Microsoft.AspNet.SignalR.Client.Silverlight5.csproj"
-                  Condition="Exists('$(MSBuildExtensionsPath)\Microsoft\Silverlight\v5.0\Microsoft.Silverlight.CSharp.targets')"></CoreProjects>
-    <CoreProjects Include="$(ProjectRoot)\src\Microsoft.AspNet.SignalR.Client.WP8\Microsoft.AspNet.SignalR.Client.WP8.csproj"
-                  Condition="Exists('$(MSBuildExtensionsPath)\Microsoft\WindowsPhone\v8.0\Microsoft.WindowsPhone.v8.0.Overrides.targets')"></CoreProjects>
     <CoreProjects Include="$(ProjectRoot)\src\Microsoft.AspNet.SignalR.Client.WinRT\Microsoft.AspNet.SignalR.Client.WinRT.csproj"
                   Condition="Exists('$(MSBuildExtensionsPath)\Microsoft\WindowsXaml')"></CoreProjects>
   </ItemGroup>
 
-  <!--Removing SL5 and WP8 from Code Analysis-->
-  <ItemGroup>
-    <!--Requires just VS2012-->
-    <CAProjects Include="$(ProjectRoot)\src\Microsoft.AspNet.SignalR.Core\Microsoft.AspNet.SignalR.Core.csproj"></CAProjects>
-
-    <CAProjects Include="$(ProjectRoot)\src\Microsoft.AspNet.SignalR.Client\Microsoft.AspNet.SignalR.Client.csproj"></CAProjects>
-    <CAProjects Include="$(ProjectRoot)\src\Microsoft.AspNet.SignalR.Client45\Microsoft.AspNet.SignalR.Client45.csproj"></CAProjects>
-    <CAProjects Include="$(ProjectRoot)\src\Microsoft.AspNet.SignalR.Client.JS\Microsoft.AspNet.SignalR.Client.JS.csproj"></CAProjects>
-
-    <CAProjects Include="$(ProjectRoot)\src\Microsoft.AspNet.SignalR.Hosting.Memory\Microsoft.AspNet.SignalR.Hosting.Memory.csproj"></CAProjects>
-    <CAProjects Include="$(ProjectRoot)\src\Microsoft.AspNet.SignalR.Owin\Microsoft.AspNet.SignalR.Owin.csproj"></CAProjects>
-    <CAProjects Include="$(ProjectRoot)\src\Microsoft.AspNet.SignalR.Owin45\Microsoft.AspNet.SignalR.Owin45.csproj"></CAProjects>
-    <CAProjects Include="$(ProjectRoot)\src\Microsoft.AspNet.SignalR.SystemWeb\Microsoft.AspNet.SignalR.SystemWeb.csproj"></CAProjects>
-    <CAProjects Include="$(ProjectRoot)\src\Microsoft.AspNet.SignalR.SystemWeb45\Microsoft.AspNet.SignalR.SystemWeb45.csproj"></CAProjects>
-
-    <CAProjects Include="$(ProjectRoot)\src\Microsoft.AspNet.SignalR.Redis\Microsoft.AspNet.SignalR.Redis.csproj"></CAProjects>
-    <CAProjects Include="$(ProjectRoot)\src\Microsoft.AspNet.SignalR.SqlServer\Microsoft.AspNet.SignalR.SqlServer.csproj"></CAProjects>
-    <CAProjects Include="$(ProjectRoot)\src\Microsoft.AspNet.SignalR.ServiceBus\Microsoft.AspNet.SignalR.ServiceBus.csproj"></CAProjects>
-
-    <CAProjects Include="$(ProjectRoot)\src\Microsoft.AspNet.SignalR.Utils\Microsoft.AspNet.SignalR.Utils.csproj"></CAProjects>
-
-    <!--Requires SDKs-->
-    <CAProjects Include="$(ProjectRoot)\src\Microsoft.AspNet.SignalR.Client.WinRT\Microsoft.AspNet.SignalR.Client.WinRT.csproj"
-                  Condition="Exists('$(MSBuildExtensionsPath)\Microsoft\WindowsXaml')"></CAProjects>
-  </ItemGroup>
-  
   <ItemGroup>
     <BuildProjects Include="@(CoreProjects)"></BuildProjects>
     
@@ -107,6 +77,11 @@
     <BuildProjects Include="$(ProjectRoot)\samples\Microsoft.AspNet.SignalR.Client.Samples\Microsoft.AspNet.SignalR.Client.Samples.csproj"></BuildProjects>
     <BuildProjects Include="$(ProjectRoot)\samples\Microsoft.AspNet.SignalR.Client.WP8.Sample\Microsoft.AspNet.SignalR.Client.WP8.Sample.csproj"
                    Condition="Exists('$(MSBuildExtensionsPath)\Microsoft\WindowsPhone\v8.0\Microsoft.WindowsPhone.v8.0.Overrides.targets')"></BuildProjects>
+    <BuildProjects Include="$(ProjectRoot)\src\Microsoft.AspNet.SignalR.Client.Silverlight5\Microsoft.AspNet.SignalR.Client.Silverlight5.csproj"
+              Condition="Exists('$(MSBuildExtensionsPath)\Microsoft\Silverlight\v5.0\Microsoft.Silverlight.CSharp.targets')"></BuildProjects>
+    <BuildProjects Include="$(ProjectRoot)\src\Microsoft.AspNet.SignalR.Client.WP8\Microsoft.AspNet.SignalR.Client.WP8.csproj"
+                  Condition="Exists('$(MSBuildExtensionsPath)\Microsoft\WindowsPhone\v8.0\Microsoft.WindowsPhone.v8.0.Overrides.targets')"></BuildProjects>
+
   </ItemGroup>
 
   <ItemGroup>
