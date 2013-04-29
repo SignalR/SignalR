@@ -13,7 +13,7 @@ using System.Threading.Tasks;
 
 namespace Microsoft.AspNet.SignalR.Client.Http
 {
-#if !NETFX_CORE && !SILVERLIGHT
+#if !NETFX_CORE && !SILVERLIGHT && !__ANDROID__ && !IOS
     public class DefaultHttpHandler : WebRequestHandler, IRequest
 #else
     public class DefaultHttpHandler : HttpClientHandler, IRequest
