@@ -85,6 +85,7 @@
     <Compile Include="Performance\ClientServerMemoryRun.cs" />
     <Compile Include="Performance\ConnectionRun.cs" />
     <Compile Include="Connections\StressConnection.cs" />
+    <Compile Include="Performance\MemoryHostEndToEndHubRun.cs" />
     <Compile Include="Performance\ServiceBusMessageBusRun.cs" />
     <Compile Include="Performance\MemoryHostHubInvocationRun.cs" />
     <Compile Include="Performance\EmptyProtectedData.cs" />

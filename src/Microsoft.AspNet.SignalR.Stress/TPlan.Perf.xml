@@ -27,6 +27,17 @@
         <target value="17323.64" labConfig="XSPPERF8S_WIN8_X64" />
       </metric>
     </trackingVariation>
+    <trackingVariation name="MemoryHostEndToEndHub-LongPolling">
+      <metric name="Latency In Milliseconds" selection="Average" units="Numeric">
+        <target value="0" labConfig="XSPPERF8S_WIN8_X64" />
+      </metric>
+    </trackingVariation>
+    <trackingVariation name="MemoryHostEndToEndHub-ServerSentEvents">
+      <metric name="Latency In Milliseconds" selection="Average" units="Numeric">
+        <target value="0" labConfig="XSPPERF8S_WIN8_X64" />
+      </metric>
+    </trackingVariation>
+
     <trackingVariation name="MessageBus">
       <metric name="Message Bus Messages Received/Sec" selection="Average" units="Numeric">
         <target value="13816648.43" labConfig="XSPPERF8S_WIN8_X64" />
@@ -60,6 +71,12 @@
     <command name="MemoryHostHubInvocation" wait="Exit">
       Microsoft.AspNet.SignalR.Stress.exe /Run:MemoryHostHubInvocation /Senders:5
     </command>
+    <command name="MemoryHostEndToEndHub-LongPolling" wait="Exit">
+      Microsoft.AspNet.SignalR.Stress.exe /Run:MemoryHostEndToEndHub /Transport:LongPolling /Senders:5
+    </command>
+    <command name="MemoryHostEndToEndHub-ServerSentEvents" wait="Exit">
+      Microsoft.AspNet.SignalR.Stress.exe /Run:MemoryHostEndToEndHub /Transport:ServerSentEvents /Senders:5
+    </command>
     <command name="MessageBus" wait="Exit">
       Microsoft.AspNet.SignalR.Stress.exe /Run:MessageBus /Senders:5
     </command>
@@ -82,7 +99,11 @@
     <run command="MemoryHost-ServerSentEvents" role="server-01" output="true" />
     
     <run command="MemoryHostHubInvocation" role="server-01" output="true" />
-    
+
+    <!-- End to end hub invocation tests -->
+    <run command="MemoryHostEndToEndHub-LongPolling" role="server-01" output="true" />
+    <run command="MemoryHostEndToEndHub-ServerSentEvents" role="server-01" output="true" />
+
     <run command="MessageBus" role="server-01" output="true" />
     
     <run command="SetupSqlServer" role="dbserver-01" output="true" profile="None" />

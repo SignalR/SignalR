@@ -145,7 +145,7 @@ namespace Microsoft.AspNet.SignalR.Stress
             }
         }
 
-        private void RecordAggregates(string key, long[] values)
+        protected void RecordAggregates(string key, long[] values)
         {
             Array.Sort(values);
             double median = values[values.Length / 2];
