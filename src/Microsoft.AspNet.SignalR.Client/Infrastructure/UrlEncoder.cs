@@ -120,7 +120,7 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
 
             return false;
         }
-        
+
         private static bool ValidateUrlEncodingParameters(byte[] bytes, int offset, int count)
         {
             if (bytes == null && count == 0)

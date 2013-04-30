@@ -1,5 +1,5 @@
 /*!
- * ASP.NET SignalR JavaScript Library v1.1.0-beta1
+ * ASP.NET SignalR JavaScript Library v2.0.0-beta1
  * http://signalr.net/
  *
  * Copyright Microsoft Open Technologies, Inc. All rights reserved.
@@ -15,7 +15,7 @@
     "use strict";
 
     if (typeof ($.signalR) !== "function") {
-        throw new Error("SignalR: SignalR is not loaded. Please ensure jquery.signalR-x.js is referenced before ~/signalr/hubs.");
+        throw new Error("SignalR: SignalR is not loaded. Please ensure jquery.signalR-x.js is referenced before ~/signalr/js.");
     }
 
     var signalR = $.signalR;

@@ -4,17 +4,53 @@
   <metadata testName ="Stress" teamName ="SignalR" description="SignalR Stress Tests">
     <trackingVariation name="ConnectionRun">
       <metric name="Message Bus Messages Received/Sec" selection="Average" units="Numeric">
-        <target value="8000000" labConfig="XSPPERF8S_WIN8_X64" />
+        <target value="11954417.38" labConfig="XSPPERF8S_WIN8_X64" />
       </metric>
     </trackingVariation>
-    <trackingVariation name="MemoryHostRun">
+    <trackingVariation name="MemoryHost-ForeverFrame">
       <metric name="Message Bus Messages Received/Sec" selection="Average" units="Numeric">
-        <target value="4000000" labConfig="XSPPERF8S_WIN8_X64" />
+        <target value="7037431.38" labConfig="XSPPERF8S_WIN8_X64" />
       </metric>
     </trackingVariation>
-    <trackingVariation name="MessageBusRun">
+    <trackingVariation name="MemoryHost-LongPolling">
       <metric name="Message Bus Messages Received/Sec" selection="Average" units="Numeric">
-        <target value="8000000" labConfig="XSPPERF8S_WIN8_X64" />
+        <target value="18676.65" labConfig="XSPPERF8S_WIN8_X64" />
+      </metric>
+    </trackingVariation>
+    <trackingVariation name="MemoryHost-ServerSentEvents">
+      <metric name="Message Bus Messages Received/Sec" selection="Average" units="Numeric">
+        <target value="5719925.40" labConfig="XSPPERF8S_WIN8_X64" />
+      </metric>
+    </trackingVariation>
+    <trackingVariation name="MemoryHostHubInvocation">
+      <metric name="Message Bus Messages Published/Sec" selection="Average" units="Numeric">
+        <target value="17323.64" labConfig="XSPPERF8S_WIN8_X64" />
+      </metric>
+    </trackingVariation>
+    <trackingVariation name="MemoryHostEndToEndHub-LongPolling">
+      <metric name="Latency In Milliseconds" selection="Average" units="Numeric">
+        <target value="0" labConfig="XSPPERF8S_WIN8_X64" />
+      </metric>
+    </trackingVariation>
+    <trackingVariation name="MemoryHostEndToEndHub-ServerSentEvents">
+      <metric name="Latency In Milliseconds" selection="Average" units="Numeric">
+        <target value="0" labConfig="XSPPERF8S_WIN8_X64" />
+      </metric>
+    </trackingVariation>
+
+    <trackingVariation name="MessageBus">
+      <metric name="Message Bus Messages Received/Sec" selection="Average" units="Numeric">
+        <target value="13816648.43" labConfig="XSPPERF8S_WIN8_X64" />
+      </metric>
+    </trackingVariation>
+    <trackingVariation name="RedisMessageBus">
+      <metric name="Message Bus Messages Received/Sec" selection="Average" units="Numeric">
+        <target value="1492096.12" labConfig="XSPPERF8S_WIN8_X64" />
+      </metric>
+    </trackingVariation>
+    <trackingVariation name="SqlMessageBus">
+      <metric name="Message Bus Messages Received/Sec" selection="Average" units="Numeric">
+        <target value="418655.70" labConfig="XSPPERF8S_WIN8_X64" />
       </metric>
     </trackingVariation>
   </metadata>
@@ -23,17 +59,56 @@
     <command name="ConnectionRun" wait="Exit">
       Microsoft.AspNet.SignalR.Stress.exe /Run:ConnectionRun /Senders:5
     </command>
-    <command name="MemoryHostRun" wait="Exit">
-      Microsoft.AspNet.SignalR.Stress.exe /Run:MemoryHost /Senders:5
+    <command name="MemoryHost-ForeverFrame" wait="Exit">
+      Microsoft.AspNet.SignalR.Stress.exe /Run:MemoryHost /Senders:5 /Transport:ForeverFrame
     </command>
-    <command name="MessageBusRun" wait="Exit">
+    <command name="MemoryHost-LongPolling" wait="Exit">
+      Microsoft.AspNet.SignalR.Stress.exe /Run:MemoryHost /Senders:5 /Transport:LongPolling
+    </command>
+    <command name="MemoryHost-ServerSentEvents" wait="Exit">
+      Microsoft.AspNet.SignalR.Stress.exe /Run:MemoryHost /Senders:5 /Transport:ServerSentEvents
+    </command>
+    <command name="MemoryHostHubInvocation" wait="Exit">
+      Microsoft.AspNet.SignalR.Stress.exe /Run:MemoryHostHubInvocation /Senders:5
+    </command>
+    <command name="MemoryHostEndToEndHub-LongPolling" wait="Exit">
+      Microsoft.AspNet.SignalR.Stress.exe /Run:MemoryHostEndToEndHub /Transport:LongPolling /Senders:5
+    </command>
+    <command name="MemoryHostEndToEndHub-ServerSentEvents" wait="Exit">
+      Microsoft.AspNet.SignalR.Stress.exe /Run:MemoryHostEndToEndHub /Transport:ServerSentEvents /Senders:5
+    </command>
+    <command name="MessageBus" wait="Exit">
       Microsoft.AspNet.SignalR.Stress.exe /Run:MessageBus /Senders:5
+    </command>
+    <command name="SetupSqlServer" wait="Exit">
+      sqlcmd -i CreateStressDatabase.sql
+    </command>
+    <command name="SqlMessageBus" wait="Exit">
+      Microsoft.AspNet.SignalR.Stress.exe /Run:SqlMessageBus /Senders:5 /SqlConnectionString:"Data Source={dbserver-01};Initial Catalog=Stress;User ID=sqluser;Password={remotePassword}"
+    </command>
+    <command name="RedisMessageBus" wait="Exit">
+      Microsoft.AspNet.SignalR.Stress.exe /Run:RedisMessageBus /Senders:5 /RedisServer:{dbserver-01} /RedisPort:6379
     </command>
   </commands>
 
   <plan>
     <run command="ConnectionRun" role="server-01" output="true" />
-    <run command="MemoryHostRun" role="server-01" output="true" />
-    <run command="MessageBusRun" role="server-01" output="true" />
+
+    <run command="MemoryHost-ForeverFrame" role="server-01" output="true" />
+    <run command="MemoryHost-LongPolling" role="server-01" output="true" />
+    <run command="MemoryHost-ServerSentEvents" role="server-01" output="true" />
+    
+    <run command="MemoryHostHubInvocation" role="server-01" output="true" />
+
+    <!-- End to end hub invocation tests -->
+    <run command="MemoryHostEndToEndHub-LongPolling" role="server-01" output="true" />
+    <run command="MemoryHostEndToEndHub-ServerSentEvents" role="server-01" output="true" />
+
+    <run command="MessageBus" role="server-01" output="true" />
+    
+    <run command="SetupSqlServer" role="dbserver-01" output="true" profile="None" />
+    <run command="SqlMessageBus" role="server-01" output="true" />
+    
+    <run command="RedisMessageBus" role="server-01" output="true" />
   </plan>
 </config>

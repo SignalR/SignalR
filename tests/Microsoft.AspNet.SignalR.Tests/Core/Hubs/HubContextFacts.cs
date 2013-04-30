@@ -7,6 +7,7 @@ using Microsoft.AspNet.SignalR.Json;
 using Microsoft.AspNet.SignalR.Messaging;
 using Microsoft.AspNet.SignalR.Tracing;
 using Moq;
+using Newtonsoft.Json;
 using Xunit;
 
 namespace Microsoft.AspNet.SignalR.Tests.Core.Hubs
@@ -18,7 +19,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Core.Hubs
         {
             Func<string, ClientHubInvocation, IList<string>, Task> send = (signal, value, exclude) => Task.Factory.StartNew(() => { });
 
-            var serializer = new JsonNetSerializer();
+            var serializer = JsonUtility.CreateDefaultSerializer();
             var counters = new PerformanceCounterManager();
             var connection = new Connection(new Mock<IMessageBus>().Object,
                     serializer,
@@ -43,7 +44,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Core.Hubs
         {
             Func<string, ClientHubInvocation, IList<string>, Task> send = (signal, value, exclude) => Task.Factory.StartNew(() => { });
 
-            var serializer = new JsonNetSerializer();
+            var serializer = JsonUtility.CreateDefaultSerializer();
             var counters = new PerformanceCounterManager();
             var connection = new Connection(new Mock<IMessageBus>().Object,
                     serializer,

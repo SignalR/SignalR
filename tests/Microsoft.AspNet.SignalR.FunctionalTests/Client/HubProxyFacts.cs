@@ -27,21 +27,24 @@ namespace Microsoft.AspNet.SignalR.Tests
 
                 HubConnection hubConnection = CreateHubConnection(host);
                 IHubProxy proxy = hubConnection.CreateHubProxy("ChatHub");
-                var wh = new ManualResetEvent(false);
 
-                proxy.On("addMessage", data =>
+
+                using (hubConnection)
                 {
-                    Assert.Equal("hello", data);
-                    wh.Set();
-                });
+                    var wh = new ManualResetEvent(false);
 
-                hubConnection.Start(host.Transport).Wait();
+                    proxy.On("addMessage", data =>
+                    {
+                        Assert.Equal("hello", data);
+                        wh.Set();
+                    });
 
-                proxy.InvokeWithTimeout("Send", "hello");
+                    hubConnection.Start(host.Transport).Wait();
 
-                Assert.True(wh.WaitOne(TimeSpan.FromSeconds(10)));
+                    proxy.InvokeWithTimeout("Send", "hello");
 
-                hubConnection.Stop();
+                    Assert.True(wh.WaitOne(TimeSpan.FromSeconds(10)));
+                }
             }
         }
 
@@ -55,20 +58,24 @@ namespace Microsoft.AspNet.SignalR.Tests
                 host.Initialize();
 
                 HubConnection hubConnection = CreateHubConnection(host);
-                IHubProxy proxy = hubConnection.CreateHubProxy("chatHub");
-                var wh = new ManualResetEvent(false);
 
-                proxy.On("addMessage", data =>
+                using (hubConnection)
                 {
-                    Assert.Equal("hello", data);
-                    wh.Set();
-                });
+                    IHubProxy proxy = hubConnection.CreateHubProxy("chatHub");
+                    var wh = new ManualResetEvent(false);
 
-                hubConnection.Start(host.Transport).Wait();
+                    proxy.On("addMessage", data =>
+                    {
+                        Assert.Equal("hello", data);
+                        wh.Set();
+                    });
 
-                proxy.InvokeWithTimeout("Send", "hello");
+                    hubConnection.Start(host.Transport).Wait();
 
-                Assert.True(wh.WaitOne(TimeSpan.FromSeconds(10)));
+                    proxy.InvokeWithTimeout("Send", "hello");
+
+                    Assert.True(wh.WaitOne(TimeSpan.FromSeconds(10)));
+                }
             }
         }
 
@@ -82,10 +89,14 @@ namespace Microsoft.AspNet.SignalR.Tests
                 host.Initialize();
 
                 HubConnection hubConnection = CreateHubConnection(host);
-                IHubProxy proxy = hubConnection.CreateHubProxy("MyHub2");
 
-                hubConnection.Start(host.Transport).Wait();
-                var ex = Assert.Throws<AggregateException>(() => proxy.InvokeWithTimeout("Send", "hello"));
+                using (hubConnection)
+                {
+                    IHubProxy proxy = hubConnection.CreateHubProxy("MyHub2");
+
+                    hubConnection.Start(host.Transport).Wait();
+                    var ex = Assert.Throws<AggregateException>(() => proxy.InvokeWithTimeout("Send", "hello"));
+                }
             }
         }
 
@@ -104,24 +115,28 @@ namespace Microsoft.AspNet.SignalR.Tests
                 host.Initialize();
 
                 var connection = CreateHubConnection(host);
-                var proxy = connection.CreateHubProxy("ChatHub");
 
-                proxy.On("addMessage", () =>
+                using (connection)
                 {
-                    throw thrown;
-                });
+                    var proxy = connection.CreateHubProxy("ChatHub");
 
-                connection.Error += e =>
-                {
-                    caught = e;
-                    wh.Set();
-                };
+                    proxy.On("addMessage", () =>
+                    {
+                        throw thrown;
+                    });
 
-                connection.Start(host.Transport).Wait();
-                proxy.Invoke("Send", "");
+                    connection.Error += e =>
+                    {
+                        caught = e;
+                        wh.Set();
+                    };
 
-                Assert.True(wh.Wait(TimeSpan.FromSeconds(5)));
-                Assert.Equal(thrown, caught);
+                    connection.Start(host.Transport).Wait();
+                    proxy.Invoke("Send", "");
+
+                    Assert.True(wh.Wait(TimeSpan.FromSeconds(5)));
+                    Assert.Equal(thrown, caught);
+                }
             }
         }
 
@@ -138,32 +153,35 @@ namespace Microsoft.AspNet.SignalR.Tests
                 host.Initialize();
 
                 HubConnection hubConnection = CreateHubConnection(host);
-                IHubProxy proxy = hubConnection.CreateHubProxy("ExamineHeadersHub");
-                var tcs = new TaskCompletionSource<object>();
 
-                proxy.On("sendHeader", (headers) =>
+                using (hubConnection)
                 {
-                    Assert.Equal<string>("test-header", (string)headers.testHeader);
+                    IHubProxy proxy = hubConnection.CreateHubProxy("ExamineHeadersHub");
+                    var tcs = new TaskCompletionSource<object>();
+
+                    proxy.On("sendHeader", (headers) =>
+                    {
+                        Assert.Equal<string>("test-header", (string)headers.testHeader);
+                        if (transportType != TransportType.Websockets)
+                        {
+                            Assert.Equal<string>("referer", (string)headers.refererHeader);
+                        }
+                        tcs.TrySetResult(null);
+                    });
+
+                    hubConnection.Error += e => tcs.TrySetException(e);
+
+                    hubConnection.Headers.Add("test-header", "test-header");
                     if (transportType != TransportType.Websockets)
                     {
-                        Assert.Equal<string>("referer", (string)headers.refererHeader);
+                        hubConnection.Headers.Add(System.Net.HttpRequestHeader.Referer.ToString(), "referer");
                     }
-                    tcs.TrySetResult(null);
-                });
 
-                hubConnection.Error += e => tcs.TrySetException(e);
+                    hubConnection.Start(host.Transport).Wait();
+                    proxy.Invoke("Send", "Hello");
 
-                hubConnection.Headers.Add("test-header", "test-header");
-                if (transportType != TransportType.Websockets)
-                {
-                    hubConnection.Headers.Add(System.Net.HttpRequestHeader.Referer.ToString(), "referer");
+                    Assert.True(tcs.Task.Wait(TimeSpan.FromSeconds(10)));
                 }
-
-                hubConnection.Start(host.Transport).Wait();
-                proxy.Invoke("Send", "Hello");
-
-                Assert.True(tcs.Task.Wait(TimeSpan.FromSeconds(10)));
-                hubConnection.Stop();
             }
         }
 
@@ -180,15 +198,17 @@ namespace Microsoft.AspNet.SignalR.Tests
                 // Arrange
                 host.Initialize();
                 HubConnection hubConnection = CreateHubConnection(host);
-                IHubProxy proxy = hubConnection.CreateHubProxy("ExamineHeadersHub");
 
-                hubConnection.Start(host.Transport).Wait();
 
-                var ex = Assert.Throws<InvalidOperationException>(() => hubConnection.Headers.Add("test-header", "test-header"));
-                Assert.Equal("Request headers cannot be set after the connection has started.", ex.Message);
+                using (hubConnection)
+                {
+                    IHubProxy proxy = hubConnection.CreateHubProxy("ExamineHeadersHub");
 
-                // Clean-up
-                hubConnection.Stop();
+                    hubConnection.Start(host.Transport).Wait();
+
+                    var ex = Assert.Throws<InvalidOperationException>(() => hubConnection.Headers.Add("test-header", "test-header"));
+                    Assert.Equal("Request headers cannot be set after the connection has started.", ex.Message);
+                }
             }
         }
 

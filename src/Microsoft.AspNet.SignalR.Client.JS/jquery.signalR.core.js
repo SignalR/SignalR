@@ -1,6 +1,6 @@
 /*global window:false */
 /*!
- * ASP.NET SignalR JavaScript Library v1.1.0-beta1
+ * ASP.NET SignalR JavaScript Library v2.0.0-beta1
  * http://signalr.net/
  *
  * Copyright Microsoft Open Technologies, Inc. All rights reserved.
@@ -155,7 +155,7 @@
     signalR.hub = {
         start: function () {
             // This will get replaced with the real hub connection start method when hubs is referenced correctly
-            throw new Error("SignalR: Error loading hubs. Ensure your hubs reference is correct, e.g. <script src='/signalr/hubs'></script>.");
+            throw new Error("SignalR: Error loading hubs. Ensure your hubs reference is correct, e.g. <script src='/signalr/js'></script>.");
         }
     };
 

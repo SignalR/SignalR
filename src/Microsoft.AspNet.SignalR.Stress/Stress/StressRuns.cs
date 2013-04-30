@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -243,6 +244,50 @@ namespace Microsoft.AspNet.SignalR.Stress
             return host;
         }
 
+        public static void SendLoop()
+        {
+            var host = new MemoryHost();
+
+            host.Configure(app =>
+            {
+                var config = new HubConfiguration()
+                {
+                    Resolver = new DefaultDependencyResolver()
+                };
+
+                config.Resolver.Resolve<IConfigurationManager>().ConnectionTimeout = TimeSpan.FromDays(1);
+                app.MapHubs(config);
+            });
+
+
+            var connection = new Client.Hubs.HubConnection("http://foo");
+            var proxy = connection.CreateHubProxy("EchoHub");
+            var wh = new ManualResetEventSlim(false);
+
+            proxy.On("echo", _ => wh.Set());
+
+            try
+            {
+                connection.Start(new Client.Transports.LongPollingTransport(host)).Wait();
+
+                while (true)
+                {
+                    proxy.Invoke("Echo", "foo").Wait();
+
+                    if (!wh.Wait(TimeSpan.FromSeconds(10)))
+                    {
+                        Debugger.Break();
+                    }
+
+                    wh.Reset();
+                }
+            }
+            catch
+            {
+                connection.Stop();
+            }
+        }
+
         public static IDisposable ClientGroupsSyncWithServerGroupsOnReconnectLongPolling()
         {
             var host = new MemoryHost();
@@ -414,6 +459,5 @@ namespace Microsoft.AspNet.SignalR.Stress
         public class MyRejoinGroupConnection : MyGroupConnection
         {
         }
-
     }
 }

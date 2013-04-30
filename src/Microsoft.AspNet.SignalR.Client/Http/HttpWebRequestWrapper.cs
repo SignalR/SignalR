@@ -4,9 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Net;
-#if (NET4 || NET45)
 using System.Security.Cryptography.X509Certificates;
-#endif
 
 namespace Microsoft.AspNet.SignalR.Client.Http
 {
@@ -19,7 +17,6 @@ namespace Microsoft.AspNet.SignalR.Client.Http
                                                                         { HttpRequestHeader.ContentType.ToString(), (request, value) => { request.ContentType = value; } },
                                                                         { HttpRequestHeader.ContentLength.ToString(), (request, value) => { request.ContentLength = Int32.Parse(value, CultureInfo.CurrentCulture); } }, 
                                                                         { HttpRequestHeader.UserAgent.ToString(), (request, value) => { request.UserAgent = value; } },
-#if (!WINDOWS_PHONE && !SILVERLIGHT)                                                                                                                                               
                                                                         { HttpRequestHeader.Connection.ToString(), (request, value) => { request.Connection = value; } },
                                                                         { HttpRequestHeader.Date.ToString(), (request, value) => {request.Date = DateTime.Parse(value, CultureInfo.CurrentCulture); } },
                                                                         { HttpRequestHeader.Expect.ToString(), (request, value) => {request.Expect = value;} },
@@ -27,7 +24,6 @@ namespace Microsoft.AspNet.SignalR.Client.Http
                                                                         { HttpRequestHeader.IfModifiedSince.ToString(), (request, value) => {request.IfModifiedSince = DateTime.Parse(value, CultureInfo.CurrentCulture);} },
                                                                         { HttpRequestHeader.Referer.ToString(), (request, value) => { request.Referer = value; } },                                                                         
                                                                         { HttpRequestHeader.TransferEncoding.ToString(), (request, value) => { request.TransferEncoding = value; } },
-#endif
                                                                     };
 
         public HttpWebRequestWrapper(HttpWebRequest request)
@@ -83,7 +79,6 @@ namespace Microsoft.AspNet.SignalR.Client.Http
             }
         }
 
-#if !SILVERLIGHT
         public IWebProxy Proxy
         {
             get
@@ -95,7 +90,6 @@ namespace Microsoft.AspNet.SignalR.Client.Http
                 _request.Proxy = value;
             }
         }
-#endif
 
         public void Abort()
         {
@@ -113,9 +107,7 @@ namespace Microsoft.AspNet.SignalR.Client.Http
             {
                 if (!_restrictedHeadersSet.Keys.Contains(headerEntry.Key))
                 {
-#if (!WINDOWS_PHONE && !SILVERLIGHT)
                     _request.Headers.Add(headerEntry.Key, headerEntry.Value);
-#endif
                 }
                 else
                 {
@@ -129,7 +121,6 @@ namespace Microsoft.AspNet.SignalR.Client.Http
             }
         }
 
-#if (NET4 || NET45)
         public void AddClientCerts(X509CertificateCollection certificates)
         {
             if (certificates == null)
@@ -139,6 +130,5 @@ namespace Microsoft.AspNet.SignalR.Client.Http
 
             _request.ClientCertificates = certificates;
         }
-#endif
     }
 }

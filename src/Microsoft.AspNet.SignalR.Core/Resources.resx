@@ -198,14 +198,14 @@
   <data name="Error_ProtocolErrorUnknownTransport" xml:space="preserve">
     <value>Protocol error: Unknown transport.</value>
   </data>
-  <data name="Error_QueueClosed" xml:space="preserve">
-    <value>The queue has been closed.</value>
-  </data>
-  <data name="Error_QueueNotOpen" xml:space="preserve">
-    <value>The queue is not open.</value>
-  </data>
   <data name="Error_StateExceededMaximumLength" xml:space="preserve">
     <value>State has exceeded the maximum length of 4096 bytes.</value>
+  </data>
+  <data name="Error_StreamClosed" xml:space="preserve">
+    <value>The stream has been closed.</value>
+  </data>
+  <data name="Error_StreamNotOpen" xml:space="preserve">
+    <value>The stream is not open.</value>
   </data>
   <data name="Error_TaskQueueFull" xml:space="preserve">
     <value>The queue is full.</value>

@@ -28,7 +28,7 @@ namespace Microsoft.AspNet.SignalR.Client.Http
 
             reader.Closed = exception =>
             {
-                stream.Dispose();
+                response.Dispose();
                 resultTcs.SetResult(result.ToString());
             };
 

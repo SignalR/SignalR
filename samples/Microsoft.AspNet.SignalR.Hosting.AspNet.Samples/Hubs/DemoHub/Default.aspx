@@ -66,7 +66,7 @@
 </asp:Content>
 
 <asp:Content ContentPlaceHolderID="Scripts" runat="server">
-    <script src="<%: ResolveUrl("~/signalr/hubs") %>"></script>
+    <script src="<%: ResolveUrl("~/signalr/js") %>"></script>
     <script>
         var options = { transport: activeTransport };
     </script>

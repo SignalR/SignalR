@@ -57,26 +57,31 @@
     <CoreProjects Include="$(ProjectRoot)\src\Microsoft.AspNet.SignalR.SqlServer\Microsoft.AspNet.SignalR.SqlServer.csproj"></CoreProjects>
     <CoreProjects Include="$(ProjectRoot)\src\Microsoft.AspNet.SignalR.ServiceBus\Microsoft.AspNet.SignalR.ServiceBus.csproj"></CoreProjects>
 
-    <CoreProjects Include="$(ProjectRoot)\src\Microsoft.AspNet.SignalR.Crank\Microsoft.AspNet.SignalR.Crank.csproj"></CoreProjects>
     <CoreProjects Include="$(ProjectRoot)\src\Microsoft.AspNet.SignalR.Utils\Microsoft.AspNet.SignalR.Utils.csproj"></CoreProjects>
 
     <!--Requires SDKs-->
-    <CoreProjects Include="$(ProjectRoot)\src\Microsoft.AspNet.SignalR.Client.Silverlight5\Microsoft.AspNet.SignalR.Client.Silverlight5.csproj"
-                  Condition="Exists('$(MSBuildExtensionsPath)\Microsoft\Silverlight\v5.0\Microsoft.Silverlight.CSharp.targets')"></CoreProjects>
-    <CoreProjects Include="$(ProjectRoot)\src\Microsoft.AspNet.SignalR.Client.WP8\Microsoft.AspNet.SignalR.Client.WP8.csproj"
-                  Condition="Exists('$(MSBuildExtensionsPath)\Microsoft\WindowsPhone\v8.0\Microsoft.WindowsPhone.v8.0.Overrides.targets')"></CoreProjects>
     <CoreProjects Include="$(ProjectRoot)\src\Microsoft.AspNet.SignalR.Client.WinRT\Microsoft.AspNet.SignalR.Client.WinRT.csproj"
                   Condition="Exists('$(MSBuildExtensionsPath)\Microsoft\WindowsXaml')"></CoreProjects>
   </ItemGroup>
 
   <ItemGroup>
     <BuildProjects Include="@(CoreProjects)"></BuildProjects>
+    
+    <!--Performance projects-->
+    <BuildProjects Include="$(ProjectRoot)\src\Microsoft.AspNet.SignalR.Crank\Microsoft.AspNet.SignalR.Crank.csproj"></BuildProjects>
+    <BuildProjects Include="$(ProjectRoot)\src\Microsoft.AspNet.SignalR.Stress\Microsoft.AspNet.SignalR.Stress.csproj"></BuildProjects>
+        
     <!--Sample projects-->
     <BuildProjects Include="$(ProjectRoot)\samples\Microsoft.AspNet.SignalR.Hosting.AspNet.Samples\Microsoft.AspNet.SignalR.Hosting.AspNet.Samples.csproj"></BuildProjects>
     <BuildProjects Include="$(ProjectRoot)\samples\Microsoft.AspNet.Owin.Samples\Microsoft.AspNet.Owin.Samples.csproj"></BuildProjects>
     <BuildProjects Include="$(ProjectRoot)\samples\Microsoft.AspNet.SignalR.Client.Samples\Microsoft.AspNet.SignalR.Client.Samples.csproj"></BuildProjects>
     <BuildProjects Include="$(ProjectRoot)\samples\Microsoft.AspNet.SignalR.Client.WP8.Sample\Microsoft.AspNet.SignalR.Client.WP8.Sample.csproj"
                    Condition="Exists('$(MSBuildExtensionsPath)\Microsoft\WindowsPhone\v8.0\Microsoft.WindowsPhone.v8.0.Overrides.targets')"></BuildProjects>
+    <BuildProjects Include="$(ProjectRoot)\src\Microsoft.AspNet.SignalR.Client.Silverlight5\Microsoft.AspNet.SignalR.Client.Silverlight5.csproj"
+              Condition="Exists('$(MSBuildExtensionsPath)\Microsoft\Silverlight\v5.0\Microsoft.Silverlight.CSharp.targets')"></BuildProjects>
+    <BuildProjects Include="$(ProjectRoot)\src\Microsoft.AspNet.SignalR.Client.WP8\Microsoft.AspNet.SignalR.Client.WP8.csproj"
+                  Condition="Exists('$(MSBuildExtensionsPath)\Microsoft\WindowsPhone\v8.0\Microsoft.WindowsPhone.v8.0.Overrides.targets')"></BuildProjects>
+
   </ItemGroup>
 
   <ItemGroup>
@@ -126,7 +131,7 @@
   <Target Name="CI" DependsOnTargets="RunCodeAnalysis; Build; RunUnitTests;">
   </Target>
 
-  <Target Name="FunctionalCI" DependsOnTargets="RunCodeAnalysis; Build; RunTests;">
+  <Target Name="FunctionalCI" DependsOnTargets="RunCodeAnalysis; Build; RunTests; AnalyzeLogs;">
   </Target>
 
   <Target Name="Go" DependsOnTargets="RunCodeAnalysis; Build; RunTests;">
@@ -152,6 +157,10 @@
              Condition=" '$(OS)' == 'Windows_NT'"/>
   </Target>
 
+  <Target Name="AnalyzeLogs" DependsOnTargets="RunFunctionalTests">
+    <Exec Command='powershell -NoProfile -ExecutionPolicy Bypass $(ProjectRoot)\build\AnalyzeLogs.ps1 "$(ArtifactsDir)"' ContinueOnError="true" />
+  </Target>
+  
   <Target Name="RunUnitTests" DependsOnTargets="BuildNetUnitTests">
     <MSBuild Projects="%(JsTestProjects.Identity)"
          Targets="pipelinePreDeployCopyAllFilesToOneFolder"
@@ -159,8 +168,8 @@
          Condition=" '$(OS)' == 'Windows_NT'"/>
 
     <!-- Replaces files for -->
-    <FileUpdate Files="$(JSTestsPath)\default.html" Regex="&lt;!-- ##SIGNALRHUBS## --&gt;((.|\r|\n)*?)&lt;!-- ##SIGNALRHUBS## --&gt;" ReplacementText="&lt;!-- ##SIGNALRHUBS## --&gt;&lt;script type='text/javascript' src='/signalr/hubs'&gt;&lt;/script&gt;&lt;!-- ##SIGNALRHUBS## --&gt;"  Condition=" '$(OS)' == 'Windows_NT'" />
-    <FileUpdate Files="$(JSTestsPath)\default.html" Regex="&lt;!-- ##SIGNALRHUBS## --&gt;((.|\r|\n)*?)&lt;!-- ##SIGNALRHUBS## --&gt;" ReplacementText="&lt;!-- ##SIGNALRHUBS## --&gt;&lt;script type='text/javascript' src='$(JSTestsURL)signalr/hubs'&gt;&lt;/script&gt;&lt;!-- ##SIGNALRHUBS## --&gt;" Condition=" '$(OS)' == 'Windows_NT'" />
+    <FileUpdate Files="$(JSTestsPath)\default.html" Regex="&lt;!-- ##SIGNALRHUBS## --&gt;((.|\r|\n)*?)&lt;!-- ##SIGNALRHUBS## --&gt;" ReplacementText="&lt;!-- ##SIGNALRHUBS## --&gt;&lt;script type='text/javascript' src='/signalr/js'&gt;&lt;/script&gt;&lt;!-- ##SIGNALRHUBS## --&gt;"  Condition=" '$(OS)' == 'Windows_NT'" />
+    <FileUpdate Files="$(JSTestsPath)\default.html" Regex="&lt;!-- ##SIGNALRHUBS## --&gt;((.|\r|\n)*?)&lt;!-- ##SIGNALRHUBS## --&gt;" ReplacementText="&lt;!-- ##SIGNALRHUBS## --&gt;&lt;script type='text/javascript' src='$(JSTestsURL)signalr/js'&gt;&lt;/script&gt;&lt;!-- ##SIGNALRHUBS## --&gt;" Condition=" '$(OS)' == 'Windows_NT'" />
     <FileUpdate Files="$(JSTestsPath)\Build\test.config.js" Regex="/\*URL\*/(.*?)/\*URL\*/" ReplacementText="/*URL*/'$(JSTestsURL)'/*URL*/" Condition=" '$(OS)' == 'Windows_NT'" />
     <FileUpdate Files="$(JSTestsPath)\Build\test.config.js" Regex="/\*CMDLineTest\*/(.*?)/\*CMDLineTest\*/" ReplacementText="/*CMDLineTest*/true/*CMDLineTest*/" Condition=" '$(OS)' == 'Windows_NT'" />
 
@@ -228,7 +237,7 @@
   </Target>
 
   <Target Name="RunCodeAnalysis" DependsOnTargets="CreateOutputDir" Condition="Exists('$(MSBuildExtensionsPath)\Microsoft\VisualStudio\v11.0\CodeAnalysis\fxcoptask.dll')">
-    <MSBuild Projects="%(CoreProjects.Identity)"
+    <MSBuild Projects="%(CAProjects.Identity)"
              Targets="ReBuild"
              Properties="RunCodeAnalysis=true;Configuration=$(Configuration);ArtifactsDir=$(ArtifactsDir);SolutionDir=$(ProjectRoot)\;$(ExtraProperties)" />
   </Target>

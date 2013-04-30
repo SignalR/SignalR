@@ -43,7 +43,9 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Microsoft.VisualStudio.Diagnostics.Measurement" Condition="'$(PerfRun)'=='True'">
-      <HintPath>..\..\lib\Microsoft.VisualStudio.Diagnostics.Measurement.dll</HintPath>
+      <SpecificVersion>false</SpecificVersion>
+      <HintPath>$(PerfToolsBin)\Microsoft.VisualStudio.Diagnostics.Measurement.dll</HintPath>
+      <Private>true</Private>
     </Reference>
     <Reference Include="CmdLine">
       <HintPath>..\..\packages\CmdLine.1.0.7.509\lib\net40-Client\CmdLine.dll</HintPath>
@@ -83,6 +85,7 @@
     <Compile Include="Performance\ClientServerMemoryRun.cs" />
     <Compile Include="Performance\ConnectionRun.cs" />
     <Compile Include="Connections\StressConnection.cs" />
+    <Compile Include="Performance\MemoryHostEndToEndHubRun.cs" />
     <Compile Include="Performance\ServiceBusMessageBusRun.cs" />
     <Compile Include="Performance\MemoryHostHubInvocationRun.cs" />
     <Compile Include="Performance\EmptyProtectedData.cs" />
@@ -134,6 +137,9 @@
   <ItemGroup>
     <None Include="app.config" />
     <None Include="packages.config" />
+    <None Include="CreateStressDatabase.sql">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Include="TPlan.Perf.xml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>

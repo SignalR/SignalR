@@ -10,6 +10,6 @@ namespace Microsoft.AspNet.SignalR.Stress.Hubs
         public Task Echo(string message)
         {
             return Clients.Caller.echo(message);
-        }     
+        }  
     }
 }

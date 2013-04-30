@@ -34,9 +34,8 @@ namespace Microsoft.AspNet.SignalR
                 throw new ArgumentNullException("resolver");
             }
 
-            // TODO: Can this be Lazy<T> initialized again now?
-            var bus = new SqlMessageBus(resolver, configuration);
-            resolver.Register(typeof(IMessageBus), () => bus);
+            var bus = new Lazy<SqlMessageBus>(() => new SqlMessageBus(resolver, configuration));
+            resolver.Register(typeof(IMessageBus), () => bus.Value);
 
             return resolver;
         }

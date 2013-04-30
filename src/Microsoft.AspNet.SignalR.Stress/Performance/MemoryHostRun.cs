@@ -23,6 +23,14 @@ namespace Microsoft.AspNet.SignalR.Stress
             Host = new MemoryHost();
         }
 
+        protected override string ScenarioName
+        {
+            get
+            {
+                return base.ScenarioName + "-" + RunData.Transport;
+            }
+        }
+
         public virtual string Endpoint
         {
             get { return "echo"; }

@@ -241,17 +241,18 @@ namespace Microsoft.AspNet.SignalR.Messaging
             subscriber.EventKeyRemoved += _removeEvent;
             subscriber.WriteCursor = subscription.WriteCursor;
 
-            // Add the subscription when it's all set and can be scheduled
-            // for work
-            foreach (var topic in topics)
-            {
-                topic.AddSubscription(subscription);
-            }
-
             var disposable = new DisposableAction(_disposeSubscription, subscriber);
 
             // When the subscription itself is disposed then dispose it
             subscription.Disposable = disposable;
+
+            // Add the subscription when it's all set and can be scheduled
+            // for work. It's important to do this after everything is wired up for the
+            // subscription so that publishes can schedule work at the right time.
+            foreach (var topic in topics)
+            {
+                topic.AddSubscription(subscription);
+            }
 
             // If there's a cursor then schedule work for this subscription
             if (!String.IsNullOrEmpty(cursor))
@@ -379,7 +380,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
                 }
 
                 // We want to remove the overflow but oldest first
-                candidates.Sort((leftPair, rightPair) => rightPair.Value.LastUsed.CompareTo(leftPair.Value.LastUsed));
+                candidates.Sort((leftPair, rightPair) => leftPair.Value.LastUsed.CompareTo(rightPair.Value.LastUsed));
 
                 // Clear up to the overflow and stay within bounds
                 for (int i = 0; i < overflow && i < candidates.Count; i++)
@@ -387,10 +388,12 @@ namespace Microsoft.AspNet.SignalR.Messaging
                     var pair = candidates[i];
 
                     // Mark it as dead
-                    Interlocked.Exchange(ref pair.Value.State, TopicState.Dead);
-
-                    // Kill it
-                    DestroyTopicCore(pair.Key, pair.Value);
+                    if (Interlocked.CompareExchange(ref pair.Value.State, TopicState.Dead, TopicState.NoSubscriptions)
+                        == TopicState.NoSubscriptions)
+                    {
+                        // Kill it
+                        DestroyTopicCore(pair.Key, pair.Value);
+                    }
                 }
             }
 

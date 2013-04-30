@@ -4,6 +4,7 @@ using System;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Net;
+using System.Net.Http;
 using Microsoft.AspNet.SignalR.Infrastructure;
 
 namespace Microsoft.AspNet.SignalR.Client
@@ -19,13 +20,32 @@ namespace Microsoft.AspNet.SignalR.Client
         public static SignalRError GetError(this Exception ex)
         {
             ex = ex.Unwrap();
-            var wex = ex as WebException;
 
+            var httpClientException = ex as HttpClientException;
+            SignalRError error;
+
+            if (httpClientException != null)
+            {
+                error = GetHttpClientException(ex);
+            }
+            else
+            {
+                error = GetWebExceptionError(ex);
+            }
+
+            return error;
+        }
+
+        [SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope", Justification = "The IDisposable object is the return value.")]
+        private static SignalRError GetWebExceptionError(Exception ex)
+        {
             var error = new SignalRError(ex);
+            var wex = ex as WebException;
 
             if (wex != null && wex.Response != null)
             {
                 var response = wex.Response as HttpWebResponse;
+
                 if (response != null)
                 {
                     error.SetResponse(response);
@@ -44,6 +64,27 @@ namespace Microsoft.AspNet.SignalR.Client
                             error.ResponseBody = sr.ReadToEnd();
                         }
                     }
+                }
+            }
+
+            return error;
+        }
+
+        [SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope", Justification = "The IDisposable object is the return value.")]
+        private static SignalRError GetHttpClientException(Exception ex)
+        {
+            var error = new SignalRError(ex);
+            var hex = ex as HttpClientException;
+
+            if (hex != null && hex.Response != null)
+            {
+                var response = hex.Response as HttpResponseMessage;
+
+                if (response != null)
+                {
+                    error.SetResponse(response);
+                    error.StatusCode = response.StatusCode;
+                    error.ResponseBody = response.Content.ReadAsStringAsync().Result;
                 }
             }
 

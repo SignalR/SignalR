@@ -129,13 +129,13 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
         /// <summary>
         /// Gets the performance counter representing the total number of messages published to the message bus since the application was started.
         /// </summary>
-        [PerformanceCounter(Name = "Messages Bus Messages Published Total", Description = "The total number of messages published to the message bus since the application was started.", CounterType = PerformanceCounterType.NumberOfItems64)]
+        [PerformanceCounter(Name = "Message Bus Messages Published Total", Description = "The total number of messages published to the message bus since the application was started.", CounterType = PerformanceCounterType.NumberOfItems64)]
         public IPerformanceCounter MessageBusMessagesPublishedTotal { get; private set; }
 
         /// <summary>
         /// Gets the performance counter representing the number of messages published to the message bus per second.
         /// </summary>
-        [PerformanceCounter(Name = "Messages Bus Messages Published/Sec", Description = "The number of messages published to the message bus per second.", CounterType = PerformanceCounterType.RateOfCountsPerSecond32)]
+        [PerformanceCounter(Name = "Message Bus Messages Published/Sec", Description = "The number of messages published to the message bus per second.", CounterType = PerformanceCounterType.RateOfCountsPerSecond32)]
         public IPerformanceCounter MessageBusMessagesPublishedPerSec { get; private set; }
 
         /// <summary>
@@ -221,6 +221,43 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
         /// </summary>
         [PerformanceCounter(Name = "Errors: Transport/Sec", Description = "The number of transport errors per second.", CounterType = PerformanceCounterType.RateOfCountsPerSecond32)]
         public IPerformanceCounter ErrorsTransportPerSec { get; private set; }
+
+
+        /// <summary>
+        /// Gets the performance counter representing the number of logical streams in the currently configured scaleout message bus provider.
+        /// </summary>
+        [PerformanceCounter(Name = "Scaleout Streams Total", Description = "The number of logical streams in the currently configured scaleout message bus provider.", CounterType = PerformanceCounterType.NumberOfItems32)]
+        public IPerformanceCounter ScaleoutStreamCountTotal { get; private set; }
+
+        /// <summary>
+        /// Gets the performance counter representing the number of logical streams in the currently configured scaleout message bus provider that are in the open state.
+        /// </summary>
+        [PerformanceCounter(Name = "Scaleout Streams Open", Description = "The number of logical streams in the currently configured scaleout message bus provider that are in the open state", CounterType = PerformanceCounterType.NumberOfItems32)]
+        public IPerformanceCounter ScaleoutStreamCountOpen { get; private set; }
+
+        /// <summary>
+        /// Gets the performance counter representing the number of logical streams in the currently configured scaleout message bus provider that are in the buffering state.
+        /// </summary>
+        [PerformanceCounter(Name = "Scaleout Streams Buffering", Description = "The number of logical streams in the currently configured scaleout message bus provider that are in the buffering state", CounterType = PerformanceCounterType.NumberOfItems32)]
+        public IPerformanceCounter ScaleoutStreamCountBuffering { get; private set; }
+
+        /// <summary>
+        /// Gets the performance counter representing the total number of scaleout errors since the application was started.
+        /// </summary>
+        [PerformanceCounter(Name = "Scaleout Errors Total", Description = "The total number of scaleout errors since the application was started.", CounterType = PerformanceCounterType.NumberOfItems32)]
+        public IPerformanceCounter ScaleoutErrorsTotal { get; private set; }
+
+        /// <summary>
+        /// Gets the performance counter representing the number of scaleout errors per second.
+        /// </summary>
+        [PerformanceCounter(Name = "Scaleout Errors/Sec", Description = "The number of scaleout errors per second.", CounterType = PerformanceCounterType.RateOfCountsPerSecond32)]
+        public IPerformanceCounter ScaleoutErrorsPerSec { get; private set; }
+
+        /// <summary>
+        /// Gets the performance counter representing the current scaleout send queue length.
+        /// </summary>
+        [PerformanceCounter(Name = "Scaleout Send Queue Length", Description = "The current scaleout send queue length.", CounterType = PerformanceCounterType.NumberOfItems32)]
+        public IPerformanceCounter ScaleoutSendQueueLength { get; private set; }
 
         /// <summary>
         /// Initializes the performance counters.

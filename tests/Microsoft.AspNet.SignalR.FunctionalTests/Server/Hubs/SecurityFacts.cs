@@ -33,48 +33,50 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Server.Hubs
                 });
 
                 var connection = new Client.Connection("http://memoryhost/echo");
-                var inGroup = new ManualResetEventSlim();
 
-                connection.Received += data =>
+                using (connection)
                 {
-                    if (data == "group")
+                    var inGroup = new ManualResetEventSlim();
+
+                    connection.Received += data =>
                     {
-                        inGroup.Set();
-                    }
-                };
+                        if (data == "group")
+                        {
+                            inGroup.Set();
+                        }
+                    };
 
-                connection.Start(host).Wait();
+                    connection.Start(host).Wait();
 
-                inGroup.Wait();
+                    inGroup.Wait();
 
-                Assert.NotNull(connection.GroupsToken);
+                    Assert.NotNull(connection.GroupsToken);
 
-                var spyWh = new ManualResetEventSlim();
-                var hackerConnection = new Client.Connection(connection.Url)
-                {
-                    ConnectionId = "hacker"
-                };
-
-                var url = GetUrl(protectedData, connection, connection.GroupsToken);
-                var response = host.Get(url).Result;
-                var reader = new EventSourceStreamReader(hackerConnection, response.GetStream());
-
-                reader.Message = sseEvent =>
-                {
-                    if (sseEvent.EventType == EventType.Data &&
-                        sseEvent.Data != "initialized" &&
-                        sseEvent.Data != "{}")
+                    var spyWh = new ManualResetEventSlim();
+                    var hackerConnection = new Client.Connection(connection.Url)
                     {
-                        spyWh.Set();
-                    }
-                };
+                        ConnectionId = "hacker"
+                    };
 
-                reader.Start();
-                connection.Send("random").Wait();
+                    var url = GetUrl(protectedData, connection, connection.GroupsToken);
+                    var response = host.Get(url).Result;
+                    var reader = new EventSourceStreamReader(hackerConnection, response.GetStream());
 
-                Assert.False(spyWh.Wait(TimeSpan.FromSeconds(5)));
+                    reader.Message = sseEvent =>
+                    {
+                        if (sseEvent.EventType == EventType.Data &&
+                            sseEvent.Data != "initialized" &&
+                            sseEvent.Data != "{}")
+                        {
+                            spyWh.Set();
+                        }
+                    };
 
-                connection.Stop();
+                    reader.Start();
+                    connection.Send("random").Wait();
+
+                    Assert.False(spyWh.Wait(TimeSpan.FromSeconds(5)));
+                }
             }
         }
 
@@ -99,55 +101,56 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Server.Hubs
 
                 var connection = new Client.Connection("http://memoryhost/echo");
 
-                var connectionTcs = new TaskCompletionSource<string>();
-                var spyTcs = new TaskCompletionSource<string>();
-
-                connection.Received += data =>
+                using (connection)
                 {
-                    connectionTcs.SetResult(data.Trim());
-                };
+                    var connectionTcs = new TaskCompletionSource<string>();
+                    var spyTcs = new TaskCompletionSource<string>();
 
-                connection.Start(host).Wait();
-
-                var tcs = new TaskCompletionSource<object>();
-                EventSourceStreamReader reader = null;
-
-                Task.Run(async () =>
-                {
-                    try
+                    connection.Received += data =>
                     {
-                        string url = GetUrl(protectedData, connection);
-                        var response = await host.Get(url);
-                        reader = new EventSourceStreamReader(connection, response.GetStream());
+                        connectionTcs.SetResult(data.Trim());
+                    };
 
-                        reader.Message = sseEvent =>
+                    connection.Start(host).Wait();
+
+                    var tcs = new TaskCompletionSource<object>();
+                    EventSourceStreamReader reader = null;
+
+                    Task.Run(async () =>
+                    {
+                        try
                         {
-                            if (sseEvent.EventType == EventType.Data &&
-                                sseEvent.Data != "initialized" &&
-                                sseEvent.Data != "{}")
+                            string url = GetUrl(protectedData, connection);
+                            var response = await host.Get(url);
+                            reader = new EventSourceStreamReader(connection, response.GetStream());
+
+                            reader.Message = sseEvent =>
                             {
-                                spyTcs.TrySetResult(sseEvent.Data);
-                            }
-                        };
+                                if (sseEvent.EventType == EventType.Data &&
+                                    sseEvent.Data != "initialized" &&
+                                    sseEvent.Data != "{}")
+                                {
+                                    spyTcs.TrySetResult(sseEvent.Data);
+                                }
+                            };
 
-                        reader.Start();
-                        tcs.TrySetResult(null);
-                    }
-                    catch (Exception ex)
-                    {
-                        tcs.TrySetException(ex);
-                    }
-                });
+                            reader.Start();
+                            tcs.TrySetResult(null);
+                        }
+                        catch (Exception ex)
+                        {
+                            tcs.TrySetException(ex);
+                        }
+                    });
 
-                tcs.Task.Wait();
+                    tcs.Task.Wait();
 
-                connection.SendWithTimeout("STUFFF");
+                    connection.SendWithTimeout("STUFFF");
 
-                Assert.True(connectionTcs.Task.Wait(TimeSpan.FromSeconds(5)));
-                Assert.Equal("STUFFF", connectionTcs.Task.Result);
-                Assert.False(spyTcs.Task.Wait(TimeSpan.FromSeconds(5)));
-
-                connection.Stop();
+                    Assert.True(connectionTcs.Task.Wait(TimeSpan.FromSeconds(5)));
+                    Assert.Equal("STUFFF", connectionTcs.Task.Result);
+                    Assert.False(spyTcs.Task.Wait(TimeSpan.FromSeconds(5)));
+                }
             }
         }
 

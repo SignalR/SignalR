@@ -5,13 +5,19 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Net.Http;
 using System.Net.Http.Headers;
+#if !NETFX_CORE
+using System.Security.Cryptography.X509Certificates;
+#endif
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.AspNet.SignalR.Client.Http;
 
-namespace Microsoft.AspNet.SignalR.Client.WinRT.Http
+namespace Microsoft.AspNet.SignalR.Client.Http
 {
+#if !NETFX_CORE && !SILVERLIGHT && !__ANDROID__ && !IOS
+    public class DefaultHttpHandler : WebRequestHandler, IRequest
+#else
     public class DefaultHttpHandler : HttpClientHandler, IRequest
+#endif
     {
         private readonly Action<IRequest> _prepareRequest;
         private readonly Action _cancel;
@@ -68,6 +74,21 @@ namespace Microsoft.AspNet.SignalR.Client.WinRT.Http
                 _request.Headers.Add(headerEntry.Key, headerEntry.Value);
             }
         }
+
+#if NET45 || NET4
+        public void AddClientCerts(X509CertificateCollection certificates)
+        {
+            if (certificates == null)
+            {
+                throw new ArgumentNullException("certificates");
+            }
+
+            foreach (X509Certificate cert in certificates)
+            {
+                this.ClientCertificates.Add(cert);
+            }
+        }
+#endif
 
         public void Abort()
         {

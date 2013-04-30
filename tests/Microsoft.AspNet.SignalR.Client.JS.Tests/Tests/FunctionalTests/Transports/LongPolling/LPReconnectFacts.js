@@ -182,8 +182,8 @@ QUnit.asyncTimeoutTest("Clears stop reconnecting timeout on stop inside of state
     };
 });
 
-QUnit.asyncTimeoutTest("Can remain connected to /signalr/hubs.", testUtilities.defaultTestTimeout, function (end, assert, testName) {
-    var connection = testUtilities.createHubConnection(end, assert, testName, "signalr/hubs"),
+QUnit.asyncTimeoutTest("Can remain connected to /signalr/js.", testUtilities.defaultTestTimeout, function (end, assert, testName) {
+    var connection = testUtilities.createHubConnection(end, assert, testName, "signalr/js"),
         demo = connection.createHubProxies().demo,
         testGuidInvocations = 0;
 
@@ -216,5 +216,55 @@ QUnit.asyncTimeoutTest("Can remain connected to /signalr/hubs.", testUtilities.d
     // Cleanup
     return function () {
         connection.stop();
+    };
+});
+
+// For #1809
+QUnit.asyncTimeoutTest("Does not reconnect infinitely if ping succeeds", testUtilities.defaultTestTimeout * 2, function (end, assert, testName) {
+    var connection = testUtilities.createHubConnection(end, assert, testName),
+        demo = connection.createHubProxies().demo,
+        savedPingServer = $.signalR.transports._logic.pingServer,
+        reconnectingTriggered = false;
+
+    // Need to have at least one client function in order to be subscribed to a hub
+    demo.client.TestGuid = function () {
+        $.signalR.transports._logic.pingServer = function () {
+            var deferral = $.Deferred();
+
+            // Force the ping server to resolve in a timeout (act like an actual ajax request)
+            window.setTimeout(function () {
+                deferral.resolve();
+            }, 100);
+
+            return deferral.promise();
+        };
+
+        // Stop reconnecting after 6 seconds ( this overrides the negotiate value ).
+        connection.disconnectTimeout = 6000;
+
+        connection.reconnecting(function () {
+            reconnectingTriggered = true;
+        });
+
+        connection.disconnected(function () {
+            assert.ok(reconnectingTriggered, "Reconnecting was triggered within the test.");
+            assert.ok(true, "Disconnect triggered, transport did not reconnect infinitely.");
+            end();
+        });
+
+        $.network.disconnect();
+    };
+
+    connection.start({ transport: "longPolling" }).done(function () {
+        assert.ok(true, "Connected");
+        // Call a server function and request a message back in order to get a message ID so we can successfully reconnect
+        demo.server.testGuid();
+    });
+
+    // Cleanup
+    return function () {
+        $.signalR.transports._logic.pingServer = savedPingServer;
+        connection.stop();
+        $.network.connect();
     };
 });

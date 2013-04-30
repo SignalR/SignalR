@@ -12,6 +12,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR.Hosting;
 using Microsoft.AspNet.SignalR.Infrastructure;
 using Microsoft.AspNet.SignalR.Json;
+using Newtonsoft.Json;
 
 namespace Microsoft.AspNet.SignalR.Hubs
 {
@@ -22,6 +23,7 @@ namespace Microsoft.AspNet.SignalR.Hubs
     public class HubDispatcher : PersistentConnection
     {
         private const string HubsSuffix = "/hubs";
+        private const string JsSuffix = "/js";
 
         private readonly List<HubDescriptor> _hubs = new List<HubDescriptor>();
         private readonly bool _enableJavaScriptProxies;
@@ -30,6 +32,7 @@ namespace Microsoft.AspNet.SignalR.Hubs
         private IJavaScriptProxyGenerator _proxyGenerator;
         private IHubManager _manager;
         private IHubRequestParser _requestParser;
+        private JsonSerializer _serializer;
         private IParameterResolver _binder;
         private IHubPipelineInvoker _pipelineInvoker;
         private IPerformanceCounterManager _counters;
@@ -86,6 +89,7 @@ namespace Microsoft.AspNet.SignalR.Hubs
             _manager = resolver.Resolve<IHubManager>();
             _binder = resolver.Resolve<IParameterResolver>();
             _requestParser = resolver.Resolve<IHubRequestParser>();
+            _serializer = resolver.Resolve<JsonSerializer>();
             _pipelineInvoker = resolver.Resolve<IHubPipelineInvoker>();
             _counters = resolver.Resolve<IPerformanceCounterManager>();
 
@@ -142,7 +146,7 @@ namespace Microsoft.AspNet.SignalR.Hubs
         /// </summary>
         protected override Task OnReceived(IRequest request, string connectionId, string data)
         {
-            HubRequest hubRequest = _requestParser.Parse(data);
+            HubRequest hubRequest = _requestParser.Parse(data, _serializer);
 
             // Create the hub
             HubDescriptor descriptor = _manager.EnsureHub(hubRequest.Hub,
@@ -228,10 +232,20 @@ namespace Microsoft.AspNet.SignalR.Hubs
             // Trim any trailing slashes
             string normalized = context.Request.Url.LocalPath.TrimEnd('/');
 
+            int suffixLength = -1;
             if (normalized.EndsWith(HubsSuffix, StringComparison.OrdinalIgnoreCase))
             {
-                // Generate the proper hub url
-                string hubUrl = normalized.Substring(0, normalized.Length - HubsSuffix.Length);
+                suffixLength = HubsSuffix.Length;
+            }
+            else if (normalized.EndsWith(JsSuffix, StringComparison.OrdinalIgnoreCase))
+            {
+                suffixLength = JsSuffix.Length;
+            }
+
+            if (suffixLength != -1)
+            {
+                // Generate the proper JS proxy url
+                string hubUrl = normalized.Substring(0, normalized.Length - suffixLength);
 
                 // Generate the proxy
                 context.Response.ContentType = JsonUtility.JavaScriptMimeType;
@@ -452,7 +466,7 @@ namespace Microsoft.AspNet.SignalR.Hubs
 
                 if (_enableDetailedErrors)
                 {
-                    var exception = error.Unwrap();
+                    var exception = error.InnerException ?? error;
                     hubResult.StackTrace = _isDebuggingEnabled ? exception.StackTrace : null;
                     hubResult.Error = exception.Message;
                 }

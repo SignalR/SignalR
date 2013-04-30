@@ -8,11 +8,11 @@ DECLARE @SCHEMA_NAME nvarchar(32),
         @CREATE_MESSAGE_TABLE_DDL nvarchar(1000),
 		@CREATE_MESSAGE_ID_TABLE_DDL nvarchar(1000);
 
-SET @SCHEMA_NAME = 'SignalR'; -- replaced from C#
-SET @SCHEMA_TABLE_NAME = 'Schema'; -- replaced from C#
-SET @TARGET_SCHEMA_VERSION = 1; -- replaced from C#
-SET @MESSAGE_TABLE_COUNT = 3; -- replaced from C#
-SET @MESSAGE_TABLE_NAME = 'Messages'; -- replaced from C#
+SET @SCHEMA_NAME = 'SignalR';
+SET @SCHEMA_TABLE_NAME = 'Schema';
+SET @TARGET_SCHEMA_VERSION = 1;
+SET @MESSAGE_TABLE_COUNT = 1;
+SET @MESSAGE_TABLE_NAME = 'Messages';
 SET @CREATE_MESSAGE_TABLE_DDL =
 N'CREATE TABLE [' + @SCHEMA_NAME + N'].[@TableName](
     [PayloadId] [bigint] NOT NULL,

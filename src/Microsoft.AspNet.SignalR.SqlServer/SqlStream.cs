@@ -17,21 +17,28 @@ namespace Microsoft.AspNet.SignalR.SqlServer
         private readonly SqlReceiver _receiver;
         private readonly string _tracePrefix;
 
-        public SqlStream(int streamIndex, string connectionString, string tableName, Action open, Action<int, ulong, IList<Message>> onReceived, Action<Exception> onError, TraceSource traceSource, IDbProviderFactory dbProviderFactory)
+        public SqlStream(int streamIndex, string connectionString, string tableName, TraceSource traceSource, IDbProviderFactory dbProviderFactory)
         {
             _streamIndex = streamIndex;
             _trace = traceSource;
             _tracePrefix = String.Format(CultureInfo.InvariantCulture, "Stream {0} : ", _streamIndex);
 
+            Queried += () => { };
+            Received += (_, __) => { };
+            Faulted += _ => { };
+
             _sender = new SqlSender(connectionString, tableName, _trace, dbProviderFactory);
-            _receiver = new SqlReceiver(connectionString, tableName,
-                onQuery: () => open(),
-                onReceived: (id, messages) => onReceived(_streamIndex, id, messages),
-                onError: ex => onError(ex),
-                traceSource: _trace,
-                tracePrefix: _tracePrefix,
-                dbProviderFactory: dbProviderFactory);
+            _receiver = new SqlReceiver(connectionString, tableName, _trace, _tracePrefix, dbProviderFactory);
+            _receiver.Queried += () => Queried();
+            _receiver.Faulted += (ex) => Faulted(ex);
+            _receiver.Received += (id, messages) => Received(id, messages);
         }
+
+        public event Action Queried;
+
+        public event Action<ulong, IList<Message>> Received;
+
+        public event Action<Exception> Faulted;
 
         public Task StartReceiving()
         {
