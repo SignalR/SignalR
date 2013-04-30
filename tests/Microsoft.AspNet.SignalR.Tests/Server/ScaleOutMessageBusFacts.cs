@@ -120,6 +120,60 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
         }
 
         [Fact]
+        public void SubscriptionPullFromMultipleStreamsInFairOrder()
+        {
+            var dr = new DefaultDependencyResolver();
+            using (var bus = new TestScaleoutBus(dr, streams: 3))
+            {
+                var subscriber = new TestSubscriber(new[] { "key" });
+                var cd = new OrderedCountDownRange<int>(new[] { 1, 2, 4, 3 });
+                IDisposable subscription = null;
+
+                bus.Publish(0, 1, new[] { 
+                        new Message("test", "key", "3"),
+                        new Message("test", "key2", "5"),
+                    },
+                    new DateTime(TimeSpan.TicksPerDay * 5, DateTimeKind.Local));
+
+                bus.Publish(1, 1, new[] {
+                        new Message("test", "key", "1"),
+                        new Message("test", "key2", "foo")
+                    },
+                    new DateTime(TimeSpan.TicksPerDay * 1, DateTimeKind.Local));
+
+                bus.Publish(2, 1, new[] {
+                        new Message("test", "key", "2"),
+                        new Message("test", "key", "4")
+                    },
+                    new DateTime(TimeSpan.TicksPerDay * 2, DateTimeKind.Local));
+
+                try
+                {
+                    subscription = bus.Subscribe(subscriber, "0,0|1,0|2,0", (result, state) =>
+                    {
+                        foreach (var m in result.GetMessages())
+                        {
+                            int n = Int32.Parse(m.GetString());
+                            Assert.True(cd.Mark(n));
+                        }
+
+                        return TaskAsyncHelper.True;
+
+                    }, 10, null);
+
+                    Assert.True(cd.Wait(TimeSpan.FromSeconds(10)));
+                }
+                finally
+                {
+                    if (subscription != null)
+                    {
+                        subscription.Dispose();
+                    }
+                }
+            }
+        }
+
+        [Fact]
         public void SubscriptionPublishingAfter()
         {
             var dr = new DefaultDependencyResolver();
@@ -185,7 +239,18 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
 
             public void Publish(int streamIndex, ulong id, IList<Message> messages)
             {
-                OnReceived(streamIndex, id, messages);
+                Publish(streamIndex, id, messages, DateTime.UtcNow);
+            }
+
+            public void Publish(int streamIndex, ulong id, IList<Message> messages, DateTime creationTime)
+            {
+                var message = new ScaleoutMessage
+                {
+                    Messages = messages,
+                    CreationTime = creationTime
+                };
+
+                OnReceived(streamIndex, id, message);
             }
         }
     }

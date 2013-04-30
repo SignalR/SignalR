@@ -19,14 +19,14 @@ namespace Microsoft.AspNet.SignalR.Messaging
             _store = new ScaleoutStore(MaxMessages);
         }
 
-        public void Add(ulong id, IList<LocalEventKeyInfo> localKeyInfo)
+        public void Add(ulong id, ScaleoutMessage message, IDictionary<string, IList<LocalEventKeyInfo>> localKeyInfo)
         {
             if (id < _maxKey)
             {
                 _store = new ScaleoutStore(MaxMessages);
             }
 
-            _store.Add(new ScaleoutMapping(id, localKeyInfo));
+            _store.Add(new ScaleoutMapping(id, message, localKeyInfo));
 
             _maxKey = id;
         }

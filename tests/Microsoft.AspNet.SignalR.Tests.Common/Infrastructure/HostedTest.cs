@@ -291,7 +291,9 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure
 
             protected override Task Send(int streamIndex, IList<Message> messages)
             {
-                OnReceived(streamIndex, _id++, messages);
+                OnReceived(streamIndex, _id, new ScaleoutMessage(messages));
+
+                _id++;
 
                 return TaskAsyncHelper.Empty;
             }

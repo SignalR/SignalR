@@ -14,7 +14,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
 
             for (int i = 0; i < 5; i++)
             {
-                store.Add(new ScaleoutMapping((ulong)i, new List<LocalEventKeyInfo>()));
+                store.Add(new ScaleoutMapping((ulong)i, new ScaleoutMessage()));
             }
 
             ScaleoutStore.Fragment fragment;
@@ -30,7 +30,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
 
             for (int i = 0; i < 5; i++)
             {
-                store.Add(new ScaleoutMapping((ulong)i, new List<LocalEventKeyInfo>()));
+                store.Add(new ScaleoutMapping((ulong)i, new ScaleoutMessage()));
             }
 
             ScaleoutStore.Fragment fragment;
@@ -46,7 +46,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
 
             for (int i = 1; i <= 5; i++)
             {
-                store.Add(new ScaleoutMapping((ulong)i, new List<LocalEventKeyInfo>()));
+                store.Add(new ScaleoutMapping((ulong)i, new ScaleoutMessage()));
             }
 
             ScaleoutStore.Fragment fragment;
@@ -65,7 +65,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
             {
                 for (int j = 0; j < store.FragmentCount; j++)
                 {
-                    store.Add(new ScaleoutMapping((ulong)id, new List<LocalEventKeyInfo>()));
+                    store.Add(new ScaleoutMapping((ulong)id, new ScaleoutMessage()));
                     id++;
                 }
             }
@@ -86,7 +86,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
             {
                 for (int j = 0; j < store.FragmentCount; j++)
                 {
-                    store.Add(new ScaleoutMapping((ulong)id, new List<LocalEventKeyInfo>()));
+                    store.Add(new ScaleoutMapping((ulong)id, new ScaleoutMessage()));
                     id++;
                 }
             }
@@ -107,7 +107,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
             {
                 for (int j = 0; j < store.FragmentCount; j++)
                 {
-                    store.Add(new ScaleoutMapping((ulong)id, new List<LocalEventKeyInfo>()));
+                    store.Add(new ScaleoutMapping((ulong)id, new ScaleoutMessage()));
                     id++;
                 }
             }

@@ -9,7 +9,7 @@ namespace Microsoft.AspNet.SignalR.SqlServer
 {
     public class SqlPayload
     {
-        public IList<Message> Messages { get; private set; }
+        public ScaleoutMessage ScaleoutMessage { get; private set; }
 
         public static byte[] ToBytes(IList<Message> messages)
         {
@@ -18,35 +18,16 @@ namespace Microsoft.AspNet.SignalR.SqlServer
                 throw new ArgumentNullException("messages");
             }
 
-            using (var ms = new MemoryStream())
-            {
-                var binaryWriter = new BinaryWriter(ms);
-                binaryWriter.Write(messages.Count);
-                
-                for (int i = 0; i < messages.Count; i++)
-                {
-                    messages[i].WriteTo(ms);
-                }
-
-                return ms.ToArray();
-            }
+            var message = new ScaleoutMessage(messages);
+            return message.ToBytes();
         }
 
         public static SqlPayload FromBytes(byte[] data)
         {
-            using (var stream = new MemoryStream(data))
+            return new SqlPayload
             {
-                var binaryReader = new BinaryReader(stream);
-                int count = binaryReader.ReadInt32();
-
-                var payload = new SqlPayload { Messages = new List<Message>() };
-                for (int i = 0; i < count; i++)
-                {
-                    payload.Messages.Add(Message.ReadFrom(stream));
-                }
-
-                return payload;
-            }
+                ScaleoutMessage = ScaleoutMessage.FromBytes(data)
+            };
         }
     }
 }

@@ -36,7 +36,7 @@ namespace Microsoft.AspNet.SignalR.SqlServer
 
         public event Action Queried;
 
-        public event Action<ulong, IList<Message>> Received;
+        public event Action<ulong, ScaleoutMessage> Received;
 
         public event Action<Exception> Faulted;
 
