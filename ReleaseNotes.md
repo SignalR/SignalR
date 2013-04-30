@@ -18,7 +18,7 @@
 * Support SQL Server scale-out message bus ([#1711](https://github.com/SignalR/SignalR/issues/1711))
 * Make SQL message bus light up with query notifications only if service broker is available ([#1662](https://github.com/SignalR/SignalR/issues/1662))
 * Allow specifiying the JsonSerializer in the .NET Client ([#1373](https://github.com/SignalR/SignalR/issues/1373))
-* Allow specifying headers int the .NET client ([#1362](https://github.com/SignalR/SignalR/issues/1362))
+* Allow specifying headers in the .NET client ([#1362](https://github.com/SignalR/SignalR/issues/1362))
 * Allow specifying client certificates in the .NET Client ([#1303](https://github.com/SignalR/SignalR/issues/1303))
 * Support client side keep alive for the .NET client ([#741](https://github.com/SignalR/SignalR/issues/741))
 * Add tracing to the .NET client ([#135](https://github.com/SignalR/SignalR/issues/135))
