@@ -16,6 +16,8 @@
 
         supportsKeepAlive: true,
 
+        timeOut : 3000,
+
         send: function (connection, data) {
             connection.socket.send(data);
         },
@@ -24,6 +26,8 @@
             var url,
                 opened = false,
                 that = this,
+                initialSocket,
+                timeOutHandle,
                 reconnecting = !onSuccess,
                 $connection = $(connection);
 
@@ -44,7 +48,26 @@
 
                 connection.log("Connecting to websocket endpoint '" + url + "'");
                 connection.socket = new window.WebSocket(url);
+
+                // Issue #1653: Galaxy S3 Android Stock Browser fails silently to establish websocket connections. 
+                if (connection.state === $.signalR.connectionState.connecting) {
+                    initialSocket = connection.socket;
+                    timeOutHandle = window.setTimeout(function () {
+                        if (initialSocket === connection.socket) {
+                            if (onFailed) {
+                                connection.log("WebSocket timed out trying to connect");
+                                onFailed();
+                            }
+                        }
+                    }, that.timeOut);
+                }
+
                 connection.socket.onopen = function () {
+                    if (timeOutHandle) {
+                        window.clearTimeout(timeOutHandle);
+                        timeOutHandle = undefined;
+                    }
+
                     opened = true;
                     connection.log("Websocket opened");
 
@@ -63,6 +86,11 @@
                     // Only handle a socket close if the close is from the current socket.
                     // Sometimes on disconnect the server will push down an onclose event
                     // to an expired socket.
+                    if (timeOutHandle) {
+                        window.clearTimeout(timeOutHandle);
+                        timeOutHandle = undefined;
+                    }
+
                     if (this === connection.socket) {
                         if (!opened) {
                             if (onFailed) {
