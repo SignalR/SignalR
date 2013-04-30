@@ -294,7 +294,7 @@ namespace Microsoft.AspNet.SignalR.Redis
                 // The key is the stream id (channel)
                 var message = RedisMessage.FromBytes(data);
 
-                OnReceived(0, (ulong)message.Id, message.Messages);
+                OnReceived(0, (ulong)message.Id, message.ScaleoutMessage);
             }
         }
 

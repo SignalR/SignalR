@@ -165,6 +165,7 @@
     <Compile Include="Messaging\LocalEventKeyInfo.cs" />
     <Compile Include="Messaging\MessageBroker.cs" />
     <Compile Include="Messaging\ScaleoutMapping.cs" />
+    <Compile Include="Messaging\ScaleoutMessage.cs" />
     <Compile Include="Messaging\ScaleoutMessageBus.cs" />
     <Compile Include="Messaging\IMessageBus.cs" />
     <Compile Include="Messaging\ISubscriber.cs" />

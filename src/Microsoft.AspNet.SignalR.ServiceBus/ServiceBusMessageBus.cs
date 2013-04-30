@@ -77,9 +77,9 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
             {
                 using (message)
                 {
-                    IList<Message> internalMessages = ServiceBusMessage.FromStream(message.GetBody<Stream>());
+                    ScaleoutMessage scaleoutMessage = ServiceBusMessage.FromBrokeredMessage(message);
 
-                    OnReceived(topicIndex, (ulong)message.EnqueuedSequenceNumber, internalMessages);
+                    OnReceived(topicIndex, (ulong)message.EnqueuedSequenceNumber, scaleoutMessage);
                 }
             }
         }
