@@ -154,7 +154,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
                         foreach (var m in result.GetMessages())
                         {
                             int n = Int32.Parse(m.GetString());
-                            Assert.True(cd.Mark(n));
+                            Assert.True(cd.Expect(n));
                         }
 
                         return TaskAsyncHelper.True;

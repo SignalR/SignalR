@@ -17,7 +17,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Infrastructure
             _value = _enumerator.Current;
         }
 
-        public bool Mark(T item)
+        public bool Expect(T item)
         {
             bool result = Object.Equals(_value, item);
 

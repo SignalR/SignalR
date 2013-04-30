@@ -86,7 +86,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
         /// <summary>
         /// Sends messages to the backplane
         /// </summary>
-        /// <param name="messages"></param>
+        /// <param name="messages">The list of messages to send</param>
         /// <returns></returns>
         protected virtual Task Send(IList<Message> messages)
         {
@@ -156,9 +156,9 @@ namespace Microsoft.AspNet.SignalR.Messaging
         /// <summary>
         /// Invoked when a payload is received from the backplane. There should only be one active call at any time.
         /// </summary>
-        /// <param name="streamIndex">id of the stream</param>
-        /// <param name="id">id of the payload within that stream</param>
-        /// <param name="message">the scaleout message</param>
+        /// <param name="streamIndex">id of the stream.</param>
+        /// <param name="id">id of the payload within that stream.</param>
+        /// <param name="message">The scaleout message.</param>
         /// <returns></returns>
         protected void OnReceived(int streamIndex, ulong id, ScaleoutMessage message)
         {
