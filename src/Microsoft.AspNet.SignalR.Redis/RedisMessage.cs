@@ -10,8 +10,7 @@ namespace Microsoft.AspNet.SignalR.Redis
     public class RedisMessage
     {
         public long Id { get; private set; }
-
-        public IList<Message> Messages { get; private set; }
+        public ScaleoutMessage ScaleoutMessage { get; private set; }
 
         public static byte[] ToBytes(long id, IList<Message> messages)
         {
@@ -24,12 +23,12 @@ namespace Microsoft.AspNet.SignalR.Redis
             {
                 var binaryWriter = new BinaryWriter(ms);
 
+                var scaleoutMessage = new ScaleoutMessage(messages);
+                var buffer = scaleoutMessage.ToBytes();
+
                 binaryWriter.Write(id);
-                binaryWriter.Write(messages.Count);
-                for (int i = 0; i < messages.Count; i++)
-                {
-                    messages[i].WriteTo(ms);
-                }
+                binaryWriter.Write(buffer.Length);
+                binaryWriter.Write(buffer);
 
                 return ms.ToArray();
             }
@@ -41,14 +40,13 @@ namespace Microsoft.AspNet.SignalR.Redis
             {
                 var binaryReader = new BinaryReader(stream);
                 var message = new RedisMessage();
-                message.Id = binaryReader.ReadInt64();
-                message.Messages = new List<Message>();
-                int count = binaryReader.ReadInt32();
-                for (int i = 0; i < count; i++)
-                {
-                    message.Messages.Add(Message.ReadFrom(stream));
-                }
 
+                message.Id = binaryReader.ReadInt64();
+
+                int count = binaryReader.ReadInt32();
+                byte[] buffer = binaryReader.ReadBytes(count);
+
+                message.ScaleoutMessage = ScaleoutMessage.FromBytes(buffer); 
                 return message;
             }
         }

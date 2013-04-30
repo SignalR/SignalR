@@ -70,7 +70,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
         /// </summary>
         protected void Close(int streamIndex)
         {
-            StreamManager.Close(streamIndex);   
+            StreamManager.Close(streamIndex);
         }
 
         /// <summary>
@@ -86,7 +86,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
         /// <summary>
         /// Sends messages to the backplane
         /// </summary>
-        /// <param name="messages"></param>
+        /// <param name="messages">The list of messages to send</param>
         /// <returns></returns>
         protected virtual Task Send(IList<Message> messages)
         {
@@ -156,46 +156,52 @@ namespace Microsoft.AspNet.SignalR.Messaging
         /// <summary>
         /// Invoked when a payload is received from the backplane. There should only be one active call at any time.
         /// </summary>
-        /// <param name="streamIndex">id of the stream</param>
-        /// <param name="id">id of the payload within that stream</param>
-        /// <param name="messages">List of messages associated</param>
+        /// <param name="streamIndex">id of the stream.</param>
+        /// <param name="id">id of the payload within that stream.</param>
+        /// <param name="message">The scaleout message.</param>
         /// <returns></returns>
-        protected void OnReceived(int streamIndex, ulong id, IList<Message> messages)
+        protected void OnReceived(int streamIndex, ulong id, ScaleoutMessage message)
         {
-            StreamManager.OnReceived(streamIndex, id, messages);
+            StreamManager.OnReceived(streamIndex, id, message);
         }
 
         [SuppressMessage("Microsoft.Design", "CA1062:Validate arguments of public methods", MessageId = "2", Justification = "Called from derived class")]
         [SuppressMessage("Microsoft.Design", "CA1062:Validate arguments of public methods", MessageId = "0", Justification = "Called from derived class")]
-        private void OnReceivedCore(int streamIndex, ulong id, IList<Message> messages)
+        private void OnReceivedCore(int streamIndex, ulong id, ScaleoutMessage scaleoutMessage)
         {
-            Counters.ScaleoutMessageBusMessagesReceivedPerSec.IncrementBy(messages.Count);
+            Counters.ScaleoutMessageBusMessagesReceivedPerSec.IncrementBy(scaleoutMessage.Messages.Count);
 
-            _trace.TraceInformation("OnReceived({0}, {1}, {2})", streamIndex, id, messages.Count);
+            _trace.TraceInformation("OnReceived({0}, {1}, {2})", streamIndex, id, scaleoutMessage.Messages.Count);
 
-            var localMapping = new LocalEventKeyInfo[messages.Count];
-            var keys = new HashSet<string>();
+            var localMapping = new Dictionary<string, IList<LocalEventKeyInfo>>(StringComparer.OrdinalIgnoreCase);
 
-            for (var i = 0; i < messages.Count; ++i)
+            for (var i = 0; i < scaleoutMessage.Messages.Count; ++i)
             {
-                Message message = messages[i];
+                Message message = scaleoutMessage.Messages[i];
 
-                keys.Add(message.Key);
+
+                IList<LocalEventKeyInfo> keyInfo;
+                if (!localMapping.TryGetValue(message.Key, out keyInfo))
+                {
+                    keyInfo = new List<LocalEventKeyInfo>();
+                    localMapping.Add(message.Key, keyInfo);
+                }
+
 
                 ulong localId = Save(message);
                 MessageStore<Message> messageStore = Topics[message.Key].Store;
 
-                localMapping[i] = new LocalEventKeyInfo(message.Key, localId, messageStore);
+                keyInfo.Add(new LocalEventKeyInfo(localId, messageStore));
             }
 
             // Get the stream for this payload
             ScaleoutMappingStore store = StreamManager.Streams[streamIndex];
 
             // Publish only after we've setup the mapping fully
-            store.Add(id, localMapping);
+            store.Add(id, scaleoutMessage, localMapping);
 
             // Schedule after we're done
-            foreach (var eventKey in keys)
+            foreach (var eventKey in localMapping.Keys)
             {
                 ScheduleEvent(eventKey);
             }

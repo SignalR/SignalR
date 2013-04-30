@@ -12,34 +12,34 @@ namespace Microsoft.AspNet.SignalR.Messaging
 {
     public class ScaleoutSubscription : Subscription
     {
-        private readonly IList<ScaleoutMappingStore> _stores;
+        private readonly IList<ScaleoutMappingStore> _streams;
         private readonly List<Cursor> _cursors;
 
         public ScaleoutSubscription(string identity,
                                     IList<string> eventKeys,
                                     string cursor,
-                                    IList<ScaleoutMappingStore> stores,
+                                    IList<ScaleoutMappingStore> streams,
                                     Func<MessageResult, object, Task<bool>> callback,
                                     int maxMessages,
                                     IPerformanceCounterManager counters,
                                     object state)
             : base(identity, eventKeys, callback, maxMessages, counters, state)
         {
-            if (stores == null)
+            if (streams == null)
             {
-                throw new ArgumentNullException("stores");
+                throw new ArgumentNullException("streams");
             }
 
-            _stores = stores;
+            _streams = streams;
 
             List<Cursor> cursors = null;
 
             if (String.IsNullOrEmpty(cursor))
             {
-                cursors = new List<Cursor>(stores.Count);
-                for (int i = 0; i < stores.Count; i++)
+                cursors = new List<Cursor>(streams.Count);
+                for (int i = 0; i < streams.Count; i++)
                 {
-                    cursors.Add(new Cursor(i.ToString(CultureInfo.InvariantCulture), stores[i].MaxKey));
+                    cursors.Add(new Cursor(i.ToString(CultureInfo.InvariantCulture), streams[i].MaxKey));
                 }
             }
             else
@@ -60,11 +60,11 @@ namespace Microsoft.AspNet.SignalR.Messaging
         protected override void PerformWork(IList<ArraySegment<Message>> items, out int totalCount, out object state)
         {
             // The list of cursors represent (streamid, payloadid)
-            var nextCursors = new ulong?[_stores.Count];
+            var nextCursors = new ulong?[_streams.Count];
             totalCount = 0;
 
             // Get the enumerator so that we can extract messages for this subscription
-            IEnumerator<Tuple<ScaleoutMapping, int>> enumerator = GetStoreEnumerable().GetEnumerator();
+            IEnumerator<Tuple<ScaleoutMapping, int>> enumerator = GetMappings().GetEnumerator();
 
             while (totalCount < MaxMessages && enumerator.MoveNext())
             {
@@ -88,7 +88,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
             {
                 // Only update non-null cursors
                 ulong? nextId = nextCursors[i];
-                
+
                 if (nextId != null)
                 {
                     _cursors[i].Id = nextId.Value;
@@ -96,21 +96,52 @@ namespace Microsoft.AspNet.SignalR.Messaging
             }
         }
 
-        private IEnumerable<Tuple<ScaleoutMapping, int>> GetStoreEnumerable()
+        private IEnumerable<Tuple<ScaleoutMapping, int>> GetMappings()
         {
-            for (var i = 0; i < _stores.Count; ++i)
+            var enumerators = new List<CachedStreamEnumerator>();
+
+            for (var streamIndex = 0; streamIndex < _streams.Count; ++streamIndex)
             {
                 // Get the mapping for this stream
-                ScaleoutMappingStore store = _stores[i];
+                ScaleoutMappingStore store = _streams[streamIndex];
 
-                Cursor cursor = _cursors[i];
+                Cursor cursor = _cursors[streamIndex];
 
                 // Try to find a local mapping for this payload
-                IEnumerator<ScaleoutMapping> enumerator = store.GetEnumerator(cursor.Id);
+                var enumerator = new CachedStreamEnumerator(store.GetEnumerator(cursor.Id), 
+                                                            streamIndex);
 
-                while (enumerator.MoveNext())
+                enumerators.Add(enumerator);
+            }
+
+            while (enumerators.Count > 0)
+            {
+                ScaleoutMapping minMapping = null;
+                CachedStreamEnumerator minEnumerator = null;
+
+                for (int i = enumerators.Count - 1; i >= 0; i--)
                 {
-                    yield return Tuple.Create(enumerator.Current, i);
+                    CachedStreamEnumerator enumerator = enumerators[i];
+
+                    ScaleoutMapping mapping;
+                    if (enumerator.TryMoveNext(out mapping))
+                    {
+                        if (minMapping == null || mapping.CreationTime < minMapping.CreationTime)
+                        {
+                            minMapping = mapping;
+                            minEnumerator = enumerator;
+                        }
+                    }
+                    else
+                    {
+                        enumerators.RemoveAt(i);
+                    }
+                }
+
+                if (minMapping != null)
+                {
+                    minEnumerator.ClearCachedValue();
+                    yield return Tuple.Create(minMapping, minEnumerator.StreamIndex);
                 }
             }
         }
@@ -123,14 +154,13 @@ namespace Microsoft.AspNet.SignalR.Messaging
             {
                 for (var i = 0; i < EventKeys.Count; ++i)
                 {
-                    string eventKey = EventKeys[i];
-
-                    for (int j = 0; j < mapping.LocalKeyInfo.Count; j++)
+                    IList<LocalEventKeyInfo> infos;
+                    if (mapping.LocalKeyInfo.TryGetValue(EventKeys[i], out infos))
                     {
-                        LocalEventKeyInfo info = mapping.LocalKeyInfo[j];
-
-                        if (info.Key.Equals(eventKey, StringComparison.OrdinalIgnoreCase))
+                        for (int j = 0; j < infos.Count; j++)
                         {
+                            LocalEventKeyInfo info = infos[j];
+
                             MessageStoreResult<Message> storeResult = info.MessageStore.GetMessages(info.Id, 1);
 
                             if (storeResult.Messages.Count > 0)
@@ -141,6 +171,45 @@ namespace Microsoft.AspNet.SignalR.Messaging
                         }
                     }
                 }
+            }
+        }
+
+        private class CachedStreamEnumerator
+        {
+            private readonly IEnumerator<ScaleoutMapping> _enumerator;
+            private ScaleoutMapping _cachedValue;
+
+            public CachedStreamEnumerator(IEnumerator<ScaleoutMapping> enumerator, int streamIndex)
+            {
+                _enumerator = enumerator;
+                StreamIndex = streamIndex;
+            }
+
+            public int StreamIndex { get; private set; }
+
+            public bool TryMoveNext(out ScaleoutMapping mapping)
+            {
+                mapping = null;
+
+                if (_cachedValue != null)
+                {
+                    mapping = _cachedValue;
+                    return true;
+                }
+
+                if (_enumerator.MoveNext())
+                {
+                    mapping = _enumerator.Current;
+                    _cachedValue = mapping;
+                    return true;
+                }
+
+                return false;
+            }
+
+            public void ClearCachedValue()
+            {
+                _cachedValue = null;
             }
         }
     }

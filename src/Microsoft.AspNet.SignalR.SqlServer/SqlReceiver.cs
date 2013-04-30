@@ -44,7 +44,7 @@ namespace Microsoft.AspNet.SignalR.SqlServer
 
         public event Action Queried;
 
-        public event Action<ulong, IList<Message>> Received;
+        public event Action<ulong, ScaleoutMessage> Received;
 
         public event Action<Exception> Faulted;
 
@@ -149,9 +149,9 @@ namespace Microsoft.AspNet.SignalR.SqlServer
             // Update the Parameter with the new payload ID
             dbOperation.Parameters[0].Value = _lastPayloadId;
 
-            Received((ulong)id, payload.Messages);
+            Received((ulong)id, payload.ScaleoutMessage);
 
-            _trace.TraceVerbose("{0}Payload {1} containing {2} message(s) received", _tracePrefix, id, payload.Messages.Count);
+            _trace.TraceVerbose("{0}Payload {1} containing {2} message(s) received", _tracePrefix, id, payload.ScaleoutMessage.Messages.Count);
         }
     }
 }

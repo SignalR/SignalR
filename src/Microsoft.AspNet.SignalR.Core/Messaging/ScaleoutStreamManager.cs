@@ -13,11 +13,11 @@ namespace Microsoft.AspNet.SignalR.Messaging
     internal class ScaleoutStreamManager
     {
         private readonly Func<int, IList<Message>, Task> _send;
-        private readonly Action<int, ulong, IList<Message>> _receive;
+        private readonly Action<int, ulong, ScaleoutMessage> _receive;
         private readonly ScaleoutStream[] _streams;
 
         public ScaleoutStreamManager(Func<int, IList<Message>, Task> send,
-                                     Action<int, ulong, IList<Message>> receive,
+                                     Action<int, ulong, ScaleoutMessage> receive,
                                      int streamCount,
                                      TraceSource trace,
                                      IPerformanceCounterManager performanceCounters,
@@ -66,9 +66,9 @@ namespace Microsoft.AspNet.SignalR.Messaging
             return _streams[streamIndex].Send(state => Send(state), context);
         }
 
-        public void OnReceived(int streamIndex, ulong id, IList<Message> messages)
+        public void OnReceived(int streamIndex, ulong id, ScaleoutMessage message)
         {
-            _receive(streamIndex, id, messages);
+            _receive(streamIndex, id, message);
 
             // We assume if a message has come in then the stream is open
             Open(streamIndex);
