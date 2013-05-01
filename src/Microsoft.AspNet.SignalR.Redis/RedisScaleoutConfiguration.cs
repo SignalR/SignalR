@@ -44,7 +44,7 @@ namespace Microsoft.AspNet.SignalR
         /// <summary>
         /// The Redis event key to use.
         /// </summary>
-        public string EventKey { get; set; }
+        public string EventKey { get; private set; }
 
         private static Func<RedisConnection> MakeConnectionFactory(string server, int port, string password)
         {
