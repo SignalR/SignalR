@@ -24,6 +24,7 @@
             /// <param name="connection" type="signalR">The SignalR connection to start</param>
             var that = this,
                 fireConnect = function () {
+                    fireConnect = $.noop;
                     onSuccess();
                     connection.log("Longpolling connected");
                 },

@@ -946,37 +946,18 @@
             return false;
         },
 
-        processMessages: function (connection, minData, onInitialize) {
-            var data;
+        processMessages: function (connection, minData, onInitialized) {
+            var data,
+                $connection = $(connection);
+
+            // If our transport supports keep alive then we need to update the last keep alive time stamp.
+            // Very rarely the transport can be null.
+            if (connection.transport && connection.transport.supportsKeepAlive && connection.keepAliveData.activated) {
+                this.updateKeepAlive(connection);
+            }
 
             if (minData) {
                 data = this.maximizePersistentResponse(minData);
-
-                // If we did not initialize (we could already be initialized)
-                if (!transportLogic.tryInitialize(data, onInitialize)) {
-                    // Try to buffer only if we're still trying to connect to the server.
-                    // Protects against server race where data can come to the client faster
-                    // than the initialize message.
-                    if (transportLogic.tryPreConnectBuffer(connection, minData)) {
-                        // We've successfully buffered a message so abort current message execution
-                        return;
-                    }
-                }
-            }
-
-            // Transport can be null if we've just closed the connection
-            if (connection.transport) {
-                var $connection = $(connection);
-
-                // If our transport supports keep alive then we need to update the last keep alive time stamp.
-                // Very rarely the transport can be null.
-                if (connection.transport.supportsKeepAlive && connection.keepAliveData.activated) {
-                    this.updateKeepAlive(connection);
-                }
-
-                if (!minData) {
-                    return;
-                }
 
                 if (data.Disconnect) {
                     connection.log("Disconnect command received from server");
@@ -988,14 +969,24 @@
 
                 this.updateGroups(connection, data.GroupsToken);
 
+                if (data.MessageId) {
+                    connection.messageId = data.MessageId;
+                }
+
+                // If we did not initialize (we could already be initialized)
+                if (onInitialized && !transportLogic.tryInitialize(data, onInitialized)) {
+                    // Try to buffer only if we're still trying to connect to the server.
+                    // Protects against server race where data can come to the client faster
+                    // than the initialize message.
+                    if (transportLogic.tryPreConnectBuffer(connection, minData)) {
+                        return;
+                    }
+                }
+
                 if (data.Messages) {
                     $.each(data.Messages, function (index, message) {
                         $connection.triggerHandler(events.onReceived, [message]);
                     });
-                }
-
-                if (data.MessageId) {
-                    connection.messageId = data.MessageId;
                 }
             }
         },
@@ -1636,6 +1627,7 @@
             /// <param name="connection" type="signalR">The SignalR connection to start</param>
             var that = this,
                 fireConnect = function () {
+                    fireConnect = $.noop;
                     onSuccess();
                     connection.log("Longpolling connected");
                 },
