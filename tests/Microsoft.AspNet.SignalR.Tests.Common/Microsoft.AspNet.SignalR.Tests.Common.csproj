@@ -123,6 +123,7 @@
     <Compile Include="Hubs\ChatWithGroups.cs" />
     <Compile Include="Hubs\EchoHub.cs" />
     <Compile Include="Hubs\ExamineHeadersHub.cs" />
+    <Compile Include="Hubs\GroupJoiningHub.cs" />
     <Compile Include="Hubs\MyItemsHub.cs" />
     <Compile Include="Infrastructure\BasicAuthModule.cs" />
     <Compile Include="Infrastructure\ClientAssertExtensions.cs" />

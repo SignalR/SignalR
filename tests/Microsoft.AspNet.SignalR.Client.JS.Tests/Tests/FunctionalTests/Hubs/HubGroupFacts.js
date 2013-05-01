@@ -77,5 +77,30 @@ testUtilities.runWithAllTransports(function (transport) {
         };
     });
 
+    QUnit.asyncTimeoutTest(transport + " transport can join group in OnConnected and get message.", testUtilities.defaultTestTimeout, function (end, assert, testName) {
+        var connection = testUtilities.createHubConnection(end, assert, testName),
+            groupJoiningHub = connection.createHubProxies().groupJoiningHub,
+            pingCount = 0;
+
+        groupJoiningHub.client.ping = function () {
+            assert.comment("Ping received from group.");
+
+            if (++pingCount === 2) {
+                assert.comment("Pinged twice.");
+                end();
+            }
+        };
+
+        connection.start({ transport: transport }).done(function () {
+            assert.ok(true, "Connected");
+            groupJoiningHub.server.pingGroup();
+        });
+
+        // Cleanup
+        return function () {
+            connection.stop();
+        };
+    });
+
 });
 
