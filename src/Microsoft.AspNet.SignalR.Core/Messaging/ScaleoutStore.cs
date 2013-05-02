@@ -47,6 +47,14 @@ namespace Microsoft.AspNet.SignalR.Messaging
             }
         }
 
+        internal ulong MinMappingId
+        {
+            get
+            {
+                return _minMappingId;
+            }
+        }
+
         public ScaleoutMapping MaxMapping
         {
             get
@@ -145,7 +153,11 @@ namespace Microsoft.AspNet.SignalR.Messaging
                             _minMessageId = (long)(existingFragment.MaxId + 1);
                             _minMappingId = existingFragment.MaxId;
                         }
-
+                        else if(idxIntoFragmentsArray == 0)
+                        {
+                            _minMappingId = mapping.Id;
+                        }
+                        
                         return true;
                     }
                 }
@@ -248,7 +260,8 @@ namespace Microsoft.AspNet.SignalR.Messaging
                 }
             }
 
-            // If we're expired or we're at the first mapping then get everything
+            // If we're expired or we're at the first mapping or we're lower than the 
+            // min then get everything
             if (expiredMappingId || mappingId <= _minMappingId)
             {
                 return GetAllMessages(minMessageId);
