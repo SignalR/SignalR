@@ -48,6 +48,8 @@ namespace Microsoft.AspNet.SignalR.Client
         // The default connection state is disconnected
         private ConnectionState _state;
 
+        private ConnectingMessageBuffer _connectingMessageBuffer;
+
         private KeepAliveData _keepAliveData;
 
         private Task _connectTask;
@@ -125,7 +127,6 @@ namespace Microsoft.AspNet.SignalR.Client
         public Connection(string url, IDictionary<string, string> queryString)
             : this(url, CreateQueryString(queryString))
         {
-
         }
 
         /// <summary>
@@ -153,6 +154,7 @@ namespace Microsoft.AspNet.SignalR.Client
             Url = url;
             QueryString = queryString;
             _disconnectTimeoutOperation = DisposableAction.Empty;
+            _connectingMessageBuffer = new ConnectingMessageBuffer(this, OnMessageReceived);
             Items = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
             State = ConnectionState.Disconnected;
             TraceLevel = TraceLevels.All;
@@ -306,6 +308,7 @@ namespace Microsoft.AspNet.SignalR.Client
                     {
                         var stateChange = new StateChange(oldState: _state, newState: value);
                         _state = value;
+
                         if (StateChanged != null)
                         {
                             StateChanged(stateChange);
@@ -398,6 +401,13 @@ namespace Microsoft.AspNet.SignalR.Client
                              {
                                  ChangeState(ConnectionState.Connecting, ConnectionState.Connected);
 
+                                 // Now that we're connected drain any messages within the buffer
+                                 // We want to protect against state changes when draining
+                                 lock (_stateLock)
+                                 {
+                                     _connectingMessageBuffer.TryDrain();
+                                 }
+
                                  if (_keepAliveData != null)
                                  {
                                      // Start the monitor to check for server activity
@@ -482,6 +492,10 @@ namespace Microsoft.AspNet.SignalR.Client
                         string connectionId = ConnectionId;
 
                         Trace(TraceLevels.Events, "Stop");
+
+                        // If we've connected then instantly disconnected we may have data in the incomingMessageBuffer
+                        // Therefore we need to clear it incase we start the connection again.
+                        _connectingMessageBuffer.Clear();
 
                         // Dispose the heart beat monitor so we don't fire notifications when waiting to abort
                         _monitor.Dispose();
@@ -614,7 +628,15 @@ namespace Microsoft.AspNet.SignalR.Client
         [SuppressMessage("Microsoft.Design", "CA1062:Validate arguments of public methods", MessageId = "0", Justification = "This is called by the transport layer")]
         void IConnection.OnReceived(JToken message)
         {
-            OnMessageReceived(message);
+            // Try to buffer only if we're still trying to connect to the server.
+            // Need to protect against state changes here
+            lock (_stateLock)
+            {
+                if (!_connectingMessageBuffer.TryBuffer(message))
+                {
+                    OnMessageReceived(message);
+                }
+            }
         }
 
         [SuppressMessage("Microsoft.Design", "CA1062:Validate arguments of public methods", MessageId = "0", Justification = "This is called by the transport layer")]
@@ -622,11 +644,22 @@ namespace Microsoft.AspNet.SignalR.Client
         {
             if (Received != null)
             {
-                Received(message.ToString());
+                // #1889: We now have a try-catch in the OnMessageReceived handler.  One note about this change is that
+                // messages that are triggered via responses to server invocations will no longer be wrapped in an
+                // aggregate exception due to this change.  This makes the exception throwing behavior consistent across
+                // all types of receive triggers.
+                try
+                {
+                    Received(message.ToString());
+                }
+                catch (Exception ex)
+                {
+                    OnError(ex);
+                }
             }
         }
 
-        void IConnection.OnError(Exception error)
+        private void OnError(Exception error)
         {
             Trace(TraceLevels.Events, "OnError({0})", error);
 
@@ -634,6 +667,11 @@ namespace Microsoft.AspNet.SignalR.Client
             {
                 Error(error);
             }
+        }
+
+        void IConnection.OnError(Exception error)
+        {
+            OnError(error);
         }
 
         void IConnection.OnReconnecting()
