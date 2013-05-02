@@ -64,7 +64,7 @@
 
         isDisconnecting = function (connection) {
             return connection.state === signalR.connectionState.disconnected;
-        }, 
+        },
 
         configureStopReconnectingTimeout = function (connection) {
             var stopReconnectingTimeout,
@@ -181,8 +181,7 @@
             connection.log("Invalid transport: " + requestedTransport.toString());
             requestedTransport = null;
         }
-        else if (requestedTransport === "auto" && signalR._.ieVersion <= 8)
-        {
+        else if (requestedTransport === "auto" && signalR._.ieVersion <= 8) {
             // If we're doing an auto transport and we're IE8 then force longPolling, #1764
             return ["longPolling"];
 
@@ -192,7 +191,7 @@
     }
 
     function getDefaultPort(protocol) {
-        if(protocol === "http:") {
+        if (protocol === "http:") {
             return 80;
         }
         else if (protocol === "https:") {
@@ -203,18 +202,56 @@
     function addDefaultPort(protocol, url) {
         // Remove ports  from url.  We have to check if there's a / or end of line
         // following the port in order to avoid removing ports such as 8080.
-        if(url.match(/:\d+$/)) {
+        if (url.match(/:\d+$/)) {
             return url;
         } else {
             return url + ":" + getDefaultPort(protocol);
         }
     }
 
+    function ConnectingMessageBuffer(connection, drainCallback) {
+        var that = this,
+            buffer = [];
+
+        that.tryBuffer = function (message) {
+            if (connection.state === $.signalR.connectionState.connecting) {
+                buffer.push(message);
+                
+                return true;
+            }
+
+            return false;
+        };
+
+        that.tryDrain = function () {
+            // Ensure that the connection is connected when we drain (do not want to drain while a connection is not active)
+            if (connection.state === $.signalR.connectionState.connected) {
+                while (buffer.length !== 0) {
+                    drainCallback(buffer.shift());
+                }
+
+                return true;
+            }
+
+            return false;
+        };
+
+        that.clear = function () {
+            buffer = [];
+        };
+    }
+
     signalR.fn = signalR.prototype = {
         init: function (url, qs, logging) {
+            var $connection = $(this);
+
             this.url = url;
             this.qs = qs;
-            this._ = {};
+            this._ = {
+                connectingMessageBuffer: new ConnectingMessageBuffer(this, function(message) {
+                    $connection.triggerHandler(events.onReceived, [message]);
+                })
+            };
             if (typeof (logging) === "boolean") {
                 this.logging = logging;
             }
@@ -419,9 +456,13 @@
                                 signalR.connectionState.connecting,
                                 signalR.connectionState.connected);
 
+                    // Drain any incoming buffered messages (messages that came in prior to connect)
+                    connection._.connectingMessageBuffer.tryDrain();
+
                     $(connection).triggerHandler(events.onStart);
 
-                    _pageWindow.unload(function () { // failure
+                    // wire the stop handler for when the user leaves the page
+                    _pageWindow.unload(function () {
                         connection.stop(false /* async */);
                     });
 
@@ -461,7 +502,7 @@
                     // Once the server has labeled the PersistentConnection as Disconnected, we should stop attempting to reconnect
                     // after res.DisconnectTimeout seconds.
                     connection.disconnectTimeout = res.DisconnectTimeout * 1000; // in ms
-                    
+
 
                     // If we have a keep alive
                     if (res.KeepAliveTimeout) {
@@ -560,7 +601,9 @@
             /// <returns type="signalR" />
             var connection = this;
             $(connection).bind(events.onReceived, function (e, data) {
-                callback.call(connection, data);
+                if (!connection._.connectingMessageBuffer.tryBuffer(data)) {
+                    callback.call(connection, data);
+                }
             });
             return connection;
         },
@@ -603,7 +646,7 @@
             /// <param name="callback" type="Function">A callback function to execute when the connection is slow</param>
             /// <returns type="signalR" />
             var connection = this;
-            $(connection).bind(events.onConnectionSlow, function(e, data) {
+            $(connection).bind(events.onConnectionSlow, function (e, data) {
                 callback.call(connection);
             });
 
@@ -666,6 +709,9 @@
                 // Remove the ID and the deferral on stop, this is to ensure that if a connection is restarted it takes on a new id/deferral.
                 delete connection.id;
                 delete connection._deferral;
+
+                // Clear out our message buffer
+                connection._.connectingMessageBuffer.clear();
             }
             finally {
                 changeState(connection, connection.state, signalR.connectionState.disconnected);
