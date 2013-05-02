@@ -174,6 +174,25 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
         }
 
         [Fact]
+        public void SubscriptionWithoutTimestampsThrows()
+        {
+            var dr = new DefaultDependencyResolver();
+            using (var bus = new TestScaleoutBus(dr, streams: 3))
+            {
+                var subscriber = new TestSubscriber(new[] { "key" });
+
+                Assert.Throws<FormatException>(() =>
+                {
+                    bus.Subscribe(subscriber, "0,0|1,0/A", (result, state) =>
+                    {
+                        return TaskAsyncHelper.True;
+
+                    }, 10, null);
+                });
+            }
+        }
+
+        [Fact]
         public void SubscriptionPublishingAfter()
         {
             var dr = new DefaultDependencyResolver();

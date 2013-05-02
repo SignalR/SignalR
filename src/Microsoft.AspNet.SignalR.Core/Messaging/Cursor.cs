@@ -49,7 +49,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
                 textWriter.Write(cursor._escapedKey);
                 textWriter.Write(',');
                 WriteUlongAsHexToBuffer(cursor.Id, textWriter);
-                if (cursor.Timestamp != null)
+                if (cursor.Timestamp.HasValue)
                 {
                     textWriter.Write('/');
                     WriteUlongAsHexToBuffer((ulong)cursor.Timestamp.Value, textWriter);
