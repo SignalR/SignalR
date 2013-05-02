@@ -8,7 +8,8 @@
 
     var signalR = $.signalR,
         events = $.signalR.events,
-        changeState = $.signalR.changeState;
+        changeState = $.signalR.changeState,
+        transportLogic;
 
     signalR.transports = {};
 
@@ -59,7 +60,7 @@
                connection.state === signalR.connectionState.reconnecting;
     }
 
-    signalR.transports._logic = {
+    transportLogic = signalR.transports._logic = {
         pingServer: function (connection, transport) {
             /// <summary>Pings the server</summary>
             /// <param name="connection" type="signalr">Connection associated with the server ping</param>
@@ -150,7 +151,7 @@
                 }
             }
             url += "?" + qs;
-            url = this.addQs(url, connection);
+            url = transportLogic.addQs(url, connection);
             url += "&tid=" + Math.floor(Math.random() * 11);
             return url;
         },
@@ -159,6 +160,7 @@
             return {
                 MessageId: minPersistentResponse.C,
                 Messages: minPersistentResponse.M,
+                Initialized: typeof (minPersistentResponse.Z) !== "undefined" ? true : false,
                 Disconnect: typeof (minPersistentResponse.D) !== "undefined" ? true : false,
                 TimedOut: typeof (minPersistentResponse.T) !== "undefined" ? true : false,
                 LongPollDelay: minPersistentResponse.L,
@@ -225,22 +227,26 @@
             connection.log("Fired ajax abort async = " + async);
         },
 
-        processMessages: function (connection, minData) {
-            var data;
-            // Transport can be null if we've just closed the connection
-            if (connection.transport) {
-                var $connection = $(connection);
+        tryInitialize: function (persistentResponse, onInitialized) {
+            if (persistentResponse.Initialized) {
+                onInitialized();
+                return true;
+            }
 
-                // If our transport supports keep alive then we need to update the last keep alive time stamp.
-                // Very rarely the transport can be null.
-                if (connection.transport.supportsKeepAlive && connection.keepAliveData.activated) {
-                    this.updateKeepAlive(connection);
-                }
+            return false;
+        },
 
-                if (!minData) {
-                    return;
-                }
+        processMessages: function (connection, minData, onInitialized) {
+            var data,
+                $connection = $(connection);
 
+            // If our transport supports keep alive then we need to update the last keep alive time stamp.
+            // Very rarely the transport can be null.
+            if (connection.transport && connection.transport.supportsKeepAlive && connection.keepAliveData.activated) {
+                this.updateKeepAlive(connection);
+            }
+
+            if (minData) {
                 data = this.maximizePersistentResponse(minData);
 
                 if (data.Disconnect) {
@@ -253,14 +259,16 @@
 
                 this.updateGroups(connection, data.GroupsToken);
 
+                if (data.MessageId) {
+                    connection.messageId = data.MessageId;
+                }
+
                 if (data.Messages) {
                     $.each(data.Messages, function (index, message) {
                         $connection.triggerHandler(events.onReceived, [message]);
                     });
-                }
 
-                if (data.MessageId) {
-                    connection.messageId = data.MessageId;
+                    transportLogic.tryInitialize(data, onInitialized);
                 }
             }
         },
