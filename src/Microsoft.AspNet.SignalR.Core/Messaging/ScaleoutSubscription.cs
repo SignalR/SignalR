@@ -202,7 +202,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
             {
                 // We require cursors to have a timestamp, if it doesn't then 
                 // the backplane wasn't implemented correctly
-                if (cursors[i].Timestamp == null)
+                if (!cursors[i].Timestamp.HasValue)
                 {
                     throw new FormatException(Resources.Error_InvalidCursorFormat);
                 }
