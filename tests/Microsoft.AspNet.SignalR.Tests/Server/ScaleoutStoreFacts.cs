@@ -117,5 +117,114 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
 
             Assert.False(result);
         }
+
+        [Fact]
+        public void SingleMessageOnlyVerifyIds()
+        {
+            var store = new ScaleoutStore(10);
+            var message = new ScaleoutMessage();
+            message.CreationTime = new DateTime(TimeSpan.TicksPerDay);
+            store.Add(new ScaleoutMapping(10ul, message));
+
+            Assert.Equal(10ul, store.MinMappingId);
+            Assert.Equal(10ul, store.MaxMapping.Id);
+        }
+
+        [Fact]
+        public void AccurateMappingIds()
+        {
+            var store = new ScaleoutStore(10);
+            var message1 = new ScaleoutMessage { CreationTime = new DateTime(TimeSpan.TicksPerDay) };
+            store.Add(new ScaleoutMapping(10ul, message1));
+            var message2 = new ScaleoutMessage { CreationTime = new DateTime(TimeSpan.TicksPerDay * 2) };
+            store.Add(new ScaleoutMapping(15ul, message2));
+
+            Assert.Equal(10ul, store.MinMappingId);
+            Assert.Equal(15ul, store.MaxMapping.Id);
+        }
+
+        [Fact]
+        public void MinMappingIdMovesWhenOverflow()
+        {
+            var store = new ScaleoutStore(5);
+
+            int id = 0;
+            for (int i = 0; i < store.FragmentSize + 1; i++)
+            {
+                for (int j = 0; j < store.FragmentCount; j++)
+                {
+                    var message = new ScaleoutMessage();
+                    message.CreationTime = new DateTime(TimeSpan.TicksPerDay * i);
+                    store.Add(new ScaleoutMapping((ulong)id, message));
+                    id++;
+                }
+            }
+
+            Assert.Equal((ulong)store.FragmentSize - 1, store.MinMappingId);
+        }
+
+        [Fact]
+        public void GettingMessagesWithCursorBiggerThanMaxReturnsAllIfOlderCursor()
+        {
+            var store = new ScaleoutStore(10);
+
+            for (int i = 10; i < 15; i++)
+            {
+                var message = new ScaleoutMessage();
+                message.CreationTime = new DateTime(TimeSpan.TicksPerDay * i);
+                store.Add(new ScaleoutMapping((ulong)i, message));
+            }
+
+            var result = store.GetMessagesByMappingId(16, TimeSpan.TicksPerDay);
+            Assert.Equal(5, result.Messages.Count);
+        }
+
+        [Fact]
+        public void GettingMessagesWithCursorBiggerThanMaxReturnsNothingIfNewer()
+        {
+            var store = new ScaleoutStore(10);
+
+            for (int i = 0; i < 5; i++)
+            {
+                var message = new ScaleoutMessage();
+                message.CreationTime = new DateTime(TimeSpan.TicksPerDay * i);
+                store.Add(new ScaleoutMapping((ulong)i, message));
+            }
+
+            var result = store.GetMessagesByMappingId(6, TimeSpan.TicksPerDay * 6);
+            Assert.Equal(0, result.Messages.Count);
+        }
+
+        [Fact]
+        public void GettingMessagesWithCursorLowerThanMinReturnsAll()
+        {
+            var store = new ScaleoutStore(10);
+
+            for (int i = 5; i < 10; i++)
+            {
+                var message = new ScaleoutMessage();
+                message.CreationTime = new DateTime(TimeSpan.TicksPerDay * i);
+                store.Add(new ScaleoutMapping((ulong)i, message));
+            }
+
+            var result = store.GetMessagesByMappingId(4, TimeSpan.TicksPerDay);
+            Assert.Equal(0ul, result.FirstMessageId);
+            Assert.Equal(5ul, store.MinMappingId);
+            Assert.Equal(5, result.Messages.Count);
+        }
+
+        [Fact]
+        public void GettingMessagesWithZeroCursorTimestampReturnsEverything()
+        {
+            var store = new ScaleoutStore(10);
+
+            var message = new ScaleoutMessage();
+            message.CreationTime = new DateTime(TimeSpan.TicksPerDay * 1);
+            store.Add(new ScaleoutMapping((ulong)0, message));
+
+            var result = store.GetMessagesByMappingId(0, 0);
+            Assert.Equal(0ul, result.FirstMessageId);
+            Assert.Equal(1, result.Messages.Count);
+        }
     }
 }
