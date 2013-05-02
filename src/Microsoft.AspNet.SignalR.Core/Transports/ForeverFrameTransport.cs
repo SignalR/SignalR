@@ -109,7 +109,7 @@ namespace Microsoft.AspNet.SignalR.Transports
             var initContext = new ForeverFrameTransportContext(context.Transport, context.State);
 
             // Ensure delegate continues to use the C# Compiler static delegate caching optimization.
-            return context.Transport.EnqueueOperation(s => WriteInit(s), initContext);
+            return WriteInit(initContext);
         }
 
         private static Task WriteInit(object state)
