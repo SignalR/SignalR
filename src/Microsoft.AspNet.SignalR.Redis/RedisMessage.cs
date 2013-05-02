@@ -9,10 +9,10 @@ namespace Microsoft.AspNet.SignalR.Redis
 {
     public class RedisMessage
     {
-        public long Id { get; private set; }
+        public ulong Id { get; private set; }
         public ScaleoutMessage ScaleoutMessage { get; private set; }
 
-        public static byte[] ToBytes(long id, IList<Message> messages)
+        public static byte[] ToBytes(long id, IList<Message> messages, DateTime serverTime)
         {
             if (messages == null)
             {
@@ -29,6 +29,7 @@ namespace Microsoft.AspNet.SignalR.Redis
                 binaryWriter.Write(id);
                 binaryWriter.Write(buffer.Length);
                 binaryWriter.Write(buffer);
+                binaryWriter.Write(serverTime.Ticks);
 
                 return ms.ToArray();
             }
@@ -41,12 +42,13 @@ namespace Microsoft.AspNet.SignalR.Redis
                 var binaryReader = new BinaryReader(stream);
                 var message = new RedisMessage();
 
-                message.Id = binaryReader.ReadInt64();
-
+                message.Id = (ulong)binaryReader.ReadInt64();
                 int count = binaryReader.ReadInt32();
                 byte[] buffer = binaryReader.ReadBytes(count);
+                var creationTime = new DateTime(binaryReader.ReadInt64());
 
-                message.ScaleoutMessage = ScaleoutMessage.FromBytes(buffer); 
+                message.ScaleoutMessage = ScaleoutMessage.FromBytes(buffer);
+                message.ScaleoutMessage.CreationTime = creationTime;
                 return message;
             }
         }

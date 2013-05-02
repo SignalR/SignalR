@@ -10,6 +10,11 @@ namespace Microsoft.AspNet.SignalR.Stress.Hubs
         public Task Echo(string message)
         {
             return Clients.Caller.echo(message);
-        }     
+        }
+
+        public Task Send(int number)
+        {
+            return Clients.All.send(number, Context.ConnectionId, Context.Headers["X-Server-Name"]);
+        }
     }
 }

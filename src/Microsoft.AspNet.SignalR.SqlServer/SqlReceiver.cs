@@ -22,7 +22,7 @@ namespace Microsoft.AspNet.SignalR.SqlServer
 
         private long? _lastPayloadId = null;
         private string _maxIdSql = "SELECT [PayloadId] FROM [{0}].[{1}_Id]";
-        private string _selectSql = "SELECT [PayloadId], [Payload] FROM [{0}].[{1}] WHERE [PayloadId] > @PayloadId";
+        private string _selectSql = "SELECT [PayloadId], [Payload], [InsertedOn] FROM [{0}].[{1}] WHERE [PayloadId] > @PayloadId";
         private ObservableDbOperation _dbOperation;
         private volatile bool _disposed;
 
@@ -132,7 +132,7 @@ namespace Microsoft.AspNet.SignalR.SqlServer
         private void ProcessRecord(IDataRecord record, DbOperation dbOperation)
         {
             var id = record.GetInt64(0);
-            var payload = SqlPayload.FromBytes(record.GetBinary(1));
+            ScaleoutMessage message = SqlPayload.FromBytes(record);
 
             if (id != _lastPayloadId + 1)
             {
@@ -149,9 +149,9 @@ namespace Microsoft.AspNet.SignalR.SqlServer
             // Update the Parameter with the new payload ID
             dbOperation.Parameters[0].Value = _lastPayloadId;
 
-            Received((ulong)id, payload.ScaleoutMessage);
+            Received((ulong)id, message);
 
-            _trace.TraceVerbose("{0}Payload {1} containing {2} message(s) received", _tracePrefix, id, payload.ScaleoutMessage.Messages.Count);
+            _trace.TraceVerbose("{0}Payload {1} containing {2} message(s) received", _tracePrefix, id, message.Messages.Count);
         }
     }
 }
