@@ -65,10 +65,8 @@ namespace Microsoft.AspNet.SignalR.Transports
             return context.Transport.Context.Response.Flush();
         }
 
-        private static Task WriteInit(object state)
+        private static Task WriteInit(ServerSentEventsTransport transport)
         {
-            var transport = (ServerSentEventsTransport)state;
-
             transport.Context.Response.ContentType = "text/event-stream";
 
             // "data: initialized\n\n"

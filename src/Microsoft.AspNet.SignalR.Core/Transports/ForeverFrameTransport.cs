@@ -112,10 +112,8 @@ namespace Microsoft.AspNet.SignalR.Transports
             return WriteInit(initContext);
         }
 
-        private static Task WriteInit(object state)
+        private static Task WriteInit(ForeverFrameTransportContext context)
         {
-            var context = (ForeverFrameTransportContext)state;
-
             context.Transport.Context.Response.ContentType = "text/html; charset=UTF-8";
 
             context.Transport.HTMLOutputWriter.WriteRaw((string)context.State);

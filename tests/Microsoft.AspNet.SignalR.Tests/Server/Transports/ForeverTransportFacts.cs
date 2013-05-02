@@ -236,20 +236,19 @@ namespace Microsoft.AspNet.SignalR.Tests.Server.Transports
             transportConnection.Setup(m => m.Receive(It.IsAny<string>(),
                                                      It.IsAny<Func<PersistentResponse, object, Task<bool>>>(),
                                                      It.IsAny<int>(),
-                                                     It.IsAny<object>()))
-                .Callback<string, Func<PersistentResponse, object, Task<bool>>, int, object>(async (id, cb, max, st) =>
-                {
-                    callback = cb;
-                    state = st;
+                                                     It.IsAny<object>())).Callback<string, Func<PersistentResponse, object, Task<bool>>, int, object>(async (id, cb, max, st) =>
+                                                     {
+                                                         callback = cb;
+                                                         state = st;
 
-                    bool result = await cb(new PersistentResponse() { Disconnect = true }, st);
+                                                         bool result = await cb(new PersistentResponse() { Disconnect = true }, st);
 
-                    if (!result)
-                    {
-                        disposable.Dispose();
-                    }
-                })
-                .Returns(disposable);
+                                                         if (!result)
+                                                         {
+                                                             disposable.Dispose();
+                                                         }
+                                                     })
+                                                    .Returns(disposable);
 
             var transport = new Mock<ForeverTransport>(hostContext, json, heartBeat.Object, counters.Object, traceManager.Object)
             {
@@ -391,7 +390,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Server.Transports
                     pr =>
                     {
                         results.Add("InitializeResponse");
-                        return Task.FromResult(0);
+                        return TaskAsyncHelper.Empty;
                     });
 
             transport.Setup(t => t.Send(It.IsAny<PersistentResponse>()))
@@ -400,7 +399,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Server.Transports
                         transport.Object.EnqueueOperation(() =>
                         {
                             results.Add("Send");
-                            return Task.FromResult(0);
+                            return TaskAsyncHelper.Empty;
                         }));
 
             // Act
@@ -456,7 +455,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Server.Transports
 
             transport.Setup(t => t.Send(It.IsAny<PersistentResponse>()))
                 .Returns<PersistentResponse>(
-                    pr => transport.Object.EnqueueOperation(() => Task.FromResult(0)));
+                    pr => transport.Object.EnqueueOperation(() => TaskAsyncHelper.Empty));
 
             var tcs = new TaskCompletionSource<bool>();
             transport.Object.AfterRequestEnd = (ex) =>
