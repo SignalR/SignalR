@@ -1,6 +1,49 @@
 ﻿QUnit.module("Connection State Facts");
 
 testUtilities.runWithAllTransports(function (transport) {
+
+    QUnit.asyncTimeoutTest(transport + " transport triggers start after initialize message.", testUtilities.defaultTestTimeout, function (end, assert, testName) {
+        var connections = [testUtilities.createHubConnection(end, assert, testName), testUtilities.createConnection("signalr", end, assert, testName)],
+            savedProcessMessage = $.signalR.transports._logic.processMessages,
+            runWith = function (connection) {
+                var initialized = false,
+                    deferred = $.Deferred();
+
+                $.signalR.transports._logic.processMessages = function (connection, minData, onInitialize) {
+                    // We could be buffering so ensure that we have the initialize message
+                    if (minData.Z) {
+                        assert.ok(onInitialize, "On initialize passed to process messages.");
+                        assert.ok(true, "Initialized");
+                        initialized = true;
+                    }
+
+                    savedProcessMessage.apply(this, arguments);
+                }
+
+                connection.start({ transport: transport }).done(function () {
+                    assert.isTrue(initialized, "Start triggered after initialization.");
+                    connection.stop();
+                    deferred.resolve();
+                });
+
+                return deferred.promise();
+            };
+
+        runWith(connections[0]).done(function () {
+            runWith(connections[1]).done(function () {
+                end();
+            });
+        });
+
+        // Cleanup
+        return function () {
+            $.signalR.transports._logic.processMessages = savedProcessMessage;
+            $.each(connections, function (_, connection) {
+                connection.stop();
+            });
+        };
+    });
+
     QUnit.asyncTimeoutTest(transport + " transport connection shifts into appropriate states.", testUtilities.defaultTestTimeout, function (end, assert, testName) {
         var connection = testUtilities.createHubConnection(end, assert, testName),
             demo = connection.createHubProxies().demo;
