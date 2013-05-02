@@ -1,5 +1,22 @@
 ﻿QUnit.module("Transports Common - Process Messages Facts");
 
+QUnit.test("onInitialize is triggered on an initialize message.", function () {
+    var connection = testUtilities.createConnection(),
+        initializeTriggered = false;
+
+    $.signalR.transports._logic.processMessages(connection, {
+        C: 1234,
+        M: [],
+        L: 1337,
+        G: "foo",
+        Z: 1
+    }, function () {
+        initializeTriggered = true;
+    });
+
+    QUnit.isTrue(initializeTriggered, "Initialize was triggered from initialize message");
+});
+
 QUnit.test("Noop's on missing transport", function () {
     var connection = testUtilities.createConnection(),
         lastKeepAlive = false;

@@ -1,7 +1,6 @@
 ﻿QUnit.module("Hub Proxy Facts");
 
-// All transports will run successfully once #1442 is completed.  At that point we will be able to change this to runWithAllTransports
-testUtilities.runWithTransports(["foreverFrame", "serverSentEvents", "webSockets"], function (transport) {
+testUtilities.runWithAllTransports(function (transport) {
     QUnit.asyncTimeoutTest(transport + " transport unable to create invalid hub", testUtilities.defaultTestTimeout, function (end, assert, testName) {
         var connection = testUtilities.createHubConnection($.noop, { ok: $.noop }, testName),
             badHub = connection.createHubProxy('SomeHubThatDoesntExist');
@@ -21,6 +20,37 @@ testUtilities.runWithTransports(["foreverFrame", "serverSentEvents", "webSockets
             connection.stop();
         };
     });
+
+    QUnit.asyncTimeoutTest(transport + " transport buffers messages correctly.", testUtilities.defaultTestTimeout * 100, function (end, assert, testName) {
+        var connection = testUtilities.createHubConnection(end, assert, testName),
+            onConnectedBufferHub = connection.createHubProxies().onConnectedBufferHub,
+            bufferMeCalls = 0,
+            lastBufferMeValue = -1;
+
+        onConnectedBufferHub.client.pong = function () {
+            assert.equal(bufferMeCalls, 2, "Buffer me has been called twice prior to pong's execution.");
+            end();
+        };
+
+        onConnectedBufferHub.client.bufferMe = function (val) {
+            // Ensure correct ordering of the buffered messages
+            assert.isTrue(lastBufferMeValue < val, "Buffered message is drained in the correct order.");
+            lastBufferMeValue = val;
+            bufferMeCalls++;
+            assert.equal(connection.state, $.signalR.connectionState.connected, "Buffer me triggers after the connection is in the connected state.");
+        };
+
+        connection.start({ transport: transport }).done(function () {
+            assert.equal(bufferMeCalls, 2, "After start's deferred completes the buffer has already been drained.");
+
+            onConnectedBufferHub.server.ping();
+        });
+        // Cleanup
+        return function () {
+            connection.stop();
+        };
+    });
+
 });
 
 QUnit.module("Hub Proxy Facts", !window.document.commandLineTest);
