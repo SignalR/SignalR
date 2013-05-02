@@ -160,7 +160,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
         /// <param name="id">id of the payload within that stream.</param>
         /// <param name="message">The scaleout message.</param>
         /// <returns></returns>
-        protected void OnReceived(int streamIndex, ulong id, ScaleoutMessage message)
+        protected virtual void OnReceived(int streamIndex, ulong id, ScaleoutMessage message)
         {
             StreamManager.OnReceived(streamIndex, id, message);
         }

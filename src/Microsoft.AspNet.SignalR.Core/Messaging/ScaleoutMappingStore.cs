@@ -31,17 +31,17 @@ namespace Microsoft.AspNet.SignalR.Messaging
             _maxKey = id;
         }
 
-        public ulong MaxKey
+        public ScaleoutMapping MaxMapping
         {
             get
             {
-                return _maxKey;
+                return _store.MaxMapping;
             }
         }
 
-        public IEnumerator<ScaleoutMapping> GetEnumerator(ulong id)
+        public IEnumerator<ScaleoutMapping> GetEnumerator(ulong id, long timestamp)
         {
-            MessageStoreResult<ScaleoutMapping> result = _store.GetMessagesByMappingId(id);
+            MessageStoreResult<ScaleoutMapping> result = _store.GetMessagesByMappingId(id, timestamp);
 
             return new ScaleoutStoreEnumerator(_store, result);
         }

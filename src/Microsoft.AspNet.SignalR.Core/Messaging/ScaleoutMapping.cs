@@ -26,11 +26,13 @@ namespace Microsoft.AspNet.SignalR.Messaging
 
             Id = id;
             LocalKeyInfo = localKeyInfo;
+            ServerCreationTime = message.ServerCreationTime;
             CreationTime = message.CreationTime;
         }
 
         public ulong Id { get; private set; }
         public IDictionary<string, IList<LocalEventKeyInfo>> LocalKeyInfo { get; private set; }
-        public DateTime CreationTime { get; private set; }
+        public DateTime ServerCreationTime { get; private set; }
+        public DateTime CreationTime { get; set; }
     }
 }
