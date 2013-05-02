@@ -61,7 +61,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
             }
             else
             {
-                cursors = Cursor.GetCursors(cursor);
+                cursors = GetCursors(cursor);
             }
 
             _cursors = cursors;
@@ -192,6 +192,23 @@ namespace Microsoft.AspNet.SignalR.Messaging
                     }
                 }
             }
+        }
+
+        private static List<Cursor> GetCursors(string cursor)
+        {
+            var cursors = Cursor.GetCursors(cursor);
+
+            for (int i = 0; i < cursors.Count; i++)
+            {
+                // We require cursors to have a timestamp, if it doesn't then 
+                // the backplane wasn't implemented correctly
+                if (cursors[i].Timestamp == null)
+                {
+                    throw new FormatException(Resources.Error_InvalidCursorFormat);
+                }
+            }
+
+            return cursors;
         }
 
         private class CachedStreamEnumerator
