@@ -8,7 +8,8 @@
 
     var signalR = $.signalR,
         events = $.signalR.events,
-        changeState = $.signalR.changeState;
+        changeState = $.signalR.changeState,
+        transportLogic;
 
     signalR.transports = {};
 
@@ -59,7 +60,7 @@
                connection.state === signalR.connectionState.reconnecting;
     }
 
-    signalR.transports._logic = {
+    transportLogic = signalR.transports._logic = {
         pingServer: function (connection, transport) {
             /// <summary>Pings the server</summary>
             /// <param name="connection" type="signalr">Connection associated with the server ping</param>
@@ -148,7 +149,7 @@
                 }
             }
             url += "?" + qs;
-            url = this.addQs(url, connection);
+            url = transportLogic.addQs(url, connection);
             url += "&tid=" + Math.floor(Math.random() * 11);
             return url;
         },
@@ -157,6 +158,7 @@
             return {
                 MessageId: minPersistentResponse.C,
                 Messages: minPersistentResponse.M,
+                Initialized: typeof (minPersistentResponse.Z) !== "undefined" ? true : false,
                 Disconnect: typeof (minPersistentResponse.D) !== "undefined" ? true : false,
                 TimedOut: typeof (minPersistentResponse.T) !== "undefined" ? true : false,
                 LongPollDelay: minPersistentResponse.L,
@@ -223,22 +225,44 @@
             connection.log("Fired ajax abort async = " + async);
         },
 
-        processMessages: function (connection, minData) {
-            var data;
-            // Transport can be null if we've just closed the connection
-            if (connection.transport) {
-                var $connection = $(connection);
+        drainIncomingMessageBuffer: function (connection) {
+            while (connection._.incomingMessageBuffer.length > 0) {
+                // Do not need to check if we're still connected at this point because in connection.stop
+                // we clear the message buffer which will result in the next iteration of the loop not executing
+                transportLogic.processMessages(connection, connection._.incomingMessageBuffer.shift());
+            }
+        },
 
-                // If our transport supports keep alive then we need to update the last keep alive time stamp.
-                // Very rarely the transport can be null.
-                if (connection.transport.supportsKeepAlive && connection.keepAliveData.activated) {
-                    this.updateKeepAlive(connection);
-                }
+        tryPreConnectBuffer: function (connection, message) {
+            // Check if we need to buffer message
+            if (connection.state === signalR.connectionState.connecting) {
+                connection._.incomingMessageBuffer.push(message);
+                return true;
+            }
 
-                if (!minData) {
-                    return;
-                }
+            return false;
+        },
 
+        tryInitialize: function (persistentResponse, onInitialized) {
+            if (persistentResponse.Initialized) {
+                onInitialized();
+                return true;
+            }
+
+            return false;
+        },
+
+        processMessages: function (connection, minData, onInitialized) {
+            var data,
+                $connection = $(connection);
+
+            // If our transport supports keep alive then we need to update the last keep alive time stamp.
+            // Very rarely the transport can be null.
+            if (connection.transport && connection.transport.supportsKeepAlive && connection.keepAliveData.activated) {
+                this.updateKeepAlive(connection);
+            }
+
+            if (minData) {
                 data = this.maximizePersistentResponse(minData);
 
                 if (data.Disconnect) {
@@ -251,14 +275,24 @@
 
                 this.updateGroups(connection, data.GroupsToken);
 
+                if (data.MessageId) {
+                    connection.messageId = data.MessageId;
+                }
+
+                // If we did not initialize (we could already be initialized)
+                if (onInitialized && !transportLogic.tryInitialize(data, onInitialized)) {
+                    // Try to buffer only if we're still trying to connect to the server.
+                    // Protects against server race where data can come to the client faster
+                    // than the initialize message.
+                    if (transportLogic.tryPreConnectBuffer(connection, minData)) {
+                        return;
+                    }
+                }
+
                 if (data.Messages) {
                     $.each(data.Messages, function (index, message) {
                         $connection.triggerHandler(events.onReceived, [message]);
                     });
-                }
-
-                if (data.MessageId) {
-                    connection.messageId = data.MessageId;
                 }
             }
         },

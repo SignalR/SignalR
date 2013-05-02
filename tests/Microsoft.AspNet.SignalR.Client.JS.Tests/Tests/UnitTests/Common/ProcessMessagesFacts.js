@@ -1,5 +1,49 @@
 ﻿QUnit.module("Transports Common - Process Messages Facts");
 
+QUnit.test("onInitialize is triggered on an initialize message.", function () {
+    var connection = testUtilities.createConnection(),
+        initializeTriggered = false;
+
+    $.signalR.transports._logic.processMessages(connection, {
+        C: 1234,
+        M: [],
+        L: 1337,
+        G: "foo",
+        Z: 1
+    }, function () {
+        initializeTriggered = true;
+    });
+
+    QUnit.isTrue(initializeTriggered, "Initialize was triggered from initialize message");
+});
+
+QUnit.test("Messages buffer prior to being connected", function () {
+    var connection = testUtilities.createConnection(),
+        message = {
+            C: 1234,
+            M: [{ uno: 1, dos: 2 }, { tres: 3, quatro: 4 }],
+            L: 1337,
+            G: "foo"
+        };
+
+    connection.state = $.signalR.connectionState.connecting;
+
+    $.signalR.transports._logic.processMessages(connection, message);
+    $.signalR.transports._logic.processMessages(connection, message);
+
+    QUnit.equal(connection._.incomingMessageBuffer.length, 2, "There are two messages buffered.");
+
+    connection.state = $.signalR.connectionState.connected;
+
+    $.signalR.transports._logic.processMessages(connection, message);
+
+    QUnit.equal(connection._.incomingMessageBuffer.length, 2, "There are still two messages buffered after processing messages a third time when connected.");
+
+    while (connection._.incomingMessageBuffer.length > 0) {
+        QUnit.equal(connection._.incomingMessageBuffer.pop(), message, "All buffered messages are those that were initially buffered.");
+    }
+});
+
 QUnit.test("Noop's on missing transport", function () {
     var connection = testUtilities.createConnection(),
         lastKeepAlive = false;

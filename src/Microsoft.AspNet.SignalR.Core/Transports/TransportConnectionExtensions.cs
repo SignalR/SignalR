@@ -8,6 +8,11 @@ namespace Microsoft.AspNet.SignalR.Transports
 {
     internal static class TransportConnectionExtensions
     {
+        internal static Task Initialize(this ITransportConnection connection, string connectionId)
+        {
+            return SendCommand(connection, connectionId, CommandType.Initializing);
+        }
+
         internal static Task Close(this ITransportConnection connection, string connectionId)
         {
             return SendCommand(connection, connectionId, CommandType.Disconnect);

@@ -51,6 +51,11 @@ namespace Microsoft.AspNet.SignalR.Transports
         public int TotalCount { get; set; }
 
         /// <summary>
+        /// True if the connection is in process of initializing
+        /// </summary>
+        public bool Initializing { get; set; }
+
+        /// <summary>
         /// True if the connection receives a disconnect command.
         /// </summary>
         public bool Disconnect { get; set; }
@@ -99,6 +104,12 @@ namespace Microsoft.AspNet.SignalR.Transports
             _writeCursor(writer);
             writer.Write('"');
             writer.Write(',');
+
+            if (Initializing)
+            {
+                jsonWriter.WritePropertyName("Z");
+                jsonWriter.WriteValue(1);
+            }
 
             if (Disconnect)
             {
