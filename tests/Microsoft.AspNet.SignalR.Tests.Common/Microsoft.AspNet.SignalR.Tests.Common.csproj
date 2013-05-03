@@ -125,6 +125,7 @@
     <Compile Include="Hubs\ExamineHeadersHub.cs" />
     <Compile Include="Hubs\GroupJoiningHub.cs" />
     <Compile Include="Hubs\MyItemsHub.cs" />
+    <Compile Include="Hubs\OnConnectedBufferHub.cs" />
     <Compile Include="Infrastructure\BasicAuthModule.cs" />
     <Compile Include="Infrastructure\ClientAssertExtensions.cs" />
     <Compile Include="Infrastructure\OrderedCountDownRange.cs" />
