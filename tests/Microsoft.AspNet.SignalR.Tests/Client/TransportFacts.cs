@@ -52,6 +52,20 @@ namespace Microsoft.AspNet.SignalR.Tests
         }
 
         [Fact]
+        public void OnInitializedFiresFromInitializeMessage()
+        {
+            bool timedOut, disconnected, triggered = false;
+            var connection = new Connection("http://foo.com");
+
+            TransportHelper.ProcessResponse(connection, "{\"Z\":1, \"M\":[]}", out timedOut, out disconnected, () =>
+            {
+                triggered = true;
+            });
+
+            Assert.True(triggered);
+        }
+
+        [Fact]
         public void ProcessResponseCapturesOnReceivedExceptions()
         {
             bool timedOut, disconnected;
