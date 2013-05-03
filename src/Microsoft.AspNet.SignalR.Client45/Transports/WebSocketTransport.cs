@@ -14,6 +14,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
     {
         private readonly IHttpClient _client;
         private CancellationToken _disconnectToken;
+        private Action _initializeCallback;
         private WebSocketConnectionInfo _connectionInfo;
         private TaskCompletionSource<object> _startTcs;
         private ManualResetEventSlim _abortEventSlim;
@@ -65,6 +66,10 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
         public Task Start(IConnection connection, string data, CancellationToken disconnectToken)
         {
             _startTcs = new TaskCompletionSource<object>();
+            _initializeCallback = () =>
+            {
+                _startTcs.TrySetResult(null);
+            };
             _disconnectToken = disconnectToken;
             _connectionInfo = new WebSocketConnectionInfo(connection, data);
 
@@ -122,7 +127,8 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
             TransportHelper.ProcessResponse(_connectionInfo.Connection,
                                             message,
                                             out timedOut,
-                                            out disconnected);
+                                            out disconnected,
+                                            _initializeCallback);
 
             if (disconnected && !_disconnectToken.IsCancellationRequested)
             {
@@ -133,8 +139,8 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
 
         public override void OnOpen()
         {
-            if (!_startTcs.TrySetResult(null) &&
-                _connectionInfo.Connection.ChangeState(ConnectionState.Reconnecting, ConnectionState.Connected))
+            // This will noop if we're not in the reconnecting state
+            if (_connectionInfo.Connection.ChangeState(ConnectionState.Reconnecting, ConnectionState.Connected))
             {
                 _connectionInfo.Connection.OnReconnected();
             }

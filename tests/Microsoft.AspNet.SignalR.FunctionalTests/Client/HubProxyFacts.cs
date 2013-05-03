@@ -1,6 +1,8 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNet.SignalR.Client;
 using Microsoft.AspNet.SignalR.Client.Hubs;
 using Microsoft.AspNet.SignalR.FunctionalTests;
 using Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure;
@@ -19,6 +21,120 @@ namespace Microsoft.AspNet.SignalR.Tests
         [InlineData(HostType.IISExpress, TransportType.Websockets)]
         [InlineData(HostType.IISExpress, TransportType.ServerSentEvents)]
         [InlineData(HostType.IISExpress, TransportType.LongPolling)]
+        public void InitMessageReceivedPriorToStartCompletion(HostType hostType, TransportType transportType)
+        {
+            using (var host = CreateHost(hostType, transportType))
+            {
+                host.Initialize();
+
+                HubConnection hubConnection = CreateHubConnection(host);
+                // Does nothing on OnConnected so we shouldn't get any user generated messages
+                IHubProxy proxy = hubConnection.CreateHubProxy("EchoHub");
+
+                using (hubConnection)
+                {
+                    Assert.True(String.IsNullOrEmpty(hubConnection.MessageId));
+
+                    hubConnection.Start(host.Transport).Wait();
+
+                    // If we have an init message that means we got a message prior to start
+                    Assert.False(String.IsNullOrEmpty(hubConnection.MessageId));
+                }
+            }
+        }
+
+        [Theory]
+        [InlineData(HostType.Memory, TransportType.ServerSentEvents)]
+        [InlineData(HostType.Memory, TransportType.LongPolling)]
+        [InlineData(HostType.IISExpress, TransportType.Websockets)]
+        [InlineData(HostType.IISExpress, TransportType.ServerSentEvents)]
+        [InlineData(HostType.IISExpress, TransportType.LongPolling)]
+        public void TransportsBufferMessagesCorrectly(HostType hostType, TransportType transportType)
+        {
+            using (var host = CreateHost(hostType, transportType))
+            {
+                host.Initialize();
+
+                HubConnection hubConnection = CreateHubConnection(host);
+                IHubProxy proxy = hubConnection.CreateHubProxy("OnConnectedBufferHub");
+                int bufferMeCalls = 0;
+                int lastBufferMeValue = -1;
+
+                using (hubConnection)
+                {
+                    var wh = new ManualResetEvent(false);
+
+                    proxy.On("pong", () =>
+                    {
+                        Assert.Equal(2, bufferMeCalls);
+
+                        wh.Set();
+                    });
+
+                    proxy.On<int>("bufferMe", (val) =>
+                    {
+                        // Ensure correct ordering of the buffered messages
+                        Assert.True(Interlocked.Exchange(ref lastBufferMeValue,val) < val);
+                        bufferMeCalls++;
+                        Assert.Equal(hubConnection.State, ConnectionState.Connected);
+                    });
+
+                    hubConnection.Start(host.Transport).Wait();
+
+                    Assert.Equal(2, bufferMeCalls);
+
+                    proxy.Invoke("Ping");
+
+                    Assert.True(wh.WaitOne(TimeSpan.FromSeconds(10)));
+                }
+            }
+        }
+
+        [Theory]
+        [InlineData(HostType.Memory, TransportType.ServerSentEvents)]
+        [InlineData(HostType.Memory, TransportType.LongPolling)]
+        [InlineData(HostType.IISExpress, TransportType.Websockets)]
+        [InlineData(HostType.IISExpress, TransportType.ServerSentEvents)]
+        [InlineData(HostType.IISExpress, TransportType.LongPolling)]
+        public void TransportCanJoinGroupInOnConnected(HostType hostType, TransportType transportType)
+        {
+            using (var host = CreateHost(hostType, transportType))
+            {
+                host.Initialize();
+
+                HubConnection hubConnection = CreateHubConnection(host);
+                IHubProxy proxy = hubConnection.CreateHubProxy("GroupJoiningHub");
+                int pingCount = 0;
+
+                using (hubConnection)
+                {
+                    var wh = new ManualResetEvent(false);
+
+                    proxy.On("ping", () =>
+                    {
+                        if (++pingCount == 2)
+                        {
+                            wh.Set();
+                        }
+
+                        Assert.True(pingCount <= 2);
+                    });
+
+                    hubConnection.Start(host.Transport).Wait();
+
+                    proxy.Invoke("PingGroup");
+
+                    Assert.True(wh.WaitOne(TimeSpan.FromSeconds(10)));
+                }
+            }
+        }
+
+        [Theory]
+        [InlineData(HostType.Memory, TransportType.ServerSentEvents)]
+        [InlineData(HostType.Memory, TransportType.LongPolling)]
+        [InlineData(HostType.IISExpress, TransportType.Websockets)]
+        [InlineData(HostType.IISExpress, TransportType.ServerSentEvents)]
+        [InlineData(HostType.IISExpress, TransportType.LongPolling)]
         public void EndToEndTest(HostType hostType, TransportType transportType)
         {
             using (var host = CreateHost(hostType, transportType))
@@ -27,7 +143,6 @@ namespace Microsoft.AspNet.SignalR.Tests
 
                 HubConnection hubConnection = CreateHubConnection(host);
                 IHubProxy proxy = hubConnection.CreateHubProxy("ChatHub");
-
 
                 using (hubConnection)
                 {

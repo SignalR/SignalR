@@ -433,7 +433,7 @@ namespace Microsoft.AspNet.SignalR.Client.Tests
                         Debug.WriteLine("Transport: {0}", (object)transport.Name);
 
                         var wh = new ManualResetEventSlim();
-                        Exception thrown = new Exception(),
+                        Exception thrown = new InvalidOperationException(),
                                   caught = null;
 
                         var connection = new Connection("http://foo/transport-response");
@@ -455,8 +455,7 @@ namespace Microsoft.AspNet.SignalR.Client.Tests
                             connection.Send("");
 
                             Assert.True(wh.Wait(TimeSpan.FromSeconds(5)));
-                            Assert.IsType(typeof(AggregateException), caught);
-                            Assert.Equal(thrown, caught.InnerException);
+                            Assert.Equal(thrown, caught);
                         }
                     }
                 }

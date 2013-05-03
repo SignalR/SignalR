@@ -99,12 +99,9 @@
                 if (opened === false) {
                     opened = true;
 
-                    if (onSuccess) {
-                        onSuccess();
-                    } else if (changeState(connection,
+                    if (changeState(connection,
                                          signalR.connectionState.reconnecting,
                                          signalR.connectionState.connected) === true) {
-                        // If there's no onSuccess handler we assume this is a reconnect
                         $connection.triggerHandler(events.onReconnect);
                     }
                 }
@@ -116,7 +113,7 @@
                     return;
                 }
 
-                transportLogic.processMessages(connection, window.JSON.parse(e.data));
+                transportLogic.processMessages(connection, window.JSON.parse(e.data), onSuccess);
             }, false);
 
             connection.eventSource.addEventListener("error", function (e) {

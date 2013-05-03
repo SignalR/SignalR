@@ -29,6 +29,7 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
 
         private bool _disconnected;
         private bool _aborted;
+        private bool _initializing;
         private readonly TraceSource _traceSource;
         private readonly IAckHandler _ackHandler;
         private readonly IProtectedData _protectedData;
@@ -199,6 +200,8 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
                 response.Disconnect = _disconnected;
                 response.Aborted = _aborted;
                 response.TotalCount = result.TotalCount;
+                response.Initializing = _initializing;
+                _initializing = false;
             }
             
             PopulateResponseState(response);
@@ -276,6 +279,9 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
                             EventKeyRemoved(this, name);
                         }
                     }
+                    break;
+                case CommandType.Initializing:
+                    _initializing = true;
                     break;
                 case CommandType.Disconnect:
                     _disconnected = true;

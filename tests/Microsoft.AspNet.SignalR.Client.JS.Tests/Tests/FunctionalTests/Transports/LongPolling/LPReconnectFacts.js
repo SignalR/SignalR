@@ -220,25 +220,13 @@ QUnit.asyncTimeoutTest("Can remain connected to /signalr/js.", testUtilities.def
 });
 
 // For #1809
-QUnit.asyncTimeoutTest("Does not reconnect infinitely if ping succeeds", testUtilities.defaultTestTimeout * 2, function (end, assert, testName) {
+QUnit.asyncTimeoutTest("Does not reconnect infinitely if network is down", testUtilities.defaultTestTimeout * 2, function (end, assert, testName) {
     var connection = testUtilities.createHubConnection(end, assert, testName),
         demo = connection.createHubProxies().demo,
-        savedPingServer = $.signalR.transports._logic.pingServer,
         reconnectingTriggered = false;
 
     // Need to have at least one client function in order to be subscribed to a hub
     demo.client.TestGuid = function () {
-        $.signalR.transports._logic.pingServer = function () {
-            var deferral = $.Deferred();
-
-            // Force the ping server to resolve in a timeout (act like an actual ajax request)
-            window.setTimeout(function () {
-                deferral.resolve();
-            }, 100);
-
-            return deferral.promise();
-        };
-
         // Stop reconnecting after 6 seconds ( this overrides the negotiate value ).
         connection.disconnectTimeout = 6000;
 
@@ -263,7 +251,6 @@ QUnit.asyncTimeoutTest("Does not reconnect infinitely if ping succeeds", testUti
 
     // Cleanup
     return function () {
-        $.signalR.transports._logic.pingServer = savedPingServer;
         connection.stop();
         $.network.connect();
     };

@@ -99,7 +99,10 @@
             connection.frameId = frameId;
 
             if (onSuccess) {
-                connection.onSuccess = onSuccess;
+                connection.onSuccess = function () {
+                    onSuccess();
+                    delete connection.onSuccess;
+                };
             }
 
             // After connecting, if after the specified timeout there's no response stop the connection
@@ -139,7 +142,7 @@
         receive: function (connection, data) {
             var cw;
 
-            transportLogic.processMessages(connection, data);
+            transportLogic.processMessages(connection, data, connection.onSuccess);
             // Delete the script & div elements
             connection.frameMessageCount = (connection.frameMessageCount || 0) + 1;
             if (connection.frameMessageCount > 50) {
@@ -177,6 +180,7 @@
                 connection.frameId = null;
                 delete connection.frame;
                 delete connection.frameId;
+                delete connection.onSuccess;
                 connection.log("Stopping forever frame");
             }
         },
@@ -190,13 +194,9 @@
         },
 
         started: function (connection) {
-            if (connection.onSuccess) {
-                connection.onSuccess();
-                connection.onSuccess = null;
-                delete connection.onSuccess;
-            } else if (changeState(connection,
-                                   signalR.connectionState.reconnecting,
-                                   signalR.connectionState.connected) === true) {
+            if (changeState(connection,
+                signalR.connectionState.reconnecting,
+                signalR.connectionState.connected) === true) {
                 // If there's no onSuccess handler we assume this is a reconnect
                 $(connection).triggerHandler(events.onReconnect);
             }

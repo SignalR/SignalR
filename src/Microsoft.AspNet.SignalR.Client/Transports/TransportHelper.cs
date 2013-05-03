@@ -124,10 +124,16 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
             return qs;
         }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1021:AvoidOutParameters", Justification="This is called internally.")]
+        public static void ProcessResponse(IConnection connection, string response, out bool timedOut, out bool disconnected)
+        {
+            ProcessResponse(connection, response, out timedOut, out disconnected, () => { });
+        }
+
         [SuppressMessage("Microsoft.Design", "CA1062:Validate arguments of public methods", MessageId = "0", Justification = "This is called internally.")]
         [SuppressMessage("Microsoft.Design", "CA1021:AvoidOutParameters", Justification = "This is called internally.")]
         [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "The client receives the exception in the OnError callback.")]
-        public static void ProcessResponse(IConnection connection, string response, out bool timedOut, out bool disconnected)
+        public static void ProcessResponse(IConnection connection, string response, out bool timedOut, out bool disconnected, Action onInitialized)
         {
             if (connection == null)
             {
@@ -147,7 +153,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
             try
             {
                 var result = JValue.Parse(response);
-                
+
                 if (!result.HasValues)
                 {
                     return;
@@ -172,19 +178,14 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
                 var messages = result["M"] as JArray;
                 if (messages != null)
                 {
+                    connection.MessageId = (string)result["C"];
+
                     foreach (JToken message in messages)
                     {
-                        try
-                        {
-                            connection.OnReceived(message);
-                        }
-                        catch (Exception ex)
-                        {
-                            connection.OnError(ex);
-                        }
+                        connection.OnReceived(message);
                     }
 
-                    connection.MessageId = (string)result["C"];
+                    TryInitialize(response, onInitialized);
                 }
             }
             catch (Exception ex)
@@ -192,7 +193,6 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
                 connection.OnError(ex);
             }
         }
-
 
         private static void UpdateGroups(IConnection connection, JToken groupsToken)
         {
@@ -206,6 +206,19 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
         private static string GetNoCacheUrlParam()
         {
             return "noCache=" + Guid.NewGuid().ToString();
+        }
+
+        private static bool TryInitialize(string response, Action onInitialized)
+        {
+            var responseToken = JValue.Parse(response);
+
+            if (responseToken.HasValues && (int?)responseToken["Z"] == 1)
+            {
+                onInitialized();
+                return true;
+            }
+
+            return false;
         }
     }
 }
