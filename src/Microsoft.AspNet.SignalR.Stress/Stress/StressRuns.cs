@@ -569,13 +569,22 @@ namespace Microsoft.AspNet.SignalR.Stress
             private long id;
             public event EventHandler<EventMessage> Received;
 
-            public void Publish(EventMessage message)
+            public void Publish(int streamIndex, ScaleoutMessage message)
             {
                 if (Received != null)
                 {
-                    message.Id = (ulong)Interlocked.Increment(ref id);
-                    message.Message.CreationTime = DateTime.UtcNow;
-                    Received(this, message);
+                    lock (this)
+                    {
+                        message.CreationTime = DateTime.UtcNow;
+                        Received(this, new EventMessage
+                        {
+                            Id = (ulong)id,
+                            Message = message,
+                            StreamIndex = streamIndex
+                        });
+
+                        id++;
+                    }
                 }
             }
         }
@@ -603,34 +612,37 @@ namespace Microsoft.AspNet.SignalR.Stress
 
                 _bus.Received += (sender, e) =>
                 {
-                    _queue.Enqueue(() => Task.Run(() => OnReceived(e.StreamIndex, e.Id, e.Message)));
+                    _queue.Enqueue(state =>
+                    {
+                        var eventMessage = (EventMessage)state;
+                        return Task.Run(() => OnReceived(eventMessage.StreamIndex, eventMessage.Id, eventMessage.Message));
+                    },
+                    e);
                 };
 
                 Open(0);
             }
 
-
             protected override Task Send(IList<Message> messages)
             {
-                var eventMessage = new EventMessage
-                {
-                    StreamIndex = 0,
-                    Message = new ScaleoutMessage(messages)
-                };
-
-                _bus.Publish(eventMessage);
+                _bus.Publish(0, new ScaleoutMessage(messages));
 
                 return TaskAsyncHelper.Empty;
             }
 
             protected override void OnReceived(int streamIndex, ulong id, ScaleoutMessage message)
             {
-                if (_delay != TimeSpan.Zero)
-                {
-                    Thread.Sleep(_delay);
-                }
+                string value = message.Messages[0].GetString();
 
-                Console.WriteLine("{0}: OnReceived({1}, {2}, {3})", _serverName, streamIndex, id, message.Messages.Count);
+                if (!value.Contains("ServerCommandType"))
+                {
+                    if (_delay != TimeSpan.Zero)
+                    {
+                        Thread.Sleep(_delay);
+                    }
+
+                    Console.WriteLine("{0}: OnReceived({1}, {2}, {3})", _serverName, streamIndex, id, value);
+                }
 
                 base.OnReceived(streamIndex, id, message);
             }
