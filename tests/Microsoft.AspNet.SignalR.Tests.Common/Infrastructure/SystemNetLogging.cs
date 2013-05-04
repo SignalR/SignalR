@@ -13,12 +13,24 @@ namespace Microsoft.AspNet.SignalR.Tests.FunctionalTests.Infrastructure
         public static IDisposable Enable(string path)
         {
             var listener = new TextWriterTraceListener(path);
-            _logging.Value.Sources.ForEach(s => s.Listeners.Add(listener));
+            _logging.Value.Sources.ForEach(s =>
+                {
+                    if (s != null)
+                    {
+                        s.Listeners.Add(listener);
+                    }
+                });
 
             return new DisposableAction(() =>
             {
                 listener.Flush();
-                _logging.Value.Sources.ForEach(s => s.Listeners.Remove(listener));
+                _logging.Value.Sources.ForEach(s =>
+                    {
+                        if (s != null)
+                        {
+                            s.Listeners.Remove(listener);
+                        }
+                    });
                 listener.Close();
             });
         }

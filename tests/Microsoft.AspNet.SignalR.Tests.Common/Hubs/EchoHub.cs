@@ -13,6 +13,6 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Hubs
         public string EchoReturn(string message)
         {
             return message;
-        }
+        }  
     }
 }
