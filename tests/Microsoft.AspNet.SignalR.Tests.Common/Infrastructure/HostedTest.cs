@@ -292,7 +292,6 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure
             protected override Task Send(int streamIndex, IList<Message> messages)
             {
                 var message = new ScaleoutMessage(messages);
-                message.CreationTime = DateTime.UtcNow;
 
                 OnReceived(streamIndex, _id, message);
 

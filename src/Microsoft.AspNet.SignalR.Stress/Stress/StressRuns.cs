@@ -575,7 +575,6 @@ namespace Microsoft.AspNet.SignalR.Stress
                 {
                     lock (this)
                     {
-                        message.CreationTime = DateTime.UtcNow;
                         Received(this, new EventMessage
                         {
                             Id = (ulong)id,

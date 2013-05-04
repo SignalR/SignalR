@@ -234,7 +234,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
             }
         }
 
-        public MessageStoreResult<ScaleoutMapping> GetMessagesByMappingId(ulong mappingId, long timestamp)
+        public MessageStoreResult<ScaleoutMapping> GetMessagesByMappingId(ulong mappingId)
         {
             var minMessageId = (ulong)Volatile.Read(ref _minMessageId);
             bool expiredMappingId = false;
@@ -242,7 +242,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
             int idxIntoFragment;
             // look for the fragment containing the start of the data requested by the client
             Fragment thisFragment;
-            if (timestamp != 0 && TryGetFragmentFromMappingId(mappingId, out thisFragment))
+            if (TryGetFragmentFromMappingId(mappingId, out thisFragment))
             {
                 if (thisFragment.TrySearch(mappingId, out idxIntoFragment))
                 {
@@ -262,17 +262,12 @@ namespace Microsoft.AspNet.SignalR.Messaging
 
             // If we're expired or we're at the first mapping or we're lower than the 
             // min then get everything
-            if (expiredMappingId || mappingId <= _minMappingId)
+            if (expiredMappingId || mappingId < _minMappingId || mappingId == UInt64.MaxValue)
             {
                 return GetAllMessages(minMessageId);
             }
 
-            // We have a message id that is older than the max id we have so get all messages
-            if (_maxMapping != null && _maxMapping.CreationTime.Ticks > timestamp)
-            {
-                return GetAllMessages(minMessageId);
-            }
-
+            // We're up to date so do nothing
             return new MessageStoreResult<ScaleoutMapping>(0, _emptyArraySegment, hasMoreData: false);
         }
 

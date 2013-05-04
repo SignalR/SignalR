@@ -41,27 +41,22 @@ namespace Microsoft.AspNet.SignalR.Messaging
                 {
                     ScaleoutMapping maxMapping = streams[i].MaxMapping;
 
-                    ulong id = 0;
-                    long timestamp = DateTime.MinValue.Ticks;
+                    ulong id = UInt64.MaxValue;
                     string key = i.ToString(CultureInfo.InvariantCulture);
 
                     if (maxMapping != null)
                     {
                         id = maxMapping.Id;
-                        timestamp = maxMapping.CreationTime.Ticks;
                     }
 
-                    var newCursor = new Cursor(key, id)
-                    {
-                        Timestamp = timestamp
-                    };
+                    var newCursor = new Cursor(key, id);
 
                     cursors.Add(newCursor);
                 }
             }
             else
             {
-                cursors = GetCursors(cursor);
+                cursors = Cursor.GetCursors(cursor);
             }
 
             _cursors = cursors;
@@ -111,7 +106,6 @@ namespace Microsoft.AspNet.SignalR.Messaging
                     Cursor cursor = _cursors[i];
 
                     cursor.Id = nextMapping.Id;
-                    cursor.Timestamp = nextMapping.CreationTime.Ticks;
                 }
             }
         }
@@ -128,7 +122,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
                 Cursor cursor = _cursors[streamIndex];
 
                 // Try to find a local mapping for this payload
-                var enumerator = new CachedStreamEnumerator(store.GetEnumerator(cursor.Id, cursor.Timestamp.Value),
+                var enumerator = new CachedStreamEnumerator(store.GetEnumerator(cursor.Id),
                                                             streamIndex);
 
                 enumerators.Add(enumerator);
@@ -192,23 +186,6 @@ namespace Microsoft.AspNet.SignalR.Messaging
                     }
                 }
             }
-        }
-
-        private static List<Cursor> GetCursors(string cursor)
-        {
-            var cursors = Cursor.GetCursors(cursor);
-
-            for (int i = 0; i < cursors.Count; i++)
-            {
-                // We require cursors to have a timestamp, if it doesn't then 
-                // the backplane wasn't implemented correctly
-                if (!cursors[i].Timestamp.HasValue)
-                {
-                    throw new FormatException(Resources.Error_InvalidCursorFormat);
-                }
-            }
-
-            return cursors;
         }
 
         private class CachedStreamEnumerator

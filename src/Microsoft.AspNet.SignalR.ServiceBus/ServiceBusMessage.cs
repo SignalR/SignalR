@@ -37,7 +37,6 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
                 stream.CopyTo(ms);
 
                 var message = ScaleoutMessage.FromBytes(ms.ToArray());
-                message.CreationTime = brokeredMessage.EnqueuedTimeUtc;
 
                 return message;
             }
