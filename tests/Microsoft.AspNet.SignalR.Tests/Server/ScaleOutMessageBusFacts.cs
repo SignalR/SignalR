@@ -93,7 +93,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
 
                 try
                 {
-                    subscription = bus.Subscribe(subscriber, "0,00000000/10|1,00000000/A", (result, state) =>
+                    subscription = bus.Subscribe(subscriber, "0,00000000|1,00000000", (result, state) =>
                     {
                         foreach (var m in result.GetMessages())
                         {
@@ -149,7 +149,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
 
                 try
                 {
-                    subscription = bus.Subscribe(subscriber, "0,0/0|1,0/0|2,0/0", (result, state) =>
+                    subscription = bus.Subscribe(subscriber, "0,0|1,0|2,0", (result, state) =>
                     {
                         foreach (var m in result.GetMessages())
                         {
@@ -170,25 +170,6 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
                         subscription.Dispose();
                     }
                 }
-            }
-        }
-
-        [Fact]
-        public void SubscriptionWithoutTimestampsThrows()
-        {
-            var dr = new DefaultDependencyResolver();
-            using (var bus = new TestScaleoutBus(dr, streams: 3))
-            {
-                var subscriber = new TestSubscriber(new[] { "key" });
-
-                Assert.Throws<FormatException>(() =>
-                {
-                    bus.Subscribe(subscriber, "0,0|1,0/A", (result, state) =>
-                    {
-                        return TaskAsyncHelper.True;
-
-                    }, 10, null);
-                });
             }
         }
 
@@ -267,7 +248,6 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
                 {
                     Messages = messages,
                     ServerCreationTime = creationTime,
-                    CreationTime = DateTime.UtcNow
                 };
 
                 OnReceived(streamIndex, id, message);

@@ -108,22 +108,7 @@ namespace Microsoft.AspNet.SignalR.Redis
         private void SendImpl(IList<Message> messages, TaskCompletionSource<object> tcs)
         {
         go:
-
-            DateTime serverTime;
-
-            try
-            {
-                // Get the server time (this should be fast so leave it sync)
-                serverTime = _connection.Wait<DateTime>(_connection.Server.Time());
-            }
-            catch (Exception ex)
-            {
-                tcs.TrySetUnwrappedException(ex);
-                return;
-            }
-
             Task<long?> task = _connection.Strings.GetInt64(_db, _key);
-
 
             RedisTransaction transaction = null;
 
@@ -149,7 +134,7 @@ namespace Microsoft.AspNet.SignalR.Redis
 
                     transaction = _connection.CreateTransaction();
 
-                    Task<bool> transactionTask = ExecuteTransaction(transaction, task.Result, serverTime, messages);
+                    Task<bool> transactionTask = ExecuteTransaction(transaction, task.Result, messages);
 
                     if (transactionTask.IsCompleted)
                     {
@@ -194,7 +179,7 @@ namespace Microsoft.AspNet.SignalR.Redis
 
                     transaction = _connection.CreateTransaction();
 
-                    Task<bool> transactionTask = ExecuteTransaction(transaction, oldId, serverTime, messages);
+                    Task<bool> transactionTask = ExecuteTransaction(transaction, oldId, messages);
 
                     OnTransactionCompleting(transaction, transactionTask, messages, tcs);
                 })
@@ -248,7 +233,7 @@ namespace Microsoft.AspNet.SignalR.Redis
             }
         }
 
-        private Task<bool> ExecuteTransaction(RedisTransaction transaction, long? oldId, DateTime serverTime, IList<Message> messages)
+        private Task<bool> ExecuteTransaction(RedisTransaction transaction, long? oldId, IList<Message> messages)
         {
             _trace.TraceVerbose("ExecuteTransaction({0})", oldId);
 
@@ -256,7 +241,7 @@ namespace Microsoft.AspNet.SignalR.Redis
             long newId = (oldId ?? 0) + 1;
 
             // TODO: Don't do this everytime
-            byte[] data = RedisMessage.ToBytes(newId, messages, serverTime);
+            byte[] data = RedisMessage.ToBytes(newId, messages);
 
             // These don't need to be observed
             transaction.AddCondition(Condition.KeyEquals(_db, _key, oldId));

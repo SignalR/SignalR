@@ -88,7 +88,6 @@ namespace Microsoft.AspNet.SignalR.Tests
             {
                 Assert.Equal(cursors[i].Id, deserializedCursors[i].Id);
                 Assert.Equal(cursors[i].Key, deserializedCursors[i].Key);
-                Assert.Equal(cursors[i].Timestamp, deserializedCursors[i].Timestamp);
             }
         }
 
@@ -166,18 +165,6 @@ namespace Microsoft.AspNet.SignalR.Tests
         }
 
         [Theory]
-        [InlineData("A,1/4", "A", 1, 4)]
-        [InlineData("A,A/A", "A", 10, 10)]
-        public void CursorsWithTimestamps(string cursor, string key, long id, long timestamp)
-        {
-            var cursors = Cursor.GetCursors(cursor);
-            Assert.Equal(1, cursors.Count);
-            Assert.Equal(key, cursors[0].Key);
-            Assert.Equal((ulong)id, cursors[0].Id);
-            Assert.Equal(timestamp, cursors[0].Timestamp);
-        }
-
-        [Theory]
         [InlineData(@"|")]
         [InlineData(@"A|A2|")]
         [InlineData(@"||")]
@@ -213,10 +200,6 @@ namespace Microsoft.AspNet.SignalR.Tests
         [InlineData(@"test,A|test,B")]
         [InlineData(@",A|,B")]
         [InlineData(@"\test,A")]
-        [InlineData(@"A,1/")]
-        [InlineData(@"|1/")]
-        [InlineData(@"/")]
-        [InlineData(@"C,1/  ")]
         public void FuzzedCursors(string serializedCursor)
         {
             Assert.Throws<FormatException>(() => Cursor.GetCursors(serializedCursor));

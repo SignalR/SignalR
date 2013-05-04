@@ -32,11 +32,6 @@ namespace Microsoft.AspNet.SignalR.Messaging
         /// </summary>
         public DateTime ServerCreationTime { get; set; }
 
-        /// <summary>
-        /// The time the message was created in the scaleout backplane
-        /// </summary>
-        public DateTime CreationTime { get; set; }
-
         public byte[] ToBytes()
         {
             using (var ms = new MemoryStream())

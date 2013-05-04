@@ -123,7 +123,6 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
         {
             var store = new ScaleoutStore(10);
             var message = new ScaleoutMessage();
-            message.CreationTime = new DateTime(TimeSpan.TicksPerDay);
             store.Add(new ScaleoutMapping(10ul, message));
 
             Assert.Equal(10ul, store.MinMappingId);
@@ -134,9 +133,9 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
         public void AccurateMappingIds()
         {
             var store = new ScaleoutStore(10);
-            var message1 = new ScaleoutMessage { CreationTime = new DateTime(TimeSpan.TicksPerDay) };
+            var message1 = new ScaleoutMessage();
             store.Add(new ScaleoutMapping(10ul, message1));
-            var message2 = new ScaleoutMessage { CreationTime = new DateTime(TimeSpan.TicksPerDay * 2) };
+            var message2 = new ScaleoutMessage();
             store.Add(new ScaleoutMapping(15ul, message2));
 
             Assert.Equal(10ul, store.MinMappingId);
@@ -154,7 +153,6 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
                 for (int j = 0; j < store.FragmentCount; j++)
                 {
                     var message = new ScaleoutMessage();
-                    message.CreationTime = new DateTime(TimeSpan.TicksPerDay * i);
                     store.Add(new ScaleoutMapping((ulong)id, message));
                     id++;
                 }
@@ -164,19 +162,18 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
         }
 
         [Fact]
-        public void GettingMessagesWithCursorBiggerThanMaxReturnsAllIfOlderCursor()
+        public void GettingMessagesWithCursorBiggerThanMaxReturnsNothing()
         {
             var store = new ScaleoutStore(10);
 
             for (int i = 10; i < 15; i++)
             {
                 var message = new ScaleoutMessage();
-                message.CreationTime = new DateTime(TimeSpan.TicksPerDay * i);
                 store.Add(new ScaleoutMapping((ulong)i, message));
             }
 
-            var result = store.GetMessagesByMappingId(16, TimeSpan.TicksPerDay);
-            Assert.Equal(5, result.Messages.Count);
+            var result = store.GetMessagesByMappingId(16);
+            Assert.Equal(0, result.Messages.Count);
         }
 
         [Fact]
@@ -187,11 +184,10 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
             for (int i = 0; i < 5; i++)
             {
                 var message = new ScaleoutMessage();
-                message.CreationTime = new DateTime(TimeSpan.TicksPerDay * i);
                 store.Add(new ScaleoutMapping((ulong)i, message));
             }
 
-            var result = store.GetMessagesByMappingId(6, TimeSpan.TicksPerDay * 6);
+            var result = store.GetMessagesByMappingId(6);
             Assert.Equal(0, result.Messages.Count);
         }
 
@@ -203,26 +199,24 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
             for (int i = 5; i < 10; i++)
             {
                 var message = new ScaleoutMessage();
-                message.CreationTime = new DateTime(TimeSpan.TicksPerDay * i);
                 store.Add(new ScaleoutMapping((ulong)i, message));
             }
 
-            var result = store.GetMessagesByMappingId(4, TimeSpan.TicksPerDay);
+            var result = store.GetMessagesByMappingId(4);
             Assert.Equal(0ul, result.FirstMessageId);
             Assert.Equal(5ul, store.MinMappingId);
             Assert.Equal(5, result.Messages.Count);
         }
 
         [Fact]
-        public void GettingMessagesWithZeroCursorTimestampReturnsEverything()
+        public void GettingMessagesWithSentinelCursorReturnsEverything()
         {
             var store = new ScaleoutStore(10);
 
             var message = new ScaleoutMessage();
-            message.CreationTime = new DateTime(TimeSpan.TicksPerDay * 1);
             store.Add(new ScaleoutMapping((ulong)0, message));
 
-            var result = store.GetMessagesByMappingId(0, 0);
+            var result = store.GetMessagesByMappingId(UInt64.MaxValue);
             Assert.Equal(0ul, result.FirstMessageId);
             Assert.Equal(1, result.Messages.Count);
         }

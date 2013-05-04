@@ -36,9 +36,9 @@ namespace Microsoft.AspNet.SignalR.Messaging
             }
         }
 
-        public IEnumerator<ScaleoutMapping> GetEnumerator(ulong id, long timestamp)
+        public IEnumerator<ScaleoutMapping> GetEnumerator(ulong id)
         {
-            MessageStoreResult<ScaleoutMapping> result = _store.GetMessagesByMappingId(id, timestamp);
+            MessageStoreResult<ScaleoutMapping> result = _store.GetMessagesByMappingId(id);
 
             return new ScaleoutStoreEnumerator(_store, result);
         }

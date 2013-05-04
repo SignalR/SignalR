@@ -15,14 +15,10 @@ namespace Microsoft.AspNet.SignalR.Messaging
 
         public string Key { get; private set; }
         public ulong Id { get; set; }
-        public long? Timestamp { get; set; }
 
         public static Cursor Clone(Cursor cursor)
         {
-            return new Cursor(cursor.Key, cursor.Id, cursor._escapedKey)
-            {
-                Timestamp = cursor.Timestamp
-            };
+            return new Cursor(cursor.Key, cursor.Id, cursor._escapedKey);
         }
 
         public Cursor(string key, ulong id)
@@ -49,11 +45,6 @@ namespace Microsoft.AspNet.SignalR.Messaging
                 textWriter.Write(cursor._escapedKey);
                 textWriter.Write(',');
                 WriteUlongAsHexToBuffer(cursor.Id, textWriter);
-                if (cursor.Timestamp.HasValue)
-                {
-                    textWriter.Write('/');
-                    WriteUlongAsHexToBuffer((ulong)cursor.Timestamp.Value, textWriter);
-                }
             }
         }
 
@@ -146,7 +137,6 @@ namespace Microsoft.AspNet.SignalR.Messaging
             string currentKey = null;
             string currentEscapedKey = null;
             ulong currentId;
-            long? ticks = null;
             bool escape = false;
             bool consumingKey = true;
             var sb = new StringBuilder();
@@ -215,10 +205,9 @@ namespace Microsoft.AspNet.SignalR.Messaging
                             throw new FormatException(Resources.Error_InvalidCursorFormat);
                         }
 
-                        ParseCursorId(sb, out currentId, out ticks);
+                        ParseCursorId(sb, out currentId);
 
                         parsedCursor = new Cursor(currentKey, currentId, currentEscapedKey);
-                        parsedCursor.Timestamp = ticks;
 
                         cursors.Add(parsedCursor);
                         sb.Clear();
@@ -240,34 +229,18 @@ namespace Microsoft.AspNet.SignalR.Messaging
                 throw new FormatException(Resources.Error_InvalidCursorFormat);
             }
 
-            ParseCursorId(sb, out currentId, out ticks);
+            ParseCursorId(sb, out currentId);
 
             parsedCursor = new Cursor(currentKey, currentId, currentEscapedKey);
-            parsedCursor.Timestamp = ticks;
 
             cursors.Add(parsedCursor);
 
             return cursors;
         }
 
-        private static void ParseCursorId(StringBuilder sb, out ulong id, out long? ticks)
+        private static void ParseCursorId(StringBuilder sb, out ulong id)
         {
-            ticks = null;
             string value = sb.ToString();
-            int slashIndex = value.IndexOf('/');
-            
-            if (slashIndex != -1)
-            {
-                string timestampValue = value.Substring(slashIndex + 1);
-                if (String.IsNullOrWhiteSpace(timestampValue))
-                {
-                    throw new FormatException(Resources.Error_InvalidCursorFormat);
-                }
-
-                ticks = Int64.Parse(timestampValue, NumberStyles.HexNumber, CultureInfo.InvariantCulture);
-                value = value.Substring(0, slashIndex);
-            }
-
             id = UInt64.Parse(value, NumberStyles.HexNumber, CultureInfo.InvariantCulture);
         }
 

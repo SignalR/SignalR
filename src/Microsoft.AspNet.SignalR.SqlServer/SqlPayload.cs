@@ -24,7 +24,6 @@ namespace Microsoft.AspNet.SignalR.SqlServer
         public static ScaleoutMessage FromBytes(IDataRecord record)
         {
             var message = ScaleoutMessage.FromBytes(record.GetBinary(1));
-            message.CreationTime = record.GetDateTime(2);
 
             return message;
         }
