@@ -5,7 +5,7 @@ namespace Microsoft.AspNet.SignalR.Transports
     [Flags]
     public enum TransportConnectionStates
     {
-        Initialized = 0,
+        None = 0,
         Added = 1,
         Removed = 2,
         Replaced = 4,
