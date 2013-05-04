@@ -199,14 +199,26 @@ namespace Microsoft.AspNet.SignalR.Transports
 
         public Task Disconnect()
         {
-            // Abort the queue the disconnect command
-
             // Ensure delegate continues to use the C# Compiler static delegate caching optimization.
-            return Abort().Then(transport => transport.Connection.Close(transport.ConnectionId), this);
+            return Abort(clean: false).Then(transport => transport.Connection.Close(transport.ConnectionId), this);
         }
 
         public Task Abort()
         {
+            return Abort(clean: true);
+        }
+
+        public Task Abort(bool clean)
+        {
+            if (clean)
+            {
+                ApplyState(TransportConnectionStates.Aborted);
+            }
+            else
+            {
+                ApplyState(TransportConnectionStates.Disconnected);
+            }
+
             Trace.TraceInformation("Abort(" + ConnectionId + ")");
 
             // When a connection is aborted (graceful disconnect) we send a command to it
@@ -270,6 +282,8 @@ namespace Microsoft.AspNet.SignalR.Transports
                 _connectionEndTokenSource.Dispose();
                 _connectionEndRegistration.Dispose();
                 _hostRegistration.Dispose();
+
+                ApplyState(TransportConnectionStates.Disposed);
             }
         }
 

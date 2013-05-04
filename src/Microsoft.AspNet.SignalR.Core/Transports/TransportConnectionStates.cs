@@ -10,6 +10,10 @@ namespace Microsoft.AspNet.SignalR.Transports
         Removed = 2,
         Replaced = 4,
         QueueDrained = 8,
-        HttpRequestEnded = 16
+        HttpRequestEnded = 16,
+        Disconnected = 32,
+        Aborted = 64,
+        DisconnectMessageReceived = 128,
+        Disposed = 65536,
     }
 }
