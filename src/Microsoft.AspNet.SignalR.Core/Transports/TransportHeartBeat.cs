@@ -69,7 +69,16 @@ namespace Microsoft.AspNet.SignalR.Transports
                     // Only remove connections if this command didn't originate from the owner
                     if (!command.IsFromSelf(_serverId))
                     {
-                        RemoveConnection((string)command.Value);
+                        var connectionId = (string)command.Value;
+
+                        // Remove the connection
+                        ConnectionMetadata metadata;
+                        if (_connections.TryGetValue(connectionId, out metadata))
+                        {
+                            metadata.Connection.End();
+
+                            RemoveConnection(metadata.Connection);
+                        }
                     }
                     break;
                 default:
@@ -123,20 +132,6 @@ namespace Microsoft.AspNet.SignalR.Transports
             return isNewConnection;
         }
 
-        private void RemoveConnection(string connectionId)
-        {
-            // Remove the connection
-            ConnectionMetadata metadata;
-            if (_connections.TryRemove(connectionId, out metadata))
-            {
-                lock (_counterLock)
-                {
-                    _counters.ConnectionsCurrent.RawValue = _connections.Count;
-                }
-                Trace.TraceInformation("Removing connection {0}", connectionId);
-            }
-        }
-
         /// <summary>
         /// Removes a connection from the list of tracked connections.
         /// </summary>
@@ -149,7 +144,16 @@ namespace Microsoft.AspNet.SignalR.Transports
             }
 
             // Remove the connection and associated metadata
-            RemoveConnection(connection.ConnectionId);
+            ConnectionMetadata metadata;
+            if (_connections.TryRemove(connection.ConnectionId, out metadata))
+            {
+                lock (_counterLock)
+                {
+                    _counters.ConnectionsCurrent.RawValue = _connections.Count;
+                }
+
+                Trace.TraceInformation("Removing connection {0}", connection.ConnectionId);
+            }
         }
 
         /// <summary>
