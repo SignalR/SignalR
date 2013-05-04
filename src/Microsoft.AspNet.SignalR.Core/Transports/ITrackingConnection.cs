@@ -48,6 +48,11 @@ namespace Microsoft.AspNet.SignalR.Transports
         Uri Url { get; }
 
         /// <summary>
+        /// Applies a new state to the connection.
+        /// </summary>
+        void ApplyState(TransportConnectionStates states);
+
+        /// <summary>
         /// Causes the connection to disconnect.
         /// </summary>
         Task Disconnect();

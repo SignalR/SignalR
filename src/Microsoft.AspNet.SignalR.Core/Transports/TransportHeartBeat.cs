@@ -106,6 +106,8 @@ namespace Microsoft.AspNet.SignalR.Transports
                 // Kick out the older connection. This should only happen when 
                 // a previous connection attempt fails on the client side (e.g. transport fallback).
 
+                old.Connection.ApplyState(TransportConnectionStates.Replaced);
+
                 // Don't bother disposing the registration here since the token source
                 // gets disposed after the request has ended
                 old.Connection.End();
@@ -129,6 +131,8 @@ namespace Microsoft.AspNet.SignalR.Transports
             // Set the initial connection time
             newMetadata.Initial = DateTime.UtcNow;
 
+            newMetadata.Connection.ApplyState(TransportConnectionStates.Added);
+
             return isNewConnection;
         }
 
@@ -151,6 +155,8 @@ namespace Microsoft.AspNet.SignalR.Transports
                 {
                     _counters.ConnectionsCurrent.RawValue = _connections.Count;
                 }
+
+                connection.ApplyState(TransportConnectionStates.Removed);
 
                 Trace.TraceInformation("Removing connection {0}", connection.ConnectionId);
             }

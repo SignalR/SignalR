@@ -24,6 +24,7 @@ namespace Microsoft.AspNet.SignalR.Transports
         private int _timedOut;
         private readonly IPerformanceCounterManager _counters;
         private int _ended;
+        private TransportConnectionStates _state;
 
         internal static readonly Func<Task> _emptyTaskFunc = () => TaskAsyncHelper.Empty;
 
@@ -223,6 +224,11 @@ namespace Microsoft.AspNet.SignalR.Transports
                                  .Then(counters => counters.ConnectionsDisconnected.Increment(), _counters);
         }
 
+        public void ApplyState(TransportConnectionStates states)
+        {
+            _state |= states;
+        }
+
         public void Timeout()
         {
             if (Interlocked.Exchange(ref _timedOut, 1) == 0)
@@ -287,7 +293,7 @@ namespace Microsoft.AspNet.SignalR.Transports
         {
             _hostShutdownToken = _context.HostShutdownToken();
 
-            _requestLifeTime = new HttpRequestLifeTime(WriteQueue, Trace, ConnectionId);
+            _requestLifeTime = new HttpRequestLifeTime(this, WriteQueue, Trace, ConnectionId);
 
             // Create a token that represents the end of this connection's life
             _connectionEndTokenSource = new SafeCancellationTokenSource();
