@@ -69,7 +69,16 @@ namespace Microsoft.AspNet.SignalR.Transports
                     // Only remove connections if this command didn't originate from the owner
                     if (!command.IsFromSelf(_serverId))
                     {
-                        RemoveConnection((string)command.Value);
+                        var connectionId = (string)command.Value;
+
+                        // Remove the connection
+                        ConnectionMetadata metadata;
+                        if (_connections.TryGetValue(connectionId, out metadata))
+                        {
+                            metadata.Connection.End();
+
+                            RemoveConnection(metadata.Connection);
+                        }
                     }
                     break;
                 default:
@@ -97,6 +106,8 @@ namespace Microsoft.AspNet.SignalR.Transports
                 // Kick out the older connection. This should only happen when 
                 // a previous connection attempt fails on the client side (e.g. transport fallback).
 
+                old.Connection.ApplyState(TransportConnectionStates.Replaced);
+
                 // Don't bother disposing the registration here since the token source
                 // gets disposed after the request has ended
                 old.Connection.End();
@@ -120,21 +131,9 @@ namespace Microsoft.AspNet.SignalR.Transports
             // Set the initial connection time
             newMetadata.Initial = DateTime.UtcNow;
 
-            return isNewConnection;
-        }
+            newMetadata.Connection.ApplyState(TransportConnectionStates.Added);
 
-        private void RemoveConnection(string connectionId)
-        {
-            // Remove the connection
-            ConnectionMetadata metadata;
-            if (_connections.TryRemove(connectionId, out metadata))
-            {
-                lock (_counterLock)
-                {
-                    _counters.ConnectionsCurrent.RawValue = _connections.Count;
-                }
-                Trace.TraceInformation("Removing connection {0}", connectionId);
-            }
+            return isNewConnection;
         }
 
         /// <summary>
@@ -149,7 +148,18 @@ namespace Microsoft.AspNet.SignalR.Transports
             }
 
             // Remove the connection and associated metadata
-            RemoveConnection(connection.ConnectionId);
+            ConnectionMetadata metadata;
+            if (_connections.TryRemove(connection.ConnectionId, out metadata))
+            {
+                lock (_counterLock)
+                {
+                    _counters.ConnectionsCurrent.RawValue = _connections.Count;
+                }
+
+                connection.ApplyState(TransportConnectionStates.Removed);
+
+                Trace.TraceInformation("Removing connection {0}", connection.ConnectionId);
+            }
         }
 
         /// <summary>
