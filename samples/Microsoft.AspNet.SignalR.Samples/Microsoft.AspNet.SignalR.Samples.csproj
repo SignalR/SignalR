@@ -294,7 +294,6 @@
     <Compile Include="Hubs\DrawingPad\DrawingPad.cs" />
     <Compile Include="Hubs\HubConnectionAPI\Default.aspx.cs">
       <DependentUpon>Default.aspx</DependentUpon>
-      <SubType>ASPXCodeBehind</SubType>
     </Compile>
     <Compile Include="Hubs\HubConnectionAPI\Default.aspx.designer.cs">
       <DependentUpon>Default.aspx</DependentUpon>
@@ -302,7 +301,6 @@
     <Compile Include="Hubs\HubConnectionAPI\HubConnectionAPI.cs" />
     <Compile Include="Hubs\MessageLoops\Default.aspx.cs">
       <DependentUpon>Default.aspx</DependentUpon>
-      <SubType>ASPXCodeBehind</SubType>
     </Compile>
     <Compile Include="Hubs\MessageLoops\Default.aspx.designer.cs">
       <DependentUpon>Default.aspx</DependentUpon>
