@@ -354,7 +354,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Server.Transports
             request.Setup(m => m.Url).Returns(new Uri("http://test/echo/connect"));
             var counters = new Mock<IPerformanceCounterManager>();
             var heartBeat = new Mock<ITransportHeartbeat>();
-            var json = new JsonNetSerializer();
+            var json = new JsonSerializer();
             var hostContext = new HostContext(request.Object, response.Object);
             var transportConnection = new Mock<ITransportConnection>();
             var traceManager = new Mock<ITraceManager>();
@@ -424,7 +424,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Server.Transports
             request.Setup(m => m.Url).Returns(new Uri("http://test/echo/connect"));
             var counters = new PerformanceCounterManager();
             var heartBeat = new Mock<ITransportHeartbeat>();
-            var json = new JsonNetSerializer();
+            var json = new JsonSerializer();
             var hostContext = new HostContext(request.Object, response.Object);
             var transportConnection = new Mock<ITransportConnection>();
             var traceManager = new Mock<ITraceManager>();
