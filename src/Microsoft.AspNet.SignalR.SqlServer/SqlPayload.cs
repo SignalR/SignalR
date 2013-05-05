@@ -2,15 +2,14 @@
 
 using System;
 using System.Collections.Generic;
+using System.Data;
 using System.IO;
 using Microsoft.AspNet.SignalR.Messaging;
 
 namespace Microsoft.AspNet.SignalR.SqlServer
 {
-    public class SqlPayload
+    public static class SqlPayload
     {
-        public ScaleoutMessage ScaleoutMessage { get; private set; }
-
         public static byte[] ToBytes(IList<Message> messages)
         {
             if (messages == null)
@@ -22,12 +21,11 @@ namespace Microsoft.AspNet.SignalR.SqlServer
             return message.ToBytes();
         }
 
-        public static SqlPayload FromBytes(byte[] data)
+        public static ScaleoutMessage FromBytes(IDataRecord record)
         {
-            return new SqlPayload
-            {
-                ScaleoutMessage = ScaleoutMessage.FromBytes(data)
-            };
+            var message = ScaleoutMessage.FromBytes(record.GetBinary(1));
+
+            return message;
         }
     }
 }

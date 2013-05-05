@@ -1,10 +1,12 @@
 ﻿using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Threading;
+using Microsoft.AspNet.SignalR.Infrastructure;
 
 namespace Microsoft.AspNet.SignalR.Messaging
 {
     // Represents a message store that is backed by a ring buffer.
+    [SuppressMessage("Microsoft.Design", "CA1001:TypesThatOwnDisposableFieldsShouldBeDisposable", Justification = "The rate sampler doesn't need to be disposed")]
     public sealed class ScaleoutStore
     {
         private const uint _minFragmentCount = 4;
@@ -19,6 +21,9 @@ namespace Microsoft.AspNet.SignalR.Messaging
 
         private long _minMessageId;
         private long _nextFreeMessageId;
+
+        private ulong _minMappingId;
+        private ScaleoutMapping _maxMapping;
 
         // Creates a message store with the specified capacity. The actual capacity will be *at least* the
         // specified value. That is, GetMessages may return more data than 'capacity'.
@@ -42,11 +47,20 @@ namespace Microsoft.AspNet.SignalR.Messaging
             }
         }
 
-        // only for testing purposes
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1024:UsePropertiesWhereAppropriate", Justification = "Only for testing")]
-        public ulong GetMessageCount()
+        internal ulong MinMappingId
         {
-            return (ulong)Volatile.Read(ref _nextFreeMessageId);
+            get
+            {
+                return _minMappingId;
+            }
+        }
+
+        public ScaleoutMapping MaxMapping
+        {
+            get
+            {
+                return _maxMapping;
+            }
         }
 
         public uint FragmentSize
@@ -131,13 +145,19 @@ namespace Microsoft.AspNet.SignalR.Messaging
                         newFragment.MinId = newMessageId;
                         newFragment.Length = 1;
                         newFragment.MaxId = GetMessageId(fragmentNum, offset: _fragmentSize - 1);
+                        _maxMapping = mapping;
 
                         // Move the minimum id when we overwrite
                         if (overwrite)
                         {
                             _minMessageId = (long)(existingFragment.MaxId + 1);
+                            _minMappingId = existingFragment.MaxId;
                         }
-
+                        else if(idxIntoFragmentsArray == 0)
+                        {
+                            _minMappingId = mapping.Id;
+                        }
+                        
                         return true;
                     }
                 }
@@ -155,6 +175,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
                     {
                         newMessageId = GetMessageId(fragmentNum, offset: (uint)i);
                         fragment.Length++;
+                        _maxMapping = fragmentData[i];
                         return true;
                     }
                 }
@@ -216,46 +237,58 @@ namespace Microsoft.AspNet.SignalR.Messaging
         public MessageStoreResult<ScaleoutMapping> GetMessagesByMappingId(ulong mappingId)
         {
             var minMessageId = (ulong)Volatile.Read(ref _minMessageId);
-            int idxIntoFragment;
+            bool expiredMappingId = false;
 
+            int idxIntoFragment;
             // look for the fragment containing the start of the data requested by the client
             Fragment thisFragment;
-            if (TryGetFragmentFromMappingId(mappingId, out thisFragment) && 
-                thisFragment.TrySearch(mappingId, out idxIntoFragment))
+            if (TryGetFragmentFromMappingId(mappingId, out thisFragment))
             {
-                // Skip the first message
-                idxIntoFragment++;
-                ulong firstMessageIdRequestedByClient = GetMessageId(thisFragment.FragmentNum, (uint)idxIntoFragment);
+                if (thisFragment.TrySearch(mappingId, out idxIntoFragment))
+                {
+                    // Skip the first message
+                    idxIntoFragment++;
+                    ulong firstMessageIdRequestedByClient = GetMessageId(thisFragment.FragmentNum, (uint)idxIntoFragment);
 
-                return GetMessages(firstMessageIdRequestedByClient);
+                    return GetMessages(firstMessageIdRequestedByClient);
+                }
+                else
+                {
+                    // We assume that if you fall between the range but we can't find a cursor
+                    // then we've been reset
+                    expiredMappingId = true;
+                }
             }
 
-            // The client has missed messages, so we need to send him the earliest fragment we have.            
-            while (true)
+            // If we're expired or we're at the first mapping or we're lower than the 
+            // min then get everything
+            if (expiredMappingId || mappingId < _minMappingId || mappingId == UInt64.MaxValue)
             {
-                ulong fragmentNum;
-                int idxIntoFragmentsArray;
-                GetFragmentOffsets(minMessageId, out fragmentNum, out idxIntoFragmentsArray, out idxIntoFragment);
-
-                Fragment fragment = _fragments[idxIntoFragmentsArray];
-
-                if (fragment == null)
-                {
-                    return new MessageStoreResult<ScaleoutMapping>(minMessageId, _emptyArraySegment, hasMoreData: false);
-                }
-
-                // If we have the right data then return it
-                if (fragment.FragmentNum == fragmentNum)
-                {
-                    var firstMessageIdInThisFragment = GetMessageId(fragment.FragmentNum, offset: 0);
-
-                    var messages = new ArraySegment<ScaleoutMapping>(fragment.Data, 0, fragment.Length);
-
-                    return new MessageStoreResult<ScaleoutMapping>(firstMessageIdInThisFragment, messages, hasMoreData: true);
-                }
-
-                minMessageId = (ulong)Volatile.Read(ref _minMessageId);
+                return GetAllMessages(minMessageId);
             }
+
+            // We're up to date so do nothing
+            return new MessageStoreResult<ScaleoutMapping>(0, _emptyArraySegment, hasMoreData: false);
+        }
+
+        private MessageStoreResult<ScaleoutMapping> GetAllMessages(ulong minMessageId)
+        {
+            ulong fragmentNum;
+            int idxIntoFragmentsArray, idxIntoFragment;
+            GetFragmentOffsets(minMessageId, out fragmentNum, out idxIntoFragmentsArray, out idxIntoFragment);
+
+            Fragment fragment = _fragments[idxIntoFragmentsArray];
+
+            if (fragment == null)
+            {
+                return new MessageStoreResult<ScaleoutMapping>(minMessageId, _emptyArraySegment, hasMoreData: false);
+            }
+
+            var firstMessageIdInThisFragment = GetMessageId(fragment.FragmentNum, offset: 0);
+
+            var messages = new ArraySegment<ScaleoutMapping>(fragment.Data, 0, fragment.Length);
+
+            return new MessageStoreResult<ScaleoutMapping>(firstMessageIdInThisFragment, messages, hasMoreData: true);
         }
 
         internal bool TryGetFragmentFromMappingId(ulong mappingId, out Fragment fragment)

@@ -38,15 +38,7 @@ namespace Microsoft.AspNet.SignalR.Transports
         {
             // Ensure delegate continues to use the C# Compiler static delegate caching optimization.
             return base.InitializeResponse(connection)
-                       .Then(s => Initialize(s), this);
-        }
-
-        private static Task Initialize(object state)
-        {
-            var transport = (ServerSentEventsTransport)state;
-
-            // Ensure delegate continues to use the C# Compiler static delegate caching optimization.
-            return transport.EnqueueOperation(s => WriteInit(s), state);
+                       .Then(s => WriteInit(s), this);
         }
 
         private static Task PerformKeepAlive(object state)
@@ -74,10 +66,8 @@ namespace Microsoft.AspNet.SignalR.Transports
             return context.Transport.Context.Response.Flush();
         }
 
-        private static Task WriteInit(object state)
+        private static Task WriteInit(ServerSentEventsTransport transport)
         {
-            var transport = (ServerSentEventsTransport)state;
-
             transport.Context.Response.ContentType = "text/event-stream";
 
             // "data: initialized\n\n"

@@ -6,21 +6,31 @@ using System.IO;
 
 namespace Microsoft.AspNet.SignalR.Messaging
 {
+    /// <summary>
+    /// Represents a message to the scaleout backplane
+    /// </summary>
     public class ScaleoutMessage
     {
         public ScaleoutMessage(IList<Message> messages)
         {
             Messages = messages;
-            CreationTime = DateTime.UtcNow;
+            ServerCreationTime = DateTime.UtcNow;
         }
 
         public ScaleoutMessage()
         {
         }
 
+        /// <summary>
+        /// The messages from SignalR
+        /// </summary>
         [SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly", Justification = "This type is used for serialization")]
         public IList<Message> Messages { get; set; }
-        public DateTime CreationTime { get; set; }
+
+        /// <summary>
+        /// The time the message was created on the origin server
+        /// </summary>
+        public DateTime ServerCreationTime { get; set; }
 
         public byte[] ToBytes()
         {
@@ -33,7 +43,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
                 {
                     Messages[i].WriteTo(ms);
                 }
-                binaryWriter.Write(CreationTime.ToString("s", CultureInfo.InvariantCulture));
+                binaryWriter.Write(ServerCreationTime.Ticks);
 
                 return ms.ToArray();
             }
@@ -56,8 +66,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
                 {
                     message.Messages.Add(Message.ReadFrom(stream));
                 }
-
-                message.CreationTime = DateTime.Parse(binaryReader.ReadString(), CultureInfo.InvariantCulture);
+                message.ServerCreationTime = new DateTime(binaryReader.ReadInt64());
 
                 return message;
             }

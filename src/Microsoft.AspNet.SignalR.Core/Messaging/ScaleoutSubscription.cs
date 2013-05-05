@@ -39,7 +39,19 @@ namespace Microsoft.AspNet.SignalR.Messaging
                 cursors = new List<Cursor>(streams.Count);
                 for (int i = 0; i < streams.Count; i++)
                 {
-                    cursors.Add(new Cursor(i.ToString(CultureInfo.InvariantCulture), streams[i].MaxKey));
+                    ScaleoutMapping maxMapping = streams[i].MaxMapping;
+
+                    ulong id = UInt64.MaxValue;
+                    string key = i.ToString(CultureInfo.InvariantCulture);
+
+                    if (maxMapping != null)
+                    {
+                        id = maxMapping.Id;
+                    }
+
+                    var newCursor = new Cursor(key, id);
+
+                    cursors.Add(newCursor);
                 }
             }
             else
@@ -60,7 +72,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
         protected override void PerformWork(IList<ArraySegment<Message>> items, out int totalCount, out object state)
         {
             // The list of cursors represent (streamid, payloadid)
-            var nextCursors = new ulong?[_streams.Count];
+            var nextCursors = new ScaleoutMapping[_streams.Count];
             totalCount = 0;
 
             // Get the enumerator so that we can extract messages for this subscription
@@ -74,7 +86,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
                 ExtractMessages(mapping, items, ref totalCount);
 
                 // Update the cursor id
-                nextCursors[streamIndex] = mapping.Id;
+                nextCursors[streamIndex] = mapping;
             }
 
             state = nextCursors;
@@ -83,15 +95,17 @@ namespace Microsoft.AspNet.SignalR.Messaging
         protected override void BeforeInvoke(object state)
         {
             // Update the list of cursors before invoking anything
-            var nextCursors = (ulong?[])state;
+            var nextCursors = (ScaleoutMapping[])state;
             for (int i = 0; i < _cursors.Count; i++)
             {
-                // Only update non-null cursors
-                ulong? nextId = nextCursors[i];
+                // Only update non-null entries
+                ScaleoutMapping nextMapping = nextCursors[i];
 
-                if (nextId != null)
+                if (nextMapping != null)
                 {
-                    _cursors[i].Id = nextId.Value;
+                    Cursor cursor = _cursors[i];
+
+                    cursor.Id = nextMapping.Id;
                 }
             }
         }
@@ -108,7 +122,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
                 Cursor cursor = _cursors[streamIndex];
 
                 // Try to find a local mapping for this payload
-                var enumerator = new CachedStreamEnumerator(store.GetEnumerator(cursor.Id), 
+                var enumerator = new CachedStreamEnumerator(store.GetEnumerator(cursor.Id),
                                                             streamIndex);
 
                 enumerators.Add(enumerator);
@@ -126,7 +140,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
                     ScaleoutMapping mapping;
                     if (enumerator.TryMoveNext(out mapping))
                     {
-                        if (minMapping == null || mapping.CreationTime < minMapping.CreationTime)
+                        if (minMapping == null || mapping.ServerCreationTime < minMapping.ServerCreationTime)
                         {
                             minMapping = mapping;
                             minEnumerator = enumerator;

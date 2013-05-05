@@ -26,10 +26,13 @@ namespace Microsoft.AspNet.SignalR.Hosting.Memory
         private readonly CancellationToken _shutDownToken;
         private int _disposed;
         private AppFunc _appFunc;
+        private string _instanceName;
+        private readonly Lazy<string> _defaultInstanceName;
 
         public MemoryHost()
         {
             _shutDownToken = _shutDownTokenSource.Token;
+            _defaultInstanceName = new Lazy<string>(() => Process.GetCurrentProcess().GetUniqueInstanceName(_shutDownToken));
         }
 
         public void Configure(Action<IAppBuilder> startup)
@@ -43,14 +46,24 @@ namespace Microsoft.AspNet.SignalR.Hosting.Memory
 
             builder.Properties[OwinConstants.ServerCapabilities] = new Dictionary<string, object>();
             builder.Properties[OwinConstants.HostOnAppDisposing] = _shutDownToken;
-            builder.Properties[OwinConstants.HostAppNameKey] = InstanceName ?? Process.GetCurrentProcess().GetUniqueInstanceName(_shutDownToken);
+            builder.Properties[OwinConstants.HostAppNameKey] = InstanceName;
 
             startup(builder);
 
             _appFunc = Build(builder);
         }
 
-        public string InstanceName { get; set; }
+        public string InstanceName
+        {
+            get
+            {
+                return _instanceName ?? _defaultInstanceName.Value;
+            }
+            set
+            {
+                _instanceName = value;
+            }
+        }
 
         public Task<IClientResponse> Get(string url)
         {
@@ -121,6 +134,9 @@ namespace Microsoft.AspNet.SignalR.Hosting.Memory
             env[OwinConstants.RequestBody] = GetRequestBody(postData);
             var headers = new Dictionary<string, string[]>();
             env[OwinConstants.RequestHeaders] = headers;
+
+            headers.SetHeader("X-Server", "MemoryHost");
+            headers.SetHeader("X-Server-Name", InstanceName);
 
             if (httpMethod == "POST")
             {

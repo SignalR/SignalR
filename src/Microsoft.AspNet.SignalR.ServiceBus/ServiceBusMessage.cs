@@ -35,7 +35,10 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
             using (var ms = new MemoryStream())
             {
                 stream.CopyTo(ms);
-                return ScaleoutMessage.FromBytes(ms.ToArray());
+
+                var message = ScaleoutMessage.FromBytes(ms.ToArray());
+
+                return message;
             }
         }
     }

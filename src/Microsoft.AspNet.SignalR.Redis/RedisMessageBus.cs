@@ -108,7 +108,6 @@ namespace Microsoft.AspNet.SignalR.Redis
         private void SendImpl(IList<Message> messages, TaskCompletionSource<object> tcs)
         {
         go:
-
             Task<long?> task = _connection.Strings.GetInt64(_db, _key);
 
             RedisTransaction transaction = null;
@@ -294,7 +293,7 @@ namespace Microsoft.AspNet.SignalR.Redis
                 // The key is the stream id (channel)
                 var message = RedisMessage.FromBytes(data);
 
-                OnReceived(0, (ulong)message.Id, message.ScaleoutMessage);
+                OnReceived(0, message.Id, message.ScaleoutMessage);
             }
         }
 

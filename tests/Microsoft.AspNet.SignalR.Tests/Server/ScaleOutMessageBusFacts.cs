@@ -247,7 +247,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
                 var message = new ScaleoutMessage
                 {
                     Messages = messages,
-                    CreationTime = creationTime
+                    ServerCreationTime = creationTime,
                 };
 
                 OnReceived(streamIndex, id, message);

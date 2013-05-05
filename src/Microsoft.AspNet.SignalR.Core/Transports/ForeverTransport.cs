@@ -183,15 +183,13 @@ namespace Microsoft.AspNet.SignalR.Transports
                 initialize = Reconnected;
             }
 
-            var series = new Func<object, Task>[] 
+            var series = new Func<object, Task>[]
             { 
                 state => ((Func<Task>)state).Invoke(),
-                state => InitializeResponse((ITransportConnection)state),
                 state => ((Func<Task>)state).Invoke()
             };
 
-            var states = new object[] { TransportConnected ?? _emptyTaskFunc, 
-                                        connection, 
+            var states = new object[] { TransportConnected ?? _emptyTaskFunc,
                                         initialize ?? _emptyTaskFunc };
 
             Func<Task> fullInit = () => TaskAsyncHelper.Series(series, states);
@@ -225,6 +223,10 @@ namespace Microsoft.AspNet.SignalR.Transports
 
             try
             {
+                // Ensure we enqueue the response initialization before any messages are received
+                EnqueueOperation(state => InitializeResponse((ITransportConnection)state), connection)
+                    .Catch((ex, state) => OnError(ex, state), messageContext);
+
                 // Ensure delegate continues to use the C# Compiler static delegate caching optimization.
                 IDisposable subscription = connection.Receive(LastMessageId,
                                                               (response, state) => OnMessageReceived(response, state),
@@ -241,7 +243,7 @@ namespace Microsoft.AspNet.SignalR.Transports
 
                 // Ensure delegate continues to use the C# Compiler static delegate caching optimization.
                 initialize().Then(tcs => tcs.TrySetResult(null), InitializeTcs)
-                            .Catch((ex, state) => OnError(ex, state), messageContext); 
+                            .Catch((ex, state) => OnError(ex, state), messageContext);
             }
             catch (OperationCanceledException ex)
             {
