@@ -15,27 +15,51 @@ namespace Microsoft.AspNet.SignalR.Client.Http
     /// </summary>
     public class DefaultHttpClient : IHttpClient
     {
+        private HttpClient _longRunningClient;
+        private HttpClient _shortRunningClient;
+
+        private IConnection _connection;
+
+        /// <summary>
+        /// Initialize the Http Clients
+        /// </summary>
+        /// <param name="connection">Connection</param>
+        public void Initialize(IConnection connection)
+        {
+            _connection = connection;
+
+            var handler = new DefaultHttpHandler(connection);
+
+            _longRunningClient = new HttpClient(handler);
+            _shortRunningClient = new HttpClient(handler);
+        }
+
         /// <summary>
         /// Makes an asynchronous http GET request to the specified url.
         /// </summary>
         /// <param name="url">The url to send the request to.</param>
         /// <param name="prepareRequest">A callback that initializes the request with default values.</param>
+        /// <param name="isLongRunning">Indicates whether the request is long running</param>
         /// <returns>A <see cref="T:Task{IResponse}"/>.</returns>
         [SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope", Justification = "Handler cannot be disposed before response is disposed")]
-        public Task<IResponse> Get(string url, Action<IRequest> prepareRequest)
+        public Task<IResponse> Get(string url, Action<IRequest> prepareRequest, bool isLongRunning)
         {
             var responseDisposer = new Disposer();
             var cts = new CancellationTokenSource();
 
-            var handler = new DefaultHttpHandler(prepareRequest, () =>
+            var requestMessage = new HttpRequestMessage(HttpMethod.Get, url);
+
+            var request = new HttpRequestMessageWrapper(requestMessage, () =>
             {
                 cts.Cancel();
                 responseDisposer.Dispose();
             });
 
-            var client = new HttpClient(handler);
+            prepareRequest(request);
 
-            return client.GetAsync(new Uri(url), HttpCompletionOption.ResponseHeadersRead, cts.Token)
+            HttpClient httpClient = isLongRunning ? _longRunningClient : _shortRunningClient;
+
+            return httpClient.SendAsync(requestMessage, HttpCompletionOption.ResponseHeadersRead, cts.Token)
                  .Then(responseMessage =>
                  {
                      if (responseMessage.IsSuccessStatusCode)
@@ -46,8 +70,8 @@ namespace Microsoft.AspNet.SignalR.Client.Http
                      {
                          throw new HttpClientException(responseMessage);
                      }
-  
-                     return (IResponse)new HttpResponseMessageWrapper(responseMessage, client);
+
+                     return (IResponse)new HttpResponseMessageWrapper(responseMessage);
                  });
         }
 
@@ -57,32 +81,36 @@ namespace Microsoft.AspNet.SignalR.Client.Http
         /// <param name="url">The url to send the request to.</param>
         /// <param name="prepareRequest">A callback that initializes the request with default values.</param>
         /// <param name="postData">form url encoded data.</param>
+        /// <param name="isLongRunning">Indicates whether the request is long running</param>
         /// <returns>A <see cref="T:Task{IResponse}"/>.</returns>
         [SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope", Justification = "Handler cannot be disposed before response is disposed")]
-        public Task<IResponse> Post(string url, Action<IRequest> prepareRequest, IDictionary<string, string> postData)
+        public Task<IResponse> Post(string url, Action<IRequest> prepareRequest, IDictionary<string, string> postData, bool isLongRunning)
         {
             var responseDisposer = new Disposer();
             var cts = new CancellationTokenSource();
 
-            var handler = new DefaultHttpHandler(prepareRequest, () =>
+            var requestMessage = new HttpRequestMessage(HttpMethod.Post, new Uri(url));
+
+            if (postData == null)
+            {
+                requestMessage.Content = new StringContent(String.Empty);
+            }
+            else
+            {
+                requestMessage.Content = new FormUrlEncodedContent(postData);
+            }
+
+            var request = new HttpRequestMessageWrapper(requestMessage, () =>
             {
                 cts.Cancel();
                 responseDisposer.Dispose();
             });
 
-            var client = new HttpClient(handler);
-            var request = new HttpRequestMessage(HttpMethod.Post, new Uri(url));
+            prepareRequest(request);
 
-            if (postData == null)
-            {
-                request.Content = new StringContent(String.Empty);
-            }
-            else
-            {
-                request.Content = new FormUrlEncodedContent(postData);
-            }
+            HttpClient httpClient = isLongRunning ? _longRunningClient : _shortRunningClient;
 
-            return client.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, cts.Token).
+            return httpClient.SendAsync(requestMessage, HttpCompletionOption.ResponseHeadersRead, cts.Token).
                 Then(responseMessage =>
                 {
                     if (responseMessage.IsSuccessStatusCode)
@@ -94,7 +122,7 @@ namespace Microsoft.AspNet.SignalR.Client.Http
                         throw new HttpClientException(responseMessage);
                     }
 
-                    return (IResponse)new HttpResponseMessageWrapper(responseMessage, client);
+                    return (IResponse)new HttpResponseMessageWrapper(responseMessage);
                 });
         }
     }

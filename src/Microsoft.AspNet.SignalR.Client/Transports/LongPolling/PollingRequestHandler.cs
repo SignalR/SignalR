@@ -102,7 +102,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
                     // This is called just prior to posting the request to ensure that any in-flight polling request
                     // is always executed before an OnAfterPoll
                     OnPolling();
-                })
+                }, true)
                 .ContinueWith(task =>
                 {
                     var next = TaskAsyncHelper.Empty;

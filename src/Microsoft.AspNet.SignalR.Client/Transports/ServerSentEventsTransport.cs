@@ -91,11 +91,12 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
 
             HttpClient.Get(url, req =>
             {
-                _request = req;
+                _request = req;               
+                _request.Accept = "text/event-stream";
+                
                 connection.PrepareRequest(_request);
 
-                _request.Accept = "text/event-stream";
-            }).ContinueWith(task =>
+            }, true).ContinueWith(task =>
             {
                 if (task.IsFaulted)
                 {

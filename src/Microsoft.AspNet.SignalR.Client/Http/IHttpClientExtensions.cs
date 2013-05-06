@@ -7,7 +7,7 @@ namespace Microsoft.AspNet.SignalR.Client.Http
 {
     public static class IHttpClientExtensions
     {
-        public static Task<IResponse> Post(this IHttpClient client, string url, Action<IRequest> prepareRequest)
+        public static Task<IResponse> Post(this IHttpClient client, string url, Action<IRequest> prepareRequest, bool isLongRunning)
         {
             if (client == null)
             {
@@ -24,7 +24,7 @@ namespace Microsoft.AspNet.SignalR.Client.Http
                 throw new ArgumentNullException("prepareRequest");
             }
 
-            return client.Post(url, prepareRequest, postData: null);
+            return client.Post(url, prepareRequest, null, isLongRunning);
         }
     }
 }

@@ -13,53 +13,24 @@ using System.Threading.Tasks;
 
 namespace Microsoft.AspNet.SignalR.Client.Http
 {
-#if !NETFX_CORE && !SILVERLIGHT && !__ANDROID__ && !IOS
-    public class DefaultHttpHandler : WebRequestHandler, IRequest
-#else
-    public class DefaultHttpHandler : HttpClientHandler, IRequest
-#endif
+    public class HttpRequestMessageWrapper : IRequest
     {
-        private readonly Action<IRequest> _prepareRequest;
+        private readonly HttpRequestMessage _httpRequestMessage;
         private readonly Action _cancel;
-        private HttpRequestMessage _request;
 
-        public DefaultHttpHandler(Action<IRequest> prepareRequest, Action cancel)
+        public HttpRequestMessageWrapper(HttpRequestMessage httpRequestMessage, Action cancel)
         {
-            _prepareRequest = prepareRequest;
+            _httpRequestMessage = httpRequestMessage;
             _cancel = cancel;
         }
 
-        [SuppressMessage("Microsoft.Design", "CA1062:Validate arguments of public methods", MessageId = "0", Justification = "We call this method.")]
-        protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+        public string UserAgent { get; set; }
+
+        public string Accept { get; set; }
+
+        public void Abort()
         {
-            _request = request;
-
-            _prepareRequest(this);
-
-            if (UserAgent != null)
-            {
-                // TODO: Fix format of user agent so that ProductInfoHeaderValue likes it
-                // request.Headers.UserAgent.Add(new ProductInfoHeaderValue(UserAgent));
-            }
-
-            if (Accept != null)
-            {
-                request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue(Accept));
-            }
-
-            return base.SendAsync(request, cancellationToken);
-        }
-
-        public string UserAgent
-        {
-            get;
-            set;
-        }
-
-        public string Accept
-        {
-            get;
-            set;
+            _cancel();
         }
 
         public void SetRequestHeaders(IDictionary<string, string> headers)
@@ -69,30 +40,57 @@ namespace Microsoft.AspNet.SignalR.Client.Http
                 throw new ArgumentNullException("headers");
             }
 
+            if (UserAgent != null)
+            {
+                // TODO: Fix format of user agent so that ProductInfoHeaderValue likes it
+                // request.Headers.UserAgent.Add(new ProductInfoHeaderValue(UserAgent));
+            }
+
+            if (Accept != null)
+            {
+                _httpRequestMessage.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue(Accept));
+            }
+
             foreach (KeyValuePair<string, string> headerEntry in headers)
             {
-                _request.Headers.Add(headerEntry.Key, headerEntry.Value);
+                _httpRequestMessage.Headers.Add(headerEntry.Key, headerEntry.Value);
             }
         }
+    }
 
-#if NET45 || NET4
-        public void AddClientCerts(X509CertificateCollection certificates)
+
+#if !NETFX_CORE && !SILVERLIGHT && !__ANDROID__ && !IOS
+    public class DefaultHttpHandler : WebRequestHandler
+#else
+    public class DefaultHttpHandler : HttpClientHandler
+#endif
+    {
+        private readonly IConnection _connection;
+
+        public DefaultHttpHandler(IConnection connection)
         {
-            if (certificates == null)
+            _connection = connection;
+
+            Credentials = _connection.Credentials;
+
+            if (_connection.CookieContainer != null)
             {
-                throw new ArgumentNullException("certificates");
+                CookieContainer = _connection.CookieContainer;
             }
 
-            foreach (X509Certificate cert in certificates)
+#if !SILVERLIGHT
+            if (Proxy != null)
             {
-                this.ClientCertificates.Add(cert);
+                Proxy = Proxy;
             }
-        }
 #endif
 
-        public void Abort()
-        {
-            _cancel();
+#if (NET4 || NET45)
+            foreach (X509Certificate cert in _connection.Certificates)
+            {
+                ClientCertificates.Add(cert);
+            }
+#endif
         }
     }
 }

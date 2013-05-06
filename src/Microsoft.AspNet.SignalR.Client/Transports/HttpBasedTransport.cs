@@ -100,7 +100,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
                 { "data", data }
             };
 
-            return _httpClient.Post(url, connection.PrepareRequest, postData)
+            return _httpClient.Post(url, connection.PrepareRequest, postData, false)
                               .Then(response => response.ReadAsString())
                               .Then(raw =>
                               {
@@ -142,7 +142,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
 
                     url += TransportHelper.AppendCustomQueryString(connection, url);
 
-                    _httpClient.Post(url, connection.PrepareRequest).Catch((ex, state) =>
+                    _httpClient.Post(url, connection.PrepareRequest, false).Catch((ex, state) =>
                     {
                         // If there's an error making an http request set the reset event
                         ((HttpBasedTransport)state).CompleteAbort();

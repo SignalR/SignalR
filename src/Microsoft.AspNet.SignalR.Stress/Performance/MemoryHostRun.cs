@@ -102,12 +102,12 @@ namespace Microsoft.AspNet.SignalR.Stress
         private Task ProcessSendRequest(string connectionToken, string data)
         {
             var postData = new Dictionary<string, string> { { "data", data } };
-            return Host.Post("http://foo/" + Endpoint + "/send?transport=" + Transport + "&connectionToken=" + connectionToken, postData);
+            return Host.Post("http://foo/" + Endpoint + "/send?transport=" + Transport + "&connectionToken=" + connectionToken, postData, false);
         }
 
         private Task Abort(string connectionToken)
         {
-            return Host.Post("http://foo/" + Endpoint + "/abort?transport=" + Transport + "&connectionToken=" + connectionToken, null);
+            return Host.Post("http://foo/" + Endpoint + "/abort?transport=" + Transport + "&connectionToken=" + connectionToken, null, false);
         }
 
         private void LongPollingLoop(string connectionId)
