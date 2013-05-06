@@ -175,7 +175,7 @@ namespace Microsoft.AspNet.SignalR.Transports
                 {
                     initialize = () =>
                     {
-                        return Connected().Then(() => connection.Initialize(ConnectionId));
+                        return Connected().Then((conn, id) => conn.Initialize(id), connection, ConnectionId);
                     };
 
                     _counters.ConnectionsConnected.Increment();

@@ -1,13 +1,11 @@
 ﻿using System;
-using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR.Client;
 using Microsoft.AspNet.SignalR.Client.Hubs;
 using Microsoft.AspNet.SignalR.FunctionalTests;
 using Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure;
-using Microsoft.AspNet.SignalR.Hosting.Memory;
-using Microsoft.AspNet.SignalR.Hubs;
+using Microsoft.AspNet.SignalR.Tests.Infrastructure;
 using Xunit;
 using Xunit.Extensions;
 
@@ -57,8 +55,8 @@ namespace Microsoft.AspNet.SignalR.Tests
 
                 HubConnection hubConnection = CreateHubConnection(host);
                 IHubProxy proxy = hubConnection.CreateHubProxy("OnConnectedBufferHub");
+                var bufferCountdown = new OrderedCountDownRange<int>(new[] { 0, 1 });
                 int bufferMeCalls = 0;
-                int lastBufferMeValue = -1;
 
                 using (hubConnection)
                 {
@@ -74,7 +72,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                     proxy.On<int>("bufferMe", (val) =>
                     {
                         // Ensure correct ordering of the buffered messages
-                        Assert.True(Interlocked.Exchange(ref lastBufferMeValue,val) < val);
+                        Assert.True(bufferCountdown.Expect(val));
                         bufferMeCalls++;
                         Assert.Equal(hubConnection.State, ConnectionState.Connected);
                     });

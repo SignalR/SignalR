@@ -32,18 +32,16 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
 
         public bool TryDrain()
         {
-            // Ensure that the connection is connected when we drain (do not want to drain while a connection is not active)
-            if (_connection.State == ConnectionState.Connected)
-            {
-                while (_buffer.Count != 0)
-                {
-                    _drainCallback(_buffer.Dequeue());
-                }
+            bool drained = false;
 
-                return true;
+            // Ensure that the connection is connected when we drain (do not want to drain while a connection is not active)            
+            while (_buffer.Count > 0 && _connection.State == ConnectionState.Connected)
+            {
+                _drainCallback(_buffer.Dequeue());
+                drained = true;
             }
 
-            return false;
+            return drained;
         }
 
         public void Clear()

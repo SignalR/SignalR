@@ -84,7 +84,10 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
             bool reconnecting = initializeCallback == null;
             var callbackInvoker = new ThreadSafeInvoker();
             var requestDisposer = new Disposer();
-
+            Action initializeInvoke = () =>
+            {
+                callbackInvoker.Invoke(initializeCallback);
+            };
             var url = connection.Url + (reconnecting ? "reconnect" : "connect") + GetReceiveQueryString(connection, data);
 
             connection.Trace(TraceLevels.Events, "SSE: GET {0}", url);
@@ -154,7 +157,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
 
                             bool timedOut;
                             bool disconnected;
-                            TransportHelper.ProcessResponse(connection, sseEvent.Data, out timedOut, out disconnected, initializeCallback);
+                            TransportHelper.ProcessResponse(connection, sseEvent.Data, out timedOut, out disconnected, initializeInvoke);
 
                             if (disconnected)
                             {
