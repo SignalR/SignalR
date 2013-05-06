@@ -29,6 +29,10 @@ namespace Microsoft.AspNet.SignalR.Hosting.Memory
         private string _instanceName;
         private readonly Lazy<string> _defaultInstanceName;
 
+        public void Initialize(SignalR.Client.IConnection connection)
+        {
+        }
+
         public MemoryHost()
         {
             _shutDownToken = _shutDownTokenSource.Token;
@@ -75,17 +79,17 @@ namespace Microsoft.AspNet.SignalR.Hosting.Memory
             return ProcessRequest("GET", url, req => { }, null, disableWrites);
         }
 
-        public Task<IClientResponse> Post(string url, IDictionary<string, string> postData)
+        public Task<IClientResponse> Post(string url, IDictionary<string, string> postData, bool isLongRunning)
         {
-            return ((IHttpClient)this).Post(url, req => { }, postData);
+            return ((IHttpClient)this).Post(url, req => { }, postData, isLongRunning);
         }
 
-        Task<IClientResponse> IHttpClient.Get(string url, Action<IClientRequest> prepareRequest)
+        Task<IClientResponse> IHttpClient.Get(string url, Action<IClientRequest> prepareRequest, bool isLongRunning)
         {
             return ProcessRequest("GET", url, prepareRequest, postData: null);
         }
 
-        Task<IClientResponse> IHttpClient.Post(string url, Action<IClientRequest> prepareRequest, IDictionary<string, string> postData)
+        Task<IClientResponse> IHttpClient.Post(string url, Action<IClientRequest> prepareRequest, IDictionary<string, string> postData, bool isLongRunning)
         {
             return ProcessRequest("POST", url, prepareRequest, postData);
         }

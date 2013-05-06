@@ -6,12 +6,10 @@ namespace Microsoft.AspNet.SignalR.Client.Http
     public class HttpResponseMessageWrapper : IResponse
     {
         private HttpResponseMessage _httpResponseMessage;
-        private HttpClient _client;
-
-        public HttpResponseMessageWrapper(HttpResponseMessage httpResponseMessage, HttpClient client)
+        
+        public HttpResponseMessageWrapper(HttpResponseMessage httpResponseMessage)
         {
             _httpResponseMessage = httpResponseMessage;
-            _client = client;
         }
 
         public string ReadAsString()
@@ -30,7 +28,6 @@ namespace Microsoft.AspNet.SignalR.Client.Http
             {
                 _httpResponseMessage.RequestMessage.Dispose();
                 _httpResponseMessage.Dispose();
-                _client.Dispose();
             }
         }
 

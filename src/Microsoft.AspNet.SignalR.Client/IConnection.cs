@@ -30,6 +30,17 @@ namespace Microsoft.AspNet.SignalR.Client
         ConnectionState State { get; }
         IClientTransport Transport { get; }
 
+#if !SILVERLIGHT
+        /// <summary>
+        /// Gets of sets proxy information for the connection.
+        /// </summary>
+        IWebProxy Proxy { get; set; }
+#endif
+
+#if (NET4 || NET45)
+        X509CertificateCollection Certificates { get; }
+#endif
+
         bool ChangeState(ConnectionState oldState, ConnectionState newState);
 
         IDictionary<string, string> Headers { get; }
@@ -49,9 +60,6 @@ namespace Microsoft.AspNet.SignalR.Client
         void OnConnectionSlow();
         void PrepareRequest(IRequest request);
         void UpdateLastKeepAlive();
-#if (NET4 || NET45)
-        void AddClientCertificate(X509Certificate certificate);
-#endif
         void Trace(TraceLevels level, string format, params object[] args);
     }
 }

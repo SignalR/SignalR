@@ -219,6 +219,7 @@
     <Compile Include="..\Microsoft.AspNet.SignalR.Owin45\WebSockets\WebSocketMessageReader.cs">
       <Link>Transports\WebSockets\WebSocketMessageReader.cs</Link>
     </Compile>
+    <Compile Include="Http\HttpRequestMessageWrapper.cs" />
     <Compile Include="Http\DefaultHttpClient.cs" />
     <Compile Include="Http\DefaultHttpHandler.cs" />
     <Compile Include="Http\HttpResponseMessageWrapper.cs" />
