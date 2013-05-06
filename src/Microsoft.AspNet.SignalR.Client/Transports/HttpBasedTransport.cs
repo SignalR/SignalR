@@ -100,7 +100,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
                 { "data", data }
             };
 
-            return _httpClient.Post(url, connection.PrepareRequest, postData, false)
+            return _httpClient.Post(url, connection.PrepareRequest, postData, isLongRunning: false)
                               .Then(response => response.ReadAsString())
                               .Then(raw =>
                               {
