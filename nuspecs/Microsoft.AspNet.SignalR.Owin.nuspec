@@ -6,7 +6,7 @@
         <version>__SIGNALR_PACKAGE_VERSION__</version>
         <authors>Microsoft</authors>
         <owners>Microsoft</owners>
-        <licenseUrl>http://www.microsoft.com/web/webpi/eula/signalr_prerelease.htm</licenseUrl>
+        <licenseUrl>__SIGNALR_LICENSE_URL__</licenseUrl>
         <projectUrl>http://www.asp.net/signalr</projectUrl>
         <requireLicenseAcceptance>true</requireLicenseAcceptance>
         <description>OWIN componenets for ASP.NET SignalR.</description>
@@ -18,9 +18,7 @@
         </dependencies>
     </metadata>
     <files>
-        <file src="Net40\Microsoft.AspNet.SignalR.Owin.dll" target="lib\net40" />
-        <file src="Intellisense\Net40\Microsoft.AspNet.SignalR.Owin.xml" target="lib\net40" />
         <file src="Net45\Microsoft.AspNet.SignalR.Owin.dll" target="lib\net45" />
-        <file src="Intellisense\Net45\Microsoft.AspNet.SignalR.Owin.xml" target="lib\net45" />
+        <file src="Net45\Microsoft.AspNet.SignalR.Owin.xml" target="lib\net45" />
     </files>
 </package>
