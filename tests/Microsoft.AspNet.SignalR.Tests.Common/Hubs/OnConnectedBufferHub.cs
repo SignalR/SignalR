@@ -6,12 +6,10 @@ namespace Microsoft.AspNet.SignalR.Tests.Common.Hubs
 {
     public class OnConnectedBufferHub : Hub
     {
-        public static int bufferMeValues = 0;
-
         public override Task OnConnected()
         {
-            Clients.Caller.bufferMe(Interlocked.Increment(ref bufferMeValues));
-            Clients.Caller.bufferMe(Interlocked.Increment(ref bufferMeValues));
+            Clients.Caller.bufferMe(0);
+            Clients.Caller.bufferMe(1);
 
             Thread.Sleep(TimeSpan.FromSeconds(2));
 

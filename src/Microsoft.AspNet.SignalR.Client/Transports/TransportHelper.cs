@@ -187,7 +187,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
                         connection.OnReceived(message);
                     }
 
-                    TryInitialize(response, onInitialized);
+                    TryInitialize(result, onInitialized);
                 }
             }
             catch (Exception ex)
@@ -210,11 +210,9 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
             return "noCache=" + Guid.NewGuid().ToString();
         }
 
-        private static bool TryInitialize(string response, Action onInitialized)
+        private static bool TryInitialize(JToken response, Action onInitialized)
         {
-            var responseToken = JValue.Parse(response);
-
-            if (responseToken.HasValues && (int?)responseToken["Z"] == 1)
+            if ((int?)response["Z"] == 1)
             {
                 onInitialized();
                 return true;
