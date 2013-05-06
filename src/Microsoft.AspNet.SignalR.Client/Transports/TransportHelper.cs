@@ -34,7 +34,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
 
             httpClient.Initialize(connection);
 
-            return httpClient.Get(negotiateUrl, connection.PrepareRequest, false)
+            return httpClient.Get(negotiateUrl, connection.PrepareRequest, isLongRunning: false)
                             .Then(response => response.ReadAsString())
                             .Then(raw =>
                             {

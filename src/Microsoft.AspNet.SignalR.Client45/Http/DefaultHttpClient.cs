@@ -57,7 +57,7 @@ namespace Microsoft.AspNet.SignalR.Client.Http
 
             prepareRequest(request);
 
-            HttpClient httpClient = isLongRunning ? _longRunningClient : _shortRunningClient;
+            HttpClient httpClient = GetHttpClient(isLongRunning);
 
             return httpClient.SendAsync(requestMessage, HttpCompletionOption.ResponseHeadersRead, cts.Token)
                  .Then(responseMessage =>
@@ -108,7 +108,7 @@ namespace Microsoft.AspNet.SignalR.Client.Http
 
             prepareRequest(request);
 
-            HttpClient httpClient = isLongRunning ? _longRunningClient : _shortRunningClient;
+            HttpClient httpClient = GetHttpClient(isLongRunning);
 
             return httpClient.SendAsync(requestMessage, HttpCompletionOption.ResponseHeadersRead, cts.Token).
                 Then(responseMessage =>
@@ -124,6 +124,16 @@ namespace Microsoft.AspNet.SignalR.Client.Http
 
                     return (IResponse)new HttpResponseMessageWrapper(responseMessage);
                 });
+        }
+
+        /// <summary>
+        /// Returns the appropriate client based on whether it is a long running request
+        /// </summary>
+        /// <param name="isLongRunning">Indicates whether the request is long running</param>
+        /// <returns></returns>
+        private HttpClient GetHttpClient(bool isLongRunning)
+        {
+            return isLongRunning ? _longRunningClient : _shortRunningClient;
         }
     }
 }

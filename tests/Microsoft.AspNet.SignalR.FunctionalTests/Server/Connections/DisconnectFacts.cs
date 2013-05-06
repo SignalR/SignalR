@@ -237,7 +237,10 @@ namespace Microsoft.AspNet.SignalR.Tests
 
             public void Initialize(SignalR.Client.IConnection connection)
             {
-                _servers[_counter].Initialize(connection);
+                foreach (SignalR.Client.Http.IHttpClient server in _servers)
+                {
+                    server.Initialize(connection);
+                }
             }
 
             public LoadBalancer(params SignalR.Client.Http.IHttpClient[] servers)

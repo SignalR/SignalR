@@ -96,7 +96,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
                 
                 connection.PrepareRequest(_request);
 
-            }, true).ContinueWith(task =>
+            }, isLongRunning: true).ContinueWith(task =>
             {
                 if (task.IsFaulted)
                 {

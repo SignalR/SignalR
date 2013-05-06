@@ -142,7 +142,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
 
                     url += TransportHelper.AppendCustomQueryString(connection, url);
 
-                    _httpClient.Post(url, connection.PrepareRequest, false).Catch((ex, state) =>
+                    _httpClient.Post(url, connection.PrepareRequest, isLongRunning: false).Catch((ex, state) =>
                     {
                         // If there's an error making an http request set the reset event
                         ((HttpBasedTransport)state).CompleteAbort();
