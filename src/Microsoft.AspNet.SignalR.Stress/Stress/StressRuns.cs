@@ -549,18 +549,26 @@ namespace Microsoft.AspNet.SignalR.Stress
                 _servers = servers;
             }
 
-            public Task<Client.Http.IResponse> Get(string url, Action<Client.Http.IRequest> prepareRequest)
+            public void Initialize(SignalR.Client.IConnection connection)
             {
-                int index = _random.Next(0, _servers.Length);
-                _counter = (_counter + 1) % _servers.Length;
-                return _servers[index].Get(url, prepareRequest);
+                foreach (SignalR.Client.Http.IHttpClient server in _servers)
+                {
+                    server.Initialize(connection);
+                }
             }
 
-            public Task<Client.Http.IResponse> Post(string url, Action<Client.Http.IRequest> prepareRequest, IDictionary<string, string> postData)
+            public Task<Client.Http.IResponse> Get(string url, Action<Client.Http.IRequest> prepareRequest, bool isLongRunning)
             {
                 int index = _random.Next(0, _servers.Length);
                 _counter = (_counter + 1) % _servers.Length;
-                return _servers[index].Post(url, prepareRequest, postData);
+                return _servers[index].Get(url, prepareRequest, isLongRunning);
+            }
+
+            public Task<Client.Http.IResponse> Post(string url, Action<Client.Http.IRequest> prepareRequest, IDictionary<string, string> postData, bool isLongRunning)
+            {
+                int index = _random.Next(0, _servers.Length);
+                _counter = (_counter + 1) % _servers.Length;
+                return _servers[index].Post(url, prepareRequest, postData, isLongRunning);
             }
         }
 
