@@ -104,8 +104,9 @@
                             type: "GET",
                             dataType: connection.ajaxDataType,
                             contentType: connection.contentType,
-                            success: function (minData) {
-                                var delay = 0,
+                            success: function (result) {
+                                var minData = connection._parseResponse(result),
+                                    delay = 0,
                                     data;
 
                                 // Reset our reconnect errors so if we transition into a reconnecting state again we trigger

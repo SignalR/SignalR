@@ -107,7 +107,7 @@
                 };
 
                 connection.socket.onmessage = function (event) {
-                    var data = window.JSON.parse(event.data),
+                    var data = connection.json.parse(event.data),
                         $connection = $(connection);
 
                     if (data) {

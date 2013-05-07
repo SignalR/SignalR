@@ -223,8 +223,22 @@
             this._ = {};
             if (typeof (logging) === "boolean") {
                 this.logging = logging;
-            }            
+            }
         },
+
+        _parseResponse : function (response) {
+            var self = this;
+
+            if (!response) {
+                return response;
+            } else if (self.ajaxDataType === "text") {
+                return self.json.parse(response);
+            } else {
+                return response;
+            }
+        },
+
+        json : window.JSON,
 
         isCrossDomain: function (url, against) {
             /// <summary>Checks if url is cross domain</summary>
@@ -250,7 +264,7 @@
             return link.protocol + addDefaultPort(link.protocol, link.host) !== against.protocol + addDefaultPort(against.protocol, against.host);
         },
 
-        ajaxDataType: "json",
+        ajaxDataType: "text",
 
         contentType: "application/json; charset=UTF-8",
 
@@ -364,7 +378,7 @@
                 connection.contentType = signalR._.defaultContentType;
             }
 
-            connection.ajaxDataType = config.jsonp ? "jsonp" : "json";
+            connection.ajaxDataType = config.jsonp ? "jsonp" : "text";
 
             $(connection).bind(events.onStart, function (e, data) {
                 if ($.type(callback) === "function") {
@@ -436,8 +450,9 @@
                     // Stop the connection if negotiate failed
                     connection.stop();
                 },
-                success: function (res) {
-                    var keepAliveData = connection.keepAliveData;
+                success: function (result) {
+                    var res = connection._parseResponse(result),
+                        keepAliveData = connection.keepAliveData;
 
                     connection.appRelativeUrl = res.Url;
                     connection.id = res.ConnectionId;
@@ -764,7 +779,9 @@
                 contentType: connection.contentType,
                 data: {},
                 dataType: connection.ajaxDataType,
-                success: function (data) {
+                success: function (result) {
+                    var data = connection._parseResponse(result);
+
                     if (data.Response === "pong") {
                         deferral.resolve();
                     }
@@ -870,7 +887,7 @@
                 },
                 success: function (result) {
                     if (result) {
-                        $(connection).triggerHandler(events.onReceived, [result]);
+                        $(connection).triggerHandler(events.onReceived, [connection._parseResponse(result)]);
                     }
                 },
                 error: function (errData, textStatus) {
@@ -1150,7 +1167,7 @@
                 };
 
                 connection.socket.onmessage = function (event) {
-                    var data = window.JSON.parse(event.data),
+                    var data = connection.json.parse(event.data),
                         $connection = $(connection);
 
                     if (data) {
@@ -1311,7 +1328,7 @@
                     return;
                 }
 
-                transportLogic.processMessages(connection, window.JSON.parse(e.data));
+                transportLogic.processMessages(connection, connection.json.parse(e.data));
             }, false);
 
             connection.eventSource.addEventListener("error", function (e) {
@@ -1689,8 +1706,9 @@
                             type: "GET",
                             dataType: connection.ajaxDataType,
                             contentType: connection.contentType,
-                            success: function (minData) {
-                                var delay = 0,
+                            success: function (result) {
+                                var minData = connection._parseResponse(result),
+                                    delay = 0,
                                     data;
 
                                 // Reset our reconnect errors so if we transition into a reconnecting state again we trigger
@@ -1977,7 +1995,7 @@
                 data.S = self.state;
             }
             
-            self.connection.send(window.JSON.stringify(data));
+            self.connection.send(self.connection.json.stringify(data));
 
             return d.promise();
         },
@@ -2085,21 +2103,22 @@
         ///     Sets the starting event to loop through the known hubs and register any new hubs 
         ///     that have been added to the proxy.
         /// </summary>
+        var connection = this;
 
-        if (!this._subscribedToHubs) {
-            this._subscribedToHubs = true;
-            this.starting(function () {
+        if (!connection._subscribedToHubs) {
+            connection._subscribedToHubs = true;
+            connection.starting(function () {
                 // Set the connection's data object with all the hub proxies with active subscriptions.
                 // These proxies will receive notifications from the server.
                 var subscribedHubs = [];
 
-                $.each(this.proxies, function (key) {
+                $.each(connection.proxies, function (key) {
                     if (this.hasSubscriptions()) {
                         subscribedHubs.push({ name: key });
                     }
                 });
 
-                this.data = window.JSON.stringify(subscribedHubs);
+                connection.data = connection.json.stringify(subscribedHubs);
             });
         }
     };

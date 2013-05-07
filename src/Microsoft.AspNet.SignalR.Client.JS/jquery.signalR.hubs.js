@@ -162,7 +162,7 @@
                 data.S = self.state;
             }
             
-            self.connection.send(window.JSON.stringify(data));
+            self.connection.send(self.connection.json.stringify(data));
 
             return d.promise();
         },
@@ -270,21 +270,22 @@
         ///     Sets the starting event to loop through the known hubs and register any new hubs 
         ///     that have been added to the proxy.
         /// </summary>
+        var connection = this;
 
-        if (!this._subscribedToHubs) {
-            this._subscribedToHubs = true;
-            this.starting(function () {
+        if (!connection._subscribedToHubs) {
+            connection._subscribedToHubs = true;
+            connection.starting(function () {
                 // Set the connection's data object with all the hub proxies with active subscriptions.
                 // These proxies will receive notifications from the server.
                 var subscribedHubs = [];
 
-                $.each(this.proxies, function (key) {
+                $.each(connection.proxies, function (key) {
                     if (this.hasSubscriptions()) {
                         subscribedHubs.push({ name: key });
                     }
                 });
 
-                this.data = window.JSON.stringify(subscribedHubs);
+                connection.data = connection.json.stringify(subscribedHubs);
             });
         }
     };
