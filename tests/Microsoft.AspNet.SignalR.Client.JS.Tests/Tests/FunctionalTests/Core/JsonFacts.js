@@ -4,7 +4,8 @@
     testUtilities.runWithAllTransports(function (transport) {
         QUnit.asyncTimeoutTest(transport + " transport uses custom JSON object.", testUtilities.defaultTestTimeout, function (end, assert, testName) {
             var connections = [testUtilities.createConnection("signalr", end, assert, testName),
-                               testUtilities.createHubConnection(end, assert, testName)];
+                               testUtilities.createHubConnection(end, assert, testName)],
+                numStarts = 0;
             
             $.each(connections, function (_, connection) {
                 var customJsonCalled = false;
@@ -22,13 +23,18 @@
 
                 connection.start({ transport: transport }).done(function () {
                     assert.ok(customJsonCalled, "Should use custom JSON object.");
-                    end();
+                    numStarts++;
+                    if (numStarts == connections.length) {
+                        end();
+                    }
                 });
             });
             
-            $.each(connections, function (_, connection) {
-                connection.stop();
-            });
+            return function () {
+                $.each(connections, function (_, connection) {
+                    connection.stop();
+                });
+            };
         });
     });
 })($, window);
