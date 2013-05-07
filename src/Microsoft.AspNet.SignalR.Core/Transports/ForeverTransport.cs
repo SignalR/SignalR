@@ -310,6 +310,8 @@ namespace Microsoft.AspNet.SignalR.Transports
 
         private static void OnDisconnectMessage(MessageContext context)
         {
+            context.Transport.ApplyState(TransportConnectionStates.DisconnectMessageReceived);
+
             context.Registration.Dispose();
 
             // Remove connection without triggering disconnect
