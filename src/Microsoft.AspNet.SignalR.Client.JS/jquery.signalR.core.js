@@ -222,8 +222,22 @@
             this._ = {};
             if (typeof (logging) === "boolean") {
                 this.logging = logging;
-            }            
+            }
         },
+
+        _parseResponse : function (response) {
+            var self = this;
+
+            if (!response) {
+                return response;
+            } else if (self.ajaxDataType === "text") {
+                return self.json.parse(response);
+            } else {
+                return response;
+            }
+        },
+
+        json : window.JSON,
 
         isCrossDomain: function (url, against) {
             /// <summary>Checks if url is cross domain</summary>
@@ -249,7 +263,7 @@
             return link.protocol + addDefaultPort(link.protocol, link.host) !== against.protocol + addDefaultPort(against.protocol, against.host);
         },
 
-        ajaxDataType: "json",
+        ajaxDataType: "text",
 
         contentType: "application/json; charset=UTF-8",
 
@@ -363,7 +377,7 @@
                 connection.contentType = signalR._.defaultContentType;
             }
 
-            connection.ajaxDataType = config.jsonp ? "jsonp" : "json";
+            connection.ajaxDataType = config.jsonp ? "jsonp" : "text";
 
             $(connection).bind(events.onStart, function (e, data) {
                 if ($.type(callback) === "function") {
@@ -435,8 +449,9 @@
                     // Stop the connection if negotiate failed
                     connection.stop();
                 },
-                success: function (res) {
-                    var keepAliveData = connection.keepAliveData;
+                success: function (result) {
+                    var res = connection._parseResponse(result),
+                        keepAliveData = connection.keepAliveData;
 
                     connection.appRelativeUrl = res.Url;
                     connection.id = res.ConnectionId;
