@@ -153,11 +153,11 @@ namespace Microsoft.AspNet.SignalR.Messaging
                             _minMessageId = (long)(existingFragment.MaxId + 1);
                             _minMappingId = existingFragment.MaxId;
                         }
-                        else if(idxIntoFragmentsArray == 0)
+                        else if (idxIntoFragmentsArray == 0)
                         {
                             _minMappingId = mapping.Id;
                         }
-                        
+
                         return true;
                     }
                 }
@@ -237,14 +237,18 @@ namespace Microsoft.AspNet.SignalR.Messaging
         public MessageStoreResult<ScaleoutMapping> GetMessagesByMappingId(ulong mappingId)
         {
             var minMessageId = (ulong)Volatile.Read(ref _minMessageId);
-            bool expiredMappingId = false;
 
             int idxIntoFragment;
             // look for the fragment containing the start of the data requested by the client
             Fragment thisFragment;
             if (TryGetFragmentFromMappingId(mappingId, out thisFragment))
             {
-                if (thisFragment.TrySearch(mappingId, out idxIntoFragment))
+                int lastSearchIndex;
+                ulong lastSearchId;
+                if (thisFragment.TrySearch(mappingId,
+                                           out idxIntoFragment,
+                                           out lastSearchIndex,
+                                           out lastSearchId))
                 {
                     // Skip the first message
                     idxIntoFragment++;
@@ -254,15 +258,26 @@ namespace Microsoft.AspNet.SignalR.Messaging
                 }
                 else
                 {
-                    // We assume that if you fall between the range but we can't find a cursor
-                    // then we've been reset
-                    expiredMappingId = true;
+                    if (mappingId > lastSearchId)
+                    {
+                        lastSearchIndex++;
+                    }
+
+                    var segment = new ArraySegment<ScaleoutMapping>(thisFragment.Data,
+                                                                    lastSearchIndex,
+                                                                    thisFragment.Length - lastSearchIndex);
+
+                    var firstMessageIdInThisFragment = GetMessageId(thisFragment.FragmentNum, offset: (uint)lastSearchIndex);
+
+                    return new MessageStoreResult<ScaleoutMapping>(firstMessageIdInThisFragment,
+                                                                   segment,
+                                                                   hasMoreData: true);
                 }
             }
 
             // If we're expired or we're at the first mapping or we're lower than the 
             // min then get everything
-            if (expiredMappingId || mappingId < _minMappingId || mappingId == UInt64.MaxValue)
+            if (mappingId < _minMappingId || mappingId == UInt64.MaxValue)
             {
                 return GetAllMessages(minMessageId);
             }
@@ -384,16 +399,23 @@ namespace Microsoft.AspNet.SignalR.Messaging
                 return id >= MinValue && id <= MaxValue;
             }
 
-            public bool TrySearch(ulong id, out int index)
+            public bool TrySearch(ulong id, out int index, out int lastSearchIndex, out ulong lastSearchId)
             {
-                int low = 0;
-                int high = Length;
+                lastSearchIndex = 0;
+                lastSearchId = id;
+
+                var low = 0;
+                var high = Length;
+
 
                 while (low <= high)
                 {
                     int mid = (low + high) / 2;
 
                     ScaleoutMapping mapping = Data[mid];
+
+                    lastSearchIndex = mid;
+                    lastSearchId = mapping.Id;
 
                     if (id < mapping.Id)
                     {
