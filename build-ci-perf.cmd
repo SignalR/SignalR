@@ -9,17 +9,20 @@ if "%branch%" == "" (
    set branch=dev
 )
 
+set target=Build
 set privateRun=true
 if /i "%branch%" == "dev" (
-  set privateRun=false
+   set target=CI
+   set privateRun=false
 )
 if /i "%branch%" == "release" (
-  set privateRun=false
+   set target=CI
+   set privateRun=false
 )
 
 call \PerfRuns\SignalR-Env.cmd
 
-cmd /c build-ci Release 1 true
+cmd /c build-ci Release 1 %target% true
 
 if %ERRORLEVEL% neq 0 exit /b %ERRORLEVEL%
 
