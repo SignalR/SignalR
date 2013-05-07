@@ -43,8 +43,23 @@ QUnit.test("connection.json is window.JSON by default", function () {
 });
 
 QUnit.test("connection.json is custom object after set", function () {
-    var con = $.connection();
-    var customJson = { };
+    var con = $.connection(),
+        customJson = {};
+
     con.json = customJson;
+
     QUnit.equal(con.json, customJson, "Verifies connection.json is settable to a custom object.");
+});
+
+QUnit.test("connection.json is unique on different objcets object when custom", function () {
+    var con1 = $.connection(),
+        con2 = $.connection(),
+        customJson1 = {},
+        customJson2 = {};
+
+    con1.json = customJson1;
+    con2.json = customJson2;
+
+    QUnit.equal(con1.json, customJson1, "Verifies connection.json is not shared when set to a custom object.");
+    QUnit.equal(con2.json, customJson2, "Verifies connection.json is not shared when set to a custom object.");
 });

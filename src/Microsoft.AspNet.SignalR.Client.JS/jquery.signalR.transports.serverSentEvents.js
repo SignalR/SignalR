@@ -116,7 +116,7 @@
                     return;
                 }
 
-                transportLogic.processMessages(connection, connection.json.parse(e.data));
+                transportLogic.processMessages(connection, connection._parseResponse(e.data));
             }, false);
 
             connection.eventSource.addEventListener("error", function (e) {
