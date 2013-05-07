@@ -24,7 +24,7 @@
                 connection.start({ transport: transport }).done(function () {
                     assert.ok(customJsonCalled, "Should use custom JSON object.");
                     numStarts++;
-                    if (numStarts == connections.length) {
+                    if (numStarts === connections.length) {
                         end();
                     }
                 });
