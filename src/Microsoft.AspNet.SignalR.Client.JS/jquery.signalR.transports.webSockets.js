@@ -16,7 +16,7 @@
 
         supportsKeepAlive: true,
 
-        timeOut : 3000,
+        timeOut: 3000,
 
         send: function (connection, data) {
             connection.socket.send(data);
@@ -107,7 +107,7 @@
                 };
 
                 connection.socket.onmessage = function (event) {
-                    var data = window.JSON.parse(event.data),
+                    var data = connection._parseResponse(event.data),
                         $connection = $(connection);
 
                     if (data) {

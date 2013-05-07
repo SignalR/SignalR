@@ -265,6 +265,20 @@
             }
         },
 
+        _parseResponse: function (response) {
+            var self = this;
+
+            if (!response) {
+                return response;
+            } else if (self.ajaxDataType === "text") {
+                return self.json.parse(response);
+            } else {
+                return response;
+            }
+        },
+
+        json: window.JSON,
+
         isCrossDomain: function (url, against) {
             /// <summary>Checks if url is cross domain</summary>
             /// <param name="url" type="String">The base URL</param>
@@ -289,7 +303,7 @@
             return link.protocol + addDefaultPort(link.protocol, link.host) !== against.protocol + addDefaultPort(against.protocol, against.host);
         },
 
-        ajaxDataType: "json",
+        ajaxDataType: "text",
 
         contentType: "application/json; charset=UTF-8",
 
@@ -422,8 +436,8 @@
             }
 
             connection.withCredentials = config.withCredentials;
+            connection.ajaxDataType = config.jsonp ? "jsonp" : "text";
 
-            connection.ajaxDataType = config.jsonp ? "jsonp" : "json";
 
             $(connection).bind(events.onStart, function (e, data) {
                 if ($.type(callback) === "function") {
@@ -534,8 +548,9 @@
                             deferred.reject("Stopped the connection while negotiating.");
                         }
                     },
-                    success: function (res) {
-                        var keepAliveData = connection._.keepAliveData;
+                    success: function (result) {
+                        var res = connection._parseResponse(result),
+                            keepAliveData = connection._.keepAliveData;
 
                         connection.appRelativeUrl = res.Url;
                         connection.id = res.ConnectionId;

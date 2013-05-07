@@ -185,7 +185,7 @@
                 data.S = self.state;
             }
 
-            connection.send(window.JSON.stringify(data));
+            connection.send(self.connection.json.stringify(data));
 
             return d.promise();
         },
@@ -296,7 +296,7 @@
             }
 
             try {
-                data = window.JSON.parse(origData);
+                data = connection.json.parse(origData);
                 if (!data.I) {
                     // The original data doesn't have a callback ID so not a send error
                     return;
@@ -344,14 +344,14 @@
         /// </summary>
         var connection = this;
 
-        if (!this._subscribedToHubs) {
-            this._subscribedToHubs = true;
-            this.starting(function () {
+        if (!connection._subscribedToHubs) {
+            connection._subscribedToHubs = true;
+            connection.starting(function () {
                 // Set the connection's data object with all the hub proxies with active subscriptions.
                 // These proxies will receive notifications from the server.
                 var subscribedHubs = [];
 
-                $.each(this.proxies, function (key) {
+                $.each(connection.proxies, function (key) {
                     if (this.hasSubscriptions()) {
                         subscribedHubs.push({ name: key });
                         connection.log("Client subscribed to hub '" + key + "'.");
@@ -362,7 +362,7 @@
                     connection.log("No hubs have been subscribed to.  The client will not receive data from hubs.  To fix, declare at least one client side function prior to connection start for each hub you wish to subscribe to.");
                 }
 
-                this.data = window.JSON.stringify(subscribedHubs);
+                connection.data = connection.json.stringify(subscribedHubs);
             });
         }
     };

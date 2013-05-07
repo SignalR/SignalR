@@ -239,8 +239,10 @@ testUtilities.runWithAllTransports(function (transport) {
             if (url.indexOf("/negotiate") >= 0) {
                 // Let the ajax request finish out
                 savedSuccess = settings.success;
-                settings.success = function (res) {
+                settings.success = function (result) {
+                    var res = connection._parseResponse(result);
                     res.ProtocolVersion = "1.1";
+                    result = connection.json.stringify(res);
                     savedSuccess.apply(this, arguments);
                 }
             }

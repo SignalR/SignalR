@@ -1,11 +1,12 @@
-﻿/// <reference path="..\..\..\SignalR.Client.JS\jquery.signalR.core.js" />
+﻿/// <reference path="..\..\..\Scripts\_references.js" />
+/// <reference path="..\..\..\SignalR.Client.JS\jquery.signalR.core.js" />
 
 QUnit.module("Connection Facts");
 
 QUnit.test("Default Connection Parameters", function () {
     var con = $.connection;
     QUnit.equal(con.fn.state, con.connectionState.disconnected, "Verifies connection is disconnected.");
-    QUnit.equal(con.fn.ajaxDataType, "json", "Verifies ajax data type is json.");
+    QUnit.equal(con.fn.ajaxDataType, "text", "Verifies ajax data type is text.");
     QUnit.equal(con.fn.logging, false, "Verifies logging is disabled.");
     QUnit.equal(con.fn.reconnectDelay, 2000, "Verifies reconnect delay is 2000 ms.");
 });
@@ -20,4 +21,21 @@ QUnit.test("Error on send prior to connected state", function () {
     QUnit.throws(function () { con.fn.send("Something"); }, "Verifying we error on send when connecting.");
     // Reset the connection state back to disconnected
     con.changeState(con.fn, con.connectionState.connecting, con.connectionState.disconnected);
+});
+
+QUnit.test("connection.prototype.json is window.JSON", function () {
+    var json = $.connection.prototype.json;
+    QUnit.equal(json, window.JSON, "Verifies connection.prototype.json is window.JSON.");
+});
+
+QUnit.test("connection.json is window.JSON by default", function () {
+    var con = $.connection();
+    QUnit.equal(con.json, window.JSON, "Verifies connection.json is window.JSON by default.");
+});
+
+QUnit.test("connection.json is custom object after set", function () {
+    var con = $.connection();
+    var customJson = { };
+    con.json = customJson;
+    QUnit.equal(con.json, customJson, "Verifies connection.json is settable to a custom object.");
 });
