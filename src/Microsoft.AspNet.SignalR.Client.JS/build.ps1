@@ -7,6 +7,7 @@ $files =
     "jquery.signalR.transports.foreverFrame.js",
     "jquery.signalR.transports.longPolling.js",
 	"jquery.signalR.hubs.js",
+	"jquery.signalR.hubs.pipeline.js",
 	"jquery.signalR.version.js"
 
 $versionHolder = "##VERSION##"

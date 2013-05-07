@@ -38,6 +38,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Content Include="jquery.signalR.hubs.js" />
+    <Content Include="jquery.signalR.hubs.pipeline.js" />
     <Content Include="jquery.signalR.transports.common.js" />
     <Content Include="jquery.signalR.transports.webSockets.js" />
     <Content Include="jquery.signalR.transports.serverSentEvents.js" />
@@ -99,8 +100,6 @@
   </Target>
   -->
   <Target Name="AfterBuild">
-     <Exec Command="powershell -NoProfile -ExecutionPolicy Bypass .\build.ps1" 
-           WorkingDirectory="$(ProjectDir)"
-           Condition=" '$(OS)' == 'Windows_NT'" />
+    <Exec Command="powershell -NoProfile -ExecutionPolicy Bypass .\build.ps1" WorkingDirectory="$(ProjectDir)" Condition=" '$(OS)' == 'Windows_NT'" />
   </Target>
 </Project>

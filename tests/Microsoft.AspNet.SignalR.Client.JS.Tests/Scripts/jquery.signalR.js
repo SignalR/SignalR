@@ -1817,6 +1817,7 @@
 
 /*global window:false */
 /// <reference path="jquery.signalR.core.js" />
+/// <reference path="jquery.signalR.hubs.pipeline.js" />
 
 (function ($, window) {
     "use strict";
@@ -1858,6 +1859,15 @@
         return false;
     }
 
+    function buildContext(data) {
+        return {
+            hubName: data.Hub,
+            methodName: data.Method,
+            args: data.Args
+        };
+    }
+
+
     // hubProxy
     function hubProxy(hubConnection, hubName) {
         /// <summary>
@@ -1872,6 +1882,7 @@
             this.state = {};
             this.connection = connection;
             this.hubName = hubName;
+            this.pipeline = new $.hubConnection._.HubPipeline(this);
             this._ = {
                 callbackMap: {}
             };
@@ -1976,7 +1987,7 @@
             if (!$.isEmptyObject(self.state)) {
                 data.S = self.state;
             }
-            
+
             self.connection.send(window.JSON.stringify(data));
 
             return d.promise();
@@ -2014,7 +2025,23 @@
         return new hubConnection.fn.init(url, settings);
     }
 
+    // For private referrences
+    hubConnection._ = {};
+
     hubConnection.fn = hubConnection.prototype = $.connection();
+
+    hubConnection.fn.invokeClient = function (context) {
+        /*
+        Context Format:
+        - hubName
+        - methodName
+        - args
+        */
+        var proxy = this;
+
+        // Trigger the local invocation event
+        $(proxy).triggerHandler(makeEventName(context.methodName.toLowerCase()), [context.args]);
+    };
 
     hubConnection.fn.init = function (url, options) {
         var settings = {
@@ -2034,7 +2061,8 @@
 
         // Wire up the received handler
         connection.received(function (minData) {
-            var data, proxy, dataCallbackId, callback, hubName, eventName;
+            var data, proxy, dataCallbackId, callback, hubName;
+            
             if (!minData) {
                 return;
             }
@@ -2059,14 +2087,14 @@
 
                 // Normalize the names to lowercase
                 hubName = data.Hub.toLowerCase();
-                eventName = data.Method.toLowerCase();
 
                 // Trigger the local invocation event
                 proxy = this.proxies[hubName];
 
                 // Update the hub state
                 $.extend(proxy.state, data.State);
-                $(proxy).triggerHandler(makeEventName(eventName), [data.Args]);
+
+                proxy.pipeline._.invoker.incoming(buildContext(data));
             }
         });
     };
@@ -2085,21 +2113,24 @@
         ///     Sets the starting event to loop through the known hubs and register any new hubs 
         ///     that have been added to the proxy.
         /// </summary>
+        var that = this;
 
-        if (!this._subscribedToHubs) {
-            this._subscribedToHubs = true;
-            this.starting(function () {
+        if (!that._subscribedToHubs) {
+            that._subscribedToHubs = true;
+            that.starting(function () {
                 // Set the connection's data object with all the hub proxies with active subscriptions.
                 // These proxies will receive notifications from the server.
                 var subscribedHubs = [];
 
-                $.each(this.proxies, function (key) {
+                $.each(that.proxies, function (key, proxy) {
                     if (this.hasSubscriptions()) {
                         subscribedHubs.push({ name: key });
+
+                        proxy.pipeline._.composeIncoming(that.invokeClient);
                     }
                 });
 
-                this.data = window.JSON.stringify(subscribedHubs);
+                that.data = window.JSON.stringify(subscribedHubs);
             });
         }
     };
@@ -2130,6 +2161,83 @@
     hubConnection.fn.init.prototype = hubConnection.fn;
 
     $.hubConnection = hubConnection;
+
+}(window.jQuery, window));
+/* jquery.signalR.hubs.pipeline.js */
+// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.md in the project root for license information.
+
+/*global window:false */
+/// <reference path="jquery.signalR.hubs.js" />
+
+(function ($, window) {
+    "use strict";
+
+    var HubPipelineModule = function () {
+        var that = this;
+
+        that.beforeIncoming = function (context) {
+            return true;
+        };
+
+        that.afterIncoming = function (context, error) { };
+
+        that.incoming = function (next) {
+            return function (context) {
+                if (that.beforeIncoming()) {
+                    var error;
+
+                    try {
+                        next(context);
+                    }
+                    catch (ex) {
+                        error = ex;
+                    }
+                    finally {
+                        that.afterIncoming(context, error);
+                    }
+                }
+            };
+        };
+    },
+    HubPipeline = function (proxy) {
+        var that = this,
+            modules = [],
+            compose = function (moduleProperty, endpoint) {
+                var composition = function () {
+                        endpoint.apply(proxy, arguments);
+                    };
+
+                if (modules.length > 0) {
+
+                    for (var i = 1; i < modules.length; i++) {
+                        composition = modules[i][moduleProperty](composition);
+                    }
+                }
+
+                that._.invoker[moduleProperty] = composition;
+            };
+
+        that._ = {
+            invoker: {
+                incoming: function (action) { }
+            },
+            composeIncoming: function (endpoint) {
+                compose("incoming", endpoint);
+            }
+        };
+
+        that.incoming = function (incomingModule) {
+            var module = new HubPipelineModule();
+
+            // Fill in defaults for any non-set properties                
+            modules.beforeIncoming = incomingModule.before || modules.beforeIncoming;
+            modules.afterIncoming = incomingModule.after || modules.afterIncoming;
+
+            modules.push(module);
+        };
+    };
+
+    $.hubConnection._.HubPipeline = HubPipeline;
 
 }(window.jQuery, window));
 /* jquery.signalR.version.js */
