@@ -226,12 +226,12 @@
         },
 
         _parseResponse : function (response) {
-            var self = this;
+            var that = this;
 
             if (!response) {
                 return response;
-            } else if (self.ajaxDataType === "text") {
-                return self.json.parse(response);
+            } else if (that.ajaxDataType === "text") {
+                return that.json.parse(response);
             } else {
                 return response;
             }

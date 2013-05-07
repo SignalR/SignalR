@@ -227,12 +227,12 @@
         },
 
         _parseResponse : function (response) {
-            var self = this;
+            var that = this;
 
             if (!response) {
                 return response;
-            } else if (self.ajaxDataType === "text") {
-                return self.json.parse(response);
+            } else if (that.ajaxDataType === "text") {
+                return that.json.parse(response);
             } else {
                 return response;
             }
@@ -1167,7 +1167,7 @@
                 };
 
                 connection.socket.onmessage = function (event) {
-                    var data = connection.json.parse(event.data),
+                    var data = connection._parseResponse(event.data),
                         $connection = $(connection);
 
                     if (data) {
@@ -1328,7 +1328,7 @@
                     return;
                 }
 
-                transportLogic.processMessages(connection, connection.json.parse(e.data));
+                transportLogic.processMessages(connection, connection._parseResponse(e.data));
             }, false);
 
             connection.eventSource.addEventListener("error", function (e) {
@@ -1903,8 +1903,8 @@
             /// <summary>Wires up a callback to be invoked when a invocation request is received from the server hub.</summary>
             /// <param name="eventName" type="String">The name of the hub event to register the callback for.</param>
             /// <param name="callback" type="Function">The callback to be invoked.</param>
-            var self = this,
-                callbackMap = self._.callbackMap;
+            var that = this,
+                callbackMap = that._.callbackMap;
 
             // Normalize the event name to lowercase
             eventName = eventName.toLowerCase();
@@ -1916,20 +1916,20 @@
 
             // Map the callback to our encompassed function
             callbackMap[eventName][callback] = function (e, data) {
-                callback.apply(self, data);
+                callback.apply(that, data);
             };
 
-            $(self).bind(makeEventName(eventName), callbackMap[eventName][callback]);
+            $(that).bind(makeEventName(eventName), callbackMap[eventName][callback]);
 
-            return self;
+            return that;
         },
 
         off: function (eventName, callback) {
             /// <summary>Removes the callback invocation request from the server hub for the given event name.</summary>
             /// <param name="eventName" type="String">The name of the hub event to unregister the callback for.</param>
             /// <param name="callback" type="Function">The callback to be invoked.</param>
-            var self = this,
-                callbackMap = self._.callbackMap,
+            var that = this,
+                callbackMap = that._.callbackMap,
                 callbackSpace;
 
             // Normalize the event name to lowercase
@@ -1941,7 +1941,7 @@
             if (callbackSpace) {
                 // Only unbind if there's an event bound with eventName and a callback with the specified callback
                 if (callbackSpace[callback]) {
-                    $(self).unbind(makeEventName(eventName), callbackSpace[callback]);
+                    $(that).unbind(makeEventName(eventName), callbackSpace[callback]);
 
                     // Remove the callback from the callback map
                     delete callbackSpace[callback];
@@ -1952,50 +1952,50 @@
                     }
                 }
                 else if (!callback) { // Check if we're removing the whole event and we didn't error because of an invalid callback
-                    $(self).unbind(makeEventName(eventName));
+                    $(that).unbind(makeEventName(eventName));
 
                     delete callbackMap[eventName];
                 }
             }
 
-            return self;
+            return that;
         },
 
         invoke: function (methodName) {
             /// <summary>Invokes a server hub method with the given arguments.</summary>
             /// <param name="methodName" type="String">The name of the server hub method.</param>
 
-            var self = this,
+            var that = this,
                 args = $.makeArray(arguments).slice(1),
                 argValues = map(args, getArgValue),
-                data = { H: self.hubName, M: methodName, A: argValues, I: callbackId },
+                data = { H: that.hubName, M: methodName, A: argValues, I: callbackId },
                 d = $.Deferred(),
                 callback = function (minResult) {
-                    var result = self._maximizeHubResponse(minResult);
+                    var result = that._maximizeHubResponse(minResult);
 
                     // Update the hub state
-                    $.extend(self.state, result.State);
+                    $.extend(that.state, result.State);
 
                     if (result.Error) {
                         // Server hub method threw an exception, log it & reject the deferred
                         if (result.StackTrace) {
-                            self.connection.log(result.Error + "\n" + result.StackTrace);
+                            that.connection.log(result.Error + "\n" + result.StackTrace);
                         }
-                        d.rejectWith(self, [result.Error]);
+                        d.rejectWith(that, [result.Error]);
                     } else {
                         // Server invocation succeeded, resolve the deferred
-                        d.resolveWith(self, [result.Result]);
+                        d.resolveWith(that, [result.Result]);
                     }
                 };
 
-            callbacks[callbackId.toString()] = { scope: self, method: callback };
+            callbacks[callbackId.toString()] = { scope: that, method: callback };
             callbackId += 1;
 
-            if (!$.isEmptyObject(self.state)) {
-                data.S = self.state;
+            if (!$.isEmptyObject(that.state)) {
+                data.S = that.state;
             }
             
-            self.connection.send(self.connection.json.stringify(data));
+            that.connection.send(that.connection.json.stringify(data));
 
             return d.promise();
         },
