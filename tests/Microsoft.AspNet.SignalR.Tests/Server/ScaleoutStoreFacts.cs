@@ -220,5 +220,47 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
             Assert.Equal(0ul, result.FirstMessageId);
             Assert.Equal(1, result.Messages.Count);
         }
+
+        [Fact]
+        public void GettingMessagesWithCursorInbetweenEvenRangeGetsAll()
+        {
+            AssertMessagesWithCursorForRange(new[] { 1, 4, 6, 10 }, 5, 2ul, 2);
+            AssertMessagesWithCursorForRange(new[] { 1, 3, 6, 7, 8, 10 }, 9, 5ul, 1);
+        }
+
+        [Fact]
+        public void GettingMessagesWithCursorInbetweenOddRangeGetsAll()
+        {
+            AssertMessagesWithCursorForRange(new[] { 1, 4, 10 }, 2, 1ul, 2);
+            AssertMessagesWithCursorForRange(new[] { 1, 3, 6, 8, 10 }, 7, 3ul, 2);
+        }
+
+        public void AssertMessagesWithCursorForRange(int[] values, ulong targetId, ulong firstId, int count)
+        {
+            var store = new ScaleoutStore(10);
+
+            var message = new ScaleoutMessage();
+            foreach (var v in values)
+            {
+                store.Add(new ScaleoutMapping((ulong)v, message));
+            }
+
+            var result = store.GetMessagesByMappingId(targetId);
+            Assert.Equal(firstId, result.FirstMessageId);
+            Assert.Equal(count, result.Messages.Count);
+        }
+
+        [Fact]
+        public void GettingMessagesWithCursorInbetweenOnElementRangeGetsAll()
+        {
+            var store = new ScaleoutStore(10);
+
+            var message = new ScaleoutMessage();
+            store.Add(new ScaleoutMapping((ulong)1, message));
+
+            var result = store.GetMessagesByMappingId(2);
+            Assert.Equal(0ul, result.FirstMessageId);
+            Assert.Equal(0, result.Messages.Count);
+        }
     }
 }
