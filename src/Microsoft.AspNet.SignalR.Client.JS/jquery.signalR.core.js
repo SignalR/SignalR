@@ -223,17 +223,13 @@
             return false;
         };
 
-        that.tryDrain = function () {
+        that.drain = function () {
             // Ensure that the connection is connected when we drain (do not want to drain while a connection is not active)
             if (connection.state === $.signalR.connectionState.connected) {
-                while (buffer.length !== 0) {
+                while (buffer.length > 0) {
                     drainCallback(buffer.shift());
                 }
-
-                return true;
             }
-
-            return false;
         };
 
         that.clear = function () {
@@ -457,7 +453,7 @@
                                 signalR.connectionState.connected);
 
                     // Drain any incoming buffered messages (messages that came in prior to connect)
-                    connection._.connectingMessageBuffer.tryDrain();
+                    connection._.connectingMessageBuffer.drain();
 
                     $(connection).triggerHandler(events.onStart);
 

@@ -405,7 +405,7 @@ namespace Microsoft.AspNet.SignalR.Client
                                  // We want to protect against state changes when draining
                                  lock (_stateLock)
                                  {
-                                     _connectingMessageBuffer.TryDrain();
+                                     _connectingMessageBuffer.Drain();
                                  }
 
                                  if (_keepAliveData != null)
