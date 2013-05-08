@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNet.SignalR.Configuration;
 using Microsoft.AspNet.SignalR.Messaging;
 using Microsoft.AspNet.SignalR.Tests.Infrastructure;
 using Xunit;
@@ -162,6 +163,54 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
                     }, 10, null);
 
                     Assert.True(cd.Wait(TimeSpan.FromSeconds(10)));
+                }
+                finally
+                {
+                    if (subscription != null)
+                    {
+                        subscription.Dispose();
+                    }
+                }
+            }
+        }
+
+        [Fact]
+        public void SubscriptionGetsNewMessagesWhenTopicStoreOverrun()
+        {
+            var dr = new DefaultDependencyResolver();
+            dr.Resolve<IConfigurationManager>().DefaultMessageBufferSize = 10;
+
+            using (var bus = new TestScaleoutBus(dr))
+            {
+                var subscriber = new TestSubscriber(new[] { "key" });
+                IDisposable subscription = null;
+                // 16-49 is the valid range
+                var cd = new OrderedCountDownRange<int>(Enumerable.Range(16, 33));
+                var results = new List<bool>();
+
+                for (int i = 0; i < 50; i++)
+                {
+                    bus.Publish(0, (ulong)i, new[] { 
+                        new Message("test", "key", i.ToString())
+                    });
+                }
+
+                try
+                {
+                    subscription = bus.Subscribe(subscriber, "0,1", (result, state) =>
+                    {
+                        foreach (var m in result.GetMessages())
+                        {
+                            int n = Int32.Parse(m.GetString());
+
+                            cd.Expect(n);
+                        }
+
+                        return TaskAsyncHelper.True;
+
+                    }, 10, null);
+
+                    Assert.True(cd.Wait(TimeSpan.FromSeconds(5)));
                 }
                 finally
                 {
