@@ -72,7 +72,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
         protected override void PerformWork(IList<ArraySegment<Message>> items, out int totalCount, out object state)
         {
             // The list of cursors represent (streamid, payloadid)
-            var nextCursors = new ScaleoutMapping[_streams.Count];
+            var nextCursors = new ulong?[_streams.Count];
             totalCount = 0;
 
             // Get the enumerator so that we can extract messages for this subscription
@@ -83,10 +83,17 @@ namespace Microsoft.AspNet.SignalR.Messaging
                 ScaleoutMapping mapping = enumerator.Current.Item1;
                 int streamIndex = enumerator.Current.Item2;
 
-                ExtractMessages(mapping, items, ref totalCount);
+                ulong mappingId = ExtractMessages(mapping, items, ref totalCount);
 
                 // Update the cursor id
-                nextCursors[streamIndex] = mapping;
+                nextCursors[streamIndex] = mappingId;
+
+                // If the mapping id of the message we received is bigger than our current mapping id
+                // it means we missed messages and we need to jump ahead.
+                if (mappingId > mapping.Id)
+                {
+                    break;
+                }
             }
 
             state = nextCursors;
@@ -95,17 +102,17 @@ namespace Microsoft.AspNet.SignalR.Messaging
         protected override void BeforeInvoke(object state)
         {
             // Update the list of cursors before invoking anything
-            var nextCursors = (ScaleoutMapping[])state;
+            var nextCursors = (ulong?[])state;
             for (int i = 0; i < _cursors.Count; i++)
             {
                 // Only update non-null entries
-                ScaleoutMapping nextMapping = nextCursors[i];
+                ulong? nextCursor = nextCursors[i];
 
-                if (nextMapping != null)
+                if (nextCursor.HasValue)
                 {
                     Cursor cursor = _cursors[i];
 
-                    cursor.Id = nextMapping.Id;
+                    cursor.Id = nextCursor.Value;
                 }
             }
         }
@@ -160,7 +167,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
             }
         }
 
-        private void ExtractMessages(ScaleoutMapping mapping, IList<ArraySegment<Message>> items, ref int totalCount)
+        private ulong ExtractMessages(ScaleoutMapping mapping, IList<ArraySegment<Message>> items, ref int totalCount)
         {
             // For each of the event keys we care about, extract all of the messages
             // from the payload
@@ -181,11 +188,20 @@ namespace Microsoft.AspNet.SignalR.Messaging
                             {
                                 items.Add(storeResult.Messages);
                                 totalCount += storeResult.Messages.Count;
+
+                                ulong mappingId = storeResult.Messages.Array[storeResult.Messages.Offset].MappingId;
+
+                                if (mappingId > mapping.Id)
+                                {
+                                    return mappingId;
+                                }
                             }
                         }
                     }
                 }
             }
+
+            return mapping.Id;
         }
 
         private class CachedStreamEnumerator

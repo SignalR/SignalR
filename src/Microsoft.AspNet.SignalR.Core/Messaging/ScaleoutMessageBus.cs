@@ -178,7 +178,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
             for (var i = 0; i < scaleoutMessage.Messages.Count; ++i)
             {
                 Message message = scaleoutMessage.Messages[i];
-
+                message.MappingId = id;
 
                 IList<LocalEventKeyInfo> keyInfo;
                 if (!localMapping.TryGetValue(message.Key, out keyInfo))
