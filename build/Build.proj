@@ -238,7 +238,7 @@
   </Target>
 
   <Target Name="RunCodeAnalysis" DependsOnTargets="CreateOutputDir" Condition="Exists('$(MSBuildExtensionsPath)\Microsoft\VisualStudio\v11.0\CodeAnalysis\fxcoptask.dll')">
-    <MSBuild Projects="%(CAProjects.Identity)"
+    <MSBuild Projects="%(CoreProjects.Identity)"
              Targets="ReBuild"
              Properties="RunCodeAnalysis=true;Configuration=$(Configuration);ArtifactsDir=$(ArtifactsDir);SolutionDir=$(ProjectRoot)\;$(ExtraProperties)" />
   </Target>
