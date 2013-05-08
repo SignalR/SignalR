@@ -13,6 +13,7 @@ namespace Microsoft.AspNet.SignalR.Client.Http
     /// <summary>
     /// The default <see cref="IHttpClient"/> implementation.
     /// </summary>
+    [SuppressMessage("Microsoft.Design", "CA1001:Implement IDisposable", Justification = "Response task returned to the caller so cannot dispose Http Client")]
     public class DefaultHttpClient : IHttpClient
     {
         private HttpClient _longRunningClient;
@@ -24,11 +25,12 @@ namespace Microsoft.AspNet.SignalR.Client.Http
         /// Initialize the Http Clients
         /// </summary>
         /// <param name="connection">Connection</param>
+        [SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope", Justification = "Handler cannot be disposed before response is disposed")]
         public void Initialize(IConnection connection)
         {
             _connection = connection;
 
-            var handler = new DefaultHttpHandler(connection);
+            var handler = new DefaultHttpHandler(_connection);
 
             _longRunningClient = new HttpClient(handler);
             _shortRunningClient = new HttpClient(handler);
@@ -44,10 +46,15 @@ namespace Microsoft.AspNet.SignalR.Client.Http
         [SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope", Justification = "Handler cannot be disposed before response is disposed")]
         public Task<IResponse> Get(string url, Action<IRequest> prepareRequest, bool isLongRunning)
         {
+            if (prepareRequest == null)
+            {
+                throw new ArgumentNullException("prepareRequest");
+            }
+
             var responseDisposer = new Disposer();
             var cts = new CancellationTokenSource();
 
-            var requestMessage = new HttpRequestMessage(HttpMethod.Get, url);
+            var requestMessage = new HttpRequestMessage(HttpMethod.Get, new Uri(url));
 
             var request = new HttpRequestMessageWrapper(requestMessage, () =>
             {
@@ -86,6 +93,11 @@ namespace Microsoft.AspNet.SignalR.Client.Http
         [SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope", Justification = "Handler cannot be disposed before response is disposed")]
         public Task<IResponse> Post(string url, Action<IRequest> prepareRequest, IDictionary<string, string> postData, bool isLongRunning)
         {
+            if (prepareRequest == null)
+            {
+                throw new ArgumentNullException("prepareRequest");
+            }
+
             var responseDisposer = new Disposer();
             var cts = new CancellationTokenSource();
 

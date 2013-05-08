@@ -32,6 +32,7 @@ namespace Microsoft.AspNet.SignalR.Client.Http
             {
                 req = new HttpWebRequestWrapper(request);
                 prepareRequest(req);
+                ClientPrepareRequest((HttpWebRequestWrapper)req);
             }
             ).Then(response => (IResponse)new HttpWebResponseWrapper(response));
         }
@@ -51,8 +52,36 @@ namespace Microsoft.AspNet.SignalR.Client.Http
             {
                 req = new HttpWebRequestWrapper(request);
                 prepareRequest(req);
+                ClientPrepareRequest((HttpWebRequestWrapper)req);
             },
             postData).Then(response => (IResponse)new HttpWebResponseWrapper(response));
+        }
+
+        /// <summary>
+        /// Adds certificates, credentials, proxies and cookies to the request
+        /// </summary>
+        /// <param name="req">Request object</param>
+        private void ClientPrepareRequest(HttpWebRequestWrapper req)
+        {
+            if (_connection.Certificates != null)
+            {
+                req.AddClientCerts(_connection.Certificates);
+            }
+
+            if (_connection.CookieContainer != null)
+            {
+                req.CookieContainer = _connection.CookieContainer;
+            }
+
+            if (_connection.Credentials != null)
+            {
+                req.Credentials = _connection.Credentials;
+            }
+
+            if (_connection.Proxy != null)
+            {
+                req.Proxy = _connection.Proxy;
+            }
         }
     }
 }

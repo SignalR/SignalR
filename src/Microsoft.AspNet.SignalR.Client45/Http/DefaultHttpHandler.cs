@@ -1,9 +1,10 @@
 ﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.md in the project root for license information.
 
-using System.Net.Http;
+using System;
 #if !NETFX_CORE
 using System.Security.Cryptography.X509Certificates;
 #endif
+using System.Net.Http;
 
 namespace Microsoft.AspNet.SignalR.Client.Http
 {
@@ -17,7 +18,14 @@ namespace Microsoft.AspNet.SignalR.Client.Http
 
         public DefaultHttpHandler(IConnection connection)
         {
-            _connection = connection;
+            if (connection != null)
+            {
+                _connection = connection;
+            }
+            else
+            {
+                throw new ArgumentNullException("connection");
+            }
 
             Credentials = _connection.Credentials;
 

@@ -17,6 +17,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
         private WebSocketConnectionInfo _connectionInfo;
         private TaskCompletionSource<object> _startTcs;
         private ManualResetEventSlim _abortEventSlim;
+        private IConnection _connection;
 
         public WebSocketTransport()
             : this(new DefaultHttpClient())
@@ -65,6 +66,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
         public Task Start(IConnection connection, string data, CancellationToken disconnectToken)
         {
             _startTcs = new TaskCompletionSource<object>();
+            _connection = connection;
             _disconnectToken = disconnectToken;
             _connectionInfo = new WebSocketConnectionInfo(connection, data);
 
@@ -84,7 +86,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
             _connectionInfo.Connection.Trace(TraceLevels.Events, "WS: {0}", builder.Uri);
 
             var webSocket = new ClientWebSocket();
-            _connectionInfo.Connection.PrepareRequest(new WebSocketWrapperRequest(webSocket));
+            _connectionInfo.Connection.PrepareRequest(new WebSocketWrapperRequest(webSocket, _connection));
 
             await webSocket.ConnectAsync(builder.Uri, _disconnectToken);
             await ProcessWebSocketRequestAsync(webSocket, _disconnectToken);
