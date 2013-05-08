@@ -27,12 +27,11 @@ namespace Microsoft.AspNet.SignalR.Client.Http
         /// <returns>A <see cref="T:Task{IResponse}"/>.</returns>
         public Task<IResponse> Get(string url, Action<IRequest> prepareRequest, bool isLongRunning)
         {
-            IRequest req = null;
             return HttpHelper.GetAsync(url, request =>
             {
-                req = new HttpWebRequestWrapper(request);
+                var req = new HttpWebRequestWrapper(request);
                 prepareRequest(req);
-                ClientPrepareRequest((HttpWebRequestWrapper)req);
+                PrepareClientRequest(req);
             }
             ).Then(response => (IResponse)new HttpWebResponseWrapper(response));
         }
@@ -47,12 +46,11 @@ namespace Microsoft.AspNet.SignalR.Client.Http
         /// <returns>A <see cref="T:Task{IResponse}"/>.</returns>
         public Task<IResponse> Post(string url, Action<IRequest> prepareRequest, IDictionary<string, string> postData, bool isLongRunning)
         {
-            IRequest req = null;
             return HttpHelper.PostAsync(url, request =>
             {
-                req = new HttpWebRequestWrapper(request);
+                var req = new HttpWebRequestWrapper(request);
                 prepareRequest(req);
-                ClientPrepareRequest((HttpWebRequestWrapper)req);
+                PrepareClientRequest(req);
             },
             postData).Then(response => (IResponse)new HttpWebResponseWrapper(response));
         }
@@ -61,7 +59,7 @@ namespace Microsoft.AspNet.SignalR.Client.Http
         /// Adds certificates, credentials, proxies and cookies to the request
         /// </summary>
         /// <param name="req">Request object</param>
-        private void ClientPrepareRequest(HttpWebRequestWrapper req)
+        private void PrepareClientRequest(HttpWebRequestWrapper req)
         {
             if (_connection.Certificates != null)
             {
