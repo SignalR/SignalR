@@ -37,6 +37,7 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <Prefer32Bit>false</Prefer32Bit>
+    <UseVSHostingProcess>false</UseVSHostingProcess>
   </PropertyGroup>
   <PropertyGroup Condition="'$(PerfRun)'=='True'">
     <DefineConstants>$(DefineConstants);PERFRUN</DefineConstants>
@@ -99,6 +100,9 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="RunBase.cs" />
     <Compile Include="RunData.cs" />
+    <Compile Include="Stress\ConcurrentCallsRun.cs" />
+    <Compile Include="Stress\HostedStressRun.cs" />
+    <Compile Include="Stress\StressRunBase.cs" />
     <Compile Include="Stress\StressRuns.cs" />
     <Compile Include="Performance\Subscriber.cs" />
   </ItemGroup>
