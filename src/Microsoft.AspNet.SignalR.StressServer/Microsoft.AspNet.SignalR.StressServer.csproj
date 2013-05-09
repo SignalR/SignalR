@@ -46,6 +46,7 @@
       <Link>Connections\RawConnection.cs</Link>
     </Compile>
     <Compile Include="Connections\StressConnection.cs" />
+    <Compile Include="Hubs\ConcurrentCallsHub.cs" />
     <Compile Include="Hubs\SimpleEchoHub.cs" />
     <Compile Include="Hubs\HubWithGroups.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
