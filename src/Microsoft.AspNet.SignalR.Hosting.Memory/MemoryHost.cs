@@ -18,6 +18,7 @@ using IClientResponse = Microsoft.AspNet.SignalR.Client.Http.IResponse;
 
 namespace Microsoft.AspNet.SignalR.Hosting.Memory
 {
+    using Microsoft.Owin;
     using AppFunc = Func<IDictionary<string, object>, Task>;
 
     public class MemoryHost : IHttpClient, IDisposable

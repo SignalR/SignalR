@@ -71,16 +71,11 @@ namespace Microsoft.AspNet.SignalR.Hubs
             }
         }
 
-        public override void Initialize(IDependencyResolver resolver, HostContext context)
+        public override void Initialize(IDependencyResolver resolver)
         {
             if (resolver == null)
             {
                 throw new ArgumentNullException("resolver");
-            }
-
-            if (context == null)
-            {
-                throw new ArgumentNullException("context");
             }
 
             _proxyGenerator = _enableJavaScriptProxies ? resolver.Resolve<IJavaScriptProxyGenerator>()
@@ -93,13 +88,18 @@ namespace Microsoft.AspNet.SignalR.Hubs
             _pipelineInvoker = resolver.Resolve<IHubPipelineInvoker>();
             _counters = resolver.Resolve<IPerformanceCounterManager>();
 
-            base.Initialize(resolver, context);
+            base.Initialize(resolver);
         }
 
         protected override bool AuthorizeRequest(IRequest request)
         {
+            if (request == null)
+            {
+                throw new ArgumentNullException("request");
+            }
+
             // Populate _hubs
-            string data = request.QueryStringOrForm("connectionData");
+            string data = request.QueryString["connectionData"];
 
             if (!String.IsNullOrEmpty(data))
             {
@@ -230,7 +230,7 @@ namespace Microsoft.AspNet.SignalR.Hubs
             }
 
             // Trim any trailing slashes
-            string normalized = context.Request.Url.LocalPath.TrimEnd('/');
+            string normalized = context.Request.LocalPath.TrimEnd('/');
 
             int suffixLength = -1;
             if (normalized.EndsWith(HubsSuffix, StringComparison.OrdinalIgnoreCase))
@@ -252,7 +252,7 @@ namespace Microsoft.AspNet.SignalR.Hubs
                 return context.Response.End(_proxyGenerator.GenerateProxy(hubUrl));
             }
 
-            _isDebuggingEnabled = context.IsDebuggingEnabled();
+            _isDebuggingEnabled = context.Environment.IsDebugEnabled();
 
             return base.ProcessRequest(context);
         }

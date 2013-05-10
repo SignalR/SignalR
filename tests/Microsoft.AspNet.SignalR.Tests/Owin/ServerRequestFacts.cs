@@ -74,7 +74,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Owin
         }
 
         [Fact]
-        public void NoHostOrIpAddressUsesLoopback()
+        public void NoHostOrIpAddressUsesLocalhost()
         {
             var env = new Dictionary<string, object>();
             env[OwinConstants.RequestScheme] = "https";
@@ -84,7 +84,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Owin
             env[OwinConstants.RequestHeaders] = headers;
             var request = new ServerRequest(env);
 
-            Assert.Equal(IPAddress.Loopback.ToString(), request.Url.Host);
+            Assert.Equal("localhost", request.Url.Host);
             Assert.Equal(443, request.Url.Port);
         }
 
@@ -216,15 +216,6 @@ namespace Microsoft.AspNet.SignalR.Tests.Owin
 
             Assert.Equal("www.foo.com", request.Url.Host);
             Assert.Equal(443, request.Url.Port);
-        }
-
-        [Fact]
-        public void NotAWebSocketRequestThrowsSynchronously()
-        {
-            var env = new Dictionary<string, object>();
-            var request = new ServerRequest(env);
-
-            Assert.Throws<InvalidOperationException>(() => request.AcceptWebSocketRequest(socket => TaskAsyncHelper.Empty));
         }
 
         internal static class OwinConstants

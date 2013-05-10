@@ -34,12 +34,5 @@ namespace Microsoft.AspNet.SignalR.Hosting
         /// </summary>
         /// <returns>A task that represents when the data has been flushed.</returns>
         Task Flush();
-
-        /// <summary>
-        /// Closes the connection to the client.
-        /// </summary>
-        /// <returns>A task that represents when the connection is closed.</returns>
-        [SuppressMessage("Microsoft.Naming", "CA1716:IdentifiersShouldNotMatchKeywords", MessageId = "End", Justification = "Ends the response thus the name is appropriate.")]
-        Task End();
     }
 }

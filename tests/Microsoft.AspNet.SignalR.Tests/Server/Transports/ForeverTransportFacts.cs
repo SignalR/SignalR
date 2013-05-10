@@ -27,8 +27,8 @@ namespace Microsoft.AspNet.SignalR.Tests.Server.Transports
             var qs = new NameValueCollection();
             qs["connectionId"] = "1";
             request.Setup(m => m.QueryString).Returns(qs);
-            request.Setup(m => m.Form).Returns(form);
-            request.Setup(m => m.Url).Returns(new Uri("http://test/echo/send"));
+            request.Setup(m => m.ReadForm()).Returns(Task.FromResult<NameValueCollection>(form));
+            request.Setup(m => m.LocalPath).Returns("/test/echo/send");
             var counters = new Mock<IPerformanceCounterManager>();
             var heartBeat = new Mock<ITransportHeartbeat>();
             var json = JsonUtility.CreateDefaultSerializer();
@@ -58,7 +58,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Server.Transports
             var request = new Mock<IRequest>();
             var qs = new NameValueCollection();
             request.Setup(m => m.QueryString).Returns(qs);
-            request.Setup(m => m.Url).Returns(new Uri("http://test/echo/abort"));
+            request.Setup(m => m.LocalPath).Returns("/test/echo/abort");
             string abortedConnectionId = null;
             var counters = new Mock<IPerformanceCounterManager>();
             var heartBeat = new Mock<ITransportHeartbeat>();
@@ -97,7 +97,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Server.Transports
             var qs = new NameValueCollection();
             qs["connectionId"] = "1";
             request.Setup(m => m.QueryString).Returns(qs);
-            request.Setup(m => m.Url).Returns(new Uri("http://test/echo/connect"));
+            request.Setup(m => m.LocalPath).Returns("/test/echo/connect");
             var counters = new Mock<IPerformanceCounterManager>();
             var heartBeat = new Mock<ITransportHeartbeat>();
             var json = JsonUtility.CreateDefaultSerializer();
@@ -156,7 +156,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Server.Transports
             var qs = new NameValueCollection();
             qs["connectionId"] = "1";
             request.Setup(m => m.QueryString).Returns(qs);
-            request.Setup(m => m.Url).Returns(new Uri("http://test/echo/connect"));
+            request.Setup(m => m.LocalPath).Returns("/test/echo/connect");
             var counters = new Mock<IPerformanceCounterManager>();
             var heartBeat = new Mock<ITransportHeartbeat>();
             var json = JsonUtility.CreateDefaultSerializer();
@@ -217,7 +217,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Server.Transports
             var qs = new NameValueCollection();
             qs["connectionId"] = "1";
             request.Setup(m => m.QueryString).Returns(qs);
-            request.Setup(m => m.Url).Returns(new Uri("http://test/echo/connect"));
+            request.Setup(m => m.LocalPath).Returns("/test/echo/connect");
             var counters = new Mock<IPerformanceCounterManager>();
             var heartBeat = new Mock<ITransportHeartbeat>();
             var json = JsonUtility.CreateDefaultSerializer();
@@ -281,7 +281,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Server.Transports
             var qs = new NameValueCollection();
             qs["connectionId"] = "1";
             request.Setup(m => m.QueryString).Returns(qs);
-            request.Setup(m => m.Url).Returns(new Uri("http://test/echo/connect"));
+            request.Setup(m => m.LocalPath).Returns("/test/echo/connect");
             var counters = new Mock<IPerformanceCounterManager>();
             var heartBeat = new Mock<ITransportHeartbeat>();
             var json = JsonUtility.CreateDefaultSerializer();
@@ -351,7 +351,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Server.Transports
             var qs = new NameValueCollection();
             qs["connectionId"] = "1";
             request.Setup(m => m.QueryString).Returns(qs);
-            request.Setup(m => m.Url).Returns(new Uri("http://test/echo/connect"));
+            request.Setup(m => m.LocalPath).Returns("/test/echo/connect");
             var counters = new Mock<IPerformanceCounterManager>();
             var heartBeat = new Mock<ITransportHeartbeat>();
             var json = new JsonSerializer();
@@ -421,7 +421,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Server.Transports
             var qs = new NameValueCollection();
             qs["connectionId"] = "1";
             request.Setup(m => m.QueryString).Returns(qs);
-            request.Setup(m => m.Url).Returns(new Uri("http://test/echo/connect"));
+            request.Setup(m => m.LocalPath).Returns("/test/echo/connect");
             var counters = new PerformanceCounterManager();
             var heartBeat = new Mock<ITransportHeartbeat>();
             var json = new JsonSerializer();
@@ -481,7 +481,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Server.Transports
             var qs = new NameValueCollection();
             qs["connectionId"] = "1";
             request.Setup(m => m.QueryString).Returns(qs);
-            request.Setup(m => m.Url).Returns(new Uri("http://test/echo/connect"));
+            request.Setup(m => m.LocalPath).Returns("/test/echo/connect");
             var counters = new Mock<IPerformanceCounterManager>();
             var heartBeat = new Mock<ITransportHeartbeat>();
             var json = JsonUtility.CreateDefaultSerializer();

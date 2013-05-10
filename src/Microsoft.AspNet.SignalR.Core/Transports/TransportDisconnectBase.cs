@@ -110,7 +110,10 @@ namespace Microsoft.AspNet.SignalR.Transports
 
         public virtual CancellationToken CancellationToken
         {
-            get { return _context.Response.CancellationToken; }
+            get
+            {
+                return _context.Response.CancellationToken;
+            }
         }
 
         public virtual bool IsAlive
@@ -155,7 +158,7 @@ namespace Microsoft.AspNet.SignalR.Transports
         {
             get
             {
-                return Context.Request.Url.LocalPath.EndsWith("/connect", StringComparison.OrdinalIgnoreCase);
+                return Context.Request.LocalPath.EndsWith("/connect", StringComparison.OrdinalIgnoreCase);
             }
         }
 
@@ -163,7 +166,7 @@ namespace Microsoft.AspNet.SignalR.Transports
         {
             get
             {
-                return Context.Request.Url.LocalPath.EndsWith("/abort", StringComparison.OrdinalIgnoreCase);
+                return Context.Request.LocalPath.EndsWith("/abort", StringComparison.OrdinalIgnoreCase);
             }
         }
 
@@ -305,7 +308,7 @@ namespace Microsoft.AspNet.SignalR.Transports
 
         protected virtual void InitializePersistentState()
         {
-            _hostShutdownToken = _context.HostShutdownToken();
+            _hostShutdownToken = _context.Environment.GetShutdownToken();
 
             _requestLifeTime = new HttpRequestLifeTime(this, WriteQueue, Trace, ConnectionId);
 

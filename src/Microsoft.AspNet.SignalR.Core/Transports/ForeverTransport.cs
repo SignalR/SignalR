@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.md in the project root for license information.
 
 using System;
+using System.Collections.Specialized;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
@@ -99,7 +100,7 @@ namespace Microsoft.AspNet.SignalR.Transports
         {
             Connection = connection;
 
-            if (Context.Request.Url.LocalPath.EndsWith("/send", StringComparison.OrdinalIgnoreCase))
+            if (Context.Request.LocalPath.EndsWith("/send", StringComparison.OrdinalIgnoreCase))
             {
                 return ProcessSendRequest();
             }
@@ -150,16 +151,15 @@ namespace Microsoft.AspNet.SignalR.Transports
             return TaskAsyncHelper.Empty;
         }
 
-        private Task ProcessSendRequest()
+        private async Task ProcessSendRequest()
         {
-            string data = Context.Request.Form["data"];
+            NameValueCollection form = await Context.Request.ReadForm();
+            string data = form["data"];
 
             if (Received != null)
             {
-                return Received(data);
+                await Received(data);
             }
-
-            return TaskAsyncHelper.Empty;
         }
 
         [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "Exceptions are flowed to the caller.")]
@@ -332,7 +332,7 @@ namespace Microsoft.AspNet.SignalR.Transports
             context.Transport.JsonSerializer.Serialize(context.State, context.Transport.OutputWriter);
             context.Transport.OutputWriter.Flush();
 
-            return context.Transport.Context.Response.End();
+            return TaskAsyncHelper.Empty;
         }
 
         private static void OnError(AggregateException ex, object state)

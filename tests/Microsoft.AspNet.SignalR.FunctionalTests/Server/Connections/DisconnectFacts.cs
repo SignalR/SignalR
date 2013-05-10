@@ -6,19 +6,18 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR.Configuration;
+using Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure;
 using Microsoft.AspNet.SignalR.Hosting;
 using Microsoft.AspNet.SignalR.Hosting.Memory;
-using Microsoft.AspNet.SignalR.Hubs;
 using Microsoft.AspNet.SignalR.Infrastructure;
 using Microsoft.AspNet.SignalR.Messaging;
 using Microsoft.AspNet.SignalR.Tracing;
 using Microsoft.AspNet.SignalR.Transports;
 using Moq;
+using Owin;
 using Xunit;
 using IClientRequest = Microsoft.AspNet.SignalR.Client.Http.IRequest;
 using IClientResponse = Microsoft.AspNet.SignalR.Client.Http.IResponse;
-using Owin;
-using Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure;
 
 namespace Microsoft.AspNet.SignalR.Tests
 {
@@ -31,8 +30,9 @@ namespace Microsoft.AspNet.SignalR.Tests
             var response = new Mock<IResponse>();
             var qs = new NameValueCollection();
             request.Setup(m => m.QueryString).Returns(qs);
-            request.Setup(m => m.Url).Returns(new Uri("http://test/echo/connect"));
-            response.Setup(m => m.End()).Returns(TaskAsyncHelper.Empty);
+            var url = new Uri("http://test/echo/connect");
+            request.Setup(m => m.Url).Returns(url);
+            request.Setup(m => m.LocalPath).Returns(url.LocalPath);
             var cts = new CancellationTokenSource();
             response.Setup(m => m.CancellationToken).Returns(cts.Token);
             response.Setup(m => m.Flush()).Returns(TaskAsyncHelper.Empty);

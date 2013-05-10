@@ -107,14 +107,6 @@
       <RunFxCop>false</RunFxCop>
     </Projects>
 
-    <!-- Temporarily disable the building of the non-client 4.0 projects with 4.5 counterparts. These will be removed soon -->
-    <Projects Include="$(ProjectRoot)\src\Microsoft.AspNet.SignalR.Owin\Microsoft.AspNet.SignalR.Owin.csproj">
-      <Build>false</Build>
-    </Projects>
-    <Projects Include="$(ProjectRoot)\src\Microsoft.AspNet.SignalR.SystemWeb\Microsoft.AspNet.SignalR.SystemWeb.csproj">
-      <Build>false</Build>
-    </Projects>
-
     <!-- Add any src projects that have not been defined manually -->
     <Projects Include="$(ProjectRoot)\src\**\*.csproj" Exclude="@(Projects)" />
 
@@ -132,7 +124,7 @@
 
     <!-- Asp.Net sample projects -->
     <Projects Include="$(ProjectRoot)\samples\Microsoft.AspNet.SignalR.LoadTestHarness\Microsoft.AspNet.SignalR.LoadTestHarness.csproj;
-                       $(ProjectRoot)\samples\Microsoft.AspNet.SignalR.Hosting.AspNet.Samples\Microsoft.AspNet.SignalR.Hosting.AspNet.Samples.csproj">
+                       $(ProjectRoot)\samples\Microsoft.AspNet.SignalR.Samples\Microsoft.AspNet.SignalR.Samples.csproj">
       <!-- If the Build target isn't run first, package restore will fail -->
       <BuildTargets>Build;pipelinePreDeployCopyAllFilesToOneFolder</BuildTargets>
       <BuildProperties>Configuration=$(Configuration);ArtifactsDir=$(ProjectArtifactsDir);SolutionDir=$(ProjectRoot)\;$(ExtraProperties);_PackageTempDir=$(ProjectArtifactsDir)\%(FileName);AutoParameterizationWebConfigConnectionStrings=false;MSBuildCommunityTasksPath=$(MSBuildCommunityTasksPath)</BuildProperties>

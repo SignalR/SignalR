@@ -51,7 +51,13 @@ namespace Microsoft.AspNet.SignalR.Client.Tests
                         };
 
                         app.Use(middleware);
-                        app.MapConnection<MyAuthenticatedConnection>("/authenticatedConnection", new ConnectionConfiguration());
+
+                        var config = new ConnectionConfiguration
+                        {
+                            Resolver = new DefaultDependencyResolver()
+                        };
+
+                        app.MapConnection<MyAuthenticatedConnection>("/authenticatedConnection", config);
 
                     });
 
@@ -146,8 +152,13 @@ namespace Microsoft.AspNet.SignalR.Client.Tests
                 {
                     host.Configure(app =>
                     {
-                        app.MapConnection<MyConnection>("/echo");
-                        app.MapConnection<MyConnection2>("/echo2");
+                        var config = new ConnectionConfiguration
+                        {
+                            Resolver = new DefaultDependencyResolver()
+                        };
+
+                        app.MapConnection<MyConnection>("/echo", config);
+                        app.MapConnection<MyConnection2>("/echo2", config);
                     });
 
                     var tcs = new TaskCompletionSource<string>();
@@ -175,8 +186,13 @@ namespace Microsoft.AspNet.SignalR.Client.Tests
                 {
                     host.Configure(app =>
                     {
-                        app.MapConnection<MyConnection>("echo");
-                        app.MapConnection<MyConnection2>("echo2");
+                        var config = new ConnectionConfiguration
+                        {
+                            Resolver = new DefaultDependencyResolver()
+                        };
+
+                        app.MapConnection<MyConnection>("echo", config);
+                        app.MapConnection<MyConnection2>("echo2", config);
                     });
 
                     var tcs = new TaskCompletionSource<string>();
@@ -204,8 +220,13 @@ namespace Microsoft.AspNet.SignalR.Client.Tests
                 {
                     host.Configure(app =>
                     {
-                        app.MapConnection<MyConnection>("echo");
-                        app.MapConnection<MyConnection2>("echo2");
+                        var config = new ConnectionConfiguration
+                        {
+                            Resolver = new DefaultDependencyResolver()
+                        };
+
+                        app.MapConnection<MyConnection>("echo", config);
+                        app.MapConnection<MyConnection2>("echo2", config);
                     });
 
                     var tcs = new TaskCompletionSource<string>();
@@ -419,7 +440,12 @@ namespace Microsoft.AspNet.SignalR.Client.Tests
                 {
                     host.Configure(app =>
                     {
-                        app.MapConnection<TransportResponse>("/transport-response");
+                        var config = new ConnectionConfiguration
+                        {
+                            Resolver = new DefaultDependencyResolver()
+                        };
+
+                        app.MapConnection<TransportResponse>("/transport-response", config);
                     });
 
                     var transports = new List<IClientTransport>()

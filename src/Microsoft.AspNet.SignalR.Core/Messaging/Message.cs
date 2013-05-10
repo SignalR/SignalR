@@ -66,6 +66,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
         /// <summary>
         /// The message payload
         /// </summary>
+        [SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly", Justification = "This type is serialzied")]
         public ArraySegment<byte> Value { get; set; }
 
         /// <summary>

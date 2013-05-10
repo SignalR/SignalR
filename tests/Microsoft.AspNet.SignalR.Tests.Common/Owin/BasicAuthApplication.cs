@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure;
 using Owin;
 
-namespace Microsoft.AspNet.SignalR.FunctionalTests.Owin
+namespace Microsoft.AspNet.SignalR.Tests.Common.Owin
 {
     public class BasicAuthApplication
     {
