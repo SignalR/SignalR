@@ -33,6 +33,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                 var connection = new Mock<PersistentConnection>() { CallBase = true };
                 var req = new Mock<IRequest>();
                 req.Setup(m => m.Url).Returns(new Uri("http://foo"));
+                req.Setup(m => m.LocalPath).Returns("");
                 var qs = new NameValueCollection();
                 req.Setup(m => m.QueryString).Returns(qs);
 
@@ -49,6 +50,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                 var connection = new Mock<PersistentConnection>() { CallBase = true };
                 var req = new Mock<IRequest>();
                 req.Setup(m => m.Url).Returns(new Uri("http://foo"));
+                req.Setup(m => m.LocalPath).Returns("");
                 var qs = new NameValueCollection();
                 qs["transport"] = "serverSentEvents";
                 req.Setup(m => m.QueryString).Returns(qs);
@@ -102,6 +104,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                 var connection = new Mock<PersistentConnection>() { CallBase = true };
                 var req = new Mock<IRequest>();
                 req.Setup(m => m.Url).Returns(new Uri("http://foo"));
+                req.Setup(m => m.LocalPath).Returns("");
                 var qs = new NameValueCollection();
                 qs["transport"] = "serverSentEvents";
                 qs["connectionToken"] = "1";

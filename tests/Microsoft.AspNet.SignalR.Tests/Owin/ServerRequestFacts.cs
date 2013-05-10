@@ -74,7 +74,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Owin
         }
 
         [Fact]
-        public void NoHostOrIpAddressUsesLoopback()
+        public void NoHostOrIpAddressUsesLocalhost()
         {
             var env = new Dictionary<string, object>();
             env[OwinConstants.RequestScheme] = "https";
@@ -84,7 +84,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Owin
             env[OwinConstants.RequestHeaders] = headers;
             var request = new ServerRequest(env);
 
-            Assert.Equal(IPAddress.Loopback.ToString(), request.Url.Host);
+            Assert.Equal("localhost", request.Url.Host);
             Assert.Equal(443, request.Url.Port);
         }
 

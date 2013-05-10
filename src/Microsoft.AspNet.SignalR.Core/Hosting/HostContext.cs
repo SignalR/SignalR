@@ -21,6 +21,8 @@ namespace Microsoft.AspNet.SignalR.Hosting
         {
             Request = request;
             Response = response;
+
+            Environment = new Dictionary<string, object>();
         }
 
         public HostContext(IDictionary<string, object> environment)

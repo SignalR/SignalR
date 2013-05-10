@@ -109,8 +109,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Server.Hubs
             // Arrange
             var dispatcher = new HubDispatcher(new HubConfiguration());
 
-            var request = new Mock<IRequest>();
-            request.Setup(m => m.Url).Returns(new Uri("http://something/signalr/send"));
+            var request = GetRequestForUrl("http://something/signalr/send");
             request.Setup(m => m.QueryString).Returns(new NameValueCollection()
                                                       {
                                                           {"transport", "longPolling"},
@@ -157,8 +156,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Server.Hubs
             // Arrange
             var dispatcher = new HubDispatcher(new HubConfiguration());
 
-            var request = new Mock<IRequest>();
-            request.Setup(m => m.Url).Returns(new Uri("http://something/signalr/send"));
+            var request = GetRequestForUrl("http://something/signalr/send");
             request.Setup(m => m.QueryString).Returns(new NameValueCollection()
                                                       {
                                                           {"transport", "longPolling"},
@@ -205,8 +203,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Server.Hubs
             // Arrange
             var dispatcher = new HubDispatcher(new HubConfiguration() { EnableDetailedErrors = true });
 
-            var request = new Mock<IRequest>();
-            request.Setup(m => m.Url).Returns(new Uri("http://something/signalr/send"));
+            var request = GetRequestForUrl("http://something/signalr/send");
             request.Setup(m => m.QueryString).Returns(new NameValueCollection()
                                                       {
                                                           {"transport", "longPolling"},
@@ -252,8 +249,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Server.Hubs
             // Arrange
             var dispatcher = new HubDispatcher(new HubConfiguration() { EnableDetailedErrors = true });
 
-            var request = new Mock<IRequest>();
-            request.Setup(m => m.Url).Returns(new Uri("http://something/signalr/send"));
+            var request = GetRequestForUrl("http://something/signalr/send");
             request.Setup(m => m.QueryString).Returns(new NameValueCollection()
                                                       {
                                                           {"transport", "longPolling"},
@@ -318,7 +314,9 @@ namespace Microsoft.AspNet.SignalR.Tests.Server.Hubs
         private static Mock<IRequest> GetRequestForUrl(string url)
         {
             var request = new Mock<IRequest>();
-            request.Setup(m => m.Url).Returns(new Uri(url));
+            var uri = new Uri(url);
+            request.Setup(m => m.Url).Returns(uri);
+            request.Setup(m => m.LocalPath).Returns(uri.LocalPath);
             request.Setup(m => m.QueryString).Returns(new NameValueCollection());
             return request;
         }
