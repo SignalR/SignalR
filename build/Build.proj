@@ -108,6 +108,8 @@
     <Projects Include="$(ProjectRoot)\src\Microsoft.AspNet.SignalR.Stress\Microsoft.AspNet.SignalR.Stress.csproj">
       <CopyArtifacts>false</CopyArtifacts>
       <RunFxCop>false</RunFxCop>
+      <!-- InternalsVisibleTo("Microsoft.AspNet.SignalR.Tests.Common, PublicKey=...") is broken in the wsr-teamcity build and Stress depends on Tests.Common -->
+      <Build Condition="'$(KeyFile)' != ''">false</Build>
     </Projects>
 
     <!-- Add any src projects that have not been defined manually -->
