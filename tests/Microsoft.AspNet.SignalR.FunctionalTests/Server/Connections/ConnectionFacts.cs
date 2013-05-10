@@ -440,7 +440,12 @@ namespace Microsoft.AspNet.SignalR.Client.Tests
                 {
                     host.Configure(app =>
                     {
-                        app.MapConnection<TransportResponse>("/transport-response");
+                        var config = new ConnectionConfiguration
+                        {
+                            Resolver = new DefaultDependencyResolver()
+                        };
+
+                        app.MapConnection<TransportResponse>("/transport-response", config);
                     });
 
                     var transports = new List<IClientTransport>()

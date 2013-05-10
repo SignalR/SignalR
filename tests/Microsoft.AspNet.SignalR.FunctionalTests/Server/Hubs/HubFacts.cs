@@ -168,15 +168,12 @@ namespace Microsoft.AspNet.SignalR.Tests
 
                 Assert.Equal(3, results.Count);
                 Assert.Equal("OnConnected", results[0].Method);
-                Assert.Equal(1, results[0].Keys.Length);
-                Assert.Equal("owin.environment", results[0].Keys[0]);
+                Assert.True(results[0].OwinKeys.Length > 0);
                 Assert.Equal("nosniff", results[0].XContentTypeOptions);
                 Assert.Equal("GetItems", results[1].Method);
-                Assert.Equal(1, results[1].Keys.Length);
-                Assert.Equal("owin.environment", results[1].Keys[0]);
+                Assert.True(results[1].OwinKeys.Length > 0);
                 Assert.Equal("OnDisconnected", results[2].Method);
-                Assert.Equal(1, results[2].Keys.Length);
-                Assert.Equal("owin.environment", results[2].Keys[0]);
+                Assert.True(results[2].OwinKeys.Length > 0);
 
                 connection2.Stop();
             }

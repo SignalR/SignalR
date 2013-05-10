@@ -5,7 +5,6 @@
         public string Method { get; set; }
         public int Count { get; set; }
         public string[] OwinKeys { get; set; }
-        public string[] Keys { get; set; }
         public string XContentTypeOptions { get; set; }
 
         public override int GetHashCode()
