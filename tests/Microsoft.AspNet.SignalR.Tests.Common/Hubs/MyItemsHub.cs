@@ -26,28 +26,13 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Hubs
 
         private Task PrintEnvironment(string method, IRequest request)
         {
-            object owinEnv;
-            if (request.Items.TryGetValue("owin.environment", out owinEnv))
-            {
-                var env = (IDictionary<string, object>)owinEnv;
-                var responseHeaders = (Dictionary<string, string[]>)env["owin.ResponseHeaders"];
-                return Clients.All.update(new
-                {
-                    method = method,
-                    count = env.Count,
-                    owinKeys = env.Keys,
-                    keys = request.Items.Keys,
-                    xContentTypeOptions = responseHeaders["X-Content-Type-Options"][0]
-                });
-            }
-
+            var responseHeaders = (Dictionary<string, string[]>)request.Environment["owin.ResponseHeaders"];
             return Clients.All.update(new
             {
                 method = method,
-                count = 0,
-                keys = new string[0],
-                owinKeys = new string[0],
-                xContentTypeOptions = ""
+                count = request.Environment.Count,
+                owinKeys = request.Environment.Keys,
+                xContentTypeOptions = responseHeaders["X-Content-Type-Options"][0]
             });
         }
     }

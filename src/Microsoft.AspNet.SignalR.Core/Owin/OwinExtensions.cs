@@ -6,10 +6,13 @@ using System.Threading;
 using Microsoft.AspNet.SignalR;
 using Microsoft.AspNet.SignalR.Hosting;
 using Microsoft.AspNet.SignalR.Owin;
-using Microsoft.AspNet.SignalR.Owin.Handlers;
+using Microsoft.AspNet.SignalR.Owin.Middleware;
 
 namespace Owin
 {
+    using DataProtectionProviderDelegate = Func<string[], Tuple<Func<byte[], byte[]>, Func<byte[], byte[]>>>;
+    using DataProtectionTuple = Tuple<Func<byte[], byte[]>, Func<byte[], byte[]>>;
+    
     [SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly", MessageId = "Owin", Justification = "The owin namespace is for consistentcy.")]
     public static class OwinExtensions
     {
@@ -30,7 +33,7 @@ namespace Owin
                 throw new ArgumentNullException("configuration");
             }
 
-            return builder.UseType<HubDispatcherHandler>(path, configuration);
+            return builder.UseType<HubDispatcherMiddleware>(path, configuration);
         }
 
         [SuppressMessage("Microsoft.Design", "CA1004:GenericMethodsShouldProvideTypeParameter", Justification = "The type parameter is syntactic sugar")]
@@ -52,14 +55,16 @@ namespace Owin
                 throw new ArgumentNullException("configuration");
             }
 
-            return builder.UseType<PersistentConnectionHandler>(url, connectionType, configuration);
+            return builder.UseType<PersistentConnectionMiddleware>(url, connectionType, configuration);
         }
 
         private static IAppBuilder UseType<T>(this IAppBuilder builder, params object[] args)
         {
+            ConnectionConfiguration configuration = null;
+
             if (args.Length > 0)
             {
-                var configuration = args[args.Length - 1] as ConnectionConfiguration;
+                configuration = args[args.Length - 1] as ConnectionConfiguration;
 
                 if (configuration == null)
                 {
@@ -75,12 +80,28 @@ namespace Owin
 
                 var env = builder.Properties;
                 CancellationToken token = env.GetShutdownToken();
+
+                // TODO: Don't depend on this
                 string instanceName = env.GetAppInstanceName();
 
                 resolver.InitializeHost(instanceName, token);
             }
 
-            return builder.Use(typeof(T), args);
+            if (configuration != null)
+            {
+                if (configuration.EnableCrossDomain)
+                {
+                    builder.Use(typeof(AllowCrossOriginMiddleware), args[0]);
+                }
+                else
+                {
+                    builder.Use(typeof(DenyCrossOriginMiddleware), args[0]);
+                }
+            }
+
+            builder.Use(typeof(T), args);
+
+            return builder;
         }
     }
 }

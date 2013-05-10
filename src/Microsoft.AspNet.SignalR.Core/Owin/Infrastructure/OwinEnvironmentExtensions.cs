@@ -4,16 +4,10 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 
-namespace Microsoft.AspNet.SignalR.Owin
+namespace Microsoft.AspNet.SignalR
 {
     internal static class OwinEnvironmentExtensions
     {
-        internal static T Get<T>(this IDictionary<string, object> environment, string key)
-        {
-            object value;
-            return environment.TryGetValue(key, out value) ? (T)value : default(T);
-        }
-
         internal static CancellationToken GetShutdownToken(this IDictionary<string, object> env)
         {
             object value;
@@ -53,7 +47,7 @@ namespace Microsoft.AspNet.SignalR.Owin
             return false;
         }
 
-        internal static bool GetIsDebugEnabled(this IDictionary<string, object> environment)
+        internal static bool IsDebugEnabled(this IDictionary<string, object> environment)
         {
             object value;
             if (environment.TryGetValue(OwinConstants.HostAppModeKey, out value))
@@ -64,6 +58,26 @@ namespace Microsoft.AspNet.SignalR.Owin
             }
 
             return false;
+        }
+
+        internal static void DisableResponseBuffering(this IDictionary<string, object> environment)
+        {
+            var action = environment.Get<Action>(OwinConstants.DisableResponseBuffering);
+
+            if (action != null)
+            {
+                action();
+            }
+        }
+
+        internal static void DisableRequestCompression(this IDictionary<string, object> environment)
+        {
+            var action = environment.Get<Action>(OwinConstants.DisableRequestCompression);
+
+            if (action != null)
+            {
+                action();
+            }
         }
     }
 }

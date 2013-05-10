@@ -8,7 +8,7 @@ namespace Microsoft.AspNet.SignalR.Hosting
     /// <summary>
     /// Represents a web socket.
     /// </summary>
-    public interface IWebSocket
+    internal interface IWebSocket
     {
         /// <summary>
         /// Invoked when data is sent over the websocket

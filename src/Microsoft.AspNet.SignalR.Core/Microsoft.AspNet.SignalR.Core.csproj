@@ -40,6 +40,10 @@
     <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Microsoft.Owin, Version=1.1.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\packages\Microsoft.Owin.1.1.0-beta1-20507-285\lib\net45\Microsoft.Owin.dll</HintPath>
+    </Reference>
     <Reference Include="Newtonsoft.Json, Version=4.5.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\packages\Newtonsoft.Json.4.5.11\lib\net40\Newtonsoft.Json.dll</HintPath>
@@ -64,6 +68,7 @@
     </Compile>
     <Compile Include="Configuration\ConfigurationExtensions.cs" />
     <Compile Include="ConnectionConfiguration.cs" />
+    <Compile Include="Hosting\IResponse.cs" />
     <Compile Include="HubConfiguration.cs" />
     <Compile Include="Hubs\ConnectionIdProxy.cs" />
     <Compile Include="Hubs\DynamicDictionary.cs" />
@@ -80,11 +85,8 @@
     <Compile Include="Infrastructure\DiffPair.cs" />
     <Compile Include="Infrastructure\DiffSet.cs" />
     <Compile Include="GlobalHost.cs" />
-    <Compile Include="Hosting\HostConstants.cs" />
     <Compile Include="Hosting\HostContext.cs" />
-    <Compile Include="Hosting\HostContextExtensions.cs" />
     <Compile Include="Cookie.cs" />
-    <Compile Include="Hosting\IWebSocketRequest.cs" />
     <Compile Include="Infrastructure\IBinaryWriter.cs" />
     <Compile Include="Infrastructure\IProtectedData.cs" />
     <Compile Include="Infrastructure\ListHelper.cs" />
@@ -93,7 +95,6 @@
     <Compile Include="Infrastructure\BufferTextWriter.cs" />
     <Compile Include="Infrastructure\SipHashBasedStringEqualityComparer.cs" />
     <Compile Include="IRequest.cs" />
-    <Compile Include="Hosting\IResponse.cs" />
     <Compile Include="Hosting\HostDependencyResolverExtensions.cs" />
     <Compile Include="Json\SipHashBasedDictionaryConverter.cs" />
     <Compile Include="Messaging\CommandType.cs" />
@@ -200,14 +201,14 @@
     <Compile Include="Hubs\DefaultHubActivator.cs" />
     <Compile Include="Hubs\HubNameAttribute.cs" />
     <Compile Include="Hubs\IHub.cs" />
-    <Compile Include="Owin\Handlers\CallHandler.cs" />
-    <Compile Include="Owin\Handlers\HubDispatcherHandler.cs" />
-    <Compile Include="Owin\Handlers\PersistentConnectionHandler.cs" />
+    <Compile Include="Owin\Middleware\DenyCrossOriginMiddleware.cs" />
+    <Compile Include="Owin\Middleware\AllowCrossOriginMiddleware.cs" />
+    <Compile Include="Owin\Middleware\HubDispatcherMiddleware.cs" />
+    <Compile Include="Owin\Middleware\PersistentConnectionMiddleware.cs" />
+    <Compile Include="Owin\Middleware\PathMatchingMiddleware.cs" />
     <Compile Include="Owin\Infrastructure\ByteBuffer.cs" />
-    <Compile Include="Owin\Infrastructure\Headers.cs" />
     <Compile Include="Owin\Infrastructure\OwinConstants.cs" />
     <Compile Include="Owin\Infrastructure\OwinEnvironmentExtensions.cs" />
-    <Compile Include="Owin\Infrastructure\ParamDictionary.cs" />
     <Compile Include="Owin\Infrastructure\PrefixMatcher.cs" />
     <Compile Include="Owin\Infrastructure\UrlDecoder.cs" />
     <Compile Include="Owin\Infrastructure\WebSocketConstants.cs" />
@@ -215,7 +216,6 @@
     <Compile Include="Owin\OwinWebSocketHandler.cs" />
     <Compile Include="Owin\RequestExtensions.cs" />
     <Compile Include="Owin\ServerRequest.cs" />
-    <Compile Include="Owin\ServerRequest.Owin.cs" />
     <Compile Include="Owin\ServerResponse.cs" />
     <Compile Include="Owin\WebSockets\DefaultWebSocketHandler.cs" />
     <Compile Include="Owin\WebSockets\WebSocketHandler.cs" />
@@ -224,7 +224,6 @@
     <Compile Include="Tracing\ITraceManager.cs" />
     <Compile Include="DependencyResolverExtensions.cs" />
     <Compile Include="Hubs\ReflectionHelper.cs" />
-    <Compile Include="Hosting\RequestExtensions.cs" />
     <Compile Include="Tracing\TraceManager.cs" />
     <Compile Include="IGroupManager.cs" />
     <Compile Include="Hubs\IHubActivator.cs" />

@@ -6,42 +6,38 @@ using System.Collections.Specialized;
 using System.Security.Principal;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.AspNet.SignalR.Owin.Infrastructure;
-using Microsoft.AspNet.SignalR.Hosting;
+using Microsoft.Owin;
 
 namespace Microsoft.AspNet.SignalR.Owin
 {
-    using WebSocketFunc = Func<IDictionary<string, object>, Task>;
-
-    public partial class ServerRequest : IWebSocketRequest
+    public class ServerRequest : IRequest
     {
-        private static readonly char[] CommaSemicolon = new[] { ',', ';' };
-
-        private Uri _url;
         private NameValueCollection _queryString;
         private NameValueCollection _headers;
-        private NameValueCollection _form;
-        private bool _formInitialized;
-        private object _formLock = new object();
         private IDictionary<string, Cookie> _cookies;
+
+        private readonly OwinRequest _request;
+
+        public ServerRequest(IDictionary<string, object> environment)
+        {
+            _request = new OwinRequest(environment);
+        }
 
         public Uri Url
         {
             get
             {
-                return LazyInitializer.EnsureInitialized(
-                    ref _url, () =>
-                    {
-                        var uriBuilder = new UriBuilder(RequestScheme, RequestHost, RequestPort, RequestPathBase + RequestPath);
-                        if (!String.IsNullOrEmpty(RequestQueryString))
-                        {
-                            uriBuilder.Query = RequestQueryString;
-                        }
-                        return uriBuilder.Uri;
-                    });
+                return _request.Uri;
             }
         }
 
+        public string LocalPath
+        {
+            get
+            {
+                return _request.PathBase + _request.Path;
+            }
+        }
 
         public NameValueCollection QueryString
         {
@@ -51,9 +47,9 @@ namespace Microsoft.AspNet.SignalR.Owin
                     ref _queryString, () =>
                     {
                         var collection = new NameValueCollection();
-                        foreach (var kv in ParamDictionary.ParseToEnumerable(RequestQueryString))
+                        foreach (var kv in _request.GetQuery())
                         {
-                            collection.Add(kv.Key, kv.Value);
+                            collection.Add(kv.Key, kv.Value[0]);
                         }
                         return collection;
                     });
@@ -83,24 +79,6 @@ namespace Microsoft.AspNet.SignalR.Owin
             }
         }
 
-        public NameValueCollection Form
-        {
-            get
-            {
-                return LazyInitializer.EnsureInitialized(
-                    ref _form, ref _formInitialized, ref _formLock, () =>
-                    {
-                        var collection = new NameValueCollection();
-                        foreach (var kv in ReadForm())
-                        {
-                            collection.Add(kv.Key, kv.Value);
-                        }
-                        return collection;
-                    });
-            }
-        }
-
-
         public IDictionary<string, Cookie> Cookies
         {
             get
@@ -109,8 +87,7 @@ namespace Microsoft.AspNet.SignalR.Owin
                     ref _cookies, () =>
                     {
                         var cookies = new Dictionary<string, Cookie>(StringComparer.OrdinalIgnoreCase);
-                        var text = RequestHeaders.GetHeader("Cookie");
-                        foreach (var kv in ParamDictionary.ParseToEnumerable(text, CommaSemicolon))
+                        foreach (var kv in _request.GetCookies())
                         {
                             if (!cookies.ContainsKey(kv.Key))
                             {
@@ -124,27 +101,25 @@ namespace Microsoft.AspNet.SignalR.Owin
 
         public IPrincipal User
         {
-            get { return _environment.Get<IPrincipal>(OwinConstants.User); }
+            get { return _request.User; }
         }
 
-
-        public IDictionary<string, object> Items
+        public IDictionary<string, object> Environment
         {
-            get;
-            private set;
-        }
-
-        public Task AcceptWebSocketRequest(Func<IWebSocket, Task> callback)
-        {
-            var accept = _environment.Get<Action<IDictionary<string, object>, WebSocketFunc>>(OwinConstants.WebSocketAccept);
-            if (accept == null)
+            get
             {
-                throw new InvalidOperationException(Resources.Error_NotWebSocketRequest);
+                return _request.Environment;
             }
+        }
 
-            var handler = new OwinWebSocketHandler(callback);
-            accept(null, handler.ProcessRequestAsync);
-            return TaskAsyncHelper.Empty;
+        private IDictionary<string, string[]> RequestHeaders
+        {
+            get { return Environment.Get<IDictionary<string, string[]>>(OwinConstants.RequestHeaders); }
+        }
+        
+        public Task<NameValueCollection> ReadForm()
+        {
+            return _request.ReadForm();
         }
     }
 }

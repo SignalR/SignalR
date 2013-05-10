@@ -17,6 +17,11 @@ namespace Microsoft.AspNet.SignalR
         /// Gets the url for this request.
         /// </summary>
         Uri Url { get; }
+
+        /// <summary>
+        /// The local path part of the url
+        /// </summary>
+        string LocalPath { get; }
         
         /// <summary>
         /// Gets the querystring for this request.
@@ -29,11 +34,6 @@ namespace Microsoft.AspNet.SignalR
         NameValueCollection Headers { get; }
 
         /// <summary>
-        /// Gets the form for this request.
-        /// </summary>
-        NameValueCollection Form { get; }
-
-        /// <summary>
         /// Gets the cookies for this request.
         /// </summary>
         IDictionary<string, Cookie> Cookies { get; }
@@ -44,8 +44,14 @@ namespace Microsoft.AspNet.SignalR
         IPrincipal User { get; }
 
         /// <summary>
-        /// Gets state for the current HTTP request.
+        /// Gets the owin enviornment
         /// </summary>
-        IDictionary<string, object> Items { get; }
+        IDictionary<string, object> Environment { get; }
+
+        /// <summary>
+        /// Reads the form of the http request
+        /// </summary>
+        /// <returns></returns>
+        Task<NameValueCollection> ReadForm();
     }
 }

@@ -54,15 +54,15 @@ namespace Microsoft.AspNet.SignalR.Owin
         }
 
         [SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope", Justification = "The websocket handler disposes the socket when the receive loop is over.")]
-        public Task ProcessRequestAsync(IDictionary<string, object> env)
+        public Task ProcessRequest(IDictionary<string, object> environment)
         {
             object value;
             WebSocket webSocket;
 
             // Try to get the websocket context from the environment
-            if (!env.TryGetValue(typeof(WebSocketContext).FullName, out value))
+            if (!environment.TryGetValue(typeof(WebSocketContext).FullName, out value))
             {
-                webSocket = new OwinWebSocket(env);
+                webSocket = new OwinWebSocket(environment);
             }
             else
             {

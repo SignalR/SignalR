@@ -431,6 +431,7 @@ namespace Microsoft.AspNet.SignalR.Stress
                 {
                     Resolver = new DefaultDependencyResolver()
                 };
+
                 app.MapConnection<RawConnection>("/Raw-connection", config);
             });
 

@@ -166,6 +166,10 @@
       <Project>{055f2118-fe29-4219-a28a-3d6f0889652e}</Project>
       <Name>Microsoft.AspNet.SignalR.Hosting.Memory</Name>
     </ProjectReference>
+    <ProjectReference Include="..\..\src\Microsoft.AspNet.SignalR.StressServer\Microsoft.AspNet.SignalR.StressServer.csproj">
+      <Project>{9ac65ed5-48c2-4c5c-8498-dc340b313fdf}</Project>
+      <Name>Microsoft.AspNet.SignalR.StressServer</Name>
+    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Infrastructure\IIS\site.web.config" />

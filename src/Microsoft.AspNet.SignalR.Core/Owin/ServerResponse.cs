@@ -7,19 +7,19 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR.Hosting;
 using Microsoft.AspNet.SignalR.Owin.Infrastructure;
+using Microsoft.Owin;
 
 namespace Microsoft.AspNet.SignalR.Owin
 {
-    public partial class ServerResponse : IResponse
+    public class ServerResponse : IResponse
     {
         private readonly CancellationToken _callCancelled;
-        private readonly IDictionary<string, object> _environment;
-        private Stream _responseBody;
+        private readonly OwinResponse _response;
 
         public ServerResponse(IDictionary<string, object> environment)
         {
-            _environment = environment;
-            _callCancelled = _environment.Get<CancellationToken>(OwinConstants.CallCancelled);
+            _response = new OwinResponse(environment);
+            _callCancelled = _response.Environment.Get<CancellationToken>(OwinConstants.CallCancelled);
         }
 
         public CancellationToken CancellationToken
@@ -29,46 +29,26 @@ namespace Microsoft.AspNet.SignalR.Owin
 
         public string ContentType
         {
-            get { return ResponseHeaders.GetHeader("Content-Type"); }
-            set { ResponseHeaders.SetHeader("Content-Type", value); }
+            get { return _response.GetHeader("Content-Type"); }
+            set { _response.SetHeader("Content-Type", value); }
         }
 
         public void Write(ArraySegment<byte> data)
         {
-            ResponseBody.Write(data.Array, data.Offset, data.Count);
+            _response.Body.Write(data.Array, data.Offset, data.Count);
         }
 
         public Task Flush()
         {
-            return ResponseBody.FlushAsync();
-        }
-
-        public Task End()
-        {
-            return TaskAsyncHelper.Empty;
-        }
-
-        public IDictionary<string, string[]> ResponseHeaders
-        {
-            get { return _environment.Get<IDictionary<string, string[]>>(OwinConstants.ResponseHeaders); }
+            return _response.Body.FlushAsync();
         }
 
         public Stream ResponseBody
         {
             get
             {
-                if (_responseBody == null)
-                {
-                    _responseBody = _environment.Get<Stream>(OwinConstants.ResponseBody);
-                }
-
-                return _responseBody;
+                return _response.Body;
             }
-        }
-
-        public Action DisableResponseBuffering
-        {
-            get { return _environment.Get<Action>(OwinConstants.DisableResponseBuffering) ?? (() => { }); }
         }
     }
 }

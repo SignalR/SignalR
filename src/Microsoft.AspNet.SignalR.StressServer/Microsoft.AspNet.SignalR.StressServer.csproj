@@ -42,7 +42,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="..\..\samples\microsoft.aspnet.signalr.hosting.aspnet.samples\raw\RawConnection.cs">
+    <Compile Include="..\..\samples\Microsoft.AspNet.SignalR.Samples\Raw\RawConnection.cs">
       <Link>Connections\RawConnection.cs</Link>
     </Compile>
     <Compile Include="Connections\StressConnection.cs" />

@@ -156,14 +156,7 @@ namespace Microsoft.AspNet.SignalR.Samples
 
         private static string GetClientIP(IRequest request)
         {
-            var env = Get<IDictionary<string, object>>(request.Items, "owin.environment");
-
-            if (env == null)
-            {
-                return null;
-            }
-
-            return Get<string>(env, "server.RemoteIpAddress");
+            return Get<string>(request.Environment, "server.RemoteIpAddress");
         }
 
         private static T Get<T>(IDictionary<string, object> env, string key)

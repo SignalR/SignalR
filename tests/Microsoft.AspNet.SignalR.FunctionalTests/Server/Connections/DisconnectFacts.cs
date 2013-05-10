@@ -32,7 +32,6 @@ namespace Microsoft.AspNet.SignalR.Tests
             var qs = new NameValueCollection();
             request.Setup(m => m.QueryString).Returns(qs);
             request.Setup(m => m.Url).Returns(new Uri("http://test/echo/connect"));
-            response.Setup(m => m.End()).Returns(TaskAsyncHelper.Empty);
             var cts = new CancellationTokenSource();
             response.Setup(m => m.CancellationToken).Returns(cts.Token);
             response.Setup(m => m.Flush()).Returns(TaskAsyncHelper.Empty);

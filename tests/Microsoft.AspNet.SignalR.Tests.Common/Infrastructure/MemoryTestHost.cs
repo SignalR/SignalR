@@ -100,12 +100,6 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure
                 }
 
                 Initializer.ConfigureRoutes(app, dr);
-
-
-                // perf test related
-                app.MapHubs(new HubConfiguration { Resolver = dr });
-                app.MapConnection<StressConnection>("echo", config);
-                config.Resolver.Register(typeof(IProtectedData), () => new EmptyProtectedData());
             });
         }
 

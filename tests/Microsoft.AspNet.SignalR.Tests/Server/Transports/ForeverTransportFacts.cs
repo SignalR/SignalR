@@ -27,7 +27,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Server.Transports
             var qs = new NameValueCollection();
             qs["connectionId"] = "1";
             request.Setup(m => m.QueryString).Returns(qs);
-            request.Setup(m => m.Form).Returns(form);
+            request.Setup(m => m.ReadForm()).Returns(Task.FromResult<NameValueCollection>(form));
             request.Setup(m => m.Url).Returns(new Uri("http://test/echo/send"));
             var counters = new Mock<IPerformanceCounterManager>();
             var heartBeat = new Mock<ITransportHeartbeat>();

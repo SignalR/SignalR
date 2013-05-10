@@ -6,6 +6,8 @@ using System.Threading.Tasks;
 using System.Web;
 using System.Web.Routing;
 using Microsoft.AspNet.SignalR.FunctionalTests;
+using Microsoft.AspNet.SignalR.Infrastructure;
+using Microsoft.AspNet.SignalR.StressServer.Connections;
 using Microsoft.AspNet.SignalR.Tests.Common;
 using Microsoft.AspNet.SignalR.Tests.Common.Handlers;
 using Owin;
@@ -107,6 +109,15 @@ namespace Microsoft.AspNet.SignalR.Tests.Common
             app.MapConnection<AddGroupOnConnectedConnection>("add-group", config);
             app.MapConnection<UnusableProtectedConnection>("protected", config);
             app.MapConnection<FallbackToLongPollingConnection>("/fall-back", config);
+
+            // Perf/stress test related
+            var performanceConfig = new ConnectionConfiguration
+            {
+                Resolver = resolver
+            };
+
+            performanceConfig.Resolver.Register(typeof(IProtectedData), () => new EmptyProtectedData());
+            app.MapConnection<StressConnection>("echo", performanceConfig);
         }
     }
 }

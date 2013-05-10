@@ -218,15 +218,6 @@ namespace Microsoft.AspNet.SignalR.Tests.Owin
             Assert.Equal(443, request.Url.Port);
         }
 
-        [Fact]
-        public void NotAWebSocketRequestThrowsSynchronously()
-        {
-            var env = new Dictionary<string, object>();
-            var request = new ServerRequest(env);
-
-            Assert.Throws<InvalidOperationException>(() => request.AcceptWebSocketRequest(socket => TaskAsyncHelper.Empty));
-        }
-
         internal static class OwinConstants
         {
             public const string Version = "owin.Version";

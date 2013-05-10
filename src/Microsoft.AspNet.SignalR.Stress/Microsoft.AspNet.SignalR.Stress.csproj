@@ -67,9 +67,6 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="..\..\samples\Microsoft.AspNet.SignalR.Samples\Raw\RawConnection.cs">
-      <Link>Connections\RawConnection.cs</Link>
-    </Compile>
     <Compile Include="..\..\tests\Microsoft.AspNet.SignalR.Tests.Common\Infrastructure\CountDownRange.cs">
       <Link>Infrastructure\CountDownRange.cs</Link>
     </Compile>

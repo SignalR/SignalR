@@ -41,11 +41,10 @@ namespace Microsoft.AspNet.SignalR.Tests.Server.Hubs
             var buffer = new List<string>();
             response.SetupSet(m => m.ContentType = It.IsAny<string>()).Callback<string>(type => contentType = type);
             response.Setup(m => m.Write(It.IsAny<ArraySegment<byte>>())).Callback<ArraySegment<byte>>(data => buffer.Add(Encoding.UTF8.GetString(data.Array, data.Offset, data.Count)));
-            response.Setup(m => m.End()).Returns(TaskAsyncHelper.Empty);
 
             // Act
             var context = new HostContext(request.Object, response.Object);
-            dispatcher.Initialize(new DefaultDependencyResolver(), context);
+            dispatcher.Initialize(new DefaultDependencyResolver());
             dispatcher.ProcessRequest(context).Wait();
 
             // Assert
@@ -67,11 +66,10 @@ namespace Microsoft.AspNet.SignalR.Tests.Server.Hubs
             var buffer = new List<string>();
             response.SetupSet(m => m.ContentType = It.IsAny<string>()).Callback<string>(type => contentType = type);
             response.Setup(m => m.Write(It.IsAny<ArraySegment<byte>>())).Callback<ArraySegment<byte>>(data => buffer.Add(Encoding.UTF8.GetString(data.Array, data.Offset, data.Count)));
-            response.Setup(m => m.End()).Returns(TaskAsyncHelper.Empty);
 
             // Act
             var context = new HostContext(request.Object, response.Object);
-            dispatcher.Initialize(new DefaultDependencyResolver(), context);
+            dispatcher.Initialize(new DefaultDependencyResolver());
             dispatcher.ProcessRequest(context).Wait();
 
             // Assert
@@ -93,11 +91,10 @@ namespace Microsoft.AspNet.SignalR.Tests.Server.Hubs
             var buffer = new List<string>();
             response.SetupSet(m => m.ContentType = It.IsAny<string>()).Callback<string>(type => contentType = type);
             response.Setup(m => m.Write(It.IsAny<ArraySegment<byte>>())).Callback<ArraySegment<byte>>(data => buffer.Add(Encoding.UTF8.GetString(data.Array, data.Offset, data.Count)));
-            response.Setup(m => m.End()).Returns(TaskAsyncHelper.Empty);
 
             // Act
             var context = new HostContext(request.Object, response.Object);
-            dispatcher.Initialize(new DefaultDependencyResolver(), context);
+            dispatcher.Initialize(new DefaultDependencyResolver());
             dispatcher.ProcessRequest(context).Wait();
 
             // Assert
@@ -120,7 +117,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Server.Hubs
                                                           {"connectionToken", "0"},
                                                           {"data", "{\"H\":\"ErrorHub\",\"M\":\"Error\",\"A\":[],\"I\":0}"}
                                                       });
-            request.Setup(m => m.Form).Returns(new NameValueCollection());
+            request.Setup(m => m.ReadForm()).Returns(Task.FromResult(new NameValueCollection()));
 
             string contentType = null;
             var buffer = new List<string>();
@@ -129,14 +126,13 @@ namespace Microsoft.AspNet.SignalR.Tests.Server.Hubs
             response.SetupGet(m => m.CancellationToken).Returns(CancellationToken.None);
             response.SetupSet(m => m.ContentType = It.IsAny<string>()).Callback<string>(type => contentType = type);
             response.Setup(m => m.Write(It.IsAny<ArraySegment<byte>>())).Callback<ArraySegment<byte>>(data => buffer.Add(Encoding.UTF8.GetString(data.Array, data.Offset, data.Count)));
-            response.Setup(m => m.End()).Returns(TaskAsyncHelper.Empty);
 
             // Act
             var context = new HostContext(request.Object, response.Object);
             var resolver = new DefaultDependencyResolver();
             resolver.Register(typeof(IProtectedData), () => new EmptyProtectedData());
             resolver.Register(typeof(ErrorHub), () => new ErrorHub());
-            dispatcher.Initialize(resolver, context);
+            dispatcher.Initialize(resolver);
 
             dispatcher.ProcessRequest(context).Wait();
 
@@ -169,7 +165,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Server.Hubs
                                                           {"connectionToken", "0"},
                                                           {"data", "{\"H\":\"ErrorHub\",\"M\":\"ErrorTask\",\"A\":[],\"I\":0}"}
                                                       });
-            request.Setup(m => m.Form).Returns(new NameValueCollection());
+            request.Setup(m => m.ReadForm()).Returns(Task.FromResult(new NameValueCollection()));
 
             string contentType = null;
             var buffer = new List<string>();
@@ -178,14 +174,13 @@ namespace Microsoft.AspNet.SignalR.Tests.Server.Hubs
             response.SetupGet(m => m.CancellationToken).Returns(CancellationToken.None);
             response.SetupSet(m => m.ContentType = It.IsAny<string>()).Callback<string>(type => contentType = type);
             response.Setup(m => m.Write(It.IsAny<ArraySegment<byte>>())).Callback<ArraySegment<byte>>(data => buffer.Add(Encoding.UTF8.GetString(data.Array, data.Offset, data.Count)));
-            response.Setup(m => m.End()).Returns(TaskAsyncHelper.Empty);
 
             // Act
             var context = new HostContext(request.Object, response.Object);
             var resolver = new DefaultDependencyResolver();
             resolver.Register(typeof(IProtectedData), () => new EmptyProtectedData());
             resolver.Register(typeof(ErrorHub), () => new ErrorHub());
-            dispatcher.Initialize(resolver, context);
+            dispatcher.Initialize(resolver);
 
             dispatcher.ProcessRequest(context).Wait();
 
@@ -218,7 +213,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Server.Hubs
                                                           {"connectionToken", "0"},
                                                           {"data", "{\"H\":\"ErrorHub\",\"M\":\"Error\",\"A\":[],\"I\":0}"}
                                                       });
-            request.Setup(m => m.Form).Returns(new NameValueCollection());
+            request.Setup(m => m.ReadForm()).Returns(Task.FromResult(new NameValueCollection()));
 
             string contentType = null;
             var buffer = new List<string>();
@@ -227,14 +222,13 @@ namespace Microsoft.AspNet.SignalR.Tests.Server.Hubs
             response.SetupGet(m => m.CancellationToken).Returns(CancellationToken.None);
             response.SetupSet(m => m.ContentType = It.IsAny<string>()).Callback<string>(type => contentType = type);
             response.Setup(m => m.Write(It.IsAny<ArraySegment<byte>>())).Callback<ArraySegment<byte>>(data => buffer.Add(Encoding.UTF8.GetString(data.Array, data.Offset, data.Count)));
-            response.Setup(m => m.End()).Returns(TaskAsyncHelper.Empty);
 
             // Act
             var context = new HostContext(request.Object, response.Object);
             var resolver = new DefaultDependencyResolver();
             resolver.Register(typeof(IProtectedData), () => new EmptyProtectedData());
             resolver.Register(typeof(ErrorHub), () => new ErrorHub());
-            dispatcher.Initialize(resolver, context);
+            dispatcher.Initialize(resolver);
 
             dispatcher.ProcessRequest(context).Wait();
 
@@ -266,7 +260,8 @@ namespace Microsoft.AspNet.SignalR.Tests.Server.Hubs
                                                           {"connectionToken", "0"},
                                                           {"data", "{\"H\":\"ErrorHub\",\"M\":\"ErrorTask\",\"A\":[],\"I\":0}"}
                                                       });
-            request.Setup(m => m.Form).Returns(new NameValueCollection());
+
+            request.Setup(m => m.ReadForm()).Returns(Task.FromResult(new NameValueCollection()));
 
             string contentType = null;
             var buffer = new List<string>();
@@ -275,14 +270,13 @@ namespace Microsoft.AspNet.SignalR.Tests.Server.Hubs
             response.SetupGet(m => m.CancellationToken).Returns(CancellationToken.None);
             response.SetupSet(m => m.ContentType = It.IsAny<string>()).Callback<string>(type => contentType = type);
             response.Setup(m => m.Write(It.IsAny<ArraySegment<byte>>())).Callback<ArraySegment<byte>>(data => buffer.Add(Encoding.UTF8.GetString(data.Array, data.Offset, data.Count)));
-            response.Setup(m => m.End()).Returns(TaskAsyncHelper.Empty);
 
             // Act
             var context = new HostContext(request.Object, response.Object);
             var resolver = new DefaultDependencyResolver();
             resolver.Register(typeof(IProtectedData), () => new EmptyProtectedData());
             resolver.Register(typeof(ErrorHub), () => new ErrorHub());
-            dispatcher.Initialize(resolver, context);
+            dispatcher.Initialize(resolver);
 
             dispatcher.ProcessRequest(context).Wait();
 
@@ -317,7 +311,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Server.Hubs
             var dr = new DefaultDependencyResolver();
             dr.Register(typeof(IHubManager), () => mockHubManager.Object);
 
-            dispatcher.Initialize(dr, new HostContext(null, null));
+            dispatcher.Initialize(dr);
             Assert.Throws<InvalidOperationException>(() => dispatcher.Authorize(request.Object));
         }
 
@@ -326,7 +320,6 @@ namespace Microsoft.AspNet.SignalR.Tests.Server.Hubs
             var request = new Mock<IRequest>();
             request.Setup(m => m.Url).Returns(new Uri(url));
             request.Setup(m => m.QueryString).Returns(new NameValueCollection());
-            request.Setup(m => m.Form).Returns(new NameValueCollection());
             return request;
         }
 
