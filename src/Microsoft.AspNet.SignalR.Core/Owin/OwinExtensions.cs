@@ -7,6 +7,7 @@ using Microsoft.AspNet.SignalR;
 using Microsoft.AspNet.SignalR.Hosting;
 using Microsoft.AspNet.SignalR.Owin;
 using Microsoft.AspNet.SignalR.Owin.Middleware;
+using Microsoft.Owin.Infrastructure;
 
 namespace Owin
 {
@@ -61,6 +62,10 @@ namespace Owin
         private static IAppBuilder UseType<T>(this IAppBuilder builder, params object[] args)
         {
             ConnectionConfiguration configuration = null;
+
+            // Ensure we have the conversions for MS.Owin so that
+            // the app builder respects the OwinMiddleware base class
+            SignatureConversions.AddConversions(builder);
 
             if (args.Length > 0)
             {

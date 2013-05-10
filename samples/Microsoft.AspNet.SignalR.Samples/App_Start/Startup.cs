@@ -2,12 +2,11 @@
 using System.Collections.Generic;
 using System.Security.Claims;
 using System.Threading.Tasks;
+using Microsoft.Owin;
 using Owin;
 
 namespace Microsoft.AspNet.SignalR.Samples
 {
-    using AppFunc = Func<IDictionary<string, object>, Task>;
-
     public partial class Startup
     {
         public void Configuration(IAppBuilder app)
@@ -33,29 +32,35 @@ namespace Microsoft.AspNet.SignalR.Samples
 
         private static void SetupAuthenticationMiddleware(IAppBuilder app)
         {
-            Func<AppFunc, AppFunc> middleware = (next) =>
+            app.Use(typeof(ClaimsMiddleware));
+        }
+
+        private class ClaimsMiddleware : OwinMiddleware
+        {
+            public ClaimsMiddleware(OwinMiddleware next)
+                : base(next)
             {
-                return env =>
+            }
+
+            public override Task Invoke(OwinRequest request, OwinResponse response)
+            {
+                string username = request.GetHeader("username");
+
+                if (!String.IsNullOrEmpty(username))
                 {
-                    var headers = (IDictionary<string, string[]>)env["owin.RequestHeaders"];
-                    string[] username;
-                    if (headers.TryGetValue("username", out username))
+                    var authenticated = username == "john" ? "true" : "false";
+
+                    var claims = new List<Claim>
                     {
-                        var authenticated = (username[0] == "john") ? "true" : "false";
+                        new Claim(ClaimTypes.Authentication, authenticated)
+                    };
 
-                        var claims = new List<Claim>
-                        {
-                            new Claim(ClaimTypes.Authentication, authenticated)
-                        };
+                    var claimsIdentity = new ClaimsIdentity(claims);
+                    request.User = new ClaimsPrincipal(claimsIdentity);
+                }
 
-                        var claimsIdentity = new ClaimsIdentity(claims);
-                        env["server.User"] = new ClaimsPrincipal(claimsIdentity);
-                    }
-                    return next(env);
-                };
-            };
-
-            app.Use(middleware);
+                return Next.Invoke(request, response);
+            }
         }
     }
 }
