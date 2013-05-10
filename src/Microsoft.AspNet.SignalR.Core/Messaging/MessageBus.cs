@@ -241,7 +241,8 @@ namespace Microsoft.AspNet.SignalR.Messaging
             subscriber.EventKeyRemoved += _removeEvent;
             subscriber.WriteCursor = subscription.WriteCursor;
 
-            var disposable = new DisposableAction(_disposeSubscription, subscriber);
+            var subscriptionState = new SubscriptionState(subscriber);
+            var disposable = new DisposableAction(_disposeSubscription, subscriptionState);
 
             // When the subscription itself is disposed then dispose it
             subscription.Disposable = disposable;
@@ -253,6 +254,8 @@ namespace Microsoft.AspNet.SignalR.Messaging
             {
                 topic.AddSubscription(subscription);
             }
+
+            subscriptionState.Initialized.Set();
 
             // If there's a cursor then schedule work for this subscription
             if (!String.IsNullOrEmpty(cursor))
@@ -491,7 +494,8 @@ namespace Microsoft.AspNet.SignalR.Messaging
         [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "Failure to invoke the callback should be ignored")]
         private void DisposeSubscription(object state)
         {
-            var subscriber = (ISubscriber)state;
+            var subscriptionState = (SubscriptionState)state;
+            var subscriber = subscriptionState.Subscriber;
 
             // This will stop work from continuting to happen
             subscriber.Subscription.Dispose();
@@ -507,6 +511,8 @@ namespace Microsoft.AspNet.SignalR.Messaging
                 // so the terminal message isn't required.
             }
 
+            subscriptionState.Initialized.Wait();
+
             subscriber.EventKeyAdded -= _addEvent;
             subscriber.EventKeyRemoved -= _removeEvent;
             subscriber.WriteCursor = null;
@@ -515,6 +521,18 @@ namespace Microsoft.AspNet.SignalR.Messaging
             {
                 string eventKey = subscriber.EventKeys[i];
                 RemoveEvent(subscriber, eventKey);
+            }
+        }
+
+        private class SubscriptionState
+        {
+            public ISubscriber Subscriber { get; private set; }
+            public ManualResetEventSlim Initialized { get; private set; }
+
+            public SubscriptionState(ISubscriber subscriber)
+            {
+                Initialized = new ManualResetEventSlim();
+                Subscriber = subscriber;
             }
         }
     }

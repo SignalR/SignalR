@@ -93,6 +93,11 @@ namespace Microsoft.AspNet.SignalR.Messaging
         /// </summary>
         public Encoding Encoding { get; private set; }
 
+        /// <summary>
+        /// The scaleout mapping id. Only used in scaleout scenarios
+        /// </summary>
+        public ulong MappingId { get; set; }
+
         public bool IsCommand
         {
             get

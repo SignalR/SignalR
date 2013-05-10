@@ -8,20 +8,22 @@ namespace Microsoft.AspNet.SignalR.Tests.Infrastructure
     {
         private readonly IEnumerator<T> _enumerator;
         private T _value;
-        private readonly ManualResetEventSlim _wh = new ManualResetEventSlim(false);
+        private readonly ManualResetEventSlim _wh = new ManualResetEventSlim();
+        private bool _result;
 
         public OrderedCountDownRange(IEnumerable<T> range)
         {
             _enumerator = range.GetEnumerator();
             _enumerator.MoveNext();
             _value = _enumerator.Current;
+            _result = true;
         }
 
         public bool Expect(T item)
         {
-            bool result = Object.Equals(_value, item);
+            _result = Object.Equals(_value, item) && _result;
 
-            if (result)
+            if (_result)
             {
                 if (_enumerator.MoveNext())
                 {
@@ -33,7 +35,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Infrastructure
                 }
             }
 
-            return result;
+            return _result;
         }
 
         public bool Wait(TimeSpan timeout)
