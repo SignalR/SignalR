@@ -178,7 +178,10 @@ namespace Microsoft.AspNet.SignalR.Messaging
             for (var i = 0; i < scaleoutMessage.Messages.Count; ++i)
             {
                 Message message = scaleoutMessage.Messages[i];
+
+                // Remember where this message came from
                 message.MappingId = id;
+                message.StreamIndex = streamIndex;
 
                 IList<LocalEventKeyInfo> keyInfo;
                 if (!localMapping.TryGetValue(message.Key, out keyInfo))
@@ -186,7 +189,6 @@ namespace Microsoft.AspNet.SignalR.Messaging
                     keyInfo = new List<LocalEventKeyInfo>();
                     localMapping.Add(message.Key, keyInfo);
                 }
-
 
                 ulong localId = Save(message);
                 MessageStore<Message> messageStore = Topics[message.Key].Store;
