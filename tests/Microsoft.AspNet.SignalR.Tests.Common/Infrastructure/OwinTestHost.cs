@@ -65,7 +65,7 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure
 
             // REVIEW: We don't support specifying settings today. Since Configuration gets called
             // on a new instance.
-            _server = WebApplication.Start<TApplication>(Url);
+            _server = WebApp.Start<TApplication>(Url);
         }
 
         public void Initialize(int? keepAlive = -1, int? connectionTimeout = 110, int? disconnectTimeout = 30, bool enableAutoRejoiningGroups = false)

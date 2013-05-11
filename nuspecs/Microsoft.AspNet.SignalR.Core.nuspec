@@ -13,7 +13,7 @@
         <language>en-US</language>
         <tags>Microsoft AspNet SignalR AspNetSignalR Core</tags>
         <dependencies>
-            <dependency id="Newtonsoft.Json" version="4.5.11" />
+            <dependency id="Newtonsoft.Json" version="5.0" />
             <dependency id="Owin" version="1.0" />
             <dependency id="Microsoft.Owin" version="__KATANADEV_PACKAGE_VERSION__" />
             <dependency id="Microsoft.Owin.Security" version="__KATANADEV_PACKAGE_VERSION__" />

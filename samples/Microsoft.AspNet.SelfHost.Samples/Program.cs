@@ -7,7 +7,7 @@ namespace Microsoft.AspNet.Owin.Samples
     {
         static void Main(string[] args)
         {
-            using (WebApplication.Start<Startup>("http://localhost:8080/"))
+            using (WebApp.Start<Startup>(8080))
             {
                 Console.WriteLine("Server running at http://localhost:8080/");
                 Console.ReadLine();
