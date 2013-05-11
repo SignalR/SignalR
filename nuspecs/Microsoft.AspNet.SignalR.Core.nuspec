@@ -15,10 +15,12 @@
         <dependencies>
             <dependency id="Newtonsoft.Json" version="4.5.11" />
             <dependency id="Owin" version="1.0" />
+            <dependency id="Microsoft.Owin" version="__KATANADEV_PACKAGE_VERSION__" />
+            <dependency id="Microsoft.Owin.Security" version="__KATANADEV_PACKAGE_VERSION__" />
         </dependencies>
     </metadata>
     <files>
-        <file src="Net45\Microsoft.AspNet.SignalR.Core.dll" target="lib\net40" />
-        <file src="Net45\Microsoft.AspNet.SignalR.Core.xml" target="lib\net40" />
+        <file src="Net45\Microsoft.AspNet.SignalR.Core.dll" target="lib\net45" />
+        <file src="Net45\Microsoft.AspNet.SignalR.Core.xml" target="lib\net45" />
     </files>
 </package>

@@ -42,7 +42,11 @@
   <ItemGroup>
     <Reference Include="Microsoft.Owin, Version=1.1.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\packages\Microsoft.Owin.1.1.0-beta1-20507-285\lib\net45\Microsoft.Owin.dll</HintPath>
+      <HintPath>..\..\packages\Microsoft.Owin.1.1.0-beta1-20510-300\lib\net45\Microsoft.Owin.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.Owin.Security, Version=1.1.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\packages\Microsoft.Owin.Security.1.1.0-beta1-20510-300\lib\net45\Microsoft.Owin.Security.dll</HintPath>
     </Reference>
     <Reference Include="Newtonsoft.Json, Version=4.5.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
@@ -81,7 +85,7 @@
     <Compile Include="Infrastructure\ArraySegmentTextReader.cs" />
     <Compile Include="Infrastructure\ConnectionManager.cs" />
     <Compile Include="ConnectionMessage.cs" />
-    <Compile Include="Infrastructure\DefaultProtectedData.cs" />
+    <Compile Include="Infrastructure\DataProtectionProviderProtectedData.cs" />
     <Compile Include="Infrastructure\DiffPair.cs" />
     <Compile Include="Infrastructure\DiffSet.cs" />
     <Compile Include="GlobalHost.cs" />
