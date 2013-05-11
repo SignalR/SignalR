@@ -15,7 +15,8 @@
         <tags>Microsoft AspNet SignalR AspNetSignalR websockets real-time realtime comet HTTP streaming</tags>
         <dependencies>
             <dependency id="Microsoft.AspNet.SignalR.JS" version="__SIGNALR_PACKAGE_VERSION__" />
-            <dependency id="Microsoft.AspNet.SignalR.SystemWeb" version="__SIGNALR_PACKAGE_VERSION__" />
+            <dependency id="Microsoft.AspNet.SignalR.Core" version="__SIGNALR_PACKAGE_VERSION__" />
+            <dependency id="Microsoft.Owin" version="__KATANARELEASE_PACKAGE_VERSION__" />
         </dependencies>
         <frameworkAssemblies>
             <frameworkAssembly assemblyName="System" targetFramework="net40" />
