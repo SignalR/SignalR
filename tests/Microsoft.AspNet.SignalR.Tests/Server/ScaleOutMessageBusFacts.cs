@@ -223,6 +223,64 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
         }
 
         [Fact]
+        public void SubscriptionDoesNotGetNewMessagesWhenTopicStoreOverrunByOtherStream()
+        {
+            var dr = new DefaultDependencyResolver();
+            dr.Resolve<IConfigurationManager>().DefaultMessageBufferSize = 10;
+
+            using (var bus = new TestScaleoutBus(dr, streams: 2))
+            {
+                var subscriber = new TestSubscriber(new[] { "key" });
+                IDisposable subscription = null;
+
+                // The min fragment size is 8 and min fragments is 5
+                var expectedValues = Enumerable.Range(171, 8);
+                var cd = new OrderedCountDownRange<int>(expectedValues);
+
+                // This will overwrite the buffer ending up with (40 - 79) for stream 2
+                for (int i = 0; i < 80; i++)
+                {
+                    bus.Publish(0, (ulong)i, new[] { 
+                        new Message("test", "key", i.ToString())
+                    });
+                }
+
+                // This will overwrite the buffer with (140 - 179) for stream 1
+                for (int i = 100; i < 180; i++)
+                {
+                    bus.Publish(1, (ulong)i, new[] { 
+                        new Message("test", "key", i.ToString())
+                    });
+                }
+
+                try
+                {
+                    subscription = bus.Subscribe(subscriber, "0,27|1,AA", (result, state) =>
+                    {
+                        foreach (var m in result.GetMessages())
+                        {
+                            int n = Int32.Parse(m.GetString());
+
+                            cd.Expect(n);
+                        }
+
+                        return TaskAsyncHelper.True;
+
+                    }, 100, null);
+
+                    Assert.True(cd.Wait(TimeSpan.FromSeconds(10)));
+                }
+                finally
+                {
+                    if (subscription != null)
+                    {
+                        subscription.Dispose();
+                    }
+                }
+            }
+        }
+
+        [Fact]
         public void SubscriptionPublishingAfter()
         {
             var dr = new DefaultDependencyResolver();

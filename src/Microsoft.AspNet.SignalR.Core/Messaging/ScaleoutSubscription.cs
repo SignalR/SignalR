@@ -83,16 +83,16 @@ namespace Microsoft.AspNet.SignalR.Messaging
                 ScaleoutMapping mapping = enumerator.Current.Item1;
                 int streamIndex = enumerator.Current.Item2;
 
-                ulong mappingId = ExtractMessages(mapping, items, ref totalCount);
+                ulong? nextCursor = nextCursors[streamIndex];
 
-                // Update the cursor id
-                nextCursors[streamIndex] = mappingId;
-
-                // If the mapping id of the message we received is bigger than our current mapping id
-                // it means we missed messages and we need to jump ahead.
-                if (mappingId > mapping.Id)
+                // Only keep going with this stream if the cursor we're looking at is bigger than
+                // anything we already processed
+                if (nextCursor == null || mapping.Id > nextCursor)
                 {
-                    break;
+                    ulong mappingId = ExtractMessages(streamIndex, mapping, items, ref totalCount);
+
+                    // Update the cursor id
+                    nextCursors[streamIndex] = mappingId;
                 }
             }
 
@@ -167,7 +167,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
             }
         }
 
-        private ulong ExtractMessages(ScaleoutMapping mapping, IList<ArraySegment<Message>> items, ref int totalCount)
+        private ulong ExtractMessages(int streamIndex, ScaleoutMapping mapping, IList<ArraySegment<Message>> items, ref int totalCount)
         {
             // For each of the event keys we care about, extract all of the messages
             // from the payload
@@ -186,14 +186,27 @@ namespace Microsoft.AspNet.SignalR.Messaging
 
                             if (storeResult.Messages.Count > 0)
                             {
-                                items.Add(storeResult.Messages);
-                                totalCount += storeResult.Messages.Count;
+                                // TODO: Figure out what to do when we have multiple event keys per mapping
+                                Message message = storeResult.Messages.Array[storeResult.Messages.Offset];
 
-                                ulong mappingId = storeResult.Messages.Array[storeResult.Messages.Offset].MappingId;
-
-                                if (mappingId > mapping.Id)
+                                // Only add the message to the list if the stream index matches
+                                if (message.StreamIndex == streamIndex)
                                 {
-                                    return mappingId;
+                                    items.Add(storeResult.Messages);
+                                    totalCount += storeResult.Messages.Count;
+
+                                    // We got a mapping id bigger than what we expected which
+                                    // means we missed messages. Use the new mappingId.
+                                    if (message.MappingId > mapping.Id)
+                                    {
+                                        return message.MappingId;
+                                    }
+                                }
+                                else
+                                {
+                                    // REVIEW: When the stream indexes don't match should we leave the mapping id as is?
+                                    // If we do nothing then we'll end up querying old cursor ids until
+                                    // we eventually find a message id that matches this stream index.
                                 }
                             }
                         }
