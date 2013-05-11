@@ -32,9 +32,9 @@ namespace Microsoft.AspNet.SignalR.Tests
                             Resolver = new DefaultDependencyResolver()
                         };
 
-                        config.Resolver.Register(typeof(IProtectedData), () => new EmptyProtectedData());
-
                         app.MapConnection<MyGroupEchoConnection>("/echo", config);
+
+                        config.Resolver.Register(typeof(IProtectedData), () => new EmptyProtectedData());
                     });
 
                     string id = Guid.NewGuid().ToString("d");
@@ -66,9 +66,9 @@ namespace Microsoft.AspNet.SignalR.Tests
                             Resolver = new DefaultDependencyResolver()
                         };
 
-                        config.Resolver.Register(typeof(IProtectedData), () => new EmptyProtectedData());
-
                         app.MapConnection<MyGroupEchoConnection>("/echo", config);
+
+                        config.Resolver.Register(typeof(IProtectedData), () => new EmptyProtectedData());
                     });
 
                     string id = Guid.NewGuid().ToString("d");

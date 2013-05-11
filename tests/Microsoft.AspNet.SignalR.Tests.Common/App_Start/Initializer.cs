@@ -116,8 +116,9 @@ namespace Microsoft.AspNet.SignalR.Tests.Common
                 Resolver = resolver
             };
 
-            performanceConfig.Resolver.Register(typeof(IProtectedData), () => new EmptyProtectedData());
             app.MapConnection<StressConnection>("echo", performanceConfig);
+
+            performanceConfig.Resolver.Register(typeof(IProtectedData), () => new EmptyProtectedData());
         }
     }
 }
