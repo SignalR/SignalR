@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR.Client.Transports;
+using Microsoft.AspNet.SignalR.Configuration;
+using Microsoft.AspNet.SignalR.Tests.Common;
 using Microsoft.Owin.Hosting;
 
 namespace Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure
@@ -10,7 +12,6 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure
     public class OwinTestHost : ITestHost
     {
         private IDisposable _server;
-        // private IDependencyResolver _resolver;
 
         private static Random _random = new Random();
 
@@ -59,42 +60,36 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure
             private set;
         }
 
-        public void Start<TApplication>()
-        {
-            Initialize();
-
-            // REVIEW: We don't support specifying settings today. Since Configuration gets called
-            // on a new instance.
-            _server = WebApp.Start<TApplication>(Url);
-        }
-
         public void Initialize(int? keepAlive = -1, int? connectionTimeout = 110, int? disconnectTimeout = 30, bool enableAutoRejoiningGroups = false)
         {
-            //_resolver = new DefaultDependencyResolver();
+            var resolver = new DefaultDependencyResolver();
 
-            //var configurationManager = _resolver.Resolve<IConfigurationManager>();
+            var configuration = resolver.Resolve<IConfigurationManager>();
 
-            //if (keepAlive != null)
-            //{
-            //    configurationManager.KeepAlive = TimeSpan.FromSeconds(keepAlive.Value);
-            //}
-            //if (connectionTimeout != null)
-            //{
-            //    configurationManager.ConnectionTimeout = TimeSpan.FromSeconds(connectionTimeout.Value);
-            //}
-            //if (disconnectTimeout != null)
-            //{
-            //    configurationManager.DisconnectTimeout = TimeSpan.FromSeconds(disconnectTimeout.Value);
-            //}
-            //if (hearbeatInterval != null)
-            //{
-            //    configurationManager.HeartbeatInterval = TimeSpan.FromSeconds(hearbeatInterval.Value);
-            //}
+            if (!keepAlive.HasValue)
+            {
+                configuration.KeepAlive = null;
+            }
+            // Set only if the keep-alive was changed from the default value.
+            else if (keepAlive.Value != -1)
+            {
+                configuration.KeepAlive = TimeSpan.FromSeconds(keepAlive.Value);
+            }
 
-            //if (enableAutoRejoiningGroups)
-            //{
-            //    _resolver.Resolve<IHubPipeline>().EnableAutoRejoiningGroups();
-            //}
+            if (connectionTimeout != null)
+            {
+                configuration.ConnectionTimeout = TimeSpan.FromSeconds(connectionTimeout.Value);
+            }
+
+            if (disconnectTimeout != null)
+            {
+                configuration.DisconnectTimeout = TimeSpan.FromSeconds(disconnectTimeout.Value);
+            }
+
+            _server = WebApp.Start(Url, app =>
+            {
+                Initializer.ConfigureRoutes(app, resolver);
+            });
         }
 
         public Task Get(string uri, bool disableWrites)

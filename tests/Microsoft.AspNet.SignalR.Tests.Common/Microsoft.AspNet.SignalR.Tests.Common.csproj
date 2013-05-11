@@ -40,6 +40,12 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\packages\Microsoft.Owin.Hosting.1.1.0-beta1-20511-301\lib\net40\Microsoft.Owin.Hosting.dll</HintPath>
     </Reference>
+    <Reference Include="Microsoft.Owin.Mapping">
+      <HintPath>..\..\packages\Microsoft.Owin.Mapping.0.22.0-pre-20511-301\lib\net40\Microsoft.Owin.Mapping.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.Owin.Security.Basic">
+      <HintPath>..\..\packages\Microsoft.Owin.Security.Basic.1.1.0-beta1-20502-274\lib\net45\Microsoft.Owin.Security.Basic.dll</HintPath>
+    </Reference>
     <Reference Include="Microsoft.Web.Administration, Version=7.9.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
     </Reference>
@@ -114,6 +120,7 @@
       <Link>Hubs\DemoHub.cs</Link>
     </Compile>
     <Compile Include="App_Start\Initializer.cs" />
+    <Compile Include="Connections\AuthenticatedEchoConnection.cs" />
     <Compile Include="Connections\ExamineHeadersConnection.cs" />
     <Compile Include="Connections\ExamineReconnectPath.cs" />
     <Compile Include="Handlers\GCHandler.cs" />
@@ -135,7 +142,7 @@
     <Compile Include="Hubs\EchoHub.cs" />
     <Compile Include="Hubs\ExamineHeadersHub.cs" />
     <Compile Include="Hubs\MyItemsHub.cs" />
-    <Compile Include="Infrastructure\BasicAuthModule.cs" />
+    <Compile Include="Infrastructure\BasicAuthenticationProvider.cs" />
     <Compile Include="Infrastructure\ClientAssertExtensions.cs" />
     <Compile Include="Infrastructure\OrderedCountDownRange.cs" />
     <Compile Include="Infrastructure\CountDownRange.cs" />
@@ -154,7 +161,6 @@
     <Compile Include="Infrastructure\MessageBusType.cs" />
     <Compile Include="Infrastructure\SystemNetLogging.cs" />
     <Compile Include="Infrastructure\TransportType.cs" />
-    <Compile Include="Owin\BasicAuthApplication.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

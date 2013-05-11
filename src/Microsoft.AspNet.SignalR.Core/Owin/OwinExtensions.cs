@@ -84,8 +84,8 @@ namespace Owin
                 var env = builder.Properties;
                 CancellationToken token = env.GetShutdownToken();
 
-                // TODO: Don't depend on this
-                string instanceName = env.GetAppInstanceName();
+                // If we don't get a valid instance name then generate a random one
+                string instanceName = env.GetAppInstanceName() ?? Guid.NewGuid().ToString();
 
                 // Use the data protection provider from app builder and fallback to the
                 // Dpapi provider

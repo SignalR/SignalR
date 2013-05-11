@@ -133,6 +133,38 @@ namespace Microsoft.AspNet.SignalR.Tests
             }
 
             [Theory]
+            [InlineData(HostType.HttpListener, TransportType.Websockets)]
+            [InlineData(HostType.IISExpress, TransportType.ServerSentEvents)]
+            [InlineData(HostType.IISExpress, TransportType.LongPolling)]
+            public void BasicAuthCredentialsFlow(HostType hostType, TransportType transportType)
+            {
+                using (var host = CreateHost(hostType, transportType))
+                {
+                    host.Initialize();
+
+                    var connection = CreateConnection(host, "/basicauth/echo");
+                    var tcs = new TaskCompletionSource<string>();
+
+                    using (connection)
+                    {
+                        connection.Credentials = new System.Net.NetworkCredential("user", "password");
+
+                        connection.Received += data =>
+                        {
+                            tcs.TrySetResult(data);
+                        };
+
+                        connection.Start(host.Transport).Wait();
+
+                        connection.SendWithTimeout("Hello World");
+
+                        Assert.True(tcs.Task.Wait(TimeSpan.FromSeconds(10)));
+                        Assert.Equal("Hello World", tcs.Task.Result);
+                    }
+                }
+            }
+
+            [Theory]
             [InlineData(HostType.Memory, TransportType.Auto)]
             [InlineData(HostType.Memory, TransportType.ServerSentEvents)]
             [InlineData(HostType.Memory, TransportType.LongPolling)]
@@ -430,8 +462,8 @@ namespace Microsoft.AspNet.SignalR.Tests
 
                     var connection1 = CreateConnection(host, "/filter");
                     var connection2 = CreateConnection(host, "/filter");
-                 
-                    using(connection1)
+
+                    using (connection1)
                     using (connection2)
                     {
                         var wh1 = new ManualResetEventSlim(initialState: false);

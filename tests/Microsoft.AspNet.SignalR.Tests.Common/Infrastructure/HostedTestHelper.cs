@@ -60,7 +60,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Common.Infrastructure
                     host.TransportFactory = () => CreateTransport(transportType, mh);
                     host.Transport = host.TransportFactory();
                     break;
-                case HostType.Owin:
+                case HostType.HttpListener:
                     host = new OwinTestHost();
                     host.TransportFactory = () => CreateTransport(transportType);
                     host.Transport = host.TransportFactory();
