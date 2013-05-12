@@ -2157,5 +2157,5 @@
 /*global window:false */
 /// <reference path="jquery.signalR.core.js" />
 (function ($) {
-    $.signalR.version = "2.0.0-beta1";
+    $.signalR.version = "2.0.0-beta2";
 }(window.jQuery));
