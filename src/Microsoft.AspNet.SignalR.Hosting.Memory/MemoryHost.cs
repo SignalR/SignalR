@@ -168,11 +168,10 @@ namespace Microsoft.AspNet.SignalR.Hosting.Memory
 
             _appFunc(env).ContinueWith(task =>
             {
-                object statusCode;
-                if (env.TryGetValue(OwinConstants.ResponseStatusCode, out statusCode) &&
-                    (int)statusCode == 403)
+                var owinResponse = new OwinResponse(env);
+                if (!IsSuccessStatusCode(owinResponse.StatusCode))
                 {
-                    tcs.TrySetException(new InvalidOperationException("Forbidden"));
+                    tcs.TrySetException(new InvalidOperationException("Unsuccessful status code " + owinResponse.StatusCode));
                 }
                 else if (task.IsFaulted)
                 {
@@ -248,6 +247,17 @@ namespace Microsoft.AspNet.SignalR.Hosting.Memory
             }
 
             return (AppFunc)builder.Build(typeof(AppFunc));
+        }
+
+        private static bool IsSuccessStatusCode(int statusCode)
+        {
+            // If it's unset just return true
+            if (statusCode == 0)
+            {
+                return true;
+            }
+
+            return (statusCode >= 200) && (statusCode <= 299);
         }
     }
 }
