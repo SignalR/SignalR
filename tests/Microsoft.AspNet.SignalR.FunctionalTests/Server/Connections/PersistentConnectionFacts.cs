@@ -133,7 +133,7 @@ namespace Microsoft.AspNet.SignalR.Tests
             }
 
             [Theory]
-            [InlineData(HostType.HttpListener, TransportType.Websockets)]
+            [InlineData(HostType.IISExpress, TransportType.Websockets)]
             [InlineData(HostType.IISExpress, TransportType.ServerSentEvents)]
             [InlineData(HostType.IISExpress, TransportType.LongPolling)]
             public void BasicAuthCredentialsFlow(HostType hostType, TransportType transportType)
