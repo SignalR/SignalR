@@ -11,6 +11,7 @@ using Microsoft.AspNet.SignalR.Client.Http;
 using Microsoft.AspNet.SignalR.Infrastructure;
 using Microsoft.AspNet.SignalR.Owin;
 using Microsoft.AspNet.SignalR.Owin.Infrastructure;
+using Microsoft.Owin;
 using Owin;
 using Owin.Builder;
 using IClientRequest = Microsoft.AspNet.SignalR.Client.Http.IRequest;
@@ -18,7 +19,6 @@ using IClientResponse = Microsoft.AspNet.SignalR.Client.Http.IResponse;
 
 namespace Microsoft.AspNet.SignalR.Hosting.Memory
 {
-    using Microsoft.Owin;
     using AppFunc = Func<IDictionary<string, object>, Task>;
 
     public class MemoryHost : IHttpClient, IDisposable

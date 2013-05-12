@@ -115,7 +115,13 @@ namespace Microsoft.AspNet.SignalR.Tests.Common
             app.MapPath("/basicauth", subApp =>
             {
                 subApp.UseBasicAuthentication(new BasicAuthenticationProvider());
-                subApp.MapConnection<AuthenticatedEchoConnection>("/echo");
+
+                var subConfig = new ConnectionConfiguration
+                {
+                    Resolver = resolver
+                };
+
+                subApp.MapConnection<AuthenticatedEchoConnection>("/echo", subConfig);
             });
 
             // Perf/stress test related
