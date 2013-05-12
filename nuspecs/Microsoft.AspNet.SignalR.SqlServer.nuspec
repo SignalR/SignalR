@@ -17,8 +17,8 @@
         </dependencies>
     </metadata>
     <files>
-        <file src="Net45\Microsoft.AspNet.SignalR.SqlServer.dll" target="lib\net40" />
-        <file src="Net45\Microsoft.AspNet.SignalR.SqlServer.xml" target="lib\net40" />
+        <file src="Net45\Microsoft.AspNet.SignalR.SqlServer.dll" target="lib\net45" />
+        <file src="Net45\Microsoft.AspNet.SignalR.SqlServer.xml" target="lib\net45" />
         <file src="Content\install.sql" target="tools" />
     </files>
 </package>

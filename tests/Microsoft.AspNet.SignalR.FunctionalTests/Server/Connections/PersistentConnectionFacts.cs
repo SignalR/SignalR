@@ -32,9 +32,9 @@ namespace Microsoft.AspNet.SignalR.Tests
                             Resolver = new DefaultDependencyResolver()
                         };
 
-                        config.Resolver.Register(typeof(IProtectedData), () => new EmptyProtectedData());
-
                         app.MapConnection<MyGroupEchoConnection>("/echo", config);
+
+                        config.Resolver.Register(typeof(IProtectedData), () => new EmptyProtectedData());
                     });
 
                     string id = Guid.NewGuid().ToString("d");
@@ -66,9 +66,9 @@ namespace Microsoft.AspNet.SignalR.Tests
                             Resolver = new DefaultDependencyResolver()
                         };
 
-                        config.Resolver.Register(typeof(IProtectedData), () => new EmptyProtectedData());
-
                         app.MapConnection<MyGroupEchoConnection>("/echo", config);
+
+                        config.Resolver.Register(typeof(IProtectedData), () => new EmptyProtectedData());
                     });
 
                     string id = Guid.NewGuid().ToString("d");
@@ -128,6 +128,38 @@ namespace Microsoft.AspNet.SignalR.Tests
                         connectionContext.Groups.Send("Foo", "yay");
 
                         Assert.True(wh1.Wait(TimeSpan.FromSeconds(10)));
+                    }
+                }
+            }
+
+            [Theory]
+            [InlineData(HostType.IISExpress, TransportType.Websockets)]
+            [InlineData(HostType.IISExpress, TransportType.ServerSentEvents)]
+            [InlineData(HostType.IISExpress, TransportType.LongPolling)]
+            public void BasicAuthCredentialsFlow(HostType hostType, TransportType transportType)
+            {
+                using (var host = CreateHost(hostType, transportType))
+                {
+                    host.Initialize();
+
+                    var connection = CreateConnection(host, "/basicauth/echo");
+                    var tcs = new TaskCompletionSource<string>();
+
+                    using (connection)
+                    {
+                        connection.Credentials = new System.Net.NetworkCredential("user", "password");
+
+                        connection.Received += data =>
+                        {
+                            tcs.TrySetResult(data);
+                        };
+
+                        connection.Start(host.Transport).Wait();
+
+                        connection.SendWithTimeout("Hello World");
+
+                        Assert.True(tcs.Task.Wait(TimeSpan.FromSeconds(10)));
+                        Assert.Equal("Hello World", tcs.Task.Result);
                     }
                 }
             }
@@ -430,8 +462,8 @@ namespace Microsoft.AspNet.SignalR.Tests
 
                     var connection1 = CreateConnection(host, "/filter");
                     var connection2 = CreateConnection(host, "/filter");
-                 
-                    using(connection1)
+
+                    using (connection1)
                     using (connection2)
                     {
                         var wh1 = new ManualResetEventSlim(initialState: false);

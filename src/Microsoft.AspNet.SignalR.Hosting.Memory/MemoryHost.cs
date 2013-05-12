@@ -11,6 +11,7 @@ using Microsoft.AspNet.SignalR.Client.Http;
 using Microsoft.AspNet.SignalR.Infrastructure;
 using Microsoft.AspNet.SignalR.Owin;
 using Microsoft.AspNet.SignalR.Owin.Infrastructure;
+using Microsoft.Owin;
 using Owin;
 using Owin.Builder;
 using IClientRequest = Microsoft.AspNet.SignalR.Client.Http.IRequest;
@@ -18,7 +19,6 @@ using IClientResponse = Microsoft.AspNet.SignalR.Client.Http.IResponse;
 
 namespace Microsoft.AspNet.SignalR.Hosting.Memory
 {
-    using Microsoft.Owin;
     using AppFunc = Func<IDictionary<string, object>, Task>;
 
     public class MemoryHost : IHttpClient, IDisposable
@@ -168,11 +168,10 @@ namespace Microsoft.AspNet.SignalR.Hosting.Memory
 
             _appFunc(env).ContinueWith(task =>
             {
-                object statusCode;
-                if (env.TryGetValue(OwinConstants.ResponseStatusCode, out statusCode) &&
-                    (int)statusCode == 403)
+                var owinResponse = new OwinResponse(env);
+                if (!IsSuccessStatusCode(owinResponse.StatusCode))
                 {
-                    tcs.TrySetException(new InvalidOperationException("Forbidden"));
+                    tcs.TrySetException(new InvalidOperationException("Unsuccessful status code " + owinResponse.StatusCode));
                 }
                 else if (task.IsFaulted)
                 {
@@ -248,6 +247,17 @@ namespace Microsoft.AspNet.SignalR.Hosting.Memory
             }
 
             return (AppFunc)builder.Build(typeof(AppFunc));
+        }
+
+        private static bool IsSuccessStatusCode(int statusCode)
+        {
+            // If it's unset just return true
+            if (statusCode == 0)
+            {
+                return true;
+            }
+
+            return (statusCode >= 200) && (statusCode <= 299);
         }
     }
 }

@@ -5,15 +5,13 @@ using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using Microsoft.AspNet.SignalR;
 using Microsoft.AspNet.SignalR.Hosting;
-using Microsoft.AspNet.SignalR.Owin;
+using Microsoft.AspNet.SignalR.Infrastructure;
 using Microsoft.AspNet.SignalR.Owin.Middleware;
 using Microsoft.Owin.Infrastructure;
+using Microsoft.Owin.Security.DataProtection;
 
 namespace Owin
 {
-    using DataProtectionProviderDelegate = Func<string[], Tuple<Func<byte[], byte[]>, Func<byte[], byte[]>>>;
-    using DataProtectionTuple = Tuple<Func<byte[], byte[]>, Func<byte[], byte[]>>;
-    
     [SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly", MessageId = "Owin", Justification = "The owin namespace is for consistentcy.")]
     public static class OwinExtensions
     {
@@ -86,8 +84,16 @@ namespace Owin
                 var env = builder.Properties;
                 CancellationToken token = env.GetShutdownToken();
 
-                // TODO: Don't depend on this
-                string instanceName = env.GetAppInstanceName();
+                // If we don't get a valid instance name then generate a random one
+                string instanceName = env.GetAppInstanceName() ?? Guid.NewGuid().ToString();
+
+                // Use the data protection provider from app builder and fallback to the
+                // Dpapi provider
+                IDataProtectionProvider provider = builder.GetDataProtectionProvider() ?? new DpapiDataProtectionProvider();
+
+                // Register the provider
+                var dataProtectionProtectedData = new DataProtectionProviderProtectedData(provider);
+                resolver.Register(typeof(IProtectedData), () => dataProtectionProtectedData);
 
                 resolver.InitializeHost(instanceName, token);
             }

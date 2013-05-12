@@ -12,7 +12,6 @@ using Microsoft.AspNet.SignalR.Hosting.Memory;
 using Microsoft.AspNet.SignalR.Hubs;
 using Microsoft.AspNet.SignalR.Infrastructure;
 using Microsoft.AspNet.SignalR.Messaging;
-using Microsoft.AspNet.SignalR.Tests.Common.Owin;
 using Microsoft.AspNet.SignalR.Tests.Infrastructure;
 using Microsoft.AspNet.SignalR.Tests.Utilities;
 using Moq;
@@ -91,37 +90,6 @@ namespace Microsoft.AspNet.SignalR.Tests
                     Assert.Equal("David", (string)state2.Name);
                     Assert.Equal("St", (string)state2.Address.Street);
                     Assert.Equal("St", (string)addy.Street);
-                }
-            }
-        }
-
-        [Theory]
-        [InlineData(TransportType.ServerSentEvents)]
-        [InlineData(TransportType.LongPolling)]
-        // [InlineData(TransportType.Websockets)]
-        public void BasicAuthCredentialsFlow(TransportType transportType)
-        {
-            using (var host = new OwinTestHost())
-            {
-                Debug.Listeners.Clear();
-
-                host.Start<BasicAuthApplication>();
-
-                HubConnection connection = CreateHubConnection(host);
-
-                using (connection)
-                {
-                    var hub = connection.CreateHubProxy("demo");
-
-                    hub["name"] = "test";
-
-                    connection.Credentials = new System.Net.NetworkCredential("user", "password");
-
-                    connection.Start(CreateTransport(transportType)).Wait();
-
-                    var result = hub.InvokeWithTimeout<string>("ReadStateValue");
-
-                    Assert.Equal("test", result);
                 }
             }
         }

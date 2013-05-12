@@ -9,6 +9,7 @@ using Microsoft.AspNet.SignalR.FunctionalTests;
 using Microsoft.AspNet.SignalR.Infrastructure;
 using Microsoft.AspNet.SignalR.StressServer.Connections;
 using Microsoft.AspNet.SignalR.Tests.Common;
+using Microsoft.AspNet.SignalR.Tests.Common.Connections;
 using Microsoft.AspNet.SignalR.Tests.Common.Handlers;
 using Owin;
 
@@ -110,14 +111,28 @@ namespace Microsoft.AspNet.SignalR.Tests.Common
             app.MapConnection<UnusableProtectedConnection>("protected", config);
             app.MapConnection<FallbackToLongPollingConnection>("/fall-back", config);
 
+            // This subpipeline is protected by basic auth
+            app.MapPath("/basicauth", subApp =>
+            {
+                subApp.UseBasicAuthentication(new BasicAuthenticationProvider());
+
+                var subConfig = new ConnectionConfiguration
+                {
+                    Resolver = resolver
+                };
+
+                subApp.MapConnection<AuthenticatedEchoConnection>("/echo", subConfig);
+            });
+
             // Perf/stress test related
             var performanceConfig = new ConnectionConfiguration
             {
                 Resolver = resolver
             };
 
-            performanceConfig.Resolver.Register(typeof(IProtectedData), () => new EmptyProtectedData());
             app.MapConnection<StressConnection>("echo", performanceConfig);
+
+            performanceConfig.Resolver.Register(typeof(IProtectedData), () => new EmptyProtectedData());
         }
     }
 }

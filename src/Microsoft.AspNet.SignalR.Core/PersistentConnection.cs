@@ -152,9 +152,8 @@ namespace Microsoft.AspNet.SignalR
                 return ProcessRequest(context);
             }
 
-            // If we failed to authorize the request then return a 403 since the request
-            // can't do anything
-            response.StatusCode = 403;
+            // If we failed to authorize the request then return a 401
+            response.StatusCode = 401;
 
             return TaskAsyncHelper.Empty;
         }
