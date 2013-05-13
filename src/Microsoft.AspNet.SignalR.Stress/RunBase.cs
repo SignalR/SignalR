@@ -293,12 +293,12 @@ namespace Microsoft.AspNet.SignalR.Stress
             {
                 try
                 {
+                    await Send(senderState.Item1, senderState.Item2);
+
                     if (RunData.SendDelay > 0)
                     {
-                        Thread.Sleep(RunData.SendDelay);
+                        await Task.Delay(RunData.SendDelay);
                     }
-
-                    await Send(senderState.Item1, senderState.Item2);
                 }
                 catch (Exception)
                 {

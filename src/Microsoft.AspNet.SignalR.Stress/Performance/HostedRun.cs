@@ -16,6 +16,8 @@ namespace Microsoft.AspNet.SignalR.Stress.Performance
     /// </summary>
     public abstract class HostedRun : RunBase
     {
+        private string _scenarioName; 
+
         public HostedRun(RunData runData)
             : base(runData)
         {
@@ -27,7 +29,12 @@ namespace Microsoft.AspNet.SignalR.Stress.Performance
         {
             get
             {
-                return base.ScenarioName + "-" + RunData.Host + "-" + RunData.Transport;
+                if (_scenarioName == null)
+                {
+                    _scenarioName = base.ScenarioName + "-" + RunData.Host + "-" + RunData.Transport;
+                }
+
+                return _scenarioName;
             }
         }
 
