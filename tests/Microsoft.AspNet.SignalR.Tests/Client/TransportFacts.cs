@@ -57,7 +57,7 @@ namespace Microsoft.AspNet.SignalR.Tests
             bool timedOut, disconnected, triggered = false;
             var connection = new Connection("http://foo.com");
 
-            TransportHelper.ProcessResponse(connection, "{\"Z\":1, \"M\":[]}", out timedOut, out disconnected, () =>
+            TransportHelper.ProcessResponse(connection, "{\"S\":1, \"M\":[]}", out timedOut, out disconnected, () =>
             {
                 triggered = true;
             });

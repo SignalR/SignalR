@@ -210,15 +210,13 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
             return "noCache=" + Guid.NewGuid().ToString();
         }
 
-        private static bool TryInitialize(JToken response, Action onInitialized)
+        private static void TryInitialize(JToken response, Action onInitialized)
         {
-            if ((int?)response["Z"] == 1)
+            if ((int?)response["S"] == 1)
             {
                 onInitialized();
-                return true;
             }
 
-            return false;
         }
     }
 }

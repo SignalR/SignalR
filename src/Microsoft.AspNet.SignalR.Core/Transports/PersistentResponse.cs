@@ -107,7 +107,7 @@ namespace Microsoft.AspNet.SignalR.Transports
 
             if (Initializing)
             {
-                jsonWriter.WritePropertyName("Z");
+                jsonWriter.WritePropertyName("S");
                 jsonWriter.WriteValue(1);
             }
 

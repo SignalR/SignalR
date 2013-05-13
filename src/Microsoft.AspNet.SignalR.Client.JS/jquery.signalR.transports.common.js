@@ -160,7 +160,7 @@
             return {
                 MessageId: minPersistentResponse.C,
                 Messages: minPersistentResponse.M,
-                Initialized: typeof (minPersistentResponse.Z) !== "undefined" ? true : false,
+                Initialized: typeof (minPersistentResponse.S) !== "undefined" ? true : false,
                 Disconnect: typeof (minPersistentResponse.D) !== "undefined" ? true : false,
                 TimedOut: typeof (minPersistentResponse.T) !== "undefined" ? true : false,
                 LongPollDelay: minPersistentResponse.L,
@@ -230,10 +230,7 @@
         tryInitialize: function (persistentResponse, onInitialized) {
             if (persistentResponse.Initialized) {
                 onInitialized();
-                return true;
             }
-
-            return false;
         },
 
         processMessages: function (connection, minData, onInitialized) {
