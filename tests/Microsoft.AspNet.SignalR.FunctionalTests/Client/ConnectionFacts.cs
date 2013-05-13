@@ -57,13 +57,18 @@ namespace Microsoft.AspNet.SignalR.Tests
                         {
                             Assert.Equal("referer", (string)headers["refererHeader"]);
                         }
+
                         Assert.Equal("test-header", (string)headers["testHeader"]);
+                        Assert.Equal("user-agent", (string)headers["userAgentHeader"]);
+
                         tcs.TrySetResult(null);
                     };
 
                     connection.Error += e => tcs.TrySetException(e);
 
                     connection.Headers.Add("test-header", "test-header");
+                    connection.Headers.Add(System.Net.HttpRequestHeader.UserAgent.ToString(), "user-agent");
+
                     if (transportType != TransportType.Websockets)
                     {
                         connection.Headers.Add(System.Net.HttpRequestHeader.Referer.ToString(), "referer");

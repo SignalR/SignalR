@@ -8,11 +8,13 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests
         {
             string refererHeader = request.Headers[System.Net.HttpRequestHeader.Referer.ToString()];
             string testHeader = request.Headers["test-header"];
+            string userAgentHeader = request.Headers[System.Net.HttpRequestHeader.UserAgent.ToString()];
 
             return Connection.Send(connectionId, new
             {
                 refererHeader = refererHeader,
-                testHeader = testHeader
+                testHeader = testHeader,
+                userAgentHeader = userAgentHeader
             });
         }
     }
