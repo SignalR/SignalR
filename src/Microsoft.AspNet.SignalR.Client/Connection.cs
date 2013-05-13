@@ -398,7 +398,7 @@ namespace Microsoft.AspNet.SignalR.Client
                              {
                                  ChangeState(ConnectionState.Connecting, ConnectionState.Connected);
 
-                                 if (_keepAliveData != null)
+                                 if (_keepAliveData != null && _transport.SupportsKeepAlive)
                                  {
                                      // Start the monitor to check for server activity
                                      _monitor.Start();
