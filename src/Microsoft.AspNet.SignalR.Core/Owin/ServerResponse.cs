@@ -42,13 +42,5 @@ namespace Microsoft.AspNet.SignalR.Owin
         {
             return _response.Body.FlushAsync();
         }
-
-        public Stream ResponseBody
-        {
-            get
-            {
-                return _response.Body;
-            }
-        }
     }
 }

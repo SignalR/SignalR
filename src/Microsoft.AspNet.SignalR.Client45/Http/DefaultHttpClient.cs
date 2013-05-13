@@ -33,7 +33,12 @@ namespace Microsoft.AspNet.SignalR.Client.Http
             var handler = new DefaultHttpHandler(_connection);
 
             _longRunningClient = new HttpClient(handler);
+
+            // Disabling the Http Client timeout 
+            _longRunningClient.Timeout = TimeSpan.FromMilliseconds(-1.0);
+
             _shortRunningClient = new HttpClient(handler);
+            _shortRunningClient.Timeout = TimeSpan.FromMilliseconds(-1.0);
         }
 
         /// <summary>

@@ -16,7 +16,7 @@ namespace Microsoft.AspNet.SignalR.Samples
             app.MapConnection<RawConnection>("raw-connection");
             app.MapConnection<StreamingConnection>("streaming-connection");
 
-            SetupAuthenticationMiddleware(app);
+            app.Use(typeof(ClaimsMiddleware));
 
             ConfigureSignalR(GlobalHost.DependencyResolver, GlobalHost.HubPipeline);
 
@@ -28,11 +28,6 @@ namespace Microsoft.AspNet.SignalR.Samples
             app.MapHubs(config);
 
             BackgroundThread.Start();
-        }
-
-        private static void SetupAuthenticationMiddleware(IAppBuilder app)
-        {
-            app.Use(typeof(ClaimsMiddleware));
         }
 
         private class ClaimsMiddleware : OwinMiddleware
