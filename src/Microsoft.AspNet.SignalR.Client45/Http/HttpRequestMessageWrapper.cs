@@ -34,8 +34,7 @@ namespace Microsoft.AspNet.SignalR.Client.Http
 
             if (UserAgent != null)
             {
-                // TODO: Fix format of user agent so that ProductInfoHeaderValue likes it
-                // request.Headers.UserAgent.Add(new ProductInfoHeaderValue(UserAgent));
+                _httpRequestMessage.Headers.TryAddWithoutValidation("User-Agent", UserAgent);
             }
 
             if (Accept != null)
