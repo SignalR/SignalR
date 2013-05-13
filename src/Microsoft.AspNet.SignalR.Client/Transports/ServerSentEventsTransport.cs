@@ -84,7 +84,10 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
             bool reconnecting = initializeCallback == null;
             var callbackInvoker = new ThreadSafeInvoker();
             var requestDisposer = new Disposer();
-
+            Action initializeInvoke = () =>
+            {
+                callbackInvoker.Invoke(initializeCallback);
+            };
             var url = connection.Url + (reconnecting ? "reconnect" : "connect") + GetReceiveQueryString(connection, data);
 
             connection.Trace(TraceLevels.Events, "SSE: GET {0}", url);
@@ -136,12 +139,8 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
 
                     eventSource.Opened = () =>
                     {
-                        // If we're not reconnecting, then we're starting the transport for the first time. Trigger callback only on first start.
-                        if (!reconnecting)
-                        {
-                            callbackInvoker.Invoke(initializeCallback);
-                        }
-                        else if (connection.ChangeState(ConnectionState.Reconnecting, ConnectionState.Connected))
+                        // This will noop if we're not in the reconnecting state
+                        if (connection.ChangeState(ConnectionState.Reconnecting, ConnectionState.Connected))
                         {
                             // Raise the reconnect event if the connection comes back up
                             connection.OnReconnected();
@@ -159,7 +158,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
 
                             bool timedOut;
                             bool disconnected;
-                            TransportHelper.ProcessResponse(connection, sseEvent.Data, out timedOut, out disconnected);
+                            TransportHelper.ProcessResponse(connection, sseEvent.Data, out timedOut, out disconnected, initializeInvoke);
 
                             if (disconnected)
                             {

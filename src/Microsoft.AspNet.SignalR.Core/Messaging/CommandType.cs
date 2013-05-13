@@ -4,6 +4,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
 {
     public enum CommandType
     {
+        Initializing,
         AddToGroup,
         RemoveFromGroup,
         Disconnect,
