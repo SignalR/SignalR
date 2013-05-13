@@ -9,7 +9,7 @@ QUnit.test("onInitialize is triggered on an initialize message.", function () {
         M: [],
         L: 1337,
         G: "foo",
-        Z: 1
+        S: 1
     }, function () {
         initializeTriggered = true;
     });

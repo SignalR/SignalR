@@ -11,7 +11,7 @@ testUtilities.runWithAllTransports(function (transport) {
 
                 $.signalR.transports._logic.processMessages = function (connection, minData, onInitialize) {
                     // We could be buffering so ensure that we have the initialize message
-                    if (minData.Z) {
+                    if (minData.S) {
                         assert.ok(onInitialize, "On initialize passed to process messages.");
                         assert.ok(true, "Initialized");
                         initialized = true;
