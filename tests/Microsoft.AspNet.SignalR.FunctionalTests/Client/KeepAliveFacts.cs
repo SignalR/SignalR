@@ -121,7 +121,7 @@ namespace Microsoft.AspNet.SignalR.Tests
             {
                 // Arrange
                 var mre = new ManualResetEventSlim(false);
-                host.Initialize(keepAlive: null);
+                host.Initialize(keepAlive: 2);
                 var connection = CreateConnection(host, "/my-reconnect");
 
                 using (connection)
