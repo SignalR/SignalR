@@ -112,6 +112,11 @@
       <Build Condition="'$(KeyFile)' != ''">false</Build>
     </Projects>
 
+    <!-- The MemoryHost dll is not referenced by any package, so don't copy its artifacts to package-src -->
+    <Projects Include="$(ProjectRoot)\src\Microsoft.AspNet.SignalR.Hosting.Memory\Microsoft.AspNet.SignalR.Hosting.Memory.csproj">
+      <CopyArtifacts>false</CopyArtifacts>
+    </Projects>
+
     <!-- Add any src projects that have not been defined manually -->
     <Projects Include="$(ProjectRoot)\src\**\*.csproj" Exclude="@(Projects)" />
 
