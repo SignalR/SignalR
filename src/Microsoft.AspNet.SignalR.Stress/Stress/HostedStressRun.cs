@@ -1,6 +1,5 @@
 ﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.md in the project root for license information.
 
-using Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure;
 using Microsoft.AspNet.SignalR.Tests.Common.Infrastructure;
 
 namespace Microsoft.AspNet.SignalR.Stress.Stress
@@ -20,7 +19,7 @@ namespace Microsoft.AspNet.SignalR.Stress.Stress
         public override void Initialize()
         {
             // Create the host
-            Host = HostedTestHelper.CreateHost(RunData.Host, RunData.Transport, ScenarioName, RunData.Url);
+            Host = HostedTestFactory.CreateHost(RunData.Host, RunData.Transport, ScenarioName, RunData.Url);
             Host.Resolver = Resolver;
             Host.Initialize();
 
