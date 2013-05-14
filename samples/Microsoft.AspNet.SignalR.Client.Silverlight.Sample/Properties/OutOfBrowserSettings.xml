@@ -1,7 +1,0 @@
-<OutOfBrowserSettings ShortName="Microsoft.AspNet.SignalR.Client.Silverlight.Sample Application" EnableGPUAcceleration="False" ShowInstallMenuItem="True">
-  <OutOfBrowserSettings.Blurb>Microsoft.AspNet.SignalR.Client.Silverlight.Sample Application on your desktop; at home, at work or on the go.</OutOfBrowserSettings.Blurb>
-  <OutOfBrowserSettings.WindowSettings>
-    <WindowSettings Title="Microsoft.AspNet.SignalR.Client.Silverlight.Sample Application" />
-  </OutOfBrowserSettings.WindowSettings>
-  <OutOfBrowserSettings.Icons />
-</OutOfBrowserSettings>

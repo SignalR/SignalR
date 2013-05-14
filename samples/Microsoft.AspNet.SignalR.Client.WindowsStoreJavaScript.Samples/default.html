@@ -1,0 +1,72 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>Microsoft.AspNet.SignalR.Client.WindowsStoreJavaScript.Samples</title>
+
+    <!-- WinJS references -->
+    <link href="//Microsoft.WinJS.1.0/css/ui-dark.css" rel="stylesheet" />
+    <script src="//Microsoft.WinJS.1.0/js/base.js"></script>
+    <script src="//Microsoft.WinJS.1.0/js/ui.js"></script>
+
+    <!-- WindowsStoreJavaScript references -->
+    <link href="/css/default.css" rel="stylesheet" />
+    <script src="/js/default.js"></script>
+
+    <script src="Scripts/jquery-2.0.0.js"></script>
+    <script src="Scripts/jquery.signalR.js"></script>
+    <script src="Scripts/hubs.js"></script>
+    <script type="text/javascript">
+        $.connection.hubConnectionAPI.client.displayMessage = function (data) {
+            $("#Messages").append("<li>" + data + "</li>");
+        }
+
+        $.connection.hub.url = "http://signalr01.cloudapp.net/signalr";
+        $.connection.hub.logging = true;
+        $.connection.hub.connectionSlow(function () {
+            $("#Messages").append("<li>[connectionSlow]</li>");
+        });
+        $.connection.hub.disconnected(function () {
+            $("#Messages").append("<li>[disconnected]</li>");
+        });
+        $.connection.hub.error(function (error) {
+            $("#Messages").append("<li>[error]" + error + "</li>");
+        });
+        $.connection.hub.received(function (payload) {
+            $("#Messages").append("<li>[received]" + window.JSON.stringify(payload) + "</li>");
+        });
+        $.connection.hub.reconnected(function () {
+            $("#Messages").append("<li>[reconnected]</li>");
+        });
+        $.connection.hub.reconnecting(function () {
+            $("#Messages").append("<li>[reconnecting]</li>");
+        });
+        $.connection.hub.starting(function () {
+            $("#Messages").append("<li>[starting]</li>");
+        });
+        $.connection.hub.stateChanged(function (change) {
+            $("#Messages").append("<li>[stateChanged] " + displayState(change.oldState) + " => " + displayState(change.newState) + "</li>");
+        });
+
+        $.connection.hub.start().
+            done(function () {
+                $("#Messages").append("<li>Connected</li>");
+                $("#Messages").append("<li>transport.name=" + $.connection.hub.transport.name + "</li>");
+
+                $.connection.hubConnectionAPI.server.displayMessageCaller("Hello Caller!");
+                $.connection.hubConnectionAPI.server.joinGroup($.connection.hub.connectionId, "CommonClientGroup");
+                $.connection.hubConnectionAPI.server.displayMessageGroup("CommonClientGroup", "Hello Group Members!");
+            }).
+            fail(function (error) {
+                $("#Messages").append("<li>Failed to connect: " + error + "</li>");
+            });
+
+        function displayState(state) {
+            return ["connecting", "connected", "reconnecting", state, "disconnected"][state];
+        }
+    </script>
+</head>
+<body>
+    <ul id="Messages"></ul>
+</body>
+</html>
