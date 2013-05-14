@@ -173,7 +173,10 @@ namespace Microsoft.AspNet.SignalR.Transports
             {
                 if (newConnection)
                 {
-                    initialize = Connected;
+                    initialize = () =>
+                    {
+                        return Connected().Then((conn, id) => conn.Initialize(id), connection, ConnectionId);
+                    };
 
                     _counters.ConnectionsConnected.Increment();
                 }

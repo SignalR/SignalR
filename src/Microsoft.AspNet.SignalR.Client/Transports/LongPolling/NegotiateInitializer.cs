@@ -9,13 +9,11 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
         private readonly ThreadSafeInvoker _callbackInvoker;
         private readonly Action _initializeCallback;
         private readonly Action<Exception> _errorCallback;
-        private readonly TimeSpan _assumeSuccessAfter;
 
-        public NegotiateInitializer(Action initializeCallback, Action<Exception> errorCallback, TimeSpan assumeSuccessAfter)
+        public NegotiateInitializer(Action initializeCallback, Action<Exception> errorCallback)
         {
             _initializeCallback = initializeCallback;
             _errorCallback = errorCallback;
-            _assumeSuccessAfter = assumeSuccessAfter;
             _callbackInvoker = new ThreadSafeInvoker();
 
             // Set default initialized function
@@ -23,18 +21,6 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
         }
 
         public event Action Initialized;
-
-        public void Initialize()
-        {
-            TaskAsyncHelper.Delay(_assumeSuccessAfter).Then(() =>
-            {
-                _callbackInvoker.Invoke(() =>
-                {
-                    Initialized();
-                    _initializeCallback();
-                });
-            });
-        }
 
         public void Complete()
         {
