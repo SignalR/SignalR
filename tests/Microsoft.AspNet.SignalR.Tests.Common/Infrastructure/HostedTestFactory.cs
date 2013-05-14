@@ -7,14 +7,12 @@ using System.IO;
 using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR.Client.Http;
 using Microsoft.AspNet.SignalR.Client.Transports;
-using Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure;
 using Microsoft.AspNet.SignalR.Hosting.Memory;
 using Microsoft.AspNet.SignalR.Infrastructure;
-using Microsoft.AspNet.SignalR.Tests.FunctionalTests.Infrastructure;
 
 namespace Microsoft.AspNet.SignalR.Tests.Common.Infrastructure
 {
-    public static class HostedTestHelper
+    public static class HostedTestFactory
     {
         public static ITestHost CreateHost(string hostTypeName, string transportName, string testName, string url = null)
         {

@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Configuration;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -10,15 +9,11 @@ using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR.Client.Http;
 using Microsoft.AspNet.SignalR.Client.Hubs;
 using Microsoft.AspNet.SignalR.Client.Transports;
-using Microsoft.AspNet.SignalR.Hosting.Memory;
-using Microsoft.AspNet.SignalR.Infrastructure;
 using Microsoft.AspNet.SignalR.Messaging;
-using Microsoft.AspNet.SignalR.Tests.Common.Infrastructure;
-using Microsoft.AspNet.SignalR.Tests.FunctionalTests.Infrastructure;
 using Xunit;
 using Xunit.Extensions;
 
-namespace Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure
+namespace Microsoft.AspNet.SignalR.Tests.Common.Infrastructure
 {
     public abstract class HostedTest : IDisposable
     {
@@ -33,7 +28,7 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure
         {
             string detailedTestName = GetTestName() + "." + hostType + "." + transportType + "." + Interlocked.Increment(ref _id);
 
-            return HostedTestHelper.CreateHost(hostType, transportType, detailedTestName);
+            return HostedTestFactory.CreateHost(hostType, transportType, detailedTestName);
         }
 
         protected void UseMessageBus(MessageBusType type, IDependencyResolver resolver, ScaleoutConfiguration configuration = null, int streams = 1)
@@ -61,7 +56,7 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure
         {
             string testName = GetTestName();
             string logBasePath = Path.Combine(Directory.GetCurrentDirectory(), "..");
-            HostedTestHelper.EnableTracing(GetTestName(), logBasePath);
+            HostedTestFactory.EnableTracing(GetTestName(), logBasePath);
         }
 
         protected HubConnection CreateHubConnection(string url)
@@ -70,7 +65,7 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure
             var query = new Dictionary<string, string>();
             query["test"] = testName;
             var connection = new HubConnection(url, query);
-            connection.TraceWriter = HostedTestHelper.CreateClientTraceWriter(testName);
+            connection.TraceWriter = HostedTestFactory.CreateClientTraceWriter(testName);
             return connection;
         }
 
@@ -125,7 +120,7 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure
 
         protected IClientTransport CreateTransport(TransportType transportType, IHttpClient client)
         {
-            return HostedTestHelper.CreateTransport(transportType, client);
+            return HostedTestFactory.CreateTransport(transportType, client);
         }
 
         protected virtual void Dispose(bool disposing)

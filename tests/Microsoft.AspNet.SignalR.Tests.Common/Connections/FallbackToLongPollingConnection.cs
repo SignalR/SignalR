@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
 
-namespace Microsoft.AspNet.SignalR.FunctionalTests
+namespace Microsoft.AspNet.SignalR.Tests.Common
 {
     public class FallbackToLongPollingConnection : PersistentConnection
     {

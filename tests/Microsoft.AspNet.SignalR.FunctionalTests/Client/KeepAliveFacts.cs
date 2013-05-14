@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Threading;
 using Microsoft.AspNet.SignalR.Client;
-using Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure;
+using Microsoft.AspNet.SignalR.Tests.Common.Infrastructure;
 using Xunit;
 using Xunit.Extensions;
 
