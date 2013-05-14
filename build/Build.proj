@@ -27,7 +27,6 @@
     <JSTester>$(JSTestsPath)\default.html</JSTester>
     <DocuExePath>$(ToolsPath)docu\docu.exe</DocuExePath>
     <ZipExe>$(ToolsPath)7za920\7za.exe</ZipExe>
-    <KeyFile Condition="'$(KeyFile)' == ''">$(ProjectRoot)\35MSSharedLib1024.snk</KeyFile>
     <MSBuildCommunityTasksPath>$(MSBuildProjectDirectory)</MSBuildCommunityTasksPath>
   </PropertyGroup>
 
