@@ -4,9 +4,9 @@ using System.Diagnostics;
 using System.IO;
 using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR.Client.Transports;
-using Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure.IIS;
+using Microsoft.AspNet.SignalR.Tests.Common.Infrastructure.IIS;
 
-namespace Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure
+namespace Microsoft.AspNet.SignalR.Tests.Common.Infrastructure
 {
     public class IISExpressTestHost : ITestHost
     {

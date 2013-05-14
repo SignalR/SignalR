@@ -1,4 +1,4 @@
-﻿namespace Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure
+﻿namespace Microsoft.AspNet.SignalR.Tests.Common.Infrastructure
 {
     public enum MessageBusType
     {

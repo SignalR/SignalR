@@ -2,7 +2,7 @@
 using Microsoft.AspNet.SignalR.Client.Hubs;
 using Xunit;
 
-namespace Microsoft.AspNet.SignalR.FunctionalTests
+namespace Microsoft.AspNet.SignalR.Tests.Common
 {
     public static class ClientAssertExtensions
     {

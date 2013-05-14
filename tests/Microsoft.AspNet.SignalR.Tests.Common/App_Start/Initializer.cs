@@ -5,7 +5,6 @@ using System.IO;
 using System.Threading.Tasks;
 using System.Web;
 using System.Web.Routing;
-using Microsoft.AspNet.SignalR.FunctionalTests;
 using Microsoft.AspNet.SignalR.Infrastructure;
 using Microsoft.AspNet.SignalR.StressServer.Connections;
 using Microsoft.AspNet.SignalR.Tests.Common;

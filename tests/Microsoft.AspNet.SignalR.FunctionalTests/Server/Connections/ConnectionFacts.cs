@@ -7,11 +7,11 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR.Client.Http;
 using Microsoft.AspNet.SignalR.Client.Transports;
-using Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure;
 using Microsoft.AspNet.SignalR.Hosting.Memory;
 using Owin;
 using Xunit;
 using Xunit.Extensions;
+using Microsoft.AspNet.SignalR.Tests.Common.Infrastructure;
 
 namespace Microsoft.AspNet.SignalR.Client.Tests
 {
