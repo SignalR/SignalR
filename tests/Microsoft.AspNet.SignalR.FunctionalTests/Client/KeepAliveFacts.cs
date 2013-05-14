@@ -159,13 +159,14 @@ namespace Microsoft.AspNet.SignalR.Tests
         }
 
         [Theory]
-        [InlineData(HostType.IISExpress, TransportType.LongPolling)]
-        public void OnConnectionSlowDoesntFireForLongPollingTest(HostType hostType, TransportType transportType)
+        [InlineData(HostType.Memory)]
+        [InlineData(HostType.IISExpress)]
+        public void OnConnectionSlowDoesntFireForLongPolling(HostType hostType)
         {
-            using (var host = CreateHost(hostType, transportType))
+            using (var host = CreateHost(hostType, TransportType.LongPolling))
             {
                 // Arrange
-                var mre = new ManualResetEventSlim(false);
+                var mre = new ManualResetEventSlim();
                 host.Initialize(keepAlive: 2);
                 var connection = CreateConnection(host, "/my-reconnect");
 
