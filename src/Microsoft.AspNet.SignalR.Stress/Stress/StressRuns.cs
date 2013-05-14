@@ -3,14 +3,18 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNet.SignalR;
+using Microsoft.AspNet.SignalR.Client.Http;
 using Microsoft.AspNet.SignalR.Client.Hubs;
 using Microsoft.AspNet.SignalR.Configuration;
 using Microsoft.AspNet.SignalR.Hosting.Memory;
 using Microsoft.AspNet.SignalR.Hubs;
 using Microsoft.AspNet.SignalR.Infrastructure;
+using Microsoft.AspNet.SignalR.Messaging;
 using Microsoft.AspNet.SignalR.Samples.Raw;
 using Microsoft.AspNet.SignalR.Tests.Infrastructure;
 using Newtonsoft.Json.Linq;
@@ -243,6 +247,125 @@ namespace Microsoft.AspNet.SignalR.Stress
             return host;
         }
 
+        public static void Scaleout(int nodes, int clients)
+        {
+            var hosts = new MemoryHost[nodes];
+            var random = new Random();
+            var eventBus = new EventBus();
+            for (var i = 0; i < nodes; ++i)
+            {
+                var host = new MemoryHost();
+
+                host.Configure(app =>
+                {
+                    var config = new HubConfiguration()
+                    {
+                        Resolver = new DefaultDependencyResolver()
+                    };
+
+                    var delay = i % 2 == 0 ? TimeSpan.Zero : TimeSpan.FromSeconds(1);
+                    var bus = new DelayedMessageBus(host.InstanceName, eventBus, config.Resolver, delay);
+                    config.Resolver.Register(typeof(IMessageBus), () => bus);
+
+                    app.MapHubs(config);
+                });
+
+                hosts[i] = host;
+            }
+
+            var client = new LoadBalancer(hosts);
+            var wh = new ManualResetEventSlim();
+
+            for (int i = 0; i < clients; i++)
+            {
+                Task.Run(() => RunLoop(client, wh));
+            }
+
+            wh.Wait();
+        }
+
+        private static void RunLoop(IHttpClient client, ManualResetEventSlim wh)
+        {
+            var connection = new Client.Hubs.HubConnection("http://foo");
+            var proxy = connection.CreateHubProxy("EchoHub");
+            connection.TraceLevel = Client.TraceLevels.Messages;
+            var dict = new Dictionary<string, int>();
+
+            proxy.On<int, string, string>("send", (next, connectionId, serverName) =>
+            {
+                if (wh.IsSet)
+                {
+                    return;
+                }
+
+                int value;
+                if (dict.TryGetValue(connectionId, out value))
+                {
+                    if (value + 1 != next)
+                    {
+                        Console.WriteLine("{0}: Expected {1} and got {2} from {3}", connection.ConnectionId, value + 1, next, connectionId);
+                        wh.Set();
+                        return;
+                    }
+                }
+
+                dict[connectionId] = next;
+
+                if (connectionId == connection.ConnectionId)
+                {
+                    proxy.Invoke("send", next + 1).Wait();
+                }
+            });
+
+            connection.Start(new Client.Transports.LongPollingTransport(client)).Wait();
+
+            proxy.Invoke("send", 0).Wait();
+        }
+
+        public static void SendLoop()
+        {
+            var host = new MemoryHost();
+
+            host.Configure(app =>
+            {
+                var config = new HubConfiguration()
+                {
+                    Resolver = new DefaultDependencyResolver()
+                };
+
+                config.Resolver.Resolve<IConfigurationManager>().ConnectionTimeout = TimeSpan.FromDays(1);
+                app.MapHubs(config);
+            });
+
+
+            var connection = new Client.Hubs.HubConnection("http://foo");
+            var proxy = connection.CreateHubProxy("EchoHub");
+            var wh = new ManualResetEventSlim(false);
+
+            proxy.On("echo", _ => wh.Set());
+
+            try
+            {
+                connection.Start(new Client.Transports.LongPollingTransport(host)).Wait();
+
+                while (true)
+                {
+                    proxy.Invoke("Echo", "foo").Wait();
+
+                    if (!wh.Wait(TimeSpan.FromSeconds(10)))
+                    {
+                        Debugger.Break();
+                    }
+
+                    wh.Reset();
+                }
+            }
+            catch
+            {
+                connection.Stop();
+            }
+        }
+
         public static IDisposable ClientGroupsSyncWithServerGroupsOnReconnectLongPolling()
         {
             var host = new MemoryHost();
@@ -415,5 +538,113 @@ namespace Microsoft.AspNet.SignalR.Stress
         {
         }
 
+        private class LoadBalancer : SignalR.Client.Http.IHttpClient
+        {
+            private int _counter;
+            private readonly SignalR.Client.Http.IHttpClient[] _servers;
+            private Random _random = new Random();
+
+            public LoadBalancer(params SignalR.Client.Http.IHttpClient[] servers)
+            {
+                _servers = servers;
+            }
+
+            public Task<Client.Http.IResponse> Get(string url, Action<Client.Http.IRequest> prepareRequest)
+            {
+                int index = _random.Next(0, _servers.Length);
+                _counter = (_counter + 1) % _servers.Length;
+                return _servers[index].Get(url, prepareRequest);
+            }
+
+            public Task<Client.Http.IResponse> Post(string url, Action<Client.Http.IRequest> prepareRequest, IDictionary<string, string> postData)
+            {
+                int index = _random.Next(0, _servers.Length);
+                _counter = (_counter + 1) % _servers.Length;
+                return _servers[index].Post(url, prepareRequest, postData);
+            }
+        }
+
+        private class EventBus
+        {
+            private long id;
+            public event EventHandler<EventMessage> Received;
+
+            public void Publish(int streamIndex, ScaleoutMessage message)
+            {
+                if (Received != null)
+                {
+                    lock (this)
+                    {
+                        Received(this, new EventMessage
+                        {
+                            Id = (ulong)id,
+                            Message = message,
+                            StreamIndex = streamIndex
+                        });
+
+                        id++;
+                    }
+                }
+            }
+        }
+
+        private class EventMessage
+        {
+            public int StreamIndex { get; set; }
+            public ulong Id { get; set; }
+            public ScaleoutMessage Message { get; set; }
+        }
+
+        private class DelayedMessageBus : ScaleoutMessageBus
+        {
+            private readonly TimeSpan _delay;
+            private readonly EventBus _bus;
+            private readonly string _serverName;
+            private TaskQueue _queue = new TaskQueue();
+
+            public DelayedMessageBus(string serverName, EventBus bus, IDependencyResolver resolver, TimeSpan delay)
+                : base(resolver, new ScaleoutConfiguration())
+            {
+                _serverName = serverName;
+                _bus = bus;
+                _delay = delay;
+
+                _bus.Received += (sender, e) =>
+                {
+                    _queue.Enqueue(state =>
+                    {
+                        var eventMessage = (EventMessage)state;
+                        return Task.Run(() => OnReceived(eventMessage.StreamIndex, eventMessage.Id, eventMessage.Message));
+                    },
+                    e);
+                };
+
+                Open(0);
+            }
+
+            protected override Task Send(IList<Message> messages)
+            {
+                _bus.Publish(0, new ScaleoutMessage(messages));
+
+                return TaskAsyncHelper.Empty;
+            }
+
+            protected override void OnReceived(int streamIndex, ulong id, ScaleoutMessage message)
+            {
+                string value = message.Messages[0].GetString();
+
+                if (!value.Contains("ServerCommandType"))
+                {
+                    if (_delay != TimeSpan.Zero)
+                    {
+                        Thread.Sleep(_delay);
+                    }
+
+                    Console.WriteLine("{0}: OnReceived({1}, {2}, {3})", _serverName, streamIndex, id, value);
+                }
+
+                base.OnReceived(streamIndex, id, message);
+            }
+        }
     }
 }

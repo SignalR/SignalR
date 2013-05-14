@@ -228,6 +228,7 @@ namespace Microsoft.AspNet.SignalR.Tests
         [InlineData(@"test,123ABC\,DE")]
         [InlineData(@"test,123ABC\\DE")]
         [InlineData(@"test,123ABC\|DE")]
+        [InlineData(@"test,123ABC///////|DE")]
         public void CursorWithInvalidCharactersInIds(string serializedCursor)
         {
             Assert.Throws<FormatException>(() => Cursor.GetCursors(serializedCursor));

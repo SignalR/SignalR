@@ -2,15 +2,14 @@
 
 using System;
 using System.Collections.Generic;
+using System.Data;
 using System.IO;
 using Microsoft.AspNet.SignalR.Messaging;
 
 namespace Microsoft.AspNet.SignalR.SqlServer
 {
-    public class SqlPayload
+    public static class SqlPayload
     {
-        public IList<Message> Messages { get; private set; }
-
         public static byte[] ToBytes(IList<Message> messages)
         {
             if (messages == null)
@@ -18,35 +17,15 @@ namespace Microsoft.AspNet.SignalR.SqlServer
                 throw new ArgumentNullException("messages");
             }
 
-            using (var ms = new MemoryStream())
-            {
-                var binaryWriter = new BinaryWriter(ms);
-                binaryWriter.Write(messages.Count);
-                
-                for (int i = 0; i < messages.Count; i++)
-                {
-                    messages[i].WriteTo(ms);
-                }
-
-                return ms.ToArray();
-            }
+            var message = new ScaleoutMessage(messages);
+            return message.ToBytes();
         }
 
-        public static SqlPayload FromBytes(byte[] data)
+        public static ScaleoutMessage FromBytes(IDataRecord record)
         {
-            using (var stream = new MemoryStream(data))
-            {
-                var binaryReader = new BinaryReader(stream);
-                int count = binaryReader.ReadInt32();
+            var message = ScaleoutMessage.FromBytes(record.GetBinary(1));
 
-                var payload = new SqlPayload { Messages = new List<Message>() };
-                for (int i = 0; i < count; i++)
-                {
-                    payload.Messages.Add(Message.ReadFrom(stream));
-                }
-
-                return payload;
-            }
+            return message;
         }
     }
 }

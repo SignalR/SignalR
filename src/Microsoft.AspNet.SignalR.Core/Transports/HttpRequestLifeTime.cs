@@ -10,12 +10,14 @@ namespace Microsoft.AspNet.SignalR.Transports
     internal class HttpRequestLifeTime
     {
         private readonly TaskCompletionSource<object> _lifetimeTcs = new TaskCompletionSource<object>();
+        private readonly TransportDisconnectBase _transport;
         private readonly TaskQueue _writeQueue;
         private readonly TraceSource _trace;
         private readonly string _connectionId;
 
-        public HttpRequestLifeTime(TaskQueue writeQueue, TraceSource trace, string connectionId)
+        public HttpRequestLifeTime(TransportDisconnectBase transport, TaskQueue writeQueue, TraceSource trace, string connectionId)
         {
+            _transport = transport;
             _trace = trace;
             _connectionId = connectionId;
             _writeQueue = writeQueue;
@@ -38,7 +40,9 @@ namespace Microsoft.AspNet.SignalR.Transports
         {
             _trace.TraceEvent(TraceEventType.Verbose, 0, "DrainWrites(" + _connectionId + ")");
 
-            var context = new LifetimeContext(_lifetimeTcs, error);
+            var context = new LifetimeContext(_transport, _lifetimeTcs, error);
+
+            _transport.ApplyState(TransportConnectionStates.QueueDrained);
 
             // Drain the task queue for pending write operations so we don't end the request and then try to write
             // to a corrupted request object.
@@ -63,15 +67,19 @@ namespace Microsoft.AspNet.SignalR.Transports
         {
             private readonly TaskCompletionSource<object> _lifetimeTcs;
             private readonly Exception _error;
+            private readonly TransportDisconnectBase _transport;
 
-            public LifetimeContext(TaskCompletionSource<object> lifeTimetcs, Exception error)
+            public LifetimeContext(TransportDisconnectBase transport, TaskCompletionSource<object> lifeTimetcs, Exception error)
             {
+                _transport = transport;
                 _lifetimeTcs = lifeTimetcs;
                 _error = error;
             }
 
             public void Complete()
             {
+                _transport.ApplyState(TransportConnectionStates.HttpRequestEnded);
+
                 if (_error != null)
                 {
                     _lifetimeTcs.TrySetUnwrappedException(_error);

@@ -73,6 +73,9 @@
     <Compile Include="..\Microsoft.AspNet.SignalR.Tests.Common\Infrastructure\CountDownRange.cs">
       <Link>Infrastructure\CountDownRange.cs</Link>
     </Compile>
+    <Compile Include="..\Microsoft.AspNet.SignalR.Tests.Common\Infrastructure\OrderedCountDownRange.cs">
+      <Link>Infrastructure\OrderedCountDownRange.cs</Link>
+    </Compile>
     <Compile Include="ArrayTextReaderFacts.cs" />
     <Compile Include="ChunkBufferFacts.cs" />
     <Compile Include="Client\ConnectionFacts.cs" />
@@ -106,6 +109,7 @@
     <Compile Include="BufferTextWriterFacts.cs" />
     <Compile Include="RouteExtensionsTest.cs" />
     <Compile Include="Server\AckHandlerFacts.cs" />
+    <Compile Include="Server\ServiceBusConfigurationFacts.cs" />
     <Compile Include="Server\DiffSetFacts.cs" />
     <Compile Include="Server\Hubs\HubDispatcherFacts.cs" />
     <Compile Include="Server\MessageResultExtensions.cs" />
@@ -121,7 +125,8 @@
     <Compile Include="Server\MessageBusFacts.cs" />
     <Compile Include="Server\ScaleOutMessageBusFacts.cs" />
     <Compile Include="Server\ScaleoutStoreFacts.cs" />
-    <Compile Include="Server\ScaleoutTaskQueueFacts.cs" />
+    <Compile Include="Server\ScaleoutStreamFacts.cs" />
+    <Compile Include="Server\ScaleoutConfigurationFacts.cs" />
     <Compile Include="Server\TestSubscriber.cs" />
     <Compile Include="Server\TopicFacts.cs" />
     <Compile Include="Server\Transports\ForeverTransportFacts.cs" />
@@ -146,6 +151,10 @@
     <ProjectReference Include="..\..\src\Microsoft.AspNet.SignalR.Owin45\Microsoft.AspNet.SignalR.Owin45.csproj">
       <Project>{45892477-ef4e-4f45-a431-822755a38ea0}</Project>
       <Name>Microsoft.AspNet.SignalR.Owin45</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\src\Microsoft.AspNet.SignalR.ServiceBus\Microsoft.AspNet.SignalR.ServiceBus.csproj">
+      <Project>{3da5e69c-ba4c-4ec1-9fde-688a1bc34b17}</Project>
+      <Name>Microsoft.AspNet.SignalR.ServiceBus</Name>
     </ProjectReference>
     <ProjectReference Include="..\..\src\Microsoft.AspNet.SignalR.SystemWeb\Microsoft.AspNet.SignalR.SystemWeb.csproj">
       <Project>{37c04b69-0989-458a-b80c-a1ed574adbe4}</Project>

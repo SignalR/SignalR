@@ -8,6 +8,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using BookSleeve;
 using Microsoft.AspNet.SignalR.Messaging;
+using Microsoft.AspNet.SignalR.Tracing;
 
 namespace Microsoft.AspNet.SignalR.Redis
 {
@@ -21,10 +22,12 @@ namespace Microsoft.AspNet.SignalR.Redis
         private readonly int _db;
         private readonly string _key;
         private readonly Func<RedisConnection> _connectionFactory;
+        private readonly TraceSource _trace;
 
         private RedisConnection _connection;
         private RedisSubscriberConnection _channel;
         private int _state;
+        private readonly object _callbackLock = new object();
 
         [SuppressMessage("Microsoft.Usage", "CA2214:DoNotCallOverridableMethodsInConstructors", Justification = "Reviewed")]
         public RedisMessageBus(IDependencyResolver resolver, RedisScaleoutConfiguration configuration)
@@ -39,6 +42,9 @@ namespace Microsoft.AspNet.SignalR.Redis
             _db = configuration.Database;
             _key = configuration.EventKey;
 
+            var traceManager = resolver.Resolve<ITraceManager>();
+            _trace = traceManager["SignalR." + typeof(RedisMessageBus).Name];
+
             ReconnectDelay = TimeSpan.FromSeconds(2);
             ConnectWithRetry();
         }
@@ -47,37 +53,231 @@ namespace Microsoft.AspNet.SignalR.Redis
 
         protected override Task Send(int streamIndex, IList<Message> messages)
         {
-            var context = new SendContext(_key, messages, _connection);
+            var tcs = new TaskCompletionSource<object>();
 
-            // Increment the channel number
-            return _connection.Strings.Increment(_db, _key)
-                               .Then((id, ctx) =>
-                               {
-                                   byte[] data = RedisMessage.ToBytes(id, ctx.Messages);
+            SendImpl(messages, tcs);
 
-                                   return ctx.Connection.Publish(ctx.Key, data);
-                               },
-                               context);
+            return tcs.Task;
+        }
+
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                var oldState = Interlocked.Exchange(ref _state, State.Disposing);
+
+                switch (oldState)
+                {
+                    case State.Connected:
+                        Shutdown();
+                        break;
+                    case State.Closed:
+                    case State.Disposing:
+                        // No-op
+                        break;
+                    case State.Disposed:
+                        Interlocked.Exchange(ref _state, State.Disposed);
+                        break;
+                    default:
+                        break;
+                }
+            }
+
+            base.Dispose(disposing);
+        }
+
+        private void Shutdown()
+        {
+            _trace.TraceInformation("Shutdown()");
+
+            if (_channel != null)
+            {
+                _channel.Unsubscribe(_key);
+                _channel.Close(abort: true);
+            }
+
+            if (_connection != null)
+            {
+                _connection.Close(abort: true);
+            }
+
+            Interlocked.Exchange(ref _state, State.Disposed);
+        }
+
+        [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "The exception is set in the tcs")]
+        private void SendImpl(IList<Message> messages, TaskCompletionSource<object> tcs)
+        {
+        go:
+            Task<long?> task = _connection.Strings.GetInt64(_db, _key);
+
+            RedisTransaction transaction = null;
+
+            // Dispose the transaction after everything runs
+            tcs.Task.Finally(state =>
+            {
+                if (transaction != null)
+                {
+                    _trace.TraceVerbose("Transaction disposed");
+
+                    transaction.Dispose();
+                }
+            },
+            null);
+
+            if (task.IsCompleted)
+            {
+                try
+                {
+                    task.Wait();
+
+                    _trace.TraceVerbose("CreateTransaction({0})", task.Result);
+
+                    transaction = _connection.CreateTransaction();
+
+                    Task<bool> transactionTask = ExecuteTransaction(transaction, task.Result, messages);
+
+                    if (transactionTask.IsCompleted)
+                    {
+                        transactionTask.Wait();
+
+                        bool success = transactionTask.Result;
+
+                        if (success)
+                        {
+                            OnTransactionComplete(transaction, success, messages, tcs);
+                        }
+                        else
+                        {
+                            _trace.TraceVerbose("Transaction failed. Retrying...");
+
+                            _trace.TraceVerbose("Transaction disposed");
+
+                            transaction.Dispose();
+
+                            goto go;
+                        }
+                    }
+                    else
+                    {
+                        OnTransactionCompleting(transaction, transactionTask, messages, tcs);
+                    }
+                }
+                catch (OperationCanceledException)
+                {
+                    tcs.TrySetCanceled();
+                }
+                catch (Exception ex)
+                {
+                    tcs.TrySetException(ex);
+                }
+            }
+            else
+            {
+                task.Then(oldId =>
+                {
+                    _trace.TraceVerbose("CreateTransaction({0})", oldId);
+
+                    transaction = _connection.CreateTransaction();
+
+                    Task<bool> transactionTask = ExecuteTransaction(transaction, oldId, messages);
+
+                    OnTransactionCompleting(transaction, transactionTask, messages, tcs);
+                })
+                .ContinueWithNotComplete(tcs);
+            }
+        }
+
+        [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "The exception is set in the tcs")]
+        private void OnTransactionCompleting(RedisTransaction transaction, Task<bool> transactionTask, IList<Message> messages, TaskCompletionSource<object> tcs)
+        {
+            if (transactionTask.IsCompleted)
+            {
+                try
+                {
+                    OnTransactionComplete(transaction, transactionTask.Result, messages, tcs);
+                }
+                catch (OperationCanceledException)
+                {
+                    tcs.TrySetCanceled();
+                }
+                catch (Exception ex)
+                {
+                    tcs.TrySetException(ex);
+                }
+            }
+            else
+            {
+                transactionTask.Then(result => OnTransactionComplete(transaction, result, messages, tcs))
+                               .ContinueWithNotComplete(tcs);
+            }
+        }
+
+        private void OnTransactionComplete(RedisTransaction transaction, bool success, IList<Message> messages, TaskCompletionSource<object> tcs)
+        {
+            if (success)
+            {
+                _trace.TraceVerbose("Transaction completed successfully");
+
+                tcs.TrySetResult(null);
+            }
+            else
+            {
+                _trace.TraceVerbose("Transaction failed. Retrying...");
+
+                _trace.TraceVerbose("Transaction disposed");
+
+                // Dispose the transaction
+                transaction.Dispose();
+
+                SendImpl(messages, tcs);
+            }
+        }
+
+        private Task<bool> ExecuteTransaction(RedisTransaction transaction, long? oldId, IList<Message> messages)
+        {
+            _trace.TraceVerbose("ExecuteTransaction({0})", oldId);
+
+            // New target id
+            long newId = (oldId ?? 0) + 1;
+
+            // TODO: Don't do this everytime
+            byte[] data = RedisMessage.ToBytes(newId, messages);
+
+            // These don't need to be observed
+            transaction.AddCondition(Condition.KeyEquals(_db, _key, oldId));
+            transaction.Strings.Increment(_db, _key);
+            transaction.Publish(_key, data);
+
+            // Execute the transaction
+            return transaction.Execute();
         }
 
         private void OnConnectionClosed(object sender, EventArgs e)
         {
-            Interlocked.Exchange(ref _state, State.Disposed);
+            _trace.TraceInformation("OnConnectionClosed()");
 
-            Trace.TraceInformation("OnConnectionClosed()");
+            AttemptReconnect(exception: new RedisConnectionClosedException());
         }
 
         private void OnConnectionError(object sender, ErrorEventArgs e)
         {
-            Trace.TraceError("OnConnectionError - " + e.Cause + ". " + e.Exception.GetBaseException());
+            _trace.TraceError("OnConnectionError - " + e.Cause + ". " + e.Exception.GetBaseException());
 
+            AttemptReconnect(e.Exception);
+        }
+
+        private void AttemptReconnect(Exception exception)
+        {
             // Change the state to closed and retry connecting
-            if (Interlocked.CompareExchange(ref _state,
-                                            State.Closed,
-                                            State.Connected) == State.Connected)
+            var oldState = Interlocked.CompareExchange(ref _state,
+                                                       State.Closed,
+                                                       State.Connected);
+            if (oldState == State.Connected)
             {
-                // Start buffering any sends that they are preserved
-                OnError(0, e.Exception);
+                _trace.TraceInformation("Attempting reconnect...");
+
+                // Let the base class know that an error occurred
+                OnError(0, exception);
 
                 // Retry until the connection reconnects
                 ConnectWithRetry();
@@ -86,56 +286,49 @@ namespace Microsoft.AspNet.SignalR.Redis
 
         private void OnMessage(string key, byte[] data)
         {
-            // The key is the stream id (channel)
-            var message = RedisMessage.FromBytes(data);
-
-            OnReceived(0, (ulong)message.Id, message.Messages);
-        }
-
-        protected override void Dispose(bool disposing)
-        {
-            if (disposing)
+            // locked to avoid overlapping calls (even though we have set the mode 
+            // to preserve order on the subscription)
+            lock (_callbackLock)
             {
-                if (_channel != null)
-                {
-                    _channel.Unsubscribe(_key);
-                    _channel.Close(abort: true);
-                }
+                // The key is the stream id (channel)
+                var message = RedisMessage.FromBytes(data);
 
-                if (_connection != null)
-                {
-                    _connection.Close(abort: true);
-                }
+                OnReceived(0, message.Id, message.ScaleoutMessage);
             }
-
-            base.Dispose(disposing);
         }
 
         private void ConnectWithRetry()
         {
-            // Attempt to change to connecting
-            if (Interlocked.CompareExchange(ref _state,
-                                            State.Connecting,
-                                            State.Connected) == State.Connecting)
-            {
-                // Already connected so bail
-                return;
-            }
-
             Task connectTask = ConnectToRedis();
 
             connectTask.ContinueWith(task =>
             {
                 if (task.IsFaulted)
                 {
+                    _trace.TraceError("Error connecting to Redis - " + task.Exception.GetBaseException());
+
+                    if (_state == State.Disposing)
+                    {
+                        Shutdown();
+                        return;
+                    }
+
                     TaskAsyncHelper.Delay(ReconnectDelay)
                                    .Then(bus => bus.ConnectWithRetry(), this);
                 }
                 else
                 {
-                    Interlocked.Exchange(ref _state, State.Connected);
-
-                    Open(0);
+                    var oldState = Interlocked.CompareExchange(ref _state,
+                                                               State.Connected,
+                                                               State.Closed);
+                    if (oldState == State.Closed)
+                    {
+                        Open(0);
+                    }
+                    else if (oldState == State.Disposing)
+                    {
+                        Shutdown();
+                    }
                 }
             },
             TaskContinuationOptions.ExecuteSynchronously);
@@ -160,59 +353,40 @@ namespace Microsoft.AspNet.SignalR.Redis
 
             try
             {
-                Trace.TraceInformation("Connecting...");
+                _trace.TraceInformation("Connecting...");
 
                 // Start the connection
                 return connection.Open().Then(() =>
                 {
-                    Trace.TraceInformation("Connection opened");
+                    _trace.TraceInformation("Connection opened");
 
                     // Create a subscription channel in redis
                     RedisSubscriberConnection channel = connection.GetOpenSubscriberChannel();
+                    channel.CompletionMode = ResultCompletionMode.PreserveOrder;
 
                     // Subscribe to the registered connections
-                    channel.Subscribe(_key, OnMessage);
-
-                    // Dirty hack but it seems like subscribe returns before the actual
-                    // subscription is properly setup in some cases
-                    while (channel.SubscriptionCount == 0)
+                    return channel.Subscribe(_key, OnMessage).Then(() =>
                     {
-                        Thread.Sleep(500);
-                    }
+                        _trace.TraceVerbose("Subscribed to event " + _key);
 
-                    Trace.TraceVerbose("Subscribed to event " + _key);
-
-                    _channel = channel;
-                    _connection = connection;
+                        _channel = channel;
+                        _connection = connection;
+                    });
                 });
             }
             catch (Exception ex)
             {
-                Trace.TraceError("Error connecting to redis - " + ex.GetBaseException());
+                _trace.TraceError("Error connecting to Redis - " + ex.GetBaseException());
 
                 return TaskAsyncHelper.FromError(ex);
-            }
-        }
-
-        private class SendContext
-        {
-            public string Key;
-            public IList<Message> Messages;
-            public RedisConnection Connection;
-
-            public SendContext(string key, IList<Message> messages, RedisConnection connection)
-            {
-                Key = key;
-                Messages = messages;
-                Connection = connection;
             }
         }
 
         private static class State
         {
             public const int Closed = 0;
-            public const int Connecting = 1;
-            public const int Connected = 2;
+            public const int Connected = 1;
+            public const int Disposing = 2;
             public const int Disposed = 3;
         }
     }

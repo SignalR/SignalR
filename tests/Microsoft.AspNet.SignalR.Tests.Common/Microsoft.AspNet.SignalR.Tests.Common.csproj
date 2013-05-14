@@ -104,6 +104,7 @@
     </Compile>
     <Compile Include="App_Start\InitializeIISHost.cs" />
     <Compile Include="Connections\ExamineHeadersConnection.cs" />
+    <Compile Include="Connections\ExamineReconnectPath.cs" />
     <Compile Include="Handlers\GCHandler.cs" />
     <Compile Include="Handlers\PingHandler.cs" />
     <Compile Include="Build\StartIISTask.cs" />
@@ -125,6 +126,7 @@
     <Compile Include="Hubs\MyItemsHub.cs" />
     <Compile Include="Infrastructure\BasicAuthModule.cs" />
     <Compile Include="Infrastructure\ClientAssertExtensions.cs" />
+    <Compile Include="Infrastructure\OrderedCountDownRange.cs" />
     <Compile Include="Infrastructure\CountDownRange.cs" />
     <Compile Include="Infrastructure\EmptyProtectedData.cs" />
     <Compile Include="Infrastructure\HostedTest.cs" />

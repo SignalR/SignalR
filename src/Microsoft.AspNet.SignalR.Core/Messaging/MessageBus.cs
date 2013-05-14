@@ -241,17 +241,21 @@ namespace Microsoft.AspNet.SignalR.Messaging
             subscriber.EventKeyRemoved += _removeEvent;
             subscriber.WriteCursor = subscription.WriteCursor;
 
+            var subscriptionState = new SubscriptionState(subscriber);
+            var disposable = new DisposableAction(_disposeSubscription, subscriptionState);
+
+            // When the subscription itself is disposed then dispose it
+            subscription.Disposable = disposable;
+
             // Add the subscription when it's all set and can be scheduled
-            // for work
+            // for work. It's important to do this after everything is wired up for the
+            // subscription so that publishes can schedule work at the right time.
             foreach (var topic in topics)
             {
                 topic.AddSubscription(subscription);
             }
 
-            var disposable = new DisposableAction(_disposeSubscription, subscriber);
-
-            // When the subscription itself is disposed then dispose it
-            subscription.Disposable = disposable;
+            subscriptionState.Initialized.Set();
 
             // If there's a cursor then schedule work for this subscription
             if (!String.IsNullOrEmpty(cursor))
@@ -379,7 +383,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
                 }
 
                 // We want to remove the overflow but oldest first
-                candidates.Sort((leftPair, rightPair) => rightPair.Value.LastUsed.CompareTo(leftPair.Value.LastUsed));
+                candidates.Sort((leftPair, rightPair) => leftPair.Value.LastUsed.CompareTo(rightPair.Value.LastUsed));
 
                 // Clear up to the overflow and stay within bounds
                 for (int i = 0; i < overflow && i < candidates.Count; i++)
@@ -387,10 +391,12 @@ namespace Microsoft.AspNet.SignalR.Messaging
                     var pair = candidates[i];
 
                     // Mark it as dead
-                    Interlocked.Exchange(ref pair.Value.State, TopicState.Dead);
-
-                    // Kill it
-                    DestroyTopicCore(pair.Key, pair.Value);
+                    if (Interlocked.CompareExchange(ref pair.Value.State, TopicState.Dead, TopicState.NoSubscriptions)
+                        == TopicState.NoSubscriptions)
+                    {
+                        // Kill it
+                        DestroyTopicCore(pair.Key, pair.Value);
+                    }
                 }
             }
 
@@ -488,7 +494,8 @@ namespace Microsoft.AspNet.SignalR.Messaging
         [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "Failure to invoke the callback should be ignored")]
         private void DisposeSubscription(object state)
         {
-            var subscriber = (ISubscriber)state;
+            var subscriptionState = (SubscriptionState)state;
+            var subscriber = subscriptionState.Subscriber;
 
             // This will stop work from continuting to happen
             subscriber.Subscription.Dispose();
@@ -504,6 +511,8 @@ namespace Microsoft.AspNet.SignalR.Messaging
                 // so the terminal message isn't required.
             }
 
+            subscriptionState.Initialized.Wait();
+
             subscriber.EventKeyAdded -= _addEvent;
             subscriber.EventKeyRemoved -= _removeEvent;
             subscriber.WriteCursor = null;
@@ -512,6 +521,18 @@ namespace Microsoft.AspNet.SignalR.Messaging
             {
                 string eventKey = subscriber.EventKeys[i];
                 RemoveEvent(subscriber, eventKey);
+            }
+        }
+
+        private class SubscriptionState
+        {
+            public ISubscriber Subscriber { get; private set; }
+            public ManualResetEventSlim Initialized { get; private set; }
+
+            public SubscriptionState(ISubscriber subscriber)
+            {
+                Initialized = new ManualResetEventSlim();
+                Subscriber = subscriber;
             }
         }
     }

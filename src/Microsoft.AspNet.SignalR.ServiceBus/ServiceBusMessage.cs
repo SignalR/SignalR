@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using Microsoft.AspNet.SignalR.Messaging;
+using Microsoft.ServiceBus.Messaging;
 
 namespace Microsoft.AspNet.SignalR.ServiceBus
 {
@@ -18,30 +19,27 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
                 throw new ArgumentNullException("messages");
             }
 
-            var ms = new MemoryStream();
-            var binaryWriter = new BinaryWriter(ms);
-            binaryWriter.Write(messages.Count);
-            for (int i = 0; i < messages.Count; i++)
-            {
-                messages[i].WriteTo(ms);
-            }
-
-            ms.Seek(0, SeekOrigin.Begin);
-            return ms;
+            var scaleoutMessage = new ScaleoutMessage(messages);
+            return new MemoryStream(scaleoutMessage.ToBytes());
         }
 
-        public static IList<Message> FromStream(Stream stream)
+        public static ScaleoutMessage FromBrokeredMessage(BrokeredMessage brokeredMessage)
         {
-            var binaryReader = new BinaryReader(stream);
-            int count = binaryReader.ReadInt32();
-
-            var messages = new List<Message>();
-            for (int i = 0; i < count; i++)
+            if (brokeredMessage == null)
             {
-                messages.Add(Message.ReadFrom(stream));
+                throw new ArgumentNullException("brokeredMessage");
             }
 
-            return messages;
+            var stream = brokeredMessage.GetBody<Stream>();
+
+            using (var ms = new MemoryStream())
+            {
+                stream.CopyTo(ms);
+
+                var message = ScaleoutMessage.FromBytes(ms.ToArray());
+
+                return message;
+            }
         }
     }
 }

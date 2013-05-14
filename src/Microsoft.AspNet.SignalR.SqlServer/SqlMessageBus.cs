@@ -80,7 +80,8 @@ namespace Microsoft.AspNet.SignalR.SqlServer
             base.Dispose(disposing);
         }
 
-        [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "On a background thread and we report exceptions asynchronously")]
+        [SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope", Justification = "They're stored in a List and disposed in the Dispose method"),
+         SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "On a background thread and we report exceptions asynchronously")]
         private void Initialize(object state)
         {
             // NOTE: Called from a ThreadPool thread
@@ -100,6 +101,8 @@ namespace Microsoft.AspNet.SignalR.SqlServer
                         OnError(i, ex);
                     }
 
+                    Trace.TraceError("Error trying to install SQL server objects, trying again in 2 seconds: {0}", ex);
+
                     // Try again in a little bit
                     Thread.Sleep(2000);
                 }
@@ -108,22 +111,20 @@ namespace Microsoft.AspNet.SignalR.SqlServer
             for (var i = 0; i < _configuration.TableCount; i++)
             {
                 var streamIndex = i;
+                var tableName = String.Format(CultureInfo.InvariantCulture, "{0}_{1}", _tableNamePrefix, streamIndex);
 
-                var stream = new SqlStream(streamIndex, _connectionString,
-                    tableName: String.Format(CultureInfo.InvariantCulture, "{0}_{1}", _tableNamePrefix, streamIndex),
-                    open: () => Open(streamIndex),
-                    onReceived: OnReceived,
-                    onError: ex => OnError(streamIndex, ex),
-                    traceSource: _trace,
-                    dbProviderFactory: _dbProviderFactory);
+                var stream = new SqlStream(streamIndex, _connectionString, tableName, _trace, _dbProviderFactory);
+                stream.Queried += () => Open(streamIndex);
+                stream.Faulted += (ex) => OnError(streamIndex, ex);
+                stream.Received += (id, messages) => OnReceived(streamIndex, id, messages);
 
                 _streams.Add(stream);
 
-                StartStream(streamIndex);
+                StartReceiving(streamIndex);
             }
         }
 
-        private void StartStream(int streamIndex)
+        private void StartReceiving(int streamIndex)
         {
             var stream = _streams[streamIndex];
             stream.StartReceiving()
@@ -136,7 +137,7 @@ namespace Microsoft.AspNet.SignalR.SqlServer
 
                     // Try again in a little bit
                     Thread.Sleep(2000);
-                    StartStream(streamIndex);
+                    StartReceiving(streamIndex);
                 });
         }
     }

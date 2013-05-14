@@ -147,6 +147,8 @@
     <Content Include="Hubs\Chat\mobile.htm" />
     <Content Include="Hubs\ConnectDisconnect\Default.aspx" />
     <Content Include="Hubs\ConnectDisconnect\Status.js" />
+    <Content Include="Hubs\Counting\ClientAcks.js" />
+    <Content Include="Hubs\Counting\Default.aspx" />
     <Content Include="Hubs\DemoHub\crossdomain.htm" />
     <Content Include="Hubs\DemoHub\Default.aspx" />
     <Content Include="Hubs\DemoHub\DemoHub.js" />
@@ -154,6 +156,10 @@
     <Content Include="Hubs\Chat\Chat.js" />
     <Content Include="Hubs\Chat\index.htm" />
     <Content Include="Hubs\DrawingPad\Default.aspx" />
+    <Content Include="Hubs\HubConnectionAPI\Default.aspx" />
+    <Content Include="Hubs\HubConnectionAPI\HubConnectionAPI.js" />
+    <Content Include="Hubs\MessageLoops\MessageLoops.js" />
+    <Content Include="Hubs\MessageLoops\Default.aspx" />
     <Content Include="Hubs\MouseTracking\Default.aspx" />
     <Content Include="Hubs\MouseTracking\images\wand.png" />
     <Content Include="Hubs\MouseTracking\MouseTracking.css" />
@@ -250,6 +256,14 @@
     </Compile>
     <Compile Include="Hubs\ConnectDisconnect\Status.cs" />
     <Compile Include="Hubs\Auth\AuthorizeClaimsAttribute.cs" />
+    <Compile Include="Hubs\Counting\CountingHub.cs" />
+    <Compile Include="Hubs\Counting\Default.aspx.cs">
+      <DependentUpon>Default.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Hubs\Counting\Default.aspx.designer.cs">
+      <DependentUpon>Default.aspx</DependentUpon>
+    </Compile>
     <Compile Include="Hubs\DemoHub\Default.aspx.cs">
       <DependentUpon>Default.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
@@ -272,6 +286,22 @@
       <DependentUpon>Default.aspx</DependentUpon>
     </Compile>
     <Compile Include="Hubs\DrawingPad\DrawingPad.cs" />
+    <Compile Include="Hubs\HubConnectionAPI\Default.aspx.cs">
+      <DependentUpon>Default.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Hubs\HubConnectionAPI\Default.aspx.designer.cs">
+      <DependentUpon>Default.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Hubs\HubConnectionAPI\HubConnectionAPI.cs" />
+    <Compile Include="Hubs\MessageLoops\Default.aspx.cs">
+      <DependentUpon>Default.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Hubs\MessageLoops\Default.aspx.designer.cs">
+      <DependentUpon>Default.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Hubs\MessageLoops\MessageLoops.cs" />
     <Compile Include="Hubs\MouseTracking\Default.aspx.cs">
       <DependentUpon>Default.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>

@@ -93,6 +93,16 @@ namespace Microsoft.AspNet.SignalR.Messaging
         /// </summary>
         public Encoding Encoding { get; private set; }
 
+        /// <summary>
+        /// The payload id. Only used in scaleout scenarios
+        /// </summary>
+        public ulong MappingId { get; set; }
+
+        /// <summary>
+        /// The stream index this message came from. Only used the scaleout scenarios.
+        /// </summary>
+        public int StreamIndex { get; set; }
+
         public bool IsCommand
         {
             get

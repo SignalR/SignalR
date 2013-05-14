@@ -14,7 +14,6 @@ namespace Microsoft.AspNet.SignalR.Messaging
         private string _escapedKey;
 
         public string Key { get; private set; }
-
         public ulong Id { get; set; }
 
         public static Cursor Clone(Cursor cursor)
@@ -142,6 +141,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
             bool consumingKey = true;
             var sb = new StringBuilder();
             var sbEscaped = new StringBuilder();
+            Cursor parsedCursor;
 
             foreach (var ch in cursor)
             {
@@ -205,8 +205,11 @@ namespace Microsoft.AspNet.SignalR.Messaging
                             throw new FormatException(Resources.Error_InvalidCursorFormat);
                         }
 
-                        currentId = UInt64.Parse(sb.ToString(), NumberStyles.HexNumber, CultureInfo.InvariantCulture);
-                        cursors.Add(new Cursor(currentKey, currentId, currentEscapedKey));
+                        ParseCursorId(sb, out currentId);
+
+                        parsedCursor = new Cursor(currentKey, currentId, currentEscapedKey);
+
+                        cursors.Add(parsedCursor);
                         sb.Clear();
                         consumingKey = true;
                     }
@@ -226,10 +229,19 @@ namespace Microsoft.AspNet.SignalR.Messaging
                 throw new FormatException(Resources.Error_InvalidCursorFormat);
             }
 
-            currentId = UInt64.Parse(sb.ToString(), NumberStyles.HexNumber, CultureInfo.InvariantCulture);
-            cursors.Add(new Cursor(currentKey, currentId, currentEscapedKey));
+            ParseCursorId(sb, out currentId);
+
+            parsedCursor = new Cursor(currentKey, currentId, currentEscapedKey);
+
+            cursors.Add(parsedCursor);
 
             return cursors;
+        }
+
+        private static void ParseCursorId(StringBuilder sb, out ulong id)
+        {
+            string value = sb.ToString();
+            id = UInt64.Parse(value, NumberStyles.HexNumber, CultureInfo.InvariantCulture);
         }
 
         public override string ToString()

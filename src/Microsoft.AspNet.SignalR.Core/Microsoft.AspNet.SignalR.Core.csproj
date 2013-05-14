@@ -165,6 +165,7 @@
     <Compile Include="Messaging\LocalEventKeyInfo.cs" />
     <Compile Include="Messaging\MessageBroker.cs" />
     <Compile Include="Messaging\ScaleoutMapping.cs" />
+    <Compile Include="Messaging\ScaleoutMessage.cs" />
     <Compile Include="Messaging\ScaleoutMessageBus.cs" />
     <Compile Include="Messaging\IMessageBus.cs" />
     <Compile Include="Messaging\ISubscriber.cs" />
@@ -179,7 +180,7 @@
     <Compile Include="Messaging\ScaleoutSubscription.cs" />
     <Compile Include="Messaging\DefaultSubscription.cs" />
     <Compile Include="Infrastructure\StringMinifier.cs" />
-    <Compile Include="Messaging\ScaleoutTaskQueue.cs" />
+    <Compile Include="Messaging\ScaleoutStream.cs" />
     <Compile Include="Messaging\Subscription.cs" />
     <Compile Include="Messaging\Topic.cs" />
     <Compile Include="Messaging\TopicLookup.cs" />
@@ -235,6 +236,7 @@
     <Compile Include="Transports\ITransportHeartBeat.cs" />
     <Compile Include="Transports\ITransportManager.cs" />
     <Compile Include="Transports\ServerSentEventsTransport.cs" />
+    <Compile Include="Transports\TransportConnectionStates.cs" />
     <Compile Include="Transports\TransportDisconnectBase.cs" />
     <Compile Include="Transports\TransportHeartBeat.cs" />
     <Compile Include="Transports\LongPollingTransport.cs" />

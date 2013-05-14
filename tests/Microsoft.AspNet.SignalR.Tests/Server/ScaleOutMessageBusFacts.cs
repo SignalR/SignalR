@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNet.SignalR.Configuration;
 using Microsoft.AspNet.SignalR.Messaging;
 using Microsoft.AspNet.SignalR.Tests.Infrastructure;
 using Xunit;
@@ -120,6 +121,166 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
         }
 
         [Fact]
+        public void SubscriptionPullFromMultipleStreamsInFairOrder()
+        {
+            var dr = new DefaultDependencyResolver();
+            using (var bus = new TestScaleoutBus(dr, streams: 3))
+            {
+                var subscriber = new TestSubscriber(new[] { "key" });
+                var cd = new OrderedCountDownRange<int>(new[] { 1, 2, 4, 3 });
+                IDisposable subscription = null;
+
+                bus.Publish(0, 1, new[] { 
+                        new Message("test", "key", "3"),
+                        new Message("test", "key2", "5"),
+                    },
+                    new DateTime(TimeSpan.TicksPerDay * 5, DateTimeKind.Local));
+
+                bus.Publish(1, 1, new[] {
+                        new Message("test", "key", "1"),
+                        new Message("test", "key2", "foo")
+                    },
+                    new DateTime(TimeSpan.TicksPerDay * 1, DateTimeKind.Local));
+
+                bus.Publish(2, 1, new[] {
+                        new Message("test", "key", "2"),
+                        new Message("test", "key", "4")
+                    },
+                    new DateTime(TimeSpan.TicksPerDay * 2, DateTimeKind.Local));
+
+                try
+                {
+                    subscription = bus.Subscribe(subscriber, "0,0|1,0|2,0", (result, state) =>
+                    {
+                        foreach (var m in result.GetMessages())
+                        {
+                            int n = Int32.Parse(m.GetString());
+                            Assert.True(cd.Expect(n));
+                        }
+
+                        return TaskAsyncHelper.True;
+
+                    }, 10, null);
+
+                    Assert.True(cd.Wait(TimeSpan.FromSeconds(10)));
+                }
+                finally
+                {
+                    if (subscription != null)
+                    {
+                        subscription.Dispose();
+                    }
+                }
+            }
+        }
+
+        [Fact]
+        public void SubscriptionGetsNewMessagesWhenTopicStoreOverrun()
+        {
+            var dr = new DefaultDependencyResolver();
+            dr.Resolve<IConfigurationManager>().DefaultMessageBufferSize = 10;
+
+            using (var bus = new TestScaleoutBus(dr))
+            {
+                var subscriber = new TestSubscriber(new[] { "key" });
+                IDisposable subscription = null;
+                // 16-49 is the valid range
+                var cd = new OrderedCountDownRange<int>(Enumerable.Range(16, 33));
+                var results = new List<bool>();
+
+                for (int i = 0; i < 50; i++)
+                {
+                    bus.Publish(0, (ulong)i, new[] { 
+                        new Message("test", "key", i.ToString())
+                    });
+                }
+
+                try
+                {
+                    subscription = bus.Subscribe(subscriber, "0,1", (result, state) =>
+                    {
+                        foreach (var m in result.GetMessages())
+                        {
+                            int n = Int32.Parse(m.GetString());
+
+                            cd.Expect(n);
+                        }
+
+                        return TaskAsyncHelper.True;
+
+                    }, 10, null);
+
+                    Assert.True(cd.Wait(TimeSpan.FromSeconds(5)));
+                }
+                finally
+                {
+                    if (subscription != null)
+                    {
+                        subscription.Dispose();
+                    }
+                }
+            }
+        }
+
+        [Fact]
+        public void SubscriptionDoesNotGetNewMessagesWhenTopicStoreOverrunByOtherStream()
+        {
+            var dr = new DefaultDependencyResolver();
+            dr.Resolve<IConfigurationManager>().DefaultMessageBufferSize = 10;
+
+            using (var bus = new TestScaleoutBus(dr, streams: 2))
+            {
+                var subscriber = new TestSubscriber(new[] { "key" });
+                IDisposable subscription = null;
+
+                // The min fragment size is 8 and min fragments is 5
+                var expectedValues = Enumerable.Range(171, 8);
+                var cd = new OrderedCountDownRange<int>(expectedValues);
+
+                // This will overwrite the buffer ending up with (40 - 79) for stream 2
+                for (int i = 0; i < 80; i++)
+                {
+                    bus.Publish(0, (ulong)i, new[] { 
+                        new Message("test", "key", i.ToString())
+                    });
+                }
+
+                // This will overwrite the buffer with (140 - 179) for stream 1
+                for (int i = 100; i < 180; i++)
+                {
+                    bus.Publish(1, (ulong)i, new[] { 
+                        new Message("test", "key", i.ToString())
+                    });
+                }
+
+                try
+                {
+                    subscription = bus.Subscribe(subscriber, "0,27|1,AA", (result, state) =>
+                    {
+                        foreach (var m in result.GetMessages())
+                        {
+                            int n = Int32.Parse(m.GetString());
+
+                            cd.Expect(n);
+                        }
+
+                        return TaskAsyncHelper.True;
+
+                    }, 100, null);
+
+                    Assert.True(cd.Wait(TimeSpan.FromSeconds(10)));
+                }
+                finally
+                {
+                    if (subscription != null)
+                    {
+                        subscription.Dispose();
+                    }
+                }
+            }
+        }
+
+        [Fact]
         public void SubscriptionPublishingAfter()
         {
             var dr = new DefaultDependencyResolver();
@@ -185,7 +346,18 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
 
             public void Publish(int streamIndex, ulong id, IList<Message> messages)
             {
-                OnReceived(streamIndex, id, messages);
+                Publish(streamIndex, id, messages, DateTime.UtcNow);
+            }
+
+            public void Publish(int streamIndex, ulong id, IList<Message> messages, DateTime creationTime)
+            {
+                var message = new ScaleoutMessage
+                {
+                    Messages = messages,
+                    ServerCreationTime = creationTime,
+                };
+
+                OnReceived(streamIndex, id, message);
             }
         }
     }

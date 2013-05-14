@@ -38,17 +38,30 @@ namespace Microsoft.AspNet.SignalR.SqlServer
             : base(connectionString, commandText, traceSource, dbProviderFactory)
         {
             _dbBehavior = dbBehavior ?? this;
+
+            InitEvents();
         }
 
         public ObservableDbOperation(string connectionString, string commandText, TraceSource traceSource, params IDataParameter[] parameters)
             : base(connectionString, commandText, traceSource, parameters)
         {
             _dbBehavior = this;
+
+            InitEvents();
         }
 
-        public Action<Exception> OnError { get; set; }
+        private void InitEvents()
+        {
+            Faulted += _ => { };
+            Queried += () => { };
+            Changed += () => { };
+        }
 
-        public Action OnQuery { get; set; }
+        public event Action Queried;
+
+        public event Action Changed;
+
+        public event Action<Exception> Faulted;
 
         /// <summary>
         /// Note this blocks the calling thread until a SQL Query Notification can be set up
@@ -101,18 +114,13 @@ namespace Microsoft.AspNet.SignalR.SqlServer
                     {
                         recordCount = ExecuteReader(processRecord);
 
-                        if (OnQuery != null)
-                        {
-                            OnQuery();
-                        }
+                        Queried();
                     }
                     catch (Exception ex)
                     {
                         Trace.TraceError("{0}Error in SQL receive loop: {1}", TracePrefix, ex);
-                        if (OnError != null)
-                        {
-                            OnError(ex);
-                        }
+
+                        Faulted(ex);
                     }
 
                     if (recordCount > 0)
@@ -146,10 +154,7 @@ namespace Microsoft.AspNet.SignalR.SqlServer
                                     _dbBehavior.AddSqlDependency(command, e => SqlDependency_OnChange(e, processRecord));
                                 });
 
-                                if (OnQuery != null)
-                                {
-                                    OnQuery();
-                                }
+                                Queried();
 
                                 if (recordCount > 0 ||
                                     Interlocked.CompareExchange(ref _notificationState, NotificationState.AwaitingNotification,
@@ -175,10 +180,7 @@ namespace Microsoft.AspNet.SignalR.SqlServer
                             catch (Exception ex)
                             {
                                 Trace.TraceError("{0}Error in SQL receive loop: {1}", TracePrefix, ex);
-                                if (OnError != null)
-                                {
-                                    OnError(ex);
-                                }
+                                Faulted(ex);
 
                                 // Re-enter the loop on the last retry delay
                                 j = j - 1;
@@ -231,7 +233,7 @@ namespace Microsoft.AspNet.SignalR.SqlServer
          SuppressMessage("Microsoft.Usage", "CA1801:ReviewUnusedParameters", MessageId = "sender", Justification = "Event handler")]
         protected virtual void SqlDependency_OnChange(SqlNotificationEventArgs e, Action<IDataRecord, DbOperation> processRecord)
         {
-            Trace.TraceInformation("SQL notification change fired");
+            Trace.TraceInformation("{0}SQL notification change fired", TracePrefix);
 
             lock (_stopLocker)
             {
@@ -245,7 +247,7 @@ namespace Microsoft.AspNet.SignalR.SqlServer
                 NotificationState.NotificationReceived, NotificationState.ProcessingUpdates) == NotificationState.ProcessingUpdates)
             {
                 // New updates will be retreived by the original reader thread
-                Trace.TraceVerbose("Original reader processing is still in progress and will pick up the changes");
+                Trace.TraceVerbose("{0}Original reader processing is still in progress and will pick up the changes", TracePrefix);
 
                 return;
             }
@@ -265,10 +267,7 @@ namespace Microsoft.AspNet.SignalR.SqlServer
                 {
                     Trace.TraceError("{0}Unexpected SQL notification details: Type={1}, Source={2}, Info={3}", TracePrefix, e.Type, e.Source, e.Info);
 
-                    if (OnError != null)
-                    {
-                        OnError(new SqlMessageBusException(String.Format(CultureInfo.InvariantCulture, Resources.Error_UnexpectedSqlNotificationType, e.Type, e.Source, e.Info)));
-                    }
+                    Faulted(new SqlMessageBusException(String.Format(CultureInfo.InvariantCulture, Resources.Error_UnexpectedSqlNotificationType, e.Type, e.Source, e.Info)));
                 }
             }
             else if (e.Type == SqlNotificationType.Subscribe)
@@ -294,9 +293,7 @@ namespace Microsoft.AspNet.SignalR.SqlServer
                 }
             }
 
-            Trace.TraceInformation("Starting receive loop again to process updates");
-
-            ExecuteReaderWithUpdates(processRecord);
+            Changed();
         }
 
         [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "I need to")]
@@ -346,9 +343,9 @@ namespace Microsoft.AspNet.SignalR.SqlServer
         [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "Stopping is a terminal state on a bg thread")]
         protected virtual void Stop(Exception ex)
         {
-            if (ex != null && OnError != null)
+            if (ex != null)
             {
-                OnError(ex);
+                Faulted(ex);
             }
 
             if (_notificationState != NotificationState.Disabled)

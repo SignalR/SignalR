@@ -10,7 +10,6 @@ namespace Microsoft.AspNet.SignalR.Messaging
     public class ScaleoutMappingStore
     {
         private const int MaxMessages = 1000000;
-        private ulong _maxKey = UInt64.MaxValue;
 
         private ScaleoutStore _store;
 
@@ -19,23 +18,21 @@ namespace Microsoft.AspNet.SignalR.Messaging
             _store = new ScaleoutStore(MaxMessages);
         }
 
-        public void Add(ulong id, IList<LocalEventKeyInfo> localKeyInfo)
+        public void Add(ulong id, ScaleoutMessage message, IDictionary<string, IList<LocalEventKeyInfo>> localKeyInfo)
         {
-            if (id < _maxKey)
+            if (MaxMapping != null && id < MaxMapping.Id)
             {
                 _store = new ScaleoutStore(MaxMessages);
             }
 
-            _store.Add(new ScaleoutMapping(id, localKeyInfo));
-
-            _maxKey = id;
+            _store.Add(new ScaleoutMapping(id, message, localKeyInfo));
         }
 
-        public ulong MaxKey
+        public ScaleoutMapping MaxMapping
         {
             get
             {
-                return _maxKey;
+                return _store.MaxMapping;
             }
         }
 

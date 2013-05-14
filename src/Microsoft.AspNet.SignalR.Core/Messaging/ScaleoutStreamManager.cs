@@ -13,24 +13,29 @@ namespace Microsoft.AspNet.SignalR.Messaging
     internal class ScaleoutStreamManager
     {
         private readonly Func<int, IList<Message>, Task> _send;
-        private readonly Action<int, ulong, IList<Message>> _receive;
-        private readonly ScaleoutTaskQueue[] _sendQueues;
+        private readonly Action<int, ulong, ScaleoutMessage> _receive;
+        private readonly ScaleoutStream[] _streams;
 
         public ScaleoutStreamManager(Func<int, IList<Message>, Task> send,
-                                     Action<int, ulong, IList<Message>> receive,
+                                     Action<int, ulong, ScaleoutMessage> receive,
                                      int streamCount,
-                                     ScaleoutConfiguration configuration,
-                                     TraceSource trace)
+                                     TraceSource trace,
+                                     IPerformanceCounterManager performanceCounters,
+                                     ScaleoutConfiguration configuration)
         {
-            _sendQueues = new ScaleoutTaskQueue[streamCount];
+            _streams = new ScaleoutStream[streamCount];
             _send = send;
             _receive = receive;
 
             var receiveMapping = new ScaleoutMappingStore[streamCount];
 
+            performanceCounters.ScaleoutStreamCountTotal.RawValue = streamCount;
+            performanceCounters.ScaleoutStreamCountBuffering.RawValue = streamCount;
+            performanceCounters.ScaleoutStreamCountOpen.RawValue = 0;
+
             for (int i = 0; i < streamCount; i++)
             {
-                _sendQueues[i] = new ScaleoutTaskQueue(trace, "Stream(" + i + ")", configuration);
+                _streams[i] = new ScaleoutStream(trace, "Stream(" + i + ")", configuration.MaxQueueLength, performanceCounters);
                 receiveMapping[i] = new ScaleoutMappingStore();
             }
 
@@ -41,29 +46,29 @@ namespace Microsoft.AspNet.SignalR.Messaging
 
         public void Open(int streamIndex)
         {
-            _sendQueues[streamIndex].Open();
+            _streams[streamIndex].Open();
         }
 
         public void Close(int streamIndex)
         {
-            _sendQueues[streamIndex].Close();
+            _streams[streamIndex].Close();
         }
 
         public void OnError(int streamIndex, Exception exception)
         {
-            _sendQueues[streamIndex].SetError(exception);
+            _streams[streamIndex].SetError(exception);
         }
 
         public Task Send(int streamIndex, IList<Message> messages)
         {
             var context = new SendContext(this, streamIndex, messages);
 
-            return _sendQueues[streamIndex].Enqueue(state => Send(state), context);
+            return _streams[streamIndex].Send(state => Send(state), context);
         }
 
-        public void OnReceived(int streamIndex, ulong id, IList<Message> messages)
+        public void OnReceived(int streamIndex, ulong id, ScaleoutMessage message)
         {
-            _receive(streamIndex, id, messages);
+            _receive(streamIndex, id, message);
 
             // We assume if a message has come in then the stream is open
             Open(streamIndex);
@@ -73,18 +78,18 @@ namespace Microsoft.AspNet.SignalR.Messaging
         {
             var context = (SendContext)state;
 
-            return context.QueueManager._send(context.Index, context.Messages);
+            return context.StreamManager._send(context.Index, context.Messages);
         }
 
         private class SendContext
         {
-            public ScaleoutStreamManager QueueManager;
+            public ScaleoutStreamManager StreamManager;
             public int Index;
             public IList<Message> Messages;
 
             public SendContext(ScaleoutStreamManager scaleoutStream, int index, IList<Message> messages)
             {
-                QueueManager = scaleoutStream;
+                StreamManager = scaleoutStream;
                 Index = index;
                 Messages = messages;
             }

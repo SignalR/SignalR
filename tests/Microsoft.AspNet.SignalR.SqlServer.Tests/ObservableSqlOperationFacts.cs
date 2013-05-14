@@ -16,7 +16,7 @@ namespace Microsoft.AspNet.SignalR.Tests.SqlServer
     {
         private static readonly List<Tuple<int, int>> _defaultRetryDelays = new List<Tuple<int, int>> { new Tuple<int, int>(0, 1) };
 
-        [Theory(Timeout = 1000)]
+        [Theory(Timeout = 10000)]
         [InlineData(true)]
         [InlineData(false)]
         public void UseSqlNotificationsIfAvailable(bool supportSqlNotifications)
@@ -35,15 +35,14 @@ namespace Microsoft.AspNet.SignalR.Tests.SqlServer
                     sqlDependencyAdded = true;
                     mre.Set();
                 });
-            var operation = new ObservableDbOperation("test", "test", new TraceSource("test"), dbProviderFactory, dbBehavior.Object)
+            var operation = new ObservableDbOperation("test", "test", new TraceSource("test"), dbProviderFactory, dbBehavior.Object);
+            operation.Faulted += _ => mre.Set();
+            operation.Queried += () =>
             {
-                OnError = ex => mre.Set(),
-                OnQuery = () =>
+                retryLoopCount++;
+                if (retryLoopCount > 1)
                 {
-                    if (++retryLoopCount > 1)
-                    {
-                        mre.Set();
-                    }
+                    mre.Set();
                 }
             };
 
@@ -56,7 +55,7 @@ namespace Microsoft.AspNet.SignalR.Tests.SqlServer
             Assert.Equal(supportSqlNotifications, sqlDependencyAdded);
         }
 
-        [Theory(Timeout = 1000)]
+        [Theory(Timeout = 10000)]
         [InlineData(1, null, null)]
         [InlineData(5, null, null)]
         [InlineData(10, null, null)]
@@ -80,20 +79,18 @@ namespace Microsoft.AspNet.SignalR.Tests.SqlServer
                     sqlDependencyCreated = true;
                     mre.Set();
                 });
-            var operation = new ObservableDbOperation("test", "test", new TraceSource("test"), dbProviderFactory, dbBehavior.Object)
+            var operation = new ObservableDbOperation("test", "test", new TraceSource("test"), dbProviderFactory, dbBehavior.Object);
+            operation.Faulted += _ => mre.Set();
+            operation.Queried += () =>
             {
-                OnError = ex => mre.Set(),
-                OnQuery = () =>
+                if (!sqlDependencyCreated)
                 {
-                    if (!sqlDependencyCreated)
-                    {
-                        // Only update the loop count if the SQL dependency hasn't been created yet (we're still in the loop)
-                        retryLoopCount++;
-                    }
-                    if (retryLoopCount == retryLoopTotal)
-                    {
-                        mre.Set();
-                    }
+                    // Only update the loop count if the SQL dependency hasn't been created yet (we're still in the loop)
+                    retryLoopCount++;
+                }
+                if (retryLoopCount == retryLoopTotal)
+                {
+                    mre.Set();
                 }
             };
 
@@ -106,7 +103,7 @@ namespace Microsoft.AspNet.SignalR.Tests.SqlServer
             Assert.Equal(retryLoopTotal, retryLoopCount);
         }
 
-        [Fact(Timeout = 1000)]
+        [Fact(Timeout = 10000)]
         public void CallsOnErrorOnException()
         {
             // Arrange
@@ -117,13 +114,11 @@ namespace Microsoft.AspNet.SignalR.Tests.SqlServer
             dbBehavior.Setup(db => db.UpdateLoopRetryDelays).Returns(_defaultRetryDelays);
             dbBehavior.Setup(db => db.StartSqlDependencyListener()).Returns(false);
             dbProviderFactory.MockDataReader.Setup(r => r.Read()).Throws(new ApplicationException("test"));
-            var operation = new ObservableDbOperation("test", "test", new TraceSource("test"), dbProviderFactory, dbBehavior.Object)
+            var operation = new ObservableDbOperation("test", "test", new TraceSource("test"), dbProviderFactory, dbBehavior.Object);
+            operation.Faulted += _ =>
             {
-                OnError = ex =>
-                {
-                    onErrorCalled = true;
-                    mre.Set();
-                }
+                onErrorCalled = true;
+                mre.Set();
             };
 
             // Act

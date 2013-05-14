@@ -24,6 +24,7 @@ namespace Microsoft.AspNet.SignalR.Transports
         private int _timedOut;
         private readonly IPerformanceCounterManager _counters;
         private int _ended;
+        private TransportConnectionStates _state;
 
         internal static readonly Func<Task> _emptyTaskFunc = () => TaskAsyncHelper.Empty;
 
@@ -198,14 +199,26 @@ namespace Microsoft.AspNet.SignalR.Transports
 
         public Task Disconnect()
         {
-            // Abort the queue the disconnect command
-
             // Ensure delegate continues to use the C# Compiler static delegate caching optimization.
-            return Abort().Then(transport => transport.Connection.Close(transport.ConnectionId), this);
+            return Abort(clean: false).Then(transport => transport.Connection.Close(transport.ConnectionId), this);
         }
 
         public Task Abort()
         {
+            return Abort(clean: true);
+        }
+
+        public Task Abort(bool clean)
+        {
+            if (clean)
+            {
+                ApplyState(TransportConnectionStates.Aborted);
+            }
+            else
+            {
+                ApplyState(TransportConnectionStates.Disconnected);
+            }
+
             Trace.TraceInformation("Abort(" + ConnectionId + ")");
 
             // When a connection is aborted (graceful disconnect) we send a command to it
@@ -221,6 +234,11 @@ namespace Microsoft.AspNet.SignalR.Transports
             // Ensure delegate continues to use the C# Compiler static delegate caching optimization.
             return disconnected().Catch((ex, state) => OnDisconnectError(ex, state), Trace)
                                  .Then(counters => counters.ConnectionsDisconnected.Increment(), _counters);
+        }
+
+        public void ApplyState(TransportConnectionStates states)
+        {
+            _state |= states;
         }
 
         public void Timeout()
@@ -264,6 +282,8 @@ namespace Microsoft.AspNet.SignalR.Transports
                 _connectionEndTokenSource.Dispose();
                 _connectionEndRegistration.Dispose();
                 _hostRegistration.Dispose();
+
+                ApplyState(TransportConnectionStates.Disposed);
             }
         }
 
@@ -287,7 +307,7 @@ namespace Microsoft.AspNet.SignalR.Transports
         {
             _hostShutdownToken = _context.HostShutdownToken();
 
-            _requestLifeTime = new HttpRequestLifeTime(WriteQueue, Trace, ConnectionId);
+            _requestLifeTime = new HttpRequestLifeTime(this, WriteQueue, Trace, ConnectionId);
 
             // Create a token that represents the end of this connection's life
             _connectionEndTokenSource = new SafeCancellationTokenSource();
