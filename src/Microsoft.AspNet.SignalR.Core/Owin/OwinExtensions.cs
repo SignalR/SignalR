@@ -98,18 +98,6 @@ namespace Owin
                 resolver.InitializeHost(instanceName, token);
             }
 
-            if (configuration != null)
-            {
-                if (configuration.EnableCrossDomain)
-                {
-                    builder.Use(typeof(AllowCrossOriginMiddleware), args[0]);
-                }
-                else
-                {
-                    builder.Use(typeof(DenyCrossOriginMiddleware), args[0]);
-                }
-            }
-
             builder.Use(typeof(T), args);
 
             return builder;
