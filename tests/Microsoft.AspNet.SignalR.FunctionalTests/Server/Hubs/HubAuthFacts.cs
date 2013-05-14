@@ -1,17 +1,19 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Security.Principal;
 using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR.Client.Hubs;
-using Microsoft.AspNet.SignalR.FunctionalTests;
-using Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure;
 using Microsoft.AspNet.SignalR.Hosting.Memory;
 using Microsoft.AspNet.SignalR.Hubs;
+using Microsoft.AspNet.SignalR.Tests.Common;
+using Microsoft.AspNet.SignalR.Tests.Common.Infrastructure;
 using Owin;
 using Xunit;
 
 namespace Microsoft.AspNet.SignalR.Tests
 {
-    using AppFunc = Func<System.Collections.Generic.IDictionary<string, object>, System.Threading.Tasks.Task>;
+    using AppFunc = Func<IDictionary<string, object>, Task>;
 
     public class HubAuthFacts : HostedTest
     {
