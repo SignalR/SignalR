@@ -204,11 +204,10 @@
     <Compile Include="Hubs\DefaultHubActivator.cs" />
     <Compile Include="Hubs\HubNameAttribute.cs" />
     <Compile Include="Hubs\IHub.cs" />
-    <Compile Include="Owin\Middleware\DenyCrossOriginMiddleware.cs" />
-    <Compile Include="Owin\Middleware\AllowCrossOriginMiddleware.cs" />
+    <Compile Include="Owin\Infrastructure\CorsUtility.cs" />
     <Compile Include="Owin\Middleware\HubDispatcherMiddleware.cs" />
     <Compile Include="Owin\Middleware\PersistentConnectionMiddleware.cs" />
-    <Compile Include="Owin\Middleware\PathMatchingMiddleware.cs" />
+    <Compile Include="Owin\Middleware\SignalRMiddleware.cs" />
     <Compile Include="Owin\Infrastructure\ByteBuffer.cs" />
     <Compile Include="Owin\Infrastructure\OwinConstants.cs" />
     <Compile Include="Owin\Infrastructure\OwinEnvironmentExtensions.cs" />

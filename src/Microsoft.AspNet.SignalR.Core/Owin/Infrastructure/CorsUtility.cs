@@ -1,18 +1,24 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Threading.Tasks;
 using Microsoft.Owin;
 
-namespace Microsoft.AspNet.SignalR.Owin.Middleware
+namespace Microsoft.AspNet.SignalR.Owin.Infrastructure
 {
-    public class DenyCrossOriginMiddleware : PathMatchingMiddleware
+    internal static class CorsUtility
     {
-        public DenyCrossOriginMiddleware(OwinMiddleware next, string path)
-            : base(next, path)
+        internal static void AddHeaders(OwinRequest request, OwinResponse response)
         {
+            string origin = request.GetHeader("Origin");
+
+            // Add CORS response headers support
+            if (!String.IsNullOrEmpty(origin))
+            {
+                response.SetHeader("Access-Control-Allow-Origin", origin);
+                response.SetHeader("Access-Control-Allow-Credentials", "true");
+            }
         }
 
-        protected override Task ProcessRequest(OwinRequest request, OwinResponse response)
+        internal static bool IsCrossDomainRequest(OwinRequest request)
         {
             string origin = request.GetHeader("Origin");
 
@@ -33,15 +39,10 @@ namespace Microsoft.AspNet.SignalR.Owin.Middleware
             if (!String.IsNullOrEmpty(callback) ||
                 (!String.IsNullOrEmpty(origin) && !IsSameOrigin(request.Uri, origin)))
             {
-                response.StatusCode = 403;
-
-                // REVIEW: Because MS.Owin is lacking
-                response.Environment[OwinConstants.ResponseReasonPhrase] = Resources.Forbidden_CrossDomainIsDisabled;
-
-                return TaskAsyncHelper.Empty;
+                return true;
             }
 
-            return Next.Invoke(request, response);
+            return false;
         }
 
         private static bool IsSameOrigin(Uri requestUri, string origin)
