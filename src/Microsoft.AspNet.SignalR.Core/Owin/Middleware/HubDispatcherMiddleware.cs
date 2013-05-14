@@ -8,12 +8,12 @@ using Microsoft.Owin;
 
 namespace Microsoft.AspNet.SignalR.Owin.Middleware
 {
-    public class HubDispatcherMiddleware : PathMatchingMiddleware
+    public class HubDispatcherMiddleware : SignalRMiddleware
     {
         private readonly HubConfiguration _configuration;
 
         public HubDispatcherMiddleware(OwinMiddleware next, string path, HubConfiguration configuration)
-            : base(next, path)
+            : base(next, path, configuration)
         {
             _configuration = configuration;
         }

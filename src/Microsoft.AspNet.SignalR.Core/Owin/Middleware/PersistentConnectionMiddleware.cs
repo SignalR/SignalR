@@ -8,7 +8,7 @@ using Microsoft.Owin;
 
 namespace Microsoft.AspNet.SignalR.Owin.Middleware
 {
-    public class PersistentConnectionMiddleware : PathMatchingMiddleware
+    public class PersistentConnectionMiddleware : SignalRMiddleware
     {
         private readonly Type _connectionType;
         private readonly ConnectionConfiguration _configuration;
@@ -17,7 +17,7 @@ namespace Microsoft.AspNet.SignalR.Owin.Middleware
                                               string path,
                                               Type connectionType,
                                               ConnectionConfiguration configuration)
-            : base(next, path)
+            : base(next, path, configuration)
         {
             _connectionType = connectionType;
             _configuration = configuration;

@@ -247,6 +247,66 @@ namespace Microsoft.AspNet.SignalR.Client.Tests
                 }
             }
 
+            [Fact]
+            public void CrossDomainRequestFailsIfStartIfOriginHeaderDoesntMatchRequestUrlAndCrossDomainDisabled()
+            {
+                using (var host = new MemoryHost())
+                {
+                    host.Configure(app =>
+                    {
+                        var config = new ConnectionConfiguration
+                        {
+                            Resolver = new DefaultDependencyResolver()
+                        };
+
+                        app.MapConnection<MyConnection>("echo", config);
+                    });
+
+                    var connection = new Connection("http://foo/echo");
+
+                    using (connection)
+                    {
+                        connection.Headers["Origin"] = "http://bar";
+                        Assert.Throws<AggregateException>(() => connection.Start(host).Wait());
+                    }
+                }
+            }
+
+            [Fact]
+            public void CrossDomainRequestSucceedsIfStartIfOriginHeaderDoesntMatchRequestUrlAndCrossDomainEnabled()
+            {
+                using (var host = new MemoryHost())
+                {
+                    host.Configure(app =>
+                    {
+                        var config = new ConnectionConfiguration
+                        {
+                            Resolver = new DefaultDependencyResolver(),
+                            EnableCrossDomain = true
+                        };
+
+                        app.MapConnection<MyConnection>("echo", config);
+                    });
+
+                    var tcs = new TaskCompletionSource<string>();
+                    var connection = new Connection("http://foo/echo");
+
+                    using (connection)
+                    {
+                        connection.Received += data =>
+                        {
+                            tcs.TrySetResult(data);
+                        };
+
+                        connection.Headers["Origin"] = "http://bar";
+                        connection.Start(host).Wait();
+                        connection.Send("");
+
+                        Assert.Equal("MyConnection", tcs.Task.Result);
+                    }
+                }
+            }
+
             [Theory]
             [InlineData(HostType.IISExpress, TransportType.Websockets)]
             [InlineData(HostType.IISExpress, TransportType.ServerSentEvents)]
