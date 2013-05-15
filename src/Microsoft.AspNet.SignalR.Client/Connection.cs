@@ -160,7 +160,12 @@ namespace Microsoft.AspNet.SignalR.Client
             TraceLevel = TraceLevels.All;
             TraceWriter = new DebugTextWriter();
             Headers = new HeaderDictionary(this);
+
+            // Current client protocol
+            Protocol = new Version(1, 3);
         }
+
+        public Version Protocol { get; set; }
 
         /// <summary>
         /// Object to store the various keep alive timeout values
@@ -439,17 +444,17 @@ namespace Microsoft.AspNet.SignalR.Client
             return false;
         }
 
-        private static void VerifyProtocolVersion(string versionString)
+        private void VerifyProtocolVersion(string versionString)
         {
             Version version;
 
             if (String.IsNullOrEmpty(versionString) ||
                 !TryParseVersion(versionString, out version) ||
-                !(version.Major == 1 && version.Minor == 2))
+                version != Protocol)
             {
                 throw new InvalidOperationException(String.Format(CultureInfo.CurrentCulture,
                                                                   Resources.Error_IncompatibleProtocolVersion,
-                                                                  "1.2",
+                                                                  Protocol,
                                                                   versionString ?? "null"));
             }
         }
