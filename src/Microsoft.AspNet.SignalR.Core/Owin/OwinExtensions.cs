@@ -1,10 +1,13 @@
 ﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.md in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Reflection;
 using System.Threading;
 using Microsoft.AspNet.SignalR;
 using Microsoft.AspNet.SignalR.Hosting;
+using Microsoft.AspNet.SignalR.Hubs;
 using Microsoft.AspNet.SignalR.Infrastructure;
 using Microsoft.AspNet.SignalR.Owin.Middleware;
 using Microsoft.Owin.Infrastructure;
@@ -94,6 +97,15 @@ namespace Owin
                 // Register the provider
                 var dataProtectionProtectedData = new DataProtectionProviderProtectedData(provider);
                 resolver.Register(typeof(IProtectedData), () => dataProtectionProtectedData);
+
+                // Try to get the list of reference assemblies from the host
+                IEnumerable<Assembly> referenceAssemblies = env.GetReferenceAssemblies();
+                if (referenceAssemblies != null)
+                {
+                    // Use this list as the assembly locator
+                    var assemblyLocator = new EnumerableOfAssemblyLocator(referenceAssemblies);
+                    resolver.Register(typeof(IAssemblyLocator), () => assemblyLocator);
+                }
 
                 resolver.InitializeHost(instanceName, token);
             }
