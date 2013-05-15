@@ -54,6 +54,8 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
             for (var topicIndex = 0; topicIndex < topicNames.Count; ++topicIndex)
             {
                 string topicName = topicNames[topicIndex];
+                var topicDescription = new TopicDescription(topicName);
+	            topicDescription.DefaultMessageTimeToLive = _configuration.TimeToLive;
 
                 if (!_namespaceManager.TopicExists(topicName))
                 {
@@ -61,7 +63,7 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
                     {
                         _trace.TraceInformation("Creating a new topic {0} in the service bus...", topicName);
 
-                        _namespaceManager.CreateTopic(topicName);
+                        _namespaceManager.CreateTopic(topicDescription);
 
                         _trace.TraceInformation("Creation of a new topic {0} in the service bus completed successfully.", topicName);
                     }
