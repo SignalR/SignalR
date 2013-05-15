@@ -51,13 +51,13 @@
         },
         defaultTestTimeout: (function () {
             var defaultTestTimeout = window.location.search.match(/defaultTestTimeout=(\d+)/);
-            
+
             // There is no default test timeout parameter
             if (!defaultTestTimeout) {
                 // Return the default
                 return 10000;
             }
-            
+
             // Match returns an array, so we need to take the second element (string).
             defaultTestTimeout = defaultTestTimeout[1];
             // Convert to integer and translate to milliseconds
@@ -65,10 +65,12 @@
 
             return defaultTestTimeout;
         })(),
-        createHubConnection: function (end, assert, testName, url) {
+        createHubConnection: function (end, assert, testName, url, wrapStart) {
             var connection,
                 qs = (testName ? "test=" + window.encodeURIComponent(testName) : ""),
                 urlSet = !!url;
+
+            wrapStart = typeof wrapStart === "undefined" ? true : false;
 
             url = url ? url : 'signalr';
             if (window.document.testUrl !== 'auto') {
@@ -77,13 +79,18 @@
 
             connection = $.hubConnection(url, { useDefaultPath: false, qs: qs })
             connection.logging = true;
-            wrapConnectionStart(connection, end, assert);
+
+            if (wrapStart) {
+                wrapConnectionStart(connection, end, assert);
+            }
 
             return connection;
         },
-        createConnection: function (url, end, assert, testName) {
+        createConnection: function (url, end, assert, testName, wrapStart) {
             var connection,
                 qs = (testName ? "test=" + window.encodeURIComponent(testName) : "");
+
+            wrapStart = typeof wrapStart === "undefined" ? true : false;
 
             if (window.document.testUrl !== 'auto') {
                 url = window.document.testUrl + url;
@@ -91,7 +98,10 @@
 
             connection = $.connection(url, qs);
             connection.logging = true;
-            wrapConnectionStart(connection, end, assert);
+
+            if (wrapStart) {
+                wrapConnectionStart(connection, end, assert);
+            }
 
             return connection;
         }
