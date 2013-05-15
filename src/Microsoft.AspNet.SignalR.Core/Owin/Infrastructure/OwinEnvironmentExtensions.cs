@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Reflection;
 using System.Threading;
 
 namespace Microsoft.AspNet.SignalR
@@ -58,6 +59,17 @@ namespace Microsoft.AspNet.SignalR
             }
 
             return false;
+        }
+
+        internal static IEnumerable<Assembly> GetReferenceAssemblies(this IDictionary<string, object> environment)
+        {
+            object assembliesValue;
+            if (environment.TryGetValue(OwinConstants.HostReferencedAssembliesKey, out assembliesValue))
+            {
+                return (IEnumerable<Assembly>)assembliesValue;
+            }
+
+            return null;
         }
 
         internal static void DisableResponseBuffering(this IDictionary<string, object> environment)
