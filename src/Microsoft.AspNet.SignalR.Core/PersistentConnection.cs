@@ -28,11 +28,12 @@ namespace Microsoft.AspNet.SignalR
     {
         private const string WebSocketsTransportName = "webSockets";
         private static readonly char[] SplitChars = new[] { ':' };
+        private static readonly ProtocolResolver _protocolResolver = new ProtocolResolver();
 
         private IConfigurationManager _configurationManager;
         private ITransportManager _transportManager;
         private bool _initialized;
-        private IServerCommandHandler _serverMessageHandler;
+        private IServerCommandHandler _serverMessageHandler;        
 
         public virtual void Initialize(IDependencyResolver resolver)
         {
@@ -475,7 +476,7 @@ namespace Microsoft.AspNet.SignalR
                 KeepAliveTimeout = keepAliveTimeout != null ? keepAliveTimeout.Value.TotalSeconds : (double?)null,
                 DisconnectTimeout = _configurationManager.DisconnectTimeout.TotalSeconds,
                 TryWebSockets = _transportManager.SupportsTransport(WebSocketsTransportName) && context.Environment.SupportsWebSockets(),
-                ProtocolVersion = "1.2"
+                ProtocolVersion = _protocolResolver.Resolve(context.Request).ToString()
             };
 
             if (!String.IsNullOrEmpty(context.Request.QueryString["callback"]))

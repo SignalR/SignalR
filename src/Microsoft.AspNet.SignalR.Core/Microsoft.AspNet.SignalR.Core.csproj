@@ -86,6 +86,7 @@
     <Compile Include="Infrastructure\ConnectionManager.cs" />
     <Compile Include="ConnectionMessage.cs" />
     <Compile Include="Infrastructure\DataProtectionProviderProtectedData.cs" />
+    <Compile Include="Infrastructure\ProtocolResolver.cs" />
     <Compile Include="Infrastructure\DiffPair.cs" />
     <Compile Include="Infrastructure\DiffSet.cs" />
     <Compile Include="GlobalHost.cs" />
