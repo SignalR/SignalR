@@ -14,7 +14,7 @@
         <tags>Microsoft AspNet SignalR AspNetSignalR ServiceBus</tags>
         <dependencies>
             <dependency id="Microsoft.AspNet.SignalR.Core" version="__SIGNALR_PACKAGE_VERSION__" />
-            <dependency id="WindowsAzure.ServiceBus" version="2.0.0-beta" />
+            <dependency id="WindowsAzure.ServiceBus" version="2.0.1" />
         </dependencies>
     </metadata>
     <files>
