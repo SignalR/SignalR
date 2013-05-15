@@ -55,7 +55,7 @@
     </trackingVariation>
   
     <!-- External Host-->
-    <trackingVariation name="SimpleEchoHub-LongPolling-External">
+    <trackingVariation name="SimpleEchoHub-External-LongPolling">
       <metric name="Latency In Milliseconds" selection="Average" units="Numeric">
         <target value="0" labConfig="XSPPERF8S_WIN8_X64" />
       </metric>
@@ -102,7 +102,7 @@
     <command name="SetupIIS" wait="Exit">
       powershell -executionpolicy remotesigned -command "{bin}\RegisterIIS.ps1 {currentdir}\www
     </command>
-    <command name="SimpleEchoHub-LongPolling-External" wait="Exit">
+    <command name="SimpleEchoHub-External-LongPolling" wait="Exit">
       Microsoft.AspNet.SignalR.Stress.exe /Run:SimpleEchoHub /Transport:LongPolling /Host:External /Connections:5 /Url:http://{server-01}:81/
     </command>
   
@@ -131,6 +131,6 @@
     <!--External host hub tests-->
     <run command="CopyWWW" role="controller" output="true" profile="None" />
     <run command="SetupIIS" role="server-01" output="true" profile="None" />
-    <run command="SimpleEchoHub-LongPolling-External" role="client-01" output="true" />
+    <run command="SimpleEchoHub-External-LongPolling" role="client-01" output="true" />
   </plan>
 </config>
