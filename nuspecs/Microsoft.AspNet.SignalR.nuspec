@@ -16,7 +16,7 @@
         <dependencies>
             <dependency id="Microsoft.AspNet.SignalR.JS" version="__SIGNALR_PACKAGE_VERSION__" />
             <dependency id="Microsoft.AspNet.SignalR.Core" version="__SIGNALR_PACKAGE_VERSION__" />
-            <dependency id="Microsoft.Owin.Host.SystemWeb" version="__KATANARELEASE_PACKAGE_VERSION__" />
+            <dependency id="Microsoft.Owin.Host.SystemWeb" version="__KATANADEV_PACKAGE_VERSION__" />
         </dependencies>
         <frameworkAssemblies>
             <frameworkAssembly assemblyName="System" targetFramework="net40" />
