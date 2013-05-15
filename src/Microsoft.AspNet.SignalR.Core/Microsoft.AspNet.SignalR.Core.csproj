@@ -42,11 +42,11 @@
   <ItemGroup>
     <Reference Include="Microsoft.Owin, Version=1.1.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\packages\Microsoft.Owin.1.1.0-beta1-20511-301\lib\net45\Microsoft.Owin.dll</HintPath>
+      <HintPath>..\..\packages\Microsoft.Owin.1.1.0-beta1-20514-307\lib\net45\Microsoft.Owin.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.Owin.Security, Version=1.1.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\packages\Microsoft.Owin.Security.1.1.0-beta1-20511-301\lib\net45\Microsoft.Owin.Security.dll</HintPath>
+      <HintPath>..\..\packages\Microsoft.Owin.Security.1.1.0-beta1-20514-307\lib\net45\Microsoft.Owin.Security.dll</HintPath>
     </Reference>
     <Reference Include="Newtonsoft.Json, Version=4.5.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
@@ -76,6 +76,7 @@
     <Compile Include="Hubs\ConnectionIdProxy.cs" />
     <Compile Include="Hubs\DynamicDictionary.cs" />
     <Compile Include="Hubs\EmptyJavaScriptProxyGenerator.cs" />
+    <Compile Include="Hubs\EnumerableOfAssemblyLocator.cs" />
     <Compile Include="Hubs\GroupProxy.cs" />
     <Compile Include="Hubs\Lookup\Descriptors\NullMethodDescriptor.cs" />
     <Compile Include="Hubs\Lookup\HubMethodDispatcher.cs" />
