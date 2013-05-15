@@ -116,6 +116,12 @@
     <Compile Include="..\Microsoft.AspNet.SignalR.Client\Infrastructure\HttpClientException.cs">
       <Link>Infrastructure\HttpClientException.cs</Link>
     </Compile>
+    <Compile Include="..\Microsoft.AspNet.SignalR.Client\Transports\ConnectingMessageBuffer.cs">
+      <Link>Transports\ConnectingMessageBuffer.cs</Link>
+    </Compile>
+    <Compile Include="..\Microsoft.AspNet.SignalR.Client45\Http\HttpRequestMessageWrapper.cs">
+      <Link>Http\HttpRequestMessageWrapper.cs</Link>
+    </Compile>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="..\Common\CommonAssemblyInfo.cs">
