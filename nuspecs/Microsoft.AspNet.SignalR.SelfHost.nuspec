@@ -3,7 +3,7 @@
     <metadata>
         <id>Microsoft.AspNet.SignalR.SelfHost</id>
         <title>Microsoft ASP.NET SignalR Self Host</title>
-        <version>__KATANADEV_PACKAGE_VERSION__</version>
+        <version>__SIGNALR_PACKAGE_VERSION__</version>
         <authors>Microsoft</authors>
         <owners>Microsoft</owners>
         <licenseUrl>__SIGNALR_LICENSE_URL__</licenseUrl>
