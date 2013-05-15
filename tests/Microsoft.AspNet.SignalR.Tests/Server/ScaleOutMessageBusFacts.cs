@@ -281,6 +281,106 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
         }
 
         [Fact]
+        public void SubscriptionGetsCorrectCursorsIfMoreKeysThanStreams()
+        {
+            var dr = new DefaultDependencyResolver();
+
+            using (var bus = new TestScaleoutBus(dr))
+            {
+                var subscriber = new TestSubscriber(new[] { "key" });
+                IDisposable subscription = null;
+                var cd = new OrderedCountDownRange<int>(new[] { 101 });
+
+                bus.Publish(0, 10ul, new[] { 
+                    new Message("test", "key", "100")
+                });
+
+                try
+                {
+                    subscription = bus.Subscribe(subscriber, "0,0|1,0|2,4", (result, state) =>
+                    {
+                        foreach (var m in result.GetMessages())
+                        {
+                            int n = Int32.Parse(m.GetString());
+                            cd.Expect(n);
+                        }
+
+                        return TaskAsyncHelper.True;
+
+                    }, 100, null);
+
+                    bus.Publish(0, 11ul, new[] { 
+                        new Message("test", "key", "101")
+                    });
+
+                    Assert.True(cd.Wait(TimeSpan.FromSeconds(10)));
+                }
+                finally
+                {
+                    if (subscription != null)
+                    {
+                        subscription.Dispose();
+                    }
+                }
+            }
+        }
+
+        [Fact]
+        public void SubscriptionGetsCorrectCursorsIfLessKeysThanStreams()
+        {
+            var dr = new DefaultDependencyResolver();
+
+            using (var bus = new TestScaleoutBus(dr, streams: 2))
+            {
+                var subscriber = new TestSubscriber(new[] { "key" });
+                IDisposable subscription = null;
+                var cd = new OrderedCountDownRange<int>(new[] { 101, 11 });
+
+                bus.Publish(0, 10ul, new[] { 
+                    new Message("test", "key", "100")
+                });
+
+                bus.Publish(1, 10ul, new[] { 
+                    new Message("test", "key", "10")
+                });
+
+                try
+                {
+                    subscription = bus.Subscribe(subscriber, "0,0", (result, state) =>
+                    {
+                        foreach (var m in result.GetMessages())
+                        {
+                            int n = Int32.Parse(m.GetString());
+                            cd.Expect(n);
+                        }
+
+                        return TaskAsyncHelper.True;
+
+                    }, 100, null);
+
+                    bus.Publish(0, 11ul, new[] { 
+                        new Message("test", "key", "101")
+                    }, 
+                    new DateTime(TimeSpan.TicksPerDay * 1));
+
+                    bus.Publish(1, 11ul, new[] { 
+                        new Message("test", "key", "11")
+                    },
+                    new DateTime(TimeSpan.TicksPerDay * 2));
+
+                    Assert.True(cd.Wait(TimeSpan.FromSeconds(10)));
+                }
+                finally
+                {
+                    if (subscription != null)
+                    {
+                        subscription.Dispose();
+                    }
+                }
+            }
+        }
+
+        [Fact]
         public void SubscriptionPublishingAfter()
         {
             var dr = new DefaultDependencyResolver();
