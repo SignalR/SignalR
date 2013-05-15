@@ -15,8 +15,8 @@
         <dependencies>
             <dependency id="Newtonsoft.Json" version="5.0" />
             <dependency id="Owin" version="1.0" />
-            <dependency id="Microsoft.Owin" version="__KATANADEV_PACKAGE_VERSION__" />
-            <dependency id="Microsoft.Owin.Security" version="__KATANADEV_PACKAGE_VERSION__" />
+            <dependency id="Microsoft.Owin" version="__KATANA_PACKAGE_VERSION__" />
+            <dependency id="Microsoft.Owin.Security" version="__KATANA_PACKAGE_VERSION__" />
         </dependencies>
     </metadata>
     <files>

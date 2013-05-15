@@ -9,11 +9,10 @@
         <!-- These values are used in SemVer, so make sure to always increase these alphabetically. -->
         <BuildQuality>beta2</BuildQuality>
         <ScaleoutBuildQuality>beta2</ScaleoutBuildQuality>
-        <KatanaDevelopmentBuildQuality>beta1</KatanaDevelopmentBuildQuality>
+        <KatanaBuildQuality>beta1</KatanaBuildQuality>
         
-        <!-- Katana versions -->
-        <KatanaDevelopmentVersion>1.1</KatanaDevelopmentVersion>
-        <KatanaReleaseVersion>1.1</KatanaReleaseVersion>
+        <!-- Katana version -->
+        <KatanaVersion>1.1.0</KatanaVersion>
 
         <!-- Ensure that we come up with a new version every 65535 years -->
         <VersionStartYear>2012</VersionStartYear>
