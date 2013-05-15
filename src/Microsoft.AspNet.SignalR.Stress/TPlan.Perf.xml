@@ -97,7 +97,7 @@
   
     <!-- external host-->
     <command name="CopyWWW" wait="Exit">
-      {bin}\xcopy /ecyi artifacts\Release\Microsoft.AspNet.SignalR.LoadTestHarness \\{server-01}\perftestbits\www
+      {bin}\xcopy /ecyi artifacts\Release\projects\Microsoft.AspNet.SignalR.LoadTestHarness \\{server-01}\perftestbits\www
     </command>
     <command name="SetupIIS" wait="Exit">
       powershell -executionpolicy remotesigned -command "{bin}\RegisterIIS.ps1 {currentdir}\www
@@ -129,8 +129,10 @@
     <run command="RedisMessageBus" role="server-01" output="true" />
   
     <!--External host hub tests-->
+    <!-- Disabling until this scenario is fixed
     <run command="CopyWWW" role="controller" output="true" profile="None" />
     <run command="SetupIIS" role="server-01" output="true" profile="None" />
     <run command="SimpleEchoHub-LongPolling-External" role="client-01" output="true" />
+    -->
   </plan>
 </config>
