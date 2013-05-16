@@ -17,6 +17,7 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
         private static readonly TimeSpan DefaultReadTimeout = TimeSpan.FromSeconds(60);
         private static readonly TimeSpan ErrorReadTimeout = TimeSpan.FromSeconds(0.5);
         private static readonly TimeSpan IdleSubscriptionTimeout = TimeSpan.FromMinutes(5);
+        private static readonly TimeSpan IdleTopicTimeout = TimeSpan.FromDays(1);
 
         private readonly NamespaceManager _namespaceManager;
         private readonly MessagingFactory _factory;
@@ -54,6 +55,9 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
             for (var topicIndex = 0; topicIndex < topicNames.Count; ++topicIndex)
             {
                 string topicName = topicNames[topicIndex];
+                var topicDescription = new TopicDescription(topicName);
+                topicDescription.DefaultMessageTimeToLive = _configuration.TimeToLive;
+                topicDescription.AutoDeleteOnIdle = IdleTopicTimeout;
 
                 if (!_namespaceManager.TopicExists(topicName))
                 {
@@ -61,7 +65,7 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
                     {
                         _trace.TraceInformation("Creating a new topic {0} in the service bus...", topicName);
 
-                        _namespaceManager.CreateTopic(topicName);
+                        _namespaceManager.CreateTopic(topicDescription);
 
                         _trace.TraceInformation("Creation of a new topic {0} in the service bus completed successfully.", topicName);
                     }
@@ -83,6 +87,8 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
                 try
                 {
                     var subscriptionDescription = new SubscriptionDescription(topicName, subscriptionName);
+
+                    subscriptionDescription.DefaultMessageTimeToLive = _configuration.TimeToLive;
 
                     // This cleans up the subscription while if it's been idle for more than the timeout.
                     subscriptionDescription.AutoDeleteOnIdle = IdleSubscriptionTimeout;
