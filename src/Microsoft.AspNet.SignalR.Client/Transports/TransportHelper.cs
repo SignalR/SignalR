@@ -32,6 +32,14 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
 #endif
             negotiateUrl += AppendCustomQueryString(connection, negotiateUrl);
 
+            char appender = '?';
+            if (negotiateUrl.Contains("?"))
+            {
+                appender = '&';
+            }
+
+            negotiateUrl += appender + "clientProtocol=" + connection.Protocol;
+
             httpClient.Initialize(connection);
 
             return httpClient.Get(negotiateUrl, connection.PrepareRequest, isLongRunning: false)

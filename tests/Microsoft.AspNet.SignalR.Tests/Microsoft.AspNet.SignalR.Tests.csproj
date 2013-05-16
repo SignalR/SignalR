@@ -107,6 +107,7 @@
     <Compile Include="PrefixMatcherFacts.cs" />
     <Compile Include="BufferTextWriterFacts.cs" />
     <Compile Include="Server\AckHandlerFacts.cs" />
+    <Compile Include="Server\ProtocolResolverFacts.cs" />
     <Compile Include="Server\ServiceBusConfigurationFacts.cs" />
     <Compile Include="Server\DiffSetFacts.cs" />
     <Compile Include="Server\Hubs\HubDispatcherFacts.cs" />
