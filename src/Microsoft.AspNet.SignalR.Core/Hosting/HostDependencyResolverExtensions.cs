@@ -20,8 +20,10 @@ namespace Microsoft.AspNet.SignalR.Hosting
                 throw new ArgumentNullException("instanceName");
             }
 
+#if !MONO
             // Initialize the performance counters
             resolver.InitializePerformanceCounters(instanceName, hostShutdownToken);
+#endif
 
             // Dispose the dependency resolver on host shut down (cleanly)
             resolver.InitializeResolverDispose(hostShutdownToken);
