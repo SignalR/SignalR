@@ -252,16 +252,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
 
         public virtual bool AddEvent(string key, Topic topic)
         {
-            lock (EventKeys)
-            {
-                if (EventKeys.Contains(key))
-                {
-                    return false;
-                }
-
-                EventKeys.Add(key);
-                return true;
-            }
+            return AddEventCore(key);
         }
 
         public virtual void RemoveEvent(string key)
@@ -274,7 +265,8 @@ namespace Microsoft.AspNet.SignalR.Messaging
 
         public virtual void SetEventTopic(string key, Topic topic)
         {
-            AddEvent(key, topic);
+            // Don't call AddEvent since that's virtual
+            AddEventCore(key);
         }
 
         protected virtual void Dispose(bool disposing)
@@ -324,6 +316,20 @@ namespace Microsoft.AspNet.SignalR.Messaging
         }
 
         public abstract void WriteCursor(TextWriter textWriter);
+
+        private bool AddEventCore(string key)
+        {
+            lock (EventKeys)
+            {
+                if (EventKeys.Contains(key))
+                {
+                    return false;
+                }
+
+                EventKeys.Add(key);
+                return true;
+            }
+        }
 
         private static class State
         {
