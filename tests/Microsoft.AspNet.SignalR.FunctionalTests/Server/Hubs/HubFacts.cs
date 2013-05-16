@@ -1387,6 +1387,8 @@ namespace Microsoft.AspNet.SignalR.Tests
         [Theory]
         [InlineData(HostType.Memory, TransportType.LongPolling)]
         [InlineData(HostType.IISExpress, TransportType.LongPolling)]
+        [InlineData(HostType.IISExpress, TransportType.ServerSentEvents)]
+        [InlineData(HostType.IISExpress, TransportType.Websockets)]
         public void JoinAndSendToGroupRenamedHub(HostType hostType, TransportType transportType)
         {
             using (var host = CreateHost(hostType, transportType))
@@ -1398,17 +1400,25 @@ namespace Microsoft.AspNet.SignalR.Tests
 
                 var hub = connection.CreateHubProxy("groupChat");
 
-                hub.On("send", wh.Set);
+                var list = new List<int>();
+
+                hub.On<int>("send", list.Add);
 
                 connection.Start(host.Transport).Wait();
 
                 hub.InvokeWithTimeout("Join", "Foo");
 
-                Thread.Sleep(TimeSpan.FromSeconds(2));
+                hub.InvokeWithTimeout("Send", "Foo", "1");
 
-                hub.InvokeWithTimeout("Send", "Foo", "new test");
+                hub.InvokeWithTimeout("Leave", "Foo");
 
-                Assert.True(wh.Wait(TimeSpan.FromSeconds(10)));
+                for (int i = 0; i < 10; i++)
+                {
+                    hub.InvokeWithTimeout("Send", "Foo", "2");
+                }
+
+                Assert.Equal(1, list.Count);
+                Assert.Equal(1, list[0]);
 
                 connection.Stop();
             }
