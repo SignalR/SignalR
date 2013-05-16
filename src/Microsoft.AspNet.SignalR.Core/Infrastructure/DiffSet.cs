@@ -12,23 +12,20 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
 
         public DiffSet(IEnumerable<T> items)
         {
-            _addedItems = new HashSet<T>(items);
+            _addedItems = new HashSet<T>();
             _removedItems = new HashSet<T>();
 
-            // We don't want to re-enumerate items
-            _items = new HashSet<T>(_addedItems);
+            _items = new HashSet<T>(items);
         }
 
         public bool Add(T item)
         {
             if (_items.Add(item))
             {
-                if (!_removedItems.Remove(item))
-                {
-                    _addedItems.Add(item);
-                }
+                _addedItems.Add(item);
                 return true;
             }
+
             return false;
         }
 
@@ -36,10 +33,7 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
         {
             if (_items.Remove(item))
             {
-                if (!_addedItems.Remove(item))
-                {
-                    _removedItems.Add(item);
-                }
+                _removedItems.Add(item);
                 return true;
             }
             return false;
@@ -61,18 +55,6 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
             _addedItems.Clear();
             _removedItems.Clear();
             return anyChanges;
-        }
-
-        public DiffPair<T> GetDiff()
-        {
-            var pair = new DiffPair<T>
-            {
-                Added = new List<T>(_addedItems),
-                Removed = new List<T>(_removedItems)
-            };
-            _addedItems.Clear();
-            _removedItems.Clear();
-            return pair;
         }
     }
 }
