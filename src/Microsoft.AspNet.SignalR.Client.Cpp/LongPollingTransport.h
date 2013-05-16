@@ -8,7 +8,6 @@ public:
     ~LongPollingTransport(void);
 
     void Start(Connection* connection, START_CALLBACK startCallback, string data, void* state = NULL);
-    void Abort(Connection* connection);
 
     struct PollHttpRequestInfo
     {

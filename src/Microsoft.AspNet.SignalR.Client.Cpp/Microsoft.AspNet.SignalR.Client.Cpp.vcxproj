@@ -13,6 +13,8 @@
   <PropertyGroup Label="Globals">
     <ProjectGuid>{3F489CB9-C96B-43CB-A59D-A907B0B4A56B}</ProjectGuid>
     <RootNamespace>MicrosoftAspNetSignalRClientCpp</RootNamespace>
+    <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\..\</SolutionDir>
+    <RestorePackages>true</RestorePackages>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -43,6 +45,7 @@
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
+      <AdditionalOptions>/D "WIN32" %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -91,7 +94,13 @@
     <ClInclude Include="ServerSentEventsTransport.h" />
     <ClInclude Include="TransportHelper.h" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
+    <Import Project="$(SolutionDir)\.nuget\NuGet.targets" Condition="Exists('$(SolutionDir)\.nuget\NuGet.targets')" />
+    <Import Project="..\..\packages\cpprestsdk.redist.0.6.0.21\build\native\cpprestsdk.redist.targets" Condition="Exists('..\..\packages\cpprestsdk.redist.0.6.0.21\build\native\cpprestsdk.redist.targets')" />
+    <Import Project="..\..\packages\cpprestsdk.0.6.0.21\build\native\cpprestsdk.targets" Condition="Exists('..\..\packages\cpprestsdk.0.6.0.21\build\native\cpprestsdk.targets')" />
   </ImportGroup>
 </Project>

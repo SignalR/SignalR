@@ -13,6 +13,14 @@ namespace Microsoft.AspNet.SignalR.Client.Samples
             var client = new CommonClient(writer);
             client.RunAsync("http://localhost:40476/").Wait();
 
+            // var hubConnection = new HubConnection("http://localhost:40476/");
+
+            // RunDemoHub(hubConnection);
+
+            RunStreamingSample();
+
+            //RunStatusHub();
+
             Console.ReadKey();
         }
     }

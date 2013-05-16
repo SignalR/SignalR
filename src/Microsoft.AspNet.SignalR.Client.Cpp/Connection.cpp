@@ -1,5 +1,6 @@
 #include "Connection.h"
 #include "IConnectionHandler.h"
+#include "LongPollingTransport.h"
 #include <string>
 
 Connection::Connection(const string url, IConnectionHandler* handler)
@@ -17,6 +18,7 @@ void Connection::Start()
 void Connection::Start(IHttpClient* client) 
 {	
     // Start(new AutoTransport(client));
+	Start(new LongPollingTransport(client));
 }
 
 void Connection::Start(IClientTransport* transport) 

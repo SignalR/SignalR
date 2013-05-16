@@ -20,6 +20,6 @@ public:
     virtual void Start(Connection* connection, START_CALLBACK startCallback, string data, void* state = NULL) = 0;
     virtual void Send(Connection* connection, string data) = 0;
     virtual void Stop(Connection* connection) = 0;
-    virtual void Abort(Connection connection) = 0;
+    virtual void Abort(Connection* connection) = 0;
 };
 
