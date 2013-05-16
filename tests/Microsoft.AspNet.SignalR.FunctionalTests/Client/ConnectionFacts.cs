@@ -12,6 +12,35 @@ namespace Microsoft.AspNet.SignalR.Tests
     public class ConnectionFacts : HostedTest
     {
         [Theory]
+        [InlineData("1337.0", HostType.Memory, TransportType.ServerSentEvents)]
+        [InlineData("1337.0", HostType.Memory, TransportType.LongPolling)]
+        [InlineData("1337.0", HostType.IISExpress, TransportType.LongPolling)]
+        [InlineData("1337.0", HostType.IISExpress, TransportType.ServerSentEvents)]
+        [InlineData("1337.0", HostType.IISExpress, TransportType.Websockets)]
+        [InlineData("0.1337", HostType.Memory, TransportType.ServerSentEvents)]
+        [InlineData("0.1337", HostType.Memory, TransportType.LongPolling)]
+        [InlineData("0.1337", HostType.IISExpress, TransportType.LongPolling)]
+        [InlineData("0.1337", HostType.IISExpress, TransportType.ServerSentEvents)]
+        [InlineData("0.1337", HostType.IISExpress, TransportType.Websockets)]
+        public void ConnectionFailsToStartWithInvalidOldProtocol(string protocolVersion, HostType hostType, TransportType transportType)
+        {
+            using (var host = CreateHost(hostType, transportType))
+            {
+                host.Initialize();
+                var connection = CreateConnection(host, "/signalr");
+
+                connection.Protocol = new Version(protocolVersion);
+
+                using (connection)
+                {
+                    connection.Start(host.Transport).ContinueWith(task => {
+                        Assert.True(task.IsFaulted);
+                    }).Wait();
+                }
+            }
+        }
+
+        [Theory]
         [InlineData(HostType.Memory, TransportType.ServerSentEvents)]
         [InlineData(HostType.Memory, TransportType.LongPolling)]
         [InlineData(HostType.IISExpress, TransportType.LongPolling)]
