@@ -71,12 +71,6 @@
     <Compile Include="..\..\src\Common\CommonVersionInfo.cs">
       <Link>Properties\CommonVersionInfo.cs</Link>
     </Compile>
-    <Compile Include="..\Microsoft.AspNet.SignalR.Tests.Common\Infrastructure\CountDownRange.cs">
-      <Link>Infrastructure\CountDownRange.cs</Link>
-    </Compile>
-    <Compile Include="..\Microsoft.AspNet.SignalR.Tests.Common\Infrastructure\OrderedCountDownRange.cs">
-      <Link>Infrastructure\OrderedCountDownRange.cs</Link>
-    </Compile>
     <Compile Include="ArrayTextReaderFacts.cs" />
     <Compile Include="ChunkBufferFacts.cs" />
     <Compile Include="Client\ConnectionFacts.cs" />

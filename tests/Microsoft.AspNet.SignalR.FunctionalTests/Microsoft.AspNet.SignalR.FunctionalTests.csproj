@@ -82,12 +82,6 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="..\Microsoft.AspNet.SignalR.Tests.Common\Infrastructure\CountDownRange.cs">
-      <Link>Infrastructure\CountDownRange.cs</Link>
-    </Compile>
-    <Compile Include="..\Microsoft.AspNet.SignalR.Tests.Common\Infrastructure\OrderedCountDownRange.cs">
-      <Link>Infrastructure\OrderedCountDownRange.cs</Link>
-    </Compile>
     <Compile Include="Client\ConnectionFacts.cs" />
     <Compile Include="Client\HubProxyFacts.cs" />
     <Compile Include="Client\KeepAliveFacts.cs" />
