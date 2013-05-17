@@ -121,12 +121,12 @@
     <Projects Include="$(ProjectRoot)\src\**\*.csproj" Exclude="@(Projects)" />
 
     <!-- Custom sample projects -->
-    <Projects Include="$(ProjectRoot)\samples\Microsoft.AspNet.SignalR.Client.Silverlight.Sample\Microsoft.AspNet.SignalR.Client.Silverlight.Sample.csproj">
+    <Projects Include="$(ProjectRoot)\samples\Microsoft.AspNet.SignalR.Client.Silverlight5.Samples\Microsoft.AspNet.SignalR.Client.Silverlight5.Samples.csproj">
       <Build Condition="$(Silverlight5SDKInstalled) != 'true'">false</Build>
       <Sample>true</Sample>
       <Platform>SL5</Platform>
     </Projects>
-    <Projects Include="$(ProjectRoot)\samples\Microsoft.AspNet.SignalR.Client.WP8.Sample\Microsoft.AspNet.SignalR.Client.WP8.Sample.csproj">
+    <Projects Include="$(ProjectRoot)\samples\Microsoft.AspNet.SignalR.Client.WP8.Samples\Microsoft.AspNet.SignalR.Client.WP8.Samples.csproj">
       <Build Condition="$(WP8SDKInstalled) != 'true'">false</Build>
       <Sample>true</Sample>
       <Platform>WP8</Platform>
