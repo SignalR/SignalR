@@ -25,6 +25,7 @@ namespace Microsoft.AspNet.SignalR.Configuration
             ConnectionTimeout = TimeSpan.FromSeconds(110);
             DisconnectTimeout = TimeSpan.FromSeconds(30);
             DefaultMessageBufferSize = 1000;
+            TransportConnectTimeout = TimeSpan.FromSeconds(5);
         }
 
         // TODO: Should we guard against negative TimeSpans here like everywhere else?
@@ -81,6 +82,12 @@ namespace Microsoft.AspNet.SignalR.Configuration
         }
 
         public int DefaultMessageBufferSize
+        {
+            get;
+            set;
+        }
+
+        public TimeSpan TransportConnectTimeout
         {
             get;
             set;
