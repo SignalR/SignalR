@@ -68,9 +68,6 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="..\..\tests\Microsoft.AspNet.SignalR.Tests.Common\Infrastructure\CountDownRange.cs">
-      <Link>Infrastructure\CountDownRange.cs</Link>
-    </Compile>
     <Compile Include="..\Common\CommonVersionInfo.cs">
       <Link>Properties\CommonVersionInfo.cs</Link>
     </Compile>

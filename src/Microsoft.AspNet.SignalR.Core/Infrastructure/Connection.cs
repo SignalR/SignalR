@@ -144,7 +144,7 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
         }
 
         private ArraySegment<byte> GetMessageBuffer(object value)
-        {            
+        {
             using (var stream = new MemoryStream(128))
             {
                 var bufferWriter = new BufferTextWriter((buffer, state) =>
@@ -203,7 +203,7 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
                 response.Initializing = _initializing;
                 _initializing = false;
             }
-            
+
             PopulateResponseState(response);
 
             _counters.ConnectionMessagesReceivedTotal.IncrementBy(result.TotalCount);
@@ -310,15 +310,11 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
                 // Create a protected payload of the sorted list
                 IEnumerable<string> groups = groupSet.GetSnapshot();
 
-                // No groups so do nothing
-                if (groups.Any())
-                {
-                    // Remove group prefixes before any thing goes over the wire
-                    string groupsString = connectionId + ':' + serializer.Stringify(PrefixHelper.RemoveGroupPrefixes(groups)); ;
+                // Remove group prefixes before any thing goes over the wire
+                string groupsString = connectionId + ':' + serializer.Stringify(PrefixHelper.RemoveGroupPrefixes(groups)); ;
 
-                    // The groups token
-                    response.GroupsToken = protectedData.Protect(groupsString, Purposes.Groups);
-                }
+                // The groups token
+                response.GroupsToken = protectedData.Protect(groupsString, Purposes.Groups);
             }
         }
 

@@ -4,7 +4,7 @@ using System.Threading;
 
 namespace Microsoft.AspNet.SignalR.Tests.Infrastructure
 {
-    internal class OrderedCountDownRange<T>
+    public class OrderedCountDownRange<T>
     {
         private readonly IEnumerator<T> _enumerator;
         private T _value;

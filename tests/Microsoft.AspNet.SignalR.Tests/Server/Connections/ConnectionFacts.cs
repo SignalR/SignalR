@@ -38,7 +38,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                 var groupSet = new DiffSet<string>(new string[] { "a", "b", "c" });
 
                 // Get the first diff
-                groupSet.GetDiff();
+                groupSet.DetectChanges();
 
                 var serializer = JsonUtility.CreateDefaultSerializer();
                 var protectedData = new Mock<IProtectedData>();
@@ -59,7 +59,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                 var response = new PersistentResponse();
                 var groupSet = new DiffSet<string>(new string[] { "a:1", "b:2", "c", "d" });
 
-                groupSet.GetDiff();
+                groupSet.DetectChanges();
 
                 groupSet.Add("g");
 
@@ -87,6 +87,35 @@ namespace Microsoft.AspNet.SignalR.Tests
                 Assert.True(results.Contains("c"));
                 Assert.True(results.Contains("d"));
                 Assert.True(results.Contains("g"));
+            }
+
+            [Fact]
+            public void GroupTokenIsNotNullWhenGroupsChangeToEmpty()
+            {
+                var response = new PersistentResponse();
+                var groupSet = new DiffSet<string>(new string[] { "b", "d" });
+
+                groupSet.DetectChanges();
+
+                groupSet.Remove("b");
+                groupSet.Remove("d");
+
+                var serializer = JsonUtility.CreateDefaultSerializer();
+                var protectedData = new Mock<IProtectedData>();
+                protectedData.Setup(m => m.Protect(It.IsAny<string>(), It.IsAny<string>()))
+                    .Returns<string, string>((value, purpose) => value);
+
+                protectedData.Setup(m => m.Unprotect(It.IsAny<string>(), It.IsAny<string>()))
+                             .Returns<string, string>((value, purpose) => value);
+
+                Connection.PopulateResponseState(response, groupSet, serializer, protectedData.Object, connectionId: "myconnection");
+
+                Assert.NotNull(response.GroupsToken);
+                var parts = response.GroupsToken.Split(new[] { ':' }, 2);
+                Assert.Equal(2, parts.Length);
+                Assert.Equal("myconnection", parts[0]);
+                var groups = serializer.Deserialize<string[]>(new JsonTextReader(new StringReader(parts[1])));
+                Assert.Equal(0, groups.Length);
             }
         }
     }

@@ -388,8 +388,11 @@ namespace Microsoft.AspNet.SignalR.Tests
                     // Leave the group
                     connection.SendWithTimeout(new { type = 2, group = "test" });
 
-                    // Send a message
-                    connection.SendWithTimeout(new { type = 3, group = "test", message = "goodbye to group test" });
+                    for (int i = 0; i < 10; i++)
+                    {
+                        // Send a message
+                        connection.SendWithTimeout(new { type = 3, group = "test", message = "goodbye to group test" });
+                    }
 
                     Thread.Sleep(TimeSpan.FromSeconds(5));
 
