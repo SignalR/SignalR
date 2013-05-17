@@ -7,7 +7,7 @@ class ServerSentEventsTransport :
     public HttpBasedTransport
 {
 public:
-    ServerSentEventsTransport(IHttpClient* client);
+    ServerSentEventsTransport(http_client* client);
     ~ServerSentEventsTransport(void);
 
     void Start(Connection* connection, START_CALLBACK startCallback, string data, void* state = NULL);

@@ -90,7 +90,7 @@
     <ClInclude Include="IHttpResponse.h" />
     <ClInclude Include="LongPollingTransport.h" />
     <ClInclude Include="MyConnectionHandler.h" />
-    <ClInclude Include="NegotiateResponse.h" />
+    <ClInclude Include="NegotiationResponse.h" />
     <ClInclude Include="ServerSentEventsTransport.h" />
     <ClInclude Include="TransportHelper.h" />
   </ItemGroup>

@@ -1,11 +1,10 @@
 #include "Connection.h"
 #include "IConnectionHandler.h"
 #include "LongPollingTransport.h"
-#include <string>
 
-Connection::Connection(const string url, IConnectionHandler* handler)
+Connection::Connection(utility::string_t uri, IConnectionHandler* handler)
 {
-    mUrl = url;
+    mUri = uri;
     mState = State::Disconnected;
     mHandler = handler;
 }
@@ -13,9 +12,10 @@ Connection::Connection(const string url, IConnectionHandler* handler)
 void Connection::Start() 
 {
     // Start(new DefaultHttpClient());
+    Start(new http_client(L"http://junk"));
 }
 
-void Connection::Start(IHttpClient* client) 
+void Connection::Start(http_client* client) 
 {	
     // Start(new AutoTransport(client));
 	Start(new LongPollingTransport(client));
@@ -57,7 +57,7 @@ bool Connection::EnsureReconnecting()
     return mState == State::Reconnecting;
 }
 
-void Connection::SetConnectionState(NegotiateResponse negotiateResponse)
+void Connection::SetConnectionState(NegotiationResponse negotiateResponse)
 {
     mConnectionId = negotiateResponse.ConnectionId;
     mConnectionToken = negotiateResponse.ConnectionToken;
@@ -73,9 +73,9 @@ IClientTransport* Connection::GetTransport()
     return mTransport;
 }
 
-string Connection::GetUrl()
+utility::string_t Connection::GetUri()
 {
-    return mUrl;
+    return mUri;
 }
 
 string Connection::GetConnectionToken()
@@ -98,7 +98,7 @@ void Connection::Stop()
     mTransport->Stop(this);
 }
 
-void Connection::OnNegotiateCompleted(NegotiateResponse* negotiateResponse, exception* error, void* state) 
+void Connection::OnNegotiateCompleted(NegotiationResponse* negotiateResponse, exception* error, void* state) 
 {	
     auto connection = (Connection*)state;
 

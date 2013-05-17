@@ -1,6 +1,6 @@
 #include "ServerSentEventsTransport.h"
 
-ServerSentEventsTransport::ServerSentEventsTransport(IHttpClient* httpClient) : 
+ServerSentEventsTransport::ServerSentEventsTransport(http_client* httpClient) : 
     HttpBasedTransport(httpClient)
 {
 
@@ -13,23 +13,23 @@ ServerSentEventsTransport::~ServerSentEventsTransport(void)
 
 void ServerSentEventsTransport::Start(Connection* connection, START_CALLBACK startCallback, string data, void* state)
 {
-    string url = connection->GetUrl(); 
-    
-    if(startCallback != NULL)
-    {
-        url += "connect";
-    }
+    //string url = connection->GetUrl(); 
+    //
+    //if(startCallback != NULL)
+    //{
+    //    url += "connect";
+    //}
 
-    url += TransportHelper::GetReceiveQueryString(connection, data, "serverSentEvents");
+    //url += TransportHelper::GetReceiveQueryString(connection, data, "serverSentEvents");
 
-    auto requestInfo = new HttpRequestInfo();
-    requestInfo->CallbackState = state;
-    requestInfo->Transport = this;
-    requestInfo->Callback = startCallback;
-    requestInfo->Connection = connection;
-    requestInfo->Data = data;
+    //auto requestInfo = new HttpRequestInfo();
+    //requestInfo->CallbackState = state;
+    //requestInfo->Transport = this;
+    //requestInfo->Callback = startCallback;
+    //requestInfo->Connection = connection;
+    //requestInfo->Data = data;
 
-    mHttpClient->Get(url, &ServerSentEventsTransport::OnStartHttpResponse, requestInfo);
+    //mHttpClient->Get(url, &ServerSentEventsTransport::OnStartHttpResponse, requestInfo);
 }
 
 void ServerSentEventsTransport::OnStartHttpResponse(IHttpResponse* httpResponse, exception* error, void* state)

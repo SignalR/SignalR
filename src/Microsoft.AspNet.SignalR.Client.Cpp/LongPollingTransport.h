@@ -4,7 +4,7 @@ class LongPollingTransport :
     public HttpBasedTransport
 {
 public:
-    LongPollingTransport(IHttpClient* httpClient);
+    LongPollingTransport(http_client* httpClient);
     ~LongPollingTransport(void);
 
     void Start(Connection* connection, START_CALLBACK startCallback, string data, void* state = NULL);

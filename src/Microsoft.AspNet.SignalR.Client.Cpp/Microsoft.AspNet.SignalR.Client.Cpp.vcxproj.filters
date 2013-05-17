@@ -80,9 +80,6 @@
     <ClInclude Include="MyConnectionHandler.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="NegotiateResponse.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="ServerSentEventsTransport.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -93,6 +90,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="LongPollingTransport.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="NegotiationResponse.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

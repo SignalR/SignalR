@@ -1,6 +1,6 @@
-using namespace std;
+//using namespace std;
 
-#include <iostream>
+//#include <iostream>
 #include "Connection.h"
 #include "MyConnectionHandler.h"
 #include "FakeHttpClient.h"
@@ -23,60 +23,62 @@ using namespace std;
 //    connection.Stop();
 //}
 
-//#include <http_client.h>
-//#include <filestream.h>
-//#include <iostream>
-//#include <sstream>
-//
-//using namespace web::http;
-//using namespace web::http::client;
-//using namespace std;
+#include <http_client.h>
+#include <filestream.h>
+#include <iostream>
+#include <sstream>
 
-//// Creates an HTTP request and prints the length of the response stream.
-//pplx::task<void> HTTPStreamingAsync()
-//{
-//    http_client client(L"http://localhost:40476/raw-connection/negotiate");
-//
-//    // Make the request and asynchronously process the response. 
-//    return client.request(methods::GET).then([](http_response response)
-//    {
-//        // Print the status code.
-//        std::wostringstream ss;
-//        ss << L"Server returned returned status code " << response.status_code() << L'.' << std::endl;
-//        std::wcout << ss.str();
-//
-//        // TODO: Perform actions here reading from the response stream.
-//        auto bodyStream = response.body();
-//
-//        // In this example, we print the length of the response to the console.
-//        ss.str(std::wstring());
-//        ss << L"Content length is " << response.headers().content_length() << L" bytes." << std::endl;
-//        std::wcout << ss.str();
-//
-//		ss.str(std::wstring());
-//		ss << response.extract_json().get() << endl;
-//        std::wcout << ss.str();
-//
-//    });
-//}
+using namespace web::http;
+using namespace web::http::client;
+using namespace std;
+
+// Creates an HTTP request and prints the length of the response stream.
+pplx::task<void> HTTPStreamingAsync()
+{
+    http_client client(L"http://localhost:40476/raw-connection/negotiate");
+
+    // Make the request and asynchronously process the response. 
+    return client.request(methods::GET).then([](http_response response)
+    {
+        // Print the status code.
+        std::wostringstream ss;
+        ss << L"Server returned returned status code " << response.status_code() << L'.' << std::endl;
+        std::wcout << ss.str();
+
+        // TODO: Perform actions here reading from the response stream.
+        auto bodyStream = response.body();
+
+        // In this example, we print the length of the response to the console.
+        ss.str(std::wstring());
+        ss << L"Content length is " << response.headers().content_length() << L" bytes." << std::endl;
+        std::wcout << ss.str();
+
+		ss.str(std::wstring());
+		ss << response.extract_json().get() << endl;
+        std::wcout << ss.str();
+
+    });
+}
 
 int main () {
 	//cout << "changed" << endl;
 
 	//std::wcout << L"Calling HTTPStreamingAsync..." << std::endl;
-    //HTTPStreamingAsync().wait();
+ //   HTTPStreamingAsync().wait();
 
-	//char t;
-	//cin >> t;
+
 	IConnectionHandler* handler = new MyConnectionHandler();
-    IHttpClient* client = new FakeHttpClient();
+    //IHttpClient* client = new FakeHttpClient();
 
-    auto connection = Connection("http://localhost:40476/", handler);
+    auto connection = Connection(U("http://localhost:40476/raw-connection"), handler);
     
-    connection.Start(client);
+    connection.Start();
     
-    connection.Send("hello");
-    connection.Send("bar");
+    //connection.Send("hello");
+    //connection.Send("bar");
 
-    connection.Stop();
+    //connection.Stop();
+
+    char t;
+	cin >> t;
 }

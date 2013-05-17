@@ -5,10 +5,13 @@ class IClientTransport;
 
 #include <string>
 #include "IHttpClient.h"
-#include "NegotiateResponse.h"
 #include "IClientTransport.h"
+#include <http_client.h>
+#include <filestream.h>
 
 using namespace std;
+using namespace web::http;
+using namespace web::http::client;
 
 class Connection
 {
@@ -22,12 +25,12 @@ public:
         Disconnected,
     };
 
-    Connection(string url, IConnectionHandler* handler);
+    Connection(utility::string_t uri, IConnectionHandler* handler);
     ~Connection(void);
 
     void Start();
     void Start(IClientTransport* tranport);
-    void Start(IHttpClient* client);
+    void Start(http_client* client);
     void Stop();
     void Send(string data);
     
@@ -36,7 +39,7 @@ public:
     string GetConnectionToken();
     string GetGroupsToken();
     IClientTransport* GetTransport();
-    string GetUrl();
+    utility::string_t GetUri();
     string GetMessageId();
 
     // Transport API
@@ -45,10 +48,10 @@ public:
     void OnError(exception error);
     void OnReceived(string data);
 
-    void SetConnectionState(NegotiateResponse negotiateResponse);
+    void SetConnectionState(NegotiationResponse negotiateResponse);
 
 private:
-    string mUrl;
+    utility::string_t mUri;
     string mConnectionId;
     string mConnectionToken;
     string mGroupsToken;
@@ -58,6 +61,6 @@ private:
     IConnectionHandler* mHandler;
 
     static void OnTransportStartCompleted(exception* error, void* state);
-    static void OnNegotiateCompleted(NegotiateResponse* negotiateResponse, exception* error, void* state);
+    static void OnNegotiateCompleted(NegotiationResponse* negotiateResponse, exception* error, void* state);
 };
 

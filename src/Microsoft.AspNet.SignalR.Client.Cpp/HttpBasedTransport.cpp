@@ -1,7 +1,7 @@
 #include "HttpBasedTransport.h"
 
 
-HttpBasedTransport::HttpBasedTransport(IHttpClient* httpClient)
+HttpBasedTransport::HttpBasedTransport(http_client* httpClient)
 {
     mHttpClient = httpClient;
 }
@@ -19,25 +19,25 @@ void HttpBasedTransport::Negotiate(Connection* connection, NEGOTIATE_CALLBACK ne
 
 void HttpBasedTransport::Send(Connection* connection, string data)
 {
-    auto url = connection->GetUrl() + 
-        "send?transport=serverSentEvents&connectionToken=" + 
-        connection->GetConnectionToken();
+    //auto url = connection->GetUrl() + 
+    //    "send?transport=serverSentEvents&connectionToken=" + 
+    //    connection->GetConnectionToken();
 
-    auto postData = map<string, string>();
-    postData["data"] = data;
+    //auto postData = map<string, string>();
+    //postData["data"] = data;
 
-    if(mSending)
-    {
-        auto queueItem = new SendQueueItem();
-        queueItem->Connection = connection;
-        queueItem->Url = url;
-        queueItem->PostData = postData;
-        mSendQueue.push(queueItem);
-    }
-    else
-    {
-        mHttpClient->Post(url, postData, &HttpBasedTransport::OnSendHttpResponse, this);
-    }
+    //if(mSending)
+    //{
+    //    auto queueItem = new SendQueueItem();
+    //    queueItem->Connection = connection;
+    //    queueItem->Url = url;
+    //    queueItem->PostData = postData;
+    //    mSendQueue.push(queueItem);
+    //}
+    //else
+    //{
+    //    //mHttpClient->Post(url, postData, &HttpBasedTransport::OnSendHttpResponse, this);
+    //}
 }
 
 void HttpBasedTransport::TryDequeueNextWorkItem()
@@ -53,7 +53,7 @@ void HttpBasedTransport::TryDequeueNextWorkItem()
         // Nuke the work item
         mSendQueue.pop();
 
-        mHttpClient->Post(workItem->Url, workItem->PostData, &HttpBasedTransport::OnSendHttpResponse, this);
+        //mHttpClient->Post(workItem->Url, workItem->PostData, &HttpBasedTransport::OnSendHttpResponse, this);
 
         delete workItem;
     }

@@ -1,7 +1,7 @@
 #include "LongPollingTransport.h"
 
 
-LongPollingTransport::LongPollingTransport(IHttpClient* httpClient) :
+LongPollingTransport::LongPollingTransport(http_client* httpClient) :
     HttpBasedTransport(httpClient)
 {
 }
@@ -13,27 +13,27 @@ LongPollingTransport::~LongPollingTransport(void)
 
 void LongPollingTransport::Start(Connection* connection, START_CALLBACK startCallback, string data, void* state)
 {    
-    string url = connection->GetUrl();
+    //string url = connection->GetUrl();
 
-    if(startCallback != NULL)
-    {
-        url += "connect";
-    }
+    //if(startCallback != NULL)
+    //{
+    //    url += "connect";
+    //}
 
-    // TODO: Handle reconnect
+    //// TODO: Handle reconnect
 
-    url += TransportHelper::GetReceiveQueryString(connection, data, "longPolling");
+    //url += TransportHelper::GetReceiveQueryString(connection, data, "longPolling");
 
-    auto info = new PollHttpRequestInfo();
-    info->CallbackState = state;
-    info->Transport = this;
-    info->Callback = startCallback;
-    info->Connection = connection;
-    info->Data = data;
+    //auto info = new PollHttpRequestInfo();
+    //info->CallbackState = state;
+    //info->Transport = this;
+    //info->Callback = startCallback;
+    //info->Connection = connection;
+    //info->Data = data;
 
-    mHttpClient->Get(url, &LongPollingTransport::OnPollHttpResponse, info);
+    ////mHttpClient->Get(url, &LongPollingTransport::OnPollHttpResponse, info);
 
-    // TODO: Need to set a timer here to trigger connected after 2 seconds or so
+    //// TODO: Need to set a timer here to trigger connected after 2 seconds or so
 }
 
 void LongPollingTransport::OnPollHttpResponse(IHttpResponse* httpResponse, exception* error, void* state)

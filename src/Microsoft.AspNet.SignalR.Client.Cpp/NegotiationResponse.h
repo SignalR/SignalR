@@ -4,10 +4,14 @@
 
 using namespace std;
 
-struct NegotiateResponse
+class NegotiationResponse
 {
+public:
     string ConnectionId;
     string ConnectionToken;
+	string Url;
     string ProtocolVersion;
     double DisconnectTimeout;
+	bool TryWebSockets;
+	double KeepAliveTimeout;
 };

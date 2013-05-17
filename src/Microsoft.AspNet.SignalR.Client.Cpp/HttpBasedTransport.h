@@ -11,10 +11,10 @@ class HttpBasedTransport :
 {
 
 protected:
-    IHttpClient* mHttpClient;
+    http_client* mHttpClient;
 
 public:
-    HttpBasedTransport(IHttpClient* httpClient);
+    HttpBasedTransport(http_client* httpClient);
     ~HttpBasedTransport(void);
 
     void Negotiate(Connection* connection, NEGOTIATE_CALLBACK negotiateCallback, void* state = NULL);
