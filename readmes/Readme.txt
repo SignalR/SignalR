@@ -2,25 +2,22 @@ Please see http://go.microsoft.com/fwlink/?LinkId=272764 for more information on
  
 Mapping the Hubs connection
 ----------------------------
-SignalR Hubs will not work without a Hub route being configured. To register the default Hubs route, call RouteTable.Routes.MapHubs() in  your application's
-Application_Start method, e.g.:
+To enable SignalR in your application, create a class called Startup with the following:
  
-using System;
-using System.Web;
-using System.Web.Routing;
- 
+using Owin;
+
+// This needs to be AssemblyName.Startup or it will fail to load
 namespace MyWebApplication
 {
-    public class Global : System.Web.HttpApplication
+    public class Startup
     {
-        public void Application_Start()
+        // The name *MUST* be Configuration
+        public void Configuration(IAppBuilder app)
         {
-            // Register the default hubs route: ~/signalr
-            RouteTable.Routes.MapHubs();
+            app.MapHubs();
         }
     }
-}
- 
+} 
  
 Why does ~/signalr/hubs return 404 or Why do I get a JavaScript error: 'myhub is undefined'?
 --------------------------------------------------------------------------------------------
