@@ -12,6 +12,7 @@
     <PackageSrcDir>$(ArtifactsDir)\package-src</PackageSrcDir>
     <FxCopDir>$(ArtifactsDir)\fxcop</FxCopDir>
     <SamplesDir>$(ArtifactsDir)\samples</SamplesDir>
+    <ReadmesSource>$(ProjectRoot)\readmes</ReadmesSource>
     <NuspecsSource>$(ProjectRoot)\nuspecs</NuspecsSource>
     <NuspecsDestination>$(ArtifactsDir)\nuspecs</NuspecsDestination>
     <TestResultsPath>$(ArtifactsDir)\TestResults</TestResultsPath>
@@ -305,9 +306,10 @@
                  Condition="%(Projects.CopyArtifacts) And !%(Projects.Sample)">
         <Destination>$(PackageSrcDir)\Tools</Destination>
       </Artifacts>
-      <!-- Copy combined/minified JS and sql scripts to artifacts/{Configuration}/package-src/Content/ -->
+      <!-- Copy combined/minified JS, sql scripts and READMEs to artifacts/{Configuration}/package-src/Content/ -->
       <Artifacts Include="$(ProjectArtifactsDir)\Microsoft.AspNet.SignalR.Client.JS\*.js;
-                          $(ProjectArtifactsDir)\Microsoft.AspNet.SignalR.SqlServer\install.sql">
+                          $(ProjectArtifactsDir)\Microsoft.AspNet.SignalR.SqlServer\install.sql;
+                          $(ReadmesSource)\*.*">
         <Destination>$(PackageSrcDir)\Content</Destination>
       </Artifacts>
       <!-- Copy samples to artifacts/{Configuration}/samples while keeping directory structure -->
