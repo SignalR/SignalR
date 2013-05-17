@@ -14,9 +14,8 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
     {
         private readonly IHttpClient _client;
         private CancellationToken _disconnectToken;
-        private Action _initializeCallback;
+        private TransportInitializationHandler _initializeHandler;
         private WebSocketConnectionInfo _connectionInfo;
-        private TaskCompletionSource<object> _startTcs;
         private ManualResetEventSlim _abortEventSlim;
 
         public WebSocketTransport()
@@ -65,18 +64,15 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
 
         public Task Start(IConnection connection, string data, CancellationToken disconnectToken)
         {
-            _startTcs = new TaskCompletionSource<object>();
-            _initializeCallback = () =>
-            {
-                _startTcs.TrySetResult(null);
-            };
+            _initializeHandler = new TransportInitializationHandler(connection, this);
+
             _disconnectToken = disconnectToken;
             _connectionInfo = new WebSocketConnectionInfo(connection, data);
 
             // We don't need to await this task
-            PerformConnect().ContinueWithNotComplete(_startTcs);
+            PerformConnect().Then((Action)_initializeHandler.OnSuccess).Catch(_initializeHandler.OnFailure);
 
-            return _startTcs.Task;
+            return _initializeHandler.Handle;
         }
 
         private async Task PerformConnect(bool reconnecting = false)
@@ -128,7 +124,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
                                             message,
                                             out timedOut,
                                             out disconnected,
-                                            _initializeCallback);
+                                            _initializeHandler.OnSuccess);
 
             if (disconnected && !_disconnectToken.IsCancellationRequested)
             {

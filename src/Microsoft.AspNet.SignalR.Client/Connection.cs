@@ -42,6 +42,9 @@ namespace Microsoft.AspNet.SignalR.Client
         // The amount of time the client should attempt to reconnect before stopping.
         private TimeSpan _disconnectTimeout;
 
+        // The amount of time a transport will wait (while connecting) before failing
+        private TimeSpan _transportConnectTimeout;
+
         // Provides a way to cancel the the timeout that stops a reconnect cycle
         private IDisposable _disconnectTimeoutOperation;
 
@@ -163,6 +166,14 @@ namespace Microsoft.AspNet.SignalR.Client
 
             // Current client protocol
             Protocol = new Version(1, 3);
+        }
+
+        TimeSpan IConnection.TransportConnectTimeout
+        {
+            get
+            {
+                return _transportConnectTimeout;
+            }
         }
 
         public Version Protocol { get; set; }
@@ -386,6 +397,7 @@ namespace Microsoft.AspNet.SignalR.Client
                                 ConnectionId = negotiationResponse.ConnectionId;
                                 ConnectionToken = negotiationResponse.ConnectionToken;
                                 _disconnectTimeout = TimeSpan.FromSeconds(negotiationResponse.DisconnectTimeout);
+                                _transportConnectTimeout = TimeSpan.FromSeconds(negotiationResponse.TransportConnectTimeout);
 
                                 // If we have a keep alive
                                 if (negotiationResponse.KeepAliveTimeout != null)
