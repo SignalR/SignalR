@@ -1430,6 +1430,8 @@ namespace Microsoft.AspNet.SignalR.Tests
 
                     connection.Start(host.Transport).Wait();
 
+                    hub.InvokeWithTimeout("Join", "Foo");
+
                     hub.InvokeWithTimeout("Send", "Foo", "1");
 
                     hub.InvokeWithTimeout("Leave", "Foo");
