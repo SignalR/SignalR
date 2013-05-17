@@ -2,6 +2,33 @@
 
 testUtilities.runWithAllTransports(function (transport) {
    
+    QUnit.asyncTimeoutTest(transport + " transport can timeout when it does not receive initialize message.", testUtilities.defaultTestTimeout, function (end, assert, testName) {
+        var connection = testUtilities.createHubConnection(end, assert, testName, undefined, false),
+            savedProcessMessages = $.signalR.transports._logic.processMessages;
+
+        $.signalR.transports._logic.processMessages = function (_, minData) {
+            // Look for initialize message, if we get it, ignore it, transports should time out
+            if (!minData.S) {
+                savedProcessMessages.apply(this, arguments);
+            }
+        }
+
+        connection.start({ transport: transport }).done(function () {
+            assert.ok(false, "Connection started");
+            end();
+        }).fail(function () {
+            // transport timed out
+            assert.comment("Connection failed to start!");
+            end();
+        });
+
+        // Cleanup
+        return function () {
+            $.signalR.transports._logic.processMessages = savedProcessMessages;
+            connection.stop();
+        };
+    });
+
     QUnit.asyncTimeoutTest(transport + " transport can send and receive messages on connect.", testUtilities.defaultTestTimeout, function (end, assert, testName) {
         var connection = testUtilities.createConnection("multisend", end, assert, testName),
             values = [];

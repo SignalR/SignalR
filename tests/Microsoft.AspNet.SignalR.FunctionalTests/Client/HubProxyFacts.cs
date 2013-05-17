@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR.Client;
@@ -14,6 +15,65 @@ namespace Microsoft.AspNet.SignalR.Tests
 {
     public class HubProxyFacts : HostedTest
     {
+        [Theory]
+        [InlineData(HostType.Memory, TransportType.LongPolling)]
+        [InlineData(HostType.Memory, TransportType.ServerSentEvents)]
+        [InlineData(HostType.IISExpress, TransportType.Websockets)]
+        [InlineData(HostType.IISExpress, TransportType.ServerSentEvents)]
+        [InlineData(HostType.IISExpress, TransportType.LongPolling)]
+        public void TransportTimesOutIfNoInitMessage(HostType hostType, TransportType transportType)
+        {
+            var mre = new ManualResetEventSlim();
+
+            using (var host = CreateHost(hostType, transportType))
+            {
+                // All defaults except for last parameter (transportConnectTimeout)
+                host.Initialize(-1,110,30,1);
+
+                HubConnection hubConnection = CreateHubConnection(host);
+                IHubProxy proxy = hubConnection.CreateHubProxy("DelayedOnConnectedHub");
+
+                using (hubConnection)
+                {
+                    hubConnection.Start(host.Transport).Catch(ex =>
+                    {
+                        mre.Set();
+                    });
+
+                    Assert.True(mre.Wait(TimeSpan.FromSeconds(10)));
+                }
+            }
+        }
+
+        [Theory]
+        [InlineData(HostType.Memory, TransportType.Auto)]
+        [InlineData(HostType.IISExpress, TransportType.Auto)]
+        public void ConnectionFailsStartOnMultipleTransportTimeouts(HostType hostType, TransportType transportType)
+        {
+            var mre = new ManualResetEventSlim();
+
+            using (var host = CreateHost(hostType, transportType))
+            {
+                // All defaults except for last parameter (transportConnectTimeout)
+                host.Initialize(-1, 110, 30, 1);
+
+                HubConnection hubConnection = CreateHubConnection(host);
+                IHubProxy proxy = hubConnection.CreateHubProxy("DelayedOnConnectedHub");
+
+                using (hubConnection)
+                {                    
+                    hubConnection.Start(host.Transport).Catch(ex =>
+                    {
+                        mre.Set();
+                    });
+
+                    // Should take 1-2s per transport timeout
+                    Assert.True(mre.Wait(TimeSpan.FromSeconds(15)));
+                    Assert.True(String.IsNullOrEmpty(hubConnection.Transport.Name));
+                }
+            }
+        }
+
         [Theory]
         [InlineData(HostType.Memory, TransportType.ServerSentEvents)]
         [InlineData(HostType.Memory, TransportType.LongPolling)]
@@ -45,9 +105,9 @@ namespace Microsoft.AspNet.SignalR.Tests
         [Theory]
         [InlineData(HostType.Memory, TransportType.ServerSentEvents)]
         [InlineData(HostType.Memory, TransportType.LongPolling)]
-        [InlineData(HostType.IISExpress, TransportType.Websockets)]
         [InlineData(HostType.IISExpress, TransportType.ServerSentEvents)]
         [InlineData(HostType.IISExpress, TransportType.LongPolling)]
+        [InlineData(HostType.IISExpress, TransportType.Websockets)]
         public void TransportsBufferMessagesCorrectly(HostType hostType, TransportType transportType)
         {
             using (var host = CreateHost(hostType, transportType))
