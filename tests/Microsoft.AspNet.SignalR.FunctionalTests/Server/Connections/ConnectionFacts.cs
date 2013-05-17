@@ -109,14 +109,15 @@ namespace Microsoft.AspNet.SignalR.Client.Tests
                         Assert.NotNull(ser.Exception);
                     }
                 }
-            }
+            }            
 
             [Fact]
             public void FallbackToLongPollingIIS()
             {
                 using (ITestHost host = CreateHost(HostType.IISExpress))
                 {
-                    host.Initialize();
+                    // Reduce transportConnectionTimeout to 3 seconds
+                    host.Initialize(-1,110,30,3);
 
                     var connection = CreateConnection(host, "/fall-back");
 
@@ -134,7 +135,7 @@ namespace Microsoft.AspNet.SignalR.Client.Tests
 
                         var client = new DefaultHttpClient();
                         var transports = new IClientTransport[]  {
-                        new ServerSentEventsTransport(client) { ConnectionTimeout = TimeSpan.Zero },
+                        new ServerSentEventsTransport(client),
                         new LongPollingTransport(client)
                     };
 

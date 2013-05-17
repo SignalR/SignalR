@@ -67,8 +67,7 @@
         })(),
         createHubConnection: function (end, assert, testName, url, wrapStart) {
             var connection,
-                qs = (testName ? "test=" + window.encodeURIComponent(testName) : ""),
-                urlSet = !!url;
+                qs = (testName ? "test=" + window.encodeURIComponent(testName) : "");
 
             wrapStart = typeof wrapStart === "undefined" ? true : false;
 

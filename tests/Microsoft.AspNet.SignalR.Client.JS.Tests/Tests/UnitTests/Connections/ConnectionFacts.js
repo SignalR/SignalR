@@ -40,7 +40,7 @@ QUnit.test("connection.json is custom object after set", function () {
     QUnit.equal(con.json, customJson, "Verifies connection.json is settable to a custom object.");
 });
 
-QUnit.test("connection.json is unique on different objcets object when custom", function () {
+QUnit.test("connection.json is unique on different objects when custom", function () {
     var con1 = $.connection(),
         con2 = $.connection(),
         customJson1 = {},
