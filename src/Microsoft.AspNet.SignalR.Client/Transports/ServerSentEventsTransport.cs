@@ -24,7 +24,6 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
             : base(httpClient, "serverSentEvents")
         {
             ReconnectDelay = TimeSpan.FromSeconds(2);
-            ConnectionTimeout = TimeSpan.FromSeconds(5);
         }
 
         /// <summary>
@@ -37,11 +36,6 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
                 return true;
             }
         }
-
-        /// <summary>
-        /// Time allowed before failing the connect request.
-        /// </summary>
-        public TimeSpan ConnectionTimeout { get; set; }
 
         /// <summary>
         /// The time to wait after a connection drops to try reconnecting.
@@ -122,6 +116,13 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
                 }
                 else
                 {
+                    // If cancellation requested the task is either complete or cancelled, either way
+                    // we don't want to do anything
+                    if (disconnectToken.IsCancellationRequested)
+                    {
+                        return;
+                    }
+
                     var response = task.Result;
                     Stream stream = response.GetStream();
 
@@ -225,23 +226,6 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
             }, _request);
 
             requestDisposer.Set(requestCancellationRegistration);
-
-            if (errorCallback != null)
-            {
-                TaskAsyncHelper.Delay(ConnectionTimeout).Then(() =>
-                {
-                    callbackInvoker.Invoke((conn, cb) =>
-                    {
-                        // Abort the request before cancelling
-                        _request.Abort();
-
-                        // Connection timeout occurred
-                        cb(new TimeoutException());
-                    },
-                    connection,
-                    errorCallback);
-                });
-            }
         }
 
         public override void LostConnection(IConnection connection)
