@@ -16,8 +16,6 @@
 
         supportsKeepAlive: true,
 
-        timeOut : 3000,
-
         send: function (connection, data) {
             connection.socket.send(data);
         },
@@ -27,7 +25,6 @@
                 opened = false,
                 that = this,
                 initialSocket,
-                timeOutHandle,
                 reconnecting = !onSuccess,
                 $connection = $(connection);
 
@@ -52,16 +49,9 @@
                 // Issue #1653: Galaxy S3 Android Stock Browser fails silently to establish websocket connections. 
                 if (onFailed) {
                     initialSocket = connection.socket;
-                    timeOutHandle = window.setTimeout(function () {
-                        if (initialSocket === connection.socket) {
-                            connection.log("WebSocket timed out trying to connect");
-                            onFailed();
-                        }
-                    }, that.timeOut);
                 }
 
                 connection.socket.onopen = function () {
-                    window.clearTimeout(timeOutHandle);
                     opened = true;
                     connection.log("Websocket opened");
 
@@ -78,7 +68,6 @@
                     // Only handle a socket close if the close is from the current socket.
                     // Sometimes on disconnect the server will push down an onclose event
                     // to an expired socket.
-                    window.clearTimeout(timeOutHandle);
 
                     if (this === connection.socket) {
                         if (!opened) {
