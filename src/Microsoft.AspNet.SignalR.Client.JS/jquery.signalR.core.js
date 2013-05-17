@@ -247,7 +247,8 @@
             this._ = {
                 connectingMessageBuffer: new ConnectingMessageBuffer(this, function (message) {
                     $connection.triggerHandler(events.onReceived, [message]);
-                })
+                }),
+                onFailedTimeoutHandle: null
             };
             if (typeof (logging) === "boolean") {
                 this.logging = logging;
@@ -301,10 +302,12 @@
         state: signalR.connectionState.disconnected,
 
         keepAliveData: {},
-        
+
         clientProtocol: "1.3",
 
         reconnectDelay: 2000,
+
+        transportConnectTimeout: 5000, // This will be set by the server in respone to the negotiate request (5s default)
 
         disconnectTimeout: 30000, // This should be set by the server in response to the negotiate request (30s default)
 
@@ -436,7 +439,18 @@
                 }
 
                 var transportName = transports[index],
-                    transport = $.type(transportName) === "object" ? transportName : signalR.transports[transportName];
+                    transport = $.type(transportName) === "object" ? transportName : signalR.transports[transportName],
+                    initializationComplete = false,
+                    onFailed = function () {
+
+                        // Check if we've already triggered onFailed
+                        if (!initializationComplete) {
+                            initializationComplete = true;
+                            window.clearTimeout(connection._.onFailedTimeoutHandle);
+                            transport.stop(connection);
+                            initialize(transports, index + 1);
+                        }
+                    };
 
                 if (transportName.indexOf("_") === 0) {
                     // Private member
@@ -444,30 +458,38 @@
                     return;
                 }
 
+                connection._.onFailedTimeoutHandle = window.setTimeout(function () {
+                    connection.log(transport.name + " timed out when trying to connect.");
+                    onFailed();
+                }, connection.transportConnectTimeout);
+
                 transport.start(connection, function () { // success
-                    if (transport.supportsKeepAlive && connection.keepAliveData.activated) {
-                        signalR.transports._logic.monitorKeepAlive(connection);
+                    if (!initializationComplete) {
+                        initializationComplete = true;
+
+                        window.clearTimeout(connection._.onFailedTimeoutHandle);
+
+                        if (transport.supportsKeepAlive && connection.keepAliveData.activated) {
+                            signalR.transports._logic.monitorKeepAlive(connection);
+                        }
+
+                        connection.transport = transport;
+
+                        changeState(connection,
+                                    signalR.connectionState.connecting,
+                                    signalR.connectionState.connected);
+
+                        // Drain any incoming buffered messages (messages that came in prior to connect)
+                        connection._.connectingMessageBuffer.drain();
+
+                        $(connection).triggerHandler(events.onStart);
+
+                        // wire the stop handler for when the user leaves the page
+                        _pageWindow.unload(function () {
+                            connection.stop(false /* async */);
+                        });
                     }
-
-                    connection.transport = transport;
-
-                    changeState(connection,
-                                signalR.connectionState.connecting,
-                                signalR.connectionState.connected);
-
-                    // Drain any incoming buffered messages (messages that came in prior to connect)
-                    connection._.connectingMessageBuffer.drain();
-
-                    $(connection).triggerHandler(events.onStart);
-
-                    // wire the stop handler for when the user leaves the page
-                    _pageWindow.unload(function () {
-                        connection.stop(false /* async */);
-                    });
-
-                }, function () {
-                    initialize(transports, index + 1);
-                });
+                }, onFailed);
             };
 
             var url = connection.url + "/negotiate";
@@ -507,7 +529,7 @@
                     // Once the server has labeled the PersistentConnection as Disconnected, we should stop attempting to reconnect
                     // after res.DisconnectTimeout seconds.
                     connection.disconnectTimeout = res.DisconnectTimeout * 1000; // in ms
-
+                    connection.transportConnectTimeout = res.TransportConnectTimeout * 1000;
 
                     // If we have a keep alive
                     if (res.KeepAliveTimeout) {
@@ -692,6 +714,9 @@
             }
 
             try {
+                // Clear this no matter what
+                window.clearTimeout(connection._.onFailedTimeoutHandle);
+
                 if (connection.transport) {
                     if (notifyServer !== false) {
                         connection.transport.abort(connection, async);
