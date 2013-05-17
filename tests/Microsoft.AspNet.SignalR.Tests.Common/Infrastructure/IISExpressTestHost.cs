@@ -70,6 +70,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Common.Infrastructure
         public void Initialize(int? keepAlive,
                                int? connectionTimeout,
                                int? disconnectTimeout,
+                               int? transportConnectTimeout,
                                bool enableAutoRejoiningGroups)
         {
             // Use a configuration file to specify values
@@ -77,6 +78,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Common.Infrastructure
                                            keepAlive,
                                            connectionTimeout,
                                            disconnectTimeout,
+                                           transportConnectTimeout,
                                            enableAutoRejoiningGroups,
                                            _logFileName);
 

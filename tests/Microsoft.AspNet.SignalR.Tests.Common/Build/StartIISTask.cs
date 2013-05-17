@@ -21,6 +21,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Common
                 myHost.Initialize(keepAlive: -1, // default
                                   connectionTimeout: 110,
                                   disconnectTimeout: 30,
+                                  transportConnectTimeout: 5,
                                   enableAutoRejoiningGroups: false);
             }
             catch (WebException ex)
