@@ -22,10 +22,12 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
         {
             if (_items.Add(item))
             {
-                _addedItems.Add(item);
+                if (!_removedItems.Remove(item))
+                {
+                    _addedItems.Add(item);
+                }
                 return true;
             }
-
             return false;
         }
 
@@ -33,7 +35,10 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
         {
             if (_items.Remove(item))
             {
-                _removedItems.Add(item);
+                if (!_addedItems.Remove(item))
+                {
+                    _removedItems.Add(item);
+                }
                 return true;
             }
             return false;
