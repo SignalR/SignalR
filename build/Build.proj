@@ -220,7 +220,7 @@
              Condition=" '$(OS)' == 'Windows_NT'"/>
   </Target>
 
-  <Target Name="AnalyzeLogs" DependsOnTargets="RunFunctionalTests">
+  <Target Name="AnalyzeLogs">
     <Exec Command='powershell -NoProfile -ExecutionPolicy Bypass $(ProjectRoot)\build\AnalyzeLogs.ps1 "$(ProjectArtifactsDir)"' ContinueOnError="true" />
   </Target>
 
@@ -258,8 +258,8 @@
            Xml="$(TestResultsPath)\Microsoft.AspNet.SignalR.FunctionalTests.XunitResults.xml"
            Verbose="true" />
 
-    <CallTarget Targets="KillIISExpress" />
-    <OnError ExecuteTargets="KillIISExpress" />
+    <CallTarget Targets="KillIISExpress; AnalyzeLogs" />
+    <OnError ExecuteTargets="KillIISExpress; AnalyzeLogs" />
   </Target>
 
   <Target Name="TestSwarm" Condition="$(TestSwarmPostData) != ''">
