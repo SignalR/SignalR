@@ -14,7 +14,7 @@
         <language>en-US</language>
         <tags>Microsoft AspNet SignalR AspNetSignalR Client</tags>
         <dependencies>
-            <dependency id="Newtonsoft.Json" version="5.0" />
+            <dependency id="Newtonsoft.Json" version="4.5.11" />
         </dependencies>
     </metadata>
     <files>
