@@ -117,6 +117,9 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <data name="Error_CertsCanOnlyBeAddedWhenDisconnected" xml:space="preserve">
+    <value>Client Certificates cannot be added after the connection has started.</value>
+  </data>
   <data name="Error_ConnectionCancelled" xml:space="preserve">
     <value>The connection was stopped before it could be started.</value>
   </data>
@@ -137,6 +140,9 @@
   </data>
   <data name="Error_StartMustBeCalledBeforeDataCanBeSent" xml:space="preserve">
     <value>The Start method must be called before data can be sent.</value>
+  </data>
+  <data name="Error_TransportTimedOutTryingToConnect" xml:space="preserve">
+    <value>Transport timed out trying to connect</value>
   </data>
   <data name="Error_UrlCantContainQueryStringDirectly" xml:space="preserve">
     <value>Url cannot contain query string directly. Pass query string values in using available overload.</value>

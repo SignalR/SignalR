@@ -25,6 +25,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Common.Infrastructure
         void Initialize(int? keepAlive = -1,
                         int? connectionTimeout = 110,
                         int? disconnectTimeout = 30,
+                        int? transportConnectTimeout = 5,
                         bool enableAutoRejoiningGroups = false);
 
         Task Get(string uri, bool disableWrites);

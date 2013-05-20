@@ -55,8 +55,6 @@
 
         supportsKeepAlive: true,
 
-        timeOut: 3000,
-
         start: function (connection, onSuccess, onFailed) {
             var that = this,
                 frameId = (transportLogic.foreverFrame.count += 1),
@@ -104,19 +102,6 @@
                     delete connection.onSuccess;
                 };
             }
-
-            // After connecting, if after the specified timeout there's no response stop the connection
-            // and raise on failed
-            window.setTimeout(function () {
-                if (connection.onSuccess) {
-                    connection.log("Failed to connect using forever frame source, it timed out after " + that.timeOut + "ms.");
-                    that.stop(connection);
-
-                    if (onFailed) {
-                        onFailed();
-                    }
-                }
-            }, that.timeOut);
         },
 
         reconnect: function (connection) {
