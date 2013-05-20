@@ -382,9 +382,9 @@
   </Target>
 
   <Target Name="CodeCoverage" DependsOnTargets="PrepareCodeCoverage; BuildNetUnitTests; BuildNetFunctionalTests">
-    <Copy SourceFiles="$(ProjectRoot)\build\Microsoft.AspNet.SignalR.OpenCover.xunit" DestinationFolder="$(ArtifactsDir)" />
+    <Copy SourceFiles="$(ProjectRoot)\build\Microsoft.AspNet.SignalR.OpenCover.xunit" DestinationFolder="$(ProjectArtifactsDir)" />
     <MSBuild Projects="Microsoft.AspNet.SignalR.OpenCover.targets"
-             Properties="ArtifactsDir=$(ArtifactsDir);SolutionDir=$(ProjectRoot)\;XunitArgs=$(ArtifactsDir)\Microsoft.AspNet.SignalR.OpenCover.xunit"
+             Properties="ArtifactsDir=$(ArtifactsDir);SolutionDir=$(ProjectRoot)\;XunitArgs=$(ProjectArtifactsDir)\Microsoft.AspNet.SignalR.OpenCover.xunit"
              Condition="'$(OS)' == 'Windows_NT'"/>
   </Target>
 
