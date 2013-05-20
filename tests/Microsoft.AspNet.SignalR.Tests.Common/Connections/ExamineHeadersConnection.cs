@@ -8,7 +8,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Common
         {
             string refererHeader = request.Headers[System.Net.HttpRequestHeader.Referer.ToString()];
             string testHeader = request.Headers["test-header"];
-            string userAgentHeader = request.Headers[System.Net.HttpRequestHeader.UserAgent.ToString()];
+            string userAgentHeader = request.Headers["User-Agent"];
 
             return Connection.Send(connectionId, new
             {

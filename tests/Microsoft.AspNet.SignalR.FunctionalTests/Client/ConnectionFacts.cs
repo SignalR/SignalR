@@ -33,7 +33,8 @@ namespace Microsoft.AspNet.SignalR.Tests
 
                 using (connection)
                 {
-                    connection.Start(host.Transport).ContinueWith(task => {
+                    connection.Start(host.Transport).ContinueWith(task =>
+                    {
                         Assert.True(task.IsFaulted);
                     }).Wait();
                 }
@@ -51,7 +52,7 @@ namespace Microsoft.AspNet.SignalR.Tests
             using (var host = CreateHost(hostType, transportType))
             {
                 host.Initialize();
-                var connection = CreateConnection(host,"/signalr");
+                var connection = CreateConnection(host, "/signalr");
 
                 using (connection)
                 {
@@ -85,10 +86,10 @@ namespace Microsoft.AspNet.SignalR.Tests
                         if (transportType != TransportType.Websockets)
                         {
                             Assert.Equal("referer", (string)headers["refererHeader"]);
+                            Assert.Equal("SignalR.Client.NET45/2.0.0.0 (Microsoft Windows NT 6.2.9200.0)", (string)headers["userAgentHeader"]);
                         }
 
                         Assert.Equal("test-header", (string)headers["testHeader"]);
-                        Assert.Equal("user-agent", (string)headers["userAgentHeader"]);
 
                         tcs.TrySetResult(null);
                     };
@@ -96,7 +97,6 @@ namespace Microsoft.AspNet.SignalR.Tests
                     connection.Error += e => tcs.TrySetException(e);
 
                     connection.Headers.Add("test-header", "test-header");
-                    connection.Headers.Add(System.Net.HttpRequestHeader.UserAgent.ToString(), "user-agent");
 
                     if (transportType != TransportType.Websockets)
                     {
