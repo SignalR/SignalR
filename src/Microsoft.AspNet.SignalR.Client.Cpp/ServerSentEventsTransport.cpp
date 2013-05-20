@@ -6,12 +6,7 @@ ServerSentEventsTransport::ServerSentEventsTransport(http_client* httpClient) :
 
 }
 
-ServerSentEventsTransport::~ServerSentEventsTransport(void)
-{
-
-}
-
-void ServerSentEventsTransport::Start(Connection* connection, START_CALLBACK startCallback, string data, void* state)
+pplx::task<void> ServerSentEventsTransport::Start(Connection* connection, START_CALLBACK startCallback, string data, void* state)
 {
     //string url = connection->GetUrl(); 
     //
@@ -30,6 +25,7 @@ void ServerSentEventsTransport::Start(Connection* connection, START_CALLBACK sta
     //requestInfo->Data = data;
 
     //mHttpClient->Get(url, &ServerSentEventsTransport::OnStartHttpResponse, requestInfo);
+    return pplx::task<void>();
 }
 
 void ServerSentEventsTransport::OnStartHttpResponse(IHttpResponse* httpResponse, exception* error, void* state)

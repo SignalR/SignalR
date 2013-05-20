@@ -12,9 +12,14 @@ HttpBasedTransport::~HttpBasedTransport(void)
     delete mHttpClient;
 }
 
-void HttpBasedTransport::Negotiate(Connection* connection, NEGOTIATE_CALLBACK negotiateCallback, void* state)
+pplx::task<NegotiationResponse*> HttpBasedTransport::Negotiate(Connection* connection)
 {
-    TransportHelper::GetNegotiationResponse(mHttpClient, connection, negotiateCallback, state);
+    return TransportHelper::GetNegotiationResponse(connection);
+}
+
+pplx::task<void> Start(Connection* connection, utility::string_t data)
+{
+    return pplx::task<void>();
 }
 
 void HttpBasedTransport::Send(Connection* connection, string data)

@@ -28,15 +28,15 @@ public:
     Connection(utility::string_t uri, IConnectionHandler* handler);
     ~Connection(void);
 
-    void Start();
-    void Start(IClientTransport* tranport);
-    void Start(http_client* client);
+    pplx::task<void> Start();
+    pplx::task<void> Start(IClientTransport* tranport);
+    pplx::task<void> Start(http_client* client);
     void Stop();
     void Send(string data);
     
     State GetState();
-    string GetConnectionId();
-    string GetConnectionToken();
+    utility::string_t GetConnectionId();
+    utility::string_t GetConnectionToken();
     string GetGroupsToken();
     IClientTransport* GetTransport();
     utility::string_t GetUri();
@@ -52,15 +52,15 @@ public:
 
 private:
     utility::string_t mUri;
-    string mConnectionId;
-    string mConnectionToken;
+    utility::string_t mConnectionId;
+    utility::string_t mConnectionToken;
     string mGroupsToken;
     string mMessageId;
     State mState;
     IClientTransport* mTransport;
     IConnectionHandler* mHandler;
 
+    pplx::task<void> StartTransport();
     static void OnTransportStartCompleted(exception* error, void* state);
-    static void OnNegotiateCompleted(NegotiationResponse* negotiateResponse, exception* error, void* state);
 };
 

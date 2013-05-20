@@ -17,12 +17,14 @@ public:
     HttpBasedTransport(http_client* httpClient);
     ~HttpBasedTransport(void);
 
-    void Negotiate(Connection* connection, NEGOTIATE_CALLBACK negotiateCallback, void* state = NULL);
+    pplx::task<NegotiationResponse*> Negotiate(Connection* connection);
+    pplx::task<void> Start(Connection* connection, utility::string_t data);
     void Send(Connection* connection, string data);
     void Stop(Connection* connection);
     void Abort(Connection* connection);
 
     void TryDequeueNextWorkItem();
+
 private:    
     
     struct SendQueueItem

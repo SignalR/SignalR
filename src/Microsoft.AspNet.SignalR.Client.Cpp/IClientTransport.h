@@ -2,7 +2,6 @@
 
 class Connection;
 
-#include <string>
 #include "NegotiationResponse.h"
 
 using namespace std;
@@ -15,9 +14,8 @@ public:
 
     typedef void (*START_CALLBACK)(exception* error, void* state);
     typedef void (*NEGOTIATE_CALLBACK)(NegotiationResponse* negotiateResponse, exception* error, void* state);
-
-    virtual void Negotiate(Connection* connection, NEGOTIATE_CALLBACK negotiateCallback, void* state = NULL) = 0;
-    virtual void Start(Connection* connection, START_CALLBACK startCallback, string data, void* state = NULL) = 0;
+    virtual pplx::task<NegotiationResponse*> Negotiate(Connection* connection) = 0;
+    virtual pplx::task<void> Start(Connection* connection, START_CALLBACK startCallback, string data, void* state = NULL) = 0;
     virtual void Send(Connection* connection, string data) = 0;
     virtual void Stop(Connection* connection) = 0;
     virtual void Abort(Connection* connection) = 0;

@@ -11,7 +11,7 @@ LongPollingTransport::~LongPollingTransport(void)
 {
 }
 
-void LongPollingTransport::Start(Connection* connection, START_CALLBACK startCallback, string data, void* state)
+pplx::task<void> LongPollingTransport::Start(Connection* connection, START_CALLBACK startCallback, string data, void* state)
 {    
     //string url = connection->GetUrl();
 
@@ -34,6 +34,8 @@ void LongPollingTransport::Start(Connection* connection, START_CALLBACK startCal
     ////mHttpClient->Get(url, &LongPollingTransport::OnPollHttpResponse, info);
 
     //// TODO: Need to set a timer here to trigger connected after 2 seconds or so
+
+    return pplx::task<void>();
 }
 
 void LongPollingTransport::OnPollHttpResponse(IHttpResponse* httpResponse, exception* error, void* state)

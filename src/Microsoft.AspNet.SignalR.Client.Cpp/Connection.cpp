@@ -1,6 +1,7 @@
 #include "Connection.h"
 #include "IConnectionHandler.h"
 #include "LongPollingTransport.h"
+#include "WebSocketTransport.h"
 
 Connection::Connection(utility::string_t uri, IConnectionHandler* handler)
 {
@@ -9,26 +10,38 @@ Connection::Connection(utility::string_t uri, IConnectionHandler* handler)
     mHandler = handler;
 }
 
-void Connection::Start() 
+pplx::task<void> Connection::Start() 
 {
     // Start(new DefaultHttpClient());
-    Start(new http_client(L"http://junk"));
+    return Start(new http_client(L"http://junk"));
 }
 
-void Connection::Start(http_client* client) 
+pplx::task<void> Connection::Start(http_client* client) 
 {	
     // Start(new AutoTransport(client));
-	Start(new LongPollingTransport(client));
+    //return Start(new WebSocketTransport(client));
+    return Start(new LongPollingTransport(client));
 }
 
-void Connection::Start(IClientTransport* transport) 
+pplx::task<void> Connection::Start(IClientTransport* transport) 
 {	
     mTransport = transport;
 
     if(ChangeState(State::Disconnected, State::Connecting))
     {
-        mTransport->Negotiate(this, &Connection::OnNegotiateCompleted, this);
+        mTransport->Negotiate(this).then([this](NegotiationResponse* response)
+        {
+            return StartTransport();
+        });
     }
+    
+    // temp failure resolution
+    return pplx::task<void>();
+}
+
+pplx::task<void> Connection::StartTransport()
+{
+    return mTransport->Start(this, NULL, NULL);
 }
 
 void Connection::Send(string data)
@@ -78,7 +91,7 @@ utility::string_t Connection::GetUri()
     return mUri;
 }
 
-string Connection::GetConnectionToken()
+utility::string_t Connection::GetConnectionToken()
 {
     return mConnectionToken;
 }
@@ -96,30 +109,6 @@ string Connection::GetMessageId()
 void Connection::Stop() 
 {
     mTransport->Stop(this);
-}
-
-void Connection::OnNegotiateCompleted(NegotiationResponse* negotiateResponse, exception* error, void* state) 
-{	
-    auto connection = (Connection*)state;
-
-    if(error == NULL) 
-    {
-        if(negotiateResponse->ProtocolVersion != "1.2")
-        {
-            connection->OnError(exception("Invalid protocol version"));
-            connection->Stop();
-        }
-        else
-        {
-            connection->SetConnectionState(*negotiateResponse);
-            connection->GetTransport()->Start(connection, Connection::OnTransportStartCompleted, "", connection);
-        }
-    }
-    else 
-    {
-        connection->OnError(exception("Negotiation failed"));
-        connection->Stop();
-    }
 }
 
 void Connection::OnTransportStartCompleted(exception* error, void* state) 

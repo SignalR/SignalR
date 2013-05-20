@@ -22,6 +22,7 @@
     <UseDebugLibraries>true</UseDebugLibraries>
     <PlatformToolset>v110</PlatformToolset>
     <CharacterSet>MultiByte</CharacterSet>
+    <CLRSupport>false</CLRSupport>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
@@ -78,6 +79,7 @@
     <ClCompile Include="ServerSentEventsTransport.cpp" />
     <ClCompile Include="Source.cpp" />
     <ClCompile Include="TransportHelper.cpp" />
+    <ClCompile Include="WebSocketTransport.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Connection.h" />
@@ -93,6 +95,7 @@
     <ClInclude Include="NegotiationResponse.h" />
     <ClInclude Include="ServerSentEventsTransport.h" />
     <ClInclude Include="TransportHelper.h" />
+    <ClInclude Include="WebSocketTransport.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

@@ -14,7 +14,7 @@ public:
     TransportHelper(void);
     ~TransportHelper(void);
 
-    static void GetNegotiationResponse(http_client* httpClient, Connection* connnection, IClientTransport::NEGOTIATE_CALLBACK negotiateCallback, void* state = NULL);
+    static pplx::task<NegotiationResponse*> GetNegotiationResponse(Connection* connnection);
     static string GetReceiveQueryString(Connection* connection, string data, string transport);
     static void ProcessMessages(Connection* connection, string raw, bool* timedOut, bool* disconnected);
 
