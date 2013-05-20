@@ -72,7 +72,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
             // We don't need to await this task
             PerformConnect().Then((Action)_initializeHandler.OnSuccess).Catch(_initializeHandler.OnFailure);
 
-            return _initializeHandler.Handle;
+            return _initializeHandler.Task;
         }
 
         private async Task PerformConnect(bool reconnecting = false)
