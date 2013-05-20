@@ -45,7 +45,7 @@
       <HintPath>..\..\packages\Microsoft.Owin.Mapping.0.22.0-pre-20514-307\lib\net40\Microsoft.Owin.Mapping.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.Owin.Security.Basic">
-      <HintPath>..\..\packages\Microsoft.Owin.Security.Basic.1.1.0-beta1-20502-274\lib\net45\Microsoft.Owin.Security.Basic.dll</HintPath>
+      <HintPath>..\..\packages\Microsoft.Owin.Security.Basic.0.22.0-pre-20519-315\lib\net45\Microsoft.Owin.Security.Basic.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.Web.Administration, Version=7.9.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
