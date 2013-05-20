@@ -10,6 +10,7 @@
     <ProjectArtifactsDir>$(ArtifactsDir)\projects</ProjectArtifactsDir>
     <JSTestsPath>$(ProjectArtifactsDir)\JsTestHarness</JSTestsPath>
     <PackageSrcDir>$(ArtifactsDir)\package-src</PackageSrcDir>
+    <PackagesDir>$(ArtifactsDir)\packages</PackagesDir>
     <FxCopDir>$(ArtifactsDir)\fxcop</FxCopDir>
     <SamplesDir>$(ArtifactsDir)\samples</SamplesDir>
     <ReadmesSource>$(ProjectRoot)\readmes</ReadmesSource>
@@ -40,8 +41,12 @@
 
   <PropertyGroup>
     <PrereleaseTagWithSeparator Condition="$(BuildQuality) != ''">-$(BuildQuality)</PrereleaseTagWithSeparator>
+    <ScaleoutPrereleaseTagWithSeparator Condition="$(ScaleoutBuildQuality) != ''">-$(ScaleoutBuildQuality)</ScaleoutPrereleaseTagWithSeparator>
+    <KatanaPrereleaseTagWithSeparator Condition="$(KatanaBuildQuality) != ''">-$(KatanaBuildQuality)</KatanaPrereleaseTagWithSeparator>
     <AssemblyVersion>$(MajorVersion).$(MinorVersion).0</AssemblyVersion>
     <PackageVersion>$(MajorVersion).$(MinorVersion).$(PatchVersion)$(PrereleaseTagWithSeparator)</PackageVersion>
+    <ScaleoutPackageVersion>$(MajorVersion).$(MinorVersion).$(PatchVersion)$(ScaleoutPrereleaseTagWithSeparator)</ScaleoutPackageVersion>
+    <KatanaPackageVersion>$(KatanaVersion)$(KatanaPrereleaseTagWithSeparator)</KatanaPackageVersion>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -277,6 +282,7 @@
   <Target Name="CreateOutputDirs">
     <RemoveDir Directories="$(ArtifactsDir)" Condition="Exists('$(ArtifactsDir)')" ContinueOnError="true" />
     <MakeDir Directories="$(ArtifactsDir)" Condition="!Exists('$(ArtifactsDir)')" />
+    <MakeDir Directories="$(PackagesDir)" Condition="!Exists('$(PackagesDir)')" />
     <MakeDir Directories="$(TestResultsPath)" Condition="!Exists('$(TestResultsPath)')" />
     <MakeDir Directories="$(DocsPath)" Condition="!Exists('$(DocsPath)')" />
   </Target>
@@ -320,9 +326,18 @@
       <Artifacts Include="$(NuspecsSource)\*.nuspec">
         <Destination>$(NuspecsDestination)</Destination>
       </Artifacts>
+      <JavaScript Include="$(ProjectArtifactsDir)\Microsoft.AspNet.SignalR.Client.JS\jquery.signalR.js">
+        <VersionedFileName>jquery.signalR-$(PackageVersion).js</VersionedFileName>
+      </JavaScript>
+      <JavaScript Include="$(ProjectArtifactsDir)\Microsoft.AspNet.SignalR.Client.JS\jquery.signalR.min.js">
+        <VersionedFileName>jquery.signalR-$(PackageVersion).min.js</VersionedFileName>
+      </JavaScript>
     </ItemGroup>
 
-    <Copy SourceFiles="@(Artifacts)" DestinationFiles="%(Destination)\%(RecursiveDir)%(Filename)%(Extension)" Condition="Exists('%(Identity)')"/>
+    <Copy SourceFiles="@(Artifacts)" DestinationFiles="@(Artifacts->'%(Destination)\%(RecursiveDir)%(Filename)%(Extension)')" />
+
+    <!-- Append Package Version to JS file names -->
+    <Copy SourceFiles="@(JavaScript)" DestinationFiles="$(PackageSrcDir)\Content\%(VersionedFileName)" />
   </Target>
 
   <Target Name="RunCodeAnalysis" DependsOnTargets="CreateOutputDirs" Condition="Exists('$(MSBuildExtensionsPath)\Microsoft\VisualStudio\v11.0\CodeAnalysis\fxcoptask.dll')">
@@ -371,5 +386,35 @@
     <MSBuild Projects="Microsoft.AspNet.SignalR.OpenCover.targets"
              Properties="ArtifactsDir=$(ArtifactsDir);SolutionDir=$(ProjectRoot)\;XunitArgs=$(ArtifactsDir)\Microsoft.AspNet.SignalR.OpenCover.xunit"
              Condition="'$(OS)' == 'Windows_NT'"/>
+  </Target>
+
+  <Target Name="BuildPackages" DependsOnTargets="CopyArtifacts">
+    <ItemGroup>
+      <Nuspecs Include="$(NuspecsDestination)\*.nuspec" />
+      <NuspecTransform Include="@(Nuspecs)">
+        <Find>__SIGNALR_PACKAGE_VERSION__</Find>
+        <ReplaceWith>$(PackageVersion)</ReplaceWith>
+      </NuspecTransform>
+      <NuspecTransform Include="@(Nuspecs)">
+        <Find>__SIGNALR_REDIS_PACKAGE_VERSION__|__SIGNALR_SERVICE_BUS_PACKAGE_VERSION__</Find>
+        <ReplaceWith>$(ScaleoutPackageVersion)</ReplaceWith>
+      </NuspecTransform>
+      <NuspecTransform Include="@(Nuspecs)">
+        <Find>__KATANA_PACKAGE_VERSION__</Find>
+        <ReplaceWith>$(KatanaPackageVersion)</ReplaceWith>
+      </NuspecTransform>
+      <NuspecTransform Include="@(Nuspecs)">
+        <Find>__SIGNALR_LICENSE_URL__</Find>
+        <ReplaceWith>https://raw.github.com/SignalR/SignalR/master/LICENSE.md</ReplaceWith>
+      </NuspecTransform>
+      <NuspecTransform Include="@(Nuspecs)">
+        <Find>__SIGNALR_COPYRIGHT_NOTICE__</Find>
+        <ReplaceWith>Copyright (c) Microsoft Open Technologies, Inc.  All rights reserved.</ReplaceWith>
+      </NuspecTransform>
+    </ItemGroup>
+
+    <RegexTransform Items="@(NuspecTransform)" />
+    <Exec Command="&quot;$(NuGetExePath)&quot; pack &quot;%(Nuspecs.Identity)&quot; -o &quot;$(PackagesDir)&quot; -basePath &quot;$(PackageSrcDir)&quot;"
+            LogStandardErrorAsError="true" />
   </Target>
 </Project>
