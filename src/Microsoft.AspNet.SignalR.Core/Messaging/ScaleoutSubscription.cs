@@ -36,27 +36,26 @@ namespace Microsoft.AspNet.SignalR.Messaging
 
             if (String.IsNullOrEmpty(cursor))
             {
-                cursors = new List<Cursor>(streams.Count);
-                for (int i = 0; i < streams.Count; i++)
-                {
-                    ScaleoutMapping maxMapping = streams[i].MaxMapping;
-
-                    ulong id = UInt64.MaxValue;
-                    string key = i.ToString(CultureInfo.InvariantCulture);
-
-                    if (maxMapping != null)
-                    {
-                        id = maxMapping.Id;
-                    }
-
-                    var newCursor = new Cursor(key, id);
-
-                    cursors.Add(newCursor);
-                }
+                cursors = new List<Cursor>();
             }
             else
             {
                 cursors = Cursor.GetCursors(cursor);
+
+                // If the streams don't match the cursors then throw it out
+                if (cursors.Count != _streams.Count)
+                {
+                    cursors.Clear();
+                }
+            }
+
+            // No cursors so we need to populate them from the list of streams
+            if (cursors.Count == 0)
+            {
+                for (int streamIndex = 0; streamIndex < _streams.Count; streamIndex++)
+                {
+                    AddCursorForStream(streamIndex, cursors);
+                }
             }
 
             _cursors = cursors;
@@ -72,7 +71,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
         protected override void PerformWork(IList<ArraySegment<Message>> items, out int totalCount, out object state)
         {
             // The list of cursors represent (streamid, payloadid)
-            var nextCursors = new ulong?[_streams.Count];
+            var nextCursors = new ulong?[_cursors.Count];
             totalCount = 0;
 
             // Get the enumerator so that we can extract messages for this subscription
@@ -215,6 +214,22 @@ namespace Microsoft.AspNet.SignalR.Messaging
             }
 
             return mapping.Id;
+        }
+
+        private void AddCursorForStream(int streamIndex, List<Cursor> cursors)
+        {
+            ScaleoutMapping maxMapping = _streams[streamIndex].MaxMapping;
+
+            ulong id = UInt64.MaxValue;
+            string key = streamIndex.ToString(CultureInfo.InvariantCulture);
+
+            if (maxMapping != null)
+            {
+                id = maxMapping.Id;
+            }
+
+            var newCursor = new Cursor(key, id);
+            cursors.Add(newCursor);
         }
 
         private class CachedStreamEnumerator

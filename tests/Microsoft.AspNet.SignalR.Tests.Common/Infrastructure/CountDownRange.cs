@@ -5,7 +5,7 @@ using System.Threading;
 
 namespace Microsoft.AspNet.SignalR.Tests.Infrastructure
 {
-    internal class CountDownRange<T>
+    public class CountDownRange<T>
     {
         private HashSet<T> _items;
         private HashSet<T> _seen;
