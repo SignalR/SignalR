@@ -205,19 +205,10 @@ namespace Microsoft.AspNet.SignalR.Stress
             }
         }
 
-
-        public static IDisposable RunConnectDisconnect(int connections)
+        public static IDisposable RunConnectDisconnect(bool scaleout, int nodes = 1, int connections = 1000)
         {
-            var host = new MemoryHost();
-
-            host.Configure(app =>
-            {
-                var config = new HubConfiguration()
-                {
-                    Resolver = new DefaultDependencyResolver()
-                };
-                app.MapHubs(config);
-            });
+            IHttpClient client;
+            IDisposable disposable = TryGetClient(scaleout, nodes, out client);
 
             for (int i = 0; i < connections; i++)
             {
@@ -229,7 +220,7 @@ namespace Microsoft.AspNet.SignalR.Stress
 
                 try
                 {
-                    connection.Start(host).Wait();
+                    connection.Start(client).Wait();
 
                     proxy.Invoke("Echo", "foo").Wait();
 
@@ -244,7 +235,67 @@ namespace Microsoft.AspNet.SignalR.Stress
                 }
             }
 
-            return host;
+            return disposable;
+        }
+
+
+        public static IDisposable TryGetClient(bool scaleout, int nodes, out IHttpClient client)
+        {
+            if (scaleout)
+            {
+                MemoryHost[] hosts;
+                UseScaleout(nodes, out hosts, out client);
+                return new DisposableAction(() =>
+                {
+                    for (int i = 0; i < nodes; i++)
+                    {
+                        hosts[i].Dispose();
+                    }
+                });
+            }
+            else
+            {
+                var host = new MemoryHost();
+                host.Configure(app =>
+                {
+                    var config = new HubConfiguration()
+                    {
+                        Resolver = new DefaultDependencyResolver()
+                    };
+
+                    app.MapHubs(config);
+                });
+
+                client = host;
+                return host;
+            }
+        }
+
+        private static void UseScaleout(int nodes, out MemoryHost[] hosts, out IHttpClient client)
+        {
+            hosts = new MemoryHost[nodes];
+            var eventBus = new EventBus();
+            for (var i = 0; i < nodes; ++i)
+            {
+                var host = new MemoryHost();
+
+                host.Configure(app =>
+                {
+                    var config = new HubConfiguration()
+                    {
+                        Resolver = new DefaultDependencyResolver()
+                    };
+
+                    var bus = new DelayedMessageBus(host.InstanceName, eventBus, config.Resolver, TimeSpan.Zero);
+                    config.Resolver.Register(typeof(IMessageBus), () => bus);
+
+                    app.MapHubs(config);
+                });
+
+                hosts[i] = host;
+            }
+
+            client = new LoadBalancer(hosts);
         }
 
         public static void Scaleout(int nodes, int clients)
