@@ -111,7 +111,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
         }
 
         [Fact]
-        public void GettingTopicAfterNoSubscriptionsStateSetsStateToHasSubscriptions()
+        public void SubscribingTopicAfterNoSubscriptionsStateSetsStateToHasSubscription()
         {
             var dr = new DefaultDependencyResolver();
             var configuration = dr.Resolve<IConfigurationManager>();
@@ -125,7 +125,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
                 bus.Subscribe(subscriber, null, (result, state) => TaskAsyncHelper.True, 10, null)
                    .Dispose();
 
-                Topic topic = bus.GetTopic("key");
+                Topic topic = bus.SubscribeTopic("key");
                 Assert.Equal(1, bus.Topics.Count);
                 Assert.True(bus.Topics.TryGetValue("key", out topic));
                 Assert.Equal(TopicState.HasSubscriptions, topic.State);
@@ -133,7 +133,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
         }
 
         [Fact]
-        public void GettingTopicAfterNoSubscriptionsWhenGCStateSetsStateToHasSubscriptions()
+        public void SubscribingTopicAfterNoSubscriptionsWhenGCStateSetsStateToHasSubscription()
         {
             var dr = new DefaultDependencyResolver();
 
@@ -162,7 +162,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
                     }
                 };
 
-                Topic topic = bus.GetTopic("key");
+                Topic topic = bus.SubscribeTopic("key");
                 Assert.Equal(1, bus.Topics.Count);
                 Assert.True(bus.Topics.TryGetValue("key", out topic));
                 Assert.Equal(TopicState.HasSubscriptions, topic.State);
@@ -171,7 +171,30 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
         }
 
         [Fact]
-        public void GarbageCollectingTopicsBeforeGettingTopicSetsStateToHasSubscriptions()
+        public void GetTopicDoesNotChangeState()
+        {
+            var dr = new DefaultDependencyResolver();
+            var configuration = dr.Resolve<IConfigurationManager>();
+            configuration.DisconnectTimeout = TimeSpan.FromSeconds(6);
+            configuration.KeepAlive = null;
+
+            using (var bus = new MessageBus(dr))
+            {
+                bus.Subscribe(new TestSubscriber(new[] { "key" }), null, (result, state) => TaskAsyncHelper.True, 10, null);
+                Topic topic;
+                Assert.True(bus.Topics.TryGetValue("key", out topic));
+                Assert.Equal(TopicState.HasSubscriptions, topic.State);
+                topic = bus.GetTopic("key");
+                Assert.Equal(TopicState.HasSubscriptions, topic.State);
+                topic.RemoveSubscription(topic.Subscriptions.First());
+                Assert.Equal(TopicState.NoSubscriptions, topic.State);
+                topic = bus.GetTopic("key");
+                Assert.Equal(TopicState.NoSubscriptions, topic.State);
+            }
+        }
+
+        [Fact]
+        public void GarbageCollectingTopicsBeforeSubscribingTopicSetsStateToHasSubscription()
         {
             var dr = new DefaultDependencyResolver();
             var configuration = dr.Resolve<IConfigurationManager>();
@@ -185,7 +208,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
                     bus.GarbageCollectTopics();
                 };
 
-                Topic topic = bus.GetTopic("key");
+                Topic topic = bus.SubscribeTopic("key");
                 Assert.Equal(1, bus.Topics.Count);
                 Assert.True(bus.Topics.TryGetValue("key", out topic));
                 Assert.Equal(TopicState.HasSubscriptions, topic.State);
