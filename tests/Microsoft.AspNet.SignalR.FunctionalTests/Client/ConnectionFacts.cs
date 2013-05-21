@@ -86,7 +86,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                         if (transportType != TransportType.Websockets)
                         {
                             Assert.Equal("referer", (string)headers["refererHeader"]);
-                            Assert.Equal("SignalR.Client.NET45/2.0.0.0 (Microsoft Windows NT 6.2.9200.0)", (string)headers["userAgentHeader"]);
+                            Assert.NotNull((string)headers["userAgentHeader"]);
                         }
 
                         Assert.Equal("test-header", (string)headers["testHeader"]);
