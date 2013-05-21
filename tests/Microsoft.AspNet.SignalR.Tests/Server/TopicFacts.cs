@@ -11,7 +11,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
         public void TopicStateCreated()
         {
             var topic = new Topic(100, TimeSpan.Zero);
-            Assert.Equal(TopicState.Created, topic.State);
+            Assert.Equal(TopicState.NoSubscriptions, topic.State);
         }
 
         [Fact]
