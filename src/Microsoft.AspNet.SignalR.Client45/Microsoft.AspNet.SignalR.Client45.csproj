@@ -114,9 +114,6 @@
     <Compile Include="..\Microsoft.AspNet.SignalR.Client\IConnection.cs">
       <Link>IConnection.cs</Link>
     </Compile>
-    <Compile Include="..\Microsoft.AspNet.SignalR.Client\Infrastructure\HttpClientException.cs">
-      <Link>Infrastructure\HttpClientException.cs</Link>
-    </Compile>
     <Compile Include="..\Microsoft.AspNet.SignalR.Client\KeepAliveData.cs">
       <Link>KeepAliveData.cs</Link>
     </Compile>
@@ -143,12 +140,6 @@
     </Compile>
     <Compile Include="..\Microsoft.AspNet.SignalR.Core\Infrastructure\Disposer.cs">
       <Link>Infrastructure\Disposer.cs</Link>
-    </Compile>
-    <Compile Include="..\Microsoft.AspNet.SignalR.Client\Infrastructure\ErrorExtensions.cs">
-      <Link>Infrastructure\ErrorExtensions.cs</Link>
-    </Compile>
-    <Compile Include="..\Microsoft.AspNet.SignalR.Client\Infrastructure\SignalRError.cs">
-      <Link>Infrastructure\SignalRError.cs</Link>
     </Compile>
     <Compile Include="..\Microsoft.AspNet.SignalR.Client\Infrastructure\ThreadSafeInvoker.cs">
       <Link>Infrastructure\ThreadSafeInvoker.cs</Link>
@@ -226,6 +217,9 @@
     <Compile Include="..\Microsoft.AspNet.SignalR.Core\TaskAsyncHelper.cs">
       <Link>Infrastructure\TaskAsyncHelper.cs</Link>
     </Compile>
+    <Compile Include="Infrastructure\ErrorExtensions.cs" />
+    <Compile Include="Infrastructure\HttpClientException.cs" />
+    <Compile Include="Infrastructure\SignalRError.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Transports\WebSockets\WebSocketWrapperRequest.cs" />
     <Compile Include="Transports\WebSocketTransport.cs" />
