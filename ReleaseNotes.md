@@ -1,5 +1,12 @@
 # SignalR Release Notes
 
+# 1.1.1
+
+### Bugs Fixed
+
+* SignalR Groups.Remove doesn't work ([#2040](https://github.com/SignalR/SignalR/issues/2040))
+* Changing the number of streams/topics/tables crashes the process when using scaleout ([#2024](https://github.com/SignalR/SignalR/issues/2024))
+
 # 1.1.0
 
 ### Features
