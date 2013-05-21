@@ -55,6 +55,11 @@ namespace Microsoft.AspNet.SignalR.Messaging
             SubscriptionLock = new ReaderWriterLockSlim();
         }
 
+        public void MarkUsed()
+        {
+            this._lastUsed = DateTime.UtcNow;
+        }
+
         public void AddSubscription(ISubscription subscription)
         {
             if (subscription == null)
@@ -66,14 +71,14 @@ namespace Microsoft.AspNet.SignalR.Messaging
             {
                 SubscriptionLock.EnterWriteLock();
 
-                _lastUsed = DateTime.UtcNow;
+                MarkUsed();
 
                 Subscriptions.Add(subscription);
                 
                 // Created -> HasSubscriptions
                 Interlocked.CompareExchange(ref State,
                                             TopicState.HasSubscriptions,
-                                            TopicState.Created);
+                                            TopicState.NoSubscriptions);
             }
             finally
             {
@@ -92,8 +97,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
             {
                 SubscriptionLock.EnterWriteLock();
 
-                _lastUsed = DateTime.UtcNow;
-
+                MarkUsed();
               
                 Subscriptions.Remove(subscription);
                

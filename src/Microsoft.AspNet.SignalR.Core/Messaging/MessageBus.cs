@@ -194,6 +194,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
 
             // Don't mark topics as active when publishing
             Topic topic = GetTopic(message.Key);
+            topic.MarkUsed();
 
             return topic.Store.Add(message);
         }
@@ -229,7 +230,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
 
             foreach (var key in subscriber.EventKeys)
             {
-                Topic topic = GetTopic(key);
+                Topic topic = SubscribeTopic(key);
 
                 // Set the subscription for this topic
                 subscription.SetEventTopic(key, topic);
@@ -436,37 +437,43 @@ namespace Microsoft.AspNet.SignalR.Messaging
 
         internal Topic GetTopic(string key)
         {
-            while (true)
+            return Topics.GetOrAdd(key, _createTopic);
+        }
+
+        internal Topic SubscribeTopic(string key)
+        {
+            Topic topic;
+            int oldState;
+
+            do
             {
                 if (BeforeTopicCreated != null)
                 {
                     BeforeTopicCreated(key);
                 }
 
-                Topic topic = Topics.GetOrAdd(key, _createTopic);
+                topic = Topics.GetOrAdd(key, _createTopic);
 
                 if (BeforeTopicMarked != null)
                 {
                     BeforeTopicMarked(key, topic);
                 }
 
-                var oldState = Interlocked.Exchange(ref topic.State, TopicState.HasSubscriptions);
+                oldState = Interlocked.Exchange(ref topic.State, TopicState.HasSubscriptions);
 
                 if (AfterTopicMarked != null)
                 {
-                    AfterTopicMarked(key, topic, oldState);
+                    AfterTopicMarked(key, topic, topic.State);
                 }
 
-                if (oldState != TopicState.Dead)
-                {
-                    if (AfterTopicMarkedSuccessfully != null)
-                    {
-                        AfterTopicMarkedSuccessfully(key, topic);
-                    }
+            } while (oldState == TopicState.Dead);
 
-                    return topic;
-                }
+            if (AfterTopicMarkedSuccessfully != null)
+            {
+                AfterTopicMarkedSuccessfully(key, topic);
             }
+
+            return topic;
         }
 
         private void AddEvent(ISubscriber subscriber, string eventKey)
