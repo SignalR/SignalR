@@ -478,7 +478,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
 
         private void AddEvent(ISubscriber subscriber, string eventKey)
         {
-            Topic topic = GetTopic(eventKey);
+            Topic topic = SubscribeTopic(eventKey);
 
             // Add or update the cursor (in case it already exists)
             if (subscriber.Subscription.AddEvent(eventKey, topic))
