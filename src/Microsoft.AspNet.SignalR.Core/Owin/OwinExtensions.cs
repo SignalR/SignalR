@@ -93,10 +93,21 @@ namespace Owin
                 // Use the data protection provider from app builder and fallback to the
                 // Dpapi provider
                 IDataProtectionProvider provider = builder.GetDataProtectionProvider() ?? new DpapiDataProtectionProvider();
+                IProtectedData protectedData;
 
-                // Register the provider
-                var dataProtectionProtectedData = new DataProtectionProviderProtectedData(provider);
-                resolver.Register(typeof(IProtectedData), () => dataProtectionProtectedData);
+                // If we're using DPAPI then fallback to the default protected data if running
+                // on mono since it doesn't support any of this
+                if (provider is DpapiDataProtectionProvider && 
+                    MonoUtility.IsRunningMono)
+                {
+                    protectedData = new DefaultProtectedData();
+                }
+                else
+                {
+                    protectedData = new DataProtectionProviderProtectedData(provider);
+                }
+
+                resolver.Register(typeof(IProtectedData), () => protectedData);
 
                 // Try to get the list of reference assemblies from the host
                 IEnumerable<Assembly> referenceAssemblies = env.GetReferenceAssemblies();
