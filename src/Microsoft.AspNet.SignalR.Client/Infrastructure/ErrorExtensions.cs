@@ -24,15 +24,26 @@ namespace Microsoft.AspNet.SignalR.Client
             ex = ex.Unwrap();
             SignalRError error;
 
-#if NET4
-            error = GetWebExceptionError(ex);
+            var clientException = ex as WebException;
+
+            if (clientException != null)
+            {
+                error = GetWebExceptionError(ex);
+            }
+#if !NET4
+            else
+            {
+                error = GetHttpClientException(ex);
+            }
 #else
-            error = GetHttpClientException(ex);
+            else
+            {
+                error = new SignalRError(ex);
+            }
 #endif
             return error;
         }
 
-#if NET4
         [SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope", Justification = "The IDisposable object is the return value.")]
         private static SignalRError GetWebExceptionError(Exception ex)
         {
@@ -66,7 +77,8 @@ namespace Microsoft.AspNet.SignalR.Client
 
             return error;
         }
-#else
+
+#if !NET4
         [SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope", Justification = "The IDisposable object is the return value.")]
         private static SignalRError GetHttpClientException(Exception ex)
         {
@@ -90,27 +102,11 @@ namespace Microsoft.AspNet.SignalR.Client
 #endif
 
         [SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope", Justification = "The return value of this private method is disposed in GetError.")]
-        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode", Justification = "Used for debugging purposes.")]
         private static Stream Clone(Stream source)
         {
             var cloned = new MemoryStream();
-#if NET35
-            // Copy up to 2048 bytes at a time
-            byte[] buffer = new byte[2048];
-
-            // Maintains how many bytes were read
-            int copiedBytes;
-
-            // Read bytes and copy them into a buffer making sure not to trigger the dispose
-            while ((copiedBytes = source.Read(buffer, 0, buffer.Length)) > 0)
-            {
-                // Write the copied bytes from the buffer into the cloned stream
-                cloned.Write(buffer, 0, copiedBytes);
-            }
-
-#else
             source.CopyTo(cloned);
-#endif
+
             // Move the stream pointers back to the original start locations
             if (source.CanSeek)
             {
@@ -121,5 +117,6 @@ namespace Microsoft.AspNet.SignalR.Client
 
             return cloned;
         }
+
     }
 }
