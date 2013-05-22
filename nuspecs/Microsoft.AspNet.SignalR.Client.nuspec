@@ -22,8 +22,8 @@
         <file src="Net40\Microsoft.AspNet.SignalR.Client.xml" target="lib\net40" />
         <file src="Net45\Microsoft.AspNet.SignalR.Client.dll" target="lib\net45" />
         <file src="Net45\Microsoft.AspNet.SignalR.Client.xml" target="lib\net45" />
-        <file src="WinRT\Microsoft.AspNet.SignalR.Client.dll" target="lib\winrt" />
-        <file src="WinRT\Microsoft.AspNet.SignalR.Client.xml" target="lib\winrt" />
+        <file src="WinRT\Microsoft.AspNet.SignalR.Client.dll" target="lib\netcore45" />
+        <file src="WinRT\Microsoft.AspNet.SignalR.Client.xml" target="lib\netcore45" />
         <file src="SL5\Microsoft.AspNet.SignalR.Client.dll" target="lib\sl5" />
         <file src="SL5\Microsoft.AspNet.SignalR.Client.xml" target="lib\sl5" />
         <file src="WP8\Microsoft.AspNet.SignalR.Client.dll" target="lib\wp8" />
