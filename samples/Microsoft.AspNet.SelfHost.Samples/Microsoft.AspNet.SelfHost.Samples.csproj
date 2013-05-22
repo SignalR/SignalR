@@ -7,8 +7,8 @@
     <ProjectGuid>{5D69B6BE-062B-408D-913E-5CD2F21D5D17}</ProjectGuid>
     <OutputType>Exe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Microsoft.AspNet.Owin.Samples</RootNamespace>
-    <AssemblyName>Microsoft.AspNet.Owin.Samples</AssemblyName>
+    <RootNamespace>Microsoft.AspNet.SelfHost.Samples</RootNamespace>
+    <AssemblyName>Microsoft.AspNet.SelfHost.Samples</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <TargetFrameworkProfile />

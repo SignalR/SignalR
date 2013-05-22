@@ -1,8 +1,7 @@
 ﻿using System;
-using Microsoft.AspNet.SignalR.Client.Hubs;
-using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNet.SignalR.Client.Hubs;
 
 namespace Microsoft.AspNet.SignalR.Client.Samples
 {
@@ -10,17 +9,7 @@ namespace Microsoft.AspNet.SignalR.Client.Samples
     {
         static void Main(string[] args)
         {
-#if !NET35
-            // RunInMemoryHost();
-#endif
-
-            // var hubConnection = new HubConnection("http://localhost:40476/");
-
-            // RunDemoHub(hubConnection);
-
-            // RunStreamingSample();
-
-            RunStatusHub();
+            RunRawConnection();
 
             Console.ReadKey();
         }
@@ -82,9 +71,16 @@ namespace Microsoft.AspNet.SignalR.Client.Samples
             });
         }
 
-        private static void RunStreamingSample()
+        private static void RunRawConnection()
         {
+#if MONO
+            // Mono is pointing to the self hosted server
+            var connection = new Connection("http://localhost:8080/raw-connection");
+#else
             var connection = new Connection("http://localhost:40476/raw-connection");
+#endif
+
+            Console.WriteLine("URL: {0}", connection.Url);
 
             connection.Received += data =>
             {
@@ -130,7 +126,12 @@ namespace Microsoft.AspNet.SignalR.Client.Samples
             }
             else if (key.Key == ConsoleKey.D2)
             {
+#if MONO
+                Console.WriteLine("Mono doesn't support websockets");
+                return;
+#else
                 startTask = connection.Start(new Client.Transports.WebSocketTransport());
+#endif
             }
             else if (key.Key == ConsoleKey.D3)
             {
@@ -172,27 +173,5 @@ namespace Microsoft.AspNet.SignalR.Client.Samples
 
             wh.WaitOne();
         }
-
-#if !NET35
-        public class MyConnection : PersistentConnection
-        {
-            protected override Task OnConnected(IRequest request, string connectionId)
-            {
-                Console.WriteLine("{0} Connected", connectionId);
-                return base.OnConnected(request, connectionId);
-            }
-
-            protected override Task OnReconnected(IRequest request, string connectionId)
-            {
-                Console.WriteLine("{0} Reconnected", connectionId);
-                return base.OnReconnected(request, connectionId);
-            }
-
-            protected override Task OnReceived(IRequest request, string connectionId, string data)
-            {
-                return Connection.Broadcast(data);
-            }
-        }
-#endif
     }
 }

@@ -1,7 +1,7 @@
 ﻿using System;
 using Microsoft.Owin.Hosting;
 
-namespace Microsoft.AspNet.Owin.Samples
+namespace Microsoft.AspNet.SelfHost.Samples
 {
     public class Program
     {

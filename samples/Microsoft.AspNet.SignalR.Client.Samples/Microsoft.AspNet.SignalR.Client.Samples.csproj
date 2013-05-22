@@ -37,6 +37,9 @@
     <WarningLevel>4</WarningLevel>
     <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(OS)' != 'Windows_NT'">
+    <DefineConstants>$(DefineConstants);MONO</DefineConstants>
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="Newtonsoft.Json, Version=4.5.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
@@ -54,17 +57,13 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\src\Microsoft.AspNet.SignalR.Client45\Microsoft.AspNet.SignalR.Client45.csproj">
+    <ProjectReference Include="..\..\src\Microsoft.AspNet.SignalR.Client45\Microsoft.AspNet.SignalR.Client45.csproj" Condition="'$(OS)' == 'Windows_NT'">
       <Project>{50f8a174-695e-498c-b105-bdbe6b398646}</Project>
       <Name>Microsoft.AspNet.SignalR.Client45</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\src\Microsoft.AspNet.SignalR.Hosting.Memory\Microsoft.AspNet.SignalR.Hosting.Memory.csproj">
-      <Project>{055F2118-FE29-4219-A28A-3D6F0889652E}</Project>
-      <Name>Microsoft.AspNet.SignalR.Hosting.Memory</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\src\Microsoft.AspNet.SignalR.Core\Microsoft.AspNet.SignalR.Core.csproj">
-      <Project>{1B9A82C4-BCA1-4834-A33E-226F17BE070B}</Project>
-      <Name>Microsoft.AspNet.SignalR.Core</Name>
+    <ProjectReference Include="..\..\src\Microsoft.AspNet.SignalR.Client\Microsoft.AspNet.SignalR.Client.csproj" Condition="'$(OS)' != 'Windows_NT'">
+      <Project>{eb46b9c6-ee37-48f9-835e-e49580e40e0a}</Project>
+      <Name>Microsoft.AspNet.SignalR.Client</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
