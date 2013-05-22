@@ -79,6 +79,7 @@
     <Compile Include="Cookie.cs" />
     <Compile Include="Hosting\IWebSocketRequest.cs" />
     <Compile Include="Infrastructure\IBinaryWriter.cs" />
+    <Compile Include="Infrastructure\InterlockedHelper.cs" />
     <Compile Include="Infrastructure\IProtectedData.cs" />
     <Compile Include="Infrastructure\ListHelper.cs" />
     <Compile Include="Infrastructure\PrefixHelper.cs" />

@@ -390,10 +390,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
                 for (int i = 0; i < overflow && i < candidates.Count; i++)
                 {
                     var pair = candidates[i];
-
-                    // Mark it as dead
-                    if (Interlocked.CompareExchange(ref pair.Value.State, TopicState.Dead, TopicState.NoSubscriptions)
-                        == TopicState.NoSubscriptions)
+                    if (InterlockedHelper.CompareExchangeOr(ref pair.Value.State, TopicState.Dead, TopicState.NoSubscriptions, TopicState.Dying))
                     {
                         // Kill it
                         DestroyTopicCore(pair.Key, pair.Value);
@@ -406,17 +403,12 @@ namespace Microsoft.AspNet.SignalR.Messaging
 
         private void DestroyTopic(string key, Topic topic)
         {
-            var state = Interlocked.Exchange(ref topic.State, TopicState.Dead);
-
-            switch (state)
+            if (Interlocked.CompareExchange(ref topic.State, TopicState.Dying, TopicState.NoSubscriptions) == TopicState.Dying)
             {
-                case TopicState.NoSubscriptions:
+                if (Interlocked.CompareExchange(ref topic.State, TopicState.Dead, TopicState.Dying) == TopicState.Dying)
+                {
                     DestroyTopicCore(key, topic);
-                    break;
-                default:
-                    // Restore the old state
-                    Interlocked.Exchange(ref topic.State, state);
-                    break;
+                }
             }
         }
 
@@ -437,11 +429,6 @@ namespace Microsoft.AspNet.SignalR.Messaging
 
         internal Topic GetTopic(string key)
         {
-            return Topics.GetOrAdd(key, _createTopic);
-        }
-
-        internal Topic SubscribeTopic(string key)
-        {
             Topic topic;
             int oldState;
 
@@ -459,7 +446,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
                     BeforeTopicMarked(key, topic);
                 }
 
-                oldState = Interlocked.Exchange(ref topic.State, TopicState.HasSubscriptions);
+                oldState = Interlocked.CompareExchange(ref topic.State, TopicState.NoSubscriptions, TopicState.Dying);
 
                 if (AfterTopicMarked != null)
                 {
@@ -467,6 +454,41 @@ namespace Microsoft.AspNet.SignalR.Messaging
                 }
 
             } while (oldState == TopicState.Dead);
+
+            if (AfterTopicMarkedSuccessfully != null)
+            {
+                AfterTopicMarkedSuccessfully(key, topic);
+            }
+
+            return topic;
+        }
+
+        internal Topic SubscribeTopic(string key)
+        {
+            Topic topic;
+
+            do
+            {
+                if (BeforeTopicCreated != null)
+                {
+                    BeforeTopicCreated(key);
+                }
+
+                topic = Topics.GetOrAdd(key, _createTopic);
+
+                if (BeforeTopicMarked != null)
+                {
+                    BeforeTopicMarked(key, topic);
+                }
+
+                InterlockedHelper.CompareExchangeOr(ref topic.State, TopicState.HasSubscriptions, TopicState.NoSubscriptions, TopicState.Dying);
+
+                if (AfterTopicMarked != null)
+                {
+                    AfterTopicMarked(key, topic, topic.State);
+                }
+
+            } while (topic.State != TopicState.HasSubscriptions);
 
             if (AfterTopicMarkedSuccessfully != null)
             {

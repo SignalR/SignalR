@@ -149,7 +149,9 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
                 {
                     if (retries == 0)
                     {
+                        // Need to garbage collect twice to force the topic into the dead state
                         bus.GarbageCollectTopics();
+                        Assert.Equal(TopicState.Dying, t.State);
                     }
                     retries++;
                 };
@@ -158,7 +160,8 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
                 {
                     if (retries == 1)
                     {
-                        Assert.Equal(TopicState.Dead, state);
+                        // Assert that we've revived the topic from dying since we've subscribed to the topic
+                        Assert.Equal(TopicState.HasSubscriptions, state);
                     }
                 };
 
@@ -166,7 +169,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
                 Assert.Equal(1, bus.Topics.Count);
                 Assert.True(bus.Topics.TryGetValue("key", out topic));
                 Assert.Equal(TopicState.HasSubscriptions, topic.State);
-                Assert.Equal(2, retries);
+                Assert.Equal(1, retries);
             }
         }
 

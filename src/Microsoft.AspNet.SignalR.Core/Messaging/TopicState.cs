@@ -6,6 +6,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
     {
         public const int NoSubscriptions = 0;
         public const int HasSubscriptions = 1;
-        public const int Dead = 2;
+        public const int Dying = 2;
+        public const int Dead = 3;
     }
 }
