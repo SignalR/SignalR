@@ -4,7 +4,9 @@ using System;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Net;
+#if !NET4
 using System.Net.Http;
+#endif
 using Microsoft.AspNet.SignalR.Infrastructure;
 
 namespace Microsoft.AspNet.SignalR.Client
@@ -20,22 +22,17 @@ namespace Microsoft.AspNet.SignalR.Client
         public static SignalRError GetError(this Exception ex)
         {
             ex = ex.Unwrap();
-
-            var httpClientException = ex as HttpClientException;
             SignalRError error;
 
-            if (httpClientException != null)
-            {
-                error = GetHttpClientException(ex);
-            }
-            else
-            {
-                error = GetWebExceptionError(ex);
-            }
-
+#if NET4
+            error = GetWebExceptionError(ex);
+#else
+            error = GetHttpClientException(ex);
+#endif
             return error;
         }
 
+#if NET4
         [SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope", Justification = "The IDisposable object is the return value.")]
         private static SignalRError GetWebExceptionError(Exception ex)
         {
@@ -69,7 +66,7 @@ namespace Microsoft.AspNet.SignalR.Client
 
             return error;
         }
-
+#else
         [SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope", Justification = "The IDisposable object is the return value.")]
         private static SignalRError GetHttpClientException(Exception ex)
         {
@@ -90,8 +87,10 @@ namespace Microsoft.AspNet.SignalR.Client
 
             return error;
         }
+#endif
 
         [SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope", Justification = "The return value of this private method is disposed in GetError.")]
+        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode", Justification = "Used for debugging purposes.")]
         private static Stream Clone(Stream source)
         {
             var cloned = new MemoryStream();
