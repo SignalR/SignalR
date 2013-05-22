@@ -84,6 +84,9 @@
     <ClCompile Include="SseEvent.cpp">
       <Filter>Source Files\Transport\ServerSentEvents</Filter>
     </ClCompile>
+    <ClCompile Include="ChunkBuffer.cpp">
+      <Filter>Source Files\Transport\ServerSentEvents</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Connection.h">
@@ -135,6 +138,9 @@
       <Filter>Header Files\Transports\ServerSentEvents</Filter>
     </ClInclude>
     <ClInclude Include="SseEvent.h">
+      <Filter>Header Files\Transports\ServerSentEvents</Filter>
+    </ClInclude>
+    <ClInclude Include="ChunkBuffer.h">
       <Filter>Header Files\Transports\ServerSentEvents</Filter>
     </ClInclude>
   </ItemGroup>

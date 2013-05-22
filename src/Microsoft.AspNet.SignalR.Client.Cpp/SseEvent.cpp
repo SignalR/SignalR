@@ -3,8 +3,8 @@
 
 SseEvent::SseEvent(EventType type, string_t data)
 {
-    this->mType = type;
-    this->mData = data;
+    mType = type;
+    mData = data;
 }
 
 
@@ -14,17 +14,17 @@ SseEvent::~SseEvent(void)
 
 EventType SseEvent::GetType()
 {
-    return this->mType;
+    return mType;
 }
 
 string_t SseEvent::GetData()
 {
-    return this->mData;
+    return mData;
 }
 
 string_t SseEvent::ToString()
 {
-    return this->mType + U(": ") + this->mData;
+    return mType + U(": ") + mData;
 }
 
 bool BeginsWithIgnoreCase(string_t string1, string_t string2)

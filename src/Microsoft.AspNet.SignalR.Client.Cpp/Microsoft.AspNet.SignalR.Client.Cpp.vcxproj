@@ -67,6 +67,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="AsyncStreamReader.cpp" />
+    <ClCompile Include="ChunkBuffer.cpp" />
     <ClCompile Include="Connection.cpp" />
     <ClCompile Include="FakeHttpClient.cpp" />
     <ClCompile Include="HttpBasedTransport.cpp" />
@@ -85,6 +86,7 @@
     <ClCompile Include="WebSocketTransport.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="ChunkBuffer.h" />
     <ClInclude Include="Connection.h" />
     <ClInclude Include="FakeHttpClient.h" />
     <ClInclude Include="AsyncStreamReader.h" />
