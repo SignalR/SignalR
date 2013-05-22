@@ -1,11 +1,10 @@
 #include "HttpBasedTransport.h"
 
-
-HttpBasedTransport::HttpBasedTransport(http_client* httpClient)
+HttpBasedTransport::HttpBasedTransport(http_client* httpClient, utility::string_t transport)
 {
     mHttpClient = httpClient;
+    _transport = transport;
 }
-
 
 HttpBasedTransport::~HttpBasedTransport(void)
 {
@@ -14,11 +13,17 @@ HttpBasedTransport::~HttpBasedTransport(void)
 
 pplx::task<NegotiationResponse*> HttpBasedTransport::Negotiate(Connection* connection)
 {
-    return TransportHelper::GetNegotiationResponse(connection);
+    return TransportHelper::GetNegotiationResponse(mHttpClient, connection);
 }
 
-pplx::task<void> Start(Connection* connection, utility::string_t data)
+utility::string_t HttpBasedTransport::GetReceiveQueryString(Connection* connection, utility::string_t data)
 {
+    return TransportHelper::GetReceiveQueryString(connection, data, _transport);
+}
+
+pplx::task<void> HttpBasedTransport::Start(Connection* connection, utility::string_t data, void* state)
+{
+    OnStart(connection, data);
     return pplx::task<void>();
 }
 

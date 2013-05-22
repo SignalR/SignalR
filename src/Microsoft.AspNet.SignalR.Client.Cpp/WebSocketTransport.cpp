@@ -13,10 +13,10 @@ WebSocketTransport::~WebSocketTransport(void)
 
 pplx::task<NegotiationResponse*> WebSocketTransport::Negotiate(Connection* connection)
 {
-    return TransportHelper::GetNegotiationResponse(connection);
+    return TransportHelper::GetNegotiationResponse(mHttpClient, connection);
 }
 
-pplx::task<void> WebSocketTransport::Start(Connection* connection, START_CALLBACK startCallback, string data, void* state)
+pplx::task<void> WebSocketTransport::Start(Connection* connection, utility::string_t data, void* state)
 {
     mConnection = connection;
     return PerformConnect();

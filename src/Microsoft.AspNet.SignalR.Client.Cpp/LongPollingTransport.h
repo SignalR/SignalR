@@ -7,7 +7,7 @@ public:
     LongPollingTransport(http_client* httpClient);
     ~LongPollingTransport(void);
 
-    pplx::task<void> Start(Connection* connection, START_CALLBACK startCallback, string data, void* state = NULL);
+    //pplx::task<void> Start(Connection* connection, utility::string_t data, void* state = NULL);
 
     struct PollHttpRequestInfo
     {
@@ -17,6 +17,9 @@ public:
         Connection* Connection;
         string Data;
     };
+
+protected:
+    void OnStart(Connection* connection, utility::string_t data);
 
 private:
     static void OnPollHttpResponse(IHttpResponse* httpResponse, exception* error, void* state);

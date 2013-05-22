@@ -12,7 +12,7 @@ public:
     ~WebSocketTransport(void);
     
     pplx::task<NegotiationResponse*> Negotiate(Connection* connection);
-    pplx::task<void> Start(Connection* connection, START_CALLBACK startCallback, string data, void* state = NULL);
+    pplx::task<void> Start(Connection* connection, utility::string_t data, void* state = NULL);
     void Send(Connection* connection, string data);
     void Stop(Connection* connection);
     void Abort(Connection* connection);

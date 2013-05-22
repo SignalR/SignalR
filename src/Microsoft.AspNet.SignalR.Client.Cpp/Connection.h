@@ -8,7 +8,10 @@ class IClientTransport;
 #include "IClientTransport.h"
 #include <http_client.h>
 #include <filestream.h>
+#include <containerstream.h>
+#include <producerconsumerstream.h>
 
+using namespace concurrency;
 using namespace std;
 using namespace web::http;
 using namespace web::http::client;
@@ -29,7 +32,7 @@ public:
     ~Connection(void);
 
     pplx::task<void> Start();
-    pplx::task<void> Start(IClientTransport* tranport);
+    pplx::task<void> Start(IClientTransport* transport);
     pplx::task<void> Start(http_client* client);
     void Stop();
     void Send(string data);
@@ -37,10 +40,12 @@ public:
     State GetState();
     utility::string_t GetConnectionId();
     utility::string_t GetConnectionToken();
-    string GetGroupsToken();
+    void SetConnectionId(utility::string_t connectionId);
+    void SetConnectionToken(utility::string_t connectionToken);
+    utility::string_t GetGroupsToken();
     IClientTransport* GetTransport();
     utility::string_t GetUri();
-    string GetMessageId();
+    utility::string_t GetMessageId();
 
     // Transport API
     bool ChangeState(State oldState, State newState);
@@ -54,13 +59,15 @@ private:
     utility::string_t mUri;
     utility::string_t mConnectionId;
     utility::string_t mConnectionToken;
-    string mGroupsToken;
-    string mMessageId;
+    utility::string_t mGroupsToken;
+    utility::string_t mMessageId;
+
     State mState;
     IClientTransport* mTransport;
     IConnectionHandler* mHandler;
 
     pplx::task<void> StartTransport();
+    pplx::task<void> Negotiate(IClientTransport* transport);
     static void OnTransportStartCompleted(exception* error, void* state);
 };
 

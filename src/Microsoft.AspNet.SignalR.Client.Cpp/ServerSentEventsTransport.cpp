@@ -1,31 +1,51 @@
 #include "ServerSentEventsTransport.h"
 
 ServerSentEventsTransport::ServerSentEventsTransport(http_client* httpClient) : 
-    HttpBasedTransport(httpClient)
+    HttpBasedTransport(httpClient, U("serverSentEvents"))
 {
 
 }
 
-pplx::task<void> ServerSentEventsTransport::Start(Connection* connection, START_CALLBACK startCallback, string data, void* state)
+//pplx::task<void> ServerSentEventsTransport::Start(Connection* connection, utility::string_t data, void* state)
+//{
+//    //string url = connection->GetUrl(); 
+//    //
+//    //if(startCallback != NULL)
+//    //{
+//    //    url += "connect";
+//    //}
+//
+//    //url += TransportHelper::GetReceiveQueryString(connection, data, "serverSentEvents");
+//
+//    //auto requestInfo = new HttpRequestInfo();
+//    //requestInfo->CallbackState = state;
+//    //requestInfo->Transport = this;
+//    //requestInfo->Callback = startCallback;
+//    //requestInfo->Connection = connection;
+//    //requestInfo->Data = data;
+//
+//    //mHttpClient->Get(url, &ServerSentEventsTransport::OnStartHttpResponse, requestInfo);
+//    return pplx::task<void>();
+//}
+
+void ServerSentEventsTransport::OnStart(Connection* connection, utility::string_t data)
 {
-    //string url = connection->GetUrl(); 
-    //
-    //if(startCallback != NULL)
-    //{
-    //    url += "connect";
-    //}
+    OpenConnection(connection, data);
+}
 
-    //url += TransportHelper::GetReceiveQueryString(connection, data, "serverSentEvents");
+void ServerSentEventsTransport::OpenConnection(Connection* connection, utility::string_t data)
+{
+    utility::string_t uri = connection->GetUri() + U("connect") + GetReceiveQueryString(connection, data);
 
-    //auto requestInfo = new HttpRequestInfo();
-    //requestInfo->CallbackState = state;
-    //requestInfo->Transport = this;
-    //requestInfo->Callback = startCallback;
-    //requestInfo->Connection = connection;
-    //requestInfo->Data = data;
+    http_request request(methods::GET);
+    request.set_request_uri(uri);
 
-    //mHttpClient->Get(url, &ServerSentEventsTransport::OnStartHttpResponse, requestInfo);
-    return pplx::task<void>();
+    //streams::producer_consumer_buffer<uint8_t> buffer;
+    //request.set_response_stream(buffer.create_ostream());
+
+    mHttpClient->request(request).then([](http_response response) {
+
+    });
 }
 
 void ServerSentEventsTransport::OnStartHttpResponse(IHttpResponse* httpResponse, exception* error, void* state)
@@ -79,7 +99,7 @@ void ServerSentEventsTransport::OnReadLine(string data, exception* error, void* 
         {
             // TODO: Delay here
             // There was an error reading so start re-connecting
-            readInfo->Transport->Start(readInfo->Connection, NULL, readInfo->RequestInfo->Data);
+            readInfo->Transport->Start(readInfo->Connection, U("") /*readInfo->RequestInfo->Data*/);
             return;
         }
         else

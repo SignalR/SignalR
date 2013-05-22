@@ -9,7 +9,7 @@ TransportHelper::~TransportHelper(void)
 {
 }
 
-pplx::task<NegotiationResponse*> TransportHelper::GetNegotiationResponse(Connection* connnection)
+pplx::task<NegotiationResponse*> TransportHelper::GetNegotiationResponse(http_client* client, Connection* connnection)
 {
     utility::string_t uri = connnection->GetUri() + U("/negotiate");
 
@@ -19,19 +19,24 @@ pplx::task<NegotiationResponse*> TransportHelper::GetNegotiationResponse(Connect
     //info->UserState = state;
     //info->Callback = negotiateCallback;
 
-    http_client client(uri);
+    //http_client client(uri);
 
-    return client.request(methods::GET).then([](http_response response) -> NegotiationResponse*
+    http_request request(methods::GET);
+    request.set_request_uri(uri);
+
+    return client->request(request).then([](http_response response) -> NegotiationResponse*
     {
         NegotiationResponse* responseObject = new NegotiationResponse();
         
         web::json::value obj = response.extract_json().get();
         auto iter = obj.cbegin();
-        responseObject->Uri = iter->second.to_string();
+
+        
+        responseObject->Uri = CleanString(iter->second.to_string());
         iter++;
-        responseObject->ConnectionToken = iter->second.to_string();
+        responseObject->ConnectionToken = EncodeUri(iter->second.to_string());
         iter++;
-        responseObject->ConnectionId = iter->second.to_string();
+        responseObject->ConnectionId = CleanString(iter->second.to_string());
         iter++;
         responseObject->KeepAliveTimeout = iter->second.as_double();
         iter++;
@@ -39,7 +44,7 @@ pplx::task<NegotiationResponse*> TransportHelper::GetNegotiationResponse(Connect
         iter++;
         responseObject->TryWebSockets = iter->second.as_bool();
         iter++;
-        responseObject->ProtocolVersion = iter->second.to_string();
+        responseObject->ProtocolVersion = CleanString(iter->second.to_string());
         
         return responseObject;
 
@@ -66,25 +71,53 @@ void TransportHelper::OnNegotiateHttpResponse(IHttpResponse* httpResponse, excep
     delete negotiateInfo;
 }
 
-string TransportHelper::GetReceiveQueryString(Connection* connection, string data, string transport)
+utility::string_t TransportHelper::GetReceiveQueryString(Connection* connection, utility::string_t data, utility::string_t transport)
 {
-    //// TODO: Encoding
-    //string qs = "?transport=" + transport + "&connectionToken=" + connection->GetConnectionToken();
+    // ?transport={0}&connectionToken={1}&messageId={2}&groups={3}&connectionData={4}{5}
+    utility::string_t qs = U("");
+    qs += U("?transport=") + transport + U("&connectionToken=") + connection->GetConnectionToken();
 
-    //auto messageId = connection->GetMessageId();
-    //auto groupsToken = connection->GetGroupsToken();
-    //
-    //if(!messageId.empty())
-    //{
-    //    qs += "&messageId=" + messageId;
-    //}
 
-    //if(!groupsToken.empty())
-    //{
-    //    qs += "&groupsToken=" + groupsToken;
-    //}
+    if (connection->GetMessageId() != U(""))
+    {
+        qs += U("&messageId=") + connection->GetMessageId();
+    }
 
-    return "";
+    if (connection->GetGroupsToken() != U(""))
+    {
+        qs += U("&groupsToken=") + connection->GetGroupsToken();
+    }
+
+    if (data != U(""))
+    {
+        qs += U("&connectionData=") + data;
+    }
+
+//    string customQuery = connection.QueryString;
+//
+//    if (!String.IsNullOrEmpty(customQuery))
+//    {
+//        qsBuilder.Append("&").Append(customQuery);
+//    }
+//
+//#if SILVERLIGHT || WINDOWS_PHONE
+//    qsBuilder.Append("&").Append(GetNoCacheUrlParam());
+//#endif
+    
+    return qs;
+}
+
+utility::string_t TransportHelper::CleanString(utility::string_t string)
+{
+    // strip off extra "" from the string
+    return string.substr(1, string.length()-2);
+}
+
+utility::string_t TransportHelper::EncodeUri(utility::string_t uri)
+{
+    // strip off extra "" from the string
+    uri = CleanString(uri);
+    return uri::encode_data_string(uri);
 }
 
 void TransportHelper::ProcessMessages(Connection* connection, string raw, bool* timedOut, bool* disconnected)
