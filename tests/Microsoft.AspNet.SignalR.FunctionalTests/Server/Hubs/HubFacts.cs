@@ -1432,9 +1432,15 @@ namespace Microsoft.AspNet.SignalR.Tests
 
                     hub.InvokeWithTimeout("Join", "Foo");
 
+                    Thread.Sleep(100);
+
                     hub.InvokeWithTimeout("Send", "Foo", "1");
 
+                    Thread.Sleep(100);
+
                     hub.InvokeWithTimeout("Leave", "Foo");
+
+                    Thread.Sleep(100);
 
                     for (int i = 0; i < 10; i++)
                     {
