@@ -73,12 +73,7 @@ namespace Microsoft.AspNet.SignalR.Client.Samples
 
         private static void RunRawConnection()
         {
-#if MONO
-            // Mono is pointing to the self hosted server
-            var connection = new Connection("http://localhost:8080/raw-connection");
-#else
             var connection = new Connection("http://localhost:40476/raw-connection");
-#endif
 
             Console.WriteLine("URL: {0}", connection.Url);
 
@@ -126,8 +121,8 @@ namespace Microsoft.AspNet.SignalR.Client.Samples
             }
             else if (key.Key == ConsoleKey.D2)
             {
-#if MONO
-                Console.WriteLine("Mono doesn't support websockets");
+#if NET40
+                Console.WriteLine("No .NET4 websockets");
                 return;
 #else
                 startTask = connection.Start(new Client.Transports.WebSocketTransport());
