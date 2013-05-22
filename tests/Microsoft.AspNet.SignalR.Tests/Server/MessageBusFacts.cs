@@ -174,7 +174,99 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
         }
 
         [Fact]
-        public void GetTopicDoesNotChangeState()
+        public void MultipleSubscribeTopicCallsToDeadTopicWork()
+        {
+            var dr = new DefaultDependencyResolver();
+            var configuration = dr.Resolve<IConfigurationManager>();
+            Topic topic;
+            configuration.DisconnectTimeout = TimeSpan.FromSeconds(6);
+            configuration.KeepAlive = null;
+
+            using (var bus = new TestMessageBus(dr))
+            {
+                var subscriber = new TestSubscriber(new[] { "key" });
+                int count = 0;
+
+                // Make sure the topic is in the no subs state
+                bus.Subscribe(subscriber, null, (result, state) => TaskAsyncHelper.True, 10, null)
+                   .Dispose();
+
+                bus.BeforeTopicCreated = (key) =>
+                {
+                    bus.Topics.TryGetValue(key, out topic);
+
+                    if (count == 1)
+                    {
+                        // Should have been removed by our double garbage collect in BeforeTopicMarked
+                        Assert.Null(topic);
+                    }
+
+                    if (count == 3)
+                    {
+                        // Ensure that we have a topic now created from the original thread
+                        Assert.NotNull(topic);
+                    }
+                };
+
+                bus.BeforeTopicMarked = (key, t) =>
+                {
+                    count++;
+
+                    if (count == 1)
+                    {
+                        bus.GarbageCollectTopics();
+                        bus.GarbageCollectTopics();
+                        // We garbage collect twice to mark the current topic as dead (it will remove it from the topics list)
+
+                        Assert.Equal(t.State, TopicState.Dead);
+
+                        bus.SubscribeTopic("key");
+
+                        // Topic should still be dead
+                        Assert.Equal(t.State, TopicState.Dead);
+                        Assert.Equal(count, 2);
+
+                        // Increment up to 3 so we don't execute same code path in after marked
+                        count++;
+                    }
+
+                    if (count == 2)
+                    {
+                        // We've just re-created the topic from the second bus.SubscribeTopic so we should have 0 subscriptions
+                        Assert.Equal(t.State, TopicState.NoSubscriptions);
+                    }
+
+                    if (count == 4)
+                    {
+                        // Ensure that we pulled the already created subscription (therefore it has subscriptions)
+                        Assert.Equal(t.State, TopicState.HasSubscriptions);
+                    }
+                };
+
+                bus.AfterTopicMarked = (key, t, state) =>
+                {
+                    if (count == 2)
+                    {
+                        // After re-creating the topic from the second bus.SubscribeTopic we should then move the topic state
+                        // into the has subscriptions state
+                        Assert.Equal(state, TopicState.HasSubscriptions);
+                    }
+
+                    if (count == 3)
+                    {
+                        Assert.Equal(state, TopicState.Dead);
+                    }
+                };
+
+                bus.SubscribeTopic("key");
+                Assert.Equal(1, bus.Topics.Count);
+                Assert.True(bus.Topics.TryGetValue("key", out topic));
+                Assert.Equal(TopicState.HasSubscriptions, topic.State);
+            }
+        }
+
+        [Fact]
+        public void GetTopicDoesNotChangeStateWhenNotDying()
         {
             var dr = new DefaultDependencyResolver();
             var configuration = dr.Resolve<IConfigurationManager>();
@@ -191,6 +283,9 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
                 Assert.Equal(TopicState.HasSubscriptions, topic.State);
                 topic.RemoveSubscription(topic.Subscriptions.First());
                 Assert.Equal(TopicState.NoSubscriptions, topic.State);
+                topic = bus.GetTopic("key");
+                Assert.Equal(TopicState.NoSubscriptions, topic.State);
+                topic.State = TopicState.Dying;
                 topic = bus.GetTopic("key");
                 Assert.Equal(TopicState.NoSubscriptions, topic.State);
             }
