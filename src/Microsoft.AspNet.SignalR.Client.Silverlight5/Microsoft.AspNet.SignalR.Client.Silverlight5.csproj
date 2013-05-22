@@ -120,8 +120,14 @@
     <Compile Include="..\Microsoft.AspNet.SignalR.Client\Hubs\IHubConnection.cs">
       <Link>Hubs\IHubConnection.cs</Link>
     </Compile>
+    <Compile Include="..\Microsoft.AspNet.SignalR.Client\Infrastructure\ErrorExtensions.cs">
+      <Link>Infrastructure\ErrorExtensions.cs</Link>
+    </Compile>
     <Compile Include="..\Microsoft.AspNet.SignalR.Client\Infrastructure\ExceptionHelper.cs">
       <Link>Infrastructure\ExceptionHelper.cs</Link>
+    </Compile>
+    <Compile Include="..\Microsoft.AspNet.SignalR.Client\Infrastructure\SignalRError.cs">
+      <Link>Infrastructure\SignalRError.cs</Link>
     </Compile>
     <Compile Include="..\Microsoft.AspNet.SignalR.Client\KeepAliveData.cs">
       <Link>KeepAliveData.cs</Link>

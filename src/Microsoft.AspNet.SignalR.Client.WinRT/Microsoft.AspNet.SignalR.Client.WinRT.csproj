@@ -150,6 +150,12 @@
     <Compile Include="..\Microsoft.AspNet.SignalR.Client\Http\IResponseExtensions.cs">
       <Link>Http\IResponseExtensions.cs</Link>
     </Compile>
+    <Compile Include="..\Microsoft.AspNet.SignalR.Client\Infrastructure\ErrorExtensions.cs">
+      <Link>Infrastructure\ErrorExtensions.cs</Link>
+    </Compile>
+    <Compile Include="..\Microsoft.AspNet.SignalR.Client\Infrastructure\SignalRError.cs">
+      <Link>Infrastructure\SignalRError.cs</Link>
+    </Compile>
     <Compile Include="..\Microsoft.AspNet.SignalR.Client\Resources.Designer.cs">
       <Link>Resources.Designer.cs</Link>
     </Compile>
