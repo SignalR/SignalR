@@ -13,6 +13,24 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="Header Files\Transports">
+      <UniqueIdentifier>{16f7c1b7-9430-478b-81c7-132a36a5b5b5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Http">
+      <UniqueIdentifier>{3babf8ce-7c0d-4eae-a77a-5f7eb1faabad}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Transport">
+      <UniqueIdentifier>{be3e0509-3821-4152-903a-1c7d549c001d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Http">
+      <UniqueIdentifier>{d2d00845-f11b-4051-ba71-08ca1cd0ee39}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Transport\ServerSentEvents">
+      <UniqueIdentifier>{50af4e52-ab49-41e3-8785-ba40e0ddf2e9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Transports\ServerSentEvents">
+      <UniqueIdentifier>{f7500dc8-c151-417d-bb3c-dc0704279a7d}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Connection.cpp">
@@ -21,19 +39,7 @@
     <ClCompile Include="FakeHttpClient.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="IClientTransport.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="IConnectionHandler.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="IHttpClient.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="IHttpRequest.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="IHttpResponse.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="MyConnectionHandler.cpp">
@@ -42,20 +48,41 @@
     <ClCompile Include="Source.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="ServerSentEventsTransport.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="TransportHelper.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="HttpBasedTransport.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Source Files\Http</Filter>
+    </ClCompile>
+    <ClCompile Include="IHttpClient.cpp">
+      <Filter>Source Files\Http</Filter>
     </ClCompile>
     <ClCompile Include="LongPollingTransport.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Source Files\Transport</Filter>
+    </ClCompile>
+    <ClCompile Include="IHttpRequest.cpp">
+      <Filter>Source Files\Http</Filter>
+    </ClCompile>
+    <ClCompile Include="IHttpResponse.cpp">
+      <Filter>Source Files\Http</Filter>
+    </ClCompile>
+    <ClCompile Include="IClientTransport.cpp">
+      <Filter>Source Files\Transport</Filter>
+    </ClCompile>
+    <ClCompile Include="ServerSentEventsTransport.cpp">
+      <Filter>Source Files\Transport</Filter>
+    </ClCompile>
+    <ClCompile Include="TransportHelper.cpp">
+      <Filter>Source Files\Transport</Filter>
     </ClCompile>
     <ClCompile Include="WebSocketTransport.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Source Files\Transport</Filter>
+    </ClCompile>
+    <ClCompile Include="EventSourceStreamReader.cpp">
+      <Filter>Source Files\Transport\ServerSentEvents</Filter>
+    </ClCompile>
+    <ClCompile Include="AsyncStreamReader.cpp">
+      <Filter>Source Files\Transport\ServerSentEvents</Filter>
+    </ClCompile>
+    <ClCompile Include="SseEvent.cpp">
+      <Filter>Source Files\Transport\ServerSentEvents</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -65,41 +92,50 @@
     <ClInclude Include="FakeHttpClient.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="IClientTransport.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="IConnectionHandler.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="IHttpClient.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="IHttpRequest.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="IHttpResponse.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="MyConnectionHandler.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="ServerSentEventsTransport.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="TransportHelper.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="HttpBasedTransport.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="LongPollingTransport.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="NegotiationResponse.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="LongPollingTransport.h">
+      <Filter>Header Files\Transports</Filter>
+    </ClInclude>
     <ClInclude Include="WebSocketTransport.h">
-      <Filter>Header Files</Filter>
+      <Filter>Header Files\Transports</Filter>
+    </ClInclude>
+    <ClInclude Include="TransportHelper.h">
+      <Filter>Header Files\Transports</Filter>
+    </ClInclude>
+    <ClInclude Include="ServerSentEventsTransport.h">
+      <Filter>Header Files\Transports</Filter>
+    </ClInclude>
+    <ClInclude Include="HttpBasedTransport.h">
+      <Filter>Header Files\Http</Filter>
+    </ClInclude>
+    <ClInclude Include="IClientTransport.h">
+      <Filter>Header Files\Transports</Filter>
+    </ClInclude>
+    <ClInclude Include="IHttpClient.h">
+      <Filter>Header Files\Http</Filter>
+    </ClInclude>
+    <ClInclude Include="IHttpRequest.h">
+      <Filter>Header Files\Http</Filter>
+    </ClInclude>
+    <ClInclude Include="IHttpResponse.h">
+      <Filter>Header Files\Http</Filter>
+    </ClInclude>
+    <ClInclude Include="EventSourceStreamReader.h">
+      <Filter>Header Files\Transports\ServerSentEvents</Filter>
+    </ClInclude>
+    <ClInclude Include="AsyncStreamReader.h">
+      <Filter>Header Files\Transports\ServerSentEvents</Filter>
+    </ClInclude>
+    <ClInclude Include="SseEvent.h">
+      <Filter>Header Files\Transports\ServerSentEvents</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

@@ -1,7 +1,7 @@
 #pragma once
 
-
 #include "HttpBasedTransport.h"
+#include "EventSourceStreamReader.h"
 
 class ServerSentEventsTransport : 
     public HttpBasedTransport
