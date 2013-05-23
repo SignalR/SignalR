@@ -31,7 +31,7 @@ namespace Microsoft.AspNet.SignalR.Tests
 
             using (var host = CreateHost(hostType, transportType))
             {
-                host.Initialize(transportConnectTimeout: 5, messageBusType: messageBusType);
+                host.Initialize(transportConnectTimeout: 1, messageBusType: messageBusType);
 
                 HubConnection hubConnection = CreateHubConnection(host);
                 IHubProxy proxy = hubConnection.CreateHubProxy("DelayedOnConnectedHub");
@@ -57,8 +57,7 @@ namespace Microsoft.AspNet.SignalR.Tests
 
             using (var host = CreateHost(hostType, transportType))
             {
-                // All defaults except for last parameter (transportConnectTimeout)
-                host.Initialize(-1, 110, 30, 1);
+                host.Initialize(transportConnectTimeout: 1);
 
                 HubConnection hubConnection = CreateHubConnection(host);
                 IHubProxy proxy = hubConnection.CreateHubProxy("DelayedOnConnectedHub");

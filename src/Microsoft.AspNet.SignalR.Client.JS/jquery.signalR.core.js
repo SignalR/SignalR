@@ -443,7 +443,7 @@
                     initializationComplete = false,
                     onFailed = function () {
 
-                        // Check if we've already triggered onFailed
+                        // Check if we've already triggered onFailed, onStart
                         if (!initializationComplete) {
                             initializationComplete = true;
                             window.clearTimeout(connection._.onFailedTimeoutHandle);
