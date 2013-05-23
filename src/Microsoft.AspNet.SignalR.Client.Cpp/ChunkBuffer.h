@@ -17,7 +17,7 @@ public:
     string_t ReadLine();
 
 private:
-    int mOffset;
+    unsigned int mOffset;
     string_t mBuffer;
     string_t mLineBuilder;
 };

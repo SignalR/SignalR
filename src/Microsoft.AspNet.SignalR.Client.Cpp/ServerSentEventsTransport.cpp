@@ -40,8 +40,8 @@ void ServerSentEventsTransport::OpenConnection(Connection* connection, utility::
     http_request request(methods::GET);
     request.set_request_uri(uri);
 
-    //streams::producer_consumer_buffer<uint8_t> buffer;
-    //request.set_response_stream(buffer.create_ostream());
+    streams::producer_consumer_buffer<uint8_t> buffer;
+    //request.set_response_stream(buffer.create_istream());
 
     mHttpClient->request(request).then([](http_response response) {
 

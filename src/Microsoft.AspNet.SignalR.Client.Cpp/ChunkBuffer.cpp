@@ -28,7 +28,7 @@ void ChunkBuffer::Add(char buffer[], int length)
 
 string_t ChunkBuffer::ReadLine()
 {
-    for (int i = mOffset; i < mBuffer.length(); i++, mOffset++)
+    for (unsigned int i = mOffset; i < mBuffer.length(); i++, mOffset++)
     {
         if (mBuffer.at(i) == U('\n'))
         {
