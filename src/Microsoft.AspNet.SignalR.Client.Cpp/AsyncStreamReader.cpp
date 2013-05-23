@@ -23,7 +23,7 @@ void AsyncStreamReader::Start()
     if (atomic_compare_exchange_strong<State>(&mReadingState, &initial, State::Processing))
     {
         mSetOpened = [this](){
-            //OnOpened();
+            OnOpened();
         };
 
         // FIX: Potential memory leak if Close is called between the CompareExchange and here.
@@ -47,9 +47,7 @@ READ:
     mBufferLock.lock();
     if(IsProcessing() && mReadBuffer != NULL)
     {
-
-        readTask = mStream.read();
-        //mStream.ReadAsync(mReadBuffer);
+        readTask = mStream.read(); // should only read a chunk at a time, not one character
     }
     else
     {
@@ -66,10 +64,10 @@ READ:
 
             long read = readTask.get();
 
-            //if (TryProcessRead(read))
-            //{
-            //    goto READ;
-            //}
+            if (TryProcessRead(read))
+            {
+                goto READ;
+            }
         }
         catch (exception& ex)
         {
@@ -100,12 +98,46 @@ void AsyncStreamReader::ReadAsync(pplx::task<long> readTask)
 
 bool AsyncStreamReader::TryProcessRead(long read)
 {
+    // run the setOpened method and then clear it, atomically
+    mProcessLock.lock();
+
+    function<void()> mPreviousSetOpened = mSetOpened;
+    mSetOpened = [](){};
+    mPreviousSetOpened();
+
+    mProcessLock.unlock();
+
+    if (read > 0)
+    {
+        OnData(mReadBuffer);
+        return true;
+    }
+    else if (read == 0)
+    {
+        Close();
+    }
+    
     return false;
 }
 
 void AsyncStreamReader::Close(exception& ex)
 {
+    State previousState = atomic_exchange<State>(&mReadingState, State::Stopped);
 
+    if(previousState != State::Stopped)
+    {
+        if (Closed != NULL)
+        {
+            //unwrap exception if not null?
+
+            Closed(ex);
+        }
+
+        mBufferLock.lock();
+        {
+            mReadBuffer = NULL;
+        }
+    }
 }
 
 void AsyncStreamReader::OnOpened()
@@ -116,10 +148,10 @@ void AsyncStreamReader::OnOpened()
     }
 }
 
-//void AsyncStreamReader::OnData(ArraySegment<byte> buffer)
-//{
-//    if (Data != null)
-//    {
-//        Data(buffer);
-//    }
-//}
+void AsyncStreamReader::OnData(char buffer[])
+{
+    if (Data != NULL)
+    {
+        Data(buffer);
+    }
+}

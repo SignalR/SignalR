@@ -19,14 +19,16 @@ class AsyncStreamReader
 public:
     AsyncStreamReader(Concurrency::streams::basic_istream<uint8_t> stream);
     ~AsyncStreamReader(void);
-    mutex GetBufferLock();
+    //mutex GetBufferLock();
+    //mutex GetProcessLock();
     function<void()> Opened;
-    function<void()> Closed;
-    //function<ArraySegment<byte>> Data;
+    function<void(exception& ex)> Closed;
+    function<void(char*)> Data;
     void Start();
 
 private:
     mutex mBufferLock;
+    mutex mProcessLock;
     Concurrency::streams::basic_istream<uint8_t> mStream;
     char* mReadBuffer;  // char []
     atomic<State> mReadingState;
@@ -39,5 +41,5 @@ private:
     void ReadAsync(pplx::task<long> readTask);
     bool TryProcessRead(long read);
     void OnOpened();
-    //void OnData(ArraySegment<byte> buffer);
+    void OnData(char buffer[]);
 };
