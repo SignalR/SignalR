@@ -19,15 +19,15 @@ class AsyncStreamReader
 public:
     AsyncStreamReader(Concurrency::streams::basic_istream<uint8_t> stream);
     ~AsyncStreamReader(void);
-    //mutex GetBufferLock();
-    //mutex GetProcessLock();
     function<void()> Opened;
     function<void(exception& ex)> Closed;
-    function<void(char*)> Data;
+    function<void(char buffer[])> Data;
     void Start();
 
+protected:
+        mutex mBufferLock;
+
 private:
-    mutex mBufferLock;
     mutex mProcessLock;
     Concurrency::streams::basic_istream<uint8_t> mStream;
     char* mReadBuffer;  // char []

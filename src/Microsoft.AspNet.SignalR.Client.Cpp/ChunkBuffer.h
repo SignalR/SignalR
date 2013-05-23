@@ -13,7 +13,7 @@ public:
 
     bool HasChuncks();
     void Add(char buffer[], int length);
-    //void Add(ArraySegment<byte> buffer);
+    void Add(char buffer[]);
     string_t ReadLine();
 
 private:

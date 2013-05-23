@@ -18,6 +18,15 @@ bool ChunkBuffer::HasChuncks()
     return mOffset < mBuffer.length();
 }
 
+void ChunkBuffer::Add(char buffer[])
+{
+    string str(buffer);
+    string_t wstr;
+    wstr.assign(str.begin(), str.end());
+    mBuffer = mBuffer.append(wstr);
+}
+
+//doesn't use length
 void ChunkBuffer::Add(char buffer[], int length)
 {
     string str(buffer);
