@@ -249,7 +249,7 @@ namespace Microsoft.AspNet.SignalR.Client
         /// </summary>
         public IDictionary<string, string> Headers { get; private set; }
 
-#if !SILVERLIGHT
+#if !PORTABLE
         /// <summary>
         /// Gets of sets proxy information for the connection.
         /// </summary>
@@ -734,11 +734,8 @@ namespace Microsoft.AspNet.SignalR.Client
         [SuppressMessage("Microsoft.Design", "CA1062:Validate arguments of public methods", MessageId = "0", Justification = "This is called by the transport layer")]
         void IConnection.PrepareRequest(IRequest request)
         {
-#if WINDOWS_PHONE
-            // http://msdn.microsoft.com/en-us/library/ff637320(VS.95).aspx
-            request.UserAgent = CreateUserAgentString("SignalR.Client.WP8");
-#elif SILVERLIGHT
-            // Useragent is not possible to set with Silverlight, not on the UserAgent property of the request nor in the Headers key/value in the request
+#if PORTABLE
+            // Cannot set user agent for Portable because SL does not support it.
 #elif NETFX_CORE
             request.UserAgent = CreateUserAgentString("SignalR.Client.WinRT");
 #elif NET45
@@ -761,7 +758,7 @@ namespace Microsoft.AspNet.SignalR.Client
 #endif
             }
 
-#if NETFX_CORE
+#if NETFX_CORE || PORTABLE
             return String.Format(CultureInfo.InvariantCulture, "{0}/{1} ({2})", client, _assemblyVersion, "Unknown OS");
 #else
             return String.Format(CultureInfo.InvariantCulture, "{0}/{1} ({2})", client, _assemblyVersion, Environment.OSVersion);
@@ -771,7 +768,7 @@ namespace Microsoft.AspNet.SignalR.Client
         [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "The Version constructor can throw exceptions of many different types. Failure is indicated by returning false.")]
         private static bool TryParseVersion(string versionString, out Version version)
         {
-#if WINDOWS_PHONE || NET35
+#if PORTABLE || NET35
             try
             {
                 version = new Version(versionString);
@@ -818,7 +815,7 @@ namespace Microsoft.AspNet.SignalR.Client
                 Debug.WriteLine(value);
             }
 
-#if NETFX_CORE
+#if NETFX_CORE || PORTABLE
             public override void Write(char value)
             {
                 // This is wrong we don't call it

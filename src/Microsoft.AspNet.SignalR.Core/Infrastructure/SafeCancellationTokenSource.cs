@@ -33,7 +33,7 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
                 // Because cancellation tokens are so poorly behaved, always invoke the cancellation token on 
                 // another thread. Don't capture any of the context (execution context or sync context)
                 // while doing this.
-#if WINDOWS_PHONE || SILVERLIGHT
+#if PORTABLE
                 ThreadPool.QueueUserWorkItem(_ =>
 #elif NETFX_CORE
                 Task.Run(() =>

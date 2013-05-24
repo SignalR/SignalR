@@ -85,20 +85,13 @@
       <CopyArtifacts>false</CopyArtifacts>
     </Projects>
     <!-- Only build the following clients if the SDK is installed -->
-    <Projects Include="$(ProjectRoot)\src\Microsoft.AspNet.SignalR.Client.Silverlight5\Microsoft.AspNet.SignalR.Client.Silverlight5.csproj">
+    <Projects Include="$(ProjectRoot)\src\Microsoft.AspNet.SignalR.Client.Portable\Microsoft.AspNet.SignalR.Client.Portable.csproj">
       <Build Condition="!$(Silverlight5SDKInstalled)">false</Build>
-      <Platform>SL5</Platform>
+      <Build Condition="!$(WP8SDKInstalled)">false</Build>
+      <Build Condition="!$(WinRTSDKInstalled)">false</Build>
+      <Platform>WinRT, SL5, WP8</Platform>
       <!-- HttpClient causes issues with running FxCop on the SL5 and WP8 clients -->
       <RunFxCop>false</RunFxCop>
-    </Projects>
-    <Projects Include="$(ProjectRoot)\src\Microsoft.AspNet.SignalR.Client.WP8\Microsoft.AspNet.SignalR.Client.WP8.csproj">
-      <Build Condition="!$(WP8SDKInstalled)">false</Build>
-      <Platform>WP8</Platform>
-      <RunFxCop>false</RunFxCop>
-    </Projects>
-    <Projects Include="$(ProjectRoot)\src\Microsoft.AspNet.SignalR.Client.WinRT\Microsoft.AspNet.SignalR.Client.WinRT.csproj">
-      <Build Condition="!$(WinRTSDKInstalled)">false</Build>
-      <Platform>WinRT</Platform>
     </Projects>
     <!-- The SignalR .NET client is the only remaining project that targets .NET 4.0 starting in SignalR 2.0 -->
     <Projects Include="$(ProjectRoot)\src\Microsoft.AspNet.SignalR.Client\Microsoft.AspNet.SignalR.Client.csproj">

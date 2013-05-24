@@ -25,7 +25,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
                 throw new ArgumentNullException("connection");
             }
 
-#if SILVERLIGHT || WINDOWS_PHONE
+#if PORTABLE
             string negotiateUrl = connection.Url + "negotiate?" + GetNoCacheUrlParam();
 #else
             string negotiateUrl = connection.Url + "negotiate";
@@ -90,7 +90,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
                 qsBuilder.Append("&").Append(customQuery);
             }
 
-#if SILVERLIGHT || WINDOWS_PHONE
+#if PORTABLE
             qsBuilder.Append("&").Append(GetNoCacheUrlParam());
 #endif
             return qsBuilder.ToString();

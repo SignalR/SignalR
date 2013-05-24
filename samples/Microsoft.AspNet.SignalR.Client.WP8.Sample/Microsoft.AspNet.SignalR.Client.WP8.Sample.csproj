@@ -146,9 +146,9 @@
     <Content Include="SplashScreenImage.jpg" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\src\Microsoft.AspNet.SignalR.Client.WP8\Microsoft.AspNet.SignalR.Client.WP8.csproj">
-      <Project>{12D04172-2A5A-420D-A29B-026DB62C3B72}</Project>
-      <Name>Microsoft.AspNet.SignalR.Client.WP8</Name>
+    <ProjectReference Include="..\..\src\Microsoft.AspNet.SignalR.Client.Portable\Microsoft.AspNet.SignalR.Client.Portable.csproj">
+      <Project>{47B3F28E-76DB-40BD-A8F5-800CF08D84ED}</Project>
+      <Name>Microsoft.AspNet.SignalR.Client.Portable</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\Microsoft\$(TargetFrameworkIdentifier)\$(TargetFrameworkVersion)\Microsoft.$(TargetFrameworkIdentifier).$(TargetFrameworkVersion).Overrides.targets" />

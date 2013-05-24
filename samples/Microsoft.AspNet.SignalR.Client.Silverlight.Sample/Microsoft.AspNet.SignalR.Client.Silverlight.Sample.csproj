@@ -122,13 +122,13 @@
     <None Include="Properties\AppManifest.xml" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\src\Microsoft.AspNet.SignalR.Client.Silverlight5\Microsoft.AspNet.SignalR.Client.Silverlight5.csproj">
-      <Project>{0220b607-1686-4d4a-aef0-292ea9827531}</Project>
-      <Name>Microsoft.AspNet.SignalR.Client.Silverlight5</Name>
-    </ProjectReference>
+    <None Include="Properties\OutOfBrowserSettings.xml" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Properties\OutOfBrowserSettings.xml" />
+    <ProjectReference Include="..\..\src\Microsoft.AspNet.SignalR.Client.Portable\Microsoft.AspNet.SignalR.Client.Portable.csproj">
+      <Project>{47b3f28e-76db-40bd-a8f5-800cf08d84ed}</Project>
+      <Name>Microsoft.AspNet.SignalR.Client.Portable</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\Silverlight\$(SilverlightVersion)\Microsoft.Silverlight.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

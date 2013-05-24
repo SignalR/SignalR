@@ -45,7 +45,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
             _callbackInvoker.Invoke((cb, token) =>
             {
                 Initialized();
-#if NET35 || WINDOWS_PHONE
+#if NET35
                 cb(new OperationCanceledException(Resources.Error_ConnectionCancelled));
 #else
                 cb(new OperationCanceledException(Resources.Error_ConnectionCancelled, token));
