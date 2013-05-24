@@ -6,6 +6,8 @@
 #include "TransportHelper.h"
 #include <queue>
 
+using namespace utility;
+
 class HttpBasedTransport :
     public IClientTransport
 {
@@ -14,11 +16,11 @@ protected:
     http_client* mHttpClient;
 
 public:
-    HttpBasedTransport(http_client* httpClient, utility::string_t transport);
+    HttpBasedTransport(http_client* httpClient, string_t transport);
     ~HttpBasedTransport(void);
 
     pplx::task<NegotiationResponse*> Negotiate(Connection* connection);
-    pplx::task<void> Start(Connection* connection, utility::string_t data, void* state = NULL);
+    pplx::task<void> Start(Connection* connection, string_t data, void* state = NULL);
     void Send(Connection* connection, string data);
     void Stop(Connection* connection);
     void Abort(Connection* connection);
@@ -26,8 +28,8 @@ public:
     void TryDequeueNextWorkItem();
 
 protected:
-    virtual void OnStart(Connection* connection, utility::string_t data) = 0;
-    utility::string_t GetReceiveQueryString(Connection* connection, utility::string_t data);
+    virtual void OnStart(Connection* connection, string_t data) = 0;
+    utility::string_t GetReceiveQueryString(Connection* connection, string_t data);
 
 
 private:    
@@ -39,7 +41,7 @@ private:
         map<string, string> PostData;
     };
     
-    utility::string_t _transport;
+    string_t _transport;
     queue<SendQueueItem*> mSendQueue;
     bool mSending;
     static void OnSendHttpResponse(IHttpResponse* httpResponse, exception* error, void* state);

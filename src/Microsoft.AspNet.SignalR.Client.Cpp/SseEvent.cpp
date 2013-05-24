@@ -44,7 +44,7 @@ string_t Trim(string_t string)
 
 bool SseEvent::TryParse(string_t line, SseEvent** sseEvent)
 {
-    if (line == U(""))
+    if (line.empty())
     {
         //return some error
     }

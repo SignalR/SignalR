@@ -11,15 +11,7 @@ TransportHelper::~TransportHelper(void)
 
 pplx::task<NegotiationResponse*> TransportHelper::GetNegotiationResponse(http_client* client, Connection* connnection)
 {
-    utility::string_t uri = connnection->GetUri() + U("/negotiate");
-
-	//uri += U("?clientProtoco=1.3"); // modify this later
-
-    //auto info = new NegotiationRequestInfo();
-    //info->UserState = state;
-    //info->Callback = negotiateCallback;
-
-    //http_client client(uri);
+    string_t uri = connnection->GetUri() + U("/negotiate");
 
     http_request request(methods::GET);
     request.set_request_uri(uri);
@@ -78,17 +70,17 @@ string_t TransportHelper::GetReceiveQueryString(Connection* connection, string_t
     qs += U("?transport=") + transport + U("&connectionToken=") + connection->GetConnectionToken();
 
 
-    if (connection->GetMessageId() != U(""))
+    if (!connection->GetMessageId().empty())
     {
         qs += U("&messageId=") + connection->GetMessageId();
     }
 
-    if (connection->GetGroupsToken() != U(""))
+    if (!connection->GetGroupsToken().empty())
     {
         qs += U("&groupsToken=") + connection->GetGroupsToken();
     }
 
-    if (data != U(""))
+    if (!data.empty())
     {
         qs += U("&connectionData=") + data;
     }
@@ -125,6 +117,79 @@ void TransportHelper::ProcessMessages(Connection* connection, string raw, bool* 
     // Parse some JSON stuff
 }
 
-void TransportHelper::ProcessResponse(Connection* connection, string_t response, bool* timeOut, bool* disconnected, function<void()> onInitialized)
+void TransportHelper::ProcessResponse(Connection* connection, string_t response, bool* timedOut, bool* disconnected, function<void()> onInitialized)
 {
+    // check if connection is null
+
+    // connection.UpdateLastKeepAlive();
+
+    *timedOut = false;
+    *disconnected = false;
+
+    if (response.empty())
+    {
+        return;
+    }
+
+    try 
+    {
+        value result = value::parse(response);
+
+        if (result.is_null())
+        {
+            return;
+        }
+
+        if (result[U("I")] != NULL)
+        {
+            connection->OnReceived(result.to_string());
+            return;
+        }
+
+        *timedOut = result[U("T")].as_integer() == 1;
+        *disconnected = result[U("D")].as_integer() == 1;
+
+        if (disconnected)
+        {
+            return;
+        }
+
+        UpdateGroups(connection, result[U("G")].as_string());
+
+        value messages = result[U("M")];
+
+        if (!messages.is_null())
+        {
+            connection->SetMessageId(messages[U("C")].as_string());
+
+            for (auto iter = messages.cbegin(); iter != messages.cend(); ++iter)
+            {
+                const value &v = iter->second;
+                connection->OnReceived(v.as_string());
+            }
+
+            TryInitialize(result, onInitialized);
+        }
+    }
+    catch (exception& ex)
+    {
+        connection->OnError(ex);
+    }
+}
+
+void TransportHelper::UpdateGroups(Connection* connection, string_t groupsToken)
+{
+    if (!groupsToken.empty())
+    {
+        connection->SetGroupsToken(groupsToken);
+    }
+}
+
+
+void TransportHelper::TryInitialize(value response, function<void()> onInitialized)
+{
+    if (response[U("S")].as_integer() == 1)
+    {
+        onInitialized();
+    }
 }

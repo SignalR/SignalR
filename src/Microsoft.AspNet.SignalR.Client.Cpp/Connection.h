@@ -15,6 +15,7 @@ using namespace concurrency;
 using namespace std;
 using namespace web::http;
 using namespace web::http::client;
+using namespace utility;
 
 class Connection
 {
@@ -28,39 +29,43 @@ public:
         Disconnected
     };
 
-    Connection(utility::string_t uri, IConnectionHandler* handler);
+    Connection(string_t uri, IConnectionHandler* handler);
     ~Connection(void);
 
+    function<void(string_t message)> Received;
+
+    ConnectionState GetState();
+    string_t GetConnectionId();
+    void SetConnectionId(string_t connectionId);
+    string_t GetConnectionToken();
+    void SetConnectionToken(string_t connectionToken);
+    string_t GetGroupsToken();
+    void SetGroupsToken(string_t groupsToken);
+    IClientTransport* GetTransport();
+    string_t GetUri();
+    string_t GetMessageId();
+    void SetMessageId(string_t groupsToken);
+    
     pplx::task<void> Start();
     pplx::task<void> Start(IClientTransport* transport);
     pplx::task<void> Start(http_client* client);
     void Stop();
     void Send(string data);
-    
-    ConnectionState GetState();
-    utility::string_t GetConnectionId();
-    utility::string_t GetConnectionToken();
-    void SetConnectionId(utility::string_t connectionId);
-    void SetConnectionToken(utility::string_t connectionToken);
-    utility::string_t GetGroupsToken();
-    IClientTransport* GetTransport();
-    utility::string_t GetUri();
-    utility::string_t GetMessageId();
 
     // Transport API
     bool ChangeState(ConnectionState oldState, ConnectionState newState);
     bool EnsureReconnecting();
     void OnError(exception error);
-    void OnReceived(string data);
+    void OnReceived(string_t data);
 
     void SetConnectionState(NegotiationResponse negotiateResponse);
 
 private:
-    utility::string_t mUri;
-    utility::string_t mConnectionId;
-    utility::string_t mConnectionToken;
-    utility::string_t mGroupsToken;
-    utility::string_t mMessageId;
+    string_t mUri;
+    string_t mConnectionId;
+    string_t mConnectionToken;
+    string_t mGroupsToken;
+    string_t mMessageId;
 
     ConnectionState mState;
     IClientTransport* mTransport;

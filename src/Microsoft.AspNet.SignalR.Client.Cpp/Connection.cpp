@@ -4,7 +4,7 @@
 #include "ServerSentEventsTransport.h"
 #include "WebSocketTransport.h"
 
-Connection::Connection(utility::string_t uri, IConnectionHandler* handler)
+Connection::Connection(string_t uri, IConnectionHandler* handler)
 {
     mUri = uri;
     if (!(mUri.back() == U('/')))
@@ -95,44 +95,69 @@ void Connection::OnError(exception error)
     mHandler->OnError(error);
 }
 
+void Connection::OnReceived(string_t message)
+{
+    if (Received != NULL)
+    {
+        try 
+        {
+            Received(message);
+        }
+        catch (exception& ex)
+        {
+            OnError(ex);
+        }
+    }
+}
+
 IClientTransport* Connection::GetTransport()
 {
     return mTransport;
 }
 
-utility::string_t Connection::GetUri()
+string_t Connection::GetUri()
 {
     return mUri;
 }
 
-utility::string_t Connection::GetConnectionId()
+string_t Connection::GetConnectionId()
 {
     return mConnectionId;
 }
 
-void Connection::SetConnectionId(utility::string_t connectionId)
+void Connection::SetConnectionId(string_t connectionId)
 {
     mConnectionId = connectionId;
 }
 
-utility::string_t Connection::GetConnectionToken()
+string_t Connection::GetConnectionToken()
 {
     return mConnectionToken;
 }
 
-void Connection::SetConnectionToken(utility::string_t connectionToken)
+void Connection::SetConnectionToken(string_t connectionToken)
 {
     mConnectionToken = connectionToken;
 }
 
-utility::string_t Connection::GetGroupsToken()
+void Connection::SetGroupsToken(string_t groupsToken)
+{
+    mGroupsToken = groupsToken;
+}
+
+string_t Connection::GetGroupsToken()
 {
     return mGroupsToken;
 }
 
-utility::string_t Connection::GetMessageId()
+string_t Connection::GetMessageId()
 {
     return mMessageId;
+}
+
+void Connection::SetMessageId(string_t messageId)
+{
+    mMessageId = messageId;
 }
 
 void Connection::Stop() 

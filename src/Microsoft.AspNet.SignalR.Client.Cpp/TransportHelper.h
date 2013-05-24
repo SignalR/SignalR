@@ -7,6 +7,7 @@
 
 using namespace std;
 using namespace utility;
+using namespace web::json;
 
 class TransportHelper
 {
@@ -28,5 +29,7 @@ private:
     static void OnNegotiateHttpResponse(IHttpResponse* httpResponse, exception* error, void* state);
     static string_t CleanString(string_t uri);
     static string_t EncodeUri(string_t uri);
+    static void UpdateGroups(Connection* connection, string_t groupsToken);
+    static void TryInitialize(value response, function<void()> onInitialized);
 };
 

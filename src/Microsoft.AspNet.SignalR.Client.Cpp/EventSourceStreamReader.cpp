@@ -27,7 +27,7 @@ void EventSourceStreamReader::ProcessBuffer(char readBuffer[])
     {
         string_t line = mBuffer->ReadLine();
 
-        if (line == U(""))
+        if (line.empty())
         {
             break;
         }

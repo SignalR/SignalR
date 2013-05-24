@@ -15,9 +15,9 @@ void MyConnectionHandler::OnError(exception error)
     cout << "An error occurred: " << error.what() << endl;
 }
 
-void MyConnectionHandler::OnReceived(string data)
+void MyConnectionHandler::OnReceived(string_t data)
 {
-    cout << data << endl;
+    wcout << data << endl;
 }
 
 void MyConnectionHandler::OnStateChanged(Connection::ConnectionState old_state, Connection::ConnectionState new_state)

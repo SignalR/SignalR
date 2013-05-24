@@ -69,8 +69,8 @@ void ServerSentEventsTransport::OpenConnection(Connection* connection, utility::
                     return;
                 }
 
-                bool timeOut, disconnected;
-                TransportHelper::ProcessResponse(connection, sseEvent->GetData(), &timeOut, &disconnected, [](){});
+                bool timedOut, disconnected;
+                TransportHelper::ProcessResponse(connection, sseEvent->GetData(), &timedOut, &disconnected, [](){});
 
                 if (disconnected)
                 {

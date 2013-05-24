@@ -28,6 +28,7 @@
 #include <iostream>
 #include <sstream>
 
+using namespace utility;
 using namespace web::http;
 using namespace web::http::client;
 using namespace std;
@@ -72,6 +73,11 @@ int main () {
 
     auto connection = Connection(U("http://localhost:40476/raw-connection"), handler);
     
+    connection.Received = [](string_t message)
+    {
+        wcout << message << endl;
+    };
+
     connection.Start();
     
     //connection.Send("hello");
