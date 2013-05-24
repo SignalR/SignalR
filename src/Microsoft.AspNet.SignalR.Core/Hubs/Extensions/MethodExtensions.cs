@@ -18,13 +18,38 @@ namespace Microsoft.AspNet.SignalR.Hubs
                 throw new ArgumentNullException("methodDescriptor");
             }
 
-            if ((methodDescriptor.Parameters.Count > 0 && parameters == null)
-                || methodDescriptor.Parameters.Count != parameters.Count)
+            if (methodDescriptor.Parameters.Count > 0 && parameters == null)
             {
+                return false;
+            }                       
+
+            if (methodDescriptor.Parameters.Count != parameters.Count)
+            {
+                if (methodDescriptor.Parameters.Count < parameters.Count)
+                {
+                    return false;
+                }
+
+                //if params are optional, we can accept the missing parameters
+                if (methodDescriptor.Parameters[parameters.Count].IsOptional)
+                {
+                    return true;
+                }
+                else 
+                {                    
+                    //if the last param is Params Array, then we can accept the missing parameter
+                    if (methodDescriptor.Parameters[parameters.Count].IsParameterArray && (methodDescriptor.Parameters.Count == parameters.Count + 1))
+                    {
+                        return true;                        
+                    }
+                }
+                
+                //no match
                 return false;
             }
 
             return true;
         }
+
     }
 }

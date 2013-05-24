@@ -48,7 +48,33 @@ namespace Microsoft.AspNet.SignalR.Hubs
                 throw new ArgumentNullException("method");
             }
 
-            return method.Parameters.Zip(values, ResolveParameter).ToArray();
+            var args = method.Parameters.Zip(values, ResolveParameter).ToList();
+
+            //add Type.Missing for Optional parameter
+            if (method.Parameters.Count != args.Count)
+            {
+                for (int i = args.Count; i <= method.Parameters.Count - 1; i++)
+                {
+                    //if params are optional, we add Type.Missing for each missing parameter
+                    if (method.Parameters[i].IsOptional)
+                    {
+                        //args.Add(Type.Missing);
+                        args.Add(method.Parameters[i].DefaultValue);
+                    }
+                    else
+                    {
+                        //if the last param is Params Array, then we add empty array for the missing parameter
+                        if ((method.Parameters[i].IsParameterArray) && (i == args.Count))
+                        {
+                            args.Add(Array.CreateInstance(method.Parameters[i].ParameterType.GetElementType(), 0));
+                        }
+
+                    }
+
+                }
+            }
+
+            return args.ToArray();
         }
     }
 }
