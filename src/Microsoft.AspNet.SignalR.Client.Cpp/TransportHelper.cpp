@@ -71,7 +71,7 @@ void TransportHelper::OnNegotiateHttpResponse(IHttpResponse* httpResponse, excep
     delete negotiateInfo;
 }
 
-utility::string_t TransportHelper::GetReceiveQueryString(Connection* connection, utility::string_t data, utility::string_t transport)
+string_t TransportHelper::GetReceiveQueryString(Connection* connection, string_t data, string_t transport)
 {
     // ?transport={0}&connectionToken={1}&messageId={2}&groups={3}&connectionData={4}{5}
     utility::string_t qs = U("");
@@ -107,13 +107,13 @@ utility::string_t TransportHelper::GetReceiveQueryString(Connection* connection,
     return qs;
 }
 
-utility::string_t TransportHelper::CleanString(utility::string_t string)
+utility::string_t TransportHelper::CleanString(string_t string)
 {
     // strip off extra "" from the string
     return string.substr(1, string.length()-2);
 }
 
-utility::string_t TransportHelper::EncodeUri(utility::string_t uri)
+utility::string_t TransportHelper::EncodeUri(string_t uri)
 {
     // strip off extra "" from the string
     uri = CleanString(uri);
@@ -123,4 +123,8 @@ utility::string_t TransportHelper::EncodeUri(utility::string_t uri)
 void TransportHelper::ProcessMessages(Connection* connection, string raw, bool* timedOut, bool* disconnected)
 {
     // Parse some JSON stuff
+}
+
+void TransportHelper::ProcessResponse(Connection* connection, string_t response, bool* timeOut, bool* disconnected, function<void()> onInitialized)
+{
 }
