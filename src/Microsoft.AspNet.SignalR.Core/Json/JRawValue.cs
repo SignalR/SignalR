@@ -32,6 +32,14 @@ namespace Microsoft.AspNet.SignalR.Json
         public bool CanConvertTo(Type type)
         {
             // TODO: Implement when we implement better method overload resolution
+            try
+            {
+                var value = ConvertTo(type);
+            }
+            catch
+            {
+                return false;
+            }
             return true;
         }
     }

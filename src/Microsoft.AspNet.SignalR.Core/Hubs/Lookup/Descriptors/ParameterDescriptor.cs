@@ -18,6 +18,20 @@ namespace Microsoft.AspNet.SignalR.Hubs
         /// Parameter type.
         /// </summary>
         public virtual Type ParameterType { get; set; }
+
+        /// <summary>
+        /// Parameter IsOptional.
+        /// </summary>
+        public virtual bool IsOptional { get; set; }
+
+        /// <summary>
+        /// Parameter DefaultValue.
+        /// </summary>
+        public virtual object DefaultValue { get; set; }
+        /// <summary>
+        /// Parameter IsParameterArray.
+        /// </summary>
+        public virtual bool IsParameterArray { get; set; }
     }
 }
 

@@ -13,12 +13,12 @@ namespace Microsoft.AspNet.SignalR.Hubs
     public class ReflectedMethodDescriptorProvider : IMethodDescriptorProvider
     {
         private readonly ConcurrentDictionary<string, IDictionary<string, IEnumerable<MethodDescriptor>>> _methods;
-        private readonly ConcurrentDictionary<string, MethodDescriptor> _executableMethods;
+        private readonly ConcurrentDictionary<string, IEnumerable<MethodDescriptor>> _executableMethods;
 
         public ReflectedMethodDescriptorProvider()
         {
             _methods = new ConcurrentDictionary<string, IDictionary<string, IEnumerable<MethodDescriptor>>>(StringComparer.OrdinalIgnoreCase);
-            _executableMethods = new ConcurrentDictionary<string, MethodDescriptor>(StringComparer.OrdinalIgnoreCase);
+            _executableMethods = new ConcurrentDictionary<string, IEnumerable<MethodDescriptor>>(StringComparer.OrdinalIgnoreCase);
         }
 
         public IEnumerable<MethodDescriptor> GetMethods(HubDescriptor hub)
@@ -67,6 +67,9 @@ namespace Microsoft.AspNet.SignalR.Hubs
                                               {
                                                   Name = p.Name,
                                                   ParameterType = p.ParameterType,
+                                                  IsOptional = p.IsOptional,
+                                                  DefaultValue = p.DefaultValue,
+                                                  IsParameterArray = p.GetCustomAttributes(typeof(ParamArrayAttribute), false).Length > 0,
                                               })
                                           .ToList()
                                   }),
@@ -88,27 +91,131 @@ namespace Microsoft.AspNet.SignalR.Hubs
         public bool TryGetMethod(HubDescriptor hub, string method, out MethodDescriptor descriptor, IList<IJsonValue> parameters)
         {
             string hubMethodKey = BuildHubExecutableMethodCacheKey(hub, method, parameters);
+            IEnumerable<MethodDescriptor> overloads;
+            descriptor = null;
 
-            if (!_executableMethods.TryGetValue(hubMethodKey, out descriptor))
+            if (!_executableMethods.TryGetValue(hubMethodKey, out overloads))
             {
-                IEnumerable<MethodDescriptor> overloads;
-
                 if (FetchMethodsFor(hub).TryGetValue(method, out overloads))
                 {
-                    var matches = overloads.Where(o => o.Matches(parameters)).ToList();
-
-                    // If only one match is found, that is the "executable" version, otherwise none of the methods can be returned because we don't know which one was actually being targeted
-                    descriptor = matches.Count == 1 ? matches[0] : null;
+                    if (overloads != null)
+                    {
+                        // If executable method overloads was found, cache it for future lookups (NOTE: we don't cache null instances because it could be a surface area for DoS attack by supplying random method names to flood the cache)
+                        _executableMethods.TryAdd(hubMethodKey, overloads);
+                    }
                 }
-                else
-                {
-                    descriptor = null;
-                }
+            }
 
-                // If an executable method was found, cache it for future lookups (NOTE: we don't cache null instances because it could be a surface area for DoS attack by supplying random method names to flood the cache)
-                if (descriptor != null)
+            if (overloads != null)
+            {
+                var matches = overloads.Where(o => o.Matches(parameters)).ToList();
+
+
+                if (matches.Count == 1)
+                    descriptor = matches[0];
+
+                //support overloading, choose the best match to parameters which has less extra parameters in method, and parameter type match. 
+                if (matches.Count > 1)
                 {
-                    _executableMethods.TryAdd(hubMethodKey, descriptor);
+
+                    if (parameters.Count > 0)
+                    {
+                        List<MethodDescriptor> paramCanConvertMatches = new List<MethodDescriptor>();
+
+                        foreach (var match in matches)
+                        {
+                            bool canConvert = true;
+                            for (int i = 0; i < parameters.Count; i++)
+                            {
+                                if (!parameters[i].CanConvertTo(match.Parameters[i].ParameterType))
+                                {
+                                    canConvert = false;
+                                }
+                            }
+
+                            if (canConvert == true)
+                                paramCanConvertMatches.Add(match);
+                        }
+
+
+                        //one for parameters type match 
+                        if (paramCanConvertMatches.Count == 1)
+                            descriptor = paramCanConvertMatches[0];
+
+                        if (paramCanConvertMatches.Count > 1)
+                        {
+                            int leastParamsMatch = 0;
+
+                            //multiple mataches for least paramters in matches, so check parameter type match                              
+                            for (int i = 0; i < paramCanConvertMatches.Count; i++)
+                            {
+                                if ((paramCanConvertMatches[i].Parameters.Count == parameters.Count))
+                                {
+                                    if ((!paramCanConvertMatches[i].Parameters[parameters.Count - 1].IsParameterArray) && (!paramCanConvertMatches[i].Parameters[parameters.Count - 1].IsOptional))
+                                    {
+                                        leastParamsMatch = i;
+                                        descriptor = paramCanConvertMatches[i];
+                                        break;
+                                    }
+
+                                    if (paramCanConvertMatches[i].Parameters[parameters.Count - 1].IsOptional)
+                                    {
+                                        leastParamsMatch = i;
+                                    }
+
+                                    // Parameter Array match last
+                                    if (paramCanConvertMatches[i].Parameters[parameters.Count - 1].IsParameterArray)
+                                    {
+                                        if (!paramCanConvertMatches[leastParamsMatch].Parameters[parameters.Count - 1].IsOptional)
+                                        {
+                                            leastParamsMatch = i;
+                                        }
+                                    }
+                                }
+
+                                if ((paramCanConvertMatches[i].Parameters.Count > parameters.Count))
+                                {
+                                    //multiple mataches for the last parameter in parameters type match, so mataches should have extra parameter  
+                                    //match the IsOptional for the extra parameter
+                                    if (paramCanConvertMatches[i].Parameters[parameters.Count].IsOptional)
+                                    {
+                                        if (paramCanConvertMatches[i].Parameters.Count < paramCanConvertMatches[leastParamsMatch].Parameters.Count)
+                                        {
+                                            leastParamsMatch = i;
+                                        }
+                                    }
+
+                                    // Parameter Array match last
+                                    if (paramCanConvertMatches[i].Parameters[parameters.Count].IsParameterArray)
+                                    {
+                                        if (!paramCanConvertMatches[leastParamsMatch].Parameters[parameters.Count - 1].IsOptional)
+                                        {
+                                            leastParamsMatch = i;
+                                        }
+                                    }
+                                }
+                            }
+
+                            descriptor = paramCanConvertMatches[leastParamsMatch];
+                        }
+
+                    }
+                    else
+                    {
+                        foreach (var match in matches)
+                        {
+                            //match the IsOptional if parameters count is 0
+                            if (match.Parameters[0].IsOptional)
+                            {
+                                descriptor = match;
+                                break;
+                            }
+                            else
+                            {
+                                descriptor = match;
+                            }
+                        }
+                    }
                 }
             }
 

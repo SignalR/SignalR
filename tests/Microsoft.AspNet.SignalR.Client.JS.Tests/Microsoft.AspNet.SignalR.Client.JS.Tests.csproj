@@ -103,6 +103,7 @@
     <Content Include="Tests\FunctionalTests\Common\KeepAliveFacts.js" />
     <Content Include="Tests\FunctionalTests\Core\JsonFacts.js" />
     <Content Include="Tests\FunctionalTests\Core\NegotiateFacts.js" />
+    <Content Include="Tests\FunctionalTests\Hubs\HubMethodParamFacts.js" />
     <Content Include="Tests\FunctionalTests\Hubs\HubEventHandlerFacts.js" />
     <Content Include="Tests\FunctionalTests\Hubs\HubGroupFacts.js" />
     <Content Include="Tests\FunctionalTests\Transports\All\ConnectionFacts.js" />
