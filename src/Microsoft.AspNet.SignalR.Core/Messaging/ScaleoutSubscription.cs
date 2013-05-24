@@ -174,13 +174,14 @@ namespace Microsoft.AspNet.SignalR.Messaging
             {
                 for (var i = 0; i < EventKeys.Count; ++i)
                 {
-                    IList<LocalEventKeyInfo> infos;
-                    if (mapping.LocalKeyInfo.TryGetValue(EventKeys[i], out infos))
-                    {
-                        for (int j = 0; j < infos.Count; j++)
-                        {
-                            LocalEventKeyInfo info = infos[j];
+                    string eventKey = EventKeys[i];
 
+                    for (int j = 0; j < mapping.LocalKeyInfo.Count; j++)
+                    {
+                        LocalEventKeyInfo info = mapping.LocalKeyInfo[j];
+
+                        if (info.MessageStore != null && info.Key.Equals(eventKey, StringComparison.OrdinalIgnoreCase))
+                        {
                             MessageStoreResult<Message> storeResult = info.MessageStore.GetMessages(info.Id, 1);
 
                             if (storeResult.Messages.Count > 0)

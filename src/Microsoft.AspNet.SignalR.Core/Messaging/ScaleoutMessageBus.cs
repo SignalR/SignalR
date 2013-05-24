@@ -173,7 +173,8 @@ namespace Microsoft.AspNet.SignalR.Messaging
 
             _trace.TraceInformation("OnReceived({0}, {1}, {2})", streamIndex, id, scaleoutMessage.Messages.Count);
 
-            var localMapping = new Dictionary<string, IList<LocalEventKeyInfo>>(StringComparer.OrdinalIgnoreCase);
+            var localMapping = new LocalEventKeyInfo[scaleoutMessage.Messages.Count];
+            var keys = new HashSet<string>();
 
             for (var i = 0; i < scaleoutMessage.Messages.Count; ++i)
             {
@@ -183,17 +184,11 @@ namespace Microsoft.AspNet.SignalR.Messaging
                 message.MappingId = id;
                 message.StreamIndex = streamIndex;
 
-                IList<LocalEventKeyInfo> keyInfo;
-                if (!localMapping.TryGetValue(message.Key, out keyInfo))
-                {
-                    keyInfo = new List<LocalEventKeyInfo>();
-                    localMapping.Add(message.Key, keyInfo);
-                }
-
+                keys.Add(message.Key);
                 ulong localId = Save(message);
                 MessageStore<Message> messageStore = Topics[message.Key].Store;
 
-                keyInfo.Add(new LocalEventKeyInfo(localId, messageStore));
+                localMapping[i] = new LocalEventKeyInfo(message.Key, localId, messageStore);
             }
 
             // Get the stream for this payload
@@ -203,7 +198,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
             store.Add(id, scaleoutMessage, localMapping);
 
             // Schedule after we're done
-            foreach (var eventKey in localMapping.Keys)
+            foreach (var eventKey in keys)
             {
                 ScheduleEvent(eventKey);
             }

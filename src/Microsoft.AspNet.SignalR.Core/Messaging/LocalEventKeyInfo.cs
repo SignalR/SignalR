@@ -7,13 +7,24 @@ namespace Microsoft.AspNet.SignalR.Messaging
 {
     public class LocalEventKeyInfo
     {
-        public LocalEventKeyInfo(ulong id, MessageStore<Message> store)
+        private readonly WeakReference _storeReference;
+
+        public LocalEventKeyInfo(string key, ulong id, MessageStore<Message> store)
         {
+            // Don't hold onto MessageStores that would otherwise be GC'd
+            _storeReference = new WeakReference(store);
+            Key = key;
             Id = id;
-            MessageStore = store;
         }
 
+        public string Key { get; private set; }
         public ulong Id { get; private set; }
-        public MessageStore<Message> MessageStore { get; private set; }
+        public MessageStore<Message> MessageStore
+        {
+            get
+            {
+                return _storeReference.Target as MessageStore<Message>;
+            }
+        }
     }
 }
