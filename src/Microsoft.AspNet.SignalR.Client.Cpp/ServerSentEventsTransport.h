@@ -3,6 +3,8 @@
 #include "HttpBasedTransport.h"
 #include "EventSourceStreamReader.h"
 
+using namespace utility;
+
 class ServerSentEventsTransport : 
     public HttpBasedTransport
 {
@@ -32,11 +34,12 @@ public:
     void ReadLoop(IHttpResponse* httpResponse, Connection* connection, HttpRequestInfo* reqestInfo);
 
 protected:
-    void OnStart(Connection* connection, utility::string_t data);
+    void OnStart(Connection* connection, string_t data);
 
 private:
     static void OnStartHttpResponse(IHttpResponse* httpResponse, exception* error, void* state);
-    void OpenConnection(Connection* connection, utility::string_t data);
+    void OpenConnection(Connection* connection, string_t data);
     static void OnReadLine(string data, exception* error, void* state);
+    static bool EqualsIgnoreCase(string_t string1, string_t string2);
 };
 

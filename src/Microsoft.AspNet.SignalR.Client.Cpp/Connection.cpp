@@ -11,7 +11,7 @@ Connection::Connection(utility::string_t uri, IConnectionHandler* handler)
     {
         mUri += U("/");
     }
-    mState = State::Disconnected;
+    mState = ConnectionState::Disconnected;
     mHandler = handler;
 }
 
@@ -33,7 +33,7 @@ pplx::task<void> Connection::Start(IClientTransport* transport)
 {	
     mTransport = transport;
 
-    if(!ChangeState(State::Disconnected, State::Connecting))
+    if(!ChangeState(ConnectionState::Disconnected, ConnectionState::Connecting))
     {
         // temp failure resolution
         return pplx::task<void>();
@@ -63,7 +63,7 @@ void Connection::Send(string data)
     mTransport->Send(this, data);
 }
 
-bool Connection::ChangeState(State oldState, State newState)
+bool Connection::ChangeState(ConnectionState oldState, ConnectionState newState)
 {
     if(mState == oldState)
     {
@@ -79,9 +79,9 @@ bool Connection::ChangeState(State oldState, State newState)
 
 bool Connection::EnsureReconnecting()
 {
-    ChangeState(State::Connected, State::Reconnecting);
+    ChangeState(ConnectionState::Connected, ConnectionState::Reconnecting);
             
-    return mState == State::Reconnecting;
+    return mState == ConnectionState::Reconnecting;
 }
 
 void Connection::SetConnectionState(NegotiationResponse negotiateResponse)
@@ -146,7 +146,7 @@ void Connection::OnTransportStartCompleted(exception* error, void* state)
 
     if(NULL != error)
     {
-        connection->ChangeState(State::Connecting, State::Connected);
+        connection->ChangeState(ConnectionState::Connecting, ConnectionState::Connected);
     }
     else 
     {

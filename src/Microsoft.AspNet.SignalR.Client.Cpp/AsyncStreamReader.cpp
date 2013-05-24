@@ -42,12 +42,12 @@ void AsyncStreamReader::Close()
 void AsyncStreamReader::Process()
 {
 READ:
-    pplx::task<long> readTask;
+    pplx::task<unsigned int> readTask;
     
     mBufferLock.lock();
     if(IsProcessing() && mReadBuffer != NULL)
     {
-        readTask = mStream.read(); // should only read a chunk at a time, not one character
+        readTask = AsyncReadIntoBuffer(&mReadBuffer, mStream);
     }
     else
     {
@@ -80,7 +80,7 @@ READ:
     }
 }
 
-void AsyncStreamReader::ReadAsync(pplx::task<long> readTask)
+void AsyncStreamReader::ReadAsync(pplx::task<unsigned int> readTask)
 {
     // not well translated from C# to C++
     try
@@ -96,7 +96,7 @@ void AsyncStreamReader::ReadAsync(pplx::task<long> readTask)
     }
 }
 
-bool AsyncStreamReader::TryProcessRead(long read)
+bool AsyncStreamReader::TryProcessRead(unsigned read)
 {
     // run the setOpened method and then clear it, atomically
     mProcessLock.lock();
@@ -154,4 +154,17 @@ void AsyncStreamReader::OnData(char buffer[])
     {
         Data(buffer);
     }
+}
+
+pplx::task<unsigned int> AsyncStreamReader::AsyncReadIntoBuffer(char* buffer[], Concurrency::streams::basic_istream<uint8_t> stream)
+{
+    concurrency::streams::container_buffer<string> inStringBuffer;
+    return stream.read(inStringBuffer, 4096).then([inStringBuffer, buffer](size_t bytesRead)
+    {
+        string &text = inStringBuffer.collection();
+        *buffer = new char[text.length() + 1];
+        strcpy(*buffer, text.c_str());
+
+        return (unsigned int)bytesRead;
+    });
 }

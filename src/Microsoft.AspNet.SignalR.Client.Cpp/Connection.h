@@ -19,13 +19,13 @@ using namespace web::http::client;
 class Connection
 {
 public:
-    enum State
+
+    enum ConnectionState
     {
         Connecting,
         Connected,
         Reconnecting,
-        Disconnecting,
-        Disconnected,
+        Disconnected
     };
 
     Connection(utility::string_t uri, IConnectionHandler* handler);
@@ -37,7 +37,7 @@ public:
     void Stop();
     void Send(string data);
     
-    State GetState();
+    ConnectionState GetState();
     utility::string_t GetConnectionId();
     utility::string_t GetConnectionToken();
     void SetConnectionId(utility::string_t connectionId);
@@ -48,7 +48,7 @@ public:
     utility::string_t GetMessageId();
 
     // Transport API
-    bool ChangeState(State oldState, State newState);
+    bool ChangeState(ConnectionState oldState, ConnectionState newState);
     bool EnsureReconnecting();
     void OnError(exception error);
     void OnReceived(string data);
@@ -62,7 +62,7 @@ private:
     utility::string_t mGroupsToken;
     utility::string_t mMessageId;
 
-    State mState;
+    ConnectionState mState;
     IClientTransport* mTransport;
     IConnectionHandler* mHandler;
 

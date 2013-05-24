@@ -9,6 +9,6 @@ public:
 
     void OnReceived(string data);
     void OnError(exception error);
-    void OnStateChanged(Connection::State old_state, Connection::State new_state);
+    void OnStateChanged(Connection::ConnectionState old_state, Connection::ConnectionState new_state);
 };
 

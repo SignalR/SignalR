@@ -38,8 +38,9 @@ private:
     void Close();
     void Close(exception &ex);
     void Process();
-    void ReadAsync(pplx::task<long> readTask);
-    bool TryProcessRead(long read);
+    void ReadAsync(pplx::task<unsigned int> readTask);
+    bool TryProcessRead(unsigned read);
     void OnOpened();
     void OnData(char buffer[]);
+    pplx::task<unsigned int> AsyncReadIntoBuffer(char* buffer[], Concurrency::streams::basic_istream<uint8_t> stream);
 };
