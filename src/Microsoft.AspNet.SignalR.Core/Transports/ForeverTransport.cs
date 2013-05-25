@@ -173,9 +173,10 @@ namespace Microsoft.AspNet.SignalR.Transports
             {
                 if (newConnection)
                 {
-                    initialize = () =>
+                    initialize = async () =>
                     {
-                        return Connected().Then((conn, id) => conn.Initialize(id), connection, ConnectionId);
+                        await Connected();
+                        await connection.Initialize(ConnectionId);
                     };
 
                     _counters.ConnectionsConnected.Increment();
@@ -186,23 +187,18 @@ namespace Microsoft.AspNet.SignalR.Transports
                 initialize = Reconnected;
             }
 
-            var series = new Func<object, Task>[]
-            { 
-                state => ((Func<Task>)state).Invoke(),
-                state => ((Func<Task>)state).Invoke()
+            Func<Task> fullInit = async () =>
+            {
+                await (TransportConnected ?? _emptyTaskFunc).Invoke();
+                await (initialize ?? _emptyTaskFunc).Invoke();
             };
-
-            var states = new object[] { TransportConnected ?? _emptyTaskFunc,
-                                        initialize ?? _emptyTaskFunc };
-
-            Func<Task> fullInit = () => TaskAsyncHelper.Series(series, states);
 
             return ProcessMessages(connection, fullInit);
         }
 
         [SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope", Justification = "The object is disposed otherwise")]
         [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "Exceptions are flowed to the caller.")]
-        private Task ProcessMessages(ITransportConnection connection, Func<Task> initialize)
+        private async Task ProcessMessages(ITransportConnection connection, Func<Task> initialize)
         {
             var disposer = new Disposer();
 
@@ -227,8 +223,7 @@ namespace Microsoft.AspNet.SignalR.Transports
             try
             {
                 // Ensure we enqueue the response initialization before any messages are received
-                EnqueueOperation(state => InitializeResponse((ITransportConnection)state), connection)
-                    .Catch((ex, state) => OnError(ex, state), messageContext);
+                await EnqueueOperation(state => InitializeResponse((ITransportConnection)state), connection);
 
                 // Ensure delegate continues to use the C# Compiler static delegate caching optimization.
                 IDisposable subscription = connection.Receive(LastMessageId,
@@ -245,23 +240,15 @@ namespace Microsoft.AspNet.SignalR.Transports
                 }
 
                 // Ensure delegate continues to use the C# Compiler static delegate caching optimization.
-                initialize().Then(tcs => tcs.TrySetResult(null), InitializeTcs)
-                            .Catch((ex, state) => OnError(ex, state), messageContext);
-            }
-            catch (OperationCanceledException ex)
-            {
-                InitializeTcs.TrySetCanceled();
-
-                lifetime.Complete(ex);
+                await initialize();
+                InitializeTcs.TrySetResult(null);
             }
             catch (Exception ex)
             {
-                InitializeTcs.TrySetCanceled();
-
-                lifetime.Complete(ex);
+                OnError(ex, messageContext);
             }
 
-            return _requestLifeTime.Task;
+            await _requestLifeTime.Task;
         }
 
         private static void Cancel(object state)
@@ -273,7 +260,7 @@ namespace Microsoft.AspNet.SignalR.Transports
             ((IDisposable)context.State).Dispose();
         }
 
-        private static Task<bool> OnMessageReceived(PersistentResponse response, object state)
+        private static async Task<bool> OnMessageReceived(PersistentResponse response, object state)
         {
             var context = (MessageContext)state;
 
@@ -283,8 +270,11 @@ namespace Microsoft.AspNet.SignalR.Transports
             if (response.Disconnect)
             {
                 // Send the response before removing any connection data
-                return context.Transport.Send(response).Then(c => OnDisconnectMessage(c), context)
-                                        .Then(() => TaskAsyncHelper.False);
+                await context.Transport.Send(response);
+
+                OnDisconnectMessage(context);
+
+                return false;
             }
             else if (response.TimedOut || response.Aborted)
             {
@@ -293,8 +283,9 @@ namespace Microsoft.AspNet.SignalR.Transports
                 if (response.Aborted)
                 {
                     // If this was a clean disconnect raise the event.
-                    return context.Transport.Abort()
-                                            .Then(() => TaskAsyncHelper.False);
+                    await context.Transport.Abort();
+
+                    return false;
                 }
             }
 
@@ -303,12 +294,11 @@ namespace Microsoft.AspNet.SignalR.Transports
                 // End the request on the terminal response
                 context.Lifetime.Complete();
 
-                return TaskAsyncHelper.False;
+                return false;
             }
 
-            // Ensure delegate continues to use the C# Compiler static delegate caching optimization.
-            return context.Transport.Send(response)
-                                    .Then(() => TaskAsyncHelper.True);
+            await context.Transport.Send(response);
+            return true;
         }
 
         private static void OnDisconnectMessage(MessageContext context)
@@ -338,7 +328,7 @@ namespace Microsoft.AspNet.SignalR.Transports
             return TaskAsyncHelper.Empty;
         }
 
-        private static void OnError(AggregateException ex, object state)
+        private static void OnError(Exception ex, object state)
         {
             var context = (MessageContext)state;
 

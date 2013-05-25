@@ -182,9 +182,10 @@ namespace Microsoft.AspNet.SignalR.Transports
             {
                 if (newConnection)
                 {
-                    initialize = () =>
+                    initialize = async () =>
                     {
-                        return Connected().Then((conn, id) => conn.Initialize(id), connection, ConnectionId);
+                        await Connected();
+                        await connection.Initialize(ConnectionId);
                     };
 
                     _counters.ConnectionsConnected.Increment();
@@ -195,23 +196,18 @@ namespace Microsoft.AspNet.SignalR.Transports
                 initialize = Reconnected;
             }
 
-            var series = new Func<object, Task>[] 
-            { 
-                state => ((Func<Task>)state).Invoke(),
-                state => ((Func<Task>)state).Invoke()
+            Func<Task> fullInit = async () =>
+            {
+                await (TransportConnected ?? _emptyTaskFunc).Invoke();
+                await (initialize ?? _emptyTaskFunc).Invoke();
             };
-
-            var states = new object[] { TransportConnected ?? _emptyTaskFunc, 
-                                        initialize ?? _emptyTaskFunc };
-
-            Func<Task> fullInit = () => TaskAsyncHelper.Series(series, states);
 
             return ProcessMessages(connection, fullInit);
         }
 
         [SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope", Justification = "The subscription is disposed in the callback")]
         [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "The exception is captured in a task")]
-        private Task ProcessMessages(ITransportConnection connection, Func<Task> initialize)
+        private async Task ProcessMessages(ITransportConnection connection, Func<Task> initialize)
         {
             var disposer = new Disposer();
 
@@ -235,14 +231,14 @@ namespace Microsoft.AspNet.SignalR.Transports
                 disposer.Set(subscription);
 
                 // Ensure delegate continues to use the C# Compiler static delegate caching optimization.
-                initialize().Catch((ex, state) => OnError(ex, state), messageContext);
+                await initialize();
             }
             catch (Exception ex)
             {
-                lifeTime.Complete(ex);
+                OnError(ex, messageContext);
             }
 
-            return _requestLifeTime.Task;
+            await _requestLifeTime.Task;
         }
 
         private static void Cancel(object state)
@@ -254,18 +250,16 @@ namespace Microsoft.AspNet.SignalR.Transports
             ((IDisposable)context.State).Dispose();
         }
 
-        private static Task<bool> OnMessageReceived(PersistentResponse response, object state)
+        private static async Task<bool> OnMessageReceived(PersistentResponse response, object state)
         {
             var context = (MessageContext)state;
 
             response.TimedOut = context.Transport.IsTimedOut;
 
-            Task task = TaskAsyncHelper.Empty;
-
             if (response.Aborted)
             {
                 // If this was a clean disconnect then raise the event
-                task = context.Transport.Abort();
+                await context.Transport.Abort();
             }
 
             if (response.Terminal)
@@ -274,22 +268,11 @@ namespace Microsoft.AspNet.SignalR.Transports
                 if (!context.ResponseSent)
                 {
                     // Ensure delegate continues to use the C# Compiler static delegate caching optimization.
-                    return task.Then((ctx, resp) => ctx.Transport.Send(resp), context, response)
-                               .Then(() =>
-                               {
-                                   context.Lifetime.Complete();
-
-                                   return TaskAsyncHelper.False;
-                               });
+                    await context.Transport.Send(response);
                 }
 
-                // Ensure delegate continues to use the C# Compiler static delegate caching optimization.
-                return task.Then(() =>
-                {
-                    context.Lifetime.Complete();
-
-                    return TaskAsyncHelper.False;
-                });
+                context.Lifetime.Complete();
+                return false;
             }
 
             // Mark the response as sent
@@ -297,8 +280,8 @@ namespace Microsoft.AspNet.SignalR.Transports
 
             // Send the response and return false
             // Ensure delegate continues to use the C# Compiler static delegate caching optimization.
-            return task.Then((ctx, resp) => ctx.Transport.Send(resp), context, response)
-                       .Then(() => TaskAsyncHelper.False);
+            await context.Transport.Send(response);
+            return false;
         }
 
         private static Task PerformSend(object state)
@@ -310,7 +293,7 @@ namespace Microsoft.AspNet.SignalR.Transports
                 return TaskAsyncHelper.Empty;
             }
 
-            context.Transport.Context.Response.ContentType = context.Transport.IsJsonp ? JsonUtility.JavaScriptMimeType : JsonUtility.JsonMimeType; 
+            context.Transport.Context.Response.ContentType = context.Transport.IsJsonp ? JsonUtility.JavaScriptMimeType : JsonUtility.JsonMimeType;
 
             if (context.Transport.IsJsonp)
             {
@@ -330,7 +313,7 @@ namespace Microsoft.AspNet.SignalR.Transports
             return TaskAsyncHelper.Empty;
         }
 
-        private static void OnError(AggregateException ex, object state)
+        private static void OnError(Exception ex, object state)
         {
             var context = (MessageContext)state;
 

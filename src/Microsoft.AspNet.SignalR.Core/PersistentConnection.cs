@@ -33,7 +33,7 @@ namespace Microsoft.AspNet.SignalR
         private IConfigurationManager _configurationManager;
         private ITransportManager _transportManager;
         private bool _initialized;
-        private IServerCommandHandler _serverMessageHandler;        
+        private IServerCommandHandler _serverMessageHandler;
 
         public virtual void Initialize(IDependencyResolver resolver)
         {
@@ -169,7 +169,7 @@ namespace Microsoft.AspNet.SignalR
         /// Thrown if the transport wasn't specified.
         /// Thrown if the connection id wasn't specified.
         /// </exception>
-        public virtual Task ProcessRequest(HostContext context)
+        public virtual async Task ProcessRequest(HostContext context)
         {
             if (context == null)
             {
@@ -183,11 +183,13 @@ namespace Microsoft.AspNet.SignalR
 
             if (IsNegotiationRequest(context.Request))
             {
-                return ProcessNegotiationRequest(context);
+                await ProcessNegotiationRequest(context);
+                return;
             }
             else if (IsPingRequest(context.Request))
             {
-                return ProcessPingRequest(context);
+                await ProcessPingRequest(context);
+                return;
             }
 
             Transport = GetTransport(context);
@@ -230,29 +232,40 @@ namespace Microsoft.AspNet.SignalR
                 return _serverMessageHandler.SendCommand(command);
             };
 
-            Transport.Connected = () =>
+            Transport.Connected = async () =>
             {
-                return TaskAsyncHelper.FromMethod(() => OnConnected(context.Request, connectionId).OrEmpty());
+                await OnConnected(context.Request, connectionId).OrEmpty();
             };
 
-            Transport.Reconnected = () =>
+            Transport.Reconnected = async () =>
             {
-                return TaskAsyncHelper.FromMethod(() => OnReconnected(context.Request, connectionId).OrEmpty());
+                await OnReconnected(context.Request, connectionId).OrEmpty();
             };
 
-            Transport.Received = data =>
+            Transport.Received = async data =>
             {
                 Counters.ConnectionMessagesSentTotal.Increment();
                 Counters.ConnectionMessagesSentPerSec.Increment();
-                return TaskAsyncHelper.FromMethod(() => OnReceived(context.Request, connectionId, data).OrEmpty());
+
+                await OnReceived(context.Request, connectionId, data).OrEmpty();
             };
 
-            Transport.Disconnected = () =>
+            Transport.Disconnected = async () =>
             {
-                return TaskAsyncHelper.FromMethod(() => OnDisconnected(context.Request, connectionId).OrEmpty());
+                await OnDisconnected(context.Request, connectionId).OrEmpty();
             };
 
-            return Transport.ProcessRequest(connection).OrEmpty().Catch(Counters.ErrorsAllTotal, Counters.ErrorsAllPerSec);
+            try
+            {
+                await Transport.ProcessRequest(connection).OrEmpty().ConfigureAwait(continueOnCapturedContext: false);
+            }
+            catch (Exception)
+            {
+                Counters.ErrorsAllTotal.Increment();
+                Counters.ErrorsAllPerSec.Increment();
+
+                throw;
+            }
         }
 
         [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "We want to catch any exception when unprotecting data.")]
