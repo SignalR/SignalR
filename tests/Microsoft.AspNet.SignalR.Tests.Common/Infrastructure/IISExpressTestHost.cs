@@ -70,8 +70,15 @@ namespace Microsoft.AspNet.SignalR.Tests.Common.Infrastructure
         public void Initialize(int? keepAlive,
                                int? connectionTimeout,
                                int? disconnectTimeout,
-                               bool enableAutoRejoiningGroups)
+                               bool enableAutoRejoiningGroups,
+                               MessageBusType type = MessageBusType.Default,
+                               int streams = 1)
         {
+            if (type != MessageBusType.Default)
+            {
+                throw new NotImplementedException();
+            }
+
             // Use a configuration file to specify values
             string content = String.Format(_webConfigTemplate.Value,
                                            keepAlive,

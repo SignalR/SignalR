@@ -73,15 +73,17 @@ namespace Microsoft.AspNet.SignalR.Client.Tests
             }
 
             [Theory]
-            [InlineData(HostType.Memory, TransportType.ServerSentEvents)]
-            [InlineData(HostType.Memory, TransportType.LongPolling)]
-            [InlineData(HostType.IISExpress, TransportType.ServerSentEvents)]
+            [InlineData(HostType.Memory, TransportType.ServerSentEvents, MessageBusType.Default)]
+            [InlineData(HostType.Memory, TransportType.ServerSentEvents, MessageBusType.Fake)]
+            [InlineData(HostType.Memory, TransportType.LongPolling, MessageBusType.Default)]
+            [InlineData(HostType.Memory, TransportType.LongPolling, MessageBusType.Fake)]
+            [InlineData(HostType.IISExpress, TransportType.ServerSentEvents, MessageBusType.Default)]
             // [InlineData(HostType.IISExpress, TransportType.LongPolling)] // Connect has issues with LP
-            public void ThrownWebExceptionShouldBeUnwrapped(HostType hostType, TransportType transportType)
+            public void ThrownWebExceptionShouldBeUnwrapped(HostType hostType, TransportType transportType, MessageBusType messageBusType)
             {
                 using (var host = CreateHost(hostType, transportType))
                 {
-                    host.Initialize();
+                    host.Initialize(messageBusType: messageBusType);
 
                     var connection = CreateConnection(host, "/ErrorsAreFun");
 
@@ -333,16 +335,18 @@ namespace Microsoft.AspNet.SignalR.Client.Tests
             }
 
             [Theory]
-            [InlineData(HostType.Memory, TransportType.ServerSentEvents)]
-            [InlineData(HostType.Memory, TransportType.LongPolling)]
-            [InlineData(HostType.IISExpress, TransportType.ServerSentEvents)]
-            [InlineData(HostType.IISExpress, TransportType.Websockets)]
-            [InlineData(HostType.IISExpress, TransportType.LongPolling)]
-            public void ManuallyRestartedClientMaintainsConsistentState(HostType hostType, TransportType transportType)
+            [InlineData(HostType.Memory, TransportType.ServerSentEvents, MessageBusType.Default)]
+            [InlineData(HostType.Memory, TransportType.ServerSentEvents, MessageBusType.Fake)]
+            [InlineData(HostType.Memory, TransportType.LongPolling, MessageBusType.Default)]
+            [InlineData(HostType.Memory, TransportType.LongPolling, MessageBusType.Fake)]
+            [InlineData(HostType.IISExpress, TransportType.ServerSentEvents, MessageBusType.Default)]
+            [InlineData(HostType.IISExpress, TransportType.Websockets, MessageBusType.Default)]
+            [InlineData(HostType.IISExpress, TransportType.LongPolling, MessageBusType.Default)]
+            public void ManuallyRestartedClientMaintainsConsistentState(HostType hostType, TransportType transportType, MessageBusType messageBusType)
             {
                 using (var host = CreateHost(hostType, transportType))
                 {
-                    host.Initialize();
+                    host.Initialize(messageBusType: messageBusType);
                     var connection = CreateHubConnection(host);
                     int timesStopped = 0;
 
@@ -367,16 +371,18 @@ namespace Microsoft.AspNet.SignalR.Client.Tests
             }
 
             [Theory]
-            [InlineData(HostType.Memory, TransportType.ServerSentEvents)]
-            [InlineData(HostType.Memory, TransportType.LongPolling)]
-            [InlineData(HostType.IISExpress, TransportType.ServerSentEvents)]
-            [InlineData(HostType.IISExpress, TransportType.Websockets)]
+            [InlineData(HostType.Memory, TransportType.ServerSentEvents, MessageBusType.Default)]
+            [InlineData(HostType.Memory, TransportType.ServerSentEvents, MessageBusType.Fake)]
+            [InlineData(HostType.Memory, TransportType.LongPolling, MessageBusType.Default)]
+            [InlineData(HostType.Memory, TransportType.LongPolling, MessageBusType.Fake)]
+            [InlineData(HostType.IISExpress, TransportType.ServerSentEvents, MessageBusType.Default)]
+            [InlineData(HostType.IISExpress, TransportType.Websockets, MessageBusType.Default)]
             //[InlineData(HostType.IISExpress, TransportType.LongPolling)]
-            public void ClientStopsReconnectingAfterDisconnectTimeout(HostType hostType, TransportType transportType)
+            public void ClientStopsReconnectingAfterDisconnectTimeout(HostType hostType, TransportType transportType, MessageBusType messageBusType)
             {
                 using (var host = CreateHost(hostType, transportType))
                 {
-                    host.Initialize(disconnectTimeout: 6);
+                    host.Initialize(disconnectTimeout: 6, messageBusType: messageBusType);
                     var connection = CreateHubConnection(host);
 
                     using (connection)
@@ -406,18 +412,21 @@ namespace Microsoft.AspNet.SignalR.Client.Tests
             }
 
             [Theory]
-            [InlineData(HostType.Memory, TransportType.ServerSentEvents)]
-            [InlineData(HostType.Memory, TransportType.LongPolling)]
-            [InlineData(HostType.IISExpress, TransportType.ServerSentEvents)]
-            [InlineData(HostType.IISExpress, TransportType.Websockets)]
-            [InlineData(HostType.IISExpress, TransportType.LongPolling)]
-            public void ClientStaysReconnectedAfterDisconnectTimeout(HostType hostType, TransportType transportType)
+            [InlineData(HostType.Memory, TransportType.ServerSentEvents, MessageBusType.Default)]
+            [InlineData(HostType.Memory, TransportType.ServerSentEvents, MessageBusType.Fake)]
+            [InlineData(HostType.Memory, TransportType.LongPolling, MessageBusType.Default)]
+            [InlineData(HostType.Memory, TransportType.LongPolling, MessageBusType.Fake)]
+            [InlineData(HostType.IISExpress, TransportType.ServerSentEvents, MessageBusType.Default)]
+            [InlineData(HostType.IISExpress, TransportType.Websockets, MessageBusType.Default)]
+            [InlineData(HostType.IISExpress, TransportType.LongPolling, MessageBusType.Default)]
+            public void ClientStaysReconnectedAfterDisconnectTimeout(HostType hostType, TransportType transportType, MessageBusType messageBusType)
             {
                 using (var host = CreateHost(hostType, transportType))
                 {
                     host.Initialize(keepAlive: null,
                                     connectionTimeout: 2,
-                                    disconnectTimeout: 6);
+                                    disconnectTimeout: 6,
+                                    messageBusType: messageBusType);
 
                     var connection = CreateHubConnection(host);
 
@@ -453,10 +462,12 @@ namespace Microsoft.AspNet.SignalR.Client.Tests
             }
 
             [Theory]
-            [InlineData(HostType.Memory, TransportType.ServerSentEvents)]
-            [InlineData(HostType.Memory, TransportType.LongPolling)]
-            [InlineData(HostType.IISExpress, TransportType.Websockets)]
-            public void ConnectionErrorCapturesExceptionsThrownInReceived(HostType hostType, TransportType transportType)
+            [InlineData(HostType.Memory, TransportType.ServerSentEvents, MessageBusType.Default)]
+            [InlineData(HostType.Memory, TransportType.ServerSentEvents, MessageBusType.Fake)]
+            [InlineData(HostType.Memory, TransportType.LongPolling, MessageBusType.Default)]
+            [InlineData(HostType.Memory, TransportType.LongPolling, MessageBusType.Fake)]
+            [InlineData(HostType.IISExpress, TransportType.Websockets, MessageBusType.Default)]
+            public void ConnectionErrorCapturesExceptionsThrownInReceived(HostType hostType, TransportType transportType, MessageBusType messageBusType)
             {
                 using (var host = CreateHost(hostType, transportType))
                 {
@@ -465,7 +476,7 @@ namespace Microsoft.AspNet.SignalR.Client.Tests
                     Exception thrown = new Exception(),
                               caught = null;
 
-                    host.Initialize();
+                    host.Initialize(messageBusType: messageBusType);
 
                     var connection = CreateConnection(host, "/multisend");
 

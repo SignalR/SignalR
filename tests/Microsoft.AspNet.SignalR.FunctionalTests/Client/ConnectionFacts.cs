@@ -12,21 +12,25 @@ namespace Microsoft.AspNet.SignalR.Tests
     public class ConnectionFacts : HostedTest
     {
         [Theory]
-        [InlineData("1337.0", HostType.Memory, TransportType.ServerSentEvents)]
-        [InlineData("1337.0", HostType.Memory, TransportType.LongPolling)]
-        [InlineData("1337.0", HostType.IISExpress, TransportType.LongPolling)]
-        [InlineData("1337.0", HostType.IISExpress, TransportType.ServerSentEvents)]
-        [InlineData("1337.0", HostType.IISExpress, TransportType.Websockets)]
-        [InlineData("0.1337", HostType.Memory, TransportType.ServerSentEvents)]
-        [InlineData("0.1337", HostType.Memory, TransportType.LongPolling)]
-        [InlineData("0.1337", HostType.IISExpress, TransportType.LongPolling)]
-        [InlineData("0.1337", HostType.IISExpress, TransportType.ServerSentEvents)]
-        [InlineData("0.1337", HostType.IISExpress, TransportType.Websockets)]
-        public void ConnectionFailsToStartWithInvalidOldProtocol(string protocolVersion, HostType hostType, TransportType transportType)
+        [InlineData("1337.0", HostType.Memory, TransportType.ServerSentEvents, MessageBusType.Default)]
+        [InlineData("1337.0", HostType.Memory, TransportType.ServerSentEvents, MessageBusType.Fake)]
+        [InlineData("1337.0", HostType.Memory, TransportType.LongPolling, MessageBusType.Default)]
+        [InlineData("1337.0", HostType.Memory, TransportType.LongPolling, MessageBusType.Fake)]
+        [InlineData("1337.0", HostType.IISExpress, TransportType.LongPolling, MessageBusType.Default)]
+        [InlineData("1337.0", HostType.IISExpress, TransportType.ServerSentEvents, MessageBusType.Default)]
+        [InlineData("1337.0", HostType.IISExpress, TransportType.Websockets, MessageBusType.Default)]
+        [InlineData("0.1337", HostType.Memory, TransportType.ServerSentEvents, MessageBusType.Default)]
+        [InlineData("0.1337", HostType.Memory, TransportType.ServerSentEvents, MessageBusType.Fake)]
+        [InlineData("0.1337", HostType.Memory, TransportType.LongPolling, MessageBusType.Default)]
+        [InlineData("0.1337", HostType.Memory, TransportType.LongPolling, MessageBusType.Fake)]
+        [InlineData("0.1337", HostType.IISExpress, TransportType.LongPolling, MessageBusType.Default)]
+        [InlineData("0.1337", HostType.IISExpress, TransportType.ServerSentEvents, MessageBusType.Default)]
+        [InlineData("0.1337", HostType.IISExpress, TransportType.Websockets, MessageBusType.Default)]
+        public void ConnectionFailsToStartWithInvalidOldProtocol(string protocolVersion, HostType hostType, TransportType transportType, MessageBusType messageBusType)
         {
             using (var host = CreateHost(hostType, transportType))
             {
-                host.Initialize();
+                host.Initialize(messageBusType: messageBusType);
                 var connection = CreateConnection(host, "/signalr");
 
                 connection.Protocol = new Version(protocolVersion);
@@ -42,16 +46,18 @@ namespace Microsoft.AspNet.SignalR.Tests
         }
 
         [Theory]
-        [InlineData(HostType.Memory, TransportType.ServerSentEvents)]
-        [InlineData(HostType.Memory, TransportType.LongPolling)]
-        [InlineData(HostType.IISExpress, TransportType.LongPolling)]
-        [InlineData(HostType.IISExpress, TransportType.ServerSentEvents)]
-        [InlineData(HostType.IISExpress, TransportType.Websockets)]
-        public void ConnectionDisposeTriggersStop(HostType hostType, TransportType transportType)
+        [InlineData(HostType.Memory, TransportType.ServerSentEvents, MessageBusType.Default)]
+        [InlineData(HostType.Memory, TransportType.ServerSentEvents, MessageBusType.Fake)]
+        [InlineData(HostType.Memory, TransportType.LongPolling, MessageBusType.Default)]
+        [InlineData(HostType.Memory, TransportType.LongPolling, MessageBusType.Fake)]
+        [InlineData(HostType.IISExpress, TransportType.LongPolling, MessageBusType.Default)]
+        [InlineData(HostType.IISExpress, TransportType.ServerSentEvents, MessageBusType.Default)]
+        [InlineData(HostType.IISExpress, TransportType.Websockets, MessageBusType.Default)]
+        public void ConnectionDisposeTriggersStop(HostType hostType, TransportType transportType, MessageBusType messageBusType)
         {
             using (var host = CreateHost(hostType, transportType))
             {
-                host.Initialize();
+                host.Initialize(messageBusType: messageBusType);
                 var connection = CreateConnection(host, "/signalr");
 
                 using (connection)

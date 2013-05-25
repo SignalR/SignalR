@@ -26,14 +26,15 @@ namespace Microsoft.AspNet.SignalR.Tests
     public class HubFacts : HostedTest
     {
         [Theory]
-        [InlineData(HostType.Memory, TransportType.ServerSentEvents)]
-        [InlineData(HostType.IISExpress, TransportType.ServerSentEvents)]
-        [InlineData(HostType.IISExpress, TransportType.Websockets)]
-        public void ReadingState(HostType hostType, TransportType transportType)
+        [InlineData(HostType.Memory, TransportType.ServerSentEvents, MessageBusType.Default)]
+        [InlineData(HostType.Memory, TransportType.ServerSentEvents, MessageBusType.Fake)]
+        [InlineData(HostType.IISExpress, TransportType.ServerSentEvents, MessageBusType.Default)]
+        [InlineData(HostType.IISExpress, TransportType.Websockets, MessageBusType.Default)]
+        public void ReadingState(HostType hostType, TransportType transportType, MessageBusType messageBusType)
         {
             using (var host = CreateHost(hostType, transportType))
             {
-                host.Initialize();
+                host.Initialize(messageBusType: messageBusType);
 
                 HubConnection connection = CreateHubConnection(host);
 
@@ -53,14 +54,15 @@ namespace Microsoft.AspNet.SignalR.Tests
         }
 
         [Theory]
-        [InlineData(HostType.Memory, TransportType.ServerSentEvents)]
-        [InlineData(HostType.IISExpress, TransportType.ServerSentEvents)]
-        [InlineData(HostType.IISExpress, TransportType.Websockets)]
-        public void ReadingComplexState(HostType hostType, TransportType transportType)
+        [InlineData(HostType.Memory, TransportType.ServerSentEvents, MessageBusType.Default)]
+        [InlineData(HostType.Memory, TransportType.ServerSentEvents, MessageBusType.Fake)]
+        [InlineData(HostType.IISExpress, TransportType.ServerSentEvents, MessageBusType.Default)]
+        [InlineData(HostType.IISExpress, TransportType.Websockets, MessageBusType.Default)]
+        public void ReadingComplexState(HostType hostType, TransportType transportType, MessageBusType messageBusType)
         {
             using (var host = CreateHost(hostType, transportType))
             {
-                host.Initialize();
+                host.Initialize(messageBusType: messageBusType);
 
                 var connection = CreateHubConnection(host);
 
@@ -149,14 +151,15 @@ namespace Microsoft.AspNet.SignalR.Tests
         }
 
         [Theory]
-        [InlineData(HostType.Memory, TransportType.ServerSentEvents)]
-        [InlineData(HostType.IISExpress, TransportType.ServerSentEvents)]
-        [InlineData(HostType.IISExpress, TransportType.Websockets)]
-        public void SettingState(HostType hostType, TransportType transportType)
+        [InlineData(HostType.Memory, TransportType.ServerSentEvents, MessageBusType.Default)]
+        [InlineData(HostType.Memory, TransportType.ServerSentEvents, MessageBusType.Fake)]
+        [InlineData(HostType.IISExpress, TransportType.ServerSentEvents, MessageBusType.Default)]
+        [InlineData(HostType.IISExpress, TransportType.Websockets, MessageBusType.Default)]
+        public void SettingState(HostType hostType, TransportType transportType, MessageBusType messageBusType)
         {
             using (var host = CreateHost(hostType, transportType))
             {
-                host.Initialize();
+                host.Initialize(messageBusType: messageBusType);
                 HubConnection connection = CreateHubConnection(host);
 
                 using (connection)
@@ -173,13 +176,14 @@ namespace Microsoft.AspNet.SignalR.Tests
         }
 
         [Theory]
-        [InlineData(HostType.Memory, TransportType.ServerSentEvents)]
-        [InlineData(HostType.IISExpress, TransportType.ServerSentEvents)]
-        public void CancelledTask(HostType hostType, TransportType transportType)
+        [InlineData(HostType.Memory, TransportType.ServerSentEvents, MessageBusType.Default)]
+        [InlineData(HostType.Memory, TransportType.ServerSentEvents, MessageBusType.Fake)]
+        [InlineData(HostType.IISExpress, TransportType.ServerSentEvents, MessageBusType.Default)]
+        public void CancelledTask(HostType hostType, TransportType transportType, MessageBusType messageBusType)
         {
             using (var host = CreateHost(hostType, transportType))
             {
-                host.Initialize();
+                host.Initialize(messageBusType: messageBusType);
                 HubConnection connection = CreateHubConnection(host);
 
                 using (connection)
@@ -205,13 +209,14 @@ namespace Microsoft.AspNet.SignalR.Tests
         }
 
         [Theory]
-        [InlineData(HostType.Memory, TransportType.ServerSentEvents)]
-        [InlineData(HostType.IISExpress, TransportType.ServerSentEvents)]
-        public void CancelledGenericTask(HostType hostType, TransportType transportType)
+        [InlineData(HostType.Memory, TransportType.ServerSentEvents, MessageBusType.Default)]
+        [InlineData(HostType.Memory, TransportType.ServerSentEvents, MessageBusType.Fake)]
+        [InlineData(HostType.IISExpress, TransportType.ServerSentEvents, MessageBusType.Default)]
+        public void CancelledGenericTask(HostType hostType, TransportType transportType, MessageBusType messageBusType)
         {
             using (var host = CreateHost(hostType, transportType))
             {
-                host.Initialize();
+                host.Initialize(messageBusType: messageBusType);
                 HubConnection connection = CreateHubConnection(host);
 
                 using (connection)
@@ -237,14 +242,15 @@ namespace Microsoft.AspNet.SignalR.Tests
         }
 
         [Theory]
-        [InlineData(HostType.Memory, TransportType.ServerSentEvents)]
-        [InlineData(HostType.IISExpress, TransportType.ServerSentEvents)]
-        [InlineData(HostType.IISExpress, TransportType.Websockets)]
-        public void GetValueFromServer(HostType hostType, TransportType transportType)
+        [InlineData(HostType.Memory, TransportType.ServerSentEvents, MessageBusType.Default)]
+        [InlineData(HostType.Memory, TransportType.ServerSentEvents, MessageBusType.Fake)]
+        [InlineData(HostType.IISExpress, TransportType.ServerSentEvents, MessageBusType.Default)]
+        [InlineData(HostType.IISExpress, TransportType.Websockets, MessageBusType.Default)]
+        public void GetValueFromServer(HostType hostType, TransportType transportType, MessageBusType messageBusType)
         {
             using (var host = CreateHost(hostType, transportType))
             {
-                host.Initialize();
+                host.Initialize(messageBusType: messageBusType);
                 HubConnection connection = CreateHubConnection(host);
 
                 using (connection)
@@ -261,14 +267,15 @@ namespace Microsoft.AspNet.SignalR.Tests
         }
 
         [Theory]
-        [InlineData(HostType.Memory, TransportType.ServerSentEvents)]
-        [InlineData(HostType.IISExpress, TransportType.ServerSentEvents)]
-        [InlineData(HostType.IISExpress, TransportType.Websockets)]
-        public void SynchronousException(HostType hostType, TransportType transportType)
+        [InlineData(HostType.Memory, TransportType.ServerSentEvents, MessageBusType.Default)]
+        [InlineData(HostType.Memory, TransportType.ServerSentEvents, MessageBusType.Fake)]
+        [InlineData(HostType.IISExpress, TransportType.ServerSentEvents, MessageBusType.Default)]
+        [InlineData(HostType.IISExpress, TransportType.Websockets, MessageBusType.Default)]
+        public void SynchronousException(HostType hostType, TransportType transportType, MessageBusType messageBusType)
         {
             using (var host = CreateHost(hostType, transportType))
             {
-                host.Initialize();
+                host.Initialize(messageBusType: messageBusType);
                 HubConnection connection = CreateHubConnection(host);
 
                 using (connection)
@@ -287,14 +294,15 @@ namespace Microsoft.AspNet.SignalR.Tests
 
 
         [Theory]
-        [InlineData(HostType.Memory, TransportType.ServerSentEvents)]
-        [InlineData(HostType.IISExpress, TransportType.ServerSentEvents)]
-        [InlineData(HostType.IISExpress, TransportType.Websockets)]
-        public void TaskWithException(HostType hostType, TransportType transportType)
+        [InlineData(HostType.Memory, TransportType.ServerSentEvents, MessageBusType.Default)]
+        [InlineData(HostType.Memory, TransportType.ServerSentEvents, MessageBusType.Fake)]
+        [InlineData(HostType.IISExpress, TransportType.ServerSentEvents, MessageBusType.Default)]
+        [InlineData(HostType.IISExpress, TransportType.Websockets, MessageBusType.Default)]
+        public void TaskWithException(HostType hostType, TransportType transportType, MessageBusType messageBusType)
         {
             using (var host = CreateHost(hostType, transportType))
             {
-                host.Initialize();
+                host.Initialize(messageBusType: messageBusType);
                 HubConnection connection = CreateHubConnection(host);
 
                 using (connection)
@@ -312,14 +320,15 @@ namespace Microsoft.AspNet.SignalR.Tests
         }
 
         [Theory]
-        [InlineData(HostType.Memory, TransportType.ServerSentEvents)]
-        [InlineData(HostType.IISExpress, TransportType.ServerSentEvents)]
-        [InlineData(HostType.IISExpress, TransportType.Websockets)]
-        public void GenericTaskWithException(HostType hostType, TransportType transportType)
+        [InlineData(HostType.Memory, TransportType.ServerSentEvents, MessageBusType.Default)]
+        [InlineData(HostType.Memory, TransportType.ServerSentEvents, MessageBusType.Fake)]
+        [InlineData(HostType.IISExpress, TransportType.ServerSentEvents, MessageBusType.Default)]
+        [InlineData(HostType.IISExpress, TransportType.Websockets, MessageBusType.Default)]
+        public void GenericTaskWithException(HostType hostType, TransportType transportType, MessageBusType messageBusType)
         {
             using (var host = CreateHost(hostType, transportType))
             {
-                host.Initialize();
+                host.Initialize(messageBusType: messageBusType);
                 HubConnection connection = CreateHubConnection(host);
 
                 using (connection)
@@ -337,15 +346,16 @@ namespace Microsoft.AspNet.SignalR.Tests
         }
 
         [Theory]
-        [InlineData(HostType.Memory, TransportType.ServerSentEvents)]
-        [InlineData(HostType.IISExpress, TransportType.ServerSentEvents)]
-        [InlineData(HostType.IISExpress, TransportType.Websockets)]
-        [InlineData(HostType.IISExpress, TransportType.LongPolling)]
-        public void DetailedErrorsAreDisabledByDefault(HostType hostType, TransportType transportType)
+        [InlineData(HostType.Memory, TransportType.ServerSentEvents, MessageBusType.Default)]
+        [InlineData(HostType.Memory, TransportType.ServerSentEvents, MessageBusType.Fake)]
+        [InlineData(HostType.IISExpress, TransportType.ServerSentEvents, MessageBusType.Default)]
+        [InlineData(HostType.IISExpress, TransportType.Websockets, MessageBusType.Default)]
+        [InlineData(HostType.IISExpress, TransportType.LongPolling, MessageBusType.Default)]
+        public void DetailedErrorsAreDisabledByDefault(HostType hostType, TransportType transportType, MessageBusType messageBusType)
         {
             using (var host = CreateHost(hostType, transportType))
             {
-                host.Initialize();
+                host.Initialize(messageBusType: messageBusType);
                 var query = new Dictionary<string, string>();
                 SetHostData(host, query);
                 query["test"] = GetTestName();
@@ -371,14 +381,15 @@ namespace Microsoft.AspNet.SignalR.Tests
         }
 
         [Theory]
-        [InlineData(HostType.Memory, TransportType.ServerSentEvents)]
-        [InlineData(HostType.IISExpress, TransportType.ServerSentEvents)]
-        [InlineData(HostType.IISExpress, TransportType.Websockets)]
-        public void GenericTaskWithContinueWith(HostType hostType, TransportType transportType)
+        [InlineData(HostType.Memory, TransportType.ServerSentEvents, MessageBusType.Default)]
+        [InlineData(HostType.Memory, TransportType.ServerSentEvents, MessageBusType.Fake)]
+        [InlineData(HostType.IISExpress, TransportType.ServerSentEvents, MessageBusType.Default)]
+        [InlineData(HostType.IISExpress, TransportType.Websockets, MessageBusType.Default)]
+        public void GenericTaskWithContinueWith(HostType hostType, TransportType transportType, MessageBusType messageBusType)
         {
             using (var host = CreateHost(hostType, transportType))
             {
-                host.Initialize();
+                host.Initialize(messageBusType: messageBusType);
                 HubConnection connection = CreateHubConnection(host);
 
                 using (connection)
@@ -395,14 +406,15 @@ namespace Microsoft.AspNet.SignalR.Tests
         }
 
         [Theory]
-        [InlineData(HostType.Memory, TransportType.ServerSentEvents)]
-        [InlineData(HostType.IISExpress, TransportType.ServerSentEvents)]
-        [InlineData(HostType.IISExpress, TransportType.Websockets)]
-        public void Overloads(HostType hostType, TransportType transportType)
+        [InlineData(HostType.Memory, TransportType.ServerSentEvents, MessageBusType.Default)]
+        [InlineData(HostType.Memory, TransportType.ServerSentEvents, MessageBusType.Fake)]
+        [InlineData(HostType.IISExpress, TransportType.ServerSentEvents, MessageBusType.Default)]
+        [InlineData(HostType.IISExpress, TransportType.Websockets, MessageBusType.Default)]
+        public void Overloads(HostType hostType, TransportType transportType, MessageBusType messageBusType)
         {
             using (var host = CreateHost(hostType, transportType))
             {
-                host.Initialize();
+                host.Initialize(messageBusType: messageBusType);
                 HubConnection connection = CreateHubConnection(host);
 
                 using (connection)
@@ -420,15 +432,16 @@ namespace Microsoft.AspNet.SignalR.Tests
         }
 
         [Theory]
-        [InlineData(HostType.Memory, TransportType.ServerSentEvents)]
-        [InlineData(HostType.IISExpress, TransportType.ServerSentEvents)]
-        [InlineData(HostType.IISExpress, TransportType.Websockets)]
-        [InlineData(HostType.IISExpress, TransportType.LongPolling)]
-        public void ReturnDataWithPlus(HostType hostType, TransportType transportType)
+        [InlineData(HostType.Memory, TransportType.ServerSentEvents, MessageBusType.Default)]
+        [InlineData(HostType.Memory, TransportType.ServerSentEvents, MessageBusType.Fake)]
+        [InlineData(HostType.IISExpress, TransportType.ServerSentEvents, MessageBusType.Default)]
+        [InlineData(HostType.IISExpress, TransportType.Websockets, MessageBusType.Default)]
+        [InlineData(HostType.IISExpress, TransportType.LongPolling, MessageBusType.Default)]
+        public void ReturnDataWithPlus(HostType hostType, TransportType transportType, MessageBusType messageBusType)
         {
             using (var host = CreateHost(hostType, transportType))
             {
-                host.Initialize();
+                host.Initialize(messageBusType: messageBusType);
                 HubConnection connection = CreateHubConnection(host);
 
                 using (connection)
@@ -445,15 +458,16 @@ namespace Microsoft.AspNet.SignalR.Tests
         }
 
         [Theory]
-        [InlineData(HostType.Memory, TransportType.ServerSentEvents)]
-        [InlineData(HostType.IISExpress, TransportType.ServerSentEvents)]
-        [InlineData(HostType.IISExpress, TransportType.Websockets)]
-        [InlineData(HostType.IISExpress, TransportType.LongPolling)]
-        public void CallbackDataWithPlus(HostType hostType, TransportType transportType)
+        [InlineData(HostType.Memory, TransportType.ServerSentEvents, MessageBusType.Default)]
+        [InlineData(HostType.Memory, TransportType.ServerSentEvents, MessageBusType.Fake)]
+        [InlineData(HostType.IISExpress, TransportType.ServerSentEvents, MessageBusType.Default)]
+        [InlineData(HostType.IISExpress, TransportType.Websockets, MessageBusType.Default)]
+        [InlineData(HostType.IISExpress, TransportType.LongPolling, MessageBusType.Default)]
+        public void CallbackDataWithPlus(HostType hostType, TransportType transportType, MessageBusType messageBusType)
         {
             using (var host = CreateHost(hostType, transportType))
             {
-                host.Initialize();
+                host.Initialize(messageBusType: messageBusType);
                 HubConnection connection = CreateHubConnection(host);
 
                 using (connection)
@@ -473,14 +487,15 @@ namespace Microsoft.AspNet.SignalR.Tests
         }
 
         [Theory]
-        [InlineData(HostType.Memory, TransportType.ServerSentEvents)]
-        [InlineData(HostType.IISExpress, TransportType.ServerSentEvents)]
-        [InlineData(HostType.IISExpress, TransportType.Websockets)]
-        public void UnsupportedOverloads(HostType hostType, TransportType transportType)
+        [InlineData(HostType.Memory, TransportType.ServerSentEvents, MessageBusType.Default)]
+        [InlineData(HostType.Memory, TransportType.ServerSentEvents, MessageBusType.Fake)]
+        [InlineData(HostType.IISExpress, TransportType.ServerSentEvents, MessageBusType.Default)]
+        [InlineData(HostType.IISExpress, TransportType.Websockets, MessageBusType.Default)]
+        public void UnsupportedOverloads(HostType hostType, TransportType transportType, MessageBusType messageBusType)
         {
             using (var host = CreateHost(hostType, transportType))
             {
-                host.Initialize();
+                host.Initialize(messageBusType: messageBusType);
                 HubConnection connection = CreateHubConnection(host);
 
                 using (connection)
@@ -570,13 +585,14 @@ namespace Microsoft.AspNet.SignalR.Tests
         }
 
         [Theory]
-        [InlineData(HostType.Memory, TransportType.ServerSentEvents)]
-        [InlineData(HostType.IISExpress, TransportType.ServerSentEvents)]
-        public void GuidTest(HostType hostType, TransportType transportType)
+        [InlineData(HostType.Memory, TransportType.ServerSentEvents, MessageBusType.Default)]
+        [InlineData(HostType.Memory, TransportType.ServerSentEvents, MessageBusType.Fake)]
+        [InlineData(HostType.IISExpress, TransportType.ServerSentEvents, MessageBusType.Default)]
+        public void GuidTest(HostType hostType, TransportType transportType, MessageBusType messageBusType)
         {
             using (var host = CreateHost(hostType, transportType))
             {
-                host.Initialize();
+                host.Initialize(messageBusType: messageBusType);
                 HubConnection connection = CreateHubConnection(host);
 
                 using (connection)
@@ -658,14 +674,15 @@ namespace Microsoft.AspNet.SignalR.Tests
         }
 
         [Theory]
-        [InlineData(HostType.Memory, TransportType.ServerSentEvents)]
-        [InlineData(HostType.IISExpress, TransportType.ServerSentEvents)]
-        [InlineData(HostType.IISExpress, TransportType.Websockets)]
-        public void ComplexPersonState(HostType hostType, TransportType transportType)
+        [InlineData(HostType.Memory, TransportType.ServerSentEvents, MessageBusType.Default)]
+        [InlineData(HostType.Memory, TransportType.ServerSentEvents, MessageBusType.Fake)]
+        [InlineData(HostType.IISExpress, TransportType.ServerSentEvents, MessageBusType.Default)]
+        [InlineData(HostType.IISExpress, TransportType.Websockets, MessageBusType.Default)]
+        public void ComplexPersonState(HostType hostType, TransportType transportType, MessageBusType messageBusType)
         {
             using (var host = CreateHost(hostType, transportType))
             {
-                host.Initialize();
+                host.Initialize(messageBusType: messageBusType);
                 HubConnection connection = CreateHubConnection(host);
 
                 using (connection)
@@ -703,14 +720,15 @@ namespace Microsoft.AspNet.SignalR.Tests
         }
 
         [Theory]
-        [InlineData(HostType.Memory, TransportType.ServerSentEvents)]
-        [InlineData(HostType.IISExpress, TransportType.ServerSentEvents)]
-        [InlineData(HostType.IISExpress, TransportType.Websockets)]
-        public void DynamicInvokeTest(HostType hostType, TransportType transportType)
+        [InlineData(HostType.Memory, TransportType.ServerSentEvents, MessageBusType.Default)]
+        [InlineData(HostType.Memory, TransportType.ServerSentEvents, MessageBusType.Fake)]
+        [InlineData(HostType.IISExpress, TransportType.ServerSentEvents, MessageBusType.Default)]
+        [InlineData(HostType.IISExpress, TransportType.Websockets, MessageBusType.Default)]
+        public void DynamicInvokeTest(HostType hostType, TransportType transportType, MessageBusType messageBusType)
         {
             using (var host = CreateHost(hostType, transportType))
             {
-                host.Initialize();
+                host.Initialize(messageBusType: messageBusType);
                 HubConnection connection = CreateHubConnection(host);
 
                 using (connection)
@@ -733,14 +751,15 @@ namespace Microsoft.AspNet.SignalR.Tests
         }
 
         [Theory]
-        [InlineData(HostType.Memory, TransportType.ServerSentEvents)]
-        [InlineData(HostType.IISExpress, TransportType.ServerSentEvents)]
-        [InlineData(HostType.IISExpress, TransportType.Websockets)]
-        public void CreateProxyAfterConnectionStartsThrows(HostType hostType, TransportType transportType)
+        [InlineData(HostType.Memory, TransportType.ServerSentEvents, MessageBusType.Default)]
+        [InlineData(HostType.Memory, TransportType.ServerSentEvents, MessageBusType.Fake)]
+        [InlineData(HostType.IISExpress, TransportType.ServerSentEvents, MessageBusType.Default)]
+        [InlineData(HostType.IISExpress, TransportType.Websockets, MessageBusType.Default)]
+        public void CreateProxyAfterConnectionStartsThrows(HostType hostType, TransportType transportType, MessageBusType messageBusType)
         {
             using (var host = CreateHost(hostType, transportType))
             {
-                host.Initialize();
+                host.Initialize(messageBusType: messageBusType);
                 HubConnection connection = CreateHubConnection(host);
 
                 try
@@ -756,14 +775,15 @@ namespace Microsoft.AspNet.SignalR.Tests
         }
 
         [Theory]
-        [InlineData(HostType.Memory, TransportType.ServerSentEvents)]
-        [InlineData(HostType.IISExpress, TransportType.ServerSentEvents)]
-        [InlineData(HostType.IISExpress, TransportType.Websockets)]
-        public void AddingToMultipleGroups(HostType hostType, TransportType transportType)
+        [InlineData(HostType.Memory, TransportType.ServerSentEvents, MessageBusType.Default)]
+        [InlineData(HostType.Memory, TransportType.ServerSentEvents, MessageBusType.Fake)]
+        [InlineData(HostType.IISExpress, TransportType.ServerSentEvents, MessageBusType.Default)]
+        [InlineData(HostType.IISExpress, TransportType.Websockets, MessageBusType.Default)]
+        public void AddingToMultipleGroups(HostType hostType, TransportType transportType, MessageBusType messageBusType)
         {
             using (var host = CreateHost(hostType, transportType))
             {
-                host.Initialize();
+                host.Initialize(messageBusType: messageBusType);
                 int max = 10;
 
                 var countDown = new CountDownRange<int>(Enumerable.Range(0, max));
@@ -793,19 +813,22 @@ namespace Microsoft.AspNet.SignalR.Tests
         }
 
         [Theory]
-        [InlineData(HostType.Memory, TransportType.ServerSentEvents)]
-        [InlineData(HostType.Memory, TransportType.LongPolling)]
-        [InlineData(HostType.IISExpress, TransportType.ServerSentEvents)]
-        [InlineData(HostType.IISExpress, TransportType.LongPolling)]
-        [InlineData(HostType.IISExpress, TransportType.Websockets)]
-        public void HubGroupsRejoinWhenAutoRejoiningGroupsEnabled(HostType hostType, TransportType transportType)
+        [InlineData(HostType.Memory, TransportType.ServerSentEvents, MessageBusType.Default)]
+        [InlineData(HostType.Memory, TransportType.ServerSentEvents, MessageBusType.Fake)]
+        [InlineData(HostType.Memory, TransportType.LongPolling, MessageBusType.Default)]
+        [InlineData(HostType.Memory, TransportType.LongPolling, MessageBusType.Fake)]
+        [InlineData(HostType.IISExpress, TransportType.ServerSentEvents, MessageBusType.Default)]
+        [InlineData(HostType.IISExpress, TransportType.LongPolling, MessageBusType.Default)]
+        [InlineData(HostType.IISExpress, TransportType.Websockets, MessageBusType.Default)]
+        public void HubGroupsRejoinWhenAutoRejoiningGroupsEnabled(HostType hostType, TransportType transportType, MessageBusType messageBusType)
         {
             using (var host = CreateHost(hostType, transportType))
             {
                 host.Initialize(keepAlive: null,
                                 disconnectTimeout: 6,
                                 connectionTimeout: 1,
-                                enableAutoRejoiningGroups: true);
+                                enableAutoRejoiningGroups: true,
+                                messageBusType: messageBusType);
 
                 int max = 10;
 
@@ -912,14 +935,15 @@ namespace Microsoft.AspNet.SignalR.Tests
         }
 
         [Theory]
-        [InlineData(HostType.Memory, TransportType.ServerSentEvents)]
-        [InlineData(HostType.IISExpress, TransportType.ServerSentEvents)]
-        [InlineData(HostType.IISExpress, TransportType.Websockets)]
-        public void CustomQueryStringRaw(HostType hostType, TransportType transportType)
+        [InlineData(HostType.Memory, TransportType.ServerSentEvents, MessageBusType.Default)]
+        [InlineData(HostType.Memory, TransportType.ServerSentEvents, MessageBusType.Fake)]
+        [InlineData(HostType.IISExpress, TransportType.ServerSentEvents, MessageBusType.Default)]
+        [InlineData(HostType.IISExpress, TransportType.Websockets, MessageBusType.Default)]
+        public void CustomQueryStringRaw(HostType hostType, TransportType transportType, MessageBusType messageBusType)
         {
             using (var host = CreateHost(hostType, transportType))
             {
-                host.Initialize();
+                host.Initialize(messageBusType: messageBusType);
 
                 var connection = new Client.Hubs.HubConnection(host.Url, "a=b&test=" + GetTestName());
 
@@ -939,14 +963,15 @@ namespace Microsoft.AspNet.SignalR.Tests
         }
 
         [Theory]
-        [InlineData(HostType.Memory, TransportType.ServerSentEvents)]
-        [InlineData(HostType.IISExpress, TransportType.ServerSentEvents)]
-        [InlineData(HostType.IISExpress, TransportType.Websockets)]
-        public void CustomQueryString(HostType hostType, TransportType transportType)
+        [InlineData(HostType.Memory, TransportType.ServerSentEvents, MessageBusType.Default)]
+        [InlineData(HostType.Memory, TransportType.ServerSentEvents, MessageBusType.Fake)]
+        [InlineData(HostType.IISExpress, TransportType.ServerSentEvents, MessageBusType.Default)]
+        [InlineData(HostType.IISExpress, TransportType.Websockets, MessageBusType.Default)]
+        public void CustomQueryString(HostType hostType, TransportType transportType, MessageBusType messageBusType)
         {
             using (var host = CreateHost(hostType, transportType))
             {
-                host.Initialize();
+                host.Initialize(messageBusType: messageBusType);
                 var qs = new Dictionary<string, string>();
                 qs["a"] = "b";
                 qs["test"] = GetTestName();
@@ -1144,15 +1169,17 @@ namespace Microsoft.AspNet.SignalR.Tests
         }
 
         [Theory]
-        [InlineData(HostType.Memory, TransportType.ServerSentEvents)]
-        [InlineData(HostType.Memory, TransportType.LongPolling)]
-        [InlineData(HostType.IISExpress, TransportType.ServerSentEvents)]
-        [InlineData(HostType.IISExpress, TransportType.Websockets)]
-        public void SendToAllButCaller(HostType hostType, TransportType transportType)
+        [InlineData(HostType.Memory, TransportType.ServerSentEvents, MessageBusType.Default)]
+        [InlineData(HostType.Memory, TransportType.ServerSentEvents, MessageBusType.Fake)]
+        [InlineData(HostType.Memory, TransportType.LongPolling, MessageBusType.Default)]
+        [InlineData(HostType.Memory, TransportType.LongPolling, MessageBusType.Fake)]
+        [InlineData(HostType.IISExpress, TransportType.ServerSentEvents, MessageBusType.Default)]
+        [InlineData(HostType.IISExpress, TransportType.Websockets, MessageBusType.Default)]
+        public void SendToAllButCaller(HostType hostType, TransportType transportType, MessageBusType messageBusType)
         {
             using (var host = CreateHost(hostType, transportType))
             {
-                host.Initialize();
+                host.Initialize(messageBusType: messageBusType);
 
                 var connection1 = CreateHubConnection(host);
                 var connection2 = CreateHubConnection(host);
@@ -1181,14 +1208,15 @@ namespace Microsoft.AspNet.SignalR.Tests
         }
 
         [Theory]
-        [InlineData(HostType.Memory, TransportType.ServerSentEvents)]
-        [InlineData(HostType.IISExpress, TransportType.ServerSentEvents)]
-        [InlineData(HostType.IISExpress, TransportType.Websockets)]
-        public void SendToAllButCallerInGroup(HostType hostType, TransportType transportType)
+        [InlineData(HostType.Memory, TransportType.ServerSentEvents, MessageBusType.Default)]
+        [InlineData(HostType.Memory, TransportType.ServerSentEvents, MessageBusType.Fake)]
+        [InlineData(HostType.IISExpress, TransportType.ServerSentEvents, MessageBusType.Default)]
+        [InlineData(HostType.IISExpress, TransportType.Websockets, MessageBusType.Default)]
+        public void SendToAllButCallerInGroup(HostType hostType, TransportType transportType, MessageBusType messageBusType)
         {
             using (var host = CreateHost(hostType, transportType))
             {
-                host.Initialize();
+                host.Initialize(messageBusType: messageBusType);
 
                 var connection1 = CreateHubConnection(host);
                 var connection2 = CreateHubConnection(host);
@@ -1220,14 +1248,15 @@ namespace Microsoft.AspNet.SignalR.Tests
         }
 
         [Theory]
-        [InlineData(HostType.Memory, TransportType.ServerSentEvents)]
-        [InlineData(HostType.IISExpress, TransportType.ServerSentEvents)]
-        [InlineData(HostType.IISExpress, TransportType.Websockets)]
-        public void SendToAll(HostType hostType, TransportType transportType)
+        [InlineData(HostType.Memory, TransportType.ServerSentEvents, MessageBusType.Default)]
+        [InlineData(HostType.Memory, TransportType.ServerSentEvents, MessageBusType.Fake)]
+        [InlineData(HostType.IISExpress, TransportType.ServerSentEvents, MessageBusType.Default)]
+        [InlineData(HostType.IISExpress, TransportType.Websockets, MessageBusType.Default)]
+        public void SendToAll(HostType hostType, TransportType transportType, MessageBusType messageBusType)
         {
             using (var host = CreateHost(hostType, transportType))
             {
-                host.Initialize();
+                host.Initialize(messageBusType: messageBusType);
 
                 var connection1 = CreateHubConnection(host);
                 var connection2 = CreateHubConnection(host);
@@ -1256,14 +1285,15 @@ namespace Microsoft.AspNet.SignalR.Tests
         }
 
         [Theory]
-        [InlineData(HostType.Memory, TransportType.ServerSentEvents)]
-        [InlineData(HostType.IISExpress, TransportType.ServerSentEvents)]
-        [InlineData(HostType.IISExpress, TransportType.Websockets)]
-        public void SendToSelf(HostType hostType, TransportType transportType)
+        [InlineData(HostType.Memory, TransportType.ServerSentEvents, MessageBusType.Default)]
+        [InlineData(HostType.Memory, TransportType.ServerSentEvents, MessageBusType.Fake)]
+        [InlineData(HostType.IISExpress, TransportType.ServerSentEvents, MessageBusType.Default)]
+        [InlineData(HostType.IISExpress, TransportType.Websockets, MessageBusType.Default)]
+        public void SendToSelf(HostType hostType, TransportType transportType, MessageBusType messageBusType)
         {
             using (var host = CreateHost(hostType, transportType))
             {
-                host.Initialize();
+                host.Initialize(messageBusType: messageBusType);
 
                 var connection1 = CreateHubConnection(host);
                 var connection2 = CreateHubConnection(host);
@@ -1408,15 +1438,16 @@ namespace Microsoft.AspNet.SignalR.Tests
         }
 
         [Theory]
-        [InlineData(HostType.Memory, TransportType.LongPolling)]
-        [InlineData(HostType.IISExpress, TransportType.LongPolling)]
-        [InlineData(HostType.IISExpress, TransportType.ServerSentEvents)]
-        [InlineData(HostType.IISExpress, TransportType.Websockets)]
-        public void JoinAndSendToGroupRenamedHub(HostType hostType, TransportType transportType)
+        [InlineData(HostType.Memory, TransportType.LongPolling, MessageBusType.Default)]
+        [InlineData(HostType.Memory, TransportType.LongPolling, MessageBusType.Fake)]
+        [InlineData(HostType.IISExpress, TransportType.LongPolling, MessageBusType.Default)]
+        [InlineData(HostType.IISExpress, TransportType.ServerSentEvents, MessageBusType.Default)]
+        [InlineData(HostType.IISExpress, TransportType.Websockets, MessageBusType.Default)]
+        public void JoinAndSendToGroupRenamedHub(HostType hostType, TransportType transportType, MessageBusType messageBusType)
         {
             using (var host = CreateHost(hostType, transportType))
             {
-                host.Initialize(enableAutoRejoiningGroups: true);
+                host.Initialize(enableAutoRejoiningGroups: true, messageBusType: messageBusType);
 
                 HubConnection connection = CreateHubConnection(host);
 

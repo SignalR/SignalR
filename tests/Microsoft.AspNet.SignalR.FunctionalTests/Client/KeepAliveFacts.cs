@@ -10,16 +10,17 @@ namespace Microsoft.AspNet.SignalR.Tests
     public class KeepAliveFacts : HostedTest
     {
         [Theory]
-        [InlineData(HostType.Memory, TransportType.ServerSentEvents)]
-        [InlineData(HostType.IISExpress, TransportType.Websockets)]
-        [InlineData(HostType.IISExpress, TransportType.ServerSentEvents)]
-        public void ReconnectionSuccesfulTest(HostType hostType, TransportType transportType)
+        [InlineData(HostType.Memory, TransportType.ServerSentEvents, MessageBusType.Default)]
+        [InlineData(HostType.Memory, TransportType.ServerSentEvents, MessageBusType.Fake)]
+        [InlineData(HostType.IISExpress, TransportType.Websockets, MessageBusType.Default)]
+        [InlineData(HostType.IISExpress, TransportType.ServerSentEvents, MessageBusType.Default)]
+        public void ReconnectionSuccesfulTest(HostType hostType, TransportType transportType, MessageBusType messageBusType)
         {
             using (var host = CreateHost(hostType, transportType))
             {
                 // Arrange
                 var mre = new ManualResetEventSlim(false);
-                host.Initialize(keepAlive: null);
+                host.Initialize(keepAlive: null, messageBusType: messageBusType);
                 var connection = CreateConnection(host, "/my-reconnect");
 
                 using (connection)
@@ -44,16 +45,17 @@ namespace Microsoft.AspNet.SignalR.Tests
 
 
         [Theory]
-        [InlineData(HostType.Memory, TransportType.ServerSentEvents)]
-        [InlineData(HostType.IISExpress, TransportType.Websockets)]
-        [InlineData(HostType.IISExpress, TransportType.ServerSentEvents)]
-        public void SuccessiveTimeoutTest(HostType hostType, TransportType transportType)
+        [InlineData(HostType.Memory, TransportType.ServerSentEvents, MessageBusType.Default)]
+        [InlineData(HostType.Memory, TransportType.ServerSentEvents, MessageBusType.Fake)]
+        [InlineData(HostType.IISExpress, TransportType.Websockets, MessageBusType.Default)]
+        [InlineData(HostType.IISExpress, TransportType.ServerSentEvents, MessageBusType.Default)]
+        public void SuccessiveTimeoutTest(HostType hostType, TransportType transportType, MessageBusType messageBusType)
         {
             using (var host = CreateHost(hostType, transportType))
             {
                 // Arrange
                 var mre = new ManualResetEventSlim(false);
-                host.Initialize(keepAlive: null);
+                host.Initialize(keepAlive: null, messageBusType: messageBusType);
                 var connection = CreateConnection(host, "/my-reconnect");
 
                 using (connection)
@@ -81,16 +83,17 @@ namespace Microsoft.AspNet.SignalR.Tests
         }
 
         [Theory]
-        [InlineData(HostType.Memory, TransportType.ServerSentEvents)]
-        [InlineData(HostType.IISExpress, TransportType.Websockets)]
-        [InlineData(HostType.IISExpress, TransportType.ServerSentEvents)]
-        public void OnConnectionSlowTest(HostType hostType, TransportType transportType)
+        [InlineData(HostType.Memory, TransportType.ServerSentEvents, MessageBusType.Default)]
+        [InlineData(HostType.Memory, TransportType.ServerSentEvents, MessageBusType.Fake)]
+        [InlineData(HostType.IISExpress, TransportType.Websockets, MessageBusType.Default)]
+        [InlineData(HostType.IISExpress, TransportType.ServerSentEvents, MessageBusType.Default)]
+        public void OnConnectionSlowTest(HostType hostType, TransportType transportType, MessageBusType messageBusType)
         {
             using (var host = CreateHost(hostType, transportType))
             {
                 // Arrange
                 var mre = new ManualResetEventSlim(false);
-                host.Initialize(keepAlive: null);
+                host.Initialize(keepAlive: null, messageBusType: messageBusType);
                 var connection = CreateConnection(host, "/my-reconnect");
 
                 using (connection)
