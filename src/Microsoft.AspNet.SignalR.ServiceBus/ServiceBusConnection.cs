@@ -6,6 +6,7 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.ServiceBus;
 using Microsoft.ServiceBus.Messaging;
+using System.Collections.Concurrent;
 
 namespace Microsoft.AspNet.SignalR.ServiceBus
 {
@@ -21,6 +22,7 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
         private readonly NamespaceManager _namespaceManager;
         private readonly MessagingFactory _factory;
         private readonly ServiceBusScaleoutConfiguration _configuration;
+        private Dictionary<int, MessageReceiver> _receivers;
         private readonly TraceSource _trace;
 
         public ServiceBusConnection(ServiceBusScaleoutConfiguration configuration, TraceSource traceSource)
@@ -50,6 +52,8 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
 
             var subscriptions = new ServiceBusSubscription.SubscriptionContext[topicNames.Count];
             var clients = new TopicClient[topicNames.Count];
+
+            _receivers = new Dictionary<int, MessageReceiver>();
 
             for (var topicIndex = 0; topicIndex < topicNames.Count; ++topicIndex)
             {
@@ -90,6 +94,7 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
                     _namespaceManager.CreateSubscription(subscriptionDescription);
 
                     _trace.TraceInformation("Creation of a new subscription {0} for topic {1} in the service bus completed successfully.", subscriptionName, topicName);
+
                 }
                 catch (MessagingEntityAlreadyExistsException)
                 {
@@ -99,20 +104,30 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
 
                 // Create a receiver to get messages
                 string subscriptionEntityPath = SubscriptionClient.FormatSubscriptionPath(topicName, subscriptionName);
+
                 MessageReceiver receiver = _factory.CreateMessageReceiver(subscriptionEntityPath, ReceiveMode.ReceiveAndDelete);
+
+                _receivers.Add(topicIndex, receiver);
 
                 _trace.TraceInformation("Creation of a message receive for subscription entity path {0} in the service bus completed successfully.", subscriptionEntityPath);
 
                 subscriptions[topicIndex] = new ServiceBusSubscription.SubscriptionContext(topicName, subscriptionName, receiver);
-
-                var receiverContext = new ReceiverContext(topicIndex, receiver, handler, errorHandler);
-
-                ProcessMessages(receiverContext);
             }
 
             _trace.TraceInformation("Subscription to {0} topics in the service bus Topic service completed successfully.", topicNames.Count);
 
             return new ServiceBusSubscription(_configuration, _namespaceManager, subscriptions, clients);
+        }
+
+        public void ProcessReceivers(Action<int, IEnumerable<BrokeredMessage>> handler,
+                                               Action<int, Exception> errorHandler)
+        {
+            foreach (var receiver in _receivers)
+            {
+                var receiverContext = new ReceiverContext(receiver.Key, receiver.Value, handler, errorHandler);
+
+                ProcessMessages(receiverContext);
+            }
         }
 
         protected virtual void Dispose(bool disposing)
