@@ -43,19 +43,12 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
             _topics = Enumerable.Range(0, configuration.TopicCount)
                                 .Select(topicIndex => SignalRTopicPrefix + "_" + configuration.TopicPrefix + "_" + topicIndex)
                                 .ToArray();
-            
-            SubscribeWithRetry();
 
-            _connection.ProcessReceivers(OnMessage, OnError);
+            SubscribeWithRetry(configuration.TopicCount);
 
-            // Open the streams after creating the subscription
-            for (int i = 0; i < configuration.TopicCount; i++)
-            {
-                Open(i);
-            }
         }
 
-        private void SubscribeWithRetry()
+        private void SubscribeWithRetry(int topicCount)
         {
             Task subscribeTask = SubscribeToServiceBus();
 
@@ -64,7 +57,18 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
                 if (task.IsFaulted)
                 {
                     TaskAsyncHelper.Delay(_retryDelay)
-                                   .Then(bus => bus.SubscribeWithRetry(), this);
+                                   .Then(bus => bus.SubscribeWithRetry(topicCount), this);
+                }
+                else
+                {
+                    _connection.ProcessReceivers(OnMessage, OnError);
+
+                    // Open the streams after creating the subscription
+                    for (int i = 0; i < topicCount; i++)
+                    {
+                        Open(i);
+                    }
+
                 }
 
             },
