@@ -180,7 +180,14 @@ void TransportHelper::ProcessResponse(Connection* connection, string_t response,
                 for (auto iter = messages.cbegin(); iter != messages.cend(); iter++)
                 {
                     const value &v = iter->second;
-                    connection->OnReceived(v.as_string());
+                    if (v.is_string())
+                    {
+                        connection->OnReceived(v.as_string());
+                    }
+                    else if (v.is_object())
+                    {
+                        connection->OnReceived(v.to_string());
+                    }
                 }
 
                 TryInitialize(result, onInitialized);
