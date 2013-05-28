@@ -140,35 +140,51 @@ void TransportHelper::ProcessResponse(Connection* connection, string_t response,
             return;
         }
 
-        if (result[U("I")] != NULL)
+        if (!(result[U("I")].is_null()))
         {
             connection->OnReceived(result.to_string());
             return;
         }
 
-        *timedOut = result[U("T")].as_integer() == 1;
-        *disconnected = result[U("D")].as_integer() == 1;
+        if (!result[U("T")].is_null())
+        {
+            *timedOut = result[U("T")].as_integer() == 1;
+        }
+        
+        if (!result[U("D")].is_null())
+        {
+            *disconnected = result[U("D")].as_integer() == 1;
+        }
 
-        if (disconnected)
+        if (*disconnected)
         {
             return;
         }
 
-        UpdateGroups(connection, result[U("G")].as_string());
+        if (!result[U("G")].is_null())
+        {
+            UpdateGroups(connection, result[U("G")].to_string());
+        }
 
         value messages = result[U("M")];
 
         if (!messages.is_null())
         {
-            connection->SetMessageId(messages[U("C")].as_string());
-
-            for (auto iter = messages.cbegin(); iter != messages.cend(); ++iter)
+            if (!result[U("C")].is_null())
             {
-                const value &v = iter->second;
-                connection->OnReceived(v.as_string());
+                connection->SetMessageId(result[U("C")].to_string());
             }
 
-            TryInitialize(result, onInitialized);
+            if (!(messages.cbegin() == messages.cend()))
+            {
+                for (auto iter = messages.cbegin(); iter != messages.cend(); iter++)
+                {
+                    const value &v = iter->second;
+                    connection->OnReceived(v.as_string());
+                }
+
+                TryInitialize(result, onInitialized);
+            }
         }
     }
     catch (exception& ex)
@@ -188,7 +204,7 @@ void TransportHelper::UpdateGroups(Connection* connection, string_t groupsToken)
 
 void TransportHelper::TryInitialize(value response, function<void()> onInitialized)
 {
-    if (response[U("S")].as_integer() == 1)
+    if (!response[U("S")].is_null() && response[U("S")].as_integer() == 1)
     {
         onInitialized();
     }
