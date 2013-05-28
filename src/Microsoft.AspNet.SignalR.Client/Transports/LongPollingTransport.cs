@@ -102,6 +102,8 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
 
                 url += GetReceiveQueryString(connection, data);
 
+                connection.Trace(TraceLevels.Events, "LP: {0}", url);
+
                 return url;
             };
 

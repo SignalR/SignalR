@@ -542,7 +542,7 @@ namespace Microsoft.AspNet.SignalR.Client
                     // Change state before doing anything else in case something later in the method throws
                     State = ConnectionState.Disconnected;
 
-                    Trace(TraceLevels.StateChanges, "Disconnect");
+                    Trace(TraceLevels.StateChanges, "Disconnected");
 
                     _disconnectTimeoutOperation.Dispose();
                     _disconnectCts.Cancel();
