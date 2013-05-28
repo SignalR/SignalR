@@ -18,7 +18,7 @@ namespace Microsoft.AspNet.SignalR.Client.Infrastructure
             _initializationInvoker = new ThreadSafeInvoker();
             _connection = connection;
 
-            TaskAsyncHelper.Delay(connection.TransportConnectTimeout).Then(() =>
+            TaskAsyncHelper.Delay(connection.TransportConnectTimeout.Value).Then(() =>
             {
                 OnFailure(new TimeoutException(Resources.Error_TransportTimedOutTryingToConnect));
             });

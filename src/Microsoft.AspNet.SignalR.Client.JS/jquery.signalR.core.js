@@ -307,7 +307,7 @@
 
         reconnectDelay: 2000,
 
-        transportConnectTimeout: 5000, // This will be set by the server in respone to the negotiate request (5s default)
+        transportConnectTimeout: null, // This will be set by the server in respone to the negotiate request if it is not set on the client
 
         disconnectTimeout: 30000, // This should be set by the server in response to the negotiate request (30s default)
 
@@ -529,7 +529,9 @@
                     // Once the server has labeled the PersistentConnection as Disconnected, we should stop attempting to reconnect
                     // after res.DisconnectTimeout seconds.
                     connection.disconnectTimeout = res.DisconnectTimeout * 1000; // in ms
-                    connection.transportConnectTimeout = res.TransportConnectTimeout * 1000;
+
+                    // If the connection already has a transportConnectTimeout set then keep it, otherwise use the servers value.
+                    connection.transportConnectTimeout = connection.transportConnectTimeout || res.TransportConnectTimeout * 1000;
 
                     // If we have a keep alive
                     if (res.KeepAliveTimeout) {
