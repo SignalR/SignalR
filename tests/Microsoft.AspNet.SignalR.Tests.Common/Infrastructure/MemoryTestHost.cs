@@ -26,10 +26,9 @@ namespace Microsoft.AspNet.SignalR.Tests.Common.Infrastructure
                                         int? connectionTimeout = 110,
                                         int? disconnectTimeout = 30,
                                         bool enableAutoRejoiningGroups = false,
-                                        MessageBusType messageBusType = MessageBusType.Default,
-                                        int streams = 1)
+                                        MessageBusType messageBusType = MessageBusType.Default)
         {
-            base.Initialize(keepAlive, connectionTimeout, disconnectTimeout, enableAutoRejoiningGroups, messageBusType, streams);
+            base.Initialize(keepAlive, connectionTimeout, disconnectTimeout, enableAutoRejoiningGroups, messageBusType);
 
             _host.Configure(app =>
             {

@@ -4,6 +4,7 @@
     {
         Default,
         Fake,
+        FakeMultiStream,
         SqlServer,
         ServiceBus,
         Redis

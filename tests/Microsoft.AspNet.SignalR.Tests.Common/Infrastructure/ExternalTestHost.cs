@@ -41,8 +41,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Common.Infrastructure
                                int? connectionTimeout = 110,
                                int? disconnectTimeout = 30,
                                bool enableAutoRejoiningGroups = false,
-                               MessageBusType type = MessageBusType.Default,
-                               int streams = 1)
+                               MessageBusType type = MessageBusType.Default)
         {
             // nothing to initialize since it is external! 
         }

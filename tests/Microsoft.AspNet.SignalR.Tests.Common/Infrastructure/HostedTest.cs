@@ -31,15 +31,19 @@ namespace Microsoft.AspNet.SignalR.Tests.Common.Infrastructure
             return HostedTestFactory.CreateHost(hostType, transportType, detailedTestName);
         }
 
-        protected void UseMessageBus(MessageBusType type, IDependencyResolver resolver, ScaleoutConfiguration configuration = null, int streams = 1)
+        protected void UseMessageBus(MessageBusType type, IDependencyResolver resolver)
         {
+            IMessageBus bus = null;
+
             switch (type)
             {
                 case MessageBusType.Default:
                     break;
                 case MessageBusType.Fake:
-                    var bus = new FakeScaleoutBus(resolver, streams);
-                    resolver.Register(typeof(IMessageBus), () => bus);
+                    bus = new FakeScaleoutBus(resolver, streams: 1);
+                    break;
+                case MessageBusType.FakeMultiStream:
+                    bus  = new FakeScaleoutBus(resolver, streams: 3);
                     break;
                 case MessageBusType.SqlServer:
                     break;
@@ -49,6 +53,11 @@ namespace Microsoft.AspNet.SignalR.Tests.Common.Infrastructure
                     break;
                 default:
                     break;
+            }
+
+            if (bus != null)
+            {
+                resolver.Register(typeof(IMessageBus), () => bus);
             }
         }
 

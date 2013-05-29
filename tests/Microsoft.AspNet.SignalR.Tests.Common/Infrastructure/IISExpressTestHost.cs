@@ -71,8 +71,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Common.Infrastructure
                                int? connectionTimeout,
                                int? disconnectTimeout,
                                bool enableAutoRejoiningGroups,
-                               MessageBusType type = MessageBusType.Default,
-                               int streams = 1)
+                               MessageBusType type = MessageBusType.Default)
         {
             if (type != MessageBusType.Default)
             {

@@ -12,6 +12,7 @@ namespace Microsoft.AspNet.SignalR.Tests
         [Theory]
         [InlineData(HostType.Memory, TransportType.ServerSentEvents, MessageBusType.Default)]
         [InlineData(HostType.Memory, TransportType.ServerSentEvents, MessageBusType.Fake)]
+        [InlineData(HostType.Memory, TransportType.ServerSentEvents, MessageBusType.FakeMultiStream)]
         [InlineData(HostType.IISExpress, TransportType.Websockets, MessageBusType.Default)]
         [InlineData(HostType.IISExpress, TransportType.ServerSentEvents, MessageBusType.Default)]
         public void ReconnectionSuccesfulTest(HostType hostType, TransportType transportType, MessageBusType messageBusType)
@@ -47,6 +48,7 @@ namespace Microsoft.AspNet.SignalR.Tests
         [Theory]
         [InlineData(HostType.Memory, TransportType.ServerSentEvents, MessageBusType.Default)]
         [InlineData(HostType.Memory, TransportType.ServerSentEvents, MessageBusType.Fake)]
+        [InlineData(HostType.Memory, TransportType.ServerSentEvents, MessageBusType.FakeMultiStream)]
         [InlineData(HostType.IISExpress, TransportType.Websockets, MessageBusType.Default)]
         [InlineData(HostType.IISExpress, TransportType.ServerSentEvents, MessageBusType.Default)]
         public void SuccessiveTimeoutTest(HostType hostType, TransportType transportType, MessageBusType messageBusType)
@@ -85,6 +87,7 @@ namespace Microsoft.AspNet.SignalR.Tests
         [Theory]
         [InlineData(HostType.Memory, TransportType.ServerSentEvents, MessageBusType.Default)]
         [InlineData(HostType.Memory, TransportType.ServerSentEvents, MessageBusType.Fake)]
+        [InlineData(HostType.Memory, TransportType.ServerSentEvents, MessageBusType.FakeMultiStream)]
         [InlineData(HostType.IISExpress, TransportType.Websockets, MessageBusType.Default)]
         [InlineData(HostType.IISExpress, TransportType.ServerSentEvents, MessageBusType.Default)]
         public void OnConnectionSlowTest(HostType hostType, TransportType transportType, MessageBusType messageBusType)

@@ -28,6 +28,7 @@ namespace Microsoft.AspNet.SignalR.Tests
         [Theory]
         [InlineData(HostType.Memory, TransportType.ServerSentEvents, MessageBusType.Default)]
         [InlineData(HostType.Memory, TransportType.ServerSentEvents, MessageBusType.Fake)]
+        [InlineData(HostType.Memory, TransportType.ServerSentEvents, MessageBusType.FakeMultiStream)]
         [InlineData(HostType.IISExpress, TransportType.ServerSentEvents, MessageBusType.Default)]
         [InlineData(HostType.IISExpress, TransportType.Websockets, MessageBusType.Default)]
         public void ReadingState(HostType hostType, TransportType transportType, MessageBusType messageBusType)
@@ -56,6 +57,7 @@ namespace Microsoft.AspNet.SignalR.Tests
         [Theory]
         [InlineData(HostType.Memory, TransportType.ServerSentEvents, MessageBusType.Default)]
         [InlineData(HostType.Memory, TransportType.ServerSentEvents, MessageBusType.Fake)]
+        [InlineData(HostType.Memory, TransportType.ServerSentEvents, MessageBusType.FakeMultiStream)]
         [InlineData(HostType.IISExpress, TransportType.ServerSentEvents, MessageBusType.Default)]
         [InlineData(HostType.IISExpress, TransportType.Websockets, MessageBusType.Default)]
         public void ReadingComplexState(HostType hostType, TransportType transportType, MessageBusType messageBusType)
@@ -153,6 +155,7 @@ namespace Microsoft.AspNet.SignalR.Tests
         [Theory]
         [InlineData(HostType.Memory, TransportType.ServerSentEvents, MessageBusType.Default)]
         [InlineData(HostType.Memory, TransportType.ServerSentEvents, MessageBusType.Fake)]
+        [InlineData(HostType.Memory, TransportType.ServerSentEvents, MessageBusType.FakeMultiStream)]
         [InlineData(HostType.IISExpress, TransportType.ServerSentEvents, MessageBusType.Default)]
         [InlineData(HostType.IISExpress, TransportType.Websockets, MessageBusType.Default)]
         public void SettingState(HostType hostType, TransportType transportType, MessageBusType messageBusType)
@@ -178,6 +181,7 @@ namespace Microsoft.AspNet.SignalR.Tests
         [Theory]
         [InlineData(HostType.Memory, TransportType.ServerSentEvents, MessageBusType.Default)]
         [InlineData(HostType.Memory, TransportType.ServerSentEvents, MessageBusType.Fake)]
+        [InlineData(HostType.Memory, TransportType.ServerSentEvents, MessageBusType.FakeMultiStream)]
         [InlineData(HostType.IISExpress, TransportType.ServerSentEvents, MessageBusType.Default)]
         public void CancelledTask(HostType hostType, TransportType transportType, MessageBusType messageBusType)
         {
@@ -211,6 +215,7 @@ namespace Microsoft.AspNet.SignalR.Tests
         [Theory]
         [InlineData(HostType.Memory, TransportType.ServerSentEvents, MessageBusType.Default)]
         [InlineData(HostType.Memory, TransportType.ServerSentEvents, MessageBusType.Fake)]
+        [InlineData(HostType.Memory, TransportType.ServerSentEvents, MessageBusType.FakeMultiStream)]
         [InlineData(HostType.IISExpress, TransportType.ServerSentEvents, MessageBusType.Default)]
         public void CancelledGenericTask(HostType hostType, TransportType transportType, MessageBusType messageBusType)
         {
@@ -244,6 +249,7 @@ namespace Microsoft.AspNet.SignalR.Tests
         [Theory]
         [InlineData(HostType.Memory, TransportType.ServerSentEvents, MessageBusType.Default)]
         [InlineData(HostType.Memory, TransportType.ServerSentEvents, MessageBusType.Fake)]
+        [InlineData(HostType.Memory, TransportType.ServerSentEvents, MessageBusType.FakeMultiStream)]
         [InlineData(HostType.IISExpress, TransportType.ServerSentEvents, MessageBusType.Default)]
         [InlineData(HostType.IISExpress, TransportType.Websockets, MessageBusType.Default)]
         public void GetValueFromServer(HostType hostType, TransportType transportType, MessageBusType messageBusType)
@@ -269,6 +275,7 @@ namespace Microsoft.AspNet.SignalR.Tests
         [Theory]
         [InlineData(HostType.Memory, TransportType.ServerSentEvents, MessageBusType.Default)]
         [InlineData(HostType.Memory, TransportType.ServerSentEvents, MessageBusType.Fake)]
+        [InlineData(HostType.Memory, TransportType.ServerSentEvents, MessageBusType.FakeMultiStream)]
         [InlineData(HostType.IISExpress, TransportType.ServerSentEvents, MessageBusType.Default)]
         [InlineData(HostType.IISExpress, TransportType.Websockets, MessageBusType.Default)]
         public void SynchronousException(HostType hostType, TransportType transportType, MessageBusType messageBusType)
@@ -296,6 +303,7 @@ namespace Microsoft.AspNet.SignalR.Tests
         [Theory]
         [InlineData(HostType.Memory, TransportType.ServerSentEvents, MessageBusType.Default)]
         [InlineData(HostType.Memory, TransportType.ServerSentEvents, MessageBusType.Fake)]
+        [InlineData(HostType.Memory, TransportType.ServerSentEvents, MessageBusType.FakeMultiStream)]
         [InlineData(HostType.IISExpress, TransportType.ServerSentEvents, MessageBusType.Default)]
         [InlineData(HostType.IISExpress, TransportType.Websockets, MessageBusType.Default)]
         public void TaskWithException(HostType hostType, TransportType transportType, MessageBusType messageBusType)
@@ -322,6 +330,7 @@ namespace Microsoft.AspNet.SignalR.Tests
         [Theory]
         [InlineData(HostType.Memory, TransportType.ServerSentEvents, MessageBusType.Default)]
         [InlineData(HostType.Memory, TransportType.ServerSentEvents, MessageBusType.Fake)]
+        [InlineData(HostType.Memory, TransportType.ServerSentEvents, MessageBusType.FakeMultiStream)]
         [InlineData(HostType.IISExpress, TransportType.ServerSentEvents, MessageBusType.Default)]
         [InlineData(HostType.IISExpress, TransportType.Websockets, MessageBusType.Default)]
         public void GenericTaskWithException(HostType hostType, TransportType transportType, MessageBusType messageBusType)
@@ -348,6 +357,7 @@ namespace Microsoft.AspNet.SignalR.Tests
         [Theory]
         [InlineData(HostType.Memory, TransportType.ServerSentEvents, MessageBusType.Default)]
         [InlineData(HostType.Memory, TransportType.ServerSentEvents, MessageBusType.Fake)]
+        [InlineData(HostType.Memory, TransportType.ServerSentEvents, MessageBusType.FakeMultiStream)]
         [InlineData(HostType.IISExpress, TransportType.ServerSentEvents, MessageBusType.Default)]
         [InlineData(HostType.IISExpress, TransportType.Websockets, MessageBusType.Default)]
         [InlineData(HostType.IISExpress, TransportType.LongPolling, MessageBusType.Default)]
@@ -383,6 +393,7 @@ namespace Microsoft.AspNet.SignalR.Tests
         [Theory]
         [InlineData(HostType.Memory, TransportType.ServerSentEvents, MessageBusType.Default)]
         [InlineData(HostType.Memory, TransportType.ServerSentEvents, MessageBusType.Fake)]
+        [InlineData(HostType.Memory, TransportType.ServerSentEvents, MessageBusType.FakeMultiStream)]
         [InlineData(HostType.IISExpress, TransportType.ServerSentEvents, MessageBusType.Default)]
         [InlineData(HostType.IISExpress, TransportType.Websockets, MessageBusType.Default)]
         public void GenericTaskWithContinueWith(HostType hostType, TransportType transportType, MessageBusType messageBusType)
@@ -408,6 +419,7 @@ namespace Microsoft.AspNet.SignalR.Tests
         [Theory]
         [InlineData(HostType.Memory, TransportType.ServerSentEvents, MessageBusType.Default)]
         [InlineData(HostType.Memory, TransportType.ServerSentEvents, MessageBusType.Fake)]
+        [InlineData(HostType.Memory, TransportType.ServerSentEvents, MessageBusType.FakeMultiStream)]
         [InlineData(HostType.IISExpress, TransportType.ServerSentEvents, MessageBusType.Default)]
         [InlineData(HostType.IISExpress, TransportType.Websockets, MessageBusType.Default)]
         public void Overloads(HostType hostType, TransportType transportType, MessageBusType messageBusType)
@@ -434,6 +446,7 @@ namespace Microsoft.AspNet.SignalR.Tests
         [Theory]
         [InlineData(HostType.Memory, TransportType.ServerSentEvents, MessageBusType.Default)]
         [InlineData(HostType.Memory, TransportType.ServerSentEvents, MessageBusType.Fake)]
+        [InlineData(HostType.Memory, TransportType.ServerSentEvents, MessageBusType.FakeMultiStream)]
         [InlineData(HostType.IISExpress, TransportType.ServerSentEvents, MessageBusType.Default)]
         [InlineData(HostType.IISExpress, TransportType.Websockets, MessageBusType.Default)]
         [InlineData(HostType.IISExpress, TransportType.LongPolling, MessageBusType.Default)]
@@ -460,6 +473,7 @@ namespace Microsoft.AspNet.SignalR.Tests
         [Theory]
         [InlineData(HostType.Memory, TransportType.ServerSentEvents, MessageBusType.Default)]
         [InlineData(HostType.Memory, TransportType.ServerSentEvents, MessageBusType.Fake)]
+        [InlineData(HostType.Memory, TransportType.ServerSentEvents, MessageBusType.FakeMultiStream)]
         [InlineData(HostType.IISExpress, TransportType.ServerSentEvents, MessageBusType.Default)]
         [InlineData(HostType.IISExpress, TransportType.Websockets, MessageBusType.Default)]
         [InlineData(HostType.IISExpress, TransportType.LongPolling, MessageBusType.Default)]
@@ -489,6 +503,7 @@ namespace Microsoft.AspNet.SignalR.Tests
         [Theory]
         [InlineData(HostType.Memory, TransportType.ServerSentEvents, MessageBusType.Default)]
         [InlineData(HostType.Memory, TransportType.ServerSentEvents, MessageBusType.Fake)]
+        [InlineData(HostType.Memory, TransportType.ServerSentEvents, MessageBusType.FakeMultiStream)]
         [InlineData(HostType.IISExpress, TransportType.ServerSentEvents, MessageBusType.Default)]
         [InlineData(HostType.IISExpress, TransportType.Websockets, MessageBusType.Default)]
         public void UnsupportedOverloads(HostType hostType, TransportType transportType, MessageBusType messageBusType)
@@ -587,6 +602,7 @@ namespace Microsoft.AspNet.SignalR.Tests
         [Theory]
         [InlineData(HostType.Memory, TransportType.ServerSentEvents, MessageBusType.Default)]
         [InlineData(HostType.Memory, TransportType.ServerSentEvents, MessageBusType.Fake)]
+        [InlineData(HostType.Memory, TransportType.ServerSentEvents, MessageBusType.FakeMultiStream)]
         [InlineData(HostType.IISExpress, TransportType.ServerSentEvents, MessageBusType.Default)]
         public void GuidTest(HostType hostType, TransportType transportType, MessageBusType messageBusType)
         {
@@ -676,6 +692,7 @@ namespace Microsoft.AspNet.SignalR.Tests
         [Theory]
         [InlineData(HostType.Memory, TransportType.ServerSentEvents, MessageBusType.Default)]
         [InlineData(HostType.Memory, TransportType.ServerSentEvents, MessageBusType.Fake)]
+        [InlineData(HostType.Memory, TransportType.ServerSentEvents, MessageBusType.FakeMultiStream)]
         [InlineData(HostType.IISExpress, TransportType.ServerSentEvents, MessageBusType.Default)]
         [InlineData(HostType.IISExpress, TransportType.Websockets, MessageBusType.Default)]
         public void ComplexPersonState(HostType hostType, TransportType transportType, MessageBusType messageBusType)
@@ -722,6 +739,7 @@ namespace Microsoft.AspNet.SignalR.Tests
         [Theory]
         [InlineData(HostType.Memory, TransportType.ServerSentEvents, MessageBusType.Default)]
         [InlineData(HostType.Memory, TransportType.ServerSentEvents, MessageBusType.Fake)]
+        [InlineData(HostType.Memory, TransportType.ServerSentEvents, MessageBusType.FakeMultiStream)]
         [InlineData(HostType.IISExpress, TransportType.ServerSentEvents, MessageBusType.Default)]
         [InlineData(HostType.IISExpress, TransportType.Websockets, MessageBusType.Default)]
         public void DynamicInvokeTest(HostType hostType, TransportType transportType, MessageBusType messageBusType)
@@ -753,6 +771,7 @@ namespace Microsoft.AspNet.SignalR.Tests
         [Theory]
         [InlineData(HostType.Memory, TransportType.ServerSentEvents, MessageBusType.Default)]
         [InlineData(HostType.Memory, TransportType.ServerSentEvents, MessageBusType.Fake)]
+        [InlineData(HostType.Memory, TransportType.ServerSentEvents, MessageBusType.FakeMultiStream)]
         [InlineData(HostType.IISExpress, TransportType.ServerSentEvents, MessageBusType.Default)]
         [InlineData(HostType.IISExpress, TransportType.Websockets, MessageBusType.Default)]
         public void CreateProxyAfterConnectionStartsThrows(HostType hostType, TransportType transportType, MessageBusType messageBusType)
@@ -777,6 +796,7 @@ namespace Microsoft.AspNet.SignalR.Tests
         [Theory]
         [InlineData(HostType.Memory, TransportType.ServerSentEvents, MessageBusType.Default)]
         [InlineData(HostType.Memory, TransportType.ServerSentEvents, MessageBusType.Fake)]
+        [InlineData(HostType.Memory, TransportType.ServerSentEvents, MessageBusType.FakeMultiStream)]
         [InlineData(HostType.IISExpress, TransportType.ServerSentEvents, MessageBusType.Default)]
         [InlineData(HostType.IISExpress, TransportType.Websockets, MessageBusType.Default)]
         public void AddingToMultipleGroups(HostType hostType, TransportType transportType, MessageBusType messageBusType)
@@ -815,8 +835,10 @@ namespace Microsoft.AspNet.SignalR.Tests
         [Theory]
         [InlineData(HostType.Memory, TransportType.ServerSentEvents, MessageBusType.Default)]
         [InlineData(HostType.Memory, TransportType.ServerSentEvents, MessageBusType.Fake)]
+        [InlineData(HostType.Memory, TransportType.ServerSentEvents, MessageBusType.FakeMultiStream)]
         [InlineData(HostType.Memory, TransportType.LongPolling, MessageBusType.Default)]
         [InlineData(HostType.Memory, TransportType.LongPolling, MessageBusType.Fake)]
+        [InlineData(HostType.Memory, TransportType.LongPolling, MessageBusType.FakeMultiStream)]
         [InlineData(HostType.IISExpress, TransportType.ServerSentEvents, MessageBusType.Default)]
         [InlineData(HostType.IISExpress, TransportType.LongPolling, MessageBusType.Default)]
         [InlineData(HostType.IISExpress, TransportType.Websockets, MessageBusType.Default)]
@@ -937,6 +959,7 @@ namespace Microsoft.AspNet.SignalR.Tests
         [Theory]
         [InlineData(HostType.Memory, TransportType.ServerSentEvents, MessageBusType.Default)]
         [InlineData(HostType.Memory, TransportType.ServerSentEvents, MessageBusType.Fake)]
+        [InlineData(HostType.Memory, TransportType.ServerSentEvents, MessageBusType.FakeMultiStream)]
         [InlineData(HostType.IISExpress, TransportType.ServerSentEvents, MessageBusType.Default)]
         [InlineData(HostType.IISExpress, TransportType.Websockets, MessageBusType.Default)]
         public void CustomQueryStringRaw(HostType hostType, TransportType transportType, MessageBusType messageBusType)
@@ -965,6 +988,7 @@ namespace Microsoft.AspNet.SignalR.Tests
         [Theory]
         [InlineData(HostType.Memory, TransportType.ServerSentEvents, MessageBusType.Default)]
         [InlineData(HostType.Memory, TransportType.ServerSentEvents, MessageBusType.Fake)]
+        [InlineData(HostType.Memory, TransportType.ServerSentEvents, MessageBusType.FakeMultiStream)]
         [InlineData(HostType.IISExpress, TransportType.ServerSentEvents, MessageBusType.Default)]
         [InlineData(HostType.IISExpress, TransportType.Websockets, MessageBusType.Default)]
         public void CustomQueryString(HostType hostType, TransportType transportType, MessageBusType messageBusType)
@@ -1125,6 +1149,7 @@ namespace Microsoft.AspNet.SignalR.Tests
         [Theory]
         [InlineData(MessageBusType.Default)]
         [InlineData(MessageBusType.Fake)]
+        [InlineData(MessageBusType.FakeMultiStream)]
         public void JoiningGroupMultipleTimesGetsMessageOnce(MessageBusType messagebusType)
         {
             using (var host = new MemoryHost())
@@ -1171,8 +1196,10 @@ namespace Microsoft.AspNet.SignalR.Tests
         [Theory]
         [InlineData(HostType.Memory, TransportType.ServerSentEvents, MessageBusType.Default)]
         [InlineData(HostType.Memory, TransportType.ServerSentEvents, MessageBusType.Fake)]
+        [InlineData(HostType.Memory, TransportType.ServerSentEvents, MessageBusType.FakeMultiStream)]
         [InlineData(HostType.Memory, TransportType.LongPolling, MessageBusType.Default)]
         [InlineData(HostType.Memory, TransportType.LongPolling, MessageBusType.Fake)]
+        [InlineData(HostType.Memory, TransportType.LongPolling, MessageBusType.FakeMultiStream)]
         [InlineData(HostType.IISExpress, TransportType.ServerSentEvents, MessageBusType.Default)]
         [InlineData(HostType.IISExpress, TransportType.Websockets, MessageBusType.Default)]
         public void SendToAllButCaller(HostType hostType, TransportType transportType, MessageBusType messageBusType)
@@ -1210,6 +1237,7 @@ namespace Microsoft.AspNet.SignalR.Tests
         [Theory]
         [InlineData(HostType.Memory, TransportType.ServerSentEvents, MessageBusType.Default)]
         [InlineData(HostType.Memory, TransportType.ServerSentEvents, MessageBusType.Fake)]
+        [InlineData(HostType.Memory, TransportType.ServerSentEvents, MessageBusType.FakeMultiStream)]
         [InlineData(HostType.IISExpress, TransportType.ServerSentEvents, MessageBusType.Default)]
         [InlineData(HostType.IISExpress, TransportType.Websockets, MessageBusType.Default)]
         public void SendToAllButCallerInGroup(HostType hostType, TransportType transportType, MessageBusType messageBusType)
@@ -1250,6 +1278,7 @@ namespace Microsoft.AspNet.SignalR.Tests
         [Theory]
         [InlineData(HostType.Memory, TransportType.ServerSentEvents, MessageBusType.Default)]
         [InlineData(HostType.Memory, TransportType.ServerSentEvents, MessageBusType.Fake)]
+        [InlineData(HostType.Memory, TransportType.ServerSentEvents, MessageBusType.FakeMultiStream)]
         [InlineData(HostType.IISExpress, TransportType.ServerSentEvents, MessageBusType.Default)]
         [InlineData(HostType.IISExpress, TransportType.Websockets, MessageBusType.Default)]
         public void SendToAll(HostType hostType, TransportType transportType, MessageBusType messageBusType)
@@ -1287,6 +1316,7 @@ namespace Microsoft.AspNet.SignalR.Tests
         [Theory]
         [InlineData(HostType.Memory, TransportType.ServerSentEvents, MessageBusType.Default)]
         [InlineData(HostType.Memory, TransportType.ServerSentEvents, MessageBusType.Fake)]
+        [InlineData(HostType.Memory, TransportType.ServerSentEvents, MessageBusType.FakeMultiStream)]
         [InlineData(HostType.IISExpress, TransportType.ServerSentEvents, MessageBusType.Default)]
         [InlineData(HostType.IISExpress, TransportType.Websockets, MessageBusType.Default)]
         public void SendToSelf(HostType hostType, TransportType transportType, MessageBusType messageBusType)
@@ -1440,6 +1470,7 @@ namespace Microsoft.AspNet.SignalR.Tests
         [Theory]
         [InlineData(HostType.Memory, TransportType.LongPolling, MessageBusType.Default)]
         [InlineData(HostType.Memory, TransportType.LongPolling, MessageBusType.Fake)]
+        [InlineData(HostType.Memory, TransportType.LongPolling, MessageBusType.FakeMultiStream)]
         [InlineData(HostType.IISExpress, TransportType.LongPolling, MessageBusType.Default)]
         [InlineData(HostType.IISExpress, TransportType.ServerSentEvents, MessageBusType.Default)]
         [InlineData(HostType.IISExpress, TransportType.Websockets, MessageBusType.Default)]

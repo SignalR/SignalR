@@ -69,8 +69,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Common.Infrastructure
                                        int? connectionTimeout = 110,
                                        int? disconnectTimeout = 30,
                                        bool enableAutoRejoiningGroups = false,
-                                       MessageBusType type = MessageBusType.Default,
-                                       int streams = 1)
+                                       MessageBusType type = MessageBusType.Default)
         {
             Resolver = Resolver ?? new DefaultDependencyResolver();
 
@@ -104,17 +103,26 @@ namespace Microsoft.AspNet.SignalR.Tests.Common.Infrastructure
             {
                 configuration.KeepAlive = TimeSpan.FromSeconds(keepAlive.Value);
             }
-            
+
+            IMessageBus bus = null;
+
             switch (type)
             {
                 case MessageBusType.Default:
                     break;
                 case MessageBusType.Fake:
-                    var bus = new FakeScaleoutBus(Resolver, streams);
-                    Resolver.Register(typeof(IMessageBus), () => bus);
+                    bus = new FakeScaleoutBus(Resolver, streams: 1);
+                    break;
+                case MessageBusType.FakeMultiStream:
+                    bus =  new FakeScaleoutBus(Resolver, streams: 3);
                     break;
                 default:
                     throw new NotImplementedException();
+            }
+
+            if (bus != null)
+            {
+                Resolver.Register(typeof(IMessageBus), () => bus);
             }
         }
 
