@@ -16,6 +16,7 @@ using namespace std;
 using namespace web::http;
 using namespace web::http::client;
 using namespace utility;
+using namespace web::json;
 
 class Connection
 {
@@ -50,7 +51,8 @@ public:
     pplx::task<void> Start(IClientTransport* transport);
     pplx::task<void> Start(http_client* client);
     void Stop();
-    void Send(string data);
+    pplx::task<void> Send(web::json::value::field_map object);
+    pplx::task<void> Send(string_t data);
 
     // Transport API
     bool ChangeState(ConnectionState oldState, ConnectionState newState);

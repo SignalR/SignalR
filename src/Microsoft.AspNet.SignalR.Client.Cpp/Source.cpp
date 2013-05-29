@@ -32,42 +32,9 @@ using namespace utility;
 using namespace web::http;
 using namespace web::http::client;
 using namespace std;
-
-// Creates an HTTP request and prints the length of the response stream.
-pplx::task<void> HTTPStreamingAsync()
-{
-    http_client client(L"http://localhost:40476/raw-connection/negotiate");
-
-    // Make the request and asynchronously process the response. 
-    return client.request(methods::GET).then([](http_response response)
-    {
-        // Print the status code.
-        std::wostringstream ss;
-        ss << L"Server returned returned status code " << response.status_code() << L'.' << std::endl;
-        std::wcout << ss.str();
-
-        // TODO: Perform actions here reading from the response stream.
-        auto bodyStream = response.body();
-
-        // In this example, we print the length of the response to the console.
-        ss.str(std::wstring());
-        ss << L"Content length is " << response.headers().content_length() << L" bytes." << std::endl;
-        std::wcout << ss.str();
-
-		ss.str(std::wstring());
-		ss << response.extract_json().get() << endl;
-        std::wcout << ss.str();
-
-    });
-}
+using namespace web::json;
 
 int main () {
-	//cout << "changed" << endl;
-
-	//std::wcout << L"Calling HTTPStreamingAsync..." << std::endl;
- //   HTTPStreamingAsync().wait();
-
-
 	IConnectionHandler* handler = new MyConnectionHandler();
     //IHttpClient* client = new FakeHttpClient();
 
@@ -78,10 +45,15 @@ int main () {
         wcout << message << endl;
     };
 
-    connection.Start();
+    connection.Start().wait();
     
-    //connection.Send("hello");
-    //connection.Send("bar");
+    cout << "connection started" << endl;
+
+    web::json::value::field_map object;
+    object.push_back(make_pair(value(U("type")), value(1)));
+    object.push_back(make_pair(value(U("value")), value(U("hello"))));
+
+    connection.Send(object).wait();
 
     //connection.Stop();
 

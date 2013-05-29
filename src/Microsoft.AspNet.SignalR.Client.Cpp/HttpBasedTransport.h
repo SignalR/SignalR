@@ -7,6 +7,7 @@
 #include <queue>
 
 using namespace utility;
+using namespace web::json;
 
 class HttpBasedTransport :
     public IClientTransport
@@ -21,7 +22,7 @@ public:
 
     pplx::task<NegotiationResponse*> Negotiate(Connection* connection);
     pplx::task<void> Start(Connection* connection, string_t data, void* state = NULL);
-    void Send(Connection* connection, string data);
+    pplx::task<void> Send(Connection* connection, string_t data);
     void Stop(Connection* connection);
     void Abort(Connection* connection);
 
@@ -41,7 +42,7 @@ private:
         map<string, string> PostData;
     };
     
-    string_t _transport;
+    string_t mTransport;
     queue<SendQueueItem*> mSendQueue;
     bool mSending;
     static void OnSendHttpResponse(IHttpResponse* httpResponse, exception* error, void* state);

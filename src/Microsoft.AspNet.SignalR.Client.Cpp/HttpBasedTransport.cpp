@@ -3,7 +3,7 @@
 HttpBasedTransport::HttpBasedTransport(http_client* httpClient, string_t transport)
 {
     mHttpClient = httpClient;
-    _transport = transport;
+    mTransport = transport;
 }
 
 HttpBasedTransport::~HttpBasedTransport(void)
@@ -18,7 +18,7 @@ pplx::task<NegotiationResponse*> HttpBasedTransport::Negotiate(Connection* conne
 
 string_t HttpBasedTransport::GetReceiveQueryString(Connection* connection, string_t data)
 {
-    return TransportHelper::GetReceiveQueryString(connection, data, _transport);
+    return TransportHelper::GetReceiveQueryString(connection, data, mTransport);
 }
 
 pplx::task<void> HttpBasedTransport::Start(Connection* connection, string_t data, void* state)
@@ -27,27 +27,32 @@ pplx::task<void> HttpBasedTransport::Start(Connection* connection, string_t data
     return pplx::task<void>();
 }
 
-void HttpBasedTransport::Send(Connection* connection, string data)
+pplx::task<void> HttpBasedTransport::Send(Connection* connection, string_t data)
 {
-    //auto url = connection->GetUrl() + 
-    //    "send?transport=serverSentEvents&connectionToken=" + 
-    //    connection->GetConnectionToken();
+    string_t uri = connection->GetUri() + U("send?transport=") + mTransport + U("&connectionToken=") + connection->GetConnectionToken();
 
-    //auto postData = map<string, string>();
-    //postData["data"] = data;
+    http_request request(methods::POST);
+    request.set_request_uri(uri);
+    
+    //value dataObj;
+    //dataObj[U("data")] = value::string(data);
+    //stringstream_t stream;
+    //dataObj.serialize(stream);
 
-    //if(mSending)
-    //{
-    //    auto queueItem = new SendQueueItem();
-    //    queueItem->Connection = connection;
-    //    queueItem->Url = url;
-    //    queueItem->PostData = postData;
-    //    mSendQueue.push(queueItem);
-    //}
-    //else
-    //{
-    //    //mHttpClient->Post(url, postData, &HttpBasedTransport::OnSendHttpResponse, this);
-    //}
+    //map<string_t,string_t> postData;
+    //postData.insert(pair<string_t, string_t>(U("data"), data));
+
+    string_t encodedData = U("data=") + uri::encode_data_string(data);
+
+    request.set_body(encodedData);
+
+    wcout << request.to_string() << endl;
+
+    return mHttpClient->request(request).then([request](http_response response)
+    {
+        cout << "message sent" << endl;
+        cout << "status code: " << response.status_code() << endl;
+    });
 }
 
 void HttpBasedTransport::TryDequeueNextWorkItem()

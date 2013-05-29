@@ -29,9 +29,9 @@ pplx::task<void> WebSocketTransport::PerformConnect(bool reconnecting)
     return pplx::task<void>();
 }
 
-void WebSocketTransport::Send(Connection* connection, string data)
+pplx::task<void> WebSocketTransport::Send(Connection* connection, string data)
 {
-    
+    return pplx::task<void>();
 }
 
 void WebSocketTransport::Stop(Connection* connection)

@@ -58,9 +58,18 @@ pplx::task<void> Connection::StartTransport()
     return mTransport->Start(this, U(""));
 }
 
-void Connection::Send(string data)
+pplx::task<void> Connection::Send(web::json::value::field_map object)
 {
-    mTransport->Send(this, data);
+    stringstream_t stream;
+    value v1 = value::object(object);
+    v1.serialize(stream); 
+
+    return Send(stream.str());
+}
+
+pplx::task<void> Connection::Send(string_t data)
+{
+    return mTransport->Send(this, data);
 }
 
 bool Connection::ChangeState(ConnectionState oldState, ConnectionState newState)
