@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.ComponentModel.Composition;
 using System.Diagnostics;
 using System.Linq;
+using System.Numerics;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR.Stress.Infrastructure;
@@ -251,9 +252,17 @@ namespace Microsoft.AspNet.SignalR.Stress
                 median = median + values[(values.Length / 2) - 1] / 2;
             }
 
-            var average = values.Average();
-            var sumOfSquaresDiffs = values.Select(v => (v - average) * (v - average)).Sum();
-            var stdDevP = Math.Sqrt(sumOfSquaresDiffs / values.Length) / average * 100;
+            var sum = values.Select(i => new BigInteger(i)).Aggregate((aggregate, bi) => aggregate + bi);
+            BigInteger remainder;
+            var average = (double)BigInteger.DivRem(sum, values.Length, out remainder) + ((double)remainder / values.Length);
+            
+            double stdDevP = 0;
+            if (average > 0)
+            {
+                var sumOfSquares = values.Sum(i => Math.Pow(i - average, 2.0));
+                stdDevP = Math.Sqrt(sumOfSquares / values.Length) / average * 100;
+            }
+            
             Console.WriteLine("{0} (MEDIAN):  {1}", key, Math.Round(median));
             Console.WriteLine("{0} (AVERAGE): {1}", key, Math.Round(average));
             Console.WriteLine("{0} (STDDEV%): {1}%", key, Math.Round(stdDevP));
