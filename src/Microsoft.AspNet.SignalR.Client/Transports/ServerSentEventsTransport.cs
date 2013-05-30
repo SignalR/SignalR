@@ -227,11 +227,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
                 {
                     callbackInvoker.Invoke((cb, token) =>
                     {
-#if NET35
-                        cb(new OperationCanceledException(Resources.Error_ConnectionCancelled));
-#else
                         cb(new OperationCanceledException(Resources.Error_ConnectionCancelled, token));
-#endif
                     }, errorCallback, disconnectToken);
                 }
             }, _request);

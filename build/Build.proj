@@ -84,12 +84,18 @@
     <Projects Include="$(ProjectRoot)\src\Microsoft.AspNet.SignalR.Client.JS\Microsoft.AspNet.SignalR.Client.JS.csproj">
       <CopyArtifacts>false</CopyArtifacts>
     </Projects>
+    <!-- Don't copy dll's from WinRT project -->
+    <Projects Include="$(ProjectRoot)\src\Microsoft.AspNet.SignalR.Client.WinRT\Microsoft.AspNet.SignalR.Client.WinRT.csproj">
+      <Build Condition="!$(WinRTSDKInstalled)">false</Build>
+      <Platform>WinRT</Platform>
+      <CopyArtifacts>false</CopyArtifacts>
+    </Projects>
     <!-- Only build the following clients if the SDK is installed -->
     <Projects Include="$(ProjectRoot)\src\Microsoft.AspNet.SignalR.Client.Portable\Microsoft.AspNet.SignalR.Client.Portable.csproj">
       <Build Condition="!$(Silverlight5SDKInstalled)">false</Build>
       <Build Condition="!$(WP8SDKInstalled)">false</Build>
       <Build Condition="!$(WinRTSDKInstalled)">false</Build>
-      <Platform>WinRT, SL5, WP8</Platform>
+      <Platform>portable-net40+sl4+win8+wp71</Platform>
       <!-- HttpClient causes issues with running FxCop on the SL5 and WP8 clients -->
       <RunFxCop>false</RunFxCop>
     </Projects>

@@ -222,7 +222,7 @@ namespace Microsoft.AspNet.SignalR.Client.Hubs
             return new DisposableAction(() => subscription.Received -= handler);
         }
 
-#if !PORTABLE && !NET35 && !__ANDROID__ && !IOS
+#if !PORTABLE && !__ANDROID__ && !IOS
         /// <summary>
         /// Registers for an event with the specified name and callback
         /// </summary>

@@ -88,7 +88,7 @@ namespace Microsoft.AspNet.SignalR.Client
             return connection.State == ConnectionState.Reconnecting;
         }
 
-#if !PORTABLE && !NET35 && !__ANDROID__ && !IOS
+#if !PORTABLE && !__ANDROID__ && !IOS
         public static IObservable<string> AsObservable(this Connection connection)
         {
             return connection.AsObservable(value => value);
