@@ -31,15 +31,17 @@ namespace Microsoft.AspNet.SignalR.Tests.Common.Infrastructure
             return HostedTestFactory.CreateHost(hostType, transportType, detailedTestName);
         }
 
-        protected void UseMessageBus(MessageBusType type, IDependencyResolver resolver, ScaleoutConfiguration configuration = null, int streams = 1)
+        protected void UseMessageBus(MessageBusType type, IDependencyResolver resolver, int streams = 1)
         {
+            IMessageBus bus = null;
+
             switch (type)
             {
                 case MessageBusType.Default:
                     break;
                 case MessageBusType.Fake:
-                    var bus = new FakeScaleoutBus(resolver, streams);
-                    resolver.Register(typeof(IMessageBus), () => bus);
+                case MessageBusType.FakeMultiStream:
+                    bus = new FakeScaleoutBus(resolver, streams);
                     break;
                 case MessageBusType.SqlServer:
                     break;
@@ -49,6 +51,11 @@ namespace Microsoft.AspNet.SignalR.Tests.Common.Infrastructure
                     break;
                 default:
                     break;
+            }
+
+            if (bus != null)
+            {
+                resolver.Register(typeof(IMessageBus), () => bus);
             }
         }
 
@@ -135,47 +142,6 @@ namespace Microsoft.AspNet.SignalR.Tests.Common.Infrastructure
         public virtual void Dispose()
         {
             Dispose(true);
-        }
-
-        private class FakeScaleoutBus : ScaleoutMessageBus
-        {
-            private int _streams;
-            private ulong _id;
-
-            public FakeScaleoutBus(IDependencyResolver resolver)
-                : this(resolver, streams: 1)
-            {
-            }
-
-            public FakeScaleoutBus(IDependencyResolver dr, int streams)
-                : base(dr, new ScaleoutConfiguration())
-            {
-                _streams = streams;
-
-                for (int i = 0; i < _streams; i++)
-                {
-                    Open(i);
-                }
-            }
-
-            protected override int StreamCount
-            {
-                get
-                {
-                    return _streams;
-                }
-            }
-
-            protected override Task Send(int streamIndex, IList<Message> messages)
-            {
-                var message = new ScaleoutMessage(messages);
-
-                OnReceived(streamIndex, _id, message);
-
-                _id++;
-
-                return TaskAsyncHelper.Empty;
-            }
         }
     }
 }

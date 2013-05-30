@@ -6,6 +6,7 @@ using System.IO;
 using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR.Client.Transports;
 using Microsoft.AspNet.SignalR.Configuration;
+using Microsoft.AspNet.SignalR.Messaging;
 using Microsoft.AspNet.SignalR.Tracing;
 
 namespace Microsoft.AspNet.SignalR.Tests.Common.Infrastructure
@@ -64,7 +65,11 @@ namespace Microsoft.AspNet.SignalR.Tests.Common.Infrastructure
             set;
         }
 
-        public virtual void Initialize(int? keepAlive = -1, int? connectionTimeout = 110, int? disconnectTimeout = 30, bool enableAutoRejoiningGroups = false)
+        public virtual void Initialize(int? keepAlive = -1,
+                                       int? connectionTimeout = 110,
+                                       int? disconnectTimeout = 30,
+                                       bool enableAutoRejoiningGroups = false,
+                                       MessageBusType type = MessageBusType.Default)
         {
             Resolver = Resolver ?? new DefaultDependencyResolver();
 
@@ -97,6 +102,27 @@ namespace Microsoft.AspNet.SignalR.Tests.Common.Infrastructure
             else if (keepAlive.Value != -1)
             {
                 configuration.KeepAlive = TimeSpan.FromSeconds(keepAlive.Value);
+            }
+
+            IMessageBus bus = null;
+
+            switch (type)
+            {
+                case MessageBusType.Default:
+                    break;
+                case MessageBusType.Fake:
+                    bus = new FakeScaleoutBus(Resolver, streams: 1);
+                    break;
+                case MessageBusType.FakeMultiStream:
+                    bus =  new FakeScaleoutBus(Resolver, streams: 3);
+                    break;
+                default:
+                    throw new NotImplementedException();
+            }
+
+            if (bus != null)
+            {
+                Resolver.Register(typeof(IMessageBus), () => bus);
             }
         }
 

@@ -37,7 +37,11 @@ namespace Microsoft.AspNet.SignalR.Tests.Common.Infrastructure
 
         public Func<Client.Transports.IClientTransport> TransportFactory { get; set; }
 
-        public void Initialize(int? keepAlive = -1, int? connectionTimeout = 110, int? disconnectTimeout = 30, bool enableAutoRejoiningGroups = false)
+        public void Initialize(int? keepAlive = -1,
+                               int? connectionTimeout = 110,
+                               int? disconnectTimeout = 30,
+                               bool enableAutoRejoiningGroups = false,
+                               MessageBusType type = MessageBusType.Default)
         {
             // nothing to initialize since it is external! 
         }
