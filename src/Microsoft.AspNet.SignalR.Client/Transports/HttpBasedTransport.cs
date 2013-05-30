@@ -68,9 +68,14 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
 
         public Task Start(IConnection connection, string data, CancellationToken disconnectToken)
         {
-            var initializeHandler = new TransportInitializationHandler(connection, this);
+            if (connection == null)
+            {
+                throw new ArgumentNullException("connection");
+            }
 
-            OnStart(connection, data, disconnectToken, initializeHandler.OnSuccess, initializeHandler.OnFailure);
+            var initializeHandler = new TransportInitializationHandler(connection.TransportConnectTimeout.Value, disconnectToken);
+
+            OnStart(connection, data, disconnectToken, initializeHandler);
 
             return initializeHandler.Task;
         }
@@ -78,8 +83,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
         protected abstract void OnStart(IConnection connection,
                                         string data,
                                         CancellationToken disconnectToken,
-                                        Action initializeCallback,
-                                        Action<Exception> errorCallback);
+                                        TransportInitializationHandler initializeHandler);
 
         public Task Send(IConnection connection, string data)
         {
@@ -215,6 +219,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
                 // Wait for any ongoing aborts to complete
                 // In practice, any aborts should have finished by the time Dispose is called
                 lock (_abortLock)
+                {
                     lock (_disposeLock)
                     {
                         if (!_disposed)
@@ -223,6 +228,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
                             _disposed = true;
                         }
                     }
+                }
             }
         }
     }

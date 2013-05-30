@@ -442,7 +442,6 @@
                     transport = $.type(transportName) === "object" ? transportName : signalR.transports[transportName],
                     initializationComplete = false,
                     onFailed = function () {
-
                         // Check if we've already triggered onFailed, onStart
                         if (!initializationComplete) {
                             initializationComplete = true;

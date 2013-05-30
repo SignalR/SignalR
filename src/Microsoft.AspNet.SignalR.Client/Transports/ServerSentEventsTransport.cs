@@ -45,10 +45,20 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
         protected override void OnStart(IConnection connection,
                                         string data,
                                         CancellationToken disconnectToken,
-                                        Action initializeCallback,
-                                        Action<Exception> errorCallback)
+                                        TransportInitializationHandler initializeHandler)
         {
-            OpenConnection(connection, data, disconnectToken, initializeCallback, errorCallback);
+            if (initializeHandler == null)
+            {
+                throw new ArgumentNullException("initializeHandler");
+            }
+
+            // Tie into the OnFailure event so that we can stop the transport silently.
+            initializeHandler.OnFailure += () =>
+            {
+                _request.Abort();
+            };
+
+            OpenConnection(connection, data, disconnectToken, initializeHandler.Success, initializeHandler.Failure);
         }
 
         private void Reconnect(IConnection connection, string data, CancellationToken disconnectToken)

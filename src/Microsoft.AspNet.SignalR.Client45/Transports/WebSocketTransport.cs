@@ -64,13 +64,29 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
 
         public Task Start(IConnection connection, string data, CancellationToken disconnectToken)
         {
-            _initializeHandler = new TransportInitializationHandler(connection, this);
+            if (connection == null)
+            {
+                throw new ArgumentNullException("connection");
+            }
+
+            _initializeHandler = new TransportInitializationHandler(connection.TransportConnectTimeout.Value, disconnectToken);
+            // Tie into the OnFailure event so that we can stop the transport silently.
+            _initializeHandler.OnFailure += () =>
+            {
+                WebSocket.Abort();
+            };
 
             _disconnectToken = disconnectToken;
             _connectionInfo = new WebSocketConnectionInfo(connection, data);
 
             // We don't need to await this task
-            PerformConnect().Then((Action)_initializeHandler.OnSuccess).Catch(_initializeHandler.OnFailure);
+            PerformConnect().Then((Action)_initializeHandler.Success).ContinueWith(task =>
+            {
+                if (!task.IsCompleted)
+                {
+                    _initializeHandler.Failure(task.Exception);
+                }
+            });
 
             return _initializeHandler.Task;
         }
@@ -124,7 +140,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
                                             message,
                                             out timedOut,
                                             out disconnected,
-                                            _initializeHandler.OnSuccess);
+                                            _initializeHandler.Success);
 
             if (disconnected && !_disconnectToken.IsCancellationRequested)
             {

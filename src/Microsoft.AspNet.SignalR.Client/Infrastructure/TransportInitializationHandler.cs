@@ -1,28 +1,39 @@
-﻿using System;
+﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.md in the project root for license information.
+
+using System;
+using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.AspNet.SignalR.Client.Transports;
+using Microsoft.AspNet.SignalR.Infrastructure;
 
 namespace Microsoft.AspNet.SignalR.Client.Infrastructure
 {
-    internal class TransportInitializationHandler
+    public class TransportInitializationHandler
     {
         private ThreadSafeInvoker _initializationInvoker;
-        private IConnection _connection;
-        private IClientTransport _transport;
         private TaskCompletionSource<object> _initializationTask;
+        private IDisposable _tokenCleanup;
 
-        public TransportInitializationHandler(IConnection connection, IClientTransport transport)
+        public TransportInitializationHandler(TimeSpan failureTimeout, CancellationToken disconnectToken)
         {
-            _transport = transport;
             _initializationTask = new TaskCompletionSource<object>();
             _initializationInvoker = new ThreadSafeInvoker();
-            _connection = connection;
 
-            TaskAsyncHelper.Delay(connection.TransportConnectTimeout.Value).Then(() =>
+            // Default event
+            OnFailure = () => { };
+
+            // We want to fail if the disconnect token is tripped while we're waiting on initialization
+            _tokenCleanup = disconnectToken.SafeRegister(_ =>
             {
-                OnFailure(new TimeoutException(Resources.Error_TransportTimedOutTryingToConnect));
+                Failure(null);
+            }, null);
+
+            TaskAsyncHelper.Delay(failureTimeout).Then(() =>
+            {
+                Failure(new TimeoutException(Resources.Error_TransportTimedOutTryingToConnect));
             });
         }
+
+        public event Action OnFailure;
 
         public Task Task
         {
@@ -32,20 +43,22 @@ namespace Microsoft.AspNet.SignalR.Client.Infrastructure
             }
         }
 
-        public void OnSuccess()
+        public void Success()
         {
             _initializationInvoker.Invoke(() =>
             {
                 _initializationTask.SetResult(null);
+                _tokenCleanup.Dispose();
             });
         }
 
-        public void OnFailure(Exception ex)
+        public void Failure(Exception ex)
         {
             _initializationInvoker.Invoke(() =>
             {
-                _transport.Abort(_connection, TimeSpan.FromSeconds(1));
+                OnFailure();
                 _initializationTask.SetException(ex);
+                _tokenCleanup.Dispose();
             });
         }
     }
