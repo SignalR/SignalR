@@ -16,24 +16,24 @@
     </trackingVariation>
     <trackingVariation name="SendReceive-Memory-ServerSentEvents">
       <metric name="Message Bus Messages Received/Sec" selection="Average" units="Numeric">
-        <target value="5719925.40" labConfig="XSPPERF8S_WIN8_X64" />
+        <target value="4000000" labConfig="XSPPERF8S_WIN8_X64" />
       </metric>
     </trackingVariation>
     
     <!--Memory Host with Hubs-->
     <trackingVariation name="HubInvocation">
       <metric name="Message Bus Messages Published/Sec" selection="Average" units="Numeric">
-        <target value="17323.64" labConfig="XSPPERF8S_WIN8_X64" />
+        <target value="17000" labConfig="XSPPERF8S_WIN8_X64" />
       </metric>
     </trackingVariation>
     <trackingVariation name="SimpleEchoHub-Memory-LongPolling">
       <metric name="Latency In Milliseconds" selection="Average" units="Numeric">
-        <target value="0" labConfig="XSPPERF8S_WIN8_X64" />
+        <target value="250" labConfig="XSPPERF8S_WIN8_X64" />
       </metric>
     </trackingVariation>
     <trackingVariation name="SimpleEchoHub-Memory-ServerSentEvents">
       <metric name="Latency In Milliseconds" selection="Average" units="Numeric">
-        <target value="0" labConfig="XSPPERF8S_WIN8_X64" />
+        <target value="250" labConfig="XSPPERF8S_WIN8_X64" />
       </metric>
     </trackingVariation>
 
@@ -45,19 +45,19 @@
     </trackingVariation>
     <trackingVariation name="RedisMessageBus">
       <metric name="Message Bus Messages Received/Sec" selection="Average" units="Numeric">
-        <target value="1492096.12" labConfig="XSPPERF8S_WIN8_X64" />
+        <target value="780000" labConfig="XSPPERF8S_WIN8_X64" />
       </metric>
     </trackingVariation>
     <trackingVariation name="SqlMessageBus">
       <metric name="Message Bus Messages Received/Sec" selection="Average" units="Numeric">
-        <target value="418655.70" labConfig="XSPPERF8S_WIN8_X64" />
+        <target value="655000" labConfig="XSPPERF8S_WIN8_X64" />
       </metric>
     </trackingVariation>
   
     <!-- External Host-->
-    <trackingVariation name="SimpleEchoHub-LongPolling-External">
+    <trackingVariation name="SimpleEchoHub-External-LongPolling">
       <metric name="Latency In Milliseconds" selection="Average" units="Numeric">
-        <target value="0" labConfig="XSPPERF8S_WIN8_X64" />
+        <target value="250" labConfig="XSPPERF8S_WIN8_X64" />
       </metric>
     </trackingVariation>
     
@@ -102,8 +102,8 @@
     <command name="SetupIIS" wait="Exit">
       powershell -executionpolicy remotesigned -command "{bin}\RegisterIIS.ps1 {currentdir}\www
     </command>
-    <command name="SimpleEchoHub-LongPolling-External" wait="Exit">
-      Microsoft.AspNet.SignalR.Stress.exe /Run:SimpleEchoHub /Transport:LongPolling /Host:External /Connections:5 /Url:http://{server-01}:81/
+    <command name="SimpleEchoHub-External-LongPolling" wait="Exit">
+      Microsoft.AspNet.SignalR.Stress.exe /Run:SimpleEchoHub /Transport:LongPolling /Host:External /Connections:5 /Url:http://{server-01}:81/ /Duration:150
     </command>
   
   </commands>
@@ -129,10 +129,8 @@
     <run command="RedisMessageBus" role="server-01" output="true" />
   
     <!--External host hub tests-->
-    <!-- Disabling until this scenario is fixed
     <run command="CopyWWW" role="controller" output="true" profile="None" />
     <run command="SetupIIS" role="server-01" output="true" profile="None" />
-    <run command="SimpleEchoHub-LongPolling-External" role="client-01" output="true" />
-    -->
+    <run command="SimpleEchoHub-External-LongPolling" role="client-01" output="true" />
   </plan>
 </config>
