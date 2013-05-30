@@ -1,6 +1,5 @@
 #include "AsyncStreamReader.h"
 
-
 AsyncStreamReader::AsyncStreamReader(Concurrency::streams::basic_istream<uint8_t> stream)
 {
     mStream = stream;
@@ -94,7 +93,7 @@ void AsyncStreamReader::ReadAsync(pplx::task<unsigned int> readTask)
         {
             Close(ex);
         }
-    });//, pplx::task_options(pplx::task_continuation_context::use_default()));
+    });
 }
 
 bool AsyncStreamReader::TryProcessRead(unsigned read)
@@ -160,7 +159,7 @@ void AsyncStreamReader::OnData(char buffer[])
 pplx::task<unsigned int> AsyncStreamReader::AsyncReadIntoBuffer(char* buffer[], Concurrency::streams::basic_istream<uint8_t> stream)
 {
     concurrency::streams::container_buffer<string> inStringBuffer;
-    return stream.read(inStringBuffer, 512).then([inStringBuffer, buffer](size_t bytesRead)
+    return stream.read(inStringBuffer, 4096).then([inStringBuffer, buffer](size_t bytesRead)
     {
         string &text = inStringBuffer.collection();
         *buffer = new char[text.length() + 1];

@@ -29,7 +29,7 @@ void EventSourceStreamReader::ProcessBuffer(char readBuffer[])
 
         if (line.empty())
         {
-            break;
+            continue;
         }
 
         SseEvent* sseEvent;

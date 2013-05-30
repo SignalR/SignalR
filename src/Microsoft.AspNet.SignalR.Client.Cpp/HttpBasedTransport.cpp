@@ -33,25 +33,14 @@ pplx::task<void> HttpBasedTransport::Send(Connection* connection, string_t data)
 
     http_request request(methods::POST);
     request.set_request_uri(uri);
-    
-    //value dataObj;
-    //dataObj[U("data")] = value::string(data);
-    //stringstream_t stream;
-    //dataObj.serialize(stream);
-
-    //map<string_t,string_t> postData;
-    //postData.insert(pair<string_t, string_t>(U("data"), data));
 
     string_t encodedData = U("data=") + uri::encode_data_string(data);
 
     request.set_body(encodedData);
 
-    wcout << request.to_string() << endl;
-
     return mHttpClient->request(request).then([request](http_response response)
     {
-        cout << "message sent" << endl;
-        cout << "status code: " << response.status_code() << endl;
+
     });
 }
 
