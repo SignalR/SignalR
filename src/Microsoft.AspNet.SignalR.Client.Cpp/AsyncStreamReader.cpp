@@ -4,6 +4,7 @@
 AsyncStreamReader::AsyncStreamReader(Concurrency::streams::basic_istream<uint8_t> stream)
 {
     mStream = stream;
+    mReadingState = State::Initial;
 }
 
 
@@ -60,8 +61,6 @@ READ:
     {
         try
         {
-            // readTask.wait(); // .get waits already?
-
             long read = readTask.get();
 
             if (TryProcessRead(read))
@@ -82,18 +81,20 @@ READ:
 
 void AsyncStreamReader::ReadAsync(pplx::task<unsigned int> readTask)
 {
-    // not well translated from C# to C++
-    try
+    readTask.then([readTask, this](unsigned int bytesRead)
     {
-        if (TryProcessRead(readTask.get()))
+        try
         {
-            Process();
+            if (TryProcessRead(bytesRead))
+            {
+                Process();
+            }
         }
-    }
-    catch (exception& ex)
-    {
-        Close(ex);
-    }
+        catch (exception& ex)
+        {
+            Close(ex);
+        }
+    });//, pplx::task_options(pplx::task_continuation_context::use_default()));
 }
 
 bool AsyncStreamReader::TryProcessRead(unsigned read)
@@ -159,7 +160,7 @@ void AsyncStreamReader::OnData(char buffer[])
 pplx::task<unsigned int> AsyncStreamReader::AsyncReadIntoBuffer(char* buffer[], Concurrency::streams::basic_istream<uint8_t> stream)
 {
     concurrency::streams::container_buffer<string> inStringBuffer;
-    return stream.read(inStringBuffer, 4096).then([inStringBuffer, buffer](size_t bytesRead)
+    return stream.read(inStringBuffer, 512).then([inStringBuffer, buffer](size_t bytesRead)
     {
         string &text = inStringBuffer.collection();
         *buffer = new char[text.length() + 1];
