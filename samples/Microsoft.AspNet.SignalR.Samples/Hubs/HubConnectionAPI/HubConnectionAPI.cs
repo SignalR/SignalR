@@ -18,7 +18,7 @@ namespace Microsoft.AspNet.SignalR.Hosting.AspNet.Samples.Hubs.HubConnectionAPI
 
         public void DisplayMessageAll(string message)
         {
-            Clients.All.displayMessage("Clients.All: " + message + " from " + Context.ConnectionId);
+            Clients.All.displayMessage("Clients.All from " + Context.ConnectionId + ": " + message);
         }
 
         public void DisplayMessageAllExcept(string message, params string[] excludeConnectionIds)
