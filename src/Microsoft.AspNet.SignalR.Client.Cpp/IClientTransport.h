@@ -13,6 +13,8 @@ public:
     IClientTransport(void);
     ~IClientTransport(void);
 
+    string_t GetTransportName();
+
     typedef void (*START_CALLBACK)(exception* error, void* state);
     typedef void (*NEGOTIATE_CALLBACK)(NegotiationResponse* negotiateResponse, exception* error, void* state);
     virtual pplx::task<NegotiationResponse*> Negotiate(Connection* connection) = 0;
@@ -20,5 +22,8 @@ public:
     virtual pplx::task<void> Send(Connection* connection, string_t data) = 0;
     virtual void Stop(Connection* connection) = 0;
     virtual void Abort(Connection* connection) = 0;
+
+protected:
+    string_t mTransportName;
 };
 

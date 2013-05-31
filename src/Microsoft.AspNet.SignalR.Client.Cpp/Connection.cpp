@@ -2,7 +2,6 @@
 #include "IConnectionHandler.h"
 #include "LongPollingTransport.h"
 #include "ServerSentEventsTransport.h"
-#include "WebSocketTransport.h"
 
 Connection::Connection(string_t uri, IConnectionHandler* handler)
 {

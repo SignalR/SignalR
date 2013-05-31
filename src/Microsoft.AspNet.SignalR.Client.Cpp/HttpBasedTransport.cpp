@@ -3,7 +3,7 @@
 HttpBasedTransport::HttpBasedTransport(http_client* httpClient, string_t transport)
 {
     mHttpClient = httpClient;
-    mTransport = transport;
+    mTransportName = transport;
 }
 
 HttpBasedTransport::~HttpBasedTransport(void)
@@ -18,7 +18,7 @@ pplx::task<NegotiationResponse*> HttpBasedTransport::Negotiate(Connection* conne
 
 string_t HttpBasedTransport::GetReceiveQueryString(Connection* connection, string_t data)
 {
-    return TransportHelper::GetReceiveQueryString(connection, data, mTransport);
+    return TransportHelper::GetReceiveQueryString(connection, data, mTransportName);
 }
 
 pplx::task<void> HttpBasedTransport::Start(Connection* connection, string_t data, void* state)
@@ -29,7 +29,7 @@ pplx::task<void> HttpBasedTransport::Start(Connection* connection, string_t data
 
 pplx::task<void> HttpBasedTransport::Send(Connection* connection, string_t data)
 {
-    string_t uri = connection->GetUri() + U("send?transport=") + mTransport + U("&connectionToken=") + connection->GetConnectionToken();
+    string_t uri = connection->GetUri() + U("send?transport=") + mTransportName + U("&connectionToken=") + connection->GetConnectionToken();
 
     http_request request(methods::POST);
     request.set_request_uri(uri);

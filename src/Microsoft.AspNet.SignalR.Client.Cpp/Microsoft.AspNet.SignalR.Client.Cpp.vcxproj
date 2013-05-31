@@ -85,7 +85,6 @@
     <ClCompile Include="EventSourceStreamReader.cpp" />
     <ClCompile Include="SseEvent.cpp" />
     <ClCompile Include="TransportHelper.cpp" />
-    <ClCompile Include="WebSocketTransport.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ChunkBuffer.h" />
@@ -105,7 +104,6 @@
     <ClInclude Include="ServerSentEventsTransport.h" />
     <ClInclude Include="SseEvent.h" />
     <ClInclude Include="TransportHelper.h" />
-    <ClInclude Include="WebSocketTransport.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

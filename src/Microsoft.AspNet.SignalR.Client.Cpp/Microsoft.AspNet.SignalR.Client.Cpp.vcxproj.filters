@@ -72,9 +72,6 @@
     <ClCompile Include="TransportHelper.cpp">
       <Filter>Source Files\Transport</Filter>
     </ClCompile>
-    <ClCompile Include="WebSocketTransport.cpp">
-      <Filter>Source Files\Transport</Filter>
-    </ClCompile>
     <ClCompile Include="EventSourceStreamReader.cpp">
       <Filter>Source Files\Transport\ServerSentEvents</Filter>
     </ClCompile>
@@ -105,9 +102,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="LongPollingTransport.h">
-      <Filter>Header Files\Transports</Filter>
-    </ClInclude>
-    <ClInclude Include="WebSocketTransport.h">
       <Filter>Header Files\Transports</Filter>
     </ClInclude>
     <ClInclude Include="TransportHelper.h">

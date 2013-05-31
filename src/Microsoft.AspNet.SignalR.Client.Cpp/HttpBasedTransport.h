@@ -42,7 +42,6 @@ private:
         map<string, string> PostData;
     };
     
-    string_t mTransport;
     queue<SendQueueItem*> mSendQueue;
     bool mSending;
     static void OnSendHttpResponse(IHttpResponse* httpResponse, exception* error, void* state);

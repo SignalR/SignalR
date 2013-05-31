@@ -51,5 +51,5 @@ string_t ChunkBuffer::ReadLine()
         }
         mLineBuilder.append(&(mBuffer.at(i)), 1);
     }
-    return NULL;
+    return U("");
 }

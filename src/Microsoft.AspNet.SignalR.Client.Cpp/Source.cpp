@@ -1,62 +1,70 @@
-//using namespace std;
-
-//#include <iostream>
+#include <http_client.h>
 #include "Connection.h"
 #include "MyConnectionHandler.h"
-#include "FakeHttpClient.h"
-//
-//
-//int main() {
-//
-//    // Playing with API patterns
-//
-//    IConnectionHandler* handler = new MyConnectionHandler();
-//    IHttpClient* client = new FakeHttpClient();
-//
-//    auto connection = Connection("http://myendpoint", handler);
-//    
-//    connection.Start(client);
-//    
-//    connection.Send("hello");
-//    connection.Send("bar");
-//
-//    connection.Stop();
-//}
 
-#include <http_client.h>
-#include <filestream.h>
-#include <iostream>
-#include <sstream>
 
 using namespace utility;
-using namespace web::http;
-using namespace web::http::client;
 using namespace std;
 using namespace web::json;
 
-int main () {
-	IConnectionHandler* handler = new MyConnectionHandler();
-    //IHttpClient* client = new FakeHttpClient();
+static void RunStreamingSample()
+{
+    wcout << U("Choose transport:") << endl;
+    wcout << U("1. AutoTransport") << endl;
+    wcout << U("2. ServerSentEventsTransport") << endl;
+    wcout << U("Option: ");
 
-    auto connection = Connection(U("http://localhost:40476/raw-connection"), handler);
-    
-    connection.Received = [](string_t message)
+    string_t key;
+    getline(wcin, key);
+
+    if (key == U("1") || key == U("2"))
     {
-        wcout << message << endl;
-    };
-
-    connection.Start().wait();
+        Connection* connection = new Connection(U("http://localhost:40476/raw-connection"), new MyConnectionHandler());
     
-    cout << "connection started" << endl;
+        connection->Received = [](string_t message)
+        {
+            wcout << message << endl;
+        };
 
-    web::json::value::field_map object;
-    object.push_back(make_pair(value(U("type")), value(1)));
-    object.push_back(make_pair(value(U("value")), value(U("hello"))));
+        try
+        {
+            connection->Start().wait();
 
-    connection.Send(object).wait();
+            wcout << U("Using ") << connection->GetTransport()->GetTransportName() << endl;
+            wcout << U("- Broadcast by pressing <Enter> after entering a message or") << endl;
+            wcout << U("- Exit by pressing <Enter>") << endl;
+        }
+        catch (exception& ex)
+        {
+            wcerr << U("========ERROR==========") << endl;
+            wcerr << ex.what() << endl;
+            wcerr << U("=======================") << endl;
 
-    //connection.Stop();
+            delete connection;
+            return;
+        }
+        string_t line;
+        getline(wcin, line);
 
-    char t;
-	cin >> t;
+        while (!line.empty())
+        {
+            value::field_map object;
+            object.push_back(make_pair(value(U("type")), value(1)));
+            object.push_back(make_pair(value(U("value")), value(line)));
+
+            connection->Send(object).wait();
+
+            getline(wcin, line);
+        }
+
+        delete connection;
+    }
+}
+
+int main () 
+{
+    RunStreamingSample();
+
+    wcout << U("Press Any Key to Exit ...") << endl;
+    getwchar();
 }
