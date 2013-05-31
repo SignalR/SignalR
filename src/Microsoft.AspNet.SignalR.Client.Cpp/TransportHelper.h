@@ -1,8 +1,6 @@
 #pragma once
 
 #include <string>
-#include "IHttpClient.h"
-#include "IClientTransport.h"
 #include "Connection.h"
 
 using namespace std;
@@ -26,7 +24,6 @@ private:
         IClientTransport::NEGOTIATE_CALLBACK Callback;
     };
 
-    static void OnNegotiateHttpResponse(IHttpResponse* httpResponse, exception* error, void* state);
     static string_t CleanString(string_t uri);
     static string_t EncodeUri(string_t uri);
     static void UpdateGroups(Connection* connection, string_t groupsToken);

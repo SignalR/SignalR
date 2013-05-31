@@ -1,27 +1,27 @@
 #pragma once
 
-class IConnectionHandler;
-class IClientTransport;
 class StateChange;
+class IClientTransport;
+class IConnectionHandler;
 
+#include <mutex>
 #include <string>
-#include <http_client.h>
 #include <filestream.h>
+#include <http_client.h>
 #include <containerstream.h>
 #include <producerconsumerstream.h>
-#include <mutex>
 
-#include "IHttpClient.h"
-#include "IClientTransport.h"
+
 #include "StateChange.h"
+#include "IClientTransport.h"
 
+using namespace std;
+using namespace pplx;
 using namespace utility;
 using namespace concurrency;
-using namespace pplx;
 using namespace web::json;
 using namespace web::http;
 using namespace web::http::client;
-using namespace std;
 
 class Connection
 {
@@ -32,19 +32,26 @@ public:
 
     function<void(string_t message)> Received;
     function<void(StateChange* stateChange)> StateChanged;
+    function<void(exception& ex)> Error;
+    function<void()> Closed;
+    function<void()> Reconnecting;
+    function<void()> Reconnected;
+    function<void()> ConnectionSlow;
+
 
     ConnectionState GetState();
     string_t GetConnectionId();
-    void SetConnectionId(string_t connectionId);
     string_t GetConnectionToken();
-    void SetConnectionToken(string_t connectionToken);
     string_t GetGroupsToken();
-    void SetGroupsToken(string_t groupsToken);
     IClientTransport* GetTransport();
     string_t GetUri();
     string_t GetMessageId();
-    void SetMessageId(string_t groupsToken);
     
+    void SetConnectionToken(string_t connectionToken);
+    void SetGroupsToken(string_t groupsToken);
+    void SetMessageId(string_t groupsToken);
+    void SetConnectionId(string_t connectionId);
+
     task<void> Start();
     task<void> Start(IClientTransport* transport);
     task<void> Start(http_client* client);

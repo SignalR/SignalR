@@ -39,33 +39,13 @@ pplx::task<NegotiationResponse*> TransportHelper::GetNegotiationResponse(http_cl
         responseObject->ProtocolVersion = CleanString(iter->second.to_string());
         
         return responseObject;
-
     });
-
-    //httpClient->Get(url, &TransportHelper::OnNegotiateHttpResponse, info);
 }
 
 
-void TransportHelper::OnNegotiateHttpResponse(IHttpResponse* httpResponse, exception* error, void* state)
-{
-    auto negotiateInfo = (NegotiationRequestInfo*)state;
-
-    string raw = httpResponse->GetResponseBody();
-
-    // TODO: Parse using some kind of JSON library into a Negotiate response
-    auto response = NegotiationResponse();
-    response.ConnectionId = U("");
-    response.ConnectionToken = U("");
-    response.ProtocolVersion = U("1.2");
-
-    negotiateInfo->Callback(&response, NULL, negotiateInfo->UserState);
-
-    delete negotiateInfo;
-}
 
 string_t TransportHelper::GetReceiveQueryString(Connection* connection, string_t data, string_t transport)
 {
-    // ?transport={0}&connectionToken={1}&messageId={2}&groups={3}&connectionData={4}{5}
     utility::string_t qs = U("");
     qs += U("?transport=") + transport + U("&connectionToken=") + connection->GetConnectionToken();
 

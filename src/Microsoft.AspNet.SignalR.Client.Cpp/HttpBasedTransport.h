@@ -2,7 +2,6 @@
 
 #include "IClientTransport.h"
 #include "Connection.h"
-#include "IHttpClient.h"
 #include "TransportHelper.h"
 #include <queue>
 
@@ -45,6 +44,5 @@ private:
     
     queue<SendQueueItem*> mSendQueue;
     bool mSending;
-    static void OnSendHttpResponse(IHttpResponse* httpResponse, exception* error, void* state);
 };
 

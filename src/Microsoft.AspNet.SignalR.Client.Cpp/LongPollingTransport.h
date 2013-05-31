@@ -20,8 +20,5 @@ public:
 
 protected:
     void OnStart(Connection* connection, utility::string_t data);
-
-private:
-    static void OnPollHttpResponse(IHttpResponse* httpResponse, exception* error, void* state);
 };
 

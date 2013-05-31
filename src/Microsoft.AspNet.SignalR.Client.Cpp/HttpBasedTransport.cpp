@@ -57,17 +57,8 @@ void HttpBasedTransport::TryDequeueNextWorkItem()
         // Nuke the work item
         mSendQueue.pop();
 
-        //mHttpClient->Post(workItem->Url, workItem->PostData, &HttpBasedTransport::OnSendHttpResponse, this);
-
         delete workItem;
     }
-}
-
-void HttpBasedTransport::OnSendHttpResponse(IHttpResponse* httpResponse, exception* error, void* state)
-{    
-    auto transport = (HttpBasedTransport*)state;
-
-    transport->TryDequeueNextWorkItem();
 }
 
 void HttpBasedTransport::Stop(Connection* connection)
