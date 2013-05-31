@@ -1,16 +1,7 @@
 #pragma once
 
-class StateChange;
-class IClientTransport;
-class IConnectionHandler;
-
 #include <mutex>
-#include <string>
-#include <filestream.h>
 #include <http_client.h>
-#include <containerstream.h>
-#include <producerconsumerstream.h>
-
 
 #include "StateChange.h"
 #include "IClientTransport.h"
@@ -27,7 +18,7 @@ class Connection
 {
 public:
 
-    Connection(string_t uri, IConnectionHandler* handler);
+    Connection(string_t uri);
     ~Connection(void);
 
     function<void(string_t message)> Received;
@@ -62,8 +53,12 @@ public:
     // Transport API
     bool ChangeState(ConnectionState oldState, ConnectionState newState);
     bool EnsureReconnecting();
-    void OnError(exception error);
+    void OnError(exception& ex);
     void OnReceived(string_t data);
+    void Disconnect();
+    void OnReconnecting();
+    void OnReconnected();
+    void OnConnectionSlow();
 
 private:
     string_t mUri;
@@ -74,7 +69,6 @@ private:
 
     ConnectionState mState;
     IClientTransport* mTransport;
-    IConnectionHandler* mHandler;
     mutex mStateLock;
 
     void SetState(ConnectionState newState);

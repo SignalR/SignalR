@@ -73,9 +73,7 @@
     <ClCompile Include="Connection.cpp" />
     <ClCompile Include="HttpBasedTransport.cpp" />
     <ClCompile Include="IClientTransport.cpp" />
-    <ClCompile Include="IConnectionHandler.cpp" />
     <ClCompile Include="LongPollingTransport.cpp" />
-    <ClCompile Include="MyConnectionHandler.cpp" />
     <ClCompile Include="ServerSentEventsTransport.cpp" />
     <ClCompile Include="Source.cpp" />
     <ClCompile Include="EventSourceStreamReader.cpp" />
@@ -90,9 +88,7 @@
     <ClInclude Include="AsyncStreamReader.h" />
     <ClInclude Include="HttpBasedTransport.h" />
     <ClInclude Include="IClientTransport.h" />
-    <ClInclude Include="IConnectionHandler.h" />
     <ClInclude Include="LongPollingTransport.h" />
-    <ClInclude Include="MyConnectionHandler.h" />
     <ClInclude Include="NegotiationResponse.h" />
     <ClInclude Include="EventSourceStreamReader.h" />
     <ClInclude Include="ServerSentEventsTransport.h" />

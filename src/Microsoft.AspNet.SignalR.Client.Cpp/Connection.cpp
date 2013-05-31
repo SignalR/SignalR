@@ -1,10 +1,8 @@
 #include "Connection.h"
-#include "IConnectionHandler.h"
-//#include "StateChange.h"
 #include "LongPollingTransport.h"
 #include "ServerSentEventsTransport.h"
 
-Connection::Connection(string_t uri, IConnectionHandler* handler)
+Connection::Connection(string_t uri)
 {
     mUri = uri;
     if (!(mUri.back() == U('/')))
@@ -12,7 +10,10 @@ Connection::Connection(string_t uri, IConnectionHandler* handler)
         mUri += U("/");
     }
     mState = ConnectionState::Disconnected;
-    mHandler = handler;
+}
+
+Connection::~Connection()
+{
 }
 
 task<void> Connection::Start() 
@@ -93,9 +94,12 @@ bool Connection::EnsureReconnecting()
     return mState == ConnectionState::Reconnecting;
 }
 
-void Connection::OnError(exception error)
+void Connection::OnError(exception& ex)
 {
-    mHandler->OnError(error);
+    if (Error != NULL)
+    {
+        Error(ex);
+    }
 }
 
 void Connection::OnReceived(string_t message)
@@ -110,6 +114,52 @@ void Connection::OnReceived(string_t message)
         {
             OnError(ex);
         }
+    }
+}
+
+void Connection::Disconnect()
+{
+    mStateLock.lock();
+
+    if (mState != ConnectionState::Disconnected)
+    {
+        SetState(ConnectionState::Disconnected);
+
+        mConnectionId.clear();
+        mConnectionToken.clear();
+        mGroupsToken.clear();
+        mMessageId.clear();
+
+        if (Closed != NULL)
+        {
+            Closed();
+        }
+    }
+
+    mStateLock.unlock();
+}
+
+void Connection::OnReconnecting()
+{
+    if (Reconnecting != NULL)
+    {
+        Reconnecting();
+    }
+}
+
+void Connection::OnReconnected()
+{
+    if (Reconnected != NULL)
+    {
+        Reconnected();
+    }
+}
+
+void Connection::OnConnectionSlow()
+{
+    if (ConnectionSlow != NULL)
+    {
+        ConnectionSlow();
     }
 }
 
@@ -198,8 +248,4 @@ void Connection::SetState(ConnectionState newState)
     delete stateChange;
 
     mStateLock.unlock();
-}
-
-Connection::~Connection()
-{
 }

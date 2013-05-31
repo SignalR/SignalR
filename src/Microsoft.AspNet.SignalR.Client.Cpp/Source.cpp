@@ -1,7 +1,6 @@
+#include <ctime>
 #include <http_client.h>
 #include "Connection.h"
-#include "MyConnectionHandler.h"
-
 
 using namespace utility;
 using namespace std;
@@ -19,16 +18,32 @@ static void RunStreamingSample()
 
     if (key == U("1") || key == U("2"))
     {
-        Connection* connection = new Connection(U("http://localhost:40476/raw-connection"), new MyConnectionHandler());
+        Connection* connection = new Connection(U("http://localhost:40476/raw-connection"));
     
         connection->Received = [](string_t message)
         {
             wcout << message << endl;
         };
 
+        connection->Reconnected = []()
+        {
+            time_t now = time(0);
+            struct tm* nowStruct = localtime(&now);
+
+            wcout << "[" << (nowStruct->tm_mon + 1) << "-" << nowStruct->tm_mday << "-" << (nowStruct->tm_year + 1900) << " "
+                << nowStruct->tm_hour << ":" << nowStruct->tm_min << ":" << nowStruct->tm_sec << "]: Connection restablished" << endl;
+        };
+
         connection->StateChanged = [](StateChange* stateChange)
         {
             wcout << stateChange->GetOldStateName() << " => " << stateChange->GetNewStateName() << endl;
+        };
+
+        connection->Error = [](exception& ex)
+        {
+            wcerr << U("========ERROR==========") << endl;
+            wcerr << ex.what() << endl;
+            wcerr << U("=======================") << endl;
         };
 
         try
@@ -70,6 +85,6 @@ int main ()
 {
     RunStreamingSample();
 
-    wcout << U("Press Any Key to Exit ...") << endl;
+    wcout << U("Press <Enter> to Exit ...") << endl;
     getwchar();
 }
