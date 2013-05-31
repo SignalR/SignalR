@@ -14,7 +14,9 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 [assembly: AssemblyConfiguration("")]
+#if !PORTABLE
 [assembly: ComVisible(false)]
+#endif
 [assembly: CLSCompliant(false)]
 
 [assembly: NeutralResourcesLanguage("en-US")]
