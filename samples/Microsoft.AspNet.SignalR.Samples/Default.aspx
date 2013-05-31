@@ -97,6 +97,11 @@
             <p>A sample that demonstrates message loops where client calls the server method to broadcast message after the client successfully calls the server method once start, and shows missing and dup messages if happens.</p>
             <p><a class="btn" href="Hubs/MessageLoops/">View sample &raquo;</a></p>
         </div>
+        <div class="span4">
+            <h3>Simultaneous Hub Connections</h3>
+            <p>A sample that demonstrates simultaneous Hub connections, you can add new hub connection on fly as well as you can also specify number of connections by default to run.</p>
+            <p><a class="btn" href="Hubs/SimultaneousConnections/">View sample &raquo;</a></p>
+        </div>
     </div>
 
     <div class="clear"></div>
