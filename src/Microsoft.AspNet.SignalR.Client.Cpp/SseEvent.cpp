@@ -1,6 +1,5 @@
 #include "SseEvent.h"
 
-
 SseEvent::SseEvent(EventType type, string_t data)
 {
     mType = type;

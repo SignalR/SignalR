@@ -84,6 +84,9 @@
     <ClCompile Include="ChunkBuffer.cpp">
       <Filter>Source Files\Transport\ServerSentEvents</Filter>
     </ClCompile>
+    <ClCompile Include="StateChange.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Connection.h">
@@ -136,6 +139,12 @@
     </ClInclude>
     <ClInclude Include="ChunkBuffer.h">
       <Filter>Header Files\Transports\ServerSentEvents</Filter>
+    </ClInclude>
+    <ClInclude Include="StateChange.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ConnectionState.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

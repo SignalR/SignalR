@@ -54,7 +54,7 @@ void ServerSentEventsTransport::OpenConnection(Connection* connection, utility::
 
         eventSource->Opened = [connection]()
         {
-            if (connection->ChangeState(Connection::ConnectionState::Reconnecting, Connection::ConnectionState::Connected))
+            if (connection->ChangeState(ConnectionState::Reconnecting, ConnectionState::Connected))
             {
                 // connection->OnReconnected(); still need to define this
             }
@@ -157,7 +157,7 @@ void ServerSentEventsTransport::OnReadLine(string data, exception* error, void* 
         else
         {
             // Reconnected
-            readInfo->Connection->ChangeState(Connection::ConnectionState::Reconnecting, Connection::ConnectionState::Connected);
+            readInfo->Connection->ChangeState(ConnectionState::Reconnecting, ConnectionState::Connected);
         }
     }
     else if(error != NULL)

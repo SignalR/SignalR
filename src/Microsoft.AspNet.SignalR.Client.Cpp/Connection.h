@@ -2,38 +2,36 @@
 
 class IConnectionHandler;
 class IClientTransport;
+class StateChange;
 
 #include <string>
-#include "IHttpClient.h"
-#include "IClientTransport.h"
 #include <http_client.h>
 #include <filestream.h>
 #include <containerstream.h>
 #include <producerconsumerstream.h>
+#include <mutex>
 
+#include "IHttpClient.h"
+#include "IClientTransport.h"
+#include "StateChange.h"
+
+using namespace utility;
 using namespace concurrency;
-using namespace std;
+using namespace pplx;
+using namespace web::json;
 using namespace web::http;
 using namespace web::http::client;
-using namespace utility;
-using namespace web::json;
+using namespace std;
 
 class Connection
 {
 public:
 
-    enum ConnectionState
-    {
-        Connecting,
-        Connected,
-        Reconnecting,
-        Disconnected
-    };
-
     Connection(string_t uri, IConnectionHandler* handler);
     ~Connection(void);
 
     function<void(string_t message)> Received;
+    function<void(StateChange* stateChange)> StateChanged;
 
     ConnectionState GetState();
     string_t GetConnectionId();
@@ -47,20 +45,18 @@ public:
     string_t GetMessageId();
     void SetMessageId(string_t groupsToken);
     
-    pplx::task<void> Start();
-    pplx::task<void> Start(IClientTransport* transport);
-    pplx::task<void> Start(http_client* client);
+    task<void> Start();
+    task<void> Start(IClientTransport* transport);
+    task<void> Start(http_client* client);
     void Stop();
-    pplx::task<void> Send(web::json::value::field_map object);
-    pplx::task<void> Send(string_t data);
+    task<void> Send(value::field_map object);
+    task<void> Send(string_t data);
 
     // Transport API
     bool ChangeState(ConnectionState oldState, ConnectionState newState);
     bool EnsureReconnecting();
     void OnError(exception error);
     void OnReceived(string_t data);
-
-    void SetConnectionState(NegotiationResponse negotiateResponse);
 
 private:
     string_t mUri;
@@ -72,6 +68,9 @@ private:
     ConnectionState mState;
     IClientTransport* mTransport;
     IConnectionHandler* mHandler;
+    mutex mStateLock;
+
+    void SetState(ConnectionState newState);
 
     pplx::task<void> StartTransport();
     pplx::task<void> Negotiate(IClientTransport* transport);

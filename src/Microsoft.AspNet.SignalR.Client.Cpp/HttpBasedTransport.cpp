@@ -11,7 +11,7 @@ HttpBasedTransport::~HttpBasedTransport(void)
     delete mHttpClient;
 }
 
-pplx::task<NegotiationResponse*> HttpBasedTransport::Negotiate(Connection* connection)
+task<NegotiationResponse*> HttpBasedTransport::Negotiate(Connection* connection)
 {
     return TransportHelper::GetNegotiationResponse(mHttpClient, connection);
 }
@@ -21,13 +21,13 @@ string_t HttpBasedTransport::GetReceiveQueryString(Connection* connection, strin
     return TransportHelper::GetReceiveQueryString(connection, data, mTransportName);
 }
 
-pplx::task<void> HttpBasedTransport::Start(Connection* connection, string_t data, void* state)
+task<void> HttpBasedTransport::Start(Connection* connection, string_t data, void* state)
 {
     OnStart(connection, data);
     return pplx::task<void>();
 }
 
-pplx::task<void> HttpBasedTransport::Send(Connection* connection, string_t data)
+task<void> HttpBasedTransport::Send(Connection* connection, string_t data)
 {
     string_t uri = connection->GetUri() + U("send?transport=") + mTransportName + U("&connectionToken=") + connection->GetConnectionToken();
 

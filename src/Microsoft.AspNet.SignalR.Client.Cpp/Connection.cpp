@@ -1,5 +1,6 @@
 #include "Connection.h"
 #include "IConnectionHandler.h"
+//#include "StateChange.h"
 #include "LongPollingTransport.h"
 #include "ServerSentEventsTransport.h"
 
@@ -14,13 +15,13 @@ Connection::Connection(string_t uri, IConnectionHandler* handler)
     mHandler = handler;
 }
 
-pplx::task<void> Connection::Start() 
+task<void> Connection::Start() 
 {
     // Start(new DefaultHttpClient());
     return Start(new http_client(mUri));
 }
 
-pplx::task<void> Connection::Start(http_client* client) 
+task<void> Connection::Start(http_client* client) 
 {	
     // Start(new AutoTransport(client));
     //return Start(new WebSocketTransport(client));
@@ -28,7 +29,7 @@ pplx::task<void> Connection::Start(http_client* client)
     return Start(new ServerSentEventsTransport(client));
 }
 
-pplx::task<void> Connection::Start(IClientTransport* transport) 
+task<void> Connection::Start(IClientTransport* transport) 
 {	
     mTransport = transport;
 
@@ -41,7 +42,7 @@ pplx::task<void> Connection::Start(IClientTransport* transport)
     return Negotiate(transport);
 }
 
-pplx::task<void> Connection::Negotiate(IClientTransport* transport) 
+task<void> Connection::Negotiate(IClientTransport* transport) 
 {
     return mTransport->Negotiate(this).then([this](NegotiationResponse* response)
     {
@@ -49,15 +50,17 @@ pplx::task<void> Connection::Negotiate(IClientTransport* transport)
         mConnectionToken = response->ConnectionToken;
 
         StartTransport();
+        ChangeState(ConnectionState::Connecting, ConnectionState::Connected);
+
     });
 }
 
-pplx::task<void> Connection::StartTransport()
+task<void> Connection::StartTransport()
 {
     return mTransport->Start(this, U(""));
 }
 
-pplx::task<void> Connection::Send(web::json::value::field_map object)
+task<void> Connection::Send(value::field_map object)
 {
     stringstream_t stream;
     value v1 = value::object(object);
@@ -66,7 +69,7 @@ pplx::task<void> Connection::Send(web::json::value::field_map object)
     return Send(stream.str());
 }
 
-pplx::task<void> Connection::Send(string_t data)
+task<void> Connection::Send(string_t data)
 {
     return mTransport->Send(this, data);
 }
@@ -75,13 +78,11 @@ bool Connection::ChangeState(ConnectionState oldState, ConnectionState newState)
 {
     if(mState == oldState)
     {
-        mState = newState;
-
-        mHandler->OnStateChanged(oldState, oldState);
-
+        SetState(newState);
         return true;
     }
 
+    // Invalid transition
     return false;
 }
 
@@ -90,12 +91,6 @@ bool Connection::EnsureReconnecting()
     ChangeState(ConnectionState::Connected, ConnectionState::Reconnecting);
             
     return mState == ConnectionState::Reconnecting;
-}
-
-void Connection::SetConnectionState(NegotiationResponse negotiateResponse)
-{
-    mConnectionId = negotiateResponse.ConnectionId;
-    mConnectionToken = negotiateResponse.ConnectionToken;
 }
 
 void Connection::OnError(exception error)
@@ -186,6 +181,23 @@ void Connection::OnTransportStartCompleted(exception* error, void* state)
         connection->OnError(*error);
         connection->Stop();
     }
+}
+
+void Connection::SetState(ConnectionState newState)
+{
+    mStateLock.lock();
+
+    StateChange* stateChange = new StateChange(mState, newState);
+    mState = newState;
+
+    if (StateChanged != NULL)
+    {
+        StateChanged(stateChange);
+    }
+    
+    delete stateChange;
+
+    mStateLock.unlock();
 }
 
 Connection::~Connection()

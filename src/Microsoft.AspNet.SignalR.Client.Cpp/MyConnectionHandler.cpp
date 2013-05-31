@@ -20,7 +20,3 @@ void MyConnectionHandler::OnReceived(string_t data)
     wcout << data << endl;
 }
 
-void MyConnectionHandler::OnStateChanged(Connection::ConnectionState old_state, Connection::ConnectionState new_state)
-{
-    cout << "state changed: " << old_state << " -> " << new_state << endl;
-}

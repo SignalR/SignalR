@@ -84,11 +84,13 @@
     <ClCompile Include="Source.cpp" />
     <ClCompile Include="EventSourceStreamReader.cpp" />
     <ClCompile Include="SseEvent.cpp" />
+    <ClCompile Include="StateChange.cpp" />
     <ClCompile Include="TransportHelper.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ChunkBuffer.h" />
     <ClInclude Include="Connection.h" />
+    <ClInclude Include="ConnectionState.h" />
     <ClInclude Include="FakeHttpClient.h" />
     <ClInclude Include="AsyncStreamReader.h" />
     <ClInclude Include="HttpBasedTransport.h" />
@@ -103,6 +105,7 @@
     <ClInclude Include="EventSourceStreamReader.h" />
     <ClInclude Include="ServerSentEventsTransport.h" />
     <ClInclude Include="SseEvent.h" />
+    <ClInclude Include="StateChange.h" />
     <ClInclude Include="TransportHelper.h" />
   </ItemGroup>
   <ItemGroup>

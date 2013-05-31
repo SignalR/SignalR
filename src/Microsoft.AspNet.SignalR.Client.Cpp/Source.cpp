@@ -26,6 +26,11 @@ static void RunStreamingSample()
             wcout << message << endl;
         };
 
+        connection->StateChanged = [](StateChange* stateChange)
+        {
+            wcout << stateChange->GetOldStateName() << " => " << stateChange->GetNewStateName() << endl;
+        };
+
         try
         {
             connection->Start().wait();
