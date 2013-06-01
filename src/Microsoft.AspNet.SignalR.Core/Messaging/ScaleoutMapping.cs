@@ -2,17 +2,18 @@
 
 using System;
 using System.Collections.Generic;
+using Microsoft.AspNet.SignalR.Infrastructure;
 
 namespace Microsoft.AspNet.SignalR.Messaging
 {
     public class ScaleoutMapping
     {
         public ScaleoutMapping(ulong id, ScaleoutMessage message)
-            : this(id, message, new Dictionary<string, IList<LocalEventKeyInfo>>())
+            : this(id, message, ListHelper<LocalEventKeyInfo>.Empty)
         {
         }
 
-        public ScaleoutMapping(ulong id, ScaleoutMessage message, IDictionary<string, IList<LocalEventKeyInfo>> localKeyInfo)
+        public ScaleoutMapping(ulong id, ScaleoutMessage message, IList<LocalEventKeyInfo> localKeyInfo)
         {
             if (message == null)
             {
@@ -30,7 +31,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
         }
 
         public ulong Id { get; private set; }
-        public IDictionary<string, IList<LocalEventKeyInfo>> LocalKeyInfo { get; private set; }
+        public IList<LocalEventKeyInfo> LocalKeyInfo { get; private set; }
         public DateTime ServerCreationTime { get; private set; }
     }
 }

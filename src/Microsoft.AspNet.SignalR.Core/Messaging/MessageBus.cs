@@ -192,8 +192,11 @@ namespace Microsoft.AspNet.SignalR.Messaging
                 throw new ArgumentNullException("message");
             }
 
-            // Don't mark topics as active when publishing
+            // GetTopic will return a topic for the given key. If topic exists and is Dying, 
+            // it will revive it and mark it as NoSubscriptions
             Topic topic = GetTopic(message.Key);
+            // Mark the topic as used so it doesn't immediately expire (if it was in that state before).
+            topic.MarkUsed();
 
             return topic.Store.Add(message);
         }
@@ -229,7 +232,8 @@ namespace Microsoft.AspNet.SignalR.Messaging
 
             foreach (var key in subscriber.EventKeys)
             {
-                Topic topic = GetTopic(key);
+                // Create or retrieve topic and set it as HasSubscriptions
+                Topic topic = SubscribeTopic(key);
 
                 // Set the subscription for this topic
                 subscription.SetEventTopic(key, topic);
@@ -389,10 +393,8 @@ namespace Microsoft.AspNet.SignalR.Messaging
                 for (int i = 0; i < overflow && i < candidates.Count; i++)
                 {
                     var pair = candidates[i];
-
-                    // Mark it as dead
-                    if (Interlocked.CompareExchange(ref pair.Value.State, TopicState.Dead, TopicState.NoSubscriptions)
-                        == TopicState.NoSubscriptions)
+                    // We only want to kill the topic if it's in the NoSubscriptions or Dying state.
+                    if (InterlockedHelper.CompareExchangeOr(ref pair.Value.State, TopicState.Dead, TopicState.NoSubscriptions, TopicState.Dying))
                     {
                         // Kill it
                         DestroyTopicCore(pair.Key, pair.Value);
@@ -405,17 +407,20 @@ namespace Microsoft.AspNet.SignalR.Messaging
 
         private void DestroyTopic(string key, Topic topic)
         {
-            var state = Interlocked.Exchange(ref topic.State, TopicState.Dead);
-
-            switch (state)
+            // The goal of this function is to destroy topics after 2 garbage collect cycles
+            // This first if statement will transition a topic into the dying state on the first GC cycle 
+            // but it will prevent the code path from hitting the second if statement
+            if (Interlocked.CompareExchange(ref topic.State, TopicState.Dying, TopicState.NoSubscriptions) == TopicState.Dying)
             {
-                case TopicState.NoSubscriptions:
+                // If we've hit this if statement we're on the second GC cycle with this soon to be
+                // destroyed topic.  At this point we move the Topic State into the Dead state as
+                // long as it has not been revived from the dying state.  We check if the state is
+                // still dying again to ensure that the topic has not been transitioned into a new
+                // state since we've decided to destroy it.
+                if (Interlocked.CompareExchange(ref topic.State, TopicState.Dead, TopicState.Dying) == TopicState.Dying)
+                {
                     DestroyTopicCore(key, topic);
-                    break;
-                default:
-                    // Restore the old state
-                    Interlocked.Exchange(ref topic.State, state);
-                    break;
+                }
             }
         }
 
@@ -436,42 +441,86 @@ namespace Microsoft.AspNet.SignalR.Messaging
 
         internal Topic GetTopic(string key)
         {
-            while (true)
+            Topic topic;
+            int oldState;
+
+            do
             {
                 if (BeforeTopicCreated != null)
                 {
                     BeforeTopicCreated(key);
                 }
 
-                Topic topic = Topics.GetOrAdd(key, _createTopic);
+                topic = Topics.GetOrAdd(key, _createTopic);
 
                 if (BeforeTopicMarked != null)
                 {
                     BeforeTopicMarked(key, topic);
                 }
 
-                var oldState = Interlocked.Exchange(ref topic.State, TopicState.HasSubscriptions);
+                // If the topic was dying revive it to the NoSubscriptions state.  This is used to ensure
+                // that in the scaleout case that even if we're publishing to a topic with no subscriptions
+                // that we keep it around in case a user hops nodes.
+                oldState = Interlocked.CompareExchange(ref topic.State, TopicState.NoSubscriptions, TopicState.Dying);
 
                 if (AfterTopicMarked != null)
                 {
-                    AfterTopicMarked(key, topic, oldState);
+                    AfterTopicMarked(key, topic, topic.State);
                 }
 
-                if (oldState != TopicState.Dead)
-                {
-                    if (AfterTopicMarkedSuccessfully != null)
-                    {
-                        AfterTopicMarkedSuccessfully(key, topic);
-                    }
+                // If the topic is currently dead then we're racing with the DestroyTopicCore function, therefore
+                // loop around until we're able to create a new topic
+            } while (oldState == TopicState.Dead);
 
-                    return topic;
-                }
+            if (AfterTopicMarkedSuccessfully != null)
+            {
+                AfterTopicMarkedSuccessfully(key, topic);
             }
+
+            return topic;
+        }
+
+        internal Topic SubscribeTopic(string key)
+        {
+            Topic topic;
+
+            do
+            {
+                if (BeforeTopicCreated != null)
+                {
+                    BeforeTopicCreated(key);
+                }
+
+                topic = Topics.GetOrAdd(key, _createTopic);
+
+                if (BeforeTopicMarked != null)
+                {
+                    BeforeTopicMarked(key, topic);
+                }
+
+                // Transition into the HasSubscriptions state as long as the topic is not dead
+                InterlockedHelper.CompareExchangeOr(ref topic.State, TopicState.HasSubscriptions, TopicState.NoSubscriptions, TopicState.Dying);
+
+                if (AfterTopicMarked != null)
+                {
+                    AfterTopicMarked(key, topic, topic.State);
+                }
+
+                // If we were unable to transition into the HasSubscription state that means we're in the Dead state.
+                // Loop around until we're able to create the topic new
+            } while (topic.State != TopicState.HasSubscriptions);
+
+            if (AfterTopicMarkedSuccessfully != null)
+            {
+                AfterTopicMarkedSuccessfully(key, topic);
+            }
+
+            return topic;
         }
 
         private void AddEvent(ISubscriber subscriber, string eventKey)
         {
-            Topic topic = GetTopic(eventKey);
+            Topic topic = SubscribeTopic(eventKey);
 
             // Add or update the cursor (in case it already exists)
             if (subscriber.Subscription.AddEvent(eventKey, topic))
