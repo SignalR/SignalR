@@ -1,5 +1,11 @@
 # SignalR Release Notes
 
+# 1.1.2
+
+### Bugs Fixed
+
+* Scaleout Message Bus Memory Leak ([#2070](https://github.com/SignalR/SignalR/issues/2070))
+
 # 1.1.1
 
 ### Bugs Fixed
