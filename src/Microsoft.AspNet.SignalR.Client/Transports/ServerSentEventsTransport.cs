@@ -126,13 +126,6 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
                 }
                 else
                 {
-                    // If cancellation requested the task is either complete or cancelled, either way
-                    // we don't want to do anything
-                    if (disconnectToken.IsCancellationRequested)
-                    {
-                        return;
-                    }
-
                     var response = task.Result;
                     Stream stream = response.GetStream();
 
@@ -143,6 +136,8 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
                     var esCancellationRegistration = disconnectToken.SafeRegister(state =>
                     {
                         stop = true;
+
+                        errorCallback(null);
 
                         ((IRequest)state).Abort();
                     },
