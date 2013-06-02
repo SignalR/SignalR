@@ -90,14 +90,17 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
                 if (connection.MessageId == null)
                 {
                     url += "connect";
+                    connection.Trace(TraceLevels.Events, "LP Connect: {0}", url);
                 }
                 else if (IsReconnecting(connection))
                 {
                     url += "reconnect";
+                    connection.Trace(TraceLevels.Events, "LP Reconnect: {0}", url);
                 }
                 else
                 {
                     url += "poll";
+                    connection.Trace(TraceLevels.Events, "LP Poll: {0}", url);
                 }
 
                 url += GetReceiveQueryString(connection, data);

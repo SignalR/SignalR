@@ -86,7 +86,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
             var builder = new UriBuilder(url);
             builder.Scheme = builder.Scheme == "https" ? "wss" : "ws";
 
-            _connectionInfo.Connection.Trace(TraceLevels.Events, "WS: {0}", builder.Uri);
+            _connectionInfo.Connection.Trace(TraceLevels.Events, "WS Connecting to: {0}", builder.Uri);
 
             var webSocket = new ClientWebSocket();
             _connectionInfo.Connection.PrepareRequest(new WebSocketWrapperRequest(webSocket, _connectionInfo.Connection));
