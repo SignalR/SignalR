@@ -2,12 +2,13 @@
 $(function () {
     "use strict";
 
-    var numberCons = getQueryVariable('cons'),
+    var connectionsCount = getQueryVariable('cons'),
         connections = [],
         messages = $("#messages"),
         connectionsCtrl = $("#connections"),
         addConnections,
-        createConnection = function (id, persistentConnection) {
+        start,
+        createConnection = function (connectionNumber, persistentConnection) {
             var connection;
 
             if (persistentConnection) {
@@ -20,25 +21,25 @@ $(function () {
             connection.logging = true;
 
             connection.reconnecting(function () {
-                $("<li/>").html("connection" + id + " " + "[" + new Date().toTimeString() + "]: reconnecting").appendTo(messages);
+                $("<li/>").html("connection" + connectionNumber + " " + "[" + new Date().toTimeString() + "]: reconnecting").appendTo(messages);
             });
 
             connection.reconnected(function () {
                 $("<li/>").css("background-color", "green")
                           .css("color", "white")
-                          .html("connection" + id + " " + "[" + new Date().toTimeString() + "]: Connection re-established")
+                          .html("connection" + connectionNumber + " " + "[" + new Date().toTimeString() + "]: Connection re-established")
                           .appendTo(messages);
             });
 
             connection.error(function (err) {
-                $("<li/>").html("connection" + id + " " + (err.responseText || err))
+                $("<li/>").html("connection" + connectionNumber + " " + (err.responseText || err))
                           .appendTo(messages);
             });
 
             connection.disconnected(function () {
-                $("#stopStart" + id)
+                $("#stopStart" + connectionNumber)
                     .prop("disabled", false)
-                    .val("Start Connection" + id)
+                    .val("Start Connection" + connectionNumber)
                         .end();
             });
 
@@ -55,19 +56,57 @@ $(function () {
                     }
                 }
 
-                $("#connectionState" + id).text(" " + newState);
+                $("#connectionState" + connectionNumber).text(" " + newState);
 
-                $("<li/>").html("connection" + id + " " + oldState + " => " + newState + " " + connection.id)
+                $("<li/>").html("connection" + connectionNumber + " " + oldState + " => " + newState + " " + connection.id)
                           .appendTo(messages);
             });
 
             return connection;
         };
 
-    addConnections = function (first, numberCons) {
-        var connection, myHub, start;
 
-        for (var i = first; i < first + numberCons; i++) {
+    start = function (connectionNumber) {
+        var startConnection;
+
+        connections[connectionNumber].myHub.on('displayMessage', function (value) {
+            $("<li/>").html("connection" + connectionNumber + " " + value).appendTo(messages);
+
+            $("#connectionMsg" + connectionNumber).text(value);
+        });
+
+        $("#stopStart" + connectionNumber).click(function () {
+            var $el = $("#stopStart" + connectionNumber);
+
+            $el.prop("disabled", true);
+
+            if ($.trim($el.val()) === "Stop Connection" + connectionNumber) {
+                connections[connectionNumber].connection.stop();
+            } else {
+                startConnection();
+            }
+        });
+
+        $("#broadcast" + connectionNumber).click(function () {
+            connections[connectionNumber].myHub.invoke("displayMessageAll", $("#msg" + connectionNumber).val());
+        });
+
+        startConnection = function () {
+            connections[connectionNumber].connection.start({ transport: activeTransport, jsonp: isJsonp })
+                .done(function () {
+                    $("#connection" + connectionNumber).text(" " + connections[connectionNumber].connection.id + " " + connections[connectionNumber].connection.transport.name);
+
+                    $("#stopStart" + connectionNumber).prop("disabled", false).val("Stop Connection" + connectionNumber);
+                });
+        };
+
+        startConnection();
+    };
+
+    addConnections = function (first, connectionsCount) {
+        var connection, myHub;
+
+        for (var i = first; i < first + connectionsCount; i++) {
             connectionsCtrl.append("<p>");
             connectionsCtrl.append(" <input type='text' id='msg" + i + "' value=" + i + i + i + " style='margin-bottom: 0'></input>");
             connectionsCtrl.append("<input type='button' id='broadcast" + i + "' class='btn' value='Broadcast' ></input>");
@@ -80,50 +119,13 @@ $(function () {
 
             myHub = connection.createHubProxy('hubConnectionAPI');
 
-            start = function (j) {
-                var startConnection;
-
-                connections[j].myHub.on('displayMessage', function (value) {
-                    $("<li/>").html("connection" + j + " " + value).appendTo(messages);
-
-                    $("#connectionMsg" + j).text(value);
-                });
-
-                $("#stopStart" + j).click(function () {
-                    var $el = $("#stopStart" + j);
-
-                    $el.prop("disabled", true);
-
-                    if ($.trim($el.val()) === "Stop Connection" + j) {
-                        connections[j].connection.stop();
-                    } else {
-                        startConnection();
-                    }
-                });
-
-                $("#broadcast" + j).click(function () {
-                    connections[j].myHub.invoke("displayMessageAll", $("#msg" + j).val());
-                });
-
-                startConnection = function () {
-                    connections[j].connection.start({ transport: activeTransport, jsonp: isJsonp })
-                        .done(function () {
-                            $("#connection" + j).text(" " + connections[j].connection.id + " " + connections[j].connection.transport.name);
-
-                            $("#stopStart" + j).prop("disabled", false).val("Stop Connection" + j);
-                        });
-                };
-
-                startConnection();
-            };
-
             connections.push({ "number": i, "connection": connection, "myHub": myHub, "start": start });
 
             connections[i].start(i);
         }
     }
 
-    addConnections(0, numberCons);
+    addConnections(0, connectionsCount);
 
     $("#addCon").click(function () {
         addConnections(connections.length, 1);
