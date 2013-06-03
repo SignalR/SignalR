@@ -79,6 +79,7 @@
     <ClCompile Include="EventSourceStreamReader.cpp" />
     <ClCompile Include="SseEvent.cpp" />
     <ClCompile Include="StateChange.cpp" />
+    <ClCompile Include="StringHelper.cpp" />
     <ClCompile Include="TransportHelper.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -94,6 +95,7 @@
     <ClInclude Include="ServerSentEventsTransport.h" />
     <ClInclude Include="SseEvent.h" />
     <ClInclude Include="StateChange.h" />
+    <ClInclude Include="StringHelper.h" />
     <ClInclude Include="TransportHelper.h" />
   </ItemGroup>
   <ItemGroup>

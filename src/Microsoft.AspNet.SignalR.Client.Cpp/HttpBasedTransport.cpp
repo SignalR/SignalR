@@ -11,6 +11,11 @@ HttpBasedTransport::~HttpBasedTransport(void)
     delete mHttpClient;
 }
 
+http_client* HttpBasedTransport::GetHttpClient()
+{
+    return mHttpClient;
+}
+
 task<NegotiationResponse*> HttpBasedTransport::Negotiate(Connection* connection)
 {
     return TransportHelper::GetNegotiationResponse(mHttpClient, connection);
@@ -23,8 +28,26 @@ string_t HttpBasedTransport::GetReceiveQueryString(Connection* connection, strin
 
 task<void> HttpBasedTransport::Start(Connection* connection, string_t data, void* state)
 {
-    OnStart(connection, data);
-    return pplx::task<void>();
+    task_completion_event<void> tce;
+    
+    auto initializeCallback = new call<int>([tce](int)
+    {
+        tce.set();
+    });
+
+    exception ex;
+
+    auto errorCallback = new call<int>([tce, &ex](int)
+    {
+        tce.set_exception(ex);
+    });
+
+    OnStart(connection, data, initializeCallback, errorCallback);
+    return task<void>(tce).then([initializeCallback, errorCallback]()
+    {
+        delete initializeCallback;
+        delete errorCallback;
+    });
 }
 
 task<void> HttpBasedTransport::Send(Connection* connection, string_t data)
@@ -44,23 +67,6 @@ task<void> HttpBasedTransport::Send(Connection* connection, string_t data)
     });
 }
 
-void HttpBasedTransport::TryDequeueNextWorkItem()
-{
-    // If the queue is empty then we are free to send
-    mSending = mSendQueue.size() > 0;
-
-    if(mSending)
-    {
-        // Grab the next work item from the queue
-        SendQueueItem* workItem = mSendQueue.front();
-
-        // Nuke the work item
-        mSendQueue.pop();
-
-        delete workItem;
-    }
-}
-
 void HttpBasedTransport::Stop(Connection* connection)
 {
 
@@ -71,4 +77,3 @@ void HttpBasedTransport::Abort(Connection* connection)
 {
 
 }
-

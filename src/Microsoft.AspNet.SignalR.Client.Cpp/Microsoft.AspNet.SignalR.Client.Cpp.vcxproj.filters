@@ -39,9 +39,6 @@
     <ClCompile Include="Source.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="HttpBasedTransport.cpp">
-      <Filter>Source Files\Http</Filter>
-    </ClCompile>
     <ClCompile Include="LongPollingTransport.cpp">
       <Filter>Source Files\Transport</Filter>
     </ClCompile>
@@ -69,6 +66,12 @@
     <ClCompile Include="StateChange.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="StringHelper.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="HttpBasedTransport.cpp">
+      <Filter>Source Files\Transport</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Connection.h">
@@ -85,9 +88,6 @@
     </ClInclude>
     <ClInclude Include="ServerSentEventsTransport.h">
       <Filter>Header Files\Transports</Filter>
-    </ClInclude>
-    <ClInclude Include="HttpBasedTransport.h">
-      <Filter>Header Files\Http</Filter>
     </ClInclude>
     <ClInclude Include="IClientTransport.h">
       <Filter>Header Files\Transports</Filter>
@@ -109,6 +109,12 @@
     </ClInclude>
     <ClInclude Include="ConnectionState.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="StringHelper.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="HttpBasedTransport.h">
+      <Filter>Header Files\Transports</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

@@ -1,6 +1,5 @@
 #include "EventSourceStreamReader.h"
 
-
 EventSourceStreamReader::EventSourceStreamReader(Connection* connection, Concurrency::streams::basic_istream<uint8_t> stream)
     : AsyncStreamReader(stream)
 {
@@ -15,6 +14,7 @@ EventSourceStreamReader::EventSourceStreamReader(Connection* connection, Concurr
 
 EventSourceStreamReader::~EventSourceStreamReader(void)
 {
+    delete mBuffer;
 }
 
 void EventSourceStreamReader::ProcessBuffer(char readBuffer[])

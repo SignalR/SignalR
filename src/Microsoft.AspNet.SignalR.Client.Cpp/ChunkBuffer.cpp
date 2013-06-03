@@ -1,6 +1,5 @@
 #include "ChunkBuffer.h"
 
-
 ChunkBuffer::ChunkBuffer(void)
 {
     mOffset = 0;
@@ -26,15 +25,6 @@ void ChunkBuffer::Add(char buffer[])
     mBuffer = mBuffer.append(wstr);
 }
 
-//doesn't use length
-void ChunkBuffer::Add(char buffer[], int length)
-{
-    string str(buffer);
-    string_t wstr;
-    wstr.assign(str.begin(), str.end());
-    mBuffer = mBuffer.append(wstr);
-}
-
 string_t ChunkBuffer::ReadLine()
 {
     for (unsigned int i = mOffset; i < mBuffer.length(); i++, mOffset++)
@@ -43,7 +33,7 @@ string_t ChunkBuffer::ReadLine()
         {
             mBuffer = mBuffer.substr(mOffset + 1, mBuffer.length() - 1);
 
-            string_t line(mLineBuilder);
+            string_t line = StringHelper::Trim(mLineBuilder);
             mLineBuilder.clear();
 
             mOffset = 0;

@@ -37,11 +37,14 @@ public:
     IClientTransport* GetTransport();
     string_t GetUri();
     string_t GetMessageId();
+    string_t GetQueryString();
+    string_t GetProtocol();
     
     void SetConnectionToken(string_t connectionToken);
     void SetGroupsToken(string_t groupsToken);
     void SetMessageId(string_t groupsToken);
     void SetConnectionId(string_t connectionId);
+    void SetProtocol(string_t protocol);
 
     task<void> Start();
     task<void> Start(IClientTransport* transport);
@@ -66,6 +69,8 @@ private:
     string_t mConnectionToken;
     string_t mGroupsToken;
     string_t mMessageId;
+    string_t mQueryString;
+    string_t mProtocol;
 
     ConnectionState mState;
     IClientTransport* mTransport;
@@ -73,8 +78,8 @@ private:
 
     void SetState(ConnectionState newState);
 
-    pplx::task<void> StartTransport();
-    pplx::task<void> Negotiate(IClientTransport* transport);
+    task<void> StartTransport();
+    task<void> Negotiate(IClientTransport* transport);
     static void OnTransportStartCompleted(exception* error, void* state);
 };
 

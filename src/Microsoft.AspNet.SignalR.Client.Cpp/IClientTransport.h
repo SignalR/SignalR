@@ -14,16 +14,17 @@ public:
     ~IClientTransport(void);
 
     string_t GetTransportName();
+    bool SupportsKeepAlive();
 
-    typedef void (*START_CALLBACK)(exception* error, void* state);
-    typedef void (*NEGOTIATE_CALLBACK)(NegotiationResponse* negotiateResponse, exception* error, void* state);
     virtual pplx::task<NegotiationResponse*> Negotiate(Connection* connection) = 0;
     virtual pplx::task<void> Start(Connection* connection, string_t data, void* state = NULL) = 0;
     virtual pplx::task<void> Send(Connection* connection, string_t data) = 0;
-    virtual void Stop(Connection* connection) = 0;
     virtual void Abort(Connection* connection) = 0;
+
+    virtual void LostConnection(Connection* connection) = 0;
 
 protected:
     string_t mTransportName;
+    bool mSupportKeepAlive;
 };
 

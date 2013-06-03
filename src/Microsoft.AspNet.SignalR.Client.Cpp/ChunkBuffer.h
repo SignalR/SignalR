@@ -1,6 +1,7 @@
 #pragma once
 
 #include <http_client.h>
+#include "StringHelper.h"
 
 using namespace std;
 using namespace utility;
@@ -12,7 +13,6 @@ public:
     ~ChunkBuffer(void);
 
     bool HasChuncks();
-    void Add(char buffer[], int length);
     void Add(char buffer[]);
     string_t ReadLine();
 

@@ -14,3 +14,8 @@ string_t IClientTransport::GetTransportName()
 {
     return mTransportName;
 }
+
+bool IClientTransport::SupportsKeepAlive()
+{
+    return mSupportKeepAlive;
+}

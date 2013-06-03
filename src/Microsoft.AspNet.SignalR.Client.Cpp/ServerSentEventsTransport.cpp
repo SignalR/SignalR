@@ -28,12 +28,12 @@ ServerSentEventsTransport::ServerSentEventsTransport(http_client* httpClient) :
 //    return pplx::task<void>();
 //}
 
-void ServerSentEventsTransport::OnStart(Connection* connection, utility::string_t data)
+void ServerSentEventsTransport::OnStart(Connection* connection, string_t data,  call<int>* initializeCallback, call<int>* errorCallback)
 {
-    OpenConnection(connection, data);
+    OpenConnection(connection, data, initializeCallback, errorCallback);
 }
 
-void ServerSentEventsTransport::OpenConnection(Connection* connection, utility::string_t data)
+void ServerSentEventsTransport::OpenConnection(Connection* connection, string_t data, call<int>* initializeCallback, call<int>* errorCallback)
 {
     utility::string_t uri = connection->GetUri() + U("connect") + GetReceiveQueryString(connection, data);
 
@@ -44,7 +44,7 @@ void ServerSentEventsTransport::OpenConnection(Connection* connection, utility::
     //streams::basic_ostream<uint8_t> stream = buffer.create_ostream();
     //request.set_response_stream(stream);
 
-    mHttpClient->request(request).then([connection](http_response response) 
+    GetHttpClient()->request(request).then([connection](http_response response) 
     {
         // check if the task failed
         EventSourceStreamReader* eventSource = new EventSourceStreamReader(connection, response.body());
@@ -64,7 +64,7 @@ void ServerSentEventsTransport::OpenConnection(Connection* connection, utility::
         {
             if (sseEvent->GetType() == EventType::Data)
             {
-                if (ServerSentEventsTransport::EqualsIgnoreCase(sseEvent->GetData(), U("initialized")))
+                if (StringHelper::EqualsIgnoreCase(sseEvent->GetData(), U("initialized")))
                 {
                     return;
                 }
@@ -115,9 +115,12 @@ void ServerSentEventsTransport::OpenConnection(Connection* connection, utility::
     });
 }
 
-bool ServerSentEventsTransport::EqualsIgnoreCase(string_t string1, string_t string2)
+void ServerSentEventsTransport::LostConnection(Connection* connection)
 {
-    transform(string1.begin(), string1.end(), string1.begin(), towupper);
-    transform(string2.begin(), string2.end(), string2.begin(), towupper);
-    return string1 == string2;
+
+}
+
+bool ServerSentEventsTransport::SupportsKeepAlive()
+{
+    return true;
 }

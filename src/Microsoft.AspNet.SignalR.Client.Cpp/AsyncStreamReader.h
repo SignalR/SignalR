@@ -6,6 +6,7 @@
 #include <http_client.h>
 
 using namespace std;
+using namespace pplx;
 
 enum State {
     Initial = 0,
@@ -30,10 +31,10 @@ protected:
 private:
     mutex mProcessLock;
     Concurrency::streams::basic_istream<uint8_t> mStream;
-    char* mReadBuffer;  // char []
+    char* mReadBuffer;
     atomic<State> mReadingState;
-
     function<void()> mSetOpened;
+
     bool IsProcessing();
     void Close();
     void Close(exception &ex);
@@ -42,5 +43,5 @@ private:
     bool TryProcessRead(unsigned read);
     void OnOpened();
     void OnData(char buffer[]);
-    pplx::task<unsigned int> AsyncReadIntoBuffer(char* buffer[], Concurrency::streams::basic_istream<uint8_t> stream);
+    task<unsigned int> AsyncReadIntoBuffer(char* buffer[], Concurrency::streams::basic_istream<uint8_t> stream);
 };

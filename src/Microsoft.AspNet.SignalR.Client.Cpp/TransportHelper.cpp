@@ -9,26 +9,50 @@ TransportHelper::~TransportHelper(void)
 {
 }
 
-pplx::task<NegotiationResponse*> TransportHelper::GetNegotiationResponse(http_client* client, Connection* connnection)
+task<NegotiationResponse*> TransportHelper::GetNegotiationResponse(http_client* httpClient, Connection* connection)
 {
-    string_t uri = connnection->GetUri() + U("/negotiate");
+    if (httpClient == NULL)
+    {
+        throw exception("ArgumentNullException: httpClient");
+    }
+
+    if (connection == NULL)
+    {
+        throw exception("ArgumentNullException: connection");
+    }
+
+    string_t uri = connection->GetUri() + U("/negotiate");
+    uri += AppendCustomQueryString(connection, uri);
+
+    string_t appender = U("?");
+    if (uri.find(appender) != string_t::npos)
+    {
+        appender = U("&");
+    }
+
+    uri += appender + U("clientProtocol=") + connection->GetProtocol();
 
     http_request request(methods::GET);
     request.set_request_uri(uri);
 
-    return client->request(request).then([](http_response response) -> NegotiationResponse*
+    return httpClient->request(request).then([](http_response response) -> NegotiationResponse*
     {
         NegotiationResponse* responseObject = new NegotiationResponse();
         
-        web::json::value obj = response.extract_json().get();
-        auto iter = obj.cbegin();
+        value raw = response.extract_json().get();
 
-        
-        responseObject->Uri = CleanString(iter->second.to_string());
+        if (raw.is_null())
+        {
+            throw exception("Invalid Operation Exception: Error_serverNegotiationFailed");
+        }
+
+        auto iter = raw.cbegin();
+
+        responseObject->Uri = StringHelper::CleanString(iter->second.to_string());
         iter++;
-        responseObject->ConnectionToken = EncodeUri(iter->second.to_string());
+        responseObject->ConnectionToken = StringHelper::EncodeUri(iter->second.to_string());
         iter++;
-        responseObject->ConnectionId = CleanString(iter->second.to_string());
+        responseObject->ConnectionId = StringHelper::CleanString(iter->second.to_string());
         iter++;
         responseObject->KeepAliveTimeout = iter->second.as_double();
         iter++;
@@ -36,19 +60,21 @@ pplx::task<NegotiationResponse*> TransportHelper::GetNegotiationResponse(http_cl
         iter++;
         responseObject->TryWebSockets = iter->second.as_bool();
         iter++;
-        responseObject->ProtocolVersion = CleanString(iter->second.to_string());
+        responseObject->ProtocolVersion = StringHelper::CleanString(iter->second.to_string());
         
         return responseObject;
     });
 }
 
-
-
 string_t TransportHelper::GetReceiveQueryString(Connection* connection, string_t data, string_t transport)
 {
-    utility::string_t qs = U("");
-    qs += U("?transport=") + transport + U("&connectionToken=") + connection->GetConnectionToken();
+    if (connection == NULL)
+    {
+        throw exception("ArgumentNullException: connection");
+    }
 
+    string_t qs = U("");
+    qs += U("?transport=") + transport + U("&connectionToken=") + connection->GetConnectionToken();
 
     if (!connection->GetMessageId().empty())
     {
@@ -65,13 +91,13 @@ string_t TransportHelper::GetReceiveQueryString(Connection* connection, string_t
         qs += U("&connectionData=") + data;
     }
 
-//    string customQuery = connection.QueryString;
-//
-//    if (!String.IsNullOrEmpty(customQuery))
-//    {
-//        qsBuilder.Append("&").Append(customQuery);
-//    }
-//
+    string_t customQuery = connection->GetQueryString();
+
+    if (!customQuery.empty())
+    {
+        qs += U("&") + customQuery;
+    }
+
 //#if SILVERLIGHT || WINDOWS_PHONE
 //    qsBuilder.Append("&").Append(GetNoCacheUrlParam());
 //#endif
@@ -79,27 +105,49 @@ string_t TransportHelper::GetReceiveQueryString(Connection* connection, string_t
     return qs;
 }
 
-utility::string_t TransportHelper::CleanString(string_t string)
+string_t TransportHelper::AppendCustomQueryString(Connection* connection, string_t baseUrl)
 {
-    // strip off extra "" from the string
-    return string.substr(1, string.length()-2);
+    if (connection == NULL)
+    {
+        throw exception("ArgumentNullException: connection");
+    }
+
+    if (baseUrl.empty())
+    {
+        baseUrl = U("");
+    }
+
+    string_t appender = U(""), customQuery = connection->GetQueryString(), qs = U("");
+    
+    if (!customQuery.empty())
+    {
+        if (customQuery.front() != U('?') && customQuery.front() != U('&'))
+        {
+            appender = U("?");
+
+            if (baseUrl.find(appender) != string_t::npos)
+            {
+                appender = U("&");
+            }
+        }
+
+        qs += appender + customQuery;
+    }
+
+    return qs;
 }
 
-utility::string_t TransportHelper::EncodeUri(string_t uri)
+void TransportHelper::ProcessResponse(Connection* connection, string_t response, bool* timedOut, bool* disconnected)
 {
-    // strip off extra "" from the string
-    uri = CleanString(uri);
-    return uri::encode_data_string(uri);
-}
-
-void TransportHelper::ProcessMessages(Connection* connection, string raw, bool* timedOut, bool* disconnected)
-{
-    // Parse some JSON stuff
+    ProcessResponse(connection, response, timedOut, disconnected, [](){});
 }
 
 void TransportHelper::ProcessResponse(Connection* connection, string_t response, bool* timedOut, bool* disconnected, function<void()> onInitialized)
 {
-    // check if connection is null
+    if (connection == NULL)
+    {
+        throw exception("ArgumentNullException: connection");
+    }
 
     // connection.UpdateLastKeepAlive();
 

@@ -1,7 +1,7 @@
 #pragma once
 
 #include <http_client.h>
-#include <algorithm>
+#include "StringHelper.h"
 
 using namespace utility;
 using namespace std;

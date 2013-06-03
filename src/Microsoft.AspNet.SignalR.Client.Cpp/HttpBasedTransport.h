@@ -1,21 +1,16 @@
 #pragma once
 
-#include "IClientTransport.h"
 #include "Connection.h"
 #include "TransportHelper.h"
-#include <queue>
+#include <agents.h>
 
-using namespace utility;
 using namespace pplx;
+using namespace utility;
 using namespace web::json;
 
 class HttpBasedTransport :
     public IClientTransport
 {
-
-protected:
-    http_client* mHttpClient;
-
 public:
     HttpBasedTransport(http_client* httpClient, string_t transport);
     ~HttpBasedTransport(void);
@@ -26,23 +21,19 @@ public:
     void Stop(Connection* connection);
     void Abort(Connection* connection);
 
-    void TryDequeueNextWorkItem();
 
 protected:
-    virtual void OnStart(Connection* connection, string_t data) = 0;
+    http_client* GetHttpClient();
+
+    virtual void OnStart(Connection* connection, string_t data, call<int>* initializeCallback, call<int>* errorCallback) = 0;
     string_t GetReceiveQueryString(Connection* connection, string_t data);
 
-
-private:    
-    
-    struct SendQueueItem
-    {
-        Connection* Connection;
-        string Url;
-        map<string, string> PostData;
-    };
-    
-    queue<SendQueueItem*> mSendQueue;
+private:
     bool mSending;
+    bool mStartedAbort;
+    bool mDisposed;
+    mutex mAbortLock;
+    mutex mDisposeLock;
+    http_client* mHttpClient;
 };
 

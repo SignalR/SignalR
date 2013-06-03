@@ -34,11 +34,6 @@ void AsyncStreamReader::Start()
     }
 }
 
-void AsyncStreamReader::Close()
-{
-    Close(exception(NULL));
-}
-
 void AsyncStreamReader::Process()
 {
 READ:
@@ -82,6 +77,7 @@ void AsyncStreamReader::ReadAsync(pplx::task<unsigned int> readTask)
 {
     readTask.then([readTask, this](unsigned int bytesRead)
     {
+        // differentiate between faulted and canceled tasks?
         try
         {
             if (TryProcessRead(bytesRead))
@@ -103,9 +99,10 @@ bool AsyncStreamReader::TryProcessRead(unsigned read)
 
     function<void()> mPreviousSetOpened = mSetOpened;
     mSetOpened = [](){};
-    mPreviousSetOpened();
 
     mProcessLock.unlock();
+
+    mPreviousSetOpened();
 
     if (read > 0)
     {
@@ -120,6 +117,12 @@ bool AsyncStreamReader::TryProcessRead(unsigned read)
     return false;
 }
 
+
+void AsyncStreamReader::Close()
+{
+    Close(exception(NULL));
+}
+
 void AsyncStreamReader::Close(exception& ex)
 {
     State previousState = atomic_exchange<State>(&mReadingState, State::Stopped);
@@ -128,15 +131,14 @@ void AsyncStreamReader::Close(exception& ex)
     {
         if (Closed != NULL)
         {
-            //unwrap exception if not null?
-
             Closed(ex);
         }
 
         mBufferLock.lock();
-        {
-            mReadBuffer = NULL;
-        }
+            
+        mReadBuffer = NULL;
+
+        mBufferLock.unlock();
     }
 }
 
@@ -156,7 +158,7 @@ void AsyncStreamReader::OnData(char buffer[])
     }
 }
 
-pplx::task<unsigned int> AsyncStreamReader::AsyncReadIntoBuffer(char* buffer[], Concurrency::streams::basic_istream<uint8_t> stream)
+task<unsigned int> AsyncStreamReader::AsyncReadIntoBuffer(char* buffer[], Concurrency::streams::basic_istream<uint8_t> stream)
 {
     concurrency::streams::container_buffer<string> inStringBuffer;
     return stream.read(inStringBuffer, 4096).then([inStringBuffer, buffer](size_t bytesRead)

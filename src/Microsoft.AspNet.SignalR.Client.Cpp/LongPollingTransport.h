@@ -9,15 +9,6 @@ public:
 
     //pplx::task<void> Start(Connection* connection, utility::string_t data, void* state = NULL);
 
-    struct PollHttpRequestInfo
-    {
-        START_CALLBACK Callback;
-        void* CallbackState;
-        LongPollingTransport* Transport;
-        Connection* Connection;
-        string Data;
-    };
-
 protected:
     void OnStart(Connection* connection, utility::string_t data);
 };

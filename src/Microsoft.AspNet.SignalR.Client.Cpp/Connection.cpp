@@ -9,7 +9,10 @@ Connection::Connection(string_t uri)
     {
         mUri += U("/");
     }
+
     mState = ConnectionState::Disconnected;
+
+    mProtocol = U("1.3");
 }
 
 Connection::~Connection()
@@ -94,27 +97,10 @@ bool Connection::EnsureReconnecting()
     return mState == ConnectionState::Reconnecting;
 }
 
-void Connection::OnError(exception& ex)
-{
-    if (Error != NULL)
-    {
-        Error(ex);
-    }
-}
 
-void Connection::OnReceived(string_t message)
+void Connection::Stop() 
 {
-    if (Received != NULL)
-    {
-        try 
-        {
-            Received(message);
-        }
-        catch (exception& ex)
-        {
-            OnError(ex);
-        }
-    }
+    
 }
 
 void Connection::Disconnect()
@@ -137,6 +123,44 @@ void Connection::Disconnect()
     }
 
     mStateLock.unlock();
+}
+
+void Connection::OnTransportStartCompleted(exception* error, void* state) 
+{
+    auto connection = (Connection*)state;
+
+    if(NULL != error)
+    {
+        connection->ChangeState(ConnectionState::Connecting, ConnectionState::Connected);
+    }
+    else 
+    {
+        connection->OnError(*error);
+        connection->Stop();
+    }
+}
+
+void Connection::OnError(exception& ex)
+{
+    if (Error != NULL)
+    {
+        Error(ex);
+    }
+}
+
+void Connection::OnReceived(string_t message)
+{
+    if (Received != NULL)
+    {
+        try 
+        {
+            Received(message);
+        }
+        catch (exception& ex)
+        {
+            OnError(ex);
+        }
+    }
 }
 
 void Connection::OnReconnecting()
@@ -178,24 +202,9 @@ string_t Connection::GetConnectionId()
     return mConnectionId;
 }
 
-void Connection::SetConnectionId(string_t connectionId)
-{
-    mConnectionId = connectionId;
-}
-
 string_t Connection::GetConnectionToken()
 {
     return mConnectionToken;
-}
-
-void Connection::SetConnectionToken(string_t connectionToken)
-{
-    mConnectionToken = connectionToken;
-}
-
-void Connection::SetGroupsToken(string_t groupsToken)
-{
-    mGroupsToken = groupsToken;
 }
 
 string_t Connection::GetGroupsToken()
@@ -208,29 +217,39 @@ string_t Connection::GetMessageId()
     return mMessageId;
 }
 
+string_t Connection::GetQueryString()
+{
+    return mQueryString;
+}
+
+string_t Connection::GetProtocol()
+{
+    return mProtocol;
+}
+
+void Connection::SetProtocol(string_t protocol)
+{
+    mProtocol = protocol;
+}
+
+void Connection::SetConnectionToken(string_t connectionToken)
+{
+    mConnectionToken = connectionToken;
+}
+
+void Connection::SetGroupsToken(string_t groupsToken)
+{
+    mGroupsToken = groupsToken;
+}
+
+void Connection::SetConnectionId(string_t connectionId)
+{
+    mConnectionId = connectionId;
+}
+
 void Connection::SetMessageId(string_t messageId)
 {
     mMessageId = messageId;
-}
-
-void Connection::Stop() 
-{
-    mTransport->Stop(this);
-}
-
-void Connection::OnTransportStartCompleted(exception* error, void* state) 
-{
-    auto connection = (Connection*)state;
-
-    if(NULL != error)
-    {
-        connection->ChangeState(ConnectionState::Connecting, ConnectionState::Connected);
-    }
-    else 
-    {
-        connection->OnError(*error);
-        connection->Stop();
-    }
 }
 
 void Connection::SetState(ConnectionState newState)

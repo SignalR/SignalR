@@ -11,15 +11,16 @@ class ServerSentEventsTransport :
 public:
     ServerSentEventsTransport(http_client* client);
     ~ServerSentEventsTransport(void);
+    bool SupportsKeepAlive();
 
     //pplx::task<void> Start(Connection* connection, utility::string_t data, void* state = NULL);
 
 protected:
-    void OnStart(Connection* connection, string_t data);
+    void OnStart(Connection* connection, string_t data, call<int>* initializeCallback, call<int>* errorCallback);
+    void LostConnection(Connection* connection);
 
 private:
-    void OpenConnection(Connection* connection, string_t data);
+    void OpenConnection(Connection* connection, string_t data, call<int>* initializeCallback, call<int>* errorCallback);
     static void OnReadLine(string data, exception* error, void* state);
-    static bool EqualsIgnoreCase(string_t string1, string_t string2);
 };
 
