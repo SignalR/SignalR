@@ -2,6 +2,7 @@
 (function ($, window, undefined) {
     var enabled = !!window.WebSocket,
         savedWebSocket = window.WebSocket,
+        modifiedWebSocket,
         network = $.network,
         webSocketData = {},
         webSocketIds = 0,
@@ -97,9 +98,22 @@
         $.extend(CustomWebSocket, window.WebSocket);
 
         window.WebSocket = CustomWebSocket;
+        modifiedWebSocket = CustomWebSocket;
     }
 
     network.websocket = {
+        enable: function () {
+            /// <summary>Enables the WebSocket network mock functionality.</summary>
+            if (enabled) {
+                window.WebSocket = modifiedWebSocket;
+            }
+        },
+        disable: function () {
+            /// <summary>Disables the WebSocket network mock functionality.</summary>
+            if (enabled) {
+                window.WebSocket = savedWebSocket;
+            }
+        },
         disconnect: function (soft) {
             /// <summary>Disconnects the network so javascript transport methods are unable to communicate with a server.</summary>
             /// <param name="soft" type="Boolean">Whether the disconnect should be soft.  A soft disconnect indicates that transport methods are not notified of disconnect.</param>
