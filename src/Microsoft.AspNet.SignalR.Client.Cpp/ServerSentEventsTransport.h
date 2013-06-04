@@ -13,8 +13,6 @@ public:
     ~ServerSentEventsTransport(void);
     bool SupportsKeepAlive();
 
-    //pplx::task<void> Start(Connection* connection, utility::string_t data, void* state = NULL);
-
 protected:
     void OnStart(Connection* connection, string_t data, call<int>* initializeCallback, call<int>* errorCallback);
     void LostConnection(Connection* connection);

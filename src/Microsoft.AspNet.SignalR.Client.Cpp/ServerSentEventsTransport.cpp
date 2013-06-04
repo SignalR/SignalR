@@ -6,28 +6,6 @@ ServerSentEventsTransport::ServerSentEventsTransport(http_client* httpClient) :
 
 }
 
-//pplx::task<void> ServerSentEventsTransport::Start(Connection* connection, utility::string_t data, void* state)
-//{
-//    //string url = connection->GetUrl(); 
-//    //
-//    //if(startCallback != NULL)
-//    //{
-//    //    url += "connect";
-//    //}
-//
-//    //url += TransportHelper::GetReceiveQueryString(connection, data, "serverSentEvents");
-//
-//    //auto requestInfo = new HttpRequestInfo();
-//    //requestInfo->CallbackState = state;
-//    //requestInfo->Transport = this;
-//    //requestInfo->Callback = startCallback;
-//    //requestInfo->Connection = connection;
-//    //requestInfo->Data = data;
-//
-//    //mHttpClient->Get(url, &ServerSentEventsTransport::OnStartHttpResponse, requestInfo);
-//    return pplx::task<void>();
-//}
-
 void ServerSentEventsTransport::OnStart(Connection* connection, string_t data,  call<int>* initializeCallback, call<int>* errorCallback)
 {
     OpenConnection(connection, data, initializeCallback, errorCallback);
