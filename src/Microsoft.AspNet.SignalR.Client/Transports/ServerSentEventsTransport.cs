@@ -126,6 +126,12 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
                 }
                 else
                 {
+                    // If the disconnect token is canceled the response to the task doesn't matter.
+                    if (disconnectToken.IsCancellationRequested)
+                    {
+                        return;
+                    }
+
                     var response = task.Result;
                     Stream stream = response.GetStream();
 
