@@ -9,7 +9,7 @@
 
     <div class="page-header">
         <h2>Simultaneous Connections </h2>
-        <p>Demonstrates simultaneous connections, you can click button to add new connection as well as you can also use queryString cons for hub connection and queryString pCons for persistent connection to specify number of connections by default to run.</p>
+        <p>Demonstrates simultaneous connections. You can add new connections via the button or default the number of active connections via the queryString parameters hubConnections and persistentConnections.</p>
     </div>
 
     <p>
@@ -20,7 +20,7 @@
     <div id="connections">
     </div>
 
-    <h5>Messages</h5>
+    <h5>Messages: latest on top</h5>
     <ul id="messages">
     </ul>
 

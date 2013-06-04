@@ -99,7 +99,7 @@
         </div>
         <div class="span4">
             <h3>Simultaneous Connections</h3>
-            <p>A sample that demonstrates simultaneous connections, you can add new connection on fly as well as you can also specify number of connections by default to run.</p>
+            <p>A sample that demonstrates simultaneous connections. You can add new connections via the button or default the number of active connections via the queryString parameters hubConnections and persistentConnections.</p>
             <p><a class="btn" href="Hubs/SimultaneousConnections/">View sample &raquo;</a></p>
         </div>
     </div>
