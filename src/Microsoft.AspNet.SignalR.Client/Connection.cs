@@ -165,6 +165,9 @@ namespace Microsoft.AspNet.SignalR.Client
             Protocol = new Version(1, 3);
         }
 
+        // The amount of time a transport will wait (while connecting) before failing
+        public TimeSpan? TransportConnectTimeout { get; set; }
+
         public Version Protocol { get; set; }
 
         /// <summary>
@@ -181,7 +184,7 @@ namespace Microsoft.AspNet.SignalR.Client
                 _keepAliveData = value;
             }
         }
-       
+
 #if NET4 || NET45
         X509CertificateCollection IConnection.Certificates
         {
@@ -386,6 +389,7 @@ namespace Microsoft.AspNet.SignalR.Client
                                 ConnectionId = negotiationResponse.ConnectionId;
                                 ConnectionToken = negotiationResponse.ConnectionToken;
                                 _disconnectTimeout = TimeSpan.FromSeconds(negotiationResponse.DisconnectTimeout);
+                                TransportConnectTimeout = TransportConnectTimeout ?? TimeSpan.FromSeconds(negotiationResponse.TransportConnectTimeout);
 
                                 // If we have a keep alive
                                 if (negotiationResponse.KeepAliveTimeout != null)
@@ -644,7 +648,7 @@ namespace Microsoft.AspNet.SignalR.Client
             }
         }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification="The exception can be from user code, needs to be a catch all."), SuppressMessage("Microsoft.Design", "CA1062:Validate arguments of public methods", MessageId = "0", Justification = "This is called by the transport layer")]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "The exception can be from user code, needs to be a catch all."), SuppressMessage("Microsoft.Design", "CA1062:Validate arguments of public methods", MessageId = "0", Justification = "This is called by the transport layer")]
         protected virtual void OnMessageReceived(JToken message)
         {
             if (Received != null)

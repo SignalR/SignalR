@@ -48,16 +48,21 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
         protected override void OnStart(IConnection connection,
                                         string data,
                                         CancellationToken disconnectToken,
-                                        Action initializeCallback,
-                                        Action<Exception> errorCallback)
+                                        TransportInitializationHandler initializeHandler)
         {
             var requestHandler = new PollingRequestHandler(HttpClient);
-            var negotiateInitializer = new NegotiateInitializer(initializeCallback, errorCallback);
+            var negotiateInitializer = new NegotiateInitializer(initializeHandler);
 
             Action<IRequest> initializeAbort = request => { negotiateInitializer.Abort(disconnectToken); };
 
             requestHandler.OnError += negotiateInitializer.Complete;
             requestHandler.OnAbort += initializeAbort;
+
+            // If the transport fails to initialize we want to silently stop
+            initializeHandler.OnFailure += () =>
+            {
+                requestHandler.Stop();
+            };
 
             // Once we've initialized the connection we need to tear down the initializer functions and assign the appropriate onMessage function
             negotiateInitializer.Initialized += () =>

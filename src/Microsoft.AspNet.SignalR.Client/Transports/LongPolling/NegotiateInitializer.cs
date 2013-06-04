@@ -10,10 +10,10 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
         private readonly Action _initializeCallback;
         private readonly Action<Exception> _errorCallback;
 
-        public NegotiateInitializer(Action initializeCallback, Action<Exception> errorCallback)
+        public NegotiateInitializer(TransportInitializationHandler initializeHandler)
         {
-            _initializeCallback = initializeCallback;
-            _errorCallback = errorCallback;
+            _initializeCallback = initializeHandler.Success;
+            _errorCallback = initializeHandler.Failure;
             _callbackInvoker = new ThreadSafeInvoker();
 
             // Set default initialized function

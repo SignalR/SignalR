@@ -7,6 +7,7 @@ using System.Globalization;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR.Client.Http;
+using Microsoft.AspNet.SignalR.Client.Infrastructure;
 using Microsoft.AspNet.SignalR.Infrastructure;
 using Newtonsoft.Json.Linq;
 
@@ -67,18 +68,22 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
 
         public Task Start(IConnection connection, string data, CancellationToken disconnectToken)
         {
-            var tcs = new TaskCompletionSource<object>();
+            if (connection == null)
+            {
+                throw new ArgumentNullException("connection");
+            }
 
-            OnStart(connection, data, disconnectToken, () => tcs.TrySetResult(null), exception => tcs.TrySetException(exception));
+            var initializeHandler = new TransportInitializationHandler(connection.TransportConnectTimeout.Value, disconnectToken);
 
-            return tcs.Task;
+            OnStart(connection, data, disconnectToken, initializeHandler);
+
+            return initializeHandler.Task;
         }
 
         protected abstract void OnStart(IConnection connection,
                                         string data,
                                         CancellationToken disconnectToken,
-                                        Action initializeCallback,
-                                        Action<Exception> errorCallback);
+                                        TransportInitializationHandler initializeHandler);
 
         public Task Send(IConnection connection, string data)
         {
@@ -214,15 +219,17 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
                 // Wait for any ongoing aborts to complete
                 // In practice, any aborts should have finished by the time Dispose is called
                 lock (_abortLock)
-                lock (_disposeLock)
                 {
-                    if (!_disposed)
+                    lock (_disposeLock)
                     {
-                        _abortResetEvent.Dispose();
-                        _disposed = true;
+                        if (!_disposed)
+                        {
+                            _abortResetEvent.Dispose();
+                            _disposed = true;
+                        }
                     }
                 }
-           }
+            }
         }
     }
 }

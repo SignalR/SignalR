@@ -112,11 +112,41 @@ namespace Microsoft.AspNet.SignalR.Client.Tests
             }
 
             [Fact]
+            public void ConnectionUsesClientSetTransportConnectTimeout()
+            {
+                using (var host = new MemoryHost())
+                {
+                    host.Configure(app =>
+                    {
+                        var config = new ConnectionConfiguration
+                        {
+                            Resolver = new DefaultDependencyResolver()
+                        };
+
+                        app.MapConnection<MyConnection>("echo", config);
+                    });
+
+                    var tcs = new TaskCompletionSource<string>();
+                    var connection = new Connection("http://foo/echo");
+                    var newTimeout = TimeSpan.FromSeconds(4);
+
+                    using (connection)
+                    {
+                        Assert.False(connection.TransportConnectTimeout.HasValue);
+                        connection.TransportConnectTimeout = newTimeout;
+                        connection.Start(host).Wait();
+                        Assert.Equal(connection.TransportConnectTimeout.Value, newTimeout);
+                    }
+                }
+            }
+
+            [Fact]
             public void FallbackToLongPollingIIS()
             {
                 using (ITestHost host = CreateHost(HostType.IISExpress))
                 {
-                    host.Initialize();
+                    // Reduce transportConnectionTimeout to 3 seconds
+                    host.Initialize(transportConnectTimeout: 3);
 
                     var connection = CreateConnection(host, "/fall-back");
 
@@ -134,9 +164,9 @@ namespace Microsoft.AspNet.SignalR.Client.Tests
 
                         var client = new DefaultHttpClient();
                         var transports = new IClientTransport[]  {
-                        new ServerSentEventsTransport(client) { ConnectionTimeout = TimeSpan.Zero },
-                        new LongPollingTransport(client)
-                    };
+                            new ServerSentEventsTransport(client),
+                            new LongPollingTransport(client)
+                        };
 
                         var transport = new AutoTransport(client, transports);
 

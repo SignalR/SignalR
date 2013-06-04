@@ -1,4 +1,4 @@
-﻿﻿using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -70,6 +70,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Common.Infrastructure
         public void Initialize(int? keepAlive,
                                int? connectionTimeout,
                                int? disconnectTimeout,
+                               int? transportConnectTimeout,
                                bool enableAutoRejoiningGroups,
                                MessageBusType type = MessageBusType.Default)
         {
@@ -83,6 +84,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Common.Infrastructure
                                            keepAlive,
                                            connectionTimeout,
                                            disconnectTimeout,
+                                           transportConnectTimeout,
                                            enableAutoRejoiningGroups,
                                            _logFileName);
 

@@ -119,10 +119,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Common.Infrastructure
                 case TransportType.Websockets:
                     return new WebSocketTransport(client);
                 case TransportType.ServerSentEvents:
-                    return new ServerSentEventsTransport(client)
-                    {
-                        ConnectionTimeout = TimeSpan.FromSeconds(10)
-                    };
+                    return new ServerSentEventsTransport(client);
                 case TransportType.ForeverFrame:
                     break;
                 case TransportType.LongPolling:

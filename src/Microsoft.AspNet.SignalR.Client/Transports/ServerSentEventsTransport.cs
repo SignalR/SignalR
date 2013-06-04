@@ -24,7 +24,6 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
             : base(httpClient, "serverSentEvents")
         {
             ReconnectDelay = TimeSpan.FromSeconds(2);
-            ConnectionTimeout = TimeSpan.FromSeconds(5);
         }
 
         /// <summary>
@@ -39,11 +38,6 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
         }
 
         /// <summary>
-        /// Time allowed before failing the connect request.
-        /// </summary>
-        public TimeSpan ConnectionTimeout { get; set; }
-
-        /// <summary>
         /// The time to wait after a connection drops to try reconnecting.
         /// </summary>
         public TimeSpan ReconnectDelay { get; set; }
@@ -51,10 +45,20 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
         protected override void OnStart(IConnection connection,
                                         string data,
                                         CancellationToken disconnectToken,
-                                        Action initializeCallback,
-                                        Action<Exception> errorCallback)
+                                        TransportInitializationHandler initializeHandler)
         {
-            OpenConnection(connection, data, disconnectToken, initializeCallback, errorCallback);
+            if (initializeHandler == null)
+            {
+                throw new ArgumentNullException("initializeHandler");
+            }
+
+            // Tie into the OnFailure event so that we can stop the transport silently.
+            initializeHandler.OnFailure += () =>
+            {
+                _request.Abort();
+            };
+
+            OpenConnection(connection, data, disconnectToken, initializeHandler.Success, initializeHandler.Failure);
         }
 
         private void Reconnect(IConnection connection, string data, CancellationToken disconnectToken)
@@ -122,6 +126,12 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
                 }
                 else
                 {
+                    // If the disconnect token is canceled the response to the task doesn't matter.
+                    if (disconnectToken.IsCancellationRequested)
+                    {
+                        return;
+                    }
+
                     var response = task.Result;
                     Stream stream = response.GetStream();
 
@@ -132,6 +142,8 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
                     var esCancellationRegistration = disconnectToken.SafeRegister(state =>
                     {
                         stop = true;
+
+                        errorCallback(null);
 
                         ((IRequest)state).Abort();
                     },
@@ -225,23 +237,6 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
             }, _request);
 
             requestDisposer.Set(requestCancellationRegistration);
-
-            if (errorCallback != null)
-            {
-                TaskAsyncHelper.Delay(ConnectionTimeout).Then(() =>
-                {
-                    callbackInvoker.Invoke((conn, cb) =>
-                    {
-                        // Abort the request before cancelling
-                        _request.Abort();
-
-                        // Connection timeout occurred
-                        cb(new TimeoutException());
-                    },
-                    connection,
-                    errorCallback);
-                });
-            }
         }
 
         public override void LostConnection(IConnection connection)

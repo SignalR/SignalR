@@ -476,7 +476,8 @@ namespace Microsoft.AspNet.SignalR
                 KeepAliveTimeout = keepAliveTimeout != null ? keepAliveTimeout.Value.TotalSeconds : (double?)null,
                 DisconnectTimeout = _configurationManager.DisconnectTimeout.TotalSeconds,
                 TryWebSockets = _transportManager.SupportsTransport(WebSocketsTransportName) && context.Environment.SupportsWebSockets(),
-                ProtocolVersion = _protocolResolver.Resolve(context.Request).ToString()
+                ProtocolVersion = _protocolResolver.Resolve(context.Request).ToString(),
+                TransportConnectTimeout = _configurationManager.TransportConnectTimeout.TotalSeconds
             };
 
             if (!String.IsNullOrEmpty(context.Request.QueryString["callback"]))

@@ -39,6 +39,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Common
         {
             string keepAliveRaw = ConfigurationManager.AppSettings["keepAlive"];
             string connectionTimeoutRaw = ConfigurationManager.AppSettings["connectionTimeout"];
+            string transportConnectTimeoutRaw = ConfigurationManager.AppSettings["transportConnectTimeout"];
             string disconnectTimeoutRaw = ConfigurationManager.AppSettings["disconnectTimeout"];
 
             int connectionTimeout;
@@ -51,6 +52,12 @@ namespace Microsoft.AspNet.SignalR.Tests.Common
             if (Int32.TryParse(disconnectTimeoutRaw, out disconnectTimeout))
             {
                 GlobalHost.Configuration.DisconnectTimeout = TimeSpan.FromSeconds(disconnectTimeout);
+            }
+
+            int transportConnectTimeout;
+            if (Int32.TryParse(transportConnectTimeoutRaw, out transportConnectTimeout))
+            {
+                GlobalHost.Configuration.TransportConnectTimeout = TimeSpan.FromSeconds(transportConnectTimeout);
             }
 
             int keepAlive;
