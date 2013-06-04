@@ -23,19 +23,19 @@ $(function () {
             connection.logging = true;
 
             connection.reconnecting(function () {
-                $("<li/>").html("connection" + connectionNumber + " " + "[" + new Date().toTimeString() + "]: reconnecting").appendTo(messages);
+                $("<li/>").html("[" + new Date().toTimeString() + "]: connection" + connectionNumber + " reconnecting").prependTo(messages);
             });
 
             connection.reconnected(function () {
                 $("<li/>").css("background-color", "green")
                           .css("color", "white")
-                          .html("connection" + connectionNumber + " " + "[" + new Date().toTimeString() + "]: Connection re-established")
-                          .appendTo(messages);
+                          .html("[" + new Date().toTimeString() + "]: connection" + connectionNumber + " Connection re-established")
+                          .prependTo(messages);
             });
 
             connection.error(function (err) {
-                $("<li/>").html("connection" + connectionNumber + " " + (err.responseText || err))
-                          .appendTo(messages);
+                $("<li/>").html("[" + new Date().toTimeString() + "]: connection" + connectionNumber + " " + (err.responseText || err))
+                          .prependTo(messages);
             });
 
             connection.disconnected(function () {
@@ -66,10 +66,10 @@ $(function () {
                     }
                 }
 
-                $("#connectionState" + connectionNumber).text(" " + newState);
+                $("#connectionState" + connectionNumber).text(" (" + newState + ",");
 
-                $("<li/>").html("connection" + connectionNumber + " " + oldState + " => " + newState + " " + connection.id)
-                          .appendTo(messages);
+                $("<li/>").html("[" + new Date().toTimeString() + "]: connection" + connectionNumber + " " + oldState + " => " + newState + " " + connection.id)
+                          .prependTo(messages);
             });
 
             return connection;
@@ -81,7 +81,7 @@ $(function () {
 
         if (connections[connectionNumber].myHub) {
             connections[connectionNumber].myHub.on('displayMessage', function (value) {
-                $("<li/>").html("connection" + connectionNumber + " " + value).appendTo(messages);
+                $("<li/>").html("[" + new Date().toTimeString() + "]: connection" + connectionNumber + " " + value).prependTo(messages);
 
                 $("#connectionMsg" + connectionNumber).text(value);
             });
@@ -93,7 +93,7 @@ $(function () {
         }
         else {
             connections[connectionNumber].connection.received(function (data) {
-                $("<li/>").html(window.JSON.stringify(data)).appendTo(messages);
+                $("<li/>").html("[" + new Date().toTimeString() + "]: " + window.JSON.stringify(data)).prependTo(messages);
 
                 $("#connectionMsg" + connectionNumber).text(window.JSON.stringify(data));
             });
@@ -127,7 +127,7 @@ $(function () {
         startConnection = function () {
             connections[connectionNumber].connection.start({ transport: activeTransport, jsonp: isJsonp })
                 .done(function () {
-                    $("#connection" + connectionNumber).text(" " + connections[connectionNumber].connection.id + " " + connections[connectionNumber].connection.transport.name);
+                    $("#connection" + connectionNumber).text(" " + connections[connectionNumber].connection.id + ", " + connections[connectionNumber].connection.transport.name + ")");
 
                     if (connections[connectionNumber].myHub) {
                         $("#stopStart" + connectionNumber).prop("disabled", false).val("Stop Hub Connection" + connectionNumber);
