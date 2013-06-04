@@ -14,11 +14,14 @@ public:
     bool SupportsKeepAlive();
 
 protected:
-    void OnStart(Connection* connection, string_t data, call<int>* initializeCallback, call<int>* errorCallback);
+    void OnStart(Connection* connection, string_t data, cancellation_token disconnectToken, call<int>* initializeCallback, call<int>* errorCallback);
     void LostConnection(Connection* connection);
 
 private:
-    void OpenConnection(Connection* connection, string_t data, call<int>* initializeCallback, call<int>* errorCallback);
+    http_request mRequest;
+
+    void Reconnect(Connection* connection, string_t data);
+    void OpenConnection(Connection* connection, string_t data, cancellation_token disconnectToken, call<int>* initializeCallback, call<int>* errorCallback);
     static void OnReadLine(string data, exception* error, void* state);
 };
 

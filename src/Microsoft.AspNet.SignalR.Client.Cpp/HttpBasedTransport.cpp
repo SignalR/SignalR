@@ -34,7 +34,7 @@ string_t HttpBasedTransport::GetReceiveQueryString(Connection* connection, strin
     return TransportHelper::GetReceiveQueryString(connection, data, mTransportName);
 }
 
-task<void> HttpBasedTransport::Start(Connection* connection, string_t data, void* state)
+task<void> HttpBasedTransport::Start(Connection* connection, string_t data, cancellation_token disconnectToken)
 {
     task_completion_event<void> tce;
     
@@ -50,7 +50,7 @@ task<void> HttpBasedTransport::Start(Connection* connection, string_t data, void
         tce.set_exception(ex);
     });
 
-    OnStart(connection, data, initializeCallback, errorCallback);
+    OnStart(connection, data, disconnectToken, initializeCallback, errorCallback);
     return task<void>(tce).then([initializeCallback, errorCallback]()
     {
         delete initializeCallback;

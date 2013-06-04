@@ -35,6 +35,7 @@ task<void> Connection::Start(http_client* client)
 
 task<void> Connection::Start(IClientTransport* transport) 
 {	
+    mDisconnectCts = new cancellation_token_source();
     mTransport = transport;
 
     if(!ChangeState(ConnectionState::Disconnected, ConnectionState::Connecting))
@@ -61,7 +62,7 @@ task<void> Connection::Negotiate(IClientTransport* transport)
 
 task<void> Connection::StartTransport()
 {
-    return mTransport->Start(this, U(""));
+    return mTransport->Start(this, U(""), mDisconnectCts->get_token());
 }
 
 task<void> Connection::Send(value::field_map object)

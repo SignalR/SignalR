@@ -31,6 +31,12 @@
     <Filter Include="Header Files\Transports\ServerSentEvents">
       <UniqueIdentifier>{f7500dc8-c151-417d-bb3c-dc0704279a7d}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\Infrastructure">
+      <UniqueIdentifier>{81281ed6-12bf-4636-a793-a54198c8c7ef}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Infrastructure">
+      <UniqueIdentifier>{0bc2382c-1d23-4a08-b4a3-1b9e9b511b6c}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Connection.cpp">
@@ -71,6 +77,12 @@
     </ClCompile>
     <ClCompile Include="HttpBasedTransport.cpp">
       <Filter>Source Files\Transport</Filter>
+    </ClCompile>
+    <ClCompile Include="ThreadSafeInvoker.cpp">
+      <Filter>Source Files\Infrastructure</Filter>
+    </ClCompile>
+    <ClCompile Include="DefaultHttpClient.cpp">
+      <Filter>Source Files\Http</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -115,6 +127,12 @@
     </ClInclude>
     <ClInclude Include="HttpBasedTransport.h">
       <Filter>Header Files\Transports</Filter>
+    </ClInclude>
+    <ClInclude Include="ThreadSafeInvoker.h">
+      <Filter>Header Files\Infrastructure</Filter>
+    </ClInclude>
+    <ClInclude Include="DefaultHttpClient.h">
+      <Filter>Header Files\Http</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

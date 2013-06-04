@@ -17,7 +17,7 @@ public:
     ~HttpBasedTransport(void);
 
     task<NegotiationResponse*> Negotiate(Connection* connection);
-    task<void> Start(Connection* connection, string_t data, void* state = NULL);
+    task<void> Start(Connection* connection, string_t data, cancellation_token disconnectToken);
     task<void> Send(Connection* connection, string_t data);
     void Abort(Connection* connection);
     void Dispose();
@@ -28,7 +28,7 @@ protected:
     void Dispose(bool disposing);
     void CompleteAbort();
     bool TryCompleteAbort();
-    virtual void OnStart(Connection* connection, string_t data, call<int>* initializeCallback, call<int>* errorCallback) = 0;
+    virtual void OnStart(Connection* connection, string_t data, cancellation_token disconnectToken, call<int>* initializeCallback, call<int>* errorCallback) = 0;
     string_t GetReceiveQueryString(Connection* connection, string_t data);
     string_t GetSendQueryString(string_t transport, string_t connectionToken, string_t customQuery);
 

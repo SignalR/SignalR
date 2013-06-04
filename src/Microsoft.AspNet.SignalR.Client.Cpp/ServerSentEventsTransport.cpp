@@ -6,39 +6,41 @@ ServerSentEventsTransport::ServerSentEventsTransport(http_client* httpClient) :
 
 }
 
-void ServerSentEventsTransport::OnStart(Connection* connection, string_t data,  call<int>* initializeCallback, call<int>* errorCallback)
+void ServerSentEventsTransport::OnStart(Connection* connection, string_t data, cancellation_token disconnectToken,  call<int>* initializeCallback, call<int>* errorCallback)
 {
-    OpenConnection(connection, data, initializeCallback, errorCallback);
+    OpenConnection(connection, data, disconnectToken, initializeCallback, errorCallback);
 }
 
-void ServerSentEventsTransport::OpenConnection(Connection* connection, string_t data, call<int>* initializeCallback, call<int>* errorCallback)
+void ServerSentEventsTransport::Reconnect(Connection* connection, string_t data)
 {
+
+}
+
+void ServerSentEventsTransport::OpenConnection(Connection* connection, string_t data, cancellation_token disconnectToken, call<int>* initializeCallback, call<int>* errorCallback)
+{
+    bool reconnecting = initializeCallback == NULL;
+
     utility::string_t uri = connection->GetUri() + U("connect") + GetReceiveQueryString(connection, data);
 
     http_request request(methods::GET);
     request.set_request_uri(uri);
 
-    //streams::producer_consumer_buffer<uint8_t> buffer;
-    //streams::basic_ostream<uint8_t> stream = buffer.create_ostream();
-    //request.set_response_stream(stream);
-
-    GetHttpClient()->request(request).then([connection](http_response response) 
+    GetHttpClient()->request(request).then([this, connection, data](http_response response) 
     {
         // check if the task failed
         EventSourceStreamReader* eventSource = new EventSourceStreamReader(connection, response.body());
 
-        bool stop = false;
-        bool* stopPtr = &stop;
+        bool* stop = false;
 
         eventSource->Opened = [connection]()
         {
             if (connection->ChangeState(ConnectionState::Reconnecting, ConnectionState::Connected))
             {
-                // connection->OnReconnected(); still need to define this
+                connection->OnReconnected();
             }
         };
 
-        eventSource->Message = [connection, stopPtr](SseEvent* sseEvent) 
+        eventSource->Message = [connection, stop](SseEvent* sseEvent) 
         {
             if (sseEvent->GetType() == EventType::Data)
             {
@@ -52,15 +54,15 @@ void ServerSentEventsTransport::OpenConnection(Connection* connection, string_t 
 
                 if (disconnected)
                 {
-                    *stopPtr = true;
-                    //connection->Disconnected(); still need to define this
+                    *stop = true;
+                    connection->Disconnect();
                 }
             }
         };
 
-        eventSource->Closed = [](exception& ex)
+        eventSource->Closed = [stop, this, connection, data](exception& ex)
         {
-            //if (exception != null)
+            //if (ex != null)
             //{
             //    // Check if the request is aborted
             //    bool isRequestAborted = ExceptionHelper.IsRequestAborted(exception);
@@ -75,18 +77,18 @@ void ServerSentEventsTransport::OpenConnection(Connection* connection, string_t 
             //esCancellationRegistration.Dispose();
             //response.Dispose();
 
-            //if (stop)
-            //{
-            //    CompleteAbort();
-            //}
-            //else if (TryCompleteAbort())
-            //{
-            //    // Abort() was called, so don't reconnect
-            //}
-            //else
-            //{
-            //    Reconnect(connection, data, disconnectToken);
-            //}
+            if (*stop)
+            {
+                CompleteAbort();
+            }
+            else if (TryCompleteAbort())
+            {
+                // Abort() was called, so don't reconnect
+            }
+            else
+            {
+                Reconnect(connection, data);
+            }
         };
 
         eventSource->Start();

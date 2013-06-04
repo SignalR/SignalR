@@ -75,6 +75,7 @@ private:
     ConnectionState mState;
     IClientTransport* mTransport;
     mutex mStateLock;
+    cancellation_token_source* mDisconnectCts;
 
     void SetState(ConnectionState newState);
 
