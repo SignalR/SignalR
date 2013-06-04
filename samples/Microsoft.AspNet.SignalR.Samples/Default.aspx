@@ -98,8 +98,8 @@
             <p><a class="btn" href="Hubs/MessageLoops/">View sample &raquo;</a></p>
         </div>
         <div class="span4">
-            <h3>Simultaneous Hub Connections</h3>
-            <p>A sample that demonstrates simultaneous Hub connections, you can add new hub connection on fly as well as you can also specify number of connections by default to run.</p>
+            <h3>Simultaneous Connections</h3>
+            <p>A sample that demonstrates simultaneous connections, you can add new connection on fly as well as you can also specify number of connections by default to run.</p>
             <p><a class="btn" href="Hubs/SimultaneousConnections/">View sample &raquo;</a></p>
         </div>
     </div>
