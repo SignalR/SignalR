@@ -2,8 +2,8 @@
 $(function () {
     "use strict";
 
-    var hubConnectionsCount = getQueryVariable('cons'),
-        persistentConnectionsCount = getQueryVariable('pCons'),
+    var hubConnectionsCount = getQueryVariable('hubConnections'),
+        persistentConnectionsCount = getQueryVariable('persistentConnections'),
         connections = [],
         messages = $("#messages"),
         connectionsCtrl = $("#connections"),
@@ -96,10 +96,6 @@ $(function () {
                 $("<li/>").html(window.JSON.stringify(data)).appendTo(messages);
 
                 $("#connectionMsg" + connectionNumber).text(window.JSON.stringify(data));
-
-                if (data.type == 2) {
-                    $.cookie('user', data.data);
-                }
             });
 
             $("#broadcast" + connectionNumber).click(function () {
@@ -150,7 +146,7 @@ $(function () {
 
         for (var i = first; i < first + connectionsCount; i++) {
             connectionsCtrl.append("<p>");
-            connectionsCtrl.append(" <input type='text' id='msg" + i + "' value=" + i + i + i + " style='margin-bottom: 0'></input>");
+            connectionsCtrl.append("<input type='text' id='msg" + i + "' value=" + i + i + i + " style='margin-bottom: 0'></input>");
             connectionsCtrl.append("<input type='button' id='broadcast" + i + "' class='btn' value='Broadcast' ></input>");
             connectionsCtrl.append("<input id='stopStart" + i + "' type='button' class='btn' disabled='disabled' value='Stop Hub Connection'" + i + "'></input>");
             connectionsCtrl.append("<span id='connectionState" + i + "' style='display: inline'></span>");
@@ -172,7 +168,7 @@ $(function () {
 
         for (var i = first; i < first + connectionsCount; i++) {
             connectionsCtrl.append("<p>");
-            connectionsCtrl.append(" <input type='text' id='msg" + i + "' value=" + i + i + i + " style='margin-bottom: 0'></input>");
+            connectionsCtrl.append("<input type='text' id='msg" + i + "' value=" + i + i + i + " style='margin-bottom: 0'></input>");
             connectionsCtrl.append("<input type='button' id='broadcast" + i + "' class='btn' value='Broadcast' ></input>");
             connectionsCtrl.append("<input id='stopStart" + i + "' type='button' class='btn' disabled='disabled' value='Stop Persistent Connection'" + i + "'></input>");
             connectionsCtrl.append("<span id='connectionState" + i + "' style='display: inline'></span>");
