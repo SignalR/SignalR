@@ -8,15 +8,10 @@ $(function () {
         connectionsCtrl = $("#connections"),
         addConnections,
         start,
-        createConnection = function (connectionNumber, persistentConnection) {
+        createConnection = function (connectionNumber) {
             var connection;
 
-            if (persistentConnection) {
-                connection = $.connection(persistentConnection);
-            }
-            else {
-                connection = $.hubConnection();
-            }
+            connection = $.hubConnection();
 
             connection.logging = true;
 
