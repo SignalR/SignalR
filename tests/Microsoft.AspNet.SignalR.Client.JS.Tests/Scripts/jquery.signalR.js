@@ -1166,7 +1166,6 @@
             var url,
                 opened = false,
                 that = this,
-                initialSocket,
                 reconnecting = !onSuccess,
                 $connection = $(connection);
 
@@ -1187,11 +1186,6 @@
 
                 connection.log("Connecting to websocket endpoint '" + url + "'");
                 connection.socket = new window.WebSocket(url);
-
-                // Issue #1653: Galaxy S3 Android Stock Browser fails silently to establish websocket connections. 
-                if (onFailed) {
-                    initialSocket = connection.socket;
-                }
 
                 connection.socket.onopen = function () {
                     opened = true;
