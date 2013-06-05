@@ -79,7 +79,7 @@ namespace Microsoft.AspNet.SignalR.SqlServer {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to An unexpected SQL notification type was received. Details: Type={0}, Source={1}, Info={2}.
+        ///   Looks up a localized string similar to An unexpected SqlNotificationType was received. Details: Type={0}, Source={1}, Info={2}.
         /// </summary>
         internal static string Error_UnexpectedSqlNotificationType {
             get {

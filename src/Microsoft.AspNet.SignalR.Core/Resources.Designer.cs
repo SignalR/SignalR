@@ -106,7 +106,7 @@ namespace Microsoft.AspNet.SignalR {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The connection id is in the incorrect format..
+        ///   Looks up a localized string similar to The ConnectionId is in the incorrect format..
         /// </summary>
         internal static string Error_ConnectionIdIncorrectFormat {
             get {
@@ -151,7 +151,7 @@ namespace Microsoft.AspNet.SignalR {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Duplicate hub names found..
+        ///   Looks up a localized string similar to Duplicate Hub names found..
         /// </summary>
         internal static string Error_DuplicateHubs {
             get {
@@ -232,7 +232,7 @@ namespace Microsoft.AspNet.SignalR {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Keep Alive value must be greater than two seconds..
+        ///   Looks up a localized string similar to KeepAlive value must be greater than two seconds..
         /// </summary>
         internal static string Error_KeepAliveMustBeGreaterThanTwoSeconds {
             get {
@@ -241,7 +241,7 @@ namespace Microsoft.AspNet.SignalR {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Keep Alive value must be no more than a third of the DisconnectTimeout..
+        ///   Looks up a localized string similar to KeepAlive value must be no more than a third of the DisconnectTimeout..
         /// </summary>
         internal static string Error_KeepAliveMustBeNoMoreThanAThirdOfTheDisconnectTimeout {
             get {
