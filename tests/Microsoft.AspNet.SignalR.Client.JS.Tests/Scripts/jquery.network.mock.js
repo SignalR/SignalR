@@ -299,12 +299,12 @@
         ignoringMessages = false;
 
     network.mask = {
-        create: function (maskBase, onErrorProperties, subscriptionProperties, disableOnError) {
+        create: function (maskBase, onErrorProperties, subscriptionProperties, destroyOnError) {
             /// <summary>Wires the maskBase's onError and onMessage properties to be affected by network loss</summary>
             /// <param name="maskBase" type="Object">An object with properties indicated by onErrorProperty and onMessageProperty</param>
             /// <param name="onErrorProperties" type="Array">The array of string representation of the onError methods of the maskBase</param>
             /// <param name="subscriptionProperties" type="Array">The array of string representation of the methods subscribed to network events on the maskBase</param>
-            /// <param name="disableOnError" type="Boolean">Represents if we destroy our created mask object onError.</param>
+            /// <param name="destroyOnError" type="Boolean">Represents if we destroy our created mask object onError.</param>
             var savedOnErrors = {},
                 savedSubscriptions = {},
                 modifiedOnErrors = {},
@@ -334,8 +334,9 @@
                 }
 
                 maskBase[onErrorProperty] = function () {
-                    if (disableOnError) {
+                    if (destroyOnError) {
                         disable();
+                        delete maskData[id];
                     }
 
                     return saved.apply(this, arguments);
