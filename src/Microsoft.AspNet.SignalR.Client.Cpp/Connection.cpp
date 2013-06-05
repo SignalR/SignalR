@@ -22,10 +22,10 @@ Connection::~Connection()
 task<void> Connection::Start() 
 {
     // Start(new DefaultHttpClient());
-    return Start(new http_client(mUri));
+    return Start(new DefaultHttpClient());
 }
 
-task<void> Connection::Start(http_client* client) 
+task<void> Connection::Start(IHttpClient* client) 
 {	
     // Start(new AutoTransport(client));
     //return Start(new WebSocketTransport(client));
@@ -188,59 +188,14 @@ void Connection::OnConnectionSlow()
     }
 }
 
-IClientTransport* Connection::GetTransport()
-{
-    return mTransport;
-}
-
-string_t Connection::GetUri()
-{
-    return mUri;
-}
-
-string_t Connection::GetConnectionId()
-{
-    return mConnectionId;
-}
-
-string_t Connection::GetConnectionToken()
-{
-    return mConnectionToken;
-}
-
-string_t Connection::GetGroupsToken()
-{
-    return mGroupsToken;
-}
-
-string_t Connection::GetMessageId()
-{
-    return mMessageId;
-}
-
-string_t Connection::GetQueryString()
-{
-    return mQueryString;
-}
-
-string_t Connection::GetProtocol()
-{
-    return mProtocol;
-}
-
-void Connection::SetProtocol(string_t protocol)
-{
-    mProtocol = protocol;
-}
+//void Connection::PrepareRequest(HttpRequestWrapper* request)
+//{
+//
+//}
 
 void Connection::SetConnectionToken(string_t connectionToken)
 {
     mConnectionToken = connectionToken;
-}
-
-void Connection::SetGroupsToken(string_t groupsToken)
-{
-    mGroupsToken = groupsToken;
 }
 
 void Connection::SetConnectionId(string_t connectionId)
@@ -248,7 +203,7 @@ void Connection::SetConnectionId(string_t connectionId)
     mConnectionId = connectionId;
 }
 
-void Connection::SetMessageId(string_t messageId)
+void IConnection::SetMessageId(string_t messageId)
 {
     mMessageId = messageId;
 }

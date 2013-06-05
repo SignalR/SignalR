@@ -9,7 +9,7 @@ class ServerSentEventsTransport :
     public HttpBasedTransport
 {
 public:
-    ServerSentEventsTransport(http_client* client);
+    ServerSentEventsTransport(IHttpClient* client);
     ~ServerSentEventsTransport(void);
     bool SupportsKeepAlive();
 
@@ -18,7 +18,7 @@ protected:
     void LostConnection(Connection* connection);
 
 private:
-    http_request mRequest;
+    HttpRequestWrapper* mRequest;
 
     void Reconnect(Connection* connection, string_t data);
     void OpenConnection(Connection* connection, string_t data, cancellation_token disconnectToken, call<int>* initializeCallback, call<int>* errorCallback);

@@ -72,9 +72,6 @@
     <ClCompile Include="StateChange.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="StringHelper.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="HttpBasedTransport.cpp">
       <Filter>Source Files\Transport</Filter>
     </ClCompile>
@@ -82,6 +79,15 @@
       <Filter>Source Files\Infrastructure</Filter>
     </ClCompile>
     <ClCompile Include="DefaultHttpClient.cpp">
+      <Filter>Source Files\Http</Filter>
+    </ClCompile>
+    <ClCompile Include="StringHelper.cpp">
+      <Filter>Source Files\Infrastructure</Filter>
+    </ClCompile>
+    <ClCompile Include="IConnection.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="HttpRequestWrapper.cpp">
       <Filter>Source Files\Http</Filter>
     </ClCompile>
   </ItemGroup>
@@ -122,9 +128,6 @@
     <ClInclude Include="ConnectionState.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="StringHelper.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="HttpBasedTransport.h">
       <Filter>Header Files\Transports</Filter>
     </ClInclude>
@@ -132,6 +135,18 @@
       <Filter>Header Files\Infrastructure</Filter>
     </ClInclude>
     <ClInclude Include="DefaultHttpClient.h">
+      <Filter>Header Files\Http</Filter>
+    </ClInclude>
+    <ClInclude Include="StringHelper.h">
+      <Filter>Header Files\Infrastructure</Filter>
+    </ClInclude>
+    <ClInclude Include="IConnection.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="HttpRequestWrapper.h">
+      <Filter>Header Files\Http</Filter>
+    </ClInclude>
+    <ClInclude Include="IHttpClient.h">
       <Filter>Header Files\Http</Filter>
     </ClInclude>
   </ItemGroup>

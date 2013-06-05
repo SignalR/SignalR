@@ -51,8 +51,6 @@ static void RunStreamingSample()
             connection->Start().wait();
 
             wcout << U("Using ") << connection->GetTransport()->GetTransportName() << endl;
-            wcout << U("- Broadcast by pressing <Enter> after entering a message or") << endl;
-            wcout << U("- Exit by pressing <Enter>") << endl;
         }
         catch (exception& ex)
         {

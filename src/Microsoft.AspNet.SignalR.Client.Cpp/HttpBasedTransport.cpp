@@ -1,6 +1,6 @@
 #include "HttpBasedTransport.h"
 
-HttpBasedTransport::HttpBasedTransport(http_client* httpClient, string_t transport)
+HttpBasedTransport::HttpBasedTransport(IHttpClient* httpClient, string_t transport)
 {
     mHttpClient = httpClient;
     mTransportName = transport;
@@ -14,7 +14,7 @@ HttpBasedTransport::~HttpBasedTransport(void)
     delete mHttpClient;
 }
 
-http_client* HttpBasedTransport::GetHttpClient()
+IHttpClient* HttpBasedTransport::GetHttpClient()
 {
     return mHttpClient;
 }
@@ -64,19 +64,11 @@ task<void> HttpBasedTransport::Send(Connection* connection, string_t data)
     string_t customQueryString = connection->GetQueryString().empty()? U("") : U("&") + connection->GetQueryString();
     uri += GetSendQueryString(mTransportName, connection->GetConnectionToken(), customQueryString);
 
-    http_request request(methods::POST);
-    request.set_request_uri(uri);
-
     string_t encodedData = U("data=") + uri::encode_data_string(data);
-    request.set_body(encodedData);
 
-    return mHttpClient->request(request).then([connection](http_response response)
+    return mHttpClient->Post(uri, connection->PrepareRequest, encodedData, false).then([connection](http_response response)
     {
-        // check for errors, temporary solution
-        if (response.status_code()/100 != 2)
-        {
-            throw exception("Sending message failed");
-        }
+
     });
 }
 
@@ -103,10 +95,7 @@ void HttpBasedTransport::Abort(Connection* connection)
         string_t uri = connection->GetUri() + U("abort") + GetSendQueryString(mTransportName, connection->GetConnectionToken(), U(""));
         uri += TransportHelper::AppendCustomQueryString(connection, uri);
 
-        http_request request(methods::POST);
-        request.set_request_uri(uri);
-
-        mHttpClient->request(request);
+        mHttpClient->Post(uri, connection->PrepareRequest, false);
     }
 
     mAbortLock.unlock();

@@ -72,7 +72,9 @@
     <ClCompile Include="ChunkBuffer.cpp" />
     <ClCompile Include="Connection.cpp" />
     <ClCompile Include="HttpBasedTransport.cpp" />
+    <ClCompile Include="HttpRequestWrapper.cpp" />
     <ClCompile Include="IClientTransport.cpp" />
+    <ClCompile Include="IConnection.cpp" />
     <ClCompile Include="LongPollingTransport.cpp" />
     <ClCompile Include="ServerSentEventsTransport.cpp" />
     <ClCompile Include="Source.cpp" />
@@ -91,7 +93,10 @@
     <ClInclude Include="AsyncStreamReader.h" />
     <ClInclude Include="DefaultHttpClient.h" />
     <ClInclude Include="HttpBasedTransport.h" />
+    <ClInclude Include="HttpRequestWrapper.h" />
     <ClInclude Include="IClientTransport.h" />
+    <ClInclude Include="IConnection.h" />
+    <ClInclude Include="IHttpClient.h" />
     <ClInclude Include="LongPollingTransport.h" />
     <ClInclude Include="NegotiationResponse.h" />
     <ClInclude Include="EventSourceStreamReader.h" />

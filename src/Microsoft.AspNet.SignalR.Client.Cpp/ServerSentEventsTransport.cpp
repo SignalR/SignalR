@@ -1,6 +1,6 @@
 #include "ServerSentEventsTransport.h"
 
-ServerSentEventsTransport::ServerSentEventsTransport(http_client* httpClient) : 
+ServerSentEventsTransport::ServerSentEventsTransport(IHttpClient* httpClient) : 
     HttpBasedTransport(httpClient, U("serverSentEvents"))
 {
 
@@ -20,12 +20,13 @@ void ServerSentEventsTransport::OpenConnection(Connection* connection, string_t 
 {
     bool reconnecting = initializeCallback == NULL;
 
-    utility::string_t uri = connection->GetUri() + U("connect") + GetReceiveQueryString(connection, data);
+    string_t uri = connection->GetUri() + U("connect") + GetReceiveQueryString(connection, data);
 
-    http_request request(methods::GET);
-    request.set_request_uri(uri);
-
-    GetHttpClient()->request(request).then([this, connection, data](http_response response) 
+    GetHttpClient()->Get(uri, [this, connection](HttpRequestWrapper* request)
+    {
+        mRequest = request;
+        //connection->PrepareRequest(request);
+    }, true).then([this, connection, data](http_response response) 
     {
         // check if the task failed
         EventSourceStreamReader* eventSource = new EventSourceStreamReader(connection, response.body());

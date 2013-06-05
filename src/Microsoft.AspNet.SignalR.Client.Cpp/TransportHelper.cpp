@@ -9,7 +9,7 @@ TransportHelper::~TransportHelper(void)
 {
 }
 
-task<NegotiationResponse*> TransportHelper::GetNegotiationResponse(http_client* httpClient, Connection* connection)
+task<NegotiationResponse*> TransportHelper::GetNegotiationResponse(IHttpClient* httpClient, Connection* connection)
 {
     if (httpClient == NULL)
     {
@@ -21,7 +21,7 @@ task<NegotiationResponse*> TransportHelper::GetNegotiationResponse(http_client* 
         throw exception("ArgumentNullException: connection");
     }
 
-    string_t uri = connection->GetUri() + U("/negotiate");
+    string_t uri = connection->GetUri() + U("negotiate");
     uri += AppendCustomQueryString(connection, uri);
 
     string_t appender = U("?");
@@ -32,10 +32,9 @@ task<NegotiationResponse*> TransportHelper::GetNegotiationResponse(http_client* 
 
     uri += appender + U("clientProtocol=") + connection->GetProtocol();
 
-    http_request request(methods::GET);
-    request.set_request_uri(uri);
+    httpClient->Initialize(connection);
 
-    return httpClient->request(request).then([](http_response response) -> NegotiationResponse*
+    return httpClient->Get(uri, connection->PrepareRequest, false).then([](http_response response) -> NegotiationResponse*
     {
         NegotiationResponse* responseObject = new NegotiationResponse();
         

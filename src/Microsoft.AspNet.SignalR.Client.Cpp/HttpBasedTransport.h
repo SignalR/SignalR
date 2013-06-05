@@ -13,7 +13,7 @@ class HttpBasedTransport :
     public IClientTransport
 {
 public:
-    HttpBasedTransport(http_client* httpClient, string_t transport);
+    HttpBasedTransport(IHttpClient* httpClient, string_t transport);
     ~HttpBasedTransport(void);
 
     task<NegotiationResponse*> Negotiate(Connection* connection);
@@ -23,7 +23,7 @@ public:
     void Dispose();
 
 protected:
-    http_client* GetHttpClient();
+    IHttpClient* GetHttpClient();
 
     void Dispose(bool disposing);
     void CompleteAbort();
@@ -37,7 +37,7 @@ private:
     bool mDisposed;
     mutex mAbortLock;
     mutex mDisposeLock;
-    http_client* mHttpClient;
+    IHttpClient* mHttpClient;
     Concurrency::event* mAbortResetEvent;
 };
 
