@@ -124,7 +124,7 @@
     <value>The streamIndex value {0} is higher than the maximum configured index {1}</value>
   </data>
   <data name="Error_UnexpectedSqlNotificationType" xml:space="preserve">
-    <value>An unexpected SQL notification type was received. Details: Type={0}, Source={1}, Info={2}</value>
+    <value>An unexpected SqlNotificationType was received. Details: Type={0}, Source={1}, Info={2}</value>
   </data>
   <data name="Error_UnsupportedSqlEdition" xml:space="preserve">
     <value>The SQL Server edition of the target server is unsupported, e.g. SQL Azure.</value>
