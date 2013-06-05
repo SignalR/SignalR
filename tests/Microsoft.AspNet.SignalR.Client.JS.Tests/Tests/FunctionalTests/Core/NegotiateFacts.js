@@ -115,5 +115,22 @@
             };
         });
 
+        QUnit.asyncTimeoutTest(transport + ": connection uses client set transportConnectTimeout.", testUtilities.defaultTestTimeout, function (end, assert, testName) {
+            var connection = testUtilities.createConnection("signalr", end, assert, testName, false),
+                newTimeout = 4000;
+
+            assert.equal(connection.transportConnectTimeout, null, "Transport connect timeout is null prior to connection start.");
+            connection.transportConnectTimeout = newTimeout;
+
+            connection.start().done(function () {
+                assert.equal(connection.transportConnectTimeout, newTimeout, "Transport utilized existing transportConnectTimeout instead of using server value.");
+                end();
+            });
+
+            return function () {
+                connection.stop();
+            };
+        });
+
     });
 })($, window);

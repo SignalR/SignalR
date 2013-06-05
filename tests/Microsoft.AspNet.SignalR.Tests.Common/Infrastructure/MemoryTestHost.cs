@@ -25,10 +25,11 @@ namespace Microsoft.AspNet.SignalR.Tests.Common.Infrastructure
         public override void Initialize(int? keepAlive = -1,
                                         int? connectionTimeout = 110,
                                         int? disconnectTimeout = 30,
+                                        int? transportConnectTimeout = 5,
                                         bool enableAutoRejoiningGroups = false,
                                         MessageBusType messageBusType = MessageBusType.Default)
         {
-            base.Initialize(keepAlive, connectionTimeout, disconnectTimeout, enableAutoRejoiningGroups, messageBusType);
+            base.Initialize(keepAlive, connectionTimeout, disconnectTimeout, transportConnectTimeout, enableAutoRejoiningGroups, messageBusType);
 
             _host.Configure(app =>
             {

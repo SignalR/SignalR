@@ -9,6 +9,8 @@ namespace Microsoft.AspNet.SignalR.Configuration
     /// </summary>
     public interface IConfigurationManager
     {
+        TimeSpan TransportConnectTimeout { get; set; }
+
         /// <summary>
         /// Gets or sets a <see cref="TimeSpan"/> representing the amount of time to leave a connection open before timing out.
         /// </summary>

@@ -93,6 +93,7 @@
     <Compile Include="IConnection.cs" />
     <Compile Include="Infrastructure\ErrorExtensions.cs" />
     <Compile Include="Infrastructure\SignalRError.cs" />
+    <Compile Include="Infrastructure\TransportInitializationHandler.cs" />
     <Compile Include="Infrastructure\UrlEncoder.cs" />
     <Compile Include="KeepAliveData.cs" />
     <Compile Include="Infrastructure\ExceptionHelper.cs" />

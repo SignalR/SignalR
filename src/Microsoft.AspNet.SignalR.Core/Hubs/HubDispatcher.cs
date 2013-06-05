@@ -178,7 +178,7 @@ namespace Microsoft.AspNet.SignalR.Hubs
             var hub = CreateHub(request, descriptor, connectionId, tracker, throwIfFailedToCreate: true);
 
             return InvokeHubPipeline(hub, parameterValues, methodDescriptor, hubRequest, tracker)
-                .ContinueWith(task => hub.Dispose(), TaskContinuationOptions.ExecuteSynchronously);
+                .ContinueWithPreservedCulture(task => hub.Dispose(), TaskContinuationOptions.ExecuteSynchronously);
         }
 
         [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "Exceptions are flown to the caller.")]
@@ -204,7 +204,7 @@ namespace Microsoft.AspNet.SignalR.Hubs
             }
 
             // Determine if we have a faulted task or not and handle it appropriately.
-            return piplineInvocation.ContinueWith(task =>
+            return piplineInvocation.ContinueWithPreservedCulture(task =>
             {
                 if (task.IsFaulted)
                 {
@@ -510,7 +510,7 @@ namespace Microsoft.AspNet.SignalR.Hubs
 
         private static void ContinueAsync<T>(Task<T> task, TaskCompletionSource<object> tcs)
         {
-            task.ContinueWith(t =>
+            task.ContinueWithPreservedCulture(t =>
             {
                 if (t.IsFaulted)
                 {

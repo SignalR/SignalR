@@ -138,6 +138,15 @@ namespace Microsoft.AspNet.SignalR.Client {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Transport timed out trying to connect.
+        /// </summary>
+        internal static string Error_TransportTimedOutTryingToConnect {
+            get {
+                return ResourceManager.GetString("Error_TransportTimedOutTryingToConnect", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Url cannot contain query string directly. Pass query string values in using available overload..
         /// </summary>
         internal static string Error_UrlCantContainQueryStringDirectly {
