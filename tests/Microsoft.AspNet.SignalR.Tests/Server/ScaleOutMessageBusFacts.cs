@@ -94,7 +94,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
 
                 try
                 {
-                    subscription = bus.Subscribe(subscriber, "0,00000000|1,00000000", (result, state) =>
+                    subscription = bus.Subscribe(subscriber, "s-0,00000000|1,00000000", (result, state) =>
                     {
                         foreach (var m in result.GetMessages())
                         {
@@ -150,7 +150,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
 
                 try
                 {
-                    subscription = bus.Subscribe(subscriber, "0,0|1,0|2,0", (result, state) =>
+                    subscription = bus.Subscribe(subscriber, "s-0,0|1,0|2,0", (result, state) =>
                     {
                         foreach (var m in result.GetMessages())
                         {
@@ -197,7 +197,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
 
                 try
                 {
-                    subscription = bus.Subscribe(subscriber, "0,1", (result, state) =>
+                    subscription = bus.Subscribe(subscriber, "s-0,1", (result, state) =>
                     {
                         foreach (var m in result.GetMessages())
                         {
@@ -255,7 +255,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
 
                 try
                 {
-                    subscription = bus.Subscribe(subscriber, "0,27|1,AA", (result, state) =>
+                    subscription = bus.Subscribe(subscriber, "s-0,27|1,AA", (result, state) =>
                     {
                         foreach (var m in result.GetMessages())
                         {
@@ -297,7 +297,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
 
                 try
                 {
-                    subscription = bus.Subscribe(subscriber, "0,0|1,0|2,4", (result, state) =>
+                    subscription = bus.Subscribe(subscriber, "s-0,0|1,0|2,4", (result, state) =>
                     {
                         foreach (var m in result.GetMessages())
                         {
@@ -346,7 +346,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
 
                 try
                 {
-                    subscription = bus.Subscribe(subscriber, "0,0", (result, state) =>
+                    subscription = bus.Subscribe(subscriber, "s-0,0", (result, state) =>
                     {
                         foreach (var m in result.GetMessages())
                         {

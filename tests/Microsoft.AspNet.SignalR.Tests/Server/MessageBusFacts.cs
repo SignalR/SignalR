@@ -336,7 +336,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
 
                 try
                 {
-                    subscription = bus.Subscribe(subscriberFactory(), "key,00000001", (result, state) =>
+                    subscription = bus.Subscribe(subscriberFactory(), "d-key,00000001", (result, state) =>
                     {
                         foreach (var m in result.GetMessages())
                         {
@@ -389,7 +389,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
 
                 try
                 {
-                    subscription = bus.Subscribe(subscriberFactory(), "key,00000001|key2,00000000", (result, state) =>
+                    subscription = bus.Subscribe(subscriberFactory(), "d-key,00000001|key2,00000000", (result, state) =>
                     {
                         foreach (var m in result.GetMessages())
                         {
@@ -436,7 +436,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
 
                 try
                 {
-                    subscription = bus.Subscribe(subscriber, "key,00000001", (result, state) =>
+                    subscription = bus.Subscribe(subscriber, "d-key,00000001", (result, state) =>
                     {
                         foreach (var m in result.GetMessages())
                         {
