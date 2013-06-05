@@ -36,6 +36,7 @@ public:
     void OnReconnecting();
     void OnReconnected();
     void OnConnectionSlow();
+    void PrepareRequest(HttpRequestWrapper* request);
 
 private:
     mutex mStateLock;

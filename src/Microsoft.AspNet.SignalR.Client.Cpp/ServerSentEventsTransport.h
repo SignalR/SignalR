@@ -2,6 +2,7 @@
 
 #include "HttpBasedTransport.h"
 #include "EventSourceStreamReader.h"
+#include "ThreadSafeInvoker.h"
 
 using namespace utility;
 

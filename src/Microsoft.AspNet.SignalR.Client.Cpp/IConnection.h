@@ -31,7 +31,6 @@ public:
     void SetProtocol(string_t protocol);
     void SetMessageId(string_t groupsToken);
     void SetGroupsToken(string_t groupsToken);  
-    function<void(HttpRequestWrapper*)> PrepareRequest;
 
 protected:
     string_t mProtocol;
@@ -41,7 +40,6 @@ protected:
     string_t mConnectionToken;
     string_t mUri;
     string_t mQueryString;
-
 
     ConnectionState mState;
     IClientTransport* mTransport;
@@ -54,4 +52,5 @@ protected:
     virtual void OnReconnecting() = 0;
     virtual void OnReconnected() = 0;
     virtual void OnConnectionSlow() = 0;
+    virtual void PrepareRequest(HttpRequestWrapper* request) = 0;
 };

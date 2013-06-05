@@ -188,10 +188,10 @@ void Connection::OnConnectionSlow()
     }
 }
 
-//void Connection::PrepareRequest(HttpRequestWrapper* request)
-//{
-//
-//}
+void Connection::PrepareRequest(HttpRequestWrapper* request)
+{
+
+}
 
 void Connection::SetConnectionToken(string_t connectionToken)
 {

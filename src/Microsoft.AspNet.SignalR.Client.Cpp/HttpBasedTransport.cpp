@@ -66,7 +66,10 @@ task<void> HttpBasedTransport::Send(Connection* connection, string_t data)
 
     string_t encodedData = U("data=") + uri::encode_data_string(data);
 
-    return mHttpClient->Post(uri, connection->PrepareRequest, encodedData, false).then([connection](http_response response)
+    return mHttpClient->Post(uri, [connection](HttpRequestWrapper* request)
+    {
+        connection->PrepareRequest(request);
+    }, encodedData, false).then([connection](http_response response)
     {
 
     });
@@ -95,7 +98,10 @@ void HttpBasedTransport::Abort(Connection* connection)
         string_t uri = connection->GetUri() + U("abort") + GetSendQueryString(mTransportName, connection->GetConnectionToken(), U(""));
         uri += TransportHelper::AppendCustomQueryString(connection, uri);
 
-        mHttpClient->Post(uri, connection->PrepareRequest, false);
+        mHttpClient->Post(uri, [connection](HttpRequestWrapper* request)
+        {
+            connection->PrepareRequest(request);
+        }, false);
     }
 
     mAbortLock.unlock();

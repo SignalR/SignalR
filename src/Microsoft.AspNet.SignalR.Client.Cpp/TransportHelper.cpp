@@ -34,7 +34,10 @@ task<NegotiationResponse*> TransportHelper::GetNegotiationResponse(IHttpClient* 
 
     httpClient->Initialize(connection);
 
-    return httpClient->Get(uri, connection->PrepareRequest, false).then([](http_response response) -> NegotiationResponse*
+    return httpClient->Get(uri, [connection](HttpRequestWrapper* request)
+    {
+        connection->PrepareRequest(request);
+    }, false).then([](http_response response) -> NegotiationResponse*
     {
         NegotiationResponse* responseObject = new NegotiationResponse();
         

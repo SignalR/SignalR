@@ -19,19 +19,27 @@ void ServerSentEventsTransport::Reconnect(Connection* connection, string_t data)
 void ServerSentEventsTransport::OpenConnection(Connection* connection, string_t data, cancellation_token disconnectToken, call<int>* initializeCallback, call<int>* errorCallback)
 {
     bool reconnecting = initializeCallback == NULL;
+    ThreadSafeInvoker* callbackInvoker = new ThreadSafeInvoker();
 
-    string_t uri = connection->GetUri() + U("connect") + GetReceiveQueryString(connection, data);
+    string_t uri = connection->GetUri() + (reconnecting ? U("reconnect") : U("connect")) + GetReceiveQueryString(connection, data);
 
     GetHttpClient()->Get(uri, [this, connection](HttpRequestWrapper* request)
     {
         mRequest = request;
-        //connection->PrepareRequest(request);
-    }, true).then([this, connection, data](http_response response) 
+        connection->PrepareRequest(request);
+    }, true).then([this, connection, data, disconnectToken](http_response response) 
     {
         // check if the task failed
+
         EventSourceStreamReader* eventSource = new EventSourceStreamReader(connection, response.body());
 
         bool* stop = false;
+        
+        disconnectToken.register_callback<function<void()>>([stop, this]()
+        {
+            *stop = true;
+            mRequest->Abort();
+        });
 
         eventSource->Opened = [connection]()
         {
@@ -98,7 +106,10 @@ void ServerSentEventsTransport::OpenConnection(Connection* connection, string_t 
 
 void ServerSentEventsTransport::LostConnection(Connection* connection)
 {
-
+    if (mRequest != NULL)
+    {
+        mRequest->Abort();
+    }
 }
 
 bool ServerSentEventsTransport::SupportsKeepAlive()
