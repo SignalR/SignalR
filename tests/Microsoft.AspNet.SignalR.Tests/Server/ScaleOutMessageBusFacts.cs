@@ -381,6 +381,51 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
         }
 
         [Fact]
+        public void SubscriptionWithDefaultCursorGetsOnlyNewMessages()
+        {
+            var dr = new DefaultDependencyResolver();
+
+            using (var bus = new TestScaleoutBus(dr, streams: 1))
+            {
+                var subscriber = new TestSubscriber(new[] { "key" });
+                IDisposable subscription = null;
+                var tcs = new TaskCompletionSource<MessageResult>();
+
+                bus.Publish(0, 1ul, new[] { 
+                    new Message("test", "key", "badvalue")
+                });
+
+                try
+                {
+                    subscription = bus.Subscribe(subscriber, "d-0,0", (result, state) =>
+                    {
+                        tcs.TrySetResult(result);
+                        return TaskAsyncHelper.True;
+                    }, 100, null);
+
+                    bus.Publish(0, 2ul, new[] {
+                        new Message("test", "key", "value")
+                    });
+
+                    Assert.True(tcs.Task.Wait(TimeSpan.FromSeconds(5)));
+
+                    foreach (var m in tcs.Task.Result.GetMessages())
+                    {
+                        Assert.Equal("key", m.Key);
+                        Assert.Equal("value", m.GetString());
+                    }
+                }
+                finally
+                {
+                    if (subscription != null)
+                    {
+                        subscription.Dispose();
+                    }
+                }
+            }
+        }
+
+        [Fact]
         public void SubscriptionPublishingAfter()
         {
             var dr = new DefaultDependencyResolver();
