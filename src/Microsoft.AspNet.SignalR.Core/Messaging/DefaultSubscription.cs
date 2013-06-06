@@ -11,6 +11,8 @@ namespace Microsoft.AspNet.SignalR.Messaging
 {
     internal class DefaultSubscription : Subscription
     {
+        private const string _defaultCursorPrefix = "d-";
+
         private List<Cursor> _cursors;
         private List<Topic> _cursorTopics;
 
@@ -36,7 +38,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
             else
             {
                 // Ensure delegate continues to use the C# Compiler static delegate caching optimization.
-                _cursors = Cursor.GetCursors(cursor, (k, s) => UnminifyCursor(k, s), stringMinifier) ?? GetCursorsFromEventKeys(EventKeys, topics);
+                _cursors = Cursor.GetCursors(cursor, _defaultCursorPrefix, (k, s) => UnminifyCursor(k, s), stringMinifier) ?? GetCursorsFromEventKeys(EventKeys, topics);
             }
 
             _cursorTopics = new List<Topic>();
@@ -126,7 +128,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
         {
             lock (_cursors)
             {
-                Cursor.WriteCursors(textWriter, _cursors);
+                Cursor.WriteCursors(textWriter, _cursors, _defaultCursorPrefix);
             }
         }
 
