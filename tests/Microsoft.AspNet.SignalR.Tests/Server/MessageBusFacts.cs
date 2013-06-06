@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR.Configuration;
 using Microsoft.AspNet.SignalR.Infrastructure;
 using Microsoft.AspNet.SignalR.Messaging;
@@ -452,6 +453,51 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
                     bus.Publish("test", "key", "value");
 
                     Assert.True(wh.WaitOne(TimeSpan.FromSeconds(5)));
+                }
+                finally
+                {
+                    if (subscription != null)
+                    {
+                        subscription.Dispose();
+                    }
+                }
+            }
+        }
+
+        [Fact]
+        public void SubscriptionWithScaleoutCursorGetsOnlyNewMessages()
+        {
+            var dr = new DefaultDependencyResolver();
+            var passThroughMinfier = new PassThroughStringMinifier();
+            dr.Register(typeof(IStringMinifier), () => passThroughMinfier);
+            using (var bus = new MessageBus(dr))
+            {
+                Func<ISubscriber> subscriberFactory = () => new TestSubscriber(new[] { "key" });
+                var tcs = new TaskCompletionSource<MessageResult>();
+                IDisposable subscription = null;
+
+                try
+                {
+                    // Set-up dummy subscription so the first Publish doesn't noop
+                    bus.Subscribe(subscriberFactory(), null, (result, state) => TaskAsyncHelper.True, 10, null).Dispose();
+
+                    bus.Publish("test", "key", "badvalue").Wait();
+
+                    subscription = bus.Subscribe(subscriberFactory(), "s-key,00000000", (result, state) =>
+                    {
+                        tcs.TrySetResult(result);
+                        return TaskAsyncHelper.True;
+                    }, 10, null);
+
+                    bus.Publish("test", "key", "value");
+
+                    Assert.True(tcs.Task.Wait(TimeSpan.FromSeconds(5)));
+
+                    foreach (var m in tcs.Task.Result.GetMessages())
+                    {
+                        Assert.Equal("key", m.Key);
+                        Assert.Equal("value", m.GetString());
+                    }
                 }
                 finally
                 {
