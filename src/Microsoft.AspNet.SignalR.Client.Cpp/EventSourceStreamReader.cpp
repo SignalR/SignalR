@@ -4,9 +4,9 @@ EventSourceStreamReader::EventSourceStreamReader(Connection* connection, Concurr
     : AsyncStreamReader(stream)
 {
     mConnection = connection;
-    mBuffer = new ChunkBuffer();
+    mBuffer = unique_ptr<ChunkBuffer>(new ChunkBuffer());
 
-    Data = [this](char readBuffer[]){
+    Data = [this](shared_ptr<char> readBuffer){
         ProcessBuffer(readBuffer);
     };
 }
@@ -14,10 +14,10 @@ EventSourceStreamReader::EventSourceStreamReader(Connection* connection, Concurr
 
 EventSourceStreamReader::~EventSourceStreamReader(void)
 {
-    delete mBuffer;
+    mBuffer.reset();
 }
 
-void EventSourceStreamReader::ProcessBuffer(char readBuffer[])
+void EventSourceStreamReader::ProcessBuffer(shared_ptr<char> readBuffer)
 {
     mBufferLock.lock();
 
@@ -32,7 +32,7 @@ void EventSourceStreamReader::ProcessBuffer(char readBuffer[])
             continue;
         }
 
-        SseEvent* sseEvent;
+        shared_ptr<SseEvent> sseEvent;
         if (!SseEvent::TryParse(line, &sseEvent))
         {
             continue;
@@ -44,7 +44,7 @@ void EventSourceStreamReader::ProcessBuffer(char readBuffer[])
     mBufferLock.unlock();
 }
 
-void EventSourceStreamReader::OnMessage(SseEvent* sseEvent)
+void EventSourceStreamReader::OnMessage(shared_ptr<SseEvent> sseEvent)
 {
     if (Message != NULL)
     {

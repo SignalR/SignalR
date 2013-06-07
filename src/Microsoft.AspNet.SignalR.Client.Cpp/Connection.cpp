@@ -22,47 +22,55 @@ Connection::~Connection()
 task<void> Connection::Start() 
 {
     // Start(new DefaultHttpClient());
-    return Start(new DefaultHttpClient());
+    return Start(shared_ptr<IHttpClient>(new DefaultHttpClient()));
 }
 
-task<void> Connection::Start(IHttpClient* client) 
+task<void> Connection::Start(shared_ptr<IHttpClient> client) 
 {	
     // Start(new AutoTransport(client));
     //return Start(new WebSocketTransport(client));
     //return Start(new LongPollingTransport(client));
-    return Start(new ServerSentEventsTransport(client));
+    return Start(shared_ptr<IClientTransport>(new ServerSentEventsTransport(client)));
 }
 
-task<void> Connection::Start(IClientTransport* transport) 
+task<void> Connection::Start(shared_ptr<IClientTransport> transport) 
 {	
-    mDisconnectCts = new cancellation_token_source();
-    mTransport = transport;
+    mStartLock.lock();
+
+    mConnectTask = task<void>();
+    mDisconnectCts = unique_ptr<cancellation_token_source>(new cancellation_token_source());
 
     if(!ChangeState(ConnectionState::Disconnected, ConnectionState::Connecting))
     {
         // temp failure resolution
-        return pplx::task<void>();
+        return mConnectTask; 
     }
     
-    return Negotiate(transport);
+    mTransport = transport;
+    mConnectTask = Negotiate(transport);
+    
+    mStartLock.unlock();
+
+    return mConnectTask;
 }
 
-task<void> Connection::Negotiate(IClientTransport* transport) 
+task<void> Connection::Negotiate(shared_ptr<IClientTransport> transport) 
 {
-    return mTransport->Negotiate(this).then([this](NegotiationResponse* response)
+    return mTransport->Negotiate(this).then([this](shared_ptr<NegotiationResponse> response)
     {
         mConnectionId = response->ConnectionId;
         mConnectionToken = response->ConnectionToken;
 
         StartTransport();
-        ChangeState(ConnectionState::Connecting, ConnectionState::Connected);
-
     });
 }
 
 task<void> Connection::StartTransport()
 {
-    return mTransport->Start(this, U(""), mDisconnectCts->get_token());
+    return mTransport->Start(this, U(""), mDisconnectCts->get_token()).then([this]()
+    {
+        ChangeState(ConnectionState::Connecting, ConnectionState::Connected);
+    });
 }
 
 task<void> Connection::Send(value::field_map object)
@@ -101,12 +109,38 @@ bool Connection::EnsureReconnecting()
 
 void Connection::Stop() 
 {
-    
+    mStartLock.lock();
+
+    if (mConnectTask != task<void>())
+    {
+        try
+        {
+            mConnectTask.wait();
+        }
+        catch (exception& ex)
+        {
+
+        }
+    }
+
+    if (mState != ConnectionState::Disconnected)
+    {
+        mTransport->Abort(this);
+
+        Disconnect();
+
+        if (mTransport)
+        {
+            mTransport->Dispose();
+        }
+    }
+
+    mStartLock.unlock();
 }
 
 void Connection::Disconnect()
 {
-    mStateLock.lock();
+    //mStateLock.lock();
 
     if (mState != ConnectionState::Disconnected)
     {
@@ -123,7 +157,7 @@ void Connection::Disconnect()
         }
     }
 
-    mStateLock.unlock();
+    //mStateLock.unlock();
 }
 
 void Connection::OnTransportStartCompleted(exception* error, void* state) 
@@ -188,7 +222,7 @@ void Connection::OnConnectionSlow()
     }
 }
 
-void Connection::PrepareRequest(HttpRequestWrapper* request)
+void Connection::PrepareRequest(shared_ptr<HttpRequestWrapper> request)
 {
 
 }
@@ -212,15 +246,13 @@ void Connection::SetState(ConnectionState newState)
 {
     mStateLock.lock();
 
-    StateChange* stateChange = new StateChange(mState, newState);
+    shared_ptr<StateChange> stateChange = shared_ptr<StateChange>(new StateChange(mState, newState));
     mState = newState;
 
     if (StateChanged != NULL)
     {
         StateChanged(stateChange);
     }
-    
-    delete stateChange;
 
     mStateLock.unlock();
 }

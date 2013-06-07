@@ -2,12 +2,19 @@
 #include <http_client.h>
 #include "Connection.h"
 
+#define _CRTDBG_MAP_ALLOC
+#include <crtdbg.h>
+#include <stdlib.h>
+
 using namespace utility;
 using namespace std;
 using namespace web::json;
 
 static void RunStreamingSample()
 {
+    //_CrtMemState s1, s2, s3;
+    //_CrtMemCheckpoint(&s1);
+
     wcout << U("Choose transport:") << endl;
     wcout << U("1. AutoTransport") << endl;
     wcout << U("2. ServerSentEventsTransport") << endl;
@@ -18,14 +25,16 @@ static void RunStreamingSample()
 
     if (key == U("1") || key == U("2"))
     {
-        Connection* connection = new Connection(U("http://localhost:40476/raw-connection"));
+        key.~basic_string(); // Memory leak detector complains that key is lost
+
+        Connection connection(U("http://localhost:40476/raw-connection"));
     
-        connection->Received = [](string_t message)
+        connection.Received = [](string_t message)
         {
             wcout << message << endl;
         };
 
-        connection->Reconnected = []()
+        connection.Reconnected = []()
         {
             time_t now = time(0);
             struct tm* nowStruct = localtime(&now);
@@ -34,23 +43,24 @@ static void RunStreamingSample()
                 << nowStruct->tm_hour << ":" << nowStruct->tm_min << ":" << nowStruct->tm_sec << "]: Connection restablished" << endl;
         };
 
-        connection->StateChanged = [](StateChange* stateChange)
+        connection.StateChanged = [](shared_ptr<StateChange> stateChange)
         {
             wcout << stateChange->GetOldStateName() << " => " << stateChange->GetNewStateName() << endl;
         };
 
-        connection->Error = [](exception& ex)
+        connection.Error = [](exception& ex)
         {
             wcerr << U("========ERROR==========") << endl;
             wcerr << ex.what() << endl;
             wcerr << U("=======================") << endl;
         };
 
+
         try
         {
-            connection->Start().wait();
+            connection.Start().wait();
 
-            wcout << U("Using ") << connection->GetTransport()->GetTransportName() << endl;
+            wcout << U("Using ") << connection.GetTransport()->GetTransportName() << endl;
         }
         catch (exception& ex)
         {
@@ -58,9 +68,10 @@ static void RunStreamingSample()
             wcerr << ex.what() << endl;
             wcerr << U("=======================") << endl;
 
-            delete connection;
+            connection.Stop();
             return;
         }
+
         string_t line;
         getline(wcin, line);
 
@@ -70,19 +81,35 @@ static void RunStreamingSample()
             object.push_back(make_pair(value(U("type")), value(1)));
             object.push_back(make_pair(value(U("value")), value(line)));
 
-            connection->Send(object).wait();
+            connection.Send(object).wait();
 
             getline(wcin, line);
         }
 
-        delete connection;
-    }
+        connection.Stop();
+    }  
+    //_CrtMemCheckpoint(&s2);
+    //if (_CrtMemDifference(&s3, &s1, &s2))
+    //{
+    //    _CrtMemDumpStatistics(&s3);
+    //}
 }
 
 int main () 
 {
+    //_CrtMemState s1, s2, s3;
+    //_CrtMemCheckpoint(&s1);
+
     RunStreamingSample();
 
     wcout << U("Press <Enter> to Exit ...") << endl;
     getwchar();
+
+    //_CrtMemCheckpoint(&s2);
+    //if (_CrtMemDifference(&s3, &s1, &s2))
+    //{
+    //    _CrtMemDumpStatistics(&s3);
+    //}
+    
+    _CrtDumpMemoryLeaks();
 }

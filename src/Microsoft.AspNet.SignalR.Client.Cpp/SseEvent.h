@@ -21,7 +21,7 @@ public:
     EventType GetType();
     string_t GetData();
     string_t ToString();
-    static bool TryParse(string_t line, SseEvent** sseEvent);
+    static bool TryParse(string_t line, shared_ptr<SseEvent>* sseEvent);
 
 private:
     EventType mType;

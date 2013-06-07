@@ -1,6 +1,6 @@
 #include "LongPollingTransport.h"
 
-LongPollingTransport::LongPollingTransport(IHttpClient* httpClient) :
+LongPollingTransport::LongPollingTransport(shared_ptr<IHttpClient> httpClient) :
     HttpBasedTransport(httpClient, U("longPolling"))
 {
 }

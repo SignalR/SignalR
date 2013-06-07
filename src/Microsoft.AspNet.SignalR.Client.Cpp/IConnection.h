@@ -26,7 +26,7 @@ public:
     string_t GetUri();
     string_t GetQueryString();
     ConnectionState GetState();
-    IClientTransport* GetTransport();
+    shared_ptr<IClientTransport> GetTransport();
     
     void SetProtocol(string_t protocol);
     void SetMessageId(string_t groupsToken);
@@ -42,7 +42,7 @@ protected:
     string_t mQueryString;
 
     ConnectionState mState;
-    IClientTransport* mTransport;
+    shared_ptr<IClientTransport> mTransport;
 
     virtual void Stop() = 0;
     virtual void Disconnect() = 0;
@@ -52,5 +52,5 @@ protected:
     virtual void OnReconnecting() = 0;
     virtual void OnReconnected() = 0;
     virtual void OnConnectionSlow() = 0;
-    virtual void PrepareRequest(HttpRequestWrapper* request) = 0;
+    virtual void PrepareRequest(shared_ptr<HttpRequestWrapper> request) = 0;
 };

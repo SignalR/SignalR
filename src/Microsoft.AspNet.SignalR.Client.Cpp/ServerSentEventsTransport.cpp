@@ -1,12 +1,16 @@
 #include "ServerSentEventsTransport.h"
 
-ServerSentEventsTransport::ServerSentEventsTransport(IHttpClient* httpClient) : 
+ServerSentEventsTransport::ServerSentEventsTransport(shared_ptr<IHttpClient> httpClient) : 
     HttpBasedTransport(httpClient, U("serverSentEvents"))
 {
 
 }
 
-void ServerSentEventsTransport::OnStart(Connection* connection, string_t data, cancellation_token disconnectToken,  call<int>* initializeCallback, call<int>* errorCallback)
+ServerSentEventsTransport::~ServerSentEventsTransport()
+{
+}
+
+void ServerSentEventsTransport::OnStart(Connection* connection, string_t data, cancellation_token disconnectToken,  function<void()> initializeCallback, function<void()> errorCallback)
 {
     OpenConnection(connection, data, disconnectToken, initializeCallback, errorCallback);
 }
@@ -16,14 +20,14 @@ void ServerSentEventsTransport::Reconnect(Connection* connection, string_t data)
 
 }
 
-void ServerSentEventsTransport::OpenConnection(Connection* connection, string_t data, cancellation_token disconnectToken, call<int>* initializeCallback, call<int>* errorCallback)
+void ServerSentEventsTransport::OpenConnection(Connection* connection, string_t data, cancellation_token disconnectToken, function<void()> initializeCallback, function<void()> errorCallback)
 {
     bool reconnecting = initializeCallback == NULL;
-    ThreadSafeInvoker* callbackInvoker = new ThreadSafeInvoker();
+    unique_ptr<ThreadSafeInvoker> callbackInvoker = unique_ptr<ThreadSafeInvoker>(new ThreadSafeInvoker());
 
     string_t uri = connection->GetUri() + (reconnecting ? U("reconnect") : U("connect")) + GetReceiveQueryString(connection, data);
 
-    GetHttpClient()->Get(uri, [this, connection](HttpRequestWrapper* request)
+    GetHttpClient()->Get(uri, [this, connection](shared_ptr<HttpRequestWrapper> request)
     {
         mRequest = request;
         connection->PrepareRequest(request);
@@ -31,17 +35,17 @@ void ServerSentEventsTransport::OpenConnection(Connection* connection, string_t 
     {
         // check if the task failed
 
-        EventSourceStreamReader* eventSource = new EventSourceStreamReader(connection, response.body());
+        mEventSource = unique_ptr<EventSourceStreamReader>(new EventSourceStreamReader(connection, response.body()));
 
-        bool* stop = false;
+        mStop = false;
         
-        disconnectToken.register_callback<function<void()>>([stop, this]()
+        disconnectToken.register_callback<function<void()>>([this]()
         {
-            *stop = true;
+            this->mStop = true;
             mRequest->Abort();
         });
 
-        eventSource->Opened = [connection]()
+        mEventSource->Opened = [connection]()
         {
             if (connection->ChangeState(ConnectionState::Reconnecting, ConnectionState::Connected))
             {
@@ -49,7 +53,7 @@ void ServerSentEventsTransport::OpenConnection(Connection* connection, string_t 
             }
         };
 
-        eventSource->Message = [connection, stop](SseEvent* sseEvent) 
+        mEventSource->Message = [connection, this](shared_ptr<SseEvent> sseEvent) 
         {
             if (sseEvent->GetType() == EventType::Data)
             {
@@ -63,13 +67,13 @@ void ServerSentEventsTransport::OpenConnection(Connection* connection, string_t 
 
                 if (disconnected)
                 {
-                    *stop = true;
+                    this->mStop = true;
                     connection->Disconnect();
                 }
             }
         };
 
-        eventSource->Closed = [stop, this, connection, data](exception& ex)
+        mEventSource->Closed = [this, connection, data](exception& ex)
         {
             //if (ex != null)
             //{
@@ -86,7 +90,7 @@ void ServerSentEventsTransport::OpenConnection(Connection* connection, string_t 
             //esCancellationRegistration.Dispose();
             //response.Dispose();
 
-            if (*stop)
+            if (this->mStop)
             {
                 CompleteAbort();
             }
@@ -100,7 +104,7 @@ void ServerSentEventsTransport::OpenConnection(Connection* connection, string_t 
             }
         };
 
-        eventSource->Start();
+        mEventSource->Start();
     });
 }
 

@@ -9,7 +9,7 @@ TransportHelper::~TransportHelper(void)
 {
 }
 
-task<NegotiationResponse*> TransportHelper::GetNegotiationResponse(IHttpClient* httpClient, Connection* connection)
+task<shared_ptr<NegotiationResponse>> TransportHelper::GetNegotiationResponse(shared_ptr<IHttpClient> httpClient, Connection* connection)
 {
     if (httpClient == NULL)
     {
@@ -34,12 +34,12 @@ task<NegotiationResponse*> TransportHelper::GetNegotiationResponse(IHttpClient* 
 
     httpClient->Initialize(connection);
 
-    return httpClient->Get(uri, [connection](HttpRequestWrapper* request)
+    return httpClient->Get(uri, [connection](shared_ptr<HttpRequestWrapper> request)
     {
         connection->PrepareRequest(request);
-    }, false).then([](http_response response) -> NegotiationResponse*
+    }, false).then([](http_response response) -> shared_ptr<NegotiationResponse>
     {
-        NegotiationResponse* responseObject = new NegotiationResponse();
+        shared_ptr<NegotiationResponse> responseObject = shared_ptr<NegotiationResponse>(new NegotiationResponse());
         
         value raw = response.extract_json().get();
 

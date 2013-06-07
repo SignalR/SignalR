@@ -27,7 +27,7 @@ void AsyncStreamReader::Start()
         };
 
         // FIX: Potential memory leak if Close is called between the CompareExchange and here.
-        mReadBuffer = new char[4096];
+        mReadBuffer = shared_ptr<char>(new char[4096]);
 
         // Start the process loop
         Process();
@@ -136,7 +136,7 @@ void AsyncStreamReader::Close(exception& ex)
 
         mBufferLock.lock();
             
-        mReadBuffer = NULL;
+        mReadBuffer.reset();
 
         mBufferLock.unlock();
     }
@@ -150,7 +150,7 @@ void AsyncStreamReader::OnOpened()
     }
 }
 
-void AsyncStreamReader::OnData(char buffer[])
+void AsyncStreamReader::OnData(shared_ptr<char> buffer)
 {
     if (Data != NULL)
     {
@@ -158,14 +158,15 @@ void AsyncStreamReader::OnData(char buffer[])
     }
 }
 
-task<unsigned int> AsyncStreamReader::AsyncReadIntoBuffer(char* buffer[], Concurrency::streams::basic_istream<uint8_t> stream)
+task<unsigned int> AsyncStreamReader::AsyncReadIntoBuffer(shared_ptr<char>* buffer, Concurrency::streams::basic_istream<uint8_t> stream)
 {
     concurrency::streams::container_buffer<string> inStringBuffer;
     return stream.read(inStringBuffer, 4096).then([inStringBuffer, buffer](size_t bytesRead)
     {
         string &text = inStringBuffer.collection();
-        *buffer = new char[text.length() + 1];
-        strcpy(*buffer, text.c_str());
+        (*buffer) = shared_ptr<char>(new char[text.length() + 1]);
+        int length = text.length();
+        strcpy((*buffer).get(), text.c_str());
 
         return (unsigned int)bytesRead;
     });

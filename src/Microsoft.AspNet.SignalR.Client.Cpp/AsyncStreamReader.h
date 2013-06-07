@@ -22,16 +22,16 @@ public:
     ~AsyncStreamReader(void);
     function<void()> Opened;
     function<void(exception& ex)> Closed;
-    function<void(char buffer[])> Data;
+    function<void(shared_ptr<char> buffer)> Data;
     void Start();
 
 protected:
-        mutex mBufferLock;
+    mutex mBufferLock;
 
 private:
     mutex mProcessLock;
     Concurrency::streams::basic_istream<uint8_t> mStream;
-    char* mReadBuffer;
+    shared_ptr<char> mReadBuffer;
     atomic<State> mReadingState;
     function<void()> mSetOpened;
 
@@ -42,6 +42,6 @@ private:
     void ReadAsync(pplx::task<unsigned int> readTask);
     bool TryProcessRead(unsigned read);
     void OnOpened();
-    void OnData(char buffer[]);
-    task<unsigned int> AsyncReadIntoBuffer(char* buffer[], Concurrency::streams::basic_istream<uint8_t> stream);
+    void OnData(shared_ptr<char> buffer);
+    task<unsigned int> AsyncReadIntoBuffer(shared_ptr<char>* buffer, Concurrency::streams::basic_istream<uint8_t> stream);
 };

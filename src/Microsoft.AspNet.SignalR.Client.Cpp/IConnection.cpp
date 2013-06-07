@@ -1,6 +1,6 @@
 #include "IConnection.h"
 
-IClientTransport* IConnection::GetTransport()
+shared_ptr<IClientTransport> IConnection::GetTransport()
 {
     return mTransport;
 }

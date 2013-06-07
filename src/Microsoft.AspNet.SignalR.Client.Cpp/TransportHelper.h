@@ -14,7 +14,7 @@ public:
     TransportHelper(void);
     ~TransportHelper(void);
 
-    static task<NegotiationResponse*> GetNegotiationResponse(IHttpClient* client, Connection* connnection);
+    static task<shared_ptr<NegotiationResponse>> GetNegotiationResponse(shared_ptr<IHttpClient> client, Connection* connnection);
     static string_t GetReceiveQueryString(Connection* connection, string_t data, string_t transport);
     static string_t AppendCustomQueryString(Connection* connection, string_t baseUrl);
     static void ProcessResponse(Connection* connection, string_t response, bool* timedOut, bool* disconnected);

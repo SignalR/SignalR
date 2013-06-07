@@ -1,9 +1,11 @@
 #include "HttpBasedTransport.h"
 
-HttpBasedTransport::HttpBasedTransport(IHttpClient* httpClient, string_t transport)
+HttpBasedTransport::HttpBasedTransport(shared_ptr<IHttpClient> httpClient, string_t transport)
 {
     mHttpClient = httpClient;
     mTransportName = transport;
+
+    mAbortResetEvent = unique_ptr<Concurrency::event>(new Concurrency::event());
 
     mStartedAbort = false;
     mDisposed = false;
@@ -11,15 +13,15 @@ HttpBasedTransport::HttpBasedTransport(IHttpClient* httpClient, string_t transpo
 
 HttpBasedTransport::~HttpBasedTransport(void)
 {
-    delete mHttpClient;
+
 }
 
-IHttpClient* HttpBasedTransport::GetHttpClient()
+shared_ptr<IHttpClient> HttpBasedTransport::GetHttpClient()
 {
     return mHttpClient;
 }
 
-task<NegotiationResponse*> HttpBasedTransport::Negotiate(Connection* connection)
+task<shared_ptr<NegotiationResponse>> HttpBasedTransport::Negotiate(Connection* connection)
 {
     return TransportHelper::GetNegotiationResponse(mHttpClient, connection);
 }
@@ -38,24 +40,21 @@ task<void> HttpBasedTransport::Start(Connection* connection, string_t data, canc
 {
     task_completion_event<void> tce;
     
-    auto initializeCallback = new call<int>([tce](int)
+
+    function<void()> initializeCallback = [tce]()
     {
         tce.set();
-    });
+    };
 
     exception ex;
 
-    auto errorCallback = new call<int>([tce, &ex](int)
+    function<void()> errorCallback = [tce, &ex]()
     {
         tce.set_exception(ex);
-    });
+    };
 
     OnStart(connection, data, disconnectToken, initializeCallback, errorCallback);
-    return task<void>(tce).then([initializeCallback, errorCallback]()
-    {
-        delete initializeCallback;
-        delete errorCallback;
-    });
+    return task<void>(tce);
 }
 
 task<void> HttpBasedTransport::Send(Connection* connection, string_t data)
@@ -66,7 +65,7 @@ task<void> HttpBasedTransport::Send(Connection* connection, string_t data)
 
     string_t encodedData = U("data=") + uri::encode_data_string(data);
 
-    return mHttpClient->Post(uri, [connection](HttpRequestWrapper* request)
+    return mHttpClient->Post(uri, [connection](shared_ptr<HttpRequestWrapper> request)
     {
         connection->PrepareRequest(request);
     }, encodedData, false).then([connection](http_response response)
@@ -98,10 +97,10 @@ void HttpBasedTransport::Abort(Connection* connection)
         string_t uri = connection->GetUri() + U("abort") + GetSendQueryString(mTransportName, connection->GetConnectionToken(), U(""));
         uri += TransportHelper::AppendCustomQueryString(connection, uri);
 
-        mHttpClient->Post(uri, [connection](HttpRequestWrapper* request)
+        mHttpClient->Post(uri, [connection](shared_ptr<HttpRequestWrapper> request)
         {
             connection->PrepareRequest(request);
-        }, false);
+        }, false).wait();
     }
 
     mAbortLock.unlock();
@@ -109,15 +108,15 @@ void HttpBasedTransport::Abort(Connection* connection)
 
 void HttpBasedTransport::CompleteAbort()
 {
-    mDisposeLock.lock();
+    //mDisposeLock.lock();
 
     if (!mDisposed)
     {
         mStartedAbort = true;
-        mAbortResetEvent->set();
+        //mAbortResetEvent->set();
     }
 
-    mDisposeLock.unlock();
+    //mDisposeLock.unlock();
 }
 
 bool HttpBasedTransport::TryCompleteAbort()
@@ -131,7 +130,7 @@ bool HttpBasedTransport::TryCompleteAbort()
     }
     else if (mStartedAbort)
     {
-        mAbortResetEvent->set();
+        //mAbortResetEvent->set();
         mDisposeLock.unlock();
         return true;
     }
@@ -156,11 +155,10 @@ void HttpBasedTransport::Dispose(bool disposing)
 
         if (!mDisposed)
         {
-            delete mAbortResetEvent;
             mDisposed = true;
         }
         
-        mDisposeLock.lock();
-        mAbortLock.lock();
+        mDisposeLock.unlock();
+        mAbortLock.unlock();
     }
 }

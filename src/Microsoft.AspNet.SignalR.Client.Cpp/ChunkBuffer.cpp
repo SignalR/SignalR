@@ -10,6 +10,7 @@ ChunkBuffer::ChunkBuffer(void)
 
 ChunkBuffer::~ChunkBuffer(void)
 {
+
 }
 
 bool ChunkBuffer::HasChuncks()
@@ -17,12 +18,13 @@ bool ChunkBuffer::HasChuncks()
     return mOffset < mBuffer.length();
 }
 
-void ChunkBuffer::Add(char buffer[])
+void ChunkBuffer::Add(shared_ptr<char> buffer)
 {
-    string str(buffer);
+    string str(buffer.get());
     string_t wstr;
     wstr.assign(str.begin(), str.end());
     mBuffer = mBuffer.append(wstr);
+    str.clear();
 }
 
 string_t ChunkBuffer::ReadLine()
@@ -39,7 +41,8 @@ string_t ChunkBuffer::ReadLine()
             mOffset = 0;
             return line; // need to trim line
         }
-        mLineBuilder.append(&(mBuffer.at(i)), 1);
+
+        mLineBuilder.append(mBuffer, i, 1);
     }
     return U("");
 }

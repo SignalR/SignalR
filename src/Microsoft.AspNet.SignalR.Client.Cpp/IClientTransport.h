@@ -18,11 +18,11 @@ public:
     string_t GetTransportName();
     bool SupportsKeepAlive();
 
-    virtual task<NegotiationResponse*> Negotiate(Connection* connection) = 0;
+    virtual task<shared_ptr<NegotiationResponse>> Negotiate(Connection* connection) = 0;
     virtual task<void> Start(Connection* connection, string_t data, cancellation_token disconnectToken) = 0;
     virtual task<void> Send(Connection* connection, string_t data) = 0;
     virtual void Abort(Connection* connection) = 0;
-
+    virtual void Dispose() = 0;
     virtual void LostConnection(Connection* connection) = 0;
 
 protected:

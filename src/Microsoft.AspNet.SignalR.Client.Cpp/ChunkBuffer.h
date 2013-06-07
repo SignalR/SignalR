@@ -13,7 +13,7 @@ public:
     ~ChunkBuffer(void);
 
     bool HasChuncks();
-    void Add(char buffer[]);
+    void Add(shared_ptr<char> buffer);
     string_t ReadLine();
 
 private:

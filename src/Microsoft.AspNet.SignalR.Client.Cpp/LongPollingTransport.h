@@ -4,7 +4,7 @@ class LongPollingTransport :
     public HttpBasedTransport
 {
 public:
-    LongPollingTransport(IHttpClient* httpClient);
+    LongPollingTransport(shared_ptr<IHttpClient> httpClient);
     ~LongPollingTransport(void);
 
     //pplx::task<void> Start(Connection* connection, utility::string_t data, void* state = NULL);
