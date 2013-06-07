@@ -124,6 +124,7 @@
     <Compile Include="Connections\AuthenticatedEchoConnection.cs" />
     <Compile Include="Connections\ExamineHeadersConnection.cs" />
     <Compile Include="Connections\ExamineReconnectPath.cs" />
+    <Compile Include="Connections\PreserializedJsonConnection.cs" />
     <Compile Include="Handlers\GCHandler.cs" />
     <Compile Include="Handlers\PingHandler.cs" />
     <Compile Include="Build\StartIISTask.cs" />

@@ -230,7 +230,6 @@ namespace Microsoft.AspNet.SignalR.Hosting.Memory
                     writer.Write(item.Key);
                     writer.Write("=");
                     writer.Write(UrlEncoder.UrlEncode(item.Value));
-                    writer.WriteLine();
                     first = false;
                 }
 
