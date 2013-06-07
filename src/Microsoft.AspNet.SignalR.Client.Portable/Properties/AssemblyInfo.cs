@@ -2,6 +2,6 @@
 
 using System.Reflection;
 
+[assembly: AssemblyTitle("Microsoft.AspNet.SignalR.Client.Portable")]
+[assembly: AssemblyDescription("Portable client for SignalR targeting WinRT, SL and WP")]
 
-[assembly: AssemblyTitle("Microsoft.AspNet.SignalR.Client.WP8")]
-[assembly: AssemblyDescription("WP8 client for SignalR")]

@@ -30,9 +30,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
 #if NET45
                 new WebSocketTransport(httpClient),
 #endif
-#if !(SILVERLIGHT || WINDOWS_PHONE)
                 new ServerSentEventsTransport(httpClient), 
-#endif
                 new LongPollingTransport(httpClient) 
                 };
         }

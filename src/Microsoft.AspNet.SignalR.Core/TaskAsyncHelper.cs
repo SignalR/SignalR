@@ -162,7 +162,7 @@ namespace Microsoft.AspNet.SignalR
         private static void ExecuteOnFaulted(Action<AggregateException, object> handler, object state, AggregateException exception)
         {
             // observe Exception
-#if !WINDOWS_PHONE && !SILVERLIGHT && !NETFX_CORE && !__ANDROID__ && !IOS
+#if !PORTABLE && !NETFX_CORE && !__ANDROID__ && !IOS
             Trace.TraceError("SignalR exception thrown by Task: {0}", exception);
 #endif
             handler(exception, state);
