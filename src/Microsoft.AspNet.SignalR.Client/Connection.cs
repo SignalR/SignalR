@@ -417,7 +417,7 @@ namespace Microsoft.AspNet.SignalR.Client
                                      _connectingMessageBuffer.Drain();
                                  }
 
-                                 if (_keepAliveData != null)
+                                 if (_keepAliveData != null && _transport.SupportsKeepAlive)
                                  {
                                      // Start the monitor to check for server activity
                                      _monitor.Start();
