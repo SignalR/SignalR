@@ -328,6 +328,9 @@
                 deferred = connection._deferral || $.Deferred(), // Check to see if there is a pre-existing deferral that's being built on, if so we want to keep using it
                 parser = window.document.createElement("a");
 
+            // Persist the deferral so that if start is called multiple times the same deferral is used.
+            connection._deferral = deferred;
+
             if (!connection.json) {
                 // no JSON!
                 throw new Error("SignalR: No JSON parser found. Please ensure json2.js is referenced before the SignalR.js file if you need to support clients without native JSON parsing support, e.g. IE<8.");
@@ -350,11 +353,12 @@
                 throw new Error("SignalR: Invalid transport(s) specified, aborting start.");
             }
 
+            connection._.config = config;
+
             // Check to see if start is being called prior to page load
             // If waitForPageLoad is true we then want to re-direct function call to the window load event
             if (!_pageLoaded && config.waitForPageLoad === true) {
                 _pageWindow.load(function () {
-                    connection._deferral = deferred;
                     connection.start(options, callback);
                 });
                 return deferred.promise();
@@ -362,10 +366,16 @@
 
             configureStopReconnectingTimeout(connection);
 
-            if (changeState(connection,
+            // If we're already connecting just return the same deferral as the original connection start
+            if (connection.state === signalR.connectionState.connecting) {
+                return deferred.promise();
+            }
+            else if (changeState(connection,
                             signalR.connectionState.disconnected,
                             signalR.connectionState.connecting) === false) {
-                // Already started, just return
+                // We're not connecting so try and transition into connecting.
+                // If we fail to transition then we're either in connected or reconnecting.
+
                 deferred.resolve(connection);
                 return deferred.promise();
             }
@@ -429,13 +439,16 @@
             initialize = function (transports, index) {
                 index = index || 0;
                 if (index >= transports.length) {
-                    if (!connection.transport) {
-                        // No transport initialized successfully
-                        $(connection).triggerHandler(events.onError, ["SignalR: No transport could be initialized successfully. Try specifying a different transport or none at all for auto initialization."]);
-                        deferred.reject("SignalR: No transport could be initialized successfully. Try specifying a different transport or none at all for auto initialization.");
-                        // Stop the connection if it has connected and move it into the disconnected state
-                        connection.stop();
-                    }
+                    // No transport initialized successfully
+                    $(connection).triggerHandler(events.onError, ["SignalR: No transport could be initialized successfully. Try specifying a different transport or none at all for auto initialization."]);
+                    deferred.reject("SignalR: No transport could be initialized successfully. Try specifying a different transport or none at all for auto initialization.");
+                    // Stop the connection if it has connected and move it into the disconnected state
+                    connection.stop();
+                    return;
+                }
+
+                // The connection was aborted
+                if (connection.state === signalR.connectionState.disconnected) {
                     return;
                 }
 
@@ -452,6 +465,8 @@
                         }
                     };
 
+                connection.transport = transport;
+
                 if (transportName.indexOf("_") === 0) {
                     // Private member
                     initialize(transports, index + 1);
@@ -465,6 +480,11 @@
                     }, connection.transportConnectTimeout);
 
                     transport.start(connection, function () { // success
+                    // The connection was aborted while initializing transports
+                    if (connection.state === signalR.connectionState.disconnected) {
+                        return;
+                    }
+
                         if (!initializationComplete) {
                             initializationComplete = true;
 
@@ -473,8 +493,6 @@
                             if (transport.supportsKeepAlive && connection.keepAliveData.activated) {
                                 signalR.transports._logic.monitorKeepAlive(connection);
                             }
-
-                            connection.transport = transport;
 
                             changeState(connection,
                                         signalR.connectionState.connecting,
@@ -717,11 +735,23 @@
             /// <returns type="signalR" />
             var connection = this;
 
+            // Verify that we should wait for page load to call stop.
+            if (!_pageLoaded && (!connection._.config || connection._.config.waitForPageLoad === true)) {
+                // Can only stop connections after the page has loaded
+                _pageWindow.load(function () {
+                    connection.stop(async, notifyServer);
+                });
+
+                return;
+            }
+
             if (connection.state === signalR.connectionState.disconnected) {
                 return;
             }
 
             try {
+                connection.log("SignalR: Stopping connection.");
+
                 // Clear this no matter what
                 window.clearTimeout(connection._.onFailedTimeoutHandle);
 
@@ -747,6 +777,7 @@
                 // Remove the ID and the deferral on stop, this is to ensure that if a connection is restarted it takes on a new id/deferral.
                 delete connection.id;
                 delete connection._deferral;
+                delete connection._.config;
 
                 // Clear out our message buffer
                 connection._.connectingMessageBuffer.clear();
