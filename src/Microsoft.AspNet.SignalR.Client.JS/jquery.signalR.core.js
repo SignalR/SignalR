@@ -457,38 +457,44 @@
                     return;
                 }
 
-                connection._.onFailedTimeoutHandle = window.setTimeout(function () {
-                    connection.log(transport.name + " timed out when trying to connect.");
-                    onFailed();
-                }, connection.transportConnectTimeout);
+                try {
+                    connection._.onFailedTimeoutHandle = window.setTimeout(function () {
+                        connection.log(transport.name + " timed out when trying to connect.");
+                        onFailed();
+                    }, connection.transportConnectTimeout);
 
-                transport.start(connection, function () { // success
-                    if (!initializationComplete) {
-                        initializationComplete = true;
+                    transport.start(connection, function () { // success
+                        if (!initializationComplete) {
+                            initializationComplete = true;
 
-                        window.clearTimeout(connection._.onFailedTimeoutHandle);
+                            window.clearTimeout(connection._.onFailedTimeoutHandle);
 
-                        if (transport.supportsKeepAlive && connection.keepAliveData.activated) {
-                            signalR.transports._logic.monitorKeepAlive(connection);
+                            if (transport.supportsKeepAlive && connection.keepAliveData.activated) {
+                                signalR.transports._logic.monitorKeepAlive(connection);
+                            }
+
+                            connection.transport = transport;
+
+                            changeState(connection,
+                                        signalR.connectionState.connecting,
+                                        signalR.connectionState.connected);
+
+                            // Drain any incoming buffered messages (messages that came in prior to connect)
+                            connection._.connectingMessageBuffer.drain();
+
+                            $(connection).triggerHandler(events.onStart);
+
+                            // wire the stop handler for when the user leaves the page
+                            _pageWindow.unload(function () {
+                                connection.stop(false /* async */);
+                            });
                         }
-
-                        connection.transport = transport;
-
-                        changeState(connection,
-                                    signalR.connectionState.connecting,
-                                    signalR.connectionState.connected);
-
-                        // Drain any incoming buffered messages (messages that came in prior to connect)
-                        connection._.connectingMessageBuffer.drain();
-
-                        $(connection).triggerHandler(events.onStart);
-
-                        // wire the stop handler for when the user leaves the page
-                        _pageWindow.unload(function () {
-                            connection.stop(false /* async */);
-                        });
-                    }
-                }, onFailed);
+                    }, onFailed);
+                }
+                catch (error) {
+                    connection.log("SignalR: " + transport.name + " transport threw '" + error.message + "' when attempting to start.");
+                    onFailed();
+                }
             };
 
             var url = connection.url + "/negotiate";

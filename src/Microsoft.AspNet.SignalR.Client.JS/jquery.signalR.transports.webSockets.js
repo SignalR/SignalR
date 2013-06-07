@@ -111,14 +111,13 @@
 
         lostConnection: function (connection) {
             this.reconnect(connection);
-
         },
 
         stop: function (connection) {
             // Don't trigger a reconnect after stopping
             transportLogic.clearReconnectTimeout(connection);
 
-            if (connection.socket !== null) {
+            if (connection.socket) {
                 connection.log("Closing the Websocket");
                 connection.socket.close();
                 connection.socket = null;
