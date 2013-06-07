@@ -10,15 +10,6 @@ QUnit.test("Default Connection Parameters", function () {
     QUnit.equal(con.fn.reconnectDelay, 2000, "Verifies reconnect delay is 2000 ms.");
 });
 
-QUnit.test("Stopping Connection", function () {
-    var con = testUtilities.createConnection("foo");
-    // Need to be connected to stop a connection
-    QUnit.ok($.signalR.changeState(con, $.signalR.connectionState.disconnected, $.signalR.connectionState.connected), "Verify we can shift from disconnected into connected.");
-    QUnit.equal(con.state, $.signalR.connectionState.connected, "Verifies connection is now disconnected.");
-    QUnit.equal(con.stop(false), con, "Verifying when conneciton is stopped that the same connection is returned.");
-    QUnit.equal(con.state, $.signalR.connectionState.disconnected, "Verifies connection is disconnected after stop has been called.");
-});
-
 QUnit.test("Error on send prior to connected state", function () {
     var con = $.connection;
     // Need the con.fn.state to be disconnected to fail on the send
