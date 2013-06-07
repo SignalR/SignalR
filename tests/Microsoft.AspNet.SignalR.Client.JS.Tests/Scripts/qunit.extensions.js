@@ -12,6 +12,10 @@
         return QUnit.ok(true, message);
     };
 
+    QUnit.fail = function (message) {
+        return QUnit.ok(false, message);
+    };
+
     QUnit.isTrue = function (result, message) {
         return QUnit.ok(result === true, message);
     };
@@ -61,6 +65,11 @@
                         comment: function (message) {
                             if (!hasFinished) {
                                 QUnit.comment(message);
+                            }
+                        },
+                        fail: function (message) {
+                            if (!hasFinished) {
+                                QUnit.fail(message);
                             }
                         },
                         isTrue: function (result, message) {
