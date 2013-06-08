@@ -92,7 +92,6 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="clientaccesspolicy.xml" />
-    <Content Include="ClientBin\Microsoft.AspNet.SignalR.Client.Silverlight.Sample.xap" />
     <Content Include="Content\bg-body.jpg" />
     <Content Include="Content\bg.jpg" />
     <Content Include="Content\bootstrap-responsive.css" />
@@ -189,7 +188,6 @@
     <Content Include="Hubs\Test\common.js" />
     <Content Include="Hubs\Test\Default.aspx" />
     <Content Include="Raw\Default.aspx" />
-    <Content Include="Raw\silverlight.html" />
     <Content Include="Raw\test\basic.htm" />
     <Content Include="Raw\crossdomain.htm" />
     <Content Include="Raw\eventSource.html" />
