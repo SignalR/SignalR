@@ -1,9 +1,8 @@
 #include "EventSourceStreamReader.h"
 
-EventSourceStreamReader::EventSourceStreamReader(Connection* connection, Concurrency::streams::basic_istream<uint8_t> stream)
+EventSourceStreamReader::EventSourceStreamReader(Concurrency::streams::basic_istream<uint8_t> stream)
     : AsyncStreamReader(stream)
 {
-    mConnection = connection;
     mBuffer = unique_ptr<ChunkBuffer>(new ChunkBuffer());
 
     Data = [this](shared_ptr<char> readBuffer){

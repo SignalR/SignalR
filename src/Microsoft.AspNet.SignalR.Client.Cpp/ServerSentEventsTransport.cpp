@@ -8,10 +8,19 @@ ServerSentEventsTransport::ServerSentEventsTransport(shared_ptr<IHttpClient> htt
 
 ServerSentEventsTransport::~ServerSentEventsTransport()
 {
+
 }
 
-void ServerSentEventsTransport::OnStart(Connection* connection, string_t data, cancellation_token disconnectToken,  function<void()> initializeCallback, function<void()> errorCallback)
+void ServerSentEventsTransport::OnAbort()
 {
+    mEventSource->Opened = [](){};
+    mEventSource->Closed = [](exception& ex){};
+    mEventSource->Data = [](shared_ptr<char> buffer){};
+    mEventSource->Message = [](shared_ptr<SseEvent> sseEvent){};
+}
+
+void ServerSentEventsTransport::OnStart(shared_ptr<Connection> connection, string_t data, cancellation_token disconnectToken,  function<void()> initializeCallback, function<void()> errorCallback)
+{    
     OpenConnection(connection, data, disconnectToken, initializeCallback, errorCallback);
 }
 
@@ -20,12 +29,12 @@ void ServerSentEventsTransport::Reconnect(Connection* connection, string_t data)
 
 }
 
-void ServerSentEventsTransport::OpenConnection(Connection* connection, string_t data, cancellation_token disconnectToken, function<void()> initializeCallback, function<void()> errorCallback)
+void ServerSentEventsTransport::OpenConnection(shared_ptr<Connection> connection, string_t data, cancellation_token disconnectToken, function<void()> initializeCallback, function<void()> errorCallback)
 {
     bool reconnecting = initializeCallback == NULL;
     unique_ptr<ThreadSafeInvoker> callbackInvoker = unique_ptr<ThreadSafeInvoker>(new ThreadSafeInvoker());
 
-    string_t uri = connection->GetUri() + (reconnecting ? U("reconnect") : U("connect")) + GetReceiveQueryString(connection, data);
+    string_t uri = connection->GetUri() + (reconnecting ? U("reconnect") : U("connect")) + GetReceiveQueryString(connection.get(), data);
 
     GetHttpClient()->Get(uri, [this, connection](shared_ptr<HttpRequestWrapper> request)
     {
@@ -35,7 +44,7 @@ void ServerSentEventsTransport::OpenConnection(Connection* connection, string_t 
     {
         // check if the task failed
 
-        mEventSource = unique_ptr<EventSourceStreamReader>(new EventSourceStreamReader(connection, response.body()));
+        mEventSource = unique_ptr<EventSourceStreamReader>(new EventSourceStreamReader(response.body()));
 
         mStop = false;
         
@@ -45,12 +54,19 @@ void ServerSentEventsTransport::OpenConnection(Connection* connection, string_t 
             mRequest->Abort();
         });
 
+        long count = connection.use_count();
+        bool unique = connection.unique();
+
         mEventSource->Opened = [connection]()
         {
+            long count = connection.use_count();
+            bool unique = connection.unique();
             if (connection->ChangeState(ConnectionState::Reconnecting, ConnectionState::Connected))
             {
                 connection->OnReconnected();
             }
+            count = connection.use_count();
+            unique = connection.unique();
         };
 
         mEventSource->Message = [connection, this](shared_ptr<SseEvent> sseEvent) 
@@ -63,7 +79,9 @@ void ServerSentEventsTransport::OpenConnection(Connection* connection, string_t 
                 }
 
                 bool timedOut, disconnected;
-                TransportHelper::ProcessResponse(connection, sseEvent->GetData(), &timedOut, &disconnected, [](){});
+
+                TransportHelper::ProcessResponse(connection.get(), sseEvent->GetData(), &timedOut, &disconnected, [](){});
+                disconnected = false;
 
                 if (disconnected)
                 {
@@ -100,7 +118,7 @@ void ServerSentEventsTransport::OpenConnection(Connection* connection, string_t 
             }
             else
             {
-                Reconnect(connection, data);
+                Reconnect(connection.get(), data);
             }
         };
 

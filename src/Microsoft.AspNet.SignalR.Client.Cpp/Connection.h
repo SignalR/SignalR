@@ -3,7 +3,7 @@
 #include "IConnection.h"
 #include "DefaultHttpClient.h"
 
-class Connection : public IConnection
+class Connection : public IConnection, public enable_shared_from_this<Connection>
 {
 public:
 

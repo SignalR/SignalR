@@ -56,7 +56,7 @@ task<void> Connection::Start(shared_ptr<IClientTransport> transport)
 
 task<void> Connection::Negotiate(shared_ptr<IClientTransport> transport) 
 {
-    return mTransport->Negotiate(this).then([this](shared_ptr<NegotiationResponse> response)
+    return mTransport->Negotiate(shared_from_this()).then([this](shared_ptr<NegotiationResponse> response)
     {
         mConnectionId = response->ConnectionId;
         mConnectionToken = response->ConnectionToken;
@@ -67,7 +67,7 @@ task<void> Connection::Negotiate(shared_ptr<IClientTransport> transport)
 
 task<void> Connection::StartTransport()
 {
-    return mTransport->Start(this, U(""), mDisconnectCts->get_token()).then([this]()
+    return mTransport->Start(shared_from_this(), U(""), mDisconnectCts->get_token()).then([this]()
     {
         ChangeState(ConnectionState::Connecting, ConnectionState::Connected);
     });
@@ -125,7 +125,7 @@ void Connection::Stop()
 
     if (mState != ConnectionState::Disconnected)
     {
-        mTransport->Abort(this);
+        mTransport->Abort(shared_from_this());
 
         Disconnect();
 

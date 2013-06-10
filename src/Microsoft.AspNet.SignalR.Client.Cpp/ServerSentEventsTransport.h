@@ -15,7 +15,8 @@ public:
     bool SupportsKeepAlive();
 
 protected:
-    void OnStart(Connection* connection, string_t data, cancellation_token disconnectToken, function<void()> initializeCallback, function<void()> errorCallback);
+    void OnStart(shared_ptr<Connection> connection, string_t data, cancellation_token disconnectToken, function<void()> initializeCallback, function<void()> errorCallback);
+    void OnAbort();
     void LostConnection(Connection* connection);
 
 private:
@@ -24,7 +25,7 @@ private:
     bool mStop;
 
     void Reconnect(Connection* connection, string_t data);
-    void OpenConnection(Connection* connection, string_t data, cancellation_token disconnectToken, function<void()> initializeCallback, function<void()> errorCallback);
+    void OpenConnection(shared_ptr<Connection> connection, string_t data, cancellation_token disconnectToken, function<void()> initializeCallback, function<void()> errorCallback);
     static void OnReadLine(string data, exception* error, void* state);
 };
 

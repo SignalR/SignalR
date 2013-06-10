@@ -9,6 +9,7 @@ AsyncStreamReader::AsyncStreamReader(Concurrency::streams::basic_istream<uint8_t
 
 AsyncStreamReader::~AsyncStreamReader(void)
 {
+
 }
 
 bool AsyncStreamReader::IsProcessing()

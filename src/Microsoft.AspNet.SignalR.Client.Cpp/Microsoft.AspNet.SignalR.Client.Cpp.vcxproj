@@ -113,7 +113,7 @@
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
     <Import Project="$(SolutionDir)\.nuget\NuGet.targets" Condition="Exists('$(SolutionDir)\.nuget\NuGet.targets')" />
-    <Import Project="..\..\packages\cpprestsdk.redist.0.6.0.21\build\native\cpprestsdk.redist.targets" Condition="Exists('..\..\packages\cpprestsdk.redist.0.6.0.21\build\native\cpprestsdk.redist.targets')" />
-    <Import Project="..\..\packages\cpprestsdk.0.6.0.21\build\native\cpprestsdk.targets" Condition="Exists('..\..\packages\cpprestsdk.0.6.0.21\build\native\cpprestsdk.targets')" />
+    <Import Project="..\..\packages\cpprestsdk.redist.1.0.0\build\native\cpprestsdk.redist.targets" Condition="Exists('..\..\packages\cpprestsdk.redist.1.0.0\build\native\cpprestsdk.redist.targets')" />
+    <Import Project="..\..\packages\cpprestsdk.1.0.0\build\native\cpprestsdk.targets" Condition="Exists('..\..\packages\cpprestsdk.1.0.0\build\native\cpprestsdk.targets')" />
   </ImportGroup>
 </Project>

@@ -10,13 +10,12 @@ class EventSourceStreamReader :
     public AsyncStreamReader
 {
 public:
-    function<void(shared_ptr<SseEvent> sseEvent)> Message;
-
-    EventSourceStreamReader(Connection* connection, Concurrency::streams::basic_istream<uint8_t> stream);
+    EventSourceStreamReader(Concurrency::streams::basic_istream<uint8_t> stream);
     ~EventSourceStreamReader(void);
 
+    function<void(shared_ptr<SseEvent> sseEvent)> Message;
+
 private:
-    Connection* mConnection;
     unique_ptr<ChunkBuffer> mBuffer;
 
     void ProcessBuffer(shared_ptr<char> readBuffer);

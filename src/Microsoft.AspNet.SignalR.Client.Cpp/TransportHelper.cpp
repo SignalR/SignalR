@@ -9,7 +9,7 @@ TransportHelper::~TransportHelper(void)
 {
 }
 
-task<shared_ptr<NegotiationResponse>> TransportHelper::GetNegotiationResponse(shared_ptr<IHttpClient> httpClient, Connection* connection)
+task<shared_ptr<NegotiationResponse>> TransportHelper::GetNegotiationResponse(shared_ptr<IHttpClient> httpClient, shared_ptr<Connection> connection)
 {
     if (httpClient == NULL)
     {
@@ -32,7 +32,7 @@ task<shared_ptr<NegotiationResponse>> TransportHelper::GetNegotiationResponse(sh
 
     uri += appender + U("clientProtocol=") + connection->GetProtocol();
 
-    httpClient->Initialize(connection);
+    httpClient->Initialize(connection->GetUri());
 
     return httpClient->Get(uri, [connection](shared_ptr<HttpRequestWrapper> request)
     {
@@ -107,7 +107,7 @@ string_t TransportHelper::GetReceiveQueryString(Connection* connection, string_t
     return qs;
 }
 
-string_t TransportHelper::AppendCustomQueryString(Connection* connection, string_t baseUrl)
+string_t TransportHelper::AppendCustomQueryString(shared_ptr<Connection> connection, string_t baseUrl)
 {
     if (connection == NULL)
     {

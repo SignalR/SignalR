@@ -27,14 +27,14 @@ static void RunStreamingSample()
     {
         key.~basic_string(); // Memory leak detector complains that key is lost
 
-        Connection connection(U("http://localhost:40476/raw-connection"));
+        shared_ptr<Connection> connection = shared_ptr<Connection>(new Connection(U("http://localhost:40476/raw-connection")));
     
-        connection.Received = [](string_t message)
+        connection->Received = [](string_t message)
         {
             wcout << message << endl;
         };
 
-        connection.Reconnected = []()
+        connection->Reconnected = []()
         {
             time_t now = time(0);
             struct tm* nowStruct = localtime(&now);
@@ -43,12 +43,12 @@ static void RunStreamingSample()
                 << nowStruct->tm_hour << ":" << nowStruct->tm_min << ":" << nowStruct->tm_sec << "]: Connection restablished" << endl;
         };
 
-        connection.StateChanged = [](shared_ptr<StateChange> stateChange)
+        connection->StateChanged = [](shared_ptr<StateChange> stateChange)
         {
             wcout << stateChange->GetOldStateName() << " => " << stateChange->GetNewStateName() << endl;
         };
 
-        connection.Error = [](exception& ex)
+        connection->Error = [](exception& ex)
         {
             wcerr << U("========ERROR==========") << endl;
             wcerr << ex.what() << endl;
@@ -58,9 +58,9 @@ static void RunStreamingSample()
 
         try
         {
-            connection.Start().wait();
+            connection->Start().wait();
 
-            wcout << U("Using ") << connection.GetTransport()->GetTransportName() << endl;
+            wcout << U("Using ") << connection->GetTransport()->GetTransportName() << endl;
         }
         catch (exception& ex)
         {
@@ -68,7 +68,7 @@ static void RunStreamingSample()
             wcerr << ex.what() << endl;
             wcerr << U("=======================") << endl;
 
-            connection.Stop();
+            connection->Stop();
             return;
         }
 
@@ -81,12 +81,12 @@ static void RunStreamingSample()
             object.push_back(make_pair(value(U("type")), value(1)));
             object.push_back(make_pair(value(U("value")), value(line)));
 
-            connection.Send(object).wait();
+            connection->Send(object).wait();
 
             getline(wcin, line);
         }
 
-        connection.Stop();
+        connection->Stop();
     }  
     //_CrtMemCheckpoint(&s2);
     //if (_CrtMemDifference(&s3, &s1, &s2))
@@ -95,21 +95,69 @@ static void RunStreamingSample()
     //}
 }
 
+class B;
+
+class A
+{
+public:
+    shared_ptr<B> pB;
+    int variable;
+    void someFunction()
+    {
+        variable = 1;
+    };
+};
+
+class B
+{
+public:
+    function<void()> callBack;
+};
+
 int main () 
 {
-    //_CrtMemState s1, s2, s3;
-    //_CrtMemCheckpoint(&s1);
+    _CrtMemState s1, s2, s3;
+    _CrtMemCheckpoint(&s1);
+
+    //bool testing = true;
+    //if (testing)
+    //{
+    //    shared_ptr<A> pA = shared_ptr<A>(new A());
+    //    pA->pB = shared_ptr<B>(new B());
+
+    //    long count = pA.use_count();
+    //    bool unique = pA.unique();
+
+    //    pA->pB->callBack = [pA]()
+    //    {
+    //        pA->someFunction();
+    //        long count = pA.use_count();
+    //        bool unique = pA.unique();
+    //    };
+
+    //    unique = pA.unique();
+    //    count = pA.use_count();
+
+    //    pA->pB->callBack();
+
+    //    int result = pA->variable;
+
+    //    pA->pB->callBack = [](){};
+
+    //    unique = pA.unique();
+    //    count = pA.use_count();
+    //}
 
     RunStreamingSample();
 
     wcout << U("Press <Enter> to Exit ...") << endl;
     getwchar();
 
-    //_CrtMemCheckpoint(&s2);
-    //if (_CrtMemDifference(&s3, &s1, &s2))
-    //{
-    //    _CrtMemDumpStatistics(&s3);
-    //}
+    _CrtMemCheckpoint(&s2);
+    if (_CrtMemDifference(&s3, &s1, &s2))
+    {
+        _CrtMemDumpStatistics(&s3);
+    }
     
-    _CrtDumpMemoryLeaks();
+    //_CrtDumpMemoryLeaks();
 }

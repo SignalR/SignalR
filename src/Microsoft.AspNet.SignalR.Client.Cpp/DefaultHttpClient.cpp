@@ -10,18 +10,16 @@ DefaultHttpClient::~DefaultHttpClient()
 
 }
 
-void DefaultHttpClient::Initialize(IConnection* connection)
+void DefaultHttpClient::Initialize(string_t uri)
 {
-    mConnection = connection;
-
     // set timeout to some large value
     //http_client_config configurationLong = http_client_config();
     //configurationLong.set_timeout();
     //http_client_config configurationShort = http_client_config();
     //configurationShort.set_timeout();
 
-    mLongRunningClient = unique_ptr<http_client>(new http_client(mConnection->GetUri()/*, configurationLong*/));
-    mShortRunningClient = unique_ptr<http_client>(new http_client(mConnection->GetUri()/*, configurationShort*/));
+    mLongRunningClient = unique_ptr<http_client>(new http_client(uri/*, configurationLong*/));
+    mShortRunningClient = unique_ptr<http_client>(new http_client(uri/*, configurationShort*/));
 }
     
 task<http_response> DefaultHttpClient::Get(string_t uri, function<void(shared_ptr<HttpRequestWrapper>)> prepareRequest, bool isLongRunning)

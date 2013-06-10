@@ -21,7 +21,7 @@ shared_ptr<IHttpClient> HttpBasedTransport::GetHttpClient()
     return mHttpClient;
 }
 
-task<shared_ptr<NegotiationResponse>> HttpBasedTransport::Negotiate(Connection* connection)
+task<shared_ptr<NegotiationResponse>> HttpBasedTransport::Negotiate(shared_ptr<Connection> connection)
 {
     return TransportHelper::GetNegotiationResponse(mHttpClient, connection);
 }
@@ -36,7 +36,7 @@ string_t HttpBasedTransport::GetReceiveQueryString(Connection* connection, strin
     return TransportHelper::GetReceiveQueryString(connection, data, mTransportName);
 }
 
-task<void> HttpBasedTransport::Start(Connection* connection, string_t data, cancellation_token disconnectToken)
+task<void> HttpBasedTransport::Start(shared_ptr<Connection> connection, string_t data, cancellation_token disconnectToken)
 {
     task_completion_event<void> tce;
     
@@ -74,7 +74,7 @@ task<void> HttpBasedTransport::Send(Connection* connection, string_t data)
     });
 }
 
-void HttpBasedTransport::Abort(Connection* connection)
+void HttpBasedTransport::Abort(shared_ptr<Connection> connection)
 {
     if (connection == NULL)
     {
@@ -101,6 +101,8 @@ void HttpBasedTransport::Abort(Connection* connection)
         {
             connection->PrepareRequest(request);
         }, false).wait();
+
+        OnAbort();
     }
 
     mAbortLock.unlock();

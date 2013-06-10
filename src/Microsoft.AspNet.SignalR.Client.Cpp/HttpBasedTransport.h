@@ -16,10 +16,10 @@ public:
     HttpBasedTransport(shared_ptr<IHttpClient> httpClient, string_t transport);
     ~HttpBasedTransport(void);
 
-    task<shared_ptr<NegotiationResponse>> Negotiate(Connection* connection);
-    task<void> Start(Connection* connection, string_t data, cancellation_token disconnectToken);
+    task<shared_ptr<NegotiationResponse>> Negotiate(shared_ptr<Connection> connection);
+    task<void> Start(shared_ptr<Connection> connection, string_t data, cancellation_token disconnectToken);
     task<void> Send(Connection* connection, string_t data);
-    void Abort(Connection* connection);
+    void Abort(shared_ptr<Connection> connection);
     void Dispose();
 
 protected:
@@ -28,7 +28,8 @@ protected:
     void Dispose(bool disposing);
     void CompleteAbort();
     bool TryCompleteAbort();
-    virtual void OnStart(Connection* connection, string_t data, cancellation_token disconnectToken, function<void()> initializeCallback, function<void()> errorCallback) = 0;
+    virtual void OnStart(shared_ptr<Connection> connection, string_t data, cancellation_token disconnectToken, function<void()> initializeCallback, function<void()> errorCallback) = 0;
+    virtual void OnAbort() = 0;
     string_t GetReceiveQueryString(Connection* connection, string_t data);
     string_t GetSendQueryString(string_t transport, string_t connectionToken, string_t customQuery);
 
