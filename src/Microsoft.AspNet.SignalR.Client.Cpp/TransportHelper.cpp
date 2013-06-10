@@ -68,7 +68,7 @@ task<shared_ptr<NegotiationResponse>> TransportHelper::GetNegotiationResponse(sh
     });
 }
 
-string_t TransportHelper::GetReceiveQueryString(Connection* connection, string_t data, string_t transport)
+string_t TransportHelper::GetReceiveQueryString(shared_ptr<Connection> connection, string_t data, string_t transport)
 {
     if (connection == NULL)
     {
@@ -139,12 +139,12 @@ string_t TransportHelper::AppendCustomQueryString(shared_ptr<Connection> connect
     return qs;
 }
 
-void TransportHelper::ProcessResponse(Connection* connection, string_t response, bool* timedOut, bool* disconnected)
+void TransportHelper::ProcessResponse(shared_ptr<Connection> connection, string_t response, bool* timedOut, bool* disconnected)
 {
     ProcessResponse(connection, response, timedOut, disconnected, [](){});
 }
 
-void TransportHelper::ProcessResponse(Connection* connection, string_t response, bool* timedOut, bool* disconnected, function<void()> onInitialized)
+void TransportHelper::ProcessResponse(shared_ptr<Connection> connection, string_t response, bool* timedOut, bool* disconnected, function<void()> onInitialized)
 {
     if (connection == NULL)
     {
@@ -230,7 +230,7 @@ void TransportHelper::ProcessResponse(Connection* connection, string_t response,
     }
 }
 
-void TransportHelper::UpdateGroups(Connection* connection, string_t groupsToken)
+void TransportHelper::UpdateGroups(shared_ptr<Connection> connection, string_t groupsToken)
 {
     if (!groupsToken.empty())
     {

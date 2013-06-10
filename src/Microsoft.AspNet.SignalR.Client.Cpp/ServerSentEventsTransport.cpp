@@ -24,7 +24,7 @@ void ServerSentEventsTransport::OnStart(shared_ptr<Connection> connection, strin
     OpenConnection(connection, data, disconnectToken, initializeCallback, errorCallback);
 }
 
-void ServerSentEventsTransport::Reconnect(Connection* connection, string_t data)
+void ServerSentEventsTransport::Reconnect(shared_ptr<Connection> connection, string_t data)
 {
 
 }
@@ -34,7 +34,7 @@ void ServerSentEventsTransport::OpenConnection(shared_ptr<Connection> connection
     bool reconnecting = initializeCallback == NULL;
     unique_ptr<ThreadSafeInvoker> callbackInvoker = unique_ptr<ThreadSafeInvoker>(new ThreadSafeInvoker());
 
-    string_t uri = connection->GetUri() + (reconnecting ? U("reconnect") : U("connect")) + GetReceiveQueryString(connection.get(), data);
+    string_t uri = connection->GetUri() + (reconnecting ? U("reconnect") : U("connect")) + GetReceiveQueryString(connection, data);
 
     GetHttpClient()->Get(uri, [this, connection](shared_ptr<HttpRequestWrapper> request)
     {
@@ -54,19 +54,12 @@ void ServerSentEventsTransport::OpenConnection(shared_ptr<Connection> connection
             mRequest->Abort();
         });
 
-        long count = connection.use_count();
-        bool unique = connection.unique();
-
         mEventSource->Opened = [connection]()
         {
-            long count = connection.use_count();
-            bool unique = connection.unique();
             if (connection->ChangeState(ConnectionState::Reconnecting, ConnectionState::Connected))
             {
                 connection->OnReconnected();
             }
-            count = connection.use_count();
-            unique = connection.unique();
         };
 
         mEventSource->Message = [connection, this](shared_ptr<SseEvent> sseEvent) 
@@ -80,7 +73,7 @@ void ServerSentEventsTransport::OpenConnection(shared_ptr<Connection> connection
 
                 bool timedOut, disconnected;
 
-                TransportHelper::ProcessResponse(connection.get(), sseEvent->GetData(), &timedOut, &disconnected, [](){});
+                TransportHelper::ProcessResponse(connection, sseEvent->GetData(), &timedOut, &disconnected, [](){});
                 disconnected = false;
 
                 if (disconnected)
@@ -118,7 +111,7 @@ void ServerSentEventsTransport::OpenConnection(shared_ptr<Connection> connection
             }
             else
             {
-                Reconnect(connection.get(), data);
+                Reconnect(connection, data);
             }
         };
 
@@ -126,7 +119,7 @@ void ServerSentEventsTransport::OpenConnection(shared_ptr<Connection> connection
     });
 }
 
-void ServerSentEventsTransport::LostConnection(Connection* connection)
+void ServerSentEventsTransport::LostConnection(shared_ptr<Connection> connection)
 {
     if (mRequest != NULL)
     {

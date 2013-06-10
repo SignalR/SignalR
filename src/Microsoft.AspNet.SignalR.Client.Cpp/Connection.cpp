@@ -84,7 +84,7 @@ task<void> Connection::Send(value::field_map object)
 
 task<void> Connection::Send(string_t data)
 {
-    return mTransport->Send(this, data);
+    return mTransport->Send(shared_from_this(), data);
 }
 
 bool Connection::ChangeState(ConnectionState oldState, ConnectionState newState)
@@ -158,21 +158,6 @@ void Connection::Disconnect()
     }
 
     //mStateLock.unlock();
-}
-
-void Connection::OnTransportStartCompleted(exception* error, void* state) 
-{
-    auto connection = (Connection*)state;
-
-    if(NULL != error)
-    {
-        connection->ChangeState(ConnectionState::Connecting, ConnectionState::Connected);
-    }
-    else 
-    {
-        connection->OnError(*error);
-        connection->Stop();
-    }
 }
 
 void Connection::OnError(exception& ex)

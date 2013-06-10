@@ -31,7 +31,7 @@ string_t HttpBasedTransport::GetSendQueryString(string_t transport, string_t con
     return U("?transport=") + transport + U("&connectionToken=") + connectionToken + customQuery;
 }
 
-string_t HttpBasedTransport::GetReceiveQueryString(Connection* connection, string_t data)
+string_t HttpBasedTransport::GetReceiveQueryString(shared_ptr<Connection> connection, string_t data)
 {
     return TransportHelper::GetReceiveQueryString(connection, data, mTransportName);
 }
@@ -57,7 +57,7 @@ task<void> HttpBasedTransport::Start(shared_ptr<Connection> connection, string_t
     return task<void>(tce);
 }
 
-task<void> HttpBasedTransport::Send(Connection* connection, string_t data)
+task<void> HttpBasedTransport::Send(shared_ptr<Connection> connection, string_t data)
 {
     string_t uri = connection->GetUri() + U("send");
     string_t customQueryString = connection->GetQueryString().empty()? U("") : U("&") + connection->GetQueryString();

@@ -47,6 +47,5 @@ private:
     void SetState(ConnectionState newState);
     task<void> StartTransport();
     task<void> Negotiate(shared_ptr<IClientTransport> transport);
-    static void OnTransportStartCompleted(exception* error, void* state);
 };
 
