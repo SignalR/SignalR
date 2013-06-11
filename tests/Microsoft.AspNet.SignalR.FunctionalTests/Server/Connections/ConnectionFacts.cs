@@ -80,12 +80,12 @@ namespace Microsoft.AspNet.SignalR.Client.Tests
             [InlineData(HostType.Memory, TransportType.LongPolling, MessageBusType.Fake)]
             [InlineData(HostType.Memory, TransportType.LongPolling, MessageBusType.FakeMultiStream)]
             [InlineData(HostType.IISExpress, TransportType.ServerSentEvents, MessageBusType.Default)]
-            // [InlineData(HostType.IISExpress, TransportType.LongPolling)] // Connect has issues with LP
+            [InlineData(HostType.IISExpress, TransportType.LongPolling, MessageBusType.Default)]
             public void ThrownWebExceptionShouldBeUnwrapped(HostType hostType, TransportType transportType, MessageBusType messageBusType)
             {
                 using (var host = CreateHost(hostType, transportType))
                 {
-                    host.Initialize(messageBusType: messageBusType);
+                    host.Initialize(messageBusType: messageBusType, transportConnectTimeout: 30);
 
                     var connection = CreateConnection(host, "/ErrorsAreFun");
 
