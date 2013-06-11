@@ -79,6 +79,7 @@
 
                     connection.log("Attempting to connect to '" + url + "' using longPolling.");
                     instance.pollXhr = $.ajax({
+                        xhrFields: { withCredentials: connection.withCredentials },
                         url: url,
                         global: false,
                         cache: false,
