@@ -116,6 +116,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Common
             app.MapConnection<AddGroupOnConnectedConnection>("add-group", config);
             app.MapConnection<UnusableProtectedConnection>("protected", config);
             app.MapConnection<FallbackToLongPollingConnection>("/fall-back", config);
+            app.MapConnection<PreserializedJsonConnection>("preserialize", config);
 
             // This subpipeline is protected by basic auth
             app.MapPath("/basicauth", subApp =>

@@ -127,12 +127,21 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
 
         private Message CreateMessage(string key, object value)
         {
-            var command = value as Command;
-
-            ArraySegment<byte> messageBuffer = GetMessageBuffer(value);
+            ArraySegment<byte> messageBuffer;
+            // We can't use "as" like we do for Command since ArraySegment is a struct
+            if (value is ArraySegment<byte>)
+            {
+                // We assume that any ArraySegment<byte> is already JSON serialized
+                messageBuffer = (ArraySegment<byte>)value;
+            }
+            else
+            {
+                messageBuffer = GetMessageBuffer(value);
+            }
 
             var message = new Message(_connectionId, key, messageBuffer);
 
+            var command = value as Command;
             if (command != null)
             {
                 // Set the command id
