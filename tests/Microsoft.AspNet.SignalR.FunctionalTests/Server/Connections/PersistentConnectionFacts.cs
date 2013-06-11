@@ -11,6 +11,7 @@ using Microsoft.AspNet.SignalR.Infrastructure;
 using Microsoft.AspNet.SignalR.Tests.Common;
 using Microsoft.AspNet.SignalR.Tests.Common.Infrastructure;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using Owin;
 using Xunit;
 using Xunit.Extensions;
@@ -548,6 +549,45 @@ namespace Microsoft.AspNet.SignalR.Tests
                         connection.Start(host.Transport).Wait();
 
                         Assert.Throws<AggregateException>(() => connection.SendWithTimeout("test"));
+                    }
+                }
+            }
+        }
+
+        public class ReceiveFacts : HostedTest
+        {
+            [Theory]
+            [InlineData(HostType.Memory, TransportType.ServerSentEvents, MessageBusType.Default)]
+            [InlineData(HostType.Memory, TransportType.ServerSentEvents, MessageBusType.Fake)]
+            [InlineData(HostType.Memory, TransportType.ServerSentEvents, MessageBusType.FakeMultiStream)]
+            [InlineData(HostType.Memory, TransportType.LongPolling, MessageBusType.Default)]
+            [InlineData(HostType.Memory, TransportType.LongPolling, MessageBusType.Fake)]
+            [InlineData(HostType.Memory, TransportType.LongPolling, MessageBusType.FakeMultiStream)]
+            [InlineData(HostType.IISExpress, TransportType.ServerSentEvents, MessageBusType.Default)]
+            [InlineData(HostType.IISExpress, TransportType.LongPolling, MessageBusType.Default)]
+            public void ReceivePreserializedJson(HostType hostType, TransportType transportType, MessageBusType messageBusType)
+            {
+                using (var host = CreateHost(hostType, transportType))
+                {
+                    host.Initialize(messageBusType: messageBusType);
+
+                    var connection = CreateConnection(host, "/preserialize");
+                    var tcs = new TaskCompletionSource<string>();
+
+                    connection.Received += json =>
+                    {
+                        tcs.TrySetResult(json);
+                    };
+
+                    using (connection)
+                    {
+                        connection.Start(host.Transport).Wait();
+
+                        connection.SendWithTimeout(new { preserialized = true });
+
+                        Assert.True(tcs.Task.Wait(TimeSpan.FromSeconds(5)));
+                        var json = JObject.Parse(tcs.Task.Result);
+                        Assert.True((bool)json["preserialized"]);
                     }
                 }
             }
