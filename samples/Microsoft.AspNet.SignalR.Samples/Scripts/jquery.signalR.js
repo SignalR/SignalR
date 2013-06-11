@@ -322,7 +322,8 @@
                 config = {
                     waitForPageLoad: true,
                     transport: "auto",
-                    jsonp: false
+                    jsonp: false,
+                    withCredentials: true
                 },
                 initialize,
                 deferred = connection._deferral || $.Deferred(), // Check to see if there is a pre-existing deferral that's being built on, if so we want to keep using it
@@ -354,6 +355,7 @@
             }
 
             connection._.config = config;
+            connection.withCredentials = config.withCredentials;
 
             // Check to see if start is being called prior to page load
             // If waitForPageLoad is true we then want to re-direct function call to the window load event
@@ -480,10 +482,10 @@
                     }, connection.transportConnectTimeout);
 
                     transport.start(connection, function () { // success
-                    // The connection was aborted while initializing transports
-                    if (connection.state === signalR.connectionState.disconnected) {
-                        return;
-                    }
+                        // The connection was aborted while initializing transports
+                        if (connection.state === signalR.connectionState.disconnected) {
+                            return;
+                        }
 
                         if (!initializationComplete) {
                             initializationComplete = true;
@@ -528,6 +530,7 @@
 
             connection.log("Negotiating with '" + url + "'.");
             $.ajax({
+                xhrFields: { withCredentials: connection.withCredentials },
                 url: url,
                 global: false,
                 cache: false,
@@ -887,6 +890,7 @@
             url = this.addQs(url, connection.qs);
 
             $.ajax({
+                xhrFields: { withCredentials: connection.withCredentials },
                 url: url,
                 global: false,
                 cache: false,
@@ -993,6 +997,7 @@
             var url = connection.url + "/send" + "?transport=" + connection.transport.name + "&connectionToken=" + window.encodeURIComponent(connection.token);
             url = this.addQs(url, connection.qs);
             return $.ajax({
+                xhrFields: { withCredentials: connection.withCredentials },
                 url: url,
                 global: false,
                 type: connection.ajaxDataType === "jsonp" ? "GET" : "POST",
@@ -1029,6 +1034,7 @@
             var url = connection.url + "/abort" + "?transport=" + connection.transport.name + "&connectionToken=" + window.encodeURIComponent(connection.token);
             url = this.addQs(url, connection.qs);
             $.ajax({
+                xhrFields: { withCredentials: connection.withCredentials },
                 url: url,
                 async: async,
                 timeout: 1000,
@@ -1751,6 +1757,7 @@
 
                     connection.log("Attempting to connect to '" + url + "' using longPolling.");
                     instance.pollXhr = $.ajax({
+                        xhrFields: { withCredentials: connection.withCredentials },
                         url: url,
                         global: false,
                         cache: false,

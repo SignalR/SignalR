@@ -72,6 +72,7 @@
             url = this.addQs(url, connection.qs);
 
             $.ajax({
+                xhrFields: { withCredentials: connection.withCredentials },
                 url: url,
                 global: false,
                 cache: false,
@@ -178,6 +179,7 @@
             var url = connection.url + "/send" + "?transport=" + connection.transport.name + "&connectionToken=" + window.encodeURIComponent(connection.token);
             url = this.addQs(url, connection.qs);
             return $.ajax({
+                xhrFields: { withCredentials: connection.withCredentials },
                 url: url,
                 global: false,
                 type: connection.ajaxDataType === "jsonp" ? "GET" : "POST",
@@ -214,6 +216,7 @@
             var url = connection.url + "/abort" + "?transport=" + connection.transport.name + "&connectionToken=" + window.encodeURIComponent(connection.token);
             url = this.addQs(url, connection.qs);
             $.ajax({
+                xhrFields: { withCredentials: connection.withCredentials },
                 url: url,
                 async: async,
                 timeout: 1000,
