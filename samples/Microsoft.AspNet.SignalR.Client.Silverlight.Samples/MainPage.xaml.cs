@@ -12,7 +12,7 @@ namespace Microsoft.AspNet.SignalR.Client.Silverlight.Samples
 
             var writer = new TextBlockWriter(SynchronizationContext.Current, this.Messages);
             var client = new CommonClient(writer);
-            client.RunAsync();
+            var task = client.RunAsync();
         }
     }
 }
