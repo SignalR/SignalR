@@ -50,7 +50,7 @@ void ServerSentEventsTransport::OpenConnection(shared_ptr<Connection> connection
     {
         pRequest = request;
         connection->PrepareRequest(request);
-    }, true).then([this, connection, data, disconnectToken, errorCallback](http_response response) 
+    }, true).then([this, connection, data, disconnectToken, errorCallback, initializeInvoke](http_response response) 
     {
         // check if the task failed
 
@@ -72,7 +72,7 @@ void ServerSentEventsTransport::OpenConnection(shared_ptr<Connection> connection
             }
         };
 
-        pEventSource->Message = [connection, this](shared_ptr<SseEvent> sseEvent) 
+        pEventSource->Message = [connection, this, initializeInvoke](shared_ptr<SseEvent> sseEvent) 
         {
             if (sseEvent->GetType() == EventType::Data)
             {
@@ -83,7 +83,7 @@ void ServerSentEventsTransport::OpenConnection(shared_ptr<Connection> connection
 
                 bool timedOut, disconnected;
 
-                TransportHelper::ProcessResponse(connection, sseEvent->GetData(), &timedOut, &disconnected, [](){});
+                TransportHelper::ProcessResponse(connection, sseEvent->GetData(), &timedOut, &disconnected, initializeInvoke);
                 disconnected = false;
 
                 if (disconnected)

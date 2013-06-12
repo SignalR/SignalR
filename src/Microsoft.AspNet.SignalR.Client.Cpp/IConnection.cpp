@@ -40,6 +40,11 @@ string_t IConnection::GetProtocol()
     return mProtocol;
 }
 
+void IConnection::SetMessageId(string_t messageId)
+{
+    mMessageId = messageId;
+}
+
 void IConnection::SetConnectionToken(string_t connectionToken)
 {
     mConnectionToken = connectionToken;

@@ -37,7 +37,7 @@ READ:
     
     {
         lock_guard<mutex> lock(mBufferLock);
-        if(IsProcessing() && pReadBuffer != NULL)
+        if(IsProcessing() && pReadBuffer != nullptr)
         {
             readTask = AsyncReadIntoBuffer(&pReadBuffer, mStream);
         }
@@ -121,7 +121,7 @@ void AsyncStreamReader::Close(exception& ex)
 
     if(previousState != State::Stopped)
     {
-        if (Closed != NULL)
+        if (Closed != nullptr)
         {
             Closed(ex);
         }
@@ -135,7 +135,7 @@ void AsyncStreamReader::Close(exception& ex)
 
 void AsyncStreamReader::OnOpened()
 {
-    if (Opened != NULL)
+    if (Opened != nullptr)
     {
         Opened();
     }
@@ -143,7 +143,7 @@ void AsyncStreamReader::OnOpened()
 
 void AsyncStreamReader::OnData(shared_ptr<char> buffer)
 {
-    if (Data != NULL)
+    if (Data != nullptr)
     {
         Data(buffer);
     }

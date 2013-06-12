@@ -44,7 +44,7 @@ void EventSourceStreamReader::ProcessBuffer(shared_ptr<char> readBuffer)
 
 void EventSourceStreamReader::OnMessage(shared_ptr<SseEvent> sseEvent)
 {
-    if (Message != NULL)
+    if (Message != nullptr)
     {
         Message(sseEvent);
     }

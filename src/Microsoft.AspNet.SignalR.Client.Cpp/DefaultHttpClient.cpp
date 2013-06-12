@@ -14,9 +14,9 @@ void DefaultHttpClient::Initialize(string_t uri)
 {
     // Disabling the Http Client timeout by setting timeout to some large value (min 35 bits)
     http_client_config configurationLong = http_client_config();
-    configurationLong.set_timeout(seconds(1<<64 - 1));
+    configurationLong.set_timeout(seconds(1<<32 - 1));
     http_client_config configurationShort = http_client_config();
-    configurationShort.set_timeout(seconds(1<<64 - 1));
+    configurationShort.set_timeout(seconds(1<<32 - 1));
 
     pLongRunningClient = unique_ptr<http_client>(new http_client(uri, configurationLong));
     pShortRunningClient = unique_ptr<http_client>(new http_client(uri, configurationShort));
@@ -24,7 +24,7 @@ void DefaultHttpClient::Initialize(string_t uri)
     
 task<http_response> DefaultHttpClient::Get(string_t uri, function<void(shared_ptr<HttpRequestWrapper>)> prepareRequest, bool isLongRunning)
 {
-    if (prepareRequest == NULL)
+    if (prepareRequest == nullptr)
     {
         throw exception("ArgumentNullException: prepareRequest");
     }
@@ -60,7 +60,7 @@ task<http_response> DefaultHttpClient::Post(string_t uri, function<void(shared_p
 
 task<http_response> DefaultHttpClient::Post(string_t uri, function<void(shared_ptr<HttpRequestWrapper>)> prepareRequest, string_t postData, bool isLongRunning)
 {
-    if (prepareRequest == NULL)
+    if (prepareRequest == nullptr)
     {
         throw exception("ArgumentNullException: prepareRequest");
     }

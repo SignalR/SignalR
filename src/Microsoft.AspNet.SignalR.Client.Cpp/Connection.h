@@ -43,7 +43,7 @@ public:
     void PrepareRequest(shared_ptr<HttpRequestWrapper> request);
 
 private:
-    mutex mStateLock;
+    recursive_mutex mStateLock;
     mutex mStartLock;
     unique_ptr<pplx::cancellation_token_source> mDisconnectCts;
     pplx::task<void> mConnectTask;

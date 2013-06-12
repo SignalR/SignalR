@@ -4,6 +4,10 @@
 
 Connection::Connection(string_t uri)
 {
+    if (uri.empty())
+    {
+        throw exception("ArgumentNullException: uri");
+    }
     mUri = uri;
     if (!(mUri.back() == U('/')))
     {
@@ -32,21 +36,18 @@ pplx::task<void> Connection::Start(shared_ptr<IHttpClient> client)
 
 pplx::task<void> Connection::Start(shared_ptr<IClientTransport> transport) 
 {	
-    mStartLock.lock();
+    lock_guard<mutex> lock(mStartLock);
 
     mConnectTask = pplx::task<void>();
     mDisconnectCts = unique_ptr<pplx::cancellation_token_source>(new pplx::cancellation_token_source());
 
     if(!ChangeState(ConnectionState::Disconnected, ConnectionState::Connecting))
     {
-        // temp failure resolution
         return mConnectTask; 
     }
     
     mTransport = transport;
     mConnectTask = Negotiate(transport);
-    
-    mStartLock.unlock();
 
     return mConnectTask;
 }
@@ -81,11 +82,22 @@ pplx::task<void> Connection::Send(value::field_map object)
 
 pplx::task<void> Connection::Send(string_t data)
 {
+    if (mState == ConnectionState::Disconnected)
+    {
+        throw exception("InvalidOperationException: Error_StartMustBeCalledBeforeDataCanBeSent");
+    }
+    if (mState == ConnectionState::Connecting)
+    {
+        throw exception("InvalidOperationException: Error_ConnectionHasNotBeenEstablished");
+    }
+
     return mTransport->Send(shared_from_this(), data);
 }
 
 bool Connection::ChangeState(ConnectionState oldState, ConnectionState newState)
 {
+    lock_guard<recursive_mutex> lock (mStateLock);
+
     if(mState == oldState)
     {
         SetState(newState);
@@ -98,7 +110,10 @@ bool Connection::ChangeState(ConnectionState oldState, ConnectionState newState)
 
 bool Connection::EnsureReconnecting()
 {
-    ChangeState(ConnectionState::Connected, ConnectionState::Reconnecting);
+    if(ChangeState(ConnectionState::Connected, ConnectionState::Reconnecting))
+    {
+        OnReconnecting();
+    }
             
     return mState == ConnectionState::Reconnecting;
 }
@@ -106,7 +121,7 @@ bool Connection::EnsureReconnecting()
 
 void Connection::Stop() 
 {
-    mStartLock.lock();
+    lock_guard<mutex> lock(mStartLock);
 
     if (mConnectTask != pplx::task<void>())
     {
@@ -116,28 +131,30 @@ void Connection::Stop()
         }
         catch (exception& ex)
         {
-
+            //Trace
         }
     }
 
-    if (mState != ConnectionState::Disconnected)
     {
-        mTransport->Abort(shared_from_this());
+        lock_guard<recursive_mutex> lock(mStateLock);
 
-        Disconnect();
-
-        if (mTransport)
+        if (mState != ConnectionState::Disconnected)
         {
-            mTransport->Dispose();
+            mTransport->Abort(shared_from_this());
+
+            Disconnect();
+
+            if (mTransport)
+            {
+                mTransport->Dispose();
+            }
         }
     }
-
-    mStartLock.unlock();
 }
 
 void Connection::Disconnect()
 {
-    //mStateLock.lock();
+    lock_guard<recursive_mutex> lock(mStateLock);
 
     if (mState != ConnectionState::Disconnected)
     {
@@ -148,18 +165,16 @@ void Connection::Disconnect()
         mGroupsToken.clear();
         mMessageId.clear();
 
-        if (Closed != NULL)
+        if (Closed != nullptr)
         {
             Closed();
         }
     }
-
-    //mStateLock.unlock();
 }
 
 void Connection::OnError(exception& ex)
 {
-    if (Error != NULL)
+    if (Error != nullptr)
     {
         Error(ex);
     }
@@ -167,7 +182,7 @@ void Connection::OnError(exception& ex)
 
 void Connection::OnReceived(string_t message)
 {
-    if (Received != NULL)
+    if (Received != nullptr)
     {
         try 
         {
@@ -182,7 +197,7 @@ void Connection::OnReceived(string_t message)
 
 void Connection::OnReconnecting()
 {
-    if (Reconnecting != NULL)
+    if (Reconnecting != nullptr)
     {
         Reconnecting();
     }
@@ -190,7 +205,7 @@ void Connection::OnReconnecting()
 
 void Connection::OnReconnected()
 {
-    if (Reconnected != NULL)
+    if (Reconnected != nullptr)
     {
         Reconnected();
     }
@@ -198,7 +213,7 @@ void Connection::OnReconnected()
 
 void Connection::OnConnectionSlow()
 {
-    if (ConnectionSlow != NULL)
+    if (ConnectionSlow != nullptr)
     {
         ConnectionSlow();
     }
@@ -209,22 +224,15 @@ void Connection::PrepareRequest(shared_ptr<HttpRequestWrapper> request)
 
 }
 
-void IConnection::SetMessageId(string_t messageId)
-{
-    mMessageId = messageId;
-}
-
 void Connection::SetState(ConnectionState newState)
 {
-    mStateLock.lock();
+    lock_guard<recursive_mutex> lock(mStateLock);
 
     shared_ptr<StateChange> stateChange = shared_ptr<StateChange>(new StateChange(mState, newState));
     mState = newState;
 
-    if (StateChanged != NULL)
+    if (StateChanged != nullptr)
     {
         StateChanged(stateChange);
     }
-
-    mStateLock.unlock();
 }

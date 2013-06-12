@@ -148,7 +148,7 @@ void TransportHelper::ProcessResponse(shared_ptr<Connection> connection, string_
 
 void TransportHelper::ProcessResponse(shared_ptr<Connection> connection, string_t response, bool* timedOut, bool* disconnected, function<void()> onInitialized)
 {
-    if (connection == NULL)
+    if (connection == nullptr)
     {
         throw exception("ArgumentNullException: connection");
     }
