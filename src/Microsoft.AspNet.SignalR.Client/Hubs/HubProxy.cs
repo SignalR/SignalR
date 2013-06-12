@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR.Client;
 using Newtonsoft.Json;
@@ -170,6 +171,11 @@ namespace Microsoft.AspNet.SignalR.Client.Hubs
             if (_subscriptions.TryGetValue(eventName, out subscription))
             {
                 subscription.OnReceived(args);
+            }
+            else
+            {
+                throw new InvalidOperationException(String.Format(CultureInfo.CurrentCulture, Resources.Error_ClientCallbackNotFound,
+                                                                  eventName));
             }
         }
     }
