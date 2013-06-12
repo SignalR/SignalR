@@ -119,11 +119,12 @@
             var connection = testUtilities.createConnection("signalr", end, assert, testName, false),
                 newTimeout = 4000;
 
-            assert.equal(connection.transportConnectTimeout, null, "Transport connect timeout is null prior to connection start.");
+            assert.equal(connection.transportConnectTimeout, 0, "Transport connect timeout is 0 prior to connection start.");
             connection.transportConnectTimeout = newTimeout;
 
             connection.start().done(function () {
-                assert.equal(connection.transportConnectTimeout, newTimeout, "Transport utilized existing transportConnectTimeout instead of using server value.");
+                // Subtract the default timeout from server to get the client side timeout
+                assert.equal(connection.transportConnectTimeout - 5000, newTimeout, "Transport utilized existing transportConnectTimeout instead of using server value.");
                 end();
             });
 
