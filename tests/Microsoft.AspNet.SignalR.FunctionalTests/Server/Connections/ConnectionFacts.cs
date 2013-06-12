@@ -16,6 +16,7 @@ using Microsoft.AspNet.SignalR.Tests.Common.Infrastructure;
 namespace Microsoft.AspNet.SignalR.Client.Tests
 {
     using AppFunc = Func<IDictionary<string, object>, Task>;
+    using Microsoft.AspNet.SignalR.Configuration;
 
     public class ConnectionFacts
     {
@@ -114,6 +115,7 @@ namespace Microsoft.AspNet.SignalR.Client.Tests
             [Fact]
             public void ConnectionUsesClientSetTransportConnectTimeout()
             {
+                TimeSpan defaultTransportConnectTimeout = TimeSpan.Zero;
                 using (var host = new MemoryHost())
                 {
                     host.Configure(app =>
@@ -122,6 +124,8 @@ namespace Microsoft.AspNet.SignalR.Client.Tests
                         {
                             Resolver = new DefaultDependencyResolver()
                         };
+
+                        defaultTransportConnectTimeout = config.Resolver.Resolve<IConfigurationManager>().TransportConnectTimeout;
 
                         app.MapConnection<MyConnection>("echo", config);
                     });
@@ -132,10 +136,10 @@ namespace Microsoft.AspNet.SignalR.Client.Tests
 
                     using (connection)
                     {
-                        Assert.False(connection.TransportConnectTimeout.HasValue);
+                        Assert.Equal(connection.TransportConnectTimeout, TimeSpan.Zero);
                         connection.TransportConnectTimeout = newTimeout;
                         connection.Start(host).Wait();
-                        Assert.Equal(connection.TransportConnectTimeout.Value, newTimeout);
+                        Assert.Equal(connection.TransportConnectTimeout - defaultTransportConnectTimeout, newTimeout);
                     }
                 }
             }
