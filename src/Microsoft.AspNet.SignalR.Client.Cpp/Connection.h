@@ -13,7 +13,6 @@
 class Connection : public IConnection, public enable_shared_from_this<Connection>
 {
 public:
-
     Connection(string_t uri);
     ~Connection(void);
 
@@ -31,16 +30,7 @@ public:
     void Stop();
     pplx::task<void> Send(value::field_map object);
     pplx::task<void> Send(string_t data);
-    bool ChangeState(ConnectionState oldState, ConnectionState newState);
     bool EnsureReconnecting();
-    void Disconnect();
-
-    void OnReceived(string_t data);
-    void OnError(exception& ex);
-    void OnReconnecting();
-    void OnReconnected();
-    void OnConnectionSlow();
-    void PrepareRequest(shared_ptr<HttpRequestWrapper> request);
 
 private:
     recursive_mutex mStateLock;
@@ -51,5 +41,18 @@ private:
     void SetState(ConnectionState newState);
     pplx::task<void> StartTransport();
     pplx::task<void> Negotiate(shared_ptr<IClientTransport> transport);
+
+    bool ChangeState(ConnectionState oldState, ConnectionState newState);
+    void Disconnect();
+    void OnReceived(string_t data);
+    void OnError(exception& ex);
+    void OnReconnecting();
+    void OnReconnected();
+    void OnConnectionSlow();
+    void PrepareRequest(shared_ptr<HttpRequestWrapper> request);
+
+    friend class HttpBasedTransport;
+    friend class ServerSentEventsTransport;
+    friend class TransportHelper;
 };
 

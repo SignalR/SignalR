@@ -47,12 +47,15 @@ protected:
     shared_ptr<IClientTransport> mTransport;
 
     virtual void Stop() = 0;
-    virtual void Disconnect() = 0;
     virtual pplx::task<void> Send(string_t data) = 0;
+
+private:
+    virtual void Disconnect() = 0;
     virtual void OnReceived(string_t data) = 0;
     virtual void OnError(exception& ex) = 0;
     virtual void OnReconnecting() = 0;
     virtual void OnReconnected() = 0;
     virtual void OnConnectionSlow() = 0;
     virtual void PrepareRequest(shared_ptr<HttpRequestWrapper> request) = 0;
+
 };
