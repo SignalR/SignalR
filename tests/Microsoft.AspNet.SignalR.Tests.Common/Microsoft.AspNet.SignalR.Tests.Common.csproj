@@ -141,6 +141,7 @@
     <Compile Include="Connections\SyncErrorConnection.cs" />
     <Compile Include="Connections\UnusableProtectedConnection.cs" />
     <Compile Include="Hubs\ChatWithGroups.cs" />
+    <Compile Include="Hubs\ClientCallbackHub.cs" />
     <Compile Include="Hubs\DelayedOnConnectedHub.cs" />
     <Compile Include="Hubs\EchoHub.cs" />
     <Compile Include="Hubs\ExamineHeadersHub.cs" />
