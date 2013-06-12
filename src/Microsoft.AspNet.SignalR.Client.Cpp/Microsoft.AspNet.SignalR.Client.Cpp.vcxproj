@@ -76,6 +76,7 @@
     <ClCompile Include="IClientTransport.cpp" />
     <ClCompile Include="IConnection.cpp" />
     <ClCompile Include="LongPollingTransport.cpp" />
+    <ClCompile Include="NegotiationResponse.cpp" />
     <ClCompile Include="ServerSentEventsTransport.cpp" />
     <ClCompile Include="Source.cpp" />
     <ClCompile Include="EventSourceStreamReader.cpp" />

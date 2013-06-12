@@ -13,6 +13,7 @@ ServerSentEventsTransport::~ServerSentEventsTransport()
 
 void ServerSentEventsTransport::OnAbort()
 {
+    // need to clear all the function<> variables to prevent circular referencing
     pEventSource->Opened = [](){};
     pEventSource->Closed = [](exception& ex){};
     pEventSource->Data = [](shared_ptr<char> buffer){};
@@ -123,6 +124,8 @@ void ServerSentEventsTransport::OpenConnection(shared_ptr<Connection> connection
         };
 
         pEventSource->Start();
+
+        // some more code missing here
     });
 }
 

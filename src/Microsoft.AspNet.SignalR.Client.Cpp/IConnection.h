@@ -35,7 +35,7 @@ public:
     void SetConnectionId(string_t connectionId); 
 
 protected:
-    string_t mProtocol;
+    string_t mProtocol; // temporarily stored as a string
     string_t mMessageId;
     string_t mGroupsToken;
     string_t mConnectionId;

@@ -41,7 +41,7 @@ task<shared_ptr<NegotiationResponse>> TransportHelper::GetNegotiationResponse(sh
     {
         shared_ptr<NegotiationResponse> responseObject = shared_ptr<NegotiationResponse>(new NegotiationResponse());
         
-        // temporary solution, couldn't find a JSON parser in C++ 
+        // temporary solution, couldn't find a JSON parser in C++ with the Apache Licence
 
         value raw = response.extract_json().get();
 
@@ -52,19 +52,19 @@ task<shared_ptr<NegotiationResponse>> TransportHelper::GetNegotiationResponse(sh
 
         auto iter = raw.cbegin();
 
-        responseObject->Uri = StringHelper::CleanString(iter->second.to_string());
+        responseObject->mUri = StringHelper::CleanString(iter->second.to_string());
         iter++;
-        responseObject->ConnectionToken = StringHelper::EncodeUri(iter->second.to_string());
+        responseObject->mConnectionToken = StringHelper::EncodeUri(iter->second.to_string());
         iter++;
-        responseObject->ConnectionId = StringHelper::CleanString(iter->second.to_string());
+        responseObject->mConnectionId = StringHelper::CleanString(iter->second.to_string());
         iter++;
-        responseObject->KeepAliveTimeout = iter->second.as_double();
+        responseObject->mKeepAliveTimeout = iter->second.as_double();
         iter++;
-        responseObject->DisconnectTimeout = iter->second.as_double();
+        responseObject->mDisconnectTimeout = iter->second.as_double();
         iter++;
-        responseObject->TryWebSockets = iter->second.as_bool();
+        responseObject->mTryWebSockets = iter->second.as_bool();
         iter++;
-        responseObject->ProtocolVersion = StringHelper::CleanString(iter->second.to_string());
+        responseObject->mProtocolVersion = StringHelper::CleanString(iter->second.to_string());
         
         return responseObject;
     });
@@ -101,10 +101,6 @@ string_t TransportHelper::GetReceiveQueryString(shared_ptr<Connection> connectio
     {
         qs += U("&") + customQuery;
     }
-
-//#if SILVERLIGHT || WINDOWS_PHONE
-//    qsBuilder.Append("&").Append(GetNoCacheUrlParam());
-//#endif
     
     return qs;
 }

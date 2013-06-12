@@ -32,7 +32,7 @@ bool StringHelper::EqualsIgnoreCase(string_t string1, string_t string2)
     return string1 == string2;
 }
 
-// strip off extra quotation marks <"> from the string
+// strip off extra quotation marks <\"> from the string
 string_t StringHelper::CleanString(string_t string)
 {
     if (string.front() = U('\"'))

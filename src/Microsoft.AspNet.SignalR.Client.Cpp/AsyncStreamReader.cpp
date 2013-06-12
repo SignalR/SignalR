@@ -73,7 +73,7 @@ void AsyncStreamReader::ReadAsync(pplx::task<unsigned int> readTask)
 {
     readTask.then([readTask, this](unsigned int bytesRead)
     {
-        // differentiate between faulted and canceled tasks?
+        // how to differentiate between faulted and canceled tasks?
         if (TryProcessRead(bytesRead))
         {
             Process();
@@ -149,11 +149,13 @@ void AsyncStreamReader::OnData(shared_ptr<char> buffer)
     }
 }
 
+// returns a task that reads the incomming stream and stored the messages into a buffer
 task<unsigned int> AsyncStreamReader::AsyncReadIntoBuffer(shared_ptr<char>* buffer, Concurrency::streams::basic_istream<uint8_t> stream)
 {
     concurrency::streams::container_buffer<string> inStringBuffer;
     return stream.read(inStringBuffer, 4096).then([inStringBuffer, buffer](size_t bytesRead)
     {
+        // race: read may finish after AsyncStreamReader is destroyed
         string &text = inStringBuffer.collection();
         (*buffer) = shared_ptr<char>(new char[text.length() + 1]);
         int length = text.length();

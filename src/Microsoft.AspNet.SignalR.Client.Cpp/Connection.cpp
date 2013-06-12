@@ -31,7 +31,8 @@ pplx::task<void> Connection::Start()
 pplx::task<void> Connection::Start(shared_ptr<IHttpClient> client) 
 {	
     //return Start(new AutoTransport(client));
-    return Start(shared_ptr<IClientTransport>(new ServerSentEventsTransport(client)));
+    // default to using ServerSentEvents
+    return Start(shared_ptr<IClientTransport>(new ServerSentEventsTransport(client))); 
 }
 
 pplx::task<void> Connection::Start(shared_ptr<IClientTransport> transport) 
@@ -56,8 +57,8 @@ pplx::task<void> Connection::Negotiate(shared_ptr<IClientTransport> transport)
 {
     return mTransport->Negotiate(shared_from_this()).then([this](shared_ptr<NegotiationResponse> response)
     {
-        mConnectionId = response->ConnectionId;
-        mConnectionToken = response->ConnectionToken;
+        mConnectionId = response->mConnectionId;
+        mConnectionToken = response->mConnectionToken;
 
         StartTransport();
     });

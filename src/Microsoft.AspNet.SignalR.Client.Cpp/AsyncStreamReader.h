@@ -43,5 +43,5 @@ private:
     bool TryProcessRead(unsigned read);
     void OnOpened();
     void OnData(shared_ptr<char> buffer);
-    task<unsigned int> AsyncReadIntoBuffer(shared_ptr<char>* buffer, Concurrency::streams::basic_istream<uint8_t> stream);
+    pplx::task<unsigned int> AsyncReadIntoBuffer(shared_ptr<char>* buffer, Concurrency::streams::basic_istream<uint8_t> stream);
 };

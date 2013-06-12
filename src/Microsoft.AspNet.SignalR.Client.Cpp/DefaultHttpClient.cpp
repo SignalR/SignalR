@@ -14,9 +14,9 @@ void DefaultHttpClient::Initialize(string_t uri)
 {
     // Disabling the Http Client timeout by setting timeout to some large value (min 35 bits)
     http_client_config configurationLong = http_client_config();
-    configurationLong.set_timeout(seconds(1<<32 - 1));
+    configurationLong.set_timeout(seconds(1<<31));
     http_client_config configurationShort = http_client_config();
-    configurationShort.set_timeout(seconds(1<<32 - 1));
+    configurationShort.set_timeout(seconds(1<<31));
 
     pLongRunningClient = unique_ptr<http_client>(new http_client(uri, configurationLong));
     pShortRunningClient = unique_ptr<http_client>(new http_client(uri, configurationShort));

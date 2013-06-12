@@ -39,7 +39,7 @@ string_t ChunkBuffer::ReadLine()
             mLineBuilder.clear();
 
             mOffset = 0;
-            return line; // need to trim line
+            return line;
         }
 
         mLineBuilder.append(mBuffer, i, 1);

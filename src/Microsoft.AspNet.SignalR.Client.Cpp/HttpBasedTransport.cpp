@@ -145,7 +145,7 @@ void HttpBasedTransport::Dispose()
     Dispose(true);
 }
 
-// Is this function necessary?
+// Is this function necessary for C++?
 void HttpBasedTransport::Dispose(bool disposing)
 {
     if (disposing)

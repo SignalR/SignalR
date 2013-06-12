@@ -51,6 +51,7 @@ private:
     void OnConnectionSlow();
     void PrepareRequest(shared_ptr<HttpRequestWrapper> request);
 
+    // Allowing these classes to access private functions such as ChangeState
     friend class HttpBasedTransport;
     friend class ServerSentEventsTransport;
     friend class TransportHelper;
