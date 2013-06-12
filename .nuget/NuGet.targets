@@ -18,6 +18,7 @@
         <PackageSource Include="https://nuget.org/api/v2/" />
         <PackageSource Include="http://www.myget.org/F/aspnetwebstacknightly/" />
         <PackageSource Include="http://www.myget.org/F/katana/" />
+        <PackageSource Include="http://www.myget.org/F/katanatemp/" />
     </ItemGroup>
 
     <PropertyGroup Condition=" '$(OS)' == 'Windows_NT'">
