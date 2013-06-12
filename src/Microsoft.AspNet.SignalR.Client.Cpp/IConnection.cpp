@@ -40,6 +40,16 @@ string_t IConnection::GetProtocol()
     return mProtocol;
 }
 
+void IConnection::SetConnectionToken(string_t connectionToken)
+{
+    mConnectionToken = connectionToken;
+}
+
+void IConnection::SetConnectionId(string_t connectionId)
+{
+    mConnectionId = connectionId;
+}
+
 void IConnection::SetProtocol(string_t protocol)
 {
     mProtocol = protocol;

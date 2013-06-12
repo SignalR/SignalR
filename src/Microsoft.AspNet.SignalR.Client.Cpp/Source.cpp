@@ -1,6 +1,7 @@
 #include <ctime>
 #include <http_client.h>
 #include "Connection.h"
+#include "TaskAsyncHelper.h"
 
 #define _CRTDBG_MAP_ALLOC
 #include <crtdbg.h>
@@ -12,9 +13,6 @@ using namespace web::json;
 
 static void RunStreamingSample()
 {
-    //_CrtMemState s1, s2, s3;
-    //_CrtMemCheckpoint(&s1);
-
     wcout << U("Choose transport:") << endl;
     wcout << U("1. AutoTransport") << endl;
     wcout << U("2. ServerSentEventsTransport") << endl;
@@ -55,11 +53,9 @@ static void RunStreamingSample()
             wcerr << U("=======================") << endl;
         };
 
-
         try
         {
             connection->Start().wait();
-
             wcout << U("Using ") << connection->GetTransport()->GetTransportName() << endl;
         }
         catch (exception& ex)
@@ -88,67 +84,23 @@ static void RunStreamingSample()
 
         connection->Stop();
     }  
-    //_CrtMemCheckpoint(&s2);
-    //if (_CrtMemDifference(&s3, &s1, &s2))
-    //{
-    //    _CrtMemDumpStatistics(&s3);
-    //}
 }
 
-class B;
-
-class A
+static void RunDelaySample()
 {
-public:
-    shared_ptr<B> pB;
-    int variable;
-    void someFunction()
+    TaskAsyncHelper::Delay(seconds(1)).then([]()
     {
-        variable = 1;
-    };
-};
-
-class B
-{
-public:
-    function<void()> callBack;
-};
+        cout << "I'm done!" << endl;
+    }).wait();
+}
 
 int main () 
 {
     _CrtMemState s1, s2, s3;
     _CrtMemCheckpoint(&s1);
 
-    //bool testing = true;
-    //if (testing)
-    //{
-    //    shared_ptr<A> pA = shared_ptr<A>(new A());
-    //    pA->pB = shared_ptr<B>(new B());
-
-    //    long count = pA.use_count();
-    //    bool unique = pA.unique();
-
-    //    pA->pB->callBack = [pA]()
-    //    {
-    //        pA->someFunction();
-    //        long count = pA.use_count();
-    //        bool unique = pA.unique();
-    //    };
-
-    //    unique = pA.unique();
-    //    count = pA.use_count();
-
-    //    pA->pB->callBack();
-
-    //    int result = pA->variable;
-
-    //    pA->pB->callBack = [](){};
-
-    //    unique = pA.unique();
-    //    count = pA.use_count();
-    //}
-
     RunStreamingSample();
+    //RunDelaySample();
 
     wcout << U("Press <Enter> to Exit ...") << endl;
     getwchar();
@@ -158,6 +110,4 @@ int main ()
     {
         _CrtMemDumpStatistics(&s3);
     }
-    
-    //_CrtDumpMemoryLeaks();
 }

@@ -48,7 +48,7 @@ string_t StateChange::StateName(ConnectionState state)
         return U("Disconnected");
         break;
     default:
-        // throw some error
+        throw(exception("InvalidArgumentException: state"));
         break;
     }
 }

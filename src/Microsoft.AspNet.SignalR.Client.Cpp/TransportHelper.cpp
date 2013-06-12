@@ -1,22 +1,22 @@
 #include "TransportHelper.h"
 
-TransportHelper::TransportHelper(void)
+TransportHelper::TransportHelper()
 {
 }
 
 
-TransportHelper::~TransportHelper(void)
+TransportHelper::~TransportHelper()
 {
 }
 
 task<shared_ptr<NegotiationResponse>> TransportHelper::GetNegotiationResponse(shared_ptr<IHttpClient> httpClient, shared_ptr<Connection> connection)
 {
-    if (httpClient == NULL)
+    if (httpClient == nullptr)
     {
         throw exception("ArgumentNullException: httpClient");
     }
 
-    if (connection == NULL)
+    if (connection == nullptr)
     {
         throw exception("ArgumentNullException: connection");
     }
@@ -41,6 +41,8 @@ task<shared_ptr<NegotiationResponse>> TransportHelper::GetNegotiationResponse(sh
     {
         shared_ptr<NegotiationResponse> responseObject = shared_ptr<NegotiationResponse>(new NegotiationResponse());
         
+        // temporary solution, couldn't find a JSON parser in C++ 
+
         value raw = response.extract_json().get();
 
         if (raw.is_null())
@@ -70,7 +72,7 @@ task<shared_ptr<NegotiationResponse>> TransportHelper::GetNegotiationResponse(sh
 
 string_t TransportHelper::GetReceiveQueryString(shared_ptr<Connection> connection, string_t data, string_t transport)
 {
-    if (connection == NULL)
+    if (connection == nullptr)
     {
         throw exception("ArgumentNullException: connection");
     }
@@ -109,7 +111,7 @@ string_t TransportHelper::GetReceiveQueryString(shared_ptr<Connection> connectio
 
 string_t TransportHelper::AppendCustomQueryString(shared_ptr<Connection> connection, string_t baseUrl)
 {
-    if (connection == NULL)
+    if (connection == nullptr)
     {
         throw exception("ArgumentNullException: connection");
     }

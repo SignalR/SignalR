@@ -2,10 +2,10 @@
 
 HttpBasedTransport::HttpBasedTransport(shared_ptr<IHttpClient> httpClient, string_t transport)
 {
-    mHttpClient = httpClient;
+    pHttpClient = httpClient;
     mTransportName = transport;
 
-    mAbortResetEvent = unique_ptr<Concurrency::event>(new Concurrency::event());
+    pAbortResetEvent = unique_ptr<Concurrency::event>(new Concurrency::event());
 
     mStartedAbort = false;
     mDisposed = false;
@@ -18,12 +18,12 @@ HttpBasedTransport::~HttpBasedTransport(void)
 
 shared_ptr<IHttpClient> HttpBasedTransport::GetHttpClient()
 {
-    return mHttpClient;
+    return pHttpClient;
 }
 
 task<shared_ptr<NegotiationResponse>> HttpBasedTransport::Negotiate(shared_ptr<Connection> connection)
 {
-    return TransportHelper::GetNegotiationResponse(mHttpClient, connection);
+    return TransportHelper::GetNegotiationResponse(pHttpClient, connection);
 }
 
 string_t HttpBasedTransport::GetSendQueryString(string_t transport, string_t connectionToken, string_t customQuery)
@@ -40,15 +40,12 @@ task<void> HttpBasedTransport::Start(shared_ptr<Connection> connection, string_t
 {
     task_completion_event<void> tce;
     
-
     function<void()> initializeCallback = [tce]()
     {
         tce.set();
     };
 
-    exception ex;
-
-    function<void()> errorCallback = [tce, &ex]()
+    function<void(exception)> errorCallback = [tce](exception& ex)
     {
         tce.set_exception(ex);
     };
@@ -59,13 +56,18 @@ task<void> HttpBasedTransport::Start(shared_ptr<Connection> connection, string_t
 
 task<void> HttpBasedTransport::Send(shared_ptr<Connection> connection, string_t data)
 {
+    if (connection == nullptr)
+    {
+        throw exception("ArgumentNullException: connection");
+    }
+
     string_t uri = connection->GetUri() + U("send");
     string_t customQueryString = connection->GetQueryString().empty()? U("") : U("&") + connection->GetQueryString();
     uri += GetSendQueryString(mTransportName, connection->GetConnectionToken(), customQueryString);
 
     string_t encodedData = U("data=") + uri::encode_data_string(data);
 
-    return mHttpClient->Post(uri, [connection](shared_ptr<HttpRequestWrapper> request)
+    return pHttpClient->Post(uri, [connection](shared_ptr<HttpRequestWrapper> request)
     {
         connection->PrepareRequest(request);
     }, encodedData, false).then([connection](http_response response)
@@ -76,69 +78,64 @@ task<void> HttpBasedTransport::Send(shared_ptr<Connection> connection, string_t 
 
 void HttpBasedTransport::Abort(shared_ptr<Connection> connection)
 {
-    if (connection == NULL)
+    if (connection == nullptr)
     {
         throw exception("ArgumentNullException: connection");
     }
 
-    mAbortLock.lock();
-
-    if (mDisposed)
     {
-        mAbortLock.unlock();
-        string name = typeid(this).name();
-        throw exception(("ObjectDisposedException: " + name).c_str());
-    }
-
-    if (!mStartedAbort)
-    {
-        mStartedAbort = true;
-
-        string_t uri = connection->GetUri() + U("abort") + GetSendQueryString(mTransportName, connection->GetConnectionToken(), U(""));
-        uri += TransportHelper::AppendCustomQueryString(connection, uri);
-
-        mHttpClient->Post(uri, [connection](shared_ptr<HttpRequestWrapper> request)
+        lock_guard<mutex> lock(mAbortLock);
+        
+        if (mDisposed)
         {
-            connection->PrepareRequest(request);
-        }, false).wait();
+            string name = typeid(this).name();
+            throw exception(("ObjectDisposedException: " + name).c_str());
+        }
 
-        OnAbort();
+        if (!mStartedAbort)
+        {
+            mStartedAbort = true;
+
+            string_t uri = connection->GetUri() + U("abort") + GetSendQueryString(mTransportName, connection->GetConnectionToken(), U(""));
+            uri += TransportHelper::AppendCustomQueryString(connection, uri);
+
+            // this is not asynchronous yet
+            pHttpClient->Post(uri, [connection](shared_ptr<HttpRequestWrapper> request)
+            {
+                connection->PrepareRequest(request);
+            }, false).wait();
+
+            OnAbort();
+        }
     }
-
-    mAbortLock.unlock();
 }
 
 void HttpBasedTransport::CompleteAbort()
 {
-    //mDisposeLock.lock();
+    lock_guard<mutex> lock(mDisposeLock);
 
     if (!mDisposed)
     {
         mStartedAbort = true;
-        //mAbortResetEvent->set();
+        pAbortResetEvent->set();
     }
-
-    //mDisposeLock.unlock();
 }
 
 bool HttpBasedTransport::TryCompleteAbort()
 {
-    mDisposeLock.lock();
+    lock_guard<mutex> lock(mDisposeLock);
 
     if (mDisposed)
     {
-        mDisposeLock.unlock();
         return true;
     }
     else if (mStartedAbort)
     {
-        //mAbortResetEvent->set();
-        mDisposeLock.unlock();
+        pAbortResetEvent->set();
         return true;
     }
     else
     {
-        mDisposeLock.unlock();
         return false;
     }
 }
@@ -148,19 +145,23 @@ void HttpBasedTransport::Dispose()
     Dispose(true);
 }
 
+// Is this function necessary?
 void HttpBasedTransport::Dispose(bool disposing)
 {
     if (disposing)
     {
-        mAbortLock.lock();
-        mDisposeLock.lock();
-
-        if (!mDisposed)
-        {
-            mDisposed = true;
-        }
+        lock_guard<mutex> lock(mAbortLock);
         
-        mDisposeLock.unlock();
-        mAbortLock.unlock();
+        {
+            lock_guard<mutex> lock(mDisposeLock);
+
+            // Wait for any ongoing aborts to complete
+            // In practice, any aborts should have finished by the time Dispose is called
+            if (!mDisposed)
+            {
+                //pAbortResetEvent.Dispose();
+                mDisposed = true;
+            }
+        }
     }
 }

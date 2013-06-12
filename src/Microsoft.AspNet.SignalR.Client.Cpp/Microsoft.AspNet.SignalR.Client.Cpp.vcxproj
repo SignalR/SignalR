@@ -83,6 +83,7 @@
     <ClCompile Include="SseEvent.cpp" />
     <ClCompile Include="StateChange.cpp" />
     <ClCompile Include="StringHelper.cpp" />
+    <ClCompile Include="TaskAsyncHelper.cpp" />
     <ClCompile Include="ThreadSafeInvoker.cpp" />
     <ClCompile Include="TransportHelper.cpp" />
   </ItemGroup>
@@ -104,6 +105,7 @@
     <ClInclude Include="SseEvent.h" />
     <ClInclude Include="StateChange.h" />
     <ClInclude Include="StringHelper.h" />
+    <ClInclude Include="TaskAsyncHelper.h" />
     <ClInclude Include="ThreadSafeInvoker.h" />
     <ClInclude Include="TransportHelper.h" />
   </ItemGroup>

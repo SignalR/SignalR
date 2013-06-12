@@ -30,7 +30,9 @@ public:
     
     void SetProtocol(string_t protocol);
     void SetMessageId(string_t groupsToken);
-    void SetGroupsToken(string_t groupsToken);  
+    void SetGroupsToken(string_t groupsToken); 
+    void SetConnectionToken(string_t connectionToken);
+    void SetConnectionId(string_t connectionId); 
 
 protected:
     string_t mProtocol;
@@ -46,7 +48,7 @@ protected:
 
     virtual void Stop() = 0;
     virtual void Disconnect() = 0;
-    virtual task<void> Send(string_t data) = 0;
+    virtual pplx::task<void> Send(string_t data) = 0;
     virtual void OnReceived(string_t data) = 0;
     virtual void OnError(exception& ex) = 0;
     virtual void OnReconnecting() = 0;

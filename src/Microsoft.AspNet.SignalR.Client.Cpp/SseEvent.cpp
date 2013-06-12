@@ -7,7 +7,7 @@ SseEvent::SseEvent(EventType type, string_t data)
 }
 
 
-SseEvent::~SseEvent(void)
+SseEvent::~SseEvent()
 {
 }
 
@@ -28,6 +28,8 @@ string_t SseEvent::ToString()
 
 bool SseEvent::TryParse(string_t line, shared_ptr<SseEvent>* sseEvent)
 {
+    *sseEvent = nullptr;
+
     if (line.empty())
     {
         throw exception("ArgumentNullException: line");
@@ -35,13 +37,13 @@ bool SseEvent::TryParse(string_t line, shared_ptr<SseEvent>* sseEvent)
 
     if (StringHelper::BeginsWithIgnoreCase(line, U("data:")))
     {
-        string_t data = StringHelper::Trim(line.substr(string_t(U("data:")).length(), line.length()));
+        string_t data = StringHelper::Trim(line.substr(string_t(U("data:")).length(), line.length() - string_t(U("data:")).length()));
         *sseEvent = shared_ptr<SseEvent>(new SseEvent(EventType::Data, data));
         return true;
     }
     else if (StringHelper::BeginsWithIgnoreCase(line, U("id:")))
     {
-        string_t data = StringHelper::Trim(line.substr(string_t(U("id:")).length(), line.length()));
+        string_t data = StringHelper::Trim(line.substr(string_t(U("id:")).length(), line.length() - string_t(U("id:")).length()));
         *sseEvent = shared_ptr<SseEvent>(new SseEvent(EventType::Id, data));
         return true;
     }

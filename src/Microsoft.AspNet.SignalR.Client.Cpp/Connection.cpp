@@ -19,26 +19,23 @@ Connection::~Connection()
 {
 }
 
-task<void> Connection::Start() 
+pplx::task<void> Connection::Start() 
 {
-    // Start(new DefaultHttpClient());
     return Start(shared_ptr<IHttpClient>(new DefaultHttpClient()));
 }
 
-task<void> Connection::Start(shared_ptr<IHttpClient> client) 
+pplx::task<void> Connection::Start(shared_ptr<IHttpClient> client) 
 {	
-    // Start(new AutoTransport(client));
-    //return Start(new WebSocketTransport(client));
-    //return Start(new LongPollingTransport(client));
+    //return Start(new AutoTransport(client));
     return Start(shared_ptr<IClientTransport>(new ServerSentEventsTransport(client)));
 }
 
-task<void> Connection::Start(shared_ptr<IClientTransport> transport) 
+pplx::task<void> Connection::Start(shared_ptr<IClientTransport> transport) 
 {	
     mStartLock.lock();
 
-    mConnectTask = task<void>();
-    mDisconnectCts = unique_ptr<cancellation_token_source>(new cancellation_token_source());
+    mConnectTask = pplx::task<void>();
+    mDisconnectCts = unique_ptr<pplx::cancellation_token_source>(new pplx::cancellation_token_source());
 
     if(!ChangeState(ConnectionState::Disconnected, ConnectionState::Connecting))
     {
@@ -54,7 +51,7 @@ task<void> Connection::Start(shared_ptr<IClientTransport> transport)
     return mConnectTask;
 }
 
-task<void> Connection::Negotiate(shared_ptr<IClientTransport> transport) 
+pplx::task<void> Connection::Negotiate(shared_ptr<IClientTransport> transport) 
 {
     return mTransport->Negotiate(shared_from_this()).then([this](shared_ptr<NegotiationResponse> response)
     {
@@ -65,7 +62,7 @@ task<void> Connection::Negotiate(shared_ptr<IClientTransport> transport)
     });
 }
 
-task<void> Connection::StartTransport()
+pplx::task<void> Connection::StartTransport()
 {
     return mTransport->Start(shared_from_this(), U(""), mDisconnectCts->get_token()).then([this]()
     {
@@ -73,7 +70,7 @@ task<void> Connection::StartTransport()
     });
 }
 
-task<void> Connection::Send(value::field_map object)
+pplx::task<void> Connection::Send(value::field_map object)
 {
     stringstream_t stream;
     value v1 = value::object(object);
@@ -82,7 +79,7 @@ task<void> Connection::Send(value::field_map object)
     return Send(stream.str());
 }
 
-task<void> Connection::Send(string_t data)
+pplx::task<void> Connection::Send(string_t data)
 {
     return mTransport->Send(shared_from_this(), data);
 }
@@ -111,7 +108,7 @@ void Connection::Stop()
 {
     mStartLock.lock();
 
-    if (mConnectTask != task<void>())
+    if (mConnectTask != pplx::task<void>())
     {
         try
         {
@@ -210,16 +207,6 @@ void Connection::OnConnectionSlow()
 void Connection::PrepareRequest(shared_ptr<HttpRequestWrapper> request)
 {
 
-}
-
-void Connection::SetConnectionToken(string_t connectionToken)
-{
-    mConnectionToken = connectionToken;
-}
-
-void Connection::SetConnectionId(string_t connectionId)
-{
-    mConnectionId = connectionId;
 }
 
 void IConnection::SetMessageId(string_t messageId)

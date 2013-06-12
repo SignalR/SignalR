@@ -3,8 +3,8 @@
 #include <http_client.h>
 #include "StringHelper.h"
 
-using namespace utility;
 using namespace std;
+using namespace utility;
 
 enum EventType
 {
@@ -16,7 +16,7 @@ class SseEvent
 {
 public:
     SseEvent(EventType type, string_t data);
-    ~SseEvent(void);
+    ~SseEvent();
     
     EventType GetType();
     string_t GetData();

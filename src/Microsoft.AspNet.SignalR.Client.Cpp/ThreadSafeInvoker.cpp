@@ -17,7 +17,6 @@ bool ThreadSafeInvoker::Invoke(function<void()> function)
         function();
         return true;
     }
-
     return false;
 }
 
@@ -29,14 +28,13 @@ bool ThreadSafeInvoker::Invoke(function<void(T)> function, T arg)
         function(arg);
         return true;
     }
-
     return false;
 }
 
 template <typename T1, typename T2>
 bool ThreadSafeInvoker::Invoke(function<void(T1, T2)> function, T1 arg1, T2 arg2)
 {
-        if (!atomic_exchange<bool>(&mInvoked, true))
+    if (!atomic_exchange<bool>(&mInvoked, true))
     {
         function(arg1, arg2);
         return true;

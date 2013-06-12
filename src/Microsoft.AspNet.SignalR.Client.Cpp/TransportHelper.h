@@ -11,8 +11,8 @@ using namespace web::json;
 class TransportHelper
 {
 public:
-    TransportHelper(void);
-    ~TransportHelper(void);
+    TransportHelper();
+    ~TransportHelper();
 
     static task<shared_ptr<NegotiationResponse>> GetNegotiationResponse(shared_ptr<IHttpClient> client, shared_ptr<Connection> connnection);
     static string_t GetReceiveQueryString(shared_ptr<Connection> connection, string_t data, string_t transport);

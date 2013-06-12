@@ -1,3 +1,10 @@
+//  Variable Prefix Convention
+//  http://stackoverflow.com/questions/1228161/why-use-prefixes-on-member-variables-in-c-classes third answer
+//  I use:
+//
+//  m for members
+//  p for member pointers/smart pointers
+
 #pragma once
 
 #include "IConnection.h"
@@ -18,15 +25,12 @@ public:
     function<void()> Reconnected;
     function<void()> ConnectionSlow;
 
-    void SetConnectionToken(string_t connectionToken);
-    void SetConnectionId(string_t connectionId);
-
-    task<void> Start();
-    task<void> Start(shared_ptr<IClientTransport> transport);
-    task<void> Start(shared_ptr<IHttpClient> client);
+    pplx::task<void> Start();
+    pplx::task<void> Start(shared_ptr<IClientTransport> transport);
+    pplx::task<void> Start(shared_ptr<IHttpClient> client);
     void Stop();
-    task<void> Send(value::field_map object);
-    task<void> Send(string_t data);
+    pplx::task<void> Send(value::field_map object);
+    pplx::task<void> Send(string_t data);
     bool ChangeState(ConnectionState oldState, ConnectionState newState);
     bool EnsureReconnecting();
     void Disconnect();
@@ -41,11 +45,11 @@ public:
 private:
     mutex mStateLock;
     mutex mStartLock;
-    unique_ptr<cancellation_token_source> mDisconnectCts;
-    task<void> mConnectTask;
+    unique_ptr<pplx::cancellation_token_source> mDisconnectCts;
+    pplx::task<void> mConnectTask;
 
     void SetState(ConnectionState newState);
-    task<void> StartTransport();
-    task<void> Negotiate(shared_ptr<IClientTransport> transport);
+    pplx::task<void> StartTransport();
+    pplx::task<void> Negotiate(shared_ptr<IClientTransport> transport);
 };
 

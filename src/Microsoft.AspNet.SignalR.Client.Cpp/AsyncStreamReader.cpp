@@ -12,23 +12,18 @@ AsyncStreamReader::~AsyncStreamReader(void)
 
 }
 
-bool AsyncStreamReader::IsProcessing()
-{
-    return mReadingState == State::Processing;
-}
-
 void AsyncStreamReader::Start()
 {
     State initial = State::Initial;
 
     if (atomic_compare_exchange_strong<State>(&mReadingState, &initial, State::Processing))
     {
-        mSetOpened = [this](){
+        SetOpened = [this](){
             OnOpened();
         };
 
         // FIX: Potential memory leak if Close is called between the CompareExchange and here.
-        mReadBuffer = shared_ptr<char>(new char[4096]);
+        pReadBuffer = shared_ptr<char>(new char[4096]);
 
         // Start the process loop
         Process();
@@ -40,17 +35,17 @@ void AsyncStreamReader::Process()
 READ:
     pplx::task<unsigned int> readTask;
     
-    mBufferLock.lock();
-    if(IsProcessing() && mReadBuffer != NULL)
     {
-        readTask = AsyncReadIntoBuffer(&mReadBuffer, mStream);
+        lock_guard<mutex> lock(mBufferLock);
+        if(IsProcessing() && pReadBuffer != NULL)
+        {
+            readTask = AsyncReadIntoBuffer(&pReadBuffer, mStream);
+        }
+        else
+        {
+            return;
+        }
     }
-    else
-    {
-        mBufferLock.unlock();
-        return;
-    }
-    mBufferLock.unlock();
 
     if (readTask.is_done())
     {
@@ -79,16 +74,9 @@ void AsyncStreamReader::ReadAsync(pplx::task<unsigned int> readTask)
     readTask.then([readTask, this](unsigned int bytesRead)
     {
         // differentiate between faulted and canceled tasks?
-        try
+        if (TryProcessRead(bytesRead))
         {
-            if (TryProcessRead(bytesRead))
-            {
-                Process();
-            }
-        }
-        catch (exception& ex)
-        {
-            Close(ex);
+            Process();
         }
     });
 }
@@ -96,18 +84,17 @@ void AsyncStreamReader::ReadAsync(pplx::task<unsigned int> readTask)
 bool AsyncStreamReader::TryProcessRead(unsigned read)
 {
     // run the setOpened method and then clear it, atomically
-    mProcessLock.lock();
-
-    function<void()> mPreviousSetOpened = mSetOpened;
-    mSetOpened = [](){};
-
-    mProcessLock.unlock();
-
+    function<void()> mPreviousSetOpened;
+    {
+        lock_guard<mutex> lock(mProcessLock);
+        mPreviousSetOpened = SetOpened;
+        SetOpened = [](){};
+    }
     mPreviousSetOpened();
 
     if (read > 0)
     {
-        OnData(mReadBuffer);
+        OnData(pReadBuffer);
         return true;
     }
     else if (read == 0)
@@ -118,10 +105,14 @@ bool AsyncStreamReader::TryProcessRead(unsigned read)
     return false;
 }
 
+bool AsyncStreamReader::IsProcessing()
+{
+    return mReadingState == State::Processing;
+}
 
 void AsyncStreamReader::Close()
 {
-    Close(exception(NULL));
+    Close(exception(""));
 }
 
 void AsyncStreamReader::Close(exception& ex)
@@ -135,11 +126,10 @@ void AsyncStreamReader::Close(exception& ex)
             Closed(ex);
         }
 
-        mBufferLock.lock();
-            
-        mReadBuffer.reset();
-
-        mBufferLock.unlock();
+        {
+            lock_guard<mutex> lock(mBufferLock);
+            pReadBuffer.reset();
+        }
     }
 }
 

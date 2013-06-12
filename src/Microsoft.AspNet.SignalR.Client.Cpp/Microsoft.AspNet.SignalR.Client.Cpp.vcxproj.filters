@@ -90,6 +90,9 @@
     <ClCompile Include="HttpRequestWrapper.cpp">
       <Filter>Source Files\Http</Filter>
     </ClCompile>
+    <ClCompile Include="TaskAsyncHelper.cpp">
+      <Filter>Source Files\Infrastructure</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Connection.h">
@@ -148,6 +151,9 @@
     </ClInclude>
     <ClInclude Include="IHttpClient.h">
       <Filter>Header Files\Http</Filter>
+    </ClInclude>
+    <ClInclude Include="TaskAsyncHelper.h">
+      <Filter>Header Files\Infrastructure</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

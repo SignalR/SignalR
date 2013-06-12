@@ -3,7 +3,7 @@
 HttpRequestWrapper::HttpRequestWrapper(http_request httpRequestMessage, function<void()> cancel)
 {
     mHttpRequestMessage = httpRequestMessage;
-    mCancel = cancel;
+    Cancel = cancel;
 }
 
 HttpRequestWrapper::~HttpRequestWrapper()
@@ -13,5 +13,5 @@ HttpRequestWrapper::~HttpRequestWrapper()
 
 void HttpRequestWrapper::Abort()
 {
-    mCancel();
+    Cancel();
 }

@@ -10,9 +10,10 @@ class HttpRequestWrapper
 public:
     HttpRequestWrapper(http_request httpRequestMessage, function<void()> cancel);
     ~HttpRequestWrapper();
+
     void Abort();
 
 private:
     http_request mHttpRequestMessage;
-    function<void()> mCancel;
+    function<void()> Cancel;
 };

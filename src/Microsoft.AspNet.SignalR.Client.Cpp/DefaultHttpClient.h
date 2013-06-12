@@ -14,6 +14,6 @@ public:
     task<http_response> Post(string_t uri, function<void(shared_ptr<HttpRequestWrapper>)> prepareRequest, string_t postData, bool isLongRunning);
 
 private:
-    unique_ptr<http_client> mLongRunningClient;
-    unique_ptr<http_client> mShortRunningClient;
+    unique_ptr<http_client> pLongRunningClient;
+    unique_ptr<http_client> pShortRunningClient;
 };

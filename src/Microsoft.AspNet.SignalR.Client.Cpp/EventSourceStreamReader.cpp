@@ -3,7 +3,7 @@
 EventSourceStreamReader::EventSourceStreamReader(Concurrency::streams::basic_istream<uint8_t> stream)
     : AsyncStreamReader(stream)
 {
-    mBuffer = unique_ptr<ChunkBuffer>(new ChunkBuffer());
+    pBuffer = unique_ptr<ChunkBuffer>(new ChunkBuffer());
 
     Data = [this](shared_ptr<char> readBuffer){
         ProcessBuffer(readBuffer);
@@ -11,36 +11,35 @@ EventSourceStreamReader::EventSourceStreamReader(Concurrency::streams::basic_ist
 }
 
 
-EventSourceStreamReader::~EventSourceStreamReader(void)
+EventSourceStreamReader::~EventSourceStreamReader()
 {
-    mBuffer.reset();
 }
 
 void EventSourceStreamReader::ProcessBuffer(shared_ptr<char> readBuffer)
 {
-    mBufferLock.lock();
-
-    mBuffer->Add(readBuffer);
-
-    while(mBuffer->HasChuncks())
     {
-        string_t line = mBuffer->ReadLine();
+        lock_guard<mutex> lock(mBufferLock);
 
-        if (line.empty())
+        pBuffer->Add(readBuffer);
+
+        while(pBuffer->HasChuncks())
         {
-            continue;
-        }
+            string_t line = pBuffer->ReadLine();
 
-        shared_ptr<SseEvent> sseEvent;
-        if (!SseEvent::TryParse(line, &sseEvent))
-        {
-            continue;
-        }
+            if (line.empty())
+            {
+                continue;
+            }
 
-        OnMessage(sseEvent);
+            shared_ptr<SseEvent> sseEvent;
+            if (!SseEvent::TryParse(line, &sseEvent))
+            {
+                continue;
+            }
+
+            OnMessage(sseEvent);
+        }
     }
-
-    mBufferLock.unlock();
 }
 
 void EventSourceStreamReader::OnMessage(shared_ptr<SseEvent> sseEvent)

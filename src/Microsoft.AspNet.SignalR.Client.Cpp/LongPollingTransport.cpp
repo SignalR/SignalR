@@ -6,11 +6,18 @@ LongPollingTransport::LongPollingTransport(shared_ptr<IHttpClient> httpClient) :
 }
 
 
-LongPollingTransport::~LongPollingTransport(void)
+LongPollingTransport::~LongPollingTransport()
 {
 }
 
-void LongPollingTransport::OnStart(shared_ptr<Connection> connection, utility::string_t data)
+void LongPollingTransport::OnStart(shared_ptr<Connection> connection, string_t data, cancellation_token disconnectToken, function<void()> initializeCallback, function<void()> errorCallback)
 {
+}
 
+void LongPollingTransport::OnAbort()
+{
+}
+
+void LongPollingTransport::LostConnection(shared_ptr<Connection> connection)
+{
 }

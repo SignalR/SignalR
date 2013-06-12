@@ -3,58 +3,68 @@
 ServerSentEventsTransport::ServerSentEventsTransport(shared_ptr<IHttpClient> httpClient) : 
     HttpBasedTransport(httpClient, U("serverSentEvents"))
 {
-
 }
 
 ServerSentEventsTransport::~ServerSentEventsTransport()
 {
-
+    mConnectionTimeout = seconds(2);
+    mReconnectDelay = seconds(5);
 }
 
 void ServerSentEventsTransport::OnAbort()
 {
-    mEventSource->Opened = [](){};
-    mEventSource->Closed = [](exception& ex){};
-    mEventSource->Data = [](shared_ptr<char> buffer){};
-    mEventSource->Message = [](shared_ptr<SseEvent> sseEvent){};
+    pEventSource->Opened = [](){};
+    pEventSource->Closed = [](exception& ex){};
+    pEventSource->Data = [](shared_ptr<char> buffer){};
+    pEventSource->Message = [](shared_ptr<SseEvent> sseEvent){};
 }
 
-void ServerSentEventsTransport::OnStart(shared_ptr<Connection> connection, string_t data, cancellation_token disconnectToken,  function<void()> initializeCallback, function<void()> errorCallback)
+void ServerSentEventsTransport::OnStart(shared_ptr<Connection> connection, string_t data, pplx::cancellation_token disconnectToken,  function<void()> initializeCallback, function<void(exception)> errorCallback)
 {    
     OpenConnection(connection, data, disconnectToken, initializeCallback, errorCallback);
 }
 
-void ServerSentEventsTransport::Reconnect(shared_ptr<Connection> connection, string_t data)
+void ServerSentEventsTransport::Reconnect(shared_ptr<Connection> connection, string_t data, pplx::cancellation_token disconnectToken)
 {
-
+    TaskAsyncHelper::Delay(mReconnectDelay).then([this, connection, disconnectToken, data]()
+    {
+        if (disconnectToken.is_canceled() && connection->EnsureReconnecting())
+        {
+            OpenConnection(connection, data, disconnectToken, nullptr, nullptr);
+        }
+    });
 }
 
-void ServerSentEventsTransport::OpenConnection(shared_ptr<Connection> connection, string_t data, cancellation_token disconnectToken, function<void()> initializeCallback, function<void()> errorCallback)
+void ServerSentEventsTransport::OpenConnection(shared_ptr<Connection> connection, string_t data, pplx::cancellation_token disconnectToken, function<void()> initializeCallback, function<void(exception)> errorCallback)
 {
-    bool reconnecting = initializeCallback == NULL;
-    unique_ptr<ThreadSafeInvoker> callbackInvoker = unique_ptr<ThreadSafeInvoker>(new ThreadSafeInvoker());
+    bool reconnecting = initializeCallback == nullptr;
+    pCallbackInvoker = unique_ptr<ThreadSafeInvoker>(new ThreadSafeInvoker());
+    function<void()> initializeInvoke = [this, initializeCallback]()
+    {
+        pCallbackInvoker->Invoke(initializeCallback);
+    };
 
     string_t uri = connection->GetUri() + (reconnecting ? U("reconnect") : U("connect")) + GetReceiveQueryString(connection, data);
 
     GetHttpClient()->Get(uri, [this, connection](shared_ptr<HttpRequestWrapper> request)
     {
-        mRequest = request;
+        pRequest = request;
         connection->PrepareRequest(request);
-    }, true).then([this, connection, data, disconnectToken](http_response response) 
+    }, true).then([this, connection, data, disconnectToken, errorCallback](http_response response) 
     {
         // check if the task failed
 
-        mEventSource = unique_ptr<EventSourceStreamReader>(new EventSourceStreamReader(response.body()));
+        pEventSource = unique_ptr<EventSourceStreamReader>(new EventSourceStreamReader(response.body()));
 
         mStop = false;
         
         disconnectToken.register_callback<function<void()>>([this]()
         {
-            this->mStop = true;
-            mRequest->Abort();
+            mStop = true;
+            pRequest->Abort();
         });
 
-        mEventSource->Opened = [connection]()
+        pEventSource->Opened = [connection]()
         {
             if (connection->ChangeState(ConnectionState::Reconnecting, ConnectionState::Connected))
             {
@@ -62,7 +72,7 @@ void ServerSentEventsTransport::OpenConnection(shared_ptr<Connection> connection
             }
         };
 
-        mEventSource->Message = [connection, this](shared_ptr<SseEvent> sseEvent) 
+        pEventSource->Message = [connection, this](shared_ptr<SseEvent> sseEvent) 
         {
             if (sseEvent->GetType() == EventType::Data)
             {
@@ -84,7 +94,7 @@ void ServerSentEventsTransport::OpenConnection(shared_ptr<Connection> connection
             }
         };
 
-        mEventSource->Closed = [this, connection, data](exception& ex)
+        pEventSource->Closed = [this, connection, data, disconnectToken](exception& ex)
         {
             //if (ex != null)
             //{
@@ -97,9 +107,6 @@ void ServerSentEventsTransport::OpenConnection(shared_ptr<Connection> connection
             //        connection.OnError(exception);
             //    }
             //}
-            //requestDisposer.Dispose();
-            //esCancellationRegistration.Dispose();
-            //response.Dispose();
 
             if (this->mStop)
             {
@@ -111,19 +118,19 @@ void ServerSentEventsTransport::OpenConnection(shared_ptr<Connection> connection
             }
             else
             {
-                Reconnect(connection, data);
+                Reconnect(connection, data, disconnectToken);
             }
         };
 
-        mEventSource->Start();
+        pEventSource->Start();
     });
 }
 
 void ServerSentEventsTransport::LostConnection(shared_ptr<Connection> connection)
 {
-    if (mRequest != NULL)
+    if (pRequest != nullptr)
     {
-        mRequest->Abort();
+        pRequest->Abort();
     }
 }
 

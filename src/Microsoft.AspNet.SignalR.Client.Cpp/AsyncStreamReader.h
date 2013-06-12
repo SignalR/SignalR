@@ -31,9 +31,9 @@ protected:
 private:
     mutex mProcessLock;
     Concurrency::streams::basic_istream<uint8_t> mStream;
-    shared_ptr<char> mReadBuffer;
+    shared_ptr<char> pReadBuffer;
     atomic<State> mReadingState;
-    function<void()> mSetOpened;
+    function<void()> SetOpened;
 
     bool IsProcessing();
     void Close();

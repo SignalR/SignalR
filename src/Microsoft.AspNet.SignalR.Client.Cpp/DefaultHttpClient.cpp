@@ -12,18 +12,23 @@ DefaultHttpClient::~DefaultHttpClient()
 
 void DefaultHttpClient::Initialize(string_t uri)
 {
-    // set timeout to some large value
-    //http_client_config configurationLong = http_client_config();
-    //configurationLong.set_timeout();
-    //http_client_config configurationShort = http_client_config();
-    //configurationShort.set_timeout();
+    // Disabling the Http Client timeout by setting timeout to some large value (min 35 bits)
+    http_client_config configurationLong = http_client_config();
+    configurationLong.set_timeout(seconds(1<<64 - 1));
+    http_client_config configurationShort = http_client_config();
+    configurationShort.set_timeout(seconds(1<<64 - 1));
 
-    mLongRunningClient = unique_ptr<http_client>(new http_client(uri/*, configurationLong*/));
-    mShortRunningClient = unique_ptr<http_client>(new http_client(uri/*, configurationShort*/));
+    pLongRunningClient = unique_ptr<http_client>(new http_client(uri, configurationLong));
+    pShortRunningClient = unique_ptr<http_client>(new http_client(uri, configurationShort));
 }
     
 task<http_response> DefaultHttpClient::Get(string_t uri, function<void(shared_ptr<HttpRequestWrapper>)> prepareRequest, bool isLongRunning)
 {
+    if (prepareRequest == NULL)
+    {
+        throw exception("ArgumentNullException: prepareRequest");
+    }
+
     shared_ptr<cancellation_token_source> cts = shared_ptr<cancellation_token_source>(new cancellation_token_source());
 
     http_request requestMessage = http_request(methods::GET);
@@ -36,32 +41,16 @@ task<http_response> DefaultHttpClient::Get(string_t uri, function<void(shared_pt
 
     prepareRequest(request);
 
-    if (isLongRunning)
+     return (isLongRunning ? pLongRunningClient : pShortRunningClient)->request(requestMessage).then([](http_response response)
     {
-        return mLongRunningClient->request(requestMessage).then([](http_response response)
+        // check if the request was successful, temporary
+        if (response.status_code()/100 != 2)
         {
-            // check for errors, temporary solution
-            if (response.status_code()/100 != 2)
-            {
-                throw exception("HttpClient Get Failed");
-            }
+            throw exception("HttpClientException: Get Failed");
+        }
 
-            return response;
-        });
-    }
-    else
-    {
-        return mShortRunningClient->request(requestMessage).then([](http_response response)
-        {
-            // check for errors, temporary solution
-            if (response.status_code()/100 != 2)
-            {
-                throw exception("HttpClient Get Failed");
-            }
-
-            return response;
-        });
-    }
+        return response;
+    });
 }
 
 task<http_response> DefaultHttpClient::Post(string_t uri, function<void(shared_ptr<HttpRequestWrapper>)> prepareRequest, bool isLongRunning)
@@ -71,6 +60,10 @@ task<http_response> DefaultHttpClient::Post(string_t uri, function<void(shared_p
 
 task<http_response> DefaultHttpClient::Post(string_t uri, function<void(shared_ptr<HttpRequestWrapper>)> prepareRequest, string_t postData, bool isLongRunning)
 {
+    if (prepareRequest == NULL)
+    {
+        throw exception("ArgumentNullException: prepareRequest");
+    }
     shared_ptr<cancellation_token_source> cts = shared_ptr<cancellation_token_source>(new cancellation_token_source());
 
     http_request requestMessage = http_request(methods::POST);
@@ -84,30 +77,14 @@ task<http_response> DefaultHttpClient::Post(string_t uri, function<void(shared_p
 
     prepareRequest(request);
 
-    if (isLongRunning)
+    return (isLongRunning ? pLongRunningClient : pShortRunningClient)->request(requestMessage).then([](http_response response)
     {
-        return mLongRunningClient->request(requestMessage).then([](http_response response)
+        // check if the request was successful, temporary
+        if (response.status_code()/100 != 2)
         {
-            // check for errors, temporary solution
-            if (response.status_code()/100 != 2)
-            {
-                throw exception("HttpClient Post Failed");
-            }
+            throw exception("HttpClientException: Get Failed");
+        }
 
-            return response;
-        });
-    }
-    else
-    {
-        return mShortRunningClient->request(requestMessage).then([](http_response response)
-        {
-            // check for errors, temporary solution
-            if (response.status_code()/100 != 2)
-            {
-                throw exception("HttpClient Post Failed");
-            }
-
-            return response;
-        });
-    }
+        return response;
+    });
 }
