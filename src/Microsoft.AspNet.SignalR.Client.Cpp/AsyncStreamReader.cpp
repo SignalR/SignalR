@@ -9,7 +9,8 @@ AsyncStreamReader::AsyncStreamReader(Concurrency::streams::basic_istream<uint8_t
 
 AsyncStreamReader::~AsyncStreamReader(void)
 {
-
+    // cancel any ongoing reads
+    mReadCts.cancel();
 }
 
 void AsyncStreamReader::Start()
@@ -149,18 +150,23 @@ void AsyncStreamReader::OnData(shared_ptr<char> buffer)
     }
 }
 
-// returns a task that reads the incomming stream and stored the messages into a buffer
+// returns a task that reads the incoming stream and stored the messages into a buffer
 task<unsigned int> AsyncStreamReader::AsyncReadIntoBuffer(shared_ptr<char>* buffer, Concurrency::streams::basic_istream<uint8_t> stream)
 {
     concurrency::streams::container_buffer<string> inStringBuffer;
+    task_options readTaskOptions(mReadCts.get_token());
     return stream.read(inStringBuffer, 4096).then([inStringBuffer, buffer](size_t bytesRead)
     {
-        // race: read may finish after AsyncStreamReader is destroyed
+        if (is_task_cancellation_requested())
+        {
+            cancel_current_task();
+        }
+
         string &text = inStringBuffer.collection();
         (*buffer) = shared_ptr<char>(new char[text.length() + 1]);
         int length = text.length();
         strcpy((*buffer).get(), text.c_str());
 
         return (unsigned int)bytesRead;
-    });
+    }, readTaskOptions);
 }

@@ -33,6 +33,7 @@ private:
     Concurrency::streams::basic_istream<uint8_t> mStream;
     shared_ptr<char> pReadBuffer;
     atomic<State> mReadingState;
+    cancellation_token_source mReadCts;
     function<void()> SetOpened;
 
     bool IsProcessing();
