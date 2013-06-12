@@ -133,6 +133,17 @@
       <Sample>true</Sample>
       <Platform>WP8</Platform>
     </Projects>
+    <Projects Include="$(ProjectRoot)\samples\Microsoft.AspNet.SignalR.Client.WindowsStoreJavaScript.Samples\Microsoft.AspNet.SignalR.Client.WindowsStoreJavaScript.Samples.jsproj;
+                       $(ProjectRoot)\samples\Microsoft.AspNet.SignalR.Client.WindowsStoreCSharp.Samples\Microsoft.AspNet.SignalR.Client.WindowsStoreCSharp.Samples.csproj">
+      <Build>false</Build>
+      <Sample>true</Sample>
+      <Platform>WinRT</Platform>
+    </Projects>
+    <Projects Include="$(ProjectRoot)\samples\Microsoft.AspNet.SignalR.Client.Android.Samples\Microsoft.AspNet.SignalR.Client.Android.Samples.csproj;
+                       $(ProjectRoot)\samples\Microsoft.AspNet.SignalR.Client.iOS.Samples\Microsoft.AspNet.SignalR.Client.iOS.Samples.csproj">
+      <Build>false</Build>
+      <Sample>true</Sample>
+    </Projects>
 
     <!-- Asp.Net sample projects -->
     <Projects Include="$(ProjectRoot)\samples\Microsoft.AspNet.SignalR.LoadTestHarness\Microsoft.AspNet.SignalR.LoadTestHarness.csproj;
@@ -144,7 +155,7 @@
     </Projects>
 
     <!-- Add any sample projects that have not been defined manually -->
-    <Projects Include="$(ProjectRoot)\sample\**\*.csproj" Exclude="@(Projects)">
+    <Projects Include="$(ProjectRoot)\samples\**\*.csproj" Exclude="@(Projects)">
       <Sample>true</Sample>
     </Projects>
   </ItemGroup>
