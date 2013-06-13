@@ -7,6 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR.Client.Http;
 using Microsoft.AspNet.SignalR.Client.Transports;
+using Microsoft.AspNet.SignalR.Configuration;
 using Microsoft.AspNet.SignalR.Hosting.Memory;
 using Owin;
 using Xunit;
@@ -16,7 +17,6 @@ using Microsoft.AspNet.SignalR.Tests.Common.Infrastructure;
 namespace Microsoft.AspNet.SignalR.Client.Tests
 {
     using AppFunc = Func<IDictionary<string, object>, Task>;
-    using Microsoft.AspNet.SignalR.Configuration;
 
     public class ConnectionFacts
     {
