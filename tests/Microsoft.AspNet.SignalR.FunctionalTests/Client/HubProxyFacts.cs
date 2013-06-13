@@ -429,9 +429,11 @@ namespace Microsoft.AspNet.SignalR.Tests
             {
                 host.Initialize(messageBusType: messageBusType);
                 HubConnection hubConnection = CreateHubConnection(host);
+                var tcs = new TaskCompletionSource<object>();
+
                 Action<Exception> error = (ex) =>
                 {
-                    Assert.Equal(ex.Message, "A client callback for event methodName2 could not be found");
+                    tcs.TrySetResult(ex);
                 };
                 hubConnection.Error += error;
 
@@ -443,6 +445,10 @@ namespace Microsoft.AspNet.SignalR.Tests
 
                     hubConnection.Start(host.Transport).Wait();
                     proxy.Invoke("SendIncorrectMethodName").Wait();
+
+                    Assert.True(tcs.Task.Wait(TimeSpan.FromSeconds(5)));
+                    Assert.IsType(typeof(InvalidOperationException), tcs.Task.Result);
+                    Assert.Equal(((InvalidOperationException)tcs.Task.Result).Message, "A client callback for event methodName2 could not be found");
                 }
             }
         }
@@ -459,9 +465,11 @@ namespace Microsoft.AspNet.SignalR.Tests
             {
                 host.Initialize(messageBusType: messageBusType);
                 HubConnection hubConnection = CreateHubConnection(host);
+                var tcs = new TaskCompletionSource<object>();
+
                 Action<Exception> error = (ex) =>
                 {
-                    Assert.Equal(ex.Message, "A client callback for event twoArgsMethod with 1 arguments could not be found");
+                    tcs.TrySetResult(ex);
                 };
                 hubConnection.Error += error;
 
@@ -473,6 +481,10 @@ namespace Microsoft.AspNet.SignalR.Tests
 
                     hubConnection.Start(host.Transport).Wait();
                     proxy.Invoke("SendInvalidNumberOfArguments").Wait();
+
+                    Assert.True(tcs.Task.Wait(TimeSpan.FromSeconds(5)));
+                    Assert.IsType(typeof(InvalidOperationException), tcs.Task.Result);
+                    Assert.Equal(((InvalidOperationException)tcs.Task.Result).Message, "A client callback for event twoArgsMethod with 1 argument(s) could not be found");
                 }
             }
         }
@@ -489,9 +501,11 @@ namespace Microsoft.AspNet.SignalR.Tests
             {
                 host.Initialize(messageBusType: messageBusType);
                 HubConnection hubConnection = CreateHubConnection(host);
+                var tcs = new TaskCompletionSource<object>();
+
                 Action<Exception> error = (ex) =>
                 {
-                    Assert.Equal(ex.Message, "A client callback for event foo with 1 argument(s) was found, however an error occurred because Could not convert string to integer: arg1. Path ''.");
+                    tcs.TrySetResult(ex);
                 };
                 hubConnection.Error += error;
 
@@ -503,6 +517,10 @@ namespace Microsoft.AspNet.SignalR.Tests
 
                     hubConnection.Start(host.Transport).Wait();
                     proxy.Invoke("SendArgumentsTypeMismatch").Wait();
+
+                    Assert.True(tcs.Task.Wait(TimeSpan.FromSeconds(5)));
+                    Assert.IsType(typeof(InvalidOperationException), tcs.Task.Result);
+                    Assert.Equal(((InvalidOperationException)tcs.Task.Result).Message, "A client callback for event foo with 1 argument(s) was found, however an error occurred because Could not convert string to integer: arg1. Path ''.");
                 }
             }
         }

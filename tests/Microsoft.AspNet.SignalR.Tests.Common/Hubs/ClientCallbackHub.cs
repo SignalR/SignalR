@@ -8,7 +8,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Common.Hubs
     {
         public Task SendIncorrectMethodName()
         {
-            return Clients.Caller.methodName1();
+            return Clients.Caller.methodName2();
         }
 
         public Task SendInvalidNumberOfArguments()
