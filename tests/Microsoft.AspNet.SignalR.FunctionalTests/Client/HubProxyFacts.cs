@@ -317,7 +317,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                 {
                     var proxy = connection.CreateHubProxy("ChatHub");
 
-                    proxy.On("addMessage", () =>
+                    proxy.On<string>("addMessage", (message) =>
                     {
                         throw thrown;
                     });

@@ -65,8 +65,7 @@ namespace Microsoft.AspNet.SignalR.Client.Hubs
 
             Action<IList<JToken>> handler = args =>
             {
-                ExecuteCallback(eventName, args.Count, 0,
-                    () => { onData(); });
+                ExecuteCallback(eventName, args.Count, 0, onData);
             };
 
             subscription.Received += handler;
