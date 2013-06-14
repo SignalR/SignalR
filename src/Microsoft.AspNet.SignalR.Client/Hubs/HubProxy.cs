@@ -172,11 +172,6 @@ namespace Microsoft.AspNet.SignalR.Client.Hubs
             {
                 subscription.OnReceived(args);
             }
-            else
-            {
-                throw new InvalidOperationException(String.Format(CultureInfo.CurrentCulture, Resources.Error_ClientCallbackNotFound,
-                                                                  eventName));
-            }
         }
     }
 }

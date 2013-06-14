@@ -423,41 +423,6 @@ namespace Microsoft.AspNet.SignalR.Tests
         [InlineData(HostType.IISExpress, TransportType.LongPolling)]
         [InlineData(HostType.IISExpress, TransportType.ServerSentEvents)]
         [InlineData(HostType.IISExpress, TransportType.Websockets)]
-        public void ClientCallbackNotFoundExceptionThrown(HostType hostType, TransportType transportType)
-        {
-            using (var host = CreateHost(hostType, transportType))
-            {
-                host.Initialize();
-                HubConnection hubConnection = CreateHubConnection(host);
-                var tcs = new TaskCompletionSource<object>();
-
-                hubConnection.Error += (ex) =>
-                {
-                    tcs.TrySetResult(ex);
-                };
-
-                using (hubConnection)
-                {
-                    IHubProxy proxy = hubConnection.CreateHubProxy("ClientCallbackHub");
-
-                    proxy.On<int>("methodName1", args => { });
-
-                    hubConnection.Start(host.Transport).Wait();
-                    proxy.Invoke("SendIncorrectMethodName").Wait();
-
-                    Assert.True(tcs.Task.Wait(TimeSpan.FromSeconds(5)));
-                    Assert.IsType(typeof(InvalidOperationException), tcs.Task.Result);
-                    Assert.Equal(((InvalidOperationException)tcs.Task.Result).Message, "A client callback for event methodName2 could not be found");
-                }
-            }
-        }
-
-        [Theory]
-        [InlineData(HostType.Memory, TransportType.ServerSentEvents)]
-        [InlineData(HostType.Memory, TransportType.LongPolling)]
-        [InlineData(HostType.IISExpress, TransportType.LongPolling)]
-        [InlineData(HostType.IISExpress, TransportType.ServerSentEvents)]
-        [InlineData(HostType.IISExpress, TransportType.Websockets)]
         public void ClientCallbackInvalidNumberOfArgumentsExceptionThrown(HostType hostType, TransportType transportType)
         {
             using (var host = CreateHost(hostType, transportType))
