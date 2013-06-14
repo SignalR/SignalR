@@ -317,7 +317,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                 {
                     var proxy = connection.CreateHubProxy("ChatHub");
 
-                    proxy.On("addMessage", () =>
+                    proxy.On<string>("addMessage", (message) =>
                     {
                         throw thrown;
                     });
@@ -413,6 +413,111 @@ namespace Microsoft.AspNet.SignalR.Tests
 
                     var ex = Assert.Throws<InvalidOperationException>(() => hubConnection.Headers.Add("test-header", "test-header"));
                     Assert.Equal("Request headers cannot be set after the connection has started.", ex.Message);
+                }
+            }
+        }
+
+        [Theory]
+        [InlineData(HostType.Memory, TransportType.ServerSentEvents)]
+        [InlineData(HostType.Memory, TransportType.LongPolling)]
+        [InlineData(HostType.IISExpress, TransportType.LongPolling)]
+        [InlineData(HostType.IISExpress, TransportType.ServerSentEvents)]
+        [InlineData(HostType.IISExpress, TransportType.Websockets)]
+        public void ClientCallbackNotFoundExceptionThrown(HostType hostType, TransportType transportType)
+        {
+            using (var host = CreateHost(hostType, transportType))
+            {
+                host.Initialize();
+                HubConnection hubConnection = CreateHubConnection(host);
+                var tcs = new TaskCompletionSource<object>();
+
+                hubConnection.Error += (ex) =>
+                {
+                    tcs.TrySetResult(ex);
+                };
+
+                using (hubConnection)
+                {
+                    IHubProxy proxy = hubConnection.CreateHubProxy("ClientCallbackHub");
+
+                    proxy.On<int>("methodName1", args => { });
+
+                    hubConnection.Start(host.Transport).Wait();
+                    proxy.Invoke("SendIncorrectMethodName").Wait();
+
+                    Assert.True(tcs.Task.Wait(TimeSpan.FromSeconds(5)));
+                    Assert.IsType(typeof(InvalidOperationException), tcs.Task.Result);
+                    Assert.Equal(((InvalidOperationException)tcs.Task.Result).Message, "A client callback for event methodName2 could not be found");
+                }
+            }
+        }
+
+        [Theory]
+        [InlineData(HostType.Memory, TransportType.ServerSentEvents)]
+        [InlineData(HostType.Memory, TransportType.LongPolling)]
+        [InlineData(HostType.IISExpress, TransportType.LongPolling)]
+        [InlineData(HostType.IISExpress, TransportType.ServerSentEvents)]
+        [InlineData(HostType.IISExpress, TransportType.Websockets)]
+        public void ClientCallbackInvalidNumberOfArgumentsExceptionThrown(HostType hostType, TransportType transportType)
+        {
+            using (var host = CreateHost(hostType, transportType))
+            {
+                host.Initialize();
+                HubConnection hubConnection = CreateHubConnection(host);
+                var tcs = new TaskCompletionSource<object>();
+
+                hubConnection.Error += (ex) =>
+                {
+                    tcs.TrySetResult(ex);
+                };
+
+                using (hubConnection)
+                {
+                    IHubProxy proxy = hubConnection.CreateHubProxy("ClientCallbackHub");
+
+                    proxy.On<string, string>("twoArgsMethod", (arg1, arg2) => { });
+
+                    hubConnection.Start(host.Transport).Wait();
+                    proxy.Invoke("SendInvalidNumberOfArguments").Wait();
+
+                    Assert.True(tcs.Task.Wait(TimeSpan.FromSeconds(5)));
+                    Assert.IsType(typeof(InvalidOperationException), tcs.Task.Result);
+                    Assert.Equal(((InvalidOperationException)tcs.Task.Result).Message, "A client callback for event twoArgsMethod with 1 argument(s) could not be found");
+                }
+            }
+        }
+
+        [Theory]
+        [InlineData(HostType.Memory, TransportType.ServerSentEvents)]
+        [InlineData(HostType.Memory, TransportType.LongPolling)]
+        [InlineData(HostType.IISExpress, TransportType.LongPolling)]
+        [InlineData(HostType.IISExpress, TransportType.ServerSentEvents)]
+        [InlineData(HostType.IISExpress, TransportType.Websockets)]
+        public void ClientCallbackArgumentTypeMismatchExceptionThrown(HostType hostType, TransportType transportType)
+        {
+            using (var host = CreateHost(hostType, transportType))
+            {
+                host.Initialize();
+                HubConnection hubConnection = CreateHubConnection(host);
+                var tcs = new TaskCompletionSource<object>();
+
+                hubConnection.Error += (ex) =>
+                {
+                    tcs.TrySetResult(ex);
+                };
+
+                using (hubConnection)
+                {
+                    IHubProxy proxy = hubConnection.CreateHubProxy("ClientCallbackHub");
+
+                    proxy.On<int>("foo", args => { });
+
+                    hubConnection.Start(host.Transport).Wait();
+                    proxy.Invoke("SendArgumentsTypeMismatch").Wait();
+
+                    Assert.True(tcs.Task.Wait(TimeSpan.FromSeconds(5)));
+                    Assert.IsType(typeof(InvalidOperationException), tcs.Task.Result);
+                    Assert.Equal(((InvalidOperationException)tcs.Task.Result).Message, "A client callback for event foo with 1 argument(s) was found, however an error occurred because Could not convert string to integer: arg1. Path ''.");
                 }
             }
         }

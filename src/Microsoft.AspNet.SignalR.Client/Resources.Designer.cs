@@ -75,6 +75,33 @@ namespace Microsoft.AspNet.SignalR.Client {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to A client callback for event {0} with {1} argument(s) was found, however an error occurred because {2}.
+        /// </summary>
+        internal static string Error_ClientCallbackArgumentTypeMismatch {
+            get {
+                return ResourceManager.GetString("Error_ClientCallbackArgumentTypeMismatch", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to A client callback for event {0} with {1} argument(s) could not be found.
+        /// </summary>
+        internal static string Error_ClientCallbackInvalidNumberOfArguments {
+            get {
+                return ResourceManager.GetString("Error_ClientCallbackInvalidNumberOfArguments", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to A client callback for event {0} could not be found.
+        /// </summary>
+        internal static string Error_ClientCallbackNotFound {
+            get {
+                return ResourceManager.GetString("Error_ClientCallbackNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to The connection was stopped before it could be started..
         /// </summary>
         internal static string Error_ConnectionCancelled {
