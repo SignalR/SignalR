@@ -317,7 +317,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                 {
                     var proxy = connection.CreateHubProxy("ChatHub");
 
-                    proxy.On("addMessage", () =>
+                    proxy.On<string>("addMessage", (message) =>
                     {
                         throw thrown;
                     });
@@ -418,22 +418,23 @@ namespace Microsoft.AspNet.SignalR.Tests
         }
 
         [Theory]
-        [InlineData(HostType.Memory, TransportType.ServerSentEvents, MessageBusType.Default)]
-        [InlineData(HostType.Memory, TransportType.LongPolling, MessageBusType.Default)]
-        [InlineData(HostType.IISExpress, TransportType.LongPolling, MessageBusType.Default)]
-        [InlineData(HostType.IISExpress, TransportType.ServerSentEvents, MessageBusType.Default)]
-        [InlineData(HostType.IISExpress, TransportType.Websockets, MessageBusType.Default)]
-        public void ClientCallbackNotFoundExceptionThrown(HostType hostType, TransportType transportType, MessageBusType messageBusType)
+        [InlineData(HostType.Memory, TransportType.ServerSentEvents)]
+        [InlineData(HostType.Memory, TransportType.LongPolling)]
+        [InlineData(HostType.IISExpress, TransportType.LongPolling)]
+        [InlineData(HostType.IISExpress, TransportType.ServerSentEvents)]
+        [InlineData(HostType.IISExpress, TransportType.Websockets)]
+        public void ClientCallbackNotFoundExceptionThrown(HostType hostType, TransportType transportType)
         {
             using (var host = CreateHost(hostType, transportType))
             {
-                host.Initialize(messageBusType: messageBusType);
+                host.Initialize();
                 HubConnection hubConnection = CreateHubConnection(host);
-                Action<Exception> error = (ex) =>
+                var tcs = new TaskCompletionSource<object>();
+
+                hubConnection.Error += (ex) =>
                 {
-                    Assert.Equal(ex.Message, "A client callback for event methodName2 could not be found");
+                    tcs.TrySetResult(ex);
                 };
-                hubConnection.Error += error;
 
                 using (hubConnection)
                 {
@@ -443,27 +444,32 @@ namespace Microsoft.AspNet.SignalR.Tests
 
                     hubConnection.Start(host.Transport).Wait();
                     proxy.Invoke("SendIncorrectMethodName").Wait();
+
+                    Assert.True(tcs.Task.Wait(TimeSpan.FromSeconds(5)));
+                    Assert.IsType(typeof(InvalidOperationException), tcs.Task.Result);
+                    Assert.Equal(((InvalidOperationException)tcs.Task.Result).Message, "A client callback for event methodName2 could not be found");
                 }
             }
         }
 
         [Theory]
-        [InlineData(HostType.Memory, TransportType.ServerSentEvents, MessageBusType.Default)]
-        [InlineData(HostType.Memory, TransportType.LongPolling, MessageBusType.Default)]
-        [InlineData(HostType.IISExpress, TransportType.LongPolling, MessageBusType.Default)]
-        [InlineData(HostType.IISExpress, TransportType.ServerSentEvents, MessageBusType.Default)]
-        [InlineData(HostType.IISExpress, TransportType.Websockets, MessageBusType.Default)]
-        public void ClientCallbackInvalidNumberOfArgumentsExceptionThrown(HostType hostType, TransportType transportType, MessageBusType messageBusType)
+        [InlineData(HostType.Memory, TransportType.ServerSentEvents)]
+        [InlineData(HostType.Memory, TransportType.LongPolling)]
+        [InlineData(HostType.IISExpress, TransportType.LongPolling)]
+        [InlineData(HostType.IISExpress, TransportType.ServerSentEvents)]
+        [InlineData(HostType.IISExpress, TransportType.Websockets)]
+        public void ClientCallbackInvalidNumberOfArgumentsExceptionThrown(HostType hostType, TransportType transportType)
         {
             using (var host = CreateHost(hostType, transportType))
             {
-                host.Initialize(messageBusType: messageBusType);
+                host.Initialize();
                 HubConnection hubConnection = CreateHubConnection(host);
-                Action<Exception> error = (ex) =>
+                var tcs = new TaskCompletionSource<object>();
+
+                hubConnection.Error += (ex) =>
                 {
-                    Assert.Equal(ex.Message, "A client callback for event twoArgsMethod with 1 arguments could not be found");
+                    tcs.TrySetResult(ex);
                 };
-                hubConnection.Error += error;
 
                 using (hubConnection)
                 {
@@ -473,27 +479,32 @@ namespace Microsoft.AspNet.SignalR.Tests
 
                     hubConnection.Start(host.Transport).Wait();
                     proxy.Invoke("SendInvalidNumberOfArguments").Wait();
+
+                    Assert.True(tcs.Task.Wait(TimeSpan.FromSeconds(5)));
+                    Assert.IsType(typeof(InvalidOperationException), tcs.Task.Result);
+                    Assert.Equal(((InvalidOperationException)tcs.Task.Result).Message, "A client callback for event twoArgsMethod with 1 argument(s) could not be found");
                 }
             }
         }
 
         [Theory]
-        [InlineData(HostType.Memory, TransportType.ServerSentEvents, MessageBusType.Default)]
-        [InlineData(HostType.Memory, TransportType.LongPolling, MessageBusType.Default)]
-        [InlineData(HostType.IISExpress, TransportType.LongPolling, MessageBusType.Default)]
-        [InlineData(HostType.IISExpress, TransportType.ServerSentEvents, MessageBusType.Default)]
-        [InlineData(HostType.IISExpress, TransportType.Websockets, MessageBusType.Default)]
-        public void ClientCallbackArgumentTypeMismatchExceptionThrown(HostType hostType, TransportType transportType, MessageBusType messageBusType)
+        [InlineData(HostType.Memory, TransportType.ServerSentEvents)]
+        [InlineData(HostType.Memory, TransportType.LongPolling)]
+        [InlineData(HostType.IISExpress, TransportType.LongPolling)]
+        [InlineData(HostType.IISExpress, TransportType.ServerSentEvents)]
+        [InlineData(HostType.IISExpress, TransportType.Websockets)]
+        public void ClientCallbackArgumentTypeMismatchExceptionThrown(HostType hostType, TransportType transportType)
         {
             using (var host = CreateHost(hostType, transportType))
             {
-                host.Initialize(messageBusType: messageBusType);
+                host.Initialize();
                 HubConnection hubConnection = CreateHubConnection(host);
-                Action<Exception> error = (ex) =>
+                var tcs = new TaskCompletionSource<object>();
+
+                hubConnection.Error += (ex) =>
                 {
-                    Assert.Equal(ex.Message, "A client callback for event foo with 1 argument(s) was found, however an error occurred because Could not convert string to integer: arg1. Path ''.");
+                    tcs.TrySetResult(ex);
                 };
-                hubConnection.Error += error;
 
                 using (hubConnection)
                 {
@@ -503,6 +514,10 @@ namespace Microsoft.AspNet.SignalR.Tests
 
                     hubConnection.Start(host.Transport).Wait();
                     proxy.Invoke("SendArgumentsTypeMismatch").Wait();
+
+                    Assert.True(tcs.Task.Wait(TimeSpan.FromSeconds(5)));
+                    Assert.IsType(typeof(InvalidOperationException), tcs.Task.Result);
+                    Assert.Equal(((InvalidOperationException)tcs.Task.Result).Message, "A client callback for event foo with 1 argument(s) was found, however an error occurred because Could not convert string to integer: arg1. Path ''.");
                 }
             }
         }
