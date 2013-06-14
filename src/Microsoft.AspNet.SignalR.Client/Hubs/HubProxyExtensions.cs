@@ -65,7 +65,8 @@ namespace Microsoft.AspNet.SignalR.Client.Hubs
 
             Action<IList<JToken>> handler = args =>
             {
-                onData();
+                ExecuteCallback(eventName, args.Count, 0,
+                    () => { onData(); });
             };
 
             subscription.Received += handler;
@@ -101,23 +102,8 @@ namespace Microsoft.AspNet.SignalR.Client.Hubs
 
             Action<IList<JToken>> handler = args =>
             {
-                if (args.Count != 1)
-                {
-                    throw new InvalidOperationException(String.Format(CultureInfo.CurrentCulture, Resources.Error_ClientCallbackInvalidNumberOfArguments,
-                                                                  eventName, args.Count));
-                }
-                else
-                {
-                    try
-                    {
-                        onData(Convert<T>(args[0], proxy.JsonSerializer));
-                    }
-                    catch (Newtonsoft.Json.JsonReaderException ex)
-                    {
-                        throw new InvalidOperationException(String.Format(CultureInfo.CurrentCulture, Resources.Error_ClientCallbackArgumentTypeMismatch,
-                            eventName, args.Count, ex.Message));
-                    }
-                }
+                ExecuteCallback(eventName, args.Count, 1,
+                    () => { onData(Convert<T>(args[0], proxy.JsonSerializer)); });
             };
 
             subscription.Received += handler;
@@ -153,24 +139,11 @@ namespace Microsoft.AspNet.SignalR.Client.Hubs
 
             Action<IList<JToken>> handler = args =>
             {
-                if (args.Count != 2)
+                ExecuteCallback(eventName, args.Count, 2, () =>
                 {
-                    throw new InvalidOperationException(String.Format(CultureInfo.CurrentCulture, Resources.Error_ClientCallbackInvalidNumberOfArguments,
-                                              eventName, args.Count));
-                }
-                else
-                {
-                    try
-                    {
-                        onData(Convert<T1>(args[0], proxy.JsonSerializer),
-                         Convert<T2>(args[1], proxy.JsonSerializer));
-                    }
-                    catch (Newtonsoft.Json.JsonReaderException ex)
-                    {
-                        throw new InvalidOperationException(String.Format(CultureInfo.CurrentCulture, Resources.Error_ClientCallbackArgumentTypeMismatch,
-                            eventName, args.Count, ex.Message));
-                    }
-                }
+                    onData(Convert<T1>(args[0], proxy.JsonSerializer),
+                        Convert<T2>(args[1], proxy.JsonSerializer));
+                });
             };
 
             subscription.Received += handler;
@@ -206,25 +179,12 @@ namespace Microsoft.AspNet.SignalR.Client.Hubs
 
             Action<IList<JToken>> handler = args =>
             {
-                if (args.Count != 3)
+                ExecuteCallback(eventName, args.Count, 3, () =>
                 {
-                    throw new InvalidOperationException(String.Format(CultureInfo.CurrentCulture, Resources.Error_ClientCallbackInvalidNumberOfArguments,
-                          eventName, args.Count));
-                }
-                else
-                {
-                    try
-                    {
-                        onData(Convert<T1>(args[0], proxy.JsonSerializer),
-                               Convert<T2>(args[1], proxy.JsonSerializer),
-                               Convert<T3>(args[2], proxy.JsonSerializer));
-                    }
-                    catch (Newtonsoft.Json.JsonReaderException ex)
-                    {
-                        throw new InvalidOperationException(String.Format(CultureInfo.CurrentCulture, Resources.Error_ClientCallbackArgumentTypeMismatch,
-                            eventName, args.Count, ex.Message));
-                    }
-                }
+                    onData(Convert<T1>(args[0], proxy.JsonSerializer),
+                           Convert<T2>(args[1], proxy.JsonSerializer),
+                           Convert<T3>(args[2], proxy.JsonSerializer));
+                });
             };
 
             subscription.Received += handler;
@@ -260,26 +220,13 @@ namespace Microsoft.AspNet.SignalR.Client.Hubs
 
             Action<IList<JToken>> handler = args =>
             {
-                if (args.Count != 4)
+                ExecuteCallback(eventName, args.Count, 4, () =>
                 {
-                    throw new InvalidOperationException(String.Format(CultureInfo.CurrentCulture, Resources.Error_ClientCallbackInvalidNumberOfArguments,
-                          eventName, args.Count));
-                }
-                else
-                {
-                    try
-                    {
-                        onData(Convert<T1>(args[0], proxy.JsonSerializer),
-                               Convert<T2>(args[1], proxy.JsonSerializer),
-                               Convert<T3>(args[2], proxy.JsonSerializer),
-                               Convert<T4>(args[3], proxy.JsonSerializer));
-                    }
-                    catch (Newtonsoft.Json.JsonReaderException ex)
-                    {
-                        throw new InvalidOperationException(String.Format(CultureInfo.CurrentCulture, Resources.Error_ClientCallbackArgumentTypeMismatch,
-                            eventName, args.Count, ex.Message));
-                    }
-                }
+                    onData(Convert<T1>(args[0], proxy.JsonSerializer),
+                           Convert<T2>(args[1], proxy.JsonSerializer),
+                           Convert<T3>(args[2], proxy.JsonSerializer),
+                           Convert<T4>(args[3], proxy.JsonSerializer));
+                });
             };
 
             subscription.Received += handler;
@@ -328,27 +275,14 @@ namespace Microsoft.AspNet.SignalR.Client.Hubs
 
             Action<IList<JToken>> handler = args =>
             {
-                if (args.Count != 5)
+                ExecuteCallback(eventName, args.Count, 5, () =>
                 {
-                    throw new InvalidOperationException(String.Format(CultureInfo.CurrentCulture, Resources.Error_ClientCallbackInvalidNumberOfArguments,
-                          eventName, args.Count));
-                }
-                else
-                {
-                    try
-                    {
-                        onData(Convert<T1>(args[0], proxy.JsonSerializer),
-                               Convert<T2>(args[1], proxy.JsonSerializer),
-                               Convert<T3>(args[2], proxy.JsonSerializer),
-                               Convert<T4>(args[3], proxy.JsonSerializer),
-                               Convert<T5>(args[4], proxy.JsonSerializer));
-                    }
-                    catch (Newtonsoft.Json.JsonReaderException ex)
-                    {
-                        throw new InvalidOperationException(String.Format(CultureInfo.CurrentCulture, Resources.Error_ClientCallbackArgumentTypeMismatch,
-                            eventName, args.Count, ex.Message));
-                    }
-                }
+                    onData(Convert<T1>(args[0], proxy.JsonSerializer),
+                           Convert<T2>(args[1], proxy.JsonSerializer),
+                           Convert<T3>(args[2], proxy.JsonSerializer),
+                           Convert<T4>(args[3], proxy.JsonSerializer),
+                           Convert<T5>(args[4], proxy.JsonSerializer));
+                });
             };
 
             subscription.Received += handler;
@@ -384,28 +318,15 @@ namespace Microsoft.AspNet.SignalR.Client.Hubs
 
             Action<IList<JToken>> handler = args =>
             {
-                if (args.Count != 6)
+                ExecuteCallback(eventName, args.Count, 6, () =>
                 {
-                    throw new InvalidOperationException(String.Format(CultureInfo.CurrentCulture, Resources.Error_ClientCallbackInvalidNumberOfArguments,
-                          eventName, args.Count));
-                }
-                else
-                {
-                    try
-                    {
-                        onData(Convert<T1>(args[0], proxy.JsonSerializer),
-                               Convert<T2>(args[1], proxy.JsonSerializer),
-                               Convert<T3>(args[2], proxy.JsonSerializer),
-                               Convert<T4>(args[3], proxy.JsonSerializer),
-                               Convert<T5>(args[4], proxy.JsonSerializer),
-                               Convert<T6>(args[5], proxy.JsonSerializer));
-                    }
-                    catch (Newtonsoft.Json.JsonReaderException ex)
-                    {
-                        throw new InvalidOperationException(String.Format(CultureInfo.CurrentCulture, Resources.Error_ClientCallbackArgumentTypeMismatch,
-                            eventName, args.Count, ex.Message));
-                    }
-                }
+                    onData(Convert<T1>(args[0], proxy.JsonSerializer),
+                           Convert<T2>(args[1], proxy.JsonSerializer),
+                           Convert<T3>(args[2], proxy.JsonSerializer),
+                           Convert<T4>(args[3], proxy.JsonSerializer),
+                           Convert<T5>(args[4], proxy.JsonSerializer),
+                           Convert<T6>(args[5], proxy.JsonSerializer));
+                });
             };
 
             subscription.Received += handler;
@@ -441,29 +362,16 @@ namespace Microsoft.AspNet.SignalR.Client.Hubs
 
             Action<IList<JToken>> handler = args =>
             {
-                if (args.Count != 7)
+                ExecuteCallback(eventName, args.Count, 7, () =>
                 {
-                    throw new InvalidOperationException(String.Format(CultureInfo.CurrentCulture, Resources.Error_ClientCallbackInvalidNumberOfArguments,
-                          eventName, args.Count));
-                }
-                else
-                {
-                    try
-                    {
-                        onData(Convert<T1>(args[0], proxy.JsonSerializer),
-                               Convert<T2>(args[1], proxy.JsonSerializer),
-                               Convert<T3>(args[2], proxy.JsonSerializer),
-                               Convert<T4>(args[3], proxy.JsonSerializer),
-                               Convert<T5>(args[4], proxy.JsonSerializer),
-                               Convert<T6>(args[5], proxy.JsonSerializer),
-                               Convert<T7>(args[6], proxy.JsonSerializer));
-                    }
-                    catch (Newtonsoft.Json.JsonReaderException ex)
-                    {
-                        throw new InvalidOperationException(String.Format(CultureInfo.CurrentCulture, Resources.Error_ClientCallbackArgumentTypeMismatch,
-                            eventName, args.Count, ex.Message));
-                    }
-                }
+                    onData(Convert<T1>(args[0], proxy.JsonSerializer),
+                           Convert<T2>(args[1], proxy.JsonSerializer),
+                           Convert<T3>(args[2], proxy.JsonSerializer),
+                           Convert<T4>(args[3], proxy.JsonSerializer),
+                           Convert<T5>(args[4], proxy.JsonSerializer),
+                           Convert<T6>(args[5], proxy.JsonSerializer),
+                           Convert<T7>(args[6], proxy.JsonSerializer));
+                });
             };
 
             subscription.Received += handler;
@@ -492,6 +400,24 @@ namespace Microsoft.AspNet.SignalR.Client.Hubs
             return new Hubservable(proxy, eventName);
         }
 #endif
+
+        private static void ExecuteCallback(string eventName, int actualArgs, int expectedArgs, Action action)
+        {
+            if (expectedArgs != actualArgs)
+            {
+                throw new InvalidOperationException(String.Format(CultureInfo.CurrentCulture, Resources.Error_ClientCallbackInvalidNumberOfArguments,
+                    eventName, actualArgs));
+            }
+
+            try
+            {
+                action();
+            }
+            catch (JsonReaderException ex)
+            {
+                throw new InvalidOperationException(String.Format(CultureInfo.CurrentCulture, Resources.Error_ClientCallbackArgumentTypeMismatch, eventName, actualArgs, ex.Message));
+            }
+        }
 
         private static T Convert<T>(JToken obj, JsonSerializer serializer)
         {
