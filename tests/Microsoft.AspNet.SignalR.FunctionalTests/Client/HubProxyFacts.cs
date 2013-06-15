@@ -429,7 +429,7 @@ namespace Microsoft.AspNet.SignalR.Tests
             {
                 host.Initialize();
                 HubConnection hubConnection = CreateHubConnection(host);
-                var tcs = new TaskCompletionSource<object>();
+                var tcs = new TaskCompletionSource<Exception>();
 
                 hubConnection.Error += (ex) =>
                 {
@@ -464,7 +464,7 @@ namespace Microsoft.AspNet.SignalR.Tests
             {
                 host.Initialize();
                 HubConnection hubConnection = CreateHubConnection(host);
-                var tcs = new TaskCompletionSource<object>();
+                var tcs = new TaskCompletionSource<Exception>();
 
                 hubConnection.Error += (ex) =>
                 {
