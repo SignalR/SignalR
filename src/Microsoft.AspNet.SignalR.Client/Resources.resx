@@ -126,9 +126,6 @@
   <data name="Error_ClientCallbackInvalidNumberOfArguments" xml:space="preserve">
     <value>A client callback for event {0} with {1} argument(s) could not be found</value>
   </data>
-  <data name="Error_ClientCallbackNotFound" xml:space="preserve">
-    <value>A client callback for event {0} could not be found</value>
-  </data>
   <data name="Error_ConnectionCancelled" xml:space="preserve">
     <value>The connection was stopped before it could be started.</value>
   </data>
