@@ -156,7 +156,6 @@ namespace Microsoft.AspNet.SignalR.Tests
             // Each node shares the same bus but are indepenent servers
             var counters = new SignalR.Infrastructure.PerformanceCounterManager();
             var configurationManager = new DefaultConfigurationManager();
-            var protectedData = new DefaultProtectedData();
             using (var bus = new MessageBus(new StringMinifier(), new TraceManager(), counters, configurationManager, 5000))
             {
                 var nodeCount = 3;
@@ -175,12 +174,13 @@ namespace Microsoft.AspNet.SignalR.Tests
                     IDependencyResolver resolver = node.Resolver;
                     node.Server.Configure(app =>
                     {
+                        // If the servers don't share an App name, they will fail to unprotect a connectionToken
+                        // generated on another server.
+                        app.Properties[OwinConstants.HostAppNameKey] = "FarmDisconnectOnlyRaisesEventOnceApp";
                         app.MapConnection<FarmConnection>("/echo", new ConnectionConfiguration
                         {
                             Resolver = resolver
                         });
-
-                        resolver.Register(typeof(IProtectedData), () => protectedData);
                     });
                 }
 
