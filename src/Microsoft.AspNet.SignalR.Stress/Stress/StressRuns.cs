@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR;
@@ -24,6 +25,13 @@ namespace Microsoft.AspNet.SignalR.Stress
 {
     public static class StressRuns
     {
+        static StressRuns()
+        {
+            // HACK: This is horrible but we need the assembly to be loaded
+            // so that hubs are detected
+            Assembly.Load("Microsoft.AspNet.SignalR.StressServer");
+        }
+
         public static IDisposable StressGroups(int max = 100)
         {
             var host = new MemoryHost();
@@ -104,7 +112,7 @@ namespace Microsoft.AspNet.SignalR.Stress
                 configuration.KeepAlive = TimeSpan.FromSeconds(10);
 
                 var connectionManager = config.Resolver.Resolve<IConnectionManager>();
-                context = connectionManager.GetHubContext("EchoHub");
+                context = connectionManager.GetHubContext("SimpleEchoHub");
             });
 
             var cancellationTokenSource = new CancellationTokenSource();
@@ -120,7 +128,7 @@ namespace Microsoft.AspNet.SignalR.Stress
             thread.Start();
 
             var connection = new Client.Hubs.HubConnection("http://foo");
-            var proxy = connection.CreateHubProxy("EchoHub");
+            var proxy = connection.CreateHubProxy("SimpleEchoHub");
 
             try
             {
@@ -213,7 +221,7 @@ namespace Microsoft.AspNet.SignalR.Stress
             for (int i = 0; i < connections; i++)
             {
                 var connection = new Client.Hubs.HubConnection("http://foo");
-                var proxy = connection.CreateHubProxy("EchoHub");
+                var proxy = connection.CreateHubProxy("SimpleEchoHub");
                 var wh = new ManualResetEventSlim(false);
 
                 proxy.On("echo", _ => wh.Set());
@@ -275,6 +283,7 @@ namespace Microsoft.AspNet.SignalR.Stress
         {
             hosts = new MemoryHost[nodes];
             var eventBus = new EventBus();
+            var protectedData = new DefaultProtectedData();
             for (var i = 0; i < nodes; ++i)
             {
                 var host = new MemoryHost();
@@ -290,6 +299,8 @@ namespace Microsoft.AspNet.SignalR.Stress
                     config.Resolver.Register(typeof(IMessageBus), () => bus);
 
                     app.MapHubs(config);
+
+                    config.Resolver.Register(typeof(IProtectedData), () => protectedData);
                 });
 
                 hosts[i] = host;
@@ -303,6 +314,7 @@ namespace Microsoft.AspNet.SignalR.Stress
             var hosts = new MemoryHost[nodes];
             var random = new Random();
             var eventBus = new EventBus();
+            var protectedData = new DefaultProtectedData();
             for (var i = 0; i < nodes; ++i)
             {
                 var host = new MemoryHost();
@@ -319,6 +331,8 @@ namespace Microsoft.AspNet.SignalR.Stress
                     config.Resolver.Register(typeof(IMessageBus), () => bus);
 
                     app.MapHubs(config);
+
+                    config.Resolver.Register(typeof(IProtectedData), () => protectedData);
                 });
 
                 hosts[i] = host;
@@ -338,7 +352,7 @@ namespace Microsoft.AspNet.SignalR.Stress
         private static void RunLoop(IHttpClient client, ManualResetEventSlim wh)
         {
             var connection = new Client.Hubs.HubConnection("http://foo");
-            var proxy = connection.CreateHubProxy("EchoHub");
+            var proxy = connection.CreateHubProxy("SimpleEchoHub");
             connection.TraceLevel = Client.TraceLevels.Messages;
             var dict = new Dictionary<string, int>();
 
@@ -390,7 +404,7 @@ namespace Microsoft.AspNet.SignalR.Stress
 
 
             var connection = new Client.Hubs.HubConnection("http://foo");
-            var proxy = connection.CreateHubProxy("EchoHub");
+            var proxy = connection.CreateHubProxy("SimpleEchoHub");
             var wh = new ManualResetEventSlim(false);
 
             proxy.On("echo", _ => wh.Set());
