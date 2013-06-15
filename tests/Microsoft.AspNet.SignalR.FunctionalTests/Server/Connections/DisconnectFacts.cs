@@ -156,13 +156,14 @@ namespace Microsoft.AspNet.SignalR.Tests
             // Each node shares the same bus but are indepenent servers
             var counters = new SignalR.Infrastructure.PerformanceCounterManager();
             var configurationManager = new DefaultConfigurationManager();
+            var protectedData = new DefaultProtectedData();
             using (var bus = new MessageBus(new StringMinifier(), new TraceManager(), counters, configurationManager, 5000))
             {
                 var nodeCount = 3;
                 var nodes = new List<ServerNode>();
                 for (int i = 0; i < nodeCount; i++)
                 {
-                    nodes.Add(new ServerNode(bus));
+                    nodes.Add(new ServerNode(bus, protectedData));
                 }
 
                 var timeout = TimeSpan.FromSeconds(5);
@@ -178,6 +179,8 @@ namespace Microsoft.AspNet.SignalR.Tests
                         {
                             Resolver = resolver
                         });
+
+                        resolver.Register(typeof(IProtectedData), () => protectedData);
                     });
                 }
 
