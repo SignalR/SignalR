@@ -120,6 +120,12 @@
   <data name="Error_CertsCanOnlyBeAddedWhenDisconnected" xml:space="preserve">
     <value>Client Certificates cannot be added after the connection has started.</value>
   </data>
+  <data name="Error_ClientCallbackArgumentTypeMismatch" xml:space="preserve">
+    <value>A client callback for event {0} with {1} argument(s) was found, however an error occurred because {2}</value>
+  </data>
+  <data name="Error_ClientCallbackInvalidNumberOfArguments" xml:space="preserve">
+    <value>A client callback for event {0} with {1} argument(s) could not be found</value>
+  </data>
   <data name="Error_ConnectionCancelled" xml:space="preserve">
     <value>The connection was stopped before it could be started.</value>
   </data>
