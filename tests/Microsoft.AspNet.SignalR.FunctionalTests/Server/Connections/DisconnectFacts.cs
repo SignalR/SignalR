@@ -163,7 +163,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                 var nodes = new List<ServerNode>();
                 for (int i = 0; i < nodeCount; i++)
                 {
-                    nodes.Add(new ServerNode(bus, protectedData));
+                    nodes.Add(new ServerNode(bus));
                 }
 
                 var timeout = TimeSpan.FromSeconds(5);
