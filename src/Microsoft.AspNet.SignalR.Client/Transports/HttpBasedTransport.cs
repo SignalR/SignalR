@@ -73,7 +73,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
                 throw new ArgumentNullException("connection");
             }
 
-            var initializeHandler = new TransportInitializationHandler(connection.TransportConnectTimeout.Value, disconnectToken);
+            var initializeHandler = new TransportInitializationHandler(connection.TransportConnectTimeout, disconnectToken);
 
             OnStart(connection, data, disconnectToken, initializeHandler);
 

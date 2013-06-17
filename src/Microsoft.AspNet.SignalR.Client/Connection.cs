@@ -160,13 +160,17 @@ namespace Microsoft.AspNet.SignalR.Client
             TraceLevel = TraceLevels.All;
             TraceWriter = new DebugTextWriter();
             Headers = new HeaderDictionary(this);
+            TransportConnectTimeout = TimeSpan.Zero;
 
             // Current client protocol
             Protocol = new Version(1, 3);
         }
 
-        // The amount of time a transport will wait (while connecting) before failing
-        public TimeSpan? TransportConnectTimeout { get; set; }
+        /// <summary>
+        /// The amount of time a transport will wait (while connecting) before failing.
+        /// This value is modified by adding the server's TransportConnectTimeout configuration value.
+        /// </summary>
+        public TimeSpan TransportConnectTimeout { get; set; }
 
         public Version Protocol { get; set; }
 
@@ -389,7 +393,7 @@ namespace Microsoft.AspNet.SignalR.Client
                                 ConnectionId = negotiationResponse.ConnectionId;
                                 ConnectionToken = negotiationResponse.ConnectionToken;
                                 _disconnectTimeout = TimeSpan.FromSeconds(negotiationResponse.DisconnectTimeout);
-                                TransportConnectTimeout = TransportConnectTimeout ?? TimeSpan.FromSeconds(negotiationResponse.TransportConnectTimeout);
+                                TransportConnectTimeout = TransportConnectTimeout + TimeSpan.FromSeconds(negotiationResponse.TransportConnectTimeout);
 
                                 // If we have a keep alive
                                 if (negotiationResponse.KeepAliveTimeout != null)

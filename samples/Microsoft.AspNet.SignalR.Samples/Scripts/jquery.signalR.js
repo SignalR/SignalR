@@ -308,7 +308,7 @@
 
         reconnectDelay: 2000,
 
-        transportConnectTimeout: null, // This will be set by the server in respone to the negotiate request if it is not set on the client
+        transportConnectTimeout: 0, // This will be modified by the server in respone to the negotiate request.  It will add any value sent down from the server to the client value.
 
         disconnectTimeout: 30000, // This should be set by the server in response to the negotiate request (30s default)
 
@@ -558,7 +558,7 @@
                     connection.disconnectTimeout = res.DisconnectTimeout * 1000; // in ms
 
                     // If the connection already has a transportConnectTimeout set then keep it, otherwise use the servers value.
-                    connection.transportConnectTimeout = connection.transportConnectTimeout || res.TransportConnectTimeout * 1000;
+                    connection.transportConnectTimeout = connection.transportConnectTimeout + res.TransportConnectTimeout * 1000;
 
                     // If we have a keep alive
                     if (res.KeepAliveTimeout) {
