@@ -643,12 +643,9 @@ namespace Microsoft.AspNet.SignalR.Client
         {
             // Try to buffer only if we're still trying to connect to the server.
             // Need to protect against state changes here
-            lock (_stateLock)
+            if (!_connectingMessageBuffer.TryBuffer(message, _stateLock))
             {
-                if (!_connectingMessageBuffer.TryBuffer(message))
-                {
-                    OnMessageReceived(message);
-                }
+                OnMessageReceived(message);
             }
         }
 

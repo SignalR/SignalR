@@ -17,17 +17,20 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
             _drainCallback = drainCallback;
         }
 
-        public bool TryBuffer(JToken message)
+        public bool TryBuffer(JToken message, object stateLock)
         {
-            // Check if we need to buffer message
-            if (_connection.State == ConnectionState.Connecting)
+            lock (stateLock)
             {
-                _buffer.Enqueue(message);
+                // Check if we need to buffer message
+                if (_connection.State == ConnectionState.Connecting)
+                {
+                    _buffer.Enqueue(message);
 
-                return true;
+                    return true;
+                }
+
+                return false;
             }
-
-            return false;
         }
 
         public void Drain()
