@@ -1,6 +1,6 @@
 #include "ChunkBuffer.h"
 
-ChunkBuffer::ChunkBuffer(void)
+ChunkBuffer::ChunkBuffer()
 {
     mOffset = 0;
     mBuffer = U("");
@@ -8,7 +8,7 @@ ChunkBuffer::ChunkBuffer(void)
 }
 
 
-ChunkBuffer::~ChunkBuffer(void)
+ChunkBuffer::~ChunkBuffer()
 {
 
 }

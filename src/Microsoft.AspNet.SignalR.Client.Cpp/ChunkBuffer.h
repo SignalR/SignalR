@@ -9,8 +9,8 @@ using namespace utility;
 class ChunkBuffer
 {
 public:
-    ChunkBuffer(void);
-    ~ChunkBuffer(void);
+    ChunkBuffer();
+    ~ChunkBuffer();
 
     bool HasChuncks();
     void Add(shared_ptr<char> buffer);

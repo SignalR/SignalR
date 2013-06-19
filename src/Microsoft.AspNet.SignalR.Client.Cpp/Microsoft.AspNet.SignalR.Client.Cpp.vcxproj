@@ -45,16 +45,21 @@
     <ReferencePath>$(SolutionDir)packages\cpprestsdk.0.6.0.21\build\native\include;$(ReferencePath)</ReferencePath>
     <OutDir>$(ProjectDir)bin\$(Configuration)\</OutDir>
     <IntDir>$(ProjectDir)obj\$(Configuration)\</IntDir>
+    <EnableManagedIncrementalBuild>true</EnableManagedIncrementalBuild>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <AdditionalOptions>/D "WIN32" %(AdditionalOptions)</AdditionalOptions>
+      <GenerateXMLDocumentationFiles>false</GenerateXMLDocumentationFiles>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
+    <Xdcmake>
+      <DocumentLibraryDependencies>false</DocumentLibraryDependencies>
+    </Xdcmake>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
@@ -103,6 +108,7 @@
     <ClInclude Include="LongPollingTransport.h" />
     <ClInclude Include="NegotiationResponse.h" />
     <ClInclude Include="EventSourceStreamReader.h" />
+    <ClInclude Include="resource.h" />
     <ClInclude Include="ServerSentEventsTransport.h" />
     <ClInclude Include="SseEvent.h" />
     <ClInclude Include="StateChange.h" />
