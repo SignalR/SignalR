@@ -2,8 +2,11 @@
 using System.Collections.Generic;
 using System.Security.Claims;
 using System.Threading.Tasks;
+using Microsoft.AspNet.SignalR.Samples;
 using Microsoft.Owin;
 using Owin;
+
+[assembly: OwinStartup(typeof(Startup))]
 
 namespace Microsoft.AspNet.SignalR.Samples
 {

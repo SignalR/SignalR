@@ -5,20 +5,26 @@ Mapping the Hubs connection
 To enable SignalR in your application, create a class called Startup with the following:
  
 using Owin;
+using MyWebApplication;
 
-// This needs to be AssemblyName.Startup or it will fail to load
+// Specify the entry point
+[assembly: OwinStartup(typeof(Startup), "Configuration")]
+
 namespace MyWebApplication
 {
     public class Startup
     {
-        // The name *MUST* be Configuration
         public void Configuration(IAppBuilder app)
         {
             app.MapHubs();
         }
     }
 } 
- 
+
+Getting Started
+---------------
+See http://www.asp.net/signalr/overview/getting-started for more information on how to get started.
+
 Why does ~/signalr/hubs return 404 or Why do I get a JavaScript error: 'myhub is undefined'?
 --------------------------------------------------------------------------------------------
 This issue is generally due to a missing or invalid script reference to the auto-generated Hub JavaScript proxy at '~/signalr/hubs'.

@@ -1,5 +1,9 @@
 ﻿using System;
+using Microsoft.AspNet.SignalR.LoadTestHarness;
+using Microsoft.Owin;
 using Owin;
+
+[assembly: OwinStartup(typeof(Startup))]
 
 namespace Microsoft.AspNet.SignalR.LoadTestHarness
 {

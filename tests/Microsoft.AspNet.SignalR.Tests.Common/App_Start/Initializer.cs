@@ -10,9 +10,11 @@ using Microsoft.AspNet.SignalR.StressServer.Connections;
 using Microsoft.AspNet.SignalR.Tests.Common;
 using Microsoft.AspNet.SignalR.Tests.Common.Connections;
 using Microsoft.AspNet.SignalR.Tests.Common.Handlers;
+using Microsoft.Owin;
 using Owin;
 
 [assembly: PreApplicationStartMethod(typeof(Initializer), "Start")]
+[assembly: OwinStartup(typeof(Initializer))]
 
 namespace Microsoft.AspNet.SignalR.Tests.Common
 {
