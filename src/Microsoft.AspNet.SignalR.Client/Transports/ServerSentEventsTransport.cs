@@ -44,7 +44,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
         public TimeSpan ReconnectDelay { get; set; }
 
         protected override void OnStart(IConnection connection,
-                                        string data,
+                                        string connectionData,
                                         CancellationToken disconnectToken,
                                         TransportInitializationHandler initializeHandler)
         {
@@ -61,7 +61,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
                 _request.Abort();
             };
 
-            OpenConnection(connection, data, disconnectToken, initializeHandler.Success, initializeHandler.Fail);
+            OpenConnection(connection, connectionData, disconnectToken, initializeHandler.Success, initializeHandler.Fail);
         }
 
         private void Reconnect(IConnection connection, string data, CancellationToken disconnectToken)

@@ -12,10 +12,10 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
         string Name { get; }
         bool SupportsKeepAlive { get; }
 
-        Task<NegotiationResponse> Negotiate(IConnection connection);
-        Task Start(IConnection connection, string data, CancellationToken disconnectToken);
-        Task Send(IConnection connection, string data);
-        void Abort(IConnection connection, TimeSpan timeout);
+        Task<NegotiationResponse> Negotiate(IConnection connection, string connectionData);
+        Task Start(IConnection connection, string connectionData, CancellationToken disconnectToken);
+        Task Send(IConnection connection, string data, string connectionData);
+        void Abort(IConnection connection, TimeSpan timeout, string connectionData);
 
         void LostConnection(IConnection connection);
     }

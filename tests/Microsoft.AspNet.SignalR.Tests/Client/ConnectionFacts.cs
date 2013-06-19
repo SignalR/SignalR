@@ -125,7 +125,7 @@ namespace Microsoft.AspNet.SignalR.Tests
             {
                 var connection = new Client.Connection("http://test");
                 var transport = new Mock<IClientTransport>();
-                transport.Setup(m => m.Negotiate(connection)).Returns(TaskAsyncHelper.FromResult(new NegotiationResponse
+                transport.Setup(m => m.Negotiate(connection, It.IsAny<string>())).Returns(TaskAsyncHelper.FromResult(new NegotiationResponse
                 {
                     ProtocolVersion = null
                 }));
@@ -141,7 +141,7 @@ namespace Microsoft.AspNet.SignalR.Tests
             {
                 var connection = new Client.Connection("http://test");
                 var transport = new Mock<IClientTransport>();
-                transport.Setup(m => m.Negotiate(connection))
+                transport.Setup(m => m.Negotiate(connection, It.IsAny<string>()))
                          .Returns(TaskAsyncHelper.FromError<NegotiationResponse>(new InvalidOperationException("Something failed.")));
 
                 var aggEx = Assert.Throws<AggregateException>(() => connection.Start(transport.Object).Wait());
@@ -156,7 +156,7 @@ namespace Microsoft.AspNet.SignalR.Tests
             {
                 var connection = new Client.Connection("http://test");
                 var transport = new Mock<IClientTransport>();
-                transport.Setup(m => m.Negotiate(connection))
+                transport.Setup(m => m.Negotiate(connection, It.IsAny<string>()))
                          .Returns(() =>
                          {
                              var tcs = new TaskCompletionSource<NegotiationResponse>();
@@ -175,7 +175,7 @@ namespace Microsoft.AspNet.SignalR.Tests
             {
                 var connection = new Client.Connection("http://test");
                 var transport = new Mock<IClientTransport>();
-                transport.Setup(m => m.Negotiate(connection))
+                transport.Setup(m => m.Negotiate(connection, It.IsAny<string>()))
                          .Returns(TaskAsyncHelper.FromResult(new NegotiationResponse
                          {
                              ProtocolVersion = connection.Protocol.ToString(),
@@ -197,7 +197,7 @@ namespace Microsoft.AspNet.SignalR.Tests
             {
                 var connection = new Client.Connection("http://test");
                 var transport = new Mock<IClientTransport>();
-                transport.Setup(m => m.Negotiate(connection))
+                transport.Setup(m => m.Negotiate(connection, It.IsAny<string>()))
                          .Returns(TaskAsyncHelper.FromResult(new NegotiationResponse
                          {
                              ProtocolVersion = connection.Protocol.ToString(),
@@ -223,7 +223,7 @@ namespace Microsoft.AspNet.SignalR.Tests
             {
                 var connection = new Client.Connection("http://test");
                 var transport = new Mock<IClientTransport>();
-                transport.Setup(m => m.Negotiate(connection))
+                transport.Setup(m => m.Negotiate(connection, It.IsAny<string>()))
                          .Returns(TaskAsyncHelper.FromResult(new NegotiationResponse
                          {
                              ProtocolVersion = connection.Protocol.ToString(),
@@ -242,7 +242,7 @@ namespace Microsoft.AspNet.SignalR.Tests
             {
                 var connection = new Client.Connection("http://test");
                 var transport = new Mock<IClientTransport>();
-                transport.Setup(m => m.Negotiate(connection))
+                transport.Setup(m => m.Negotiate(connection, It.IsAny<string>()))
                          .Returns(TaskAsyncHelper.FromResult(new NegotiationResponse
                          {
                              ProtocolVersion = connection.Protocol.ToString(),
@@ -262,7 +262,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                 var connection = new Client.Connection("http://test");
                 var transport = new Mock<IClientTransport>();
                 var ex = new Exception();
-                transport.Setup(m => m.Negotiate(connection))
+                transport.Setup(m => m.Negotiate(connection, It.IsAny<string>()))
                          .Returns(TaskAsyncHelper.FromResult(new NegotiationResponse
                          {
                              ProtocolVersion = connection.Protocol.ToString(),

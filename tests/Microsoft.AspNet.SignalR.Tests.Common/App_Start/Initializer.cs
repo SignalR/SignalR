@@ -131,6 +131,13 @@ namespace Microsoft.AspNet.SignalR.Tests.Common
                 };
 
                 subApp.MapConnection<AuthenticatedEchoConnection>("/echo", subConfig);
+
+                var subHubsConfig = new HubConfiguration
+                {
+                    Resolver = resolver
+                };
+
+                subApp.MapHubs(subHubsConfig);
             });
 
             // Perf/stress test related

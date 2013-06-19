@@ -16,7 +16,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
     public abstract class HttpBasedTransport : IClientTransport
     {
         // The send query string
-        private const string _sendQueryString = "?transport={0}&connectionToken={1}{2}";
+        private const string _sendQueryString = "?transport={0}&connectionData={1}&connectionToken={2}{3}";
 
         // The transport name
         private readonly string _transport;
@@ -61,12 +61,12 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
             get { return _httpClient; }
         }
 
-        public Task<NegotiationResponse> Negotiate(IConnection connection)
+        public Task<NegotiationResponse> Negotiate(IConnection connection, string connectionData)
         {
-            return _httpClient.GetNegotiationResponse(connection);
+            return _httpClient.GetNegotiationResponse(connection, connectionData);
         }
 
-        public Task Start(IConnection connection, string data, CancellationToken disconnectToken)
+        public Task Start(IConnection connection, string connectionData, CancellationToken disconnectToken)
         {
             if (connection == null)
             {
@@ -75,17 +75,17 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
 
             var initializeHandler = new TransportInitializationHandler(connection.TransportConnectTimeout, disconnectToken);
 
-            OnStart(connection, data, disconnectToken, initializeHandler);
+            OnStart(connection, connectionData, disconnectToken, initializeHandler);
 
             return initializeHandler.Task;
         }
 
         protected abstract void OnStart(IConnection connection,
-                                        string data,
+                                        string connectionData,
                                         CancellationToken disconnectToken,
                                         TransportInitializationHandler initializeHandler);
 
-        public Task Send(IConnection connection, string data)
+        public Task Send(IConnection connection, string data, string connectionData)
         {
             if (connection == null)
             {
@@ -98,6 +98,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
             url += String.Format(CultureInfo.InvariantCulture,
                                 _sendQueryString,
                                 _transport,
+                                connectionData,
                                 Uri.EscapeDataString(connection.ConnectionToken),
                                 customQueryString);
 
@@ -119,7 +120,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
                               .Catch(connection.OnError);
         }
 
-        public void Abort(IConnection connection, TimeSpan timeout)
+        public void Abort(IConnection connection, TimeSpan timeout, string connectionData)
         {
             if (connection == null)
             {
@@ -142,6 +143,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
                     string url = connection.Url + "abort" + String.Format(CultureInfo.InvariantCulture,
                                                                           _sendQueryString,
                                                                           _transport,
+                                                                          connectionData,
                                                                           Uri.EscapeDataString(connection.ConnectionToken),
                                                                           null);
 

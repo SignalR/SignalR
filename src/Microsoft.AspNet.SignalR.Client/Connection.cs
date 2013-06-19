@@ -56,6 +56,8 @@ namespace Microsoft.AspNet.SignalR.Client
 
         private TextWriter _traceWriter;
 
+        private string _connectionData;
+
         // Used to synchronize state changes
         private readonly object _stateLock = new object();
 
@@ -385,7 +387,8 @@ namespace Microsoft.AspNet.SignalR.Client
         [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "The exception is flowed back to the caller via the tcs.")]
         private Task Negotiate(IClientTransport transport)
         {
-            return transport.Negotiate(this)
+            _connectionData = OnSending();
+            return transport.Negotiate(this, _connectionData)
                             .Then(negotiationResponse =>
                             {
                                 VerifyProtocolVersion(negotiationResponse.ProtocolVersion);
@@ -401,8 +404,7 @@ namespace Microsoft.AspNet.SignalR.Client
                                     _keepAliveData = new KeepAliveData(TimeSpan.FromSeconds(negotiationResponse.KeepAliveTimeout.Value));
                                 }
 
-                                var data = OnSending();
-                                return StartTransport(data);
+                                return StartTransport(_connectionData);
                             })
                             .ContinueWithNotComplete(() => Disconnect());
         }
@@ -513,7 +515,7 @@ namespace Microsoft.AspNet.SignalR.Client
                         // Dispose the heart beat monitor so we don't fire notifications when waiting to abort
                         _monitor.Dispose();
 
-                        _transport.Abort(this, timeout);
+                        _transport.Abort(this, timeout, _connectionData);
 
                         Disconnect();
 
@@ -563,6 +565,7 @@ namespace Microsoft.AspNet.SignalR.Client
                     ConnectionToken = null;
                     GroupsToken = null;
                     MessageId = null;
+                    _connectionData = null;
 
                     // TODO: Do we want to trigger Closed if we are connecting?
                     if (Closed != null)
@@ -590,7 +593,7 @@ namespace Microsoft.AspNet.SignalR.Client
                 throw new InvalidOperationException(String.Format(CultureInfo.CurrentCulture, Resources.Error_ConnectionHasNotBeenEstablished));
             }
 
-            return _transport.Send(this, data);
+            return _transport.Send(this, data, _connectionData);
         }
 
         /// <summary>
