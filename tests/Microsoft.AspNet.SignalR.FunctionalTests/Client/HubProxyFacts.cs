@@ -4,10 +4,12 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR.Client;
 using Microsoft.AspNet.SignalR.Client.Hubs;
+using Microsoft.AspNet.SignalR.Client.Transports;
 using Microsoft.AspNet.SignalR.FunctionalTests;
 using Microsoft.AspNet.SignalR.Tests.Common;
 using Microsoft.AspNet.SignalR.Tests.Common.Infrastructure;
 using Microsoft.AspNet.SignalR.Tests.Infrastructure;
+using Moq;
 using Xunit;
 using Xunit.Extensions;
 
@@ -38,6 +40,42 @@ namespace Microsoft.AspNet.SignalR.Tests
                     });
 
                     Assert.True(mre.Wait(TimeSpan.FromSeconds(10)));
+                }
+            }
+        }
+
+        [Fact(Timeout = 5000)]
+        public void WebSocketTransportDoesntHangIfConnectReturnsCancelledTask()
+        {
+            RunWebSocketTransportWithConnectTask(() =>
+            {
+                var tcs = new TaskCompletionSource<object>();
+                tcs.SetCanceled();
+                return tcs.Task;
+            });
+        }
+
+        [Fact(Timeout = 5000)]
+        public void WebSocketTransportDoesntHangIfConnectReturnsFaultedTask()
+        {
+            RunWebSocketTransportWithConnectTask(() => TaskAsyncHelper.FromError(new Exception()));
+        }
+
+        public void RunWebSocketTransportWithConnectTask(Func<Task> taskReturn)
+        {
+            using (var host = CreateHost(HostType.IISExpress))
+            {
+                host.Initialize();
+
+                HubConnection hubConnection = CreateHubConnection(host);
+                IHubProxy proxy = hubConnection.CreateHubProxy("EchoHub");
+
+                var transport = new Mock<WebSocketTransport>() { CallBase = true };
+                transport.Setup(m => m.PerformConnect()).Returns(taskReturn());
+
+                using (hubConnection)
+                {
+                    Assert.Throws<AggregateException>(() => hubConnection.Start(transport.Object).Wait());
                 }
             }
         }

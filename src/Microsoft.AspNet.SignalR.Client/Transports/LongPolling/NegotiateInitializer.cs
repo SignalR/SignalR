@@ -13,7 +13,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
         public NegotiateInitializer(TransportInitializationHandler initializeHandler)
         {
             _initializeCallback = initializeHandler.Success;
-            _errorCallback = initializeHandler.Failure;
+            _errorCallback = initializeHandler.Fail;
             _callbackInvoker = new ThreadSafeInvoker();
 
             // Set default initialized function
