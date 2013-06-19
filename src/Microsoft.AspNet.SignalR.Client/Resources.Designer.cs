@@ -156,6 +156,15 @@ namespace Microsoft.AspNet.SignalR.Client {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Transport failed trying to connect..
+        /// </summary>
+        internal static string Error_TransportFailedToConnect {
+            get {
+                return ResourceManager.GetString("Error_TransportFailedToConnect", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Transport timed out trying to connect.
         /// </summary>
         internal static string Error_TransportTimedOutTryingToConnect {

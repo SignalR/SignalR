@@ -58,7 +58,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
                 _request.Abort();
             };
 
-            OpenConnection(connection, data, disconnectToken, initializeHandler.Success, initializeHandler.Failure);
+            OpenConnection(connection, data, disconnectToken, initializeHandler.Success, initializeHandler.Fail);
         }
 
         private void Reconnect(IConnection connection, string data, CancellationToken disconnectToken)
