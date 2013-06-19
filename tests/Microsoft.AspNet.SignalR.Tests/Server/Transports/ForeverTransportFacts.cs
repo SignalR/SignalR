@@ -35,6 +35,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Server.Transports
             var hostContext = new HostContext(request.Object, null);
             var transportConnection = new Mock<ITransportConnection>();
             var traceManager = new Mock<ITraceManager>();
+            counters.SetupGet(m => m.ConnectionsConnected).Returns(new NoOpPerformanceCounter());
             traceManager.Setup(m => m[It.IsAny<string>()]).Returns(new System.Diagnostics.TraceSource("foo"));
             var transport = new Mock<ForeverTransport>(hostContext, json, heartBeat.Object, counters.Object, traceManager.Object)
             {
@@ -66,6 +67,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Server.Transports
             var hostContext = new HostContext(request.Object, null);
             var transportConnection = new Mock<ITransportConnection>();
             var traceManager = new Mock<ITraceManager>();
+            counters.SetupGet(m => m.ConnectionsConnected).Returns(new NoOpPerformanceCounter());
             traceManager.Setup(m => m[It.IsAny<string>()]).Returns(new System.Diagnostics.TraceSource("foo"));
             transportConnection.Setup(m => m.Send(It.IsAny<ConnectionMessage>()))
                                .Callback<ConnectionMessage>(m =>
@@ -104,6 +106,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Server.Transports
             var hostContext = new HostContext(request.Object, response.Object);
             var transportConnection = new Mock<ITransportConnection>();
             var traceManager = new Mock<ITraceManager>();
+            counters.SetupGet(m => m.ConnectionsConnected).Returns(new NoOpPerformanceCounter());
             traceManager.Setup(m => m[It.IsAny<string>()]).Returns(new System.Diagnostics.TraceSource("foo"));
 
             Func<PersistentResponse, object, Task<bool>> callback = null;
@@ -163,6 +166,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Server.Transports
             var hostContext = new HostContext(request.Object, response.Object);
             var transportConnection = new Mock<ITransportConnection>();
             var traceManager = new Mock<ITraceManager>();
+            counters.SetupGet(m => m.ConnectionsConnected).Returns(new NoOpPerformanceCounter());
             traceManager.Setup(m => m[It.IsAny<string>()]).Returns(new System.Diagnostics.TraceSource("foo"));
 
             transportConnection.Setup(m => m.Receive(It.IsAny<string>(),
@@ -224,6 +228,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Server.Transports
             var hostContext = new HostContext(request.Object, response.Object);
             var transportConnection = new Mock<ITransportConnection>();
             var traceManager = new Mock<ITraceManager>();
+            counters.SetupGet(m => m.ConnectionsConnected).Returns(new NoOpPerformanceCounter());
             traceManager.Setup(m => m[It.IsAny<string>()]).Returns(new System.Diagnostics.TraceSource("foo"));
 
             Func<PersistentResponse, object, Task<bool>> callback = null;
@@ -250,6 +255,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Server.Transports
                                                          }
                                                      })
                                                     .Returns(disposable);
+            transportConnection.Setup(m => m.Send(It.IsAny<ConnectionMessage>())).Returns(TaskAsyncHelper.Empty);
 
             var transport = new Mock<ForeverTransport>(hostContext, json, heartBeat.Object, counters.Object, traceManager.Object)
             {
@@ -259,6 +265,8 @@ namespace Microsoft.AspNet.SignalR.Tests.Server.Transports
             transport.Setup(m => m.Send(It.IsAny<PersistentResponse>())).Returns(TaskAsyncHelper.Empty);
 
             bool ended = false;
+
+            transport.Object.Connected = () => TaskAsyncHelper.Empty;
 
             transport.Object.AfterRequestEnd = (ex) =>
             {
@@ -288,6 +296,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Server.Transports
             var hostContext = new HostContext(request.Object, response.Object);
             var transportConnection = new Mock<ITransportConnection>();
             var traceManager = new Mock<ITraceManager>();
+            counters.SetupGet(m => m.ConnectionsConnected).Returns(new NoOpPerformanceCounter());
             traceManager.Setup(m => m[It.IsAny<string>()]).Returns(new System.Diagnostics.TraceSource("foo"));
 
             transportConnection.Setup(m => m.Receive(It.IsAny<string>(),
@@ -358,6 +367,11 @@ namespace Microsoft.AspNet.SignalR.Tests.Server.Transports
             var hostContext = new HostContext(request.Object, response.Object);
             var transportConnection = new Mock<ITransportConnection>();
             var traceManager = new Mock<ITraceManager>();
+            counters.SetupGet(m => m.ConnectionsConnected).Returns(new NoOpPerformanceCounter());
+            counters.SetupGet(m => m.ErrorsTransportTotal).Returns(new NoOpPerformanceCounter());
+            counters.SetupGet(m => m.ErrorsTransportPerSec).Returns(new NoOpPerformanceCounter());
+            counters.SetupGet(m => m.ErrorsAllTotal).Returns(new NoOpPerformanceCounter());
+            counters.SetupGet(m => m.ErrorsAllPerSec).Returns(new NoOpPerformanceCounter());
             traceManager.Setup(m => m[It.IsAny<string>()]).Returns(new System.Diagnostics.TraceSource("foo"));
 
             transportConnection.Setup(m => m.Receive(It.IsAny<string>(),
@@ -488,6 +502,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Server.Transports
             var hostContext = new HostContext(request.Object, response.Object);
             var transportConnection = new Mock<ITransportConnection>();
             var traceManager = new Mock<ITraceManager>();
+            counters.SetupGet(m => m.ConnectionsConnected).Returns(new NoOpPerformanceCounter());
             traceManager.Setup(m => m[It.IsAny<string>()]).Returns(new System.Diagnostics.TraceSource("foo"));
 
             Func<PersistentResponse, object, Task<bool>> callback = null;
@@ -507,6 +522,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Server.Transports
                                                          state = st;
                                                      })
                                                      .Returns(disposable);
+            transportConnection.Setup(m => m.Send(It.IsAny<ConnectionMessage>())).Returns(TaskAsyncHelper.Empty);
 
             var transport = new Mock<ForeverTransport>(hostContext, json, heartBeat.Object, counters.Object, traceManager.Object)
             {
@@ -518,6 +534,8 @@ namespace Microsoft.AspNet.SignalR.Tests.Server.Transports
             var tcs = new TaskCompletionSource<bool>();
 
             transport.Object.EnqueueOperation(writeAsync);
+
+            transport.Object.Connected = () => TaskAsyncHelper.Empty;
 
             transport.Object.AfterRequestEnd = (ex) =>
             {
