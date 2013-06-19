@@ -120,6 +120,7 @@
     <Compile Include="Connections\MySendingConnection.cs" />
     <Compile Include="Connections\SyncErrorConnection.cs" />
     <Compile Include="Connections\UnusableProtectedConnection.cs" />
+    <Compile Include="Hubs\AuthenticatedEchoHub.cs" />
     <Compile Include="Hubs\ChatWithGroups.cs" />
     <Compile Include="Hubs\ClientCallbackHub.cs" />
     <Compile Include="Hubs\ConnectionDataVerifierHub.cs" />

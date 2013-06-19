@@ -112,7 +112,7 @@ namespace Microsoft.AspNet.SignalR.Client.Tests
                         CallBase = true
                     };
 
-                    httpBasedTransport.Object.Send(connection.Object, "").ContinueWith(sendTask =>
+                    httpBasedTransport.Object.Send(connection.Object, "", null).ContinueWith(sendTask =>
                     {
                         Assert.True(sendTask.IsFaulted);
                         Assert.IsType(typeof(AggregateException), sendTask.Exception);

@@ -49,12 +49,12 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
         public TimeSpan ReconnectDelay { get; set; }
 
         protected override void OnStart(IConnection connection,
-                                        string data,
+                                        string connectionData,
                                         CancellationToken disconnectToken,
                                         Action initializeCallback,
                                         Action<Exception> errorCallback)
         {
-            OpenConnection(connection, data, disconnectToken, initializeCallback, errorCallback);
+            OpenConnection(connection, connectionData, disconnectToken, initializeCallback, errorCallback);
         }
 
         private void Reconnect(IConnection connection, string data, CancellationToken disconnectToken)
