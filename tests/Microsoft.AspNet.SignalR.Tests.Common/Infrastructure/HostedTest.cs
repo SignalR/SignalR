@@ -76,12 +76,12 @@ namespace Microsoft.AspNet.SignalR.Tests.Common.Infrastructure
             return connection;
         }
 
-        protected HubConnection CreateHubConnection(ITestHost host, string url = null, bool useDefaultUrl = true)
+        protected HubConnection CreateHubConnection(ITestHost host, string path = null, bool useDefaultUrl = true)
         {
             var query = new Dictionary<string, string>();
             query["test"] = GetTestName();
             SetHostData(host, query);
-            var connection = new HubConnection(url ?? host.Url, query, useDefaultUrl);
+            var connection = new HubConnection(host.Url + path, query, useDefaultUrl);
             connection.TraceWriter = host.ClientTraceOutput ?? connection.TraceWriter;
             return connection;
         }

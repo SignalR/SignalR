@@ -57,12 +57,12 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
             }
         }
 
-        public Task<NegotiationResponse> Negotiate(IConnection connection)
+        public Task<NegotiationResponse> Negotiate(IConnection connection, string connectionData)
         {
-            return _client.GetNegotiationResponse(connection);
+            return _client.GetNegotiationResponse(connection, connectionData);
         }
 
-        public Task Start(IConnection connection, string data, CancellationToken disconnectToken)
+        public Task Start(IConnection connection, string connectionData, CancellationToken disconnectToken)
         {
             if (connection == null)
             {
@@ -84,7 +84,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
             };
 
             _disconnectToken = disconnectToken;
-            _connectionInfo = new WebSocketConnectionInfo(connection, data);
+            _connectionInfo = new WebSocketConnectionInfo(connection, connectionData);
 
             // We don't need to await this task
             PerformConnect().ContinueWith(task =>
@@ -128,7 +128,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
             await ProcessWebSocketRequestAsync(webSocket, _disconnectToken);
         }
 
-        public void Abort(IConnection connection, TimeSpan timeout)
+        public void Abort(IConnection connection, TimeSpan timeout, string connectionData)
         {
             lock (this)
             {
@@ -146,7 +146,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
             }
         }
 
-        public Task Send(IConnection connection, string data)
+        public Task Send(IConnection connection, string data, string connectionData)
         {
             return SendAsync(data);
         }

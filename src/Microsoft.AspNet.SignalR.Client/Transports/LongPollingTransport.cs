@@ -46,7 +46,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
         }
 
         protected override void OnStart(IConnection connection,
-                                        string data,
+                                        string connectionData,
                                         CancellationToken disconnectToken,
                                         TransportInitializationHandler initializeHandler)
         {
@@ -72,7 +72,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
             };
 
             // Add additional actions to each of the PollingRequestHandler events
-            PollingSetup(connection, data, disconnectToken, requestHandler, negotiateInitializer.Complete);
+            PollingSetup(connection, connectionData, disconnectToken, requestHandler, negotiateInitializer.Complete);
 
             requestHandler.Start();
         }

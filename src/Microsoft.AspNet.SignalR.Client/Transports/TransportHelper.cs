@@ -13,7 +13,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
 {
     public static class TransportHelper
     {
-        public static Task<NegotiationResponse> GetNegotiationResponse(this IHttpClient httpClient, IConnection connection)
+        public static Task<NegotiationResponse> GetNegotiationResponse(this IHttpClient httpClient, IConnection connection, string connectionData)
         {
             if (httpClient == null)
             {
@@ -40,6 +40,11 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
 
             negotiateUrl += appender + "clientProtocol=" + connection.Protocol;
 
+            if (!String.IsNullOrEmpty(connectionData))
+            {
+                negotiateUrl += "&connectionData=" + connectionData;
+            }
+
             httpClient.Initialize(connection);
 
             return httpClient.Get(negotiateUrl, connection.PrepareRequest, isLongRunning: false)
@@ -56,7 +61,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
         }
 
         [SuppressMessage("Microsoft.Design", "CA1062:Validate arguments of public methods", MessageId = "0", Justification = "This is called by internally")]
-        public static string GetReceiveQueryString(IConnection connection, string data, string transport)
+        public static string GetReceiveQueryString(IConnection connection, string connectionData, string transport)
         {
             if (connection == null)
             {
@@ -78,9 +83,9 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
                 qsBuilder.Append("&groupsToken=" + Uri.EscapeDataString(connection.GroupsToken));
             }
 
-            if (data != null)
+            if (connectionData != null)
             {
-                qsBuilder.Append("&connectionData=" + data);
+                qsBuilder.Append("&connectionData=" + connectionData);
             }
 
             string customQuery = connection.QueryString;
@@ -134,7 +139,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
             return qs;
         }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1021:AvoidOutParameters", Justification="This is called internally.")]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1021:AvoidOutParameters", Justification = "This is called internally.")]
         public static void ProcessResponse(IConnection connection, string response, out bool timedOut, out bool disconnected)
         {
             ProcessResponse(connection, response, out timedOut, out disconnected, () => { });
