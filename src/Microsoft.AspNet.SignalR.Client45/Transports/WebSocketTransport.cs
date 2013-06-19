@@ -87,8 +87,21 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
             _connectionInfo = new WebSocketConnectionInfo(connection, data);
 
             // We don't need to await this task
-            PerformConnect().Then((Action)_initializeHandler.Success)
-                            .Catch(ex => _initializeHandler.Failure(ex));
+            PerformConnect().ContinueWith(task =>
+            {
+                if (task.IsFaulted)
+                {
+                    _initializeHandler.Fail(task.Exception);
+                }
+                else if (task.IsCanceled)
+                {
+                    _initializeHandler.Fail();
+                }
+                else
+                {
+                    _initializeHandler.Success();
+                }
+            });
 
             return _initializeHandler.Task;
         }

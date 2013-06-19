@@ -44,11 +44,26 @@ namespace Microsoft.AspNet.SignalR.Tests
             }
         }
 
-        [Theory(Timeout = 5000)]
-        [InlineData(HostType.IISExpress)]
-        public void WebSocketTransportDoesntHangIfConnectThrows(HostType hostType)
+        [Fact(Timeout = 5000)]
+        public void WebSocketTransportDoesntHangIfConnectReturnsCancelledTask()
         {
-            using (var host = CreateHost(hostType))
+            RunWebSocketTransportWithConnectTask(() =>
+            {
+                var tcs = new TaskCompletionSource<object>();
+                tcs.SetCanceled();
+                return tcs.Task;
+            });
+        }
+
+        [Fact(Timeout = 5000)]
+        public void WebSocketTransportDoesntHangIfConnectReturnsFaultedTask()
+        {
+            RunWebSocketTransportWithConnectTask(() => TaskAsyncHelper.FromError(new Exception()));
+        }
+
+        public void RunWebSocketTransportWithConnectTask(Func<Task> taskReturn)
+        {
+            using (var host = CreateHost(HostType.IISExpress))
             {
                 host.Initialize();
 
@@ -56,7 +71,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                 IHubProxy proxy = hubConnection.CreateHubProxy("EchoHub");
 
                 var transport = new Mock<WebSocketTransport>() { CallBase = true };
-                transport.Setup(m => m.PerformConnect()).Returns(TaskAsyncHelper.FromError(new Exception()));
+                transport.Setup(m => m.PerformConnect()).Returns(taskReturn());
 
                 using (hubConnection)
                 {

@@ -24,12 +24,13 @@ namespace Microsoft.AspNet.SignalR.Client.Infrastructure
             // We want to fail if the disconnect token is tripped while we're waiting on initialization
             _tokenCleanup = disconnectToken.SafeRegister(_ =>
             {
-                Failure(null);
-            }, null);
+                Fail();
+            },
+            state: null);
 
             TaskAsyncHelper.Delay(failureTimeout).Then(() =>
             {
-                Failure(new TimeoutException(Resources.Error_TransportTimedOutTryingToConnect));
+                Fail(new TimeoutException(Resources.Error_TransportTimedOutTryingToConnect));
             });
         }
 
@@ -52,7 +53,12 @@ namespace Microsoft.AspNet.SignalR.Client.Infrastructure
             });
         }
 
-        public void Failure(Exception ex)
+        public void Fail()
+        {
+            Fail(new InvalidOperationException(Resources.Error_TransportFailedToConnect));
+        }
+
+        public void Fail(Exception ex)
         {
             _initializationInvoker.Invoke(() =>
             {
