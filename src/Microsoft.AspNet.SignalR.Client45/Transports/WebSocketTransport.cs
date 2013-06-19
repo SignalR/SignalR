@@ -70,9 +70,16 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
             }
 
             _initializeHandler = new TransportInitializationHandler(connection.TransportConnectTimeout, disconnectToken);
+
             // Tie into the OnFailure event so that we can stop the transport silently.
             _initializeHandler.OnFailure += () =>
             {
+                if (WebSocket == null)
+                {
+                    return;
+                }
+
+                // If the websocket was initialized then abort it
                 WebSocket.Abort();
             };
 
@@ -80,18 +87,19 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
             _connectionInfo = new WebSocketConnectionInfo(connection, data);
 
             // We don't need to await this task
-            PerformConnect().Then((Action)_initializeHandler.Success).ContinueWith(task =>
-            {
-                if (!task.IsCompleted)
-                {
-                    _initializeHandler.Failure(task.Exception);
-                }
-            });
+            PerformConnect().Then((Action)_initializeHandler.Success)
+                            .Catch(ex => _initializeHandler.Failure(ex));
 
             return _initializeHandler.Task;
         }
 
-        private async Task PerformConnect(bool reconnecting = false)
+        // For testing
+        public virtual Task PerformConnect()
+        {
+            return PerformConnect(reconnecting: false);
+        }
+
+        private async Task PerformConnect(bool reconnecting)
         {
             var url = _connectionInfo.Connection.Url + (reconnecting ? "reconnect" : "connect");
             url += TransportHelper.GetReceiveQueryString(_connectionInfo.Connection, _connectionInfo.Data, "webSockets");
