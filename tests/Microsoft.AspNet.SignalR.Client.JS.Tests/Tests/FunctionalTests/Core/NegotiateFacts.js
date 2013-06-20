@@ -23,7 +23,7 @@
             }
 
             // Persist the request through to the original ajax request
-            savedAjax.call(this, url, settings);
+            return savedAjax.call(this, url, settings);
         };
 
         connection.start({ transport: transport });
@@ -84,7 +84,7 @@
                 }
 
                 // Persist the request through to the original ajax request
-                savedAjax.call(this, url, settings);
+                return savedAjax.call(this, url, settings);
             };
 
             connection.start({ transport: transport });

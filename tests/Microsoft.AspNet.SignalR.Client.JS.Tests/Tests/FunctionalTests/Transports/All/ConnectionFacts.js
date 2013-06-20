@@ -233,7 +233,7 @@ testUtilities.runWithAllTransports(function (transport) {
             }
 
             // Persist the request through to the original ajax request
-            savedAjax.call(this, url, settings);
+            return savedAjax.call(this, url, settings);
         };
 
         $.ajax = ajaxReplacement;

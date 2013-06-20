@@ -61,7 +61,7 @@ testUtilities.runWithAllTransports(function (transport) {
             }
 
             // Persist the request through to the original ajax request
-            savedAjax.call(this, url, settings);
+            return savedAjax.call(this, url, settings);
         };
 
         // Starting/Stopping a connection to have it instantiated with all the appropriate variables
