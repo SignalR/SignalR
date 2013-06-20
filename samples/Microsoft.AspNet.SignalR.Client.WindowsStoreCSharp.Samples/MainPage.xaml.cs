@@ -26,7 +26,7 @@ namespace Microsoft.AspNet.SignalR.Client.WindowsStoreCSharp.Samples
         {
             var writer = new TextBoxWriter(SynchronizationContext.Current, this.Messages);
             var client = new CommonClient(writer);
-            var task = client.RunAsync();
+            var task = client.RunAsync("http://localhost:40476/");
         }
     }
 }

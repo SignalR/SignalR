@@ -44,10 +44,15 @@
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Net" />
+    <Reference Include="System.Net.Http" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="..\..\src\Common\CommonVersionInfo.cs">
       <Link>Properties\CommonVersionInfo.cs</Link>
+    </Compile>
+    <Compile Include="..\Common\CommonClient.cs">
+      <Link>CommonClient.cs</Link>
     </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

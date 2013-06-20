@@ -43,9 +43,8 @@
     <Compile Include="..\..\src\Common\CommonVersionInfo.cs">
       <Link>Properties\CommonVersionInfo.cs</Link>
     </Compile>
-    <Compile Include="..\Microsoft.AspNet.SignalR.Client.Samples\Program.cs">
-      <Link>Program.cs</Link>
-    </Compile>
+    <Compile Include="Client.cs" />
+    <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

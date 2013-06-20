@@ -21,8 +21,7 @@
     <ProductVersion>10.0.0</ProductVersion>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <TargetFrameworkProfile />
-    <SilverlightApplicationList>
-    </SilverlightApplicationList>
+    <SilverlightApplicationList>{3DCD7F29-E221-45B6-8C0C-881D931946E9}|..\Microsoft.AspNet.SignalR.Client.Silverlight.Samples\Microsoft.AspNet.SignalR.Client.Silverlight.Samples.csproj|ClientBin|False</SilverlightApplicationList>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>True</DebugSymbols>
@@ -92,6 +91,7 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="clientaccesspolicy.xml" />
+    <Content Include="ClientBin\Microsoft.AspNet.SignalR.Client.Silverlight.Samples.xap" />
     <Content Include="Content\bg-body.jpg" />
     <Content Include="Content\bg.jpg" />
     <Content Include="Content\bootstrap-responsive.css" />
@@ -187,6 +187,7 @@
     <Content Include="Hubs\Test\clientsGroupSender.js" />
     <Content Include="Hubs\Test\common.js" />
     <Content Include="Hubs\Test\Default.aspx" />
+    <Content Include="silverlight.html" />
     <Content Include="Raw\Default.aspx" />
     <Content Include="Raw\test\basic.htm" />
     <Content Include="Raw\crossdomain.htm" />
@@ -219,6 +220,7 @@
     <Content Include="Scripts\remedial.js" />
     <Content Include="Scripts\jquery.signalR.js" />
     <Content Include="Scripts\jquery.signalR.min.js" />
+    <Content Include="Silverlight.js" />
     <Content Include="Streaming\Default.aspx" />
     <Content Include="Web.config">
       <SubType>Designer</SubType>
