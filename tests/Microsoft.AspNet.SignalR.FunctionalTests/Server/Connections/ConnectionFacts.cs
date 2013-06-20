@@ -196,8 +196,8 @@ namespace Microsoft.AspNet.SignalR.Client.Tests
             {
                 using (ITestHost host = CreateHost(HostType.IISExpress))
                 {
-                    // Reduce transportConnectionTimeout to 3 seconds
-                    host.Initialize(transportConnectTimeout: 3);
+                    // Reduce transportConnectionTimeout to 5 seconds
+                    host.Initialize(transportConnectTimeout: 5);
 
                     var connection = CreateConnection(host, "/fall-back");
 
