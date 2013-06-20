@@ -3,7 +3,8 @@ Please see http://go.microsoft.com/fwlink/?LinkId=272764 for more information on
 Mapping the Hubs connection
 ----------------------------
 To enable SignalR in your application, create a class called Startup with the following:
- 
+
+using Microsoft.Owin;
 using Owin;
 using MyWebApplication;
 
