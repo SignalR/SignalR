@@ -455,6 +455,44 @@ namespace Microsoft.AspNet.SignalR.Tests
             }
         }
 
+        [Theory]
+        [InlineData(HostType.Memory, TransportType.ServerSentEvents)]
+        [InlineData(HostType.Memory, TransportType.LongPolling)]
+        [InlineData(HostType.IISExpress, TransportType.LongPolling)]
+        [InlineData(HostType.IISExpress, TransportType.ServerSentEvents)]
+        public void WaitingOnHubInvocationDoesNotDeadlock(HostType hostType, TransportType transportType)
+        {
+            using (var host = CreateHost(hostType, transportType))
+            {
+                host.Initialize();
+                HubConnection hubConnection = CreateHubConnection(host);
+                var mre = new ManualResetEventSlim();
+
+                using (hubConnection)
+                {
+                    IHubProxy proxy = hubConnection.CreateHubProxy("EchoHub");
+                    int callbackInvokedCount = 0;
+
+                    proxy.On<string>("echo", message =>
+                    {
+                        callbackInvokedCount++;
+                        if (callbackInvokedCount == 4)
+                        {
+                            mre.Set();
+                        }
+                        else
+                        {
+                            proxy.Invoke("EchoCallback", message);
+                        }
+                    });
+
+                    hubConnection.Start(host.Transport).Wait();
+                    proxy.Invoke("EchoCallback", "message");
+                    Assert.True(mre.Wait(TimeSpan.FromSeconds(10)));
+                }
+            }
+        }
+
         public class MyHub2 : Hub
         {
             public MyHub2(int n)
