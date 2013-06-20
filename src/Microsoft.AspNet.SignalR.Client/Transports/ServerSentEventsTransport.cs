@@ -182,10 +182,11 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
 
                     eventSource.Closed = exception =>
                     {
+                        bool isRequestAborted = false;
                         if (exception != null)
                         {
                             // Check if the request is aborted
-                            bool isRequestAborted = ExceptionHelper.IsRequestAborted(exception);
+                            isRequestAborted = ExceptionHelper.IsRequestAborted(exception);
 
                             if (!isRequestAborted)
                             {
@@ -205,7 +206,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
                         {
                             // Abort() was called, so don't reconnect
                         }
-                        else
+                        else if (!isRequestAborted)
                         {
                             Reconnect(connection, data, disconnectToken);
                         }
