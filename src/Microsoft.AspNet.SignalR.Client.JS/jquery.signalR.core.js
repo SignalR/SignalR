@@ -249,6 +249,7 @@
             this.url = url;
             this.qs = qs;
             this._ = {
+                negotiateAbortText: "__Negotiate Aborted__",
                 pingIntervalId: null,
                 pingInterval: 300000,
                 pollTimeoutId: null,
@@ -504,7 +505,9 @@
             url = signalR.transports._logic.prepareQueryString(connection, url);
 
             connection.log("Negotiating with '" + url + "'.");
-            $.ajax(
+
+            // Save the ajax negotiate request object so we can abort it if stop is called while the request is in flight.
+            connection._.negotiateRequest = $.ajax(
                 $.extend({}, $.signalR.ajaxDefaults, {
                     xhrFields: { withCredentials: connection.withCredentials },
                     url: url,
@@ -512,11 +515,17 @@
                     contentType: connection.contentType,
                     data: {},
                     dataType: connection.ajaxDataType,
-                    error: function (error) {
-                        $(connection).triggerHandler(events.onError, [error.responseText]);
-                        deferred.reject("SignalR: Error during negotiation request: " + error.responseText);
-                        // Stop the connection if negotiate failed
-                        connection.stop();
+                    error: function (error, statusText) {
+                        // We don't want to cause any errors if we're aborting our own negotiate request.
+                        if (statusText !== connection._.negotiateAbortText) {
+                            $(connection).triggerHandler(events.onError, [error.responseText]);
+                            deferred.reject("SignalR: Error during negotiation request: " + error.responseText);
+                            // Stop the connection if negotiate failed
+                            connection.stop();
+                        } else {
+                            // This rejection will noop if the deferred has already been resolved or rejected.
+                            deferred.reject("Stopped the connection while negotiating.");
+                        }
                     },
                     success: function (res) {
                         var keepAliveData = connection.keepAliveData;
@@ -753,6 +762,12 @@
 
                     connection.transport.stop(connection);
                     connection.transport = null;
+                }
+
+                if (connection._.negotiateRequest) {
+                    // If the negotiation request has already completed this will noop.
+                    connection._.negotiateRequest.abort(connection._.negotiateAbortText);
+                    delete connection._.negotiateRequest;
                 }
 
                 // Trigger the disconnect event
