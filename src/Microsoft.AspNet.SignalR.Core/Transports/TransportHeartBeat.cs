@@ -90,7 +90,7 @@ namespace Microsoft.AspNet.SignalR.Transports
         /// Adds a new connection to the list of tracked connections.
         /// </summary>
         /// <param name="connection">The connection to be added.</param>
-        public bool AddConnection(ITrackingConnection connection)
+        public ITrackingConnection AddOrUpdateConnection(ITrackingConnection connection)
         {
             if (connection == null)
             {
@@ -99,6 +99,7 @@ namespace Microsoft.AspNet.SignalR.Transports
 
             var newMetadata = new ConnectionMetadata(connection);
             bool isNewConnection = true;
+            ITrackingConnection oldConnection = null;
 
             _connections.AddOrUpdate(connection.ConnectionId, newMetadata, (key, old) =>
             {
@@ -114,6 +115,7 @@ namespace Microsoft.AspNet.SignalR.Transports
 
                 // If we have old metadata this isn't a new connection
                 isNewConnection = false;
+                oldConnection = old.Connection;
 
                 return newMetadata;
             });
@@ -133,7 +135,7 @@ namespace Microsoft.AspNet.SignalR.Transports
 
             newMetadata.Connection.ApplyState(TransportConnectionStates.Added);
 
-            return isNewConnection;
+            return oldConnection;
         }
 
         /// <summary>

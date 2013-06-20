@@ -28,6 +28,9 @@ namespace Microsoft.AspNet.SignalR.Transports
 
         internal static readonly Func<Task> _emptyTaskFunc = () => TaskAsyncHelper.Empty;
 
+        // The TCS that completes when the task returned by PersistentConnection.OnConnected does.
+        internal TaskCompletionSource<object> _connectTcs;
+
         // Token that represents the end of the connection based on a combination of
         // conditions (timeout, disconnect, connection forcibly ended, host shutdown)
         private CancellationToken _connectionEndToken;
@@ -122,6 +125,14 @@ namespace Microsoft.AspNet.SignalR.Transports
             {
                 // If the CTS is tripped or the request has ended then the connection isn't alive
                 return !(CancellationToken.IsCancellationRequested || (_requestLifeTime != null && _requestLifeTime.Task.IsCompleted));
+            }
+        }
+
+        public Task ConnectTask
+        {
+            get
+            {
+                return _connectTcs.Task;
             }
         }
 
@@ -311,6 +322,9 @@ namespace Microsoft.AspNet.SignalR.Transports
             _hostShutdownToken = _context.Environment.GetShutdownToken();
 
             _requestLifeTime = new HttpRequestLifeTime(this, WriteQueue, Trace, ConnectionId);
+
+            // Create the TCS that completes when the task returned by PersistentConnection.OnConnected does.
+            _connectTcs = new TaskCompletionSource<object>();
 
             // Create a token that represents the end of this connection's life
             _connectionEndTokenSource = new SafeCancellationTokenSource();

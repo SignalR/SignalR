@@ -23,6 +23,11 @@ namespace Microsoft.AspNet.SignalR.Transports
         CancellationToken CancellationToken { get; }
 
         /// <summary>
+        /// Gets the task that completes when the task returned by PersistentConnection.OnConnected does.
+        /// </summary>
+        Task ConnectTask { get; }
+
+        /// <summary>
         /// Gets a value that represents if the connection is alive.
         /// </summary>
         bool IsAlive { get; }
