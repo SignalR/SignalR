@@ -471,21 +471,23 @@ namespace Microsoft.AspNet.SignalR.Tests
                 using (hubConnection)
                 {
                     IHubProxy proxy = hubConnection.CreateHubProxy("EchoHub");
+                    int callbackInvokedCount = 0;
 
-                    proxy.On<int>("echo", value =>
+                    proxy.On<string>("echo", message =>
                     {
-                        if (value == 4)
+                        callbackInvokedCount++;
+                        if (callbackInvokedCount == 4)
                         {
                             mre.Set();
                         }
                         else
                         {
-                            proxy.Invoke("Echo", value);
+                            proxy.Invoke("EchoCallback", message);
                         }
                     });
 
                     hubConnection.Start(host.Transport).Wait();
-                    proxy.Invoke("Echo", 1);
+                    proxy.Invoke("EchoCallback", "message");
                     Assert.True(mre.Wait(TimeSpan.FromSeconds(10)));
                 }
             }

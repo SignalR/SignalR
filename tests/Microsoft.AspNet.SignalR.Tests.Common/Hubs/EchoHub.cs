@@ -14,10 +14,5 @@ namespace Microsoft.AspNet.SignalR.Tests.Common.Hubs
         {
             return message;
         }
-
-        public Task Echo(int value)
-        {
-            return Clients.Caller.echo(value + 1);
-        }
     }
 }
