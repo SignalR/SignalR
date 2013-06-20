@@ -167,19 +167,29 @@ namespace Microsoft.AspNet.SignalR.Transports
         {
             Func<Task> initialize = null;
 
-            bool newConnection = Heartbeat.AddConnection(this);
+            // If this transport isn't replacing an existing transport, oldConnection will be null.
+            ITrackingConnection oldConnection = Heartbeat.AddOrUpdateConnection(this);
+            bool newConnection = oldConnection == null;
 
             if (IsConnectRequest)
             {
+                Func<Task> connected;
                 if (newConnection)
                 {
-                    initialize = () =>
-                    {
-                        return Connected().Then((conn, id) => conn.Initialize(id), connection, ConnectionId);
-                    };
-
+                    connected = Connected;
                     _counters.ConnectionsConnected.Increment();
                 }
+                else
+                {
+                    // Wait until the previous call to Connected completes.
+                    // We don't want to call Connected twice
+                    connected = () => oldConnection.ConnectTask;
+                }
+
+                initialize = () =>
+                {
+                    return connected().Then((conn, id) => conn.Initialize(id), connection, ConnectionId);
+                };
             }
             else
             {
@@ -195,7 +205,7 @@ namespace Microsoft.AspNet.SignalR.Transports
             var states = new object[] { TransportConnected ?? _emptyTaskFunc,
                                         initialize ?? _emptyTaskFunc };
 
-            Func<Task> fullInit = () => TaskAsyncHelper.Series(series, states);
+            Func<Task> fullInit = () => TaskAsyncHelper.Series(series, states).ContinueWith(_connectTcs);
 
             return ProcessMessages(connection, fullInit);
         }

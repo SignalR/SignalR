@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Security.Principal;
 using System.Threading;
@@ -9,10 +10,11 @@ using Microsoft.AspNet.SignalR.Client.Http;
 using Microsoft.AspNet.SignalR.Client.Transports;
 using Microsoft.AspNet.SignalR.Configuration;
 using Microsoft.AspNet.SignalR.Hosting.Memory;
+using Microsoft.AspNet.SignalR.Tests.Common.Infrastructure;
+using Microsoft.Owin;
 using Owin;
 using Xunit;
 using Xunit.Extensions;
-using Microsoft.AspNet.SignalR.Tests.Common.Infrastructure;
 
 namespace Microsoft.AspNet.SignalR.Client.Tests
 {
@@ -22,6 +24,51 @@ namespace Microsoft.AspNet.SignalR.Client.Tests
     {
         public class Start : HostedTest
         {
+            [Fact]
+            public void InitMessageSentToFallbackTransports()
+            {
+                using (var host = new MemoryHost())
+                {
+                    host.Configure(app =>
+                    {
+                        Func<AppFunc, AppFunc> middleware = (next) =>
+                        {
+                            return env =>
+                            {
+                                var request = new OwinRequest(env);
+                                var response = new OwinResponse(env);
+
+                                if (!request.Path.Contains("negotiate") && !request.QueryString.Contains("longPolling"))
+                                {
+                                    response.Body = new MemoryStream();
+                                }
+
+                                return next(env);
+                            };
+                        };
+
+                        app.Use(middleware);
+
+                        var config = new ConnectionConfiguration
+                        {
+                            Resolver = new DefaultDependencyResolver()
+                        };
+
+                        app.MapConnection<MyConnection>("echo", config);
+                    });
+
+                    var connection = new Connection("http://foo/echo");
+
+                    using (connection)
+                    {
+                        connection.Start(host).Wait();
+
+                        Assert.Equal(connection.State, ConnectionState.Connected);
+                        Assert.Equal(connection.Transport.Name, "longPolling");
+                    }
+                }
+            }
+
             [Fact]
             public void ConnectionCanStartWithAuthenicatedUserAndQueryString()
             {
