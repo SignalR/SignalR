@@ -14,7 +14,7 @@ public:
     TransportHelper();
     ~TransportHelper();
 
-    static task<shared_ptr<NegotiationResponse>> GetNegotiationResponse(shared_ptr<IHttpClient> client, shared_ptr<Connection> connnection);
+    static pplx::task<shared_ptr<NegotiationResponse>> GetNegotiationResponse(shared_ptr<IHttpClient> client, shared_ptr<Connection> connnection);
     static string_t GetReceiveQueryString(shared_ptr<Connection> connection, string_t data, string_t transport);
     static string_t AppendCustomQueryString(shared_ptr<Connection> connection, string_t baseUrl);
     static void ProcessResponse(shared_ptr<Connection> connection, string_t response, bool* timedOut, bool* disconnected);

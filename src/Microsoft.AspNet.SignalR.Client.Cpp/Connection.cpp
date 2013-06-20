@@ -15,7 +15,6 @@ Connection::Connection(string_t uri)
     }
 
     mState = ConnectionState::Disconnected;
-
     mProtocol = U("1.3");
 }
 
@@ -23,9 +22,14 @@ Connection::~Connection()
 {
 }
 
+ConnectionState Connection::GetState()
+{
+    return mState;
+}
+
 shared_ptr<IClientTransport> Connection::GetTransport()
 {
-    return mTransport;
+    return pTransport;
 }
 
 string_t Connection::GetUri()
@@ -104,15 +108,20 @@ pplx::task<void> Connection::Start(shared_ptr<IClientTransport> transport)
 {	
     lock_guard<mutex> lock(mStartLock);
 
+    mConnectingMessageBuffer.Initialize(shared_from_this(), [this](string_t message)
+    {
+        OnMessageReceived(message);
+    });
+
     mConnectTask = pplx::task<void>();
-    mDisconnectCts = unique_ptr<pplx::cancellation_token_source>(new pplx::cancellation_token_source());
+    pDisconnectCts = unique_ptr<pplx::cancellation_token_source>(new pplx::cancellation_token_source());
 
     if(!ChangeState(ConnectionState::Disconnected, ConnectionState::Connecting))
     {
         return mConnectTask; 
     }
     
-    mTransport = transport;
+    pTransport = transport;
     mConnectTask = Negotiate(transport);
 
     return mConnectTask;
@@ -120,7 +129,7 @@ pplx::task<void> Connection::Start(shared_ptr<IClientTransport> transport)
 
 pplx::task<void> Connection::Negotiate(shared_ptr<IClientTransport> transport) 
 {
-    return mTransport->Negotiate(shared_from_this()).then([this](shared_ptr<NegotiationResponse> response)
+    return pTransport->Negotiate(shared_from_this()).then([this](shared_ptr<NegotiationResponse> response)
     {
         mConnectionId = response->mConnectionId;
         mConnectionToken = response->mConnectionToken;
@@ -131,9 +140,16 @@ pplx::task<void> Connection::Negotiate(shared_ptr<IClientTransport> transport)
 
 pplx::task<void> Connection::StartTransport()
 {
-    return mTransport->Start(shared_from_this(), U(""), mDisconnectCts->get_token()).then([this]()
+    return pTransport->Start(shared_from_this(), U(""), pDisconnectCts->get_token()).then([this]()
     {
         ChangeState(ConnectionState::Connecting, ConnectionState::Connected);
+
+        // Now that we're connected drain any messages within the buffer
+        // We want to protect against state changes when draining
+        {
+            lock_guard<recursive_mutex> lock(mStateLock);
+            mConnectingMessageBuffer.Drain();
+        }
     });
 }
 
@@ -157,7 +173,7 @@ pplx::task<void> Connection::Send(string_t data)
         throw exception("InvalidOperationException: The connection has not been established.");
     }
 
-    return mTransport->Send(shared_from_this(), data);
+    return pTransport->Send(shared_from_this(), data);
 }
 
 bool Connection::ChangeState(ConnectionState oldState, ConnectionState newState)
@@ -206,13 +222,19 @@ void Connection::Stop()
 
         if (mState != ConnectionState::Disconnected)
         {
-            mTransport->Abort(shared_from_this());
+            // If we've connected then instantly disconnected we may have data in the incomingMessageBuffer
+            // Therefore we need to clear it incase we start the connection again. Also reset the buffer to 
+            // avoid leaks due to circular referencing
+            mConnectingMessageBuffer.Clear();
+            mConnectingMessageBuffer.Initialize(nullptr, [](string_t message){});
+
+            pTransport->Abort(shared_from_this());
 
             Disconnect();
 
-            if (mTransport)
+            if (pTransport)
             {
-                mTransport->Dispose();
+                pTransport->Dispose();
             }
         }
     }
@@ -247,6 +269,16 @@ void Connection::OnError(exception& ex)
 }
 
 void Connection::OnReceived(string_t message)
+{
+    lock_guard<recursive_mutex> lock(mStateLock);
+    
+    if (!mConnectingMessageBuffer.TryBuffer(message))
+    {
+        OnMessageReceived(message);
+    }
+}
+
+void Connection::OnMessageReceived(string_t message)
 {
     if (Received != nullptr)
     {

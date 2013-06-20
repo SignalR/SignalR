@@ -15,6 +15,7 @@
 #include "IClientTransport.h"
 #include "DefaultHttpClient.h"
 #include "HttpRequestWrapper.h"
+#include "ConnectingMessageBuffer.h"
 
 using namespace std;
 using namespace pplx;
@@ -73,8 +74,9 @@ private:
     ConnectionState mState;
     recursive_mutex mStateLock;
     mutex mStartLock;
-    shared_ptr<IClientTransport> mTransport;
-    unique_ptr<pplx::cancellation_token_source> mDisconnectCts;
+    ConnectingMessageBuffer mConnectingMessageBuffer;
+    shared_ptr<IClientTransport> pTransport;
+    unique_ptr<pplx::cancellation_token_source> pDisconnectCts;
     pplx::task<void> mConnectTask;
 
     pplx::task<void> StartTransport();
@@ -83,6 +85,7 @@ private:
     void SetState(ConnectionState newState);
     void Disconnect();
     void OnReceived(string_t data);
+    void OnMessageReceived(string_t data);
     void OnError(exception& ex);
     void OnReconnecting();
     void OnReconnected();

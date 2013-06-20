@@ -90,6 +90,9 @@
     <ClCompile Include="NegotiationResponse.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="ConnectingMessageBuffer.cpp">
+      <Filter>Source Files\Transport</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Connection.h">
@@ -151,6 +154,9 @@
     </ClInclude>
     <ClInclude Include="resource.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ConnectingMessageBuffer.h">
+      <Filter>Header Files\Transports</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
