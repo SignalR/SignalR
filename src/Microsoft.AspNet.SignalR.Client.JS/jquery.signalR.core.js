@@ -248,7 +248,8 @@
                 connectingMessageBuffer: new ConnectingMessageBuffer(this, function (message) {
                     $connection.triggerHandler(events.onReceived, [message]);
                 }),
-                onFailedTimeoutHandle: null
+                onFailedTimeoutHandle: null,
+                negotiateAbortText: "__Negotiate Aborted__"
             };
             if (typeof (logging) === "boolean") {
                 this.logging = logging;
@@ -526,7 +527,9 @@
             });
 
             connection.log("Negotiating with '" + url + "'.");
-            $.ajax({
+
+            // Save the ajax negotiate request object so we can abort it if stop is called while the request is in flight.
+            connection._.negotiateRequest = $.ajax({
                 url: url,
                 global: false,
                 cache: false,
@@ -534,11 +537,14 @@
                 contentType: connection.contentType,
                 data: {},
                 dataType: connection.ajaxDataType,
-                error: function (error) {
-                    $(connection).triggerHandler(events.onError, [error.responseText]);
-                    deferred.reject("SignalR: Error during negotiation request: " + error.responseText);
-                    // Stop the connection if negotiate failed
-                    connection.stop();
+                error: function (error, statusText) {
+                    // We don't want to cause any errors if we're aborting our own negotiate request.
+                    if (statusText !== connection._.negotiateAbortText) {
+                        $(connection).triggerHandler(events.onError, [error.responseText]);
+                        deferred.reject("SignalR: Error during negotiation request: " + error.responseText);
+                        // Stop the connection if negotiate failed
+                        connection.stop();
+                    }
                 },
                 success: function (result) {
                     var res = connection._parseResponse(result),
@@ -765,6 +771,12 @@
 
                     connection.transport.stop(connection);
                     connection.transport = null;
+                }
+
+                if (connection._.negotiateRequest) {
+                    // If the negotiation request has already completed this will noop.
+                    connection._.negotiateRequest.abort(connection._.negotiateAbortText);
+                    delete connection._.negotiateRequest;
                 }
 
                 // Trigger the disconnect event
