@@ -26,19 +26,19 @@ task<http_response> DefaultHttpClient::Get(string_t uri, function<void(shared_pt
         throw exception("ArgumentNullException: prepareRequest");
     }
 
-    shared_ptr<cancellation_token_source> cts = shared_ptr<cancellation_token_source>(new cancellation_token_source());
+    auto cts = shared_ptr<cancellation_token_source>(new cancellation_token_source());
 
-    http_request requestMessage = http_request(methods::GET);
+    auto requestMessage = http_request(methods::GET);
     requestMessage.set_request_uri(uri);
     
-    shared_ptr<HttpRequestWrapper> request = shared_ptr<HttpRequestWrapper>(new HttpRequestWrapper(requestMessage, [cts]()
+    auto request = shared_ptr<HttpRequestWrapper>(new HttpRequestWrapper(requestMessage, [cts]()
     {
         cts->cancel();
     }));
 
     prepareRequest(request);
 
-     return pClient->request(requestMessage).then([](http_response response)
+    return pClient->request(requestMessage).then([](http_response response)
     {
         // check if the request was successful, temporary
         if (response.status_code()/100 != 2)
@@ -61,13 +61,13 @@ task<http_response> DefaultHttpClient::Post(string_t uri, function<void(shared_p
     {
         throw exception("ArgumentNullException: prepareRequest");
     }
-    shared_ptr<cancellation_token_source> cts = shared_ptr<cancellation_token_source>(new cancellation_token_source());
+    auto cts = shared_ptr<cancellation_token_source>(new cancellation_token_source());
 
-    http_request requestMessage = http_request(methods::POST);
+    auto requestMessage = http_request(methods::POST);
     requestMessage.set_request_uri(uri);
     requestMessage.set_body(postData);
 
-    shared_ptr<HttpRequestWrapper> request = shared_ptr<HttpRequestWrapper>(new HttpRequestWrapper(requestMessage, [cts]()
+    auto request = shared_ptr<HttpRequestWrapper>(new HttpRequestWrapper(requestMessage, [cts]()
     {
         cts->cancel();
     }));

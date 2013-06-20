@@ -7,6 +7,7 @@
 
 using namespace std;
 using namespace pplx;
+using namespace Concurrency;
 
 enum State {
     Initial = 0,
@@ -18,7 +19,7 @@ enum State {
 class AsyncStreamReader
 {
 public:
-    AsyncStreamReader(Concurrency::streams::basic_istream<uint8_t> stream);
+    AsyncStreamReader(streams::basic_istream<uint8_t> stream);
     ~AsyncStreamReader(void);
     function<void()> Opened;
     function<void(exception& ex)> Closed;
@@ -30,7 +31,7 @@ protected:
 
 private:
     mutex mProcessLock;
-    Concurrency::streams::basic_istream<uint8_t> mStream;
+    streams::basic_istream<uint8_t> mStream;
     shared_ptr<char> pReadBuffer;
     atomic<State> mReadingState;
     cancellation_token_source mReadCts;
@@ -40,9 +41,9 @@ private:
     void Close();
     void Close(exception &ex);
     void Process();
-    void ReadAsync(pplx::task<unsigned int> readTask);
+    void ReadAsync(task<unsigned int> readTask);
     bool TryProcessRead(unsigned read);
     void OnOpened();
     void OnData(shared_ptr<char> buffer);
-    pplx::task<unsigned int> AsyncReadIntoBuffer(Concurrency::streams::basic_istream<uint8_t> stream);
+    task<unsigned int> AsyncReadIntoBuffer(streams::basic_istream<uint8_t> stream);
 };

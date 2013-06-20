@@ -38,20 +38,20 @@ string_t HttpBasedTransport::GetReceiveQueryString(shared_ptr<Connection> connec
 
 task<void> HttpBasedTransport::Start(shared_ptr<Connection> connection, string_t data, cancellation_token disconnectToken)
 {
-    task_completion_event<void> tce;
+    auto tce = shared_ptr<task_completion_event<void>>(new task_completion_event<void>());
     
     function<void()> initializeCallback = [tce]()
     {
-        tce.set();
+        tce->set();
     };
 
     function<void(exception)> errorCallback = [tce](exception& ex)
     {
-        tce.set_exception(ex);
+        tce->set_exception(ex);
     };
 
     OnStart(connection, data, disconnectToken, initializeCallback, errorCallback);
-    return task<void>(tce);
+    return task<void>(*(tce.get()));
 }
 
 task<void> HttpBasedTransport::Send(shared_ptr<Connection> connection, string_t data)

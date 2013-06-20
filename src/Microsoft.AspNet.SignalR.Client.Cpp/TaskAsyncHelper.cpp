@@ -11,8 +11,8 @@ TaskAsyncHelper::~TaskAsyncHelper()
 pplx::task<void> TaskAsyncHelper::Delay(seconds seconds)
 {
     task_completion_event<void> tce;
-    shared_ptr<timer<int>> timer_once = shared_ptr<timer<int>>(new timer<int>(seconds.count()*1000, 0, nullptr, false));
-    shared_ptr<call<int>> callback = shared_ptr<call<int>>(new call<int>([tce](int)
+    auto timer_once = shared_ptr<timer<int>>(new timer<int>(seconds.count()*1000, 0, nullptr, false));
+    auto callback = shared_ptr<call<int>>(new call<int>([tce](int)
     {
         tce.set();
     }));

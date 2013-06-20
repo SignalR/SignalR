@@ -1,6 +1,6 @@
 #include "AsyncStreamReader.h"
 
-AsyncStreamReader::AsyncStreamReader(Concurrency::streams::basic_istream<uint8_t> stream)
+AsyncStreamReader::AsyncStreamReader(streams::basic_istream<uint8_t> stream)
 {
     mStream = stream;
     mReadingState = State::Initial;
@@ -70,11 +70,11 @@ READ:
     }
 }
 
-void AsyncStreamReader::ReadAsync(pplx::task<unsigned int> readTask)
+void AsyncStreamReader::ReadAsync(task<unsigned int> readTask)
 {
     try
     {
-        readTask.then([readTask, this](unsigned int bytesRead)
+        readTask.then([this](unsigned int bytesRead)
         {
             if (TryProcessRead(bytesRead))
             {
@@ -158,18 +158,18 @@ void AsyncStreamReader::OnData(shared_ptr<char> buffer)
 }
 
 // returns a task that reads the incoming stream and stored the messages into a buffer
-task<unsigned int> AsyncStreamReader::AsyncReadIntoBuffer(Concurrency::streams::basic_istream<uint8_t> stream)
+task<unsigned int> AsyncStreamReader::AsyncReadIntoBuffer(streams::basic_istream<uint8_t> stream)
 {
-    concurrency::streams::container_buffer<string> inStringBuffer;
+    auto inStringBuffer = shared_ptr<streams::container_buffer<string>>(new streams::container_buffer<string>());
     task_options readTaskOptions(mReadCts.get_token());
-    return stream.read(inStringBuffer, 4096).then([inStringBuffer, this](size_t bytesRead)
+    return stream.read(*(inStringBuffer.get()), 4096).then([inStringBuffer, this](size_t bytesRead)
     {
         if (is_task_cancellation_requested())
         {
             cancel_current_task();
         }
 
-        string &text = inStringBuffer.collection();
+        string &text = inStringBuffer->collection();
 
         pReadBuffer = shared_ptr<char>(new char[text.length() + 1]);
         int length = text.length();
