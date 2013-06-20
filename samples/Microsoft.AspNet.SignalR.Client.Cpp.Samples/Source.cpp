@@ -71,7 +71,6 @@ static void RunStreamingSample()
 
         while (!line.empty())
         {
-            // is there a better way to pass anonymous objects?
             value::field_map object;
             object.push_back(make_pair(value(U("type")), value(1)));
             object.push_back(make_pair(value(U("value")), value(line)));

@@ -51,7 +51,7 @@ void ServerSentEventsTransport::OpenConnection(shared_ptr<Connection> connection
     {
         pRequest = request;
         connection->PrepareRequest(request);
-    }, true).then([this, connection, data, disconnectToken, errorCallback, initializeInvoke](http_response response) 
+    }).then([this, connection, data, disconnectToken, errorCallback, initializeInvoke](http_response response) 
     {
         // check if the task failed
 

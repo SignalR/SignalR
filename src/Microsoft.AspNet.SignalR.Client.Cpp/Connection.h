@@ -7,14 +7,44 @@
 
 #pragma once
 
-#include "IConnection.h"
-#include "DefaultHttpClient.h"
 
-class Connection : public IConnection, public enable_shared_from_this<Connection>
+#include <mutex>
+#include <http_client.h>
+
+#include "StateChange.h"
+#include "IClientTransport.h"
+#include "DefaultHttpClient.h"
+#include "HttpRequestWrapper.h"
+
+using namespace std;
+using namespace pplx;
+using namespace utility;
+using namespace concurrency;
+using namespace web::json;
+using namespace web::http;
+using namespace web::http::client;
+
+class Connection : public enable_shared_from_this<Connection>
 {
 public:
     Connection(string_t uri);
     ~Connection(void);
+
+    string_t GetProtocol();
+    string_t GetMessageId();
+    string_t GetGroupsToken();
+    string_t GetConnectionId();
+    string_t GetConnectionToken();
+    string_t GetUri();
+    string_t GetQueryString();
+    ConnectionState GetState();
+    shared_ptr<IClientTransport> GetTransport();
+    
+    void SetProtocol(string_t protocol);
+    void SetMessageId(string_t groupsToken);
+    void SetGroupsToken(string_t groupsToken); 
+    void SetConnectionToken(string_t connectionToken);
+    void SetConnectionId(string_t connectionId); 
 
     function<void(string_t message)> Received;
     function<void(StateChange stateChange)> StateChanged;
@@ -33,16 +63,24 @@ public:
     bool EnsureReconnecting();
 
 private:
+    string_t mProtocol; // temporarily stored as a string
+    string_t mMessageId;
+    string_t mGroupsToken;
+    string_t mConnectionId;
+    string_t mConnectionToken;
+    string_t mUri;
+    string_t mQueryString;
+    ConnectionState mState;
     recursive_mutex mStateLock;
     mutex mStartLock;
+    shared_ptr<IClientTransport> mTransport;
     unique_ptr<pplx::cancellation_token_source> mDisconnectCts;
     pplx::task<void> mConnectTask;
 
-    void SetState(ConnectionState newState);
     pplx::task<void> StartTransport();
     pplx::task<void> Negotiate(shared_ptr<IClientTransport> transport);
-
     bool ChangeState(ConnectionState oldState, ConnectionState newState);
+    void SetState(ConnectionState newState);
     void Disconnect();
     void OnReceived(string_t data);
     void OnError(exception& ex);

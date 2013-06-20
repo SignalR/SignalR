@@ -63,14 +63,14 @@ task<void> HttpBasedTransport::Send(shared_ptr<Connection> connection, string_t 
 
     string_t uri = connection->GetUri() + U("send");
     string_t customQueryString = connection->GetQueryString().empty()? U("") : U("&") + connection->GetQueryString();
-    uri += GetSendQueryString(mTransportName, connection->GetConnectionToken(), customQueryString);
+    uri += GetSendQueryString(mTransportName, StringHelper::EncodeUri(connection->GetConnectionToken()), customQueryString);
 
     string_t encodedData = U("data=") + uri::encode_data_string(data);
 
     return pHttpClient->Post(uri, [connection](shared_ptr<HttpRequestWrapper> request)
     {
         connection->PrepareRequest(request);
-    }, encodedData, false).then([connection](http_response response)
+    }, encodedData).then([connection](http_response response)
     {
 
     });
@@ -96,14 +96,14 @@ void HttpBasedTransport::Abort(shared_ptr<Connection> connection)
         {
             mStartedAbort = true;
 
-            string_t uri = connection->GetUri() + U("abort") + GetSendQueryString(mTransportName, connection->GetConnectionToken(), U(""));
+            string_t uri = connection->GetUri() + U("abort") + GetSendQueryString(mTransportName, StringHelper::EncodeUri(connection->GetConnectionToken()), U(""));
             uri += TransportHelper::AppendCustomQueryString(connection, uri);
 
             // this is not asynchronous yet
             pHttpClient->Post(uri, [connection](shared_ptr<HttpRequestWrapper> request)
             {
                 connection->PrepareRequest(request);
-            }, false).wait();
+            }).wait();
 
             OnAbort();
         }

@@ -23,6 +23,71 @@ Connection::~Connection()
 {
 }
 
+shared_ptr<IClientTransport> Connection::GetTransport()
+{
+    return mTransport;
+}
+
+string_t Connection::GetUri()
+{
+    return mUri;
+}
+
+string_t Connection::GetConnectionId()
+{
+    return mConnectionId;
+}
+
+string_t Connection::GetConnectionToken()
+{
+    return mConnectionToken;
+}
+
+string_t Connection::GetGroupsToken()
+{
+    return mGroupsToken;
+}
+
+string_t Connection::GetMessageId()
+{
+    return mMessageId;
+}
+
+string_t Connection::GetQueryString()
+{
+    return mQueryString;
+}
+
+string_t Connection::GetProtocol()
+{
+    return mProtocol;
+}
+
+void Connection::SetMessageId(string_t messageId)
+{
+    mMessageId = messageId;
+}
+
+void Connection::SetConnectionToken(string_t connectionToken)
+{
+    mConnectionToken = connectionToken;
+}
+
+void Connection::SetConnectionId(string_t connectionId)
+{
+    mConnectionId = connectionId;
+}
+
+void Connection::SetProtocol(string_t protocol)
+{
+    mProtocol = protocol;
+}
+
+void Connection::SetGroupsToken(string_t groupsToken)
+{
+    mGroupsToken = groupsToken;
+}
+
 pplx::task<void> Connection::Start() 
 {
     return Start(shared_ptr<IHttpClient>(new DefaultHttpClient()));
@@ -60,7 +125,7 @@ pplx::task<void> Connection::Negotiate(shared_ptr<IClientTransport> transport)
         mConnectionId = response->mConnectionId;
         mConnectionToken = response->mConnectionToken;
 
-        StartTransport();
+        return StartTransport();
     });
 }
 

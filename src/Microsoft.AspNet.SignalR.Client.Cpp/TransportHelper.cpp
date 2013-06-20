@@ -37,36 +37,16 @@ task<shared_ptr<NegotiationResponse>> TransportHelper::GetNegotiationResponse(sh
     return httpClient->Get(uri, [connection](shared_ptr<HttpRequestWrapper> request)
     {
         connection->PrepareRequest(request);
-    }, false).then([](http_response response) -> shared_ptr<NegotiationResponse>
+    }).then([](http_response response) -> shared_ptr<NegotiationResponse>
     {
-        shared_ptr<NegotiationResponse> responseObject = shared_ptr<NegotiationResponse>(new NegotiationResponse());
-        
-        // temporary solution, couldn't find a JSON parser in C++ with the Apache Licence
-
         value raw = response.extract_json().get();
 
         if (raw.is_null())
         {
             throw exception("Invalid Operation Exception: Error_serverNegotiationFailed");
         }
-
-        auto iter = raw.cbegin();
-
-        responseObject->mUri = StringHelper::CleanString(iter->second.to_string());
-        iter++;
-        responseObject->mConnectionToken = StringHelper::EncodeUri(iter->second.to_string());
-        iter++;
-        responseObject->mConnectionId = StringHelper::CleanString(iter->second.to_string());
-        iter++;
-        responseObject->mKeepAliveTimeout = iter->second.as_double();
-        iter++;
-        responseObject->mDisconnectTimeout = iter->second.as_double();
-        iter++;
-        responseObject->mTryWebSockets = iter->second.as_bool();
-        iter++;
-        responseObject->mProtocolVersion = StringHelper::CleanString(iter->second.to_string());
         
-        return responseObject;
+        return shared_ptr<NegotiationResponse>(new NegotiationResponse(raw));
     });
 }
 
@@ -78,7 +58,7 @@ string_t TransportHelper::GetReceiveQueryString(shared_ptr<Connection> connectio
     }
 
     string_t qs = U("");
-    qs += U("?transport=") + transport + U("&connectionToken=") + connection->GetConnectionToken();
+    qs += U("?transport=") + transport + U("&connectionToken=") + StringHelper::EncodeUri(connection->GetConnectionToken());
 
     if (!connection->GetMessageId().empty())
     {
@@ -170,18 +150,20 @@ void TransportHelper::ProcessResponse(shared_ptr<Connection> connection, string_
 
         if (!(result[U("I")].is_null()))
         {
-            connection->OnReceived(result.to_string());
+            connection->OnReceived(result.as_string());
             return;
         }
 
-        if (!result[U("T")].is_null())
+        value timedOutValue = result[U("T")];
+        if (!timedOutValue.is_null())
         {
-            *timedOut = result[U("T")].as_integer() == 1;
+            *timedOut = timedOutValue.as_integer() == 1;
         }
         
-        if (!result[U("D")].is_null())
+        value disconnectedValue = result[U("D")];
+        if (!disconnectedValue.is_null())
         {
-            *disconnected = result[U("D")].as_integer() == 1;
+            *disconnected = disconnectedValue.as_integer() == 1;
         }
 
         if (*disconnected)
@@ -189,18 +171,19 @@ void TransportHelper::ProcessResponse(shared_ptr<Connection> connection, string_
             return;
         }
 
-        if (!result[U("G")].is_null())
+        value groupsTokenValue = result[U("G")];
+        if (!groupsTokenValue.is_null())
         {
-            UpdateGroups(connection, result[U("G")].to_string());
+            UpdateGroups(connection, groupsTokenValue.as_string());
         }
 
         value messages = result[U("M")];
-
         if (!messages.is_null())
         {
-            if (!result[U("C")].is_null())
+            value messageIdValue = result[U("C")];
+            if (!messageIdValue.is_null())
             {
-                connection->SetMessageId(result[U("C")].to_string());
+                connection->SetMessageId(messageIdValue.as_string());
             }
 
             if (!(messages.cbegin() == messages.cend()))
@@ -239,7 +222,8 @@ void TransportHelper::UpdateGroups(shared_ptr<Connection> connection, string_t g
 
 void TransportHelper::TryInitialize(value response, function<void()> onInitialized)
 {
-    if (!response[U("S")].is_null() && response[U("S")].as_integer() == 1)
+    value initialize = response[U("S")];
+    if (!initialize.is_null() && initialize.as_integer() == 1)
     {
         onInitialized();
     }

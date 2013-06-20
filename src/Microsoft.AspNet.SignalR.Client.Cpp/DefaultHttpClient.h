@@ -1,6 +1,9 @@
 #pragma once
 
+#include <http_client.h>
 #include "IHttpClient.h"
+
+using namespace pplx;
 
 class DefaultHttpClient : public IHttpClient
 {
@@ -9,11 +12,10 @@ public:
     ~DefaultHttpClient();
 
     void Initialize(string_t uri);
-    task<http_response> Get(string_t uri, function<void(shared_ptr<HttpRequestWrapper>)> prepareRequest, bool isLongRunning);
-    task<http_response> Post(string_t uri, function<void(shared_ptr<HttpRequestWrapper>)> prepareRequest, bool isLongRunning);
-    task<http_response> Post(string_t uri, function<void(shared_ptr<HttpRequestWrapper>)> prepareRequest, string_t postData, bool isLongRunning);
+    task<http_response> Get(string_t uri, function<void(shared_ptr<HttpRequestWrapper>)> prepareRequest);
+    task<http_response> Post(string_t uri, function<void(shared_ptr<HttpRequestWrapper>)> prepareRequest);
+    task<http_response> Post(string_t uri, function<void(shared_ptr<HttpRequestWrapper>)> prepareRequest, string_t postData);
 
 private:
-    unique_ptr<http_client> pLongRunningClient;
-    unique_ptr<http_client> pShortRunningClient;
+    unique_ptr<http_client> pClient;
 };

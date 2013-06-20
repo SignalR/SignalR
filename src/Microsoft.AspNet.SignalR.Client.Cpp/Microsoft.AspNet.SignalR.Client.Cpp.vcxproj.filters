@@ -81,9 +81,6 @@
     <ClCompile Include="StringHelper.cpp">
       <Filter>Source Files\Infrastructure</Filter>
     </ClCompile>
-    <ClCompile Include="IConnection.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="HttpRequestWrapper.cpp">
       <Filter>Source Files\Http</Filter>
     </ClCompile>
@@ -142,9 +139,6 @@
     </ClInclude>
     <ClInclude Include="StringHelper.h">
       <Filter>Header Files\Infrastructure</Filter>
-    </ClInclude>
-    <ClInclude Include="IConnection.h">
-      <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="HttpRequestWrapper.h">
       <Filter>Header Files\Http</Filter>

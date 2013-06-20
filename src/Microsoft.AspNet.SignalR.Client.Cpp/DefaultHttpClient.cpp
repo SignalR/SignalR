@@ -13,16 +13,13 @@ DefaultHttpClient::~DefaultHttpClient()
 void DefaultHttpClient::Initialize(string_t uri)
 {
     // Disabling the Http Client timeout by setting timeout to 0?
-    http_client_config configurationLong = http_client_config();
-    configurationLong.set_timeout(seconds(0));
-    http_client_config configurationShort = http_client_config();
-    configurationShort.set_timeout(seconds(0));
+    http_client_config configuration = http_client_config();
+    configuration.set_timeout(seconds(0));
 
-    pLongRunningClient = unique_ptr<http_client>(new http_client(uri, configurationLong));
-    pShortRunningClient = unique_ptr<http_client>(new http_client(uri, configurationShort));
+    pClient = unique_ptr<http_client>(new http_client(uri, configuration));
 }
     
-task<http_response> DefaultHttpClient::Get(string_t uri, function<void(shared_ptr<HttpRequestWrapper>)> prepareRequest, bool isLongRunning)
+task<http_response> DefaultHttpClient::Get(string_t uri, function<void(shared_ptr<HttpRequestWrapper>)> prepareRequest)
 {
     if (prepareRequest == nullptr)
     {
@@ -41,7 +38,7 @@ task<http_response> DefaultHttpClient::Get(string_t uri, function<void(shared_pt
 
     prepareRequest(request);
 
-     return (isLongRunning ? pLongRunningClient : pShortRunningClient)->request(requestMessage).then([](http_response response)
+     return pClient->request(requestMessage).then([](http_response response)
     {
         // check if the request was successful, temporary
         if (response.status_code()/100 != 2)
@@ -53,12 +50,12 @@ task<http_response> DefaultHttpClient::Get(string_t uri, function<void(shared_pt
     });
 }
 
-task<http_response> DefaultHttpClient::Post(string_t uri, function<void(shared_ptr<HttpRequestWrapper>)> prepareRequest, bool isLongRunning)
+task<http_response> DefaultHttpClient::Post(string_t uri, function<void(shared_ptr<HttpRequestWrapper>)> prepareRequest)
 {
-    return Post(uri, prepareRequest, U(""), isLongRunning);
+    return Post(uri, prepareRequest, U(""));
 }
 
-task<http_response> DefaultHttpClient::Post(string_t uri, function<void(shared_ptr<HttpRequestWrapper>)> prepareRequest, string_t postData, bool isLongRunning)
+task<http_response> DefaultHttpClient::Post(string_t uri, function<void(shared_ptr<HttpRequestWrapper>)> prepareRequest, string_t postData)
 {
     if (prepareRequest == nullptr)
     {
@@ -77,7 +74,7 @@ task<http_response> DefaultHttpClient::Post(string_t uri, function<void(shared_p
 
     prepareRequest(request);
 
-    return (isLongRunning ? pLongRunningClient : pShortRunningClient)->request(requestMessage).then([](http_response response)
+    return pClient->request(requestMessage).then([](http_response response)
     {
         // check if the request was successful, temporary
         if (response.status_code()/100 != 2)

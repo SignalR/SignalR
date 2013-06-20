@@ -32,22 +32,7 @@ bool StringHelper::EqualsIgnoreCase(string_t string1, string_t string2)
     return string1 == string2;
 }
 
-// strip off extra quotation marks <\"> from the string
-string_t StringHelper::CleanString(string_t string)
-{
-    if (string.front() == U('\"'))
-    {
-        string = string.substr(1, string.length()-1);
-    }
-    if (string.back() == U('\"'))
-    {
-        string = string.substr(0, string.length()-1);
-    }
-    return string;
-}
-
 string_t StringHelper::EncodeUri(string_t uri)
 {
-    uri = CleanString(uri);
     return web::http::uri::encode_data_string(uri);
 }
