@@ -150,11 +150,11 @@ pplx::task<void> Connection::Send(string_t data)
 {
     if (mState == ConnectionState::Disconnected)
     {
-        throw exception("InvalidOperationException: Error_StartMustBeCalledBeforeDataCanBeSent");
+        throw exception("InvalidOperationException: The Start method must be called before data can be sent.");
     }
     if (mState == ConnectionState::Connecting)
     {
-        throw exception("InvalidOperationException: Error_ConnectionHasNotBeenEstablished");
+        throw exception("InvalidOperationException: The connection has not been established.");
     }
 
     return mTransport->Send(shared_from_this(), data);

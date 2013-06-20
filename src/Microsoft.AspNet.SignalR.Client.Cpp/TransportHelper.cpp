@@ -43,7 +43,7 @@ task<shared_ptr<NegotiationResponse>> TransportHelper::GetNegotiationResponse(sh
 
         if (raw.is_null())
         {
-            throw exception("Invalid Operation Exception: Error_serverNegotiationFailed");
+            throw exception("Invalid Operation Exception: Server negotiation failed.");
         }
         
         return shared_ptr<NegotiationResponse>(new NegotiationResponse(raw));
