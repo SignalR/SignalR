@@ -1,6 +1,38 @@
 ﻿QUnit.module("Hub Event Handler Facts");
 
 testUtilities.runWithAllTransports(function (transport) {
+    // This test is meant for #2187 but also verifies the fix to #2190, #2160 (for all transports).
+    QUnit.asyncTimeoutTest(transport + ": Hub Event Handler gets called correct number of times after start and stop.", testUtilities.defaultTestTimeout * 2, function (end, assert, testName) {
+        var connection = testUtilities.createHubConnection($.noop, { ok: $.noop }, testName),
+            echoHub = connection.createHubProxies().echoHub,
+            callCount = 0;
+
+        echoHub.client.echo = function () {
+            callCount++;
+        };
+
+        echoHub.on('echo', function () {
+            callCount++;
+        });
+
+        connection.start({ transport: transport });
+        connection.stop();
+        connection.start({ transport: transport }).done(function () {
+            assert.ok(true, "Connected");
+            echoHub.server.echoCallback("hello").done(function () {
+                setTimeout(function () {
+                    assert.equal(callCount, 2, "Hub methods added are called only once (one for .on and one for dynamic method).");
+                    end();
+                }, 2000);
+            });
+        });
+
+        // Cleanup
+        return function () {
+            connection.stop();
+        };
+    });
+
     QUnit.asyncTimeoutTest(transport + ": Hub Event Handler gets called.", testUtilities.defaultTestTimeout, function (end, assert, testName) {
         var connection = testUtilities.createHubConnection(end, assert, testName),
             echoHub = connection.createHubProxies().echoHub,
