@@ -58,7 +58,7 @@ string_t TransportHelper::GetReceiveQueryString(shared_ptr<Connection> connectio
     }
 
     string_t qs = U("");
-    qs += U("?transport=") + transport + U("&connectionToken=") + StringHelper::EncodeUri(connection->GetConnectionToken());
+    qs += U("?transport=") + transport + U("&connectionToken=") + web::http::uri::encode_data_string(connection->GetConnectionToken());
 
     if (!connection->GetMessageId().empty())
     {

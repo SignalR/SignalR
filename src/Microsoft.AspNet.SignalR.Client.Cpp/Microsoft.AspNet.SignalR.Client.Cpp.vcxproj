@@ -42,7 +42,7 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <ReferencePath>$(SolutionDir)packages\cpprestsdk.0.6.0.21\build\native\include;$(ReferencePath)</ReferencePath>
+    <ReferencePath>$(SolutionDir)packages\cpprestsdk.1.0.0\build\native\include;$(SolutionDir)packages\cpprestsdk.0.6.0.21\build\native\include;$(ReferencePath)</ReferencePath>
     <OutDir>$(ProjectDir)bin\$(Configuration)\</OutDir>
     <IntDir>$(ProjectDir)obj\$(Configuration)\</IntDir>
     <EnableManagedIncrementalBuild>true</EnableManagedIncrementalBuild>

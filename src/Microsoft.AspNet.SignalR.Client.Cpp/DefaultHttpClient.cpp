@@ -79,7 +79,7 @@ task<http_response> DefaultHttpClient::Post(string_t uri, function<void(shared_p
         // check if the request was successful, temporary
         if (response.status_code()/100 != 2)
         {
-            throw exception("HttpClientException: Get Failed");
+            throw exception("HttpClientException: Post Failed");
         }
 
         return response;

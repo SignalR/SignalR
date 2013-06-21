@@ -31,8 +31,3 @@ bool StringHelper::EqualsIgnoreCase(string_t string1, string_t string2)
     transform(string2.begin(), string2.end(), string2.begin(), towupper);
     return string1 == string2;
 }
-
-string_t StringHelper::EncodeUri(string_t uri)
-{
-    return web::http::uri::encode_data_string(uri);
-}

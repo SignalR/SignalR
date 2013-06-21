@@ -72,21 +72,29 @@ READ:
 
 void AsyncStreamReader::ReadAsync(task<unsigned int> readTask)
 {
-    try
-    {
-        readTask.then([this](unsigned int bytesRead)
+    // need to test if this is asynchronous
+    //readTask.then([this](task<unsigned int> readTask)
+    //{
+        try 
         {
-            if (TryProcessRead(bytesRead))
+            task_status status = readTask.wait();
+            if(status == task_status::canceled)
             {
-                Process();
+                Close(exception("OperationCanceledException: readTask"));
             }
-        });
-    }
-    catch (exception& ex)
-    {
-        // how to differentiate between faulted and canceled tasks?
-        Close(ex);
-    }
+            else if (status == task_status::completed)
+            {
+                if (TryProcessRead(readTask.get()))
+                {
+                    Process();
+                }
+            }
+        }
+        catch (exception& ex)
+        {
+            Close(ex);
+        }
+    //});
 }
 
 bool AsyncStreamReader::TryProcessRead(unsigned read)

@@ -86,6 +86,7 @@ static void RunStreamingSample()
 
 static void RunDelaySample()
 {
+    // pplx::create_delayed_task exist in the documentation but not this project?
     TaskAsyncHelper::Delay(seconds(1)).then([]()
     {
         cout << "I'm done!" << endl;

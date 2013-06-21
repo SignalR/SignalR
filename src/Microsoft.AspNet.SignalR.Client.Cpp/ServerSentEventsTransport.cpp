@@ -51,82 +51,103 @@ void ServerSentEventsTransport::OpenConnection(shared_ptr<Connection> connection
     {
         pRequest = request;
         connection->PrepareRequest(request);
-    }).then([this, connection, data, disconnectToken, errorCallback, initializeInvoke](http_response response) 
+    }).then([this, connection, data, disconnectToken, errorCallback, initializeInvoke, reconnecting](pplx::task<http_response> connectRequest) 
     {
-        // check if the task failed
+        try
+        {
+            if (connectRequest.wait() == pplx::task_status::canceled)
+            {
+                return;
+            }
 
-        pEventSource = unique_ptr<EventSourceStreamReader>(new EventSourceStreamReader(response.body()));
+            http_response response = connectRequest.get();
+            pEventSource = unique_ptr<EventSourceStreamReader>(new EventSourceStreamReader(response.body()));
 
-        mStop = false;
+            mStop = false;
         
-        disconnectToken.register_callback<function<void()>>([this]()
-        {
-            mStop = true;
-            pRequest->Abort();
-        });
-
-        pEventSource->Opened = [connection]()
-        {
-            if (connection->ChangeState(ConnectionState::Reconnecting, ConnectionState::Connected))
+            disconnectToken.register_callback<function<void()>>([this]()
             {
-                connection->OnReconnected();
-            }
-        };
+                mStop = true;
+                pRequest->Abort();
+            });
 
-        pEventSource->Message = [connection, this, initializeInvoke](shared_ptr<SseEvent> sseEvent) 
-        {
-            if (sseEvent->GetType() == EventType::Data)
+            pEventSource->Opened = [connection]()
             {
-                if (StringHelper::EqualsIgnoreCase(sseEvent->GetData(), U("initialized")))
+                if (connection->ChangeState(ConnectionState::Reconnecting, ConnectionState::Connected))
                 {
-                    return;
+                    connection->OnReconnected();
                 }
+            };
 
-                bool timedOut, disconnected;
-
-                TransportHelper::ProcessResponse(connection, sseEvent->GetData(), &timedOut, &disconnected, initializeInvoke);
-                disconnected = false;
-
-                if (disconnected)
+            pEventSource->Message = [connection, this, initializeInvoke](shared_ptr<SseEvent> sseEvent) 
+            {
+                if (sseEvent->GetType() == EventType::Data)
                 {
-                    this->mStop = true;
-                    connection->Disconnect();
+                    if (StringHelper::EqualsIgnoreCase(sseEvent->GetData(), U("initialized")))
+                    {
+                        return;
+                    }
+
+                    bool timedOut, disconnected;
+
+                    TransportHelper::ProcessResponse(connection, sseEvent->GetData(), &timedOut, &disconnected, initializeInvoke);
+                    disconnected = false;
+
+                    if (disconnected)
+                    {
+                        this->mStop = true;
+                        connection->Disconnect();
+                    }
                 }
-            }
-        };
+            };
 
-        pEventSource->Closed = [this, connection, data, disconnectToken](exception& ex)
+            pEventSource->Closed = [this, connection, data, disconnectToken](exception& ex)
+            {
+                //if (ex != null)
+                //{
+                //    // Check if the request is aborted
+                //    bool isRequestAborted = ExceptionHelper.IsRequestAborted(exception);
+
+                //    if (!isRequestAborted)
+                //    {
+                //        // Don't raise exceptions if the request was aborted (connection was stopped).
+                //        connection.OnError(exception);
+                //    }
+                //}
+
+                if (this->mStop)
+                {
+                    CompleteAbort();
+                }
+                else if (TryCompleteAbort())
+                {
+                    // Abort() was called, so don't reconnect
+                }
+                else
+                {
+                    Reconnect(connection, data, disconnectToken);
+                }
+            };
+
+            pEventSource->Start();
+
+        }
+        catch(exception& ex)
         {
-            //if (ex != null)
-            //{
-            //    // Check if the request is aborted
-            //    bool isRequestAborted = ExceptionHelper.IsRequestAborted(exception);
-
-            //    if (!isRequestAborted)
-            //    {
-            //        // Don't raise exceptions if the request was aborted (connection was stopped).
-            //        connection.OnError(exception);
-            //    }
-            //}
-
-            if (this->mStop)
+            if (errorCallback != nullptr)
             {
-                CompleteAbort();
+                // invoke error event
             }
-            else if (TryCompleteAbort())
+            else if (reconnecting)
             {
-                // Abort() was called, so don't reconnect
-            }
-            else
-            {
+                // raise error event if failed to reconnect
+
                 Reconnect(connection, data, disconnectToken);
             }
-        };
-
-        pEventSource->Start();
-
-        // some more code missing here
+        }
     });
+
+    // some more code missing here
 }
 
 void ServerSentEventsTransport::LostConnection(shared_ptr<Connection> connection)

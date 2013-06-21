@@ -63,16 +63,43 @@ task<void> HttpBasedTransport::Send(shared_ptr<Connection> connection, string_t 
 
     string_t uri = connection->GetUri() + U("send");
     string_t customQueryString = connection->GetQueryString().empty()? U("") : U("&") + connection->GetQueryString();
-    uri += GetSendQueryString(mTransportName, StringHelper::EncodeUri(connection->GetConnectionToken()), customQueryString);
+    uri += GetSendQueryString(mTransportName, web::http::uri::encode_data_string(connection->GetConnectionToken()), customQueryString);
 
     string_t encodedData = U("data=") + uri::encode_data_string(data);
 
     return pHttpClient->Post(uri, [connection](shared_ptr<HttpRequestWrapper> request)
     {
         connection->PrepareRequest(request);
-    }, encodedData).then([connection](http_response response)
+    }, encodedData).then([connection](task<http_response> sendTask)
     {
+        try
+        {
+            task_status status = sendTask.wait();
+            if (status == task_status::completed)
+            {
+                http_response response = sendTask.get();
+                if (response.headers().content_length() != 0)
+                {
+                    auto inStringBuffer = shared_ptr<streams::container_buffer<string>>(new streams::container_buffer<string>());
+                    response.body().read_to_end(*(inStringBuffer.get())).then([connection, inStringBuffer](size_t bytesRead)
+                    {
+                        string &text = inStringBuffer->collection();
+                        string_t message;
+                        message.assign(text.begin(), text.end());
 
+                        connection->OnReceived(message);
+                    });
+                }
+            }
+            else if (status == task_status::canceled)
+            {
+                // handle cancelled send request
+            }
+        }
+        catch(exception& ex)
+        {
+            connection->OnError(ex);
+        }
     });
 }
 
@@ -96,7 +123,7 @@ void HttpBasedTransport::Abort(shared_ptr<Connection> connection)
         {
             mStartedAbort = true;
 
-            string_t uri = connection->GetUri() + U("abort") + GetSendQueryString(mTransportName, StringHelper::EncodeUri(connection->GetConnectionToken()), U(""));
+            string_t uri = connection->GetUri() + U("abort") + GetSendQueryString(mTransportName, web::http::uri::encode_data_string(connection->GetConnectionToken()), U(""));
             uri += TransportHelper::AppendCustomQueryString(connection, uri);
 
             // this is not asynchronous yet
@@ -104,7 +131,6 @@ void HttpBasedTransport::Abort(shared_ptr<Connection> connection)
             {
                 connection->PrepareRequest(request);
             }).wait();
-
             OnAbort();
         }
     }
