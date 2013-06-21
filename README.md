@@ -6,7 +6,7 @@ Pushing data from the server to the client (not just browser clients) has always
 it dead easy and handles all the heavy lifting for you.
 
 ## Documentation
-See the [documentation](https://github.com/SignalR/SignalR/wiki)
+See the [documentation](http://asp.net/signalr)
 
 ## Get it on NuGet!
 
