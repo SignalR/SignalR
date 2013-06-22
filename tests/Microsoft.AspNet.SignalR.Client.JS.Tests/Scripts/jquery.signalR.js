@@ -24,7 +24,7 @@
         _connection,
         _pageLoaded = (window.document.readyState === "complete"),
         _pageWindow = $(window),
-
+        _negotiateAbortText = "__Negotiate Aborted__",
         events = {
             onStart: "onStart",
             onStarting: "onStarting",
@@ -480,10 +480,10 @@
                     }, connection.transportConnectTimeout);
 
                     transport.start(connection, function () { // success
-                    // The connection was aborted while initializing transports
-                    if (connection.state === signalR.connectionState.disconnected) {
-                        return;
-                    }
+                        // The connection was aborted while initializing transports
+                        if (connection.state === signalR.connectionState.disconnected) {
+                            return;
+                        }
 
                         if (!initializationComplete) {
                             initializationComplete = true;
@@ -527,7 +527,9 @@
             });
 
             connection.log("Negotiating with '" + url + "'.");
-            $.ajax({
+
+            // Save the ajax negotiate request object so we can abort it if stop is called while the request is in flight.
+            connection._.negotiateRequest = $.ajax({
                 url: url,
                 global: false,
                 cache: false,
@@ -535,11 +537,14 @@
                 contentType: connection.contentType,
                 data: {},
                 dataType: connection.ajaxDataType,
-                error: function (error) {
-                    $(connection).triggerHandler(events.onError, [error.responseText]);
-                    deferred.reject("SignalR: Error during negotiation request: " + error.responseText);
-                    // Stop the connection if negotiate failed
-                    connection.stop();
+                error: function (error, statusText) {
+                    // We don't want to cause any errors if we're aborting our own negotiate request.
+                    if (statusText !== _negotiateAbortText) {
+                        $(connection).triggerHandler(events.onError, [error.responseText]);
+                        deferred.reject("SignalR: Error during negotiation request: " + error.responseText);
+                        // Stop the connection if negotiate failed
+                        connection.stop();
+                    }
                 },
                 success: function (result) {
                     var res = connection._parseResponse(result),
@@ -766,6 +771,12 @@
 
                     connection.transport.stop(connection);
                     connection.transport = null;
+                }
+
+                if (connection._.negotiateRequest) {
+                    // If the negotiation request has already completed this will noop.
+                    connection._.negotiateRequest.abort(_negotiateAbortText);
+                    delete connection._.negotiateRequest;
                 }
 
                 // Trigger the disconnect event
