@@ -24,7 +24,7 @@
         _connection,
         _pageLoaded = (window.document.readyState === "complete"),
         _pageWindow = $(window),
-
+        _negotiateAbortText = "__Negotiate Aborted__",
         events = {
             onStart: "onStart",
             onStarting: "onStarting",
@@ -249,8 +249,7 @@
                 connectingMessageBuffer: new ConnectingMessageBuffer(this, function (message) {
                     $connection.triggerHandler(events.onReceived, [message]);
                 }),
-                onFailedTimeoutHandle: null,
-                negotiateAbortText: "__Negotiate Aborted__"
+                onFailedTimeoutHandle: null
             };
             if (typeof (logging) === "boolean") {
                 this.logging = logging;
@@ -481,10 +480,10 @@
                     }, connection.transportConnectTimeout);
 
                     transport.start(connection, function () { // success
-                    // The connection was aborted while initializing transports
-                    if (connection.state === signalR.connectionState.disconnected) {
-                        return;
-                    }
+                        // The connection was aborted while initializing transports
+                        if (connection.state === signalR.connectionState.disconnected) {
+                            return;
+                        }
 
                         if (!initializationComplete) {
                             initializationComplete = true;
@@ -540,7 +539,7 @@
                 dataType: connection.ajaxDataType,
                 error: function (error, statusText) {
                     // We don't want to cause any errors if we're aborting our own negotiate request.
-                    if (statusText !== connection._.negotiateAbortText) {
+                    if (statusText !== _negotiateAbortText) {
                         $(connection).triggerHandler(events.onError, [error.responseText]);
                         deferred.reject("SignalR: Error during negotiation request: " + error.responseText);
                         // Stop the connection if negotiate failed
@@ -776,7 +775,7 @@
 
                 if (connection._.negotiateRequest) {
                     // If the negotiation request has already completed this will noop.
-                    connection._.negotiateRequest.abort(connection._.negotiateAbortText);
+                    connection._.negotiateRequest.abort(_negotiateAbortText);
                     delete connection._.negotiateRequest;
                 }
 
