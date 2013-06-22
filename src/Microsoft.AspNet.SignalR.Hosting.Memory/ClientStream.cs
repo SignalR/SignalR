@@ -14,7 +14,7 @@ namespace Microsoft.AspNet.SignalR.Hosting.Memory
 
         private readonly object _streamLock = new object();
         private readonly MemoryStream _ms = new MemoryStream();
-        private readonly CancellationTokenSource _cancelTokenSource = new CancellationTokenSource();
+        private readonly SafeCancellationTokenSource _cancelTokenSource = new SafeCancellationTokenSource();
         private readonly SafeCancellationTokenSource _callCancelledTokenSource;
         private readonly Reader _reader = new Reader();
         private readonly CancellationToken _cancelToken;
@@ -26,7 +26,7 @@ namespace Microsoft.AspNet.SignalR.Hosting.Memory
 
             networkObserver.OnCancel = () =>
             {
-                _cancelTokenSource.Cancel();
+                _cancelTokenSource.Cancel(useNewThread: false);
                 _callCancelledTokenSource.Cancel();
             };
 
