@@ -119,6 +119,8 @@ namespace Microsoft.AspNet.SignalR.Hosting.Memory
             }
 
             var tcs = new TaskCompletionSource<IClientResponse>();
+
+            // REVIEW: Should we add a new method to the IClientResponse to trip this?
             var clientTokenSource = new SafeCancellationTokenSource();
 
             var env = new Dictionary<string, object>();
@@ -148,9 +150,6 @@ namespace Microsoft.AspNet.SignalR.Hosting.Memory
                 headers.SetHeader("Content-Type", "application/x-www-form-urlencoded");
             }
 
-            // Run the client function to initialize the request
-            prepareRequest(new Request(env, clientTokenSource.Cancel));
-
             var networkObservable = new NetworkObservable(disableWrites);
             var clientStream = new ClientStream(networkObservable);
             var serverStream = new ServerStream(networkObservable);
@@ -160,41 +159,34 @@ namespace Microsoft.AspNet.SignalR.Hosting.Memory
             // Trigger the tcs on flush. This mimicks the client side
             networkObservable.OnFlush = () => tcs.TrySetResult(response);
 
-            // Cancel the network observable on cancellation of the token
-            clientTokenSource.Token.Register(networkObservable.Cancel);
+            // Run the client function to initialize the request
+            prepareRequest(new Request(env, networkObservable.Cancel));
 
             env[OwinConstants.ResponseBody] = serverStream;
             env[OwinConstants.ResponseHeaders] = new Dictionary<string, string[]>();
 
             _appFunc(env).ContinueWith(task =>
             {
-                bool responseCompleted = true;
-
                 var owinResponse = new OwinResponse(env);
                 if (!IsSuccessStatusCode(owinResponse.StatusCode))
                 {
-                    responseCompleted = tcs.TrySetException(new InvalidOperationException("Unsuccessful status code " + owinResponse.StatusCode));
+                    tcs.TrySetException(new InvalidOperationException("Unsuccessful status code " + owinResponse.StatusCode));
                 }
                 else if (task.IsFaulted)
                 {
-                    responseCompleted = tcs.TrySetException(task.Exception.InnerExceptions);
+                    tcs.TrySetException(task.Exception.InnerExceptions);
                 }
                 else if (task.IsCanceled)
                 {
-                    responseCompleted = tcs.TrySetCanceled();
+                    tcs.TrySetCanceled();
                 }
                 else
                 {
-                    responseCompleted = tcs.TrySetResult(response);
+                    tcs.TrySetResult(response);
                 }
 
-                // If the stream closed as a result of the task completing here then close the stream
-                if (responseCompleted)
-                {
-                    // Close the server stream when the request has ended
-                    serverStream.Close();
-                }
-
+                // Close the server stream when the request has ended
+                serverStream.Close();
                 clientTokenSource.Dispose();
             });
 
