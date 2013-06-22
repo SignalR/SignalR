@@ -151,7 +151,7 @@ namespace Microsoft.AspNet.SignalR.Hosting.Memory
             }
 
             var networkObservable = new NetworkObservable(disableWrites);
-            var clientStream = new ClientStream(networkObservable);
+            var clientStream = new ClientStream(networkObservable, clientTokenSource);
             var serverStream = new ServerStream(networkObservable);
 
             var response = new Response(clientStream);
