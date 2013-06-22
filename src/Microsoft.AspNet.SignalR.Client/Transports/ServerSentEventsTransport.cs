@@ -14,6 +14,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
     public class ServerSentEventsTransport : HttpBasedTransport
     {
         private IRequest _request;
+        private bool _stop;
 
         public ServerSentEventsTransport()
             : this(new DefaultHttpClient())
@@ -55,6 +56,8 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
             // Tie into the OnFailure event so that we can stop the transport silently.
             initializeHandler.OnFailure += () =>
             {
+                _stop = true;
+
                 _request.Abort();
             };
 
@@ -98,9 +101,9 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
 
             HttpClient.Get(url, req =>
             {
-                _request = req;               
+                _request = req;
                 _request.Accept = "text/event-stream";
-                
+
                 connection.PrepareRequest(_request);
 
             }, isLongRunning: true).ContinueWith(task =>
@@ -137,13 +140,9 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
 
                     var eventSource = new EventSourceStreamReader(connection, stream);
 
-                    bool stop = false;
-
                     var esCancellationRegistration = disconnectToken.SafeRegister(state =>
                     {
-                        stop = true;
-
-                        errorCallback(null);
+                        _stop = true;
 
                         ((IRequest)state).Abort();
                     },
@@ -174,7 +173,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
 
                             if (disconnected)
                             {
-                                stop = true;
+                                _stop = true;
                                 connection.Disconnect();
                             }
                         }
@@ -182,11 +181,10 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
 
                     eventSource.Closed = exception =>
                     {
-                        bool isRequestAborted = false;
                         if (exception != null)
                         {
                             // Check if the request is aborted
-                            isRequestAborted = ExceptionHelper.IsRequestAborted(exception);
+                            bool isRequestAborted = ExceptionHelper.IsRequestAborted(exception);
 
                             if (!isRequestAborted)
                             {
@@ -194,11 +192,12 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
                                 connection.OnError(exception);
                             }
                         }
+
                         requestDisposer.Dispose();
                         esCancellationRegistration.Dispose();
                         response.Dispose();
 
-                        if (stop)
+                        if (_stop)
                         {
                             CompleteAbort();
                         }
@@ -206,7 +205,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
                         {
                             // Abort() was called, so don't reconnect
                         }
-                        else if (!isRequestAborted)
+                        else
                         {
                             Reconnect(connection, data, disconnectToken);
                         }
