@@ -168,26 +168,33 @@ namespace Microsoft.AspNet.SignalR.Hosting.Memory
 
             _appFunc(env).ContinueWith(task =>
             {
+                bool responseCompleted = true;
+
                 var owinResponse = new OwinResponse(env);
                 if (!IsSuccessStatusCode(owinResponse.StatusCode))
                 {
-                    tcs.TrySetException(new InvalidOperationException("Unsuccessful status code " + owinResponse.StatusCode));
+                    responseCompleted = tcs.TrySetException(new InvalidOperationException("Unsuccessful status code " + owinResponse.StatusCode));
                 }
                 else if (task.IsFaulted)
                 {
-                    tcs.TrySetException(task.Exception.InnerExceptions);
+                    responseCompleted = tcs.TrySetException(task.Exception.InnerExceptions);
                 }
                 else if (task.IsCanceled)
                 {
-                    tcs.TrySetCanceled();
+                    responseCompleted = tcs.TrySetCanceled();
                 }
                 else
                 {
-                    tcs.TrySetResult(response);
+                    responseCompleted = tcs.TrySetResult(response);
                 }
 
-                // Close the server stream when the request has ended
-                serverStream.Close();
+                // If the stream closed as a result of the task completing here then close the stream
+                if (responseCompleted)
+                {
+                    // Close the server stream when the request has ended
+                    serverStream.Close();
+                }
+
                 clientTokenSource.Dispose();
             });
 
