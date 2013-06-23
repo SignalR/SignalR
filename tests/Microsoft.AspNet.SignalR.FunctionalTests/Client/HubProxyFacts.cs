@@ -44,7 +44,7 @@ namespace Microsoft.AspNet.SignalR.Tests
             }
         }
 
-        [Fact(Timeout = 5000)]
+        [Fact(Timeout = 10000)]
         public void WebSocketTransportDoesntHangIfConnectReturnsCancelledTask()
         {
             RunWebSocketTransportWithConnectTask(() =>
@@ -55,7 +55,7 @@ namespace Microsoft.AspNet.SignalR.Tests
             });
         }
 
-        [Fact(Timeout = 5000)]
+        [Fact(Timeout = 10000)]
         public void WebSocketTransportDoesntHangIfConnectReturnsFaultedTask()
         {
             RunWebSocketTransportWithConnectTask(() => TaskAsyncHelper.FromError(new Exception()));
