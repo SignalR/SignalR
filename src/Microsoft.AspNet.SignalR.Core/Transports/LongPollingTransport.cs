@@ -185,7 +185,7 @@ namespace Microsoft.AspNet.SignalR.Transports
                 Func<Task> connected;
                 if (newConnection)
                 {
-                    connected = Connected;
+                    connected = Connected ?? _emptyTaskFunc;
                     _counters.ConnectionsConnected.Increment();
                 }
                 else
