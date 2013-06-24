@@ -35,13 +35,13 @@ bool SseEvent::TryParse(string_t line, shared_ptr<SseEvent>* sseEvent)
         throw exception("ArgumentNullException: line");
     }
 
-    if (StringHelper::BeginsWithIgnoreCase(line, U("data:")))
+    if (StringHelper::BeginsWithIgnoreCase(line, string_t(U("data:"))))
     {
         string_t data = StringHelper::Trim(line.substr(string_t(U("data:")).length(), line.length() - string_t(U("data:")).length()));
         *sseEvent = shared_ptr<SseEvent>(new SseEvent(EventType::Data, data));
         return true;
     }
-    else if (StringHelper::BeginsWithIgnoreCase(line, U("id:")))
+    else if (StringHelper::BeginsWithIgnoreCase(line, string_t(U("id:"))))
     {
         string_t data = StringHelper::Trim(line.substr(string_t(U("id:")).length(), line.length() - string_t(U("id:")).length()));
         *sseEvent = shared_ptr<SseEvent>(new SseEvent(EventType::Id, data));

@@ -83,7 +83,7 @@ void ServerSentEventsTransport::OpenConnection(shared_ptr<Connection> connection
             {
                 if (sseEvent->GetType() == EventType::Data)
                 {
-                    if (StringHelper::EqualsIgnoreCase(sseEvent->GetData(), U("initialized")))
+                    if (StringHelper::EqualsIgnoreCase(sseEvent->GetData(), string_t(U("initialized"))))
                     {
                         return;
                     }
