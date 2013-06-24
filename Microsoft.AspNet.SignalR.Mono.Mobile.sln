@@ -7,8 +7,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNet.SignalR.Cl
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNet.SignalR.Client.Android.Samples", "samples\Microsoft.AspNet.SignalR.Client.Android.Samples\Microsoft.AspNet.SignalR.Client.Android.Samples.csproj", "{AA8BF4BF-7805-40C0-977F-0D5D7AA4D948}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNet.SignalR.Client.Android.Samples", "samples\Microsoft.AspNet.SignalR.Client.Android.Samples\Microsoft.AspNet.SignalR.Client.Android.Samples.csproj", "{AA8BF4BF-7805-40C0-977F-0D5D7AA4D948}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNet.SignalR.Client.iOS.Samples", "samples\Microsoft.AspNet.SignalR.Client.iOS.Samples\Microsoft.AspNet.SignalR.Client.iOS.Samples.csproj", "{DBFB861C-DF65-4784-B2B7-85DBFF01E787}"
 EndProject
 Global

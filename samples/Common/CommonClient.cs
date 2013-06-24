@@ -52,7 +52,7 @@ namespace Microsoft.AspNet.SignalR.Client.Samples
             await hubProxy.Invoke("DisplayMessageGroup", "CommonClientGroup", "Hello Group Members!");
 
             string leaveGroupResponse = await hubProxy.Invoke<string>("LeaveGroup", hubConnection.ConnectionId, "CommonClientGroup");
-            hubConnection.TraceWriter.WriteLine("leaveGroupResponse={0}", joinGroupResponse);
+            hubConnection.TraceWriter.WriteLine("leaveGroupResponse={0}", leaveGroupResponse);
 
             await hubProxy.Invoke("DisplayMessageGroup", "CommonClientGroup", "Hello Group Members! (caller should not see this message)");
 
