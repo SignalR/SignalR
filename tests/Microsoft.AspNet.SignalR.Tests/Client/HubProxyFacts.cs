@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using Microsoft.AspNet.SignalR.Client;
 using Microsoft.AspNet.SignalR.Client.Hubs;
 using Microsoft.AspNet.SignalR.Tests.Utilities;
 using Moq;
@@ -19,7 +20,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                 Error = "This in an error"
             };
 
-            var connection = new Mock<SignalR.Client.Hubs.IHubConnection>();
+            var connection = new Mock<IHubConnection>();
             connection.Setup(m => m.RegisterCallback(It.IsAny<Action<HubResult>>()))
                       .Callback<Action<HubResult>>(callback =>
                       {
@@ -48,7 +49,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                 }
             };
 
-            var connection = new Mock<SignalR.Client.Hubs.IHubConnection>();
+            var connection = new Mock<IHubConnection>();
             connection.Setup(m => m.RegisterCallback(It.IsAny<Action<HubResult>>()))
                       .Callback<Action<HubResult>>(callback =>
                       {
@@ -75,7 +76,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                 Result = "Something"
             };
 
-            var connection = new Mock<SignalR.Client.Hubs.IHubConnection>();
+            var connection = new Mock<IHubConnection>();
             connection.Setup(m => m.RegisterCallback(It.IsAny<Action<HubResult>>()))
                       .Callback<Action<HubResult>>(callback =>
                       {
@@ -97,7 +98,7 @@ namespace Microsoft.AspNet.SignalR.Tests
         [Fact]
         public void InvokeEventRaisesEvent()
         {
-            var connection = new Mock<SignalR.Client.Hubs.IHubConnection>();
+            var connection = new Mock<IHubConnection>();
             connection.SetupGet(x => x.JsonSerializer).Returns(new JsonSerializer());
 
             var hubProxy = new HubProxy(connection.Object, "foo");
@@ -115,7 +116,7 @@ namespace Microsoft.AspNet.SignalR.Tests
         [Fact]
         public void InvokeEventRaisesEventWithData()
         {
-            var connection = new Mock<SignalR.Client.Hubs.IHubConnection>();
+            var connection = new Mock<IHubConnection>();
             connection.SetupGet(x => x.JsonSerializer).Returns(new JsonSerializer());
 
             var hubProxy = new HubProxy(connection.Object, "foo");

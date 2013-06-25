@@ -5,6 +5,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNet.SignalR.Client;
 using Microsoft.AspNet.SignalR.Configuration;
 using Microsoft.AspNet.SignalR.Hosting;
 using Microsoft.AspNet.SignalR.Hosting.Memory;
@@ -131,7 +132,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                     dr.Register(typeof(MyHub), () => new MyHub(connectWh, disconnectWh));
                 });
 
-                var connection = new Client.Hubs.HubConnection("http://foo/");
+                var connection = new HubConnection("http://foo/");
 
                 connection.CreateHubProxy("MyHub");
 
