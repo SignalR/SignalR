@@ -57,6 +57,11 @@
             $(BuildDependsOn);
         </BuildDependsOn>
 
+      <PipelinePreDeployCopyAllFilesToOneFolderDependsOn Condition="$(RestorePackages) == 'true'">
+        RestorePackages;
+        $(PipelinePreDeployCopyAllFilesToOneFolderDependsOn);
+      </PipelinePreDeployCopyAllFilesToOneFolderDependsOn>
+
         <!-- Make the build depend on restore packages -->
         <BuildDependsOn Condition="$(BuildPackage) == 'true'">
             $(BuildDependsOn);
