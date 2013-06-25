@@ -97,27 +97,12 @@ static void RunDelaySample()
     }).wait();
 }
 
-static void RunExceptionSample()
-{
-    exception ex("baseException");
-    OperationCanceledException canceled("someOperation");
-    ExceptionNone none("none");
-
-    bool isCanceled1 = ExceptionHelper::IsRequestAborted(ex);
-    bool isCanceled2 = ExceptionHelper::IsRequestAborted(canceled);
-    bool isCanceled3 = ExceptionHelper::IsRequestAborted(none);
-    bool isNull1 = ExceptionHelper::IsNull(ex);
-    bool isNull2 = ExceptionHelper::IsNull(canceled);
-    bool isNull3 = ExceptionHelper::IsNull(none);
-}
-
 int main () 
 {
     // Saving Memory State at the beginning of the program
     _CrtMemState s1, s2, s3;
     _CrtMemCheckpoint(&s1);
 
-    //RunExceptionSample();
     RunStreamingSample();
     //RunDelaySample();
 
