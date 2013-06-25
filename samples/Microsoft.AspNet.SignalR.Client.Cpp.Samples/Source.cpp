@@ -37,10 +37,10 @@ static void RunStreamingSample()
         {
             time_t now = time(0);
             struct tm nowStruct;
-            localtime_s(&nowStruct, &now); // localtime is C++ ISO compliant, only MS mark it as deprecated
+            localtime_s(&nowStruct, &now); // this only works in visual studios, should use localtime for linux
 
-            wcout << "[" << (nowStruct->tm_mon + 1) << "-" << nowStruct->tm_mday << "-" << (nowStruct->tm_year + 1900) << " "
-                << nowStruct->tm_hour << ":" << nowStruct->tm_min << ":" << nowStruct->tm_sec << "]: Connection restablished" << endl;
+            wcout << "[" << (nowStruct.tm_mon + 1) << "-" << nowStruct.tm_mday << "-" << (nowStruct.tm_year + 1900) << " "
+                << nowStruct.tm_hour << ":" << nowStruct.tm_min << ":" << nowStruct.tm_sec << "]: Connection restablished" << endl;
         };
 
         connection->StateChanged = [](StateChange stateChange)
