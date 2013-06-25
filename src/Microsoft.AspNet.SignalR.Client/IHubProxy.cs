@@ -1,10 +1,11 @@
 ﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.md in the project root for license information.
 
 using System.Threading.Tasks;
+using Microsoft.AspNet.SignalR.Client.Hubs;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
-namespace Microsoft.AspNet.SignalR.Client.Hubs
+namespace Microsoft.AspNet.SignalR.Client
 {
     /// <summary>
     ///  A client side proxy for a server side hub.

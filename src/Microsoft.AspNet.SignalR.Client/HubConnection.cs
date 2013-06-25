@@ -6,10 +6,11 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq;
+using Microsoft.AspNet.SignalR.Client.Hubs;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
-namespace Microsoft.AspNet.SignalR.Client.Hubs
+namespace Microsoft.AspNet.SignalR.Client
 {
     /// <summary>
     /// A <see cref="Connection"/> for interacting with Hubs.

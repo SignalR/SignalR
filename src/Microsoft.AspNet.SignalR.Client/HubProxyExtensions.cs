@@ -3,12 +3,13 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using Microsoft.AspNet.SignalR.Client.Hubs;
 using Microsoft.AspNet.SignalR.Client.Infrastructure;
 using Microsoft.AspNet.SignalR.Infrastructure;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
-namespace Microsoft.AspNet.SignalR.Client.Hubs
+namespace Microsoft.AspNet.SignalR.Client
 {
     /// <summary>
     /// Extensions to the <see cref="IHubProxy"/>.

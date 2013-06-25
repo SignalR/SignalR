@@ -1,5 +1,5 @@
 ﻿using System;
-using Microsoft.AspNet.SignalR.Client.Hubs;
+using Microsoft.AspNet.SignalR.Client;
 using Xunit;
 
 namespace Microsoft.AspNet.SignalR.Tests.Common
