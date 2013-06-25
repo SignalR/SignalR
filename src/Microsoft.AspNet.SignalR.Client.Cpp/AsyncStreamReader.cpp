@@ -9,8 +9,6 @@ AsyncStreamReader::AsyncStreamReader(streams::basic_istream<uint8_t> stream)
 
 AsyncStreamReader::~AsyncStreamReader(void)
 {
-    // cancel any ongoing reads
-    mReadCts.cancel();
 }
 
 void AsyncStreamReader::Start()
@@ -136,6 +134,9 @@ void AsyncStreamReader::Close(exception& ex)
 
     if(previousState != State::Stopped)
     {
+        // cancel any ongoing reads
+        mReadCts.cancel();
+
         if (Closed != nullptr)
         {
             Closed(ex);
@@ -178,9 +179,9 @@ task<unsigned int> AsyncStreamReader::AsyncReadIntoBuffer(streams::basic_istream
 
         string &text = inStringBuffer->collection();
 
-        pReadBuffer = shared_ptr<char>(new char[text.length() + 1]);
-        int length = text.length();
-        strcpy(pReadBuffer.get(), text.c_str());
+        int length = text.length() + 1;
+        pReadBuffer = shared_ptr<char>(new char[length]);
+        strcpy_s(pReadBuffer.get(), length, text.c_str()); // this only works in visual studio, should use strcpy for linux
 
         return (unsigned int)bytesRead;
     }, readTaskOptions);

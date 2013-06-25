@@ -36,7 +36,8 @@ static void RunStreamingSample()
         connection->Reconnected = []()
         {
             time_t now = time(0);
-            struct tm* nowStruct = localtime(&now); // localtime is C++ ISO compliant, only MS mark it as deprecated
+            struct tm nowStruct;
+            localtime_s(&nowStruct, &now); // localtime is C++ ISO compliant, only MS mark it as deprecated
 
             wcout << "[" << (nowStruct->tm_mon + 1) << "-" << nowStruct->tm_mday << "-" << (nowStruct->tm_year + 1900) << " "
                 << nowStruct->tm_hour << ":" << nowStruct->tm_min << ":" << nowStruct->tm_sec << "]: Connection restablished" << endl;
@@ -116,8 +117,8 @@ int main ()
     _CrtMemState s1, s2, s3;
     _CrtMemCheckpoint(&s1);
 
-    RunExceptionSample();
-    //RunStreamingSample();
+    //RunExceptionSample();
+    RunStreamingSample();
     //RunDelaySample();
 
     wcout << U("Press <Enter> to Exit ...") << endl;
