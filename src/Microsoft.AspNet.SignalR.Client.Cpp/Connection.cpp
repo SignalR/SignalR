@@ -129,12 +129,31 @@ pplx::task<void> Connection::Start(shared_ptr<IClientTransport> transport)
 
 pplx::task<void> Connection::Negotiate(shared_ptr<IClientTransport> transport) 
 {
-    return pTransport->Negotiate(shared_from_this()).then([this](shared_ptr<NegotiationResponse> response)
+    return pTransport->Negotiate(shared_from_this()).then([this](pplx::task<shared_ptr<NegotiationResponse>> negotiateTask)
     {
-        mConnectionId = response->mConnectionId;
-        mConnectionToken = response->mConnectionToken;
+        try
+        {
+            shared_ptr<NegotiationResponse> response = negotiateTask.get();
+            
+            mConnectionId = response->mConnectionId;
+            mConnectionToken = response->mConnectionToken;
 
-        return StartTransport();
+            return StartTransport();
+        }
+        catch (pplx::task_canceled canceled)
+        {
+            return pplx::task<void>([this]()
+            {
+                Disconnect();        
+            });
+        }
+        catch (exception& ex)
+        {
+            return pplx::task<void>([this]()
+            {
+                Disconnect();        
+            });
+        }
     });
 }
 

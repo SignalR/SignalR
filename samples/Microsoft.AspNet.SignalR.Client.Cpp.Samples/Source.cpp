@@ -1,6 +1,9 @@
 #include <ctime>
 #include <http_client.h>
 #include "Connection.h"
+
+// for testing only
+#include "ExceptionHelper.h"
 #include "TaskAsyncHelper.h"
 
 #define _CRTDBG_MAP_ALLOC
@@ -86,11 +89,25 @@ static void RunStreamingSample()
 
 static void RunDelaySample()
 {
-    // pplx::create_delayed_task exist in the documentation but not this project?
+    // pplx::create_delayed_task exist in the documentation but is yet to be released
     TaskAsyncHelper::Delay(seconds(1)).then([]()
     {
         cout << "I'm done!" << endl;
     }).wait();
+}
+
+static void RunExceptionSample()
+{
+    exception ex("baseException");
+    OperationCanceledException canceled("someOperation");
+    ExceptionNone none("none");
+
+    bool isCanceled1 = ExceptionHelper::IsRequestAborted(ex);
+    bool isCanceled2 = ExceptionHelper::IsRequestAborted(canceled);
+    bool isCanceled3 = ExceptionHelper::IsRequestAborted(none);
+    bool isNull1 = ExceptionHelper::IsNull(ex);
+    bool isNull2 = ExceptionHelper::IsNull(canceled);
+    bool isNull3 = ExceptionHelper::IsNull(none);
 }
 
 int main () 
@@ -99,7 +116,8 @@ int main ()
     _CrtMemState s1, s2, s3;
     _CrtMemCheckpoint(&s1);
 
-    RunStreamingSample();
+    RunExceptionSample();
+    //RunStreamingSample();
     //RunDelaySample();
 
     wcout << U("Press <Enter> to Exit ...") << endl;

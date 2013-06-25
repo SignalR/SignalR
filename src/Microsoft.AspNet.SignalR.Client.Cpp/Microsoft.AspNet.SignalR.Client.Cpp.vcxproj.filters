@@ -93,6 +93,9 @@
     <ClCompile Include="ConnectingMessageBuffer.cpp">
       <Filter>Source Files\Transport</Filter>
     </ClCompile>
+    <ClCompile Include="ExceptionHelper.cpp">
+      <Filter>Source Files\Infrastructure</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Connection.h">
@@ -157,6 +160,9 @@
     </ClInclude>
     <ClInclude Include="ConnectingMessageBuffer.h">
       <Filter>Header Files\Transports</Filter>
+    </ClInclude>
+    <ClInclude Include="ExceptionHelper.h">
+      <Filter>Header Files\Infrastructure</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

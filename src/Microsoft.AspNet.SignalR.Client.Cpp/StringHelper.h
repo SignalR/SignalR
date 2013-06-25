@@ -1,10 +1,10 @@
 #pragma once
 
-#include <algorithm>
 #include "http_client.h"
 
 using namespace utility;
 
+// should this be a namespace instead?
 class StringHelper
 {
 public:

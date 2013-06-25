@@ -59,6 +59,10 @@ READ:
                 goto READ;
             }
         }
+        catch (task_canceled canceled)
+        {
+            Close(OperationCanceledException("readTask"));
+        }
         catch (exception& ex)
         {
             Close(ex);
@@ -72,29 +76,24 @@ READ:
 
 void AsyncStreamReader::ReadAsync(task<unsigned int> readTask)
 {
-    // need to test if this is asynchronous
-    //readTask.then([this](task<unsigned int> readTask)
-    //{
+    readTask.then([this](task<unsigned int> readTask)
+    {
         try 
         {
-            task_status status = readTask.wait();
-            if(status == task_status::canceled)
+            if (TryProcessRead(readTask.get()))
             {
-                Close(exception("OperationCanceledException: readTask"));
+                Process();
             }
-            else if (status == task_status::completed)
-            {
-                if (TryProcessRead(readTask.get()))
-                {
-                    Process();
-                }
-            }
+        }
+        catch (task_canceled canceled)
+        {
+            Close(OperationCanceledException("readTask"));
         }
         catch (exception& ex)
         {
             Close(ex);
         }
-    //});
+    });
 }
 
 bool AsyncStreamReader::TryProcessRead(unsigned read)
@@ -128,7 +127,7 @@ bool AsyncStreamReader::IsProcessing()
 
 void AsyncStreamReader::Close()
 {
-    Close(exception(""));
+    Close(ExceptionNone("none"));
 }
 
 void AsyncStreamReader::Close(exception& ex)

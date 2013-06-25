@@ -4,6 +4,7 @@
 #include <atomic>
 #include "SseEvent.h"
 #include <http_client.h>
+#include "ExceptionHelper.h"
 
 using namespace std;
 using namespace pplx;

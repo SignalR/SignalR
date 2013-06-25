@@ -55,11 +55,6 @@ void ServerSentEventsTransport::OpenConnection(shared_ptr<Connection> connection
     {
         try
         {
-            if (connectRequest.wait() == pplx::task_status::canceled)
-            {
-                return;
-            }
-
             http_response response = connectRequest.get();
             pEventSource = unique_ptr<EventSourceStreamReader>(new EventSourceStreamReader(response.body()));
 
@@ -103,17 +98,15 @@ void ServerSentEventsTransport::OpenConnection(shared_ptr<Connection> connection
 
             pEventSource->Closed = [this, connection, data, disconnectToken](exception& ex)
             {
-                //if (ex != null)
-                //{
-                //    // Check if the request is aborted
-                //    bool isRequestAborted = ExceptionHelper.IsRequestAborted(exception);
-
-                //    if (!isRequestAborted)
-                //    {
-                //        // Don't raise exceptions if the request was aborted (connection was stopped).
-                //        connection.OnError(exception);
-                //    }
-                //}
+                if (!ExceptionHelper::IsNull(ex))
+                {
+                    // Check if the request is aborted
+                    if (!ExceptionHelper::IsRequestAborted(ex))
+                    {
+                        // Don't raise exceptions if the request was aborted (connection was stopped).
+                        connection->OnError(ex);
+                    }
+                }
 
                 if (this->mStop)
                 {
@@ -132,6 +125,10 @@ void ServerSentEventsTransport::OpenConnection(shared_ptr<Connection> connection
             pEventSource->Start();
 
         }
+        catch (pplx::task_canceled canceled)
+        {
+            return;
+        }
         catch(exception& ex)
         {
             if (errorCallback != nullptr)
@@ -141,6 +138,7 @@ void ServerSentEventsTransport::OpenConnection(shared_ptr<Connection> connection
             else if (reconnecting)
             {
                 // raise error event if failed to reconnect
+                connection->OnError(ex);
 
                 Reconnect(connection, data, disconnectToken);
             }
