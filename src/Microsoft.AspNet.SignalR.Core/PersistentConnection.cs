@@ -512,8 +512,7 @@ namespace Microsoft.AspNet.SignalR
             response["ConnectionId"] = connectionId;
             response["KeepAliveTimeout"] = keepAliveTimeout != null ? keepAliveTimeout.Value.TotalSeconds : (double?)null;
             response["DisconnectTimeout"] = _configurationManager.DisconnectTimeout.TotalSeconds;
-            response["TryWebSockets"] = _transportManager.SupportsTransport(WebSocketsTransportName) && context.SupportsWebSockets();
-            response["WebSocketServerUrl"] = context.WebSocketServerUrl();
+            response["TryWebSockets"] = _transportManager.SupportsTransport(WebSocketsTransportName) && context.Environment.SupportsWebSockets();
             response["ProtocolVersion"] = _protocolResolver.Resolve(context.Request).ToString();
             response["TransportConnectTimeout"] = _configurationManager.TransportConnectTimeout.TotalSeconds;
         }

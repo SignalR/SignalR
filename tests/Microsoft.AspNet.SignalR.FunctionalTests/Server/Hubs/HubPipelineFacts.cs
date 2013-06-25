@@ -1,12 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR.Client;
-using Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure;
-using Microsoft.AspNet.SignalR.Hosting;
+using Microsoft.AspNet.SignalR.Client.Http;
 using Microsoft.AspNet.SignalR.Hosting.Memory;
 using Microsoft.AspNet.SignalR.Hubs;
-using Microsoft.AspNet.SignalR.Client.Http;
+using Microsoft.AspNet.SignalR.Tests.Common.Infrastructure;
 using Newtonsoft.Json;
 using Owin;
 using Xunit;
@@ -45,11 +43,11 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Server.Hubs
                         Assert.NotNull(raw.Foo);
                         Assert.Equal(raw.Foo, valueForKey);
                     });
-                    
+
                 }).Wait();
             }
         }
-        
+
         private class AddOrModifyNegotiateProperty : HubPipelineModule
         {
             private string _key;
@@ -70,7 +68,7 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Server.Hubs
                 };
             }
         }
-        
+
         private class CustomNegotiationResponse : NegotiationResponse
         {
             public object Foo { get; set; }
