@@ -123,6 +123,7 @@
     </Compile>
     <Compile Include="App_Start\Initializer.cs" />
     <Compile Include="Connections\AuthenticatedEchoConnection.cs" />
+    <Compile Include="Connections\FallbackToLongPollingConnectionThrows.cs" />
     <Compile Include="Connections\ExamineHeadersConnection.cs" />
     <Compile Include="Connections\ExamineReconnectPath.cs" />
     <Compile Include="Connections\PreserializedJsonConnection.cs" />
