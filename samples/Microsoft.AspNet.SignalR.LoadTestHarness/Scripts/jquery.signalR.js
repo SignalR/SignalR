@@ -2175,8 +2175,13 @@
                 $.each(connection.proxies, function (key) {
                     if (this.hasSubscriptions()) {
                         subscribedHubs.push({ name: key });
+                        connection.log("SignalR: Client subscribed to hub '" + key + "'.");
                     }
                 });
+
+                if (subscribedHubs.length === 0) {
+                    connection.log("SignalR: No hubs have been subscribed to.  The client will not receive data from hubs.  To fix, declare at least one client side function prior to connection start for each hub you wish to subscribe to.");
+                }
 
                 connection.data = connection.json.stringify(subscribedHubs);
             });
