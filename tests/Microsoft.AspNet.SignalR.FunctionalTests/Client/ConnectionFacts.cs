@@ -4,6 +4,7 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR.Client;
+using Microsoft.AspNet.SignalR.Client.Transports;
 using Microsoft.AspNet.SignalR.Hosting.Memory;
 using Microsoft.AspNet.SignalR.Tests.Common;
 using Microsoft.AspNet.SignalR.Tests.Common.Infrastructure;
@@ -72,6 +73,22 @@ namespace Microsoft.AspNet.SignalR.Tests
                     Assert.Equal(connection.State, ConnectionState.Connected);
                     Assert.Equal(connection.Transport.Name, "longPolling");
                     Assert.Equal(0, myReconnect.Reconnects);
+                }
+            }
+        }
+
+        [Fact]
+        public void WebSocketsTransportFailsIfOnConnectedThrows()
+        {
+            using (ITestHost host = CreateHost(HostType.IISExpress))
+            {
+                host.Initialize();
+
+                var connection = CreateConnection(host, "/fall-back-throws");
+
+                using (connection)
+                {
+                    Assert.Throws<AggregateException>(() => connection.Start(new WebSocketTransport()).Wait());
                 }
             }
         }

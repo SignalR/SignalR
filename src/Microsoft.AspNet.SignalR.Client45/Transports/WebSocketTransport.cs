@@ -97,11 +97,8 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
                 {
                     _initializeHandler.Fail();
                 }
-                else
-                {
-                    _initializeHandler.Success();
-                }
-            });
+            }, 
+            TaskContinuationOptions.OnlyOnCanceled | TaskContinuationOptions.OnlyOnFaulted);
 
             return _initializeHandler.Task;
         }
