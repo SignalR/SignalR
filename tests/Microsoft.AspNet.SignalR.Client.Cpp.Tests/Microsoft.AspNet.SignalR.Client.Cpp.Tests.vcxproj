@@ -57,7 +57,7 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>D:\Git\CPP\SignalR\src\Microsoft.AspNet.SignalR.Client.Cpp;D:\Git\CPP\SignalR\tests\Microsoft.AspNet.SignalR.Client.Cpp.Tests\UnitTestpp\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)packages\cpprestsdk.1.0.0\build\native\include;D:\Git\CPP\SignalR\src\Microsoft.AspNet.SignalR.Client.Cpp;D:\Git\CPP\SignalR\tests\Microsoft.AspNet.SignalR.Client.Cpp.Tests\UnitTestpp\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>

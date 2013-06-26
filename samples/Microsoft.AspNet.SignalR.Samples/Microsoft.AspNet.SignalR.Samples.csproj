@@ -393,7 +393,9 @@
       <SubType>Designer</SubType>
     </Content>
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <Folder Include="ClientBin\" />
+  </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\src\Microsoft.AspNet.SignalR.Core\Microsoft.AspNet.SignalR.Core.csproj">
       <Project>{1B9A82C4-BCA1-4834-A33E-226F17BE070B}</Project>

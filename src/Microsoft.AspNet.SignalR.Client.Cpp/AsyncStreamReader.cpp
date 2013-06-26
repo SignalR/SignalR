@@ -9,10 +9,13 @@ AsyncStreamReader::AsyncStreamReader(streams::basic_istream<uint8_t> stream)
 
 AsyncStreamReader::~AsyncStreamReader(void)
 {
+    // potential race: after cancellation and the class is freed, Close(OperationCanceledException("readTask")) is called
+    mReadCts.cancel();
 }
 
 void AsyncStreamReader::Start()
 {
+
     State initial = State::Initial;
 
     if (atomic_compare_exchange_strong<State>(&mReadingState, &initial, State::Processing))
@@ -59,7 +62,7 @@ READ:
         }
         catch (task_canceled canceled)
         {
-            Close(OperationCanceledException("readTask"));
+            //Close(OperationCanceledException("readTask"));
         }
         catch (exception& ex)
         {
@@ -85,7 +88,7 @@ void AsyncStreamReader::ReadAsync(task<unsigned int> readTask)
         }
         catch (task_canceled canceled)
         {
-            Close(OperationCanceledException("readTask"));
+            //Close(OperationCanceledException("readTask"));
         }
         catch (exception& ex)
         {
@@ -134,18 +137,16 @@ void AsyncStreamReader::Close(exception& ex)
 
     if(previousState != State::Stopped)
     {
-        // cancel any ongoing reads
-        mReadCts.cancel();
-
         if (Closed != nullptr)
         {
             Closed(ex);
         }
 
-        {
-            lock_guard<mutex> lock(mBufferLock);
-            pReadBuffer.reset();
-        }
+        // pReadBuffer is a shared pointer and is freed automatically?
+        //{
+        //    lock_guard<mutex> lock(mBufferLock);
+        //    pReadBuffer.reset();
+        //}
     }
 }
 
