@@ -14,8 +14,17 @@
     <language>en-US</language>
     <tags>Microsoft AspNet SignalR AspNetSignalR Client</tags>
     <dependencies>
-      <dependency id="Newtonsoft.Json" version="5.0.0" />
-      <dependency id="Microsoft.Net.Http" version="2.1.10" />
+      <group targetFramework="net40">
+        <dependency id="Newtonsoft.Json" version="5.0.0" />
+        <dependency id="Microsoft.Net.Http" version="2.1.10" />
+      </group>
+      <group targetFramework="net45">
+        <dependency id="Newtonsoft.Json" version="5.0.0" />
+      </group>
+      <group targetFramework="portable-net45+sl5+netcore45+wp8">
+        <dependency id="Newtonsoft.Json" version="5.0.0" />
+        <dependency id="Microsoft.Net.Http" version="2.1.10" />
+      </group>
     </dependencies>
   </metadata>
   <files>
