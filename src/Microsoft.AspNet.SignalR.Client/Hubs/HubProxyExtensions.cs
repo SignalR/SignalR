@@ -402,7 +402,7 @@ namespace Microsoft.AspNet.SignalR.Client.Hubs
 
         private static void ExecuteCallback(string eventName, int actualArgs, int expectedArgs, Action action)
         {
-            if (expectedArgs != actualArgs)
+            if (expectedArgs > actualArgs)
             {
                 throw new InvalidOperationException(String.Format(CultureInfo.CurrentCulture, Resources.Error_ClientCallbackInvalidNumberOfArguments,
                     eventName, actualArgs));

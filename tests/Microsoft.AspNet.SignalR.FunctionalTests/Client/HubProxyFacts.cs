@@ -481,11 +481,46 @@ namespace Microsoft.AspNet.SignalR.Tests
                     proxy.On<string, string>("twoArgsMethod", (arg1, arg2) => { });
 
                     hubConnection.Start(host.Transport).Wait();
-                    proxy.Invoke("SendInvalidNumberOfArguments").Wait();
+                    proxy.Invoke("SendOneArgument").Wait();
 
                     Assert.True(tcs.Task.Wait(TimeSpan.FromSeconds(5)));
                     Assert.IsType(typeof(InvalidOperationException), tcs.Task.Result);
                     Assert.Equal(((InvalidOperationException)tcs.Task.Result).Message, "A client callback for event twoArgsMethod with 1 argument(s) could not be found");
+                }
+            }
+        }
+
+        [Theory]
+        [InlineData(HostType.Memory, TransportType.ServerSentEvents)]
+        [InlineData(HostType.Memory, TransportType.LongPolling)]
+        [InlineData(HostType.IISExpress, TransportType.LongPolling)]
+        [InlineData(HostType.IISExpress, TransportType.ServerSentEvents)]
+        [InlineData(HostType.IISExpress, TransportType.Websockets)]
+        public void ClientCallbackWithFewerArgumentsDoesNotThrow(HostType hostType, TransportType transportType)
+        {
+            using (var host = CreateHost(hostType, transportType))
+            {
+                host.Initialize();
+                HubConnection hubConnection = CreateHubConnection(host);
+                var mre = new ManualResetEventSlim();
+                var wh = new ManualResetEventSlim();
+
+                hubConnection.Error += (ex) =>
+                {
+                    wh.Set();
+                };
+
+                using (hubConnection)
+                {
+                    IHubProxy proxy = hubConnection.CreateHubProxy("ClientCallbackHub");
+
+                    proxy.On("twoArgsMethod", () => { mre.Set(); });
+
+                    hubConnection.Start(host.Transport).Wait();
+                    proxy.Invoke("SendOneArgument").Wait();
+
+                    Assert.True(mre.Wait(TimeSpan.FromSeconds(5)));
+                    Assert.False(wh.Wait(TimeSpan.FromSeconds(5)));
                 }
             }
         }
