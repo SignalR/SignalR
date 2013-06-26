@@ -388,6 +388,7 @@ namespace Microsoft.AspNet.SignalR.Client
         private Task Negotiate(IClientTransport transport)
         {
             _connectionData = OnSending();
+
             return transport.Negotiate(this, _connectionData)
                             .Then(negotiationResponse =>
                             {
@@ -404,14 +405,14 @@ namespace Microsoft.AspNet.SignalR.Client
                                     _keepAliveData = new KeepAliveData(TimeSpan.FromSeconds(negotiationResponse.KeepAliveTimeout.Value));
                                 }
 
-                                return StartTransport(_connectionData);
+                                return StartTransport();
                             })
                             .ContinueWithNotComplete(() => Disconnect());
         }
 
-        private Task StartTransport(string data)
+        private Task StartTransport()
         {
-            return _transport.Start(this, data, _disconnectCts.Token)
+            return _transport.Start(this, _connectionData, _disconnectCts.Token)
                              .RunSynchronously(() =>
                              {
                                  ChangeState(ConnectionState.Connecting, ConnectionState.Connected);
