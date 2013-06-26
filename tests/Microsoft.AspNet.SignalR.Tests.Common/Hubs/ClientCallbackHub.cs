@@ -6,7 +6,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Common.Hubs
     [HubName("ClientCallbackHub")]
     public class ClientCallbackHub : Hub
     {
-        public Task SendInvalidNumberOfArguments()
+        public Task SendOneArgument()
         {
             return Clients.Caller.twoArgsMethod("arg1");
         }

@@ -481,7 +481,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                     proxy.On<string, string>("twoArgsMethod", (arg1, arg2) => { });
 
                     hubConnection.Start(host.Transport).Wait();
-                    proxy.Invoke("SendInvalidNumberOfArguments").Wait();
+                    proxy.Invoke("SendOneArgument").Wait();
 
                     Assert.True(tcs.Task.Wait(TimeSpan.FromSeconds(5)));
                     Assert.IsType(typeof(InvalidOperationException), tcs.Task.Result);
@@ -503,6 +503,12 @@ namespace Microsoft.AspNet.SignalR.Tests
                 host.Initialize();
                 HubConnection hubConnection = CreateHubConnection(host);
                 var mre = new ManualResetEventSlim();
+                var wh = new ManualResetEventSlim();
+
+                hubConnection.Error += (ex) =>
+                {
+                    wh.Set();
+                };
 
                 using (hubConnection)
                 {
@@ -511,9 +517,10 @@ namespace Microsoft.AspNet.SignalR.Tests
                     proxy.On("twoArgsMethod", () => { mre.Set(); });
 
                     hubConnection.Start(host.Transport).Wait();
-                    proxy.Invoke("SendInvalidNumberOfArguments").Wait();
+                    proxy.Invoke("SendOneArgument").Wait();
 
                     Assert.True(mre.Wait(TimeSpan.FromSeconds(5)));
+                    Assert.False(wh.Wait(TimeSpan.FromSeconds(5)));
                 }
             }
         }
