@@ -4,13 +4,11 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.AspNet.SignalR.Client.Hubs;
+using Microsoft.AspNet.SignalR.Client;
 using Microsoft.AspNet.SignalR.Configuration;
-using Microsoft.AspNet.SignalR.FunctionalTests;
 using Microsoft.AspNet.SignalR.Hosting.Memory;
 using Microsoft.AspNet.SignalR.Hubs;
 using Microsoft.AspNet.SignalR.Infrastructure;
-using Microsoft.AspNet.SignalR.Messaging;
 using Microsoft.AspNet.SignalR.Tests.Common;
 using Microsoft.AspNet.SignalR.Tests.Common.Infrastructure;
 using Microsoft.AspNet.SignalR.Tests.Infrastructure;
@@ -403,7 +401,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                 var query = new Dictionary<string, string>();
                 SetHostData(host, query);
                 query["test"] = GetTestName();
-                var connection = new Client.Hubs.HubConnection(host.Url + "/signalr2/test", useDefaultUrl: false, queryString: query);
+                var connection = new HubConnection(host.Url + "/signalr2/test", useDefaultUrl: false, queryString: query);
 
                 using (connection)
                 {
@@ -573,7 +571,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                     app.MapHubs("/foo", config);
                 });
 
-                var connection = new Client.Hubs.HubConnection("http://site/foo", useDefaultUrl: false, queryString: new Dictionary<string, string> { { "test", "ChangeHubUrl" } });
+                var connection = new HubConnection("http://site/foo", useDefaultUrl: false, queryString: new Dictionary<string, string> { { "test", "ChangeHubUrl" } });
 
                 using (connection)
                 {
@@ -608,7 +606,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                 var query = new Dictionary<string, string> { { "test", GetTestName() } };
                 SetHostData(host, query);
 
-                var connection = new Client.Hubs.HubConnection(host.Url + "/signalr2/test", useDefaultUrl: false, queryString: query);
+                var connection = new HubConnection(host.Url + "/signalr2/test", useDefaultUrl: false, queryString: query);
 
                 using (connection)
                 {
@@ -957,7 +955,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                     configuration.ConnectionTimeout = TimeSpan.FromSeconds(2);
                 });
 
-                var connection = new Client.Hubs.HubConnection("http://foo");
+                var connection = new HubConnection("http://foo");
 
                 using (connection)
                 {
@@ -1002,7 +1000,7 @@ namespace Microsoft.AspNet.SignalR.Tests
             {
                 host.Initialize(messageBusType: messageBusType);
 
-                var connection = new Client.Hubs.HubConnection(host.Url, "a=b&test=" + GetTestName());
+                var connection = new HubConnection(host.Url, "a=b&test=" + GetTestName());
 
                 using (connection)
                 {
@@ -1033,7 +1031,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                 var qs = new Dictionary<string, string>();
                 qs["a"] = "b";
                 qs["test"] = GetTestName();
-                var connection = new Client.Hubs.HubConnection(host.Url, qs);
+                var connection = new HubConnection(host.Url, qs);
 
                 using (connection)
                 {
@@ -1074,7 +1072,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                     config.Resolver.Register(typeof(SomeHub), () => mockHub.Object);
                 });
 
-                var connection = new Client.Hubs.HubConnection("http://foo");
+                var connection = new HubConnection("http://foo");
 
                 var hub = connection.CreateHubProxy("SomeHub");
                 connection.Start(host).Wait();
@@ -1111,7 +1109,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                     config.Resolver.Register(typeof(SomeHub), () => mockHub.Object);
                 });
 
-                var connection = new Client.Hubs.HubConnection("http://foo");
+                var connection = new HubConnection("http://foo");
 
                 var hub = connection.CreateHubProxy("SomeHub");
                 connection.Start(host).Wait();
@@ -1162,7 +1160,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                     });
                 });
 
-                var connection = new Client.Hubs.HubConnection("http://foo/");
+                var connection = new HubConnection("http://foo/");
 
                 using (connection)
                 {
@@ -1402,7 +1400,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                     hubContext = configuration.Resolver.Resolve<IConnectionManager>().GetHubContext("SendToSome");
                 });
 
-                var connection1 = new Client.Hubs.HubConnection("http://foo/");
+                var connection1 = new HubConnection("http://foo/");
 
                 using (connection1)
                 {
@@ -1439,7 +1437,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                     hubContext = configuration.Resolver.Resolve<IConnectionManager>().GetHubContext("SendToSome");
                 });
 
-                var connection1 = new Client.Hubs.HubConnection("http://foo/");
+                var connection1 = new HubConnection("http://foo/");
 
                 using (connection1)
                 {
@@ -1475,8 +1473,8 @@ namespace Microsoft.AspNet.SignalR.Tests
                     hubContext = configuration.Resolver.Resolve<IConnectionManager>().GetHubContext("SendToSome");
                 });
 
-                var connection1 = new Client.Hubs.HubConnection("http://foo/");
-                var connection2 = new Client.Hubs.HubConnection("http://foo/");
+                var connection1 = new HubConnection("http://foo/");
+                var connection2 = new HubConnection("http://foo/");
 
                 using (connection1)
                 using (connection2)

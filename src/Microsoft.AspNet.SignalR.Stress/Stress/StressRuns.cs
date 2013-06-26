@@ -3,17 +3,14 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.AspNet.SignalR;
+using Microsoft.AspNet.SignalR.Client;
 using Microsoft.AspNet.SignalR.Client.Http;
-using Microsoft.AspNet.SignalR.Client.Hubs;
 using Microsoft.AspNet.SignalR.Configuration;
 using Microsoft.AspNet.SignalR.Hosting.Memory;
-using Microsoft.AspNet.SignalR.Hubs;
 using Microsoft.AspNet.SignalR.Infrastructure;
 using Microsoft.AspNet.SignalR.Messaging;
 using Microsoft.AspNet.SignalR.Samples;
@@ -50,7 +47,7 @@ namespace Microsoft.AspNet.SignalR.Stress
             });
 
             var countDown = new CountDownRange<int>(Enumerable.Range(0, max));
-            var connection = new Client.Hubs.HubConnection("http://foo");
+            var connection = new HubConnection("http://foo");
             var proxy = connection.CreateHubProxy("HubWithGroups");
 
             proxy.On<int>("Do", i =>
@@ -127,7 +124,7 @@ namespace Microsoft.AspNet.SignalR.Stress
 
             thread.Start();
 
-            var connection = new Client.Hubs.HubConnection("http://foo");
+            var connection = new HubConnection("http://foo");
             var proxy = connection.CreateHubProxy("SimpleEchoHub");
 
             try
@@ -192,7 +189,7 @@ namespace Microsoft.AspNet.SignalR.Stress
 
         private static void RunOne(MemoryHost host)
         {
-            var connection = new Client.Hubs.HubConnection("http://foo");
+            var connection = new HubConnection("http://foo");
             var proxy = connection.CreateHubProxy("OnConnectedOnDisconnectedHub");
 
             try
@@ -220,7 +217,7 @@ namespace Microsoft.AspNet.SignalR.Stress
 
             for (int i = 0; i < connections; i++)
             {
-                var connection = new Client.Hubs.HubConnection("http://foo");
+                var connection = new HubConnection("http://foo");
                 var proxy = connection.CreateHubProxy("SimpleEchoHub");
                 var wh = new ManualResetEventSlim(false);
 
@@ -351,7 +348,7 @@ namespace Microsoft.AspNet.SignalR.Stress
 
         private static void RunLoop(IHttpClient client, ManualResetEventSlim wh)
         {
-            var connection = new Client.Hubs.HubConnection("http://foo");
+            var connection = new HubConnection("http://foo");
             var proxy = connection.CreateHubProxy("SimpleEchoHub");
             connection.TraceLevel = Client.TraceLevels.Messages;
             var dict = new Dictionary<string, int>();
@@ -403,7 +400,7 @@ namespace Microsoft.AspNet.SignalR.Stress
             });
 
 
-            var connection = new Client.Hubs.HubConnection("http://foo");
+            var connection = new HubConnection("http://foo");
             var proxy = connection.CreateHubProxy("SimpleEchoHub");
             var wh = new ManualResetEventSlim(false);
 
