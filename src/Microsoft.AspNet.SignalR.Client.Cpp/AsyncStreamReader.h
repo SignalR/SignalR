@@ -35,16 +35,16 @@ private:
     streams::basic_istream<uint8_t> mStream;
     shared_ptr<char> pReadBuffer;
     atomic<State> mReadingState;
-    cancellation_token_source mReadCts;
+    pplx::cancellation_token_source mReadCts;
     function<void()> SetOpened;
 
     bool IsProcessing();
     void Close();
     void Close(exception &ex);
     void Process();
-    void ReadAsync(task<unsigned int> readTask);
+    void ReadAsync(pplx::task<unsigned int> readTask);
     bool TryProcessRead(unsigned read);
     void OnOpened();
     void OnData(shared_ptr<char> buffer);
-    task<unsigned int> AsyncReadIntoBuffer(streams::basic_istream<uint8_t> stream);
+    pplx::task<unsigned int> AsyncReadIntoBuffer(streams::basic_istream<uint8_t> stream);
 };

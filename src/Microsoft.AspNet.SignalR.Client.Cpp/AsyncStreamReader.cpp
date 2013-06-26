@@ -25,7 +25,7 @@ void AsyncStreamReader::Start()
         };
 
         // FIX: Potential memory leak if Close is called between the CompareExchange and here.
-        pReadBuffer = shared_ptr<char>(new char[4096]);
+        pReadBuffer = shared_ptr<char>(new char[4096], [](char *s){delete[] s;});
 
         // Start the process loop
         Process();
@@ -142,11 +142,10 @@ void AsyncStreamReader::Close(exception& ex)
             Closed(ex);
         }
 
-        // pReadBuffer is a shared pointer and is freed automatically?
-        //{
-        //    lock_guard<mutex> lock(mBufferLock);
-        //    pReadBuffer.reset();
-        //}
+        {
+            lock_guard<mutex> lock(mBufferLock);
+            pReadBuffer.reset();
+        }
     }
 }
 
@@ -181,7 +180,7 @@ task<unsigned int> AsyncStreamReader::AsyncReadIntoBuffer(streams::basic_istream
         string &text = inStringBuffer->collection();
 
         int length = text.length() + 1;
-        pReadBuffer = shared_ptr<char>(new char[length]);
+        pReadBuffer = shared_ptr<char>(new char[length], [](char *s){delete[] s;});
         strcpy_s(pReadBuffer.get(), length, text.c_str()); // this only works in visual studio, should use strcpy for linux
 
         return (unsigned int)bytesRead;

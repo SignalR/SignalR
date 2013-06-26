@@ -10,7 +10,6 @@ ChunkBuffer::ChunkBuffer()
 
 ChunkBuffer::~ChunkBuffer()
 {
-
 }
 
 bool ChunkBuffer::HasChuncks()
@@ -21,9 +20,7 @@ bool ChunkBuffer::HasChuncks()
 void ChunkBuffer::Add(shared_ptr<char> buffer)
 {
     string str(buffer.get());
-    string_t wstr;
-    wstr.assign(str.begin(), str.end());
-    mBuffer = mBuffer.append(wstr);
+    mBuffer = mBuffer.append(string_t(str.begin(), str.end()));
     str.clear();
 }
 
