@@ -9,8 +9,6 @@ AsyncStreamReader::AsyncStreamReader(streams::basic_istream<uint8_t> stream)
 
 AsyncStreamReader::~AsyncStreamReader(void)
 {
-    // potential race: after cancellation and the class is freed, Close(OperationCanceledException("readTask")) is called
-    mReadCts.cancel();
 }
 
 void AsyncStreamReader::Start()
@@ -62,7 +60,7 @@ READ:
         }
         catch (task_canceled canceled)
         {
-            //Close(OperationCanceledException("readTask"));
+            Close(OperationCanceledException("readTask"));
         }
         catch (exception& ex)
         {
@@ -77,7 +75,7 @@ READ:
 
 void AsyncStreamReader::ReadAsync(task<unsigned int> readTask)
 {
-    readTask.then([this](task<unsigned int> readTask)
+    mLastReadTask = readTask.then([this](task<unsigned int> readTask)
     {
         try 
         {
@@ -88,7 +86,7 @@ void AsyncStreamReader::ReadAsync(task<unsigned int> readTask)
         }
         catch (task_canceled canceled)
         {
-            //Close(OperationCanceledException("readTask"));
+            Close(OperationCanceledException("readTask"));
         }
         catch (exception& ex)
         {
@@ -163,6 +161,12 @@ void AsyncStreamReader::OnData(shared_ptr<char> buffer)
     {
         Data(buffer);
     }
+}
+
+pplx::task<void> AsyncStreamReader::Abort()
+{
+    mReadCts.cancel();
+    return mLastReadTask;
 }
 
 // returns a task that reads the incoming stream and stored the messages into a buffer
