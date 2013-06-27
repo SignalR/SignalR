@@ -41,12 +41,11 @@ namespace Microsoft.AspNet.SignalR.Hosting
             // TODO: Guard against multiple calls to this
 
             // When the host triggers the shutdown token, dispose the resolver
-            hostShutdownToken.Register(state =>
+            hostShutdownToken.SafeRegister(state =>
             {
                 ((IDependencyResolver)state).Dispose();
             },
-            resolver,
-            useSynchronizationContext: false);
+            resolver);
         }
     }
 }
