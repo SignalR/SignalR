@@ -16,7 +16,6 @@
     <dependencies>
       <group targetFramework="net40">
         <dependency id="Newtonsoft.Json" version="5.0.0" />
-        <dependency id="Microsoft.Net.Http" version="2.1.10" />
       </group>
       <group targetFramework="net45">
         <dependency id="Newtonsoft.Json" version="5.0.0" />
