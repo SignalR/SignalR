@@ -18,7 +18,7 @@ namespace Microsoft.AspNet.SignalR.Client.Silverlight.Samples
             WebRequest.RegisterPrefix("http://", WebRequestCreator.ClientHttp);
             WebRequest.RegisterPrefix("https://", WebRequestCreator.ClientHttp);
 
-            var writer = new TextBlockWriter(SynchronizationContext.Current, this.Messages);
+            var writer = new TextBoxWriter(SynchronizationContext.Current, this.Messages);
             var client = new CommonClient(writer);
             var task = client.RunAsync("http://localhost:40476/");
         }

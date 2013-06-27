@@ -5,12 +5,12 @@ using System.Windows.Controls;
 
 namespace Microsoft.AspNet.SignalR.Client.Silverlight.Samples
 {
-    public class TextBlockWriter : TextWriter
+    public class TextBoxWriter : TextWriter
     {
         private SynchronizationContext _context;
-        private TextBlock _text;
+        private TextBox _text;
 
-        public TextBlockWriter(SynchronizationContext context, TextBlock text)
+        public TextBoxWriter(SynchronizationContext context, TextBox text)
         {
             _context = context;
             _text = text;

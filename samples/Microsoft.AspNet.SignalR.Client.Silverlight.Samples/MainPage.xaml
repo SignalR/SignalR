@@ -8,7 +8,7 @@
 
     <Grid x:Name="LayoutRoot" Background="White">
         <ScrollViewer Height="700" HorizontalAlignment="Left" VerticalAlignment="Top">
-            <TextBlock Name="Messages" TextWrapping="Wrap" FontSize="10"/>
+            <TextBox IsReadOnly="True" Name="Messages" TextWrapping="Wrap" FontSize="10"/>
         </ScrollViewer>
     </Grid>
 </UserControl>
