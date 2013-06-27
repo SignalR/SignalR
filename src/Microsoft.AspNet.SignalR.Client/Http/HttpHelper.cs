@@ -51,11 +51,6 @@ namespace Microsoft.AspNet.SignalR.Client.Http
 
         public static Task<HttpWebResponse> PostAsync(string url, Action<HttpWebRequest> requestPreparer, IDictionary<string, string> postData)
         {
-            return PostInternal(url, requestPreparer, postData);
-        }
-
-        private static Task<HttpWebResponse> PostInternal(string url, Action<HttpWebRequest> requestPreparer, IDictionary<string, string> postData)
-        {
             HttpWebRequest request = CreateWebRequest(url);
 
             if (requestPreparer != null)
