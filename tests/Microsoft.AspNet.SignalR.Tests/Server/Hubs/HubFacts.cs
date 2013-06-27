@@ -12,7 +12,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Server.Hubs
         public void HubsAreMockableViaDynamic()
         {
             bool sendCalled = false;
-            var hub = new MyHub();
+            var hub = new MyTestableHub();
             var mockClients = new Mock<IHubCallerConnectionContext>();
 
             hub.Clients = mockClients.Object;
@@ -32,7 +32,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Server.Hubs
         [Fact]
         public void HubsAreMockableViaType()
         {
-            var hub = new MyHub();
+            var hub = new MyTestableHub();
             var mockClients = new Mock<IHubCallerConnectionContext>();
             var all = new Mock<IClientContract>();
 
@@ -47,7 +47,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Server.Hubs
         [Fact]
         public void HubsGroupAreMockable()
         {
-            var hub = new MyHub();
+            var hub = new MyTestableHub();
             var mockClients = new Mock<IHubCallerConnectionContext>();
             var groups = new Mock<IClientContract>();
 
@@ -62,7 +62,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Server.Hubs
         [Fact]
         public void HubsClientIsMockable()
         {
-            var hub = new MyHub();
+            var hub = new MyTestableHub();
             var mockClients = new Mock<IHubCallerConnectionContext>();
             var clients = new Mock<IClientContract>();
 
@@ -74,7 +74,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Server.Hubs
             clients.VerifyAll();
         }
 
-        private class MyHub : Hub
+        private class MyTestableHub : Hub
         {
             public void Send(string messages)
             {
