@@ -1,5 +1,57 @@
 # SignalR Release Notes
 
+## SignalR 2.0.0 Beta 2
+
+### Features
+
+* Update to JSON.NET 5 ([#1932](https://github.com/SignalR/SignalR/issues/1932))
+* Make a .NET portable class library client ([#1907](https://github.com/SignalR/SignalR/issues/1907))
+* Send init message prior to triggering connect ([#1889](https://github.com/SignalR/SignalR/issues/1889))
+* Allow to Send Json Strings without duplicate Serialization ([#1546](https://github.com/SignalR/SignalR/issues/1546))
+
+### Bugs Fixed
+
+* JS client foreverFrame run into script error when immediately start->stop->start connection ([#2190](https://github.com/SignalR/SignalR/issues/2190))
+* JS client immediately start->stop->start connection causes Hub event handler added again again  ([#2187](https://github.com/SignalR/SignalR/issues/2187))
+* When the SSE transport is aborted on the client, it tries to reconnect ([#2180](https://github.com/SignalR/SignalR/issues/2180))
+* start-stop-start long polling results on a stream of poll requests ([#2160](https://github.com/SignalR/SignalR/issues/2160))
+* Update to HttpClient PCL RTW ([#2109](https://github.com/SignalR/SignalR/issues/2109))
+* Remove dependency on Microsoft.Owin.Security.DataProtection.DpapiDataProtectionProvider ([#2104](https://github.com/SignalR/SignalR/issues/2104))
+* Reconnects hang when WebSocket timed out and fallback was used ([#2096](https://github.com/SignalR/SignalR/issues/2096))
+* Run all functional tests with fake scaleout message bus. ([#2085](https://github.com/SignalR/SignalR/issues/2085))
+* when specify uiCulture in web.config, SignalR doesn't load the resource string for the specified locale ([#2077](https://github.com/SignalR/SignalR/issues/2077))
+* When change from using scale-out to not use scale-out, cursors value could change unexpectedly which cause group not working anymore ([#2061](https://github.com/SignalR/SignalR/issues/2061))
+* WP8 client fails on SSE and does not fallback to LongPolling ([#2028](https://github.com/SignalR/SignalR/issues/2028))
+* Problem with self host Server - Client on Mac (Mono) ([#1999](https://github.com/SignalR/SignalR/issues/1999))
+* Skip SSE in Silverlight & WP clients ([#1995](https://github.com/SignalR/SignalR/issues/1995))
+* Disable KeepAlive properly for Long Polling for the .NET client ([#1960](https://github.com/SignalR/SignalR/issues/1960))
+* System.ArgumentOutOfRangeException on the client side when hub invokes the callback ([#1958](https://github.com/SignalR/SignalR/issues/1958))
+* JS SSE transport: if you call connection.stop() before the connection is opened, TypeError ([#1873](https://github.com/SignalR/SignalR/issues/1873))
+* consider including connect url for longPolling etc in .Net client trace  ([#1760](https://github.com/SignalR/SignalR/issues/1760))
+* IE 10 Web Sockets Security Error when simultaneous connection limit reached ([#1744](https://github.com/SignalR/SignalR/issues/1744))
+
+## SignalR 2.0.0 Beta 1
+
+### Features
+
+* Preliminary work to allow server to support multiple protocol versions ([#2017](https://github.com/SignalR/SignalR/issues/2017))
+* Use HttpClient for .NET client HTTP stack ([#1908](https://github.com/SignalR/SignalR/issues/1908))
+* Tighter OWIN integration ([#1906](https://github.com/SignalR/SignalR/issues/1906))
+* Make Client.Connection Disposable ([#1844](https://github.com/SignalR/SignalR/issues/1844))
+* support /signalr/js for returning javascript proxy ([#1822](https://github.com/SignalR/SignalR/issues/1822))
+* Take a .NET 4.5 dependency in SignalR core (server side) ([#1723](https://github.com/SignalR/SignalR/issues/1723))
+* Add supported client libraries for MonoTouch & MonoDroid ([#1669](https://github.com/SignalR/SignalR/issues/1669))
+* Allow for overriding JS json deserializing function ([#1564](https://github.com/SignalR/SignalR/issues/1564))
+
+### Bugs Fixed
+
+* Ensure data protection and build manager dependencies come from IAppBuilder ([#2013](https://github.com/SignalR/SignalR/issues/2013))
+* Check for valid json serializer fails if there is no window.json ([#2003](https://github.com/SignalR/SignalR/issues/2003))
+* Fix UserAgent for the .NET client ([#1994](https://github.com/SignalR/SignalR/issues/1994))
+* Remove the IJsonSerializer abstraction ([#1821](https://github.com/SignalR/SignalR/issues/1821))
+* Persistent Connection fails with IIS8 on Android Stock Browser ([#1653](https://github.com/SignalR/SignalR/issues/1653))
+* OwinExtensions depends on host.AppName environment which may be null and will result in an exception. ([#1616](https://github.com/SignalR/SignalR/issues/1616))
+
 # 1.1.2
 
 ### Bugs Fixed
