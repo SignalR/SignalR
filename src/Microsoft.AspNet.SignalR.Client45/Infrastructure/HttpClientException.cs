@@ -26,8 +26,19 @@ namespace Microsoft.AspNet.SignalR.Client
         }
 
         public HttpClientException(HttpResponseMessage responseMessage)
+            : this(GetExceptionMessage(responseMessage))
         {
             Response = responseMessage;
+        }
+
+        private static string GetExceptionMessage(HttpResponseMessage responseMessage)
+        {
+            if (responseMessage == null)
+            {
+                throw new ArgumentNullException("responseMessage");
+            }
+
+            return responseMessage.ToString();
         }
     }
 }
