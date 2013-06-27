@@ -133,16 +133,16 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
             TaskContinuationOptions.ExecuteSynchronously);
         }
 
-        public Task Send(IConnection connection, string data, string connectionData)
+        public Task Send(IConnection connection, string data)
         {
-            return _transport.Send(connection, data, connectionData);
+            return _transport.Send(connection, data);
         }
 
-        public void Abort(IConnection connection, TimeSpan timeout, string connectionData)
+        public void Abort(IConnection connection, TimeSpan timeout)
         {
             if (_transport != null)
             {
-                _transport.Abort(connection, timeout, connectionData);
+                _transport.Abort(connection, timeout);
             }
         }
 

@@ -28,6 +28,7 @@ namespace Microsoft.AspNet.SignalR.Client.Http
             }
 
             Credentials = _connection.Credentials;
+            PreAuthenticate = true;
 
             if (_connection.CookieContainer != null)
             {
