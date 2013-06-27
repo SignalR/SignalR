@@ -78,6 +78,7 @@
     <Compile Include="Hubs\EmptyJavaScriptProxyGenerator.cs" />
     <Compile Include="Hubs\EnumerableOfAssemblyLocator.cs" />
     <Compile Include="Hubs\GroupProxy.cs" />
+    <Compile Include="Hubs\IHubCallerConnectionContext.cs" />
     <Compile Include="Hubs\Lookup\Descriptors\NullMethodDescriptor.cs" />
     <Compile Include="Hubs\Lookup\HubMethodDispatcher.cs" />
     <Compile Include="Infrastructure\AckHandler.cs" />
