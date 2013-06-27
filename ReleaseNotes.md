@@ -1,6 +1,6 @@
 # SignalR Release Notes
 
-## SignalR 2.0.0 Beta 2
+## 2.0.0beta2
 
 ### Features
 
@@ -30,7 +30,7 @@
 * consider including connect url for longPolling etc in .Net client trace  ([#1760](https://github.com/SignalR/SignalR/issues/1760))
 * IE 10 Web Sockets Security Error when simultaneous connection limit reached ([#1744](https://github.com/SignalR/SignalR/issues/1744))
 
-## SignalR 2.0.0 Beta 1
+## 2.0.0beta1
 
 ### Features
 
