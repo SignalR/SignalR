@@ -63,6 +63,16 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\packages\Microsoft.Owin.Host.SystemWeb.2.0.0-rc1-20617-409\lib\net45\Microsoft.Owin.Host.SystemWeb.dll</HintPath>
     </Reference>
+    <Reference Include="Microsoft.Owin.Mapping">
+      <HintPath>..\..\packages\Microsoft.Owin.Mapping.0.24.0-pre-20627-420\lib\net40\Microsoft.Owin.Mapping.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.Owin.Security, Version=2.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\packages\Microsoft.Owin.Security.2.0.0-rc1-20617-409\lib\net45\Microsoft.Owin.Security.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.Owin.Security.Basic">
+      <HintPath>..\..\packages\Microsoft.Owin.Security.Basic.0.24.0-pre-20627-420\lib\net45\Microsoft.Owin.Security.Basic.dll</HintPath>
+    </Reference>
     <Reference Include="Microsoft.Web.Infrastructure, Version=1.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <Private>True</Private>
       <HintPath>..\..\packages\Microsoft.Web.Infrastructure.1.0.0.0\lib\net40\Microsoft.Web.Infrastructure.dll</HintPath>
@@ -235,6 +245,12 @@
   <ItemGroup>
     <Compile Include="..\..\src\Common\CommonVersionInfo.cs">
       <Link>Properties\CommonVersionInfo.cs</Link>
+    </Compile>
+    <Compile Include="..\..\tests\Microsoft.AspNet.SignalR.Tests.Common\Connections\AuthenticatedEchoConnection.cs">
+      <Link>Connections\AuthenticatedEchoConnection.cs</Link>
+    </Compile>
+    <Compile Include="..\..\tests\Microsoft.AspNet.SignalR.Tests.Common\Infrastructure\BasicAuthenticationProvider.cs">
+      <Link>Infrastructure\BasicAuthenticationProvider.cs</Link>
     </Compile>
     <Compile Include="App_Start\BackgroundThread.cs" />
     <Compile Include="App_Start\Startup.SignalR.cs" />

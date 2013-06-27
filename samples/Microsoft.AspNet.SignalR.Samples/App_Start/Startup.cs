@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR.Samples;
+using Microsoft.AspNet.SignalR.Tests.Common;
+using Microsoft.AspNet.SignalR.Tests.Common.Connections;
 using Microsoft.Owin;
 using Owin;
 
@@ -29,6 +31,13 @@ namespace Microsoft.AspNet.SignalR.Samples
             };
 
             app.MapHubs(config);
+
+            app.MapPath("/basicauth", subApp =>
+            {
+                subApp.UseBasicAuthentication(new BasicAuthenticationProvider());
+                subApp.MapConnection<AuthenticatedEchoConnection>("/echo");
+                subApp.MapHubs();
+            });
 
             BackgroundThread.Start();
         }
