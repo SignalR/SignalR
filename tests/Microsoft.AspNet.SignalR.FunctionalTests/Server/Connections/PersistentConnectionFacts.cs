@@ -138,6 +138,9 @@ namespace Microsoft.AspNet.SignalR.Tests
             [InlineData(HostType.IISExpress, TransportType.Websockets)]
             [InlineData(HostType.IISExpress, TransportType.ServerSentEvents)]
             [InlineData(HostType.IISExpress, TransportType.LongPolling)]
+            [InlineData(HostType.HttpListener, TransportType.Websockets)]
+            [InlineData(HostType.HttpListener, TransportType.ServerSentEvents)]
+            [InlineData(HostType.HttpListener, TransportType.LongPolling)]
             public void BasicAuthCredentialsFlow(HostType hostType, TransportType transportType)
             {
                 using (var host = CreateHost(hostType, transportType))
@@ -177,6 +180,7 @@ namespace Microsoft.AspNet.SignalR.Tests
             [InlineData(HostType.Memory, TransportType.LongPolling, MessageBusType.Fake)]
             [InlineData(HostType.Memory, TransportType.LongPolling, MessageBusType.FakeMultiStream)]
             [InlineData(HostType.IISExpress, TransportType.Auto, MessageBusType.Default)]
+            [InlineData(HostType.HttpListener, TransportType.Auto, MessageBusType.Default)]
             public void UnableToConnectToProtectedConnection(HostType hostType, TransportType transportType, MessageBusType messageBusType)
             {
                 using (var host = CreateHost(hostType, transportType))
@@ -237,6 +241,9 @@ namespace Microsoft.AspNet.SignalR.Tests
             [InlineData(HostType.IISExpress, TransportType.Websockets, MessageBusType.Default)]
             [InlineData(HostType.IISExpress, TransportType.ServerSentEvents, MessageBusType.Default)]
             [InlineData(HostType.IISExpress, TransportType.LongPolling, MessageBusType.Default)]
+            [InlineData(HostType.HttpListener, TransportType.Websockets, MessageBusType.Default)]
+            [InlineData(HostType.HttpListener, TransportType.ServerSentEvents, MessageBusType.Default)]
+            [InlineData(HostType.HttpListener, TransportType.LongPolling, MessageBusType.Default)]
             public void SendRaisesOnReceivedFromAllEvents(HostType hostType, TransportType transportType, MessageBusType messageBusType)
             {
                 using (var host = CreateHost(hostType, transportType))
@@ -277,6 +284,9 @@ namespace Microsoft.AspNet.SignalR.Tests
             [InlineData(HostType.IISExpress, TransportType.Websockets, MessageBusType.Default)]
             [InlineData(HostType.IISExpress, TransportType.ServerSentEvents, MessageBusType.Default)]
             [InlineData(HostType.IISExpress, TransportType.LongPolling, MessageBusType.Default)]
+            [InlineData(HostType.HttpListener, TransportType.Websockets, MessageBusType.Default)]
+            [InlineData(HostType.HttpListener, TransportType.ServerSentEvents, MessageBusType.Default)]
+            [InlineData(HostType.HttpListener, TransportType.LongPolling, MessageBusType.Default)]
             public void SendCanBeCalledAfterStateChangedEvent(HostType hostType, TransportType transportType, MessageBusType messageBusType)
             {
                 using (var host = CreateHost(hostType, transportType))
@@ -322,6 +332,8 @@ namespace Microsoft.AspNet.SignalR.Tests
             [InlineData(HostType.Memory, TransportType.LongPolling, MessageBusType.FakeMultiStream)]
             [InlineData(HostType.IISExpress, TransportType.Websockets, MessageBusType.Default)]
             [InlineData(HostType.IISExpress, TransportType.ServerSentEvents, MessageBusType.Default)]
+            [InlineData(HostType.HttpListener, TransportType.Websockets, MessageBusType.Default)]
+            [InlineData(HostType.HttpListener, TransportType.ServerSentEvents, MessageBusType.Default)]
             // [InlineData(HostType.IISExpress, TransportType.LongPolling)]
             public void ReconnectFiresAfterHostShutDown(HostType hostType, TransportType transportType, MessageBusType messageBusType)
             {
@@ -394,6 +406,7 @@ namespace Microsoft.AspNet.SignalR.Tests
             [InlineData(HostType.Memory, TransportType.ServerSentEvents, MessageBusType.Fake)]
             [InlineData(HostType.Memory, TransportType.ServerSentEvents, MessageBusType.FakeMultiStream)]
             [InlineData(HostType.IISExpress, TransportType.ServerSentEvents, MessageBusType.Default)]
+            [InlineData(HostType.HttpListener, TransportType.ServerSentEvents, MessageBusType.Default)]
             // [InlineData(HostType.IISExpress, TransportType.Websockets)]
             public void GroupsReceiveMessages(HostType hostType, TransportType transportType, MessageBusType messageBusType)
             {
@@ -444,6 +457,8 @@ namespace Microsoft.AspNet.SignalR.Tests
             // [InlineData(HostType.IISExpress, TransportType.Websockets)]
             [InlineData(HostType.IISExpress, TransportType.ServerSentEvents, MessageBusType.Default)]
             [InlineData(HostType.IISExpress, TransportType.LongPolling, MessageBusType.Default)]
+            [InlineData(HostType.HttpListener, TransportType.ServerSentEvents, MessageBusType.Default)]
+            [InlineData(HostType.HttpListener, TransportType.LongPolling, MessageBusType.Default)]
             public void GroupsRejoinedWhenOnRejoiningGroupsOverridden(HostType hostType, TransportType transportType, MessageBusType messageBusType)
             {
                 using (var host = CreateHost(hostType, transportType))
@@ -498,6 +513,9 @@ namespace Microsoft.AspNet.SignalR.Tests
             [InlineData(HostType.IISExpress, TransportType.Websockets, MessageBusType.Default)]
             [InlineData(HostType.IISExpress, TransportType.ServerSentEvents, MessageBusType.Default)]
             [InlineData(HostType.IISExpress, TransportType.LongPolling, MessageBusType.Default)]
+            [InlineData(HostType.HttpListener, TransportType.Websockets, MessageBusType.Default)]
+            [InlineData(HostType.HttpListener, TransportType.ServerSentEvents, MessageBusType.Default)]
+            [InlineData(HostType.HttpListener, TransportType.LongPolling, MessageBusType.Default)]
             public void SendToAllButCaller(HostType hostType, TransportType transportType, MessageBusType messageBusType)
             {
                 using (var host = CreateHost(hostType, transportType))
@@ -536,6 +554,8 @@ namespace Microsoft.AspNet.SignalR.Tests
             [InlineData(HostType.Memory, TransportType.LongPolling, MessageBusType.FakeMultiStream)]
             [InlineData(HostType.IISExpress, TransportType.ServerSentEvents, MessageBusType.Default)]
             [InlineData(HostType.IISExpress, TransportType.LongPolling, MessageBusType.Default)]
+            [InlineData(HostType.HttpListener, TransportType.ServerSentEvents, MessageBusType.Default)]
+            [InlineData(HostType.HttpListener, TransportType.LongPolling, MessageBusType.Default)]
             public void SendWithSyncErrorThrows(HostType hostType, TransportType transportType, MessageBusType messageBusType)
             {
                 using (var host = CreateHost(hostType, transportType))
@@ -566,6 +586,9 @@ namespace Microsoft.AspNet.SignalR.Tests
             [InlineData(HostType.IISExpress, TransportType.ServerSentEvents, MessageBusType.Default)]
             [InlineData(HostType.IISExpress, TransportType.LongPolling, MessageBusType.Default)]
             [InlineData(HostType.IISExpress, TransportType.Websockets, MessageBusType.Default)]
+            [InlineData(HostType.HttpListener, TransportType.ServerSentEvents, MessageBusType.Default)]
+            [InlineData(HostType.HttpListener, TransportType.LongPolling, MessageBusType.Default)]
+            [InlineData(HostType.HttpListener, TransportType.Websockets, MessageBusType.Default)]
             public void ReceivePreserializedJson(HostType hostType, TransportType transportType, MessageBusType messageBusType)
             {
                 using (var host = CreateHost(hostType, transportType))
@@ -599,6 +622,8 @@ namespace Microsoft.AspNet.SignalR.Tests
             [Theory]
             [InlineData(HostType.IISExpress, TransportType.ServerSentEvents)]
             [InlineData(HostType.IISExpress, TransportType.LongPolling)]
+            [InlineData(HostType.HttpListener, TransportType.ServerSentEvents)]
+            [InlineData(HostType.HttpListener, TransportType.LongPolling)]
             public void EnvironmentIsAvailable(HostType hostType, TransportType transportType)
             {
                 using (var host = CreateHost(hostType, transportType))
