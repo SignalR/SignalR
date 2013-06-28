@@ -109,7 +109,7 @@ namespace Microsoft.AspNet.SignalR.Tests
             });
 
             Assert.True(wh.Task.Wait(TimeSpan.FromSeconds(5)));
-            Assert.Equal("Request failed - task cancelled.", wh.Task.Result.Message);
+            Assert.IsType(typeof(OperationCanceledException), wh.Task.Result);
         }
 
         [Fact]
@@ -132,7 +132,7 @@ namespace Microsoft.AspNet.SignalR.Tests
             pollingHandler.OnError += (ex) => { wh.TrySetResult(ex); };
 
             Assert.True(wh.Task.Wait(TimeSpan.FromSeconds(5)));
-            Assert.Equal("Request failed - task cancelled.", wh.Task.Result.Message);
+            Assert.IsType(typeof(OperationCanceledException), wh.Task.Result);
         }
 
         [Fact]

@@ -86,7 +86,6 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
 
         [SuppressMessage("Microsoft.Maintainability", "CA1502:AvoidExcessiveComplexity", Justification = "We will refactor later.")]
         [SuppressMessage("Microsoft.Maintainability", "CA1506:AvoidExcessiveClassCoupling", Justification = "We will refactor later.")]
-        [SuppressMessage("Microsoft.Usage", "CA2201:ExceptionNotSufficientlySpecific", Justification = "Limited information about cancellation")]
         private void OpenConnection(IConnection connection,
                                     string data,
                                     CancellationToken disconnectToken,
@@ -120,26 +119,24 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
 
                     if (task.IsCanceled)
                     {
-                        exception = new Exception(Resources.Error_TaskCancelledException);
+                        exception = new OperationCanceledException(Resources.Error_TaskCancelledException);
                     }
                     else
                     {
                         exception = task.Exception.Unwrap();
                     }
 
-                    if (!ExceptionHelper.IsRequestAborted(exception))
+                    if (errorCallback != null)
                     {
-                        if (errorCallback != null)
-                        {
-                            callbackInvoker.Invoke((cb, ex) => cb(ex), errorCallback, exception);
-                        }
-                        else if (reconnecting)
-                        {
-                            // Only raise the error event if we failed to reconnect
-                            connection.OnError(exception);
+                        callbackInvoker.Invoke((cb, ex) => cb(ex), errorCallback, exception);
+                    }
 
-                            Reconnect(connection, data, disconnectToken);
-                        }
+                    if (!ExceptionHelper.IsRequestAborted(exception) && reconnecting)
+                    {
+                        // Only raise the error event if we failed to reconnect
+                        connection.OnError(exception);
+
+                        Reconnect(connection, data, disconnectToken);
                     }
                     requestDisposer.Dispose();
                 }
