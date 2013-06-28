@@ -79,6 +79,11 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
             });
         }
 
+        public void OpenConnection(IConnection connection, Action<Exception> errorCallback)
+        {
+            OpenConnection(connection, null, CancellationToken.None, () => { }, errorCallback);
+        }
+
         [SuppressMessage("Microsoft.Maintainability", "CA1502:AvoidExcessiveComplexity", Justification = "We will refactor later.")]
         [SuppressMessage("Microsoft.Maintainability", "CA1506:AvoidExcessiveClassCoupling", Justification = "We will refactor later.")]
         private void OpenConnection(IConnection connection,
@@ -108,22 +113,30 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
 
             }, isLongRunning: true).ContinueWith(task =>
             {
-                if (task.IsFaulted)
+                if (task.IsFaulted || task.IsCanceled)
                 {
-                    Exception exception = task.Exception.Unwrap();
-                    if (!ExceptionHelper.IsRequestAborted(exception))
-                    {
-                        if (errorCallback != null)
-                        {
-                            callbackInvoker.Invoke((cb, ex) => cb(ex), errorCallback, exception);
-                        }
-                        else if (reconnecting)
-                        {
-                            // Only raise the error event if we failed to reconnect
-                            connection.OnError(exception);
+                    Exception exception;
 
-                            Reconnect(connection, data, disconnectToken);
-                        }
+                    if (task.IsCanceled)
+                    {
+                        exception = new OperationCanceledException(Resources.Error_TaskCancelledException);
+                    }
+                    else
+                    {
+                        exception = task.Exception.Unwrap();
+                    }
+
+                    if (errorCallback != null)
+                    {
+                        callbackInvoker.Invoke((cb, ex) => cb(ex), errorCallback, exception);
+                    }
+
+                    if (!ExceptionHelper.IsRequestAborted(exception) && reconnecting)
+                    {
+                        // Only raise the error event if we failed to reconnect
+                        connection.OnError(exception);
+
+                        Reconnect(connection, data, disconnectToken);
                     }
                     requestDisposer.Dispose();
                 }
