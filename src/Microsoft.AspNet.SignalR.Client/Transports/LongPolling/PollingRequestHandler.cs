@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.md in the project root for license information.
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR.Client.Http;
@@ -79,7 +80,8 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
             }
         }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "Exceptions are flowed back to user.")]
+        [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "Exceptions are flowed back to user.")]
+        [SuppressMessage("Microsoft.Usage", "CA2201:ExceptionNotSufficientlySpecific", Justification = "Limited information about cancellation")]
         private void Poll()
         {
             // This is to ensure that we do not accidently fire off another poll after being told to stop
@@ -108,9 +110,16 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
                     var next = TaskAsyncHelper.Empty;
                     Exception exception = null;
 
-                    if (task.IsFaulted)
+                    if (task.IsFaulted || task.IsCanceled)
                     {
-                        exception = task.Exception.Unwrap();
+                        if (task.IsCanceled)
+                        {
+                            exception = new Exception(Resources.Error_TaskCancelledException);
+                        }
+                        else
+                        {
+                            exception = task.Exception.Unwrap();
+                        }
 
                         OnError(exception);
                     }

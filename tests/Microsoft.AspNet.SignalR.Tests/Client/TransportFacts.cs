@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR.Client;
 using Microsoft.AspNet.SignalR.Client.Http;
 using Microsoft.AspNet.SignalR.Client.Transports;
@@ -85,6 +86,56 @@ namespace Microsoft.AspNet.SignalR.Tests
         }
 
         [Fact]
+        public void CancelledTaskHandledinServerSentEvents()
+        {
+            var tcs = new TaskCompletionSource<IResponse>();
+            var wh = new TaskCompletionSource<Exception>();
+
+            tcs.TrySetCanceled();
+
+            var httpClient = new Mock<Microsoft.AspNet.SignalR.Client.Http.IHttpClient>();
+            var connection = new Mock<Microsoft.AspNet.SignalR.Client.IConnection>();
+
+            httpClient.Setup(c => c.Get(It.IsAny<string>(),
+                It.IsAny<Action<Client.Http.IRequest>>(), It.IsAny<bool>()))
+                .Returns(tcs.Task);
+
+            connection.SetupGet(c => c.ConnectionToken).Returns("foo");
+
+            var sse = new ServerSentEventsTransport(httpClient.Object);
+            sse.OpenConnection(connection.Object, (ex) =>
+            {
+                wh.TrySetResult(ex);
+            });
+
+            Assert.True(wh.Task.Wait(TimeSpan.FromSeconds(5)));
+            Assert.Equal("Request failed - task cancelled.", wh.Task.Result.Message);
+        }
+
+        [Fact]
+        public void CancelledTaskHandledinLongPolling()
+        {
+            var tcs = new TaskCompletionSource<IResponse>();
+            var wh = new TaskCompletionSource<Exception>();
+
+            tcs.TrySetCanceled();
+
+            var httpClient = new Mock<Microsoft.AspNet.SignalR.Client.Http.IHttpClient>();
+
+            httpClient.Setup(c => c.Post(It.IsAny<string>(),
+                It.IsAny<Action<Client.Http.IRequest>>(), It.IsAny<IDictionary<string, string>>(), It.IsAny<bool>()))
+                .Returns(tcs.Task);
+
+            var pollingHandler = new PollingRequestHandler(httpClient.Object);
+            pollingHandler.Start();
+
+            pollingHandler.OnError += (ex) => { wh.TrySetResult(ex); };
+
+            Assert.True(wh.Task.Wait(TimeSpan.FromSeconds(5)));
+            Assert.Equal("Request failed - task cancelled.", wh.Task.Result.Message);
+        }
+
+        [Fact]
         public void SendCatchesOnReceivedExceptions()
         {
             var ex = new Exception();
@@ -106,7 +157,7 @@ namespace Microsoft.AspNet.SignalR.Tests
 
                     httpClient.Setup(h => h.Post(It.IsAny<string>(),
                                                  It.IsAny<Action<Client.Http.IRequest>>(),
-                                                 It.IsAny<IDictionary<string, string>>(),false))
+                                                 It.IsAny<IDictionary<string, string>>(), false))
                               .Returns(TaskAsyncHelper.FromResult(response.Object));
 
                     connection.Setup(c => c.Trace(TraceLevels.Messages, It.IsAny<string>(), It.IsAny<object[]>()));
