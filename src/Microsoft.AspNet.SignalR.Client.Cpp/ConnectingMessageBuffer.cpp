@@ -40,4 +40,8 @@ void ConnectingMessageBuffer::Clear()
 {
     queue<string_t> empty;
     swap(mBuffer, empty);
+
+    //clean up
+    pConnection = nullptr;
+    DrainCallback = [](string_t message){};
 }

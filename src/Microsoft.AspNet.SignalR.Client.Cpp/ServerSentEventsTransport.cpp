@@ -3,12 +3,12 @@
 ServerSentEventsTransport::ServerSentEventsTransport(shared_ptr<IHttpClient> httpClient) : 
     HttpBasedTransport(httpClient, U("serverSentEvents"))
 {
+    mConnectionTimeout = seconds(2);
+    mReconnectDelay = seconds(5);
 }
 
 ServerSentEventsTransport::~ServerSentEventsTransport()
 {
-    mConnectionTimeout = seconds(2);
-    mReconnectDelay = seconds(5);
 }
 
 void ServerSentEventsTransport::OnAbort()
@@ -54,13 +54,41 @@ void ServerSentEventsTransport::OpenConnection(shared_ptr<Connection> connection
         connection->PrepareRequest(request);
     }).then([this, connection, data, disconnectToken, errorCallback, initializeInvoke, reconnecting](pplx::task<http_response> connectRequest) 
     {
-        try
+        http_response response;
+        exception ex;
+        TaskStatus status = TaskAsyncHelper::RunTaskToCompletion<http_response>(connectRequest, response, ex);
+        
+        if (status == TaskStatus::TaskFaulted)
         {
-            http_response response = connectRequest.get();
+            if (!ExceptionHelper::IsRequestAborted(ex))
+            {
+                if (errorCallback != nullptr)
+                {
+                    pCallbackInvoker->Invoke<function<void(exception&)>, exception&>([](function<void(exception&)> cb, exception& ex)
+                    {
+                        cb(ex);        
+                    }, errorCallback, ex);
+                }
+                else if (reconnecting)
+                {
+                    // raise error event if failed to reconnect
+                    connection->OnError(ex);
+
+                    Reconnect(connection, data, disconnectToken);
+                }
+            }
+        }
+        else if (status == TaskStatus::TaskCanceled)
+        {
+            return;
+        }
+        else
+        {
             pEventSource = unique_ptr<EventSourceStreamReader>(new EventSourceStreamReader(response.body()));
 
             mStop = false;
         
+            // what is CancellationTokenExtensions.SafeRegister?
             disconnectToken.register_callback<function<void()>>([this]()
             {
                 mStop = true;
@@ -91,7 +119,7 @@ void ServerSentEventsTransport::OpenConnection(shared_ptr<Connection> connection
 
                     if (disconnected)
                     {
-                        this->mStop = true;
+                        mStop = true;
                         connection->Disconnect();
                     }
                 }
@@ -109,7 +137,7 @@ void ServerSentEventsTransport::OpenConnection(shared_ptr<Connection> connection
                     }
                 }
 
-                if (this->mStop)
+                if (mStop)
                 {
                     CompleteAbort();
                 }
@@ -124,25 +152,6 @@ void ServerSentEventsTransport::OpenConnection(shared_ptr<Connection> connection
             };
 
             pEventSource->Start();
-
-        }
-        catch (pplx::task_canceled canceled)
-        {
-            return;
-        }
-        catch(exception& ex)
-        {
-            if (errorCallback != nullptr)
-            {
-                // invoke error event
-            }
-            else if (reconnecting)
-            {
-                // raise error event if failed to reconnect
-                connection->OnError(ex);
-
-                Reconnect(connection, data, disconnectToken);
-            }
         }
     });
 

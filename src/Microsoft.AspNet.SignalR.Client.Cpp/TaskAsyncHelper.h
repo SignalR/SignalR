@@ -9,6 +9,13 @@ using namespace std;
 using namespace utility;
 using namespace concurrency;
 
+enum TaskStatus
+{
+    TaskFaulted = 0,
+    TaskCanceled,
+    TaskCompleted
+};
+
 class TaskAsyncHelper
 {
 public:
@@ -16,4 +23,24 @@ public:
     ~TaskAsyncHelper();
 
     static pplx::task<void> Delay(seconds seconds);
+
+    template <typename T>
+    static TaskStatus RunTaskToCompletion(pplx::task<T> task, T& result, exception& ex)
+    {
+        try
+        {
+            result = task.get();
+            return TaskStatus::TaskCompleted;
+        }
+        catch(pplx::task_canceled canceled)
+        {
+            return TaskStatus::TaskCanceled;
+        }
+        catch(exception& exception)
+        {
+            ex = exception;
+            return TaskStatus::TaskFaulted;
+        }
+    }
+
 };

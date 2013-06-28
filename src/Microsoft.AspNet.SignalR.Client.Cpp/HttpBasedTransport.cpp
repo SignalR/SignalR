@@ -20,7 +20,7 @@ shared_ptr<IHttpClient> HttpBasedTransport::GetHttpClient()
     return pHttpClient;
 }
 
-task<shared_ptr<NegotiationResponse>> HttpBasedTransport::Negotiate(shared_ptr<Connection> connection)
+pplx::task<shared_ptr<NegotiationResponse>> HttpBasedTransport::Negotiate(shared_ptr<Connection> connection)
 {
     return TransportHelper::GetNegotiationResponse(pHttpClient, connection);
 }
@@ -35,9 +35,9 @@ string_t HttpBasedTransport::GetReceiveQueryString(shared_ptr<Connection> connec
     return TransportHelper::GetReceiveQueryString(connection, data, mTransportName);
 }
 
-task<void> HttpBasedTransport::Start(shared_ptr<Connection> connection, string_t data, cancellation_token disconnectToken)
+pplx::task<void> HttpBasedTransport::Start(shared_ptr<Connection> connection, string_t data, pplx::cancellation_token disconnectToken)
 {
-    auto tce = shared_ptr<task_completion_event<void>>(new task_completion_event<void>());
+    auto tce = shared_ptr<pplx::task_completion_event<void>>(new pplx::task_completion_event<void>());
     
     function<void()> initializeCallback = [tce]()
     {
@@ -50,10 +50,10 @@ task<void> HttpBasedTransport::Start(shared_ptr<Connection> connection, string_t
     };
 
     OnStart(connection, data, disconnectToken, initializeCallback, errorCallback);
-    return task<void>(*(tce.get()));
+    return pplx::task<void>(*(tce.get()));
 }
 
-task<void> HttpBasedTransport::Send(shared_ptr<Connection> connection, string_t data)
+pplx::task<void> HttpBasedTransport::Send(shared_ptr<Connection> connection, string_t data)
 {
     if (connection == nullptr)
     {
@@ -69,11 +69,16 @@ task<void> HttpBasedTransport::Send(shared_ptr<Connection> connection, string_t 
     return pHttpClient->Post(uri, [connection](shared_ptr<HttpRequestWrapper> request)
     {
         connection->PrepareRequest(request);
-    }, encodedData).then([connection](task<http_response> sendTask)
+    }, encodedData).then([connection](pplx::task<http_response> sendTask)
     {
-        try
+
+
+        http_response response;
+        exception ex;
+        TaskStatus status = TaskAsyncHelper::RunTaskToCompletion<http_response>(sendTask, response, ex);
+
+        if (status == TaskStatus::TaskCompleted)
         {
-            http_response response = sendTask.get();
             if (response.headers().content_length() != 0)
             {
                 auto inStringBuffer = shared_ptr<streams::container_buffer<string>>(new streams::container_buffer<string>());
@@ -86,12 +91,12 @@ task<void> HttpBasedTransport::Send(shared_ptr<Connection> connection, string_t 
                     connection->OnReceived(message);
                 });
             }
-        }
-        catch(pplx::task_canceled canceled)
+        } 
+        else if (status == TaskStatus::TaskCanceled)
         {
             return;
         }
-        catch(exception& ex)
+        else
         {
             connection->OnError(ex);
         }
@@ -125,19 +130,17 @@ void HttpBasedTransport::Abort(shared_ptr<Connection> connection)
             pHttpClient->Post(uri, [connection](shared_ptr<HttpRequestWrapper> request)
             {
                 connection->PrepareRequest(request);
-            }).then([this](task<http_response> abortTask)
+            }).then([this](pplx::task<http_response> abortTask)
             {
-                try
+                http_response response;
+                exception ex;
+                TaskStatus status = TaskAsyncHelper::RunTaskToCompletion<http_response>(abortTask, response, ex);
+
+                if (status == TaskStatus::TaskCompleted)
                 {
-                    // the response is not used but is used to determine if task completed successfully
-                    http_response response = abortTask.get();
                     OnAbort();
-                }
-                catch(pplx::task_canceled canceled)
-                {
-                    return;
-                }
-                catch(exception& ex)
+                } 
+                else 
                 {
                     CompleteAbort();
                 }
@@ -176,28 +179,3 @@ bool HttpBasedTransport::TryCompleteAbort()
     }
 }
 
-void HttpBasedTransport::Dispose()
-{
-    Dispose(true);
-}
-
-// Is this function necessary for C++?
-void HttpBasedTransport::Dispose(bool disposing)
-{
-    if (disposing)
-    {
-        lock_guard<mutex> lock(mAbortLock);
-        
-        {
-            lock_guard<mutex> lock(mDisposeLock);
-
-            // Wait for any ongoing aborts to complete
-            // In practice, any aborts should have finished by the time Dispose is called
-            if (!mDisposed)
-            {
-                //pAbortResetEvent.Dispose();
-                mDisposed = true;
-            }
-        }
-    }
-}

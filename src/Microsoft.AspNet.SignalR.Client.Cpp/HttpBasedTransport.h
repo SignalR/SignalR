@@ -4,8 +4,8 @@
 #include "TransportHelper.h"
 #include <agents.h>
 #include <typeinfo>
+#include "TaskAsyncHelper.h"
 
-using namespace pplx;
 using namespace utility;
 using namespace web::json;
 
@@ -20,13 +20,11 @@ public:
     pplx::task<void> Start(shared_ptr<Connection> connection, string_t data, pplx::cancellation_token disconnectToken);
     pplx::task<void> Send(shared_ptr<Connection> connection, string_t data);
     void Abort(shared_ptr<Connection> connection);
-    void Dispose();
 
 protected:
     shared_ptr<IHttpClient> GetHttpClient();
     string_t GetReceiveQueryString(shared_ptr<Connection> connection, string_t data);
     string_t GetSendQueryString(string_t transport, string_t connectionToken, string_t customQuery);
-    void Dispose(bool disposing);
     void CompleteAbort();
     bool TryCompleteAbort();
     virtual void OnStart(shared_ptr<Connection> connection, string_t data, pplx::cancellation_token disconnectToken, function<void()> initializeCallback, function<void(exception)> errorCallback) = 0;

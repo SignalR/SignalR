@@ -18,7 +18,7 @@ SUITE(ExceptionHelperTests)
         // Assert
         CHECK(!isNull1);
         CHECK(!isNull2);
-        CHECK(isNull3);
+        CHECK(!isNull3);
     }
 
     TEST(IsRequestAbortedRecognizeOperationCanceledExceptionClassOnly)

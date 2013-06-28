@@ -131,27 +131,23 @@ pplx::task<void> Connection::Negotiate(shared_ptr<IClientTransport> transport)
 {
     return pTransport->Negotiate(shared_from_this()).then([this](pplx::task<shared_ptr<NegotiationResponse>> negotiateTask)
     {
-        try
+        shared_ptr<NegotiationResponse> response;
+        exception ex;
+        TaskStatus status = TaskAsyncHelper::RunTaskToCompletion<shared_ptr<NegotiationResponse>>(negotiateTask, response, ex);
+
+        if (status == TaskStatus::TaskCompleted)
         {
-            shared_ptr<NegotiationResponse> response = negotiateTask.get();
-            
             mConnectionId = response->mConnectionId;
             mConnectionToken = response->mConnectionToken;
 
             return StartTransport();
-        }
-        catch (pplx::task_canceled canceled)
+        } 
+        else
         {
             return pplx::task<void>([this]()
             {
                 Disconnect();        
-            });
-        }
-        catch (exception& ex)
-        {
-            return pplx::task<void>([this]()
-            {
-                Disconnect();        
+                // also throw some error
             });
         }
     });
@@ -245,16 +241,10 @@ void Connection::Stop()
             // Therefore we need to clear it incase we start the connection again. Also reset the buffer to 
             // avoid leaks due to circular referencing
             mConnectingMessageBuffer.Clear();
-            mConnectingMessageBuffer.Initialize(nullptr, [](string_t message){});
 
             pTransport->Abort(shared_from_this());
 
             Disconnect();
-
-            if (pTransport)
-            {
-                pTransport->Dispose();
-            }
         }
     }
 }

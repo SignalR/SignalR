@@ -48,21 +48,23 @@ READ:
     }
 
     if (readTask.is_done())
-    {
-        try
-        {
-            long read = readTask.get();
+    {        
+        unsigned int bytesRead;
+        exception ex;
+        TaskStatus status = TaskAsyncHelper::RunTaskToCompletion<unsigned int>(readTask, bytesRead, ex);
 
-            if (TryProcessRead(read))
+        if (status == TaskStatus::TaskCompleted)
+        {
+            if (TryProcessRead(bytesRead))
             {
                 goto READ;
             }
         }
-        catch (task_canceled canceled)
+        else if (status == TaskStatus::TaskCanceled)
         {
             Close(OperationCanceledException("readTask"));
         }
-        catch (exception& ex)
+        else
         {
             Close(ex);
         }
@@ -73,22 +75,26 @@ READ:
     }
 }
 
-void AsyncStreamReader::ReadAsync(task<unsigned int> readTask)
+void AsyncStreamReader::ReadAsync(pplx::task<unsigned int> readTask)
 {
-    mLastReadTask = readTask.then([this](task<unsigned int> readTask)
+    mLastReadTask = readTask.then([this](pplx::task<unsigned int> readTask)
     {
-        try 
+        unsigned int bytesRead;
+        exception ex;
+        TaskStatus status = TaskAsyncHelper::RunTaskToCompletion<unsigned int>(readTask, bytesRead, ex);
+        
+        if (status == TaskStatus::TaskCompleted)
         {
-            if (TryProcessRead(readTask.get()))
+            if (TryProcessRead(bytesRead))
             {
                 Process();
             }
         }
-        catch (task_canceled canceled)
+        else if (status == TaskStatus::TaskCanceled)
         {
             Close(OperationCanceledException("readTask"));
         }
-        catch (exception& ex)
+        else
         {
             Close(ex);
         }
@@ -170,10 +176,10 @@ pplx::task<void> AsyncStreamReader::Abort()
 }
 
 // returns a task that reads the incoming stream and stored the messages into a buffer
-task<unsigned int> AsyncStreamReader::AsyncReadIntoBuffer(streams::basic_istream<uint8_t> stream)
+pplx::task<unsigned int> AsyncStreamReader::AsyncReadIntoBuffer(Concurrency::streams::basic_istream<uint8_t> stream)
 {
     auto inStringBuffer = shared_ptr<streams::container_buffer<string>>(new streams::container_buffer<string>());
-    task_options readTaskOptions(mReadCts.get_token());
+    pplx::task_options readTaskOptions(mReadCts.get_token());
     return stream.read(*(inStringBuffer.get()), 4096).then([inStringBuffer, this](size_t bytesRead)
     {
         if (is_task_cancellation_requested())

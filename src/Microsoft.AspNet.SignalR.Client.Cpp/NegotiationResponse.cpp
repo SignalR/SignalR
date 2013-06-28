@@ -6,15 +6,13 @@ NegotiationResponse::NegotiationResponse()
 
 NegotiationResponse::NegotiationResponse(value raw)
 {
-    auto iter = raw.cbegin();
-
-    mUri = (iter++)->second.as_string();
-    mConnectionToken = (iter++)->second.as_string();
-    mConnectionId = (iter++)->second.as_string();
-    mKeepAliveTimeout = (iter++)->second.as_double();
-    mDisconnectTimeout = (iter++)->second.as_double();
-    mTryWebSockets = (iter++)->second.as_bool();
-    mProtocolVersion = iter->second.as_string();
+    mUri = raw[U("Url")].as_string();
+    mConnectionToken = raw[U("ConnectionToken")].as_string();
+    mConnectionId = raw[U("ConnectionId")].as_string();
+    mKeepAliveTimeout = raw[U("KeepAliveTimeout")].as_double();
+    mDisconnectTimeout = raw[U("DisconnectTimeout")].as_double();
+    mTryWebSockets = raw[U("TryWebSockets")].as_bool();
+    mProtocolVersion = raw[U("ProtocolVersion")].as_string();
 }
 
 NegotiationResponse::~NegotiationResponse()

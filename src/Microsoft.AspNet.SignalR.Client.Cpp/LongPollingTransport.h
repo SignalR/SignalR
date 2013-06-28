@@ -8,7 +8,7 @@ public:
     ~LongPollingTransport();
 
 protected:
-    void OnStart(shared_ptr<Connection> connection, string_t data, cancellation_token disconnectToken, function<void()> initializeCallback, function<void()> errorCallback);
+    void OnStart(shared_ptr<Connection> connection, string_t data, pplx::cancellation_token disconnectToken, function<void()> initializeCallback, function<void()> errorCallback);
     void OnAbort();
     void LostConnection(shared_ptr<Connection> connection);
 };

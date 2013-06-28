@@ -5,10 +5,9 @@
 #include "SseEvent.h"
 #include <http_client.h>
 #include "ExceptionHelper.h"
+#include "TaskAsyncHelper.h"
 
 using namespace std;
-using namespace pplx;
-using namespace Concurrency;
 
 enum State {
     Initial = 0,
@@ -26,7 +25,7 @@ public:
     function<void(exception& ex)> Closed;
     function<void(shared_ptr<char> buffer)> Data;
     void Start();
-    task<void> Abort();
+    pplx::task<void> Abort();
 
 protected:
     mutex mBufferLock;
@@ -48,5 +47,5 @@ private:
     bool TryProcessRead(unsigned read);
     void OnOpened();
     void OnData(shared_ptr<char> buffer);
-    pplx::task<unsigned int> AsyncReadIntoBuffer(streams::basic_istream<uint8_t> stream);
+    pplx::task<unsigned int> AsyncReadIntoBuffer(Concurrency::streams::basic_istream<uint8_t> stream);
 };

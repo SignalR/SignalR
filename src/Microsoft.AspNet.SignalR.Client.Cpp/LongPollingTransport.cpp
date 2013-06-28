@@ -10,7 +10,7 @@ LongPollingTransport::~LongPollingTransport()
 {
 }
 
-void LongPollingTransport::OnStart(shared_ptr<Connection> connection, string_t data, cancellation_token disconnectToken, function<void()> initializeCallback, function<void()> errorCallback)
+void LongPollingTransport::OnStart(shared_ptr<Connection> connection, string_t data, pplx::cancellation_token disconnectToken, function<void()> initializeCallback, function<void()> errorCallback)
 {
 }
 
