@@ -103,6 +103,9 @@ namespace Microsoft.AspNet.SignalR.Tests
         [InlineData("1337.0", HostType.IISExpress, TransportType.LongPolling, MessageBusType.Default)]
         [InlineData("1337.0", HostType.IISExpress, TransportType.ServerSentEvents, MessageBusType.Default)]
         [InlineData("1337.0", HostType.IISExpress, TransportType.Websockets, MessageBusType.Default)]
+        [InlineData("1337.0", HostType.HttpListener, TransportType.LongPolling, MessageBusType.Default)]
+        [InlineData("1337.0", HostType.HttpListener, TransportType.ServerSentEvents, MessageBusType.Default)]
+        [InlineData("1337.0", HostType.HttpListener, TransportType.Websockets, MessageBusType.Default)]
         [InlineData("0.1337", HostType.Memory, TransportType.ServerSentEvents, MessageBusType.Default)]
         [InlineData("0.1337", HostType.Memory, TransportType.ServerSentEvents, MessageBusType.Fake)]
         [InlineData("0.1337", HostType.Memory, TransportType.ServerSentEvents, MessageBusType.FakeMultiStream)]
@@ -112,6 +115,9 @@ namespace Microsoft.AspNet.SignalR.Tests
         [InlineData("0.1337", HostType.IISExpress, TransportType.LongPolling, MessageBusType.Default)]
         [InlineData("0.1337", HostType.IISExpress, TransportType.ServerSentEvents, MessageBusType.Default)]
         [InlineData("0.1337", HostType.IISExpress, TransportType.Websockets, MessageBusType.Default)]
+        [InlineData("0.1337", HostType.HttpListener, TransportType.LongPolling, MessageBusType.Default)]
+        [InlineData("0.1337", HostType.HttpListener, TransportType.ServerSentEvents, MessageBusType.Default)]
+        [InlineData("0.1337", HostType.HttpListener, TransportType.Websockets, MessageBusType.Default)]
         public void ConnectionFailsToStartWithInvalidOldProtocol(string protocolVersion, HostType hostType, TransportType transportType, MessageBusType messageBusType)
         {
             using (var host = CreateHost(hostType, transportType))
@@ -141,6 +147,9 @@ namespace Microsoft.AspNet.SignalR.Tests
         [InlineData(HostType.IISExpress, TransportType.LongPolling, MessageBusType.Default)]
         [InlineData(HostType.IISExpress, TransportType.ServerSentEvents, MessageBusType.Default)]
         [InlineData(HostType.IISExpress, TransportType.Websockets, MessageBusType.Default)]
+        [InlineData(HostType.HttpListener, TransportType.LongPolling, MessageBusType.Default)]
+        [InlineData(HostType.HttpListener, TransportType.ServerSentEvents, MessageBusType.Default)]
+        [InlineData(HostType.HttpListener, TransportType.Websockets, MessageBusType.Default)]
         public void ConnectionDisposeTriggersStop(HostType hostType, TransportType transportType, MessageBusType messageBusType)
         {
             using (var host = CreateHost(hostType, transportType))
@@ -163,6 +172,9 @@ namespace Microsoft.AspNet.SignalR.Tests
         [InlineData(HostType.IISExpress, TransportType.LongPolling)]
         [InlineData(HostType.IISExpress, TransportType.ServerSentEvents)]
         [InlineData(HostType.IISExpress, TransportType.Websockets)]
+        [InlineData(HostType.HttpListener, TransportType.LongPolling)]
+        [InlineData(HostType.HttpListener, TransportType.ServerSentEvents)]
+        [InlineData(HostType.HttpListener, TransportType.Websockets)]
         public void RequestHeadersSetCorrectly(HostType hostType, TransportType transportType)
         {
             using (var host = CreateHost(hostType, transportType))
@@ -210,6 +222,9 @@ namespace Microsoft.AspNet.SignalR.Tests
         [InlineData(HostType.IISExpress, TransportType.LongPolling)]
         [InlineData(HostType.IISExpress, TransportType.ServerSentEvents)]
         [InlineData(HostType.IISExpress, TransportType.Websockets)]
+        [InlineData(HostType.HttpListener, TransportType.LongPolling)]
+        [InlineData(HostType.HttpListener, TransportType.ServerSentEvents)]
+        [InlineData(HostType.HttpListener, TransportType.Websockets)]
         public void RequestHeadersCannotBeSetOnceConnected(HostType hostType, TransportType transportType)
         {
             using (var host = CreateHost(hostType, transportType))
@@ -232,6 +247,9 @@ namespace Microsoft.AspNet.SignalR.Tests
         [InlineData(HostType.IISExpress, TransportType.LongPolling)]
         [InlineData(HostType.IISExpress, TransportType.ServerSentEvents)]
         [InlineData(HostType.IISExpress, TransportType.Websockets)]
+        [InlineData(HostType.HttpListener, TransportType.LongPolling)]
+        [InlineData(HostType.HttpListener, TransportType.ServerSentEvents)]
+        [InlineData(HostType.HttpListener, TransportType.Websockets)]
         public void ReconnectRequestPathEndsInReconnect(HostType hostType, TransportType transportType)
         {
             using (var host = CreateHost(hostType, transportType))

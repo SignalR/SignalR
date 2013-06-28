@@ -129,6 +129,8 @@ namespace Microsoft.AspNet.SignalR.Client.Tests
             [InlineData(HostType.Memory, TransportType.LongPolling, MessageBusType.FakeMultiStream)]
             [InlineData(HostType.IISExpress, TransportType.ServerSentEvents, MessageBusType.Default)]
             [InlineData(HostType.IISExpress, TransportType.LongPolling, MessageBusType.Default)]
+            [InlineData(HostType.HttpListener, TransportType.ServerSentEvents, MessageBusType.Default)]
+            [InlineData(HostType.HttpListener, TransportType.LongPolling, MessageBusType.Default)]
             public void ThrownWebExceptionShouldBeUnwrapped(HostType hostType, TransportType transportType, MessageBusType messageBusType)
             {
                 using (var host = CreateHost(hostType, transportType))
@@ -144,7 +146,7 @@ namespace Microsoft.AspNet.SignalR.Client.Tests
 
                     using (var ser = aggEx.GetError())
                     {
-                        if (hostType == HostType.IISExpress)
+                        if (hostType == HostType.IISExpress || hostType == HostType.HttpListener)
                         {
                             Assert.Equal(System.Net.HttpStatusCode.InternalServerError, ser.StatusCode);
                         }
@@ -396,6 +398,9 @@ namespace Microsoft.AspNet.SignalR.Client.Tests
             [InlineData(HostType.IISExpress, TransportType.Websockets)]
             [InlineData(HostType.IISExpress, TransportType.ServerSentEvents)]
             [InlineData(HostType.IISExpress, TransportType.LongPolling)]
+            [InlineData(HostType.HttpListener, TransportType.Websockets)]
+            [InlineData(HostType.HttpListener, TransportType.ServerSentEvents)]
+            [InlineData(HostType.HttpListener, TransportType.LongPolling)]
             public void StoppingDoesntRaiseErrorEvent(HostType hostType, TransportType transportType)
             {
                 using (var host = CreateHost(hostType, transportType))
@@ -427,6 +432,9 @@ namespace Microsoft.AspNet.SignalR.Client.Tests
             [InlineData(HostType.IISExpress, TransportType.ServerSentEvents, MessageBusType.Default)]
             [InlineData(HostType.IISExpress, TransportType.Websockets, MessageBusType.Default)]
             [InlineData(HostType.IISExpress, TransportType.LongPolling, MessageBusType.Default)]
+            [InlineData(HostType.HttpListener, TransportType.ServerSentEvents, MessageBusType.Default)]
+            [InlineData(HostType.HttpListener, TransportType.Websockets, MessageBusType.Default)]
+            [InlineData(HostType.HttpListener, TransportType.LongPolling, MessageBusType.Default)]
             public void ManuallyRestartedClientMaintainsConsistentState(HostType hostType, TransportType transportType, MessageBusType messageBusType)
             {
                 using (var host = CreateHost(hostType, transportType))
@@ -464,6 +472,8 @@ namespace Microsoft.AspNet.SignalR.Client.Tests
             [InlineData(HostType.Memory, TransportType.LongPolling, MessageBusType.FakeMultiStream)]
             [InlineData(HostType.IISExpress, TransportType.ServerSentEvents, MessageBusType.Default)]
             [InlineData(HostType.IISExpress, TransportType.Websockets, MessageBusType.Default)]
+            [InlineData(HostType.HttpListener, TransportType.ServerSentEvents, MessageBusType.Default)]
+            [InlineData(HostType.HttpListener, TransportType.Websockets, MessageBusType.Default)]
             //[InlineData(HostType.IISExpress, TransportType.LongPolling)]
             public void ClientStopsReconnectingAfterDisconnectTimeout(HostType hostType, TransportType transportType, MessageBusType messageBusType)
             {
@@ -508,6 +518,9 @@ namespace Microsoft.AspNet.SignalR.Client.Tests
             [InlineData(HostType.IISExpress, TransportType.ServerSentEvents, MessageBusType.Default)]
             [InlineData(HostType.IISExpress, TransportType.Websockets, MessageBusType.Default)]
             [InlineData(HostType.IISExpress, TransportType.LongPolling, MessageBusType.Default)]
+            [InlineData(HostType.HttpListener, TransportType.ServerSentEvents, MessageBusType.Default)]
+            [InlineData(HostType.HttpListener, TransportType.Websockets, MessageBusType.Default)]
+            [InlineData(HostType.HttpListener, TransportType.LongPolling, MessageBusType.Default)]
             public void ClientStaysReconnectedAfterDisconnectTimeout(HostType hostType, TransportType transportType, MessageBusType messageBusType)
             {
                 using (var host = CreateHost(hostType, transportType))
@@ -558,6 +571,7 @@ namespace Microsoft.AspNet.SignalR.Client.Tests
             [InlineData(HostType.Memory, TransportType.LongPolling, MessageBusType.Fake)]
             [InlineData(HostType.Memory, TransportType.LongPolling, MessageBusType.FakeMultiStream)]
             [InlineData(HostType.IISExpress, TransportType.Websockets, MessageBusType.Default)]
+            [InlineData(HostType.HttpListener, TransportType.Websockets, MessageBusType.Default)]
             public void ConnectionErrorCapturesExceptionsThrownInReceived(HostType hostType, TransportType transportType, MessageBusType messageBusType)
             {
                 using (var host = CreateHost(hostType, transportType))

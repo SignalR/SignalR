@@ -26,7 +26,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Common.Hubs
 
         private Task PrintEnvironment(string method, IRequest request)
         {
-            var responseHeaders = (Dictionary<string, string[]>)request.Environment["owin.ResponseHeaders"];
+            var responseHeaders = (IDictionary<string, string[]>)request.Environment["owin.ResponseHeaders"];
             return Clients.All.update(new
             {
                 method = method,
