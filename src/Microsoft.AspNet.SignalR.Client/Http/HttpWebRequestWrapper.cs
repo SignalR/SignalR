@@ -29,13 +29,7 @@ namespace Microsoft.AspNet.SignalR.Client.Http
 
         public HttpWebRequestWrapper(HttpWebRequest request)
         {
-            if (request == null)
-            {
-                throw new ArgumentNullException("request");
-            }
-
             _request = request;
-            _request.PreAuthenticate = true;
         }
 
         public string UserAgent

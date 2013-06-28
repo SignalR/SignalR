@@ -16,7 +16,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
     public abstract class HttpBasedTransport : IClientTransport
     {
         // The send query string
-        private const string _sendQueryString = "?transport={0}&connectionToken={1}{2}";
+        private const string _sendQueryString = "?transport={0}&connectionData={1}&connectionToken={2}{3}";
 
         // The transport name
         private readonly string _transport;
@@ -85,7 +85,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
                                         CancellationToken disconnectToken,
                                         TransportInitializationHandler initializeHandler);
 
-        public Task Send(IConnection connection, string data)
+        public Task Send(IConnection connection, string data, string connectionData)
         {
             if (connection == null)
             {
@@ -98,6 +98,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
             url += String.Format(CultureInfo.InvariantCulture,
                                 _sendQueryString,
                                 _transport,
+                                connectionData,
                                 Uri.EscapeDataString(connection.ConnectionToken),
                                 customQueryString);
 
@@ -119,7 +120,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
                               .Catch(connection.OnError);
         }
 
-        public void Abort(IConnection connection, TimeSpan timeout)
+        public void Abort(IConnection connection, TimeSpan timeout, string connectionData)
         {
             if (connection == null)
             {
@@ -142,6 +143,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
                     string url = connection.Url + "abort" + String.Format(CultureInfo.InvariantCulture,
                                                                           _sendQueryString,
                                                                           _transport,
+                                                                          connectionData,
                                                                           Uri.EscapeDataString(connection.ConnectionToken),
                                                                           null);
 

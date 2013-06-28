@@ -125,7 +125,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
             await ProcessWebSocketRequestAsync(webSocket, _disconnectToken);
         }
 
-        public void Abort(IConnection connection, TimeSpan timeout)
+        public void Abort(IConnection connection, TimeSpan timeout, string connectionData)
         {
             lock (this)
             {
@@ -143,7 +143,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
             }
         }
 
-        public Task Send(IConnection connection, string data)
+        public Task Send(IConnection connection, string data, string connectionData)
         {
             return SendAsync(data);
         }
