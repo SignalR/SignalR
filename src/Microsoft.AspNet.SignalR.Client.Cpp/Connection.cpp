@@ -20,6 +20,7 @@ Connection::Connection(string_t uri)
 
 Connection::~Connection()
 {
+    cout << "Connection destructor" << endl;
 }
 
 ConnectionState Connection::GetState()
@@ -155,6 +156,7 @@ pplx::task<void> Connection::Negotiate(shared_ptr<IClientTransport> transport)
 
 pplx::task<void> Connection::StartTransport()
 {
+    pplx::cancellation_token token = pDisconnectCts->get_token();
     return pTransport->Start(shared_from_this(), U(""), pDisconnectCts->get_token()).then([this]()
     {
         ChangeState(ConnectionState::Connecting, ConnectionState::Connected);
@@ -256,6 +258,9 @@ void Connection::Disconnect()
     if (mState != ConnectionState::Disconnected)
     {
         SetState(ConnectionState::Disconnected);
+
+        cout << "connection cancel" << endl;
+        pDisconnectCts->cancel();
 
         mConnectionId.clear();
         mConnectionToken.clear();

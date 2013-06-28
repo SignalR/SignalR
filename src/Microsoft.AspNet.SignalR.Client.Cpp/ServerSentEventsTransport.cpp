@@ -9,6 +9,7 @@ ServerSentEventsTransport::ServerSentEventsTransport(shared_ptr<IHttpClient> htt
 
 ServerSentEventsTransport::~ServerSentEventsTransport()
 {
+    cout << "SSE Transport destructor" << endl;
 }
 
 void ServerSentEventsTransport::OnAbort()
@@ -18,7 +19,7 @@ void ServerSentEventsTransport::OnAbort()
     pEventSource->Closed = [](exception& ex){};
     pEventSource->Data = [](shared_ptr<char> buffer){};
     pEventSource->Message = [](shared_ptr<SseEvent> sseEvent){};
-    pEventSource->Abort().wait();
+    pEventSource->Abort();
 }
 
 void ServerSentEventsTransport::OnStart(shared_ptr<Connection> connection, string_t data, pplx::cancellation_token disconnectToken,  function<void()> initializeCallback, function<void(exception)> errorCallback)
@@ -87,11 +88,14 @@ void ServerSentEventsTransport::OpenConnection(shared_ptr<Connection> connection
             pEventSource = unique_ptr<EventSourceStreamReader>(new EventSourceStreamReader(response.body()));
 
             mStop = false;
+            bool stop = false;
         
             // what is CancellationTokenExtensions.SafeRegister?
-            disconnectToken.register_callback<function<void()>>([this]()
+            disconnectToken.register_callback<function<void()>>([this, stop]()
             {
+                cout << "transport cancel" << endl;
                 mStop = true;
+                //stop = true;
                 pRequest->Abort();
             });
 
@@ -103,7 +107,7 @@ void ServerSentEventsTransport::OpenConnection(shared_ptr<Connection> connection
                 }
             };
 
-            pEventSource->Message = [connection, this, initializeInvoke](shared_ptr<SseEvent> sseEvent) 
+            pEventSource->Message = [connection, this, initializeInvoke, stop](shared_ptr<SseEvent> sseEvent) 
             {
                 if (sseEvent->GetType() == EventType::Data)
                 {
@@ -120,13 +124,17 @@ void ServerSentEventsTransport::OpenConnection(shared_ptr<Connection> connection
                     if (disconnected)
                     {
                         mStop = true;
+                        //stop = true;
                         connection->Disconnect();
                     }
                 }
             };
 
-            pEventSource->Closed = [this, connection, data, disconnectToken](exception& ex)
+            pEventSource->Closed = [connection, this, data, disconnectToken, stop](exception& ex)
             {
+                //cout << "ASR Closed" << endl;
+
+                //cout << "exception: " << ex.what() << endl;
                 if (!ExceptionHelper::IsNull(ex))
                 {
                     // Check if the request is aborted
@@ -137,6 +145,9 @@ void ServerSentEventsTransport::OpenConnection(shared_ptr<Connection> connection
                     }
                 }
 
+                //cout << "exception handling complete" << endl;
+
+                //if (stop)
                 if (mStop)
                 {
                     CompleteAbort();
@@ -149,6 +160,8 @@ void ServerSentEventsTransport::OpenConnection(shared_ptr<Connection> connection
                 {
                     Reconnect(connection, data, disconnectToken);
                 }
+
+                
             };
 
             pEventSource->Start();

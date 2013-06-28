@@ -25,7 +25,7 @@ public:
     function<void(exception& ex)> Closed;
     function<void(shared_ptr<char> buffer)> Data;
     void Start();
-    pplx::task<void> Abort();
+    void Abort();
 
 protected:
     mutex mBufferLock;

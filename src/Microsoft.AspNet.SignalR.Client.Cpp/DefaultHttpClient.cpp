@@ -33,13 +33,18 @@ task<http_response> DefaultHttpClient::Get(string_t uri, function<void(shared_pt
     
     auto request = shared_ptr<HttpRequestWrapper>(new HttpRequestWrapper(requestMessage, [cts]()
     {
+        cout << "Get Cancel" << endl;
         cts->cancel();
     }));
 
     prepareRequest(request);
-
+    pplx::task_options readTaskOptions(cts->get_token());
     return pClient->request(requestMessage).then([](http_response response)
     {
+        if (is_task_cancellation_requested())
+        {
+            cancel_current_task();
+        }
         // check if the request was successful, temporary
         if (response.status_code()/100 != 2)
         {
@@ -47,7 +52,7 @@ task<http_response> DefaultHttpClient::Get(string_t uri, function<void(shared_pt
         }
 
         return response;
-    });
+    }, readTaskOptions);
 }
 
 task<http_response> DefaultHttpClient::Post(string_t uri, function<void(shared_ptr<HttpRequestWrapper>)> prepareRequest)
@@ -73,9 +78,13 @@ task<http_response> DefaultHttpClient::Post(string_t uri, function<void(shared_p
     }));
 
     prepareRequest(request);
-
+    pplx::task_options readTaskOptions(cts->get_token());
     return pClient->request(requestMessage).then([](http_response response)
     {
+        if (is_task_cancellation_requested())
+        {
+            cancel_current_task();
+        }
         // check if the request was successful, temporary
         if (response.status_code()/100 != 2)
         {
@@ -83,5 +92,5 @@ task<http_response> DefaultHttpClient::Post(string_t uri, function<void(shared_p
         }
 
         return response;
-    });
+    }, readTaskOptions);
 }

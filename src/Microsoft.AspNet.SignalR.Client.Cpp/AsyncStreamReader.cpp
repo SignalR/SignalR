@@ -9,6 +9,7 @@ AsyncStreamReader::AsyncStreamReader(streams::basic_istream<uint8_t> stream)
 
 AsyncStreamReader::~AsyncStreamReader(void)
 {
+    cout << "ASR destructor" << endl;
 }
 
 void AsyncStreamReader::Start()
@@ -169,10 +170,9 @@ void AsyncStreamReader::OnData(shared_ptr<char> buffer)
     }
 }
 
-pplx::task<void> AsyncStreamReader::Abort()
+void AsyncStreamReader::Abort()
 {
     mReadCts.cancel();
-    return mLastReadTask;
 }
 
 // returns a task that reads the incoming stream and stored the messages into a buffer
@@ -184,6 +184,7 @@ pplx::task<unsigned int> AsyncStreamReader::AsyncReadIntoBuffer(Concurrency::str
     {
         if (is_task_cancellation_requested())
         {
+            cout << "ASR cancel" << endl;
             cancel_current_task();
         }
 
