@@ -5,6 +5,7 @@
 #include <agents.h>
 #include <typeinfo>
 #include "TaskAsyncHelper.h"
+#include "TransportInitializationHandler.h"
 
 using namespace utility;
 using namespace web::json;
@@ -27,7 +28,8 @@ protected:
     string_t GetSendQueryString(string_t transport, string_t connectionToken, string_t customQuery);
     void CompleteAbort();
     bool TryCompleteAbort();
-    virtual void OnStart(shared_ptr<Connection> connection, string_t data, pplx::cancellation_token disconnectToken, function<void()> initializeCallback, function<void(exception)> errorCallback) = 0;
+    //virtual void OnStart(shared_ptr<Connection> connection, string_t data, pplx::cancellation_token disconnectToken, function<void()> initializeCallback, function<void()> errorCallback) = 0;
+    virtual void OnStart(shared_ptr<Connection> connection, string_t data, pplx::cancellation_token disconnectToken, shared_ptr<TransportInitializationHandler> initializeHandler) = 0;
     virtual void OnAbort() = 0;
 
 private:

@@ -38,20 +38,20 @@ string_t HttpBasedTransport::GetReceiveQueryString(shared_ptr<Connection> connec
 
 pplx::task<void> HttpBasedTransport::Start(shared_ptr<Connection> connection, string_t data, pplx::cancellation_token disconnectToken)
 {
-    auto tce = shared_ptr<pplx::task_completion_event<void>>(new pplx::task_completion_event<void>());
+    if (connection == nullptr)
+    {
+        throw exception("ArgumentNullException: connection");
+    }
+
+    auto initializeHandler = shared_ptr<TransportInitializationHandler>(new TransportInitializationHandler(disconnectToken));
+
+    int count = initializeHandler.use_count();
+
+    OnStart(connection, data, disconnectToken, initializeHandler);
+
+    int count2 = initializeHandler.use_count();
     
-    function<void()> initializeCallback = [tce]()
-    {
-        tce->set();
-    };
-
-    function<void(exception)> errorCallback = [tce](exception& ex)
-    {
-        tce->set_exception(ex);
-    };
-
-    OnStart(connection, data, disconnectToken, initializeCallback, errorCallback);
-    return pplx::task<void>(*(tce.get()));
+    return initializeHandler->GetTask();
 }
 
 pplx::task<void> HttpBasedTransport::Send(shared_ptr<Connection> connection, string_t data)

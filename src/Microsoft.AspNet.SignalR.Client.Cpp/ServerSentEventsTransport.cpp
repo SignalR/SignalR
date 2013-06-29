@@ -10,6 +10,7 @@ ServerSentEventsTransport::ServerSentEventsTransport(shared_ptr<IHttpClient> htt
 ServerSentEventsTransport::~ServerSentEventsTransport()
 {
     cout << "SSE Transport destructor" << endl;
+    int count = pInitializeHandler.use_count();
 }
 
 void ServerSentEventsTransport::OnAbort()
@@ -22,9 +23,35 @@ void ServerSentEventsTransport::OnAbort()
     //pEventSource->Abort();
 }
 
-void ServerSentEventsTransport::OnStart(shared_ptr<Connection> connection, string_t data, pplx::cancellation_token disconnectToken,  function<void()> initializeCallback, function<void(exception)> errorCallback)
+//void ServerSentEventsTransport::OnStart(shared_ptr<Connection> connection, string_t data, pplx::cancellation_token disconnectToken,  function<void()> initializeCallback, function<void(exception)> errorCallback)
+void ServerSentEventsTransport::OnStart(shared_ptr<Connection> connection, string_t data, pplx::cancellation_token disconnectToken,  shared_ptr<TransportInitializationHandler> initializeHandler)
 {    
-    OpenConnection(connection, data, disconnectToken, initializeCallback, errorCallback);
+    if (initializeHandler == nullptr)
+    {
+        throw exception("ArgumentNullException: initializeHandler");
+    }
+
+    initializeHandler->OnFailure = [this]()
+    {
+        mStop = true;
+        pRequest->Abort();
+    };
+
+    pInitializeHandler = initializeHandler;
+
+    function<void()> successCallback = [this]()
+    {
+        pInitializeHandler->Success();
+        pInitializeHandler.reset();
+    };
+    function<void(exception&)> errorCallback = [this](exception& ex)
+    {
+        pInitializeHandler->Fail(ex);
+        pInitializeHandler.reset();
+    };
+
+    OpenConnection(connection, data, disconnectToken, successCallback, errorCallback);
+    //OpenConnection(connection, data, disconnectToken, initializeCallback, errorCallback);
 }
 
 void ServerSentEventsTransport::Reconnect(shared_ptr<Connection> connection, string_t data, pplx::cancellation_token disconnectToken)

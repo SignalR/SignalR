@@ -17,7 +17,8 @@ public:
     bool SupportsKeepAlive();
 
 protected:
-    void OnStart(shared_ptr<Connection> connection, string_t data, pplx::cancellation_token disconnectToken, function<void()> initializeCallback, function<void(exception)> errorCallback);
+    void OnStart(shared_ptr<Connection> connection, string_t data, pplx::cancellation_token disconnectToken, shared_ptr<TransportInitializationHandler> initializeHandler);
+    //void OnStart(shared_ptr<Connection> connection, string_t data, pplx::cancellation_token disconnectToken, function<void()> initializeCallback, function<void(exception)> errorCallback);
     void OnAbort();
     void LostConnection(shared_ptr<Connection> connection);
 
@@ -28,6 +29,7 @@ private:
     shared_ptr<HttpRequestWrapper> pRequest;
     unique_ptr<EventSourceStreamReader> pEventSource;
     unique_ptr<ThreadSafeInvoker> pCallbackInvoker;
+    shared_ptr<TransportInitializationHandler> pInitializeHandler;
 
     void Reconnect(shared_ptr<Connection> connection, string_t data, pplx::cancellation_token disconnectToken);
     void OpenConnection(shared_ptr<Connection> connection, string_t data, pplx::cancellation_token disconnectToken, function<void()> initializeCallback, function<void(exception)> errorCallback);

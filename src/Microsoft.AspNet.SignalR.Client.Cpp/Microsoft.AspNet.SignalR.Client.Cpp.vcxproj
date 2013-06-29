@@ -94,6 +94,7 @@
     <ClCompile Include="TaskAsyncHelper.cpp" />
     <ClCompile Include="ThreadSafeInvoker.cpp" />
     <ClCompile Include="TransportHelper.cpp" />
+    <ClCompile Include="TransportInitializationHandler.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ChunkBuffer.h" />
@@ -118,6 +119,7 @@
     <ClInclude Include="TaskAsyncHelper.h" />
     <ClInclude Include="ThreadSafeInvoker.h" />
     <ClInclude Include="TransportHelper.h" />
+    <ClInclude Include="TransportInitializationHandler.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

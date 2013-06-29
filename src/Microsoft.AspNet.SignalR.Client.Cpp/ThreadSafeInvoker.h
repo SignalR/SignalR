@@ -6,7 +6,6 @@
 using namespace std;
 using namespace pplx;
 
-
 class ThreadSafeInvoker
 {
 public:

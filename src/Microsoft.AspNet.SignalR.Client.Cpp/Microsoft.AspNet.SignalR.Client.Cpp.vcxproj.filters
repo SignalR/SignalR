@@ -96,6 +96,9 @@
     <ClCompile Include="ExceptionHelper.cpp">
       <Filter>Source Files\Infrastructure</Filter>
     </ClCompile>
+    <ClCompile Include="TransportInitializationHandler.cpp">
+      <Filter>Source Files\Infrastructure</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Connection.h">
@@ -162,6 +165,9 @@
       <Filter>Header Files\Transports</Filter>
     </ClInclude>
     <ClInclude Include="ExceptionHelper.h">
+      <Filter>Header Files\Infrastructure</Filter>
+    </ClInclude>
+    <ClInclude Include="TransportInitializationHandler.h">
       <Filter>Header Files\Infrastructure</Filter>
     </ClInclude>
   </ItemGroup>
