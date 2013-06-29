@@ -46,7 +46,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
         }
 
 
-        [Fact(Timeout = 1000)]
+        [Fact(Timeout = 2000)]
         public void OpenAfterErrorRunsQueue()
         {
             int x = 0;
