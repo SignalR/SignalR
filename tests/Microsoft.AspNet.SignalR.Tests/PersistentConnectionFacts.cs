@@ -4,6 +4,7 @@ using System.Collections.Specialized;
 using System.Security.Principal;
 using Microsoft.AspNet.SignalR.Hosting;
 using Microsoft.AspNet.SignalR.Infrastructure;
+using Microsoft.AspNet.SignalR.Tests.Common.Infrastructure;
 using Moq;
 using Xunit;
 
@@ -35,7 +36,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                 req.Setup(m => m.Url).Returns(new Uri("http://foo"));
                 req.Setup(m => m.LocalPath).Returns("");
                 var qs = new NameValueCollection();
-                req.Setup(m => m.QueryString).Returns(qs);
+                req.Setup(m => m.QueryString).Returns(new NameValueCollectionWrapper(qs));
 
                 var dr = new DefaultDependencyResolver();
                 var context = new HostContext(req.Object, null);
@@ -53,7 +54,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                 req.Setup(m => m.LocalPath).Returns("");
                 var qs = new NameValueCollection();
                 qs["transport"] = "serverSentEvents";
-                req.Setup(m => m.QueryString).Returns(qs);
+                req.Setup(m => m.QueryString).Returns(new NameValueCollectionWrapper(qs));
 
                 var dr = new DefaultDependencyResolver();
                 var context = new HostContext(req.Object, null);
@@ -110,7 +111,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                 qs["connectionToken"] = "1";
                 qs["groupsToken"] = groupsToken;
 
-                req.Setup(m => m.QueryString).Returns(qs);
+                req.Setup(m => m.QueryString).Returns(new NameValueCollectionWrapper(qs));
 
                 var protectedData = new Mock<IProtectedData>();
                 protectedData.Setup(m => m.Protect(It.IsAny<string>(), It.IsAny<string>()))

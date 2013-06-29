@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Specialized;
 using Microsoft.AspNet.SignalR.Infrastructure;
+using Microsoft.AspNet.SignalR.Tests.Common.Infrastructure;
 using Moq;
 using Xunit;
 using Xunit.Extensions;
@@ -27,7 +28,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
 
             queryStrings.Add("clientProtocol", clientProtocol);
 
-            request.Setup(r => r.QueryString).Returns(queryStrings);
+            request.Setup(r => r.QueryString).Returns(new NameValueCollectionWrapper(queryStrings));
 
             var version = protocolResolver.Resolve(request.Object);
 

@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR.Hosting;
 using Microsoft.AspNet.SignalR.Hubs;
 using Microsoft.AspNet.SignalR.Infrastructure;
+using Microsoft.AspNet.SignalR.Tests.Common.Infrastructure;
 using Moq;
 using Newtonsoft.Json;
 using Xunit;
@@ -110,13 +111,13 @@ namespace Microsoft.AspNet.SignalR.Tests.Server.Hubs
             var dispatcher = new HubDispatcher(new HubConfiguration());
 
             var request = GetRequestForUrl("http://something/signalr/send");
-            request.Setup(m => m.QueryString).Returns(new NameValueCollection()
+            request.Setup(m => m.QueryString).Returns(new NameValueCollectionWrapper(new NameValueCollection()
                                                       {
                                                           {"transport", "longPolling"},
                                                           {"connectionToken", "0"},
                                                           {"data", "{\"H\":\"ErrorHub\",\"M\":\"Error\",\"A\":[],\"I\":0}"}
-                                                      });
-            request.Setup(m => m.ReadForm()).Returns(Task.FromResult(new NameValueCollection()));
+                                                      }));
+            request.Setup(m => m.ReadForm()).Returns(Task.FromResult<INameValueCollection>(new NameValueCollectionWrapper()));
 
             string contentType = null;
             var buffer = new List<string>();
@@ -157,13 +158,13 @@ namespace Microsoft.AspNet.SignalR.Tests.Server.Hubs
             var dispatcher = new HubDispatcher(new HubConfiguration());
 
             var request = GetRequestForUrl("http://something/signalr/send");
-            request.Setup(m => m.QueryString).Returns(new NameValueCollection()
+            request.Setup(m => m.QueryString).Returns(new NameValueCollectionWrapper(new NameValueCollection()
                                                       {
                                                           {"transport", "longPolling"},
                                                           {"connectionToken", "0"},
                                                           {"data", "{\"H\":\"ErrorHub\",\"M\":\"ErrorTask\",\"A\":[],\"I\":0}"}
-                                                      });
-            request.Setup(m => m.ReadForm()).Returns(Task.FromResult(new NameValueCollection()));
+                                                      }));
+            request.Setup(m => m.ReadForm()).Returns(Task.FromResult<INameValueCollection>(new NameValueCollectionWrapper()));
 
             string contentType = null;
             var buffer = new List<string>();
@@ -204,13 +205,13 @@ namespace Microsoft.AspNet.SignalR.Tests.Server.Hubs
             var dispatcher = new HubDispatcher(new HubConfiguration() { EnableDetailedErrors = true });
 
             var request = GetRequestForUrl("http://something/signalr/send");
-            request.Setup(m => m.QueryString).Returns(new NameValueCollection()
+            request.Setup(m => m.QueryString).Returns(new NameValueCollectionWrapper(new NameValueCollection()
                                                       {
                                                           {"transport", "longPolling"},
                                                           {"connectionToken", "0"},
                                                           {"data", "{\"H\":\"ErrorHub\",\"M\":\"Error\",\"A\":[],\"I\":0}"}
-                                                      });
-            request.Setup(m => m.ReadForm()).Returns(Task.FromResult(new NameValueCollection()));
+                                                      }));
+            request.Setup(m => m.ReadForm()).Returns(Task.FromResult<INameValueCollection>(new NameValueCollectionWrapper()));
 
             string contentType = null;
             var buffer = new List<string>();
@@ -250,14 +251,14 @@ namespace Microsoft.AspNet.SignalR.Tests.Server.Hubs
             var dispatcher = new HubDispatcher(new HubConfiguration() { EnableDetailedErrors = true });
 
             var request = GetRequestForUrl("http://something/signalr/send");
-            request.Setup(m => m.QueryString).Returns(new NameValueCollection()
+            request.Setup(m => m.QueryString).Returns(new NameValueCollectionWrapper(new NameValueCollection()
                                                       {
                                                           {"transport", "longPolling"},
                                                           {"connectionToken", "0"},
                                                           {"data", "{\"H\":\"ErrorHub\",\"M\":\"ErrorTask\",\"A\":[],\"I\":0}"}
-                                                      });
+                                                      }));
 
-            request.Setup(m => m.ReadForm()).Returns(Task.FromResult(new NameValueCollection()));
+            request.Setup(m => m.ReadForm()).Returns(Task.FromResult<INameValueCollection>(new NameValueCollectionWrapper()));
 
             string contentType = null;
             var buffer = new List<string>();
@@ -297,7 +298,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Server.Hubs
             var dispatcher = new HubDispatcher(new HubConfiguration());
             var request = new Mock<IRequest>();
             var qs = new NameValueCollection();
-            request.Setup(m => m.QueryString).Returns(qs);
+            request.Setup(m => m.QueryString).Returns(new NameValueCollectionWrapper(qs));
             qs["connectionData"] = @"[{name: ""foo""}, {name: ""Foo""}]";
 
             var mockHub = new Mock<IHub>();
@@ -317,7 +318,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Server.Hubs
             var uri = new Uri(url);
             request.Setup(m => m.Url).Returns(uri);
             request.Setup(m => m.LocalPath).Returns(uri.LocalPath);
-            request.Setup(m => m.QueryString).Returns(new NameValueCollection());
+            request.Setup(m => m.QueryString).Returns(new NameValueCollectionWrapper());
             return request;
         }
 

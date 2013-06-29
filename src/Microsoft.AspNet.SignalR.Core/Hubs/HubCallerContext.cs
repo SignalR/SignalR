@@ -3,6 +3,7 @@
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Security.Principal;
+using Microsoft.AspNet.SignalR.Hosting;
 
 namespace Microsoft.AspNet.SignalR.Hubs
 {
@@ -27,7 +28,7 @@ namespace Microsoft.AspNet.SignalR.Hubs
         /// <summary>
         /// Gets the headers for the request.
         /// </summary>
-        public NameValueCollection Headers
+        public INameValueCollection Headers
         {
             get
             {
@@ -38,7 +39,7 @@ namespace Microsoft.AspNet.SignalR.Hubs
         /// <summary>
         /// Gets the querystring for the request.
         /// </summary>
-        public NameValueCollection QueryString
+        public INameValueCollection QueryString
         {
             get
             {

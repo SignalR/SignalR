@@ -4,6 +4,7 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR.Hosting;
+using Microsoft.AspNet.SignalR.Tests.Common.Infrastructure;
 using Microsoft.AspNet.SignalR.Transports;
 using Moq;
 using Xunit;
@@ -37,7 +38,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Core
         {
             var request = new Mock<IRequest>();
             var qs = new NameValueCollection { { "frameId", frameId } };
-            request.Setup(r => r.QueryString).Returns(qs);
+            request.Setup(r => r.QueryString).Returns(new NameValueCollectionWrapper(qs));
             var response = new CustomResponse();
             var context = new HostContext(request.Object, response);
             var connection = new Mock<ITransportConnection>();
@@ -51,7 +52,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Core
         {
             var request = new Mock<IRequest>();
             var qs = new NameValueCollection { { "frameId", "1" } };
-            request.Setup(r => r.QueryString).Returns(qs);
+            request.Setup(r => r.QueryString).Returns(new NameValueCollectionWrapper(qs));
             var response = new CustomResponse();
             var context = new HostContext(request.Object, response);
             var connection = new Mock<ITransportConnection>();

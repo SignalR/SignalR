@@ -2,18 +2,18 @@
 
 using System;
 using System.Collections.Generic;
-using System.Collections.Specialized;
 using System.Security.Principal;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNet.SignalR.Hosting;
 using Microsoft.Owin;
 
 namespace Microsoft.AspNet.SignalR.Owin
 {
     public class ServerRequest : IRequest
     {
-        private NameValueCollection _queryString;
-        private NameValueCollection _headers;
+        private INameValueCollection _queryString;
+        private INameValueCollection _headers;
         private IDictionary<string, Cookie> _cookies;
 
         private readonly OwinRequest _request;
@@ -39,42 +39,26 @@ namespace Microsoft.AspNet.SignalR.Owin
             }
         }
 
-        public NameValueCollection QueryString
+        public INameValueCollection QueryString
         {
             get
             {
                 return LazyInitializer.EnsureInitialized(
                     ref _queryString, () =>
                     {
-                        var collection = new NameValueCollection();
-                        foreach (var kv in _request.Query)
-                        {
-                            collection.Add(kv.Key, kv.Value[0]);
-                        }
-                        return collection;
+                        return new ReadableStringCollectionWrapper(_request.Query);
                     });
             }
         }
 
-        public NameValueCollection Headers
+        public INameValueCollection Headers
         {
             get
             {
                 return LazyInitializer.EnsureInitialized(
                     ref _headers, () =>
                     {
-                        var collection = new NameValueCollection();
-                        foreach (var kv in _request.Headers)
-                        {
-                            if (kv.Value != null)
-                            {
-                                for (var index = 0; index != kv.Value.Length; ++index)
-                                {
-                                    collection.Add(kv.Key, kv.Value[index]);
-                                }
-                            }
-                        }
-                        return collection;
+                        return new ReadableStringCollectionWrapper(_request.Headers);
                     });
             }
         }
@@ -112,20 +96,10 @@ namespace Microsoft.AspNet.SignalR.Owin
             }
         }
 
-        public async Task<NameValueCollection> ReadForm()
+        public async Task<INameValueCollection> ReadForm()
         {
             IFormCollection form = await _request.ReadFormAsync();
-
-            var values = new NameValueCollection();
-            foreach (var pair in form)
-            {
-                foreach (var value in pair.Value)
-                {
-                    values.Add(pair.Key, value);
-                }
-            }
-
-            return values;
+            return new ReadableStringCollectionWrapper(form);
         }
     }
 }

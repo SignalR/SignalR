@@ -153,7 +153,7 @@ namespace Microsoft.AspNet.SignalR.Transports
 
         private async Task ProcessSendRequest()
         {
-            NameValueCollection form = await Context.Request.ReadForm();
+            INameValueCollection form = await Context.Request.ReadForm();
             string data = form["data"];
 
             if (Received != null)

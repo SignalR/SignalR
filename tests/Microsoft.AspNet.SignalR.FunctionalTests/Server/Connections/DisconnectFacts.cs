@@ -30,7 +30,7 @@ namespace Microsoft.AspNet.SignalR.Tests
             var request = new Mock<IRequest>();
             var response = new Mock<IResponse>();
             var qs = new NameValueCollection();
-            request.Setup(m => m.QueryString).Returns(qs);
+            request.Setup(m => m.QueryString).Returns(new NameValueCollectionWrapper(qs));
             var url = new Uri("http://test/echo/connect");
             request.Setup(m => m.Url).Returns(url);
             request.Setup(m => m.LocalPath).Returns(url.LocalPath);
