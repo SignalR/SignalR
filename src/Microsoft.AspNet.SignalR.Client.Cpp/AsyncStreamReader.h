@@ -37,7 +37,6 @@ private:
     atomic<State> mReadingState;
     pplx::cancellation_token_source mReadCts;
     function<void()> SetOpened;
-    pplx::task<void> mLastReadTask; 
 
     bool IsProcessing();
     void Close();

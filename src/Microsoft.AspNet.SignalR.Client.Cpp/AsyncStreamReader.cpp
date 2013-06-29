@@ -78,7 +78,7 @@ READ:
 
 void AsyncStreamReader::ReadAsync(pplx::task<unsigned int> readTask)
 {
-    mLastReadTask = readTask.then([this](pplx::task<unsigned int> readTask)
+    readTask.then([this](pplx::task<unsigned int> readTask)
     {
         unsigned int bytesRead;
         exception ex;

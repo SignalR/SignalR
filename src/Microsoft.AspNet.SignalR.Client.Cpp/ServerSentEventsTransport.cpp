@@ -19,7 +19,7 @@ void ServerSentEventsTransport::OnAbort()
     pEventSource->Closed = [](exception& ex){};
     pEventSource->Data = [](shared_ptr<char> buffer){};
     pEventSource->Message = [](shared_ptr<SseEvent> sseEvent){};
-    pEventSource->Abort();
+    //pEventSource->Abort();
 }
 
 void ServerSentEventsTransport::OnStart(shared_ptr<Connection> connection, string_t data, pplx::cancellation_token disconnectToken,  function<void()> initializeCallback, function<void(exception)> errorCallback)
