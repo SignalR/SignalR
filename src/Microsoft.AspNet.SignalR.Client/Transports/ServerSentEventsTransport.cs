@@ -130,8 +130,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
                     {
                         callbackInvoker.Invoke((cb, ex) => cb(ex), errorCallback, exception);
                     }
-
-                    if (!ExceptionHelper.IsRequestAborted(exception) && reconnecting)
+                    else if (!_stop && reconnecting)
                     {
                         // Only raise the error event if we failed to reconnect
                         connection.OnError(exception);
