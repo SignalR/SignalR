@@ -29,8 +29,8 @@ namespace Microsoft.AspNet.SignalR.Owin
 
         public string ContentType
         {
-            get { return _response.GetHeader("Content-Type"); }
-            set { _response.SetHeader("Content-Type", value); }
+            get { return _response.ContentType; }
+            set { _response.ContentType = value; }
         }
 
         public void Write(ArraySegment<byte> data)

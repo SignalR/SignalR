@@ -47,7 +47,7 @@ namespace Microsoft.AspNet.SignalR.Owin
                     ref _queryString, () =>
                     {
                         var collection = new NameValueCollection();
-                        foreach (var kv in _request.GetQuery())
+                        foreach (var kv in _request.Query)
                         {
                             collection.Add(kv.Key, kv.Value[0]);
                         }
@@ -64,7 +64,7 @@ namespace Microsoft.AspNet.SignalR.Owin
                     ref _headers, () =>
                     {
                         var collection = new NameValueCollection();
-                        foreach (var kv in RequestHeaders)
+                        foreach (var kv in _request.Headers)
                         {
                             if (kv.Value != null)
                             {
@@ -87,7 +87,7 @@ namespace Microsoft.AspNet.SignalR.Owin
                     ref _cookies, () =>
                     {
                         var cookies = new Dictionary<string, Cookie>(StringComparer.OrdinalIgnoreCase);
-                        foreach (var kv in _request.GetCookies())
+                        foreach (var kv in _request.Cookies)
                         {
                             if (!cookies.ContainsKey(kv.Key))
                             {
@@ -112,14 +112,20 @@ namespace Microsoft.AspNet.SignalR.Owin
             }
         }
 
-        private IDictionary<string, string[]> RequestHeaders
+        public async Task<NameValueCollection> ReadForm()
         {
-            get { return Environment.Get<IDictionary<string, string[]>>(OwinConstants.RequestHeaders); }
-        }
-        
-        public Task<NameValueCollection> ReadForm()
-        {
-            return _request.ReadForm();
+            IFormCollection form = await _request.ReadFormAsync();
+
+            var values = new NameValueCollection();
+            foreach (var pair in form)
+            {
+                foreach (var value in pair.Value)
+                {
+                    values.Add(pair.Key, value);
+                }
+            }
+
+            return values;
         }
     }
 }

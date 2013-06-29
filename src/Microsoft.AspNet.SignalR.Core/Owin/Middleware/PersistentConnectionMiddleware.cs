@@ -23,14 +23,19 @@ namespace Microsoft.AspNet.SignalR.Owin.Middleware
             _configuration = configuration;
         }
 
-        protected override Task ProcessRequest(OwinRequest request, OwinResponse response)
+        protected override Task ProcessRequest(IOwinContext context)
         {
+            if (context == null)
+            {
+                throw new ArgumentNullException("context");
+            }
+
             var connectionFactory = new PersistentConnectionFactory(_configuration.Resolver);
             PersistentConnection connection = connectionFactory.CreateInstance(_connectionType);
 
             connection.Initialize(_configuration.Resolver);
 
-            return connection.ProcessRequest(request.Environment);
+            return connection.ProcessRequest(context.Environment);
         }
     }
 }

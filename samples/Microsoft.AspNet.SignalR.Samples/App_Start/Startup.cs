@@ -49,9 +49,9 @@ namespace Microsoft.AspNet.SignalR.Samples
             {
             }
 
-            public override Task Invoke(OwinRequest request, OwinResponse response)
+            public override Task Invoke(IOwinContext context)
             {
-                string username = request.GetHeader("username");
+                string username = context.Request.Headers.Get("username");
 
                 if (!String.IsNullOrEmpty(username))
                 {
@@ -63,10 +63,10 @@ namespace Microsoft.AspNet.SignalR.Samples
                     };
 
                     var claimsIdentity = new ClaimsIdentity(claims);
-                    request.User = new ClaimsPrincipal(claimsIdentity);
+                    context.Request.User = new ClaimsPrincipal(claimsIdentity);
                 }
 
-                return Next.Invoke(request, response);
+                return Next.Invoke(context);
             }
         }
     }

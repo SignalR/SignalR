@@ -146,7 +146,7 @@ namespace Microsoft.AspNet.SignalR
             var response = new OwinResponse(environment);
 
             // Add the nosniff header for all responses to prevent IE from trying to sniff mime type from contents
-            response.SetHeader("X-Content-Type-Options", "nosniff");
+            response.Headers.Set("X-Content-Type-Options", "nosniff");
 
             if (Authorize(context.Request))
             {

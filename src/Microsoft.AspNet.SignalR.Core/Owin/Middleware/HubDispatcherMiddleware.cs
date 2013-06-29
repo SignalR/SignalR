@@ -18,13 +18,18 @@ namespace Microsoft.AspNet.SignalR.Owin.Middleware
             _configuration = configuration;
         }
 
-        protected override Task ProcessRequest(OwinRequest request, OwinResponse response)
+        protected override Task ProcessRequest(IOwinContext context)
         {
+            if (context == null)
+            {
+                throw new ArgumentNullException("context");
+            }
+
             var dispatcher = new HubDispatcher(_configuration);
 
             dispatcher.Initialize(_configuration.Resolver);
 
-            return dispatcher.ProcessRequest(request.Environment);
+            return dispatcher.ProcessRequest(context.Environment);
         }
     }
 }

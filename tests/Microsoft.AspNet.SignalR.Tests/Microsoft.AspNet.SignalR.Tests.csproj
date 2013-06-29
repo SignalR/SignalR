@@ -40,7 +40,7 @@
   <ItemGroup>
     <Reference Include="Microsoft.Owin, Version=2.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\packages\Microsoft.Owin.2.0.0-rc1-20617-409\lib\net45\Microsoft.Owin.dll</HintPath>
+      <HintPath>..\..\packages\Microsoft.Owin.2.0.0-rc1-20628-427\lib\net45\Microsoft.Owin.dll</HintPath>
     </Reference>
     <Reference Include="Moq">
       <HintPath>..\..\packages\Moq.4.0.10827\lib\NET40\Moq.dll</HintPath>

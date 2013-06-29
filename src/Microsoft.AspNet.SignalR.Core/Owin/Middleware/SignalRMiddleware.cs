@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR.Owin.Infrastructure;
 using Microsoft.Owin;
 
@@ -16,28 +17,33 @@ namespace Microsoft.AspNet.SignalR.Owin.Middleware
             _configuration = configuration;
         }
 
-        public override Task Invoke(OwinRequest request, OwinResponse response)
+        public override Task Invoke(IOwinContext context)
         {
-            if (request.Path == null || !PrefixMatcher.IsMatch(_path, request.Path))
+            if (context == null)
             {
-                return Next.Invoke(request, response);
+                throw new ArgumentNullException("context");
+            }
+
+            if (context.Request.Path == null || !PrefixMatcher.IsMatch(_path, context.Request.Path))
+            {
+                return Next.Invoke(context);
             }
 
             if (_configuration.EnableCrossDomain)
             {
-                CorsUtility.AddHeaders(request, response);
+                CorsUtility.AddHeaders(context);
             }
-            else if (CorsUtility.IsCrossDomainRequest(request))
+            else if (CorsUtility.IsCrossDomainRequest(context.Request))
             {
-                response.StatusCode = 403;
-                response.Environment[OwinConstants.ResponseReasonPhrase] = Resources.Forbidden_CrossDomainIsDisabled;
+                context.Response.StatusCode = 403;
+                context.Response.Environment[OwinConstants.ResponseReasonPhrase] = Resources.Forbidden_CrossDomainIsDisabled;
 
                 return TaskAsyncHelper.Empty;
             }
 
-            return ProcessRequest(request, response);
+            return ProcessRequest(context);
         }
 
-        protected abstract Task ProcessRequest(OwinRequest request, OwinResponse response);
+        protected abstract Task ProcessRequest(IOwinContext context);
     }
 }
