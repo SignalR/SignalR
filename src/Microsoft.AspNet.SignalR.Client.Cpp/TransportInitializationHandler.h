@@ -14,7 +14,7 @@ public:
     void Fail();
     void Fail(exception& ex);
     void Success();
-    pplx::task<void> GetTask(); 
+    pplx::task<void> GetTask();
 
     function<void()> OnFailure;
 
@@ -22,4 +22,5 @@ private:
     unique_ptr<ThreadSafeInvoker> pInitializationInvoker;
     pplx::task_completion_event<void> mInitializationTask;
     pplx::cancellation_token_registration mTokenCleanup;
+    pplx::cancellation_token_source mCts;
 };

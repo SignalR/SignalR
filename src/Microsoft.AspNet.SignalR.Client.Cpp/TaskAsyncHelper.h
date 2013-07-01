@@ -22,7 +22,7 @@ public:
     TaskAsyncHelper();
     ~TaskAsyncHelper();
 
-    static pplx::task<void> Delay(seconds seconds);
+    static pplx::task<void> Delay(seconds seconds, pplx::cancellation_token ct);
 
     template <typename T>
     static TaskStatus RunTaskToCompletion(pplx::task<T> task, T& result, exception& ex)

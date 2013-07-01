@@ -56,7 +56,7 @@ void ServerSentEventsTransport::OnStart(shared_ptr<Connection> connection, strin
 
 void ServerSentEventsTransport::Reconnect(shared_ptr<Connection> connection, string_t data, pplx::cancellation_token disconnectToken)
 {
-    TaskAsyncHelper::Delay(mReconnectDelay).then([this, connection, disconnectToken, data]()
+    TaskAsyncHelper::Delay(mReconnectDelay, disconnectToken).then([this, connection, disconnectToken, data]()
     {
         if (disconnectToken.is_canceled() && connection->EnsureReconnecting())
         {

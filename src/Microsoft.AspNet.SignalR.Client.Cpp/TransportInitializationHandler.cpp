@@ -14,7 +14,7 @@ TransportInitializationHandler::TransportInitializationHandler(pplx::cancellatio
     //    Fail();
     //});
 
-    TaskAsyncHelper::Delay(utility::seconds(30)).then([this]()
+    TaskAsyncHelper::Delay(utility::seconds(30), mCts.get_token()).then([this]()
     {
         Fail(exception("TimeoutException: Transport timed out trying to connect"));
     });
@@ -22,6 +22,7 @@ TransportInitializationHandler::TransportInitializationHandler(pplx::cancellatio
 
 TransportInitializationHandler::~TransportInitializationHandler()
 {
+    mCts.cancel();
 }
 
 void TransportInitializationHandler::Fail()
@@ -35,6 +36,7 @@ void TransportInitializationHandler::Fail(exception& ex)
     {
         OnFailure();
         mInitializationTask.set_exception(ex);
+        mCts.cancel();
     });
 }
 
@@ -43,6 +45,7 @@ void TransportInitializationHandler::Success()
     pInitializationInvoker->Invoke([this]()
     {
         mInitializationTask.set();
+        mCts.cancel();
     });
 }
 

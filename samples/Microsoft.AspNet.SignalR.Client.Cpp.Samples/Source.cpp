@@ -3,7 +3,6 @@
 #include "Connection.h"
 
 // for testing only
-#include "ExceptionHelper.h"
 #include "TaskAsyncHelper.h"
 
 #define _CRTDBG_MAP_ALLOC
@@ -90,11 +89,23 @@ static void RunStreamingSample()
 
 static void RunDelaySample()
 {
-    // pplx::create_delayed_task exist in the documentation but is yet to be released
-    TaskAsyncHelper::Delay(seconds(1)).then([]()
+    pplx::cancellation_token_source cts;
+    
+    //// pplx::create_delayed_task exist in the documentation but is yet to be released
+    //TaskAsyncHelper::Delay(seconds(1), cts.get_token()).then([]()
+    //{
+    //    cout << "I'm done!" << endl;
+    //}).then([cts]()
+    //{
+    //    cts.cancel();        
+    //}).wait();
+
+    TaskAsyncHelper::Delay(seconds(5), cts.get_token()).then([]()
     {
-        cout << "I'm done!" << endl;
-    }).wait();
+        cout << "I'm never going to finish so please cancel me!" << endl;
+    });
+
+    cts.cancel();
 }
 
 int main () 
@@ -103,8 +114,8 @@ int main ()
     _CrtMemState s1, s2, s3;
     _CrtMemCheckpoint(&s1);
 
-    RunStreamingSample();
-    //RunDelaySample();
+    //RunStreamingSample();
+    RunDelaySample();
 
     wcout << U("Press <Enter> to Exit ...") << endl;
     getwchar();
