@@ -123,10 +123,7 @@ namespace Microsoft.AspNet.SignalR.Hosting.Memory
             // REVIEW: Should we add a new method to the IClientResponse to trip this?
             var clientTokenSource = new SafeCancellationTokenSource();
 
-            var env = new Dictionary<string, object>();
-
-            // Server specific setup
-            env[OwinConstants.Version] = "1.0";
+            var env = new OwinEnvironment();
 
             // Request specific setup
             var uri = new Uri(url);

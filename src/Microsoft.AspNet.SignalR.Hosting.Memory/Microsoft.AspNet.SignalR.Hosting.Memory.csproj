@@ -79,6 +79,7 @@
     <Compile Include="Infrastructure\ProcessExtensions.cs" />
     <Compile Include="MemoryHost.cs" />
     <Compile Include="NetworkObservable.cs" />
+    <Compile Include="OwinEnvironment.cs" />
     <Compile Include="Request.cs" />
     <Compile Include="Response.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
