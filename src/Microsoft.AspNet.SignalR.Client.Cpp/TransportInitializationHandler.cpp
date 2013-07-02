@@ -8,11 +8,16 @@ TransportInitializationHandler::TransportInitializationHandler(pplx::cancellatio
     // Default event
     OnFailure = [](){};
 
-    //// We want to fail if the disconnect token is tripped while we're waiting on initialization
-    //mTokenCleanup = disconnectToken.register_callback([this]()
-    //{
-    //    Fail();
-    //});
+    // We want to fail if the disconnect token is tripped while we're waiting on initialization
+    mTokenCleanup = disconnectToken.register_callback([this]()
+    {
+        Fail();
+    });
+
+    DeregisterCancelCallback = [this, disconnectToken]()
+    {
+        disconnectToken.deregister_callback(mTokenCleanup);
+    };
 
     TaskAsyncHelper::Delay(utility::seconds(30), mCts.get_token()).then([this]()
     {
@@ -36,6 +41,7 @@ void TransportInitializationHandler::Fail(exception& ex)
     {
         OnFailure();
         mInitializationTask.set_exception(ex);
+        DeregisterCancelCallback();
         mCts.cancel();
     });
 }
@@ -45,6 +51,7 @@ void TransportInitializationHandler::Success()
     pInitializationInvoker->Invoke([this]()
     {
         mInitializationTask.set();
+        DeregisterCancelCallback();
         mCts.cancel();
     });
 }

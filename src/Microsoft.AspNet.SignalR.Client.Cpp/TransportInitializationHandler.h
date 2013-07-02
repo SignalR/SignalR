@@ -19,6 +19,7 @@ public:
     function<void()> OnFailure;
 
 private:
+    function<void()> DeregisterCancelCallback;
     unique_ptr<ThreadSafeInvoker> pInitializationInvoker;
     pplx::task_completion_event<void> mInitializationTask;
     pplx::cancellation_token_registration mTokenCleanup;

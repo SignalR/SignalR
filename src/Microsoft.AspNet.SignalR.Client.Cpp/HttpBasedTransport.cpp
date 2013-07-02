@@ -45,11 +45,7 @@ pplx::task<void> HttpBasedTransport::Start(shared_ptr<Connection> connection, st
 
     auto initializeHandler = shared_ptr<TransportInitializationHandler>(new TransportInitializationHandler(disconnectToken));
 
-    int count = initializeHandler.use_count();
-
     OnStart(connection, data, disconnectToken, initializeHandler);
-
-    int count2 = initializeHandler.use_count();
     
     return initializeHandler->GetTask();
 }
