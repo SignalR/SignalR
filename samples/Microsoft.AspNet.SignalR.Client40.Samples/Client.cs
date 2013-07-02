@@ -27,7 +27,7 @@ namespace Microsoft.AspNet.SignalR.Client40.Samples
                 _traceWriter.WriteLine("Exception: {0}", exception);
                 throw;
             }
-        }
+        }       
 
         private void RunHubConnectionAPI(string url)
         {
@@ -48,7 +48,7 @@ namespace Microsoft.AspNet.SignalR.Client40.Samples
             hubProxy.Invoke("DisplayMessageGroup", "CommonClientGroup", "Hello Group Members!").Wait();
 
             string leaveGroupResponse = hubProxy.Invoke<string>("LeaveGroup", hubConnection.ConnectionId, "CommonClientGroup").Result;
-            hubConnection.TraceWriter.WriteLine("leaveGroupResponse={0}", joinGroupResponse);
+            hubConnection.TraceWriter.WriteLine("leaveGroupResponse={0}", leaveGroupResponse);
 
             hubProxy.Invoke("DisplayMessageGroup", "CommonClientGroup", "Hello Group Members! (caller should not see this message)").Wait();
 
@@ -99,11 +99,20 @@ namespace Microsoft.AspNet.SignalR.Client40.Samples
             connection.TraceWriter.WriteLine("transport.Name={0}", connection.Transport.Name);
         }
 
-        private void RunBasicAuth(string url)
+        private void RunBasicAuth(string serverUrl)
         {
+            string url = serverUrl + "basicauth";
+
+            var connection = new Connection(url + "/echo");
+            connection.TraceWriter = _traceWriter;
+            connection.Received += (data) => connection.TraceWriter.WriteLine(data);
+            connection.Credentials = new NetworkCredential("user", "password");
+            connection.Start().Wait();
+            connection.Send("sending to AuthenticatedEchoConnection").Wait();
+
             var hubConnection = new HubConnection(url);
             hubConnection.TraceWriter = _traceWriter;
-            hubConnection.Credentials = new NetworkCredential("username", "password");
+            hubConnection.Credentials = new NetworkCredential("user", "password");
 
             var hubProxy = hubConnection.CreateHubProxy("AuthHub");
             hubProxy.On<string, string>("invoked", (connectionId, date) => hubConnection.TraceWriter.WriteLine("connectionId={0}, date={1}", connectionId, date));

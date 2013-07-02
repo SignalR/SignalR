@@ -1,31 +1,33 @@
-﻿$.connection.hub.logging = true;
-$.connection.hub.connectionSlow(function () {
+﻿var connection = $.connection.hub,
+    url = "http://localhost:40476/";
+
+connection.logging = true;
+connection.connectionSlow(function () {
     log("[connectionSlow]");
 });
-$.connection.hub.disconnected(function () {
+connection.disconnected(function () {
     log("[disconnected]");
 });
-$.connection.hub.error(function (error) {
+connection.error(function (error) {
     log("[error] " + error);
 });
-$.connection.hub.received(function (payload) {
+connection.received(function (payload) {
     log("[received] " + window.JSON.stringify(payload));
 });
-$.connection.hub.reconnected(function () {
+connection.reconnected(function () {
     log("[reconnected]");
 });
-$.connection.hub.reconnecting(function () {
+connection.reconnecting(function () {
     log("[reconnecting]");
 });
-$.connection.hub.starting(function () {
+connection.starting(function () {
     log("[starting]");
 });
-$.connection.hub.stateChanged(function (change) {
+connection.stateChanged(function (change) {
     log("[stateChanged] " + displayState(change.oldState) + " => " + displayState(change.newState));
 });
 
 // execute this sample
-var url = "http://localhost:40476/";
 runHubConnectionAPI(url);
 
 function displayState(state) {
@@ -37,20 +39,21 @@ function log(data) {
 }
 
 function runHubConnectionAPI(url) {
-    $.connection.hub.url = url + "signalr";
-    $.connection.hubConnectionAPI.client.displayMessage = function (data) {
+    var hub = $.connection.hubConnectionAPI;
+    connection.url = url + "signalr";
+    hub.client.displayMessage = function (data) {
         log(data);
     }
 
-    $.connection.hub.start().
+    connection.start().
     done(function () {
-        log("transport.name=" + $.connection.hub.transport.name);
-        $.connection.hubConnectionAPI.server.displayMessageCaller("Hello Caller!");
-        $.connection.hubConnectionAPI.server.joinGroup($.connection.hub.id, "CommonClientGroup").done(function () {
-            $.connection.hubConnectionAPI.server.displayMessageGroup("CommonClientGroup", "Hello Group Members!").done(function () {
-                $.connection.hubConnectionAPI.server.leaveGroup($.connection.hub.id, "CommonClientGroup").done(function () {
-                    $.connection.hubConnectionAPI.server.displayMessageGroup("CommonClientGroup", "Hello Group Members! (caller should not see this message)").done(function () {
-                        $.connection.hubConnectionAPI.server.displayMessageCaller("Hello Caller again!");
+        log("transport.name=" + connection.transport.name);
+        hub.server.displayMessageCaller("Hello Caller!");
+        hub.server.joinGroup(connection.id, "CommonClientGroup").done(function () {
+            hub.server.displayMessageGroup("CommonClientGroup", "Hello Group Members!").done(function () {
+                hub.server.leaveGroup(connection.id, "CommonClientGroup").done(function () {
+                    hub.server.displayMessageGroup("CommonClientGroup", "Hello Group Members! (caller should not see this message)").done(function () {
+                        hub.server.displayMessageCaller("Hello Caller again!");
                     })
                 })
             })
@@ -62,17 +65,18 @@ function runHubConnectionAPI(url) {
 }
 
 function runBasicAuth() {
-    $.connection.hub.url = url + "basicauth/signalr";
+    var hub = $.connection.authHub;
+    connection.url = url + "basicauth/signalr";
     // increase connect timeout to give time to user to input credentials
-    $.connection.fn.transportConnectTimeout = 10000;
-    $.connection.authHub.client.invoked = function (connectionId, date) {
+    connection.transportConnectTimeout = 10000;
+    hub.client.invoked = function (connectionId, date) {
         log(connectionId);
     }
 
-    $.connection.hub.start().
+    connection.start().
     done(function () {
-        log("transport.name=" + $.connection.hub.transport.name);
-        $.connection.authHub.server.invokedFromClient();
+        log("transport.name=" + connection.transport.name);
+        hub.server.invokedFromClient();
     }).
     fail(function (error) {
         log("Failed to connect: " + error);
