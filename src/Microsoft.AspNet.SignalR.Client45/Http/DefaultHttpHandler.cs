@@ -28,6 +28,14 @@ namespace Microsoft.AspNet.SignalR.Client.Http
             }
 
             Credentials = _connection.Credentials;
+#if PORTABLE
+            if (this.SupportsPreAuthenticate())
+            {
+                PreAuthenticate = true;
+            }
+#elif NET45
+            PreAuthenticate = true;
+#endif
 
             if (_connection.CookieContainer != null)
             {
