@@ -249,7 +249,7 @@ namespace Microsoft.AspNet.SignalR.Stress
             double median = values[values.Length / 2];
             if (values.Length % 2 == 0)
             {
-                median = median + values[(values.Length / 2) - 1] / 2;
+                median = (median + values[(values.Length / 2) - 1]) / 2;
             }
 
             var sum = values.Select(i => new BigInteger(i)).Aggregate((aggregate, bi) => aggregate + bi);
