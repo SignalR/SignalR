@@ -110,3 +110,35 @@ QUnit.asyncTimeoutTest("WebSockets fall back to next transport when connection l
         $.network.enable();
     };
 });
+
+QUnit.asyncTimeoutTest("OnConnected fires once when WebSockets falls back", testUtilities.defaultTestTimeout * 3, function (end, assert, testName, undefined) {
+    var connection = testUtilities.createHubConnection(end, assert, testName),
+        savedProcessMessages = $.signalR.transports._logic.processMessages,
+        statusHub = connection.createHubProxies().StatusHub,
+        onConnectedEventCallCount = 0;
+
+    statusHub.client.joined = function (connectionId) {
+        if (connection.id === connectionId) {
+            onConnectedEventCallCount++;
+        }
+    };
+
+    $.signalR.transports._logic.processMessages = function (_, minData) {
+        // Look for initialize message, if we get it, ignore it, transports should time out
+        if (connection.transport.name === "webSockets") {
+            minData.S = undefined;
+        }
+        savedProcessMessages.apply(this, arguments);
+    }
+
+    connection.start().done(function () {
+        assert.equal(onConnectedEventCallCount, 1, "OnConnected fired once.");
+        end();
+    });
+
+    // Cleanup
+    return function () {
+        $.signalR.transports._logic.processMessages = savedProcessMessages;
+        connection.stop();
+    };
+});
