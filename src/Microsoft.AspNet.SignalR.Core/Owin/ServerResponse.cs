@@ -6,7 +6,6 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR.Hosting;
-using Microsoft.AspNet.SignalR.Owin.Infrastructure;
 using Microsoft.Owin;
 
 namespace Microsoft.AspNet.SignalR.Owin
@@ -15,11 +14,13 @@ namespace Microsoft.AspNet.SignalR.Owin
     {
         private readonly CancellationToken _callCancelled;
         private readonly OwinResponse _response;
+        private readonly Stream _responseBody;
 
         public ServerResponse(IDictionary<string, object> environment)
         {
             _response = new OwinResponse(environment);
-            _callCancelled = _response.Environment.Get<CancellationToken>(OwinConstants.CallCancelled);
+            _callCancelled = _response.CallCancelled;
+            _responseBody = _response.Body;
         }
 
         public CancellationToken CancellationToken
@@ -35,12 +36,12 @@ namespace Microsoft.AspNet.SignalR.Owin
 
         public void Write(ArraySegment<byte> data)
         {
-            _response.Body.Write(data.Array, data.Offset, data.Count);
+            _responseBody.Write(data.Array, data.Offset, data.Count);
         }
 
         public Task Flush()
         {
-            return _response.Body.FlushAsync();
+            return _responseBody.FlushAsync();
         }
     }
 }
