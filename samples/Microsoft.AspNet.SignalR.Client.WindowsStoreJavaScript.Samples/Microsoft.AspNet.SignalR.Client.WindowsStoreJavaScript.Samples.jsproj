@@ -67,6 +67,7 @@
     <Content Include="js\default.js" />
     <Content Include="css\default.css" />
     <Content Include="packages.config" />
+    <Content Include="Scripts\CommonClient.js" />
     <Content Include="Scripts\jquery-2.0.0.intellisense.js" />
     <Content Include="Scripts\jquery-2.0.0.js" />
     <Content Include="Scripts\jquery-2.0.0.min.js" />
