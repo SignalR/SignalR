@@ -238,7 +238,7 @@ namespace Microsoft.AspNet.SignalR.Crank
             double median = values[values.Length / 2];
             if (values.Length % 2 == 0)
             {
-                median = median + values[(values.Length / 2) - 1] / 2;
+                median = (median + values[(values.Length / 2) - 1]) / 2;
             }
             Console.WriteLine("{0} (MEDIAN):  {1}", key, Math.Round(median));
 
