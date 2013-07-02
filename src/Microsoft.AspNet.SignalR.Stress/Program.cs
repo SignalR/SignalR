@@ -100,7 +100,7 @@ namespace Microsoft.AspNet.SignalR.Stress
             [CommandLineParameter(Command = "Url", Required = false, Default = "http://localhost", Description = "URL for external host.")]
             public string Url { get; set; }
 
-            [CommandLineParameter(Command = "Run", Required = false, Default = "MemoryHost", Description = "The type of run to perform (MemoryHost, MessageBus, ConnectionRun, RedisMessageBus). Default: MemoryHost")]
+            [CommandLineParameter(Command = "Run", Required = false, Default = "SendReceive", Description = "The type of run to perform. Default: SendReceive")]
             public string RunName { get; set; }
 
             [CommandLineParameter(Command = "SampleRate", Required = false, Default = 500, Description = "The sampling rate in miliseconds. Default: 500")]
