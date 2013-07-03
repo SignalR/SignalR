@@ -232,21 +232,25 @@ namespace Microsoft.AspNet.SignalR.Tests
                 var connection = CreateConnection(host, "/examine-request");
                 var mre = new ManualResetEventSlim();
 
-                connection.Received += (arg) =>
+                using (connection)
                 {
-                    JObject headers = JsonConvert.DeserializeObject<JObject>(arg);
-                    Assert.Equal("test-header", (string)headers["testHeader"]);
+                    connection.Received += arg =>
+                    {
+                        JObject headers = JsonConvert.DeserializeObject<JObject>(arg);
+                        Assert.Equal("test-header", (string)headers["testHeader"]);
 
-                    mre.Set();
-                };
+                        mre.Set();
+                    };
 
-                connection.Start(host.Transport).Wait();
+                    connection.Start(host.Transport).Wait();
 
-                connection.Headers.Add("test-header", "test-header");
-                connection.Send("message");
+                    connection.Headers.Add("test-header", "test-header");
+                    connection.Send("message");
 
-                // Assert
-                Assert.True(mre.Wait(TimeSpan.FromSeconds(10)));
+                    // Assert
+                    Assert.True(mre.Wait(TimeSpan.FromSeconds(10)));
+                }
+
             }
         }
 
