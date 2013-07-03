@@ -13,10 +13,10 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
     public class WebSocketTransport : WebSocketHandler, IClientTransport
     {
         private readonly IHttpClient _client;
+        private readonly TransportAbortHandler _abortHandler;
         private CancellationToken _disconnectToken;
         private TransportInitializationHandler _initializeHandler;
         private WebSocketConnectionInfo _connectionInfo;
-        private ManualResetEventSlim _abortEventSlim;
 
         public WebSocketTransport()
             : this(new DefaultHttpClient())
@@ -27,6 +27,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
         {
             _client = client;
             _disconnectToken = CancellationToken.None;
+            _abortHandler = new TransportAbortHandler(client, Name);
             ReconnectDelay = TimeSpan.FromSeconds(2);
         }
 
@@ -127,20 +128,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
 
         public void Abort(IConnection connection, TimeSpan timeout, string connectionData)
         {
-            lock (this)
-            {
-                if (_abortEventSlim == null)
-                {
-                    _abortEventSlim = new ManualResetEventSlim();
-
-                    CloseAsync();
-                }
-            }
-
-            if (!_abortEventSlim.Wait(timeout))
-            {
-                _connectionInfo.Connection.Trace(TraceLevels.Events, "WS: Abort never fired");
-            }
+            _abortHandler.Abort(connection, timeout, connectionData);
         }
 
         public Task Send(IConnection connection, string data, string connectionData)
@@ -185,9 +173,8 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
                 return;
             }
 
-            if (_abortEventSlim != null)
+            if (_abortHandler.TryCompleteAbort())
             {
-                _abortEventSlim.Set();
                 return;
             }
 
@@ -243,11 +230,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
         {
             if (disposing)
             {
-                if (_abortEventSlim != null)
-                {
-                    _abortEventSlim.Dispose();
-                    _abortEventSlim = null;
-                }
+                _abortHandler.Dispose();
             }
         }
 

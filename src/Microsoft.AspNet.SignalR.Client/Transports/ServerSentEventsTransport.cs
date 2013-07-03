@@ -211,9 +211,9 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
 
                         if (_stop)
                         {
-                            CompleteAbort();
+                            AbortHandler.CompleteAbort();
                         }
-                        else if (TryCompleteAbort())
+                        else if (AbortHandler.TryCompleteAbort())
                         {
                             // Abort() was called, so don't reconnect
                         }

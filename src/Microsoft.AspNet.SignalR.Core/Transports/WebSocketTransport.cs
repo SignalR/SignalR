@@ -79,15 +79,22 @@ namespace Microsoft.AspNet.SignalR.Transports
 
         public override Task ProcessRequest(ITransportConnection connection)
         {
-            return AcceptWebSocketRequest(socket =>
+            if (IsAbortRequest)
             {
-                _socket = socket;
-                socket.OnClose = _closed;
-                socket.OnMessage = _message;
-                socket.OnError = _error;
+                return connection.Abort(ConnectionId);
+            }
+            else
+            {
+                return AcceptWebSocketRequest(socket =>
+                {
+                    _socket = socket;
+                    socket.OnClose = _closed;
+                    socket.OnMessage = _message;
+                    socket.OnError = _error;
 
-                return ProcessRequestCore(connection);
-            });
+                    return ProcessRequestCore(connection);
+                });
+            }
         }
 
         protected override TextWriter CreateResponseWriter()
@@ -146,14 +153,7 @@ namespace Microsoft.AspNet.SignalR.Transports
         {
             Trace.TraceInformation("CloseSocket({0}, {1})", clean, ConnectionId);
 
-            // If we performed a clean disconnect then we go through the normal disconnect routine.  However,
-            // If we performed an unclean disconnect we want to mark the connection as "not alive" and let the
-            // HeartBeat clean it up.  This is to maintain consistency across the transports.
-            if (clean)
-            {
-                Abort();
-            }
-
+            // Require a request to /abort to stop tracking the connection. #2195
             _isAlive = false;
         }
 

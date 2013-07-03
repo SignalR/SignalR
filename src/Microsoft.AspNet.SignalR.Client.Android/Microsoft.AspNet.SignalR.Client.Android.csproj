@@ -127,6 +127,9 @@
     <Compile Include="..\Microsoft.AspNet.SignalR.Client\Infrastructure\ErrorExtensions.cs">
       <Link>Infrastructure\ErrorExtensions.cs</Link>
     </Compile>
+    <Compile Include="..\Microsoft.AspNet.SignalR.Client\Infrastructure\TransportAbortHandler.cs">
+      <Link>Infrastructure\TransportAbortHandler.cs</Link>
+    </Compile>
     <Compile Include="..\Microsoft.AspNet.SignalR.Client\Infrastructure\TransportInitializationHandler.cs">
       <Link>Infrastructure\TransportInitializationHandler.cs</Link>
     </Compile>

@@ -185,7 +185,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
             {
                 requestDisposer.Dispose();
 
-                if (TryCompleteAbort())
+                if (AbortHandler.TryCompleteAbort())
                 {
                     // Abort() was called, so don't reconnect
                     requestHandler.Stop();
@@ -209,7 +209,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
             {
                 // Complete any ongoing calls to Abort()
                 // If someone calls Abort() later, have it no-op
-                CompleteAbort();
+                AbortHandler.CompleteAbort();
             };
         }
 

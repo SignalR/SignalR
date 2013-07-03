@@ -171,6 +171,9 @@
     <Compile Include="..\Microsoft.AspNet.SignalR.Client45\Infrastructure\HttpClientException.cs">
       <Link>Infrastructure\HttpClientException.cs</Link>
     </Compile>
+    <Compile Include="..\Microsoft.AspNet.SignalR.Client\Infrastructure\TransportAbortHandler.cs">
+      <Link>Infrastructure\TransportAbortHandler.cs</Link>
+    </Compile>
     <Compile Include="..\Microsoft.AspNet.SignalR.Client\Infrastructure\TransportInitializationHandler.cs">
       <Link>Infrastructure\TransportInitializationHandler.cs</Link>
     </Compile>
