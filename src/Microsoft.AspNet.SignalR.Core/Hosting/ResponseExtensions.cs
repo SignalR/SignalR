@@ -32,18 +32,5 @@ namespace Microsoft.AspNet.SignalR.Hosting
 
             return TaskAsyncHelper.Empty;
         }
-
-        internal static string GetHeader(this OwinResponse response, string headerName)
-        {
-            var headers = response.Environment.Get<IDictionary<string, string[]>>(OwinConstants.ResponseHeaders);
-
-            string[] values;
-            if (headers.TryGetValue(headerName, out values) && values.Length > 0)
-            {
-                return values[0];
-            }
-
-            return null;
-        }
     }
 }
