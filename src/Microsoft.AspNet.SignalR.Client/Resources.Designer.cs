@@ -93,15 +93,6 @@ namespace Microsoft.AspNet.SignalR.Client {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Request headers cannot be set after the connection has started..
-        /// </summary>
-        internal static string Error_HeadersCanOnlyBeSetWhenDisconnected {
-            get {
-                return ResourceManager.GetString("Error_HeadersCanOnlyBeSetWhenDisconnected", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to You are using a version of the client that isn&apos;t compatible with the server. Client version {0}, server version {1}..
         /// </summary>
         internal static string Error_IncompatibleProtocolVersion {

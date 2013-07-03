@@ -123,9 +123,6 @@
   <data name="Error_ConnectionHasNotBeenEstablished" xml:space="preserve">
     <value>The connection has not been established.</value>
   </data>
-  <data name="Error_HeadersCanOnlyBeSetWhenDisconnected" xml:space="preserve">
-    <value>Request headers cannot be set after the connection has started.</value>
-  </data>
   <data name="Error_IncompatibleProtocolVersion" xml:space="preserve">
     <value>You are using a version of the client that isn't compatible with the server. Client version {0}, server version {1}.</value>
   </data>
