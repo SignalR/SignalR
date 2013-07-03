@@ -33,7 +33,7 @@ namespace Microsoft.AspNet.SignalR
         private IConfigurationManager _configurationManager;
         private ITransportManager _transportManager;
         private bool _initialized;
-        private IServerCommandHandler _serverMessageHandler;        
+        private IServerCommandHandler _serverMessageHandler;
 
         public virtual void Initialize(IDependencyResolver resolver)
         {
@@ -153,8 +153,17 @@ namespace Microsoft.AspNet.SignalR
                 return ProcessRequest(context);
             }
 
-            // If we failed to authorize the request then return a 401
-            response.StatusCode = 401;
+            if (context.Request.User != null && 
+                context.Request.User.Identity.IsAuthenticated)
+            {
+                // If the user is authenticated and authorize failed then 403
+                response.StatusCode = 403;
+            }
+            else
+            {
+                // If we failed to authorize the request then return a 401
+                response.StatusCode = 401;
+            }
 
             return TaskAsyncHelper.Empty;
         }
