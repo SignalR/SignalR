@@ -420,10 +420,10 @@ namespace Microsoft.AspNet.SignalR.Tests
 
                     proxy.On("sendHeader", headers =>
                     {
-                        Assert.Equal<string>("test-header", (string)headers.testHeader);
+                        Assert.Equal("test-header", (string)headers.testHeader);
                         if (transportType != TransportType.Websockets)
                         {
-                            Assert.Equal<string>("referer", (string)headers.refererHeader);
+                            Assert.Equal("referer", (string)headers.refererHeader);
                         }
                         tcs.TrySetResult(null);
                     });
