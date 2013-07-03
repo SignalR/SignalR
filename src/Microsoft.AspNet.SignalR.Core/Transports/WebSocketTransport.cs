@@ -74,23 +74,30 @@ namespace Microsoft.AspNet.SignalR.Transports
 
         public override Task ProcessRequest(ITransportConnection connection)
         {
-            var webSocketRequest = _context.Request as IWebSocketRequest;
-
-            // Throw if the server implementation doesn't support websockets
-            if (webSocketRequest == null)
+            if (IsAbortRequest)
             {
-                throw new InvalidOperationException(Resources.Error_WebSocketsNotSupported);
+                return connection.Abort(ConnectionId);
             }
-
-            return webSocketRequest.AcceptWebSocketRequest(socket =>
+            else
             {
-                _socket = socket;
-                socket.OnClose = _closed;
-                socket.OnMessage = _message;
-                socket.OnError = _error;
+                var webSocketRequest = _context.Request as IWebSocketRequest;
 
-                return ProcessRequestCore(connection);
-            });
+                // Throw if the server implementation doesn't support websockets
+                if (webSocketRequest == null)
+                {
+                    throw new InvalidOperationException(Resources.Error_WebSocketsNotSupported);
+                }
+
+                return webSocketRequest.AcceptWebSocketRequest(socket =>
+                {
+                    _socket = socket;
+                    socket.OnClose = _closed;
+                    socket.OnMessage = _message;
+                    socket.OnError = _error;
+
+                    return ProcessRequestCore(connection);
+                });
+            }
         }
 
         protected override TextWriter CreateResponseWriter()
@@ -135,14 +142,7 @@ namespace Microsoft.AspNet.SignalR.Transports
         {
             Trace.TraceInformation("CloseSocket({0}, {1})", clean, ConnectionId);
 
-            // If we performed a clean disconnect then we go through the normal disconnect routine.  However,
-            // If we performed an unclean disconnect we want to mark the connection as "not alive" and let the
-            // HeartBeat clean it up.  This is to maintain consistency across the transports.
-            if (clean)
-            {
-                Abort();
-            }
-
+            // Require a request to /abort to stop tracking the connection. #2195
             _isAlive = false;
         }
 

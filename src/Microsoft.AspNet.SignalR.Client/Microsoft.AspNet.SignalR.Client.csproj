@@ -81,6 +81,7 @@
     <Compile Include="Hubs\Subscription.cs" />
     <Compile Include="IConnection.cs" />
     <Compile Include="Infrastructure\ErrorExtensions.cs" />
+    <Compile Include="Infrastructure\TransportAbortHandler.cs" />
     <Compile Include="KeepAliveData.cs" />
     <Compile Include="Infrastructure\SignalRError.cs" />
     <Compile Include="Infrastructure\ExceptionHelper.cs" />

@@ -118,6 +118,9 @@
       <Link>Transports\TransportHelper.cs</Link>
     </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="..\Microsoft.AspNet.SignalR.Client\Infrastructure\TransportAbortHandler.cs">
+      <Link>Infrastructure\TransportAbortHandler.cs</Link>
+    </Compile>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="..\Common\CommonAssemblyInfo.cs">
