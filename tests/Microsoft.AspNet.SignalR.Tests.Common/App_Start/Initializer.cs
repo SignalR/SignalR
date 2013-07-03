@@ -99,6 +99,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Common
             };
 
             app.MapConnection<MySendingConnection>("multisend", crossDomainConfig);
+            app.MapConnection<AutoEncodedJsonConnection>("autoencodedjson", crossDomainConfig);
 
             var config = new ConnectionConfiguration
             {

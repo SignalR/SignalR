@@ -162,7 +162,7 @@
                 data.S = that.state;
             }
             
-            that.connection.send(that.connection.json.stringify(data));
+            that.connection.send(data);
 
             return d.promise();
         },

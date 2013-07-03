@@ -1012,8 +1012,16 @@
             }
         },
 
+        stringifySend: function (connection, message) {
+            if ($.type(message) === "string") {
+                return message;
+            }
+            return connection.json.stringify(message);
+        },
+
         ajaxSend: function (connection, data) {
-            var url = connection.url + "/send" + "?transport=" + connection.transport.name + "&connectionToken=" + window.encodeURIComponent(connection.token);
+            var payload = transportLogic.stringifySend(connection, data),
+                url = connection.url + "/send" + "?transport=" + connection.transport.name + "&connectionToken=" + window.encodeURIComponent(connection.token);
             url = this.addQs(url, connection.qs);
             return $.ajax(
                 $.extend({}, $.signalR.ajaxDefaults, {
@@ -1023,7 +1031,7 @@
                     contentType: signalR._.defaultContentType,
                     dataType: connection.ajaxDataType,
                     data: {
-                        data: data
+                        data: payload
                     },
                     success: function (result) {
                         if (result) {
@@ -1223,7 +1231,8 @@
         supportsKeepAlive: true,
 
         send: function (connection, data) {
-            connection.socket.send(data);
+            var payload = transportLogic.stringifySend(connection, data);
+            connection.socket.send(payload);
         },
 
         start: function (connection, onSuccess, onFailed) {
@@ -2065,7 +2074,7 @@
                 data.S = that.state;
             }
             
-            that.connection.send(that.connection.json.stringify(data));
+            that.connection.send(data);
 
             return d.promise();
         },
