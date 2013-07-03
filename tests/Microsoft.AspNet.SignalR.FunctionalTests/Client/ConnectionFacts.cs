@@ -186,7 +186,7 @@ namespace Microsoft.AspNet.SignalR.Tests
 
                 using (connection)
                 {
-                    connection.Received += (arg) =>
+                    connection.Received += arg =>
                     {
                         JObject headers = JsonConvert.DeserializeObject<JObject>(arg);
                         if (transportType != TransportType.Websockets)
