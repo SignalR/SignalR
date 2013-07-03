@@ -3,7 +3,10 @@
 HttpRequestWrapper::HttpRequestWrapper(http_request httpRequestMessage, function<void()> cancel)
 {
     mHttpRequestMessage = httpRequestMessage;
-    Cancel = cancel;
+    {
+        lock_guard<mutex> lock(mCancelLock);
+        Cancel = cancel;
+    }
 }
 
 HttpRequestWrapper::~HttpRequestWrapper()
@@ -13,5 +16,6 @@ HttpRequestWrapper::~HttpRequestWrapper()
 
 void HttpRequestWrapper::Abort()
 {
+    lock_guard<mutex> lock(mCancelLock);
     Cancel();
 }

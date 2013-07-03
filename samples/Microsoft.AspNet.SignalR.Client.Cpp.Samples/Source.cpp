@@ -27,12 +27,12 @@ static void RunStreamingSample()
     {
         shared_ptr<Connection> connection = shared_ptr<Connection>(new Connection(U("http://localhost:40476/raw-connection")));
     
-        connection->Received = [](string_t message)
+        connection->SetReceivedCallback([](string_t message)
         {
             wcout << message << endl;
-        };
+        });
 
-        connection->Reconnected = []()
+        connection->SetReconnectedCallback([]()
         {
             time_t now = time(0);
             struct tm nowStruct;
@@ -40,19 +40,19 @@ static void RunStreamingSample()
 
             wcout << "[" << (nowStruct.tm_mon + 1) << "-" << nowStruct.tm_mday << "-" << (nowStruct.tm_year + 1900) << " "
                 << nowStruct.tm_hour << ":" << nowStruct.tm_min << ":" << nowStruct.tm_sec << "]: Connection restablished" << endl;
-        };
+        });
 
-        connection->StateChanged = [](StateChange stateChange)
+        connection->SetStateChangedCallback([](StateChange stateChange)
         {
             wcout << stateChange.GetOldStateName() << " => " << stateChange.GetNewStateName() << endl;
-        };
+        });
 
-        connection->Error = [](exception& ex)
+        connection->SetErrorCallback([](exception& ex)
         {
             wcerr << U("========ERROR==========") << endl;
             wcerr << ex.what() << endl;
             wcerr << U("=======================") << endl;
-        };
+        });
 
         try
         {

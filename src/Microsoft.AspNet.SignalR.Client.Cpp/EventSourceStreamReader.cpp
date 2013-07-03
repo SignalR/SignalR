@@ -5,9 +5,9 @@ EventSourceStreamReader::EventSourceStreamReader(Concurrency::streams::basic_ist
 {
     pBuffer = unique_ptr<ChunkBuffer>(new ChunkBuffer());
 
-    Data = [this](shared_ptr<char> readBuffer){
+    SetDataCallback([this](shared_ptr<char> readBuffer){
         ProcessBuffer(readBuffer);
-    };
+    });
 }
 
 
@@ -46,6 +46,14 @@ void EventSourceStreamReader::OnMessage(shared_ptr<SseEvent> sseEvent)
 {
     if (Message != nullptr)
     {
+        lock_guard<mutex> lock(mMessageLock);
         Message(sseEvent);
     }
+}
+
+
+void EventSourceStreamReader::SetMessageCallback(function<void(shared_ptr<SseEvent> sseEvent)> message)
+{
+    lock_guard<mutex> lock(mMessageLock);
+    Message = message;
 }

@@ -50,13 +50,13 @@ public:
     void SetConnectionId(string_t connectionId); 
     void GetTransportConnectTimeout(seconds transportConnectTimeout);
 
-    function<void(string_t message)> Received;
-    function<void(StateChange stateChange)> StateChanged;
-    function<void(exception& ex)> Error;
-    function<void()> Closed;
-    function<void()> Reconnecting;
-    function<void()> Reconnected;
-    function<void()> ConnectionSlow;
+    void SetStateChangedCallback(function<void(StateChange)> stateChanged);
+    void SetReconnectingCallback(function<void()> reconnecting);
+    void SetReconnectedCallback(function<void()> reconnected);
+    void SetConnectionSlowCallback(function<void()> connectionSlow);
+    void SetErrorCallback(function<void(exception&)> error);
+    void SetClosedCallback(function<void()> closed);
+    void SetReceivedCallback(function<void(string_t)> received);
 
     pplx::task<void> Start();
     pplx::task<void> Start(shared_ptr<IClientTransport> transport);
@@ -84,6 +84,21 @@ private:
     unique_ptr<pplx::cancellation_token_source> pDisconnectCts;
     pplx::task<void> mConnectTask;
     const seconds cDefaultAbortTimeout;
+
+    mutex mStateChangedLock;
+    function<void(StateChange)> StateChanged;
+    mutex mReconnectingLock;
+    function<void()> Reconnecting;
+    mutex mReconnectedLock;
+    function<void()> Reconnected;
+    mutex mConnectionSlowLock;
+    function<void()> ConnectionSlow;
+    mutex mErrorLock;
+    function<void(exception&)> Error;
+    mutex mClosedLock;
+    function<void()> Closed;
+    mutex mReceivedLock;
+    function<void(string_t)> Received;
 
     pplx::task<void> StartTransport();
     pplx::task<void> Negotiate(shared_ptr<IClientTransport> transport);

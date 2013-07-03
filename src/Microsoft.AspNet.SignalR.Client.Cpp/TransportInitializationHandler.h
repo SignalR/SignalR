@@ -4,6 +4,7 @@
 #include "TaskAsyncHelper.h"
 #include "ExceptionHelper.h"
 #include "http_client.h"
+#include <mutex>
 
 class TransportInitializationHandler
 {
@@ -16,9 +17,12 @@ public:
     void Success();
     pplx::task<void> GetTask();
 
-    function<void()> OnFailure;
+    void SetOnFailureCallback(function<void()> onFailure);
 
 private:
+    mutex mOnFailureLock;
+    function<void()> OnFailure;
+    mutex mDeregisterCancelCallbackLock;
     function<void()> DeregisterCancelCallback;
     unique_ptr<ThreadSafeInvoker> pInitializationInvoker;
     pplx::task_completion_event<void> mInitializationTask;

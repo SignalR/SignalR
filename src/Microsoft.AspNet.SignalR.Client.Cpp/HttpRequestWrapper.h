@@ -1,6 +1,7 @@
 #pragma once
 
 #include <http_client.h>
+#include <mutex>
 
 using namespace std;
 using namespace web::http;
@@ -15,5 +16,6 @@ public:
 
 private:
     http_request mHttpRequestMessage;
+    mutex mCancelLock;
     function<void()> Cancel;
 };

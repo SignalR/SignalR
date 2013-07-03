@@ -16,10 +16,10 @@ ServerSentEventsTransport::~ServerSentEventsTransport()
 void ServerSentEventsTransport::OnAbort()
 {
     // need to clear all the function<> variables to prevent circular referencing
-    pEventSource->Opened = [](){};
-    pEventSource->Closed = [](exception& ex){};
-    pEventSource->Data = [](shared_ptr<char> buffer){};
-    pEventSource->Message = [](shared_ptr<SseEvent> sseEvent){};
+    pEventSource->SetOpenedCallback([](){});
+    pEventSource->SetClosedCallback([](exception&){});
+    pEventSource->SetDataCallback([](shared_ptr<char>){});
+    pEventSource->SetMessageCallback([](shared_ptr<SseEvent>){});
     //pEventSource->Abort();
 }
 
@@ -31,11 +31,11 @@ void ServerSentEventsTransport::OnStart(shared_ptr<Connection> connection, strin
         throw exception("ArgumentNullException: initializeHandler");
     }
 
-    initializeHandler->OnFailure = [this]()
+    initializeHandler->SetOnFailureCallback([this]()
     {
         mStop = true;
         pRequest->Abort();
-    };
+    });
 
     pInitializeHandler = initializeHandler;
 
@@ -122,19 +122,18 @@ void ServerSentEventsTransport::OpenConnection(shared_ptr<Connection> connection
             {
                 cout << "transport cancel" << endl;
                 mStop = true;
-                //stop = true;
                 pRequest->Abort();
             });
 
-            pEventSource->Opened = [connection]()
+            pEventSource->SetOpenedCallback([connection]()
             {
                 if (connection->ChangeState(ConnectionState::Reconnecting, ConnectionState::Connected))
                 {
                     connection->OnReconnected();
                 }
-            };
+            });
 
-            pEventSource->Message = [connection, this, initializeInvoke, stop](shared_ptr<SseEvent> sseEvent) 
+            pEventSource->SetMessageCallback([connection, this, initializeInvoke, stop](shared_ptr<SseEvent> sseEvent) 
             {
                 if (sseEvent->GetType() == EventType::Data)
                 {
@@ -151,17 +150,15 @@ void ServerSentEventsTransport::OpenConnection(shared_ptr<Connection> connection
                     if (disconnected)
                     {
                         mStop = true;
-                        //stop = true;
                         connection->Disconnect();
                     }
                 }
-            };
+            });
 
-            pEventSource->Closed = [connection, this, data, disconnectToken, stop](exception& ex)
+            pEventSource->SetClosedCallback([connection, this, data, disconnectToken, stop](exception& ex)
             {
-                //cout << "ASR Closed" << endl;
+                cout << "ASR Closed" << endl;
 
-                //cout << "exception: " << ex.what() << endl;
                 if (!ExceptionHelper::IsNull(ex))
                 {
                     // Check if the request is aborted
@@ -172,9 +169,6 @@ void ServerSentEventsTransport::OpenConnection(shared_ptr<Connection> connection
                     }
                 }
 
-                //cout << "exception handling complete" << endl;
-
-                //if (stop)
                 if (mStop)
                 {
                     CompleteAbort();
@@ -187,9 +181,7 @@ void ServerSentEventsTransport::OpenConnection(shared_ptr<Connection> connection
                 {
                     Reconnect(connection, data, disconnectToken);
                 }
-
-                
-            };
+            });
 
             pEventSource->Start();
         }

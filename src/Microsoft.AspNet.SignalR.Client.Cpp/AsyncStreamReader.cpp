@@ -144,6 +144,7 @@ void AsyncStreamReader::Close(exception& ex)
     {
         if (Closed != nullptr)
         {
+            lock_guard<mutex> lock(mClosedLock);
             Closed(ex);
         }
 
@@ -158,6 +159,7 @@ void AsyncStreamReader::OnOpened()
 {
     if (Opened != nullptr)
     {
+        lock_guard<mutex> lock(mOpenedLock);
         Opened();
     }
 }
@@ -166,6 +168,7 @@ void AsyncStreamReader::OnData(shared_ptr<char> buffer)
 {
     if (Data != nullptr)
     {
+        lock_guard<mutex> lock(mDataLock);
         Data(buffer);
     }
 }
@@ -196,4 +199,22 @@ pplx::task<unsigned int> AsyncStreamReader::AsyncReadIntoBuffer(Concurrency::str
 
         return (unsigned int)bytesRead;
     }, readTaskOptions);
+}
+
+void AsyncStreamReader::SetOpenedCallback(function<void()> opened)
+{
+    lock_guard<mutex> lock(mOpenedLock);
+    Opened = opened;
+}
+
+void AsyncStreamReader::SetClosedCallback(function<void(exception& ex)> closed)
+{
+    lock_guard<mutex> lock(mClosedLock);
+    Closed = closed;
+}
+
+void AsyncStreamReader::SetDataCallback(function<void(shared_ptr<char> buffer)> data)
+{
+    lock_guard<mutex> lock(mDataLock);
+    Data = data;
 }

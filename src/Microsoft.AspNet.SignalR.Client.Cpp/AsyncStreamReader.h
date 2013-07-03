@@ -21,9 +21,9 @@ class AsyncStreamReader
 public:
     AsyncStreamReader(streams::basic_istream<uint8_t> stream);
     ~AsyncStreamReader(void);
-    function<void()> Opened;
-    function<void(exception& ex)> Closed;
-    function<void(shared_ptr<char> buffer)> Data;
+    void SetOpenedCallback(function<void()> opened);
+    void SetClosedCallback(function<void(exception& ex)> closed);
+    void SetDataCallback(function<void(shared_ptr<char> buffer)> data);
     void Start();
     void Abort();
 
@@ -37,6 +37,12 @@ private:
     atomic<State> mReadingState;
     pplx::cancellation_token_source mReadCts;
     function<void()> SetOpened;
+    mutex mOpenedLock;
+    function<void()> Opened;
+    mutex mClosedLock;
+    function<void(exception& ex)> Closed;
+    mutex mDataLock;
+    function<void(shared_ptr<char> buffer)> Data;
 
     bool IsProcessing();
     void Close();

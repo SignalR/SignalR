@@ -242,7 +242,10 @@ void Connection::Stop(seconds timeout)
     {
         try
         {
-            (mConnectTask || TaskAsyncHelper::Delay(timeout)).wait(); // the memory will eventually be reclaimed after 30 seconds so it's not a leak here
+            if (!mConnectTask.is_done())
+            {
+                (mConnectTask || TaskAsyncHelper::Delay(timeout)).wait(); // the memory will eventually be reclaimed after 30 seconds so it's not a leak here
+            }
         }
         catch (exception& ex)
         {
@@ -285,6 +288,7 @@ void Connection::Disconnect()
 
         if (Closed != nullptr)
         {
+            lock_guard<mutex> lock(mClosedLock);
             Closed();
         }
     }
@@ -294,6 +298,7 @@ void Connection::OnError(exception& ex)
 {
     if (Error != nullptr)
     {
+        lock_guard<mutex> lock(mErrorLock);
         Error(ex);
     }
 }
@@ -314,6 +319,7 @@ void Connection::OnMessageReceived(string_t message)
     {
         try 
         {
+            lock_guard<mutex> lock(mReceivedLock);
             Received(message);
         }
         catch (exception& ex)
@@ -327,6 +333,7 @@ void Connection::OnReconnecting()
 {
     if (Reconnecting != nullptr)
     {
+        lock_guard<mutex> lock(mReconnectingLock);
         Reconnecting();
     }
 }
@@ -335,6 +342,7 @@ void Connection::OnReconnected()
 {
     if (Reconnected != nullptr)
     {
+        lock_guard<mutex> lock(mReconnectedLock);
         Reconnected();
     }
 }
@@ -343,6 +351,7 @@ void Connection::OnConnectionSlow()
 {
     if (ConnectionSlow != nullptr)
     {
+        lock_guard<mutex> lock(mConnectionSlowLock);
         ConnectionSlow();
     }
 }
@@ -361,6 +370,49 @@ void Connection::SetState(ConnectionState newState)
 
     if (StateChanged != nullptr)
     {
+        lock_guard<mutex> lock(mStateChangedLock);
         StateChanged(stateChange);
     }
+}
+
+void Connection::SetStateChangedCallback(function<void(StateChange)> stateChanged)
+{
+    lock_guard<mutex> lock(mStateChangedLock);
+    StateChanged = stateChanged;
+}
+
+void Connection::SetReconnectingCallback(function<void()> reconnecting)
+{
+    lock_guard<mutex> lock(mReconnectingLock);
+    Reconnecting = reconnecting;
+}
+
+void Connection::SetReconnectedCallback(function<void()> reconnected)
+{
+    lock_guard<mutex> lock(mReconnectedLock);
+    Reconnected = reconnected;
+}
+
+void Connection::SetConnectionSlowCallback(function<void()> connectionSlow)
+{
+    lock_guard<mutex> lock(mConnectionSlowLock);
+    ConnectionSlow = connectionSlow;
+}
+
+void Connection::SetErrorCallback(function<void(exception&)> error)
+{
+    lock_guard<mutex> lock(mErrorLock);
+    Error = error;
+}
+
+void Connection::SetClosedCallback(function<void()> closed)
+{
+    lock_guard<mutex> lock(mClosedLock);
+    Closed = closed;
+}
+
+void Connection::SetReceivedCallback(function<void(string_t)> received)
+{
+    lock_guard<mutex> lock(mReceivedLock);
+    Received = received;
 }

@@ -6,18 +6,23 @@ TransportInitializationHandler::TransportInitializationHandler(utility::seconds 
     pInitializationInvoker = unique_ptr<ThreadSafeInvoker>(new ThreadSafeInvoker());
 
     // Default event
-    OnFailure = [](){};
-
+    {
+        lock_guard<mutex> lock(mOnFailureLock);
+        OnFailure = [](){};
+    }
     // We want to fail if the disconnect token is tripped while we're waiting on initialization
     mTokenCleanup = disconnectToken.register_callback([this]()
     {
         Fail();
     });
 
-    DeregisterCancelCallback = [this, disconnectToken]()
     {
-        disconnectToken.deregister_callback(mTokenCleanup);
-    };
+        lock_guard<mutex> lock(mDeregisterCancelCallbackLock);
+        DeregisterCancelCallback = [this, disconnectToken]()
+        {
+            disconnectToken.deregister_callback(mTokenCleanup);
+        };
+    }
 
     TaskAsyncHelper::Delay(failureTimeout, mCts.get_token()).then([this]()
     {
@@ -39,9 +44,15 @@ void TransportInitializationHandler::Fail(exception& ex)
 {
     pInitializationInvoker->Invoke([this, ex]()
     {
-        OnFailure();
+        {
+            lock_guard<mutex> lock(mOnFailureLock);
+            OnFailure();
+        }
         mInitializationTask.set_exception(ex);
-        DeregisterCancelCallback();
+        {
+            lock_guard<mutex> lock(mDeregisterCancelCallbackLock);
+            DeregisterCancelCallback();
+        }
         mCts.cancel();
     });
 }
@@ -51,7 +62,10 @@ void TransportInitializationHandler::Success()
     pInitializationInvoker->Invoke([this]()
     {
         mInitializationTask.set();
-        DeregisterCancelCallback();
+        {
+            lock_guard<mutex> lock(mDeregisterCancelCallbackLock);
+            DeregisterCancelCallback();
+        }
         mCts.cancel();
     });
 }
@@ -59,4 +73,10 @@ void TransportInitializationHandler::Success()
 pplx::task<void> TransportInitializationHandler::GetTask()
 {
     return pplx::task<void>(mInitializationTask);
+}
+
+void TransportInitializationHandler::SetOnFailureCallback(function<void()> onFailure)
+{
+    lock_guard<mutex> lock(mOnFailureLock);
+    OnFailure = onFailure;
 }

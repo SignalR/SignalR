@@ -12,7 +12,11 @@ ConnectingMessageBuffer::~ConnectingMessageBuffer()
 void ConnectingMessageBuffer::Initialize(shared_ptr<Connection> connection, function<void(string_t)> drainCallback)
 {
     pConnection = connection;
-    DrainCallback = drainCallback;
+
+    {
+        lock_guard<mutex> lock(mDrainCallbackLock);
+        DrainCallback = drainCallback;
+    }
 }
 
 bool ConnectingMessageBuffer::TryBuffer(string_t message)
@@ -31,7 +35,10 @@ void ConnectingMessageBuffer::Drain()
     // Ensure that the connection is connected when we drain (do not want to drain while a connection is not active)          
     while (!mBuffer.empty() && pConnection->GetState() == ConnectionState::Connected)
     {
-        DrainCallback(mBuffer.front());
+        {
+            lock_guard<mutex> lock(mDrainCallbackLock);
+            DrainCallback(mBuffer.front());
+        }
         mBuffer.pop();
     }
 }
@@ -43,5 +50,8 @@ void ConnectingMessageBuffer::Clear()
 
     //clean up
     pConnection = nullptr;
-    DrainCallback = [](string_t message){};
+    {
+        lock_guard<mutex> lock(mDrainCallbackLock);
+        DrainCallback = [](string_t message){};
+    }
 }

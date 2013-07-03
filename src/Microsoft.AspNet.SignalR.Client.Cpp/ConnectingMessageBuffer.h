@@ -4,6 +4,7 @@ class Connection;
 
 #include "http_client.h"
 #include <queue>
+#include <mutex>
 
 using namespace std;
 using namespace utility;
@@ -22,5 +23,6 @@ public:
 private:
     shared_ptr<Connection> pConnection;
     queue<string_t> mBuffer;
+    mutex mDrainCallbackLock;
     function<void(string_t)> DrainCallback;
 };
