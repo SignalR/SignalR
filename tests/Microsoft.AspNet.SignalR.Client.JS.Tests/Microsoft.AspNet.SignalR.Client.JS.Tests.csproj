@@ -117,6 +117,7 @@
     <Content Include="Tests\FunctionalTests\Transports\ForeverFrame\TransportSelectionFacts.js" />
     <Content Include="Tests\FunctionalTests\Transports\LongPolling\LPConnectFacts.js" />
     <Content Include="Tests\FunctionalTests\Transports\LongPolling\LPReconnectFacts.js" />
+    <Content Include="Tests\FunctionalTests\Transports\ServerSentEvents\SSEReconnectFacts.js" />
     <Content Include="Tests\UnitTests\Common\AjaxFacts.js" />
     <Content Include="Tests\UnitTests\Common\KeepAliveFacts.js" />
     <Content Include="Tests\UnitTests\Common\ProcessMessagesFacts.js" />
