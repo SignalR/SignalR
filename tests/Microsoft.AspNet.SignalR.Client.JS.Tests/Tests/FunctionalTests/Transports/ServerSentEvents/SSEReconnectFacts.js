@@ -1,7 +1,8 @@
 ﻿QUnit.module("Server Sent Events Facts", testUtilities.transports.serverSentEvents.enabled);
 
 QUnit.asyncTimeoutTest("Attempts to reconnect at the correct interval.", testUtilities.defaultTestTimeout* 2, function (end, assert, testName) {
-    var connection = testUtilities.createConnection("signalr", end, assert, testName);
+    var connection = testUtilities.createConnection("signalr", end, assert, testName),
+        savedEventSource = window.EventSource;
 
     connection.start({ transport: "serverSentEvents" }).done(function () {
         var savedReconnect = connection.transport.reconnect,
@@ -21,12 +22,23 @@ QUnit.asyncTimeoutTest("Attempts to reconnect at the correct interval.", testUti
             savedReconnect.apply(this, arguments);
         };
 
+        function CustomEventSource() {
+            this.readyState = savedEventSource.CONNECTING;            
+
+            return savedEventSource.apply(this, arguments);
+        }
+
+        $.extend(CustomEventSource, savedEventSource);
+
+        window.EventSource = CustomEventSource;
+
         $.network.disconnect();
     });
 
     // Cleanup
     return function () {
         connection.stop();
+        window.EventSource = savedEventSource;
         $.network.connect();
     };
 });
