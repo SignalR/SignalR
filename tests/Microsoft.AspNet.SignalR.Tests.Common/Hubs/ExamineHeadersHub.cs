@@ -7,7 +7,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Common.Hubs
     [HubName("ExamineHeadersHub")]
     public class ExamineHeadersHub : Hub
     {
-        public Task Send(string message)
+        public Task Send()
         {
             string testHeader = Context.Headers.Get("test-header");
             string refererHeader = Context.Headers.Get(HttpRequestHeader.Referer.ToString());
