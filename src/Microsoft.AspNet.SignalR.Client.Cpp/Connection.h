@@ -4,6 +4,7 @@
 //
 //  m for members
 //  p for member pointers/smart pointers
+//  c for const/readonly
 
 #pragma once
 
@@ -38,6 +39,7 @@ public:
     string_t GetConnectionToken();
     string_t GetUri();
     string_t GetQueryString();
+    seconds GetTransportConnectTimeout();
     ConnectionState GetState();
     shared_ptr<IClientTransport> GetTransport();
     
@@ -46,6 +48,7 @@ public:
     void SetGroupsToken(string_t groupsToken); 
     void SetConnectionToken(string_t connectionToken);
     void SetConnectionId(string_t connectionId); 
+    void GetTransportConnectTimeout(seconds transportConnectTimeout);
 
     function<void(string_t message)> Received;
     function<void(StateChange stateChange)> StateChanged;
@@ -59,6 +62,7 @@ public:
     pplx::task<void> Start(shared_ptr<IClientTransport> transport);
     pplx::task<void> Start(shared_ptr<IHttpClient> client);
     void Stop();
+    void Stop(seconds timeout);
     pplx::task<void> Send(value::field_map object);
     pplx::task<void> Send(string_t data);
     bool EnsureReconnecting();
@@ -71,6 +75,7 @@ private:
     string_t mConnectionToken;
     string_t mUri;
     string_t mQueryString;
+    seconds mTransportConnectTimeout;
     ConnectionState mState;
     recursive_mutex mStateLock;
     mutex mStartLock;
@@ -78,6 +83,7 @@ private:
     shared_ptr<IClientTransport> pTransport;
     unique_ptr<pplx::cancellation_token_source> pDisconnectCts;
     pplx::task<void> mConnectTask;
+    const seconds cDefaultAbortTimeout;
 
     pplx::task<void> StartTransport();
     pplx::task<void> Negotiate(shared_ptr<IClientTransport> transport);

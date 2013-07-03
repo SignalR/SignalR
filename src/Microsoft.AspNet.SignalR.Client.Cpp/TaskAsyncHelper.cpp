@@ -23,13 +23,17 @@ DelayedTaskHelper::~DelayedTaskHelper()
 
 pplx::task<void> DelayedTaskHelper::Create(utility::seconds seconds, pplx::cancellation_token ct)
 {
+    // using raw pointers here, ported from casablanca cpp rest sdk
     auto helper = new DelayedTaskHelper();
 
-    ct.register_callback([helper]()
+    if (ct != pplx::cancellation_token::none())
     {
-        helper->mTimer.stop(false);
-        delete helper;
-    });
+        ct.register_callback([helper]()
+        {
+            helper->mTimer.stop(false);
+            delete helper;
+        });
+    }
 
     auto task = pplx::create_task(helper->mTce);
     helper->mTimer.start(seconds.count()*1000, false, TimerCallback, (void *)helper);

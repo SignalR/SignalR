@@ -2,7 +2,7 @@
 #include "LongPollingTransport.h"
 #include "ServerSentEventsTransport.h"
 
-Connection::Connection(string_t uri)
+Connection::Connection(string_t uri) : cDefaultAbortTimeout(30)
 {
     if (uri.empty())
     {
@@ -16,6 +16,7 @@ Connection::Connection(string_t uri)
 
     mState = ConnectionState::Disconnected;
     mProtocol = U("1.3");
+    mTransportConnectTimeout = seconds(0);
 }
 
 Connection::~Connection()
@@ -68,6 +69,11 @@ string_t Connection::GetProtocol()
     return mProtocol;
 }
 
+seconds Connection::GetTransportConnectTimeout()
+{
+    return mTransportConnectTimeout;
+}
+
 void Connection::SetMessageId(string_t messageId)
 {
     mMessageId = messageId;
@@ -91,6 +97,11 @@ void Connection::SetProtocol(string_t protocol)
 void Connection::SetGroupsToken(string_t groupsToken)
 {
     mGroupsToken = groupsToken;
+}
+
+void Connection::GetTransportConnectTimeout(seconds transportConnectTimeout)
+{
+    mTransportConnectTimeout = transportConnectTimeout;
 }
 
 pplx::task<void> Connection::Start() 
@@ -140,6 +151,7 @@ pplx::task<void> Connection::Negotiate(shared_ptr<IClientTransport> transport)
         {
             mConnectionId = response->mConnectionId;
             mConnectionToken = response->mConnectionToken;
+            mTransportConnectTimeout = seconds(mTransportConnectTimeout.count() + response->mTransportConnectTimeout);
 
             return StartTransport();
         } 
@@ -217,8 +229,12 @@ bool Connection::EnsureReconnecting()
     return mState == ConnectionState::Reconnecting;
 }
 
+void Connection::Stop()
+{
+    Stop(cDefaultAbortTimeout);
+}
 
-void Connection::Stop() 
+void Connection::Stop(seconds timeout) 
 {
     lock_guard<mutex> lock(mStartLock);
 
@@ -226,7 +242,7 @@ void Connection::Stop()
     {
         try
         {
-            mConnectTask.wait();
+            (mConnectTask || TaskAsyncHelper::Delay(timeout)).wait(); // the memory will eventually be reclaimed after 30 seconds so it's not a leak here
         }
         catch (exception& ex)
         {

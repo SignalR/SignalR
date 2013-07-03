@@ -8,7 +8,7 @@
 class TransportInitializationHandler
 {
 public:
-    TransportInitializationHandler(pplx::cancellation_token disconnectToken);
+    TransportInitializationHandler(utility::seconds failureTimeout, pplx::cancellation_token disconnectToken);
     ~TransportInitializationHandler();
 
     void Fail();

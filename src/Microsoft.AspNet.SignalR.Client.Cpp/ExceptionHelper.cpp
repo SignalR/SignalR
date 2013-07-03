@@ -10,10 +10,10 @@ ExceptionHelper::~ExceptionHelper()
 
 bool ExceptionHelper::IsRequestAborted(exception& ex)
 {
-    return strcmp(typeid(ex).name(), typeid(OperationCanceledException).name()) == 0;
+    return typeid(ex) == typeid(OperationCanceledException);
 }
 
 bool ExceptionHelper::IsNull(exception& ex)
 {
-    return strcmp(typeid(ex).name(), typeid(ExceptionNone).name()) == 0;
+    return typeid(ex) == typeid(ExceptionNone);
 }

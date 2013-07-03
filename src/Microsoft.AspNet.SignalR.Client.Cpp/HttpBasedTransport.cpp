@@ -43,7 +43,7 @@ pplx::task<void> HttpBasedTransport::Start(shared_ptr<Connection> connection, st
         throw exception("ArgumentNullException: connection");
     }
 
-    auto initializeHandler = shared_ptr<TransportInitializationHandler>(new TransportInitializationHandler(disconnectToken));
+    auto initializeHandler = shared_ptr<TransportInitializationHandler>(new TransportInitializationHandler(connection->GetTransportConnectTimeout(), disconnectToken));
 
     OnStart(connection, data, disconnectToken, initializeHandler);
     

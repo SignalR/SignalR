@@ -1,6 +1,6 @@
 #include "TransportInitializationHandler.h"
 
-TransportInitializationHandler::TransportInitializationHandler(pplx::cancellation_token disconnectToken)
+TransportInitializationHandler::TransportInitializationHandler(utility::seconds failureTimeout, pplx::cancellation_token disconnectToken)
 {
     mInitializationTask = pplx::task_completion_event<void>();
     pInitializationInvoker = unique_ptr<ThreadSafeInvoker>(new ThreadSafeInvoker());
@@ -19,7 +19,7 @@ TransportInitializationHandler::TransportInitializationHandler(pplx::cancellatio
         disconnectToken.deregister_callback(mTokenCleanup);
     };
 
-    TaskAsyncHelper::Delay(utility::seconds(30), mCts.get_token()).then([this]()
+    TaskAsyncHelper::Delay(failureTimeout, mCts.get_token()).then([this]()
     {
         Fail(exception("TimeoutException: Transport timed out trying to connect"));
     });

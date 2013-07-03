@@ -20,7 +20,8 @@ public:
     string_t mConnectionToken;
     string_t mUri;
     string_t mProtocolVersion;
-    double mDisconnectTimeout;
+    int mDisconnectTimeout;
 	bool mTryWebSockets;
-	double mKeepAliveTimeout;
+	int mKeepAliveTimeout;
+    int mTransportConnectTimeout;
 };

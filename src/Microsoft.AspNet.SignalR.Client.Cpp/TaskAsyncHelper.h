@@ -38,7 +38,7 @@ public:
     TaskAsyncHelper();
     ~TaskAsyncHelper();
 
-    static pplx::task<void> Delay(seconds seconds, pplx::cancellation_token ct);
+    static pplx::task<void> Delay(seconds seconds, pplx::cancellation_token ct = pplx::cancellation_token::none());
 
     template <typename T>
     static TaskStatus RunTaskToCompletion(pplx::task<T> task, T& result, exception& ex)
