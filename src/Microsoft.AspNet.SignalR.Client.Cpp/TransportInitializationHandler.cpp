@@ -1,5 +1,8 @@
 #include "TransportInitializationHandler.h"
 
+namespace MicrosoftAspNetSignalRClientCpp
+{
+
 TransportInitializationHandler::TransportInitializationHandler(utility::seconds failureTimeout, pplx::cancellation_token disconnectToken)
 {
     mInitializationTask = pplx::task_completion_event<void>();
@@ -80,3 +83,5 @@ void TransportInitializationHandler::SetOnFailureCallback(function<void()> onFai
     lock_guard<mutex> lock(mOnFailureLock);
     OnFailure = onFailure;
 }
+
+} // namespace MicrosoftAspNetSignalRClientCpp

@@ -1,5 +1,8 @@
 #include "ExceptionHelper.h"
 
+namespace MicrosoftAspNetSignalRClientCpp
+{
+
 ExceptionHelper::ExceptionHelper()
 {
 }
@@ -17,3 +20,5 @@ bool ExceptionHelper::IsNull(exception& ex)
 {
     return typeid(ex) == typeid(ExceptionNone);
 }
+
+} // namespace MicrosoftAspNetSignalRClientCpp

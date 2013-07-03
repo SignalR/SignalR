@@ -1,5 +1,8 @@
 #include "StringHelper.h"
 
+namespace MicrosoftAspNetSignalRClientCpp
+{
+
 StringHelper::StringHelper()
 {
 }
@@ -27,3 +30,5 @@ bool StringHelper::EqualsIgnoreCase(string_t &string1, string_t &string2)
 {
     return _wcsicmp(string1.c_str(), string2.c_str()) == 0;
 }
+
+} // namespace MicrosoftAspNetSignalRClientCpp

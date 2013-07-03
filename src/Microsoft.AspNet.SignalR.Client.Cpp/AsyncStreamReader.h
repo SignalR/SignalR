@@ -9,48 +9,51 @@
 
 using namespace std;
 
-enum State {
-    Initial = 0,
-    Processing,
-    Stopped
-};
-
-
-class AsyncStreamReader
+namespace MicrosoftAspNetSignalRClientCpp
 {
-public:
-    AsyncStreamReader(streams::basic_istream<uint8_t> stream);
-    ~AsyncStreamReader(void);
-    void SetOpenedCallback(function<void()> opened);
-    void SetClosedCallback(function<void(exception& ex)> closed);
-    void SetDataCallback(function<void(shared_ptr<char> buffer)> data);
-    void Start();
-    void Abort();
+    enum State {
+        Initial = 0,
+        Processing,
+        Stopped
+    };
 
-protected:
-    mutex mBufferLock;
 
-private:
-    mutex mProcessLock;
-    streams::basic_istream<uint8_t> mStream;
-    shared_ptr<char> pReadBuffer;
-    atomic<State> mReadingState;
-    pplx::cancellation_token_source mReadCts;
-    function<void()> SetOpened;
-    mutex mOpenedLock;
-    function<void()> Opened;
-    mutex mClosedLock;
-    function<void(exception& ex)> Closed;
-    mutex mDataLock;
-    function<void(shared_ptr<char> buffer)> Data;
+    class AsyncStreamReader
+    {
+    public:
+        AsyncStreamReader(streams::basic_istream<uint8_t> stream);
+        ~AsyncStreamReader(void);
+        void SetOpenedCallback(function<void()> opened);
+        void SetClosedCallback(function<void(exception& ex)> closed);
+        void SetDataCallback(function<void(shared_ptr<char> buffer)> data);
+        void Start();
+        void Abort();
 
-    bool IsProcessing();
-    void Close();
-    void Close(exception &ex);
-    void Process();
-    void ReadAsync(pplx::task<unsigned int> readTask);
-    bool TryProcessRead(unsigned read);
-    void OnOpened();
-    void OnData(shared_ptr<char> buffer);
-    pplx::task<unsigned int> AsyncReadIntoBuffer(Concurrency::streams::basic_istream<uint8_t> stream);
-};
+    protected:
+        mutex mBufferLock;
+
+    private:
+        mutex mProcessLock;
+        streams::basic_istream<uint8_t> mStream;
+        shared_ptr<char> pReadBuffer;
+        atomic<State> mReadingState;
+        pplx::cancellation_token_source mReadCts;
+        function<void()> SetOpened;
+        mutex mOpenedLock;
+        function<void()> Opened;
+        mutex mClosedLock;
+        function<void(exception& ex)> Closed;
+        mutex mDataLock;
+        function<void(shared_ptr<char> buffer)> Data;
+
+        bool IsProcessing();
+        void Close();
+        void Close(exception &ex);
+        void Process();
+        void ReadAsync(pplx::task<unsigned int> readTask);
+        bool TryProcessRead(unsigned read);
+        void OnOpened();
+        void OnData(shared_ptr<char> buffer);
+        pplx::task<unsigned int> AsyncReadIntoBuffer(Concurrency::streams::basic_istream<uint8_t> stream);
+    };
+} // namespace MicrosoftAspNetSignalRClientCpp

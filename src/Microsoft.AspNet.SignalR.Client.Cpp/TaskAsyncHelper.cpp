@@ -1,5 +1,8 @@
 #include "TaskAsyncHelper.h"
 
+namespace MicrosoftAspNetSignalRClientCpp
+{
+
 TaskAsyncHelper::TaskAsyncHelper()
 {
 }
@@ -46,3 +49,5 @@ void DelayedTaskHelper::TimerCallback(void* context)
     helper->mTce.set();
     delete helper;
 }
+
+} // namespace MicrosoftAspNetSignalRClientCpp

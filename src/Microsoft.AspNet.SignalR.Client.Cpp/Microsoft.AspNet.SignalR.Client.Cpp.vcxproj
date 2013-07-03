@@ -113,7 +113,6 @@
     <ClInclude Include="LongPollingTransport.h" />
     <ClInclude Include="NegotiationResponse.h" />
     <ClInclude Include="EventSourceStreamReader.h" />
-    <ClInclude Include="resource.h" />
     <ClInclude Include="ServerSentEventsTransport.h" />
     <ClInclude Include="SseEvent.h" />
     <ClInclude Include="StateChange.h" />

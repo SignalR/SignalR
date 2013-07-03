@@ -1,7 +1,5 @@
 #pragma once
 
-class Connection;
-
 #include "http_client.h"
 #include <queue>
 #include <mutex>
@@ -9,20 +7,25 @@ class Connection;
 using namespace std;
 using namespace utility;
 
-class ConnectingMessageBuffer
+namespace MicrosoftAspNetSignalRClientCpp
 {
-public:
-    ConnectingMessageBuffer();
-    ~ConnectingMessageBuffer();
+    class Connection;
 
-    void Initialize(shared_ptr<Connection> connection, function<void(string_t)> drainCallback);
-    bool TryBuffer(string_t message);
-    void Drain();
-    void Clear();
+    class ConnectingMessageBuffer
+    {
+    public:
+        ConnectingMessageBuffer();
+        ~ConnectingMessageBuffer();
 
-private:
-    shared_ptr<Connection> pConnection;
-    queue<string_t> mBuffer;
-    mutex mDrainCallbackLock;
-    function<void(string_t)> DrainCallback;
-};
+        void Initialize(shared_ptr<Connection> connection, function<void(string_t)> drainCallback);
+        bool TryBuffer(string_t message);
+        void Drain();
+        void Clear();
+
+    private:
+        shared_ptr<Connection> pConnection;
+        queue<string_t> mBuffer;
+        mutex mDrainCallbackLock;
+        function<void(string_t)> DrainCallback;
+    };
+} // namespace MicrosoftAspNetSignalRClientCpp

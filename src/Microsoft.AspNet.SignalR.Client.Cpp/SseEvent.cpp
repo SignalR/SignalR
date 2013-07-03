@@ -1,11 +1,13 @@
 #include "SseEvent.h"
 
+namespace MicrosoftAspNetSignalRClientCpp
+{
+
 SseEvent::SseEvent(EventType type, string_t data)
 {
     mType = type;
     mData = data;
 }
-
 
 SseEvent::~SseEvent()
 {
@@ -49,3 +51,5 @@ bool SseEvent::TryParse(string_t line, shared_ptr<SseEvent>* sseEvent)
     }
     else return false;
 }
+
+} // namespace MicrosoftAspNetSignalRClientCpp

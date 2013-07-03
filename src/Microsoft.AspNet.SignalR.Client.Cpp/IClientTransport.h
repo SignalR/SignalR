@@ -1,7 +1,5 @@
 #pragma once
 
-class Connection;
-
 #include "NegotiationResponse.h"
 
 using namespace std;
@@ -9,23 +7,27 @@ using namespace pplx;
 using namespace utility;
 using namespace concurrency;
 
-class IClientTransport
+namespace MicrosoftAspNetSignalRClientCpp
 {
-public:
-    IClientTransport(void);
-    ~IClientTransport(void);
+    class Connection;
 
-    string_t GetTransportName();
-    bool SupportsKeepAlive();
+    class IClientTransport
+    {
+    public:
+        IClientTransport(void);
+        ~IClientTransport(void);
 
-    virtual pplx::task<shared_ptr<NegotiationResponse>> Negotiate(shared_ptr<Connection> connection) = 0;
-    virtual pplx::task<void> Start(shared_ptr<Connection> connection, string_t data, pplx::cancellation_token disconnectToken) = 0;
-    virtual pplx::task<void> Send(shared_ptr<Connection> connection, string_t data) = 0;
-    virtual void Abort(shared_ptr<Connection> connection) = 0;
-    virtual void LostConnection(shared_ptr<Connection> connection) = 0;
+        string_t GetTransportName();
+        bool SupportsKeepAlive();
 
-protected:
-    string_t mTransportName;
-    bool mSupportKeepAlive;
-};
+        virtual pplx::task<shared_ptr<NegotiationResponse>> Negotiate(shared_ptr<Connection> connection) = 0;
+        virtual pplx::task<void> Start(shared_ptr<Connection> connection, string_t data, pplx::cancellation_token disconnectToken) = 0;
+        virtual pplx::task<void> Send(shared_ptr<Connection> connection, string_t data) = 0;
+        virtual void Abort(shared_ptr<Connection> connection) = 0;
+        virtual void LostConnection(shared_ptr<Connection> connection) = 0;
 
+    protected:
+        string_t mTransportName;
+        bool mSupportKeepAlive;
+    };
+} // namespace MicrosoftAspNetSignalRClientCpp

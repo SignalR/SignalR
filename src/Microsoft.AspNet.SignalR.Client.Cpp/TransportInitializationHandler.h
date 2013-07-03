@@ -6,26 +6,29 @@
 #include "http_client.h"
 #include <mutex>
 
-class TransportInitializationHandler
+namespace MicrosoftAspNetSignalRClientCpp
 {
-public:
-    TransportInitializationHandler(utility::seconds failureTimeout, pplx::cancellation_token disconnectToken);
-    ~TransportInitializationHandler();
+    class TransportInitializationHandler
+    {
+    public:
+        TransportInitializationHandler(utility::seconds failureTimeout, pplx::cancellation_token disconnectToken);
+        ~TransportInitializationHandler();
 
-    void Fail();
-    void Fail(exception& ex);
-    void Success();
-    pplx::task<void> GetTask();
+        void Fail();
+        void Fail(exception& ex);
+        void Success();
+        pplx::task<void> GetTask();
 
-    void SetOnFailureCallback(function<void()> onFailure);
+        void SetOnFailureCallback(function<void()> onFailure);
 
-private:
-    mutex mOnFailureLock;
-    function<void()> OnFailure;
-    mutex mDeregisterCancelCallbackLock;
-    function<void()> DeregisterCancelCallback;
-    unique_ptr<ThreadSafeInvoker> pInitializationInvoker;
-    pplx::task_completion_event<void> mInitializationTask;
-    pplx::cancellation_token_registration mTokenCleanup;
-    pplx::cancellation_token_source mCts;
-};
+    private:
+        mutex mOnFailureLock;
+        function<void()> OnFailure;
+        mutex mDeregisterCancelCallbackLock;
+        function<void()> DeregisterCancelCallback;
+        unique_ptr<ThreadSafeInvoker> pInitializationInvoker;
+        pplx::task_completion_event<void> mInitializationTask;
+        pplx::cancellation_token_registration mTokenCleanup;
+        pplx::cancellation_token_source mCts;
+    };
+} // namespace MicrosoftAspNetSignalRClientCpp

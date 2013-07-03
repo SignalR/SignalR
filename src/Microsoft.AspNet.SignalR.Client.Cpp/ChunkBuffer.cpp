@@ -1,5 +1,8 @@
 #include "ChunkBuffer.h"
 
+namespace MicrosoftAspNetSignalRClientCpp
+{
+
 ChunkBuffer::ChunkBuffer()
 {
     mOffset = 0;
@@ -43,3 +46,5 @@ string_t ChunkBuffer::ReadLine()
     }
     return U("");
 }
+
+} // namespace MicrosoftAspNetSignalRClientCpp

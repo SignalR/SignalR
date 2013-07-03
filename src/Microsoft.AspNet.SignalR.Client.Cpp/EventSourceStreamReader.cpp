@@ -1,5 +1,8 @@
 #include "EventSourceStreamReader.h"
 
+namespace MicrosoftAspNetSignalRClientCpp
+{
+
 EventSourceStreamReader::EventSourceStreamReader(Concurrency::streams::basic_istream<uint8_t> stream)
     : AsyncStreamReader(stream)
 {
@@ -57,3 +60,5 @@ void EventSourceStreamReader::SetMessageCallback(function<void(shared_ptr<SseEve
     lock_guard<mutex> lock(mMessageLock);
     Message = message;
 }
+
+} // namespace MicrosoftAspNetSignalRClientCpp

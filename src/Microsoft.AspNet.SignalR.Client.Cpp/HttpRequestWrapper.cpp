@@ -1,5 +1,8 @@
 #include "HttpRequestWrapper.h"
 
+namespace MicrosoftAspNetSignalRClientCpp
+{
+
 HttpRequestWrapper::HttpRequestWrapper(http_request httpRequestMessage, function<void()> cancel)
 {
     mHttpRequestMessage = httpRequestMessage;
@@ -11,7 +14,6 @@ HttpRequestWrapper::HttpRequestWrapper(http_request httpRequestMessage, function
 
 HttpRequestWrapper::~HttpRequestWrapper()
 {
-
 }
 
 void HttpRequestWrapper::Abort()
@@ -19,3 +21,5 @@ void HttpRequestWrapper::Abort()
     lock_guard<mutex> lock(mCancelLock);
     Cancel();
 }
+
+} // namespace MicrosoftAspNetSignalRClientCpp

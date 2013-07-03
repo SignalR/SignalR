@@ -1,5 +1,7 @@
 #include "IClientTransport.h"
 
+namespace MicrosoftAspNetSignalRClientCpp
+{
 
 IClientTransport::IClientTransport(void)
 {
@@ -19,3 +21,5 @@ bool IClientTransport::SupportsKeepAlive()
 {
     return mSupportKeepAlive;
 }
+
+} // namespace MicrosoftAspNetSignalRClientCpp

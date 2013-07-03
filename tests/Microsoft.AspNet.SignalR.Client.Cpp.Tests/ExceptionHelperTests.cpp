@@ -1,6 +1,8 @@
 #include "UnitTest++.h"
 #include "ExceptionHelper.h"
 
+using namespace MicrosoftAspNetSignalRClientCpp;
+
 SUITE(ExceptionHelperTests)
 {
     TEST(IsNullRecognizeExceptionNullClassOnly)

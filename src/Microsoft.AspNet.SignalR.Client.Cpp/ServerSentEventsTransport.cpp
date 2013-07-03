@@ -1,5 +1,8 @@
 #include "ServerSentEventsTransport.h"
 
+namespace MicrosoftAspNetSignalRClientCpp
+{
+
 ServerSentEventsTransport::ServerSentEventsTransport(shared_ptr<IHttpClient> httpClient) : 
     HttpBasedTransport(httpClient, U("serverSentEvents"))
 {
@@ -9,7 +12,6 @@ ServerSentEventsTransport::ServerSentEventsTransport(shared_ptr<IHttpClient> htt
 
 ServerSentEventsTransport::~ServerSentEventsTransport()
 {
-    cout << "SSE Transport destructor" << endl;
     int count = pInitializeHandler.use_count();
 }
 
@@ -20,10 +22,8 @@ void ServerSentEventsTransport::OnAbort()
     pEventSource->SetClosedCallback([](exception&){});
     pEventSource->SetDataCallback([](shared_ptr<char>){});
     pEventSource->SetMessageCallback([](shared_ptr<SseEvent>){});
-    //pEventSource->Abort();
 }
 
-//void ServerSentEventsTransport::OnStart(shared_ptr<Connection> connection, string_t data, pplx::cancellation_token disconnectToken,  function<void()> initializeCallback, function<void(exception)> errorCallback)
 void ServerSentEventsTransport::OnStart(shared_ptr<Connection> connection, string_t data, pplx::cancellation_token disconnectToken,  shared_ptr<TransportInitializationHandler> initializeHandler)
 {    
     if (initializeHandler == nullptr)
@@ -51,7 +51,6 @@ void ServerSentEventsTransport::OnStart(shared_ptr<Connection> connection, strin
     };
 
     OpenConnection(connection, data, disconnectToken, successCallback, errorCallback);
-    //OpenConnection(connection, data, disconnectToken, initializeCallback, errorCallback);
 }
 
 void ServerSentEventsTransport::Reconnect(shared_ptr<Connection> connection, string_t data, pplx::cancellation_token disconnectToken)
@@ -120,7 +119,6 @@ void ServerSentEventsTransport::OpenConnection(shared_ptr<Connection> connection
             // what is CancellationTokenExtensions.SafeRegister?
             disconnectToken.register_callback<function<void()>>([this, stop]()
             {
-                cout << "transport cancel" << endl;
                 mStop = true;
                 pRequest->Abort();
             });
@@ -157,8 +155,6 @@ void ServerSentEventsTransport::OpenConnection(shared_ptr<Connection> connection
 
             pEventSource->SetClosedCallback([connection, this, data, disconnectToken, stop](exception& ex)
             {
-                cout << "ASR Closed" << endl;
-
                 if (!ExceptionHelper::IsNull(ex))
                 {
                     // Check if the request is aborted
@@ -202,3 +198,5 @@ bool ServerSentEventsTransport::SupportsKeepAlive()
 {
     return true;
 }
+
+} // namespace MicrosoftAspNetSignalRClientCpp

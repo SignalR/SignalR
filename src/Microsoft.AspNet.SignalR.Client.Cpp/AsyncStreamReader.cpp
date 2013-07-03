@@ -1,5 +1,8 @@
 #include "AsyncStreamReader.h"
 
+namespace MicrosoftAspNetSignalRClientCpp
+{
+
 AsyncStreamReader::AsyncStreamReader(streams::basic_istream<uint8_t> stream)
 {
     mStream = stream;
@@ -9,7 +12,6 @@ AsyncStreamReader::AsyncStreamReader(streams::basic_istream<uint8_t> stream)
 
 AsyncStreamReader::~AsyncStreamReader(void)
 {
-    cout << "ASR destructor" << endl;
 }
 
 void AsyncStreamReader::Start()
@@ -187,7 +189,6 @@ pplx::task<unsigned int> AsyncStreamReader::AsyncReadIntoBuffer(Concurrency::str
     {
         if (is_task_cancellation_requested())
         {
-            cout << "ASR cancel" << endl;
             cancel_current_task();
         }
 
@@ -218,3 +219,5 @@ void AsyncStreamReader::SetDataCallback(function<void(shared_ptr<char> buffer)> 
     lock_guard<mutex> lock(mDataLock);
     Data = data;
 }
+
+} // namespace MicrosoftAspNetSignalRClientCpp

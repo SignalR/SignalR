@@ -1,6 +1,8 @@
 #include "UnitTest++.h"
 #include "ChunkBuffer.h"
 
+using namespace MicrosoftAspNetSignalRClientCpp;
+
 SUITE(ChunkBufferTests)
 {
     TEST(ReturnsNullIfNoNewLineIfBuffer)

@@ -1,9 +1,12 @@
 #pragma once
 
-enum ConnectionState
+namespace MicrosoftAspNetSignalRClientCpp
 {
-    Connecting,
-    Connected,
-    Reconnecting,
-    Disconnected
-};
+    enum ConnectionState
+    {
+        Connecting,
+        Connected,
+        Reconnecting,
+        Disconnected
+    };
+} // namespace MicrosoftAspNetSignalRClientCpp

@@ -1,11 +1,13 @@
 #include "StateChange.h"
 
+namespace MicrosoftAspNetSignalRClientCpp
+{
+
 StateChange::StateChange(ConnectionState oldState, ConnectionState newState)
 {
     mOldState = oldState;
     mNewState = newState;
 }
-
 
 StateChange::~StateChange(void)
 {
@@ -52,3 +54,5 @@ string_t StateChange::StateName(ConnectionState state)
         break;
     }
 }
+
+} // namespace MicrosoftAspNetSignalRClientCpp

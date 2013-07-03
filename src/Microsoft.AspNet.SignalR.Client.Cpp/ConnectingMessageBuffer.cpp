@@ -1,6 +1,9 @@
 #include "Connection.h"
 #include "ConnectingMessageBuffer.h"
 
+namespace MicrosoftAspNetSignalRClientCpp
+{
+
 ConnectingMessageBuffer::ConnectingMessageBuffer()
 {
 }
@@ -55,3 +58,5 @@ void ConnectingMessageBuffer::Clear()
         DrainCallback = [](string_t message){};
     }
 }
+
+} // namespace MicrosoftAspNetSignalRClientCpp

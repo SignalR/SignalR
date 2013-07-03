@@ -12,6 +12,7 @@
 using namespace utility;
 using namespace std;
 using namespace web::json;
+using namespace MicrosoftAspNetSignalRClientCpp;
 
 static void RunStreamingSample()
 {
@@ -25,7 +26,7 @@ static void RunStreamingSample()
 
     if (key == U("1") || key == U("2"))
     {
-        shared_ptr<Connection> connection = shared_ptr<Connection>(new Connection(U("http://localhost:40476/raw-connection")));
+        auto connection = shared_ptr<MicrosoftAspNetSignalRClientCpp::Connection>(new MicrosoftAspNetSignalRClientCpp::Connection(U("http://localhost:40476/raw-connection")));
     
         connection->SetReceivedCallback([](string_t message)
         {

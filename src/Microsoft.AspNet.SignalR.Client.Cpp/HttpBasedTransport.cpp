@@ -1,5 +1,8 @@
 #include "HttpBasedTransport.h"
 
+namespace MicrosoftAspNetSignalRClientCpp
+{
+
 HttpBasedTransport::HttpBasedTransport(shared_ptr<IHttpClient> httpClient, string_t transport)
 {
     pHttpClient = httpClient;
@@ -13,7 +16,6 @@ HttpBasedTransport::HttpBasedTransport(shared_ptr<IHttpClient> httpClient, strin
 
 HttpBasedTransport::~HttpBasedTransport(void)
 {
-    cout << "HttpBasedTransport destructor" << endl;
 }
 
 shared_ptr<IHttpClient> HttpBasedTransport::GetHttpClient()
@@ -147,11 +149,6 @@ void HttpBasedTransport::Abort(shared_ptr<Connection> connection)
             if ((waitResult = pAbortResetEvent->wait(10000)) == COOPERATIVE_WAIT_TIMEOUT)
             {
                 // trace abort never fired
-                cout << "abort never fired" << endl;
-            }
-            else if (waitResult == 0)
-            {
-                cout << "abort fired" << endl;       
             }
         }
     }
@@ -159,7 +156,6 @@ void HttpBasedTransport::Abort(shared_ptr<Connection> connection)
 
 void HttpBasedTransport::CompleteAbort()
 {
-    cout << "complete abort" << endl;
     lock_guard<mutex> lock(mDisposeLock);
 
     if (!mDisposed)
@@ -171,7 +167,6 @@ void HttpBasedTransport::CompleteAbort()
 
 bool HttpBasedTransport::TryCompleteAbort()
 {
-    cout << "try complete abort" << endl;
     lock_guard<mutex> lock(mDisposeLock);
 
     if (mDisposed)
@@ -189,3 +184,4 @@ bool HttpBasedTransport::TryCompleteAbort()
     }
 }
 
+} // namespace MicrosoftAspNetSignalRClientCpp

@@ -1,13 +1,14 @@
 #include "DefaultHttpClient.h"
 
-DefaultHttpClient::DefaultHttpClient()
+namespace MicrosoftAspNetSignalRClientCpp
 {
 
+DefaultHttpClient::DefaultHttpClient()
+{
 }
 
 DefaultHttpClient::~DefaultHttpClient()
 {
-
 }
 
 void DefaultHttpClient::Initialize(string_t uri)
@@ -33,7 +34,6 @@ task<http_response> DefaultHttpClient::Get(string_t uri, function<void(shared_pt
     
     auto request = shared_ptr<HttpRequestWrapper>(new HttpRequestWrapper(requestMessage, [cts]()
     {
-        cout << "Get Cancel" << endl;
         cts->cancel();
     }));
 
@@ -94,3 +94,5 @@ task<http_response> DefaultHttpClient::Post(string_t uri, function<void(shared_p
         return response;
     }, readTaskOptions);
 }
+
+} // namespace MicrosoftAspNetSignalRClientCpp

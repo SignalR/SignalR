@@ -1,5 +1,8 @@
 #include "NegotiationResponse.h"
 
+namespace MicrosoftAspNetSignalRClientCpp
+{
+
 NegotiationResponse::NegotiationResponse()
 {
 }
@@ -19,3 +22,5 @@ NegotiationResponse::NegotiationResponse(value raw)
 NegotiationResponse::~NegotiationResponse()
 {
 }
+
+} // namespace MicrosoftAspNetSignalRClientCpp

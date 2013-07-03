@@ -1,9 +1,11 @@
 #include "TransportHelper.h"
 
+namespace MicrosoftAspNetSignalRClientCpp
+{
+
 TransportHelper::TransportHelper()
 {
 }
-
 
 TransportHelper::~TransportHelper()
 {
@@ -228,3 +230,5 @@ void TransportHelper::TryInitialize(value response, function<void()> onInitializ
         onInitialized();
     }
 }
+
+} // namespace MicrosoftAspNetSignalRClientCpp

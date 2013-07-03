@@ -1,10 +1,12 @@
 #include "LongPollingTransport.h"
 
+namespace MicrosoftAspNetSignalRClientCpp
+{
+
 LongPollingTransport::LongPollingTransport(shared_ptr<IHttpClient> httpClient) :
     HttpBasedTransport(httpClient, U("longPolling"))
 {
 }
-
 
 LongPollingTransport::~LongPollingTransport()
 {
@@ -22,3 +24,5 @@ void LongPollingTransport::OnAbort()
 void LongPollingTransport::LostConnection(shared_ptr<Connection> connection)
 {
 }
+
+} // namespace MicrosoftAspNetSignalRClientCpp

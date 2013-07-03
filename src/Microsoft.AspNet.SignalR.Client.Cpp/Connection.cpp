@@ -2,6 +2,9 @@
 #include "LongPollingTransport.h"
 #include "ServerSentEventsTransport.h"
 
+namespace MicrosoftAspNetSignalRClientCpp
+{
+
 Connection::Connection(string_t uri) : cDefaultAbortTimeout(30)
 {
     if (uri.empty())
@@ -21,7 +24,6 @@ Connection::Connection(string_t uri) : cDefaultAbortTimeout(30)
 
 Connection::~Connection()
 {
-    cout << "Connection destructor" << endl;
 }
 
 ConnectionState Connection::GetState()
@@ -278,7 +280,6 @@ void Connection::Disconnect()
     {
         SetState(ConnectionState::Disconnected);
 
-        cout << "connection cancel" << endl;
         pDisconnectCts->cancel();
 
         mConnectionId.clear();
@@ -416,3 +417,5 @@ void Connection::SetReceivedCallback(function<void(string_t)> received)
     lock_guard<mutex> lock(mReceivedLock);
     Received = received;
 }
+
+} // namespace MicrosoftAspNetSignalRClientCpp

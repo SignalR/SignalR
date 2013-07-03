@@ -1,5 +1,8 @@
 #include "ThreadSafeInvoker.h"
 
+namespace MicrosoftAspNetSignalRClientCpp
+{
+
 ThreadSafeInvoker::ThreadSafeInvoker()
 {
     mInvoked = false;
@@ -24,3 +27,5 @@ bool ThreadSafeInvoker::Invoke()
 {
     return Invoke([](){});
 }
+
+} // namespace MicrosoftAspNetSignalRClientCpp
