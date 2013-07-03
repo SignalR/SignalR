@@ -1,7 +1,5 @@
-﻿using System;
+﻿using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using Microsoft.AspNet.SignalR.Hosting;
 using Microsoft.Owin;
 
@@ -34,5 +32,24 @@ namespace Microsoft.AspNet.SignalR.Owin
         {
             return _readableStringCollection.Get(key);
         }
+
+        public IEnumerator<KeyValuePair<string, string>> GetEnumerator()
+        {
+            return GetEnumerable().GetEnumerator();
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return GetEnumerator();
+        }
+
+        private IEnumerable<KeyValuePair<string, string>> GetEnumerable()
+        {
+            foreach (var pair in _readableStringCollection)
+            {
+                yield return new KeyValuePair<string, string>(pair.Key, _readableStringCollection.Get(pair.Key));
+            }
+        }
+
     }
 }

@@ -25,6 +25,8 @@ namespace Microsoft.AspNet.SignalR.Tests.Common
             return Connection.Broadcast(new
             {
                 method = method,
+                headers = request.Headers,
+                query = request.QueryString,
                 count = request.Environment.Count,
                 owinKeys = request.Environment.Keys
             });

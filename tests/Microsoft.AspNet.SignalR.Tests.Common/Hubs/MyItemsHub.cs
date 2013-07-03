@@ -32,6 +32,8 @@ namespace Microsoft.AspNet.SignalR.Tests.Common.Hubs
                 method = method,
                 count = request.Environment.Count,
                 owinKeys = request.Environment.Keys,
+                headers = request.Headers,
+                query = request.QueryString,
                 xContentTypeOptions = responseHeaders["X-Content-Type-Options"][0]
             });
         }

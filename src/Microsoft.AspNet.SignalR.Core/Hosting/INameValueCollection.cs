@@ -3,8 +3,7 @@ using System.Diagnostics.CodeAnalysis;
 
 namespace Microsoft.AspNet.SignalR.Hosting
 {
-    // TODO: Consider making it enumerable
-    public interface INameValueCollection
+    public interface INameValueCollection : IEnumerable<KeyValuePair<string, string>>
     {
         string this[string key] { get; }
         IEnumerable<string> GetValues(string key);

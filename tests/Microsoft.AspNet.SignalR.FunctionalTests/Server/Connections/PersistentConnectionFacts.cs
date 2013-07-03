@@ -660,11 +660,23 @@ namespace Microsoft.AspNet.SignalR.Tests
 
                     Assert.Equal(3, results.Count);
                     Assert.Equal("OnConnectedAsync", results[0].Method);
+                    Assert.NotNull(results[0].Headers);
+                    Assert.NotNull(results[0].Query);
+                    Assert.True(results[0].Headers.Count > 0);
+                    Assert.True(results[0].Query.Count > 0);
                     Assert.True(results[0].OwinKeys.Length > 0);
                     Assert.Equal("OnReceivedAsync", results[1].Method);
+                    Assert.NotNull(results[1].Headers);
+                    Assert.NotNull(results[1].Query);
+                    Assert.True(results[1].Headers.Count > 0);
+                    Assert.True(results[1].Query.Count > 0);
                     Assert.True(results[1].OwinKeys.Length > 0);
                     Assert.Equal("OnDisconnectAsync", results[2].Method);
-                    Assert.True(results[1].OwinKeys.Length > 0);
+                    Assert.NotNull(results[2].Headers);
+                    Assert.NotNull(results[2].Query);
+                    Assert.True(results[2].Headers.Count > 0);
+                    Assert.True(results[2].Query.Count > 0);
+                    Assert.True(results[2].OwinKeys.Length > 0);
 
                     connection2.Stop();
                 }
