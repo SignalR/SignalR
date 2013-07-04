@@ -1013,7 +1013,7 @@
         },
 
         stringifySend: function (connection, message) {
-            if ($.type(message) === "string") {
+            if (typeof(message) === "string" || typeof(message) === "undefined" || message === null) {
                 return message;
             }
             return connection.json.stringify(message);

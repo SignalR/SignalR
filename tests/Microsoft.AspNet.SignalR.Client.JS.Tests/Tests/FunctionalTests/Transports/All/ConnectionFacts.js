@@ -264,10 +264,12 @@ testUtilities.runWithAllTransports(function (transport) {
         connection.received(function (data) {
             values.push(data);
 
-            if (values.length === 3) {
+            if (values.length === 5) {
                 $.each(values, function (index, val) {
                     var decoded;
-                    if (val.indexOf("1.") >= 0) {
+                    if (val === undefined || val === null) {
+                        return;
+                    } else if (val.indexOf("1.") >= 0) {
                         assert.equal(val, "1.test", "Raw string correctly sent not JSON encoded");
                     } else if (val.indexOf("2.") >= 0) {
                         decoded = JSON.parse(val);
@@ -275,9 +277,6 @@ testUtilities.runWithAllTransports(function (transport) {
                     } else if (val.indexOf("3.") >= 0) {
                         decoded = JSON.parse(val);
                         assert.equal(decoded[0], "3.test", "Array correctly sent JSON encoded");
-                    } else {
-                        // No idea how we got here
-                        assert.fail("Unexpected message returned from server");
                     }
                 });
                 end();
@@ -288,6 +287,8 @@ testUtilities.runWithAllTransports(function (transport) {
             connection.send("1.test");
             connection.send({ test: "2.test" });
             connection.send(["3.test"]);
+            connection.send(null);
+            connection.send(undefined);
         });
 
         // Cleanup
