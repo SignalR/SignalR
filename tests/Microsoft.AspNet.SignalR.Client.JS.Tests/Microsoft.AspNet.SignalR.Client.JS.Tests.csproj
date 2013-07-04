@@ -131,6 +131,7 @@
     <Content Include="Tests\UnitTests\Connections\ConnectionStateFacts.js" />
     <Content Include="Tests\UnitTests\Connections\HubConnectionFacts.js" />
     <Content Include="Tests\UnitTests\SignalRFacts.js" />
+    <Content Include="Tests\UnitTests\Transports\CommonTransportFacts.js" />
     <Content Include="Tests\UnitTests\Transports\ForeverFrameFacts.js" />
     <Content Include="Tests\UnitTests\Transports\LongPollingFacts.js" />
     <Content Include="Tests\UnitTests\Transports\ServerSentEventsFacts.js" />

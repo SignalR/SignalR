@@ -124,35 +124,35 @@
             start();
 
             $("#send").click(function () {
-                connection.send(window.JSON.stringify({ type: 0, value: $("#me").val() }));
+                connection.send({ type: 0, value: $("#me").val() });
             });
 
             $("#broadcast").click(function () {
-                connection.send(window.JSON.stringify({ type: 1, value: $("#msg").val() }));
+                connection.send({ type: 1, value: $("#msg").val() });
             });
 
             $("#broadcast-exceptme").click(function () {
-                connection.send(window.JSON.stringify({ type: 7, value: $("#msg").val() }));
+                connection.send({ type: 7, value: $("#msg").val() });
             });
 
             $("#join").click(function () {
-                connection.send(window.JSON.stringify({ type: 2, value: $("#msg").val() }));
+                connection.send({ type: 2, value: $("#msg").val() });
             });
 
             $("#privatemsg").click(function () {
-                connection.send(window.JSON.stringify({ type: 3, value: $("#user").val() + "|" + $("#message").val() }));
+                connection.send({ type: 3, value: $("#user").val() + "|" + $("#message").val() });
             });
 
             $('#join-group').click(function () {
-                connection.send(window.JSON.stringify({ type: 4, value: $("#msg").val() }));
+                connection.send({ type: 4, value: $("#msg").val() });
             });
 
             $('#leave-group').click(function () {
-                connection.send(window.JSON.stringify({ type: 5, value: $("#msg").val() }));
+                connection.send({ type: 5, value: $("#msg").val() });
             });
 
             $("#groupmsg").click(function () {
-                connection.send(window.JSON.stringify({ type: 6, value: $("#user").val() + "|" + $("#message").val() }));
+                connection.send({ type: 6, value: $("#user").val() + "|" + $("#message").val() });
             });
 
             $("#stopStart").click(function () {

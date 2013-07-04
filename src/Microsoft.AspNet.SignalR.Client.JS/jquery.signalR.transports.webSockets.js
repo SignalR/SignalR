@@ -17,7 +17,8 @@
         supportsKeepAlive: true,
 
         send: function (connection, data) {
-            connection.socket.send(data);
+            var payload = transportLogic.stringifySend(connection, data);
+            connection.socket.send(payload);
         },
 
         start: function (connection, onSuccess, onFailed) {

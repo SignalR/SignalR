@@ -256,6 +256,46 @@ testUtilities.runWithAllTransports(function (transport) {
             connection.stop();
         };
     });
+
+    QUnit.asyncTimeoutTest(transport + " transport auto JSON encodes messages correctly when sending.", testUtilities.defaultTestTimeout, function (end, assert, testName) {
+        var connection = testUtilities.createConnection("autoencodedjson", end, assert, testName),
+            values = [];
+
+        connection.received(function (data) {
+            values.push(data);
+
+            if (values.length === 5) {
+                $.each(values, function (index, val) {
+                    var decoded;
+                    if (val === undefined || val === null) {
+                        return;
+                    } else if (val.indexOf("1.") >= 0) {
+                        assert.equal(val, "1.test", "Raw string correctly sent not JSON encoded");
+                    } else if (val.indexOf("2.") >= 0) {
+                        decoded = JSON.parse(val);
+                        assert.equal(decoded.test, "2.test", "Object correctly sent JSON encoded");
+                    } else if (val.indexOf("3.") >= 0) {
+                        decoded = JSON.parse(val);
+                        assert.equal(decoded[0], "3.test", "Array correctly sent JSON encoded");
+                    }
+                });
+                end();
+            }
+        });
+
+        connection.start({ transport: transport }).done(function () {
+            connection.send("1.test");
+            connection.send({ test: "2.test" });
+            connection.send(["3.test"]);
+            connection.send(null);
+            connection.send(undefined);
+        });
+
+        // Cleanup
+        return function () {
+            connection.stop();
+        };
+    });
 });
 
 QUnit.module("Connection Facts", !window.document.commandLineTest);

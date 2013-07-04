@@ -175,8 +175,16 @@
             }
         },
 
+        stringifySend: function (connection, message) {
+            if (typeof(message) === "string" || typeof(message) === "undefined" || message === null) {
+                return message;
+            }
+            return connection.json.stringify(message);
+        },
+
         ajaxSend: function (connection, data) {
-            var url = connection.url + "/send" + "?transport=" + connection.transport.name + "&connectionToken=" + window.encodeURIComponent(connection.token);
+            var payload = transportLogic.stringifySend(connection, data),
+                url = connection.url + "/send" + "?transport=" + connection.transport.name + "&connectionToken=" + window.encodeURIComponent(connection.token);
             url = this.addQs(url, connection.qs);
             return $.ajax(
                 $.extend({}, $.signalR.ajaxDefaults, {
@@ -186,7 +194,7 @@
                     contentType: signalR._.defaultContentType,
                     dataType: connection.ajaxDataType,
                     data: {
-                        data: data
+                        data: payload
                     },
                     success: function (result) {
                         if (result) {
