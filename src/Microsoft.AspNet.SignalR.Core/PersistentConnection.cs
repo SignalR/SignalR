@@ -249,6 +249,11 @@ namespace Microsoft.AspNet.SignalR
                 return TaskAsyncHelper.FromMethod(() => OnReconnected(context.Request, connectionId).OrEmpty());
             };
 
+            Transport.KeepAliveReceived = () =>
+            {
+                return TaskAsyncHelper.FromMethod(() => OnKeepAlive(context.Request, connectionId).OrEmpty());
+            };
+
             Transport.Received = data =>
             {
                 Counters.ConnectionMessagesSentTotal.Increment();
@@ -450,6 +455,17 @@ namespace Microsoft.AspNet.SignalR
         /// <param name="connectionId">The id of the disconnected connection.</param>
         /// <returns>A <see cref="Task"/> that completes when the disconnect operation is complete.</returns>
         protected virtual Task OnDisconnected(IRequest request, string connectionId)
+        {
+            return TaskAsyncHelper.Empty;
+        }
+
+        /// <summary>
+        /// Called when a keep alive packet is sent to this connection.
+        /// </summary>
+        /// <param name="request">The <see cref="IRequest"/> for the current connection.</param>
+        /// <param name="connectionId">The id of the connection the keep alive packet is being sent to.</param>
+        /// <returns>A <see cref="Task"/> that completes when the keep alive operation is complete.</returns>
+        protected virtual Task OnKeepAlive(IRequest request, string connectionId)
         {
             return TaskAsyncHelper.Empty;
         }

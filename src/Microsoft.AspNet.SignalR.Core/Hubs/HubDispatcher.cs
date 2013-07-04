@@ -272,6 +272,11 @@ namespace Microsoft.AspNet.SignalR.Hubs
             return hub.OnDisconnected();
         }
 
+        internal static Task KeepAlive(IHub hub)
+        {
+            return hub.OnKeepAlive();
+        }
+
         [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "A faulted task is returned.")]
         internal static Task<object> Incoming(IHubIncomingInvokerContext context)
         {
@@ -339,6 +344,11 @@ namespace Microsoft.AspNet.SignalR.Hubs
         protected override Task OnReconnected(IRequest request, string connectionId)
         {
             return ExecuteHubEvent(request, connectionId, hub => _pipelineInvoker.Reconnect(hub));
+        }
+
+        protected override Task OnKeepAlive(IRequest request, string connectionId)
+        {
+            return ExecuteHubEvent(request, connectionId, hub => _pipelineInvoker.KeepAlive(hub));
         }
 
         protected override IList<string> OnRejoiningGroups(IRequest request, IList<string> groups, string connectionId)

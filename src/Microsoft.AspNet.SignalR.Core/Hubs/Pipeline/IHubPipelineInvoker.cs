@@ -46,6 +46,9 @@ namespace Microsoft.AspNet.SignalR.Hubs
         /// <param name="hub">A <see cref="IHub"/> the client was disconnected from.</param>
         Task Disconnect(IHub hub);
 
+
+        Task KeepAlive(IHub hub);
+
         /// <summary>
         /// To be called before a client subscribes to signals belonging to the hub described by the <see cref="HubDescriptor"/>.
         /// By default, the <see cref="AuthorizeModule"/> will look for attributes on the <see cref="IHub"/> to help determine if

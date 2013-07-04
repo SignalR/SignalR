@@ -21,7 +21,7 @@ namespace Microsoft.AspNet.SignalR.Transports
             }
 
             // Ensure delegate continues to use the C# Compiler static delegate caching optimization.
-            return EnqueueOperation(state => PerformKeepAlive(state), this);
+            return EnqueueOperation(state => PerformKeepAlive(state), this).Then(() => base.KeepAlive());
         }
 
         public override Task Send(PersistentResponse response)

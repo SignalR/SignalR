@@ -60,6 +60,15 @@ namespace Microsoft.AspNet.SignalR
             return TaskAsyncHelper.Empty;
         }
 
+        /// <summary>
+        /// Called when the connection receives a keep alive.
+        /// </summary>
+        /// <returns>A <see cref="Task"/></returns>
+        public virtual Task OnKeepAlive()
+        {
+            return TaskAsyncHelper.Empty;
+        }
+
         protected virtual void Dispose(bool disposing)
         {
         }

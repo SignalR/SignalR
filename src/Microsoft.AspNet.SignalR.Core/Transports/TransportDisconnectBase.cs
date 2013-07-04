@@ -111,6 +111,8 @@ namespace Microsoft.AspNet.SignalR.Transports
 
         public Func<Task> Disconnected { get; set; }
 
+        public Func<Task> KeepAliveReceived { get; set; }
+
         public virtual CancellationToken CancellationToken
         {
             get
@@ -267,7 +269,12 @@ namespace Microsoft.AspNet.SignalR.Transports
 
         public virtual Task KeepAlive()
         {
-            return TaskAsyncHelper.Empty;
+            if (KeepAliveReceived == null)
+            {
+                return TaskAsyncHelper.Empty;
+            }
+
+            return KeepAliveReceived();
         }
 
         public void End()

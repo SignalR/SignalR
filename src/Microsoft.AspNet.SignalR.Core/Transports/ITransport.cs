@@ -33,6 +33,11 @@ namespace Microsoft.AspNet.SignalR.Transports
         Func<Task> Reconnected { get; set; }
 
         /// <summary>
+        /// Gets or sets a callback that is invoked when a keep alive packet is sent to the transport.
+        /// </summary>
+        Func<Task> KeepAliveReceived { get; set; }
+
+        /// <summary>
         /// Gets or sets a callback that is invoked when the transport disconnects.
         /// </summary>
         Func<Task> Disconnected { get; set; }

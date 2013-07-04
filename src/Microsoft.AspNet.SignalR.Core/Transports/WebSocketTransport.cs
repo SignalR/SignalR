@@ -74,7 +74,7 @@ namespace Microsoft.AspNet.SignalR.Transports
                 var webSocket = (IWebSocket)state;
                 return webSocket.Send("{}");
             },
-            _socket);
+            _socket).Then(() => base.KeepAlive());
         }
 
         public override Task ProcessRequest(ITransportConnection connection)

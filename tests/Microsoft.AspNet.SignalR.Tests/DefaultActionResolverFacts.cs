@@ -344,6 +344,11 @@ namespace Microsoft.AspNet.SignalR.Tests
             {
                 throw new NotImplementedException();
             }
+
+            public System.Threading.Tasks.Task OnKeepAlive()
+            {
+                throw new NotImplementedException();
+            }
         }
 
         private class HubWithOverrides : Hub

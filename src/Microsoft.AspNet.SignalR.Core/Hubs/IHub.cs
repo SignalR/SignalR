@@ -37,6 +37,11 @@ namespace Microsoft.AspNet.SignalR.Hubs
         /// Called when a connection is disconnected from the <see cref="IHub"/>.
         /// </summary>
         Task OnDisconnected();
+
+        /// <summary>
+        /// Called when the connection receives a keep alive packet.
+        /// </summary>
+        Task OnKeepAlive();
     }
 }
 
