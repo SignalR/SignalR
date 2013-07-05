@@ -25,7 +25,7 @@ namespace Microsoft.AspNet.SignalR.WebSockets
             return Encoding.UTF8.GetString(buffer, 0, count);
         }
 
-        public static async Task<WebSocketMessage> ReadMessageAsync(WebSocket webSocket, int bufferSize, int maxMessageSize, CancellationToken disconnectToken)
+        public static async Task<WebSocketMessage> ReadMessageAsync(WebSocket webSocket, int bufferSize, int? maxMessageSize, CancellationToken disconnectToken)
         {
             WebSocketMessage message;
 

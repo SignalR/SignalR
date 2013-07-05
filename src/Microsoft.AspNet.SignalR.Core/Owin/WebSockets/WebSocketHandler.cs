@@ -17,14 +17,17 @@ namespace Microsoft.AspNet.SignalR.WebSockets
 
         // 4KB default fragment size (we expect most messages to be very short)
         private const int _receiveLoopBufferSize = 4 * 1024;
-
-        // 64KB default max incoming message size
-        private int _maxIncomingMessageSize = 64 * 1024;
+        private int? _maxIncomingMessageSize;
 
         // Queue for sending messages
         private readonly TaskQueue _sendQueue = new TaskQueue();
 
         private volatile bool _isClosed;
+
+        public WebSocketHandler(int? maxIncomingMessageSize)
+        {
+            _maxIncomingMessageSize = maxIncomingMessageSize;
+        }
 
         public virtual void OnOpen() { }
 
@@ -106,7 +109,7 @@ namespace Microsoft.AspNet.SignalR.WebSockets
             closeContext).Catch();
         }
 
-        public int MaxIncomingMessageSize
+        public int? MaxIncomingMessageSize
         {
             get
             {
@@ -256,10 +259,10 @@ namespace Microsoft.AspNet.SignalR.WebSockets
         {
             public WebSocket WebSocket;
             public CancellationToken DisconnectToken;
-            public int MaxIncomingMessageSize;
+            public int? MaxIncomingMessageSize;
             public int BufferSize;
 
-            public ReceiveContext(WebSocket webSocket, CancellationToken disconnectToken, int maxIncomingMessageSize, int bufferSize)
+            public ReceiveContext(WebSocket webSocket, CancellationToken disconnectToken, int? maxIncomingMessageSize, int bufferSize)
             {
                 WebSocket = webSocket;
                 DisconnectToken = disconnectToken;

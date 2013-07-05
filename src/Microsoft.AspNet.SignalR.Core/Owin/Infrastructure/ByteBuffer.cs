@@ -12,10 +12,10 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
     {
 
         private int _currentLength;
-        private readonly int _maxLength;
+        private readonly int? _maxLength;
         private readonly List<byte[]> _segments = new List<byte[]>();
 
-        public ByteBuffer(int maxLength)
+        public ByteBuffer(int? maxLength)
         {
             _maxLength = maxLength;
         }
@@ -23,7 +23,7 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
         public void Append(byte[] segment)
         {
             checked { _currentLength += segment.Length; }
-            if (_currentLength > _maxLength)
+            if (_maxLength.HasValue && _currentLength > _maxLength)
             {
                 throw new InvalidOperationException("Buffer length exceeded");
             }
