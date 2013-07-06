@@ -229,6 +229,11 @@
                 return proxies.demo.invoke.apply(proxies.demo, $.merge(["ReadStateValue"], $.makeArray(arguments)));
              },
 
+            returnLargePayload: function () {
+            /// <summary>Calls the ReturnLargePayload method on the server-side demo hub.&#10;Returns a jQuery.Deferred() promise.</summary>
+                return proxies.demo.invoke.apply(proxies.demo, $.merge(["ReturnLargePayload"], $.makeArray(arguments)));
+             },
+
             setStateValue: function (value) {
             /// <summary>Calls the SetStateValue method on the server-side demo hub.&#10;Returns a jQuery.Deferred() promise.</summary>
             /// <param name=\"value\" type=\"String\">Server side type is System.String</param>

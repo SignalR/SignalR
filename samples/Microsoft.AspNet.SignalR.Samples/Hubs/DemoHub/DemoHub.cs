@@ -193,6 +193,11 @@ namespace Microsoft.AspNet.SignalR.Samples.Hubs.DemoHub
             Clients.Caller.clientMethd();
         }
 
+        public string ReturnLargePayload()
+        {
+            return new string('a', 64 * 1024);
+        }
+
         public class Person
         {
             public string Name { get; set; }
