@@ -513,7 +513,7 @@
                             $(connection).triggerHandler(events.onStart);
 
                             // wire the stop handler for when the user leaves the page
-                            _pageWindow.unload(function () {
+                            _pageWindow.bind("unload", function () {
                                 connection.stop(false /* async */);
                             });
                         }
