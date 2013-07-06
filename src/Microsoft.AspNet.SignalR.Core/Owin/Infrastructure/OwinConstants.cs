@@ -41,6 +41,7 @@ namespace Microsoft.AspNet.SignalR
         public const string HostOnAppDisposing = "host.OnAppDisposing";
         public const string HostAppNameKey = "host.AppName";
         public const string HostAppModeKey = "host.AppMode";
+        public const string HostTraceOutputKey = "host.TraceOutput";
         public const string HostReferencedAssembliesKey = "host.ReferencedAssemblies";
         public const string AppModeDevelopment = "development";
     }

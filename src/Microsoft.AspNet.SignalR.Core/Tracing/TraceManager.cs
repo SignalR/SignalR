@@ -9,10 +9,17 @@ namespace Microsoft.AspNet.SignalR.Tracing
     public class TraceManager : ITraceManager
     {
         private readonly ConcurrentDictionary<string, TraceSource> _sources = new ConcurrentDictionary<string, TraceSource>(StringComparer.OrdinalIgnoreCase);
+        private readonly TextWriterTraceListener _hostTraceListener;
 
         public TraceManager()
+            : this(hostTraceListener: null)
+        {
+        }
+
+        public TraceManager(TextWriterTraceListener hostTraceListener)
         {
             Switch = new SourceSwitch("SignalRSwitch");
+            _hostTraceListener = hostTraceListener;
         }
 
         public SourceSwitch Switch { get; private set; }
@@ -21,11 +28,23 @@ namespace Microsoft.AspNet.SignalR.Tracing
         {
             get
             {
-                return _sources.GetOrAdd(name, key => new TraceSource(key, SourceLevels.Off)
-                {
-                    Switch = Switch
-                });
+                return _sources.GetOrAdd(name, key => CreateTraceSource(key));
             }
+        }
+
+        private TraceSource CreateTraceSource(string name)
+        {
+            var traceSource = new TraceSource(name, SourceLevels.Off)
+            {
+                Switch = Switch
+            };
+
+            if (_hostTraceListener != null)
+            {
+                traceSource.Listeners.Add(_hostTraceListener);
+            }
+
+            return traceSource;
         }
     }
 }
