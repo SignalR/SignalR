@@ -1,5 +1,7 @@
-﻿using Microsoft.AspNet.SignalR;
+﻿using System.Diagnostics;
+using Microsoft.AspNet.SignalR;
 using Microsoft.AspNet.SignalR.Samples;
+using Microsoft.AspNet.SignalR.Tracing;
 using Owin;
 
 namespace Microsoft.AspNet.SelfHost.Samples
@@ -10,6 +12,10 @@ namespace Microsoft.AspNet.SelfHost.Samples
         {
             app.MapConnection<RawConnection>("/raw-connection", new ConnectionConfiguration { EnableCrossDomain = true });
             app.MapHubs();
+
+            // Turn tracing on programmatically
+            ITraceManager traceManager= GlobalHost.DependencyResolver.Resolve<ITraceManager>();
+            traceManager.Switch.Level = SourceLevels.Information;
         }
     }
 }

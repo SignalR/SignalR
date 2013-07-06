@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Reflection;
 using System.Threading;
 
@@ -29,6 +30,17 @@ namespace Microsoft.AspNet.SignalR
                 {
                     return stringVal;
                 }
+            }
+
+            return null;
+        }
+
+        internal static TextWriter GetTraceOutput(this IDictionary<string, object> environment)
+        {
+            object value;
+            if (environment.TryGetValue(OwinConstants.HostTraceOutputKey, out value))
+            {
+                return value as TextWriter;
             }
 
             return null;

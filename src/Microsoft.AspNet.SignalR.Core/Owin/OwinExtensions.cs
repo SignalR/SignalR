@@ -2,7 +2,9 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using System.IO;
 using System.Reflection;
 using System.Threading;
 using Microsoft.AspNet.SignalR;
@@ -10,6 +12,7 @@ using Microsoft.AspNet.SignalR.Hosting;
 using Microsoft.AspNet.SignalR.Hubs;
 using Microsoft.AspNet.SignalR.Infrastructure;
 using Microsoft.AspNet.SignalR.Owin.Middleware;
+using Microsoft.AspNet.SignalR.Tracing;
 using Microsoft.Owin.Infrastructure;
 using Microsoft.Owin.Security.DataProtection;
 
@@ -60,6 +63,7 @@ namespace Owin
             return builder.UseType<PersistentConnectionMiddleware>(url, connectionType, configuration);
         }
 
+        [SuppressMessage("Microsoft.Maintainability", "CA1506:AvoidExcessiveClassCoupling", Justification = "This class wires up new dependencies from the host")]
         private static IAppBuilder UseType<T>(this IAppBuilder builder, params object[] args)
         {
             ConnectionConfiguration configuration = null;
@@ -112,6 +116,15 @@ namespace Owin
                 }
 
                 resolver.Register(typeof(IProtectedData), () => protectedData);
+
+                // If the host provides trace output then add a default trace listener
+                TextWriter traceOutput = env.GetTraceOutput();
+                if (traceOutput != null)
+                {
+                    var hostTraceListener = new TextWriterTraceListener(traceOutput);
+                    var traceManager = new TraceManager(hostTraceListener);
+                    resolver.Register(typeof(ITraceManager), () => traceManager);
+                }
 
                 // Try to get the list of reference assemblies from the host
                 IEnumerable<Assembly> referenceAssemblies = env.GetReferenceAssemblies();
