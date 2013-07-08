@@ -526,7 +526,13 @@
                 }
             };
 
-            var url = connection.url + "/negotiate";
+            var url = connection.url + "/negotiate",
+                onFailed = function (error, connection) {
+                    $(connection).triggerHandler(events.onError, [error.responseText]);
+                    deferred.reject("SignalR: Error during negotiation request: " + error.responseText);
+                    // Stop the connection if negotiate failed
+                    connection.stop();
+                };
 
             url = signalR.transports._logic.addQs(url, connection.qs);
 
@@ -550,16 +556,22 @@
                     error: function (error, statusText) {
                         // We don't want to cause any errors if we're aborting our own negotiate request.
                         if (statusText !== _negotiateAbortText) {
-                            $(connection).triggerHandler(events.onError, [error.responseText]);
-                            deferred.reject("SignalR: Error during negotiation request: " + error.responseText);
-                            // Stop the connection if negotiate failed
-                            connection.stop();
+                            onFailed(error, connection);
                         }
                     },
                     success: function (result) {
-                        var res = connection._parseResponse(result),
-                            keepAliveData = connection.keepAliveData;
+                        var res,
+                            keepAliveData;
 
+                        try {
+                            res = connection._parseResponse(result);
+                        }
+                        catch (error) {
+                            onFailed(error, connection);
+                            return;
+                        }
+
+                        keepAliveData = connection.keepAliveData;
                         connection.appRelativeUrl = res.Url;
                         connection.id = res.ConnectionId;
                         connection.token = res.ConnectionToken;
@@ -904,7 +916,10 @@
             /// <returns type="signalR" />
             var baseUrl = transport === "webSockets" ? "" : connection.baseUrl,
                 url = baseUrl + connection.appRelativeUrl + "/ping",
-                deferral = $.Deferred();
+                deferral = $.Deferred(),
+                onFail = function (errorMessage) {
+                    deferral.reject("SignalR: Error pinging server: " + errorMessage);
+                };
 
             url = this.addQs(url, connection.qs);
 
@@ -917,7 +932,15 @@
                     data: {},
                     dataType: connection.ajaxDataType,
                     success: function (result) {
-                        var data = connection._parseResponse(result);
+                        var data;
+                        
+                        try {
+                            data = connection._parseResponse(result);
+                        }
+                        catch (error) {
+                            onFail(error.message);
+                            return;
+                        }
 
                         if (data.Response === "pong") {
                             deferral.resolve();
@@ -926,8 +949,8 @@
                             deferral.reject("SignalR: Invalid ping response when pinging server: " + (data.responseText || data.statusText));
                         }
                     },
-                    error: function (data) {
-                        deferral.reject("SignalR: Error pinging server: " + (data.responseText || data.statusText));
+                    error: function (error) {
+                        onFail((error.responseText || error.statusText));
                     }
                 }
             ));
@@ -1021,7 +1044,11 @@
 
         ajaxSend: function (connection, data) {
             var payload = transportLogic.stringifySend(connection, data),
-                url = connection.url + "/send" + "?transport=" + connection.transport.name + "&connectionToken=" + window.encodeURIComponent(connection.token);
+                url = connection.url + "/send" + "?transport=" + connection.transport.name + "&connectionToken=" + window.encodeURIComponent(connection.token),
+                onFail = function (error, connection) {
+                    $(connection).triggerHandler(events.onError, [error]);
+                };
+
             url = this.addQs(url, connection.qs);
             return $.ajax(
                 $.extend({}, $.signalR.ajaxDefaults, {
@@ -1034,18 +1061,29 @@
                         data: payload
                     },
                     success: function (result) {
+                        var res;
+
                         if (result) {
-                            $(connection).triggerHandler(events.onReceived, [connection._parseResponse(result)]);
+                            try {
+                                res = connection._parseResponse(result);
+                            }
+                            catch (error) {
+                                onFail(error, connection);
+                                return;
+                            }
+
+                            $(connection).triggerHandler(events.onReceived, [res]);
                         }
                     },
-                    error: function (errData, textStatus) {
+                    error: function (error, textStatus) {
                         if (textStatus === "abort" || textStatus === "parsererror") {
                             // The parsererror happens for sends that don't return any data, and hence
                             // don't write the jsonp callback to the response. This is harder to fix on the server
                             // so just hack around it on the client for now.
                             return;
                         }
-                        $(connection).triggerHandler(events.onError, [errData]);
+
+                        onFail(error, connection);
                     }
                 }
             ));
@@ -1303,8 +1341,16 @@
                 };
 
                 connection.socket.onmessage = function (event) {
-                    var data = connection._parseResponse(event.data),
+                    var data,
                         $connection = $(connection);
+
+                    try {
+                        data = connection._parseResponse(event.data);
+                    }
+                    catch (error) {
+                        $connection.triggerHandler(events.onError, ["SignalR: failed at parsing response: " + event.data + ".  With error: " + error.message]);
+                        return;
+                    }
 
                     if (data) {
                         // data.M is PersistentResponse.Messages
@@ -1444,12 +1490,22 @@
             }, false);
 
             connection.eventSource.addEventListener("message", function (e) {
+                var res;
+
                 // process messages
                 if (e.data === "initialized") {
                     return;
                 }
 
-                transportLogic.processMessages(connection, connection._parseResponse(e.data), onSuccess);
+                try {
+                    res = connection._parseResponse(e.data);
+                }
+                catch (error) {
+                    $(connection).triggerHandler(events.onError, ["SignalR: failed at parsing response: " + e.data + ".  With error: " + error.message]);
+                    return;
+                }
+
+                transportLogic.processMessages(connection, res, onSuccess);
             }, false);
 
             connection.eventSource.addEventListener("error", function (e) {
@@ -1794,9 +1850,9 @@
                             dataType: connection.ajaxDataType,
                             contentType: connection.contentType,
                             success: function (result) {
-                                var minData = connection._parseResponse(result),
+                                var minData,
                                     delay = 0,
-                                data;
+                                    data;
 
                                 // Reset our reconnect errors so if we transition into a reconnecting state again we trigger
                                 // reconnected quickly
@@ -1805,6 +1861,13 @@
                                 // If there's currently a timeout to trigger reconnect, fire it now before processing messages
                                 if (reconnectTimeoutId !== null) {
                                     fireReconnected();
+                                }
+
+                                try {
+                                    minData = connection._parseResponse(result);
+                                }
+                                catch (error) {
+                                    $(connection).triggerHandler(events.onError, ["SignalR: failed at parsing response: " + result + ".  With error: " + error.message]);
                                 }
 
                                 if (minData) {

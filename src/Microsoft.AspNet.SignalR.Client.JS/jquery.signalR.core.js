@@ -525,7 +525,13 @@
                 }
             };
 
-            var url = connection.url + "/negotiate";
+            var url = connection.url + "/negotiate",
+                onFailed = function (error, connection) {
+                    $(connection).triggerHandler(events.onError, [error.responseText]);
+                    deferred.reject("SignalR: Error during negotiation request: " + error.responseText);
+                    // Stop the connection if negotiate failed
+                    connection.stop();
+                };
 
             url = signalR.transports._logic.addQs(url, connection.qs);
 
@@ -549,16 +555,22 @@
                     error: function (error, statusText) {
                         // We don't want to cause any errors if we're aborting our own negotiate request.
                         if (statusText !== _negotiateAbortText) {
-                            $(connection).triggerHandler(events.onError, [error.responseText]);
-                            deferred.reject("SignalR: Error during negotiation request: " + error.responseText);
-                            // Stop the connection if negotiate failed
-                            connection.stop();
+                            onFailed(error, connection);
                         }
                     },
                     success: function (result) {
-                        var res = connection._parseResponse(result),
-                            keepAliveData = connection.keepAliveData;
+                        var res,
+                            keepAliveData;
 
+                        try {
+                            res = connection._parseResponse(result);
+                        }
+                        catch (error) {
+                            onFailed(error, connection);
+                            return;
+                        }
+
+                        keepAliveData = connection.keepAliveData;
                         connection.appRelativeUrl = res.Url;
                         connection.id = res.ConnectionId;
                         connection.token = res.ConnectionToken;
