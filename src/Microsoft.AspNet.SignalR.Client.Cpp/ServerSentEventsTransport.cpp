@@ -6,8 +6,8 @@ namespace MicrosoftAspNetSignalRClientCpp
 ServerSentEventsTransport::ServerSentEventsTransport(shared_ptr<IHttpClient> httpClient) : 
     HttpBasedTransport(httpClient, U("serverSentEvents"))
 {
-    mConnectionTimeout = seconds(2);
-    mReconnectDelay = seconds(5);
+    mConnectionTimeout = seconds(5);
+    mReconnectDelay = seconds(2);
 }
 
 ServerSentEventsTransport::~ServerSentEventsTransport()
@@ -100,9 +100,13 @@ void ServerSentEventsTransport::OpenConnection(shared_ptr<Connection> connection
                 {
                     // raise error event if failed to reconnect
                     connection->OnError(ex);
-
                     Reconnect(connection, data, disconnectToken);
                 }
+            }
+            {
+                lock_guard<mutex> lock(mDeregisterRequestCancellationLock);
+                DeregisterRequestCancellation();
+                DeregisterRequestCancellation = [](){};
             }
         }
         else if (status == TaskStatus::TaskCanceled)
@@ -165,6 +169,12 @@ void ServerSentEventsTransport::OpenConnection(shared_ptr<Connection> connection
                     }
                 }
 
+                {
+                    lock_guard<mutex> lock(mDeregisterRequestCancellationLock);
+                    DeregisterRequestCancellation();
+                    DeregisterRequestCancellation = [](){};
+                }
+
                 if (mStop)
                 {
                     CompleteAbort();
@@ -183,7 +193,45 @@ void ServerSentEventsTransport::OpenConnection(shared_ptr<Connection> connection
         }
     });
 
-    // some more code missing here
+    auto requestCancellationRegistration = disconnectToken.register_callback([this, errorCallback]()
+    {
+        if (pRequest != nullptr)
+        {
+            pRequest->Abort();
+        }
+
+        if (errorCallback != nullptr)
+        {
+            pCallbackInvoker->Invoke<function<void(exception&)>>([](function<void(exception&)> cb)
+            {
+                cb(exception("Operation Canceled Exception: The connection was stopped before it could be started."));
+            }, errorCallback);
+        }
+    });
+
+    {
+        lock_guard<mutex> lock(mDeregisterRequestCancellationLock);
+        DeregisterRequestCancellation = [disconnectToken, requestCancellationRegistration]()
+        {
+            disconnectToken.deregister_callback(requestCancellationRegistration);
+        };
+    }
+
+    if (errorCallback != nullptr)
+    {
+        // the memory will eventually be reclaimed after 5 seconds (default) so it's not a leak here
+        TaskAsyncHelper::Delay(mConnectionTimeout).then([this, errorCallback]()
+        {
+            pCallbackInvoker->Invoke<function<void(exception)>>([this](function<void(exception)> errorCallback)
+            {
+                // Abort the request before cancelling
+                pRequest->Abort();
+
+                // Connection timeout occurred
+                errorCallback(exception("TimeoutException"));
+            }, errorCallback);
+        });
+    }
 }
 
 void ServerSentEventsTransport::LostConnection(shared_ptr<Connection> connection)

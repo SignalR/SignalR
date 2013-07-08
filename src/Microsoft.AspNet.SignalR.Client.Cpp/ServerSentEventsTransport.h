@@ -27,6 +27,8 @@ class ServerSentEventsTransport :
         bool mStop;
         seconds mConnectionTimeout;
         seconds mReconnectDelay;
+        mutex mDeregisterRequestCancellationLock;
+        function<void()> DeregisterRequestCancellation;
         shared_ptr<HttpRequestWrapper> pRequest;
         unique_ptr<EventSourceStreamReader> pEventSource;
         unique_ptr<ThreadSafeInvoker> pCallbackInvoker;
