@@ -89,8 +89,16 @@
                 };
 
                 connection.socket.onmessage = function (event) {
-                    var data = connection._parseResponse(event.data),
+                    var data,
                         $connection = $(connection);
+
+                    try {
+                        data = connection._parseResponse(event.data);
+                    }
+                    catch (error) {
+                        $connection.triggerHandler(events.onError, ["SignalR: failed at parsing response: " + event.data + ".  With error: " + error.message]);
+                        return;
+                    }
 
                     if (data) {
                         // data.M is PersistentResponse.Messages
