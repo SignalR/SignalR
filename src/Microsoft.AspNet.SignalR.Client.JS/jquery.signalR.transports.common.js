@@ -67,7 +67,10 @@
             /// <returns type="signalR" />
             var baseUrl = transport === "webSockets" ? "" : connection.baseUrl,
                 url = baseUrl + connection.appRelativeUrl + "/ping",
-                deferral = $.Deferred();
+                deferral = $.Deferred(),
+                onFail = function (errorMessage) {
+                    deferral.reject("SignalR: Error pinging server: " + errorMessage);
+                };
 
             url = this.addQs(url, connection.qs);
 
@@ -80,7 +83,15 @@
                     data: {},
                     dataType: connection.ajaxDataType,
                     success: function (result) {
-                        var data = connection._parseResponse(result);
+                        var data;
+                        
+                        try {
+                            data = connection._parseResponse(result);
+                        }
+                        catch (error) {
+                            onFail(error.message);
+                            return;
+                        }
 
                         if (data.Response === "pong") {
                             deferral.resolve();
@@ -89,8 +100,8 @@
                             deferral.reject("SignalR: Invalid ping response when pinging server: " + (data.responseText || data.statusText));
                         }
                     },
-                    error: function (data) {
-                        deferral.reject("SignalR: Error pinging server: " + (data.responseText || data.statusText));
+                    error: function (error) {
+                        onFail((error.responseText || error.statusText));
                     }
                 }
             ));
@@ -184,7 +195,11 @@
 
         ajaxSend: function (connection, data) {
             var payload = transportLogic.stringifySend(connection, data),
-                url = connection.url + "/send" + "?transport=" + connection.transport.name + "&connectionToken=" + window.encodeURIComponent(connection.token);
+                url = connection.url + "/send" + "?transport=" + connection.transport.name + "&connectionToken=" + window.encodeURIComponent(connection.token),
+                onFail = function (error, connection) {
+                    $(connection).triggerHandler(events.onError, [error]);
+                };
+
             url = this.addQs(url, connection.qs);
             return $.ajax(
                 $.extend({}, $.signalR.ajaxDefaults, {
@@ -197,18 +212,29 @@
                         data: payload
                     },
                     success: function (result) {
+                        var res;
+
                         if (result) {
-                            $(connection).triggerHandler(events.onReceived, [connection._parseResponse(result)]);
+                            try {
+                                res = connection._parseResponse(result);
+                            }
+                            catch (error) {
+                                onFail(error, connection);
+                                return;
+                            }
+
+                            $(connection).triggerHandler(events.onReceived, [res]);
                         }
                     },
-                    error: function (errData, textStatus) {
+                    error: function (error, textStatus) {
                         if (textStatus === "abort" || textStatus === "parsererror") {
                             // The parsererror happens for sends that don't return any data, and hence
                             // don't write the jsonp callback to the response. This is harder to fix on the server
                             // so just hack around it on the client for now.
                             return;
                         }
-                        $(connection).triggerHandler(events.onError, [errData]);
+
+                        onFail(error, connection);
                     }
                 }
             ));

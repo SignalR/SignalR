@@ -86,9 +86,9 @@
                             dataType: connection.ajaxDataType,
                             contentType: connection.contentType,
                             success: function (result) {
-                                var minData = connection._parseResponse(result),
+                                var minData,
                                     delay = 0,
-                                data;
+                                    data;
 
                                 // Reset our reconnect errors so if we transition into a reconnecting state again we trigger
                                 // reconnected quickly
@@ -97,6 +97,13 @@
                                 // If there's currently a timeout to trigger reconnect, fire it now before processing messages
                                 if (reconnectTimeoutId !== null) {
                                     fireReconnected();
+                                }
+
+                                try {
+                                    minData = connection._parseResponse(result);
+                                }
+                                catch (error) {
+                                    $(connection).triggerHandler(events.onError, ["SignalR: failed at parsing response: " + result + ".  With error: " + error.message]);
                                 }
 
                                 if (minData) {
