@@ -106,6 +106,7 @@
     <Compile Include="Connections\EchoConnection.cs" />
     <Compile Include="Connections\ExamineHeadersConnection.cs" />
     <Compile Include="Connections\ExamineReconnectPath.cs" />
+    <Compile Include="Connections\RedirectionConnection.cs" />
     <Compile Include="Handlers\GCHandler.cs" />
     <Compile Include="Handlers\PingHandler.cs" />
     <Compile Include="Build\StartIISTask.cs" />
