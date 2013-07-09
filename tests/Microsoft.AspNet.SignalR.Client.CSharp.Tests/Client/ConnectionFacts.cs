@@ -13,7 +13,7 @@ using Moq;
 using Xunit;
 using Xunit.Extensions;
 
-namespace Microsoft.AspNet.SignalR.Tests
+namespace Microsoft.AspNet.SignalR.CSharp.Tests
 {
     public class ConnectionFacts : IDisposable
     {
@@ -23,6 +23,10 @@ namespace Microsoft.AspNet.SignalR.Tests
         public void NegotiatePassesClientProtocolCorrectly(string clientProtocolParameter, string connectionQueryString)
         {
             var connection = new Client.Connection("http://test", connectionQueryString);
+
+            Console.BackgroundColor = ConsoleColor.DarkCyan;
+            Console.WriteLine("*********************************");
+            Console.ResetColor();
 
             try
             {

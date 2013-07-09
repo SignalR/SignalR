@@ -2,7 +2,7 @@
 using Microsoft.AspNet.SignalR.Client.Transports.ServerSentEvents;
 using Xunit;
 
-namespace Microsoft.AspNet.SignalR.Client.Tests
+namespace Microsoft.AspNet.SignalR.CSharp.Tests
 {
     public class ChunkBufferFacts
     {

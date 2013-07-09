@@ -18,6 +18,7 @@
                MergeByHash="True"
                Filter="+[Microsoft.AspNet.SignalR*]*
                        -[Microsoft.AspNet.SignalR.Tests*]*
+                       -[Microsoft.AspNet.SignalR.CSharp.Tests*]*
                        -[Microsoft.AspNet.SignalR.FunctionalTests*]*
                        -[Microsoft.AspNet.SignalR.Hosting.Memory*]*
                        -[Microsoft.AspNet.SignalR.TaskAsyncHelper]*"
