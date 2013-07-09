@@ -129,6 +129,7 @@
     <Compile Include="StringMinifierFacts.cs" />
     <Compile Include="TaskAsyncHelperFacts.cs" />
     <Compile Include="TaskQueueFacts.cs" />
+    <Compile Include="Tracing\TraceManagerFacts.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
