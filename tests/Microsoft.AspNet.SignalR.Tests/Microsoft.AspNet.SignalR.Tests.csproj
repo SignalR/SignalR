@@ -71,9 +71,6 @@
       <Link>Infrastructure\PrefixMatcher.cs</Link>
     </Compile>
     <Compile Include="ArrayTextReaderFacts.cs" />
-    <Compile Include="ChunkBufferFacts.cs" />
-    <Compile Include="Client\ConnectionFacts.cs" />
-    <Compile Include="Client\TransportFacts.cs" />
     <Compile Include="ConfigurationManagerFacts.cs" />
     <Compile Include="Core\ConnectionExtensionsFacts.cs" />
     <Compile Include="Core\Hubs\DefaultJavaScriptProxyGeneratorFacts.cs" />
@@ -95,6 +92,7 @@
     <Compile Include="Json\JsonFacts.cs" />
     <Compile Include="Json\JsonNetSerializerFacts.cs" />
     <Compile Include="Client\KeepAliveFacts.cs" />
+    <Compile Include="Json\JsonSerializerExtensionFacts.cs" />
     <Compile Include="Owin\ServerRequestFacts.cs" />
     <Compile Include="PersistentConnectionFactoryFacts.cs" />
     <Compile Include="PersistentConnectionFacts.cs" />
@@ -111,8 +109,6 @@
     <Compile Include="Server\Connections\ConnectionFacts.cs" />
     <Compile Include="CursorFacts.cs" />
     <Compile Include="DefaultHubResolverFacts.cs" />
-    <Compile Include="EventSourceStreamReaderFacts.cs" />
-    <Compile Include="Client\HubProxyFacts.cs" />
     <Compile Include="Server\DisposerFacts.cs" />
     <Compile Include="DefaultActionResolverFacts.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -135,10 +131,6 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\src\Microsoft.AspNet.SignalR.Client\Microsoft.AspNet.SignalR.Client.csproj">
-      <Project>{eb46b9c6-ee37-48f9-835e-e49580e40e0a}</Project>
-      <Name>Microsoft.AspNet.SignalR.Client</Name>
-    </ProjectReference>
     <ProjectReference Include="..\..\src\Microsoft.AspNet.SignalR.Core\Microsoft.AspNet.SignalR.Core.csproj">
       <Project>{1b9a82c4-bca1-4834-a33e-226f17be070b}</Project>
       <Name>Microsoft.AspNet.SignalR.Core</Name>
@@ -160,7 +152,9 @@
       <Name>Microsoft.AspNet.SignalR.Tests.Common</Name>
     </ProjectReference>
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <Folder Include="Client\" />
+  </ItemGroup>
   <Import Project="..\..\src\Common\Microsoft.AspNet.SignalR.targets" />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="$(SolutionDir)\.nuget\NuGet.targets" />

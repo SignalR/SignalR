@@ -7,7 +7,7 @@ using Microsoft.AspNet.SignalR.Client.Transports.ServerSentEvents;
 using Moq;
 using Xunit;
 
-namespace Microsoft.AspNet.SignalR.Tests
+namespace Microsoft.AspNet.SignalR.CSharp.Tests
 {
     public class EventSourceStreamReaderFacts : IDisposable
     {
