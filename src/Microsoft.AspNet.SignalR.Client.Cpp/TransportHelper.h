@@ -21,8 +21,9 @@ namespace MicrosoftAspNetSignalRClientCpp
         static string_t AppendCustomQueryString(shared_ptr<Connection> connection, string_t baseUrl);
         static void ProcessResponse(shared_ptr<Connection> connection, string_t response, bool* timedOut, bool* disconnected);
         static void ProcessResponse(shared_ptr<Connection> connection, string_t response, bool* timedOut, bool* disconnected, function<void()> onInitialized);
-    private:
+        static string_t GetSendQueryString(string_t transport, string_t connectionToken, string_t customQuery);
 
+    private:
         static void UpdateGroups(shared_ptr<Connection> connection, string_t groupsToken);
         static void TryInitialize(value response, function<void()> onInitialized);
     };

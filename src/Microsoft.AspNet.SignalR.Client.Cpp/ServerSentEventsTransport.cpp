@@ -177,9 +177,9 @@ void ServerSentEventsTransport::OpenConnection(shared_ptr<Connection> connection
 
                 if (mStop)
                 {
-                    CompleteAbort();
+                    GetAbortHandler()->CompleteAbort();
                 }
-                else if (TryCompleteAbort())
+                else if (GetAbortHandler()->TryCompleteAbort())
                 {
                     // Abort() was called, so don't reconnect
                 }

@@ -87,6 +87,11 @@ string_t TransportHelper::GetReceiveQueryString(shared_ptr<Connection> connectio
     return qs;
 }
 
+string_t TransportHelper::GetSendQueryString(string_t transport, string_t connectionToken, string_t customQuery)
+{
+    return U("?transport=") + transport + U("&connectionToken=") + connectionToken + customQuery;
+}
+
 string_t TransportHelper::AppendCustomQueryString(shared_ptr<Connection> connection, string_t baseUrl)
 {
     if (connection == nullptr)

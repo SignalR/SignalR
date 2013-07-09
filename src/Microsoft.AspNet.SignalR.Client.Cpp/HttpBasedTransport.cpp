@@ -8,10 +8,10 @@ HttpBasedTransport::HttpBasedTransport(shared_ptr<IHttpClient> httpClient, strin
     pHttpClient = httpClient;
     mTransportName = transport;
 
-    pAbortResetEvent = unique_ptr<Concurrency::event>(new Concurrency::event());
-
-    mStartedAbort = false;
-    mDisposed = false;
+    pAbortHandler = shared_ptr<TransportAbortHandler>(new TransportAbortHandler(httpClient, transport, [this]()
+    {
+        OnAbort();
+    }));
 }
 
 HttpBasedTransport::~HttpBasedTransport(void)
@@ -23,14 +23,14 @@ shared_ptr<IHttpClient> HttpBasedTransport::GetHttpClient()
     return pHttpClient;
 }
 
+shared_ptr<TransportAbortHandler> HttpBasedTransport::GetAbortHandler()
+{
+    return pAbortHandler;
+}
+
 pplx::task<shared_ptr<NegotiationResponse>> HttpBasedTransport::Negotiate(shared_ptr<Connection> connection)
 {
     return TransportHelper::GetNegotiationResponse(pHttpClient, connection);
-}
-
-string_t HttpBasedTransport::GetSendQueryString(string_t transport, string_t connectionToken, string_t customQuery)
-{
-    return U("?transport=") + transport + U("&connectionToken=") + connectionToken + customQuery;
 }
 
 string_t HttpBasedTransport::GetReceiveQueryString(shared_ptr<Connection> connection, string_t data)
@@ -61,7 +61,7 @@ pplx::task<void> HttpBasedTransport::Send(shared_ptr<Connection> connection, str
 
     string_t uri = connection->GetUri() + U("send");
     string_t customQueryString = connection->GetQueryString().empty()? U("") : U("&") + connection->GetQueryString();
-    uri += GetSendQueryString(mTransportName, web::http::uri::encode_data_string(connection->GetConnectionToken()), customQueryString);
+    uri += TransportHelper::GetSendQueryString(mTransportName, web::http::uri::encode_data_string(connection->GetConnectionToken()), customQueryString);
 
     string_t encodedData = U("data=") + uri::encode_data_string(data);
 
@@ -102,86 +102,8 @@ pplx::task<void> HttpBasedTransport::Send(shared_ptr<Connection> connection, str
     });
 }
 
-void HttpBasedTransport::Abort(shared_ptr<Connection> connection)
+void HttpBasedTransport::Abort(shared_ptr<Connection> connection, seconds timeout)
 {
-    if (connection == nullptr)
-    {
-        throw exception("ArgumentNullException: connection");
-    }
-
-    {
-        lock_guard<mutex> lock(mAbortLock);
-        
-        if (mDisposed)
-        {
-            string name = typeid(this).name();
-            throw exception(("ObjectDisposedException: " + name).c_str());
-        }
-
-        if (!mStartedAbort)
-        {
-            mStartedAbort = true;
-
-            string_t uri = connection->GetUri() + U("abort") + GetSendQueryString(mTransportName, web::http::uri::encode_data_string(connection->GetConnectionToken()), U(""));
-            uri += TransportHelper::AppendCustomQueryString(connection, uri);
-
-            // this currently waits until the task is complete
-            pHttpClient->Post(uri, [connection](shared_ptr<HttpRequestWrapper> request)
-            {
-                connection->PrepareRequest(request);
-            }).then([this](pplx::task<http_response> abortTask)
-            {
-                http_response response;
-                exception ex;
-                TaskStatus status = TaskAsyncHelper::RunTaskToCompletion<http_response>(abortTask, response, ex);
-
-                if (status == TaskStatus::TaskCompleted)
-                {
-                    OnAbort();
-                } 
-                else 
-                {
-                    CompleteAbort();
-                }
-            });
-
-            size_t waitResult;
-            if ((waitResult = pAbortResetEvent->wait(10000)) == COOPERATIVE_WAIT_TIMEOUT)
-            {
-                // trace abort never fired
-            }
-        }
-    }
+    pAbortHandler->Abort(connection, timeout, U(""));
 }
-
-void HttpBasedTransport::CompleteAbort()
-{
-    lock_guard<mutex> lock(mDisposeLock);
-
-    if (!mDisposed)
-    {
-        mStartedAbort = true;
-        pAbortResetEvent->set();
-    }
-}
-
-bool HttpBasedTransport::TryCompleteAbort()
-{
-    lock_guard<mutex> lock(mDisposeLock);
-
-    if (mDisposed)
-    {
-        return true;
-    }
-    else if (mStartedAbort)
-    {
-        pAbortResetEvent->set();
-        return true;
-    }
-    else
-    {
-        return false;
-    }
-}
-
 } // namespace MicrosoftAspNetSignalRClientCpp

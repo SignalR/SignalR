@@ -265,7 +265,7 @@ void Connection::Stop(seconds timeout)
             // avoid leaks due to circular referencing
             mConnectingMessageBuffer.Clear();
 
-            pTransport->Abort(shared_from_this());
+            pTransport->Abort(shared_from_this(), timeout);
 
             Disconnect();
         }

@@ -99,6 +99,9 @@
     <ClCompile Include="TransportInitializationHandler.cpp">
       <Filter>Source Files\Infrastructure</Filter>
     </ClCompile>
+    <ClCompile Include="TransportAbortHandler.cpp">
+      <Filter>Source Files\Infrastructure</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Connection.h">
@@ -165,6 +168,9 @@
       <Filter>Header Files\Infrastructure</Filter>
     </ClInclude>
     <ClInclude Include="TransportInitializationHandler.h">
+      <Filter>Header Files\Infrastructure</Filter>
+    </ClInclude>
+    <ClInclude Include="TransportAbortHandler.h">
       <Filter>Header Files\Infrastructure</Filter>
     </ClInclude>
   </ItemGroup>
