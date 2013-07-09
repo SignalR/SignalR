@@ -14,8 +14,7 @@ namespace Microsoft.AspNet.SelfHost.Samples
             app.MapHubs();
 
             // Turn tracing on programmatically
-            ITraceManager traceManager= GlobalHost.DependencyResolver.Resolve<ITraceManager>();
-            traceManager.Switch.Level = SourceLevels.Information;
+            GlobalHost.TraceManager.Switch.Level = SourceLevels.Information;
         }
     }
 }
