@@ -14,6 +14,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
         private DateTime _lastUsed = DateTime.UtcNow;
 
         public IList<ISubscription> Subscriptions { get; private set; }
+        public IList<VolatileSubscription> VolatileSubscriptions { get; private set; }
         public MessageStore<Message> Store { get; private set; }
         public ReaderWriterLockSlim SubscriptionLock { get; private set; }
 
@@ -51,6 +52,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
         {
             _lifespan = lifespan;
             Subscriptions = new List<ISubscription>();
+            VolatileSubscriptions = new List<VolatileSubscription>();
             Store = new MessageStore<Message>(storeSize);
             SubscriptionLock = new ReaderWriterLockSlim();
         }
@@ -60,7 +62,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
             this._lastUsed = DateTime.UtcNow;
         }
 
-        public void AddSubscription(ISubscription subscription)
+        public void AddSubscription(ISubscription subscription, ISubscription volatileSubscription)
         {
             if (subscription == null)
             {
@@ -86,7 +88,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
             }
         }
 
-        public void RemoveSubscription(ISubscription subscription)
+        public void RemoveSubscription(ISubscription subscription, ISubscription volatileSubscription)
         {
             if (subscription == null)
             {

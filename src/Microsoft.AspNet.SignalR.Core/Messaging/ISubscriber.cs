@@ -19,5 +19,6 @@ namespace Microsoft.AspNet.SignalR.Messaging
         event Action<ISubscriber, string> EventKeyRemoved;
 
         Subscription Subscription { get; set; }
+        VolatileSubscription VolatileSubscription { get; set; }
     }
 }

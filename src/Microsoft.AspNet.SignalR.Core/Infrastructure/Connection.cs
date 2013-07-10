@@ -107,6 +107,12 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
             set;
         }
 
+        public VolatileSubscription VolatileSubscription
+        {
+            get;
+            set;
+        }
+
         public Task Send(ConnectionMessage message)
         {
             Message busMessage = CreateMessage(message.Signal, message.Value);

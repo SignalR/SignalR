@@ -145,5 +145,18 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
                 Command(command);
             }
         }
+
+
+        public VolatileSubscription VolatileSubscription
+        {
+            get
+            {
+                throw new NotImplementedException();
+            }
+            set
+            {
+                throw new NotImplementedException();
+            }
+        }
     }
 }

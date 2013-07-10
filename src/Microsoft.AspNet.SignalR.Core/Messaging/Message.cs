@@ -53,6 +53,8 @@ namespace Microsoft.AspNet.SignalR.Messaging
             Value = value;
         }
 
+        public bool Volatile { get; set; }
+
         /// <summary>
         /// Which connection the message originated from
         /// </summary>
@@ -135,6 +137,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
             binaryWriter.Write(WaitForAck);
             binaryWriter.Write(IsAck);
             binaryWriter.Write(Filter ?? String.Empty);
+            binaryWriter.Write(Volatile);
         }
 
         public static Message ReadFrom(Stream stream)
@@ -149,6 +152,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
             message.WaitForAck = binaryReader.ReadBoolean();
             message.IsAck = binaryReader.ReadBoolean();
             message.Filter = binaryReader.ReadString();
+            message.Volatile = binaryReader.ReadBoolean();
 
             return message;
         }

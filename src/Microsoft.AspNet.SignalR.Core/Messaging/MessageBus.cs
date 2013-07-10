@@ -174,8 +174,15 @@ namespace Microsoft.AspNet.SignalR.Messaging
             Topic topic;
             if (Topics.TryGetValue(message.Key, out topic))
             {
-                topic.Store.Add(message);
-                ScheduleTopic(topic);
+                if (message.Volatile)
+                {
+                    VolatileScheduleTopic(topic, message);
+                }
+                else
+                {
+                    topic.Store.Add(message);
+                    ScheduleTopic(topic);
+                }
             }
 
             Counters.MessageBusMessagesPublishedTotal.Increment();
@@ -224,9 +231,11 @@ namespace Microsoft.AspNet.SignalR.Messaging
             }
 
             Subscription subscription = CreateSubscription(subscriber, cursor, callback, maxMessages, state);
+            VolatileSubscription volatileSubscription = new VolatileSubscription(subscriber.Identity, callback, maxMessages, state);
 
             // Set the subscription for this subscriber
             subscriber.Subscription = subscription;
+            subscriber.VolatileSubscription = volatileSubscription;
 
             var topics = new HashSet<Topic>();
 
@@ -256,7 +265,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
             // subscription so that publishes can schedule work at the right time.
             foreach (var topic in topics)
             {
-                topic.AddSubscription(subscription);
+                topic.AddSubscription(subscription, volatileSubscription);
             }
 
             subscriptionState.Initialized.Set();
@@ -274,6 +283,33 @@ namespace Microsoft.AspNet.SignalR.Messaging
         protected virtual Subscription CreateSubscription(ISubscriber subscriber, string cursor, Func<MessageResult, object, Task<bool>> callback, int messageBufferSize, object state)
         {
             return new DefaultSubscription(subscriber.Identity, subscriber.EventKeys, Topics, cursor, callback, messageBufferSize, _stringMinifier, Counters, state);
+        }
+
+        protected void VolatileScheduleEvent(string eventKey, Message message)
+        {
+            Topic topic;
+            if (Topics.TryGetValue(eventKey, out topic))
+            {
+                VolatileScheduleTopic(topic, message);
+            }
+        }
+
+        private void VolatileScheduleTopic(Topic topic, Message message)
+        {
+            try
+            {
+                topic.SubscriptionLock.EnterReadLock();
+
+                for (int i = 0; i < topic.VolatileSubscriptions.Count; i++)
+                {
+                    VolatileSubscription subscription = topic.VolatileSubscriptions[i];
+                    _broker.Schedule(subscription);
+                }
+            }
+            finally
+            {
+                topic.SubscriptionLock.ExitReadLock();
+            }
         }
 
         protected void ScheduleEvent(string eventKey)
@@ -526,7 +562,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
             if (subscriber.Subscription.AddEvent(eventKey, topic))
             {
                 // Add it to the list of subs
-                topic.AddSubscription(subscriber.Subscription);
+                topic.AddSubscription(subscriber.Subscription, subscriber.VolatileSubscription);
             }
         }
 
@@ -535,7 +571,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
             Topic topic;
             if (Topics.TryGetValue(eventKey, out topic))
             {
-                topic.RemoveSubscription(subscriber.Subscription);
+                topic.RemoveSubscription(subscriber.Subscription, subscriber.VolatileSubscription);
                 subscriber.Subscription.RemoveEvent(eventKey);
             }
         }
