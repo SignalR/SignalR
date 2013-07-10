@@ -54,7 +54,7 @@ namespace Microsoft.AspNet.SignalR.Client.Tests
                             Resolver = new DefaultDependencyResolver()
                         };
 
-                        app.MapConnection<MyConnection>("echo", config);
+                        app.MapConnection<MyConnection>("/echo", config);
                     });
 
                     var connection = new Connection("http://foo/echo");
@@ -176,7 +176,7 @@ namespace Microsoft.AspNet.SignalR.Client.Tests
 
                         defaultTransportConnectTimeout = config.Resolver.Resolve<IConfigurationManager>().TransportConnectTimeout;
 
-                        app.MapConnection<MyConnection>("echo", config);
+                        app.MapConnection<MyConnection>("/echo", config);
                     });
 
                     var tcs = new TaskCompletionSource<string>();
@@ -278,8 +278,8 @@ namespace Microsoft.AspNet.SignalR.Client.Tests
                             Resolver = new DefaultDependencyResolver()
                         };
 
-                        app.MapConnection<MyConnection>("echo", config);
-                        app.MapConnection<MyConnection2>("echo2", config);
+                        app.MapConnection<MyConnection>("/echo", config);
+                        app.MapConnection<MyConnection2>("/echo2", config);
                     });
 
                     var tcs = new TaskCompletionSource<string>();
@@ -312,8 +312,8 @@ namespace Microsoft.AspNet.SignalR.Client.Tests
                             Resolver = new DefaultDependencyResolver()
                         };
 
-                        app.MapConnection<MyConnection>("echo", config);
-                        app.MapConnection<MyConnection2>("echo2", config);
+                        app.MapConnection<MyConnection>("/echo", config);
+                        app.MapConnection<MyConnection2>("/echo2", config);
                     });
 
                     var tcs = new TaskCompletionSource<string>();
@@ -346,7 +346,7 @@ namespace Microsoft.AspNet.SignalR.Client.Tests
                             Resolver = new DefaultDependencyResolver()
                         };
 
-                        app.MapConnection<MyConnection>("echo", config);
+                        app.MapConnection<MyConnection>("/echo", config);
                     });
 
                     var connection = new Connection("http://foo/echo");
@@ -372,7 +372,7 @@ namespace Microsoft.AspNet.SignalR.Client.Tests
                             EnableCrossDomain = true
                         };
 
-                        app.MapConnection<MyConnection>("echo", config);
+                        app.MapConnection<MyConnection>("/echo", config);
                     });
 
                     var tcs = new TaskCompletionSource<string>();

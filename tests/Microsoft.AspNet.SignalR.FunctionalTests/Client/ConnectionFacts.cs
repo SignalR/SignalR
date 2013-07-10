@@ -58,7 +58,7 @@ namespace Microsoft.AspNet.SignalR.Tests
 
                     config.Resolver.Register(typeof(MyReconnect), () => myReconnect);
 
-                    app.MapConnection<MyReconnect>("echo", config);
+                    app.MapConnection<MyReconnect>("/echo", config);
                 });
 
                 var connection = new Connection("http://foo/echo");
