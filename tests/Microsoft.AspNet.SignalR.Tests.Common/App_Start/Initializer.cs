@@ -123,7 +123,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Common
             app.MapConnection<PreserializedJsonConnection>("preserialize", config);
 
             // This subpipeline is protected by basic auth
-            app.MapPath("/basicauth", subApp =>
+            app.Map("/basicauth", subApp =>
             {
                 subApp.UseBasicAuthentication(new BasicAuthenticationProvider());
 

@@ -32,7 +32,7 @@ namespace Microsoft.AspNet.SignalR.Samples
 
             app.MapHubs(config);
 
-            app.MapPath("/basicauth", subApp =>
+            app.Map("/basicauth", subApp =>
             {
                 subApp.UseBasicAuthentication(new BasicAuthenticationProvider());
                 subApp.MapConnection<AuthenticatedEchoConnection>("/echo");
