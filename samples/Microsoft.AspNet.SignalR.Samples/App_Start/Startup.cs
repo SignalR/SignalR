@@ -16,10 +16,10 @@ namespace Microsoft.AspNet.SignalR.Samples
     {
         public void Configuration(IAppBuilder app)
         {
-            app.MapConnection<SendingConnection>("sending-connection");
-            app.MapConnection<TestConnection>("test-connection");
-            app.MapConnection<RawConnection>("raw-connection");
-            app.MapConnection<StreamingConnection>("streaming-connection");
+            app.MapConnection<SendingConnection>("/sending-connection");
+            app.MapConnection<TestConnection>("/test-connection");
+            app.MapConnection<RawConnection>("/raw-connection");
+            app.MapConnection<StreamingConnection>("/streaming-connection");
 
             app.Use(typeof(ClaimsMiddleware));
 

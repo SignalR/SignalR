@@ -38,33 +38,55 @@ namespace Owin
                 throw new ArgumentNullException("configuration");
             }
 
-            return builder.UseType<HubDispatcherMiddleware>(path, configuration);
+            return builder.Map(path, subApp => subApp.UseHubs(configuration));
+        }
+
+        public static IAppBuilder UseHubs(this IAppBuilder builder, HubConfiguration configuration)
+        {
+            return builder.UseSignalR<HubDispatcherMiddleware>(configuration);
         }
 
         [SuppressMessage("Microsoft.Design", "CA1004:GenericMethodsShouldProvideTypeParameter", Justification = "The type parameter is syntactic sugar")]
-        public static IAppBuilder MapConnection<T>(this IAppBuilder builder, string url) where T : PersistentConnection
+        public static IAppBuilder MapConnection<TConnection>(this IAppBuilder builder, string path) where TConnection : PersistentConnection
         {
-            return builder.MapConnection(url, typeof(T), new ConnectionConfiguration());
+            return builder.MapConnection(path, typeof(TConnection), new ConnectionConfiguration());
         }
 
         [SuppressMessage("Microsoft.Design", "CA1004:GenericMethodsShouldProvideTypeParameter", Justification = "The type parameter is syntactic sugar")]
-        public static IAppBuilder MapConnection<T>(this IAppBuilder builder, string url, ConnectionConfiguration configuration) where T : PersistentConnection
+        public static IAppBuilder MapConnection<TConnection>(this IAppBuilder builder, string path, ConnectionConfiguration configuration) where TConnection : PersistentConnection
         {
-            return builder.MapConnection(url, typeof(T), configuration);
+            return builder.MapConnection(path, typeof(TConnection), configuration);
         }
 
-        public static IAppBuilder MapConnection(this IAppBuilder builder, string url, Type connectionType, ConnectionConfiguration configuration)
+        public static IAppBuilder MapConnection(this IAppBuilder builder, string path, Type connectionType, ConnectionConfiguration configuration)
         {
             if (configuration == null)
             {
                 throw new ArgumentNullException("configuration");
             }
 
-            return builder.UseType<PersistentConnectionMiddleware>(url, connectionType, configuration);
+            return builder.Map(path, subApp => subApp.UseConnection(connectionType, configuration));
+        }
+
+        [SuppressMessage("Microsoft.Design", "CA1004:GenericMethodsShouldProvideTypeParameter", Justification = "The type parameter is syntactic sugar")]
+        public static IAppBuilder UseConnection<TConnection>(this IAppBuilder builder) where TConnection : PersistentConnection
+        {
+            return builder.UseConnection<TConnection>(new ConnectionConfiguration());
+        }
+
+        [SuppressMessage("Microsoft.Design", "CA1004:GenericMethodsShouldProvideTypeParameter", Justification = "The type parameter is syntactic sugar")]
+        public static IAppBuilder UseConnection<TConnection>(this IAppBuilder builder, ConnectionConfiguration configuration) where TConnection : PersistentConnection
+        {
+            return builder.UseConnection(typeof(TConnection), configuration);
+        }
+
+        public static IAppBuilder UseConnection(this IAppBuilder builder, Type connectionType, ConnectionConfiguration configuration)
+        {
+            return builder.UseSignalR<PersistentConnectionMiddleware>(connectionType, configuration);
         }
 
         [SuppressMessage("Microsoft.Maintainability", "CA1506:AvoidExcessiveClassCoupling", Justification = "This class wires up new dependencies from the host")]
-        private static IAppBuilder UseType<T>(this IAppBuilder builder, params object[] args)
+        private static IAppBuilder UseSignalR<T>(this IAppBuilder builder, params object[] args)
         {
             ConnectionConfiguration configuration = null;
 

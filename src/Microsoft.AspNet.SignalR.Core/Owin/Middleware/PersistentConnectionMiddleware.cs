@@ -14,10 +14,9 @@ namespace Microsoft.AspNet.SignalR.Owin.Middleware
         private readonly ConnectionConfiguration _configuration;
 
         public PersistentConnectionMiddleware(OwinMiddleware next,
-                                              string path,
                                               Type connectionType,
                                               ConnectionConfiguration configuration)
-            : base(next, path, configuration)
+            : base(next, configuration)
         {
             _connectionType = connectionType;
             _configuration = configuration;

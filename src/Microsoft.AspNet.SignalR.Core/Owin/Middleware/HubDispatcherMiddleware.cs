@@ -12,8 +12,8 @@ namespace Microsoft.AspNet.SignalR.Owin.Middleware
     {
         private readonly HubConfiguration _configuration;
 
-        public HubDispatcherMiddleware(OwinMiddleware next, string path, HubConfiguration configuration)
-            : base(next, path, configuration)
+        public HubDispatcherMiddleware(OwinMiddleware next, HubConfiguration configuration)
+            : base(next, configuration)
         {
             _configuration = configuration;
         }

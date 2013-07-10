@@ -87,7 +87,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Common
 
             app.MapHubs(hubConfig);
 
-            app.MapHubs("signalr2/test", new HubConfiguration()
+            app.MapHubs("/signalr2/test", new HubConfiguration()
             {
                 Resolver = resolver
             });
@@ -98,29 +98,29 @@ namespace Microsoft.AspNet.SignalR.Tests.Common
                 Resolver = resolver
             };
 
-            app.MapConnection<MySendingConnection>("multisend", crossDomainConfig);
-            app.MapConnection<AutoEncodedJsonConnection>("autoencodedjson", crossDomainConfig);
+            app.MapConnection<MySendingConnection>("/multisend", crossDomainConfig);
+            app.MapConnection<AutoEncodedJsonConnection>("/autoencodedjson", crossDomainConfig);
 
             var config = new ConnectionConfiguration
             {
                 Resolver = resolver
             };
 
-            app.MapConnection<MyBadConnection>("ErrorsAreFun", config);
-            app.MapConnection<MyGroupEchoConnection>("group-echo", config);
-            app.MapConnection<MyReconnect>("my-reconnect", config);
-            app.MapConnection<ExamineHeadersConnection>("examine-request", config);
-            app.MapConnection<ExamineReconnectPath>("examine-reconnect", config);
-            app.MapConnection<MyGroupConnection>("groups", config);
-            app.MapConnection<MyRejoinGroupsConnection>("rejoin-groups", config);
-            app.MapConnection<FilteredConnection>("filter", config);
-            app.MapConnection<ConnectionThatUsesItems>("items", config);
-            app.MapConnection<SyncErrorConnection>("sync-error", config);
-            app.MapConnection<AddGroupOnConnectedConnection>("add-group", config);
-            app.MapConnection<UnusableProtectedConnection>("protected", config);
+            app.MapConnection<MyBadConnection>("/ErrorsAreFun", config);
+            app.MapConnection<MyGroupEchoConnection>("/group-echo", config);
+            app.MapConnection<MyReconnect>("/my-reconnect", config);
+            app.MapConnection<ExamineHeadersConnection>("/examine-request", config);
+            app.MapConnection<ExamineReconnectPath>("/examine-reconnect", config);
+            app.MapConnection<MyGroupConnection>("/groups", config);
+            app.MapConnection<MyRejoinGroupsConnection>("/rejoin-groups", config);
+            app.MapConnection<FilteredConnection>("/filter", config);
+            app.MapConnection<ConnectionThatUsesItems>("/items", config);
+            app.MapConnection<SyncErrorConnection>("/sync-error", config);
+            app.MapConnection<AddGroupOnConnectedConnection>("/add-group", config);
+            app.MapConnection<UnusableProtectedConnection>("/protected", config);
             app.MapConnection<FallbackToLongPollingConnection>("/fall-back", config);
             app.MapConnection<FallbackToLongPollingConnectionThrows>("/fall-back-throws", config);
-            app.MapConnection<PreserializedJsonConnection>("preserialize", config);
+            app.MapConnection<PreserializedJsonConnection>("/preserialize", config);
 
             // This subpipeline is protected by basic auth
             app.Map("/basicauth", subApp =>
@@ -148,7 +148,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Common
                 Resolver = resolver
             };
 
-            app.MapConnection<StressConnection>("echo", performanceConfig);
+            app.MapConnection<StressConnection>("/echo", performanceConfig);
 
             performanceConfig.Resolver.Register(typeof(IProtectedData), () => new EmptyProtectedData());
         }

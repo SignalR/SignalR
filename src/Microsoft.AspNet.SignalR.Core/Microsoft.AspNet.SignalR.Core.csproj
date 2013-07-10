@@ -218,7 +218,6 @@
     <Compile Include="Owin\Infrastructure\ByteBuffer.cs" />
     <Compile Include="Owin\Infrastructure\OwinConstants.cs" />
     <Compile Include="Owin\Infrastructure\OwinEnvironmentExtensions.cs" />
-    <Compile Include="Owin\Infrastructure\PrefixMatcher.cs" />
     <Compile Include="Owin\Infrastructure\UrlDecoder.cs" />
     <Compile Include="Owin\Infrastructure\WebSocketConstants.cs" />
     <Compile Include="Owin\ReadableStringCollectionWrapper.cs" />
