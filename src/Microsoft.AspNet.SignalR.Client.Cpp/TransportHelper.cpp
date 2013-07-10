@@ -136,7 +136,7 @@ void TransportHelper::ProcessResponse(shared_ptr<Connection> connection, string_
         throw exception("ArgumentNullException: connection");
     }
 
-    // connection.UpdateLastKeepAlive();
+    connection->UpdateLaskKeepAlive();
 
     *timedOut = false;
     *disconnected = false;

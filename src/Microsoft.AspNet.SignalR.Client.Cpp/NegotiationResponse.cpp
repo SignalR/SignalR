@@ -9,14 +9,85 @@ NegotiationResponse::NegotiationResponse()
 
 NegotiationResponse::NegotiationResponse(value raw)
 {
-    mUri = raw[U("Url")].as_string();
-    mConnectionToken = raw[U("ConnectionToken")].as_string();
-    mConnectionId = raw[U("ConnectionId")].as_string();
-    mKeepAliveTimeout = raw[U("KeepAliveTimeout")].as_integer();
-    mDisconnectTimeout = raw[U("DisconnectTimeout")].as_integer();
-    mTryWebSockets = raw[U("TryWebSockets")].as_bool();
-    mProtocolVersion = raw[U("ProtocolVersion")].as_string();
-    mTransportConnectTimeout = raw[U("TransportConnectTimeout")].as_integer();
+    value uri = raw[U("Url")];
+    if (!uri.is_null())
+    {
+        mUri = uri.as_string();
+    }
+    else
+    {
+        mUri = U("");
+    }
+
+    value connectionToken = raw[U("ConnectionToken")];
+    if (!connectionToken.is_null())
+    {
+        mConnectionToken = connectionToken.as_string();
+    }
+    else
+    {
+        mConnectionToken = U("");
+    }
+
+    value connectionId = raw[U("ConnectionId")];
+    if (!connectionId.is_null())
+    {
+        mConnectionId = connectionId.as_string();
+    }
+    else
+    {
+        mConnectionId = U("");
+    }
+
+    value keepAliveTimeout = raw[U("KeepAliveTimeout")];
+    if (!keepAliveTimeout.is_null())
+    {
+        mKeepAliveTimeout = keepAliveTimeout.as_integer();
+    }
+    else
+    {
+        mKeepAliveTimeout = 0;
+    }
+
+    value disconnectTimeout = raw[U("DisconnectTimeout")];
+    if (!disconnectTimeout.is_null())
+    {
+        mDisconnectTimeout = disconnectTimeout.as_integer();
+    }
+    else
+    {
+        mDisconnectTimeout = 0;
+    }
+
+    value tryWebSockets = raw[U("TryWebSockets")];
+    if (!tryWebSockets.is_null())
+    {
+        mTryWebSockets = tryWebSockets.as_bool();
+    }
+    else
+    {
+        mTryWebSockets = false;
+    }
+
+    value protocolVersion = raw[U("ProtocolVersion")];
+    if (!protocolVersion.is_null())
+    {
+        mProtocolVersion = protocolVersion.as_string();
+    }
+    else
+    {
+        mProtocolVersion = U("");
+    }
+
+    value transportConnectTimeout = raw[U("TransportConnectTimeout")];
+    if (!transportConnectTimeout.is_null())
+    {
+        mTransportConnectTimeout = transportConnectTimeout.as_integer();
+    }
+    else
+    {
+        mTransportConnectTimeout = 0;
+    }
 }
 
 NegotiationResponse::~NegotiationResponse()

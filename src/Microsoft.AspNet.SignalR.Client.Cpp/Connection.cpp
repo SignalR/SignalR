@@ -76,6 +76,11 @@ seconds Connection::GetTransportConnectTimeout()
     return mTransportConnectTimeout;
 }
 
+shared_ptr<KeepAliveData> Connection::GetKeepAliveData()
+{
+    return pKeepAliveData;
+}
+
 void Connection::SetMessageId(string_t messageId)
 {
     mMessageId = messageId;
@@ -101,9 +106,14 @@ void Connection::SetGroupsToken(string_t groupsToken)
     mGroupsToken = groupsToken;
 }
 
-void Connection::GetTransportConnectTimeout(seconds transportConnectTimeout)
+void Connection::SetTransportConnectTimeout(seconds transportConnectTimeout)
 {
     mTransportConnectTimeout = transportConnectTimeout;
+}
+
+void Connection::SetKeepAliveData(shared_ptr<KeepAliveData> keepAliveData)
+{
+    pKeepAliveData = keepAliveData;
 }
 
 pplx::task<void> Connection::Start() 
@@ -154,6 +164,12 @@ pplx::task<void> Connection::Negotiate(shared_ptr<IClientTransport> transport)
             mConnectionId = response->mConnectionId;
             mConnectionToken = response->mConnectionToken;
             mTransportConnectTimeout = seconds(mTransportConnectTimeout.count() + response->mTransportConnectTimeout);
+
+            // If we have a keep alive
+            if (response->mKeepAliveTimeout != 0)
+            {
+                pKeepAliveData = shared_ptr<KeepAliveData>(new KeepAliveData(response->mKeepAliveTimeout));
+            }
 
             return StartTransport();
         } 
@@ -346,6 +362,8 @@ void Connection::OnReconnected()
         lock_guard<mutex> lock(mReconnectedLock);
         Reconnected();
     }
+
+    UpdateLaskKeepAlive();
 }
 
 void Connection::OnConnectionSlow()
@@ -354,6 +372,14 @@ void Connection::OnConnectionSlow()
     {
         lock_guard<mutex> lock(mConnectionSlowLock);
         ConnectionSlow();
+    }
+}
+
+void Connection::UpdateLaskKeepAlive()
+{
+    if (pKeepAliveData != nullptr)
+    {
+        pKeepAliveData->SetLastKeepAlive(time(0));
     }
 }
 

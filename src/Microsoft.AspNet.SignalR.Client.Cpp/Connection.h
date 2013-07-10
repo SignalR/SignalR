@@ -17,6 +17,8 @@
 #include "DefaultHttpClient.h"
 #include "HttpRequestWrapper.h"
 #include "ConnectingMessageBuffer.h"
+#include "HeartBeatMonitor.h"
+#include "KeepAliveData.h"
 
 using namespace std;
 using namespace pplx;
@@ -44,13 +46,15 @@ namespace MicrosoftAspNetSignalRClientCpp
         seconds GetTransportConnectTimeout();
         ConnectionState GetState();
         shared_ptr<IClientTransport> GetTransport();
+        shared_ptr<KeepAliveData> GetKeepAliveData();
     
         void SetProtocol(string_t protocol);
         void SetMessageId(string_t groupsToken);
         void SetGroupsToken(string_t groupsToken); 
         void SetConnectionToken(string_t connectionToken);
         void SetConnectionId(string_t connectionId); 
-        void GetTransportConnectTimeout(seconds transportConnectTimeout);
+        void SetTransportConnectTimeout(seconds transportConnectTimeout);
+        void SetKeepAliveData(shared_ptr<KeepAliveData> keepAliveData);
 
         void SetStateChangedCallback(function<void(StateChange)> stateChanged);
         void SetReconnectingCallback(function<void()> reconnecting);
@@ -78,10 +82,11 @@ namespace MicrosoftAspNetSignalRClientCpp
         string_t mUri;
         string_t mQueryString;
         seconds mTransportConnectTimeout;
-        ConnectionState mState;
         recursive_mutex mStateLock;
         mutex mStartLock;
+        ConnectionState mState;
         ConnectingMessageBuffer mConnectingMessageBuffer;
+        shared_ptr<KeepAliveData> pKeepAliveData;
         shared_ptr<IClientTransport> pTransport;
         unique_ptr<pplx::cancellation_token_source> pDisconnectCts;
         pplx::task<void> mConnectTask;
@@ -113,6 +118,7 @@ namespace MicrosoftAspNetSignalRClientCpp
         void OnReconnecting();
         void OnReconnected();
         void OnConnectionSlow();
+        void UpdateLaskKeepAlive();
         void PrepareRequest(shared_ptr<HttpRequestWrapper> request);
 
         // Allowing these classes to access private functions such as ChangeState
