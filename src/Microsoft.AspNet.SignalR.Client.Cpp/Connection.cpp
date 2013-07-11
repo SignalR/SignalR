@@ -145,6 +145,7 @@ pplx::task<void> Connection::Start(shared_ptr<IClientTransport> transport)
         return mConnectTask; 
     }
     
+    mMonitor = HeartBeatMonitor(shared_from_this(), shared_ptr<recursive_mutex>(&mStateLock, [](recursive_mutex *l){}));
     pTransport = transport;
     mConnectTask = Negotiate(transport);
 
@@ -196,6 +197,11 @@ pplx::task<void> Connection::StartTransport()
         {
             lock_guard<recursive_mutex> lock(mStateLock);
             mConnectingMessageBuffer.Drain();
+        }
+
+        if (pKeepAliveData != nullptr && pTransport->SupportsKeepAlive())
+        {
+            mMonitor.Start();
         }
     });
 }

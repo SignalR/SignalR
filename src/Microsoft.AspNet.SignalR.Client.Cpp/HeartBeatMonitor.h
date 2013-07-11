@@ -13,14 +13,20 @@ namespace MicrosoftAspNetSignalRClientCpp
     class HeartBeatMonitor
     {
     public:
-        HeartBeatMonitor(shared_ptr<Connection> connection, shared_ptr<mutex> connectionStateLock);
+        HeartBeatMonitor();
+        HeartBeatMonitor(shared_ptr<Connection> connection, shared_ptr<recursive_mutex> connectionStateLock);
         ~HeartBeatMonitor();
+
+        void Start();
 
     private:
         bool mHasBeenWarned;
         bool mTimedOut;
         pplx::details::timer_t mTimer;
-        shared_ptr<mutex> pConnectionStateLock;
+        shared_ptr<recursive_mutex> pConnectionStateLock;
         shared_ptr<Connection> pConnection;
+
+        static void Beat(void* state);
+        void Beat(int timeElapsed);
     };
 }

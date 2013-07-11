@@ -86,6 +86,7 @@ namespace MicrosoftAspNetSignalRClientCpp
         mutex mStartLock;
         ConnectionState mState;
         ConnectingMessageBuffer mConnectingMessageBuffer;
+        HeartBeatMonitor mMonitor;
         shared_ptr<KeepAliveData> pKeepAliveData;
         shared_ptr<IClientTransport> pTransport;
         unique_ptr<pplx::cancellation_token_source> pDisconnectCts;
@@ -126,5 +127,6 @@ namespace MicrosoftAspNetSignalRClientCpp
         friend class TransportAbortHandler;
         friend class ServerSentEventsTransport;
         friend class TransportHelper;
+        friend class HeartBeatMonitor;
     };
 } // namespace MicrosoftAspNetSignalRClientCpp
