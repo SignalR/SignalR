@@ -1,4 +1,6 @@
-﻿QUnit.module("Hub Proxy Facts");
+﻿
+
+QUnit.module("Hub Proxy Facts");
 
 // All transports will run successfully once #1442 is completed.  At that point we will be able to change this to runWithAllTransports
 testUtilities.runWithTransports(["foreverFrame", "serverSentEvents", "webSockets"], function (transport) {
@@ -15,6 +17,33 @@ testUtilities.runWithTransports(["foreverFrame", "serverSentEvents", "webSockets
             assert.ok(true, "Success! Failed to initiate SignalR connection with bad hub");
             end();
         });
+
+        // Cleanup
+        return function () {
+            connection.stop();
+        };
+    });
+
+    QUnit.asyncTimeoutTest(transport + " hub connection clears all invocation callbacks on stop.", testUtilities.defaultTestTimeout, function (end, assert, testName) {
+        var connection = testUtilities.createHubConnection(end, assert, testName),
+            demo = connection.createHubProxies().demo;
+
+        connection.start({ transport: transport }).done(function () {
+            demo.server.getValue().done(function () {
+                assert.ok(false, "Method invocation returned after connection stopped.");
+                end();
+            });
+        });
+
+        connection.stop();
+
+        assert.equal(connection._.invocationCallbackId, 0, "Callback id should be reset to zero.");
+        assert.equal(typeof(connection._.invocationCallbacks["0"]), "undefined", "Callbacks should be cleared.");
+
+        setTimeout(function () {
+            assert.ok(true);
+            end();
+        }, 6000);
 
         // Cleanup
         return function () {

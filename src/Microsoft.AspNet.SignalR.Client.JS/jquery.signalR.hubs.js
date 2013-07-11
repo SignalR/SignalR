@@ -7,9 +7,7 @@
     "use strict";
 
     // we use a global id for tracking callbacks so the server doesn't have to send extra info like hub name
-    var callbackId = 0,
-        callbacks = {},
-        eventNamespace = ".hubProxy";
+    var eventNamespace = ".hubProxy";
 
     function makeEventName(event) {
         return event + eventNamespace;
@@ -133,9 +131,10 @@
             /// <param name="methodName" type="String">The name of the server hub method.</param>
 
             var self = this,
+                connection = self.connection,
                 args = $.makeArray(arguments).slice(1),
                 argValues = map(args, getArgValue),
-                data = { H: self.hubName, M: methodName, A: argValues, I: callbackId },
+                data = { H: self.hubName, M: methodName, A: argValues, I: connection._.invocationCallbackId },
                 d = $.Deferred(),
                 callback = function (minResult) {
                     var result = self._maximizeHubResponse(minResult);
@@ -146,7 +145,7 @@
                     if (result.Error) {
                         // Server hub method threw an exception, log it & reject the deferred
                         if (result.StackTrace) {
-                            self.connection.log(result.Error + "\n" + result.StackTrace);
+                            connection.log(result.Error + "\n" + result.StackTrace);
                         }
                         d.rejectWith(self, [result.Error]);
                     } else {
@@ -155,14 +154,14 @@
                     }
                 };
 
-            callbacks[callbackId.toString()] = { scope: self, method: callback };
-            callbackId += 1;
+            connection._.invocationCallbacks[connection._.invocationCallbackId.toString()] = { scope: self, method: callback };
+            connection._.invocationCallbackId += 1;
 
             if (!$.isEmptyObject(self.state)) {
                 data.S = self.state;
             }
             
-            self.connection.send(window.JSON.stringify(data));
+            connection.send(window.JSON.stringify(data));
 
             return d.promise();
         },
@@ -203,10 +202,10 @@
 
     hubConnection.fn.init = function (url, options) {
         var settings = {
-            qs: null,
-            logging: false,
-            useDefaultPath: true
-        },
+                qs: null,
+                logging: false,
+                useDefaultPath: true
+            },
             connection = this;
 
         $.extend(settings, options);
@@ -216,6 +215,9 @@
 
         // Object to store hub proxies for this connection
         connection.proxies = {};
+
+        connection._.invocationCallbackId = 0;
+        connection._.invocationCallbacks = {};
 
         // Wire up the received handler
         connection.received(function (minData) {
@@ -227,11 +229,11 @@
             if (typeof (minData.I) !== "undefined") {
                 // We received the return value from a server method invocation, look up callback by id and call it
                 dataCallbackId = minData.I.toString();
-                callback = callbacks[dataCallbackId];
+                callback = connection._.invocationCallbacks[dataCallbackId];
                 if (callback) {
                     // Delete the callback from the proxy
-                    callbacks[dataCallbackId] = null;
-                    delete callbacks[dataCallbackId];
+                    connection._.invocationCallbacks[dataCallbackId] = null;
+                    delete connection._.invocationCallbacks[dataCallbackId];
 
                     // Invoke the callback
                     callback.method.call(callback.scope, minData);
@@ -253,6 +255,11 @@
                 $.extend(proxy.state, data.State);
                 $(proxy).triggerHandler(makeEventName(eventName), [data.Args]);
             }
+        });
+
+        connection.disconnected(function () {
+            connection._.invocationCallbackId = 0;
+            connection._.invocationCallbacks = {};
         });
     };
 
