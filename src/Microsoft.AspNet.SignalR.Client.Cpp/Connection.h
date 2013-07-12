@@ -3,7 +3,8 @@
 //  I use:
 //
 //  m for members
-//  p for member pointers/smart pointers
+//  p for member shared_ptr or unique_ptr
+//  wp for member weak_ptr
 //  c for const/readonly
 
 #pragma once
@@ -47,6 +48,7 @@ namespace MicrosoftAspNetSignalRClientCpp
         ConnectionState GetState();
         shared_ptr<IClientTransport> GetTransport();
         shared_ptr<KeepAliveData> GetKeepAliveData();
+        ostream& GetTraceWriter(); 
     
         void SetProtocol(string_t protocol);
         void SetMessageId(string_t groupsToken);
@@ -55,6 +57,7 @@ namespace MicrosoftAspNetSignalRClientCpp
         void SetConnectionId(string_t connectionId); 
         void SetTransportConnectTimeout(seconds transportConnectTimeout);
         void SetKeepAliveData(shared_ptr<KeepAliveData> keepAliveData);
+        void SetTraceWriter(ostream& traceWriter);
 
         void SetStateChangedCallback(function<void(StateChange)> stateChanged);
         void SetReconnectingCallback(function<void()> reconnecting);
@@ -84,6 +87,7 @@ namespace MicrosoftAspNetSignalRClientCpp
         seconds mTransportConnectTimeout;
         recursive_mutex mStateLock;
         mutex mStartLock;
+        ostream mTraceWriter;
         ConnectionState mState;
         ConnectingMessageBuffer mConnectingMessageBuffer;
         HeartBeatMonitor mMonitor;

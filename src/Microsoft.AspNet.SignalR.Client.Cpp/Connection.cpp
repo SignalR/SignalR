@@ -5,7 +5,7 @@
 namespace MicrosoftAspNetSignalRClientCpp
 {
 
-Connection::Connection(string_t uri) : cDefaultAbortTimeout(30)
+Connection::Connection(string_t uri) : cDefaultAbortTimeout(30), mTraceWriter(nullptr)
 {
     if (uri.empty())
     {
@@ -81,6 +81,11 @@ shared_ptr<KeepAliveData> Connection::GetKeepAliveData()
     return pKeepAliveData;
 }
 
+ostream& Connection::GetTraceWriter()
+{
+    return mTraceWriter;
+}
+
 void Connection::SetMessageId(string_t messageId)
 {
     mMessageId = messageId;
@@ -114,6 +119,11 @@ void Connection::SetTransportConnectTimeout(seconds transportConnectTimeout)
 void Connection::SetKeepAliveData(shared_ptr<KeepAliveData> keepAliveData)
 {
     pKeepAliveData = keepAliveData;
+}
+
+void Connection::SetTraceWriter(ostream& traceWriter)
+{
+    mTraceWriter.rdbuf(traceWriter.rdbuf());
 }
 
 pplx::task<void> Connection::Start() 

@@ -24,7 +24,7 @@ namespace MicrosoftAspNetSignalRClientCpp
         bool mTimedOut;
         pplx::details::timer_t mTimer;
         shared_ptr<recursive_mutex> pConnectionStateLock;
-        shared_ptr<Connection> pConnection;
+        weak_ptr<Connection> wpConnection;
 
         static void Beat(void* state);
         void Beat(int timeElapsed);
