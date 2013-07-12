@@ -880,7 +880,7 @@
                         // so just hack around it on the client for now.
                         return;
                     }
-                    $(connection).triggerHandler(events.onError, [errData]);
+                    $(connection).triggerHandler(events.onError, [errData, data]);
                 }
             });
         },
@@ -1837,6 +1837,16 @@
         return false;
     }
 
+    function clearInvocationCallbacks(connection, error) {
+        var callback;
+        for (var callbackId in connection._.invocationCallbacks) {
+            callback = connection._.invocationCallbacks[callbackId];
+            callback.method.call(callback.scope, { E: error });
+        }
+        connection._.invocationCallbackId = 0;
+        connection._.invocationCallbacks = {};
+    }
+
     // hubProxy
     function hubProxy(hubConnection, hubName) {
         /// <summary>
@@ -2053,9 +2063,50 @@
             }
         });
 
+        connection.error(function (errData, origData) {
+            var data, callbackId, callback;
+
+            if (connection.transport && connection.transport.name === "webSockets") {
+                // WebSockets connections have all callbacks removed on reconnect instead
+                // as WebSockets sends are fire & forget
+                return;
+            }
+
+            if (!origData) {
+                // No original data passed so this is not a send error
+                return;
+            }
+
+            try {
+                data = window.JSON.parse(origData);
+                if (!data.I) {
+                    // The original data doesn't have a callback ID so not a send error
+                    return;
+                }
+            } catch (e) {
+                // The original data is not a JSON payload so this is not a send error
+                return;
+            }
+            
+            callbackId = data.I;
+            callback = connection._.invocationCallbacks[callbackId];
+
+            // Invoke the callback with an error to reject the promise
+            callback.method.call(callback.scope, { E: errData });
+
+            // Delete the callback
+            connection._.invocationCallbacks[callbackId] = null;
+            delete connection._.invocationCallbacks[callbackId];
+        });
+
+        connection.reconnecting(function () {
+            if (connection.transport && connection.transport.name === "webSockets") {
+                clearInvocationCallbacks(connection, "Connectiong started reconnecting before invocation result was received.");
+            }
+        });
+
         connection.disconnected(function () {
-            connection._.invocationCallbackId = 0;
-            connection._.invocationCallbacks = {};
+            clearInvocationCallbacks(connection, "Connection was disconnected before invocation result was received.");
         });
     };
 
