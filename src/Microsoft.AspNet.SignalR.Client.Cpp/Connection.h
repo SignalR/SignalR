@@ -20,6 +20,7 @@
 #include "ConnectingMessageBuffer.h"
 #include "HeartBeatMonitor.h"
 #include "KeepAliveData.h"
+#include "TraceLevels.h"
 
 using namespace std;
 using namespace pplx;
@@ -48,7 +49,8 @@ namespace MicrosoftAspNetSignalRClientCpp
         ConnectionState GetState();
         shared_ptr<IClientTransport> GetTransport();
         shared_ptr<KeepAliveData> GetKeepAliveData();
-        ostream& GetTraceWriter(); 
+        ostream& GetTraceWriter();
+        TraceLevel GetTraceLevel();
     
         void SetProtocol(string_t protocol);
         void SetMessageId(string_t groupsToken);
@@ -58,6 +60,7 @@ namespace MicrosoftAspNetSignalRClientCpp
         void SetTransportConnectTimeout(seconds transportConnectTimeout);
         void SetKeepAliveData(shared_ptr<KeepAliveData> keepAliveData);
         void SetTraceWriter(ostream& traceWriter);
+        void SetTraceLevel(TraceLevel traceLevel);
 
         void SetStateChangedCallback(function<void(StateChange)> stateChanged);
         void SetReconnectingCallback(function<void()> reconnecting);
@@ -75,6 +78,7 @@ namespace MicrosoftAspNetSignalRClientCpp
         pplx::task<void> Send(value::field_map object);
         pplx::task<void> Send(string_t data);
         bool EnsureReconnecting();
+        void Trace(TraceLevel flag, string_t message);
 
     private:
         string_t mProtocol; // temporarily stored as a string
@@ -87,7 +91,9 @@ namespace MicrosoftAspNetSignalRClientCpp
         seconds mTransportConnectTimeout;
         recursive_mutex mStateLock;
         mutex mStartLock;
+        mutex mTraceLock;
         ostream mTraceWriter;
+        TraceLevel mTraceLevel;
         ConnectionState mState;
         ConnectingMessageBuffer mConnectingMessageBuffer;
         HeartBeatMonitor mMonitor;

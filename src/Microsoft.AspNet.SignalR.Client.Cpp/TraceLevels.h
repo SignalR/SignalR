@@ -13,6 +13,7 @@ namespace MicrosoftAspNetSignalRClientCpp
 
     class TraceLevelHelper
     {
+    public:
         static bool HasFlag(TraceLevel level, TraceLevel flag)
         {
             return level & flag;

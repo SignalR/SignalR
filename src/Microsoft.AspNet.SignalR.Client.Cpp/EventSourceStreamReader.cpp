@@ -3,7 +3,7 @@
 namespace MicrosoftAspNetSignalRClientCpp
 {
 
-EventSourceStreamReader::EventSourceStreamReader(Concurrency::streams::basic_istream<uint8_t> stream)
+EventSourceStreamReader::EventSourceStreamReader(shared_ptr<Connection> connection, Concurrency::streams::basic_istream<uint8_t> stream)
     : AsyncStreamReader(stream)
 {
     pBuffer = unique_ptr<ChunkBuffer>(new ChunkBuffer());
@@ -38,6 +38,13 @@ void EventSourceStreamReader::ProcessBuffer(shared_ptr<char> readBuffer)
             if (!SseEvent::TryParse(line, &sseEvent))
             {
                 continue;
+            }
+
+            if (auto pConnection = wpConnection.lock())
+            {
+                wstringstream ss;
+                ss << "SSE: OnMessage(" << sseEvent->ToString() << ")";
+                pConnection->Trace(TraceLevel::Messages, ss.str());
             }
 
             OnMessage(sseEvent);

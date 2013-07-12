@@ -45,7 +45,7 @@ static void RunStreamingSample()
 
         connection->SetStateChangedCallback([](StateChange stateChange)
         {
-            wcout << stateChange.GetOldStateName() << " => " << stateChange.GetNewStateName() << endl;
+            wcout << ConnectionStateString::ToString(stateChange.GetOldState()) << " => " << ConnectionStateString::ToString(stateChange.GetNewState()) << endl;
         });
 
         connection->SetErrorCallback([](exception& ex)
@@ -69,6 +69,9 @@ static void RunStreamingSample()
             connection->Stop();
             return;
         }
+
+        connection->SetTraceLevel(TraceLevel::All);
+        connection->SetTraceWriter(cout);
 
         string_t line;
         getline(wcin, line);

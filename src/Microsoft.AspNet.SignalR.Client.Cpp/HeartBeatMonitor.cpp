@@ -52,7 +52,7 @@ void HeartBeatMonitor::Beat(int timeElapsed)
             {
                 if (!mTimedOut)
                 {
-                    //trace
+                    pConnection->Trace(TraceLevel::Events, U("Connection Timed-out : Transport Lost Connection"));
                     mTimedOut = true;
                     pConnection->GetTransport()->LostConnection(pConnection);
                 }
@@ -61,7 +61,7 @@ void HeartBeatMonitor::Beat(int timeElapsed)
             {
                 if (!mHasBeenWarned)
                 {
-                    //trace
+                    pConnection->Trace(TraceLevel::Events, U("Connection Timeout Warning : Notifying user"));
                     mHasBeenWarned = true;
                     pConnection->OnConnectionSlow();
                 }

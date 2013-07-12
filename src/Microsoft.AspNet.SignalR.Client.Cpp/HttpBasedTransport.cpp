@@ -70,8 +70,6 @@ pplx::task<void> HttpBasedTransport::Send(shared_ptr<Connection> connection, str
         connection->PrepareRequest(request);
     }, encodedData).then([connection](pplx::task<http_response> sendTask)
     {
-
-
         http_response response;
         exception ex;
         TaskStatus status = TaskAsyncHelper::RunTaskToCompletion<http_response>(sendTask, response, ex);
@@ -87,7 +85,15 @@ pplx::task<void> HttpBasedTransport::Send(shared_ptr<Connection> connection, str
                     string_t message;
                     message.assign(text.begin(), text.end());
 
-                    connection->OnReceived(message);
+
+                    wstringstream ss;
+                    ss << "OnMessage(" << message << ")";
+                    connection->Trace(TraceLevel::StateChanges, ss.str());
+                    
+                    if (!message.empty())
+                    {
+                        connection->OnReceived(message);
+                    }
                 });
             }
         } 

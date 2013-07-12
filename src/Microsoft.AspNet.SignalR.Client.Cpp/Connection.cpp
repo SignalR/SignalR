@@ -86,6 +86,11 @@ ostream& Connection::GetTraceWriter()
     return mTraceWriter;
 }
 
+TraceLevel Connection::GetTraceLevel()
+{
+    return mTraceLevel;
+}
+
 void Connection::SetMessageId(string_t messageId)
 {
     mMessageId = messageId;
@@ -124,6 +129,11 @@ void Connection::SetKeepAliveData(shared_ptr<KeepAliveData> keepAliveData)
 void Connection::SetTraceWriter(ostream& traceWriter)
 {
     mTraceWriter.rdbuf(traceWriter.rdbuf());
+}
+
+void Connection::SetTraceLevel(TraceLevel traceLevel)
+{
+    mTraceLevel = traceLevel;
 }
 
 pplx::task<void> Connection::Start() 
@@ -245,6 +255,10 @@ bool Connection::ChangeState(ConnectionState oldState, ConnectionState newState)
 
     if(mState == oldState)
     {
+        wstringstream ss;
+        ss << "ChangeState(" << ConnectionStateString::ToString(oldState) << ", " << ConnectionStateString::ToString(newState) << ")";
+        Trace(TraceLevel::StateChanges, ss.str());
+
         SetState(newState);
         return true;
     }
@@ -283,7 +297,9 @@ void Connection::Stop(seconds timeout)
         }
         catch (exception& ex)
         {
-            //Trace
+            wstringstream ss;
+            ss << "Error: " << ex.what();
+            Trace(TraceLevel::StateChanges, ss.str());
         }
     }
 
@@ -292,6 +308,8 @@ void Connection::Stop(seconds timeout)
 
         if (mState != ConnectionState::Disconnected)
         {
+            Trace(TraceLevel::StateChanges, U("Stop"));
+
             // If we've connected then instantly disconnected we may have data in the incomingMessageBuffer
             // Therefore we need to clear it incase we start the connection again. Also reset the buffer to 
             // avoid leaks due to circular referencing
@@ -312,7 +330,11 @@ void Connection::Disconnect()
     {
         SetState(ConnectionState::Disconnected);
 
+        Trace(TraceLevel::StateChanges, U("Disconnected"));
+
         pDisconnectCts->cancel();
+
+        Trace(TraceLevel::StateChanges, U("Closed"));
 
         mConnectionId.clear();
         mConnectionToken.clear();
@@ -329,6 +351,10 @@ void Connection::Disconnect()
 
 void Connection::OnError(exception& ex)
 {
+    wstringstream ss;
+    ss << "OnError(" << ex.what() << ")";
+    Trace(TraceLevel::Events, ss.str());
+
     if (Error != nullptr)
     {
         lock_guard<mutex> lock(mErrorLock);
@@ -384,6 +410,8 @@ void Connection::OnReconnected()
 
 void Connection::OnConnectionSlow()
 {
+    Trace(TraceLevel::Events, U("OnConnectionSlow"));
+
     if (ConnectionSlow != nullptr)
     {
         lock_guard<mutex> lock(mConnectionSlowLock);
@@ -402,6 +430,29 @@ void Connection::UpdateLaskKeepAlive()
 void Connection::PrepareRequest(shared_ptr<HttpRequestWrapper> request)
 {
 
+}
+
+void Connection::Trace(TraceLevel flag,  string_t message)
+{
+    lock_guard<mutex> lock(mTraceLock);
+
+    if (TraceLevelHelper::HasFlag(mTraceLevel, flag))
+    {
+        time_t now = time(0);
+        struct tm utcTime;
+        gmtime_s(&utcTime, &now); // this only works in visual studios, should use gmtime for linux
+
+        wcout << utcTime.tm_hour << ":" << utcTime.tm_min << ":" << utcTime.tm_sec << " - ";
+        if (mConnectionId.empty())
+        {
+            wcout << "null";
+        }
+        else
+        {
+            wcout << mConnectionId;
+        }
+        wcout << " - " << message << endl;
+    }
 }
 
 void Connection::SetState(ConnectionState newState)

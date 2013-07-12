@@ -13,12 +13,13 @@ namespace MicrosoftAspNetSignalRClientCpp
         public AsyncStreamReader
     {
     public:
-        EventSourceStreamReader(Concurrency::streams::basic_istream<uint8_t> stream);
+        EventSourceStreamReader(shared_ptr<Connection> connection, Concurrency::streams::basic_istream<uint8_t> stream);
         ~EventSourceStreamReader();
 
         void SetMessageCallback(function<void(shared_ptr<SseEvent> sseEvent)> message);
 
     private:
+        weak_ptr<Connection> wpConnection;
         unique_ptr<ChunkBuffer> pBuffer;
         mutex mMessageLock;
         function<void(shared_ptr<SseEvent> sseEvent)> Message;

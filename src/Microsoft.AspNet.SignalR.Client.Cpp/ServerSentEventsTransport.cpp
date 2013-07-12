@@ -75,6 +75,10 @@ void ServerSentEventsTransport::OpenConnection(shared_ptr<Connection> connection
 
     string_t uri = connection->GetUri() + (reconnecting ? U("reconnect") : U("connect")) + GetReceiveQueryString(connection, data);
 
+    wstringstream ss;
+    ss << "SSE: GET " << uri;
+    connection->Trace(TraceLevel::Events, ss.str());
+
     GetHttpClient()->Get(uri, [this, connection](shared_ptr<HttpRequestWrapper> request)
     {
         pRequest = request;
@@ -115,7 +119,7 @@ void ServerSentEventsTransport::OpenConnection(shared_ptr<Connection> connection
         }
         else
         {
-            pEventSource = unique_ptr<EventSourceStreamReader>(new EventSourceStreamReader(response.body()));
+            pEventSource = unique_ptr<EventSourceStreamReader>(new EventSourceStreamReader(connection, response.body()));
 
             mStop = false;
             bool stop = false;

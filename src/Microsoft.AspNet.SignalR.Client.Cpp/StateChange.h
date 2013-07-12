@@ -15,12 +15,9 @@ namespace MicrosoftAspNetSignalRClientCpp
         ~StateChange(void);
     
         ConnectionState GetOldState();
-        string_t GetOldStateName(); // for tracing purposes
         ConnectionState GetNewState();
-        string_t GetNewStateName(); // for tracing purposes
 
     private:
-        string_t StateName(ConnectionState state);
         ConnectionState mOldState;
         ConnectionState mNewState;
     };
