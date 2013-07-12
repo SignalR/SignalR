@@ -1,6 +1,4 @@
-﻿
-
-QUnit.module("Hub Proxy Facts");
+﻿QUnit.module("Hub Proxy Facts");
 
 // All transports will run successfully once #1442 is completed.  At that point we will be able to change this to runWithAllTransports
 testUtilities.runWithTransports(["foreverFrame", "serverSentEvents", "webSockets"], function (transport) {
@@ -33,9 +31,9 @@ testUtilities.runWithTransports(["foreverFrame", "serverSentEvents", "webSockets
                 assert.ok(false, "Method invocation returned after connection stopped.");
                 end();
             });
-        });
 
-        connection.stop();
+            connection.stop();
+        });
 
         assert.equal(connection._.invocationCallbackId, 0, "Callback id should be reset to zero.");
         assert.equal(typeof(connection._.invocationCallbacks["0"]), "undefined", "Callbacks should be cleared.");
