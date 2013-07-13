@@ -305,7 +305,7 @@
 
         connection.reconnecting(function () {
             if (connection.transport && connection.transport.name === "webSockets") {
-                clearInvocationCallbacks(connection, "Connectiong started reconnecting before invocation result was received.");
+                clearInvocationCallbacks(connection, "Connection started reconnecting before invocation result was received.");
             }
         });
 
