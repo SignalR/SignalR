@@ -15,8 +15,7 @@
     <tags>Microsoft AspNet SignalR AspNetSignalR SelfHost</tags>
     <dependencies>
       <dependency id="Microsoft.AspNet.SignalR.Core" version="__SIGNALR_PACKAGE_VERSION__" />
-      <dependency id="Microsoft.Owin.Host.HttpListener" version="__KATANA_PACKAGE_VERSION__" />
-      <dependency id="Microsoft.Owin.Hosting" version="__KATANA_PACKAGE_VERSION__" />
+      <dependency id="Microsoft.Owin.SelfHost" version="__KATANA_PACKAGE_VERSION__" />
     </dependencies>
     <frameworkAssemblies>
       <frameworkAssembly assemblyName="System" targetFramework="net40" />
