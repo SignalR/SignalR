@@ -7,6 +7,7 @@ EventSourceStreamReader::EventSourceStreamReader(shared_ptr<Connection> connecti
     : AsyncStreamReader(stream)
 {
     pBuffer = unique_ptr<ChunkBuffer>(new ChunkBuffer());
+    wpConnection = connection;
 
     SetDataCallback([this](shared_ptr<char> readBuffer){
         ProcessBuffer(readBuffer);

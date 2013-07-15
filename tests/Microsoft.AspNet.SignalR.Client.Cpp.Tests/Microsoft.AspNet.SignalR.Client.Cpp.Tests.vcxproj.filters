@@ -27,5 +27,8 @@
     <ClCompile Include="ExceptionHelperTests.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="EventSourceStreamReaderTests.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

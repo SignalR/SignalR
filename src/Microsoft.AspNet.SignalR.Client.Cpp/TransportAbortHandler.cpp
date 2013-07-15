@@ -57,8 +57,7 @@ void TransportAbortHandler::Abort(shared_ptr<Connection> connection, utility::se
                 }
             });
 
-            size_t waitResult;
-            if ((waitResult = pAbortResetEvent->wait(10000)) == COOPERATIVE_WAIT_TIMEOUT)
+            if (pAbortResetEvent->wait(10000) == COOPERATIVE_WAIT_TIMEOUT)
             {
                 connection->Trace(TraceLevel::Events, U("Abort never fired"));
             }

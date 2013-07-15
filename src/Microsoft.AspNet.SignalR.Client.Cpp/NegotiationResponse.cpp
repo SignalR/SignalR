@@ -86,7 +86,7 @@ NegotiationResponse::NegotiationResponse(value raw)
     }
     else
     {
-        mTransportConnectTimeout = 0;
+        mTransportConnectTimeout = 5;
     }
 }
 
