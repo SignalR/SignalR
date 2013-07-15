@@ -43,7 +43,7 @@ namespace Microsoft.AspNet.SignalR.Client.iOS.Samples
 			var traceWriter = new TextViewWriter(SynchronizationContext.Current, textView);
 
 			var client = new CommonClient(traceWriter);
-			client.RunAsync("http://signalr01.cloudapp.net/");
+			client.RunAsync("http://signalr-test1.cloudapp.net:82/");
 
 			return true;
 		}
