@@ -90,6 +90,7 @@
                         }
                         catch (error) {
                             onFail(error.message);
+                            connection.stop();
                             return;
                         }
 
@@ -220,6 +221,7 @@
                             }
                             catch (error) {
                                 onFail(error, connection);
+                                connection.stop();
                                 return;
                             }
 
