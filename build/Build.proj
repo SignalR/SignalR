@@ -162,7 +162,7 @@
 
   <ItemGroup>
     <UnitTestProjects Include="$(ProjectRoot)\tests\Microsoft.AspNet.SignalR.Tests\Microsoft.AspNet.SignalR.Tests.csproj"></UnitTestProjects>
-    <UnitTestProjects Include="$(ProjectRoot)\tests\Microsoft.AspNet.SignalR.Client.CSharp.Tests\Microsoft.AspNet.SignalR.Client.CSharp.Tests.csproj"></UnitTestProjects>
+    <UnitTestProjects Include="$(ProjectRoot)\tests\Microsoft.AspNet.SignalR.Client.Tests\Microsoft.AspNet.SignalR.Client.Tests.csproj"></UnitTestProjects>
     <UnitTestProjects Include="$(ProjectRoot)\tests\Microsoft.AspNet.SignalR.SqlServer.Tests\Microsoft.AspNet.SignalR.SqlServer.Tests.csproj"></UnitTestProjects>
   </ItemGroup>
 
@@ -259,8 +259,8 @@
            Xml="$(TestResultsPath)\Microsoft.AspNet.SignalR.Tests.XunitResults.xml"
            Verbose="true" />
 
-    <xunit Assembly="$(ProjectArtifactsDir)\Microsoft.AspNet.SignalR.Client.CSharp.Tests\Microsoft.AspNet.SignalR.Client.CSharp.Tests.dll"
-       Xml="$(TestResultsPath)\Microsoft.AspNet.SignalR.Client.CSharp.Tests.XunitResults.xml"
+    <xunit Assembly="$(ProjectArtifactsDir)\Microsoft.AspNet.SignalR.Client.Tests\Microsoft.AspNet.SignalR.Client.Tests.dll"
+       Xml="$(TestResultsPath)\Microsoft.AspNet.SignalR.Client.Tests.XunitResults.xml"
        Verbose="true" />
     
     <xunit Assembly="$(ProjectArtifactsDir)\Microsoft.AspNet.SignalR.SqlServer.Tests\Microsoft.AspNet.SignalR.SqlServer.Tests.dll"

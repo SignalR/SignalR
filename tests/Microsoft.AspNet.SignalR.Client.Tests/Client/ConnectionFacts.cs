@@ -13,20 +13,16 @@ using Moq;
 using Xunit;
 using Xunit.Extensions;
 
-namespace Microsoft.AspNet.SignalR.CSharp.Tests
+namespace Microsoft.AspNet.SignalR.Client.Tests
 {
     public class ConnectionFacts : IDisposable
     {
         [Theory]
-        [InlineData("?clientProtocol=","")]
+        [InlineData("?clientProtocol=", "")]
         [InlineData("&clientProtocol=", "foo=bar")]
         public void NegotiatePassesClientProtocolCorrectly(string clientProtocolParameter, string connectionQueryString)
         {
             var connection = new Client.Connection("http://test", connectionQueryString);
-
-            Console.BackgroundColor = ConsoleColor.DarkCyan;
-            Console.WriteLine("*********************************");
-            Console.ResetColor();
 
             try
             {
@@ -35,7 +31,7 @@ namespace Microsoft.AspNet.SignalR.CSharp.Tests
                     Assert.True(url.Contains(clientProtocolParameter + connection.Protocol.ToString()));
                 }))).Wait();
             }
-            catch 
+            catch
             {
                 // Swallow exceptions because the custom http client that we pass will throw unimplemented exceptions.
             }

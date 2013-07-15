@@ -6,5 +6,5 @@ using System.Runtime.CompilerServices;
 [assembly: AssemblyTitle("Microsoft.AspNet.SignalR.Client45")]
 [assembly: AssemblyDescription(".NET client for SignalR")]
 
-[assembly: InternalsVisibleTo("Microsoft.AspNet.SignalR.Client.CSharp.Tests")]
+[assembly: InternalsVisibleTo("Microsoft.AspNet.SignalR.Client.Tests")]
 
