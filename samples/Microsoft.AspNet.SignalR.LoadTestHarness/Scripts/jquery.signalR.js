@@ -880,7 +880,7 @@
                         // so just hack around it on the client for now.
                         return;
                     }
-                    $(connection).triggerHandler(events.onError, [errData]);
+                    $(connection).triggerHandler(events.onError, [errData, data]);
                 }
             });
         },
@@ -1803,9 +1803,7 @@
     "use strict";
 
     // we use a global id for tracking callbacks so the server doesn't have to send extra info like hub name
-    var callbackId = 0,
-        callbacks = {},
-        eventNamespace = ".hubProxy";
+    var eventNamespace = ".hubProxy";
 
     function makeEventName(event) {
         return event + eventNamespace;
@@ -1837,6 +1835,16 @@
         }
 
         return false;
+    }
+
+    function clearInvocationCallbacks(connection, error) {
+        var callback;
+        for (var callbackId in connection._.invocationCallbacks) {
+            callback = connection._.invocationCallbacks[callbackId];
+            callback.method.call(callback.scope, { E: error });
+        }
+        connection._.invocationCallbackId = 0;
+        connection._.invocationCallbacks = {};
     }
 
     // hubProxy
@@ -1929,9 +1937,10 @@
             /// <param name="methodName" type="String">The name of the server hub method.</param>
 
             var self = this,
+                connection = self.connection,
                 args = $.makeArray(arguments).slice(1),
                 argValues = map(args, getArgValue),
-                data = { H: self.hubName, M: methodName, A: argValues, I: callbackId },
+                data = { H: self.hubName, M: methodName, A: argValues, I: connection._.invocationCallbackId },
                 d = $.Deferred(),
                 callback = function (minResult) {
                     var result = self._maximizeHubResponse(minResult);
@@ -1942,7 +1951,7 @@
                     if (result.Error) {
                         // Server hub method threw an exception, log it & reject the deferred
                         if (result.StackTrace) {
-                            self.connection.log(result.Error + "\n" + result.StackTrace);
+                            connection.log(result.Error + "\n" + result.StackTrace);
                         }
                         d.rejectWith(self, [result.Error]);
                     } else {
@@ -1951,14 +1960,14 @@
                     }
                 };
 
-            callbacks[callbackId.toString()] = { scope: self, method: callback };
-            callbackId += 1;
+            connection._.invocationCallbacks[connection._.invocationCallbackId.toString()] = { scope: self, method: callback };
+            connection._.invocationCallbackId += 1;
 
             if (!$.isEmptyObject(self.state)) {
                 data.S = self.state;
             }
             
-            self.connection.send(window.JSON.stringify(data));
+            connection.send(window.JSON.stringify(data));
 
             return d.promise();
         },
@@ -1999,10 +2008,10 @@
 
     hubConnection.fn.init = function (url, options) {
         var settings = {
-            qs: null,
-            logging: false,
-            useDefaultPath: true
-        },
+                qs: null,
+                logging: false,
+                useDefaultPath: true
+            },
             connection = this;
 
         $.extend(settings, options);
@@ -2012,6 +2021,9 @@
 
         // Object to store hub proxies for this connection
         connection.proxies = {};
+
+        connection._.invocationCallbackId = 0;
+        connection._.invocationCallbacks = {};
 
         // Wire up the received handler
         connection.received(function (minData) {
@@ -2023,11 +2035,11 @@
             if (typeof (minData.I) !== "undefined") {
                 // We received the return value from a server method invocation, look up callback by id and call it
                 dataCallbackId = minData.I.toString();
-                callback = callbacks[dataCallbackId];
+                callback = connection._.invocationCallbacks[dataCallbackId];
                 if (callback) {
                     // Delete the callback from the proxy
-                    callbacks[dataCallbackId] = null;
-                    delete callbacks[dataCallbackId];
+                    connection._.invocationCallbacks[dataCallbackId] = null;
+                    delete connection._.invocationCallbacks[dataCallbackId];
 
                     // Invoke the callback
                     callback.method.call(callback.scope, minData);
@@ -2049,6 +2061,52 @@
                 $.extend(proxy.state, data.State);
                 $(proxy).triggerHandler(makeEventName(eventName), [data.Args]);
             }
+        });
+
+        connection.error(function (errData, origData) {
+            var data, callbackId, callback;
+
+            if (connection.transport && connection.transport.name === "webSockets") {
+                // WebSockets connections have all callbacks removed on reconnect instead
+                // as WebSockets sends are fire & forget
+                return;
+            }
+
+            if (!origData) {
+                // No original data passed so this is not a send error
+                return;
+            }
+
+            try {
+                data = window.JSON.parse(origData);
+                if (!data.I) {
+                    // The original data doesn't have a callback ID so not a send error
+                    return;
+                }
+            } catch (e) {
+                // The original data is not a JSON payload so this is not a send error
+                return;
+            }
+            
+            callbackId = data.I;
+            callback = connection._.invocationCallbacks[callbackId];
+
+            // Invoke the callback with an error to reject the promise
+            callback.method.call(callback.scope, { E: errData });
+
+            // Delete the callback
+            connection._.invocationCallbacks[callbackId] = null;
+            delete connection._.invocationCallbacks[callbackId];
+        });
+
+        connection.reconnecting(function () {
+            if (connection.transport && connection.transport.name === "webSockets") {
+                clearInvocationCallbacks(connection, "Connection started reconnecting before invocation result was received.");
+            }
+        });
+
+        connection.disconnected(function () {
+            clearInvocationCallbacks(connection, "Connection was disconnected before invocation result was received.");
         });
     };
 
