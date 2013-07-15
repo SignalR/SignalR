@@ -119,16 +119,18 @@
                                     // reconnected quickly
                                     reconnectErrors = 0;
 
-                                    // If there's currently a timeout to trigger reconnect, fire it now before processing messages
-                                    if (privateData.reconnectTimeoutId !== null) {
-                                        fireReconnected();
-                                    }
-
                                     try {
                                         minData = connection._parseResponse(result);
                                     }
                                     catch (error) {
                                         $(connection).triggerHandler(events.onError, ["SignalR: failed at parsing response: " + result + ".  With error: " + error.message]);
+                                        connection.stop();
+                                        return;
+                                    }
+
+                                    // If there's currently a timeout to trigger reconnect, fire it now before processing messages
+                                    if (privateData.reconnectTimeoutId !== null) {
+                                        fireReconnected();
                                     }
 
                                     fireConnect();

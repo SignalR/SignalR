@@ -95,6 +95,7 @@
                         }
                         catch (error) {
                             deferral.reject("Failed to parse ping server response, stopping the connection: " + result);
+                            connection.stop();
                             return;
                         }
 
@@ -224,6 +225,7 @@
                             }
                             catch (error) {
                                 onFail(error, connection);
+                                connection.stop();
                                 return;
                             }
 

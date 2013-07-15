@@ -122,6 +122,7 @@
                 }
                 catch (error) {
                     $(connection).triggerHandler(events.onError, ["SignalR: failed at parsing response: " + e.data + ".  With error: " + error.message]);
+                    connection.stop();
                     return;
                 }
 

@@ -104,6 +104,7 @@
                     }
                     catch (error) {
                         $connection.triggerHandler(events.onError, ["SignalR: failed at parsing response: " + event.data + ".  With error: " + error.message]);
+                        connection.stop();
                         return;
                     }
                     
