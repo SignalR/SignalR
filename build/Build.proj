@@ -162,6 +162,7 @@
 
   <ItemGroup>
     <UnitTestProjects Include="$(ProjectRoot)\tests\Microsoft.AspNet.SignalR.Tests\Microsoft.AspNet.SignalR.Tests.csproj"></UnitTestProjects>
+    <UnitTestProjects Include="$(ProjectRoot)\tests\Microsoft.AspNet.SignalR.Client.Tests\Microsoft.AspNet.SignalR.Client.Tests.csproj"></UnitTestProjects>
     <UnitTestProjects Include="$(ProjectRoot)\tests\Microsoft.AspNet.SignalR.SqlServer.Tests\Microsoft.AspNet.SignalR.SqlServer.Tests.csproj"></UnitTestProjects>
   </ItemGroup>
 
@@ -258,6 +259,10 @@
            Xml="$(TestResultsPath)\Microsoft.AspNet.SignalR.Tests.XunitResults.xml"
            Verbose="true" />
 
+    <xunit Assembly="$(ProjectArtifactsDir)\Microsoft.AspNet.SignalR.Client.Tests\Microsoft.AspNet.SignalR.Client.Tests.dll"
+       Xml="$(TestResultsPath)\Microsoft.AspNet.SignalR.Client.Tests.XunitResults.xml"
+       Verbose="true" />
+    
     <xunit Assembly="$(ProjectArtifactsDir)\Microsoft.AspNet.SignalR.SqlServer.Tests\Microsoft.AspNet.SignalR.SqlServer.Tests.dll"
            Xml="$(TestResultsPath)\Microsoft.AspNet.SignalR.SqlServer.Tests.XunitResults.xml"
            Verbose="true" />
@@ -378,8 +383,9 @@
   </Target>
 
   <Target Name="UnitCodeCoverage" DependsOnTargets="PrepareCodeCoverage; BuildNetUnitTests">
+    <Copy SourceFiles="$(ProjectRoot)\build\Microsoft.AspNet.SignalR.UnitTests.OpenCover.xunit" DestinationFolder="$(ProjectArtifactsDir)" />
     <MSBuild Projects="Microsoft.AspNet.SignalR.OpenCover.targets"
-             Properties="ArtifactsDir=$(ArtifactsDir);SolutionDir=$(ProjectRoot)\;XunitArgs=$(ProjectArtifactsDir)\Microsoft.AspNet.SignalR.Tests\Microsoft.AspNet.SignalR.Tests.dll /noshadow"
+             Properties="ArtifactsDir=$(ArtifactsDir);SolutionDir=$(ProjectRoot)\;XunitArgs=$(ProjectArtifactsDir)\Microsoft.AspNet.SignalR.UnitTests.OpenCover.xunit"
              Condition="'$(OS)' == 'Windows_NT'"/>
   </Target>
 
