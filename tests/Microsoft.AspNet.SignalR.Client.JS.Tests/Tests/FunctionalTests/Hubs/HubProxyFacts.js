@@ -27,14 +27,14 @@ testUtilities.runWithTransports(["foreverFrame", "serverSentEvents", "webSockets
             demo = connection.createHubProxies().demo;
 
         connection.start({ transport: transport }).done(function () {
-            assert.equal(typeof (connection._.invocationCallbacks["0"]), "undefined", "Callback list should be empty before invocation.");
+            assert.isNotSet(connection._.invocationCallbacks["0"], "Callback list should be empty before invocation.");
 
             var invokePromise = demo.server.overload(100);
             
-            assert.notEqual(typeof (connection._.invocationCallbacks["0"]), "undefined", "Callback should be in the callback list.");
+            assert.isSet(connection._.invocationCallbacks["0"], "Callback should be in the callback list.");
 
             invokePromise.done(function (result) {
-                assert.equal(typeof (connection._.invocationCallbacks["0"]), "undefined", "Callback should be cleared.");
+                assert.isNotSet(connection._.invocationCallbacks["0"], "Callback should be cleared.");
                 end();
             });
         });
@@ -48,7 +48,7 @@ testUtilities.runWithTransports(["foreverFrame", "serverSentEvents", "webSockets
     QUnit.asyncTimeoutTest(transport + " hub connection clears all invocation callbacks on stop.", testUtilities.defaultTestTimeout, function (end, assert, testName) {
         var connection = testUtilities.createHubConnection(end, assert, testName),
             demo = connection.createHubProxies().demo,
-            invocationRejected = false;
+            connectionStopping = false;
 
         connection.start({ transport: transport }).done(function () {
             demo.server.getValue()
@@ -56,20 +56,19 @@ testUtilities.runWithTransports(["foreverFrame", "serverSentEvents", "webSockets
                     assert.ok(false, "Method invocation returned after connection stopped.");
                     end();
                 })
-                .fail(function (error) {
-                    invocationRejected = true;
+                .fail(function () {
+                    assert.ok(connectionStopping, "Method invocation promise should be rejected when connection is stopped.");
                 });
 
+            connectionStopping = true;
             connection.stop();
+            connectionStopping = false;
 
             assert.equal(connection._.invocationCallbackId, 0, "Callback id should be reset to zero.");
-            assert.equal(typeof (connection._.invocationCallbacks["0"]), "undefined", "Callbacks should be cleared.");
-        });
+            assert.isNotSet(connection._.invocationCallbacks["0"], "Callbacks should be cleared.");
 
-        setTimeout(function () {
-            assert.ok(invocationRejected, "Invocation should be rejected within timeout.");
             end();
-        }, 7000);
+        });
 
         // Cleanup
         return function () {
