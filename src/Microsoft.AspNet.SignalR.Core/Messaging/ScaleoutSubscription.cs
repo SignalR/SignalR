@@ -182,7 +182,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
 
                         if (info.MessageStore != null && info.Key.Equals(eventKey, StringComparison.OrdinalIgnoreCase))
                         {
-                            MessageStoreResult<Message> storeResult = info.MessageStore.GetMessages(info.Id, 1);
+                            MessageStoreResult<Message> storeResult = info.MessageStore.GetMessages(Identity, info.Id, 1);
 
                             if (storeResult.Messages.Count > 0)
                             {

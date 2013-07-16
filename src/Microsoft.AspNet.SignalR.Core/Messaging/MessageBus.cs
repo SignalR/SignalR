@@ -313,7 +313,12 @@ namespace Microsoft.AspNet.SignalR.Messaging
             // REVIEW: This can be called multiple times, should we guard against it?
             Counters.MessageBusTopicsCurrent.Increment();
 
-            return new Topic(_messageStoreSize, _topicTtl);
+            var source = _traceManager["SignalR.Signals." + key];
+
+            return new Topic(_messageStoreSize, _topicTtl)
+            {
+                Trace = source
+            };
         }
 
         protected virtual void Dispose(bool disposing)

@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Threading;
 
 namespace Microsoft.AspNet.SignalR.Messaging
@@ -44,6 +45,18 @@ namespace Microsoft.AspNet.SignalR.Messaging
             get
             {
                 return _lastUsed;
+            }
+        }
+
+        public TraceSource Trace
+        {
+            get
+            {
+                return Store.Trace;
+            }
+            set
+            {
+                Store.Trace = value;
             }
         }
 

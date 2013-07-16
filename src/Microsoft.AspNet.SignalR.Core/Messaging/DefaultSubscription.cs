@@ -140,7 +140,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
                 var cursors = new ulong[_cursors.Count];
                 for (int i = 0; i < _cursors.Count; i++)
                 {
-                    MessageStoreResult<Message> storeResult = _cursorTopics[i].Store.GetMessages(_cursors[i].Id, MaxMessages);
+                    MessageStoreResult<Message> storeResult = _cursorTopics[i].Store.GetMessages(Identity, _cursors[i].Id, MaxMessages);
                     cursors[i] = storeResult.FirstMessageId + (ulong)storeResult.Messages.Count;
 
                     if (storeResult.Messages.Count > 0)

@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.md in the project root for license information.
 
 using System;
+using System.Diagnostics;
 using System.Threading;
 
 namespace Microsoft.AspNet.SignalR.Messaging
@@ -17,6 +18,8 @@ namespace Microsoft.AspNet.SignalR.Messaging
         private readonly uint _fragmentSize;
 
         private long _nextFreeMessageId;
+
+        public TraceSource Trace { get; set; }
 
         // Creates a message store with the specified capacity. The actual capacity will be *at least* the
         // specified value. That is, GetMessages may return more data than 'capacity'.
@@ -89,12 +92,12 @@ namespace Microsoft.AspNet.SignalR.Messaging
         // Gets the next batch of messages, beginning with the specified ID.
         // This function may return an empty array or an array of length greater than the capacity
         // specified in the ctor. The client may also miss messages. See MessageStoreResult.
-        public MessageStoreResult<T> GetMessages(ulong firstMessageId, int maxMessages)
+        public MessageStoreResult<T> GetMessages(string connectionId, ulong firstMessageId, int maxMessages)
         {
-            return GetMessagesImpl(firstMessageId, maxMessages);
+            return GetMessagesImpl(connectionId, firstMessageId, maxMessages);
         }
 
-        private MessageStoreResult<T> GetMessagesImpl(ulong firstMessageIdRequestedByClient, int maxMessages)
+        private MessageStoreResult<T> GetMessagesImpl(string connectionId, ulong firstMessageIdRequestedByClient, int maxMessages)
         {
             ulong nextFreeMessageId = (ulong)Volatile.Read(ref _nextFreeMessageId);
 
@@ -102,6 +105,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
             // The client is already up-to-date with the message store, so we return no data.
             if (nextFreeMessageId <= firstMessageIdRequestedByClient)
             {
+                Trace.TraceInformation("{0}: GetMessagesImpl({1}, {2}) - {3}", connectionId, firstMessageIdRequestedByClient, maxMessages, "The client is already up-to-date with the message store, so we return no data.");
                 return new MessageStoreResult<T>(firstMessageIdRequestedByClient, _emptyArraySegment, hasMoreData: false);
             }
 
@@ -124,11 +128,13 @@ namespace Microsoft.AspNet.SignalR.Messaging
 
                 ArraySegment<T> retMessages = new ArraySegment<T>(thisFragment.Data, idxIntoFragment, count);
 
+                Trace.TraceInformation("{0}: GetMessagesImpl({1}, {2}) - {3}", connectionId, firstMessageIdRequestedByClient, maxMessages, "This fragment contains the first part of the data the client requested.");
                 return new MessageStoreResult<T>(firstMessageIdRequestedByClient, retMessages, hasMoreData: (nextFreeMessageId > firstMessageIdInNextFragment));
             }
 
             // Case 3:
             // The client has missed messages, so we need to send him the earliest fragment we have.
+            Trace.TraceInformation("{0}: GetMessagesImpl({1}, {2}) - {3}", connectionId, firstMessageIdRequestedByClient, maxMessages, "The client has missed messages, so we need to send him the earliest fragment we have.");
             while (true)
             {
                 GetFragmentOffsets(nextFreeMessageId, out fragmentNum, out idxIntoFragmentsArray, out idxIntoFragment);
