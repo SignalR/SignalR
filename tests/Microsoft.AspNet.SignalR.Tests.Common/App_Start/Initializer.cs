@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Threading.Tasks;
 using System.Web;
+using System.Web.Cors;
 using System.Web.Routing;
 using Microsoft.AspNet.SignalR.Infrastructure;
 using Microsoft.AspNet.SignalR.StressServer.Connections;
@@ -11,6 +12,7 @@ using Microsoft.AspNet.SignalR.Tests.Common;
 using Microsoft.AspNet.SignalR.Tests.Common.Connections;
 using Microsoft.AspNet.SignalR.Tests.Common.Handlers;
 using Microsoft.Owin;
+using Microsoft.Owin.Cors;
 using Owin;
 
 [assembly: PreApplicationStartMethod(typeof(Initializer), "Start")]
@@ -98,12 +100,34 @@ namespace Microsoft.AspNet.SignalR.Tests.Common
 
             app.Map("/multisend", subApp =>
             {
+                app.UseCors(new CorsOptions
+                {
+                    CorsPolicy = new CorsPolicy
+                    {
+                        AllowAnyHeader = true,
+                        AllowAnyMethod = true,
+                        AllowAnyOrigin = true,
+                        SupportsCredentials = true
+                    }
+                });
+
                 subApp.UseConnection<MySendingConnection>(config);
             });
 
             app.Map("/autoencodedjson", subApp =>
             {
-                subApp.MapConnection<AutoEncodedJsonConnection>("/autoencodedjson", config);
+                app.UseCors(new CorsOptions
+                {
+                    CorsPolicy = new CorsPolicy
+                    {
+                        AllowAnyHeader = true,
+                        AllowAnyMethod = true,
+                        AllowAnyOrigin = true,
+                        SupportsCredentials = true
+                    }
+                });
+
+                subApp.UseConnection<AutoEncodedJsonConnection>(config);
             });
 
             app.MapConnection<MyBadConnection>("/ErrorsAreFun", config);
