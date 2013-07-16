@@ -83,7 +83,6 @@ namespace Microsoft.AspNet.SignalR.Tests.Common
             var hubConfig = new HubConfiguration
             {
                 Resolver = resolver,
-                EnableCrossDomain = true,
                 EnableDetailedErrors = true
             };
 
@@ -94,54 +93,39 @@ namespace Microsoft.AspNet.SignalR.Tests.Common
                 Resolver = resolver
             });
 
-            var crossDomainConfig = new ConnectionConfiguration
-            {
-                EnableCrossDomain = true,
-                Resolver = resolver
-            };
-
-<<<<<<< HEAD
-            app.MapConnection<MySendingConnection>("/multisend", crossDomainConfig);
-            app.MapConnection<AutoEncodedJsonConnection>("/autoencodedjson", crossDomainConfig);
-            app.MapConnection<RedirectionConnection>("/redirectionConnection", crossDomainConfig);
-=======
-            app.Map("/multisend", subApp =>
-            {
-                app.UseCors(new CorsOptions
-                {
-                    CorsPolicy = new CorsPolicy
-                    {
-                        AllowAnyHeader = true,
-                        AllowAnyMethod = true,
-                        AllowAnyOrigin = true,
-                        SupportsCredentials = true
-                    }
-                });
-
-                subApp.UseConnection<MySendingConnection>(config);
-            });
->>>>>>> Updated samples to use new cors middleware.
-
             var config = new ConnectionConfiguration
             {
-<<<<<<< HEAD
                 Resolver = resolver
             };
-=======
-                app.UseCors(new CorsOptions
-                {
-                    CorsPolicy = new CorsPolicy
-                    {
-                        AllowAnyHeader = true,
-                        AllowAnyMethod = true,
-                        AllowAnyOrigin = true,
-                        SupportsCredentials = true
-                    }
-                });
 
-                subApp.UseConnection<AutoEncodedJsonConnection>(config);
+            var corsOptions = new CorsOptions
+            {
+                CorsPolicy = new CorsPolicy
+                {
+                    AllowAnyHeader = true,
+                    AllowAnyMethod = true,
+                    AllowAnyOrigin = true,
+                    SupportsCredentials = true
+                }
+            };
+
+            app.Map("/multisend", map =>
+            {
+                map.UseCors(corsOptions);
+                map.UseConnection<MySendingConnection>(config);
             });
->>>>>>> Updated samples to use new cors middleware.
+
+            app.Map("/autoencodedjson", map =>
+            {
+                map.UseCors(corsOptions);
+                map.UseConnection<AutoEncodedJsonConnection>(config);
+            });
+
+            app.Map("/redirectionConnection", map =>
+            {
+                map.UseCors(corsOptions);
+                map.UseConnection<RedirectionConnection>(config);
+            });
 
             app.MapConnection<MyBadConnection>("/ErrorsAreFun", config);
             app.MapConnection<MyGroupEchoConnection>("/group-echo", config);
