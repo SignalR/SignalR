@@ -136,6 +136,31 @@ namespace Microsoft.AspNet.SignalR.Client.Tests
         }
 
         [Fact]
+        public void WebSocketRemovedFronTransportList()
+        {
+            var tcs = new TaskCompletionSource<NegotiationResponse>();
+            
+            IList<IClientTransport> transports = new List<IClientTransport>();
+            transports.Add(new WebSocketTransport());
+            transports.Add(new ServerSentEventsTransport());
+            transports.Add(new LongPollingTransport());
+
+            var negotiationResponse = new NegotiationResponse();
+            negotiationResponse.TryWebSockets = false;
+
+            tcs.SetResult(negotiationResponse);
+
+            var autoTransport = new Mock<AutoTransport>(It.IsAny<IHttpClient>(), transports);
+            autoTransport.Setup(c => c.GetNegotiateResponse(It.IsAny<Connection>(), It.IsAny<string>())).Returns(tcs.Task);
+            autoTransport.Object.Negotiate(new Connection("http://foo", string.Empty), string.Empty).Wait();
+
+            foreach (IClientTransport transport in transports)
+            {
+                Assert.IsNotType(typeof(WebSocketTransport), transport);
+            }
+        }
+
+        [Fact]
         public void SendCatchesOnReceivedExceptions()
         {
             var ex = new Exception();
