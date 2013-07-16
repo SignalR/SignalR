@@ -140,7 +140,7 @@ namespace Microsoft.AspNet.SignalR.Client.Tests
         {
             var tcs = new TaskCompletionSource<NegotiationResponse>();
             
-            IList<IClientTransport> transports = new List<IClientTransport>();
+            var transports = new List<IClientTransport>();
             transports.Add(new WebSocketTransport());
             transports.Add(new ServerSentEventsTransport());
             transports.Add(new LongPollingTransport());
