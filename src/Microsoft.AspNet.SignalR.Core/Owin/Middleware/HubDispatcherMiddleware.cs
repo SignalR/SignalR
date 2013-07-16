@@ -8,17 +8,17 @@ using Microsoft.Owin;
 
 namespace Microsoft.AspNet.SignalR.Owin.Middleware
 {
-    public class HubDispatcherMiddleware : SignalRMiddleware
+    public class HubDispatcherMiddleware : OwinMiddleware
     {
         private readonly HubConfiguration _configuration;
 
         public HubDispatcherMiddleware(OwinMiddleware next, HubConfiguration configuration)
-            : base(next, configuration)
+            : base(next)
         {
             _configuration = configuration;
         }
 
-        protected override Task ProcessRequest(IOwinContext context)
+        public override Task Invoke(IOwinContext context)
         {
             if (context == null)
             {

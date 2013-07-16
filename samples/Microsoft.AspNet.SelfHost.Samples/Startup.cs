@@ -10,7 +10,11 @@ namespace Microsoft.AspNet.SelfHost.Samples
     {
         public void Configuration(IAppBuilder app)
         {
-            app.MapConnection<RawConnection>("/raw-connection", new ConnectionConfiguration { EnableCrossDomain = true });
+            app.Map("/raw-connection", subApp =>
+            {
+                subApp.UseConnection<RawConnection>();
+            });
+
             app.MapHubs();
 
             // Turn tracing on programmatically
