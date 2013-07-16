@@ -8,7 +8,7 @@ using Microsoft.Owin;
 
 namespace Microsoft.AspNet.SignalR.Owin.Middleware
 {
-    public class PersistentConnectionMiddleware : SignalRMiddleware
+    public class PersistentConnectionMiddleware : OwinMiddleware
     {
         private readonly Type _connectionType;
         private readonly ConnectionConfiguration _configuration;
@@ -16,13 +16,13 @@ namespace Microsoft.AspNet.SignalR.Owin.Middleware
         public PersistentConnectionMiddleware(OwinMiddleware next,
                                               Type connectionType,
                                               ConnectionConfiguration configuration)
-            : base(next, configuration)
+            : base(next)
         {
             _connectionType = connectionType;
             _configuration = configuration;
         }
 
-        protected override Task ProcessRequest(IOwinContext context)
+        public override Task Invoke(IOwinContext context)
         {
             if (context == null)
             {

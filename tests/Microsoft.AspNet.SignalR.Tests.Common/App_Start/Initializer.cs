@@ -81,7 +81,6 @@ namespace Microsoft.AspNet.SignalR.Tests.Common
             var hubConfig = new HubConfiguration
             {
                 Resolver = resolver,
-                EnableCrossDomain = true,
                 EnableDetailedErrors = true
             };
 
@@ -92,19 +91,20 @@ namespace Microsoft.AspNet.SignalR.Tests.Common
                 Resolver = resolver
             });
 
-            var crossDomainConfig = new ConnectionConfiguration
-            {
-                EnableCrossDomain = true,
-                Resolver = resolver
-            };
-
-            app.MapConnection<MySendingConnection>("/multisend", crossDomainConfig);
-            app.MapConnection<AutoEncodedJsonConnection>("/autoencodedjson", crossDomainConfig);
-
             var config = new ConnectionConfiguration
             {
                 Resolver = resolver
             };
+
+            app.Map("/multisend", subApp =>
+            {
+                subApp.UseConnection<MySendingConnection>(config);
+            });
+
+            app.Map("/autoencodedjson", subApp =>
+            {
+                subApp.MapConnection<AutoEncodedJsonConnection>("/autoencodedjson", config);
+            });
 
             app.MapConnection<MyBadConnection>("/ErrorsAreFun", config);
             app.MapConnection<MyGroupEchoConnection>("/group-echo", config);
