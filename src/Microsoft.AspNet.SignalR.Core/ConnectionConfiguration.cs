@@ -15,10 +15,5 @@ namespace Microsoft.AspNet.SignalR
             get { return _resolver ?? GlobalHost.DependencyResolver; }
             set { _resolver = value; }
         }
-
-        /// <summary>
-        /// Determines if browsers can make cross domain requests to SignalR endpoints.
-        /// </summary>
-        public bool EnableCrossDomain { get; set; }
     }
 }
