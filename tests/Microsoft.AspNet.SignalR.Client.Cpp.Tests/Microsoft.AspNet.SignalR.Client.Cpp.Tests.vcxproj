@@ -88,6 +88,7 @@
     <ClCompile Include="EventSourceStreamReaderTests.cpp" />
     <ClCompile Include="ExceptionHelperTests.cpp" />
     <ClCompile Include="Main.cpp" />
+    <ClCompile Include="TransportTests.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

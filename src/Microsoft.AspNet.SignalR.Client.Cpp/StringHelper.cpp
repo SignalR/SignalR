@@ -24,6 +24,12 @@ bool StringHelper::BeginsWithIgnoreCase(string_t &string1, string_t &string2)
     return _wcsnicmp(string1.c_str(), string2.c_str(), string2.length()) == 0;
 }
 
+// string2 must be shorter than or euqal to string1 in length
+bool StringHelper::EndsWith(string_t &string1, string_t &string2)
+{
+    return wcsncmp(string1.substr(string1.size() - string2.size()).c_str(), string2.c_str(), string2.length()) == 0;
+}
+
 // Currently only trims spaces
 string_t StringHelper::Trim(string_t string)
 {

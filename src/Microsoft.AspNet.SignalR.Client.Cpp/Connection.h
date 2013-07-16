@@ -39,7 +39,7 @@ namespace MicrosoftAspNetSignalRClientCpp
     class Connection : public enable_shared_from_this<Connection>
     {
     public:
-        Connection(string_t uri);
+        Connection(string_t uri, string_t queryString = U(""));
         ~Connection(void);
 
         string_t GetProtocol();

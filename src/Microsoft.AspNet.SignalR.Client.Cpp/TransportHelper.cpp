@@ -213,9 +213,9 @@ void TransportHelper::ProcessResponse(shared_ptr<Connection> connection, string_
                         connection->OnReceived(v.to_string());
                     }
                 }
-
-                TryInitialize(result, onInitialized);
             }
+
+            TryInitialize(result, onInitialized);
         }
     }
     catch (exception& ex)
