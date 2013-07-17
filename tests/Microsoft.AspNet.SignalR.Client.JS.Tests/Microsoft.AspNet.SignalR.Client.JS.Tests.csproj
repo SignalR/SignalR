@@ -82,7 +82,6 @@
   <ItemGroup>
     <None Include="Build\build.ps1" />
     <Content Include="Build\disableCrossDomain.js" />
-    <Content Include="Build\teamCityIntegration.js" />
     <Content Include="default.html" />
     <Content Include="NetworkMock\jquery.network.mock.ajax.js" />
     <Content Include="NetworkMock\jquery.network.mock.core.js" />
