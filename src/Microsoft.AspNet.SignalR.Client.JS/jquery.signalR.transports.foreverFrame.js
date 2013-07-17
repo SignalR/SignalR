@@ -55,6 +55,9 @@
 
         supportsKeepAlive: true,
 
+        // Added as a value here so we can create tests to verify functionality
+        iframeClearThreshold: 50,
+
         start: function (connection, onSuccess, onFailed) {
             var that = this,
                 frameId = (transportLogic.foreverFrame.count += 1),
@@ -130,7 +133,7 @@
             transportLogic.processMessages(connection, data, connection.onSuccess);
             // Delete the script & div elements
             connection.frameMessageCount = (connection.frameMessageCount || 0) + 1;
-            if (connection.frameMessageCount > 50) {
+            if (connection.frameMessageCount > signalR.transports.foreverFrame.iframeClearThreshold && connection.state === $.signalR.connectionState.connected) {
                 connection.frameMessageCount = 0;
                 cw = connection.frame.contentWindow || connection.frame.contentDocument;
                 if (cw && cw.document) {
@@ -166,6 +169,7 @@
                 delete connection.frame;
                 delete connection.frameId;
                 delete connection.onSuccess;
+                delete connection.frameMessageCount;
                 connection.log("Stopping forever frame");
             }
         },
