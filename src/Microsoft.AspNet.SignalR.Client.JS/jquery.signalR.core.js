@@ -73,6 +73,21 @@
             return connection.state === signalR.connectionState.disconnected;
         },
 
+        configurePingInterval = function (connection) {
+            var config = connection._.config,
+                onFail = function () {
+                    $(connection).triggerHandler(events.onError, ["SignalR: Pinging server failed, current user may no longer be authenticated, stopping the connection."]);
+                    // If we fail then we should kill the connection
+                    connection.stop();
+                };
+
+            if (!config.pingIntervalId && config.pingInterval) {
+                connection._.pingIntervalId = window.setInterval(function () {
+                    signalR.transports._logic.pingServer(connection).fail(onFail);
+                }, config.pingInterval * 1000);
+            }
+        },
+
         configureStopReconnectingTimeout = function (connection) {
             var stopReconnectingTimeout,
                 onReconnectTimeout;
@@ -327,6 +342,7 @@
             /// <param name="callback" type="Function">A callback function to execute when the connection has started</param>
             var connection = this,
                 config = {
+                    pingInterval: 300,
                     waitForPageLoad: true,
                     transport: "auto",
                     jsonp: false,
@@ -373,8 +389,6 @@
                 return deferred.promise();
             }
 
-            configureStopReconnectingTimeout(connection);
-
             // If we're already connecting just return the same deferral as the original connection start
             if (connection.state === signalR.connectionState.connecting) {
                 return deferred.promise();
@@ -388,6 +402,8 @@
                 deferred.resolve(connection);
                 return deferred.promise();
             }
+
+            configureStopReconnectingTimeout(connection);
 
             // Resolve the full url
             parser.href = connection.url;
@@ -502,6 +518,10 @@
                             if (transport.supportsKeepAlive && connection.keepAliveData.activated) {
                                 signalR.transports._logic.monitorKeepAlive(connection);
                             }
+
+                            // Used to ensure low activity clients maintain their authentication.
+                            // Must be configured once a transport has been decided to perform valid ping requests.
+                            configurePingInterval(connection);
 
                             changeState(connection,
                                         signalR.connectionState.connecting,
@@ -781,6 +801,7 @@
 
                 // Clear this no matter what
                 window.clearTimeout(connection._.onFailedTimeoutHandle);
+                window.clearInterval(connection._.pingIntervalId);
 
                 if (connection.transport) {
                     if (notifyServer !== false) {
@@ -811,6 +832,7 @@
                 delete connection.id;
                 delete connection._deferral;
                 delete connection._.config;
+                delete connection._.pingIntervalId;
 
                 // Clear out our message buffer
                 connection._.connectingMessageBuffer.clear();
