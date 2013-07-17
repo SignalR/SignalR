@@ -116,7 +116,6 @@ namespace Microsoft.AspNet.SignalR.Client.Tests
         public void CancelledTaskHandledinAutoTransport()
         {
             var tcs = new TaskCompletionSource<IResponse>();
-            var wh = new TaskCompletionSource<Object>();
 
             tcs.TrySetCanceled();
 
