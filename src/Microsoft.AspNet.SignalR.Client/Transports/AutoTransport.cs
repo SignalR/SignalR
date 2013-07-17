@@ -20,7 +20,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
         private int _startIndex = 0;
 
         // List of transports in fallback order
-        private readonly IList<IClientTransport> _transports;
+        private readonly List<IClientTransport> _transports;
 
         public AutoTransport(IHttpClient httpClient)
         {
@@ -37,7 +37,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
         public AutoTransport(IHttpClient httpClient, IList<IClientTransport> transports)
         {
             _httpClient = httpClient;
-            _transports = transports;
+            _transports = new List<IClientTransport>(transports);
         }
 
         /// <summary>
@@ -72,7 +72,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
             {
                 if (!response.TryWebSockets)
                 {
-                    ((List<IClientTransport>)_transports).RemoveAll((transport) => { return transport.Name == "webSockets"; });
+                    _transports.RemoveAll(transport => transport.Name == "webSockets");
                 }
 
                 return response;
