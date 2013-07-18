@@ -113,6 +113,26 @@ namespace Microsoft.AspNet.SignalR.Client.Tests
         }
 
         [Fact]
+        public void CancelledTaskHandledinAutoTransport()
+        {
+            var tcs = new TaskCompletionSource<IResponse>();
+
+            tcs.TrySetCanceled();
+
+            var transport = new Mock<IClientTransport>();
+            transport.Setup(t => t.Start(It.IsAny<IConnection>(), It.IsAny<string>(), CancellationToken.None))
+                .Returns(tcs.Task);
+
+            var transports = new List<IClientTransport>();
+            transports.Add(transport.Object);
+
+            var autoTransport = new AutoTransport(new DefaultHttpClient(), transports);
+            var task = autoTransport.Start(new Connection("http://foo"), string.Empty, CancellationToken.None);
+
+            Assert.IsType(typeof(OperationCanceledException), task.Exception.InnerException);
+        }
+
+        [Fact]
         public void CancelledTaskHandledinLongPolling()
         {
             var tcs = new TaskCompletionSource<IResponse>();

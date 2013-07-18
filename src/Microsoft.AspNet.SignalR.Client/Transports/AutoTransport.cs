@@ -100,10 +100,17 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
 
             transport.Start(connection, data, disconnectToken).ContinueWith(task =>
             {
-                if (task.IsFaulted)
+                if (task.IsFaulted || task.IsCanceled)
                 {
-                    // Make sure we observe the exception
-                    var ex = task.Exception.GetBaseException();
+                    Exception ex;
+                    if (task.IsCanceled)
+                    {
+                        ex = new OperationCanceledException(Resources.Error_TaskCancelledException);
+                    }
+                    else
+                    {
+                        ex = task.Exception.GetBaseException();
+                    }
 
                     connection.Trace(TraceLevels.Events, "Auto: Failed to connect to using transport {0}. {1}", transport.Name, ex);
 
@@ -117,7 +124,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
                     else
                     {
                         // If there's nothing else to try then just fail
-                        tcs.SetException(task.Exception);
+                        tcs.SetException(ex);
                     }
                 }
                 else
