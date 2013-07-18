@@ -57,12 +57,12 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(SolutionDir)packages\cpprestsdk.1.0.0\build\native\include;D:\Git\CPP\SignalR\src\Microsoft.AspNet.SignalR.Client.Cpp;D:\Git\CPP\SignalR\tests\Microsoft.AspNet.SignalR.Client.Cpp.Tests\UnitTestpp\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)packages\cpprestsdk.1.0.0\build\native\include;$(SolutionDir)src\Microsoft.AspNet.SignalR.Client.Cpp;$(SolutionDir)tools\UnitTestpp\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>$(SolutionDir)\src\Microsoft.AspNet.SignalR.Client.Cpp\bin\$(Configuration);$(ProjectDir)UnitTestpp\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(SolutionDir)\src\Microsoft.AspNet.SignalR.Client.Cpp\bin\$(Configuration);$(SolutionDir)tools\UnitTestpp\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>Microsoft.AspNet.SignalR.Client.Cpp.lib;UnitTest++.vsnet2005.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>

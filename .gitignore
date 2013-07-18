@@ -38,3 +38,6 @@ Microsoft.AspNet.SignalR.opensdf
 /Debug/Microsoft.AspNet.SignalR.Client.Cpp.exe
 *.ilk
 /samples/Microsoft.AspNet.SignalR.Client.WindowsStoreJavaScript.Samples/bld/
+/_UpgradeReport_Files/
+UpgradeLog.htm
+UpgradeLog.XML
