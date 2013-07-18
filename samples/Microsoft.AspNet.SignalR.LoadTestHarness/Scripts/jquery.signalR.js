@@ -1,7 +1,7 @@
 /* jquery.signalR.core.js */
 /*global window:false */
 /*!
- * ASP.NET SignalR JavaScript Library v1.1.2
+ * ASP.NET SignalR JavaScript Library v1.1.3
  * http://signalr.net/
  *
  * Copyright Microsoft Open Technologies, Inc. All rights reserved.
@@ -1838,13 +1838,25 @@
     }
 
     function clearInvocationCallbacks(connection, error) {
-        var callback;
-        for (var callbackId in connection._.invocationCallbacks) {
-            callback = connection._.invocationCallbacks[callbackId];
+        /// <param name="connection" type="hubConnection" />
+        var callbacks = connection._.invocationCallbacks,
+            callback;
+        
+        connection.log("Clearing hub invocation callbacks with error: " + error);
+        
+        // Reset the callback cache now as we have a local var referencing it
+        connection._.invocationCallbackId = 0;
+        delete connection._.invocationCallbacks;
+        connection._.invocationCallbacks = {};
+
+        // Loop over the callbacks and invoke them.
+        // We do this using a local var reference and *after* we've cleared the cache
+        // so that if a fail callback itself tries to invoke another method we don't 
+        // end up with its callback in the list we're looping over.
+        for (var callbackId in callbacks) {
+            callback = callbacks[callbackId];
             callback.method.call(callback.scope, { E: error });
         }
-        connection._.invocationCallbackId = 0;
-        connection._.invocationCallbacks = {};
     }
 
     // hubProxy

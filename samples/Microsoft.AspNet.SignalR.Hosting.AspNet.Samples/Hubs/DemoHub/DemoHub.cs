@@ -9,6 +9,8 @@ namespace Microsoft.AspNet.SignalR.Samples.Hubs.DemoHub
     [HubName("demo")]
     public class DemoHub : Hub
     {
+        private static readonly TaskCompletionSource<object> _neverEndingTcs = new TaskCompletionSource<object>();
+
         public Task<int> GetValue()
         {
             return Task.Factory.StartNew(() =>
@@ -123,6 +125,11 @@ namespace Microsoft.AspNet.SignalR.Samples.Hubs.DemoHub
                 tcs.SetCanceled();
                 return tcs.Task;
             }).Unwrap();
+        }
+
+        public Task NeverEndingTask()
+        {
+            return _neverEndingTcs.Task;
         }
 
         public void SimpleArray(int[] nums)
