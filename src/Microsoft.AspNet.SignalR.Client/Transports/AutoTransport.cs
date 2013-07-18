@@ -20,25 +20,26 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
         private int _startIndex = 0;
 
         // List of transports in fallback order
-        private readonly IList<IClientTransport> _transports;
+        private readonly List<IClientTransport> _transports;
 
         public AutoTransport(IHttpClient httpClient)
         {
             _httpClient = httpClient;
 
-            _transports = new IClientTransport[] { 
+            _transports = new List<IClientTransport>()
+            {
 #if NET45
                 new WebSocketTransport(httpClient),
 #endif
-                new ServerSentEventsTransport(httpClient), 
-                new LongPollingTransport(httpClient) 
-                };
+                new ServerSentEventsTransport(httpClient),
+                new LongPollingTransport(httpClient)
+            };
         }
 
         public AutoTransport(IHttpClient httpClient, IList<IClientTransport> transports)
         {
             _httpClient = httpClient;
-            _transports = transports;
+            _transports = new List<IClientTransport>(transports);
         }
 
         /// <summary>
@@ -67,13 +68,13 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
 
         public Task<NegotiationResponse> Negotiate(IConnection connection, string connectionData)
         {
-            var task = _httpClient.GetNegotiationResponse(connection, connectionData);
+            var task = GetNegotiateResponse(connection, connectionData);
 #if NET45
             return task.Then(response =>
             {
                 if (!response.TryWebSockets)
                 {
-                    _startIndex = 1;
+                    _transports.RemoveAll(transport => transport.Name == "webSockets");
                 }
 
                 return response;
@@ -81,6 +82,11 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
 #else
             return task;
 #endif
+        }
+
+        public virtual Task<NegotiationResponse> GetNegotiateResponse(IConnection connection, string connectionData)
+        {
+            return _httpClient.GetNegotiationResponse(connection, connectionData);
         }
 
         public Task Start(IConnection connection, string connectionData, CancellationToken disconnectToken)
