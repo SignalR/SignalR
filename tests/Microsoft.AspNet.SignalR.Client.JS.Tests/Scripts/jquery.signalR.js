@@ -1244,6 +1244,18 @@
             }
         },
 
+        handleParseFailure: function (connection, result, errorMessage, onFailed) {
+            // If we're in the initialization phase trigger onFailed, otherwise stop the connection.
+            if (connection.state === signalR.connectionState.connecting) {
+                connection.log("Failed to parse server response while attempting to connect.");
+                onFailed();
+            }
+            else {
+                $(connection).triggerHandler(events.onError, ["SignalR: failed at parsing response: " + result + ".  With error: " + errorMessage]);
+                connection.stop();
+            }
+        },
+
         foreverFrame: {
             count: 0,
             connections: {}
@@ -1350,8 +1362,7 @@
                         data = connection._parseResponse(event.data);
                     }
                     catch (error) {
-                        $connection.triggerHandler(events.onError, ["SignalR: failed at parsing response: " + event.data + ".  With error: " + error.message]);
-                        connection.stop();
+                        transportLogic.handleParseFailure(connection, event.data, error.message, onFailed);
                         return;
                     }
 
@@ -1504,8 +1515,7 @@
                     res = connection._parseResponse(e.data);
                 }
                 catch (error) {
-                    $(connection).triggerHandler(events.onError, ["SignalR: failed at parsing response: " + e.data + ".  With error: " + error.message]);
-                    connection.stop();
+                    transportLogic.handleParseFailure(connection, e.data, error.message, onFailed);
                     return;
                 }
 
@@ -1866,8 +1876,7 @@
                                     minData = connection._parseResponse(result);
                                 }
                                 catch (error) {
-                                    $(connection).triggerHandler(events.onError, ["SignalR: failed at parsing response: " + result + ".  With error: " + error.message]);
-                                    connection.stop();
+                                    transportLogic.handleParseFailure(instance, result, error.message, tryFailConnect);
                                     return;
                                 }
 

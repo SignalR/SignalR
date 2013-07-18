@@ -98,8 +98,7 @@
                                     minData = connection._parseResponse(result);
                                 }
                                 catch (error) {
-                                    $(connection).triggerHandler(events.onError, ["SignalR: failed at parsing response: " + result + ".  With error: " + error.message]);
-                                    connection.stop();
+                                    transportLogic.handleParseFailure(instance, result, error.message, tryFailConnect);
                                     return;
                                 }
 

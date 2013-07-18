@@ -96,8 +96,7 @@
                         data = connection._parseResponse(event.data);
                     }
                     catch (error) {
-                        $connection.triggerHandler(events.onError, ["SignalR: failed at parsing response: " + event.data + ".  With error: " + error.message]);
-                        connection.stop();
+                        transportLogic.handleParseFailure(connection, event.data, error.message, onFailed);
                         return;
                     }
 
