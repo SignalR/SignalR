@@ -12,9 +12,9 @@ namespace Microsoft.AspNet.SelfHost.Samples
     {
         public void Configuration(IAppBuilder app)
         {
-            app.Map("/raw-connection", subApp =>
+            app.Map("/raw-connection", map =>
             {
-                subApp.UseCors(new CorsOptions
+                map.UseCors(new CorsOptions
                 {
                     CorsPolicy = new CorsPolicy
                     {
@@ -25,7 +25,7 @@ namespace Microsoft.AspNet.SelfHost.Samples
                     }
                 });
 
-                subApp.UseConnection<RawConnection>();
+                map.UseConnection<RawConnection>();
             });
 
             app.MapHubs();
