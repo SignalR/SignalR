@@ -1,45 +1,5 @@
 ﻿QUnit.module("Hub Proxy Facts");
 
-testUtilities.runWithTransports(["foreverFrame", "serverSentEvents", "webSockets"], function (transport) {
-    QUnit.asyncTimeoutTest(transport + " rejects large number of hub invocations on stop", 100000, function (end, assert, testName) {
-        var connection = testUtilities.createHubConnection($.noop, { ok: $.noop }, testName),
-            hub = connection.createHubProxy("demo"),
-            count = 50000,
-            failed = 0,
-            done = function () {
-                assert.ok(false, "Server method invocation should never succeed.");
-                end();
-            },
-            fail = function (error) {
-                failed++;
-                if (failed === count) {
-                    console.log("All server method invocations rejected.");
-                    assert.ok(true, "All server method invocations rejected on stop.");
-                    end();
-                }
-            };
-
-        connection.start({ transport: transport }).done(function () {
-            for (var i = 0; i < count; i++) {
-                hub.invoke("NeverEndingTask")
-                    .done(done)
-                    .fail(fail);
-            }
-
-            console.log(count + " server invocations sent");
-
-            setTimeout(function () {
-                connection.stop();
-            }, 2000);
-        });
-
-        // Cleanup
-        return function () {
-            connection.stop();
-        };
-    });
-});
-
 // All transports will run successfully once #1442 is completed.  At that point we will be able to change this to runWithAllTransports
 testUtilities.runWithTransports(["foreverFrame", "serverSentEvents", "webSockets"], function (transport) {
     QUnit.asyncTimeoutTest(transport + " transport unable to create invalid hub", testUtilities.defaultTestTimeout, function (end, assert, testName) {
@@ -118,6 +78,46 @@ testUtilities.runWithTransports(["foreverFrame", "serverSentEvents", "webSockets
 });
 
 QUnit.module("Hub Proxy Facts", !window.document.commandLineTest);
+
+testUtilities.runWithTransports(["foreverFrame", "serverSentEvents", "webSockets"], function (transport) {
+    QUnit.asyncTimeoutTest(transport + " rejects large number of hub invocations on stop", 100000, function (end, assert, testName) {
+        var connection = testUtilities.createHubConnection($.noop, { ok: $.noop }, testName),
+            hub = connection.createHubProxy("demo"),
+            count = 50000,
+            failed = 0,
+            done = function () {
+                assert.ok(false, "Server method invocation should never succeed.");
+                end();
+            },
+            fail = function (error) {
+                failed++;
+                if (failed === count) {
+                    console.log("All server method invocations rejected.");
+                    assert.ok(true, "All server method invocations rejected on stop.");
+                    end();
+                }
+            };
+
+        connection.start({ transport: transport }).done(function () {
+            for (var i = 0; i < count; i++) {
+                hub.invoke("NeverEndingTask")
+                    .done(done)
+                    .fail(fail);
+            }
+
+            console.log(count + " server invocations sent");
+
+            setTimeout(function () {
+                connection.stop();
+            }, 2000);
+        });
+
+        // Cleanup
+        return function () {
+            connection.stop();
+        };
+    });
+});
 
 // Replacing window.onerror will not capture uncaught errors originating from inside an iframe
 testUtilities.runWithTransports(["longPolling", "serverSentEvents", "webSockets"], function (transport) {
