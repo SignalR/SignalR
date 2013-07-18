@@ -56,6 +56,16 @@
                     onSuccess();
                     connection.log("Longpolling connected.");
                 },
+                tryFailConnect = function () {
+                    if (onFailed) {
+                        onFailed();
+                        onFailed = null;
+                        connection.log("LongPolling failed to connect.");
+                        return true;
+                    }
+
+                    return false;
+                },
                 privateData = connection._,
                 reconnectErrors = 0,
                 fireReconnected = function (instance) {
@@ -123,8 +133,7 @@
                                         minData = connection._parseResponse(result);
                                     }
                                     catch (error) {
-                                        $(connection).triggerHandler(events.onError, ["SignalR: failed at parsing response: " + result + ".  With error: " + error.message]);
-                                        connection.stop();
+                                        transportLogic.handleParseFailure(instance, result, error.message, tryFailConnect);
                                         return;
                                     }
 
@@ -181,39 +190,41 @@
                                         return;
                                     }
 
-                                    // Increment our reconnect errors, we assume all errors to be reconnect errors
-                                    // In the case that it's our first error this will cause Reconnect to be fired
-                                    // after 1 second due to reconnectErrors being = 1.
-                                    reconnectErrors++;
+                                    if (!tryFailConnect()) {
+                                        // Increment our reconnect errors, we assume all errors to be reconnect errors
+                                        // In the case that it's our first error this will cause Reconnect to be fired
+                                        // after 1 second due to reconnectErrors being = 1.
+                                        reconnectErrors++;
 
-                                    if (connection.state !== signalR.connectionState.reconnecting) {
-                                        connection.log("An error occurred using longPolling. Status = " + textStatus + ".  Response = " + data.responseText + ".");
-                                        $(instance).triggerHandler(events.onError, [data.responseText]);
+                                        if (connection.state !== signalR.connectionState.reconnecting) {
+                                            connection.log("An error occurred using longPolling. Status = " + textStatus + ".  Response = " + data.responseText + ".");
+                                            $(instance).triggerHandler(events.onError, [data.responseText]);
+                                        }
+
+                                        // We check the state here to verify that we're not in an invalid state prior to verifying Reconnect.
+                                        // If we're not in connected or reconnecting then the next ensureReconnectingState check will fail and will return.
+                                        // Therefore we don't want to change that failure code path.
+                                        if ((connection.state === signalR.connectionState.connected ||
+                                            connection.state === signalR.connectionState.reconnecting) &&
+                                            !transportLogic.verifyReconnect(connection)) {
+                                            return;
+                                        }
+
+                                        // Transition into the reconnecting state
+                                        // If this fails then that means that the user transitioned the connection into the disconnected or connecting state within the above error handler trigger.
+                                        if (!transportLogic.ensureReconnectingState(instance)) {
+                                            return;
+                                        }
+
+                                        privateData.pollTimeoutId = window.setTimeout(function () {
+                                            // If we've errored out we need to verify that the server is still there, so re-start initialization process
+                                            // This will ping the server until it successfully gets a response.
+                                            that.init(instance, function () {
+                                                // Call poll with the raiseReconnect flag as true
+                                                poll(instance, true);
+                                            });
+                                        }, that.reconnectDelay);
                                     }
-
-                                    // We check the state here to verify that we're not in an invalid state prior to verifying Reconnect.
-                                    // If we're not in connected or reconnecting then the next ensureReconnectingState check will fail and will return.
-                                    // Therefore we don't want to change that failure code path.
-                                    if ((connection.state === signalR.connectionState.connected ||
-                                        connection.state === signalR.connectionState.reconnecting) &&
-                                        !transportLogic.verifyReconnect(connection)) {
-                                        return;
-                                    }
-
-                                    // Transition into the reconnecting state
-                                    // If this fails then that means that the user transitioned the connection into the disconnected or connecting state within the above error handler trigger.
-                                    if (!transportLogic.ensureReconnectingState(instance)) {
-                                        return;
-                                    }
-
-                                    privateData.pollTimeoutId = window.setTimeout(function () {
-                                        // If we've errored out we need to verify that the server is still there, so re-start initialization process
-                                        // This will ping the server until it successfully gets a response.
-                                        that.init(instance, function () {
-                                            // Call poll with the raiseReconnect flag as true
-                                            poll(instance, true);
-                                        });
-                                    }, that.reconnectDelay);
                                 }
                             }));
 

@@ -121,8 +121,7 @@
                     res = connection._parseResponse(e.data);
                 }
                 catch (error) {
-                    $(connection).triggerHandler(events.onError, ["SignalR: failed at parsing response: " + e.data + ".  With error: " + error.message]);
-                    connection.stop();
+                    transportLogic.handleParseFailure(connection, e.data, error.message, onFailed);
                     return;
                 }
 
