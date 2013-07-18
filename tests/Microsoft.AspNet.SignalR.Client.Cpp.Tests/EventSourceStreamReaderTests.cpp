@@ -37,7 +37,7 @@ SUITE(EventSourceStreamReaderTests)
         //Assert
         CHECK(pEvent->wait(5000) == 0);
         
-        TaskAsyncHelper::Delay(seconds(5)).wait();
+        (task || TaskAsyncHelper::Delay<utility::string_t>(seconds(5))).wait();
         bool taskIsDone = task.is_done();
         CHECK(taskIsDone);
         if(taskIsDone)
