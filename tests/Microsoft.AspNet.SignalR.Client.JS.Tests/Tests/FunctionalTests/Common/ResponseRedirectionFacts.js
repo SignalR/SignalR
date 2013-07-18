@@ -27,6 +27,23 @@ QUnit.asyncTimeoutTest("Transport connect fails on response redirection causing 
     };
 });
 
+QUnit.asyncTimeoutTest("Auto transport negotiate fails on response redirection.", testUtilities.defaultTestTimeout, function (end, assert, testName) {
+    var connection = buildRedirectConnection("negotiate", end, assert, testName, false);
+
+    connection.start().done(function () {
+        assert.fail("Connection was started successfully.");
+        end();
+    }).fail(function () {
+        assert.comment("Connection start deferred failure was triggered.");
+        end();
+    });
+
+    // Cleanup
+    return function () {
+        connection.stop();
+    };
+});
+
 testUtilities.runWithAllTransports(function (transport) {
     QUnit.asyncTimeoutTest(transport + ": Negotiate fails on response redirection.", testUtilities.defaultTestTimeout, function (end, assert, testName) {
         var connection = buildRedirectConnection("negotiate", end, assert, testName, false);
