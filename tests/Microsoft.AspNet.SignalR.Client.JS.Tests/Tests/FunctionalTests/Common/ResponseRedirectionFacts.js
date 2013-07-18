@@ -10,6 +10,28 @@
 
 QUnit.module("Response redirection facts");
 
+QUnit.asyncTimeoutTest("Transport connect fails on response redirection causing negotiate to fallback through all transports.", testUtilities.defaultTestTimeout * 4000, function (end, assert, testName) {
+    var connection = buildRedirectConnection("connect", end, assert, testName, false);
+
+    connection.start().done(function () {
+        // Dont fail if we're long polling, just stop, this is primarily because there's no init message and there's a race to determine if the tranport connected successfully
+        if (connection.transport.name === "longPolling") {
+            end();
+        }
+
+        assert.fail("Connection was started successfully.");
+        end();
+    }).fail(function () {
+        assert.comment("Connection start deferred failure was triggered.");
+        end();
+    });
+
+    // Cleanup
+    return function () {
+        connection.stop();
+    };
+});
+
 testUtilities.runWithAllTransports(function (transport) {
     QUnit.asyncTimeoutTest(transport + ": Negotiate fails on response redirection.", testUtilities.defaultTestTimeout, function (end, assert, testName) {
         var connection = buildRedirectConnection("negotiate", end, assert, testName, false);

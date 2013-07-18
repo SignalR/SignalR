@@ -47,14 +47,14 @@
             /// <summary>Starts the long polling connection</summary>
             /// <param name="connection" type="signalR">The SignalR connection to start</param>
             var that = this,
-                initialConnectedFired = false,
                 fireConnect = function () {
-                    if (initialConnectedFired) {
-                        return;
-                    }
-                    initialConnectedFired = true;
-                    onSuccess();
+                    tryFailConnect = fireConnect = $.noop;
+
                     connection.log("Longpolling connected.");
+                    onSuccess();
+
+                    // Reset onFailed to null because it shouldn't be called again
+                    onFailed = null;
                 },
                 tryFailConnect = function () {
                     if (onFailed) {
