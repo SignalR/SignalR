@@ -9,7 +9,7 @@
         <!-- These values are used in SemVer, so make sure to always increase these alphabetically. -->
         <BuildQuality>rtm1</BuildQuality>
         <ScaleoutBuildQuality>rtm1</ScaleoutBuildQuality>
-        <KatanaBuildQuality>rtm1</KatanaBuildQuality>
+        <KatanaBuildQuality>rc1</KatanaBuildQuality>
         
         <!-- Katana version -->
         <KatanaVersion>2.0.0</KatanaVersion>
