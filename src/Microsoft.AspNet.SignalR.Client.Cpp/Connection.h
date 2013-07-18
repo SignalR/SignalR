@@ -17,7 +17,7 @@ public:
     ~Connection(void);
 
     function<void(string_t message)> Received;
-    function<void(shared_ptr<StateChange> stateChange)> StateChanged;
+    function<void(StateChange stateChange)> StateChanged;
     function<void(exception& ex)> Error;
     function<void()> Closed;
     function<void()> Reconnecting;

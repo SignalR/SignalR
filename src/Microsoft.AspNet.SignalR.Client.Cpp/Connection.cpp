@@ -229,7 +229,7 @@ void Connection::SetState(ConnectionState newState)
 {
     lock_guard<recursive_mutex> lock(mStateLock);
 
-    shared_ptr<StateChange> stateChange = shared_ptr<StateChange>(new StateChange(mState, newState));
+    StateChange stateChange(mState, newState);
     mState = newState;
 
     if (StateChanged != nullptr)

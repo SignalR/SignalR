@@ -42,9 +42,6 @@
     <ClCompile Include="Connection.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Source.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="LongPollingTransport.cpp">
       <Filter>Source Files\Transport</Filter>
     </ClCompile>

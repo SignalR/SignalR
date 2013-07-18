@@ -40,7 +40,7 @@ READ:
         lock_guard<mutex> lock(mBufferLock);
         if(IsProcessing() && pReadBuffer != nullptr)
         {
-            readTask = AsyncReadIntoBuffer(&pReadBuffer, mStream);
+            readTask = AsyncReadIntoBuffer(mStream);
         }
         else
         {
@@ -72,14 +72,21 @@ READ:
 
 void AsyncStreamReader::ReadAsync(pplx::task<unsigned int> readTask)
 {
-    readTask.then([readTask, this](unsigned int bytesRead)
+    try
+    {
+        readTask.then([readTask, this](unsigned int bytesRead)
+        {
+            if (TryProcessRead(bytesRead))
+            {
+                Process();
+            }
+        });
+    }
+    catch (exception& ex)
     {
         // how to differentiate between faulted and canceled tasks?
-        if (TryProcessRead(bytesRead))
-        {
-            Process();
-        }
-    });
+        Close(ex);
+    }
 }
 
 bool AsyncStreamReader::TryProcessRead(unsigned read)
@@ -151,11 +158,11 @@ void AsyncStreamReader::OnData(shared_ptr<char> buffer)
 }
 
 // returns a task that reads the incoming stream and stored the messages into a buffer
-task<unsigned int> AsyncStreamReader::AsyncReadIntoBuffer(shared_ptr<char>* buffer, Concurrency::streams::basic_istream<uint8_t> stream)
+task<unsigned int> AsyncStreamReader::AsyncReadIntoBuffer(Concurrency::streams::basic_istream<uint8_t> stream)
 {
     concurrency::streams::container_buffer<string> inStringBuffer;
     task_options readTaskOptions(mReadCts.get_token());
-    return stream.read(inStringBuffer, 4096).then([inStringBuffer, buffer](size_t bytesRead)
+    return stream.read(inStringBuffer, 4096).then([inStringBuffer, this](size_t bytesRead)
     {
         if (is_task_cancellation_requested())
         {
@@ -163,9 +170,10 @@ task<unsigned int> AsyncStreamReader::AsyncReadIntoBuffer(shared_ptr<char>* buff
         }
 
         string &text = inStringBuffer.collection();
-        (*buffer) = shared_ptr<char>(new char[text.length() + 1]);
+
+        pReadBuffer = shared_ptr<char>(new char[text.length() + 1]);
         int length = text.length();
-        strcpy((*buffer).get(), text.c_str());
+        strcpy(pReadBuffer.get(), text.c_str());
 
         return (unsigned int)bytesRead;
     }, readTaskOptions);

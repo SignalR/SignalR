@@ -35,11 +35,11 @@ bool StringHelper::EqualsIgnoreCase(string_t string1, string_t string2)
 // strip off extra quotation marks <\"> from the string
 string_t StringHelper::CleanString(string_t string)
 {
-    if (string.front() = U('\"'))
+    if (string.front() == U('\"'))
     {
         string = string.substr(1, string.length()-1);
     }
-    if (string.back() = U('\"'))
+    if (string.back() == U('\"'))
     {
         string = string.substr(0, string.length()-1);
     }

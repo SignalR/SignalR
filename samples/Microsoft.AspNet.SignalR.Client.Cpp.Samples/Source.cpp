@@ -23,8 +23,6 @@ static void RunStreamingSample()
 
     if (key == U("1") || key == U("2"))
     {
-        key.~basic_string(); // Memory leak detector complains that key is lost
-
         shared_ptr<Connection> connection = shared_ptr<Connection>(new Connection(U("http://localhost:40476/raw-connection")));
     
         connection->Received = [](string_t message)
@@ -41,9 +39,9 @@ static void RunStreamingSample()
                 << nowStruct->tm_hour << ":" << nowStruct->tm_min << ":" << nowStruct->tm_sec << "]: Connection restablished" << endl;
         };
 
-        connection->StateChanged = [](shared_ptr<StateChange> stateChange)
+        connection->StateChanged = [](StateChange stateChange)
         {
-            wcout << stateChange->GetOldStateName() << " => " << stateChange->GetNewStateName() << endl;
+            wcout << stateChange.GetOldStateName() << " => " << stateChange.GetNewStateName() << endl;
         };
 
         connection->Error = [](exception& ex)
