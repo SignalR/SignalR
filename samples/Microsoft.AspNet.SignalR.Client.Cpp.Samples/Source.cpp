@@ -77,8 +77,8 @@ static void RunStreamingSample()
             return;
         }
 
-        connection->SetTraceLevel(TraceLevel::All);
-        connection->SetTraceWriter(cout);
+        //connection->SetTraceLevel(TraceLevel::All);
+        //connection->SetTraceWriter(cout);
 
         string_t line;
         getline(wcin, line);

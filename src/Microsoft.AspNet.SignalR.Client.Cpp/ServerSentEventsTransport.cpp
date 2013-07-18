@@ -230,7 +230,7 @@ void ServerSentEventsTransport::OpenConnection(shared_ptr<Connection> connection
     if (errorCallback != nullptr)
     {
         // the memory will eventually be reclaimed after 5 seconds (default) so it's not a leak here
-        TaskAsyncHelper::Delay(mConnectionTimeout).then([this, errorCallback]()
+        TaskAsyncHelper::Delay(mConnectionTimeout, disconnectToken).then([this, errorCallback]()
         {
             pCallbackInvoker->Invoke<function<void(exception)>>([this](function<void(exception)> errorCallback)
             {

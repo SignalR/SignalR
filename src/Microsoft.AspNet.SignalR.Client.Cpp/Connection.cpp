@@ -11,7 +11,7 @@
 namespace MicrosoftAspNetSignalRClientCpp
 {
 
-Connection::Connection(string_t uri, string_t queryString) : cDefaultAbortTimeout(30), mTraceWriter(nullptr)
+Connection::Connection(string_t uri, string_t queryString, TraceLevel traceLevel) : cDefaultAbortTimeout(30), mTraceWriter(nullptr)
 {
     if (uri.empty())
     {
@@ -23,6 +23,7 @@ Connection::Connection(string_t uri, string_t queryString) : cDefaultAbortTimeou
         mUri += U("/");
     }
 
+    mTraceLevel = traceLevel;
     mQueryString = queryString;
     mState = ConnectionState::Disconnected;
     mProtocol = U("1.3");
