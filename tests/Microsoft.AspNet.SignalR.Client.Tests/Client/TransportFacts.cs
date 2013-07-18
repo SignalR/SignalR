@@ -136,6 +136,34 @@ namespace Microsoft.AspNet.SignalR.Client.Tests
         }
 
         [Fact]
+        public void WebSocketRemovedFronTransportList()
+        {
+            var tcs = new TaskCompletionSource<NegotiationResponse>();
+            var mre = new ManualResetEventSlim();
+
+            var transports = new List<IClientTransport>();
+
+            var webSocketTransport = new Mock<WebSocketTransport>();
+            webSocketTransport.Setup(w => w.Start(It.IsAny<IConnection>(), It.IsAny<string>(), CancellationToken.None))
+                .Callback(mre.Set);
+            
+            transports.Add(webSocketTransport.Object);
+            transports.Add(new ServerSentEventsTransport());
+            transports.Add(new LongPollingTransport());
+
+            var negotiationResponse = new NegotiationResponse();
+            negotiationResponse.TryWebSockets = false;
+
+            tcs.SetResult(negotiationResponse);
+
+            var autoTransport = new Mock<AutoTransport>(It.IsAny<IHttpClient>(), transports);
+            autoTransport.Setup(c => c.GetNegotiateResponse(It.IsAny<Connection>(), It.IsAny<string>())).Returns(tcs.Task);
+            autoTransport.Object.Negotiate(new Connection("http://foo", string.Empty), string.Empty).Wait();
+
+            Assert.False(mre.IsSet);
+        }
+
+        [Fact]
         public void SendCatchesOnReceivedExceptions()
         {
             var ex = new Exception();
