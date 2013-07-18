@@ -161,19 +161,6 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
             GC.SuppressFinalize(this);
         }
 
-        public bool TranportsContainsWebSockets()
-        {
-            foreach (IClientTransport transport in _transports)
-            {
-                if(transport.Name == "webSockets")
-                {
-                    return true;
-                }
-            }
-
-            return false;
-        }
-
         protected virtual void Dispose(bool disposing)
         {
             if (disposing)

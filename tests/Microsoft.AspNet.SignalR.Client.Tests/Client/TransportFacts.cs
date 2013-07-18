@@ -139,9 +139,15 @@ namespace Microsoft.AspNet.SignalR.Client.Tests
         public void WebSocketRemovedFronTransportList()
         {
             var tcs = new TaskCompletionSource<NegotiationResponse>();
-            
+            var mre = new ManualResetEventSlim();
+
             var transports = new List<IClientTransport>();
-            transports.Add(new WebSocketTransport());
+
+            var webSocketTransport = new Mock<WebSocketTransport>();
+            webSocketTransport.Setup(w => w.Start(It.IsAny<IConnection>(), It.IsAny<string>(), CancellationToken.None))
+                .Callback(mre.Set);
+            
+            transports.Add(webSocketTransport.Object);
             transports.Add(new ServerSentEventsTransport());
             transports.Add(new LongPollingTransport());
 
@@ -154,7 +160,7 @@ namespace Microsoft.AspNet.SignalR.Client.Tests
             autoTransport.Setup(c => c.GetNegotiateResponse(It.IsAny<Connection>(), It.IsAny<string>())).Returns(tcs.Task);
             autoTransport.Object.Negotiate(new Connection("http://foo", string.Empty), string.Empty).Wait();
 
-            Assert.False(autoTransport.Object.TranportsContainsWebSockets());
+            Assert.False(mre.IsSet);
         }
 
         [Fact]
