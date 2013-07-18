@@ -19,7 +19,7 @@ namespace Microsoft.AspNet.SignalR.Owin
         public ServerResponse(IDictionary<string, object> environment)
         {
             _response = new OwinResponse(environment);
-            _callCancelled = _response.CallCancelled;
+            _callCancelled = _response.Get<CancellationToken>(OwinConstants.CallCancelled);
             _responseBody = _response.Body;
         }
 
