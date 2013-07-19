@@ -203,6 +203,11 @@
                 return proxies.demo.invoke.apply(proxies.demo, $.merge(["MultipleCalls"], $.makeArray(arguments)));
              },
 
+            neverEndingTask: function () {
+            /// <summary>Calls the NeverEndingTask method on the server-side demo hub.&#10;Returns a jQuery.Deferred() promise.</summary>
+                return proxies.demo.invoke.apply(proxies.demo, $.merge(["NeverEndingTask"], $.makeArray(arguments)));
+             },
+
             overload: function () {
             /// <summary>Calls the Overload method on the server-side demo hub.&#10;Returns a jQuery.Deferred() promise.</summary>
                 return proxies.demo.invoke.apply(proxies.demo, $.merge(["Overload"], $.makeArray(arguments)));
