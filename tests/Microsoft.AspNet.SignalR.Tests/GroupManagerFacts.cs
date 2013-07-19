@@ -1,5 +1,5 @@
 ﻿using System;
-using System.Linq;
+using System.Collections.Generic;
 using Microsoft.AspNet.SignalR.Messaging;
 using Moq;
 using Xunit;
@@ -127,7 +127,19 @@ namespace Microsoft.AspNet.SignalR.Tests
                 var groupManager = new GroupManager(connection.Object, "Prefix");
 
                 // Assert
-                Assert.Throws<ArgumentException>(() => groupManager.Send(null, "Way"));
+                Assert.Throws<ArgumentException>(() => groupManager.Send((string)null, "Way"));
+            }
+
+            [Fact]
+            public void ThrowsIfGroupsIsNull()
+            {
+                // Arrange
+                var connection = new Mock<IConnection>();
+                connection.Setup(m => m.Send(It.IsAny<ConnectionMessage>()));
+                var groupManager = new GroupManager(connection.Object, "Prefix");
+
+                // Assert
+                Assert.Throws<ArgumentNullException>(() => groupManager.Send((IList<string>)null, "Way"));
             }
 
             [Fact]
