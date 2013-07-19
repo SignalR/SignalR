@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 
 namespace Microsoft.AspNet.SignalR.Hubs
 {
@@ -10,5 +11,6 @@ namespace Microsoft.AspNet.SignalR.Hubs
         dynamic Caller { get; }
         dynamic Others { get; }
         dynamic OthersInGroup(string groupName);
+        dynamic OthersInGroups(IList<string> groupNames);
     }
 }

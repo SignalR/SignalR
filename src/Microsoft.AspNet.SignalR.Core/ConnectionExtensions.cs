@@ -26,7 +26,7 @@ namespace Microsoft.AspNet.SignalR
                 throw new ArgumentNullException("connection");
             }
 
-            if (string.IsNullOrEmpty(connectionId))
+            if (String.IsNullOrEmpty(connectionId))
             {
                 throw new ArgumentException(Resources.Error_ArgumentNullOrEmpty, "connectionId");
             }
@@ -34,6 +34,32 @@ namespace Microsoft.AspNet.SignalR
             var message = new ConnectionMessage(PrefixHelper.GetConnectionId(connectionId),
                                                 value,
                                                 PrefixHelper.GetPrefixedConnectionIds(excludeConnectionIds));
+
+            return connection.Send(message);
+        }
+
+        /// <summary>
+        /// Sends a message to all connections subscribed to the specified signal. An example of signal may be a
+        /// specific connection id.
+        /// </summary>
+        /// <param name="connection">The connection</param>
+        /// <param name="connectionIds">The connection ids to send to.</param>
+        /// <param name="value">The value to publish.</param>
+        /// <returns>A task that represents when the broadcast is complete.</returns>
+        public static Task Send(this IConnection connection, IList<string> connectionIds, object value)
+        {
+            if (connection == null)
+            {
+                throw new ArgumentNullException("connection");
+            }
+
+            if (connectionIds == null)
+            {
+                throw new ArgumentNullException("connectionIds");
+            }
+
+            var message = new ConnectionMessage(connectionIds.Select(c => PrefixHelper.GetConnectionId(c)).ToList(),
+                                                value);
 
             return connection.Send(message);
         }

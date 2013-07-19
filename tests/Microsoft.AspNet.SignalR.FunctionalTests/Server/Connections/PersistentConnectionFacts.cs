@@ -96,6 +96,82 @@ namespace Microsoft.AspNet.SignalR.Tests
             }
 
             [Fact]
+            public void SendToClientFromOutsideOfConnection()
+            {
+                using (var host = new MemoryHost())
+                {
+                    IPersistentConnectionContext connectionContext = null;
+                    host.Configure(app =>
+                    {
+                        var configuration = new ConnectionConfiguration
+                        {
+                            Resolver = new DefaultDependencyResolver()
+                        };
+
+                        app.MapConnection<FilteredConnection>("/echo", configuration);
+                        connectionContext = configuration.Resolver.Resolve<IConnectionManager>().GetConnectionContext<FilteredConnection>();
+                    });
+
+                    var connection1 = new Client.Connection("http://foo/echo");
+
+                    using (connection1)
+                    {
+                        var wh1 = new ManualResetEventSlim(initialState: false);
+
+                        connection1.Start(host).Wait();
+
+                        connection1.Received += data =>
+                        {
+                            Assert.Equal("yay", data);
+                            wh1.Set();
+                        };
+
+                        connectionContext.Connection.Send(connection1.ConnectionId, "yay");
+
+                        Assert.True(wh1.Wait(TimeSpan.FromSeconds(10)));
+                    }
+                }
+            }
+
+            [Fact]
+            public void SendToClientsFromOutsideOfConnection()
+            {
+                using (var host = new MemoryHost())
+                {
+                    IPersistentConnectionContext connectionContext = null;
+                    host.Configure(app =>
+                    {
+                        var configuration = new ConnectionConfiguration
+                        {
+                            Resolver = new DefaultDependencyResolver()
+                        };
+
+                        app.MapConnection<FilteredConnection>("/echo", configuration);
+                        connectionContext = configuration.Resolver.Resolve<IConnectionManager>().GetConnectionContext<FilteredConnection>();
+                    });
+
+                    var connection1 = new Client.Connection("http://foo/echo");
+
+                    using (connection1)
+                    {
+                        var wh1 = new ManualResetEventSlim(initialState: false);
+
+                        connection1.Start(host).Wait();
+
+                        connection1.Received += data =>
+                        {
+                            Assert.Equal("yay", data);
+                            wh1.Set();
+                        };
+
+                        connectionContext.Connection.Send(new[] { connection1.ConnectionId }, "yay");
+
+                        Assert.True(wh1.Wait(TimeSpan.FromSeconds(10)));
+                    }
+                }
+            }
+
+            [Fact]
             public void SendToGroupFromOutsideOfConnection()
             {
                 using (var host = new MemoryHost())
@@ -128,6 +204,45 @@ namespace Microsoft.AspNet.SignalR.Tests
 
                         connectionContext.Groups.Add(connection1.ConnectionId, "Foo").Wait();
                         connectionContext.Groups.Send("Foo", "yay");
+
+                        Assert.True(wh1.Wait(TimeSpan.FromSeconds(10)));
+                    }
+                }
+            }
+
+            [Fact]
+            public void SendToGroupsFromOutsideOfConnection()
+            {
+                using (var host = new MemoryHost())
+                {
+                    IPersistentConnectionContext connectionContext = null;
+                    host.Configure(app =>
+                    {
+                        var configuration = new ConnectionConfiguration
+                        {
+                            Resolver = new DefaultDependencyResolver()
+                        };
+
+                        app.MapConnection<FilteredConnection>("/echo", configuration);
+                        connectionContext = configuration.Resolver.Resolve<IConnectionManager>().GetConnectionContext<FilteredConnection>();
+                    });
+
+                    var connection1 = new Client.Connection("http://foo/echo");
+
+                    using (connection1)
+                    {
+                        var wh1 = new ManualResetEventSlim(initialState: false);
+
+                        connection1.Start(host).Wait();
+
+                        connection1.Received += data =>
+                        {
+                            Assert.Equal("yay", data);
+                            wh1.Set();
+                        };
+
+                        connectionContext.Groups.Add(connection1.ConnectionId, "Foo").Wait();
+                        connectionContext.Groups.Send(new[] { "Foo", "Bar" }, "yay");
 
                         Assert.True(wh1.Wait(TimeSpan.FromSeconds(10)));
                     }
