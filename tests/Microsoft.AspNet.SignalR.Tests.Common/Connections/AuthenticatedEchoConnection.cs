@@ -6,7 +6,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Common.Connections
     {
         protected override bool AuthorizeRequest(IRequest request)
         {
-            return request.User != null && request.User.Identity.IsAuthenticated;
+            return request.User != null && request.User.Identity.IsAuthenticated && request.User.IsInRole("userRole");
         }
 
         protected override Task OnReceived(IRequest request, string connectionId, string data)

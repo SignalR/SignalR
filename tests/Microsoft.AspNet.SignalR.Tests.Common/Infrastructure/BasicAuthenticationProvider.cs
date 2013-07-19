@@ -1,4 +1,5 @@
-﻿using System.Security.Claims;
+﻿using System;
+using System.Security.Claims;
 using System.Security.Principal;
 using System.Threading;
 using System.Threading.Tasks;
@@ -14,7 +15,8 @@ namespace Microsoft.AspNet.SignalR.Tests.Common
             {
                 var identity = new ClaimsIdentity("Basic");
                 identity.AddClaim(new Claim(ClaimTypes.Name, userName));
-                var principal = new ClaimsPrincipal(identity);
+                identity.AddClaim(new Claim(ClaimTypes.Role, "userRole"));
+                var principal = new ClaimsPrincipal(identity);                
                 return Task.FromResult<IPrincipal>(principal);
             }
 
