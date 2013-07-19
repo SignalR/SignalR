@@ -1462,6 +1462,132 @@ namespace Microsoft.AspNet.SignalR.Tests
             }
         }
 
+        [Theory]
+        [InlineData(HostType.Memory, TransportType.ServerSentEvents, MessageBusType.Default)]
+        [InlineData(HostType.Memory, TransportType.ServerSentEvents, MessageBusType.Fake)]
+        [InlineData(HostType.Memory, TransportType.ServerSentEvents, MessageBusType.FakeMultiStream)]
+        [InlineData(HostType.IISExpress, TransportType.ServerSentEvents, MessageBusType.Default)]
+        [InlineData(HostType.IISExpress, TransportType.Websockets, MessageBusType.Default)]
+        [InlineData(HostType.HttpListener, TransportType.ServerSentEvents, MessageBusType.Default)]
+        [InlineData(HostType.HttpListener, TransportType.Websockets, MessageBusType.Default)]
+        public void SendToSpecificConnections(HostType hostType, TransportType transportType, MessageBusType messageBusType)
+        {
+            using (var host = CreateHost(hostType, transportType))
+            {
+                host.Initialize(messageBusType: messageBusType);
+
+                var connection1 = CreateHubConnection(host);
+                var connection2 = CreateHubConnection(host);
+
+                using (connection1)
+                using (connection2)
+                {
+                    var wh1 = new ManualResetEventSlim(initialState: false);
+                    var wh2 = new ManualResetEventSlim(initialState: false);
+
+                    var hub1 = connection1.CreateHubProxy("SendToSome");
+                    var hub2 = connection2.CreateHubProxy("SendToSome");
+
+                    connection1.Start(host.TransportFactory()).Wait();
+                    connection2.Start(host.TransportFactory()).Wait();
+
+                    hub1.On("send", wh1.Set);
+                    hub2.On("send", wh2.Set);
+
+                    hub1.InvokeWithTimeout("SendToConnections", new List<string> { connection1.ConnectionId, connection2.ConnectionId });
+
+                    Assert.True(wh1.Wait(TimeSpan.FromSeconds(5)));
+                    Assert.True(wh2.Wait(TimeSpan.FromSeconds(5)));
+                }
+            }
+        }
+
+        [Theory]
+        [InlineData(HostType.Memory, TransportType.ServerSentEvents, MessageBusType.Default)]
+        [InlineData(HostType.Memory, TransportType.ServerSentEvents, MessageBusType.Fake)]
+        [InlineData(HostType.Memory, TransportType.ServerSentEvents, MessageBusType.FakeMultiStream)]
+        [InlineData(HostType.IISExpress, TransportType.ServerSentEvents, MessageBusType.Default)]
+        [InlineData(HostType.IISExpress, TransportType.Websockets, MessageBusType.Default)]
+        [InlineData(HostType.HttpListener, TransportType.ServerSentEvents, MessageBusType.Default)]
+        [InlineData(HostType.HttpListener, TransportType.Websockets, MessageBusType.Default)]
+        public void SendToSpecificGroups(HostType hostType, TransportType transportType, MessageBusType messageBusType)
+        {
+            using (var host = CreateHost(hostType, transportType))
+            {
+                host.Initialize(messageBusType: messageBusType);
+
+                var connection1 = CreateHubConnection(host);
+                var connection2 = CreateHubConnection(host);
+
+                using (connection1)
+                using (connection2)
+                {
+                    var wh1 = new ManualResetEventSlim(initialState: false);
+                    var wh2 = new ManualResetEventSlim(initialState: false);
+
+                    var hub1 = connection1.CreateHubProxy("SendToSome");
+                    var hub2 = connection2.CreateHubProxy("SendToSome");
+
+                    connection1.Start(host.TransportFactory()).Wait();
+                    connection2.Start(host.TransportFactory()).Wait();
+
+                    hub1.On("send", wh1.Set);
+                    hub2.On("send", wh2.Set);
+
+                    hub1.InvokeWithTimeout("JoinGroup", "group1");
+                    hub2.InvokeWithTimeout("JoinGroup", "group2");
+
+                    hub1.InvokeWithTimeout("SendToGroups", new List<string> { "group1", "group2" });
+
+                    Assert.True(wh1.Wait(TimeSpan.FromSeconds(5)));
+                    Assert.True(wh2.Wait(TimeSpan.FromSeconds(5)));
+                }
+            }
+        }
+
+        [Theory]
+        [InlineData(HostType.Memory, TransportType.ServerSentEvents, MessageBusType.Default)]
+        [InlineData(HostType.Memory, TransportType.ServerSentEvents, MessageBusType.Fake)]
+        [InlineData(HostType.Memory, TransportType.ServerSentEvents, MessageBusType.FakeMultiStream)]
+        [InlineData(HostType.IISExpress, TransportType.ServerSentEvents, MessageBusType.Default)]
+        [InlineData(HostType.IISExpress, TransportType.Websockets, MessageBusType.Default)]
+        [InlineData(HostType.HttpListener, TransportType.ServerSentEvents, MessageBusType.Default)]
+        [InlineData(HostType.HttpListener, TransportType.Websockets, MessageBusType.Default)]
+        public void SendToAllButCallerInGroups(HostType hostType, TransportType transportType, MessageBusType messageBusType)
+        {
+            using (var host = CreateHost(hostType, transportType))
+            {
+                host.Initialize(messageBusType: messageBusType);
+
+                var connection1 = CreateHubConnection(host);
+                var connection2 = CreateHubConnection(host);
+
+                using (connection1)
+                using (connection2)
+                {
+                    var wh1 = new ManualResetEventSlim(initialState: false);
+                    var wh2 = new ManualResetEventSlim(initialState: false);
+
+                    var hub1 = connection1.CreateHubProxy("SendToSome");
+                    var hub2 = connection2.CreateHubProxy("SendToSome");
+
+                    connection1.Start(host.TransportFactory()).Wait();
+                    connection2.Start(host.TransportFactory()).Wait();
+
+                    hub1.On("send", wh1.Set);
+                    hub2.On("send", wh2.Set);
+
+                    hub1.InvokeWithTimeout("JoinGroup", "group1");
+                    hub2.InvokeWithTimeout("JoinGroup", "group2");
+
+                    hub1.InvokeWithTimeout("AllInGroupsButCaller", new List<string> { "group1", "group2" });
+
+                    Assert.False(wh1.Wait(TimeSpan.FromSeconds(10)));
+                    Assert.True(wh2.Wait(TimeSpan.FromSeconds(5)));
+                }
+            }
+        }
+
         [Fact]
         public void SendToGroupFromOutsideOfHub()
         {
@@ -1500,6 +1626,43 @@ namespace Microsoft.AspNet.SignalR.Tests
         }
 
         [Fact]
+        public void SendToGroupsFromOutsideOfHub()
+        {
+            using (var host = new MemoryHost())
+            {
+                IHubContext hubContext = null;
+                host.Configure(app =>
+                {
+                    var configuration = new HubConfiguration
+                    {
+                        Resolver = new DefaultDependencyResolver()
+                    };
+
+                    app.MapHubs(configuration);
+                    hubContext = configuration.Resolver.Resolve<IConnectionManager>().GetHubContext("SendToSome");
+                });
+
+                var connection1 = new HubConnection("http://foo/");
+
+                using (connection1)
+                {
+                    var wh1 = new ManualResetEventSlim(initialState: false);
+
+                    var hub1 = connection1.CreateHubProxy("SendToSome");
+
+                    connection1.Start(host).Wait();
+
+                    hub1.On("send", wh1.Set);
+
+                    hubContext.Groups.Add(connection1.ConnectionId, "Foo").Wait();
+                    hubContext.Clients.Groups(new[] { "Foo" }).send();
+
+                    Assert.True(wh1.Wait(TimeSpan.FromSeconds(10)));
+                }
+            }
+        }
+
+        [Fact]
         public void SendToSpecificClientFromOutsideOfHub()
         {
             using (var host = new MemoryHost())
@@ -1529,6 +1692,42 @@ namespace Microsoft.AspNet.SignalR.Tests
                     hub1.On("send", wh1.Set);
 
                     hubContext.Clients.Client(connection1.ConnectionId).send();
+
+                    Assert.True(wh1.Wait(TimeSpan.FromSeconds(10)));
+                }
+            }
+        }
+
+        [Fact]
+        public void SendToSpecificClientsFromOutsideOfHub()
+        {
+            using (var host = new MemoryHost())
+            {
+                IHubContext hubContext = null;
+                host.Configure(app =>
+                {
+                    var configuration = new HubConfiguration
+                    {
+                        Resolver = new DefaultDependencyResolver()
+                    };
+
+                    app.MapHubs(configuration);
+                    hubContext = configuration.Resolver.Resolve<IConnectionManager>().GetHubContext("SendToSome");
+                });
+
+                var connection1 = new HubConnection("http://foo/");
+
+                using (connection1)
+                {
+                    var wh1 = new ManualResetEventSlim(initialState: false);
+
+                    var hub1 = connection1.CreateHubProxy("SendToSome");
+
+                    connection1.Start(host).Wait();
+
+                    hub1.On("send", wh1.Set);
+
+                    hubContext.Clients.Clients(new[] { connection1.ConnectionId }).send();
 
                     Assert.True(wh1.Wait(TimeSpan.FromSeconds(10)));
                 }
@@ -1659,6 +1858,21 @@ namespace Microsoft.AspNet.SignalR.Tests
             public Task SendToSelf()
             {
                 return Clients.Client(Context.ConnectionId).send();
+            }
+
+            public Task SendToConnections(IList<string> connectionIds)
+            {
+                return Clients.Clients(connectionIds).send();
+            }
+
+            public Task SendToGroups(IList<string> groups)
+            {
+                return Clients.Groups(groups).send();
+            }
+
+            public Task AllInGroupsButCaller(IList<string> groups)
+            {
+                return Clients.OthersInGroups(groups).send();
             }
         }
 

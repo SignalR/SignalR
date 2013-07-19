@@ -9,8 +9,8 @@ namespace Microsoft.AspNet.SignalR.Hubs
 {
     public class GroupProxy : SignalProxy
     {
-        public GroupProxy(Func<string, ClientHubInvocation, IList<string>, Task> send, string signal, string hubName, IList<string> exclude) :
-            base(send, signal, hubName, PrefixHelper.HubGroupPrefix, exclude)
+        public GroupProxy(IConnection connection, IHubPipelineInvoker invoker, string signal, string hubName, IList<string> exclude) :
+            base(connection, invoker, signal, hubName, PrefixHelper.HubGroupPrefix, exclude)
         {
 
         }

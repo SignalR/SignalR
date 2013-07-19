@@ -19,6 +19,13 @@ namespace Microsoft.AspNet.SignalR
         public string Signal { get; private set; }
 
         /// <summary>
+        /// A list of signals this message should be delivered to. If this is used
+        /// the Signal cannot be used.
+        /// </summary>
+        [SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly", Justification = "This is optional")]
+        public IList<string> Signals { get; set; }
+
+        /// <summary>
         /// The payload of the message.
         /// </summary>
         public object Value { get; private set; }
@@ -28,6 +35,19 @@ namespace Microsoft.AspNet.SignalR
         /// receive this message.
         /// </summary>
         public IList<string> ExcludedSignals { get; private set; }
+
+        public ConnectionMessage(IList<string> signals, object value)
+            : this(signals, value, ListHelper<string>.Empty)
+        {
+        }
+
+        public ConnectionMessage(IList<string> signals, object value, IList<string> excludedSignals)
+            : this()
+        {
+            Signals = signals;
+            Value = value;
+            ExcludedSignals = excludedSignals;
+        }
 
         public ConnectionMessage(string signal, object value)
             : this(signal, value, ListHelper<string>.Empty)
