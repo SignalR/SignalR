@@ -2,10 +2,13 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Net.Http;
+using System.Net.Http.Headers;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNet.SignalR.Client;
 using Microsoft.AspNet.SignalR.Configuration;
-using Microsoft.AspNet.SignalR.FunctionalTests;
 using Microsoft.AspNet.SignalR.Hosting.Memory;
 using Microsoft.AspNet.SignalR.Infrastructure;
 using Microsoft.AspNet.SignalR.Tests.Common;
@@ -167,6 +170,116 @@ namespace Microsoft.AspNet.SignalR.Tests
                         Assert.Equal("Hello World", tcs.Task.Result);
                     }
                 }
+            }
+
+            private string _accessToken;
+            private string _refreshToken;
+            private int _expiresIn;
+
+            [Theory]
+            [InlineData(HostType.IISExpress, TransportType.Websockets)]
+            [InlineData(HostType.IISExpress, TransportType.ServerSentEvents)]
+            [InlineData(HostType.IISExpress, TransportType.LongPolling)]
+            [InlineData(HostType.HttpListener, TransportType.Websockets)]
+            [InlineData(HostType.HttpListener, TransportType.ServerSentEvents)]
+            [InlineData(HostType.HttpListener, TransportType.LongPolling)]
+            public void OAuthCredentialsFlow(HostType hostType, TransportType transportType)
+            {
+                using (var host = CreateHost(hostType, transportType))
+                {
+                    host.Initialize();
+                    Task refreshTokenTask;
+
+                    using (var connection = CreateConnection(host, "/oauth/echo"))
+                    {
+                        var tcs = new TaskCompletionSource<List<string>>();
+                        var messages = new List<string>();
+                        connection.Received += data =>
+                        {
+                            messages.Add(data);
+                            if (data == "using refreshed token")
+                            {
+                                tcs.TrySetResult(messages);
+                            }
+                        };
+
+                        using (var httpClient = new HttpClient())
+                        {
+                            refreshTokenTask = RefreshToken(httpClient, host.Url);
+                            connection.Headers["Authorization"] = "Bearer " + _accessToken;
+
+                            connection.Start(host.Transport).Wait();
+                            connection.SendWithTimeout("Hello World");
+
+                            Task.Delay(TimeSpan.FromSeconds(_expiresIn + 1)).Wait();
+                            if (host.Transport.Name == "webSockets")
+                            {
+                                connection.SendWithTimeout("using expired token in webSockets");
+                            }
+                            else
+                            {
+                                Assert.Throws<AggregateException>(() => connection.SendWithTimeout("using expired token"));
+                            }
+
+                            connection.Headers["Authorization"] = "Bearer " + _accessToken;
+                            connection.SendWithTimeout("using refreshed token");
+
+                            Assert.True(tcs.Task.Wait(TimeSpan.FromSeconds(10)));
+                            if (host.Transport.Name == "webSockets")
+                            {
+                                Assert.Equal("Hello World", tcs.Task.Result[0]);
+                                Assert.Equal("using expired token in webSockets", tcs.Task.Result[1]);
+                                Assert.Equal("using refreshed token", tcs.Task.Result[2]);
+                            }
+                            else
+                            {
+                                Assert.Equal("Hello World", tcs.Task.Result[0]);                                
+                                Assert.Equal("using refreshed token", tcs.Task.Result[1]);
+                            }
+                        }
+
+                        refreshTokenTask.Catch();
+                    }
+                }
+            }
+
+            private void ParseToken(HttpResponseMessage response)
+            {
+                var jsonString = response.Content.ReadAsStringAsync().Result;
+                var json = JToken.Parse(jsonString);
+                _accessToken = json.Value<string>("access_token");
+                _expiresIn = json.Value<int>("expires_in");
+                _refreshToken = json.Value<string>("refresh_token");
+            }
+
+            private Task RefreshToken(HttpClient httpClient, string url)
+            {
+                string user = "user";
+                string password = "password";
+                int beforeExpiration = 5;
+
+                var request = new HttpRequestMessage(HttpMethod.Post, url + "/oauth/token");
+                request.Headers.Authorization = new AuthenticationHeaderValue("Basic", Convert.ToBase64String(Encoding.UTF8.GetBytes(user + ":" + password)));
+                request.Content = new StringContent("grant_type=client_credentials");
+                var response = httpClient.SendAsync(request).Result;
+
+                Assert.True(response.StatusCode == System.Net.HttpStatusCode.OK, "Failed to create token");
+                ParseToken(response);
+
+                return Task.Run(() =>
+                {
+                    while (true)
+                    {
+                        Task.Delay(TimeSpan.FromSeconds(_expiresIn - beforeExpiration)).Wait();
+                        request = new HttpRequestMessage(HttpMethod.Post, url + "/oauth/token");
+                        request.Headers.Authorization = new AuthenticationHeaderValue("Basic", Convert.ToBase64String(Encoding.UTF8.GetBytes(user + ":" + password)));
+                        request.Content = new StringContent("grant_type=refresh_token&refresh_token=" + _refreshToken);
+                        response = httpClient.SendAsync(request).Result;
+
+                        Assert.True(response.StatusCode == System.Net.HttpStatusCode.OK, "Failed to refresh token");
+                        ParseToken(response);
+                    }
+                });
             }
 
             [Theory]
