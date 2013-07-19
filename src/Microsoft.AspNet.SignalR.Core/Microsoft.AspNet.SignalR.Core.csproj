@@ -75,6 +75,8 @@
     <Compile Include="Hosting\IResponse.cs" />
     <Compile Include="HubConfiguration.cs" />
     <Compile Include="Hubs\ConnectionIdProxy.cs" />
+    <Compile Include="Hubs\HubConnectionContextBase.cs" />
+    <Compile Include="Hubs\MultipleSignalProxy.cs" />
     <Compile Include="Hubs\DynamicDictionary.cs" />
     <Compile Include="Hubs\EmptyJavaScriptProxyGenerator.cs" />
     <Compile Include="Hubs\EnumerableOfAssemblyLocator.cs" />
@@ -82,6 +84,7 @@
     <Compile Include="Hubs\IHubCallerConnectionContext.cs" />
     <Compile Include="Hubs\Lookup\Descriptors\NullMethodDescriptor.cs" />
     <Compile Include="Hubs\Lookup\HubMethodDispatcher.cs" />
+    <Compile Include="Hubs\Pipeline\HubOutgoingInvokerContextExtensions.cs" />
     <Compile Include="Infrastructure\AckHandler.cs" />
     <Compile Include="Configuration\DefaultConfigurationManager.cs" />
     <Compile Include="Infrastructure\ArraySegmentTextReader.cs" />
