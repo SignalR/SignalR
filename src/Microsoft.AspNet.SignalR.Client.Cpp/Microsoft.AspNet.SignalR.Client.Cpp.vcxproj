@@ -42,7 +42,7 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <ReferencePath>$(SolutionDir)packages\cpprestsdk.1.0.0\build\native\include;$(SolutionDir)packages\cpprestsdk.0.6.0.21\build\native\include;$(ReferencePath)</ReferencePath>
+    <ReferencePath>$(SolutionDir)packages\cpprestsdk.1.1.0.1\build\native\include\compat;$(SolutionDir)packages\cpprestsdk.1.1.0.1\build\native\include\cpprest;$(SolutionDir)packages\cpprestsdk.1.1.0.1\build\native\include\pplx;$(ReferencePath)</ReferencePath>
     <OutDir>$(ProjectDir)bin\$(Configuration)\</OutDir>
     <IntDir>$(ProjectDir)obj\$(Configuration)\</IntDir>
     <EnableManagedIncrementalBuild>true</EnableManagedIncrementalBuild>
@@ -55,6 +55,7 @@
       <Optimization>Disabled</Optimization>
       <AdditionalOptions>/D "WIN32" %(AdditionalOptions)</AdditionalOptions>
       <GenerateXMLDocumentationFiles>false</GenerateXMLDocumentationFiles>
+      <AdditionalIncludeDirectories>$(SolutionDir)packages\cpprestsdk.1.1.0.1\build\native\include\pplx;$(SolutionDir)packages\cpprestsdk.1.1.0.1\build\native\include\compat;$(SolutionDir)packages\cpprestsdk.1.1.0.1\build\native\include\cpprest;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -62,6 +63,12 @@
     <Xdcmake>
       <DocumentLibraryDependencies>false</DocumentLibraryDependencies>
     </Xdcmake>
+    <Lib>
+      <AdditionalDependencies>cpprest110_1_1.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Lib>
+    <Lib>
+      <AdditionalLibraryDirectories>$(SolutionDir)packages\cpprestsdk.1.1.0.1\build\native\lib\Win32\v110\$(Configuration)\Desktop;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+    </Lib>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
@@ -135,7 +142,7 @@
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
     <Import Project="$(SolutionDir)\.nuget\NuGet.targets" Condition="Exists('$(SolutionDir)\.nuget\NuGet.targets')" />
-    <Import Project="..\..\packages\cpprestsdk.redist.1.0.0\build\native\cpprestsdk.redist.targets" Condition="Exists('..\..\packages\cpprestsdk.redist.1.0.0\build\native\cpprestsdk.redist.targets')" />
-    <Import Project="..\..\packages\cpprestsdk.1.0.0\build\native\cpprestsdk.targets" Condition="Exists('..\..\packages\cpprestsdk.1.0.0\build\native\cpprestsdk.targets')" />
+    <Import Project="..\..\packages\cpprestsdk.redist.1.1.0\build\native\cpprestsdk.redist.targets" Condition="Exists('..\..\packages\cpprestsdk.redist.1.1.0\build\native\cpprestsdk.redist.targets')" />
+    <Import Project="..\..\packages\cpprestsdk.1.1.0.1\build\native\cpprestsdk.targets" Condition="Exists('..\..\packages\cpprestsdk.1.1.0.1\build\native\cpprestsdk.targets')" />
   </ImportGroup>
 </Project>

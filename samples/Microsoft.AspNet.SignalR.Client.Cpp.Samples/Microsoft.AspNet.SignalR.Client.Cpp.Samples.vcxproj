@@ -58,7 +58,7 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(SolutionDir)packages\cpprestsdk.1.0.0\build\native\include;$(SolutionDir)src\Microsoft.AspNet.SignalR.Client.Cpp;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)packages\cpprestsdk.1.1.0.1\build\native\include\pplx;$(SolutionDir)packages\cpprestsdk.1.1.0.1\build\native\include\compat;$(SolutionDir)packages\cpprestsdk.1.1.0.1\build\native\include\cpprest;$(SolutionDir)src\Microsoft.AspNet.SignalR.Client.Cpp;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -85,9 +85,6 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <None Include="packages.config" />
-  </ItemGroup>
-  <ItemGroup>
     <ClCompile Include="Source.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -95,10 +92,13 @@
       <Project>{3f489cb9-c96b-43cb-a59d-a907b0b4a56b}</Project>
     </ProjectReference>
   </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
     <Import Project="$(SolutionDir)\.nuget\NuGet.targets" Condition="Exists('$(SolutionDir)\.nuget\NuGet.targets')" />
-    <Import Project="..\..\packages\cpprestsdk.redist.1.0.0\build\native\cpprestsdk.redist.targets" Condition="Exists('..\..\packages\cpprestsdk.redist.1.0.0\build\native\cpprestsdk.redist.targets')" />
-    <Import Project="..\..\packages\cpprestsdk.1.0.0\build\native\cpprestsdk.targets" Condition="Exists('..\..\packages\cpprestsdk.1.0.0\build\native\cpprestsdk.targets')" />
+    <Import Project="..\..\packages\cpprestsdk.redist.1.1.0\build\native\cpprestsdk.redist.targets" Condition="Exists('..\..\packages\cpprestsdk.redist.1.1.0\build\native\cpprestsdk.redist.targets')" />
+    <Import Project="..\..\packages\cpprestsdk.1.1.0.1\build\native\cpprestsdk.targets" Condition="Exists('..\..\packages\cpprestsdk.1.1.0.1\build\native\cpprestsdk.targets')" />
   </ImportGroup>
 </Project>
