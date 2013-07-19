@@ -198,10 +198,11 @@
             var payload = transportLogic.stringifySend(connection, data),
                 url = connection.url + "/send" + "?transport=" + connection.transport.name + "&connectionToken=" + window.encodeURIComponent(connection.token),
                 onFail = function (error, connection) {
-                    $(connection).triggerHandler(events.onError, [error]);
+                    $(connection).triggerHandler(events.onError, [error, data]);
                 };
 
             url = this.addQs(url, connection.qs);
+            
             return $.ajax(
                 $.extend({}, $.signalR.ajaxDefaults, {
                     xhrFields: { withCredentials: connection.withCredentials },
