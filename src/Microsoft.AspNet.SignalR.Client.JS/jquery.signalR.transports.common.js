@@ -8,7 +8,8 @@
 
     var signalR = $.signalR,
         events = $.signalR.events,
-        changeState = $.signalR.changeState;
+        changeState = $.signalR.changeState,
+        transportLogic;
 
     signalR.transports = {};
 
@@ -59,7 +60,7 @@
                connection.state === signalR.connectionState.reconnecting;
     }
 
-    signalR.transports._logic = {
+    transportLogic = signalR.transports._logic = {
         pingServer: function (connection) {
             /// <summary>Pings the server</summary>
             /// <param name="connection" type="signalr">Connection associated with the server ping</param>
