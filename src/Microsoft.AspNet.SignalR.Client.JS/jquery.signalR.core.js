@@ -484,9 +484,10 @@
                 });
             };
 
-            var url = connection.url + "/negotiate";
+            $(connection).triggerHandler(events.onStarting);
 
             url = signalR.transports._logic.addQs(url, connection);
+            url = signalR.transports._logic.addConnectionData(connection, url);
 
             connection.log("Negotiating with '" + url + "'.");
             $.ajax(
@@ -540,8 +541,6 @@
                             return;
                         }
 
-                        $(connection).triggerHandler(events.onStarting);
-
                         var transports = [],
                             supportedTransports = [];
 
@@ -577,7 +576,7 @@
 
         starting: function (callback) {
             /// <summary>Adds a callback that will be invoked before anything is sent over the connection</summary>
-            /// <param name="callback" type="Function">A callback function to execute before each time data is sent on the connection</param>
+            /// <param name="callback" type="Function">A callback function to execute before the connection is fully instantiated.</param>
             /// <returns type="signalR" />
             var connection = this;
             $(connection).bind(events.onStarting, function (e, data) {
