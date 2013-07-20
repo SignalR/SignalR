@@ -60,6 +60,16 @@
                connection.state === signalR.connectionState.reconnecting;
     }
 
+    function addConnectionData(url, connectionData) {
+        var appender = url.indexOf("?") !== -1 ? "&" : "?";
+
+        if (connectionData) {
+            url += appender + "connectionData=" + window.encodeURIComponent(connectionData);
+        }
+
+        return url;
+    }
+
     transportLogic = signalR.transports._logic = {
         pingServer: function (connection) {
             /// <summary>Pings the server</summary>
@@ -68,8 +78,7 @@
             var url, deferral = $.Deferred();
 
             url = connection.url + "/ping";
-            url = transportLogic.addQs(url, connection);
-            url = transportLogic.addConnectionData(connection, url);
+            url = transportLogic.prepareQueryString(connection, url);
 
             $.ajax(
                 $.extend({}, $.signalR.ajaxDefaults, {
@@ -80,6 +89,7 @@
                     data: {},
                     dataType: connection.ajaxDataType,
                     success: function (data) {
+
                         if (data.Response === "pong") {
                             deferral.resolve();
                         }
@@ -99,6 +109,12 @@
                 }));
 
             return deferral.promise();
+        },
+
+        prepareQueryString: function (connection, url) {
+            url = transportLogic.addQs(url, connection);
+
+            return addConnectionData(url, connection.data);
         },
 
         addQs: function (url, connection) {
@@ -151,20 +167,9 @@
                 }
             }
             url += "?" + qs;
-            url = this.addQs(url, connection);
-            url = transportLogic.addConnectionData(connection, url);
+            url = transportLogic.prepareQueryString(connection, url);
             url += "&tid=" + Math.floor(Math.random() * 11);
             return url;
-        },
-
-        addConnectionData: function (connection, currentUrl) {
-            var appender = currentUrl.indexOf("?") !== -1 ? "&" : "?";
-
-            if (connection.data) {
-                currentUrl += appender + "connectionData=" + window.encodeURIComponent(connection.data);
-            }
-
-            return currentUrl;
         },
 
         maximizePersistentResponse: function (minPersistentResponse) {
@@ -186,9 +191,7 @@
 
         ajaxSend: function (connection, data) {
             var url = connection.url + "/send" + "?transport=" + connection.transport.name + "&connectionToken=" + window.encodeURIComponent(connection.token);
-            url = this.addQs(url, connection);
-            url = transportLogic.addQs(url, connection);
-            url = transportLogic.addConnectionData(connection, url);
+            url = transportLogic.prepareQueryString(connection, url);
 
             return $.ajax(
                 $.extend({}, $.signalR.ajaxDefaults, {
@@ -226,8 +229,7 @@
             async = typeof async === "undefined" ? true : async;
 
             var url = connection.url + "/abort" + "?transport=" + connection.transport.name + "&connectionToken=" + window.encodeURIComponent(connection.token);
-            url = transportLogic.addQs(url, connection);
-            url = transportLogic.addConnectionData(connection, url);
+            url = transportLogic.prepareQueryString(connection, url);
 
             $.ajax(
                 $.extend({}, $.signalR.ajaxDefaults, {

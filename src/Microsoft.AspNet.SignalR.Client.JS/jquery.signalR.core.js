@@ -487,8 +487,7 @@
             $(connection).triggerHandler(events.onStarting);
 
             var url = connection.url + "/negotiate";
-            url = signalR.transports._logic.addQs(url, connection);
-            url = signalR.transports._logic.addConnectionData(connection, url);
+            url = signalR.transports._logic.prepareQueryString(connection, url);
 
             connection.log("Negotiating with '" + url + "'.");
             $.ajax(
