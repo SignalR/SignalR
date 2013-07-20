@@ -534,7 +534,10 @@
                     connection.stop();
                 };
 
+            $(connection).triggerHandler(events.onStarting);
+
             url = signalR.transports._logic.addQs(url, connection.qs);
+            url = signalR.transports._logic.addConnectionData(connection, url);
 
             // Add the client version to the negotiate request.  We utilize the same addQs method here
             // so that it can append the clientVersion appropriately to the URL
@@ -608,8 +611,6 @@
                             return;
                         }
 
-                        $(connection).triggerHandler(events.onStarting);
-
                         var transports = [],
                             supportedTransports = [];
 
@@ -646,7 +647,7 @@
 
         starting: function (callback) {
             /// <summary>Adds a callback that will be invoked before anything is sent over the connection</summary>
-            /// <param name="callback" type="Function">A callback function to execute before each time data is sent on the connection</param>
+            /// <param name="callback" type="Function">A callback function to execute before the connection is fully instantiated.</param>
             /// <returns type="signalR" />
             var connection = this;
             $(connection).bind(events.onStarting, function (e, data) {
@@ -921,7 +922,8 @@
                     deferral.reject("SignalR: Error pinging server: " + errorMessage);
                 };
 
-            url = this.addQs(url, connection.qs);
+            url = transportLogic.addQs(url, connection.qs);
+            url = transportLogic.addConnectionData(connection, url);
 
             $.ajax(
                 $.extend({}, $.signalR.ajaxDefaults, {
@@ -990,10 +992,6 @@
                 url = baseUrl + connection.appRelativeUrl,
                 qs = "transport=" + transport + "&connectionToken=" + window.encodeURIComponent(connection.token);
 
-            if (connection.data) {
-                qs += "&connectionData=" + window.encodeURIComponent(connection.data);
-            }
-
             if (connection.groupsToken) {
                 qs += "&groupsToken=" + window.encodeURIComponent(connection.groupsToken);
             }
@@ -1014,8 +1012,19 @@
             }
             url += "?" + qs;
             url = transportLogic.addQs(url, connection.qs);
+            url = transportLogic.addConnectionData(connection, url);
             url += "&tid=" + Math.floor(Math.random() * 11);
             return url;
+        },
+
+        addConnectionData: function (connection, currentUrl) {
+            var appender = currentUrl.indexOf("?") !== -1 ? "&" : "?";
+
+            if (connection.data) {
+                currentUrl += appender + "connectionData=" + window.encodeURIComponent(connection.data);
+            }
+
+            return currentUrl;
         },
 
         maximizePersistentResponse: function (minPersistentResponse) {
@@ -1050,8 +1059,9 @@
                     $(connection).triggerHandler(events.onError, [error, data]);
                 };
 
-            url = this.addQs(url, connection.qs);
-            
+            url = transportLogic.addQs(url, connection.qs);
+            url = transportLogic.addConnectionData(connection, url);
+
             return $.ajax(
                 $.extend({}, $.signalR.ajaxDefaults, {
                     xhrFields: { withCredentials: connection.withCredentials },
@@ -1101,7 +1111,9 @@
             async = typeof async === "undefined" ? true : async;
 
             var url = connection.url + "/abort" + "?transport=" + connection.transport.name + "&connectionToken=" + window.encodeURIComponent(connection.token);
-            url = this.addQs(url, connection.qs);
+            url = transportLogic.addQs(url, connection.qs);
+            url = transportLogic.addConnectionData(connection, url);
+
             $.ajax(
                 $.extend({}, $.signalR.ajaxDefaults, {
                     xhrFields: { withCredentials: connection.withCredentials },

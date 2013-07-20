@@ -72,7 +72,8 @@
                     deferral.reject("SignalR: Error pinging server: " + errorMessage);
                 };
 
-            url = this.addQs(url, connection.qs);
+            url = transportLogic.addQs(url, connection.qs);
+            url = transportLogic.addConnectionData(connection, url);
 
             $.ajax(
                 $.extend({}, $.signalR.ajaxDefaults, {
@@ -141,10 +142,6 @@
                 url = baseUrl + connection.appRelativeUrl,
                 qs = "transport=" + transport + "&connectionToken=" + window.encodeURIComponent(connection.token);
 
-            if (connection.data) {
-                qs += "&connectionData=" + window.encodeURIComponent(connection.data);
-            }
-
             if (connection.groupsToken) {
                 qs += "&groupsToken=" + window.encodeURIComponent(connection.groupsToken);
             }
@@ -165,8 +162,19 @@
             }
             url += "?" + qs;
             url = transportLogic.addQs(url, connection.qs);
+            url = transportLogic.addConnectionData(connection, url);
             url += "&tid=" + Math.floor(Math.random() * 11);
             return url;
+        },
+
+        addConnectionData: function (connection, currentUrl) {
+            var appender = currentUrl.indexOf("?") !== -1 ? "&" : "?";
+
+            if (connection.data) {
+                currentUrl += appender + "connectionData=" + window.encodeURIComponent(connection.data);
+            }
+
+            return currentUrl;
         },
 
         maximizePersistentResponse: function (minPersistentResponse) {
@@ -201,8 +209,9 @@
                     $(connection).triggerHandler(events.onError, [error, data]);
                 };
 
-            url = this.addQs(url, connection.qs);
-            
+            url = transportLogic.addQs(url, connection.qs);
+            url = transportLogic.addConnectionData(connection, url);
+
             return $.ajax(
                 $.extend({}, $.signalR.ajaxDefaults, {
                     xhrFields: { withCredentials: connection.withCredentials },
@@ -252,7 +261,9 @@
             async = typeof async === "undefined" ? true : async;
 
             var url = connection.url + "/abort" + "?transport=" + connection.transport.name + "&connectionToken=" + window.encodeURIComponent(connection.token);
-            url = this.addQs(url, connection.qs);
+            url = transportLogic.addQs(url, connection.qs);
+            url = transportLogic.addConnectionData(connection, url);
+
             $.ajax(
                 $.extend({}, $.signalR.ajaxDefaults, {
                     xhrFields: { withCredentials: connection.withCredentials },
