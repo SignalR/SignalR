@@ -535,8 +535,7 @@
 
             $(connection).triggerHandler(events.onStarting);
 
-            url = signalR.transports._logic.addQs(url, connection.qs);
-            url = signalR.transports._logic.addConnectionData(connection, url);
+            url = signalR.transports._logic.prepareQueryString(connection, url);
 
             // Add the client version to the negotiate request.  We utilize the same addQs method here
             // so that it can append the clientVersion appropriately to the URL
