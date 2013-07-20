@@ -22,8 +22,7 @@ namespace Microsoft.AspNet.SignalR
         /// A list of signals this message should be delivered to. If this is used
         /// the Signal cannot be used.
         /// </summary>
-        [SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly", Justification = "This is optional")]
-        public IList<string> Signals { get; set; }
+        public IList<string> Signals { get; private set; }
 
         /// <summary>
         /// The payload of the message.
