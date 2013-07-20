@@ -249,6 +249,8 @@
   <Target Name="BeforeBuild">
     <Copy Condition="'$(ArtifactsDir)' == '' And '$(OS)' == 'Windows_NT'" SourceFiles="$(SolutionDir)src\Microsoft.AspNet.SignalR.Client.JS\bin\jquery.signalR.js" DestinationFiles="Scripts\jquery.signalR.js" />
     <Copy Condition="'$(ArtifactsDir)' != '' And '$(OS)' == 'Windows_NT'" SourceFiles="$(ArtifactsDir)\Microsoft.AspNet.SignalR.Client.JS\jquery.signalR.js" DestinationFiles="Scripts\jquery.signalR.js" />
+    <Copy Condition="'$(ArtifactsDir)' == '' And '$(OS)' == 'Windows_NT'" SourceFiles="$(SolutionDir)src\Microsoft.AspNet.SignalR.Client.JS\bin\jquery.signalR.min.js" DestinationFiles="Scripts\jquery.signalR.min.js" />
+    <Copy Condition="'$(ArtifactsDir)' != '' And '$(OS)' == 'Windows_NT'" SourceFiles="$(ArtifactsDir)\Microsoft.AspNet.SignalR.Client.JS\jquery.signalR.min.js" DestinationFiles="Scripts\jquery.signalR.min.js" />
   </Target>
   <!--<Target Name="RestoreSignalR" BeforeTargets="RestorePackages">
     <PropertyGroup>
