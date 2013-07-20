@@ -32,7 +32,10 @@ SUITE(EventSourceStreamReaderTests)
         {
             tce.set(sseEvent->GetData());
         });
+
         pEventSource->Start();
+
+        TaskAsyncHelper::Delay(seconds(1)).wait(); // this test crashes in debug mode if this delay is removed
 
         //Assert
         CHECK(pEvent->wait(5000) == 0);
@@ -46,6 +49,8 @@ SUITE(EventSourceStreamReaderTests)
         }
 
         //Cleanup
+        pEventSource->Abort();
+
         pEventSource->SetOpenedCallback([](){});
         pEventSource->SetMessageCallback([](shared_ptr<SseEvent>){});
     }

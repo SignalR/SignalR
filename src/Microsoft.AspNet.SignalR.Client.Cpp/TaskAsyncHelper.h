@@ -24,6 +24,7 @@ namespace MicrosoftAspNetSignalRClientCpp
         TaskCompleted
     };
 
+    // TaskAsyncHelper::Delay is experimental
     template <typename T>
     class DelayedTaskHelper
     {
@@ -39,11 +40,16 @@ namespace MicrosoftAspNetSignalRClientCpp
 
             if (ct != pplx::cancellation_token::none())
             {
-                ct.register_callback([helper]()
+                pplx::cancellation_token_registration registration = ct.register_callback([helper]()
                 {
                     helper->mTimer.stop(false);
                     delete helper;
                 });
+                
+                helper->DeregisterCallback = [ct, registration]()
+                {
+                    ct.deregister_callback(registration);
+                };
             }
 
             auto task = pplx::create_task(helper->mTce);
@@ -58,11 +64,16 @@ namespace MicrosoftAspNetSignalRClientCpp
 
             if (ct != pplx::cancellation_token::none())
             {
-                ct.register_callback([helper]()
+                pplx::cancellation_token_registration registration = ct.register_callback([helper]()
                 {
                     helper->mTimer.stop(false);
                     delete helper;
                 });
+
+                helper->DeregisterCallback = [ct, registration]()
+                {
+                    ct.deregister_callback(registration);
+                };
             }
 
             auto task = pplx::create_task(helper->mTce);
@@ -73,11 +84,13 @@ namespace MicrosoftAspNetSignalRClientCpp
     private:
         DelayedTaskHelper()
         {
+            DeregisterCallback = [](){};
         }
     
         static void TimerCallback(void* context)
         {
             auto helper = static_cast<DelayedTaskHelper<T>*>(context);
+            helper->DeregisterCallback();
             helper->mTce.set(T());
             delete helper;
         }
@@ -85,12 +98,14 @@ namespace MicrosoftAspNetSignalRClientCpp
         static void TimerCallbackVoid(void* context)
         {
             auto helper = static_cast<DelayedTaskHelper<void>*>(context);
+            helper->DeregisterCallback();
             helper->mTce.set();
             delete helper;
         }
 
         pplx::task_completion_event<T> mTce;
         pplx::details::timer_t mTimer;
+        function<void()> DeregisterCallback;
     };
 
     class TaskAsyncHelper
@@ -99,7 +114,7 @@ namespace MicrosoftAspNetSignalRClientCpp
         TaskAsyncHelper();
         ~TaskAsyncHelper();
 
-        
+        // TaskAsyncHelper::Delay is experimental
         static pplx::task<void> Delay(seconds seconds, pplx::cancellation_token ct = pplx::cancellation_token::none());
 
         template <typename T1>
