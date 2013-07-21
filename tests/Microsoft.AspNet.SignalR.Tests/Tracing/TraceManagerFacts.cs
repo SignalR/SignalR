@@ -23,8 +23,8 @@ namespace Microsoft.AspNet.SignalR.Tests.Tracing
             var traceManager = new TraceManager(hostListener);
             TraceSource source = traceManager["Random"];
 
-            Assert.Equal(2, source.Listeners.Count);
-            Assert.Same(hostListener, source.Listeners[1]);
+            Assert.Equal(1, source.Listeners.Count);
+            Assert.Same(hostListener, source.Listeners[0]);
         }
     }
 }

@@ -41,6 +41,12 @@ namespace Microsoft.AspNet.SignalR.Tracing
 
             if (_hostTraceListener != null)
             {
+                if (traceSource.Listeners.Count > 0 && 
+                    traceSource.Listeners[0] is DefaultTraceListener)
+                {
+                    traceSource.Listeners.RemoveAt(0);
+                }
+
                 traceSource.Listeners.Add(_hostTraceListener);
             }
 

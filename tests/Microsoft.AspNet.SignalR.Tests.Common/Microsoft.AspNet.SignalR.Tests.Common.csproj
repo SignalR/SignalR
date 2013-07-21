@@ -151,6 +151,7 @@
     <Compile Include="Hubs\AuthenticatedEchoHub.cs" />
     <Compile Include="Hubs\ChatWithGroups.cs" />
     <Compile Include="Hubs\ClientCallbackHub.cs" />
+    <Compile Include="Hubs\ConnectionDataVerifierHub.cs" />
     <Compile Include="Hubs\DelayedOnConnectedHub.cs" />
     <Compile Include="Hubs\EchoHub.cs" />
     <Compile Include="Hubs\ExamineHeadersHub.cs" />

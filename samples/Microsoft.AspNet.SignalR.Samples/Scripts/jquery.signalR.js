@@ -534,7 +534,9 @@
                     connection.stop();
                 };
 
-            url = signalR.transports._logic.addQs(url, connection.qs);
+            $(connection).triggerHandler(events.onStarting);
+
+            url = signalR.transports._logic.prepareQueryString(connection, url);
 
             // Add the client version to the negotiate request.  We utilize the same addQs method here
             // so that it can append the clientVersion appropriately to the URL
@@ -608,8 +610,6 @@
                             return;
                         }
 
-                        $(connection).triggerHandler(events.onStarting);
-
                         var transports = [],
                             supportedTransports = [];
 
@@ -646,7 +646,7 @@
 
         starting: function (callback) {
             /// <summary>Adds a callback that will be invoked before anything is sent over the connection</summary>
-            /// <param name="callback" type="Function">A callback function to execute before each time data is sent on the connection</param>
+            /// <param name="callback" type="Function">A callback function to execute before the connection is fully instantiated.</param>
             /// <returns type="signalR" />
             var connection = this;
             $(connection).bind(events.onStarting, function (e, data) {
@@ -909,6 +909,16 @@
                connection.state === signalR.connectionState.reconnecting;
     }
 
+    function addConnectionData(url, connectionData) {
+        var appender = url.indexOf("?") !== -1 ? "&" : "?";
+
+        if (connectionData) {
+            url += appender + "connectionData=" + window.encodeURIComponent(connectionData);
+        }
+
+        return url;
+    }
+
     transportLogic = signalR.transports._logic = {
         pingServer: function (connection, transport) {
             /// <summary>Pings the server</summary>
@@ -921,7 +931,7 @@
                     deferral.reject("SignalR: Error pinging server: " + errorMessage);
                 };
 
-            url = this.addQs(url, connection.qs);
+            url = transportLogic.prepareQueryString(connection, url);
 
             $.ajax(
                 $.extend({}, $.signalR.ajaxDefaults, {
@@ -933,7 +943,7 @@
                     dataType: connection.ajaxDataType,
                     success: function (result) {
                         var data;
-                        
+
                         try {
                             data = connection._parseResponse(result);
                         }
@@ -957,6 +967,12 @@
             ));
 
             return deferral.promise();
+        },
+
+        prepareQueryString: function (connection, url) {
+            url = transportLogic.addQs(url, connection.qs);
+
+            return addConnectionData(url, connection.data);
         },
 
         addQs: function (url, qs) {
@@ -990,10 +1006,6 @@
                 url = baseUrl + connection.appRelativeUrl,
                 qs = "transport=" + transport + "&connectionToken=" + window.encodeURIComponent(connection.token);
 
-            if (connection.data) {
-                qs += "&connectionData=" + window.encodeURIComponent(connection.data);
-            }
-
             if (connection.groupsToken) {
                 qs += "&groupsToken=" + window.encodeURIComponent(connection.groupsToken);
             }
@@ -1013,7 +1025,7 @@
                 }
             }
             url += "?" + qs;
-            url = transportLogic.addQs(url, connection.qs);
+            url = transportLogic.prepareQueryString(connection, url);
             url += "&tid=" + Math.floor(Math.random() * 11);
             return url;
         },
@@ -1037,7 +1049,7 @@
         },
 
         stringifySend: function (connection, message) {
-            if (typeof(message) === "string" || typeof(message) === "undefined" || message === null) {
+            if (typeof (message) === "string" || typeof (message) === "undefined" || message === null) {
                 return message;
             }
             return connection.json.stringify(message);
@@ -1050,8 +1062,8 @@
                     $(connection).triggerHandler(events.onError, [error, data]);
                 };
 
-            url = this.addQs(url, connection.qs);
-            
+            url = transportLogic.prepareQueryString(connection, url);
+
             return $.ajax(
                 $.extend({}, $.signalR.ajaxDefaults, {
                     xhrFields: { withCredentials: connection.withCredentials },
@@ -1101,7 +1113,8 @@
             async = typeof async === "undefined" ? true : async;
 
             var url = connection.url + "/abort" + "?transport=" + connection.transport.name + "&connectionToken=" + window.encodeURIComponent(connection.token);
-            url = this.addQs(url, connection.qs);
+            url = transportLogic.prepareQueryString(connection, url);
+
             $.ajax(
                 $.extend({}, $.signalR.ajaxDefaults, {
                     xhrFields: { withCredentials: connection.withCredentials },
