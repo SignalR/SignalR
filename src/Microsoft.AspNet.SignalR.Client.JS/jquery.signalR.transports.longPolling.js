@@ -40,11 +40,11 @@
 
                     return false;
                 },
+                privateData = connection._,
                 reconnectErrors = 0,
-                reconnectTimeoutId = null,
                 fireReconnected = function (instance) {
-                    window.clearTimeout(reconnectTimeoutId);
-                    reconnectTimeoutId = null;
+                    window.clearTimeout(privateData.reconnectTimeoutId);
+                    privateData.reconnectTimeoutId = null;
 
                     if (changeState(connection,
                                     signalR.connectionState.reconnecting,
@@ -63,6 +63,9 @@
             }
 
             connection.messageId = null;
+
+            privateData.reconnectTimeoutId = null;
+            privateData.pollTimeoutId = null;
 
             window.setTimeout(function () {
                 (function poll(instance, raiseReconnect) {
@@ -103,7 +106,7 @@
                                 }
 
                                 // If there's currently a timeout to trigger reconnect, fire it now before processing messages
-                                if (reconnectTimeoutId !== null) {
+                                if (privateData.reconnectTimeoutId !== null) {
                                     fireReconnected();
                                 }
 
@@ -128,7 +131,7 @@
 
                                 // We never want to pass a raiseReconnect flag after a successful poll.  This is handled via the error function
                                 if (delay > 0) {
-                                    window.setTimeout(function () {
+                                    privateData.pollTimeoutId = window.setTimeout(function () {
                                         poll(instance, false);
                                     }, delay);
                                 } else {
@@ -139,8 +142,8 @@
                             error: function (data, textStatus) {
                                 // Stop trying to trigger reconnect, connection is in an error state
                                 // If we're not in the reconnect state this will noop
-                                window.clearTimeout(reconnectTimeoutId);
-                                reconnectTimeoutId = null;
+                                window.clearTimeout(privateData.reconnectTimeoutId);
+                                privateData.reconnectTimeoutId = null;
 
                                 if (textStatus === "abort") {
                                     connection.log("Aborted xhr requst.");
@@ -163,7 +166,7 @@
                                     transportLogic.ensureReconnectingState(instance);
 
                                     // Call poll with the raiseReconnect flag as true after the reconnect delay
-                                    window.setTimeout(function () {
+                                    privateData.pollTimeoutId = window.setTimeout(function () {
                                         poll(instance, true);
                                     }, that.reconnectDelay);
                                 }
@@ -179,7 +182,7 @@
                         // triggering reconnected.  This depends on the "error" handler of Poll to cancel this 
                         // timeout if it triggers before the Reconnected event fires.
                         // The Math.min at the end is to ensure that the reconnect timeout does not overflow.
-                        reconnectTimeoutId = window.setTimeout(function () { fireReconnected(instance); }, Math.min(1000 * (Math.pow(2, reconnectErrors) - 1), maxFireReconnectedTimeout));
+                        privateData.reconnectTimeoutId = window.setTimeout(function () { fireReconnected(instance); }, Math.min(1000 * (Math.pow(2, reconnectErrors) - 1), maxFireReconnectedTimeout));
                     }
                 }(connection));
             }, 250); // Have to delay initial poll so Chrome doesn't show loader spinner in tab
@@ -196,6 +199,13 @@
         stop: function (connection) {
             /// <summary>Stops the long polling connection</summary>
             /// <param name="connection" type="signalR">The SignalR connection to stop</param>
+
+            window.clearTimeout(connection._.pollTimeoutId);
+            window.clearTimeout(connection._.reconnectTimeoutId);
+
+            delete connection._.pollTimeoutId;
+            delete connection._.reconnectTimeoutId;
+
             if (connection.pollXhr) {
                 connection.pollXhr.abort();
                 connection.pollXhr = null;
