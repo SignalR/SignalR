@@ -111,8 +111,7 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
         public Task Send(ConnectionMessage message)
         {
             if (!String.IsNullOrEmpty(message.Signal) &&
-                message.Signals != null && 
-                message.Signals.Count > 0)
+                message.Signals != null)
             {
                 throw new InvalidOperationException(
                     String.Format(CultureInfo.CurrentCulture,
@@ -121,7 +120,7 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
                                   String.Join(", ", message.Signals)));
             }
 
-            if (message.Signals != null && message.Signals.Count > 0)
+            if (message.Signals != null)
             {
                 return MultiSend(message.Signals, message.Value, message.ExcludedSignals);
             }
@@ -143,6 +142,12 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
 
         private Task MultiSend(IList<string> signals, object value, IList<string> excludedSignals)
         {
+            if (signals.Count == 0)
+            {
+                // If there's nobody to send to then do nothing
+                return TaskAsyncHelper.Empty;
+            }
+
             // Serialize once
             ArraySegment<byte> messageBuffer = GetMessageBuffer(value);
             string filter = GetFilter(excludedSignals); 
