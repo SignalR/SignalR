@@ -325,6 +325,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
                 Func<TestSubscriber> subscriberFactory = () => new TestSubscriber(new[] { "key" });
                 var cd = new CountDownRange<int>(Enumerable.Range(2, 4));
                 IDisposable subscription = null;
+                string prefix = DefaultSubscription._defaultCursorPrefix;
 
                 // Pretend like we had an initial subscription
                 bus.Subscribe(subscriberFactory(), null, (result, state) => TaskAsyncHelper.True, 10, null)
@@ -337,7 +338,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
 
                 try
                 {
-                    subscription = bus.Subscribe(subscriberFactory(), "d-key,00000001", (result, state) =>
+                    subscription = bus.Subscribe(subscriberFactory(), prefix + "key,00000001", (result, state) =>
                     {
                         foreach (var m in result.GetMessages())
                         {
@@ -376,6 +377,8 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
                 var cdKey2 = new CountDownRange<int>(new[] { 1, 2, 10 });
                 IDisposable subscription = null;
 
+                string prefix = DefaultSubscription._defaultCursorPrefix;
+
                 // Pretend like we had an initial subscription
                 bus.Subscribe(subscriberFactory(), null, (result, state) => TaskAsyncHelper.True, 10, null)
                     .Dispose();
@@ -390,7 +393,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
 
                 try
                 {
-                    subscription = bus.Subscribe(subscriberFactory(), "d-key,00000001|key2,00000000", (result, state) =>
+                    subscription = bus.Subscribe(subscriberFactory(), prefix + "key,00000001|key2,00000000", (result, state) =>
                     {
                         foreach (var m in result.GetMessages())
                         {

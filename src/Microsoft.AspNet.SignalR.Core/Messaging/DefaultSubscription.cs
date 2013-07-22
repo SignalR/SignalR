@@ -13,7 +13,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
 {
     internal class DefaultSubscription : Subscription
     {
-        private static string _defaultCursorPrefix = GetCursorPrefix();
+        internal static string _defaultCursorPrefix = GetCursorPrefix();
 
         private List<Cursor> _cursors;
         private List<Topic> _cursorTopics;
