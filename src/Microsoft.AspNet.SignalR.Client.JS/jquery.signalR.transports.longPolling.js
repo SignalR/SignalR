@@ -65,9 +65,8 @@
             connection.messageId = null;
 
             privateData.reconnectTimeoutId = null;
-            privateData.pollTimeoutId = null;
 
-            window.setTimeout(function () {
+            privateData.pollTimeoutId = window.setTimeout(function () {
                 (function poll(instance, raiseReconnect) {
                     var messageId = instance.messageId,
                         connect = (messageId === null),
