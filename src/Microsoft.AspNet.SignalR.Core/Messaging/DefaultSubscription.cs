@@ -3,7 +3,9 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 using System.IO;
+using System.Security.Cryptography;
 using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR.Infrastructure;
 
@@ -11,7 +13,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
 {
     internal class DefaultSubscription : Subscription
     {
-        private const string _defaultCursorPrefix = "d-";
+        internal static string _defaultCursorPrefix = GetCursorPrefix();
 
         private List<Cursor> _cursors;
         private List<Topic> _cursorTopics;
@@ -196,6 +198,22 @@ namespace Microsoft.AspNet.SignalR.Messaging
             }
 
             return list;
+        }
+
+        private static string GetCursorPrefix()
+        {
+            using (var rng = new RNGCryptoServiceProvider())
+            {
+                var data = new byte[4];
+                rng.GetBytes(data);
+
+                using (var writer = new StringWriter(CultureInfo.InvariantCulture))
+                {
+                    var randomValue = (ulong)BitConverter.ToUInt32(data, 0);
+                    Cursor.WriteUlongAsHexToBuffer(randomValue, writer);
+                    return "d-" + writer.ToString() + "-";
+                }
+            }
         }
 
         private static ulong GetMessageId(TopicLookup topics, string key)
