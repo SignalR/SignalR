@@ -283,9 +283,7 @@ namespace Microsoft.AspNet.SignalR.Tests
             }
 
             [Theory]
-            [InlineData(TransportType.ServerSentEvents)]
-            [InlineData(TransportType.LongPolling)]
-            public void ReconnectFiresAfterTimeOut(TransportType transportType)
+            public void ReconnectDoesntFireAfterTimeOut(TransportType transportType, MessageBusType messageBusType)
             {
                 using (var host = new MemoryHost())
                 {
@@ -314,7 +312,7 @@ namespace Microsoft.AspNet.SignalR.Tests
 
                     connection.Stop();
 
-                    Assert.InRange(conn.Reconnects, 1, 4);
+                    Assert.Equal(0, conn.Reconnects);
                 }
             }
         }
