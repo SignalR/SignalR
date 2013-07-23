@@ -25,6 +25,7 @@ namespace Microsoft.AspNet.SignalR.Hosting.Memory
         private readonly CancellationTokenSource _shutDownTokenSource = new CancellationTokenSource();
         private readonly CancellationToken _shutDownToken;
         private int _disposed;
+        private IAppBuilder _appBuilder;
         private AppFunc _appFunc;
         private string _instanceName;
         private readonly Lazy<string> _defaultInstanceName;
@@ -42,15 +43,15 @@ namespace Microsoft.AspNet.SignalR.Hosting.Memory
                 throw new ArgumentNullException("startup");
             }
 
-            var builder = new AppBuilder();
+            _appBuilder = new AppBuilder();
 
-            builder.Properties[OwinConstants.ServerCapabilities] = new Dictionary<string, object>();
-            builder.Properties[OwinConstants.HostOnAppDisposing] = _shutDownToken;
-            builder.Properties[OwinConstants.HostAppNameKey] = InstanceName;
+            _appBuilder.Properties[OwinConstants.ServerCapabilities] = new Dictionary<string, object>();
+            _appBuilder.Properties[OwinConstants.HostOnAppDisposing] = _shutDownToken;
+            _appBuilder.Properties[OwinConstants.HostAppNameKey] = InstanceName;
 
-            startup(builder);
+            startup(_appBuilder);
 
-            _appFunc = Build(builder);
+            _appFunc = Build(_appBuilder);
         }
 
         public string InstanceName
