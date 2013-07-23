@@ -109,7 +109,8 @@
                                 contentType: connection.contentType,
                                 success: function (minData) {
                                     var delay = 0,
-                                        data;
+                                    data,
+                                    shouldReconnect;
 
                                     connection.log("Long poll complete.");
 
@@ -143,13 +144,19 @@
                                         return;
                                     }
 
+                                shouldReconnect = data && data.ShouldReconnect;
+                                if (shouldReconnect) {
+                                    // Transition into the reconnecting state
+                                    transportLogic.ensureReconnectingState(instance);
+                                }
+
                                     // We never want to pass a raiseReconnect flag after a successful poll.  This is handled via the error function
                                     if (delay > 0) {
                                         privateData.pollTimeoutId = window.setTimeout(function () {
-                                            poll(instance, false);
+                                        poll(instance, shouldReconnect);
                                         }, delay);
                                     } else {
-                                        poll(instance, false);
+                                    poll(instance, shouldReconnect);
                                     }
                                 },
 
