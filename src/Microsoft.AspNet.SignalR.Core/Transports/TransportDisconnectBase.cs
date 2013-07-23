@@ -144,6 +144,14 @@ namespace Microsoft.AspNet.SignalR.Transports
             }
         }
 
+        protected CancellationToken HostShutdownToken
+        {
+            get
+            {
+                return _hostShutdownToken;
+            }
+        }
+
         public bool IsTimedOut
         {
             get

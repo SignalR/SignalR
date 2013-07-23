@@ -260,7 +260,7 @@ namespace Microsoft.AspNet.SignalR.Transports
         {
             var context = (MessageContext)state;
 
-            response.TimedOut = context.Transport.IsTimedOut;
+            response.Reconnect = context.Transport.HostShutdownToken.IsCancellationRequested;
 
             Task task = TaskAsyncHelper.Empty;
 
