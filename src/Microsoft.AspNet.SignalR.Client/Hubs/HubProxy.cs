@@ -154,10 +154,12 @@ namespace Microsoft.AspNet.SignalR.Client.Hubs
                 if (task.IsCanceled)
                 {
                     tcs.TrySetCanceled();
+                    ((HubConnection)_connection).RemoveCallback(callbackId);
                 }
                 else if (task.IsFaulted)
                 {
                     tcs.TrySetUnwrappedException(task.Exception);
+                    ((HubConnection)_connection).RemoveCallback(callbackId);
                 }
             },
             TaskContinuationOptions.NotOnRanToCompletion);
