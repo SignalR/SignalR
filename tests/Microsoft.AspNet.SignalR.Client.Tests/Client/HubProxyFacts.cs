@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR.Client;
 using Microsoft.AspNet.SignalR.Client.Hubs;
 using Microsoft.AspNet.SignalR.Tests.Utilities;
+using Microsoft.AspNet.SignalR.Infrastructure;
 using Moq;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -130,6 +132,53 @@ namespace Microsoft.AspNet.SignalR.Client.Tests
 
             hubProxy.InvokeEvent("foo", new[] { JToken.FromObject(1) });
             Assert.True(eventRaised);
+        }
+
+        [Fact]
+        public void HubCallbacksClearedOnDisconnect()
+        {
+            var connection = new HubConnection("http://foo");
+
+            connection.RegisterCallback(result => { });
+
+            connection.Start();
+
+            ((IHubConnection)connection).Disconnect();
+
+            Assert.True(connection.IsCallbackMapEmpty());
+        }
+
+        [Fact]
+        public void HubCallbacksClearedOnReconnect()
+        {
+            var connection = new HubConnection("http://foo");
+
+            connection.RegisterCallback(result => { });
+
+            connection.Start();
+
+            ((IConnection)connection).OnReconnecting();
+
+            Assert.True(connection.IsCallbackMapEmpty());
+        }
+
+        [Fact]
+        public void HubCallbackClearedOnFailedInvocation()
+        {
+            var connection = new Mock<HubConnection>("http://foo");
+            var tcs = new TaskCompletionSource<object>();
+
+            tcs.TrySetCanceled();
+
+            connection.Setup(c => c.Send(It.IsAny<string>())).Returns(tcs.Task);
+
+            var hubProxy = new HubProxy(connection.Object, "foo");
+
+            var aggEx = Assert.Throws<AggregateException>(() => { hubProxy.Invoke("foo", "arg1").Wait(); });
+            var ex = aggEx.Unwrap();
+
+            Assert.IsType(typeof(TaskCanceledException), ex);
+            Assert.True(connection.Object.IsCallbackMapEmpty());
         }
     }
 }

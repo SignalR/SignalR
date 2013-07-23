@@ -138,6 +138,18 @@ namespace Microsoft.AspNet.SignalR.Client
             return this.JsonSerializeObject(data);
         }
 
+        protected override void OnClosed()
+        {
+            ClearInvocationCallbacks("Connection closed");
+            base.OnClosed();
+        }
+
+        protected override void TryReconnecting()
+        {
+            ClearInvocationCallbacks("Connection lost, trying to reconnect");
+            base.TryReconnecting();
+        }
+
         /// <summary>
         /// Creates an <see cref="IHubProxy"/> for the hub with the specified name.
         /// </summary>
@@ -170,6 +182,20 @@ namespace Microsoft.AspNet.SignalR.Client
             }
         }
 
+        public bool IsCallbackMapEmpty()
+        {
+            return _callbacks.Count == 0;
+        }
+
+        public void RemoveCallback(string callbackId)
+        {
+            Action<HubResult> callback;
+            if (_callbacks.TryGetValue(callbackId, out callback))
+            {
+                _callbacks.Remove(callbackId);
+            }
+        }
+
         private static string GetUrl(string url, bool useDefaultUrl)
         {
             if (!url.EndsWith("/", StringComparison.Ordinal))
@@ -183,6 +209,19 @@ namespace Microsoft.AspNet.SignalR.Client
             }
 
             return url;
+        }
+
+        private void ClearInvocationCallbacks(string error)
+        {
+            HubResult result = new HubResult();
+            result.Error = error;
+
+            foreach (KeyValuePair<string, Action<HubResult>> callback in _callbacks)
+            {
+                callback.Value(result);
+            }
+
+            _callbacks.Clear();
         }
     }
 }
