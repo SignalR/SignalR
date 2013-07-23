@@ -25,7 +25,9 @@
         parseFailed: "Failed at parsing response: {0}",
         longPollFailed: "Long polling request failed.",
         eventSourceFailedToConnect: "EventSource failed to connect.",
-        webSocketClosed: "WebSocket closed."
+        webSocketClosed: "WebSocket closed.",
+        invalidPingServerResponse: "Invalid ping response when pinging server: '{0}'.",
+        noConnectionTransport: "Connection is in an invalid state, there is no transport active."
     };
 
     if (typeof ($) !== "function") {
@@ -89,10 +91,8 @@
 
         configurePingInterval = function (connection) {
             var config = connection._.config,
-                onFail = function () {
-                    $(connection).triggerHandler(events.onError, ["SignalR: Pinging server failed, current user may no longer be authenticated, stopping the connection."]);
-                    // If we fail then we should kill the connection
-                    connection.stop();
+                onFail = function (error) {
+                    $(connection).triggerHandler(events.onError, [error]);
                 };
 
             if (!config.pingIntervalId && config.pingInterval) {
@@ -169,7 +169,7 @@
             // undefined value means not IE
             return version;
         })(),
-        
+
         error: function (message, source) {
             var e = new Error(message);
             e.source = source;
@@ -497,7 +497,7 @@
 
             initialize = function (transports, index) {
                 var noTransportError = signalR._.error(resources.noTransportOnInit);
-                
+
                 index = index || 0;
                 if (index >= transports.length) {
                     // No transport initialized successfully
@@ -668,7 +668,7 @@
                             protocolError = signalR._.error(signalR._.format(resources.protocolIncompatible, connection.clientProtocol, res.ProtocolVersion));
                             $(connection).triggerHandler(events.onError, [protocolError]);
                             deferred.reject(protocolError);
-                            
+
                             return;
                         }
 
