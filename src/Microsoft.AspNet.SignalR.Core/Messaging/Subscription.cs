@@ -121,13 +121,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
 
             WorkImpl(tcs);
 
-            // Fast Path
-            if (tcs.Task.IsCompleted)
-            {
-                return tcs.Task;
-            }
-
-            return FinishAsync(tcs);
+            return tcs.Task;
         }
 
         public bool SetQueued()
@@ -139,19 +133,6 @@ namespace Microsoft.AspNet.SignalR.Messaging
         {
             // If we try to set the state to idle and we were not already in the working state then keep going
             return Interlocked.CompareExchange(ref _state, State.Idle, State.Working) != State.Working;
-        }
-
-        private static Task FinishAsync(TaskCompletionSource<object> tcs)
-        {
-            return tcs.Task.ContinueWith(task =>
-            {
-                if (task.IsFaulted)
-                {
-                    return TaskAsyncHelper.FromError(task.Exception);
-                }
-
-                return TaskAsyncHelper.Empty;
-            }).FastUnwrap();
         }
 
         [SuppressMessage("Microsoft.Usage", "CA2202:Do not dispose objects multiple times", Justification = "We have a sync and async code path.")]
@@ -201,7 +182,14 @@ namespace Microsoft.AspNet.SignalR.Messaging
                     }
                     catch (Exception ex)
                     {
-                        taskCompletionSource.TrySetUnwrappedException(ex);
+                        if (ex.InnerException is TaskCanceledException)
+                        {
+                            taskCompletionSource.TrySetCanceled();
+                        }
+                        else
+                        {
+                            taskCompletionSource.TrySetUnwrappedException(ex);
+                        }
                     }
                 }
                 else
@@ -233,6 +221,10 @@ namespace Microsoft.AspNet.SignalR.Messaging
                 if (task.IsFaulted)
                 {
                     taskCompletionSource.TrySetUnwrappedException(task.Exception);
+                }
+                else if (task.IsCanceled)
+                {
+                    taskCompletionSource.TrySetCanceled();
                 }
                 else if (task.Result)
                 {

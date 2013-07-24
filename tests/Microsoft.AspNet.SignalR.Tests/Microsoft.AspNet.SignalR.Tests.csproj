@@ -121,6 +121,7 @@
     <Compile Include="Server\ScaleoutStoreFacts.cs" />
     <Compile Include="Server\ScaleoutStreamFacts.cs" />
     <Compile Include="Server\ScaleoutConfigurationFacts.cs" />
+    <Compile Include="Server\SubscriptionFacts.cs" />
     <Compile Include="Server\TestSubscriber.cs" />
     <Compile Include="Server\TopicFacts.cs" />
     <Compile Include="Server\Transports\ForeverTransportFacts.cs" />
