@@ -693,18 +693,14 @@ namespace Microsoft.AspNet.SignalR.Client
             OnError(error);
         }
 
-        void IConnection.OnReconnecting()
+        public virtual void OnReconnecting()
         {
             // Only allow the client to attempt to reconnect for a _disconnectTimout TimeSpan which is set by
             // the server during negotiation.
             // If the client tries to reconnect for longer the server will likely have deleted its ConnectionId
             // topic along with the contained disconnect message.
             _disconnectTimeoutOperation = SetTimeout(_disconnectTimeout, Disconnect);
-            TryReconnecting();
-        }
 
-        protected virtual void TryReconnecting()
-        {
             if (Reconnecting != null)
             {
                 Reconnecting();

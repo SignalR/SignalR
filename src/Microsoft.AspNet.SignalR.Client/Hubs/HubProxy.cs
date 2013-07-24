@@ -154,7 +154,7 @@ namespace Microsoft.AspNet.SignalR.Client.Hubs
                 if (task.IsCanceled)
                 {
                     tcs.TrySetCanceled();
-                    ((HubConnection)_connection).RemoveCallback(callbackId);
+                    _connection.RemoveCallback(callbackId);
                 }
                 else if (task.IsFaulted)
                 {

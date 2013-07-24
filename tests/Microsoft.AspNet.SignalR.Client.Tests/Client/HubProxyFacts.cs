@@ -145,7 +145,7 @@ namespace Microsoft.AspNet.SignalR.Client.Tests
 
             ((IHubConnection)connection).Disconnect();
 
-            Assert.True(connection.IsCallbackMapEmpty());
+            Assert.True(connection._callbacks.Count == 0);
         }
 
         [Fact]
@@ -159,7 +159,7 @@ namespace Microsoft.AspNet.SignalR.Client.Tests
 
             ((IConnection)connection).OnReconnecting();
 
-            Assert.True(connection.IsCallbackMapEmpty());
+            Assert.True(connection._callbacks.Count == 0);
         }
 
         [Fact]
@@ -178,7 +178,7 @@ namespace Microsoft.AspNet.SignalR.Client.Tests
             var ex = aggEx.Unwrap();
 
             Assert.IsType(typeof(TaskCanceledException), ex);
-            Assert.True(connection.Object.IsCallbackMapEmpty());
+            Assert.True(connection.Object._callbacks.Count == 0);
         }
     }
 }
