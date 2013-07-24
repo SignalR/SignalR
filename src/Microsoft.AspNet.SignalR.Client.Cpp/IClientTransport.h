@@ -11,7 +11,6 @@
 using namespace std;
 using namespace pplx;
 using namespace utility;
-using namespace concurrency;
 
 namespace MicrosoftAspNetSignalRClientCpp
 {

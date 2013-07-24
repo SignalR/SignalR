@@ -6,11 +6,10 @@
 
 #pragma once
 
-#include <http_client.h>
+#include <functional>
 #include <atomic>
 
 using namespace std;
-using namespace pplx;
 
 namespace MicrosoftAspNetSignalRClientCpp
 {

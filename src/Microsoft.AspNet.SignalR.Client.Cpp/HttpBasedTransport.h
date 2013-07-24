@@ -8,8 +8,6 @@
 
 #include "Connection.h"
 #include "TransportHelper.h"
-#include <agents.h>
-#include "TaskAsyncHelper.h"
 #include "TransportInitializationHandler.h"
 #include "TransportAbortHandler.h"
 

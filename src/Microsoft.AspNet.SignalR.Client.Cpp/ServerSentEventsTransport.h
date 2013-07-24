@@ -9,7 +9,6 @@
 #include "HttpBasedTransport.h"
 #include "EventSourceStreamReader.h"
 #include "ThreadSafeInvoker.h"
-#include "TaskAsyncHelper.h"
 
 using namespace utility;
 

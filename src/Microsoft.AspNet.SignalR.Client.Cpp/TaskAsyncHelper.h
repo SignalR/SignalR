@@ -6,14 +6,11 @@
 
 #pragma once
 
-#include <ppltasks.h>
-#include <agents.h>
-#include "http_client.h"
-#include "pplxconv.h"
+#include <basic_types.h>
+#include <asyncrt_utils.h>
 
 using namespace std;
 using namespace utility;
-using namespace concurrency;
 
 namespace MicrosoftAspNetSignalRClientCpp
 {

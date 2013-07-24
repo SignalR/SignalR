@@ -6,7 +6,7 @@
 
 #pragma once
 
-#include <http_client.h>
+#include <memory>
 #include "StringHelper.h"
 
 using namespace std;

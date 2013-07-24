@@ -8,12 +8,14 @@
 
 #include <mutex>
 #include <atomic>
+#include <ppltasks.h>
+#include <containerstream.h>
 #include "SseEvent.h"
-#include <http_client.h>
 #include "ExceptionHelper.h"
 #include "TaskAsyncHelper.h"
 
 using namespace std;
+using namespace Concurrency;
 
 namespace MicrosoftAspNetSignalRClientCpp
 {

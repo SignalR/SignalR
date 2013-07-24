@@ -7,10 +7,8 @@
 #pragma once
 
 #include "ConnectionState.h"
-#include <http_client.h>
 
 using namespace std;
-using namespace utility;
 
 namespace MicrosoftAspNetSignalRClientCpp
 {

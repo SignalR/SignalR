@@ -6,7 +6,6 @@
 
 #pragma once
 
-#include <http_client.h>
 #include "HttpRequestWrapper.h"
 
 using namespace utility;

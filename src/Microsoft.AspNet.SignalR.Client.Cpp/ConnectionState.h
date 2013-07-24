@@ -6,7 +6,7 @@
 
 #pragma once
 
-#include <http_client.h>
+#include <basic_types.h>
 
 using namespace std;
 using namespace utility;

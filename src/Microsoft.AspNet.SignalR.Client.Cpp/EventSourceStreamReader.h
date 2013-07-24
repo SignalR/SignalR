@@ -9,7 +9,6 @@
 #include "AsyncStreamReader.h"
 #include "Connection.h"
 #include "ChunkBuffer.h"
-#include <mutex>
 
 using namespace std;
 

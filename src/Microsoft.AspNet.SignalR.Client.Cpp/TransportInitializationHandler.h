@@ -6,11 +6,10 @@
 
 #pragma once
 
+#include <mutex>
 #include "ThreadSafeInvoker.h"
 #include "TaskAsyncHelper.h"
 #include "ExceptionHelper.h"
-#include "http_client.h"
-#include <mutex>
 
 namespace MicrosoftAspNetSignalRClientCpp
 {
