@@ -19,7 +19,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Utilities
             TestUtilities.AssertUnwrappedException<AggregateException>(action, message, typeof(T));
         }
 
-        public static void AssertUnwrappedMessage<T>(Action action, string message) where T:  Exception
+        public static void AssertUnwrappedMessage<T>(Action action, string message) where T : Exception
         {
             try
             {
@@ -46,5 +46,18 @@ namespace Microsoft.AspNet.SignalR.Tests.Utilities
             }
         }
 
+        public static void AssertUnwrappedException<T>(Action action) where T : Exception
+        {
+            try
+            {
+                action();
+            }
+            catch (Exception ex)
+            {
+                Exception unwrappedException = ex.Unwrap();
+
+                Assert.IsType(typeof(T), unwrappedException);
+            }
+        }
     }
 }
