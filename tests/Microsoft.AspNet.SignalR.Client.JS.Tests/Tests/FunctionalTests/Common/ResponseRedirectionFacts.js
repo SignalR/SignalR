@@ -10,6 +10,28 @@
 
 QUnit.module("Response redirection facts");
 
+QUnit.asyncTimeoutTest("Transport connect fails on response redirection with error message.", testUtilities.defaultTestTimeout * 4000, function (end, assert, testName) {
+    var connection = buildRedirectConnection("negotiate", end, assert, testName, false);
+
+    connection.error(function (error) {
+        assert.isSet(error, "Error message shoud be set.");
+        assert.ok(error != "", "Error message should not be empty string.");
+        end();
+    });
+
+    connection.start().done(function () {
+        assert.fail("Connection was started successfully.");
+        end();
+    }).fail(function () {
+        end();
+    });
+
+    // Cleanup
+    return function () {
+        connection.stop();
+    };
+});
+
 QUnit.asyncTimeoutTest("Transport connect fails on response redirection causing negotiate to fallback through all transports.", testUtilities.defaultTestTimeout * 4000, function (end, assert, testName) {
     var connection = buildRedirectConnection("connect", end, assert, testName, false);
 
