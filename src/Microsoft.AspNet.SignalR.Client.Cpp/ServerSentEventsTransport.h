@@ -10,36 +10,34 @@
 #include "EventSourceStreamReader.h"
 #include "ThreadSafeInvoker.h"
 
-using namespace utility;
-
 namespace MicrosoftAspNetSignalRClientCpp
 {
 class ServerSentEventsTransport : 
     public HttpBasedTransport
 {
     public:
-        ServerSentEventsTransport(shared_ptr<IHttpClient> client);
+        ServerSentEventsTransport(std::shared_ptr<IHttpClient> client);
         ~ServerSentEventsTransport();
     
         bool SupportsKeepAlive();
 
     protected:
-        void OnStart(shared_ptr<Connection> connection, string_t data, pplx::cancellation_token disconnectToken, shared_ptr<TransportInitializationHandler> initializeHandler);
+        void OnStart(std::shared_ptr<Connection> connection, utility::string_t data, pplx::cancellation_token disconnectToken, std::shared_ptr<TransportInitializationHandler> initializeHandler);
         void OnAbort();
-        void LostConnection(shared_ptr<Connection> connection);
+        void LostConnection(std::shared_ptr<Connection> connection);
 
     private:
         bool mStop;
-        seconds mConnectionTimeout;
-        seconds mReconnectDelay;
-        mutex mDeregisterRequestCancellationLock;
-        function<void()> DeregisterRequestCancellation;
-        shared_ptr<HttpRequestWrapper> pRequest;
-        unique_ptr<EventSourceStreamReader> pEventSource;
-        unique_ptr<ThreadSafeInvoker> pCallbackInvoker;
-        shared_ptr<TransportInitializationHandler> pInitializeHandler;
+        utility::seconds mConnectionTimeout;
+        utility::seconds mReconnectDelay;
+        std::mutex mDeregisterRequestCancellationLock;
+        std::function<void()> DeregisterRequestCancellation;
+        std::shared_ptr<HttpRequestWrapper> pRequest;
+        std::unique_ptr<EventSourceStreamReader> pEventSource;
+        std::unique_ptr<ThreadSafeInvoker> pCallbackInvoker;
+        std::shared_ptr<TransportInitializationHandler> pInitializeHandler;
 
-        void Reconnect(shared_ptr<Connection> connection, string_t data, pplx::cancellation_token disconnectToken);
-        void OpenConnection(shared_ptr<Connection> connection, string_t data, pplx::cancellation_token disconnectToken, function<void()> initializeCallback, function<void(exception)> errorCallback);
+        void Reconnect(std::shared_ptr<Connection> connection, utility::string_t data, pplx::cancellation_token disconnectToken);
+        void OpenConnection(std::shared_ptr<Connection> connection, utility::string_t data, pplx::cancellation_token disconnectToken, std::function<void()> initializeCallback, std::function<void(std::exception)> errorCallback);
     };
 } // namespace MicrosoftAspNetSignalRClientCpp

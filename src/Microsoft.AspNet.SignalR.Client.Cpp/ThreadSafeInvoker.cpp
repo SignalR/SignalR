@@ -19,9 +19,9 @@ ThreadSafeInvoker::~ThreadSafeInvoker()
 {
 }
 
-bool ThreadSafeInvoker::Invoke(function<void()> function)
+bool ThreadSafeInvoker::Invoke(std::function<void()> function)
 {
-    if (!atomic_exchange<bool>(&mInvoked, true))
+    if (!std::atomic_exchange<bool>(&mInvoked, true))
     {
         function();
         return true;

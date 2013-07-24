@@ -9,11 +9,6 @@
 #include "Connection.h"
 #include "StringHelper.h"
 
-using namespace std;
-using namespace pplx;
-using namespace utility;
-using namespace web::json;
-
 namespace MicrosoftAspNetSignalRClientCpp
 {
     class TransportHelper
@@ -22,15 +17,15 @@ namespace MicrosoftAspNetSignalRClientCpp
         TransportHelper();
         ~TransportHelper();
 
-        static pplx::task<shared_ptr<NegotiationResponse>> GetNegotiationResponse(shared_ptr<IHttpClient> client, shared_ptr<Connection> connnection);
-        static string_t GetReceiveQueryString(shared_ptr<Connection> connection, string_t data, string_t transport);
-        static string_t AppendCustomQueryString(shared_ptr<Connection> connection, string_t baseUrl);
-        static void ProcessResponse(shared_ptr<Connection> connection, string_t response, bool* timedOut, bool* disconnected);
-        static void ProcessResponse(shared_ptr<Connection> connection, string_t response, bool* timedOut, bool* disconnected, function<void()> onInitialized);
-        static string_t GetSendQueryString(string_t transport, string_t connectionToken, string_t customQuery);
+        static pplx::task<std::shared_ptr<NegotiationResponse>> GetNegotiationResponse(std::shared_ptr<IHttpClient> client, std::shared_ptr<Connection> connnection);
+        static utility::string_t GetReceiveQueryString(std::shared_ptr<Connection> connection, utility::string_t data, utility::string_t transport);
+        static utility::string_t AppendCustomQueryString(std::shared_ptr<Connection> connection, utility::string_t baseUrl);
+        static void ProcessResponse(std::shared_ptr<Connection> connection, utility::string_t response, bool* timedOut, bool* disconnected);
+        static void ProcessResponse(std::shared_ptr<Connection> connection, utility::string_t response, bool* timedOut, bool* disconnected, std::function<void()> onInitialized);
+        static utility::string_t GetSendQueryString(utility::string_t transport, utility::string_t connectionToken, utility::string_t customQuery);
 
     private:
-        static void UpdateGroups(shared_ptr<Connection> connection, string_t groupsToken);
-        static void TryInitialize(value response, function<void()> onInitialized);
+        static void UpdateGroups(std::shared_ptr<Connection> connection, utility::string_t groupsToken);
+        static void TryInitialize(web::json::value response, std::function<void()> onInitialized);
     };
 } // namespace MicrosoftAspNetSignalRClientCpp

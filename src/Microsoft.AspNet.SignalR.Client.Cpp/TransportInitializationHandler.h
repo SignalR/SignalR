@@ -20,18 +20,18 @@ namespace MicrosoftAspNetSignalRClientCpp
         ~TransportInitializationHandler();
 
         void Fail();
-        void Fail(exception& ex);
+        void Fail(std::exception& ex);
         void Success();
         pplx::task<void> GetTask();
 
-        void SetOnFailureCallback(function<void()> onFailure);
+        void SetOnFailureCallback(std::function<void()> onFailure);
 
     private:
-        mutex mOnFailureLock;
-        function<void()> OnFailure;
-        mutex mDeregisterCancelCallbackLock;
-        function<void()> DeregisterCancelCallback;
-        unique_ptr<ThreadSafeInvoker> pInitializationInvoker;
+        std::mutex mOnFailureLock;
+        std::function<void()> OnFailure;
+        std::mutex mDeregisterCancelCallbackLock;
+        std::function<void()> DeregisterCancelCallback;
+        std::unique_ptr<ThreadSafeInvoker> pInitializationInvoker;
         pplx::task_completion_event<void> mInitializationTask;
         pplx::cancellation_token_registration mTokenCleanup;
         pplx::cancellation_token_source mCts;

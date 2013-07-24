@@ -9,8 +9,6 @@
 #include <functional>
 #include <atomic>
 
-using namespace std;
-
 namespace MicrosoftAspNetSignalRClientCpp
 {
     class ThreadSafeInvoker
@@ -19,10 +17,10 @@ namespace MicrosoftAspNetSignalRClientCpp
         ThreadSafeInvoker();
         ~ThreadSafeInvoker();
 
-        bool Invoke(function<void()> function);
+        bool Invoke(std::function<void()> function);
     
         template <typename T>
-        bool Invoke(function<void(T)> function, T arg)
+        bool Invoke(std::function<void(T)> function, T arg)
         {
             if (!atomic_exchange<bool>(&mInvoked, true))
             {
@@ -33,7 +31,7 @@ namespace MicrosoftAspNetSignalRClientCpp
         }
 
         template <typename T1, typename T2>
-        bool Invoke(function<void(T1, T2)> function, T1 arg1, T2 arg2)
+        bool Invoke(std::function<void(T1, T2)> function, T1 arg1, T2 arg2)
         {
             if (!atomic_exchange<bool>(&mInvoked, true))
             {
@@ -47,6 +45,6 @@ namespace MicrosoftAspNetSignalRClientCpp
         bool Invoke();
 
     private:
-        atomic<bool> mInvoked;
+        std::atomic<bool> mInvoked;
     };
 } // namespace MicrosoftAspNetSignalRClientCpp

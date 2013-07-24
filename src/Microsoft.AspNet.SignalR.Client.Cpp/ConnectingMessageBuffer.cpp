@@ -7,6 +7,9 @@
 #include "Connection.h"
 #include "ConnectingMessageBuffer.h"
 
+using namespace std;
+using namespace utility;
+
 namespace MicrosoftAspNetSignalRClientCpp
 {
 

@@ -6,6 +6,8 @@
 
 #include "ExceptionHelper.h"
 
+using namespace std;
+
 namespace MicrosoftAspNetSignalRClientCpp
 {
 

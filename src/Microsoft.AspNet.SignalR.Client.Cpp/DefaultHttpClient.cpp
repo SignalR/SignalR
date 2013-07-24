@@ -6,6 +6,12 @@
 
 #include "DefaultHttpClient.h"
 
+using namespace std;
+using namespace pplx;
+using namespace utility;
+using namespace web::http;
+using namespace web::http::client;
+
 namespace MicrosoftAspNetSignalRClientCpp
 {
 

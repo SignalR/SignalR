@@ -9,9 +9,6 @@
 #include <http_client.h>
 #include <mutex>
 
-using namespace std;
-using namespace utility;
-
 namespace MicrosoftAspNetSignalRClientCpp
 {
     class Connection;
@@ -20,7 +17,7 @@ namespace MicrosoftAspNetSignalRClientCpp
     {
     public:
         HeartBeatMonitor();
-        HeartBeatMonitor(shared_ptr<Connection> connection, shared_ptr<recursive_mutex> connectionStateLock);
+        HeartBeatMonitor(std::shared_ptr<Connection> connection, std::shared_ptr<std::recursive_mutex> connectionStateLock);
         ~HeartBeatMonitor();
 
         void Start();
@@ -29,8 +26,8 @@ namespace MicrosoftAspNetSignalRClientCpp
         bool mHasBeenWarned;
         bool mTimedOut;
         pplx::details::timer_t mTimer;
-        shared_ptr<recursive_mutex> pConnectionStateLock;
-        weak_ptr<Connection> wpConnection;
+        std::shared_ptr<std::recursive_mutex> pConnectionStateLock;
+        std::weak_ptr<Connection> wpConnection;
 
         static void Beat(void* state);
         void Beat(int timeElapsed);

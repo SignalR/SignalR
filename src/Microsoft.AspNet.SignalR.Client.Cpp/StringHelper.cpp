@@ -6,6 +6,8 @@
 
 #include "StringHelper.h"
 
+using namespace utility;
+
 namespace MicrosoftAspNetSignalRClientCpp
 {
 

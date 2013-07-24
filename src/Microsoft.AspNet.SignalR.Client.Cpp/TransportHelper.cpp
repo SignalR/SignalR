@@ -6,6 +6,12 @@
 
 #include "TransportHelper.h"
 
+using namespace std;
+using namespace pplx;
+using namespace utility;
+using namespace web::json;
+using namespace web::http;
+
 namespace MicrosoftAspNetSignalRClientCpp
 {
 

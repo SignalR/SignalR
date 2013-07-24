@@ -8,6 +8,11 @@
 #include "LongPollingTransport.h"
 #include "ServerSentEventsTransport.h"
 
+using namespace std;
+using namespace pplx;
+using namespace utility;
+using namespace web::json;
+
 namespace MicrosoftAspNetSignalRClientCpp
 {
 

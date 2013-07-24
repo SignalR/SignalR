@@ -8,9 +8,6 @@
 
 #include <basic_types.h>
 
-using namespace std;
-using namespace utility;
-
 namespace MicrosoftAspNetSignalRClientCpp
 {
     enum ConnectionState
@@ -24,7 +21,7 @@ namespace MicrosoftAspNetSignalRClientCpp
     class ConnectionStateString
     {
     public:
-        static string_t ToString(ConnectionState state)
+        static utility::string_t ToString(ConnectionState state)
         {
             switch (state)
             {
@@ -41,7 +38,7 @@ namespace MicrosoftAspNetSignalRClientCpp
                 return U("Disconnected");
                 break;
             default:
-                throw(exception("InvalidArgumentException: state"));
+                throw(std::exception("InvalidArgumentException: state"));
                 break;
             }
         };

@@ -9,9 +9,6 @@
 #include <memory>
 #include "StringHelper.h"
 
-using namespace std;
-using namespace utility;
-
 namespace MicrosoftAspNetSignalRClientCpp
 {
     enum EventType
@@ -23,16 +20,16 @@ namespace MicrosoftAspNetSignalRClientCpp
     class SseEvent
     {
     public:
-        SseEvent(EventType type, string_t data);
+        SseEvent(EventType type, utility::string_t data);
         ~SseEvent();
     
         EventType GetType();
-        string_t GetData();
-        string_t ToString();
-        static bool TryParse(string_t line, shared_ptr<SseEvent>* sseEvent);
+        utility::string_t GetData();
+        utility::string_t ToString();
+        static bool TryParse(utility::string_t line, std::shared_ptr<SseEvent>* sseEvent);
 
     private:
         EventType mType;
-        string_t mData;
+        utility::string_t mData;
     };
 } // namespace MicrosoftAspNetSignalRClientCpp

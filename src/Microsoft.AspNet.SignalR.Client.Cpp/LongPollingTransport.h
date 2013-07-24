@@ -13,12 +13,12 @@ namespace MicrosoftAspNetSignalRClientCpp
         public HttpBasedTransport
     {
     public:
-        LongPollingTransport(shared_ptr<IHttpClient> httpClient);
+        LongPollingTransport(std::shared_ptr<IHttpClient> httpClient);
         ~LongPollingTransport();
 
     protected:
-        void OnStart(shared_ptr<Connection> connection, string_t data, pplx::cancellation_token disconnectToken, shared_ptr<TransportInitializationHandler> initializeHandler);
+        void OnStart(std::shared_ptr<Connection> connection, utility::string_t data, pplx::cancellation_token disconnectToken, std::shared_ptr<TransportInitializationHandler> initializeHandler);
         void OnAbort();
-        void LostConnection(shared_ptr<Connection> connection);
+        void LostConnection(std::shared_ptr<Connection> connection);
     };
 } // namespace MicrosoftAspNetSignalRClientCpp

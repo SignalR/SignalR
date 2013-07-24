@@ -6,6 +6,9 @@
 
 #include "ChunkBuffer.h"
 
+using namespace std;
+using namespace utility;
+
 namespace MicrosoftAspNetSignalRClientCpp
 {
 

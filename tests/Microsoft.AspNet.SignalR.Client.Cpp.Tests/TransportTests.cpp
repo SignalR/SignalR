@@ -9,6 +9,8 @@
 #include "ServerSentEventsTransport.h"
 #include <array>
 
+using namespace std;
+using namespace utility;
 using namespace MicrosoftAspNetSignalRClientCpp;
 
 SUITE(TransportTests)

@@ -8,8 +8,6 @@
 
 #include "ConnectionState.h"
 
-using namespace std;
-
 namespace MicrosoftAspNetSignalRClientCpp
 {
     class StateChange

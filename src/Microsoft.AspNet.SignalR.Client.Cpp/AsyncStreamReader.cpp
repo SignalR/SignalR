@@ -6,6 +6,9 @@
 
 #include "AsyncStreamReader.h"
 
+using namespace std;
+using namespace Concurrency;
+
 namespace MicrosoftAspNetSignalRClientCpp
 {
 
@@ -187,7 +190,7 @@ void AsyncStreamReader::Abort()
 }
 
 // returns a task that reads the incoming stream and stored the messages into a buffer
-pplx::task<unsigned int> AsyncStreamReader::AsyncReadIntoBuffer(Concurrency::streams::basic_istream<uint8_t> stream)
+pplx::task<unsigned int> AsyncStreamReader::AsyncReadIntoBuffer(streams::basic_istream<uint8_t> stream)
 {
     auto inStringBuffer = shared_ptr<streams::container_buffer<string>>(new streams::container_buffer<string>());
     pplx::task_options readTaskOptions(mReadCts.get_token());

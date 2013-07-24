@@ -9,9 +9,6 @@
 #include <basic_types.h>
 #include <asyncrt_utils.h>
 
-using namespace std;
-using namespace utility;
-
 namespace MicrosoftAspNetSignalRClientCpp
 {
     enum TaskStatus
@@ -102,7 +99,7 @@ namespace MicrosoftAspNetSignalRClientCpp
 
         pplx::task_completion_event<T> mTce;
         pplx::details::timer_t mTimer;
-        function<void()> DeregisterCallback;
+        std::function<void()> DeregisterCallback;
     };
 
     class TaskAsyncHelper
@@ -112,7 +109,7 @@ namespace MicrosoftAspNetSignalRClientCpp
         ~TaskAsyncHelper();
 
         // TaskAsyncHelper::Delay is experimental
-        static pplx::task<void> Delay(seconds seconds, pplx::cancellation_token ct = pplx::cancellation_token::none());
+        static pplx::task<void> Delay(utility::seconds seconds, pplx::cancellation_token ct = pplx::cancellation_token::none());
 
         template <typename T1>
         static pplx::task<T1> Delay(utility::seconds seconds, pplx::cancellation_token ct = pplx::cancellation_token::none())
@@ -123,7 +120,7 @@ namespace MicrosoftAspNetSignalRClientCpp
         }
 
         template <typename T2>
-        static TaskStatus RunTaskToCompletion(pplx::task<T2> task, T2& result, exception& ex)
+        static TaskStatus RunTaskToCompletion(pplx::task<T2> task, T2& result, std::exception& ex)
         {
             try
             {

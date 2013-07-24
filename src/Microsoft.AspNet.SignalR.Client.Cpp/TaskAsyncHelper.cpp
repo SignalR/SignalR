@@ -17,7 +17,7 @@ TaskAsyncHelper::~TaskAsyncHelper()
 {
 }
 
-pplx::task<void> TaskAsyncHelper::Delay(seconds seconds, pplx::cancellation_token ct)
+pplx::task<void> TaskAsyncHelper::Delay(utility::seconds seconds, pplx::cancellation_token ct)
 {
     return DelayedTaskHelper<void>::CreateVoid(seconds, ct).then([](){}, ct);
 }

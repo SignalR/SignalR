@@ -8,8 +8,6 @@
 
 #include <ctime>
 
-using namespace std;
-
 namespace MicrosoftAspNetSignalRClientCpp
 {
     class KeepAliveData

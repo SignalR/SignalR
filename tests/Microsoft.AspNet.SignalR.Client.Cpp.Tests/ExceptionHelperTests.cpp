@@ -7,6 +7,7 @@
 #include "UnitTest++.h"
 #include "ExceptionHelper.h"
 
+using namespace std;
 using namespace MicrosoftAspNetSignalRClientCpp;
 
 SUITE(ExceptionHelperTests)

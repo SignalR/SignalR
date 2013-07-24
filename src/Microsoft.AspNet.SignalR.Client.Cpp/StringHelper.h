@@ -8,8 +8,6 @@
 
 #include <basic_types.h>
 
-using namespace utility;
-
 namespace MicrosoftAspNetSignalRClientCpp
 {
     // should this be a namespace instead?
@@ -20,9 +18,9 @@ namespace MicrosoftAspNetSignalRClientCpp
         ~StringHelper();
 
         // useful string operations that are missing in C++
-        static bool BeginsWithIgnoreCase(string_t &string1, string_t &string2);
-        static bool EndsWith(string_t &string1, string_t &string2);
-        static string_t Trim(string_t string);
-        static bool EqualsIgnoreCase(string_t &string1, string_t &string2);
+        static bool BeginsWithIgnoreCase(utility::string_t &string1, utility::string_t &string2);
+        static bool EndsWith(utility::string_t &string1, utility::string_t &string2);
+        static utility::string_t Trim(utility::string_t string);
+        static bool EqualsIgnoreCase(utility::string_t &string1, utility::string_t &string2);
     };
 } // namespace MicrosoftAspNetSignalRClientCpp

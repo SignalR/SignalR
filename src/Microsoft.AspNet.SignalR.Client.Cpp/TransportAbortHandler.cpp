@@ -6,6 +6,11 @@
 
 #include "TransportAbortHandler.h"
 
+using namespace std;
+using namespace utility;
+using namespace web::http;
+using namespace Concurrency;
+
 namespace MicrosoftAspNetSignalRClientCpp
 {
 

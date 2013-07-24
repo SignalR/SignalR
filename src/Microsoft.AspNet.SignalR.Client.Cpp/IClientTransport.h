@@ -8,10 +8,6 @@
 
 #include "NegotiationResponse.h"
 
-using namespace std;
-using namespace pplx;
-using namespace utility;
-
 namespace MicrosoftAspNetSignalRClientCpp
 {
     class Connection;
@@ -22,17 +18,17 @@ namespace MicrosoftAspNetSignalRClientCpp
         IClientTransport(void);
         ~IClientTransport(void);
 
-        string_t GetTransportName();
+        utility::string_t GetTransportName();
         bool SupportsKeepAlive();
 
-        virtual pplx::task<shared_ptr<NegotiationResponse>> Negotiate(shared_ptr<Connection> connection) = 0;
-        virtual pplx::task<void> Start(shared_ptr<Connection> connection, string_t data, pplx::cancellation_token disconnectToken) = 0;
-        virtual pplx::task<void> Send(shared_ptr<Connection> connection, string_t data) = 0;
-        virtual void Abort(shared_ptr<Connection> connection, seconds timeout) = 0;
-        virtual void LostConnection(shared_ptr<Connection> connection) = 0;
+        virtual pplx::task<std::shared_ptr<NegotiationResponse>> Negotiate(std::shared_ptr<Connection> connection) = 0;
+        virtual pplx::task<void> Start(std::shared_ptr<Connection> connection, utility::string_t data, pplx::cancellation_token disconnectToken) = 0;
+        virtual pplx::task<void> Send(std::shared_ptr<Connection> connection, utility::string_t data) = 0;
+        virtual void Abort(std::shared_ptr<Connection> connection, utility::seconds timeout) = 0;
+        virtual void LostConnection(std::shared_ptr<Connection> connection) = 0;
 
     protected:
-        string_t mTransportName;
+        utility::string_t mTransportName;
         bool mSupportKeepAlive;
     };
 } // namespace MicrosoftAspNetSignalRClientCpp

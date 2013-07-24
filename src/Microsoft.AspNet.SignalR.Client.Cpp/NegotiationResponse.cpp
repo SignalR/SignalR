@@ -6,6 +6,9 @@
 
 #include "NegotiationResponse.h"
 
+using namespace utility;
+using namespace web::json;
+
 namespace MicrosoftAspNetSignalRClientCpp
 {
 

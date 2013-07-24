@@ -6,6 +6,9 @@
 
 #include "HttpRequestWrapper.h"
 
+using namespace std;
+using namespace web::http;
+
 namespace MicrosoftAspNetSignalRClientCpp
 {
 

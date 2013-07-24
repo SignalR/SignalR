@@ -13,10 +13,6 @@
 
 #pragma once
 
-
-#include <mutex>
-#include <http_client.h>
-
 #include "StateChange.h"
 #include "IClientTransport.h"
 #include "DefaultHttpClient.h"
@@ -26,115 +22,107 @@
 #include "KeepAliveData.h"
 #include "TraceLevels.h"
 
-using namespace std;
-using namespace pplx;
-using namespace utility;
-using namespace concurrency;
-using namespace web::json;
-using namespace web::http;
-using namespace web::http::client;
-
 namespace MicrosoftAspNetSignalRClientCpp
 {
-    class Connection : public enable_shared_from_this<Connection>
+    class Connection : public std::enable_shared_from_this<Connection>
     {
     public:
-        Connection(string_t uri, string_t queryString = U(""), TraceLevel traceLevel = TraceLevel::None);
+        Connection(utility::string_t uri, utility::string_t queryString = U(""), TraceLevel traceLevel = TraceLevel::None);
         ~Connection(void);
 
-        string_t GetProtocol();
-        string_t GetMessageId();
-        string_t GetGroupsToken();
-        string_t GetConnectionId();
-        string_t GetConnectionToken();
-        string_t GetUri();
-        string_t GetQueryString();
-        seconds GetTransportConnectTimeout();
+        utility::string_t GetProtocol();
+        utility::string_t GetMessageId();
+        utility::string_t GetGroupsToken();
+        utility::string_t GetConnectionId();
+        utility::string_t GetConnectionToken();
+        utility::string_t GetUri();
+        utility::string_t GetQueryString();
+        utility::seconds GetTransportConnectTimeout();
         ConnectionState GetState();
-        shared_ptr<IClientTransport> GetTransport();
-        shared_ptr<KeepAliveData> GetKeepAliveData();
-        ostream& GetTraceWriter();
+        std::shared_ptr<IClientTransport> GetTransport();
+        std::shared_ptr<KeepAliveData> GetKeepAliveData();
+        std::ostream& GetTraceWriter();
         TraceLevel GetTraceLevel();
     
-        void SetProtocol(string_t protocol);
-        void SetMessageId(string_t groupsToken);
-        void SetGroupsToken(string_t groupsToken); 
-        void SetConnectionToken(string_t connectionToken);
-        void SetConnectionId(string_t connectionId); 
-        void SetTransportConnectTimeout(seconds transportConnectTimeout);
-        void SetKeepAliveData(shared_ptr<KeepAliveData> keepAliveData);
-        void SetTraceWriter(ostream& traceWriter);
+        void SetProtocol(utility::string_t protocol);
+        void SetMessageId(utility::string_t groupsToken);
+        void SetGroupsToken(utility::string_t groupsToken); 
+        void SetConnectionToken(utility::string_t connectionToken);
+        void SetConnectionId(utility::string_t connectionId); 
+        void SetTransportConnectTimeout(utility::seconds transportConnectTimeout);
+        void SetKeepAliveData(std::shared_ptr<KeepAliveData> keepAliveData);
+        void SetTraceWriter(std::ostream& traceWriter);
         void SetTraceLevel(TraceLevel traceLevel);
 
-        void SetStateChangedCallback(function<void(StateChange)> stateChanged);
-        void SetReconnectingCallback(function<void()> reconnecting);
-        void SetReconnectedCallback(function<void()> reconnected);
-        void SetConnectionSlowCallback(function<void()> connectionSlow);
-        void SetErrorCallback(function<void(exception&)> error);
-        void SetClosedCallback(function<void()> closed);
-        void SetReceivedCallback(function<void(string_t)> received);
+        void SetStateChangedCallback(std::function<void(StateChange)> stateChanged);
+        void SetReconnectingCallback(std::function<void()> reconnecting);
+        void SetReconnectedCallback(std::function<void()> reconnected);
+        void SetConnectionSlowCallback(std::function<void()> connectionSlow);
+        void SetErrorCallback(std::function<void(std::exception&)> error);
+        void SetClosedCallback(std::function<void()> closed);
+        void SetReceivedCallback(std::function<void(utility::string_t)> received);
 
         pplx::task<void> Start();
-        pplx::task<void> Start(shared_ptr<IClientTransport> transport);
-        pplx::task<void> Start(shared_ptr<IHttpClient> client);
+        pplx::task<void> Start(std::shared_ptr<IClientTransport> transport);
+        pplx::task<void> Start(std::shared_ptr<IHttpClient> client);
         void Stop();
-        void Stop(seconds timeout);
-        pplx::task<void> Send(value::field_map object);
-        pplx::task<void> Send(string_t data);
+        void Stop(utility::seconds timeout);
+        pplx::task<void> Send(web::json::value::field_map object);
+        pplx::task<void> Send(utility::string_t data);
         bool EnsureReconnecting();
-        void Trace(TraceLevel flag, string_t message);
+        void Trace(TraceLevel flag, utility::string_t message);
 
     private:
-        string_t mProtocol; // temporarily stored as a string
-        string_t mMessageId;
-        string_t mGroupsToken;
-        string_t mConnectionId;
-        string_t mConnectionToken;
-        string_t mUri;
-        string_t mQueryString;
-        seconds mTransportConnectTimeout;
-        recursive_mutex mStateLock;
-        mutex mStartLock;
-        mutex mTraceLock;
-        ostream mTraceWriter;
+        utility::string_t mProtocol; // temporarily stored as a string
+        utility::string_t mMessageId;
+        utility::string_t mGroupsToken;
+        utility::string_t mConnectionId;
+        utility::string_t mConnectionToken;
+        utility::string_t mUri;
+        utility::string_t mQueryString;
+        utility::seconds mTransportConnectTimeout;
+        std::recursive_mutex mStateLock;
+        std::mutex mStartLock;
+        std::mutex mTraceLock;
+        std::ostream mTraceWriter;
         TraceLevel mTraceLevel;
         ConnectionState mState;
         ConnectingMessageBuffer mConnectingMessageBuffer;
         HeartBeatMonitor mMonitor;
-        shared_ptr<KeepAliveData> pKeepAliveData;
-        shared_ptr<IClientTransport> pTransport;
-        unique_ptr<pplx::cancellation_token_source> pDisconnectCts;
+        std::shared_ptr<KeepAliveData> pKeepAliveData;
+        std::shared_ptr<IClientTransport> pTransport;
+        std::unique_ptr<pplx::cancellation_token_source> pDisconnectCts;
         pplx::task<void> mConnectTask;
-        const seconds cDefaultAbortTimeout;
+        const utility::seconds cDefaultAbortTimeout;
 
-        mutex mStateChangedLock;
-        function<void(StateChange)> StateChanged;
-        mutex mReconnectingLock;
-        function<void()> Reconnecting;
-        mutex mReconnectedLock;
-        function<void()> Reconnected;
-        mutex mConnectionSlowLock;
-        function<void()> ConnectionSlow;
-        mutex mErrorLock;
-        function<void(exception&)> Error;
-        mutex mClosedLock;
-        function<void()> Closed;
-        mutex mReceivedLock;
-        function<void(string_t)> Received;
+        std::mutex mStateChangedLock;
+        std::function<void(StateChange)> StateChanged;
+        std::mutex mReconnectingLock;
+        std::function<void()> Reconnecting;
+        std::mutex mReconnectedLock;
+        std::function<void()> Reconnected;
+        std::mutex mConnectionSlowLock;
+        std::function<void()> ConnectionSlow;
+        std::mutex mErrorLock;
+        std::function<void(std::exception&)> Error;
+        std::mutex mClosedLock;
+        std::function<void()> Closed;
+        std::mutex mReceivedLock;
+        std::function<void(utility::string_t)> Received;
 
         pplx::task<void> StartTransport();
-        pplx::task<void> Negotiate(shared_ptr<IClientTransport> transport);
+        pplx::task<void> Negotiate(std::shared_ptr<IClientTransport> transport);
         bool ChangeState(ConnectionState oldState, ConnectionState newState);
         void SetState(ConnectionState newState);
         void Disconnect();
-        void OnReceived(string_t data);
-        void OnMessageReceived(string_t data);
-        void OnError(exception& ex);
+        void OnReceived(utility::string_t data);
+        void OnMessageReceived(utility::string_t data);
+        void OnError(std::exception& ex);
         void OnReconnecting();
         void OnReconnected();
         void OnConnectionSlow();
         void UpdateLaskKeepAlive();
-        void PrepareRequest(shared_ptr<HttpRequestWrapper> request);
+        void PrepareRequest(std::shared_ptr<HttpRequestWrapper> request);
 
         // Allowing these classes to access private functions such as ChangeState
         friend class HttpBasedTransport;

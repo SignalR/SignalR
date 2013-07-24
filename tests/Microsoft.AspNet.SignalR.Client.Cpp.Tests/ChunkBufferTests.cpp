@@ -7,6 +7,9 @@
 #include "UnitTest++.h"
 #include "ChunkBuffer.h"
 
+using namespace std;
+using namespace utility;
+
 using namespace MicrosoftAspNetSignalRClientCpp;
 
 SUITE(ChunkBufferTests)

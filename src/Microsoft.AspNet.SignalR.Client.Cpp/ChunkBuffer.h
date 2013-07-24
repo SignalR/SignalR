@@ -9,9 +9,6 @@
 #include <memory>
 #include "StringHelper.h"
 
-using namespace std;
-using namespace utility;
-
 namespace MicrosoftAspNetSignalRClientCpp
 {
     class ChunkBuffer
@@ -21,12 +18,12 @@ namespace MicrosoftAspNetSignalRClientCpp
         ~ChunkBuffer();
 
         bool HasChuncks();
-        void Add(shared_ptr<char> buffer);
-        string_t ReadLine();
+        void Add(std::shared_ptr<char> buffer);
+        utility::string_t ReadLine();
 
     private:
         unsigned int mOffset;
-        string_t mBuffer;
-        string_t mLineBuilder;
+        utility::string_t mBuffer;
+        utility::string_t mLineBuilder;
     };
 } // namespace MicrosoftAspNetSignalRClientCpp

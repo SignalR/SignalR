@@ -16,21 +16,21 @@ namespace MicrosoftAspNetSignalRClientCpp
     class TransportAbortHandler
     {
     public:
-        TransportAbortHandler(shared_ptr<IHttpClient> httpClient, utility::string_t transportName, function<void()> callback);
+        TransportAbortHandler(std::shared_ptr<IHttpClient> httpClient, utility::string_t transportName, std::function<void()> callback);
         ~TransportAbortHandler();
         
-        void Abort(shared_ptr<Connection> connection, utility::seconds timeout, utility::string_t connectionData);
+        void Abort(std::shared_ptr<Connection> connection, utility::seconds timeout, utility::string_t connectionData);
         void CompleteAbort();
         bool TryCompleteAbort();
 
     private:        
         bool mStartedAbort;
-        mutex mAbortLock;
-        mutex mDisposeLock;
+        std::mutex mAbortLock;
+        std::mutex mDisposeLock;
         utility::string_t mTransportName;
-        shared_ptr<IHttpClient> pHttpClient;
-        unique_ptr<Concurrency::event> pAbortResetEvent;
-        mutex mAbortCallbackLock;
-        function<void()> AbortCallback;
+        std::shared_ptr<IHttpClient> pHttpClient;
+        std::unique_ptr<Concurrency::event> pAbortResetEvent;
+        std::mutex mAbortCallbackLock;
+        std::function<void()> AbortCallback;
     };
 }

@@ -7,6 +7,8 @@
 #include "Connection.h"
 #include "HeartBeatMonitor.h"
 
+using namespace std;
+
 namespace MicrosoftAspNetSignalRClientCpp
 {
 

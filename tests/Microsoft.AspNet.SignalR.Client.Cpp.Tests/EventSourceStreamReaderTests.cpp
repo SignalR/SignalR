@@ -7,6 +7,9 @@
 #include "UnitTest++.h"
 #include "EventSourceStreamReader.h"
 
+using namespace std;
+using namespace utility;
+using namespace web::http;
 using namespace MicrosoftAspNetSignalRClientCpp;
 
 SUITE(EventSourceStreamReaderTests)

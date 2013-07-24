@@ -10,9 +10,6 @@
 #include <queue>
 #include <mutex>
 
-using namespace std;
-using namespace utility;
-
 namespace MicrosoftAspNetSignalRClientCpp
 {
     class Connection;
@@ -23,15 +20,15 @@ namespace MicrosoftAspNetSignalRClientCpp
         ConnectingMessageBuffer();
         ~ConnectingMessageBuffer();
 
-        void Initialize(shared_ptr<Connection> connection, function<void(string_t)> drainCallback);
-        bool TryBuffer(string_t message);
+        void Initialize(std::shared_ptr<Connection> connection, std::function<void(utility::string_t)> drainCallback);
+        bool TryBuffer(utility::string_t message);
         void Drain();
         void Clear();
 
     private:
-        shared_ptr<Connection> pConnection;
-        queue<string_t> mBuffer;
-        mutex mDrainCallbackLock;
-        function<void(string_t)> DrainCallback;
+        std::shared_ptr<Connection> pConnection;
+        std::queue<utility::string_t> mBuffer;
+        std::mutex mDrainCallbackLock;
+        std::function<void(utility::string_t)> DrainCallback;
     };
 } // namespace MicrosoftAspNetSignalRClientCpp

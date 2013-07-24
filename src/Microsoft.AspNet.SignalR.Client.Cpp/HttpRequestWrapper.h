@@ -9,22 +9,19 @@
 #include <http_msg.h>
 #include <mutex>
 
-using namespace std;
-using namespace web::http;
-
 namespace MicrosoftAspNetSignalRClientCpp
 {
     class HttpRequestWrapper
     {
     public:
-        HttpRequestWrapper(http_request httpRequestMessage, function<void()> cancel);
+        HttpRequestWrapper(web::http::http_request httpRequestMessage, std::function<void()> cancel);
         ~HttpRequestWrapper();
 
         void Abort();
 
     private:
-        http_request mHttpRequestMessage;
-        mutex mCancelLock;
-        function<void()> Cancel;
+        web::http::http_request mHttpRequestMessage;
+        std::mutex mCancelLock;
+        std::function<void()> Cancel;
     };
 } // namespace MicrosoftAspNetSignalRClientCpp

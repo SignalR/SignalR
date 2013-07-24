@@ -10,26 +10,24 @@
 #include "Connection.h"
 #include "ChunkBuffer.h"
 
-using namespace std;
-
 namespace MicrosoftAspNetSignalRClientCpp
 {
     class EventSourceStreamReader :
         public AsyncStreamReader
     {
     public:
-        EventSourceStreamReader(shared_ptr<Connection> connection, Concurrency::streams::basic_istream<uint8_t> stream);
+        EventSourceStreamReader(std::shared_ptr<Connection> connection, Concurrency::streams::basic_istream<uint8_t> stream);
         ~EventSourceStreamReader();
 
-        void SetMessageCallback(function<void(shared_ptr<SseEvent> sseEvent)> message);
+        void SetMessageCallback(std::function<void(std::shared_ptr<SseEvent> sseEvent)> message);
 
     private:
-        weak_ptr<Connection> wpConnection;
-        unique_ptr<ChunkBuffer> pBuffer;
-        mutex mMessageLock;
-        function<void(shared_ptr<SseEvent> sseEvent)> Message;
+        std::weak_ptr<Connection> wpConnection;
+        std::unique_ptr<ChunkBuffer> pBuffer;
+        std::mutex mMessageLock;
+        std::function<void(std::shared_ptr<SseEvent> sseEvent)> Message;
 
-        void ProcessBuffer(shared_ptr<char> readBuffer);
-        void OnMessage(shared_ptr<SseEvent> sseEvent);
+        void ProcessBuffer(std::shared_ptr<char> readBuffer);
+        void OnMessage(std::shared_ptr<SseEvent> sseEvent);
     };
 } // namespace MicrosoftAspNetSignalRClientCpp

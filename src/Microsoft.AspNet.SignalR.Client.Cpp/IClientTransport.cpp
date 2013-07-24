@@ -6,6 +6,8 @@
 
 #include "IClientTransport.h"
 
+using namespace utility;
+
 namespace MicrosoftAspNetSignalRClientCpp
 {
 

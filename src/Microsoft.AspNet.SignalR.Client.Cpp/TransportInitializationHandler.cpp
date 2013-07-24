@@ -6,6 +6,8 @@
 
 #include "TransportInitializationHandler.h"
 
+using namespace std;
+
 namespace MicrosoftAspNetSignalRClientCpp
 {
 

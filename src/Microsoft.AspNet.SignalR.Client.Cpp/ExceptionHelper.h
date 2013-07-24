@@ -10,20 +10,18 @@
 #include <exception>
 #include <typeinfo>
 
-using namespace std;
-
 namespace MicrosoftAspNetSignalRClientCpp
 {
-    class OperationCanceledException : public exception
+    class OperationCanceledException : public std::exception
     {
     public:
-        OperationCanceledException(const char *const& s) : exception(s){};
+        OperationCanceledException(const char *const& s) : std::exception(s){};
     };
 
-    class ExceptionNone : public exception
+    class ExceptionNone : public std::exception
     {
     public:
-        ExceptionNone(const char *const& s) : exception(s){};
+        ExceptionNone(const char *const& s) : std::exception(s){};
     };
 
     class ExceptionHelper
@@ -32,7 +30,7 @@ namespace MicrosoftAspNetSignalRClientCpp
         ExceptionHelper();
         ~ExceptionHelper();
 
-        static bool IsRequestAborted(exception& ex);
-        static bool IsNull(exception& ex);
+        static bool IsRequestAborted(std::exception& ex);
+        static bool IsNull(std::exception& ex);
     };
 } // namespace MicrosoftAspNetSignalRClientCpp

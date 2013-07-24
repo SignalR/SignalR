@@ -6,6 +6,10 @@
 
 #include "ServerSentEventsTransport.h"
 
+using namespace std;
+using namespace utility;
+using namespace web::http;
+
 namespace MicrosoftAspNetSignalRClientCpp
 {
 

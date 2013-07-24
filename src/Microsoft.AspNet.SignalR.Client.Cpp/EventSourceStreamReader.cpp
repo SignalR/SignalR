@@ -6,6 +6,9 @@
 
 #include "EventSourceStreamReader.h"
 
+using namespace std;
+using namespace utility;
+
 namespace MicrosoftAspNetSignalRClientCpp
 {
 

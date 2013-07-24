@@ -6,13 +6,8 @@
 
 #pragma once
 
-#include <string>
 #include <json.h>
 #include "StringHelper.h"
-
-using namespace std;
-using namespace utility;
-using namespace web::json;
 
 namespace MicrosoftAspNetSignalRClientCpp
 {
@@ -20,14 +15,14 @@ namespace MicrosoftAspNetSignalRClientCpp
     {
     public:
         NegotiationResponse();
-        NegotiationResponse(value raw);
+        NegotiationResponse(web::json::value raw);
         ~NegotiationResponse();
 
         // set members to private and write getters/setters?
-        string_t mConnectionId;
-        string_t mConnectionToken;
-        string_t mUri;
-        string_t mProtocolVersion;
+        utility::string_t mConnectionId;
+        utility::string_t mConnectionToken;
+        utility::string_t mUri;
+        utility::string_t mProtocolVersion;
         int mDisconnectTimeout;
 	    bool mTryWebSockets;
 	    int mKeepAliveTimeout;
