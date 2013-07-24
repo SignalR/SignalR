@@ -7,5 +7,6 @@ namespace Microsoft.AspNet.SignalR.Client.Hubs
     public interface IHubConnection : IConnection
     {
         string RegisterCallback(Action<HubResult> callback);
+        void RemoveCallback(string callbackId);
     }
 }

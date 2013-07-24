@@ -18,7 +18,7 @@ namespace Microsoft.AspNet.SignalR.Client
     public class HubConnection : Connection, IHubConnection
     {
         private readonly Dictionary<string, HubProxy> _hubs = new Dictionary<string, HubProxy>(StringComparer.OrdinalIgnoreCase);
-        private readonly Dictionary<string, Action<HubResult>> _callbacks = new Dictionary<string, Action<HubResult>>();
+        internal readonly Dictionary<string, Action<HubResult>> _callbacks = new Dictionary<string, Action<HubResult>>();
         private int _callbackId;
 
         /// <summary>
@@ -82,6 +82,12 @@ namespace Microsoft.AspNet.SignalR.Client
         {
         }
 
+        public override void OnReconnecting()
+        {
+            ClearInvocationCallbacks(Resources.Message_Reconnecting);
+            base.OnReconnecting();
+        }
+
         [SuppressMessage("Microsoft.Design", "CA1062:Validate arguments of public methods", MessageId = "0", Justification = "")]
         protected override void OnMessageReceived(JToken message)
         {
@@ -140,14 +146,8 @@ namespace Microsoft.AspNet.SignalR.Client
 
         protected override void OnClosed()
         {
-            ClearInvocationCallbacks("Connection closed");
+            ClearInvocationCallbacks(Resources.Message_ConnectionClosed);
             base.OnClosed();
-        }
-
-        protected override void TryReconnecting()
-        {
-            ClearInvocationCallbacks("Connection lost, trying to reconnect");
-            base.TryReconnecting();
         }
 
         /// <summary>
@@ -182,17 +182,15 @@ namespace Microsoft.AspNet.SignalR.Client
             }
         }
 
-        public bool IsCallbackMapEmpty()
-        {
-            return _callbacks.Count == 0;
-        }
-
         public void RemoveCallback(string callbackId)
         {
             Action<HubResult> callback;
-            if (_callbacks.TryGetValue(callbackId, out callback))
+            lock (_callbacks)
             {
-                _callbacks.Remove(callbackId);
+                if (_callbacks.TryGetValue(callbackId, out callback))
+                {
+                    _callbacks.Remove(callbackId);
+                }
             }
         }
 
@@ -216,12 +214,15 @@ namespace Microsoft.AspNet.SignalR.Client
             HubResult result = new HubResult();
             result.Error = error;
 
-            foreach (KeyValuePair<string, Action<HubResult>> callback in _callbacks)
+            lock (_callbacks)
             {
-                callback.Value(result);
-            }
+                foreach (KeyValuePair<string, Action<HubResult>> callback in _callbacks)
+                {
+                    callback.Value(result);
+                }
 
-            _callbacks.Clear();
+                _callbacks.Clear();
+            }
         }
     }
 }
