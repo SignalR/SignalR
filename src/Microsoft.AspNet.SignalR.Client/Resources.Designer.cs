@@ -183,7 +183,7 @@ namespace Microsoft.AspNet.SignalR.Client {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Connection closed..
+        ///   Looks up a localized string similar to Connection was disconnected before invocation result was received..
         /// </summary>
         internal static string Message_ConnectionClosed {
             get {
@@ -192,7 +192,7 @@ namespace Microsoft.AspNet.SignalR.Client {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Connection closed, trying to reconnect..
+        ///   Looks up a localized string similar to Connection started reconnecting before invocation result was received..
         /// </summary>
         internal static string Message_Reconnecting {
             get {

@@ -139,13 +139,13 @@ namespace Microsoft.AspNet.SignalR.Client.Tests
         {
             var connection = new HubConnection("http://foo");
 
-            connection.RegisterCallback(result => { });
+            ((IHubConnection)connection).RegisterCallback(result => { });
 
             connection.Start();
 
             ((IHubConnection)connection).Disconnect();
 
-            Assert.True(connection._callbacks.Count == 0);
+            Assert.Equal(connection._callbacks.Count, 0);
         }
 
         [Fact]
@@ -153,13 +153,13 @@ namespace Microsoft.AspNet.SignalR.Client.Tests
         {
             var connection = new HubConnection("http://foo");
 
-            connection.RegisterCallback(result => { });
+            ((IHubConnection)connection).RegisterCallback(result => { });
 
             connection.Start();
 
             ((IConnection)connection).OnReconnecting();
 
-            Assert.True(connection._callbacks.Count == 0);
+            Assert.Equal(connection._callbacks.Count, 0);
         }
 
         [Fact]
@@ -178,7 +178,7 @@ namespace Microsoft.AspNet.SignalR.Client.Tests
             var ex = aggEx.Unwrap();
 
             Assert.IsType(typeof(TaskCanceledException), ex);
-            Assert.True(connection.Object._callbacks.Count == 0);
+            Assert.Equal(connection.Object._callbacks.Count, 0);
         }
     }
 }

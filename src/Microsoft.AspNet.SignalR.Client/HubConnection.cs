@@ -6,8 +6,8 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR.Client.Hubs;
-using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
 namespace Microsoft.AspNet.SignalR.Client
@@ -171,7 +171,7 @@ namespace Microsoft.AspNet.SignalR.Client
             return hubProxy;
         }
 
-        public string RegisterCallback(Action<HubResult> callback)
+        string IHubConnection.RegisterCallback(Action<HubResult> callback)
         {
             lock (_callbacks)
             {
@@ -182,15 +182,11 @@ namespace Microsoft.AspNet.SignalR.Client
             }
         }
 
-        public void RemoveCallback(string callbackId)
+        void IHubConnection.RemoveCallback(string callbackId)
         {
-            Action<HubResult> callback;
             lock (_callbacks)
             {
-                if (_callbacks.TryGetValue(callbackId, out callback))
-                {
-                    _callbacks.Remove(callbackId);
-                }
+                _callbacks.Remove(callbackId);
             }
         }
 
@@ -211,18 +207,23 @@ namespace Microsoft.AspNet.SignalR.Client
 
         private void ClearInvocationCallbacks(string error)
         {
-            HubResult result = new HubResult();
+            var result = new HubResult();
+            //var tcs = new TaskCompletionSource<object>();
+
             result.Error = error;
 
             lock (_callbacks)
             {
-                foreach (KeyValuePair<string, Action<HubResult>> callback in _callbacks)
+                foreach (var callback in _callbacks.Values)
                 {
-                    callback.Value(result);
+                    callback(result);
                 }
 
                 _callbacks.Clear();
             }
+
+            //tcs.TrySetResult("Done");
+            //return tcs.Task;
         }
     }
 }
