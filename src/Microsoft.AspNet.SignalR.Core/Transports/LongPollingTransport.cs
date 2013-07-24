@@ -1,11 +1,10 @@
 ﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.md in the project root for license information.
 
 using System;
-using System.Collections.Specialized;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
-using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNet.SignalR.Configuration;
 using Microsoft.AspNet.SignalR.Hosting;
 using Microsoft.AspNet.SignalR.Infrastructure;
 using Microsoft.AspNet.SignalR.Json;
@@ -18,6 +17,7 @@ namespace Microsoft.AspNet.SignalR.Transports
     {
         private readonly JsonSerializer _jsonSerializer;
         private readonly IPerformanceCounterManager _counters;
+        private readonly IConfigurationManager _configurationManager;
 
         // This should be ok to do since long polling request never hang around too long
         // so we won't bloat memory
@@ -28,7 +28,8 @@ namespace Microsoft.AspNet.SignalR.Transports
                    resolver.Resolve<JsonSerializer>(),
                    resolver.Resolve<ITransportHeartbeat>(),
                    resolver.Resolve<IPerformanceCounterManager>(),
-                   resolver.Resolve<ITraceManager>())
+                   resolver.Resolve<ITraceManager>(),
+                   resolver.Resolve<IConfigurationManager>())
         {
 
         }
@@ -37,27 +38,18 @@ namespace Microsoft.AspNet.SignalR.Transports
                                     JsonSerializer jsonSerializer,
                                     ITransportHeartbeat heartbeat,
                                     IPerformanceCounterManager performanceCounterManager,
-                                    ITraceManager traceManager)
+                                    ITraceManager traceManager,
+                                    IConfigurationManager configurationManager)
             : base(context, heartbeat, performanceCounterManager, traceManager)
         {
             _jsonSerializer = jsonSerializer;
             _counters = performanceCounterManager;
-        }
-
-        /// <summary>
-        /// The number of milliseconds to tell the browser to wait before restablishing a
-        /// long poll connection after data is sent from the server. Defaults to 0.
-        /// </summary>
-        [SuppressMessage("Microsoft.Naming", "CA1720:IdentifiersShouldNotContainTypeNames", MessageId = "long", Justification = "Longpolling is a well known term")]
-        public static long LongPollDelay
-        {
-            get;
-            set;
+            _configurationManager = configurationManager;
         }
 
         public override TimeSpan DisconnectThreshold
         {
-            get { return TimeSpan.FromMilliseconds(LongPollDelay); }
+            get { return _configurationManager.LongPollDelay; }
         }
 
         public override bool IsConnectRequest
@@ -349,11 +341,11 @@ namespace Microsoft.AspNet.SignalR.Transports
             context.Lifetime.Complete(ex);
         }
 
-        private static void AddTransportData(PersistentResponse response)
+        private void AddTransportData(PersistentResponse response)
         {
-            if (LongPollDelay > 0)
+            if (_configurationManager.LongPollDelay != TimeSpan.Zero)
             {
-                response.LongPollDelay = LongPollDelay;
+                response.LongPollDelay = (long)_configurationManager.LongPollDelay.TotalMilliseconds;
             }
         }
 

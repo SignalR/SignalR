@@ -17,9 +17,8 @@ namespace Microsoft.AspNet.SignalR
         /// <param name="connection">The connection</param>
         /// <param name="connectionId">The connectionId to send to.</param>
         /// <param name="value">The value to publish.</param>
-        /// <param name="excludeConnectionIds">The list of connection ids to exclude</param>
         /// <returns>A task that represents when the broadcast is complete.</returns>
-        public static Task Send(this IConnection connection, string connectionId, object value, params string[] excludeConnectionIds)
+        public static Task Send(this IConnection connection, string connectionId, object value)
         {
             if (connection == null)
             {
@@ -32,8 +31,7 @@ namespace Microsoft.AspNet.SignalR
             }
 
             var message = new ConnectionMessage(PrefixHelper.GetConnectionId(connectionId),
-                                                value,
-                                                PrefixHelper.GetPrefixedConnectionIds(excludeConnectionIds));
+                                                value);
 
             return connection.Send(message);
         }

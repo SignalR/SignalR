@@ -60,6 +60,38 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
             }
         }
 
+        [Fact(Timeout = 5000)]
+        public void SubscriptionWithCancelledTaskCanBeDisposed()
+        {
+            var dr = new DefaultDependencyResolver();
+            using (var bus = new MessageBus(dr))
+            {
+                var subscriber = new TestSubscriber(new[] { "key" });
+                var wh = new ManualResetEventSlim();
+
+                IDisposable subscription = bus.Subscribe(subscriber, null, async (result, state) =>
+                {
+                    if (result.Terminal)
+                    {
+                        return false;
+                    }
+
+                    await Task.Delay(50);
+                    var tcs = new TaskCompletionSource<bool>();
+                    tcs.SetCanceled();
+                    wh.Set();
+                    return await tcs.Task;
+
+                }, 10, null);
+
+                bus.Publish("me", "key", "hello");
+
+                wh.Wait();
+
+                subscription.Dispose();
+            }
+        }
+
         [Fact]
         public void PublishingDoesNotCreateTopic()
         {
