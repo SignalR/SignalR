@@ -126,12 +126,16 @@ testUtilities.runWithAllTransports(function (transport) {
         var restartCount = 3,
             connection = testUtilities.createHubConnection(end, assert, testName, undefined, false);
 
+        connection.error(function () {
+            assert.fail("Error was triggered.");
+        });
+
         for (var i = 0; i < restartCount; i++) {
             connection.start({ transport: transport }).done(function () {
                 assert.fail("Connection started");
                 end();
             }).fail(function () {
-                assert.fail("Connections deferred was rejected.");
+                assert.comment("Fail handler was triggered on aborted negotiate.");
             });
 
             connection.stop();
@@ -160,11 +164,15 @@ testUtilities.runWithAllTransports(function (transport) {
             }, 0);
         });
 
+        connection.error(function () {
+            assert.fail("Error was triggered.");
+        });
+
         connection.start({ transport: transport }).done(function () {
             assert.fail("Connection started");
             end();
         }).fail(function () {
-            assert.fail("Connections deferred was rejected.");
+            assert.comment("Fail handler was triggered on aborted negotiate.");
         });
 
         window.setTimeout(function () {
@@ -186,7 +194,11 @@ testUtilities.runWithAllTransports(function (transport) {
             assert.fail("Connection started");
             end();
         }).fail(function () {
-            assert.fail("Connections deferred was rejected.");
+            assert.comment("Fail handler was triggered on aborted negotiate.");
+        });
+
+        connection.error(function () {
+            assert.fail("Error was triggered.");
         });
 
         connection.stop();
