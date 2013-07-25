@@ -208,8 +208,6 @@ namespace Microsoft.AspNet.SignalR.Client
         private void ClearInvocationCallbacks(string error)
         {
             var result = new HubResult();
-            //var tcs = new TaskCompletionSource<object>();
-
             result.Error = error;
 
             lock (_callbacks)
@@ -221,9 +219,6 @@ namespace Microsoft.AspNet.SignalR.Client
 
                 _callbacks.Clear();
             }
-
-            //tcs.TrySetResult("Done");
-            //return tcs.Task;
         }
     }
 }
