@@ -2,7 +2,7 @@
 
 namespace Microsoft.AspNet.SignalR.Tests.Common
 {
-    public class FilteredConnection : PersistentConnection
+    public class BroadcastConnection : PersistentConnection
     {
         protected override Task OnReceived(IRequest request, string connectionId, string data)
         {
