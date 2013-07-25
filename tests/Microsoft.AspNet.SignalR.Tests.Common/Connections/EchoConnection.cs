@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 
 namespace Microsoft.AspNet.SignalR.Tests.Common.Connections
 {
-    public class AutoEncodedJsonConnection : PersistentConnection
+    public class EchoConnection : PersistentConnection
     {
         protected override Task OnReceived(IRequest request, string connectionId, string data)
         {

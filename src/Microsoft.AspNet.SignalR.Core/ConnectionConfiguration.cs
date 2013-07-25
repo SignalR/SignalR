@@ -15,5 +15,14 @@ namespace Microsoft.AspNet.SignalR
             get { return _resolver ?? GlobalHost.DependencyResolver; }
             set { _resolver = value; }
         }
+
+        /// <summary>
+        /// Gets of sets a boolean that determines if JSONP is enabled.
+        /// </summary>
+        public bool EnableJsonP
+        {
+            get;
+            set;
+        }
     }
 }
