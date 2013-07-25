@@ -3,7 +3,7 @@
 testUtilities.runWithAllTransports(function (transport) {
     // This test is meant for #2187 but also verifies the fix to #2190, #2160 (for all transports).
     QUnit.asyncTimeoutTest(transport + ": Hub Event Handler gets called correct number of times after start and stop.", testUtilities.defaultTestTimeout*1000, function (end, assert, testName) {
-        var connection = testUtilities.createHubConnection(end, assert, testName),
+        var connection = testUtilities.createHubConnection(end, assert, testName,undefined, false),
             echoHub = connection.createHubProxies().echoHub,
             callCount = 0;
 

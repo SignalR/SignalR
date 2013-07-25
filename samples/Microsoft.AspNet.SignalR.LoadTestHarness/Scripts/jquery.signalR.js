@@ -560,6 +560,10 @@
                         if (statusText !== _negotiateAbortText) {
                             onFailed(error, connection);
                         }
+                        else {
+                            // This rejection will noop if the deferred has already been resolved or rejected.
+                            deferred.reject("Stopped the connection while negotiating.");
+                        }
                     },
                     success: function (result) {
                         var res,
