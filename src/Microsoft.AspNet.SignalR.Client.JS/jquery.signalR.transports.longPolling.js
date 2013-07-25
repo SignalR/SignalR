@@ -173,7 +173,10 @@
                                 }
 
                                 // Transition into the reconnecting state
-                                transportLogic.ensureReconnectingState(instance);
+                                // If this fails then that means that the user transitioned the connection into the disconnected or connecting state within the above error handler trigger.
+                                if (!transportLogic.ensureReconnectingState(instance)) {
+                                    return;
+                                }
 
                                 privateData.pollTimeoutId = window.setTimeout(function () {
                                     // If we've errored out we need to verify that the server is still there, so re-start initialization process
