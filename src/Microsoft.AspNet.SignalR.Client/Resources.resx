@@ -156,4 +156,10 @@
   <data name="Error_UrlCantContainQueryStringDirectly" xml:space="preserve">
     <value>Url cannot contain query string directly. Pass query string values in using available overload.</value>
   </data>
+  <data name="Message_ConnectionClosed" xml:space="preserve">
+    <value>Connection was disconnected before invocation result was received.</value>
+  </data>
+  <data name="Message_Reconnecting" xml:space="preserve">
+    <value>Connection started reconnecting before invocation result was received.</value>
+  </data>
 </root>

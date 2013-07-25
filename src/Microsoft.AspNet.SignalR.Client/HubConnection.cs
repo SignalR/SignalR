@@ -6,8 +6,8 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR.Client.Hubs;
-using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
 namespace Microsoft.AspNet.SignalR.Client
@@ -18,7 +18,7 @@ namespace Microsoft.AspNet.SignalR.Client
     public class HubConnection : Connection, IHubConnection
     {
         private readonly Dictionary<string, HubProxy> _hubs = new Dictionary<string, HubProxy>(StringComparer.OrdinalIgnoreCase);
-        private readonly Dictionary<string, Action<HubResult>> _callbacks = new Dictionary<string, Action<HubResult>>();
+        internal readonly Dictionary<string, Action<HubResult>> _callbacks = new Dictionary<string, Action<HubResult>>();
         private int _callbackId;
 
         /// <summary>
@@ -82,6 +82,12 @@ namespace Microsoft.AspNet.SignalR.Client
         {
         }
 
+        public override void OnReconnecting()
+        {
+            ClearInvocationCallbacks(Resources.Message_Reconnecting);
+            base.OnReconnecting();
+        }
+
         [SuppressMessage("Microsoft.Design", "CA1062:Validate arguments of public methods", MessageId = "0", Justification = "")]
         protected override void OnMessageReceived(JToken message)
         {
@@ -138,6 +144,12 @@ namespace Microsoft.AspNet.SignalR.Client
             return this.JsonSerializeObject(data);
         }
 
+        protected override void OnClosed()
+        {
+            ClearInvocationCallbacks(Resources.Message_ConnectionClosed);
+            base.OnClosed();
+        }
+
         /// <summary>
         /// Creates an <see cref="IHubProxy"/> for the hub with the specified name.
         /// </summary>
@@ -159,7 +171,7 @@ namespace Microsoft.AspNet.SignalR.Client
             return hubProxy;
         }
 
-        public string RegisterCallback(Action<HubResult> callback)
+        string IHubConnection.RegisterCallback(Action<HubResult> callback)
         {
             lock (_callbacks)
             {
@@ -167,6 +179,14 @@ namespace Microsoft.AspNet.SignalR.Client
                 _callbacks[id] = callback;
                 _callbackId++;
                 return id;
+            }
+        }
+
+        void IHubConnection.RemoveCallback(string callbackId)
+        {
+            lock (_callbacks)
+            {
+                _callbacks.Remove(callbackId);
             }
         }
 
@@ -183,6 +203,22 @@ namespace Microsoft.AspNet.SignalR.Client
             }
 
             return url;
+        }
+
+        private void ClearInvocationCallbacks(string error)
+        {
+            var result = new HubResult();
+            result.Error = error;
+
+            lock (_callbacks)
+            {
+                foreach (var callback in _callbacks.Values)
+                {
+                    callback(result);
+                }
+
+                _callbacks.Clear();
+            }
         }
     }
 }

@@ -569,11 +569,16 @@ namespace Microsoft.AspNet.SignalR.Client
                     _connectionData = null;
 
                     // TODO: Do we want to trigger Closed if we are connecting?
-                    if (Closed != null)
-                    {
-                        Closed();
-                    }
+                    OnClosed();
                 }
+            }
+        }
+
+        protected virtual void OnClosed()
+        {
+            if (Closed != null)
+            {
+                Closed();
             }
         }
 
@@ -582,7 +587,7 @@ namespace Microsoft.AspNet.SignalR.Client
         /// </summary>
         /// <param name="data">The data to send.</param>
         /// <returns>A task that represents when the data has been sent.</returns>
-        public Task Send(string data)
+        public virtual Task Send(string data)
         {
             if (State == ConnectionState.Disconnected)
             {
@@ -688,13 +693,14 @@ namespace Microsoft.AspNet.SignalR.Client
             OnError(error);
         }
 
-        void IConnection.OnReconnecting()
+        public virtual void OnReconnecting()
         {
             // Only allow the client to attempt to reconnect for a _disconnectTimout TimeSpan which is set by
             // the server during negotiation.
             // If the client tries to reconnect for longer the server will likely have deleted its ConnectionId
             // topic along with the contained disconnect message.
             _disconnectTimeoutOperation = SetTimeout(_disconnectTimeout, Disconnect);
+
             if (Reconnecting != null)
             {
                 Reconnecting();
