@@ -33,8 +33,8 @@ static void RunStreamingSample()
 
     if (key == U("1") || key == U("2"))
     {
-        auto connection = shared_ptr<MicrosoftAspNetSignalRClientCpp::Connection>(new MicrosoftAspNetSignalRClientCpp::Connection(U("http://localhost:40476/raw-connection")));
-    
+        auto connection = make_shared<MicrosoftAspNetSignalRClientCpp::Connection>(U("http://localhost:40476/raw-connection"));
+
         connection->SetReceivedCallback([](string_t message)
         {
             wcout << message << endl;

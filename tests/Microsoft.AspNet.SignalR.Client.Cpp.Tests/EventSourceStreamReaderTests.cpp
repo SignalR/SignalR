@@ -19,11 +19,11 @@ SUITE(EventSourceStreamReaderTests)
         //Arrange
         http_response response;
         response.set_body("data:somedata\n\n");
-        auto pEvent = shared_ptr<Concurrency::event>(new Concurrency::event());
+        auto pEvent = make_shared<Concurrency::event>();
         pplx::task_completion_event<string_t> tce;
         pplx::task<string_t> task = pplx::create_task(tce);
         shared_ptr<Connection> pConnection;
-        auto pEventSource = shared_ptr<EventSourceStreamReader>(new EventSourceStreamReader(pConnection, response.body()));
+        auto pEventSource = make_shared<EventSourceStreamReader>(pConnection, response.body());
 
         //Act
         pEventSource->SetOpenedCallback([pEvent]()

@@ -39,15 +39,15 @@ task<http_response> DefaultHttpClient::Get(string_t uri, function<void(shared_pt
         throw exception("ArgumentNullException: prepareRequest");
     }
 
-    auto cts = shared_ptr<cancellation_token_source>(new cancellation_token_source());
+    auto cts = make_shared<cancellation_token_source>();
 
     auto requestMessage = http_request(methods::GET);
     requestMessage.set_request_uri(uri);
     
-    auto request = shared_ptr<HttpRequestWrapper>(new HttpRequestWrapper(requestMessage, [cts]()
+    auto request = make_shared<HttpRequestWrapper>(requestMessage, [cts]()
     {
         cts->cancel();
-    }));
+    });
 
     prepareRequest(request);
     pplx::task_options readTaskOptions(cts->get_token());
@@ -78,16 +78,16 @@ task<http_response> DefaultHttpClient::Post(string_t uri, function<void(shared_p
     {
         throw exception("ArgumentNullException: prepareRequest");
     }
-    auto cts = shared_ptr<cancellation_token_source>(new cancellation_token_source());
+    auto cts = make_shared<cancellation_token_source>();
 
     auto requestMessage = http_request(methods::POST);
     requestMessage.set_request_uri(uri);
     requestMessage.set_body(postData);
 
-    auto request = shared_ptr<HttpRequestWrapper>(new HttpRequestWrapper(requestMessage, [cts]()
+    auto request = make_shared<HttpRequestWrapper>(requestMessage, [cts]()
     {
         cts->cancel();
-    }));
+    });
 
     prepareRequest(request);
     pplx::task_options readTaskOptions(cts->get_token());

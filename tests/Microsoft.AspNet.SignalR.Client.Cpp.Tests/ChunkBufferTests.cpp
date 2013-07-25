@@ -17,8 +17,8 @@ SUITE(ChunkBufferTests)
     TEST(ReturnsNullIfNoNewLineIfBuffer)
     {
         // Arrange
-        auto pBuffer = shared_ptr<ChunkBuffer>(new ChunkBuffer());
-        auto pData = shared_ptr<char>(new char[4096]);
+        auto pBuffer = make_shared<ChunkBuffer>();
+		auto pData = shared_ptr<char>(new char[4096]);
         strcpy(pData.get(), "hello world");
 
         // Act
@@ -31,7 +31,7 @@ SUITE(ChunkBufferTests)
     TEST(ReturnsTextUpToNewLine)
     {
         // Arrange
-        auto pBuffer = shared_ptr<ChunkBuffer>(new ChunkBuffer());
+        auto pBuffer = make_shared<ChunkBuffer>();
         auto pData = shared_ptr<char>(new char[4096]);
         strcpy(pData.get(), "hello world\noy");
 
@@ -45,7 +45,7 @@ SUITE(ChunkBufferTests)
     TEST(CanReadMultipleLines)
     {
         // Arrange
-        auto pBuffer = shared_ptr<ChunkBuffer>(new ChunkBuffer());
+        auto pBuffer = make_shared<ChunkBuffer>();
         auto pData = shared_ptr<char>(new char[4096]);
         strcpy(pData.get(), "hel\nlo world\noy");
 
@@ -61,7 +61,7 @@ SUITE(ChunkBufferTests)
     TEST(WillCompleteNewLine)
     {
         // Arrange
-        auto pBuffer = shared_ptr<ChunkBuffer>(new ChunkBuffer());
+        auto pBuffer = make_shared<ChunkBuffer>();
         auto pData = shared_ptr<char>(new char[4096]);
         strcpy(pData.get(), "hello");
         pBuffer->Add(pData);

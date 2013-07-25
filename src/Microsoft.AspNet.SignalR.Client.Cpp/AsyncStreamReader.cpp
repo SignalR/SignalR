@@ -192,7 +192,7 @@ void AsyncStreamReader::Abort()
 // returns a task that reads the incoming stream and stored the messages into a buffer
 pplx::task<unsigned int> AsyncStreamReader::AsyncReadIntoBuffer(streams::basic_istream<uint8_t> stream)
 {
-    auto inStringBuffer = shared_ptr<streams::container_buffer<string>>(new streams::container_buffer<string>());
+    auto inStringBuffer = make_shared<streams::container_buffer<string>>();
     pplx::task_options readTaskOptions(mReadCts.get_token());
     return stream.read(*(inStringBuffer.get()), 4096).then([inStringBuffer, this](size_t bytesRead)
     {

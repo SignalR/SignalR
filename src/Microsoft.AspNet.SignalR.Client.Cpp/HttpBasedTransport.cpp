@@ -19,10 +19,10 @@ HttpBasedTransport::HttpBasedTransport(shared_ptr<IHttpClient> httpClient, strin
     pHttpClient = httpClient;
     mTransportName = transport;
 
-    pAbortHandler = shared_ptr<TransportAbortHandler>(new TransportAbortHandler(httpClient, transport, [this]()
+    pAbortHandler = make_shared<TransportAbortHandler>(httpClient, transport, [this]()
     {
         OnAbort();
-    }));
+    });
 }
 
 HttpBasedTransport::~HttpBasedTransport(void)
@@ -56,7 +56,7 @@ pplx::task<void> HttpBasedTransport::Start(shared_ptr<Connection> connection, st
         throw exception("ArgumentNullException: connection");
     }
 
-    auto initializeHandler = shared_ptr<TransportInitializationHandler>(new TransportInitializationHandler(connection->GetTransportConnectTimeout(), disconnectToken));
+    auto initializeHandler = make_shared<TransportInitializationHandler>(connection->GetTransportConnectTimeout(), disconnectToken);
 
     OnStart(connection, data, disconnectToken, initializeHandler);
     
@@ -89,7 +89,7 @@ pplx::task<void> HttpBasedTransport::Send(shared_ptr<Connection> connection, str
         {
             if (response.headers().content_length() != 0)
             {
-                auto inStringBuffer = shared_ptr<streams::container_buffer<string>>(new streams::container_buffer<string>());
+                auto inStringBuffer = make_shared<streams::container_buffer<string>>();
                 response.body().read_to_end(*(inStringBuffer.get())).then([connection, inStringBuffer](size_t bytesRead)
                 {
                     string &text = inStringBuffer->collection();

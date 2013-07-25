@@ -202,7 +202,7 @@ pplx::task<void> Connection::Negotiate(shared_ptr<IClientTransport> transport)
             // If we have a keep alive
             if (response->mKeepAliveTimeout != 0)
             {
-                pKeepAliveData = shared_ptr<KeepAliveData>(new KeepAliveData(response->mKeepAliveTimeout));
+                pKeepAliveData = make_shared<KeepAliveData>(response->mKeepAliveTimeout);
             }
 
             return StartTransport();

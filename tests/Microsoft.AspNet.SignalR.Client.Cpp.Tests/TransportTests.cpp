@@ -25,7 +25,7 @@ SUITE(TransportTests)
 
         for (int i = 0; i < testScenarios; i ++)
         {
-            auto pConnection = shared_ptr<Connection>(new Connection(U("http://foo.com"), connectionQS[i]));
+            auto pConnection = make_shared<Connection>(U("http://foo.com"), connectionQS[i]);
             pConnection->SetConnectionToken(U(""));
 
             // Act
@@ -46,7 +46,7 @@ SUITE(TransportTests)
 
         for (int i = 0; i < testScenarios; i ++)
         {
-            auto pConnection = shared_ptr<Connection>(new Connection(U("http://foo.com"), connectionQS[i]));
+            auto pConnection = make_shared<Connection>(U("http://foo.com"), connectionQS[i]);
             pConnection->SetConnectionToken(U(""));
 
             // Act
@@ -61,7 +61,7 @@ SUITE(TransportTests)
     {
         // Arrange
         bool timedOut, disconnected, triggered = false;
-        auto pConnection = shared_ptr<Connection>(new Connection(U("http://foo.com")));
+        auto pConnection = make_shared<Connection>(U("http://foo.com"));
 
         // Act
         TransportHelper::ProcessResponse(pConnection, U("{\"S\":1, \"M\":[]}"), &timedOut, &disconnected, [&triggered]()

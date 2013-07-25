@@ -49,13 +49,13 @@ bool SseEvent::TryParse(string_t line, shared_ptr<SseEvent>* sseEvent)
     if (StringHelper::BeginsWithIgnoreCase(line, string_t(U("data:"))))
     {
         string_t data = StringHelper::Trim(line.substr(string_t(U("data:")).length(), line.length() - string_t(U("data:")).length()));
-        *sseEvent = shared_ptr<SseEvent>(new SseEvent(EventType::Data, data));
+        *sseEvent = make_shared<SseEvent>(EventType::Data, data);
         return true;
     }
     else if (StringHelper::BeginsWithIgnoreCase(line, string_t(U("id:"))))
     {
         string_t data = StringHelper::Trim(line.substr(string_t(U("id:")).length(), line.length() - string_t(U("id:")).length()));
-        *sseEvent = shared_ptr<SseEvent>(new SseEvent(EventType::Id, data));
+        *sseEvent = make_shared<SseEvent>(EventType::Id, data);
         return true;
     }
     else return false;
