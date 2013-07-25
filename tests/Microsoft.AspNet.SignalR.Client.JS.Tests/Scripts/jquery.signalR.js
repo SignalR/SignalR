@@ -528,7 +528,7 @@
 
             var url = connection.url + "/negotiate",
                 onFailed = function (error, connection) {
-                    $(connection).triggerHandler(events.onError, [error.responseText]);
+                    $(connection).triggerHandler(events.onError, [error.responseText || error.message]);
                     deferred.reject("SignalR: Error during negotiation request: " + error.responseText);
                     // Stop the connection if negotiate failed
                     connection.stop();
@@ -573,6 +573,7 @@
                             res = connection._parseResponse(result);
                         }
                         catch (error) {
+                            error.message = "Error parsing negotiate response: " + error.message;
                             onFailed(error, connection);
                             return;
                         }
