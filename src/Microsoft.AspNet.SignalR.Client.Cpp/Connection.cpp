@@ -39,57 +39,57 @@ Connection::~Connection()
 {
 }
 
-ConnectionState Connection::GetState()
+ConnectionState Connection::GetState() const
 {
     return mState;
 }
 
-shared_ptr<IClientTransport> Connection::GetTransport()
+shared_ptr<IClientTransport> Connection::GetTransport() const
 {
     return pTransport;
 }
 
-string_t Connection::GetUri()
+string_t Connection::GetUri() const
 {
     return mUri;
 }
 
-string_t Connection::GetConnectionId()
+string_t Connection::GetConnectionId() const
 {
     return mConnectionId;
 }
 
-string_t Connection::GetConnectionToken()
+string_t Connection::GetConnectionToken() const
 {
     return mConnectionToken;
 }
 
-string_t Connection::GetGroupsToken()
+string_t Connection::GetGroupsToken() const
 {
     return mGroupsToken;
 }
 
-string_t Connection::GetMessageId()
+string_t Connection::GetMessageId() const
 {
     return mMessageId;
 }
 
-string_t Connection::GetQueryString()
+string_t Connection::GetQueryString() const
 {
     return mQueryString;
 }
 
-string_t Connection::GetProtocol()
+string_t Connection::GetProtocol() const
 {
     return mProtocol;
 }
 
-seconds Connection::GetTransportConnectTimeout()
+seconds Connection::GetTransportConnectTimeout() const
 {
     return mTransportConnectTimeout;
 }
 
-shared_ptr<KeepAliveData> Connection::GetKeepAliveData()
+shared_ptr<KeepAliveData> Connection::GetKeepAliveData() const
 {
     return pKeepAliveData;
 }
@@ -99,7 +99,7 @@ ostream& Connection::GetTraceWriter()
     return mTraceWriter;
 }
 
-TraceLevel Connection::GetTraceLevel()
+TraceLevel Connection::GetTraceLevel() const
 {
     return mTraceLevel;
 }

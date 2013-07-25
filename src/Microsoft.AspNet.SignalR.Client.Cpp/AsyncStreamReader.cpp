@@ -137,7 +137,7 @@ bool AsyncStreamReader::TryProcessRead(unsigned read)
     return false;
 }
 
-bool AsyncStreamReader::IsProcessing()
+bool AsyncStreamReader::IsProcessing() const
 {
     return mReadingState == State::Processing;
 }

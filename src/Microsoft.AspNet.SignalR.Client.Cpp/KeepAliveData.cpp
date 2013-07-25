@@ -28,22 +28,22 @@ KeepAliveData::~KeepAliveData()
 {
 }
 
-time_t KeepAliveData::GetLastKeepAlive()
+time_t KeepAliveData::GetLastKeepAlive() const
 {
     return mLastKeepAlive;
 }
 
-int KeepAliveData::GetTimeout()
+int KeepAliveData::GetTimeout() const
 {
     return mTimeout;
 }
 
-int KeepAliveData::GetTimeoutWarning()
+int KeepAliveData::GetTimeoutWarning() const
 {
     return mTimeoutWarning;
 }
 
-int KeepAliveData::GetCheckInterval()
+int KeepAliveData::GetCheckInterval() const
 {
     return mCheckInterval;
 }

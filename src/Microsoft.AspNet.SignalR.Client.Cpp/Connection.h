@@ -30,19 +30,19 @@ namespace MicrosoftAspNetSignalRClientCpp
         Connection(utility::string_t uri, utility::string_t queryString = U(""), TraceLevel traceLevel = TraceLevel::None);
         ~Connection(void);
 
-        utility::string_t GetProtocol();
-        utility::string_t GetMessageId();
-        utility::string_t GetGroupsToken();
-        utility::string_t GetConnectionId();
-        utility::string_t GetConnectionToken();
-        utility::string_t GetUri();
-        utility::string_t GetQueryString();
-        utility::seconds GetTransportConnectTimeout();
-        ConnectionState GetState();
-        std::shared_ptr<IClientTransport> GetTransport();
-        std::shared_ptr<KeepAliveData> GetKeepAliveData();
+        utility::string_t GetProtocol() const;
+        utility::string_t GetMessageId() const;
+        utility::string_t GetGroupsToken() const;
+        utility::string_t GetConnectionId() const;
+        utility::string_t GetConnectionToken() const;
+        utility::string_t GetUri() const;
+        utility::string_t GetQueryString() const;
+        utility::seconds GetTransportConnectTimeout() const;
+        ConnectionState GetState() const;
+        std::shared_ptr<IClientTransport> GetTransport() const;
+        std::shared_ptr<KeepAliveData> GetKeepAliveData() const;
         std::ostream& GetTraceWriter();
-        TraceLevel GetTraceLevel();
+        TraceLevel GetTraceLevel() const;
     
         void SetProtocol(utility::string_t protocol);
         void SetMessageId(utility::string_t groupsToken);

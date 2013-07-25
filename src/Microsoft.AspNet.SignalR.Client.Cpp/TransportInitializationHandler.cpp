@@ -81,7 +81,7 @@ void TransportInitializationHandler::Success()
     });
 }
 
-pplx::task<void> TransportInitializationHandler::GetTask()
+pplx::task<void> TransportInitializationHandler::GetTask() const
 {
     return pplx::task<void>(mInitializationTask);
 }

@@ -51,7 +51,7 @@ namespace MicrosoftAspNetSignalRClientCpp
         std::mutex mDataLock;
         std::function<void(std::shared_ptr<char> buffer)> Data;
 
-        bool IsProcessing();
+        bool IsProcessing() const;
         void Close();
         void Close(std::exception &ex);
         void Process();

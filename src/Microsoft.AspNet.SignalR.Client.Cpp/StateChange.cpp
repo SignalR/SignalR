@@ -19,12 +19,12 @@ StateChange::~StateChange(void)
 {
 }
 
-ConnectionState StateChange::GetOldState()
+ConnectionState StateChange::GetOldState() const
 {
     return mOldState;
 }
 
-ConnectionState StateChange::GetNewState()
+ConnectionState StateChange::GetNewState() const
 {
     return mNewState;
 }

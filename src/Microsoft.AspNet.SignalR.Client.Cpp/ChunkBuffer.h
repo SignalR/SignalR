@@ -17,7 +17,7 @@ namespace MicrosoftAspNetSignalRClientCpp
         ChunkBuffer();
         ~ChunkBuffer();
 
-        bool HasChuncks();
+        bool HasChuncks() const;
         void Add(std::shared_ptr<char> buffer);
         utility::string_t ReadLine();
 

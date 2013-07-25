@@ -28,7 +28,7 @@ namespace MicrosoftAspNetSignalRClientCpp
     protected:
         std::shared_ptr<IHttpClient> GetHttpClient();
         std::shared_ptr<TransportAbortHandler> GetAbortHandler();
-        utility::string_t GetReceiveQueryString(std::shared_ptr<Connection> connection, utility::string_t data);
+        utility::string_t GetReceiveQueryString(std::shared_ptr<Connection> connection, utility::string_t data) const;
         virtual void OnStart(std::shared_ptr<Connection> connection, utility::string_t data, pplx::cancellation_token disconnectToken, std::shared_ptr<TransportInitializationHandler> initializeHandler) = 0;
         virtual void OnAbort() = 0;
 

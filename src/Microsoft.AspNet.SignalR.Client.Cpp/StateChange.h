@@ -16,8 +16,8 @@ namespace MicrosoftAspNetSignalRClientCpp
         StateChange(ConnectionState oldState, ConnectionState newState);
         ~StateChange(void);
     
-        ConnectionState GetOldState();
-        ConnectionState GetNewState();
+        ConnectionState GetOldState() const;
+        ConnectionState GetNewState() const;
 
     private:
         ConnectionState mOldState;

@@ -17,10 +17,10 @@ namespace MicrosoftAspNetSignalRClientCpp
         KeepAliveData(time_t lastKeepAlive, int timeout, int timeoutWarning, int checkInterval);
         ~KeepAliveData();
         
-        time_t GetLastKeepAlive();
-        int GetTimeout();
-        int GetTimeoutWarning();
-        int GetCheckInterval();
+        time_t GetLastKeepAlive() const;
+        int GetTimeout() const;
+        int GetTimeoutWarning() const;
+        int GetCheckInterval() const;
 
         void SetLastKeepAlive(time_t lastKeepAlive);
 

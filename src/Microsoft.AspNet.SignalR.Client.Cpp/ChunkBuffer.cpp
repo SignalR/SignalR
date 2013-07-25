@@ -24,7 +24,7 @@ ChunkBuffer::~ChunkBuffer()
 {
 }
 
-bool ChunkBuffer::HasChuncks()
+bool ChunkBuffer::HasChuncks() const
 {
     return mOffset < mBuffer.length();
 }

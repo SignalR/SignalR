@@ -22,7 +22,7 @@ namespace MicrosoftAspNetSignalRClientCpp
         void Fail();
         void Fail(std::exception& ex);
         void Success();
-        pplx::task<void> GetTask();
+        pplx::task<void> GetTask() const;
 
         void SetOnFailureCallback(std::function<void()> onFailure);
 

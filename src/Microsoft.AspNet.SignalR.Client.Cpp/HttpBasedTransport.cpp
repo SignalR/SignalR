@@ -44,7 +44,7 @@ pplx::task<shared_ptr<NegotiationResponse>> HttpBasedTransport::Negotiate(shared
     return TransportHelper::GetNegotiationResponse(pHttpClient, connection);
 }
 
-string_t HttpBasedTransport::GetReceiveQueryString(shared_ptr<Connection> connection, string_t data)
+string_t HttpBasedTransport::GetReceiveQueryString(shared_ptr<Connection> connection, string_t data) const
 {
     return TransportHelper::GetReceiveQueryString(connection, data, mTransportName);
 }

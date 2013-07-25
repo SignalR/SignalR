@@ -22,17 +22,17 @@ SseEvent::~SseEvent()
 {
 }
 
-EventType SseEvent::GetType()
+EventType SseEvent::GetType() const
 {
     return mType;
 }
 
-string_t SseEvent::GetData()
+string_t SseEvent::GetData() const
 {
     return mData;
 }
 
-string_t SseEvent::ToString()
+string_t SseEvent::ToString() const
 {
     return mType + U(": ") + mData;
 }

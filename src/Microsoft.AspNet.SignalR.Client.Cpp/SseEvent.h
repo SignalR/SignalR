@@ -23,9 +23,9 @@ namespace MicrosoftAspNetSignalRClientCpp
         SseEvent(EventType type, utility::string_t data);
         ~SseEvent();
     
-        EventType GetType();
-        utility::string_t GetData();
-        utility::string_t ToString();
+        EventType GetType() const;
+        utility::string_t GetData() const;
+        utility::string_t ToString() const;
         static bool TryParse(utility::string_t line, std::shared_ptr<SseEvent>* sseEvent);
 
     private:
