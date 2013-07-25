@@ -108,8 +108,8 @@ namespace Microsoft.AspNet.SignalR.Tests
                             Resolver = new DefaultDependencyResolver()
                         };
 
-                        app.MapConnection<FilteredConnection>("/echo", configuration);
-                        connectionContext = configuration.Resolver.Resolve<IConnectionManager>().GetConnectionContext<FilteredConnection>();
+                        app.MapConnection<BroadcastConnection>("/echo", configuration);
+                        connectionContext = configuration.Resolver.Resolve<IConnectionManager>().GetConnectionContext<BroadcastConnection>();
                     });
 
                     var connection1 = new Client.Connection("http://foo/echo");
@@ -146,8 +146,8 @@ namespace Microsoft.AspNet.SignalR.Tests
                             Resolver = new DefaultDependencyResolver()
                         };
 
-                        app.MapConnection<FilteredConnection>("/echo", configuration);
-                        connectionContext = configuration.Resolver.Resolve<IConnectionManager>().GetConnectionContext<FilteredConnection>();
+                        app.MapConnection<BroadcastConnection>("/echo", configuration);
+                        connectionContext = configuration.Resolver.Resolve<IConnectionManager>().GetConnectionContext<BroadcastConnection>();
                     });
 
                     var connection1 = new Client.Connection("http://foo/echo");
@@ -184,8 +184,8 @@ namespace Microsoft.AspNet.SignalR.Tests
                             Resolver = new DefaultDependencyResolver()
                         };
 
-                        app.MapConnection<FilteredConnection>("/echo", configuration);
-                        connectionContext = configuration.Resolver.Resolve<IConnectionManager>().GetConnectionContext<FilteredConnection>();
+                        app.MapConnection<BroadcastConnection>("/echo", configuration);
+                        connectionContext = configuration.Resolver.Resolve<IConnectionManager>().GetConnectionContext<BroadcastConnection>();
                     });
 
                     var connection1 = new Client.Connection("http://foo/echo");
@@ -223,8 +223,8 @@ namespace Microsoft.AspNet.SignalR.Tests
                             Resolver = new DefaultDependencyResolver()
                         };
 
-                        app.MapConnection<FilteredConnection>("/echo", configuration);
-                        connectionContext = configuration.Resolver.Resolve<IConnectionManager>().GetConnectionContext<FilteredConnection>();
+                        app.MapConnection<BroadcastConnection>("/echo", configuration);
+                        connectionContext = configuration.Resolver.Resolve<IConnectionManager>().GetConnectionContext<BroadcastConnection>();
                     });
 
                     var connection1 = new Client.Connection("http://foo/echo");

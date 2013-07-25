@@ -412,11 +412,11 @@ namespace Microsoft.AspNet.SignalR {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Forbidden: SignalR cross domain is disabled..
+        ///   Looks up a localized string similar to Forbidden: JSONP is disabled..
         /// </summary>
-        internal static string Forbidden_CrossDomainIsDisabled {
+        internal static string Forbidden_JSONPDisabled {
             get {
-                return ResourceManager.GetString("Forbidden_CrossDomainIsDisabled", resourceCulture);
+                return ResourceManager.GetString("Forbidden_JSONPDisabled", resourceCulture);
             }
         }
     }

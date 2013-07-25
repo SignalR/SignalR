@@ -118,13 +118,32 @@ namespace Microsoft.AspNet.SignalR.Tests.Common
             app.Map("/autoencodedjson", map =>
             {
                 map.UseCors(corsOptions);
-                map.UseConnection<AutoEncodedJsonConnection>(config);
+                map.UseConnection<EchoConnection>(config);
             });
 
             app.Map("/redirectionConnection", map =>
             {
                 map.UseCors(corsOptions);
                 map.UseConnection<RedirectionConnection>(config);
+            });
+
+            app.Map("/jsonp", map =>
+            {
+                var jsonpConfig = new ConnectionConfiguration
+                {
+                    Resolver = resolver,
+                    EnableJsonP = true
+                };
+
+                map.MapConnection<EchoConnection>("/echo", jsonpConfig);
+
+                var jsonpHubsConfig = new HubConfiguration
+                {
+                    Resolver = resolver,
+                    EnableJsonP = true
+                };
+
+                map.MapHubs(jsonpHubsConfig);
             });
 
             app.MapConnection<MyBadConnection>("/ErrorsAreFun", config);
@@ -134,7 +153,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Common
             app.MapConnection<ExamineReconnectPath>("/examine-reconnect", config);
             app.MapConnection<MyGroupConnection>("/groups", config);
             app.MapConnection<MyRejoinGroupsConnection>("/rejoin-groups", config);
-            app.MapConnection<FilteredConnection>("/filter", config);
+            app.MapConnection<BroadcastConnection>("/filter", config);
             app.MapConnection<ConnectionThatUsesItems>("/items", config);
             app.MapConnection<SyncErrorConnection>("/sync-error", config);
             app.MapConnection<AddGroupOnConnectedConnection>("/add-group", config);

@@ -234,7 +234,7 @@
   <data name="Error_WebSocketsNotSupported" xml:space="preserve">
     <value>WebSockets is not supported.</value>
   </data>
-  <data name="Forbidden_CrossDomainIsDisabled" xml:space="preserve">
-    <value>Forbidden: SignalR cross domain is disabled.</value>
+  <data name="Forbidden_JSONPDisabled" xml:space="preserve">
+    <value>Forbidden: JSONP is disabled.</value>
   </data>
 </root>
