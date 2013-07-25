@@ -132,7 +132,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Common
                 var jsonpConfig = new ConnectionConfiguration
                 {
                     Resolver = resolver,
-                    EnableJsonP = true
+                    EnableJSONP = true
                 };
 
                 map.MapConnection<EchoConnection>("/echo", jsonpConfig);
@@ -140,7 +140,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Common
                 var jsonpHubsConfig = new HubConfiguration
                 {
                     Resolver = resolver,
-                    EnableJsonP = true
+                    EnableJSONP = true
                 };
 
                 map.MapHubs(jsonpHubsConfig);

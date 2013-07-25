@@ -134,7 +134,7 @@ namespace Microsoft.AspNet.SignalR.Json
                                                    IOwinContext context)
         {
             // If JSONP is enabled then do nothing
-            if (config.EnableJsonP)
+            if (config.EnableJSONP)
             {
                 return false;
             }
