@@ -31,4 +31,5 @@ tests/Microsoft.AspNet.SignalR.Client.JS.Tests/CommandLineBridge.js
 *.log.txt
 /tests/Microsoft.AspNet.SignalR.FunctionalTests/artifacts/
 /samples/Microsoft.AspNet.SignalR.Client.WindowsStoreJavaScript.Samples/bld/
+jquery.signalR.js
 jquery.signalR.min.js
