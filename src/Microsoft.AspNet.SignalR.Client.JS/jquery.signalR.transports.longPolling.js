@@ -118,7 +118,7 @@
                                     reconnectErrors = 0;
 
                                     // If there's currently a timeout to trigger reconnect, fire it now before processing messages
-                                if (privateData.reconnectTimeoutId !== null) {
+                                    if (privateData.reconnectTimeoutId !== null) {
                                         fireReconnected();
                                     }
 
@@ -145,7 +145,7 @@
 
                                     // We never want to pass a raiseReconnect flag after a successful poll.  This is handled via the error function
                                     if (delay > 0) {
-                                    privateData.pollTimeoutId = window.setTimeout(function () {
+                                        privateData.pollTimeoutId = window.setTimeout(function () {
                                             poll(instance, false);
                                         }, delay);
                                     } else {
@@ -156,8 +156,8 @@
                                 error: function (data, textStatus) {
                                     // Stop trying to trigger reconnect, connection is in an error state
                                     // If we're not in the reconnect state this will noop
-                                window.clearTimeout(privateData.reconnectTimeoutId);
-                                privateData.reconnectTimeoutId = null;
+                                    window.clearTimeout(privateData.reconnectTimeoutId);
+                                    privateData.reconnectTimeoutId = null;
 
                                     if (textStatus === "abort") {
                                         connection.log("Aborted xhr requst.");
@@ -175,16 +175,19 @@
                                     }
 
                                     // Transition into the reconnecting state
-                                    transportLogic.ensureReconnectingState(instance);
+                                    // If this fails then that means that the user transitioned the connection into the disconnected or connecting state within the above error handler trigger.
+                                    if (!transportLogic.ensureReconnectingState(instance)) {
+                                        return;
+                                    }
 
-                                privateData.pollTimeoutId = window.setTimeout(function () {
-                                    // If we've errored out we need to verify that the server is still there, so re-start initialization process
-                                    // This will ping the server until it successfully gets a response.
-                                    that.init(instance, function () {
-                                        // Call poll with the raiseReconnect flag as true
-                                        poll(instance, true);
-                                    });
-                                }, that.reconnectDelay);
+                                    privateData.pollTimeoutId = window.setTimeout(function () {
+                                        // If we've errored out we need to verify that the server is still there, so re-start initialization process
+                                        // This will ping the server until it successfully gets a response.
+                                        that.init(instance, function () {
+                                            // Call poll with the raiseReconnect flag as true
+                                            poll(instance, true);
+                                        });
+                                    }, that.reconnectDelay);
                                 }
                             }));
 
