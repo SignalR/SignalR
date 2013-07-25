@@ -45,3 +45,95 @@ QUnit.asyncTimeoutTest("Starting and stopping repeatedly doesn't result in multi
         connection.stop();
     };
 });
+
+// TODO: Investigate why these tests don't work in phantom.js. Seems like jsonp is borked in phantom
+QUnit.module("JSONP Facts", testUtilities.transports.longPolling.enabled && !window.document.commandLineTest);
+
+QUnit.asyncTimeoutTest("JSONP requests are blocked by default in Hubs.", testUtilities.defaultTestTimeout, function (end, assert, testName) {
+    var connection = testUtilities.createHubConnection(end, assert, testName, undefined, false),
+        options = { transport: "longPolling", jsonp: true };
+
+
+    connection.start(options)
+              .done(function () {
+                  assert.fail("JSONP connection was established successfully");
+                  end();
+              })
+              .fail(function () {
+                  assert.comment("JSONP connection failed");
+                  end();
+              });
+
+
+    // Cleanup
+    return function () {
+        connection.stop();
+    };
+});
+
+
+QUnit.asyncTimeoutTest("JSONP requests are blocked by default in PersistentConnections.", testUtilities.defaultTestTimeout, function (end, assert, testName) {
+    var connection = testUtilities.createConnection('/echo', end, assert, testName, false),
+        options = { transport: "longPolling", jsonp: true };
+
+
+    connection.start(options)
+              .done(function () {
+                  assert.fail("JSONP connection was established successfully");
+                  end();
+              })
+              .fail(function () {
+                  assert.comment("JSONP connection failed");
+                  end();
+              });
+
+
+    // Cleanup
+    return function () {
+        connection.stop();
+    };
+});
+
+QUnit.asyncTimeoutTest("JSONP requests worked when enabled in Hubs.", testUtilities.defaultTestTimeout, function (end, assert, testName) {
+    var connection = testUtilities.createHubConnection(end, assert, testName, 'jsonp/signalr', false),
+        options = { transport: "longPolling", jsonp: true };
+
+
+    connection.start(options)
+              .done(function () {
+                  assert.comment("JSONP connection was established successfully");
+                  end();
+              })
+              .fail(function () {
+                  assert.fail("JSONP connection failed");
+                  end();
+              });
+
+
+    // Cleanup
+    return function () {
+        connection.stop();
+    };
+});
+
+
+QUnit.asyncTimeoutTest("JSONP requests worked when enabled in PersistentConnections.", testUtilities.defaultTestTimeout, function (end, assert, testName) {
+    var connection = testUtilities.createConnection('jsonp/echo', end, assert, testName, false),
+        options = { transport: "longPolling", jsonp: true };
+
+    connection.start(options)
+              .done(function () {
+                  assert.comment("JSONP connection was established successfully");
+                  end();
+              })
+              .fail(function () {
+                  assert.fail("JSONP connection failed");
+                  end();
+              });
+
+
+    // Cleanup
+    return function () {
+        connection.stop();
+    };
+});

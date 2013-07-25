@@ -127,7 +127,7 @@
     </Compile>
     <Compile Include="App_Start\Initializer.cs" />
     <Compile Include="Connections\AuthenticatedEchoConnection.cs" />
-    <Compile Include="Connections\AutoJsonEncodedConnection.cs" />
+    <Compile Include="Connections\EchoConnection.cs" />
     <Compile Include="Connections\FallbackToLongPollingConnectionThrows.cs" />
     <Compile Include="Connections\ExamineHeadersConnection.cs" />
     <Compile Include="Connections\ExamineReconnectPath.cs" />
@@ -139,7 +139,7 @@
     <Compile Include="Connections\AddGroupOnConnectedConnection.cs" />
     <Compile Include="Connections\ConnectionThatUsesItems.cs" />
     <Compile Include="Connections\FallbackToLongPollingConnection.cs" />
-    <Compile Include="Connections\FilteredConnection.cs" />
+    <Compile Include="Connections\BroadcastConnection.cs" />
     <Compile Include="Connections\MyBadConnection.cs" />
     <Compile Include="Connections\MyGroupConnection.cs" />
     <Compile Include="Connections\MyGroupEchoConnection.cs" />

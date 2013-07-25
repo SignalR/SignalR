@@ -6,6 +6,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq;
 using System.Text;
+using Microsoft.Owin;
 using Newtonsoft.Json;
 
 namespace Microsoft.AspNet.SignalR.Json
@@ -126,6 +127,29 @@ namespace Microsoft.AspNet.SignalR.Json
                 }
             }
 
+            return true;
+        }
+
+        internal static bool TryRejectJSONPRequest(ConnectionConfiguration config,
+                                                   IOwinContext context)
+        {
+            // If JSONP is enabled then do nothing
+            if (config.EnableJSONP)
+            {
+                return false;
+            }
+
+            string callback = context.Request.Query.Get("callback");
+
+            // The request isn't a JSONP request so do nothing
+            if (String.IsNullOrEmpty(callback))
+            {
+                return false;
+            }
+
+            // Disable the JSONP request with a 403
+            context.Response.StatusCode = 403;
+            context.Response.ReasonPhrase = Resources.Forbidden_JSONPDisabled;
             return true;
         }
 
