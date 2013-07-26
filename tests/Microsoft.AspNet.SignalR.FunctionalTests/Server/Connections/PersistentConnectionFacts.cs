@@ -472,13 +472,10 @@ namespace Microsoft.AspNet.SignalR.Tests
             }
 
             [Theory]
-            [InlineData(TransportType.ServerSentEvents, MessageBusType.Default)]
-            [InlineData(TransportType.ServerSentEvents, MessageBusType.Fake)]
-            [InlineData(TransportType.ServerSentEvents, MessageBusType.FakeMultiStream)]
             [InlineData(TransportType.LongPolling, MessageBusType.Default)]
             [InlineData(TransportType.LongPolling, MessageBusType.Fake)]
             [InlineData(TransportType.LongPolling, MessageBusType.FakeMultiStream)]
-            public void ReconnectFiresAfterTimeOut(TransportType transportType, MessageBusType messageBusType)
+            public void ReconnectDoesntFireAfterTimeOut(TransportType transportType, MessageBusType messageBusType)
             {
                 using (var host = new MemoryHost())
                 {
@@ -509,7 +506,7 @@ namespace Microsoft.AspNet.SignalR.Tests
 
                     connection.Stop();
 
-                    Assert.InRange(conn.Reconnects, 1, 4);
+                    Assert.Equal(0, conn.Reconnects);
                 }
             }
         }

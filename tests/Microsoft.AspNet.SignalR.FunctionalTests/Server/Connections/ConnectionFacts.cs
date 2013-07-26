@@ -470,7 +470,7 @@ namespace Microsoft.AspNet.SignalR.Client.Tests
                                     disconnectTimeout: 6,
                                     messageBusType: messageBusType);
 
-                    var connection = CreateHubConnection(host);
+                    var connection = CreateHubConnection(host, "/force-lp-reconnect");
 
 
                     using (connection)

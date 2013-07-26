@@ -10,6 +10,7 @@ namespace Microsoft.AspNet.SignalR.Hosting.Memory
     internal class OwinEnvironment : IDictionary<string, object>
     {
         private IDictionary<string, object> _extraProperties;
+        private IDictionary<string, object> _hostProperties;
 
         private string _requestProtocol;
         private CancellationToken _callCancelled;
@@ -42,6 +43,11 @@ namespace Microsoft.AspNet.SignalR.Hosting.Memory
             OwinConstants.ResponseBody,
         };
 
+        public OwinEnvironment(IDictionary<string, object> hostProperties)
+        {
+            _hostProperties = hostProperties;
+        }
+
         private IDictionary<string, object> ExtraProperties
         {
             get
@@ -69,7 +75,7 @@ namespace Microsoft.AspNet.SignalR.Hosting.Memory
                 {
                     return _defaultKeys;
                 }
-                return _defaultKeys.Concat(_extraProperties.Keys).ToArray();
+                return _defaultKeys.Concat(_extraProperties.Keys).Concat(_hostProperties.Keys).ToArray();
             }
         }
 
@@ -125,7 +131,14 @@ namespace Microsoft.AspNet.SignalR.Hosting.Memory
                     value = _responseBody;
                     return true;
                 default:
-                    return ExtraProperties.TryGetValue(key, out value);
+                    if (ExtraProperties.TryGetValue(key, out value))
+                    {
+                        return true;
+                    }
+                    else
+                    {
+                        return _hostProperties.TryGetValue(key, out value);
+                    }
             }
         }
 

@@ -287,7 +287,7 @@ namespace Microsoft.AspNet.SignalR.Transports
         {
             var context = (MessageContext)state;
 
-            response.TimedOut = context.Transport.IsTimedOut;
+            response.Reconnect = context.Transport.HostShutdownToken.IsCancellationRequested;
 
             // If we're telling the client to disconnect then clean up the instantiated connection.
             if (response.Disconnect)
@@ -296,7 +296,7 @@ namespace Microsoft.AspNet.SignalR.Transports
                 return context.Transport.Send(response).Then(c => OnDisconnectMessage(c), context)
                                         .Then(() => TaskAsyncHelper.False);
             }
-            else if (response.TimedOut || response.Aborted)
+            else if (context.Transport.IsTimedOut || response.Aborted)
             {
                 context.Registration.Dispose();
 
