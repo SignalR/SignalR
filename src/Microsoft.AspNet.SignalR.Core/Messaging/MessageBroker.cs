@@ -60,12 +60,18 @@ namespace Microsoft.AspNet.SignalR.Messaging
                 {
                     try
                     {
+                        _counters.MessageBusBusyWorkers.Increment();
+
                         await sub.Work();
                     }
                     catch (Exception ex)
                     {
                         Trace.TraceError("Failed to process work - " + ex.GetBaseException());
                         break;
+                    }
+                    finally
+                    {
+                        _counters.MessageBusBusyWorkers.Decrement();
                     }
                 }
                 while (sub.UnsetQueued());
