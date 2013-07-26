@@ -1,5 +1,50 @@
 ﻿QUnit.module("Long Polling Facts", testUtilities.transports.longPolling.enabled);
 
+QUnit.asyncTimeoutTest("Connection start mid-reconnect does not cause double connections.", testUtilities.defaultTestTimeout, function (end, assert, testName) {
+    var connection = testUtilities.createHubConnection(end, assert, testName),
+        transport = { transport: "longPolling" },
+        savedAjax = $.ajax;
+
+    connection.start(transport).done(function () {
+        assert.comment("Connected");
+        
+        $.network.disconnect();
+
+        setTimeout(function () {
+            $.network.connect();
+
+            connection.stop();
+            connection.start(transport).done(function () {
+                setTimeout(function () {
+                    $.ajax = function () {
+                        // Let ajax request finish
+                        setTimeout(function () {
+                            assert.fail("Ajax called when we weren't expecting.");
+                            end();
+                        }, 0);
+
+                        // Persist the request through to the original ajax request
+                        return savedAjax.apply(this, arguments);
+                    };
+
+                    setTimeout(function () {
+                        assert.comment("No ajax requests were triggered.");
+                        end();
+                    }, $.signalR.transports.longPolling.reconnectDelay + 1500);
+                }, 500);
+            });
+        }, 0);
+        
+    });
+
+    // Cleanup
+    return function () {
+        $.ajax = savedAjax;
+        connection.stop();
+        $.network.connect();
+    };
+});
+
 QUnit.asyncTimeoutTest("Can reconnect.", testUtilities.defaultTestTimeout, function (end, assert, testName) {
     var connection = testUtilities.createHubConnection(end, assert, testName),
         demo = connection.createHubProxies().demo;
