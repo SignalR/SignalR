@@ -35,6 +35,9 @@
             onStateChanged: "onStateChanged",
             onDisconnect: "onDisconnect"
         },
+        resources = {
+            noTransportOnInit: "No transport could be initialized successfully. Try specifying a different transport or none at all for auto initialization."
+        },
         ajaxDefaults = {
             processData: true,
             timeout: null,
@@ -123,6 +126,7 @@
 
     signalR._ = {
         defaultContentType: "application/x-www-form-urlencoded; charset=UTF-8",
+
         ieVersion: (function () {
             var version,
                 matches;
@@ -138,10 +142,24 @@
 
             // undefined value means not IE
             return version;
-        })()
+        })(),
+        
+        error: function (message, source) {
+            var e = new Error(message);
+            e.source = source;
+            return e;
+        },
+
+        transportError: function (message, transport, source) {
+            var e = this.error(message, source);
+            e.transport = transport.name;
+            return e;
+        }
     };
 
     signalR.events = events;
+
+    signalR.resources = resources;
 
     signalR.ajaxDefaults = ajaxDefaults;
 
@@ -446,11 +464,13 @@
             });
 
             initialize = function (transports, index) {
+                var noTransportError = signalR._.error(resources.noTransportOnInit);
+                
                 index = index || 0;
                 if (index >= transports.length) {
                     // No transport initialized successfully
-                    $(connection).triggerHandler(events.onError, ["SignalR: No transport could be initialized successfully. Try specifying a different transport or none at all for auto initialization."]);
-                    deferred.reject("SignalR: No transport could be initialized successfully. Try specifying a different transport or none at all for auto initialization.");
+                    $(connection).triggerHandler(events.onError, [noTransportError]);
+                    deferred.reject(noTransportError);
                     // Stop the connection if it has connected and move it into the disconnected state
                     connection.stop();
                     return;
