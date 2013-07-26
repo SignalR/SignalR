@@ -1,6 +1,6 @@
 ﻿QUnit.module("Long Polling Facts", testUtilities.transports.longPolling.enabled);
 
-QUnit.asyncTimeoutTest("Stopping then starting LongPolling connection in error handler does not cause multiple connections.", testUtilities.defaultTestTimeout * 2, function (end, assert, testName) {
+QUnit.asyncTimeoutTest("Stopping then starting LongPolling connection in error handler does not cause multiple connections.", testUtilities.defaultTestTimeout * 4, function (end, assert, testName) {
     var connection = testUtilities.createHubConnection(end, assert, testName, undefined, false),
         transport = { transport: "longPolling" },
         savedAjax = $.ajax,
