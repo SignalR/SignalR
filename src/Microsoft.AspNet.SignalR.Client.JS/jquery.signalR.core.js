@@ -14,9 +14,23 @@
 (function ($, window) {
     "use strict";
 
+    var resources = {
+        nojQuery: "SignalR: jQuery not found. Please ensure jQuery is referenced before the SignalR.js file.",
+        noTransportOnInit: "No transport could be initialized successfully. Try specifying a different transport or none at all for auto initialization.",
+        errorOnNegotiate: "Error during negotiation request.",
+        stoppedWhileNegotiating: "The connection was stopped during the negotiate request.",
+        errorParsingNegotiateResponse: "Error parsing negotiate response.",
+        protocolIncompatible: "You are using a version of the client that isn't compatible with the server. Client version {0}, server version {1}.",
+        sendFailed: "Send failed.",
+        parseFailed: "Failed at parsing response: {0}. With error: {1}.",
+        longPollFailed: "Long polling request failed.",
+        eventSourceFailedToConnect: "EventSource failed to connect.",
+        webSocketClosed: "WebSocket closed with reason: {0}."
+    };
+
     if (typeof ($) !== "function") {
         // no jQuery!
-        throw new Error("SignalR: jQuery not found. Please ensure jQuery is referenced before the SignalR.js file.");
+        throw new Error(resources.nojQuery);
     }
 
     var signalR,
@@ -34,9 +48,6 @@
             onReconnect: "onReconnect",
             onStateChanged: "onStateChanged",
             onDisconnect: "onDisconnect"
-        },
-        resources = {
-            noTransportOnInit: "No transport could be initialized successfully. Try specifying a different transport or none at all for auto initialization."
         },
         ajaxDefaults = {
             processData: true,
@@ -152,8 +163,17 @@
 
         transportError: function (message, transport, source) {
             var e = this.error(message, source);
-            e.transport = transport.name;
+            e.transport = transport ? transport.name : undefined;
             return e;
+        },
+
+        format: function () {
+            /// <summary>Usage: format("Hi {0}, you are {1}!", "Foo", 100) </summary>
+            var s = arguments[0];
+            for (var i = 0; i < arguments.length - 1; i++) {
+                s = s.replace("{" + i + "}", arguments[i + 1]);
+            }
+            return s;
         }
     };
 
@@ -207,8 +227,7 @@
         } else if ($.type(requestedTransport) !== "object" && !signalR.transports[requestedTransport] && requestedTransport !== "auto") {
             connection.log("Invalid transport: " + requestedTransport.toString());
             requestedTransport = null;
-        }
-        else if (requestedTransport === "auto" && signalR._.ieVersion <= 8) {
+        } else if (requestedTransport === "auto" && signalR._.ieVersion <= 8) {
             // If we're doing an auto transport and we're IE8 then force longPolling, #1764
             return ["longPolling"];
 
@@ -220,8 +239,7 @@
     function getDefaultPort(protocol) {
         if (protocol === "http:") {
             return 80;
-        }
-        else if (protocol === "https:") {
+        } else if (protocol === "https:") {
             return 443;
         }
     }
@@ -396,8 +414,7 @@
             // If we're already connecting just return the same deferral as the original connection start
             if (connection.state === signalR.connectionState.connecting) {
                 return deferred.promise();
-            }
-            else if (changeState(connection,
+            } else if (changeState(connection,
                             signalR.connectionState.disconnected,
                             signalR.connectionState.connecting) === false) {
                 // We're not connecting so try and transition into connecting.
@@ -413,8 +430,7 @@
                 connection.protocol = window.document.location.protocol;
                 connection.host = window.document.location.host;
                 connection.baseUrl = connection.protocol + "//" + connection.host;
-            }
-            else {
+            } else {
                 connection.protocol = parser.protocol;
                 connection.host = parser.host;
                 connection.baseUrl = parser.protocol + "//" + parser.host;
@@ -547,8 +563,9 @@
 
             var url = connection.url + "/negotiate",
                 onFailed = function (error, connection) {
-                    $(connection).triggerHandler(events.onError, [error.responseText || error.message]);
-                    deferred.reject("SignalR: Error during negotiation request: " + error.responseText);
+                    var err = signalR._.error(resources.errorOnNegotiate, error);
+                    $(connection).triggerHandler(events.onError, err);
+                    deferred.reject(err);
                     // Stop the connection if negotiate failed
                     connection.stop();
                 };
@@ -578,22 +595,22 @@
                         // We don't want to cause any errors if we're aborting our own negotiate request.
                         if (statusText !== _negotiateAbortText) {
                             onFailed(error, connection);
-                        }
-                        else {
+                        } else {
                             // This rejection will noop if the deferred has already been resolved or rejected.
-                            deferred.reject("Stopped the connection while negotiating.");
+                            deferred.reject(signalR._.error(resources.stoppedWhileNegotiating));
                         }
                     },
                     success: function (result) {
                         var res,
-                            keepAliveData;
+                            keepAliveData,
+                            protocolError,
+                            transports = [],
+                            supportedTransports = [];
 
                         try {
                             res = connection._parseResponse(result);
-                        }
-                        catch (error) {
-                            error.message = "Error parsing negotiate response: " + error.message;
-                            onFailed(error, connection);
+                        } catch (error) {
+                            onFailed(signalR._.error(resources.errorParsingNegotiateResponse, error), connection);
                             return;
                         }
 
@@ -623,23 +640,23 @@
 
                             // Instantiate the frequency in which we check the keep alive.  It must be short in order to not miss/pick up any changes
                             keepAliveData.checkInterval = (keepAliveData.timeout - keepAliveData.timeoutWarning) / 3;
-                        }
-                        else {
+                        } else {
                             keepAliveData.activated = false;
                         }
 
                         if (!res.ProtocolVersion || res.ProtocolVersion !== connection.clientProtocol) {
-                            $(connection).triggerHandler(events.onError, ["You are using a version of the client that isn't compatible with the server. Client version " + connection.clientProtocol + ", server version " + res.ProtocolVersion + "."]);
-                            deferred.reject("You are using a version of the client that isn't compatible with the server. Client version " + connection.clientProtocol + ", server version " + res.ProtocolVersion + ".");
+                            protocolError = signalR._.error(signalR._.format(resources.protocolIncompatible, connection.clientProtocol, res.ProtocolVersion));
+                            $(connection).triggerHandler(events.onError, [protocolError]);
+                            deferred.reject(protocolError);
+                            
                             return;
                         }
-
-                        var transports = [],
-                            supportedTransports = [];
 
                         $.each(signalR.transports, function (key) {
                             if (key === "webSockets" && !res.TryWebSockets) {
                                 // Server said don't even try WebSockets, but keep processing the loop
+                                // BUG: We should check to see if the user passed in only the webSockets transport
+                                //      in which case we should exit right now.
                                 return true;
                             }
                             supportedTransports.push(key);

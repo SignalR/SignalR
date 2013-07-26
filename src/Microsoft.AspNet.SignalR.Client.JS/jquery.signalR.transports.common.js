@@ -31,16 +31,14 @@
 
                 // Notify transport that the connection has been lost
                 connection.transport.lostConnection(connection);
-            }
-            else if (timeElapsed >= keepAliveData.timeoutWarning) {
+            } else if (timeElapsed >= keepAliveData.timeoutWarning) {
                 // This is to assure that the user only gets a single warning
                 if (!keepAliveData.userNotified) {
                     connection.log("Keep alive has been missed, connection may be dead/slow.");
                     $(connection).triggerHandler(events.onConnectionSlow);
                     keepAliveData.userNotified = true;
                 }
-            }
-            else {
+            } else {
                 keepAliveData.userNotified = false;
             }
         }
@@ -106,8 +104,7 @@
 
                         if (data.Response === "pong") {
                             deferral.resolve();
-                        }
-                        else {
+                        } else {
                             deferral.reject("SignalR: Invalid ping response when pinging server: " + (data.responseText || data.statusText));
                         }
                     },
@@ -210,7 +207,7 @@
             var payload = transportLogic.stringifySend(connection, data),
                 url = connection.url + "/send" + "?transport=" + connection.transport.name + "&connectionToken=" + window.encodeURIComponent(connection.token),
                 onFail = function (error, connection) {
-                    $(connection).triggerHandler(events.onError, [error, data]);
+                    $(connection).triggerHandler(events.onError, [signalR._.transportError(signalR.resources.sendFailed, connection.transport, error), data]);
                 };
 
             url = transportLogic.prepareQueryString(connection, url);
@@ -347,8 +344,7 @@
                 connection.log("Now monitoring keep alive with a warning timeout of " + keepAliveData.timeoutWarning + " and a connection lost timeout of " + keepAliveData.timeout);
                 // Start the monitoring of the keep alive
                 checkIfAlive(connection);
-            }
-            else {
+            } else {
                 connection.log("Tried to monitor keep alive but it's already being monitored");
             }
         },
@@ -397,7 +393,6 @@
             // We should only set a reconnectTimeout if we are currently connected
             // and a reconnectTimeout isn't already set.
             if (isConnectedOrReconnecting(connection) && !connection._.reconnectTimeout) {
-
                 connection._.reconnectTimeout = window.setTimeout(function () {
                     transport.stop(connection);
 
@@ -414,9 +409,9 @@
             if (connection.state === signalR.connectionState.connecting) {
                 connection.log("Failed to parse server response while attempting to connect.");
                 onFailed();
-            }
-            else {
-                $(connection).triggerHandler(events.onError, ["SignalR: failed at parsing response: " + result + ".  With error: " + errorMessage]);
+            } else {
+                $(connection).triggerHandler(events.onError,
+                    [signalR._.transportError(signalR._.format(signalR.resources.parseFailed, result, errorMessage), connection.transport)]);
                 connection.stop();
             }
         },

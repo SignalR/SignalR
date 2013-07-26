@@ -36,8 +36,7 @@
             if (!connection.socket) {
                 if (connection.webSocketServerUrl) {
                     url = connection.webSocketServerUrl;
-                }
-                else {
+                } else {
                     url = connection.wsProtocol + connection.host;
                 }
 
@@ -68,19 +67,17 @@
                         if (!opened) {
                             if (onFailed) {
                                 onFailed();
-                            }
-                            else if (reconnecting) {
+                            } else if (reconnecting) {
                                 that.reconnect(connection);
                             }
                             return;
-                        }
-                        else if (typeof event.wasClean !== "undefined" && event.wasClean === false) {
+                        } else if (typeof event.wasClean !== "undefined" && event.wasClean === false) {
                             // Ideally this would use the websocket.onerror handler (rather than checking wasClean in onclose) but
                             // I found in some circumstances Chrome won't call onerror. This implementation seems to work on all browsers.
-                            $(connection).triggerHandler(events.onError, [event.reason]);
+                            $(connection).triggerHandler(events.onError,
+                                [signalR._.transportError(signalR._.format(signalR.resources.webSocketClosed, event.reason), connection.transport, event)]);
                             connection.log("Unclean disconnect from websocket." + event.reason);
-                        }
-                        else {
+                        } else {
                             connection.log("Websocket closed");
                         }
 
