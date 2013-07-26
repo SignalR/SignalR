@@ -1,6 +1,8 @@
-﻿using Microsoft.AspNet.SignalR.Client;
+﻿using System;
+using Microsoft.AspNet.SignalR.Client;
 using Microsoft.AspNet.SignalR.Tests.Common;
 using Microsoft.AspNet.SignalR.Tests.Common.Infrastructure;
+using Microsoft.AspNet.SignalR.Tests.Utilities;
 using Xunit;
 using Xunit.Extensions;
 
@@ -49,9 +51,9 @@ namespace Microsoft.AspNet.SignalR.Tests
 
                     connection.Start(host.Transport).Wait();
 
-                    Assert.Throws<Xunit.Sdk.TrueException>(() =>
+                    TestUtilities.AssertUnwrappedException<InvalidOperationException>(() =>
                     {
-                        hub.InvokeWithTimeout<string>("EchoReturn", new string('a', 64 * 1024));
+                        hub.Invoke<string>("EchoReturn", new string('a', 64 * 1024)).Wait();
                     });
                 }
             }
