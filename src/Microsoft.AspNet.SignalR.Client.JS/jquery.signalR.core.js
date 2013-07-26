@@ -15,17 +15,17 @@
     "use strict";
 
     var resources = {
-        nojQuery: "SignalR: jQuery not found. Please ensure jQuery is referenced before the SignalR.js file.",
+        nojQuery: "jQuery was not found. Please ensure jQuery is referenced before the SignalR client JavaScript file.",
         noTransportOnInit: "No transport could be initialized successfully. Try specifying a different transport or none at all for auto initialization.",
         errorOnNegotiate: "Error during negotiation request.",
         stoppedWhileNegotiating: "The connection was stopped during the negotiate request.",
         errorParsingNegotiateResponse: "Error parsing negotiate response.",
         protocolIncompatible: "You are using a version of the client that isn't compatible with the server. Client version {0}, server version {1}.",
         sendFailed: "Send failed.",
-        parseFailed: "Failed at parsing response: {0}. With error: {1}.",
+        parseFailed: "Failed at parsing response: {0}",
         longPollFailed: "Long polling request failed.",
         eventSourceFailedToConnect: "EventSource failed to connect.",
-        webSocketClosed: "WebSocket closed with reason: {0}."
+        webSocketClosed: "WebSocket closed."
     };
 
     if (typeof ($) !== "function") {

@@ -106,7 +106,7 @@
                     res = connection._parseResponse(e.data);
                 }
                 catch (error) {
-                    transportLogic.handleParseFailure(connection, e.data, error.message, onFailed);
+                    transportLogic.handleParseFailure(connection, e.data, error, onFailed);
                     return;
                 }
 

@@ -404,14 +404,16 @@
             }
         },
 
-        handleParseFailure: function (connection, result, errorMessage, onFailed) {
+        handleParseFailure: function (connection, result, error, onFailed) {
             // If we're in the initialization phase trigger onFailed, otherwise stop the connection.
             if (connection.state === signalR.connectionState.connecting) {
                 connection.log("Failed to parse server response while attempting to connect.");
                 onFailed();
             } else {
-                $(connection).triggerHandler(events.onError,
-                    [signalR._.transportError(signalR._.format(signalR.resources.parseFailed, result, errorMessage), connection.transport)]);
+                $(connection).triggerHandler(events.onError, [signalR._.transportError(
+                    signalR._.format(signalR.resources.parseFailed, result),
+                    connection.transport,
+                    error)]);
                 connection.stop();
             }
         },

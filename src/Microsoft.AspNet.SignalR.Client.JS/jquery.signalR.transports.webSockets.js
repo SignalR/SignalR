@@ -74,9 +74,11 @@
                         } else if (typeof event.wasClean !== "undefined" && event.wasClean === false) {
                             // Ideally this would use the websocket.onerror handler (rather than checking wasClean in onclose) but
                             // I found in some circumstances Chrome won't call onerror. This implementation seems to work on all browsers.
-                            $(connection).triggerHandler(events.onError,
-                                [signalR._.transportError(signalR._.format(signalR.resources.webSocketClosed, event.reason), connection.transport, event)]);
-                            connection.log("Unclean disconnect from websocket." + event.reason);
+                            $(connection).triggerHandler(events.onError, [signalR._.transportError(
+                                signalR.resources.webSocketClosed,
+                                connection.transport,
+                                event)]);
+                            connection.log("Unclean disconnect from websocket: " + event.reason || "[no reason given]");
                         } else {
                             connection.log("Websocket closed");
                         }
@@ -93,7 +95,7 @@
                         data = connection._parseResponse(event.data);
                     }
                     catch (error) {
-                        transportLogic.handleParseFailure(connection, event.data, error.message, onFailed);
+                        transportLogic.handleParseFailure(connection, event.data, error, onFailed);
                         return;
                     }
 
