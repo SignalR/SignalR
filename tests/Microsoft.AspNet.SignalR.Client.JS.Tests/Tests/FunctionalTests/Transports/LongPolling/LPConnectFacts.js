@@ -1,4 +1,4 @@
-﻿QUnit.module("Long Polling Facts", testUtilities.transports.longPolling.enabled);
+﻿QUnit.module("Long Polling Facts", testUtilities.transports.longPolling.enabled && !window.document.commandLineTest);
 
 QUnit.asyncTimeoutTest("Stopping then starting LongPolling connection in error handler does not cause multiple connections.", testUtilities.defaultTestTimeout * 4, function (end, assert, testName) {
     var connection = testUtilities.createHubConnection(end, assert, testName, undefined, false),
@@ -50,6 +50,8 @@ QUnit.asyncTimeoutTest("Stopping then starting LongPolling connection in error h
         connection.stop();
     };
 });
+
+QUnit.module("Long Polling Facts", testUtilities.transports.longPolling.enabled);
 
 QUnit.asyncTimeoutTest("Starting and stopping repeatedly doesn't result in multiple active ajax requests.", testUtilities.defaultTestTimeout * 3, function (end, assert, testName) {
     var connection = testUtilities.createHubConnection(end, assert, testName, undefined, false),
