@@ -589,54 +589,6 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
             }
         }
 
-        [Fact]
-        public void DisposingBusShutsWorkersDown()
-        {
-            var dr = new DefaultDependencyResolver();
-            var bus = new MessageBus(dr);
-            var subscriber = new TestSubscriber(new[] { "key" });
-            var wh = new ManualResetEventSlim(initialState: false);
-            IDisposable subscription = null;
-
-            try
-            {
-                subscription = bus.Subscribe(subscriber, null, (result, state) =>
-                {
-                    if (!result.Terminal)
-                    {
-                        var m = result.GetMessages().Single();
-
-                        Assert.Equal("key", m.Key);
-                        Assert.Equal("value", m.GetString());
-
-                        wh.Set();
-
-                        return TaskAsyncHelper.True;
-                    }
-
-                    return TaskAsyncHelper.False;
-
-                }, 10, null);
-
-                bus.Publish("test", "key", "value").Wait();
-
-                Assert.True(wh.Wait(TimeSpan.FromSeconds(5)));
-            }
-            finally
-            {
-                if (subscription != null)
-                {
-                    subscription.Dispose();
-                }
-
-                Assert.Equal(bus.AllocatedWorkers, 1);
-
-                bus.Dispose();
-
-                Assert.Equal(bus.AllocatedWorkers, 0);
-            }
-        }
-
         private class TestMessageBus : MessageBus
         {
             public TestMessageBus(IDependencyResolver resolver)

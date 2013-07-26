@@ -144,22 +144,6 @@ namespace Microsoft.AspNet.SignalR.Messaging
         protected internal TopicLookup Topics { get; private set; }
         protected IPerformanceCounterManager Counters { get; private set; }
 
-        public int AllocatedWorkers
-        {
-            get
-            {
-                return _broker.AllocatedWorkers;
-            }
-        }
-
-        public int BusyWorkers
-        {
-            get
-            {
-                return _broker.BusyWorkers;
-            }
-        }
-
         /// <summary>
         /// Publishes a new message to the specified event on the bus.
         /// </summary>
