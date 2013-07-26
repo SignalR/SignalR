@@ -16,6 +16,8 @@ namespace Microsoft.AspNet.SignalR.Samples
     {
         public void Configuration(IAppBuilder app)
         {
+            //ConfigureCors(app);
+
             app.MapConnection<SendingConnection>("/sending-connection");
             app.MapConnection<TestConnection>("/test-connection");
             app.MapConnection<RawConnection>("/raw-connection");
