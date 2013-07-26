@@ -333,7 +333,7 @@ testUtilities.runWithAllTransports(function (transport) {
 
         connection.error(function (err) {
             errorFired = true;
-            assert.equal(err, "You are using a version of the client that isn't compatible with the server. Client version " + connection.clientProtocol + ", server version 1.1.",
+            assert.equal(err.message, "You are using a version of the client that isn't compatible with the server. Client version " + connection.clientProtocol + ", server version 1.1.",
                 "Protocol version error message thrown");
         });
 

@@ -42,8 +42,7 @@
                 if (shouldSubscribe) {
                     // We want to subscribe to the hub events
                     subscriptionMethod = hub.on;
-                }
-                else {
+                } else {
                     // We want to unsubscribe from the hub events
                     subscriptionMethod = hub.off;
                 }

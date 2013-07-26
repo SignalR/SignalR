@@ -136,8 +136,7 @@
                     if (!hasMembers(callbackSpace)) {
                         delete callbackMap[eventName];
                     }
-                }
-                else if (!callback) { // Check if we're removing the whole event and we didn't error because of an invalid callback
+                } else if (!callback) { // Check if we're removing the whole event and we didn't error because of an invalid callback
                     $(that).unbind(makeEventName(eventName));
 
                     delete callbackMap[eventName];
