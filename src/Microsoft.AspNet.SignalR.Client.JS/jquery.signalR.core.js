@@ -25,7 +25,9 @@
         parseFailed: "Failed at parsing response: {0}",
         longPollFailed: "Long polling request failed.",
         eventSourceFailedToConnect: "EventSource failed to connect.",
-        webSocketClosed: "WebSocket closed."
+        webSocketClosed: "WebSocket closed.",
+        invalidPingServerResponse: "Invalid ping response when pinging server: '{0}'.",
+        noConnectionTransport: "Connection is in an invalid state, there is no transport active."
     };
 
     if (typeof ($) !== "function") {
@@ -85,6 +87,19 @@
 
         isDisconnecting = function (connection) {
             return connection.state === signalR.connectionState.disconnected;
+        },
+
+        configurePingInterval = function (connection) {
+            var config = connection._.config,
+                onFail = function (error) {
+                    $(connection).triggerHandler(events.onError, [error]);
+                };
+
+            if (!config.pingIntervalId && config.pingInterval) {
+                connection._.pingIntervalId = window.setInterval(function () {
+                    signalR.transports._logic.pingServer(connection).fail(onFail);
+                }, config.pingInterval);
+            }
         },
 
         configureStopReconnectingTimeout = function (connection) {
@@ -154,7 +169,7 @@
             // undefined value means not IE
             return version;
         })(),
-        
+
         error: function (message, source) {
             var e = new Error(message);
             e.source = source;
@@ -363,6 +378,7 @@
             /// <param name="callback" type="Function">A callback function to execute when the connection has started</param>
             var connection = this,
                 config = {
+                    pingInterval: 300000,
                     waitForPageLoad: true,
                     transport: "auto",
                     jsonp: false,
@@ -409,8 +425,6 @@
                 return deferred.promise();
             }
 
-            configureStopReconnectingTimeout(connection);
-
             // If we're already connecting just return the same deferral as the original connection start
             if (connection.state === signalR.connectionState.connecting) {
                 return deferred.promise();
@@ -423,6 +437,8 @@
                 deferred.resolve(connection);
                 return deferred.promise();
             }
+
+            configureStopReconnectingTimeout(connection);
 
             // Resolve the full url
             parser.href = connection.url;
@@ -481,7 +497,7 @@
 
             initialize = function (transports, index) {
                 var noTransportError = signalR._.error(resources.noTransportOnInit);
-                
+
                 index = index || 0;
                 if (index >= transports.length) {
                     // No transport initialized successfully
@@ -538,6 +554,10 @@
                             if (transport.supportsKeepAlive && connection.keepAliveData.activated) {
                                 signalR.transports._logic.monitorKeepAlive(connection);
                             }
+
+                            // Used to ensure low activity clients maintain their authentication.
+                            // Must be configured once a transport has been decided to perform valid ping requests.
+                            configurePingInterval(connection);
 
                             changeState(connection,
                                         signalR.connectionState.connecting,
@@ -648,7 +668,7 @@
                             protocolError = signalR._.error(signalR._.format(resources.protocolIncompatible, connection.clientProtocol, res.ProtocolVersion));
                             $(connection).triggerHandler(events.onError, [protocolError]);
                             deferred.reject(protocolError);
-                            
+
                             return;
                         }
 
@@ -823,6 +843,7 @@
 
                 // Clear this no matter what
                 window.clearTimeout(connection._.onFailedTimeoutHandle);
+                window.clearInterval(connection._.pingIntervalId);
 
                 if (connection.transport) {
                     if (notifyServer !== false) {
@@ -853,6 +874,7 @@
                 delete connection.id;
                 delete connection._deferral;
                 delete connection._.config;
+                delete connection._.pingIntervalId;
 
                 // Clear out our message buffer
                 connection._.connectingMessageBuffer.clear();

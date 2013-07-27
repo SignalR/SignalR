@@ -69,50 +69,55 @@
     }
 
     transportLogic = signalR.transports._logic = {
-        pingServer: function (connection, transport) {
+        pingServer: function (connection) {
             /// <summary>Pings the server</summary>
             /// <param name="connection" type="signalr">Connection associated with the server ping</param>
             /// <returns type="signalR" />
-            var baseUrl = transport === "webSockets" ? "" : connection.baseUrl,
-                url = baseUrl + connection.appRelativeUrl + "/ping",
-                deferral = $.Deferred(),
-                onFail = function (errorMessage) {
-                    deferral.reject("SignalR: Error pinging server: " + errorMessage);
-                };
+            var baseUrl, url, deferral = $.Deferred();
 
-            url = transportLogic.prepareQueryString(connection, url);
+            if (connection.transport) {
+                baseUrl = connection.transport.name === "webSockets" ? "" : connection.baseUrl;
+                url = baseUrl + connection.appRelativeUrl + "/ping";
 
-            $.ajax(
-                $.extend({}, $.signalR.ajaxDefaults, {
-                    xhrFields: { withCredentials: connection.withCredentials },
-                    url: url,
-                    type: "GET",
-                    contentType: connection.contentType,
-                    data: {},
-                    dataType: connection.ajaxDataType,
-                    success: function (result) {
-                        var data;
+                url = transportLogic.prepareQueryString(connection, url);
 
-                        try {
-                            data = connection._parseResponse(result);
+                $.ajax(
+                    $.extend({}, $.signalR.ajaxDefaults, {
+                        xhrFields: { withCredentials: connection.withCredentials },
+                        url: url,
+                        type: "GET",
+                        contentType: connection.contentType,
+                        data: {},
+                        dataType: connection.ajaxDataType,
+                        success: function (result) {
+                            var data;
+
+                            try {
+                                data = connection._parseResponse(result);
+                            }
+                            catch (error) {
+                                deferral.reject(error);
+                                connection.stop();
+                                return;
+                            }
+
+                            if (data.Response === "pong") {
+                                deferral.resolve();
+                            }
+                            else {
+                                deferral.reject(signalR._.transportError(signalR._.format(signalR.resources.invalidPingServerResponse, result.responseText), connection.transport));
+                            }
+                        },
+                        error: function (error) {
+                            deferral.reject(error);
                         }
-                        catch (error) {
-                            onFail(error.message);
-                            connection.stop();
-                            return;
-                        }
-
-                        if (data.Response === "pong") {
-                            deferral.resolve();
-                        } else {
-                            deferral.reject("SignalR: Invalid ping response when pinging server: " + (data.responseText || data.statusText));
-                        }
-                    },
-                    error: function (error) {
-                        onFail((error.responseText || error.statusText));
                     }
-                }
-            ));
+                ));
+
+            }
+            else {
+                deferral.reject(signalR._.transportError(signalR.resources.noConnectionTransport, connection.transport));
+            }
 
             return deferral.promise();
         },

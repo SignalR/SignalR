@@ -12,6 +12,44 @@ QUnit.module("Connection Facts");
 
 testUtilities.runWithAllTransports(function (transport) {
 
+    QUnit.asyncTimeoutTest(transport + ": Ping interval behaves appropriately.", testUtilities.defaultTestTimeout * 2, function (end, assert, testName) {
+        var connection = testUtilities.createHubConnection(end, assert, testName, undefined, false),
+            savedPingServer = $.signalR.transports._logic.pingServer,
+            pingCount = 0;
+
+        $.signalR.transports._logic.pingServer = function () {
+            pingCount++;
+
+            return savedPingServer.apply(this, arguments);
+        };
+
+        // Start the connection and ping the server every 1 second
+        connection.start({ transport: transport, pingInterval: 1000 }).done(function () {
+            setTimeout(function () {
+                var currentPingCount = pingCount;
+
+                assert.ok(currentPingCount >= 2, "Ping server was triggered at least 2 times");
+                connection.stop();
+                setTimeout(function () {
+                    assert.equal(currentPingCount, pingCount, "After calling stop ping interval no longer runs.");
+
+                    connection.start({ transport: transport, pingInterval: 500 }).done(function () {
+                        setTimeout(function () {
+                            assert.equal(currentPingCount + 1, pingCount, "After restarting the connection the ping interval can be reconfigured and continues execution.");
+                            end();
+                        }, 900);
+                    });
+                }, 1500);
+            }, 2500);
+        });
+
+        // Cleanup
+        return function () {
+            $.signalR.transports._logic.pingServer = savedPingServer;
+            connection.stop();
+        };
+    });
+    
     QUnit.asyncTimeoutTest(transport + ": Connection data flows with all requests to server.", testUtilities.defaultTestTimeout*2, function (end, assert, testName) {
         var connection = testUtilities.createHubConnection(end, assert, testName, undefined, false),
             connectionDataVerifierHub = connection.createHubProxies().connectionDataVerifierHub,
@@ -37,7 +75,7 @@ testUtilities.runWithAllTransports(function (transport) {
 
         connectionDataVerifierHub.client.pong = function () {
             // Verify that ping server flows through the connection data
-            $.signalR.transports._logic.pingServer(connection, transport).done(function () {
+            $.signalR.transports._logic.pingServer(connection).done(function () {
                 assert.comment("All requests contained connection data within the query string.");
                 end();
             }).fail(function () {
