@@ -87,7 +87,7 @@ testUtilities.runWithAllTransports(function (transport) {
     QUnit.asyncTimeoutTest(transport + " - Ping server fails on response redirection.", testUtilities.defaultTestTimeout, function (end, assert, testName) {
         var connection = buildRedirectConnection("ping", end, assert, testName, false),
             testPingServer = function () {
-                $.signalR.transports._logic.pingServer(connection, transport).done(function () {
+                $.signalR.transports._logic.pingServer(connection).done(function () {
                     // Successful ping
                     assert.fail("Successful ping with " + transport);
                     end();
@@ -100,7 +100,6 @@ testUtilities.runWithAllTransports(function (transport) {
         // Starting/Stopping a connection to have it instantiated with all the appropriate variables
         connection.start({ transport: transport }).done(function () {
             assert.ok(true, "Connected");
-            connection.stop();
             testPingServer();
         });
 
