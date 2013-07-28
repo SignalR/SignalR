@@ -45,40 +45,48 @@ namespace Microsoft.AspNet.SignalR.Messaging
             if (subscription.SetQueued())
             {
                 // This is a worker
-                DoWork(subscription);
+                ScheduleWork(subscription);
             }
         }
 
-        private void DoWork(ISubscription subscription)
+        private void ScheduleWork(ISubscription subscription)
         {
-            _counters.MessageBusAllocatedWorkers.Increment();
+            var workContext = new WorkContext(subscription, this);
 
-            ThreadPool.UnsafeQueueUserWorkItem(async state =>
+            ThreadPool.UnsafeQueueUserWorkItem(state =>
             {
-                var sub = (ISubscription)state;
-                do
+                var context = (WorkContext)state;
+
+                context.Broker._counters.MessageBusAllocatedWorkers.Increment();
+
+                DoWork(context);
+
+                context.Broker._counters.MessageBusAllocatedWorkers.Decrement();
+            }, 
+            workContext);
+        }
+
+        private static async void DoWork(WorkContext context)
+        {
+            do
+            {
+                try
                 {
-                    try
-                    {
-                        _counters.MessageBusBusyWorkers.Increment();
+                    context.Broker._counters.MessageBusBusyWorkers.Increment();
 
-                        await sub.Work();
-                    }
-                    catch (Exception ex)
-                    {
-                        Trace.TraceError("Failed to process work - " + ex.GetBaseException());
-                        break;
-                    }
-                    finally
-                    {
-                        _counters.MessageBusBusyWorkers.Decrement();
-                    }
+                    await context.Subscription.Work();
                 }
-                while (sub.UnsetQueued());
-
-                _counters.MessageBusAllocatedWorkers.Decrement();
-            },
-            subscription);
+                catch (Exception ex)
+                {
+                    context.Broker.Trace.TraceError("Failed to process work - " + ex.GetBaseException());
+                    break;
+                }
+                finally
+                {
+                    context.Broker._counters.MessageBusBusyWorkers.Decrement();
+                }
+            }
+            while (context.Subscription.UnsetQueued() && !context.Broker._disposed);
         }
 
         protected virtual void Dispose(bool disposing)
@@ -92,6 +100,18 @@ namespace Microsoft.AspNet.SignalR.Messaging
         public void Dispose()
         {
             Dispose(true);
+        }
+
+        private class WorkContext
+        {
+            public ISubscription Subscription;
+            public MessageBroker Broker;
+
+            public WorkContext(ISubscription subscription, MessageBroker broker)
+            {
+                Subscription = subscription;
+                Broker = broker;
+            }
         }
     }
 }
