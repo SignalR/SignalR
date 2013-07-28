@@ -14,18 +14,8 @@ namespace Microsoft.AspNet.SelfHost.Samples
         {
             app.Map("/raw-connection", map =>
             {
-                map.UseCors(new CorsOptions
-                {
-                    CorsPolicy = new CorsPolicy
-                    {
-                        AllowAnyHeader = true,
-                        AllowAnyMethod = true,
-                        AllowAnyOrigin = true,
-                        SupportsCredentials = true
-                    }
-                });
-
-                map.UseConnection<RawConnection>();
+                map.UseCors(CorsOptions.AllowAll)
+                   .UseConnection<RawConnection>();
             });
 
             app.MapHubs();
