@@ -46,6 +46,10 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\packages\Microsoft.Owin.Cors.2.0.0-rc1-20727-504-rel\lib\net45\Microsoft.Owin.Cors.dll</HintPath>
     </Reference>
+    <Reference Include="Microsoft.Owin.Diagnostics, Version=2.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\packages\Microsoft.Owin.Diagnostics.2.0.0-rc1-20727-504-rel\lib\net40\Microsoft.Owin.Diagnostics.dll</HintPath>
+    </Reference>
     <Reference Include="Microsoft.Owin.Host.HttpListener, Version=2.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\packages\Microsoft.Owin.Host.HttpListener.2.0.0-rc1-20727-504-rel\lib\net45\Microsoft.Owin.Host.HttpListener.dll</HintPath>
