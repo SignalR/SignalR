@@ -101,32 +101,21 @@ namespace Microsoft.AspNet.SignalR.Tests.Common
                 Resolver = resolver
             };
 
-            var corsOptions = new CorsOptions
-            {
-                CorsPolicy = new CorsPolicy
-                {
-                    AllowAnyHeader = true,
-                    AllowAnyMethod = true,
-                    AllowAnyOrigin = true,
-                    SupportsCredentials = true
-                }
-            };
-
             app.Map("/multisend", map =>
             {
-                map.UseCors(corsOptions);
+                map.UseCors(CorsOptions.AllowAll);
                 map.UseConnection<MySendingConnection>(config);
             });
 
             app.Map("/autoencodedjson", map =>
             {
-                map.UseCors(corsOptions);
+                map.UseCors(CorsOptions.AllowAll);
                 map.UseConnection<EchoConnection>(config);
             });
 
             app.Map("/redirectionConnection", map =>
             {
-                map.UseCors(corsOptions);
+                map.UseCors(CorsOptions.AllowAll);
                 map.UseConnection<RedirectionConnection>(config);
             });
 
