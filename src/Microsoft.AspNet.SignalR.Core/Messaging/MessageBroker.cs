@@ -16,7 +16,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
         private readonly IPerformanceCounterManager _counters;
 
         // Determines if the broker was disposed and should stop doing all work.
-        private bool _disposed;
+        private volatile bool _disposed;
 
         public MessageBroker(IPerformanceCounterManager performanceCounterManager)
         {
