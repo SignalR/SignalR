@@ -96,7 +96,7 @@
                                 data = connection._parseResponse(result);
                             }
                             catch (error) {
-                                deferral.reject(error);
+                                deferral.reject(signalR._.transportError(signalR.resources.failedToParsePingServerResponse, connection.transport, error));
                                 connection.stop();
                                 return;
                             }
@@ -109,7 +109,13 @@
                             }
                         },
                         error: function (error) {
-                            deferral.reject(error);
+                            if (error.status === 401 || error.status === 403) {
+                                deferral.reject(signalR._.transportError(signalR._.format(signalR.resources.failedToPingServerStatusCode, error.status), connection.transport, error));
+                                connection.stop();
+                            }
+                            else {
+                                deferral.reject(signalR._.transportError(signalR.resources.failedToPingServer, connection.transport, error));
+                            }
                         }
                     }
                 ));

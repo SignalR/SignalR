@@ -27,6 +27,9 @@
         eventSourceFailedToConnect: "EventSource failed to connect.",
         webSocketClosed: "WebSocket closed.",
         invalidPingServerResponse: "Invalid ping response when pinging server: '{0}'.",
+        failedToPingServer: "Failed to ping server.",
+        failedToPingServerStatusCode: "Failed to ping server.  Server responsed with a {0} status code, stopping the connection.",
+        failedToParsePingServerResponse: "Failed to parse ping server response, stopping the connection.",
         noConnectionTransport: "Connection is in an invalid state, there is no transport active."
     };
 
