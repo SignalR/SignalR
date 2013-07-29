@@ -133,7 +133,11 @@
                                 shouldReconnect = data && data.ShouldReconnect;
                                 if (shouldReconnect) {
                                     // Transition into the reconnecting state
-                                    transportLogic.ensureReconnectingState(instance);
+                                    // If this fails then that means that the user transitioned the connection into a invalid state in processMessages.
+                                    if (!transportLogic.ensureReconnectingState(instance))
+                                    {
+                                        return;
+                                    }
                                 }
 
                                 // We never want to pass a raiseReconnect flag after a successful poll.  This is handled via the error function
