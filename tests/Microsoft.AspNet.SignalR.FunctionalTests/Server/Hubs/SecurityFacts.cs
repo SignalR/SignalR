@@ -28,7 +28,7 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Server.Hubs
                         Resolver = new DefaultDependencyResolver()
                     };
 
-                    app.MapConnection<MyGroupConnection>("/echo", config);
+                    app.MapSignalR<MyGroupConnection>("/echo", config);
 
                     protectedData = config.Resolver.Resolve<IProtectedData>();
                 });
@@ -95,7 +95,7 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Server.Hubs
                         Resolver = new DefaultDependencyResolver()
                     };
 
-                    app.MapConnection<MyConnection>("/echo", config);
+                    app.MapSignalR<MyConnection>("/echo", config);
 
                     protectedData = config.Resolver.Resolve<IProtectedData>();
                 });

@@ -25,9 +25,9 @@ namespace Owin
         /// Maps SignalR hubs to the app builder pipeline at "/signalr".
         /// </summary>
         /// <param name="builder">The app builder</param>
-        public static IAppBuilder MapHubs(this IAppBuilder builder)
+        public static IAppBuilder MapSignalR(this IAppBuilder builder)
         {
-            return builder.MapHubs(new HubConfiguration());
+            return builder.MapSignalR(new HubConfiguration());
         }
 
         /// <summary>
@@ -35,9 +35,9 @@ namespace Owin
         /// </summary>
         /// <param name="builder">The app builder</param>
         /// <param name="configuration">The <see cref="HubConfiguration"/> to use</param>
-        public static IAppBuilder MapHubs(this IAppBuilder builder, HubConfiguration configuration)
+        public static IAppBuilder MapSignalR(this IAppBuilder builder, HubConfiguration configuration)
         {
-            return builder.MapHubs("/signalr", configuration);
+            return builder.MapSignalR("/signalr", configuration);
         }
 
         /// <summary>
@@ -46,23 +46,23 @@ namespace Owin
         /// <param name="builder">The app builder</param>
         /// <param name="path">The path to map signalr hubs</param>
         /// <param name="configuration">The <see cref="HubConfiguration"/> to use</param>
-        public static IAppBuilder MapHubs(this IAppBuilder builder, string path, HubConfiguration configuration)
+        public static IAppBuilder MapSignalR(this IAppBuilder builder, string path, HubConfiguration configuration)
         {
             if (configuration == null)
             {
                 throw new ArgumentNullException("configuration");
             }
 
-            return builder.Map(path, subApp => subApp.UseHubs(configuration));
+            return builder.Map(path, subApp => subApp.RunSignalR(configuration));
         }
 
         /// <summary>
         /// Adds SignalR hubs to the app builder pipeline.
         /// </summary>
         /// <param name="builder">The app builder</param>
-        public static IAppBuilder UseHubs(this IAppBuilder builder)
+        public static void RunSignalR(this IAppBuilder builder)
         {
-            return builder.UseHubs(new HubConfiguration());
+            builder.RunSignalR(new HubConfiguration());
         }
 
         /// <summary>
@@ -70,9 +70,9 @@ namespace Owin
         /// </summary>
         /// <param name="builder">The app builder</param>
         /// <param name="configuration">The <see cref="HubConfiguration"/> to use</param>
-        public static IAppBuilder UseHubs(this IAppBuilder builder, HubConfiguration configuration)
+        public static void RunSignalR(this IAppBuilder builder, HubConfiguration configuration)
         {
-            return builder.UseSignalR<HubDispatcherMiddleware>(configuration);
+            builder.UseSignalRMiddleware<HubDispatcherMiddleware>(configuration);
         }
 
         /// <summary>
@@ -83,9 +83,9 @@ namespace Owin
         /// <param name="builder">The app builder</param>
         /// <param name="path">The path to map the <see cref="PersistentConnection"/></param>
         [SuppressMessage("Microsoft.Design", "CA1004:GenericMethodsShouldProvideTypeParameter", Justification = "The type parameter is syntactic sugar")]
-        public static IAppBuilder MapConnection<TConnection>(this IAppBuilder builder, string path) where TConnection : PersistentConnection
+        public static IAppBuilder MapSignalR<TConnection>(this IAppBuilder builder, string path) where TConnection : PersistentConnection
         {
-            return builder.MapConnection(path, typeof(TConnection), new ConnectionConfiguration());
+            return builder.MapSignalR(path, typeof(TConnection), new ConnectionConfiguration());
         }
 
         /// <summary>
@@ -98,9 +98,9 @@ namespace Owin
         /// <param name="configuration">The <see cref="ConnectionConfiguration"/> to use</param>
         /// <returns></returns>
         [SuppressMessage("Microsoft.Design", "CA1004:GenericMethodsShouldProvideTypeParameter", Justification = "The type parameter is syntactic sugar")]
-        public static IAppBuilder MapConnection<TConnection>(this IAppBuilder builder, string path, ConnectionConfiguration configuration) where TConnection : PersistentConnection
+        public static IAppBuilder MapSignalR<TConnection>(this IAppBuilder builder, string path, ConnectionConfiguration configuration) where TConnection : PersistentConnection
         {
-            return builder.MapConnection(path, typeof(TConnection), configuration);
+            return builder.MapSignalR(path, typeof(TConnection), configuration);
         }
 
         /// <summary>
@@ -111,14 +111,14 @@ namespace Owin
         /// <param name="path">The path to map the persistent connection</param>
         /// <param name="connectionType">The type of <see cref="PersistentConnection"/></param>
         /// <param name="configuration">The <see cref="ConnectionConfiguration"/> to use</param>
-        public static IAppBuilder MapConnection(this IAppBuilder builder, string path, Type connectionType, ConnectionConfiguration configuration)
+        public static IAppBuilder MapSignalR(this IAppBuilder builder, string path, Type connectionType, ConnectionConfiguration configuration)
         {
             if (configuration == null)
             {
                 throw new ArgumentNullException("configuration");
             }
 
-            return builder.Map(path, subApp => subApp.UseConnection(connectionType, configuration));
+            return builder.Map(path, subApp => subApp.RunSignalR(connectionType, configuration));
         }
 
         /// <summary>
@@ -127,9 +127,9 @@ namespace Owin
         /// <typeparam name="TConnection">The type of <see cref="PersistentConnection"/></typeparam>
         /// <param name="builder">The app builder</param>
         [SuppressMessage("Microsoft.Design", "CA1004:GenericMethodsShouldProvideTypeParameter", Justification = "The type parameter is syntactic sugar")]
-        public static IAppBuilder UseConnection<TConnection>(this IAppBuilder builder) where TConnection : PersistentConnection
+        public static void RunSignalR<TConnection>(this IAppBuilder builder) where TConnection : PersistentConnection
         {
-            return builder.UseConnection<TConnection>(new ConnectionConfiguration());
+            builder.RunSignalR<TConnection>(new ConnectionConfiguration());
         }
 
         /// <summary>
@@ -140,9 +140,9 @@ namespace Owin
         /// <param name="configuration">The <see cref="ConnectionConfiguration"/> to use</param>
         /// <returns></returns>
         [SuppressMessage("Microsoft.Design", "CA1004:GenericMethodsShouldProvideTypeParameter", Justification = "The type parameter is syntactic sugar")]
-        public static IAppBuilder UseConnection<TConnection>(this IAppBuilder builder, ConnectionConfiguration configuration) where TConnection : PersistentConnection
+        public static void RunSignalR<TConnection>(this IAppBuilder builder, ConnectionConfiguration configuration) where TConnection : PersistentConnection
         {
-            return builder.UseConnection(typeof(TConnection), configuration);
+            builder.RunSignalR(typeof(TConnection), configuration);
         }
 
         /// <summary>
@@ -152,13 +152,13 @@ namespace Owin
         /// <param name="connectionType">The type of <see cref="PersistentConnection"/></param>
         /// <param name="configuration">The <see cref="ConnectionConfiguration"/> to use</param>
         /// <returns></returns>
-        public static IAppBuilder UseConnection(this IAppBuilder builder, Type connectionType, ConnectionConfiguration configuration)
+        public static void RunSignalR(this IAppBuilder builder, Type connectionType, ConnectionConfiguration configuration)
         {
-            return builder.UseSignalR<PersistentConnectionMiddleware>(connectionType, configuration);
+            builder.UseSignalRMiddleware<PersistentConnectionMiddleware>(connectionType, configuration);
         }
 
         [SuppressMessage("Microsoft.Maintainability", "CA1506:AvoidExcessiveClassCoupling", Justification = "This class wires up new dependencies from the host")]
-        private static IAppBuilder UseSignalR<T>(this IAppBuilder builder, params object[] args)
+        private static IAppBuilder UseSignalRMiddleware<T>(this IAppBuilder builder, params object[] args)
         {
             ConnectionConfiguration configuration = null;
 

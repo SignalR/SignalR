@@ -13,8 +13,8 @@ namespace Microsoft.AspNet.SignalR.LoadTestHarness
         {
             GlobalHost.Configuration.DisconnectTimeout = TimeSpan.FromSeconds(60);
 
-            app.MapConnection<TestConnection>("/TestConnection");
-            app.MapHubs();
+            app.MapSignalR<TestConnection>("/TestConnection");
+            app.MapSignalR();
 
             Dashboard.Init();
         }
