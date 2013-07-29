@@ -86,7 +86,13 @@
                         }
                     },
                     error: function (data) {
-                        deferral.reject("SignalR: Error pinging server: " + (data.responseText || data.statusText));
+                        if (data.status === 401 || data.status === 403) {
+                            deferral.reject("Failed to ping server. Server responded with a " + data.status + " status code, stopping the connection.");
+                            connection.stop();
+                        }
+                        else {
+                            deferral.reject("SignalR: Error pinging server: " + (data.responseText || data.statusText));
+                        }
                     }
                 }));
 
