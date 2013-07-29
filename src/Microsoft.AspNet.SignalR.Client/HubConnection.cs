@@ -102,6 +102,10 @@ namespace Microsoft.AspNet.SignalR.Client
                     {
                         _callbacks.Remove(result.Id);
                     }
+                    else
+                    {
+                        Trace(TraceLevels.Messages, "Callback with id " + result.Id + " not found!");
+                    }
                 }
 
                 if (callback != null)
