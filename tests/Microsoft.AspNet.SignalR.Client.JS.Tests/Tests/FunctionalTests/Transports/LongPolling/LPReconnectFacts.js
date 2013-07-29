@@ -1,5 +1,42 @@
 ﻿QUnit.module("Long Polling Facts", testUtilities.transports.longPolling.enabled);
 
+QUnit.asyncTimeoutTest("Messages received immediately after connectivity re-establishment triggers the reconnected event.", testUtilities.defaultTestTimeout, function (end, assert, testName) {
+    var connection = testUtilities.createHubConnection(end, assert, testName),
+        transport = { transport: "longPolling" },
+        demo = connection.createHubProxies().demo,
+        reconnectingTriggered = false;
+
+    demo.client.testGuid = function () { };
+
+    connection.reconnecting(function () {
+        reconnectingTriggered = true;
+    });
+
+    connection.reconnected(function () {
+        assert.isTrue(reconnectingTriggered, "Reconnecting triggered.");
+        assert.comment("Reconnected triggered.");
+        end();
+    });
+
+    connection.start(transport).done(function () {
+        assert.comment("Connected, turning off/on network.");
+
+        // Wait for next poll to be established.
+        setTimeout(function () {
+            $.network.disconnect();
+            $.network.connect();
+
+            demo.server.testGuid();
+        }, 1000);
+    });
+
+    // Cleanup
+    return function () {
+        $.network.connect();
+        connection.stop();
+    };
+});
+
 QUnit.asyncTimeoutTest("Connection start mid-reconnect does not cause double connections.", testUtilities.defaultTestTimeout, function (end, assert, testName) {
     var connection = testUtilities.createHubConnection(end, assert, testName),
         transport = { transport: "longPolling" },
@@ -7,7 +44,7 @@ QUnit.asyncTimeoutTest("Connection start mid-reconnect does not cause double con
 
     connection.start(transport).done(function () {
         assert.comment("Connected");
-        
+
         $.network.disconnect();
 
         setTimeout(function () {
@@ -34,14 +71,14 @@ QUnit.asyncTimeoutTest("Connection start mid-reconnect does not cause double con
                 }, 500);
             });
         }, 0);
-        
+
     });
 
     // Cleanup
     return function () {
         $.ajax = savedAjax;
-        connection.stop();
         $.network.connect();
+        connection.stop();
     };
 });
 
@@ -189,7 +226,7 @@ QUnit.asyncTimeoutTest("Clears stop reconnecting timeout on stop inside of state
             if (connection.state === $.signalR.connectionState.reconnecting) {
                 assert.ok(true, "Connection now in reconnecting state (via stateChanged), stopping the connection.");
                 connection.stop();
-                
+
                 // Set a timeout for 3x the disconnectTimeout.  If it hasn't triggered by then we were successful.
                 timeoutId = setTimeout(function () {
                     assert.ok(true, "Stop Reconnect timeout was not triggered, success!");
