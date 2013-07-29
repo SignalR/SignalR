@@ -47,11 +47,11 @@
                     window.clearTimeout(privateData.reconnectTimeoutId);
                     privateData.reconnectTimeoutId = null;
 
-                    if (changeState(connection,
+                    if (changeState(instance,
                                     signalR.connectionState.reconnecting,
                                     signalR.connectionState.connected) === true) {
                         // Successfully reconnected!
-                        connection.log("Raising the reconnect event");
+                        instance.log("Raising the reconnect event");
                         $(instance).triggerHandler(events.onReconnect);
                     }
                 },
@@ -108,7 +108,7 @@
 
                                 // If there's currently a timeout to trigger reconnect, fire it now before processing messages
                                 if (privateData.reconnectTimeoutId !== null) {
-                                    fireReconnected();
+                                    fireReconnected(instance);
                                 }
 
                                 if (minData) {
