@@ -179,10 +179,7 @@ namespace Microsoft.AspNet.SignalR.Client.Tests
             var ex = aggEx.Unwrap();
 
             Assert.IsType(typeof(TaskCanceledException), ex);
-            
-            // We want to wait for the callbacks to be cleared
-            Thread.Sleep(2 * 1000);
-            
+                       
             Assert.Equal(connection.Object._callbacks.Count, 0);
         }
     }
