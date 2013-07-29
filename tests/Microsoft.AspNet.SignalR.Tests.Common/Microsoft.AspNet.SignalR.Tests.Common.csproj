@@ -133,6 +133,7 @@
     <Compile Include="Connections\ExamineReconnectPath.cs" />
     <Compile Include="Connections\PreserializedJsonConnection.cs" />
     <Compile Include="Connections\RedirectionConnection.cs" />
+    <Compile Include="Connections\StatusCodeConnection.cs" />
     <Compile Include="Handlers\GCHandler.cs" />
     <Compile Include="Handlers\PingHandler.cs" />
     <Compile Include="Build\StartIISTask.cs" />

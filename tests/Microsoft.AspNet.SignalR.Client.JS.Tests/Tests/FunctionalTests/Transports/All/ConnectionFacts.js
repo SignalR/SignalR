@@ -1,8 +1,9 @@
-﻿var buildRedirectConnection = function (redirectWhen, end, assert, testName, wrapStart) {
-    var connection = testUtilities.createConnection("redirectionConnection", end, assert, testName, wrapStart);
+﻿var buildStatusCodeConnection = function (alterWhen, statusCode, end, assert, testName, wrapStart) {
+    var connection = testUtilities.createConnection("statusCodeConnection", end, assert, testName, wrapStart);
 
     connection.qs = {
-        redirectWhen: redirectWhen
+        alterWhen: alterWhen,
+        statusCode: statusCode
     };
 
     return connection;
@@ -11,6 +12,48 @@
 QUnit.module("Connection Facts");
 
 testUtilities.runWithAllTransports(function (transport) {
+
+    QUnit.asyncTimeoutTest(transport + ": Ping interval stops the connection on 401's.", testUtilities.defaultTestTimeout, function (end, assert, testName) {
+        var connection = buildStatusCodeConnection("ping", 401, end, assert, testName, false);
+
+        connection.error(function (error) {
+            assert.equal(error.message, $.signalR._.format($.signalR.resources.failedToPingServerStatusCode, 401), "Failed to ping server due to 401.");
+
+            setTimeout(function () {
+                assert.equal(connection.state, $.signalR.connectionState.disconnected, "Connection was stopped.");
+                end();
+            }, 500);
+        });
+
+        // Start the connection and ping the server every 1 second
+        connection.start({ transport: transport, pingInterval: 1000 });
+
+        // Cleanup
+        return function () {
+            connection.stop();
+        };
+    });
+
+    QUnit.asyncTimeoutTest(transport + ": Ping interval stops the connection on 403's.", testUtilities.defaultTestTimeout, function (end, assert, testName) {
+        var connection = buildStatusCodeConnection("ping", 403, end, assert, testName, false);
+
+        connection.error(function (error) {
+            assert.equal(error.message, $.signalR._.format($.signalR.resources.failedToPingServerStatusCode, 403), "Failed to ping server due to 403.");
+
+            setTimeout(function () {
+                assert.equal(connection.state, $.signalR.connectionState.disconnected, "Connection was stopped.");
+                end();
+            }, 500);
+        });
+
+        // Start the connection and ping the server every 1 second
+        connection.start({ transport: transport, pingInterval: 1000 });
+
+        // Cleanup
+        return function () {
+            connection.stop();
+        };
+    });
 
     QUnit.asyncTimeoutTest(transport + ": Ping interval behaves appropriately.", testUtilities.defaultTestTimeout * 2, function (end, assert, testName) {
         var connection = testUtilities.createHubConnection(end, assert, testName, undefined, false),
@@ -49,8 +92,8 @@ testUtilities.runWithAllTransports(function (transport) {
             connection.stop();
         };
     });
-    
-    QUnit.asyncTimeoutTest(transport + ": Connection data flows with all requests to server.", testUtilities.defaultTestTimeout*2, function (end, assert, testName) {
+
+    QUnit.asyncTimeoutTest(transport + ": Connection data flows with all requests to server.", testUtilities.defaultTestTimeout * 2, function (end, assert, testName) {
         var connection = testUtilities.createHubConnection(end, assert, testName, undefined, false),
             connectionDataVerifierHub = connection.createHubProxies().connectionDataVerifierHub,
             savedAjax = $.ajax,
@@ -95,7 +138,7 @@ testUtilities.runWithAllTransports(function (transport) {
         connection.start(transportSettings).done(function () {
             // Test disconnected
             connection.stop();
-            
+
             setTimeout(function () {
                 connection.start(transportSettings).done(function () {
                     // Delay the network disconnect so that transports can be 100% conneted with disconnect is triggered
