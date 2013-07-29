@@ -88,7 +88,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                         Resolver = dr
                     };
 
-                    app.MapConnection<MyConnection>("/echo", config);
+                    app.MapSignalR<MyConnection>("/echo", config);
 
                     configuration.DisconnectTimeout = TimeSpan.FromSeconds(6);
 
@@ -126,7 +126,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                         Resolver = dr
                     };
 
-                    app.MapHubs("/signalr", config);
+                    app.MapSignalR("/signalr", config);
 
                     configuration.DisconnectTimeout = TimeSpan.FromSeconds(6);
                     dr.Register(typeof(MyHub), () => new MyHub(connectWh, disconnectWh));
@@ -176,7 +176,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                     IDependencyResolver resolver = node.Resolver;
                     node.Server.Configure(app =>
                     {
-                        app.MapConnection<FarmConnection>("/echo", new ConnectionConfiguration
+                        app.MapSignalR<FarmConnection>("/echo", new ConnectionConfiguration
                         {
                             Resolver = resolver
                         });

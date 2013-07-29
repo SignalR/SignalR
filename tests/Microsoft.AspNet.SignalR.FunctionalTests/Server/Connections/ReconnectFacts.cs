@@ -30,7 +30,7 @@ namespace Microsoft.AspNet.SignalR.Tests
 
                 UseMessageBus(messageBusType, config.Resolver);
 
-                app.MapConnection<MyReconnect>("/endpoint", config);
+                app.MapSignalR<MyReconnect>("/endpoint", config);
 
                 var conn = new MyReconnect();
                 config.Resolver.Register(typeof(MyReconnect), () => conn);

@@ -54,7 +54,7 @@ namespace Microsoft.AspNet.SignalR.Client.Tests
                             Resolver = new DefaultDependencyResolver()
                         };
 
-                        app.MapConnection<MyConnection>("/echo", config);
+                        app.MapSignalR<MyConnection>("/echo", config);
                     });
 
                     var connection = new Connection("http://foo/echo");
@@ -105,7 +105,7 @@ namespace Microsoft.AspNet.SignalR.Client.Tests
                             Resolver = new DefaultDependencyResolver()
                         };
 
-                        app.MapConnection<MyAuthenticatedConnection>("/authenticatedConnection", config);
+                        app.MapSignalR<MyAuthenticatedConnection>("/authenticatedConnection", config);
 
                     });
 
@@ -176,7 +176,7 @@ namespace Microsoft.AspNet.SignalR.Client.Tests
 
                         defaultTransportConnectTimeout = config.Resolver.Resolve<IConfigurationManager>().TransportConnectTimeout;
 
-                        app.MapConnection<MyConnection>("/echo", config);
+                        app.MapSignalR<MyConnection>("/echo", config);
                     });
 
                     var tcs = new TaskCompletionSource<string>();
@@ -244,8 +244,8 @@ namespace Microsoft.AspNet.SignalR.Client.Tests
                             Resolver = new DefaultDependencyResolver()
                         };
 
-                        app.MapConnection<MyConnection>("/echo", config);
-                        app.MapConnection<MyConnection2>("/echo2", config);
+                        app.MapSignalR<MyConnection>("/echo", config);
+                        app.MapSignalR<MyConnection2>("/echo2", config);
                     });
 
                     var tcs = new TaskCompletionSource<string>();
@@ -278,8 +278,8 @@ namespace Microsoft.AspNet.SignalR.Client.Tests
                             Resolver = new DefaultDependencyResolver()
                         };
 
-                        app.MapConnection<MyConnection>("/echo", config);
-                        app.MapConnection<MyConnection2>("/echo2", config);
+                        app.MapSignalR<MyConnection>("/echo", config);
+                        app.MapSignalR<MyConnection2>("/echo2", config);
                     });
 
                     var tcs = new TaskCompletionSource<string>();
@@ -312,8 +312,8 @@ namespace Microsoft.AspNet.SignalR.Client.Tests
                             Resolver = new DefaultDependencyResolver()
                         };
 
-                        app.MapConnection<MyConnection>("/echo", config);
-                        app.MapConnection<MyConnection2>("/echo2", config);
+                        app.MapSignalR<MyConnection>("/echo", config);
+                        app.MapSignalR<MyConnection2>("/echo2", config);
                     });
 
                     var tcs = new TaskCompletionSource<string>();
@@ -561,7 +561,7 @@ namespace Microsoft.AspNet.SignalR.Client.Tests
                             Resolver = new DefaultDependencyResolver()
                         };
 
-                        app.MapConnection<TransportResponse>("/transport-response", config);
+                        app.MapSignalR<TransportResponse>("/transport-response", config);
                     });
 
                     var transports = new List<IClientTransport>()
