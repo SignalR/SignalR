@@ -17,7 +17,7 @@ testUtilities.runWithAllTransports(function (transport) {
         var connection = buildStatusCodeConnection("ping", 401, end, assert, testName, false);
 
         connection.error(function (error) {
-            assert.equal(error.message, $.signalR._.format($.signalR.resources.failedToPingServerStatusCode, 401), "Failed to ping server due to 401.");
+            assert.equal(error.message, $.signalR._.format($.signalR.resources.pingServerFailedStatusCode, 401), "Failed to ping server due to 401.");
 
             setTimeout(function () {
                 assert.equal(connection.state, $.signalR.connectionState.disconnected, "Connection was stopped.");
@@ -38,7 +38,7 @@ testUtilities.runWithAllTransports(function (transport) {
         var connection = buildStatusCodeConnection("ping", 403, end, assert, testName, false);
 
         connection.error(function (error) {
-            assert.equal(error.message, $.signalR._.format($.signalR.resources.failedToPingServerStatusCode, 403), "Failed to ping server due to 403.");
+            assert.equal(error.message, $.signalR._.format($.signalR.resources.pingServerFailedStatusCode, 403), "Failed to ping server due to 403.");
 
             setTimeout(function () {
                 assert.equal(connection.state, $.signalR.connectionState.disconnected, "Connection was stopped.");
