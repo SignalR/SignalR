@@ -16,10 +16,10 @@ namespace Microsoft.AspNet.SignalR.Samples
     {
         public void Configuration(IAppBuilder app)
         {
-            app.MapConnection<SendingConnection>("/sending-connection");
-            app.MapConnection<TestConnection>("/test-connection");
-            app.MapConnection<RawConnection>("/raw-connection");
-            app.MapConnection<StreamingConnection>("/streaming-connection");
+            app.MapSignalR<SendingConnection>("/sending-connection");
+            app.MapSignalR<TestConnection>("/test-connection");
+            app.MapSignalR<RawConnection>("/raw-connection");
+            app.MapSignalR<StreamingConnection>("/streaming-connection");
 
             app.Use(typeof(ClaimsMiddleware));
 
@@ -30,13 +30,13 @@ namespace Microsoft.AspNet.SignalR.Samples
                 EnableDetailedErrors = true
             };
 
-            app.MapHubs(config);
+            app.MapSignalR(config);
 
             app.Map("/basicauth", map =>
             {
                 map.UseBasicAuthentication(new BasicAuthenticationProvider());
-                map.MapConnection<AuthenticatedEchoConnection>("/echo");
-                map.MapHubs();
+                map.MapSignalR<AuthenticatedEchoConnection>("/echo");
+                map.MapSignalR();
             });
 
             BackgroundThread.Start();

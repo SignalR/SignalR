@@ -34,7 +34,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                             Resolver = new DefaultDependencyResolver()
                         };
 
-                        app.MapConnection<MyGroupEchoConnection>("/echo", config);
+                        app.MapSignalR<MyGroupEchoConnection>("/echo", config);
 
                         config.Resolver.Register(typeof(IProtectedData), () => new EmptyProtectedData());
                     });
@@ -68,7 +68,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                             Resolver = new DefaultDependencyResolver()
                         };
 
-                        app.MapConnection<MyGroupEchoConnection>("/echo", config);
+                        app.MapSignalR<MyGroupEchoConnection>("/echo", config);
 
                         config.Resolver.Register(typeof(IProtectedData), () => new EmptyProtectedData());
                     });
@@ -108,7 +108,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                             Resolver = new DefaultDependencyResolver()
                         };
 
-                        app.MapConnection<BroadcastConnection>("/echo", configuration);
+                        app.MapSignalR<BroadcastConnection>("/echo", configuration);
                         connectionContext = configuration.Resolver.Resolve<IConnectionManager>().GetConnectionContext<BroadcastConnection>();
                     });
 
@@ -146,7 +146,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                             Resolver = new DefaultDependencyResolver()
                         };
 
-                        app.MapConnection<BroadcastConnection>("/echo", configuration);
+                        app.MapSignalR<BroadcastConnection>("/echo", configuration);
                         connectionContext = configuration.Resolver.Resolve<IConnectionManager>().GetConnectionContext<BroadcastConnection>();
                     });
 
@@ -184,7 +184,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                             Resolver = new DefaultDependencyResolver()
                         };
 
-                        app.MapConnection<BroadcastConnection>("/echo", configuration);
+                        app.MapSignalR<BroadcastConnection>("/echo", configuration);
                         connectionContext = configuration.Resolver.Resolve<IConnectionManager>().GetConnectionContext<BroadcastConnection>();
                     });
 
@@ -223,7 +223,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                             Resolver = new DefaultDependencyResolver()
                         };
 
-                        app.MapConnection<BroadcastConnection>("/echo", configuration);
+                        app.MapSignalR<BroadcastConnection>("/echo", configuration);
                         connectionContext = configuration.Resolver.Resolve<IConnectionManager>().GetConnectionContext<BroadcastConnection>();
                     });
 
@@ -489,7 +489,7 @@ namespace Microsoft.AspNet.SignalR.Tests
 
                         UseMessageBus(messageBusType, config.Resolver);
 
-                        app.MapConnection<MyReconnect>("/endpoint", config);
+                        app.MapSignalR<MyReconnect>("/endpoint", config);
                         var configuration = config.Resolver.Resolve<IConfigurationManager>();
                         configuration.DisconnectTimeout = TimeSpan.FromSeconds(6);
                         configuration.ConnectionTimeout = TimeSpan.FromSeconds(2);

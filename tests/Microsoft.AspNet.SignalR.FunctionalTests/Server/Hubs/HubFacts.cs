@@ -617,7 +617,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                         Resolver = new DefaultDependencyResolver()
                     };
 
-                    app.MapHubs("/foo", config);
+                    app.MapSignalR("/foo", config);
                 });
 
                 var connection = new HubConnection("http://site/foo", useDefaultUrl: false, queryString: new Dictionary<string, string> { { "test", "ChangeHubUrl" } });
@@ -1012,7 +1012,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                         Resolver = new DefaultDependencyResolver()
                     };
 
-                    app.MapHubs("/signalr", config);
+                    app.MapSignalR("/signalr", config);
 
                     config.Resolver.Resolve<IHubPipeline>().AddModule(logRejoiningGroups);
                     var configuration = config.Resolver.Resolve<IConfigurationManager>();
@@ -1135,7 +1135,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                         Resolver = new DefaultDependencyResolver()
                     };
 
-                    app.MapHubs("/signalr", config);
+                    app.MapSignalR("/signalr", config);
 
                     var configuration = config.Resolver.Resolve<IConfigurationManager>();
                     // The below effectively sets the heartbeat interval to one second.
@@ -1170,7 +1170,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                         Resolver = new DefaultDependencyResolver()
                     };
 
-                    app.MapHubs("/signalr", config);
+                    app.MapSignalR("/signalr", config);
 
                     var configuration = config.Resolver.Resolve<IConfigurationManager>();
                     // The following sets the heartbeat to 1 s
@@ -1220,7 +1220,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                         Resolver = new DefaultDependencyResolver()
                     };
 
-                    app.MapHubs("/signalr", config);
+                    app.MapSignalR("/signalr", config);
 
                     config.Resolver.Register(typeof(IHub), () =>
                     {
@@ -1266,7 +1266,7 @@ namespace Microsoft.AspNet.SignalR.Tests
 
                     UseMessageBus(messagebusType, config.Resolver);
 
-                    app.MapHubs(config);
+                    app.MapSignalR(config);
                 });
 
                 var connection = new HubConnection("http://foo");
@@ -1643,7 +1643,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                         Resolver = new DefaultDependencyResolver()
                     };
 
-                    app.MapHubs(configuration);
+                    app.MapSignalR(configuration);
                     hubContext = configuration.Resolver.Resolve<IConnectionManager>().GetHubContext("SendToSome");
                 });
 
@@ -1680,7 +1680,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                         Resolver = new DefaultDependencyResolver()
                     };
 
-                    app.MapHubs(configuration);
+                    app.MapSignalR(configuration);
                     hubContext = configuration.Resolver.Resolve<IConnectionManager>().GetHubContext("SendToSome");
                 });
 
@@ -1717,7 +1717,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                         Resolver = new DefaultDependencyResolver()
                     };
 
-                    app.MapHubs(configuration);
+                    app.MapSignalR(configuration);
                     hubContext = configuration.Resolver.Resolve<IConnectionManager>().GetHubContext("SendToSome");
                 });
 
@@ -1753,7 +1753,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                         Resolver = new DefaultDependencyResolver()
                     };
 
-                    app.MapHubs(configuration);
+                    app.MapSignalR(configuration);
                     hubContext = configuration.Resolver.Resolve<IConnectionManager>().GetHubContext("SendToSome");
                 });
 
@@ -1789,7 +1789,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                         Resolver = new DefaultDependencyResolver()
                     };
 
-                    app.MapHubs(configuration);
+                    app.MapSignalR(configuration);
                     hubContext = configuration.Resolver.Resolve<IConnectionManager>().GetHubContext("SendToSome");
                 });
 

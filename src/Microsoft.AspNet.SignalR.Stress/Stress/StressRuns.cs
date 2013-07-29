@@ -39,7 +39,7 @@ namespace Microsoft.AspNet.SignalR.Stress
                     Resolver = new DefaultDependencyResolver()
                 };
 
-                app.MapHubs(config);
+                app.MapSignalR(config);
 
                 var configuration = config.Resolver.Resolve<IConfigurationManager>();
                 // The below effectively sets the heartbeat interval to five seconds.
@@ -102,7 +102,7 @@ namespace Microsoft.AspNet.SignalR.Stress
                     Resolver = new DefaultDependencyResolver()
                 };
 
-                app.MapHubs(config);
+                app.MapSignalR(config);
 
                 var configuration = config.Resolver.Resolve<IConfigurationManager>();
                 // The below effectively sets the heartbeat interval to five seconds.
@@ -160,7 +160,7 @@ namespace Microsoft.AspNet.SignalR.Stress
                 {
                     Resolver = new DefaultDependencyResolver()
                 };
-                app.MapHubs(config);
+                app.MapSignalR(config);
             });
 
             for (int i = 0; i < concurrency; i++)
@@ -268,7 +268,7 @@ namespace Microsoft.AspNet.SignalR.Stress
                         Resolver = new DefaultDependencyResolver()
                     };
 
-                    app.MapHubs(config);
+                    app.MapSignalR(config);
                 });
 
                 client = host;
@@ -295,7 +295,7 @@ namespace Microsoft.AspNet.SignalR.Stress
                     var bus = new DelayedMessageBus(host.InstanceName, eventBus, config.Resolver, TimeSpan.Zero);
                     config.Resolver.Register(typeof(IMessageBus), () => bus);
 
-                    app.MapHubs(config);
+                    app.MapSignalR(config);
 
                     config.Resolver.Register(typeof(IProtectedData), () => protectedData);
                 });
@@ -327,7 +327,7 @@ namespace Microsoft.AspNet.SignalR.Stress
                     var bus = new DelayedMessageBus(host.InstanceName, eventBus, config.Resolver, delay);
                     config.Resolver.Register(typeof(IMessageBus), () => bus);
 
-                    app.MapHubs(config);
+                    app.MapSignalR(config);
 
                     config.Resolver.Register(typeof(IProtectedData), () => protectedData);
                 });
@@ -396,7 +396,7 @@ namespace Microsoft.AspNet.SignalR.Stress
                 };
 
                 config.Resolver.Resolve<IConfigurationManager>().ConnectionTimeout = TimeSpan.FromDays(1);
-                app.MapHubs(config);
+                app.MapSignalR(config);
             });
 
 
@@ -439,7 +439,7 @@ namespace Microsoft.AspNet.SignalR.Stress
                     Resolver = new DefaultDependencyResolver()
                 };
 
-                app.MapConnection<MyRejoinGroupConnection>("/groups", config);
+                app.MapSignalR<MyRejoinGroupConnection>("/groups", config);
 
                 var configuration = config.Resolver.Resolve<IConfigurationManager>();
                 configuration.KeepAlive = null;
@@ -494,7 +494,7 @@ namespace Microsoft.AspNet.SignalR.Stress
                     Resolver = new DefaultDependencyResolver()
                 };
 
-                app.MapConnection<RawConnection>("/Raw-connection", config);
+                app.MapSignalR<RawConnection>("/Raw-connection", config);
             });
 
             for (int i = 0; i < concurrency; i++)

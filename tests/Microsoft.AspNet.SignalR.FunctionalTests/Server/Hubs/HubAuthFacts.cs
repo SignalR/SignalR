@@ -30,7 +30,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                     };
 
                     WithUser(app, new GenericPrincipal(new GenericIdentity(""), new string[] { }));
-                    app.MapHubs("/signalr", configuration);
+                    app.MapSignalR("/signalr", configuration);
 
                 });
 
@@ -66,7 +66,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                     };
 
                     WithUser(app, new GenericPrincipal(new GenericIdentity("test"), new string[] { }));
-                    app.MapHubs("/signalr", configuration);
+                    app.MapSignalR("/signalr", configuration);
 
                 });
 
@@ -102,7 +102,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                     };
 
                     WithUser(app, new GenericPrincipal(new GenericIdentity(""), new string[] { }));
-                    app.MapHubs("/signalr", configuration);
+                    app.MapSignalR("/signalr", configuration);
 
                 });
 
@@ -140,7 +140,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                     };
 
                     WithUser(app, new GenericPrincipal(new GenericIdentity("test"), new string[] { }));
-                    app.MapHubs("/signalr", configuration);
+                    app.MapSignalR("/signalr", configuration);
 
                 });
 
@@ -180,7 +180,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                     configuration.Resolver.Resolve<IHubPipeline>().RequireAuthentication();
 
                     WithUser(app, new GenericPrincipal(new GenericIdentity(""), new string[] { }));
-                    app.MapHubs("/signalr", configuration);
+                    app.MapSignalR("/signalr", configuration);
                 });
 
                 var connection = CreateHubConnection("http://foo/");
@@ -215,7 +215,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                     configuration.Resolver.Resolve<IHubPipeline>().RequireAuthentication();
 
                     WithUser(app, new GenericPrincipal(new GenericIdentity("test"), new string[] { }));
-                    app.MapHubs("/signalr", configuration);
+                    app.MapSignalR("/signalr", configuration);
                 });
 
                 var connection = CreateHubConnection("http://foo/");
@@ -252,7 +252,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                     configuration.Resolver.Resolve<IHubPipeline>().RequireAuthentication();
 
                     WithUser(app, new GenericPrincipal(new GenericIdentity(""), new string[] { }));
-                    app.MapHubs("/signalr", configuration);
+                    app.MapSignalR("/signalr", configuration);
                 });
 
                 var connection = CreateHubConnection("http://foo/");
@@ -287,7 +287,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                     configuration.Resolver.Resolve<IHubPipeline>().RequireAuthentication();
 
                     WithUser(app, new GenericPrincipal(new GenericIdentity("test"), new string[] { }));
-                    app.MapHubs("/signalr", configuration);
+                    app.MapSignalR("/signalr", configuration);
                 });
 
                 var connection = CreateHubConnection("http://foo/");
@@ -324,7 +324,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                     };
 
                     WithUser(app, new GenericPrincipal(new GenericIdentity(""), new string[] { }));
-                    app.MapHubs("/signalr", configuration);
+                    app.MapSignalR("/signalr", configuration);
                 });
 
                 var connection = CreateHubConnection("http://foo/");
@@ -357,7 +357,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                     };
 
                     WithUser(app, new GenericPrincipal(new GenericIdentity("test"), new string[] { }));
-                    app.MapHubs("/signalr", configuration);
+                    app.MapSignalR("/signalr", configuration);
                 });
 
                 var connection = CreateHubConnection("http://foo/");
@@ -392,7 +392,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                     };
 
                     WithUser(app, new GenericPrincipal(new GenericIdentity(""), new string[] { }));
-                    app.MapHubs("/signalr", configuration);
+                    app.MapSignalR("/signalr", configuration);
                 });
 
                 var connection = CreateHubConnection("http://foo/");
@@ -425,7 +425,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                     };
 
                     WithUser(app, new GenericPrincipal(new GenericIdentity("test"), new string[] { }));
-                    app.MapHubs("/signalr", configuration);
+                    app.MapSignalR("/signalr", configuration);
                 });
 
                 var connection = CreateHubConnection("http://foo/");
@@ -462,7 +462,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                     };
 
                     WithUser(app, new GenericPrincipal(new GenericIdentity(""), new string[] { }));
-                    app.MapHubs("/signalr", configuration);
+                    app.MapSignalR("/signalr", configuration);
                 });
                 var connection = CreateHubConnection("http://foo/");
 
@@ -494,7 +494,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                     };
 
                     WithUser(app, new GenericPrincipal(new GenericIdentity("test"), new string[] { }));
-                    app.MapHubs("/signalr", configuration);
+                    app.MapSignalR("/signalr", configuration);
                 });
 
                 var connection = CreateHubConnection("http://foo/");
@@ -529,7 +529,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                     };
 
                     WithUser(app, new GenericPrincipal(new GenericIdentity(""), new string[] { }));
-                    app.MapHubs("/signalr", configuration);
+                    app.MapSignalR("/signalr", configuration);
                 });
 
                 var connection = CreateHubConnection("http://foo/");
@@ -562,7 +562,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                     };
 
                     WithUser(app, new GenericPrincipal(new GenericIdentity("test"), new string[] { }));
-                    app.MapHubs("/signalr", configuration);
+                    app.MapSignalR("/signalr", configuration);
                 });
 
                 var connection = CreateHubConnection("http://foo/");
@@ -599,7 +599,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                     };
 
                     WithUser(app, new GenericPrincipal(new GenericIdentity(""), new string[] { "Admin" }));
-                    app.MapHubs("/signalr", configuration);
+                    app.MapSignalR("/signalr", configuration);
                 });
 
                 var connection = CreateHubConnection("http://foo/");
@@ -632,7 +632,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                     };
 
                     WithUser(app, new GenericPrincipal(new GenericIdentity(""), new string[] { "Admin" }));
-                    app.MapHubs("/signalr", configuration);
+                    app.MapSignalR("/signalr", configuration);
                 });
 
                 var connection = CreateHubConnection("http://foo/");
@@ -665,7 +665,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                     };
 
                     WithUser(app, new GenericPrincipal(new GenericIdentity("test"), new string[] { "User", "NotAdmin" }));
-                    app.MapHubs("/signalr", configuration);
+                    app.MapSignalR("/signalr", configuration);
                 });
 
                 var connection = CreateHubConnection("http://foo/");
@@ -698,7 +698,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                     };
 
                     WithUser(app, new GenericPrincipal(new GenericIdentity("test"), new string[] { "User", "NotAdmin" }));
-                    app.MapHubs("/signalr", configuration);
+                    app.MapSignalR("/signalr", configuration);
                 });
 
                 var connection = CreateHubConnection("http://foo/");
@@ -731,7 +731,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                     };
 
                     WithUser(app, new GenericPrincipal(new GenericIdentity("test"), new string[] { "User", "Admin" }));
-                    app.MapHubs("/signalr", configuration);
+                    app.MapSignalR("/signalr", configuration);
                 });
 
                 var connection = CreateHubConnection("http://foo/");
@@ -766,7 +766,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                     };
 
                     WithUser(app, new GenericPrincipal(new GenericIdentity("test"), new string[] { "Admin" }));
-                    app.MapHubs("/signalr", configuration);
+                    app.MapSignalR("/signalr", configuration);
                 });
 
                 var connection = CreateHubConnection("http://foo/");
@@ -803,7 +803,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                     };
 
                     WithUser(app, new GenericPrincipal(new GenericIdentity("User"), new string[] { "User", "NotAdmin" }));
-                    app.MapHubs("/signalr", configuration);
+                    app.MapSignalR("/signalr", configuration);
                 });
 
                 var connection = CreateHubConnection("http://foo/");
@@ -836,7 +836,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                     };
 
                     WithUser(app, new GenericPrincipal(new GenericIdentity("test"), new string[] { "User", "Admin" }));
-                    app.MapHubs("/signalr", configuration);
+                    app.MapSignalR("/signalr", configuration);
                 });
 
                 var connection = CreateHubConnection("http://foo/");
@@ -869,7 +869,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                     };
 
                     WithUser(app, new GenericPrincipal(new GenericIdentity("User"), new string[] { "test", "Admin" }));
-                    app.MapHubs("/signalr", configuration);
+                    app.MapSignalR("/signalr", configuration);
                 });
 
                 var connection = CreateHubConnection("http://foo/");
@@ -904,7 +904,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                     };
 
                     WithUser(app, new GenericPrincipal(new GenericIdentity("User"), new string[] { "Admin" }));
-                    app.MapHubs("/signalr", configuration);
+                    app.MapSignalR("/signalr", configuration);
                 });
 
                 var connection = CreateHubConnection("http://foo/");
@@ -941,7 +941,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                     };
 
                     WithUser(app, new GenericPrincipal(new GenericIdentity(""), new string[] { "User", "NotAdmin" }));
-                    app.MapHubs("/signalr", configuration);
+                    app.MapSignalR("/signalr", configuration);
                 });
 
                 var connection = CreateHubConnection("http://foo/");
@@ -976,7 +976,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                     };
 
                     WithUser(app, new GenericPrincipal(new GenericIdentity(""), new string[] { "User", "NotAdmin" }));
-                    app.MapHubs("/signalr", configuration);
+                    app.MapSignalR("/signalr", configuration);
                 });
 
                 var connection = CreateHubConnection("http://foo/");
@@ -1013,7 +1013,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                     };
 
                     WithUser(app, new GenericPrincipal(new GenericIdentity("Admin"), new string[] { }));
-                    app.MapHubs("/signalr", configuration);
+                    app.MapSignalR("/signalr", configuration);
                 });
 
                 var connection = CreateHubConnection("http://foo/");
@@ -1048,7 +1048,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                     };
 
                     WithUser(app, new GenericPrincipal(new GenericIdentity("User"), new string[] { "Admin" }));
-                    app.MapHubs("/signalr", configuration);
+                    app.MapSignalR("/signalr", configuration);
                 });
 
                 var connection = CreateHubConnection("http://foo/");
@@ -1085,7 +1085,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                     };
 
                     WithUser(app, new GenericPrincipal(new GenericIdentity(""), new string[] { "Admin", "Invoker" }));
-                    app.MapHubs("/signalr", configuration);
+                    app.MapSignalR("/signalr", configuration);
                 });
 
                 var connection = CreateHubConnection("http://foo/");
@@ -1122,7 +1122,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                     };
 
                     WithUser(app, new GenericPrincipal(new GenericIdentity("test"), new string[] { "User", "NotAdmin" }));
-                    app.MapHubs("/signalr", configuration);
+                    app.MapSignalR("/signalr", configuration);
                 });
 
                 var connection = CreateHubConnection("http://foo/");
@@ -1159,7 +1159,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                     };
 
                     WithUser(app, new GenericPrincipal(new GenericIdentity("test"), new string[] { "User", "Admin" }));
-                    app.MapHubs("/signalr", configuration);
+                    app.MapSignalR("/signalr", configuration);
                 });
 
                 var connection = CreateHubConnection("http://foo/");

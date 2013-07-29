@@ -19,7 +19,7 @@ namespace Microsoft.AspNet.SelfHost.Samples
                 // Turns cors support on allowing everything
                 // In real applications, the origins should be locked down
                 map.UseCors(CorsOptions.AllowAll)
-                   .UseConnection<RawConnection>();
+                   .RunSignalR<RawConnection>();
             });
 
             app.Map("/signalr", map =>
@@ -35,7 +35,7 @@ namespace Microsoft.AspNet.SelfHost.Samples
                 // Turns cors support on allowing everything
                 // In real applications, the origins should be locked down
                 map.UseCors(CorsOptions.AllowAll)
-                   .UseHubs(config);
+                   .RunSignalR(config);
             });
 
             // Turn tracing on programmatically

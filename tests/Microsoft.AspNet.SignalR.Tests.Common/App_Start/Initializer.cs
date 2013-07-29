@@ -89,9 +89,9 @@ namespace Microsoft.AspNet.SignalR.Tests.Common
                 EnableDetailedErrors = true
             };
 
-            app.MapHubs(hubConfig);
+            app.MapSignalR(hubConfig);
 
-            app.MapHubs("/signalr2/test", new HubConfiguration()
+            app.MapSignalR("/signalr2/test", new HubConfiguration()
             {
                 Resolver = resolver
             });
@@ -104,19 +104,19 @@ namespace Microsoft.AspNet.SignalR.Tests.Common
             app.Map("/multisend", map =>
             {
                 map.UseCors(CorsOptions.AllowAll);
-                map.UseConnection<MySendingConnection>(config);
+                map.RunSignalR<MySendingConnection>(config);
             });
 
             app.Map("/autoencodedjson", map =>
             {
                 map.UseCors(CorsOptions.AllowAll);
-                map.UseConnection<EchoConnection>(config);
+                map.RunSignalR<EchoConnection>(config);
             });
 
             app.Map("/redirectionConnection", map =>
             {
                 map.UseCors(CorsOptions.AllowAll);
-                map.UseConnection<RedirectionConnection>(config);
+                map.RunSignalR<RedirectionConnection>(config);
             });
 
             app.Map("/jsonp", map =>
@@ -127,7 +127,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Common
                     EnableJSONP = true
                 };
 
-                map.MapConnection<EchoConnection>("/echo", jsonpConfig);
+                map.MapSignalR<EchoConnection>("/echo", jsonpConfig);
 
                 var jsonpHubsConfig = new HubConfiguration
                 {
@@ -135,24 +135,24 @@ namespace Microsoft.AspNet.SignalR.Tests.Common
                     EnableJSONP = true
                 };
 
-                map.MapHubs(jsonpHubsConfig);
+                map.MapSignalR(jsonpHubsConfig);
             });
 
-            app.MapConnection<MyBadConnection>("/ErrorsAreFun", config);
-            app.MapConnection<MyGroupEchoConnection>("/group-echo", config);
-            app.MapConnection<MyReconnect>("/my-reconnect", config);
-            app.MapConnection<ExamineHeadersConnection>("/examine-request", config);
-            app.MapConnection<ExamineReconnectPath>("/examine-reconnect", config);
-            app.MapConnection<MyGroupConnection>("/groups", config);
-            app.MapConnection<MyRejoinGroupsConnection>("/rejoin-groups", config);
-            app.MapConnection<BroadcastConnection>("/filter", config);
-            app.MapConnection<ConnectionThatUsesItems>("/items", config);
-            app.MapConnection<SyncErrorConnection>("/sync-error", config);
-            app.MapConnection<AddGroupOnConnectedConnection>("/add-group", config);
-            app.MapConnection<UnusableProtectedConnection>("/protected", config);
-            app.MapConnection<FallbackToLongPollingConnection>("/fall-back", config);
-            app.MapConnection<FallbackToLongPollingConnectionThrows>("/fall-back-throws", config);
-            app.MapConnection<PreserializedJsonConnection>("/preserialize", config);
+            app.MapSignalR<MyBadConnection>("/ErrorsAreFun", config);
+            app.MapSignalR<MyGroupEchoConnection>("/group-echo", config);
+            app.MapSignalR<MyReconnect>("/my-reconnect", config);
+            app.MapSignalR<ExamineHeadersConnection>("/examine-request", config);
+            app.MapSignalR<ExamineReconnectPath>("/examine-reconnect", config);
+            app.MapSignalR<MyGroupConnection>("/groups", config);
+            app.MapSignalR<MyRejoinGroupsConnection>("/rejoin-groups", config);
+            app.MapSignalR<BroadcastConnection>("/filter", config);
+            app.MapSignalR<ConnectionThatUsesItems>("/items", config);
+            app.MapSignalR<SyncErrorConnection>("/sync-error", config);
+            app.MapSignalR<AddGroupOnConnectedConnection>("/add-group", config);
+            app.MapSignalR<UnusableProtectedConnection>("/protected", config);
+            app.MapSignalR<FallbackToLongPollingConnection>("/fall-back", config);
+            app.MapSignalR<FallbackToLongPollingConnectionThrows>("/fall-back-throws", config);
+            app.MapSignalR<PreserializedJsonConnection>("/preserialize", config);
 
             // This subpipeline is protected by basic auth
             app.Map("/basicauth", subApp =>
@@ -164,14 +164,14 @@ namespace Microsoft.AspNet.SignalR.Tests.Common
                     Resolver = resolver
                 };
 
-                subApp.MapConnection<AuthenticatedEchoConnection>("/echo", subConfig);
+                subApp.MapSignalR<AuthenticatedEchoConnection>("/echo", subConfig);
 
                 var subHubsConfig = new HubConfiguration
                 {
                     Resolver = resolver
                 };
 
-                subApp.MapHubs(subHubsConfig);
+                subApp.MapSignalR(subHubsConfig);
             });
 
             app.Map("/force-lp-reconnect", subApp =>
@@ -186,8 +186,8 @@ namespace Microsoft.AspNet.SignalR.Tests.Common
 
                     return next();
                 });
-                subApp.MapConnection<ExamineReconnectPath>("/examine-reconnect", config);
-                subApp.MapHubs(hubConfig);
+                subApp.MapSignalR<ExamineReconnectPath>("/examine-reconnect", config);
+                subApp.MapSignalR(hubConfig);
             });
 
             // Perf/stress test related
@@ -196,7 +196,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Common
                 Resolver = resolver
             };
 
-            app.MapConnection<StressConnection>("/echo", performanceConfig);
+            app.MapSignalR<StressConnection>("/echo", performanceConfig);
 
             performanceConfig.Resolver.Register(typeof(IProtectedData), () => new EmptyProtectedData());
         }
