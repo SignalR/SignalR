@@ -104,7 +104,7 @@ namespace Microsoft.AspNet.SignalR.Client
                     }
                     else
                     {
-                        Debug.Assert(false, "Callback with id " + result.Id + " not found!");
+                        Trace(TraceLevels.Messages, "Callback with id " + result.Id + " not found!");
                     }
                 }
 
