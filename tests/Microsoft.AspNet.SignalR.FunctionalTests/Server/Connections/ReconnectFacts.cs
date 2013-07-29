@@ -20,7 +20,7 @@ namespace Microsoft.AspNet.SignalR.Tests
         [InlineData(TransportType.LongPolling, MessageBusType.FakeMultiStream)]
         public void ReconnectFiresAfterHostShutdown(TransportType transportType, MessageBusType messageBusType)
         {
-            MyReconnect conn = null;
+            var persistentConnections = new List<MyReconnect>();
             var host = new ServerRestarter(app =>
             {
                 var config = new ConnectionConfiguration
@@ -32,22 +32,41 @@ namespace Microsoft.AspNet.SignalR.Tests
 
                 app.MapConnection<MyReconnect>("/endpoint", config);
 
-                conn = new MyReconnect();
+                var conn = new MyReconnect();
                 config.Resolver.Register(typeof(MyReconnect), () => conn);
+                persistentConnections.Add(conn);
             });
 
             using (host)
             {
-                var connection = new Client.Connection("http://foo/endpoint");
-                var transport = CreateTransport(transportType, host);
-                connection.Start(transport).Wait();
+                using (var connection = CreateConnection("http://foo/endpoint"))
+                {
+                    var transport = CreateTransport(transportType, host);
+                    var pollEvent = new ManualResetEventSlim();
+                    var reconnectedEvent = new ManualResetEventSlim();
 
-                Thread.Sleep(TimeSpan.FromSeconds(2));
-                host.Restart();
+                    host.OnPoll = () =>
+                    {
+                        pollEvent.Set();
+                    };
 
-                connection.Stop();
+                    connection.Reconnected += () =>
+                    {
+                        reconnectedEvent.Set();
+                    };
 
-                Assert.Equal(1, conn.Reconnects);
+                    connection.Start(transport).Wait();
+
+                    // Wait for the /poll before restarting the server
+                    Assert.True(pollEvent.Wait(TimeSpan.FromSeconds(15)), "Timed out waiting for poll request");
+
+                    host.Restart();
+
+                    Assert.True(reconnectedEvent.Wait(TimeSpan.FromSeconds(15)), "Timed out waiting for client side reconnect");
+
+                    Assert.Equal(2, persistentConnections.Count);
+                    Assert.Equal(1, persistentConnections[1].Reconnects);
+                }
             }
         }
 
@@ -55,8 +74,9 @@ namespace Microsoft.AspNet.SignalR.Tests
         {
             private readonly Action<IAppBuilder> _startup;
             private MemoryHost _server;
-            private int _counter = 0;
             private readonly object _lockobj = new object();
+
+            public Action OnPoll = () => { };
 
             public void Initialize(SignalR.Client.IConnection connection)
             {
@@ -73,7 +93,6 @@ namespace Microsoft.AspNet.SignalR.Tests
             {
                 lock (_lockobj)
                 {
-                    Debug.WriteLine("Server {0}: GET {1}", _counter, url);
                     return ((Client.Http.IHttpClient)_server).Get(url, prepareRequest, isLongRunning);
                 }
             }
@@ -82,8 +101,14 @@ namespace Microsoft.AspNet.SignalR.Tests
             {
                 lock (_lockobj)
                 {
-                    Debug.WriteLine("Server {0}: POST {1}", _counter, url);
-                    return ((Client.Http.IHttpClient)_server).Post(url, prepareRequest, postData, isLongRunning);
+                    Task<Client.Http.IResponse> task = ((Client.Http.IHttpClient)_server).Post(url, prepareRequest, postData, isLongRunning);
+
+                    if (url.Contains("poll"))
+                    {
+                        OnPoll();
+                    }
+
+                    return task;
                 }
             }
 
@@ -96,7 +121,6 @@ namespace Microsoft.AspNet.SignalR.Tests
                     // Ensure that all servers have the same instance name so tokens can be successfully unprotected
                     _server.InstanceName = "ServerRestarter";
                     _server.Configure(_startup);
-                    _counter++;
                 }
             }
 

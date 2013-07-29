@@ -60,14 +60,14 @@ namespace Microsoft.AspNet.SignalR.Tests.Common.Infrastructure
 
         protected void EnableTracing()
         {
-            string testName = GetTestName();
+            string testName = GetTestName() + "." + Interlocked.Increment(ref _id);
             string logBasePath = Path.Combine(Directory.GetCurrentDirectory(), "..");
-            HostedTestFactory.EnableTracing(GetTestName(), logBasePath);
+            HostedTestFactory.EnableTracing(testName, logBasePath);
         }
 
         protected HubConnection CreateHubConnection(string url)
         {
-            string testName = GetTestName();
+            string testName = GetTestName() + "." + Interlocked.Increment(ref _id);
             var query = new Dictionary<string, string>();
             query["test"] = testName;
             var connection = new HubConnection(url, query);
@@ -75,10 +75,20 @@ namespace Microsoft.AspNet.SignalR.Tests.Common.Infrastructure
             return connection;
         }
 
+        protected Connection CreateConnection(string url)
+        {
+            string testName = GetTestName() + "." + Interlocked.Increment(ref _id);
+            var query = new Dictionary<string, string>();
+            query["test"] = testName;
+            var connection = new Connection(url, query);
+            connection.TraceWriter = HostedTestFactory.CreateClientTraceWriter(testName);
+            return connection;
+        }
+
         protected HubConnection CreateHubConnection(ITestHost host, string path = null, bool useDefaultUrl = true)
         {
             var query = new Dictionary<string, string>();
-            query["test"] = GetTestName();
+            query["test"] = GetTestName() + "." + Interlocked.Increment(ref _id);
             SetHostData(host, query);
             var connection = new HubConnection(host.Url + path, query, useDefaultUrl);
             connection.TraceWriter = host.ClientTraceOutput ?? connection.TraceWriter;
@@ -88,7 +98,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Common.Infrastructure
         protected Client.Connection CreateConnection(ITestHost host, string path)
         {
             var query = new Dictionary<string, string>();
-            query["test"] = GetTestName();
+            query["test"] = GetTestName() + "." + Interlocked.Increment(ref _id);
             SetHostData(host, query);
             var connection = new Client.Connection(host.Url + path, query);
             connection.TraceWriter = host.ClientTraceOutput ?? connection.TraceWriter;
