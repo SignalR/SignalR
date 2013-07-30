@@ -218,17 +218,18 @@
       <Using Namespace="System.IO" />
       <Using Namespace="System.Web" />
       <Using Namespace="Microsoft.Build.Framework" />
-      <Code Type="Fragment" Language="cs"><![CDATA[
-            ScriptTagsOutput = "";
+      <Code Type="Fragment" Language="cs">
+              <![CDATA[
+            ScriptTagsOutput = "\r\n";
             DirectoryInfo dirInfo = new DirectoryInfo(ProjectDirectory + "\\" + RelativePath.Replace("/", "\\"));
             FileInfo[] fileInfos = dirInfo.GetFiles("*.js", SearchOption.AllDirectories);
 
             foreach (FileInfo f in fileInfos)
             {
-                var scriptTag = "<script type=\"text/javascript\" src=\"";
+                var scriptTag = "        <script src=\"";
                 scriptTag += Uri.UnescapeDataString(f.FullName.Replace(ProjectDirectory + "\\", "").Replace("\\","/")) + "\"></script>";
                 
-                ScriptTagsOutput += scriptTag+"\n";
+                ScriptTagsOutput += scriptTag+"\r\n";
             }
     ]]></Code>
     </Task>
