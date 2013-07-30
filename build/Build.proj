@@ -290,8 +290,14 @@
 
   <Target Name="KillIISExpress">
     <Exec Command="taskkill /IM iisexpress.exe /F" ContinueOnError="true" />
+    <CallTarget Targets="ClearAspNetTempFolder" />
   </Target>
 
+  <Target Name="ClearAspNetTempFolder">
+    <RemoveDir Directories="C:\Windows\Microsoft.NET\Framework\v4.0.30319\Temporary ASP.NET Files\root" ContinueOnError="true" />
+    <RemoveDir Directories="C:\Windows\Microsoft.NET\Framework64\v4.0.30319\Temporary ASP.NET Files\root" ContinueOnError="true" />
+  </Target>
+  
   <Target Name="RunTests" DependsOnTargets="RunUnitTests; RunFunctionalTests;">
   </Target>
 
