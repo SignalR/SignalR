@@ -26,7 +26,7 @@
                 fireConnect = function () {
                     fireConnect = $.noop;
 
-                    connection.log("LongPolling connected");
+                    connection.log("LongPolling connected.");
                     onSuccess();
                     // Reset onFailed to null because it shouldn't be called again
                     onFailed = null;
@@ -80,7 +80,7 @@
                         return;
                     }
 
-                    connection.log("Attempting to connect to '" + url + "' using longPolling.");
+                    connection.log("Opening long polling request to '" + url + "'.");
                     instance.pollXhr = $.ajax(
                         $.extend({}, $.signalR.ajaxDefaults, {
                             xhrFields: { withCredentials: connection.withCredentials },
@@ -93,6 +93,8 @@
                                     delay = 0,
                                     data,
                                     shouldReconnect;
+
+                                connection.log("Long poll complete.");
 
                                 // Reset our reconnect errors so if we transition into a reconnecting state again we trigger
                                 // reconnected quickly
@@ -169,7 +171,7 @@
                                     reconnectErrors++;
 
                                     if (connection.state !== signalR.connectionState.reconnecting) {
-                                        connection.log("An error occurred using longPolling. Status = " + textStatus + ". " + data.responseText);
+                                        connection.log("An error occurred using longPolling. Status = " + textStatus + ".  Response = " + data.responseText + ".");
                                         $(instance).triggerHandler(events.onError, [signalR._.transportError(signalR.resources.longPollFailed, connection.transport, data)]);
                                     }
 

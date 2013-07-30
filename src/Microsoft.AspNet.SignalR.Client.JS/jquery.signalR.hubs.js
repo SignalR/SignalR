@@ -45,7 +45,7 @@
         var callbacks = connection._.invocationCallbacks,
             callback;
         
-        connection.log("Clearing hub invocation callbacks with error: " + error);
+        connection.log("Clearing hub invocation callbacks with error: " + error + ".");
         
         // Reset the callback cache now as we have a local var referencing it
         connection._.invocationCallbackId = 0;
@@ -165,7 +165,7 @@
                     if (result.Error) {
                         // Server hub method threw an exception, log it & reject the deferred
                         if (result.StackTrace) {
-                            connection.log(result.Error + "\n" + result.StackTrace);
+                            connection.log(result.Error + "\n" + result.StackTrace + ".");
                         }
                         d.rejectWith(that, [result.Error]);
                     } else {
@@ -350,12 +350,12 @@
                 $.each(connection.proxies, function (key) {
                     if (this.hasSubscriptions()) {
                         subscribedHubs.push({ name: key });
-                        connection.log("SignalR: Client subscribed to hub '" + key + "'.");
+                        connection.log("Client subscribed to hub '" + key + "'.");
                     }
                 });
 
                 if (subscribedHubs.length === 0) {
-                    connection.log("SignalR: No hubs have been subscribed to.  The client will not receive data from hubs.  To fix, declare at least one client side function prior to connection start for each hub you wish to subscribe to.");
+                    connection.log("No hubs have been subscribed to.  The client will not receive data from hubs.  To fix, declare at least one client side function prior to connection start for each hub you wish to subscribe to.");
                 }
 
                 connection.data = connection.json.stringify(subscribedHubs);
