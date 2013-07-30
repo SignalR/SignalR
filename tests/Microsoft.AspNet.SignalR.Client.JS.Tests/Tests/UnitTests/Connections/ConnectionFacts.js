@@ -1,7 +1,4 @@
-﻿/// <reference path="..\..\..\Scripts\_references.js" />
-/// <reference path="..\..\..\SignalR.Client.JS\jquery.signalR.core.js" />
-
-QUnit.module("Connection Facts");
+﻿QUnit.module("Connection Facts");
 
 QUnit.test("Default Connection Parameters", function () {
     var con = $.connection;
@@ -51,4 +48,36 @@ QUnit.test("connection.json is unique on different objects when custom", functio
 
     QUnit.equal(con1.json, customJson1, "Verifies connection.json is not shared when set to a custom object.");
     QUnit.equal(con2.json, customJson2, "Verifies connection.json is not shared when set to a custom object.");
+});
+
+QUnit.test("connection.withCredentials defaults to false for same-domain", function () {
+    var con = $.connection(document.location);
+
+    con.start();
+    
+    QUnit.ok(!con.withCredentials, "connection.withCredentials should default to false for same-domain connection.");
+});
+
+QUnit.test("connection.withCredentials defaults to true for cross-domain", function () {
+    var con = $.connection("http://thisiscrossdomain.com/connection");
+
+    con.start();
+
+    QUnit.ok(con.withCredentials, "connection.withCredentials should default to true for cross-domain connection.");
+});
+
+QUnit.test("connection.withCredentials manual override to true for same-domain", function () {
+    var con = $.connection(document.location);
+
+    con.start({ withCredentials: true });
+
+    QUnit.ok(con.withCredentials, "connection.withCredentials overridden to true for same-domain connection.");
+});
+
+QUnit.test("connection.withCredentials manual override to false for cross-domain", function () {
+    var con = $.connection("http://thisiscrossdomain.com/connection");
+
+    con.start({ withCredentials: false });
+
+    QUnit.ok(!con.withCredentials, "connection.withCredentials overridden to false for cross-domain connection.");
 });

@@ -192,6 +192,15 @@
                 s = s.replace("{" + i + "}", arguments[i + 1]);
             }
             return s;
+        },
+
+        firefoxMajorVersion: function(userAgent) {
+            // Firefox user agents: http://useragentstring.com/pages/Firefox/
+                                            var matches = userAgent.match(/Firefox\/(\d+)/);
+            if (!matches || !matches.length || matches.length < 2) {
+                return 0;
+            }
+            return parseInt(matches[1], 10 /* radix */);
         }
     };
 
@@ -577,17 +586,8 @@
 
                             // wire the stop handler for when the user leaves the page
                             _pageWindow.bind("unload", function () {
-                                function firefoxMajorVersion(userAgent) {
-                                    // Firefox user agents: http://useragentstring.com/pages/Firefox/
-                                    var matches = userAgent.match(/Firefox\/(\d+)/);
-                                    if (!matches || !matches.length || matches.length < 2) {
-                                        return 0;
-                                    }
-                                    return parseInt(matches[1], 10 /* radix */);
-                                }
-
                                 // Firefox 11+ doesn't allow sync XHR withCredentials: https://developer.mozilla.org/en-US/docs/Web/API/XMLHttpRequest#withCredentials
-                                var asyncAbort = !!connection.withCredentials && firefoxMajorVersion(window.navigator.userAgent) >= 11;
+                                var asyncAbort = !!connection.withCredentials && signalR._.firefoxMajorVersion(window.navigator.userAgent) >= 11;
 
                                 connection.log("Window unloading, stopping the connection");
 
