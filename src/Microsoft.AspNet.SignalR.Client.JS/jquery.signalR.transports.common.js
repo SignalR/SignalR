@@ -96,7 +96,13 @@
                                 data = connection._parseResponse(result);
                             }
                             catch (error) {
-                                deferral.reject(error);
+                                deferral.reject(
+                                    signalR._.transportError(
+                                        signalR.resources.pingServerFailedParse,
+                                        connection.transport,
+                                        error
+                                    )
+                                );
                                 connection.stop();
                                 return;
                             }
@@ -105,18 +111,46 @@
                                 deferral.resolve();
                             }
                             else {
-                                deferral.reject(signalR._.transportError(signalR._.format(signalR.resources.invalidPingServerResponse, result.responseText), connection.transport));
+                                deferral.reject(
+                                    signalR._.transportError(
+                                        signalR._.format(signalR.resources.pingServerFailedInvalidResponse, result.responseText),
+                                        connection.transport
+                                    )
+                                );
                             }
                         },
                         error: function (error) {
-                            deferral.reject(error);
+                            if (error.status === 401 || error.status === 403) {
+                                deferral.reject(
+                                    signalR._.transportError(
+                                        signalR._.format(signalR.resources.pingServerFailedStatusCode, error.status),
+                                        connection.transport,
+                                        error
+                                    )
+                                );
+                                connection.stop();
+                            }
+                            else {
+                                deferral.reject(
+                                    signalR._.transportError(
+                                        signalR.resources.pingServerFailed,
+                                        connection.transport,
+                                        error
+                                    )
+                                );
+                            }
                         }
                     }
                 ));
 
             }
             else {
-                deferral.reject(signalR._.transportError(signalR.resources.noConnectionTransport, connection.transport));
+                deferral.reject(
+                    signalR._.transportError(
+                        signalR.resources.noConnectionTransport,
+                        connection.transport
+                    )
+                );
             }
 
             return deferral.promise();

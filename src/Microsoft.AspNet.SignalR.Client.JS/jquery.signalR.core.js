@@ -26,7 +26,10 @@
         longPollFailed: "Long polling request failed.",
         eventSourceFailedToConnect: "EventSource failed to connect.",
         webSocketClosed: "WebSocket closed.",
-        invalidPingServerResponse: "Invalid ping response when pinging server: '{0}'.",
+        pingServerFailedInvalidResponse: "Invalid ping response when pinging server: '{0}'.",
+        pingServerFailed: "Failed to ping server.",
+        pingServerFailedStatusCode: "Failed to ping server.  Server responded with status code {0}, stopping the connection.",
+        pingServerFailedParse: "Failed to parse ping server response, stopping the connection.",
         noConnectionTransport: "Connection is in an invalid state, there is no transport active."
     };
 

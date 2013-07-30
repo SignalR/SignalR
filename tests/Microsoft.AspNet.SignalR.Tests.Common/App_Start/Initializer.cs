@@ -119,6 +119,12 @@ namespace Microsoft.AspNet.SignalR.Tests.Common
                 map.RunSignalR<RedirectionConnection>(config);
             });
 
+            app.Map("/statusCodeConnection", map =>
+            {
+                map.UseCors(CorsOptions.AllowAll);
+                map.RunSignalR<StatusCodeConnection>(config);
+            });
+
             app.Map("/jsonp", map =>
             {
                 var jsonpConfig = new ConnectionConfiguration
