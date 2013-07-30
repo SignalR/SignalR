@@ -25,6 +25,7 @@
         parseFailed: "Failed at parsing response: {0}",
         longPollFailed: "Long polling request failed.",
         eventSourceFailedToConnect: "EventSource failed to connect.",
+        eventSourceError: "Error raised by EventSource",
         webSocketClosed: "WebSocket closed.",
         pingServerFailedInvalidResponse: "Invalid ping response when pinging server: '{0}'.",
         pingServerFailed: "Failed to ping server.",
