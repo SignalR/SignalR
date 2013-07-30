@@ -101,7 +101,7 @@
 
             if (onSuccess) {
                 connection.onSuccess = function () {
-                    connection.log("Iframe active.");
+                    connection.log("Iframe transport started.");
                     onSuccess();
                     delete connection.onSuccess;
                 };
