@@ -499,38 +499,21 @@ namespace Microsoft.AspNet.SignalR.Client
                         Trace(TraceLevels.Events, "Error: {0}", ex.GetBaseException());
                     }
                 }
-
-                lock (_stateLock)
+                
+                // This is racy since it's outside the _stateLock, but we are trying to avoid 30s deadlocks when calling _transport.Abort()
+                if (State == ConnectionState.Disconnected)
                 {
-                    // Do nothing if the connection is offline
-                    if (State != ConnectionState.Disconnected)
-                    {
-                        string connectionId = ConnectionId;
-
-                        Trace(TraceLevels.Events, "Stop");
-
-                        // If we've connected then instantly disconnected we may have data in the incomingMessageBuffer
-                        // Therefore we need to clear it incase we start the connection again.
-                        _connectingMessageBuffer.Clear();
-
-                        // Dispose the heart beat monitor so we don't fire notifications when waiting to abort
-                        _monitor.Dispose();
-
-                        _transport.Abort(this, timeout, _connectionData);
-
-                        Disconnect();
-
-                        _disconnectCts.Dispose();
-
-                        if (_transport != null)
-                        {
-                            Trace(TraceLevels.Events, "Transport.Dispose({0})", connectionId);
-
-                            _transport.Dispose();
-                            _transport = null;
-                        }
-                    }
+                    return;
                 }
+
+                Trace(TraceLevels.Events, "Stop");
+
+                // Dispose the heart beat monitor so we don't fire notifications when waiting to abort
+                _monitor.Dispose();
+
+                _transport.Abort(this, timeout, _connectionData);
+
+                Disconnect();
             }
         }
 
@@ -555,9 +538,22 @@ namespace Microsoft.AspNet.SignalR.Client
 
                     Trace(TraceLevels.StateChanges, "Disconnected");
 
+                    // If we've connected then instantly disconnected we may have data in the incomingMessageBuffer
+                    // Therefore we need to clear it incase we start the connection again.
+                    _connectingMessageBuffer.Clear();
+
                     _disconnectTimeoutOperation.Dispose();
                     _disconnectCts.Cancel();
+                    _disconnectCts.Dispose();
                     _monitor.Dispose();
+
+                    if (_transport != null)
+                    {
+                        Trace(TraceLevels.Events, "Transport.Dispose({0})", ConnectionId);
+
+                        _transport.Dispose();
+                        _transport = null;
+                    }
 
                     Trace(TraceLevels.Events, "Closed");
 

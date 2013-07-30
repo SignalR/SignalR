@@ -104,9 +104,11 @@ namespace Microsoft.AspNet.SignalR.Tests
                         mre.Set();
                     });
 
+                    var transport = hubConnection.Transport;
+
                     // Should take 1-2s per transport timeout
                     Assert.True(mre.Wait(TimeSpan.FromSeconds(15)));
-                    Assert.True(String.IsNullOrEmpty(hubConnection.Transport.Name));
+                    Assert.True(String.IsNullOrEmpty(transport.Name));
                 }
             }
         }
