@@ -3,12 +3,11 @@
 <head>
     <meta charset="utf-8">
     <title>QUnit Tests</title>
-    <link rel="stylesheet" href="Styles/qunit.css">
+    <link rel="stylesheet" href="Styles/qunit-1.12.0.css">
 </head>
 <body>
-    <!-- HTML instead of ASPX Page because Chutzpah cannot run an aspx file -->
-    <form id="main">
         <div id="qunit"></div>
+        <div id="qunit-fixture"></div>
         <script>
             (function () {
                 // Use a custom function since IE 8 doesn't define Array.prototype.indexOf
@@ -50,7 +49,7 @@
                 }
             })();
         </script>
-        <script src="Scripts/qunit.js"></script>
+        <script src="Scripts/qunit-1.12.0.js"></script>
         <script src="Scripts/qunit.extensions.js"></script>        
         <script src="http://testswarm.cloudapp.net/js/inject.js"></script>        
         <script src="Scripts/jquery.signalR.js"></script>                
@@ -104,6 +103,5 @@
 <script type="text/javascript" src="Tests/UnitTests/Transports/ServerSentEventsFacts.js"></script>
 <script type="text/javascript" src="Tests/UnitTests/Transports/WebSocketsFacts.js"></script>
 <!-- ##JS## -->
-    </form>
 </body>
 </html>
