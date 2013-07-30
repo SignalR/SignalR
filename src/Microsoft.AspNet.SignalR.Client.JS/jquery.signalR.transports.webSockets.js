@@ -42,12 +42,12 @@
 
                 url += transportLogic.getUrl(connection, this.name, reconnecting);
 
-                connection.log("Connecting to websocket endpoint '" + url + "'");
+                connection.log("Connecting to websocket endpoint '" + url + "'.");
                 connection.socket = new window.WebSocket(url);
 
                 connection.socket.onopen = function () {
                     opened = true;
-                    connection.log("Websocket opened");
+                    connection.log("Websocket opened.");
 
                     transportLogic.clearReconnectTimeout(connection);
 
@@ -78,9 +78,9 @@
                                 signalR.resources.webSocketClosed,
                                 connection.transport,
                                 event)]);
-                            connection.log("Unclean disconnect from websocket: " + event.reason || "[no reason given]");
+                            connection.log("Unclean disconnect from websocket: " + event.reason || "[no reason given].");
                         } else {
-                            connection.log("Websocket closed");
+                            connection.log("Websocket closed.");
                         }
 
                         that.reconnect(connection);
@@ -126,7 +126,7 @@
             transportLogic.clearReconnectTimeout(connection);
 
             if (connection.socket) {
-                connection.log("Closing the Websocket");
+                connection.log("Closing the Websocket.");
                 connection.socket.close();
                 connection.socket = null;
             }

@@ -90,7 +90,7 @@
             connection.log("Binding to iframe's readystatechange event.");
             frame.bind("readystatechange", function () {
                 if ($.inArray(this.readyState, ["loaded", "complete"]) >= 0) {
-                    connection.log("Forever frame iframe readyState changed to " + this.readyState + ", reconnecting");
+                    connection.log("Forever frame iframe readyState changed to " + this.readyState + ", reconnecting.");
 
                     that.reconnect(connection);
                 }
@@ -101,6 +101,7 @@
 
             if (onSuccess) {
                 connection.onSuccess = function () {
+                    connection.log("Iframe active.");
                     onSuccess();
                     delete connection.onSuccess;
                 };
@@ -163,7 +164,7 @@
                         }
                     }
                     catch (e) {
-                        connection.log("SignalR: Error occured when stopping foreverFrame transport. Message = " + e.message);
+                        connection.log("Error occured when stopping foreverFrame transport. Message = " + e.message + ".");
                     }
                 }
                 $(connection.frame).remove();
@@ -174,7 +175,7 @@
                 delete connection.frameId;
                 delete connection.onSuccess;
                 delete connection.frameMessageCount;
-                connection.log("Stopping forever frame");
+                connection.log("Stopping forever frame.");
             }
         },
 
