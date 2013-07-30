@@ -92,7 +92,9 @@
     <Content Include="Scripts\jquery.network.mock.js" />
     <Content Include="Scripts\jquery.signalR.js" />
     <Content Include="Build\test.config.js" />
+    <Content Include="Scripts\qunit-1.12.0.js" />
     <Content Include="Scripts\_references.js" />
+    <Content Include="Styles\qunit-1.12.0.css" />
     <Content Include="Tests\FunctionalTests\Common\AjaxAbortFacts.js" />
     <Content Include="Tests\FunctionalTests\Common\AjaxSendFacts.js" />
     <Content Include="Tests\FunctionalTests\Common\KeepAliveFacts.js" />
@@ -123,8 +125,6 @@
     <Content Include="Tests\UnitTests\Connections\ConnectionUtilityFacts.js" />
     <Content Include="Tests\UnitTests\Common\UrlFacts.js" />
     <Content Include="Tests\UnitTests\Connections\ConnectionFacts.js" />
-    <Content Include="Styles\qunit.css" />
-    <Content Include="Scripts\qunit.js" />
     <Content Include="Tests\UnitTests\Connections\ConnectionStateFacts.js" />
     <Content Include="Tests\UnitTests\Connections\HubConnectionFacts.js" />
     <Content Include="Tests\UnitTests\SignalRFacts.js" />
