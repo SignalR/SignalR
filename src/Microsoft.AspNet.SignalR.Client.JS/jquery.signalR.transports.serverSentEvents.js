@@ -117,29 +117,31 @@
                 // Only handle an error if the error is from the current Event Source.
                 // Sometimes on disconnect the server will push down an error event
                 // to an expired Event Source.
-                if (this === connection.eventSource) {
-                    if (!opened) {
-                        if (onFailed) {
-                            onFailed();
-                        }
+                if (this !== connection.eventSource) {
+                    return;
+                }
 
-                        return;
+                if (!opened) {
+                    if (onFailed) {
+                        onFailed();
                     }
 
-                    connection.log("EventSource readyState: " + connection.eventSource.readyState);
+                    return;
+                }
 
-                    if (e.eventPhase === window.EventSource.CLOSED) {
-                        // We don't use the EventSource's native reconnect function as it
-                        // doesn't allow us to change the URL when reconnecting. We need
-                        // to change the URL to not include the /connect suffix, and pass
-                        // the last message id we received.
-                        connection.log("EventSource reconnecting due to the server connection ending");
-                        that.reconnect(connection);
-                    } else {
-                        // connection error
-                        connection.log("EventSource error");
-                        $connection.triggerHandler(events.onError);
-                    }
+                connection.log("EventSource readyState: " + connection.eventSource.readyState);
+
+                if (e.eventPhase === window.EventSource.CLOSED) {
+                    // We don't use the EventSource's native reconnect function as it
+                    // doesn't allow us to change the URL when reconnecting. We need
+                    // to change the URL to not include the /connect suffix, and pass
+                    // the last message id we received.
+                    connection.log("EventSource reconnecting due to the server connection ending");
+                    that.reconnect(connection);
+                } else {
+                    // connection error
+                    connection.log("EventSource error");
+                    $connection.triggerHandler(events.onError, [signalR._.transportError(signalR.resources.eventSourceError, connection.transport, e)]);
                 }
             }, false);
         },
