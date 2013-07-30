@@ -27,9 +27,31 @@
     QUnit.isSet = function (actual, message) {
         return QUnit.notEqual(typeof (actual), "undefined", message);
     };
+
     QUnit.isNotSet = function (actual, message) {
         return QUnit.equal(typeof (actual), "undefined", message);
     };    
+
+    QUnit.theory = function (name, data, test) {
+        /// <param name="name" type="String">The name of the test.</param>
+        /// <param name="data" type="Array">An array of objects containing the theory data.</param>
+        /// <param name="test" type="Function">The test function to run that accepts the theory data.</param>
+        testUtilities.theory(data, function () {
+            var args = $.makeArray(arguments),
+                orig = args[0],
+                testName = name + ": ";
+
+            for (var key in orig) {
+                testName = testName + key + "=" + orig[key] + ", ";
+            }
+
+            testName = testName.substr(0, testName.length - 2);
+
+            QUnit.test(testName, function () {
+                test.apply(QUnit, args.splice(1));
+            });
+        });
+    };
 
     QUnit.asyncTimeoutTest = function (name, timeout, test) {
         /// <summary>Runs an async test with a specified timeout.</summary>
@@ -165,7 +187,7 @@
     };
 
     // Overwriting the original test so we can first check if we want to run the test
-    QUnit.test = function () {
+    QUnit.test = function (testname, expected, callback, async) {
         if (runModule) {
             // Append Unit to the end of the name argument only if it wasn't already marked as functional.
             // The QUnit test suite utilizes the generic test method for async tests so a name may already
@@ -173,7 +195,7 @@
             if (arguments[0].indexOf(buildFlag(functionalFlag)) < 0) {
                 arguments[0] += buildFlag(unitFlag);
             }
-
+            
             QUnitTest.apply(this, arguments);
         }
     }
