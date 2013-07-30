@@ -61,9 +61,14 @@ QUnit.test("connection.withCredentials defaults to false for same-domain", funct
 QUnit.test("connection.withCredentials defaults to true for cross-domain", function () {
     var con = $.connection("http://thisiscrossdomain.com/connection");
 
+    // Turn off the disabled cross domain (this only applies for command line testing)
+    // We need the isCrossDomain function to work so we need to be sure it's enabled.
+    window.document.crossDomainDisabled = false;
     con.start();
-
+    
     QUnit.ok(con.withCredentials, "connection.withCredentials should default to true for cross-domain connection.");
+
+    window.document.crossDomainDisabled = true;
 });
 
 QUnit.test("connection.withCredentials manual override to true for same-domain", function () {
