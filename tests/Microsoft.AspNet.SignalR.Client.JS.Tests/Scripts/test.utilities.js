@@ -49,6 +49,38 @@
                 }
             });
         },
+        theory: function (data, fn) {
+            /// <summary>Executes fn using the data.</summary>
+            /// <param name="data" type="Array">An array of objects containing the theory data.</param>
+            /// <param name="fn" type="Function">The function to invoke for each theory data instance.</param>
+            function executeWithArgs(argsObject, fn) {
+                var args = [argsObject];
+
+                if ($.type(argsObject) === "object") {
+                    for (var name in argsObject) {
+                        args.push(argsObject[name]);
+                    }
+                }
+
+                fn.apply(undefined, args);
+            }
+
+            switch ($.type(data)) {
+                case "object":
+                    executeWithArgs(data, fn);
+                    break;
+
+                case "array":
+                    $.each(data, function (_, d) {
+                        executeWithArgs(d, fn);
+                    });
+                    break;
+                
+                default:
+                    fn(data);
+                    break;
+            }
+        },
         defaultTestTimeout: (function () {
             var defaultTestTimeout = window.location.search.match(/defaultTestTimeout=(\d+)/);
 

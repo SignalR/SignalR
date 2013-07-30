@@ -192,6 +192,15 @@
                 s = s.replace("{" + i + "}", arguments[i + 1]);
             }
             return s;
+        },
+
+        firefoxMajorVersion: function(userAgent) {
+            // Firefox user agents: http://useragentstring.com/pages/Firefox/
+                                            var matches = userAgent.match(/Firefox\/(\d+)/);
+            if (!matches || !matches.length || matches.length < 2) {
+                return 0;
+            }
+            return parseInt(matches[1], 10 /* radix */);
         }
     };
 
@@ -384,8 +393,7 @@
                     pingInterval: 300000,
                     waitForPageLoad: true,
                     transport: "auto",
-                    jsonp: false,
-                    withCredentials: true
+                    jsonp: false
                 },
                 initialize,
                 deferred = connection._deferral || $.Deferred(), // Check to see if there is a pre-existing deferral that's being built on, if so we want to keep using it
@@ -417,8 +425,7 @@
             }
 
             connection._.config = config;
-            connection.withCredentials = config.withCredentials;
-
+            
             // Check to see if start is being called prior to page load
             // If waitForPageLoad is true we then want to re-direct function call to the window load event
             if (!_pageLoaded && config.waitForPageLoad === true) {
@@ -468,11 +475,15 @@
 
             if (this.isCrossDomain(connection.url)) {
                 connection.log("Auto detected cross domain url.");
-
+                
                 if (config.transport === "auto") {
                     // Try webSockets and longPolling since SSE doesn't support CORS
                     // TODO: Support XDM with foreverFrame
                     config.transport = ["webSockets", "longPolling"];
+                }
+
+                if (typeof (config.withCredentials) === "undefined") {
+                    config.withCredentials = true;
                 }
 
                 // Determine if jsonp is the only choice for negotiation, ajaxSend and ajaxAbort.
@@ -488,6 +499,8 @@
 
                 connection.contentType = signalR._.defaultContentType;
             }
+
+            connection.withCredentials = config.withCredentials;
 
             connection.ajaxDataType = config.jsonp ? "jsonp" : "text";
 
@@ -573,7 +586,12 @@
 
                             // wire the stop handler for when the user leaves the page
                             _pageWindow.bind("unload", function () {
-                                connection.stop(false /* async */);
+                                // Firefox 11+ doesn't allow sync XHR withCredentials: https://developer.mozilla.org/en-US/docs/Web/API/XMLHttpRequest#withCredentials
+                                var asyncAbort = !!connection.withCredentials && signalR._.firefoxMajorVersion(window.navigator.userAgent) >= 11;
+
+                                connection.log("Window unloading, stopping the connection");
+
+                                connection.stop(asyncAbort);
                             });
                         }
                     }, onFailed);
