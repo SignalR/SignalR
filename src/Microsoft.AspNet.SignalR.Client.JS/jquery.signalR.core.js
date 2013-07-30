@@ -253,7 +253,7 @@
                 requestedTransport = null;
             }
         } else if ($.type(requestedTransport) !== "object" && !signalR.transports[requestedTransport] && requestedTransport !== "auto") {
-            connection.log("Invalid transport: " + requestedTransport.toString());
+            connection.log("Invalid transport: " + requestedTransport.toString() + ".");
             requestedTransport = null;
         } else if (requestedTransport === "auto" && signalR._.ieVersion <= 8) {
             // If we're doing an auto transport and we're IE8 then force longPolling, #1764
@@ -494,7 +494,7 @@
                     config.jsonp = !$.support.cors;
 
                     if (config.jsonp) {
-                        connection.log("Using jsonp because this browser doesn't support CORS");
+                        connection.log("Using jsonp because this browser doesn't support CORS.");
                     }
                 }
 
@@ -590,7 +590,7 @@
                                 // Firefox 11+ doesn't allow sync XHR withCredentials: https://developer.mozilla.org/en-US/docs/Web/API/XMLHttpRequest#withCredentials
                                 var asyncAbort = !!connection.withCredentials && signalR._.firefoxMajorVersion(window.navigator.userAgent) >= 11;
 
-                                connection.log("Window unloading, stopping the connection");
+                                connection.log("Window unloading, stopping the connection.");
 
                                 connection.stop(asyncAbort);
                             });
@@ -598,7 +598,7 @@
                     }, onFailed);
                 }
                 catch (error) {
-                    connection.log("SignalR: " + transport.name + " transport threw '" + error.message + "' when attempting to start.");
+                    connection.log(transport.name + " transport threw '" + error.message + "' when attempting to start.");
                     onFailed();
                 }
             };
@@ -861,7 +861,7 @@
             }
 
             try {
-                connection.log("SignalR: Stopping connection.");
+                connection.log("Stopping connection.");
 
                 // Clear this no matter what
                 window.clearTimeout(connection._.onFailedTimeoutHandle);
