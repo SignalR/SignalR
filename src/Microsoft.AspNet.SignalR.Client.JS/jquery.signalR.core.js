@@ -10,7 +10,7 @@
  */
 
 /// <reference path="Scripts/jquery-1.6.4.js" />
-(function ($, window) {
+(function ($, window, undefined) {
     "use strict";
 
     if (typeof ($) !== "function") {

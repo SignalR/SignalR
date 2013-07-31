@@ -3,7 +3,7 @@
 /*global window:false */
 /// <reference path="jquery.signalR.core.js" />
 
-(function ($, window) {
+(function ($, window, undefined) {
     "use strict";
 
     // we use a global id for tracking callbacks so the server doesn't have to send extra info like hub name
