@@ -72,8 +72,8 @@ namespace Microsoft.AspNet.SignalR.Owin
             var handler = new DefaultWebSocketHandler();
             var task = handler.ProcessWebSocketRequestAsync(webSocket, CancellationToken.None);
 
-            _callback(handler).Catch()
-                              .Finally(state => ((DefaultWebSocketHandler)state).End(), handler);
+            _callback(handler).Finally(state => ((DefaultWebSocketHandler)state).End(), handler)
+                              .Catch();
 
             return task;
         }
