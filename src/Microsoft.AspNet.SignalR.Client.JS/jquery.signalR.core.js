@@ -624,6 +624,7 @@
 
             connection.log("Negotiating with '" + url + "'.");
 
+                        // Timeout to designate when to warn the developer that the connection may be dead or is not responding.
             // Save the ajax negotiate request object so we can abort it if stop is called while the request is in flight.
             connection._.negotiateRequest = $.ajax(
                 $.extend({}, $.signalR.ajaxDefaults, {
