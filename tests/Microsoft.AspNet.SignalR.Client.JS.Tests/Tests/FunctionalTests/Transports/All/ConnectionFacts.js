@@ -13,6 +13,35 @@ QUnit.module("Connection Facts");
 
 testUtilities.runWithAllTransports(function (transport) {
 
+    if (!window.document.commandLineTest) {
+        QUnit.asyncTimeoutTest(transport + " transport can timeout when it does not receive initialize message.", testUtilities.defaultTestTimeout, function (end, assert, testName) {
+            var connection = testUtilities.createHubConnection(end, assert, testName, undefined, false),
+                savedProcessMessages = $.signalR.transports._logic.processMessages;
+
+            $.signalR.transports._logic.processMessages = function (_, minData) {
+                // Look for initialize message, if we get it, ignore it, transports should time out
+                if (!minData.S) {
+                    savedProcessMessages.apply(this, arguments);
+                }
+            }
+
+            connection.start({ transport: transport }).done(function () {
+                assert.ok(false, "Connection started");
+                end();
+            }).fail(function () {
+                // transport timed out
+                assert.comment("Connection failed to start!");
+                end();
+            });
+
+            // Cleanup
+            return function () {
+                $.signalR.transports._logic.processMessages = savedProcessMessages;
+                connection.stop();
+            };
+        });
+    }
+
     QUnit.asyncTimeoutTest(transport + ": Ping interval stops the connection on 401's.", testUtilities.defaultTestTimeout, function (end, assert, testName) {
         var connection = buildStatusCodeConnection("ping", 401, end, assert, testName, false);
 
@@ -295,33 +324,6 @@ testUtilities.runWithAllTransports(function (transport) {
 
         // Cleanup
         return function () {
-            connection.stop();
-        };
-    });
-
-    QUnit.asyncTimeoutTest(transport + " transport can timeout when it does not receive initialize message.", testUtilities.defaultTestTimeout, function (end, assert, testName) {
-        var connection = testUtilities.createHubConnection(end, assert, testName, undefined, false),
-            savedProcessMessages = $.signalR.transports._logic.processMessages;
-
-        $.signalR.transports._logic.processMessages = function (_, minData) {
-            // Look for initialize message, if we get it, ignore it, transports should time out
-            if (!minData.S) {
-                savedProcessMessages.apply(this, arguments);
-            }
-        }
-
-        connection.start({ transport: transport }).done(function () {
-            assert.ok(false, "Connection started");
-            end();
-        }).fail(function () {
-            // transport timed out
-            assert.comment("Connection failed to start!");
-            end();
-        });
-
-        // Cleanup
-        return function () {
-            $.signalR.transports._logic.processMessages = savedProcessMessages;
             connection.stop();
         };
     });
