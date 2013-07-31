@@ -48,7 +48,7 @@
             testName = testName.substr(0, testName.length - 2);
 
             QUnit.test(testName, function () {
-                test.apply(QUnit, args.splice(1));
+                test.apply(QUnit, args.splice(1, args.length));
             });
         });
     };
