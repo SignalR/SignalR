@@ -3,7 +3,7 @@
 /*global window:false */
 /// <reference path="jquery.signalR.transports.common.js" />
 
-(function ($, window) {
+(function ($, window, undefined) {
     "use strict";
 
     var signalR = $.signalR,
