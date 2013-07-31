@@ -6,6 +6,7 @@ using Microsoft.AspNet.SignalR.Samples;
 using Microsoft.AspNet.SignalR.Tests.Common;
 using Microsoft.AspNet.SignalR.Tests.Common.Connections;
 using Microsoft.Owin;
+using Microsoft.Owin.Cors;
 using Owin;
 
 [assembly: OwinStartup(typeof(Startup))]
@@ -31,6 +32,13 @@ namespace Microsoft.AspNet.SignalR.Samples
             };
 
             app.MapSignalR(config);
+
+            app.Map("/cors", map =>
+            {
+                map.UseCors(CorsOptions.AllowAll);
+                map.MapSignalR<RawConnection>("/raw-connection");
+                map.MapSignalR();
+            });
 
             app.Map("/basicauth", map =>
             {
