@@ -6,14 +6,12 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR.Configuration;
 using Microsoft.AspNet.SignalR.Hosting;
 using Microsoft.AspNet.SignalR.Infrastructure;
 using Microsoft.AspNet.SignalR.Json;
 using Microsoft.AspNet.SignalR.Messaging;
-using Microsoft.AspNet.SignalR.Owin;
 using Microsoft.AspNet.SignalR.Tracing;
 using Microsoft.AspNet.SignalR.Transports;
 using Microsoft.Owin;
@@ -239,26 +237,27 @@ namespace Microsoft.AspNet.SignalR
                 return _serverMessageHandler.SendCommand(command);
             };
 
-            Transport.Connected = () =>
+            Transport.Connected = async () =>
             {
-                return TaskAsyncHelper.FromMethod(() => OnConnected(context.Request, connectionId).OrEmpty());
+                await OnConnected(context.Request, connectionId).OrEmpty();
             };
 
-            Transport.Reconnected = () =>
+            Transport.Reconnected = async () =>
             {
-                return TaskAsyncHelper.FromMethod(() => OnReconnected(context.Request, connectionId).OrEmpty());
+                await OnReconnected(context.Request, connectionId).OrEmpty();
             };
 
-            Transport.Received = data =>
+            Transport.Received = async data =>
             {
                 Counters.ConnectionMessagesSentTotal.Increment();
                 Counters.ConnectionMessagesSentPerSec.Increment();
-                return TaskAsyncHelper.FromMethod(() => OnReceived(context.Request, connectionId, data).OrEmpty());
+
+                await OnReceived(context.Request, connectionId, data).OrEmpty();
             };
 
-            Transport.Disconnected = () =>
+            Transport.Disconnected = async () =>
             {
-                return TaskAsyncHelper.FromMethod(() => OnDisconnected(context.Request, connectionId).OrEmpty());
+                await OnDisconnected(context.Request, connectionId).OrEmpty();
             };
 
             return Transport.ProcessRequest(connection).OrEmpty().Catch(Counters.ErrorsAllTotal, Counters.ErrorsAllPerSec);
