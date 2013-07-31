@@ -205,6 +205,7 @@ testUtilities.runWithAllTransports(function (transport) {
 
     QUnit.asyncTimeoutTest(transport + ": Connections can be started and stopped repeatedly without errors.", testUtilities.defaultTestTimeout, function (end, assert, testName) {
         var restartCount = 3,
+            failTriggered = false,
             connection = testUtilities.createHubConnection(end, assert, testName, undefined, false);
 
         connection.error(function () {
@@ -216,10 +217,12 @@ testUtilities.runWithAllTransports(function (transport) {
                 assert.fail("Connection started");
                 end();
             }).fail(function () {
-                assert.comment("Fail handler was triggered on aborted negotiate.");
+                failTriggered = true;
             });
 
             connection.stop();
+            assert.isTrue(failTriggered, "Fail handler was triggered on aborted negotiate.");
+            failTriggered = false;
         }
 
         window.setTimeout(function () {
