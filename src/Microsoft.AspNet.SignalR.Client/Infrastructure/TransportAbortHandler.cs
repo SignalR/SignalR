@@ -51,7 +51,7 @@ namespace Microsoft.AspNet.SignalR.Client.Infrastructure
             {
                 if (_disposed)
                 {
-                    throw new ObjectDisposedException(GetType().Name);
+                    return;
                 }
 
                 // Ensure that an abort request is only made once
