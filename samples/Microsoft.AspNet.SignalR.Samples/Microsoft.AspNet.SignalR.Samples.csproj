@@ -352,6 +352,7 @@
     <Compile Include="Hubs\RealtimeBroadcast\HighFrequencyTimer.cs" />
     <Compile Include="Hubs\RealtimeBroadcast\Realtime.cs" />
     <Compile Include="Hubs\ShapeShare\ShapeShare.cs" />
+    <Compile Include="Hubs\Test\LongRunningHub.cs" />
     <Compile Include="Hubs\Test\Default.aspx.cs">
       <DependentUpon>Default.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
