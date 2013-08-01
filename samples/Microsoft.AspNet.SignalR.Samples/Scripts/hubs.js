@@ -421,6 +421,26 @@
              }
         };
 
+        proxies.longRunningHub = this.createHubProxy('longRunningHub'); 
+        proxies.longRunningHub.client = { };
+        proxies.longRunningHub.server = {
+            longRunningMethod: function (i) {
+            /// <summary>Calls the LongRunningMethod method on the server-side LongRunningHub hub.&#10;Returns a jQuery.Deferred() promise.</summary>
+            /// <param name=\"i\" type=\"Number\">Server side type is System.Int32</param>
+                return proxies.longRunningHub.invoke.apply(proxies.longRunningHub, $.merge(["LongRunningMethod"], $.makeArray(arguments)));
+             },
+
+            reset: function () {
+            /// <summary>Calls the Reset method on the server-side LongRunningHub hub.&#10;Returns a jQuery.Deferred() promise.</summary>
+                return proxies.longRunningHub.invoke.apply(proxies.longRunningHub, $.merge(["Reset"], $.makeArray(arguments)));
+             },
+
+            set: function () {
+            /// <summary>Calls the Set method on the server-side LongRunningHub hub.&#10;Returns a jQuery.Deferred() promise.</summary>
+                return proxies.longRunningHub.invoke.apply(proxies.longRunningHub, $.merge(["Set"], $.makeArray(arguments)));
+             }
+        };
+
         proxies.messageLoops = this.createHubProxy('messageLoops'); 
         proxies.messageLoops.client = { };
         proxies.messageLoops.server = {

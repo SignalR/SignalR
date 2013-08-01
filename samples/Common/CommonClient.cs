@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using System.Net;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR.Client.Hubs;
 
@@ -156,7 +157,61 @@ namespace Microsoft.AspNet.SignalR.Client.Samples
 
             await hubConnection.Start();
             hubConnection.TraceWriter.WriteLine("transport.Name={0}", hubConnection.Transport.Name);
-        }   
+        }
+
+        private async Task RunPendingCallbacks(string url)
+        {
+            var hubConnection = new HubConnection(url);
+            hubConnection.TraceWriter = _traceWriter;
+            hubConnection.TraceLevel = TraceLevels.StateChanges;
+
+            var hubProxy = hubConnection.CreateHubProxy("LongRunningHub");
+            ManualResetEvent event1 = new ManualResetEvent(false);
+            ManualResetEvent event2 = new ManualResetEvent(false);
+
+            int callbacks = 1000;
+            int counter = 0;
+            hubProxy.On<int>("serverIsWaiting", (i) =>
+            {
+                if (i % 100 == 0)
+                {
+                    hubConnection.TraceWriter.WriteLine("{0} serverIsWaiting: {1}", DateTime.Now, i);
+                }
+
+                if (i == callbacks)
+                {
+                    event1.Set();
+                }
+            });
+
+            await hubConnection.Start();
+            await hubProxy.Invoke("Reset");
+
+            hubConnection.TraceWriter.WriteLine("check memory size before sending longRunning");
+
+            for (int messageNumber = 1; messageNumber <= callbacks; messageNumber++)
+            {
+                hubProxy.Invoke("LongRunningMethod", messageNumber).ContinueWith(task =>
+                {
+                    int i = Interlocked.Increment(ref counter);
+                    if (i % 100 == 0)
+                    {
+                        hubConnection.TraceWriter.WriteLine("{0} completed: {1} task.Status={2}", DateTime.Now, i, task.Status);
+                    }
+
+                    if (i == callbacks)
+                    {
+                        event2.Set();
+                    }
+                });
+            }
+
+            await Task.Factory.StartNew(() => event1.WaitOne());
+            hubConnection.TraceWriter.WriteLine("check memory size after sending longRunning");
+            await hubProxy.Invoke("Set");
+            await Task.Factory.StartNew(() => event2.WaitOne());
+            hubConnection.TraceWriter.WriteLine("check memory size after all callbacks completed");
+        }
     }    
 }
 
