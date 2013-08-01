@@ -297,8 +297,7 @@ testUtilities.runWithAllTransports(function (transport) {
         }
 
         // Shorten timeouts that slow down reconnect attempts ensure transports attempt reconnecting several times.
-        connection.reconnectDelay = 10;
-        $.connection.transports.longPolling.reconnectDelay = 10;
+        connection.reconnectDelay = 100;
 
         connection.reconnecting(function () {
             assert.equal(connection.state, $.signalR.connectionState.reconnecting, "Transport started reconnecting.");
