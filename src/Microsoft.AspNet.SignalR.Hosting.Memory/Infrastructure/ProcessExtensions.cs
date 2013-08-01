@@ -32,7 +32,7 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
                     mutex = new Mutex(true, mutexName, out createdMutex);
                     if (createdMutex)
                     {
-                        release.Register(mutex.ReleaseMutex);
+                        release.Register(mutex.Dispose);
                         break;
                     }
                 }
