@@ -402,6 +402,73 @@ namespace Microsoft.AspNet.SignalR.Client.Tests
                     Assert.Equal(15, timesStopped);
                 }
             }
+            
+            [Theory]
+            [InlineData(HostType.Memory, TransportType.ServerSentEvents, MessageBusType.Default)]
+            [InlineData(HostType.Memory, TransportType.ServerSentEvents, MessageBusType.Fake)]
+            [InlineData(HostType.Memory, TransportType.ServerSentEvents, MessageBusType.FakeMultiStream)]
+            [InlineData(HostType.Memory, TransportType.LongPolling, MessageBusType.Default)]
+            [InlineData(HostType.Memory, TransportType.LongPolling, MessageBusType.Fake)]
+            [InlineData(HostType.Memory, TransportType.LongPolling, MessageBusType.FakeMultiStream)]
+            [InlineData(HostType.IISExpress, TransportType.ServerSentEvents, MessageBusType.Default)]
+            [InlineData(HostType.IISExpress, TransportType.Websockets, MessageBusType.Default)]
+            [InlineData(HostType.IISExpress, TransportType.LongPolling, MessageBusType.Default)]
+            [InlineData(HostType.HttpListener, TransportType.ServerSentEvents, MessageBusType.Default)]
+            [InlineData(HostType.HttpListener, TransportType.Websockets, MessageBusType.Default)]
+            [InlineData(HostType.HttpListener, TransportType.LongPolling, MessageBusType.Default)]
+            public async Task AwaitingOnStartAndThenStoppingDoesntHang(HostType hostType, TransportType transportType, MessageBusType messageBusType)
+            {
+                using (var host = CreateHost(hostType, transportType))
+                {
+                    host.Initialize(messageBusType: messageBusType);
+                    var connection = CreateHubConnection(host);
+
+                    var startTime = DateTime.UtcNow;
+
+                    await connection.Start(host.TransportFactory());
+                    connection.Stop();
+
+                    Assert.True(DateTime.UtcNow - startTime < TimeSpan.FromSeconds(10));
+                }
+            }
+
+            [Theory]
+            [InlineData(HostType.Memory, TransportType.ServerSentEvents, MessageBusType.Default)]
+            [InlineData(HostType.Memory, TransportType.ServerSentEvents, MessageBusType.Fake)]
+            [InlineData(HostType.Memory, TransportType.ServerSentEvents, MessageBusType.FakeMultiStream)]
+            [InlineData(HostType.Memory, TransportType.LongPolling, MessageBusType.Default)]
+            [InlineData(HostType.Memory, TransportType.LongPolling, MessageBusType.Fake)]
+            [InlineData(HostType.Memory, TransportType.LongPolling, MessageBusType.FakeMultiStream)]
+            [InlineData(HostType.IISExpress, TransportType.ServerSentEvents, MessageBusType.Default)]
+            [InlineData(HostType.IISExpress, TransportType.Websockets, MessageBusType.Default)]
+            [InlineData(HostType.IISExpress, TransportType.LongPolling, MessageBusType.Default)]
+            [InlineData(HostType.HttpListener, TransportType.ServerSentEvents, MessageBusType.Default)]
+            [InlineData(HostType.HttpListener, TransportType.Websockets, MessageBusType.Default)]
+            [InlineData(HostType.HttpListener, TransportType.LongPolling, MessageBusType.Default)]
+            public async Task AwaitingOnFailedStartAndThenStoppingDoesntHang(HostType hostType, TransportType transportType, MessageBusType messageBusType)
+            {
+                using (var host = CreateHost(hostType, transportType))
+                {
+                    host.Initialize(messageBusType: messageBusType);
+                    var badConnection = CreateConnection(host, "/ErrorsAreFun");
+
+                    var startTime = DateTime.UtcNow;
+
+                    try
+                    {
+                        await badConnection.Start(HostedTestFactory.CreateTransport(transportType));
+                    }
+                    catch
+                    {
+                        badConnection.Stop();
+                        Assert.True(DateTime.UtcNow - startTime < TimeSpan.FromSeconds(10));
+                        return;
+                    }
+
+                    Assert.True(false, "An exception should have been thrown.");
+                }
+            }
+            
 
             [Theory]
             [InlineData(HostType.Memory, TransportType.ServerSentEvents, MessageBusType.Default)]

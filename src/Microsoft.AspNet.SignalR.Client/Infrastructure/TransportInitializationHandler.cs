@@ -48,7 +48,15 @@ namespace Microsoft.AspNet.SignalR.Client.Infrastructure
         {
             _initializationInvoker.Invoke(() =>
             {
-                _initializationTask.SetResult(null);
+#if NETFX_CORE
+                Task.Run(() =>
+#else
+                ThreadPool.QueueUserWorkItem(_ =>
+#endif
+                {
+                    _initializationTask.SetResult(null);
+                });
+
                 _tokenCleanup.Dispose();
             });
         }
