@@ -195,7 +195,7 @@ namespace Microsoft.AspNet.SignalR.Tests
 
                     Assert.Equal(2, bufferMeCalls);
 
-                    proxy.Invoke("Ping");
+                    proxy.Invoke("Ping").Catch();
 
                     Assert.True(wh.WaitOne(TimeSpan.FromSeconds(10)));
                 }
