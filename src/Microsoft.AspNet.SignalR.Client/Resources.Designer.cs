@@ -111,6 +111,15 @@ namespace Microsoft.AspNet.SignalR.Client {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Data cannot be sent as connection is disconnected. Call start before sending any data..
+        /// </summary>
+        internal static string Error_DataCannotBeSentConnectionDisconnected {
+            get {
+                return ResourceManager.GetString("Error_DataCannotBeSentConnectionDisconnected", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to You are using a version of the client that isn&apos;t compatible with the server. Client version {0}, server version {1}..
         /// </summary>
         internal static string Error_IncompatibleProtocolVersion {
@@ -134,15 +143,6 @@ namespace Microsoft.AspNet.SignalR.Client {
         internal static string Error_ServerNegotiationFailed {
             get {
                 return ResourceManager.GetString("Error_ServerNegotiationFailed", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to The Start method must be called before data can be sent..
-        /// </summary>
-        internal static string Error_StartMustBeCalledBeforeDataCanBeSent {
-            get {
-                return ResourceManager.GetString("Error_StartMustBeCalledBeforeDataCanBeSent", resourceCulture);
             }
         }
         
