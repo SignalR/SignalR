@@ -352,6 +352,26 @@ namespace Microsoft.AspNet.SignalR.Tests
             }
         }
 
+        [Fact]
+        public void HttpHandlersAreNotSetInIISIntegratedPipeline()
+        {
+            using (var host = CreateHost(HostType.IISExpress, TransportType.LongPolling))
+            {
+                host.Initialize();
+                HubConnection connection = CreateHubConnection(host, "/session");
+
+                using (connection)
+                {
+                    var hub = connection.CreateHubProxy("demo");
+                    connection.Start(host.Transport).Wait();
+
+                    var result = hub.InvokeWithTimeout<string>("GetHttpContextHandler");
+
+                    Assert.Null(result);
+                }
+            }
+        }
+
         [Theory]
         [InlineData(HostType.Memory, TransportType.ServerSentEvents, MessageBusType.Default)]
         [InlineData(HostType.Memory, TransportType.ServerSentEvents, MessageBusType.Fake)]

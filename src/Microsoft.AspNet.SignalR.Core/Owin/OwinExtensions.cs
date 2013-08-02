@@ -15,6 +15,7 @@ using Microsoft.AspNet.SignalR.Owin.Middleware;
 using Microsoft.AspNet.SignalR.Tracing;
 using Microsoft.Owin.Infrastructure;
 using Microsoft.Owin.Security.DataProtection;
+using Microsoft.Owin.Extensions;
 
 namespace Owin
 {
@@ -233,6 +234,13 @@ namespace Owin
             }
 
             builder.Use(typeof(T), args);
+
+            // BUG 2306: We need to make that SignalR runs before any handlers are
+            // mapped in the IIS pipeline so that we avoid side effects like
+            // session being enabled by random modules. The session behavior can obviously be
+            // manually overridden if user calls SetSessionStateBehavior for that shouldn't
+            // be a problem most of the time.
+            builder.UseStageMarker(PipelineStage.PostAuthorize);
 
             return builder;
         }

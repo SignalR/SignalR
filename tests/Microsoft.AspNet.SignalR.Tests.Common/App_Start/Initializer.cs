@@ -30,6 +30,9 @@ namespace Microsoft.AspNet.SignalR.Tests.Common
             RouteTable.Routes.Add("ping", new Route("ping", new PingHandler()));
             RouteTable.Routes.Add("gc", new Route("gc", new GCHandler()));
 
+            // Add a route that enables session in the handler
+            RouteTable.Routes.Add("session", new Route("session/{*path}", new HandlerWithSession()));
+
             string logFileName = Path.Combine(HttpRuntime.AppDomainAppPath, ConfigurationManager.AppSettings["logFileName"] + ".server.trace.log");
             Trace.Listeners.Add(new TextWriterTraceListener(logFileName));
             Trace.AutoFlush = true;
@@ -161,28 +164,28 @@ namespace Microsoft.AspNet.SignalR.Tests.Common
             app.MapSignalR<PreserializedJsonConnection>("/preserialize", config);
 
             // This subpipeline is protected by basic auth
-            app.Map("/basicauth", subApp =>
+            app.Map("/basicauth", map =>
             {
-                subApp.UseBasicAuthentication(new BasicAuthenticationProvider());
+                map.UseBasicAuthentication(new BasicAuthenticationProvider());
 
                 var subConfig = new ConnectionConfiguration
                 {
                     Resolver = resolver
                 };
 
-                subApp.MapSignalR<AuthenticatedEchoConnection>("/echo", subConfig);
+                map.MapSignalR<AuthenticatedEchoConnection>("/echo", subConfig);
 
                 var subHubsConfig = new HubConfiguration
                 {
                     Resolver = resolver
                 };
 
-                subApp.MapSignalR(subHubsConfig);
+                map.MapSignalR(subHubsConfig);
             });
 
-            app.Map("/force-lp-reconnect", subApp =>
+            app.Map("/force-lp-reconnect", map =>
             {
-                subApp.Use((context, next) =>
+                map.Use((context, next) =>
                 {
                     if (context.Request.Path.Contains("poll"))
                     {
@@ -192,8 +195,8 @@ namespace Microsoft.AspNet.SignalR.Tests.Common
 
                     return next();
                 });
-                subApp.MapSignalR<ExamineReconnectPath>("/examine-reconnect", config);
-                subApp.MapSignalR(hubConfig);
+                map.MapSignalR<ExamineReconnectPath>("/examine-reconnect", config);
+                map.MapSignalR(hubConfig);
             });
 
             // Perf/stress test related
@@ -205,6 +208,14 @@ namespace Microsoft.AspNet.SignalR.Tests.Common
             app.MapSignalR<StressConnection>("/echo", performanceConfig);
 
             performanceConfig.Resolver.Register(typeof(IProtectedData), () => new EmptyProtectedData());
+
+            // IMPORTANT: This needs to run last so that it runs in the "default" part of the pipeline
+
+            // Session is enabled for ASP.NET on the session path
+            app.Map("/session", map =>
+            {
+                map.MapSignalR();
+            });
         }
     }
 }

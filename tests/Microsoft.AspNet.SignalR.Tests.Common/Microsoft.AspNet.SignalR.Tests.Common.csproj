@@ -128,6 +128,7 @@
     <Compile Include="Connections\RedirectionConnection.cs" />
     <Compile Include="Connections\StatusCodeConnection.cs" />
     <Compile Include="Handlers\GCHandler.cs" />
+    <Compile Include="Handlers\HandlerWithSession.cs" />
     <Compile Include="Handlers\PingHandler.cs" />
     <Compile Include="Build\StartIISTask.cs" />
     <Compile Include="Connections\AddGroupOnConnectedConnection.cs" />

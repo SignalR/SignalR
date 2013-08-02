@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Web;
 using Microsoft.AspNet.SignalR.Hubs;
 
 namespace Microsoft.AspNet.SignalR.Samples.Hubs.DemoHub
@@ -122,6 +123,21 @@ namespace Microsoft.AspNet.SignalR.Samples.Hubs.DemoHub
             Clients.Caller.Company = value;
 
             return Clients.Caller.Company;
+        }
+
+        public string GetHttpContextHandler()
+        {
+            object value;
+            if (Context.Request.Environment.TryGetValue(typeof(HttpContextBase).FullName, out value))
+            {
+                var context = value as HttpContextBase;
+                if (context != null && context.Handler != null)
+                {
+                    return context.Handler.GetType().Name;
+                }
+            }
+
+            return null;
         }
 
         public object ReadAnyState()

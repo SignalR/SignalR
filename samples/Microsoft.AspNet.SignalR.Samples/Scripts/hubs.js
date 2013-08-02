@@ -182,6 +182,11 @@
                 return proxies.demo.invoke.apply(proxies.demo, $.merge(["GenericTaskWithException"], $.makeArray(arguments)));
              },
 
+            getHttpContextHandler: function () {
+            /// <summary>Calls the GetHttpContextHandler method on the server-side demo hub.&#10;Returns a jQuery.Deferred() promise.</summary>
+                return proxies.demo.invoke.apply(proxies.demo, $.merge(["GetHttpContextHandler"], $.makeArray(arguments)));
+             },
+
             getValue: function () {
             /// <summary>Calls the GetValue method on the server-side demo hub.&#10;Returns a jQuery.Deferred() promise.</summary>
                 return proxies.demo.invoke.apply(proxies.demo, $.merge(["GetValue"], $.makeArray(arguments)));
