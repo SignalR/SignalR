@@ -14,14 +14,14 @@ namespace MyWebApplication
     {
         public void Configuration(IAppBuilder app)
         {
-            app.MapHubs();
+            app.MapSignalR();
         }
     }
 }
  
 Starting the Web server
 --------------------------------
-To start the web server, call WebApplication.Start<Startup>(endpoint). You should now be able to navigate to endpoint/signalr/hubs in your browser.
+To start the web server, call WebApp.Start<Startup>(endpoint). You should now be able to navigate to endpoint/signalr/hubs in your browser.
  
 using System;
 using Microsoft.Owin.Hosting;

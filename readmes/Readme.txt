@@ -8,16 +8,13 @@ using Microsoft.Owin;
 using Owin;
 using MyWebApplication;
 
-// Specify the entry point
-[assembly: OwinStartup(typeof(Startup), "Configuration")]
-
 namespace MyWebApplication
 {
     public class Startup
     {
         public void Configuration(IAppBuilder app)
         {
-            app.MapHubs();
+            app.MapSignalR();
         }
     }
 } 
