@@ -241,7 +241,7 @@ namespace Microsoft.AspNet.SignalR.Tests
 
                     hubConnection.Start(host.Transport).Wait();
 
-                    proxy.Invoke("PingGroup");
+                    proxy.Invoke("PingGroup").Catch();
 
                     Assert.True(wh.WaitOne(TimeSpan.FromSeconds(10)));
                 }
@@ -386,7 +386,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                     };
 
                     connection.Start(host.Transport).Wait();
-                    proxy.Invoke("Send", "");
+                    proxy.Invoke("Send", "").Catch();
 
                     Assert.True(wh.Wait(TimeSpan.FromSeconds(5)));
                     Assert.Equal(thrown, caught);
@@ -439,7 +439,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                     }
 
                     hubConnection.Start(host.Transport).Wait();
-                    proxy.Invoke("Send");
+                    proxy.Invoke("Send").Catch();
 
                     Assert.True(tcs.Task.Wait(TimeSpan.FromSeconds(10)));
                 }
@@ -479,7 +479,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                     hubConnection.Start(host.Transport).Wait();
 
                     hubConnection.Headers.Add("test-header", "test-header");
-                    proxy.Invoke("Send");
+                    proxy.Invoke("Send").Catch();
                     Assert.True(mre.Wait(TimeSpan.FromSeconds(5)));
                 }
             }
@@ -633,7 +633,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                     });
 
                     hubConnection.Start(host.Transport).Wait();
-                    proxy.Invoke("EchoCallback", "message");
+                    proxy.Invoke("EchoCallback", "message").Catch();
                     Assert.True(mre.Wait(TimeSpan.FromSeconds(10)));
                 }
             }
