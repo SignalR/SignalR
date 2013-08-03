@@ -38,12 +38,14 @@ namespace Microsoft.AspNet.SignalR.Configuration
 
         /// <summary>
         /// Gets of sets the number of messages to buffer for a specific signal.
+        /// The default value is 1000.
         /// </summary>
         int DefaultMessageBufferSize { get; set; }
 
         /// <summary>
         /// Gets or sets a <see cref="TimeSpan"/> representing tell the client to wait before restablishing a
-        /// long poll connection after data is sent from the server. Defaults to 0.
+        /// long poll connection after data is sent from the server. 
+        /// The default value is 0.
         /// </summary>
         [SuppressMessage("Microsoft.Naming", "CA1720:IdentifiersShouldNotContainTypeNames", MessageId = "long", Justification = "Longpolling is a well known term")]
         TimeSpan LongPollDelay { get; set; }
