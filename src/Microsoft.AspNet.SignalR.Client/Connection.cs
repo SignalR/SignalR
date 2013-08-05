@@ -564,6 +564,9 @@ namespace Microsoft.AspNet.SignalR.Client
                     MessageId = null;
                     _connectionData = null;
 
+                    // Clear the buffer
+                    _traceWriter.Flush();
+
                     // TODO: Do we want to trigger Closed if we are connecting?
                     OnClosed();
                 }
@@ -697,6 +700,9 @@ namespace Microsoft.AspNet.SignalR.Client
             // topic along with the contained disconnect message.
             _disconnectTimeoutOperation = SetTimeout(_disconnectTimeout, Disconnect);
 
+            // Clear the buffer
+            _traceWriter.Flush();
+
             if (Reconnecting != null)
             {
                 Reconnecting();
@@ -812,9 +818,12 @@ namespace Microsoft.AspNet.SignalR.Client
         /// </summary>
         private class DebugTextWriter : TextWriter
         {
+            private StringBuilder buffer;
+
             public DebugTextWriter()
                 : base(CultureInfo.InvariantCulture)
             {
+                buffer = new StringBuilder();
             }
 
             public override void WriteLine(string value)
@@ -825,14 +834,29 @@ namespace Microsoft.AspNet.SignalR.Client
 #if NETFX_CORE || PORTABLE
             public override void Write(char value)
             {
-                // This is wrong we don't call it
-                Debug.WriteLine(value);
+                lock (buffer)
+                {
+                    if (value == '\n')
+                    {
+                        Flush();
+                    }
+                    else
+                    {
+                        buffer.Append(value);
+                    }
+                }
             }
 #endif
 
             public override Encoding Encoding
             {
                 get { return Encoding.UTF8; }
+            }
+
+            public override void Flush()
+            {
+                Debug.WriteLine(buffer.ToString());
+                buffer.Clear();
             }
         }
 
