@@ -97,7 +97,15 @@ namespace Microsoft.AspNet.SignalR.Client.Hubs
                 {
                     if (result.Error != null)
                     {
-                        tcs.TrySetUnwrappedException(new InvalidOperationException(result.Error));
+                        if (result.ErrorData != null)
+                        {
+                            // A HubException was thrown
+                            tcs.TrySetException(new HubException(result.Error, result.ErrorData));
+                        }
+                        else
+                        {
+                            tcs.TrySetException(new InvalidOperationException(result.Error));
+                        }
                     }
                     else
                     {

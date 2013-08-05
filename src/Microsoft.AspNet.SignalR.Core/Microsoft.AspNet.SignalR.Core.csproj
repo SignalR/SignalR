@@ -74,6 +74,7 @@
     <Compile Include="Hosting\INameValueCollection.cs" />
     <Compile Include="Hosting\IResponse.cs" />
     <Compile Include="HubConfiguration.cs" />
+    <Compile Include="HubException.cs" />
     <Compile Include="Hubs\ConnectionIdProxy.cs" />
     <Compile Include="Hubs\HubConnectionContextBase.cs" />
     <Compile Include="Hubs\MultipleSignalProxy.cs" />

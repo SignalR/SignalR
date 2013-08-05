@@ -169,7 +169,7 @@
                         if (result.StackTrace) {
                             connection.log(result.Error + "\n" + result.StackTrace + ".");
                         }
-                        d.rejectWith(that, [result.Error]);
+                        d.rejectWith(that, [result.Error, result.ErrorData]);
                     } else {
                         // Server invocation succeeded, resolve the deferred
                         d.resolveWith(that, [result.Result]);
@@ -194,7 +194,8 @@
                 Result: minHubResponse.R,
                 Id: minHubResponse.I,
                 Error: minHubResponse.E,
-                StackTrace: minHubResponse.T
+                StackTrace: minHubResponse.T,
+                ErrorData: minHubResponse.D
             };
         }
     };
