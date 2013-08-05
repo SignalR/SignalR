@@ -483,11 +483,18 @@ namespace Microsoft.AspNet.SignalR.Hubs
                 _counters.ErrorsAllTotal.Increment();
                 _counters.ErrorsAllPerSec.Increment();
 
-                if (_enableDetailedErrors)
+                var hubError = error.InnerException as HubException;
+
+                if (_enableDetailedErrors || hubError != null)
                 {
                     var exception = error.InnerException ?? error;
                     hubResult.StackTrace = _isDebuggingEnabled ? exception.StackTrace : null;
                     hubResult.Error = exception.Message;
+
+                    if (hubError != null)
+                    {
+                        hubResult.ErrorData = hubError.ErrorData;
+                    }
                 }
                 else
                 {

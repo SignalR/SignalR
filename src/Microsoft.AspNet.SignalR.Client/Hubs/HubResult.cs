@@ -31,6 +31,12 @@ namespace Microsoft.AspNet.SignalR.Client.Hubs
         public string Error { get; set; }
 
         /// <summary>
+        /// Extra error data
+        /// </summary>
+        [JsonProperty("D")]
+        public object ErrorData { get; set; }
+
+        /// <summary>
         /// The caller state from this hub.
         /// </summary>
         [SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly", Justification = "Type is used for serialization.")]

@@ -41,5 +41,11 @@ namespace Microsoft.AspNet.SignalR.Hubs
         /// </summary>
         [JsonProperty("T", NullValueHandling = NullValueHandling.Ignore)]
         public string StackTrace { get; set; }
+
+        /// <summary>
+        /// Extra error data contained in the <see cref="HubException"/>
+        /// </summary>
+        [JsonProperty("D", NullValueHandling = NullValueHandling.Ignore)]
+        public object ErrorData { get; set; }
     }
 }
