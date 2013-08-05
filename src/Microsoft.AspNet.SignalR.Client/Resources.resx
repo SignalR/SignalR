@@ -132,6 +132,9 @@
   <data name="Error_ConnectionHasNotBeenEstablished" xml:space="preserve">
     <value>The connection has not been established.</value>
   </data>
+  <data name="Error_DataCannotBeSentConnectionDisconnected" xml:space="preserve">
+    <value>Data cannot be sent because the connection is in the disconnected state. Call start before sending any data.</value>
+  </data>
   <data name="Error_IncompatibleProtocolVersion" xml:space="preserve">
     <value>You are using a version of the client that isn't compatible with the server. Client version {0}, server version {1}.</value>
   </data>
@@ -140,9 +143,6 @@
   </data>
   <data name="Error_ServerNegotiationFailed" xml:space="preserve">
     <value>Server negotiation failed.</value>
-  </data>
-  <data name="Error_StartMustBeCalledBeforeDataCanBeSent" xml:space="preserve">
-    <value>The Start method must be called before data can be sent.</value>
   </data>
   <data name="Error_TaskCancelledException" xml:space="preserve">
     <value>Request failed - task cancelled.</value>

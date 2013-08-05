@@ -587,7 +587,7 @@ namespace Microsoft.AspNet.SignalR.Client
         {
             if (State == ConnectionState.Disconnected)
             {
-                throw new InvalidOperationException(String.Format(CultureInfo.CurrentCulture, Resources.Error_StartMustBeCalledBeforeDataCanBeSent));
+                throw new InvalidOperationException(String.Format(CultureInfo.CurrentCulture, Resources.Error_DataCannotBeSentConnectionDisconnected));
             }
 
             if (State == ConnectionState.Connecting)
