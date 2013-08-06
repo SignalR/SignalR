@@ -6,7 +6,8 @@
 (function ($, window, undefined) {
     "use strict";
 
-    var eventNamespace = ".hubProxy";
+    var eventNamespace = ".hubProxy",
+        signalR = $.signalR;
 
     function makeEventName(event) {
         return event + eventNamespace;
@@ -160,7 +161,8 @@
                 d = $.Deferred(),
                 callback = function (minResult) {
                     var result = that._maximizeHubResponse(minResult),
-                        error = {};
+                        source,
+                        error;
 
                     // Update the hub state
                     $.extend(that.state, result.State);
@@ -170,7 +172,10 @@
                         if (result.StackTrace) {
                             connection.log(result.Error + "\n" + result.StackTrace + ".");
                         }
-                        error.message = result.Error;
+
+                        // result.ErrorData is only set if a HubException was thrown
+                        source = result.ErrorData ? "HubException" : "Exception";
+                        error = signalR._.error(result.Error, source);
                         error.data = result.ErrorData;
 
                         d.rejectWith(that, [error]);
