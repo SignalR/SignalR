@@ -564,9 +564,10 @@ namespace Microsoft.AspNet.SignalR.Client
                     MessageId = null;
                     _connectionData = null;
 
+#if NETFX_CORE || PORTABLE
                     // Clear the buffer
                     _traceWriter.Flush();
-
+#endif
                     // TODO: Do we want to trigger Closed if we are connecting?
                     OnClosed();
                 }
@@ -700,8 +701,10 @@ namespace Microsoft.AspNet.SignalR.Client
             // topic along with the contained disconnect message.
             _disconnectTimeoutOperation = SetTimeout(_disconnectTimeout, Disconnect);
 
+#if NETFX_CORE || PORTABLE
             // Clear the buffer
             _traceWriter.Flush();
+#endif
 
             if (Reconnecting != null)
             {
@@ -818,12 +821,16 @@ namespace Microsoft.AspNet.SignalR.Client
         /// </summary>
         private class DebugTextWriter : TextWriter
         {
-            private StringBuilder buffer;
+#if NETFX_CORE || PORTABLE
+            private readonly StringBuilder _buffer;
+#endif
 
             public DebugTextWriter()
                 : base(CultureInfo.InvariantCulture)
             {
-                buffer = new StringBuilder();
+#if NETFX_CORE || PORTABLE
+                _buffer = new StringBuilder();
+#endif
             }
 
             public override void WriteLine(string value)
@@ -834,7 +841,7 @@ namespace Microsoft.AspNet.SignalR.Client
 #if NETFX_CORE || PORTABLE
             public override void Write(char value)
             {
-                lock (buffer)
+                lock (_buffer)
                 {
                     if (value == '\n')
                     {
@@ -842,7 +849,7 @@ namespace Microsoft.AspNet.SignalR.Client
                     }
                     else
                     {
-                        buffer.Append(value);
+                        _buffer.Append(value);
                     }
                 }
             }
@@ -853,11 +860,13 @@ namespace Microsoft.AspNet.SignalR.Client
                 get { return Encoding.UTF8; }
             }
 
+#if NETFX_CORE || PORTABLE
             public override void Flush()
             {
-                Debug.WriteLine(buffer.ToString());
-                buffer.Clear();
+                Debug.WriteLine(_buffer.ToString());
+                _buffer.Clear();
             }
+#endif
         }
 
         /// <summary>
