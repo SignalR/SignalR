@@ -525,12 +525,8 @@ namespace Microsoft.AspNet.SignalR.Tests
             using (var host = CreateHost(hostType, transportType))
             {
                 host.Initialize(messageBusType: messageBusType);
-                var query = new Dictionary<string, string>();
-                SetHostData(host, query);
-                query["test"] = GetTestName();
-                var connection = new HubConnection(host.Url + "/signalr2/test", useDefaultUrl: false, queryString: query);
 
-                using (connection)
+                using (var connection = CreateHubConnection(host, "/signalr2/test", useDefaultUrl: false))
                 {
                     connection.TraceWriter = host.ClientTraceOutput;
 
@@ -564,12 +560,8 @@ namespace Microsoft.AspNet.SignalR.Tests
             using (var host = CreateHost(hostType, transportType))
             {
                 host.Initialize(messageBusType: messageBusType);
-                var query = new Dictionary<string, string>();
-                SetHostData(host, query);
-                query["test"] = GetTestName();
-                var connection = new HubConnection(host.Url + "/signalr2/test", useDefaultUrl: false, queryString: query);
 
-                using (connection)
+                using (var connection = CreateHubConnection(host, "/signalr2/test", useDefaultUrl: false))
                 {
                     connection.TraceWriter = host.ClientTraceOutput;
 
