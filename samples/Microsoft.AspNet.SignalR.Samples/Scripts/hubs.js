@@ -187,6 +187,11 @@
                 return proxies.demo.invoke.apply(proxies.demo, $.merge(["GetValue"], $.makeArray(arguments)));
              },
 
+            hubException: function () {
+            /// <summary>Calls the HubException method on the server-side demo hub.&#10;Returns a jQuery.Deferred() promise.</summary>
+                return proxies.demo.invoke.apply(proxies.demo, $.merge(["HubException"], $.makeArray(arguments)));
+             },
+
             inlineScriptTag: function () {
             /// <summary>Calls the InlineScriptTag method on the server-side demo hub.&#10;Returns a jQuery.Deferred() promise.</summary>
                 return proxies.demo.invoke.apply(proxies.demo, $.merge(["InlineScriptTag"], $.makeArray(arguments)));
