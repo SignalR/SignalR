@@ -73,6 +73,11 @@ namespace Microsoft.AspNet.SignalR.Samples.Hubs.DemoHub
             throw new Exception();
         }
 
+        public void HubException()
+        {
+            throw new HubException("message", "errorData");
+        }
+
         public Task CancelledTask()
         {
             var tcs = new TaskCompletionSource<object>();
