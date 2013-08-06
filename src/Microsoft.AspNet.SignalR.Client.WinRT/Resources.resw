@@ -133,7 +133,7 @@
     <value>The connection has not been established.</value>
   </data>
   <data name="Error_DataCannotBeSentConnectionDisconnected" xml:space="preserve">
-    <value>Data cannot be sent because the connection is in the  disconnected state. Call start before sending any data.</value>
+    <value>Data cannot be sent because the connection is in the disconnected state. Call start before sending any data.</value>
   </data>
   <data name="Error_IncompatibleProtocolVersion" xml:space="preserve">
     <value>You are using a version of the client that isn't compatible with the server. Client version {0}, server version {1}.</value>
