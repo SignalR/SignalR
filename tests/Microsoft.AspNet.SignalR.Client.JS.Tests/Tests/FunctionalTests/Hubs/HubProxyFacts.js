@@ -119,6 +119,7 @@ testUtilities.runWithAllTransports(function (transport) {
                 .fail(function (error) {
                     assert.equal(error.message, "message");
                     assert.equal(error.data, "errorData");
+                    assert.equal(error.source, "HubException");
                     end();
                 });
         });
