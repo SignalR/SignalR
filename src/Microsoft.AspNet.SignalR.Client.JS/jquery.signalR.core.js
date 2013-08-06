@@ -1,6 +1,6 @@
 /*global window:false */
 /*!
- * ASP.NET SignalR JavaScript Library v1.1.2
+ * ASP.NET SignalR JavaScript Library v1.1.3
  * http://signalr.net/
  *
  * Copyright Microsoft Open Technologies, Inc. All rights reserved.
@@ -456,7 +456,7 @@
                         // Timeout to designate when to force the connection into reconnecting converted to milliseconds
                         keepAliveData.timeout = res.KeepAliveTimeout * 1000;
 
-                        // Timeout to designate when to warn the developer that the connection may be dead or is hanging.
+                        // Timeout to designate when to warn the developer that the connection may be dead or is not responding.
                         keepAliveData.timeoutWarning = keepAliveData.timeout * connection.keepAliveWarnAt;
 
                         // Instantiate the frequency in which we check the keep alive.  It must be short in order to not miss/pick up any changes

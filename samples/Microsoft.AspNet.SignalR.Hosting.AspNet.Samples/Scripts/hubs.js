@@ -1,5 +1,5 @@
 /*!
- * ASP.NET SignalR JavaScript Library v1.1.2
+ * ASP.NET SignalR JavaScript Library v1.1.3
  * http://signalr.net/
  *
  * Copyright Microsoft Open Technologies, Inc. All rights reserved.
@@ -201,6 +201,11 @@
             multipleCalls: function () {
             /// <summary>Calls the MultipleCalls method on the server-side demo hub.&#10;Returns a jQuery.Deferred() promise.</summary>
                 return proxies.demo.invoke.apply(proxies.demo, $.merge(["MultipleCalls"], $.makeArray(arguments)));
+             },
+
+            neverEndingTask: function () {
+            /// <summary>Calls the NeverEndingTask method on the server-side demo hub.&#10;Returns a jQuery.Deferred() promise.</summary>
+                return proxies.demo.invoke.apply(proxies.demo, $.merge(["NeverEndingTask"], $.makeArray(arguments)));
              },
 
             overload: function () {
