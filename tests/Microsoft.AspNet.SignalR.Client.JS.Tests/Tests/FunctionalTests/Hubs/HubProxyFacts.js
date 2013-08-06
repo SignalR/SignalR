@@ -116,9 +116,9 @@ testUtilities.runWithAllTransports(function (transport) {
                     assert.fail("Invocation succeeded but should have failed.");
                     end();
                 })
-                .fail(function (message, errorData) {
-                    assert.equal(message, "message");
-                    assert.equal(errorData, "errorData");
+                .fail(function (error) {
+                    assert.equal(error.message, "message");
+                    assert.equal(error.data, "errorData");
                     end();
                 });
         });

@@ -159,7 +159,8 @@
                 data = { H: that.hubName, M: methodName, A: argValues, I: connection._.invocationCallbackId },
                 d = $.Deferred(),
                 callback = function (minResult) {
-                    var result = that._maximizeHubResponse(minResult);
+                    var result = that._maximizeHubResponse(minResult),
+                        error = {};
 
                     // Update the hub state
                     $.extend(that.state, result.State);
@@ -169,7 +170,10 @@
                         if (result.StackTrace) {
                             connection.log(result.Error + "\n" + result.StackTrace + ".");
                         }
-                        d.rejectWith(that, [result.Error, result.ErrorData]);
+                        error.message = result.Error;
+                        error.data = result.ErrorData;
+
+                        d.rejectWith(that, [error]);
                     } else {
                         // Server invocation succeeded, resolve the deferred
                         d.resolveWith(that, [result.Result]);
