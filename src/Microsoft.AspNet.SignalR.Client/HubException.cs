@@ -9,7 +9,6 @@ namespace Microsoft.AspNet.SignalR.Client
     {
         public HubException() { }
         public HubException(string message) : base(message) { }
-        public HubException(string message, Exception innerException) : base(message, innerException) { }
 
         public HubException(string message, object errorData)
             : base(message)

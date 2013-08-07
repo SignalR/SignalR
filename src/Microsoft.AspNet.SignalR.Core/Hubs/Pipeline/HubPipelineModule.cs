@@ -40,7 +40,11 @@ namespace Microsoft.AspNet.SignalR.Hubs
                         OnIncomingError(exContext, context);
 
                         var error = exContext.Error;
-                        if (error != null)
+                        if (error == ex)
+                        {
+                            throw;
+                        }
+                        else if (error != null)
                         {
                             throw error;
                         }

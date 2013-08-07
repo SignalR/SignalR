@@ -2050,7 +2050,7 @@ namespace Microsoft.AspNet.SignalR.Tests
         [InlineData(TransportType.Websockets, MessageBusType.Default)]
         [InlineData(TransportType.Websockets, MessageBusType.Fake)]
         [InlineData(TransportType.Websockets, MessageBusType.FakeMultiStream)]
-        public void CanSuppressExceptionsInHubPipelineModuleOnIncomingError(TransportType transportType, MessageBusType messageBusType)
+        public async Task CanSuppressExceptionsInHubPipelineModuleOnIncomingError(TransportType transportType, MessageBusType messageBusType)
         {
             var supressErrorModule = new SuppressErrorModule();
             using (var host = new MemoryHost())
@@ -2069,9 +2069,9 @@ namespace Microsoft.AspNet.SignalR.Tests
                 {
                     var hub = connection.CreateHubProxy("demo");
 
-                    connection.Start(host).Wait();
+                    await connection.Start(host);
 
-                    Assert.Equal(42, hub.InvokeWithTimeout<int>("TaskWithException"));
+                    Assert.Equal(42, await hub.Invoke<int>("TaskWithException"));
                 }
             }
         }
@@ -2086,7 +2086,7 @@ namespace Microsoft.AspNet.SignalR.Tests
         [InlineData(TransportType.Websockets, MessageBusType.Default)]
         [InlineData(TransportType.Websockets, MessageBusType.Fake)]
         [InlineData(TransportType.Websockets, MessageBusType.FakeMultiStream)]
-        public void CanChangeExceptionsInHubPipelineModuleOnIncomingError(TransportType transportType, MessageBusType messageBusType)
+        public async Task CanChangeExceptionsInHubPipelineModuleOnIncomingError(TransportType transportType, MessageBusType messageBusType)
         {
             var supressErrorModule = new WrapErrorModule();
             using (var host = new MemoryHost())
@@ -2105,10 +2105,20 @@ namespace Microsoft.AspNet.SignalR.Tests
                 {
                     var hub = connection.CreateHubProxy("demo");
 
-                    connection.Start(host).Wait();
+                    await connection.Start(host);
 
-                    var ex = Assert.Throws<AggregateException>(() => hub.InvokeWithTimeout("TaskWithException"));
-                    Assert.Equal(ex.InnerException.Message, "Wrapped");
+                    try
+                    {
+                        await hub.Invoke("TaskWithException");
+                    }
+                    catch (Client.HubException ex)
+                    {
+                        Assert.Equal("Wrapped", ex.Message);
+                        Assert.Equal("Data", (string)((dynamic)ex.ErrorData).Error);
+                        return;
+                    }
+
+                    Assert.True(false, "hub.Invoke didn't throw.");
                 }
             }
         }
@@ -2261,7 +2271,7 @@ namespace Microsoft.AspNet.SignalR.Tests
         {
             protected override void OnIncomingError(ExceptionContext exceptionContext, IHubIncomingInvokerContext invokerContext)
             {
-                exceptionContext.Error = new HubException("Wrapped", exceptionContext.Error);
+                exceptionContext.Error = new HubException("Wrapped", new { Error = "Data" });
             }
         }
 

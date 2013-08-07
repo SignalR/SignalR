@@ -1,42 +1,26 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace Microsoft.AspNet.SignalR.Hubs
 {
     public class ExceptionContext
     {
-        private int _modified;
-        private Exception _error;
         private object _result;
 
         public ExceptionContext(Exception error)
         {
-            _error = error;
+            Error = error;
         }
 
-        public Exception Error
-        {
-            get
-            {
-                return _error;
-            }
-            set
-            {
-                if (Interlocked.Exchange(ref _modified, 1) == 0)
-                {
-                    _error = value;
-                }
-                else
-                {
-                    throw new InvalidOperationException(Resources.Error_ExceptionContextCanOnlyBeModifiedOnce);
-                }
-            }
-        }
+        /// <summary>
+        /// The exception to be sent to the calling client.
+        /// This will be overridden by a generic Exception unless Error is a <see cref="HubException"/>
+        /// or <see cref="HubConfiguration.EnableDetailedErrors"/> is set to true.
+        /// </summary>
+        public Exception Error { get; set; }
 
+        /// <summary>
+        /// The value to return in lieu of throwing Error. Whenever Result is set, Error will be set to null.
+        /// </summary>
         public object Result
         {
             get
@@ -45,15 +29,8 @@ namespace Microsoft.AspNet.SignalR.Hubs
             }
             set
             {
-                if (Interlocked.Exchange(ref _modified, 1) == 0)
-                {
-                    _error = null;
-                    _result = value;
-                }
-                else
-                {
-                    throw new InvalidOperationException(Resources.Error_ExceptionContextCanOnlyBeModifiedOnce);
-                }
+                Error = null;
+                _result = value;
             }
         }
     }
