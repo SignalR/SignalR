@@ -159,6 +159,9 @@
   <data name="Error_ErrorCreatingHub" xml:space="preserve">
     <value>Error creating Hub {0}. </value>
   </data>
+  <data name="Error_ExceptionContextCanOnlyBeModifiedOnce" xml:space="preserve">
+    <value>The ExceptionContext has already been modified once and cannot be modified again.</value>
+  </data>
   <data name="Error_HubCouldNotBeResolved" xml:space="preserve">
     <value>'{0}' Hub could not be resolved.</value>
   </data>

@@ -187,6 +187,15 @@ namespace Microsoft.AspNet.SignalR {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The ExceptionContext has already been modified once and cannot be modified again..
+        /// </summary>
+        internal static string Error_ExceptionContextCanOnlyBeModifiedOnce {
+            get {
+                return ResourceManager.GetString("Error_ExceptionContextCanOnlyBeModifiedOnce", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to &apos;{0}&apos; Hub could not be resolved..
         /// </summary>
         internal static string Error_HubCouldNotBeResolved {

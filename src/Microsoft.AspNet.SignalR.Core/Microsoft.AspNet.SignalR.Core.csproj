@@ -85,6 +85,7 @@
     <Compile Include="Hubs\IHubCallerConnectionContext.cs" />
     <Compile Include="Hubs\Lookup\Descriptors\NullMethodDescriptor.cs" />
     <Compile Include="Hubs\Lookup\HubMethodDispatcher.cs" />
+    <Compile Include="Hubs\Pipeline\ExceptionContext.cs" />
     <Compile Include="Hubs\Pipeline\HubOutgoingInvokerContextExtensions.cs" />
     <Compile Include="Infrastructure\AckHandler.cs" />
     <Compile Include="Configuration\DefaultConfigurationManager.cs" />
