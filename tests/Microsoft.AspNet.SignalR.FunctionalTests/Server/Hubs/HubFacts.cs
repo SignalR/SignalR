@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Security.Principal;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR.Client;
@@ -134,6 +135,95 @@ namespace Microsoft.AspNet.SignalR.Tests
 
                     Assert.True(tcs.Task.Wait(TimeSpan.FromSeconds(10)));
                     Assert.Equal("Hello World", tcs.Task.Result);
+                }
+            }
+        }
+
+        [Fact]
+        public async Task CanSendViaUser()
+        {
+            using (var host = new MemoryHost())
+            {
+                host.Configure(app =>
+                {
+                    var resolver = new DefaultDependencyResolver();
+                    var config = new HubConfiguration
+                    {
+                        Resolver = resolver
+                    };
+                    var provider = new Mock<IUserIdProvider>();
+                    provider.Setup(m => m.GetUserId(It.IsAny<IRequest>()))
+                            .Returns<IRequest>(request =>
+                            {
+                                return request.QueryString["name"];
+                            });
+
+                    config.Resolver.Register(typeof(IUserIdProvider), () => provider.Object);
+                    app.MapSignalR(config);
+                });
+
+                var qs = new Dictionary<string, string>
+                {
+                    { "name", "myuser" }
+                };
+
+                var wh = new ManualResetEventSlim();
+
+                using (var connection = new HubConnection("http://memoryhost", qs))
+                {
+                    var proxy = connection.CreateHubProxy("demo");
+
+                    proxy.On("invoke", () =>
+                    {
+                        wh.Set();
+                    });
+
+                    await connection.Start(host);
+
+                    await proxy.Invoke("SendToUser", "myuser");
+
+                    Assert.True(wh.Wait(TimeSpan.FromSeconds(5)));
+                }
+            }
+        }
+
+        [Fact]
+        public async Task CanSendViaUserWhenPrincipalSet()
+        {
+            using (var host = new MemoryHost())
+            {
+                host.Configure(app =>
+                {
+                    var config = new HubConfiguration
+                    {
+                        Resolver = new DefaultDependencyResolver()
+                    };
+                    app.Use((context, next) =>
+                    {
+                        var identity = new GenericIdentity("randomUserId");
+                        context.Request.User = new GenericPrincipal(identity, new string[0]);
+                        return next();
+                    });
+
+                    app.MapSignalR(config);
+                });
+
+                var wh = new ManualResetEventSlim();
+
+                using (var connection = new HubConnection("http://memoryhost"))
+                {
+                    var proxy = connection.CreateHubProxy("demo");
+
+                    proxy.On("invoke", () =>
+                    {
+                        wh.Set();
+                    });
+
+                    await connection.Start(host);
+
+                    await proxy.Invoke("SendToUser", "randomUserId");
+
+                    Assert.True(wh.Wait(TimeSpan.FromSeconds(5)));
                 }
             }
         }
@@ -1668,6 +1758,54 @@ namespace Microsoft.AspNet.SignalR.Tests
         }
 
         [Fact]
+        public async Task SendToUserFromOutsideOfHub()
+        {
+            using (var host = new MemoryHost())
+            {
+                IHubContext hubContext = null;
+                host.Configure(app =>
+                {
+                    var configuration = new HubConfiguration
+                    {
+                        Resolver = new DefaultDependencyResolver()
+                    };
+
+                    var provider = new Mock<IUserIdProvider>();
+                    provider.Setup(m => m.GetUserId(It.IsAny<IRequest>()))
+                            .Returns<IRequest>(request =>
+                            {
+                                return request.QueryString["name"];
+                            });
+
+                    configuration.Resolver.Register(typeof(IUserIdProvider), () => provider.Object);
+
+                    app.MapSignalR(configuration);
+                    hubContext = configuration.Resolver.Resolve<IConnectionManager>().GetHubContext("SendToSome");
+                });
+
+                var qs = new Dictionary<string, string>
+                {
+                    { "name", "myuser" }
+                };
+
+                var wh = new ManualResetEventSlim();
+
+                using (var connection = new HubConnection("http://memoryhost", qs))
+                {
+                    var hub = connection.CreateHubProxy("SendToSome");
+
+                    await connection.Start(host);
+
+                    hub.On("send", wh.Set);
+
+                    await hubContext.Clients.User("myuser").send();
+
+                    Assert.True(wh.Wait(TimeSpan.FromSeconds(10)));
+                }
+            }
+        }
+
+        [Fact]
         public void SendToGroupsFromOutsideOfHub()
         {
             using (var host = new MemoryHost())
@@ -1872,6 +2010,11 @@ namespace Microsoft.AspNet.SignalR.Tests
 
         public class SendToSome : Hub
         {
+            public Task SendToUser(string userId)
+            {
+                return Clients.User(userId).send();
+            }
+
             public Task SendToAllButCaller()
             {
                 return Clients.Others.send();

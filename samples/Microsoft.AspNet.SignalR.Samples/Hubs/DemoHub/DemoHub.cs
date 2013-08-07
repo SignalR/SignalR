@@ -20,6 +20,11 @@ namespace Microsoft.AspNet.SignalR.Samples.Hubs.DemoHub
             });
         }
 
+        public void SendToUser(string userId)
+        {
+            Clients.User(userId).invoke();
+        }
+
         public void AddToGroups()
         {
             Groups.Add(Context.ConnectionId, "foo");

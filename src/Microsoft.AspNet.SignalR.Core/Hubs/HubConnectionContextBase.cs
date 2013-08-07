@@ -117,5 +117,15 @@ namespace Microsoft.AspNet.SignalR.Hubs
                                            PrefixHelper.HubGroupPrefix,
                                            PrefixHelper.GetPrefixedConnectionIds(excludeConnectionIds));
         }
+
+        public dynamic User(string userId)
+        {
+            if (userId == null)
+            {
+                throw new ArgumentNullException("userId");
+            }
+
+            return new UserProxy(Connection, Invoker, userId, HubName);
+        }
     }
 }
