@@ -2040,6 +2040,79 @@ namespace Microsoft.AspNet.SignalR.Tests
             }
         }
 
+        [Theory]
+        [InlineData(TransportType.LongPolling, MessageBusType.Default)]
+        [InlineData(TransportType.LongPolling, MessageBusType.Fake)]
+        [InlineData(TransportType.LongPolling, MessageBusType.FakeMultiStream)]
+        [InlineData(TransportType.ServerSentEvents, MessageBusType.Default)]
+        [InlineData(TransportType.ServerSentEvents, MessageBusType.Fake)]
+        [InlineData(TransportType.ServerSentEvents, MessageBusType.FakeMultiStream)]
+        [InlineData(TransportType.Websockets, MessageBusType.Default)]
+        [InlineData(TransportType.Websockets, MessageBusType.Fake)]
+        [InlineData(TransportType.Websockets, MessageBusType.FakeMultiStream)]
+        public void CanSuppressExceptionsInHubPipelineModuleOnIncomingError(TransportType transportType, MessageBusType messageBusType)
+        {
+            var supressErrorModule = new SuppressErrorModule();
+            using (var host = new MemoryHost())
+            {
+                host.Configure(app =>
+                {
+                    var config = new HubConfiguration
+                    {
+                        Resolver = new DefaultDependencyResolver()
+                    };
+                    app.MapSignalR(config);
+                    config.Resolver.Resolve<IHubPipeline>().AddModule(supressErrorModule);
+                });
+
+                using (var connection = CreateHubConnection("http://foo/"))
+                {
+                    var hub = connection.CreateHubProxy("demo");
+
+                    connection.Start(host).Wait();
+
+                    Assert.Equal(42, hub.InvokeWithTimeout<int>("TaskWithException"));
+                }
+            }
+        }
+
+        [Theory]
+        [InlineData(TransportType.LongPolling, MessageBusType.Default)]
+        [InlineData(TransportType.LongPolling, MessageBusType.Fake)]
+        [InlineData(TransportType.LongPolling, MessageBusType.FakeMultiStream)]
+        [InlineData(TransportType.ServerSentEvents, MessageBusType.Default)]
+        [InlineData(TransportType.ServerSentEvents, MessageBusType.Fake)]
+        [InlineData(TransportType.ServerSentEvents, MessageBusType.FakeMultiStream)]
+        [InlineData(TransportType.Websockets, MessageBusType.Default)]
+        [InlineData(TransportType.Websockets, MessageBusType.Fake)]
+        [InlineData(TransportType.Websockets, MessageBusType.FakeMultiStream)]
+        public void CanChangeExceptionsInHubPipelineModuleOnIncomingError(TransportType transportType, MessageBusType messageBusType)
+        {
+            var supressErrorModule = new WrapErrorModule();
+            using (var host = new MemoryHost())
+            {
+                host.Configure(app =>
+                {
+                    var config = new HubConfiguration
+                    {
+                        Resolver = new DefaultDependencyResolver()
+                    };
+                    app.MapSignalR(config);
+                    config.Resolver.Resolve<IHubPipeline>().AddModule(supressErrorModule);
+                });
+
+                using (var connection = CreateHubConnection("http://foo/"))
+                {
+                    var hub = connection.CreateHubProxy("demo");
+
+                    connection.Start(host).Wait();
+
+                    var ex = Assert.Throws<AggregateException>(() => hub.InvokeWithTimeout("TaskWithException"));
+                    Assert.Equal(ex.InnerException.Message, "Wrapped");
+                }
+            }
+        }
+
         public class SendToSome : Hub
         {
             public Task SendToUser(string userId)
@@ -2173,6 +2246,22 @@ namespace Microsoft.AspNet.SignalR.Tests
                     }
                     return groups;
                 };
+            }
+        }
+
+        public class SuppressErrorModule : HubPipelineModule
+        {
+            protected override void OnIncomingError(ExceptionContext exceptionContext, IHubIncomingInvokerContext invokerContext)
+            {
+                exceptionContext.Result = 42;
+            }
+        }
+
+        public class WrapErrorModule : HubPipelineModule
+        {
+            protected override void OnIncomingError(ExceptionContext exceptionContext, IHubIncomingInvokerContext invokerContext)
+            {
+                exceptionContext.Error = new HubException("Wrapped", exceptionContext.Error);
             }
         }
 
