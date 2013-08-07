@@ -71,6 +71,9 @@ namespace Microsoft.AspNet.SignalR
 
             var perfCounterWriter = new Lazy<PerformanceCounterManager>(() => new PerformanceCounterManager(this));
             Register(typeof(IPerformanceCounterManager), () => perfCounterWriter.Value);
+
+            var userIdProvider = new PrincipalUserIdProvider();
+            Register(typeof(IUserIdProvider), () => userIdProvider);
         }
 
         private void RegisterHubExtensions()

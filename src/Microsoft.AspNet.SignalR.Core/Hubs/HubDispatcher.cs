@@ -362,11 +362,30 @@ namespace Microsoft.AspNet.SignalR.Hubs
             return ExecuteHubEvent(request, connectionId, hub => _pipelineInvoker.Disconnect(hub));
         }
 
-        protected override IList<string> GetSignals(string connectionId)
+        protected override IList<string> GetSignals(string userId, string connectionId)
         {
-            return _hubs.SelectMany(info => new[] { PrefixHelper.GetHubName(info.Name), PrefixHelper.GetHubConnectionId(info.CreateQualifiedName(connectionId)) })
-                        .Concat(new[] { PrefixHelper.GetConnectionId(connectionId), PrefixHelper.GetAck(connectionId) })
-                        .ToList();
+            var signals = _hubs.SelectMany(info =>
+            {
+                var items = new List<string>
+                { 
+                    PrefixHelper.GetHubName(info.Name), 
+                    PrefixHelper.GetHubConnectionId(info.CreateQualifiedName(connectionId)),
+                };
+
+                if (!String.IsNullOrEmpty(userId))
+                {
+                    items.Add(PrefixHelper.GetHubUserId(info.CreateQualifiedName(userId)));
+                }
+
+                return items;
+            })
+            .Concat(new[] 
+            { 
+                PrefixHelper.GetConnectionId(connectionId), 
+                PrefixHelper.GetAck(connectionId) 
+            });
+
+            return signals.ToList();
         }
 
         private Task ExecuteHubEvent(IRequest request, string connectionId, Func<IHub, Task> action)

@@ -53,6 +53,7 @@ namespace Microsoft.AspNet.SignalR
             Counters = resolver.Resolve<IPerformanceCounterManager>();
             AckHandler = resolver.Resolve<IAckHandler>();
             ProtectedData = resolver.Resolve<IProtectedData>();
+            UserIdProvider = resolver.Resolve<IUserIdProvider>();
 
             _configurationManager = resolver.Resolve<IConfigurationManager>();
             _transportManager = resolver.Resolve<ITransportManager>();
@@ -87,6 +88,8 @@ namespace Microsoft.AspNet.SignalR
         protected IPerformanceCounterManager Counters { get; private set; }
 
         protected ITransport Transport { get; private set; }
+
+        protected IUserIdProvider UserIdProvider { get; private set; }
 
         /// <summary>
         /// Gets the <see cref="IConnection"/> for the <see cref="PersistentConnection"/>.
@@ -153,7 +156,7 @@ namespace Microsoft.AspNet.SignalR
                 return ProcessRequest(context);
             }
 
-            if (context.Request.User != null && 
+            if (context.Request.User != null &&
                 context.Request.User.Identity.IsAuthenticated)
             {
                 // If the user is authenticated and authorize failed then 403
@@ -219,7 +222,10 @@ namespace Microsoft.AspNet.SignalR
             // Set the transport's connection id to the unprotected one
             Transport.ConnectionId = connectionId;
 
-            IList<string> signals = GetSignals(connectionId);
+            // Get the user id from the request
+            string userId = UserIdProvider.GetUserId(context.Request);
+
+            IList<string> signals = GetSignals(userId, connectionId);
             IList<string> groups = AppendGroupPrefixes(context, connectionId);
 
             Connection connection = CreateConnection(connectionId, signals, groups);
@@ -358,12 +364,8 @@ namespace Microsoft.AspNet.SignalR
                                   ProtectedData);
         }
 
-        /// <summary>
-        /// Returns the default signals for the <see cref="PersistentConnection"/>.
-        /// </summary>
-        /// <param name="connectionId">The id of the incoming connection.</param>
-        /// <returns>The default signals for this <see cref="PersistentConnection"/>.</returns>
-        private IList<string> GetDefaultSignals(string connectionId)
+        [SuppressMessage("Microsoft.Usage", "CA1801:ReviewUnusedParameters", MessageId = "userId", Justification = "This method is virtual and is used in the derived class")]
+        private IList<string> GetDefaultSignals(string userId, string connectionId)
         {
             // The list of default signals this connection cares about:
             // 1. The default signal (the type name)
@@ -380,11 +382,12 @@ namespace Microsoft.AspNet.SignalR
         /// <summary>
         /// Returns the signals used in the <see cref="PersistentConnection"/>.
         /// </summary>
+        /// <param name="userId">The user id for the current connection.</param>
         /// <param name="connectionId">The id of the incoming connection.</param>
         /// <returns>The signals used for this <see cref="PersistentConnection"/>.</returns>
-        protected virtual IList<string> GetSignals(string connectionId)
+        protected virtual IList<string> GetSignals(string userId, string connectionId)
         {
-            return GetDefaultSignals(connectionId);
+            return GetDefaultSignals(userId, connectionId);
         }
 
         /// <summary>

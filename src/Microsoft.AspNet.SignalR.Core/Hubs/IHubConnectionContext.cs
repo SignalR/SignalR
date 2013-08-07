@@ -18,5 +18,7 @@ namespace Microsoft.AspNet.SignalR.Hubs
 
         dynamic Group(string groupName, params string[] excludeConnectionIds);
         dynamic Groups(IList<string> groupNames, params string[] excludeConnectionIds);
+
+        dynamic User(string userId);
     }
 }
