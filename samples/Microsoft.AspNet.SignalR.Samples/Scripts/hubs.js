@@ -677,6 +677,16 @@
              }
         };
 
+        proxies.typedDemoHub = this.createHubProxy('typedDemoHub'); 
+        proxies.typedDemoHub.client = { };
+        proxies.typedDemoHub.server = {
+            echo: function (message) {
+            /// <summary>Calls the Echo method on the server-side TypedDemoHub hub.&#10;Returns a jQuery.Deferred() promise.</summary>
+            /// <param name=\"message\" type=\"String\">Server side type is System.String</param>
+                return proxies.typedDemoHub.invoke.apply(proxies.typedDemoHub, $.merge(["Echo"], $.makeArray(arguments)));
+             }
+        };
+
         proxies.userAndRoleAuthHub = this.createHubProxy('userAndRoleAuthHub'); 
         proxies.userAndRoleAuthHub.client = { };
         proxies.userAndRoleAuthHub.server = {

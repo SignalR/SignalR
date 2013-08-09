@@ -1,5 +1,6 @@
 ﻿$(function () {
     var demo = $.connection.demo,
+        typedDemo = $.connection.typedDemoHub,
         groupAddedCalled = false;
 
     demo.client.invoke = function (index) {
@@ -26,9 +27,17 @@
         throw new "This should never called because it's mispelled on the server side";
     };
 
+    typedDemo.client.echo = function (message, invokeCount) {
+        console.log("echo!", message, invokeCount);
+    }
+
     $.connection.hub.logging = true;
 
     $.connection.hub.start({ transport: activeTransport }, function () {
+
+        typedDemo.server.echo("Typed callback!").done(function () {
+            console.log("done!");
+        });
 
         demo.server.getValue().done(function (value) {
             $('#value').html('The value is ' + value + ' after 5 seconds');
