@@ -558,6 +558,10 @@
                     }, connection.transportConnectTimeout);
 
                     transport.start(connection, function () { // success
+                        // Firefox 11+ doesn't allow sync XHR withCredentials: https://developer.mozilla.org/en-US/docs/Web/API/XMLHttpRequest#withCredentials
+                        var isFirefox11OrGreater = signalR._.firefoxMajorVersion(window.navigator.userAgent) >= 11,
+                            asyncAbort = !!connection.withCredentials && isFirefox11OrGreater;
+
                         // The connection was aborted while initializing transports
                         if (connection.state === signalR.connectionState.disconnected) {
                             return;
@@ -587,13 +591,22 @@
 
                             // wire the stop handler for when the user leaves the page
                             _pageWindow.bind("unload", function () {
-                                // Firefox 11+ doesn't allow sync XHR withCredentials: https://developer.mozilla.org/en-US/docs/Web/API/XMLHttpRequest#withCredentials
-                                var asyncAbort = !!connection.withCredentials && signalR._.firefoxMajorVersion(window.navigator.userAgent) >= 11;
-
                                 connection.log("Window unloading, stopping the connection.");
 
                                 connection.stop(asyncAbort);
                             });
+
+                            if (isFirefox11OrGreater) {
+                                // Firefox does not fire cross-domain XHRs in the normal unload handler on tab close.
+                                // #2400
+                                _pageWindow.bind("beforeunload", function () {
+                                    // If connection.stop() runs runs in beforeunload and fails, it will also fail
+                                    // in unload unless connection.stop() runs after a timeout.
+                                    window.setTimeout(function () {
+                                        connection.stop(asyncAbort);
+                                    }, 0);
+                                });
+                            }
                         }
                     }, onFailed);
                 }
