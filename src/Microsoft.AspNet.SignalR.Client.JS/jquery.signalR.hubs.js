@@ -174,7 +174,7 @@
                         }
 
                         // result.ErrorData is only set if a HubException was thrown
-                        source = result.ErrorData ? "HubException" : "Exception";
+                        source = result.IsHubException ? "HubException" : "Exception";
                         error = signalR._.error(result.Error, source);
                         error.data = result.ErrorData;
 
@@ -202,6 +202,7 @@
                 State: minHubResponse.S,
                 Result: minHubResponse.R,
                 Id: minHubResponse.I,
+                IsHubException: minHubResponse.H,
                 Error: minHubResponse.E,
                 StackTrace: minHubResponse.T,
                 ErrorData: minHubResponse.D

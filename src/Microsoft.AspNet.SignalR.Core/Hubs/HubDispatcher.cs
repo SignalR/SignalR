@@ -493,6 +493,7 @@ namespace Microsoft.AspNet.SignalR.Hubs
 
                     if (hubError != null)
                     {
+                        hubResult.IsHubException = true;
                         hubResult.ErrorData = hubError.ErrorData;
                     }
                 }
