@@ -31,6 +31,12 @@ namespace Microsoft.AspNet.SignalR.Hubs
         public string Id { get; set; }
 
         /// <summary>
+        /// Indicates whether the Error is a see <see cref="HubException"/>.
+        /// </summary>
+        [JsonProperty("H", NullValueHandling = NullValueHandling.Ignore)]
+        public bool? IsHubException { get; set; }
+
+        /// <summary>
         /// The exception that occurs as a result of invoking the hub method.
         /// </summary>
         [JsonProperty("E", NullValueHandling = NullValueHandling.Ignore)]
