@@ -310,8 +310,6 @@ namespace Microsoft.AspNet.SignalR
 
             if (String.IsNullOrEmpty(groupsToken))
             {
-                Trace.TraceInformation("The groups token is missing");
-
                 return ListHelper<string>.Empty;
             }
 
