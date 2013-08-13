@@ -129,6 +129,30 @@ testUtilities.runWithAllTransports(function (transport) {
             connection.stop();
         };
     });
+
+    QUnit.asyncTimeoutTest(transport + " detailed errors are always given for hub exceptions without error data", testUtilities.defaultTestTimeout, function (end, assert, testName) {
+        var connection = testUtilities.createHubConnection(end, assert, testName, "signalr2/test"),
+            demo = connection.createHubProxies().demo;
+
+        connection.start({ transport: transport }).done(function () {
+            demo.server.hubExceptionWithoutErrorData()
+                .done(function () {
+                    assert.fail("Invocation succeeded but should have failed.");
+                    end();
+                })
+                .fail(function (error) {
+                    assert.equal(error.message, "message");
+                    assert.isNotSet(error.data);
+                    assert.equal(error.source, "HubException");
+                    end();
+                });
+        });
+
+        // Cleanup
+        return function () {
+            connection.stop();
+        };
+    });
 });
 
 QUnit.module("Hub Proxy Facts", !window.document.commandLineTest);

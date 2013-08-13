@@ -97,7 +97,7 @@ namespace Microsoft.AspNet.SignalR.Client.Hubs
                 {
                     if (result.Error != null)
                     {
-                        if (result.ErrorData != null)
+                        if (result.IsHubException.HasValue && result.IsHubException.Value)
                         {
                             // A HubException was thrown
                             tcs.TrySetException(new HubException(result.Error, result.ErrorData));
