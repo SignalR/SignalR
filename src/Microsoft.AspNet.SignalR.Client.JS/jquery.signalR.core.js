@@ -340,9 +340,11 @@
             // Check to see if start is being called prior to page load
             // If waitForPageLoad is true we then want to re-direct function call to the window load event
             if (!_pageLoaded && config.waitForPageLoad === true) {
-                _pageWindow.load(function () {
+                connection._.deferredStartHandler = function () {
                     connection.start(options, callback);
-                });
+                };
+                _pageWindow.load(connection._.deferredStartHandler);
+
                 return deferred.promise();
             }
 
@@ -703,12 +705,16 @@
             /// <returns type="signalR" />
             var connection = this;
 
-            // Verify that we should wait for page load to call stop.
+            // This needs to be checked despite the connection state because a connection start can be deferred until page load.
+            // If we've deferred the start due to a page load we need to unbind the "onLoad" -> start event.
             if (!_pageLoaded && (!connection._.config || connection._.config.waitForPageLoad === true)) {
-                // Can only stop connections after the page has loaded
-                _pageWindow.load(function () {
-                    connection.stop(async, notifyServer);
-                });
+                connection.log("Stopping connection prior to negotiate.");
+                
+                // Unbind the event so it's not triggered.
+                _pageWindow.unbind("load", connection._.deferredStartHandler);
+                
+                // Reject any promises for the current connections deferred.
+                connection._deferral.reject("The connection was stopped during page load.");
 
                 return;
             }
@@ -716,6 +722,11 @@
             if (connection.state === signalR.connectionState.disconnected) {
                 return;
             }
+
+            // Always clean up the private non-timeout based state.
+            delete connection._deferral;
+            delete connection._.config;
+            delete connection._.deferredStartHandler;
 
             try {
                 connection.log("Stopping connection.");
@@ -740,11 +751,7 @@
 
                 delete connection.messageId;
                 delete connection.groupsToken;
-
-                // Remove the ID and the deferral on stop, this is to ensure that if a connection is restarted it takes on a new id/deferral.
                 delete connection.id;
-                delete connection._deferral;
-                delete connection._.config;
                 delete connection._.pingIntervalId;
             }
             finally {
