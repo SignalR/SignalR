@@ -434,7 +434,7 @@
                 connection._.deferredStartHandler = function () {
                     connection.start(options, callback);
                 };
-                _pageWindow.load(connection._.deferredStartHandler);
+                _pageWindow.bind("load", connection._.deferredStartHandler);
 
                 return deferred.promise();
             }
@@ -862,16 +862,19 @@
             /// <returns type="signalR" />
             var connection = this;
 
+            // Verify that we've bound a load event.
+            if (connection._.deferredStartHandler) {
+                // Unbind the event.
+                _pageWindow.unbind("load", connection._.deferredStartHandler);
+            }
+
             // This needs to be checked despite the connection state because a connection start can be deferred until page load.
             // If we've deferred the start due to a page load we need to unbind the "onLoad" -> start event.
             if (!_pageLoaded && (!connection._.config || connection._.config.waitForPageLoad === true)) {
                 connection.log("Stopping connection prior to negotiate.");
 
-                // Unbind the event so it's not triggered.
-                _pageWindow.unbind("load", connection._.deferredStartHandler);
-
                 // Reject any promises for the current connections deferred.
-                connection._deferral.reject(signalR._.error(resources.stoppedWhileLoading));                
+                connection._deferral.reject(signalR._.error(resources.stoppedWhileLoading));
 
                 return;
             }
