@@ -555,7 +555,7 @@ namespace Microsoft.AspNet.SignalR.Tests
         [InlineData(HostType.HttpListener, TransportType.ServerSentEvents, MessageBusType.Default)]
         [InlineData(HostType.HttpListener, TransportType.Websockets, MessageBusType.Default)]
         [InlineData(HostType.HttpListener, TransportType.LongPolling, MessageBusType.Default)]
-        public void DetailedErrorsAreAlwaysGivenForHubExceptions(HostType hostType, TransportType transportType, MessageBusType messageBusType)
+        public async Task DetailedErrorsAreAlwaysGivenForHubExceptions(HostType hostType, TransportType transportType, MessageBusType messageBusType)
         {
             using (var host = CreateHost(hostType, transportType))
             {
@@ -567,7 +567,7 @@ namespace Microsoft.AspNet.SignalR.Tests
 
                     var hub = connection.CreateHubProxy("demo");
 
-                    connection.Start(host.TransportFactory()).Wait();
+                    await connection.Start(host.TransportFactory());
 
                     var ex = Assert.Throws<AggregateException>(() => hub.InvokeWithTimeout("HubException"));
 
@@ -591,7 +591,7 @@ namespace Microsoft.AspNet.SignalR.Tests
         [InlineData(HostType.HttpListener, TransportType.ServerSentEvents, MessageBusType.Default)]
         [InlineData(HostType.HttpListener, TransportType.Websockets, MessageBusType.Default)]
         [InlineData(HostType.HttpListener, TransportType.LongPolling, MessageBusType.Default)]
-        public void DetailedErrorsAreAlwaysGivenForHubExceptionsWithoutErrorData(HostType hostType, TransportType transportType, MessageBusType messageBusType)
+        public async Task DetailedErrorsAreAlwaysGivenForHubExceptionsWithoutErrorData(HostType hostType, TransportType transportType, MessageBusType messageBusType)
         {
             using (var host = CreateHost(hostType, transportType))
             {
@@ -603,7 +603,7 @@ namespace Microsoft.AspNet.SignalR.Tests
 
                     var hub = connection.CreateHubProxy("demo");
 
-                    connection.Start(host.TransportFactory()).Wait();
+                    await connection.Start(host.TransportFactory());
 
                     var ex = Assert.Throws<AggregateException>(() => hub.InvokeWithTimeout("HubExceptionWithoutErrorData"));
 

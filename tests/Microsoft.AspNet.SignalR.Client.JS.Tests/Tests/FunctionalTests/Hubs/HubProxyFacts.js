@@ -117,9 +117,9 @@ testUtilities.runWithAllTransports(function (transport) {
                     end();
                 })
                 .fail(function (error) {
-                    assert.equal(error.message, "message");
-                    assert.equal(error.data, "errorData");
-                    assert.equal(error.source, "HubException");
+                    assert.equal(error.message, "message", "The error message should be 'message'.");
+                    assert.equal(error.data, "errorData", "The error.data property should be 'errorData'.");
+                    assert.equal(error.source, "HubException", "The error.source property should be 'HubException'");
                     end();
                 });
         });
@@ -141,9 +141,9 @@ testUtilities.runWithAllTransports(function (transport) {
                     end();
                 })
                 .fail(function (error) {
-                    assert.equal(error.message, "message");
-                    assert.isNotSet(error.data);
-                    assert.equal(error.source, "HubException");
+                    assert.equal(error.message, "message", "The error message should be 'message'.");
+                    assert.isNotSet(error.data, "The error.data property should be absent.");
+                    assert.equal(error.source, "HubException", "The error.source property should be 'HubException'");
                     end();
                 });
         });
