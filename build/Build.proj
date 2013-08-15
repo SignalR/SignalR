@@ -101,6 +101,10 @@
     <Projects Include="$(ProjectRoot)\src\Microsoft.AspNet.SignalR.Client\Microsoft.AspNet.SignalR.Client.csproj">
       <Platform>Net40</Platform>
     </Projects>
+    <!-- This is for legacy SignalR -->
+    <Projects Include="$(ProjectRoot)\src\Microsoft.AspNet.SignalR.SystemWeb\Microsoft.AspNet.SignalR.SystemWeb.csproj">
+      <RunFxCop>false</RunFxCop>
+    </Projects>
 
     <!-- Projects with RunFxCop analysis disabled -->
     <Projects Include="$(ProjectRoot)\src\Microsoft.AspNet.SignalR.Crank\Microsoft.AspNet.SignalR.Crank.csproj">
@@ -265,7 +269,7 @@
     <xunit Assembly="$(ProjectArtifactsDir)\Microsoft.AspNet.SignalR.Client.Tests\Microsoft.AspNet.SignalR.Client.Tests.dll"
        Xml="$(TestResultsPath)\Microsoft.AspNet.SignalR.Client.Tests.XunitResults.xml"
        Verbose="true" />
-    
+
     <xunit Assembly="$(ProjectArtifactsDir)\Microsoft.AspNet.SignalR.SqlServer.Tests\Microsoft.AspNet.SignalR.SqlServer.Tests.dll"
            Xml="$(TestResultsPath)\Microsoft.AspNet.SignalR.SqlServer.Tests.XunitResults.xml"
            Verbose="true" />
@@ -297,7 +301,7 @@
     <RemoveDir Directories="C:\Windows\Microsoft.NET\Framework\v4.0.30319\Temporary ASP.NET Files\root" ContinueOnError="true" />
     <RemoveDir Directories="C:\Windows\Microsoft.NET\Framework64\v4.0.30319\Temporary ASP.NET Files\root" ContinueOnError="true" />
   </Target>
-  
+
   <Target Name="RunTests" DependsOnTargets="RunUnitTests; RunFunctionalTests;">
   </Target>
 
@@ -368,7 +372,7 @@
         <BuildProperties>%(BuildProperties);RunCodeAnalysis=true</BuildProperties>
       </ProjectsToAnalyze>
     </ItemGroup>
-    
+
     <!-- If the normal Build target is run, FxCop will ignore suppressions -->
     <MSBuild Projects="@(ProjectsToAnalyze)"
              Targets="Rebuild"

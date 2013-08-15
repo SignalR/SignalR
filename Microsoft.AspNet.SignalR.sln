@@ -95,6 +95,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNet.SignalR.Te
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNet.SignalR.Client.Tests", "tests\Microsoft.AspNet.SignalR.Client.Tests\Microsoft.AspNet.SignalR.Client.Tests.csproj", "{8B9D292A-0F2D-444D-9A61-2D96A0E7041E}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNet.SignalR.SystemWeb", "src\Microsoft.AspNet.SignalR.SystemWeb\Microsoft.AspNet.SignalR.SystemWeb.csproj", "{21407043-7991-4123-B264-4D43B97B61B7}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -565,6 +567,20 @@ Global
 		{8B9D292A-0F2D-444D-9A61-2D96A0E7041E}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{8B9D292A-0F2D-444D-9A61-2D96A0E7041E}.Release|x64.ActiveCfg = Release|Any CPU
 		{8B9D292A-0F2D-444D-9A61-2D96A0E7041E}.Release|x86.ActiveCfg = Release|Any CPU
+		{21407043-7991-4123-B264-4D43B97B61B7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{21407043-7991-4123-B264-4D43B97B61B7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{21407043-7991-4123-B264-4D43B97B61B7}.Debug|ARM.ActiveCfg = Debug|Any CPU
+		{21407043-7991-4123-B264-4D43B97B61B7}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{21407043-7991-4123-B264-4D43B97B61B7}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{21407043-7991-4123-B264-4D43B97B61B7}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{21407043-7991-4123-B264-4D43B97B61B7}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{21407043-7991-4123-B264-4D43B97B61B7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{21407043-7991-4123-B264-4D43B97B61B7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{21407043-7991-4123-B264-4D43B97B61B7}.Release|ARM.ActiveCfg = Release|Any CPU
+		{21407043-7991-4123-B264-4D43B97B61B7}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{21407043-7991-4123-B264-4D43B97B61B7}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{21407043-7991-4123-B264-4D43B97B61B7}.Release|x64.ActiveCfg = Release|Any CPU
+		{21407043-7991-4123-B264-4D43B97B61B7}.Release|x86.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
