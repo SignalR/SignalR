@@ -226,6 +226,7 @@
     <Compile Include="Owin\Infrastructure\OwinEnvironmentExtensions.cs" />
     <Compile Include="Owin\Infrastructure\UrlDecoder.cs" />
     <Compile Include="Owin\Infrastructure\WebSocketConstants.cs" />
+    <Compile Include="Owin\ObsoleteOwinExtensions.cs" />
     <Compile Include="Owin\ReadableStringCollectionWrapper.cs" />
     <Compile Include="Owin\OwinExtensions.cs" />
     <Compile Include="Owin\OwinWebSocketHandler.cs" />
