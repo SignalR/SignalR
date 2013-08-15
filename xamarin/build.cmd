@@ -10,4 +10,6 @@ mono xamarin-component/xamarin-component.exe create-manually Microsoft.AspNet.Si
     --icon="icons/Microsoft.AspNet.SignalR.Client_512x512.png" \
     --library="ios":"bin/Microsoft.AspNet.SignalR.Client.dll" \
     --library="ios":"bin/Newtonsoft.Json.dll" \
+    --library="android":"bin/Microsoft.AspNet.SignalR.Client.dll" \
+    --library="android":"bin/Newtonsoft.Json.dll" \
     --sample="Android and iOS Sample. Basic sample displaying client logging on the mobile screen":"samples/Microsoft.AspNet.SignalR.Mono.Mobile.sln" \
