@@ -22,8 +22,6 @@ namespace Microsoft.AspNet.SignalR.WebSockets
         // Queue for sending messages
         private readonly TaskQueue _sendQueue = new TaskQueue();
 
-        private volatile bool _isClosed;
-
         public WebSocketHandler(int? maxIncomingMessageSize)
         {
             _maxIncomingMessageSize = maxIncomingMessageSize;
@@ -37,7 +35,7 @@ namespace Microsoft.AspNet.SignalR.WebSockets
 
         public virtual void OnError() { }
 
-        public virtual void OnClose(bool clean) { }
+        public virtual void OnClose() { }
 
         // Sends a text message to the client
         public Task Send(string message)
@@ -58,7 +56,7 @@ namespace Microsoft.AspNet.SignalR.WebSockets
 
         internal Task SendAsync(ArraySegment<byte> message, WebSocketMessageType messageType, bool endOfMessage = true)
         {
-            if (_isClosed)
+            if (WebSocket.State != WebSocketState.Open)
             {
                 return TaskAsyncHelper.Empty;
             }
@@ -69,7 +67,7 @@ namespace Microsoft.AspNet.SignalR.WebSockets
             {
                 var context = (SendContext)state;
 
-                if (context.Handler._isClosed)
+                if (context.Handler.WebSocket.State != WebSocketState.Open)
                 {
                     return TaskAsyncHelper.Empty;
                 }
@@ -79,15 +77,9 @@ namespace Microsoft.AspNet.SignalR.WebSockets
             sendContext);
         }
 
-        // Gracefully closes the connection
-        public virtual void Close()
+        public Task CloseAsync()
         {
-            CloseAsync();
-        }
-
-        internal Task CloseAsync()
-        {
-            if (_isClosed)
+            if (IsClosedOrClosedSent(WebSocket))
             {
                 return TaskAsyncHelper.Empty;
             }
@@ -98,15 +90,14 @@ namespace Microsoft.AspNet.SignalR.WebSockets
             {
                 var context = (CloseContext)state;
 
-                if (context.Handler._isClosed)
+                if (IsClosedOrClosedSent(context.Handler.WebSocket))
                 {
                     return TaskAsyncHelper.Empty;
                 }
 
-                context.Handler._isClosed = true;
                 return context.Handler.WebSocket.CloseOutputAsync(WebSocketCloseStatus.NormalClosure, "", CancellationToken.None);
             },
-            closeContext).Catch();
+            closeContext);
         }
 
         public int? MaxIncomingMessageSize
@@ -141,11 +132,8 @@ namespace Microsoft.AspNet.SignalR.WebSockets
 
         internal async Task ProcessWebSocketRequestAsync(WebSocket webSocket, CancellationToken disconnectToken, Func<object, Task<WebSocketMessage>> messageRetriever, object state)
         {
-            bool cleanClose = true;
             try
             {
-                _isClosed = false;
-
                 // first, set primitives and initialize the object
                 WebSocket = webSocket;
                 OnOpen();
@@ -170,7 +158,7 @@ namespace Microsoft.AspNet.SignalR.WebSockets
                             // timeout occurs we'll give up and abort the connection.
                             await Task.WhenAny(CloseAsync(), Task.Delay(_closeTimeout))
                                 .ContinueWith(_ => { }, TaskContinuationOptions.ExecuteSynchronously); // swallow exceptions occurring from sending the CLOSE
-                            return;
+                            break;
                     }
                 }
 
@@ -182,7 +170,6 @@ namespace Microsoft.AspNet.SignalR.WebSockets
                 {
                     Error = ex;
                     OnError();
-                    cleanClose = false;
                 }
             }
             catch (Exception ex)
@@ -191,19 +178,25 @@ namespace Microsoft.AspNet.SignalR.WebSockets
                 {
                     Error = ex;
                     OnError();
-                    cleanClose = false;
+                }
+            }
+
+            try
+            {
+                if (WebSocket.State == WebSocketState.Closed || 
+                    WebSocket.State == WebSocketState.Aborted)
+                {
+                    // No-op if the socket is already closed or aborted
+                }
+                else
+                {
+                    // Close the socket
+                    await WebSocket.CloseAsync(WebSocketCloseStatus.NormalClosure, "", CancellationToken.None);
                 }
             }
             finally
             {
-                try
-                {
-                    Close();
-                }
-                finally
-                {
-                    OnClose(cleanClose);
-                }
+                OnClose();
             }
         }
 
@@ -227,6 +220,13 @@ namespace Microsoft.AspNet.SignalR.WebSockets
 
             // unknown exception; treat as fatal
             return true;
+        }
+
+        private static bool IsClosedOrClosedSent(WebSocket webSocket)
+        {
+            return webSocket.State == WebSocketState.Closed ||
+                   webSocket.State == WebSocketState.CloseSent ||
+                   webSocket.State == WebSocketState.Aborted;
         }
 
         private class CloseContext
