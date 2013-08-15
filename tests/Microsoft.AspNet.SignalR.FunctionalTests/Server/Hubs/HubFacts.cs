@@ -2133,16 +2133,9 @@ namespace Microsoft.AspNet.SignalR.Tests
         }
 
         [Theory]
-        [InlineData(TransportType.LongPolling, MessageBusType.Default)]
-        [InlineData(TransportType.LongPolling, MessageBusType.Fake)]
-        [InlineData(TransportType.LongPolling, MessageBusType.FakeMultiStream)]
-        [InlineData(TransportType.ServerSentEvents, MessageBusType.Default)]
-        [InlineData(TransportType.ServerSentEvents, MessageBusType.Fake)]
-        [InlineData(TransportType.ServerSentEvents, MessageBusType.FakeMultiStream)]
-        [InlineData(TransportType.Websockets, MessageBusType.Default)]
-        [InlineData(TransportType.Websockets, MessageBusType.Fake)]
-        [InlineData(TransportType.Websockets, MessageBusType.FakeMultiStream)]
-        public async Task CanSuppressExceptionsInHubPipelineModuleOnIncomingError(TransportType transportType, MessageBusType messageBusType)
+        [InlineData(TransportType.LongPolling)]
+        [InlineData(TransportType.ServerSentEvents)]
+        public async Task CanSuppressExceptionsInHubPipelineModuleOnIncomingError(TransportType transportType)
         {
             var supressErrorModule = new SuppressErrorModule();
             using (var host = new MemoryHost())
@@ -2153,6 +2146,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                     {
                         Resolver = new DefaultDependencyResolver()
                     };
+
                     app.MapSignalR(config);
                     config.Resolver.Resolve<IHubPipeline>().AddModule(supressErrorModule);
                 });
@@ -2161,7 +2155,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                 {
                     var hub = connection.CreateHubProxy("demo");
 
-                    await connection.Start(host);
+                    await connection.Start(CreateTransport(transportType, host));
 
                     Assert.Equal(42, await hub.Invoke<int>("TaskWithException"));
                 }
