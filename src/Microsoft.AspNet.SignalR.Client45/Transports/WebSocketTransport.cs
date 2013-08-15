@@ -99,7 +99,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
                 {
                     _initializeHandler.Fail();
                 }
-            }, 
+            },
             TaskContinuationOptions.NotOnRanToCompletion);
 
             return _initializeHandler.Task;
@@ -123,8 +123,11 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
             var webSocket = new ClientWebSocket();
             _connectionInfo.Connection.PrepareRequest(new WebSocketWrapperRequest(webSocket, _connectionInfo.Connection));
 
-            await webSocket.ConnectAsync(builder.Uri, _disconnectToken);
-            await ProcessWebSocketRequestAsync(webSocket, _disconnectToken);
+            CancellationTokenSource cts = CancellationTokenSource.CreateLinkedTokenSource(_connectionInfo.CancellationTokenSource.Token, _disconnectToken);
+            CancellationToken token = cts.Token;
+
+            await webSocket.ConnectAsync(builder.Uri, token);
+            await ProcessWebSocketRequestAsync(webSocket, token);
         }
 
         public void Abort(IConnection connection, TimeSpan timeout, string connectionData)
@@ -152,7 +155,6 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
             if (disconnected && !_disconnectToken.IsCancellationRequested)
             {
                 _connectionInfo.Connection.Disconnect();
-                Close();
             }
         }
 
@@ -165,9 +167,9 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
             }
         }
 
-        public override void OnClose(bool clean)
+        public override void OnClose()
         {
-            _connectionInfo.Connection.Trace(TraceLevels.Events, "WS: OnClose({0})", clean);
+            _connectionInfo.Connection.Trace(TraceLevels.Events, "WS: OnClose()");
 
             if (_disconnectToken.IsCancellationRequested)
             {
@@ -218,7 +220,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
         {
             _connectionInfo.Connection.Trace(TraceLevels.Events, "WS: LostConnection");
 
-            Close();
+            _connectionInfo.CancellationTokenSource.Cancel();
         }
 
         public void Dispose()
@@ -232,18 +234,25 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
             if (disposing)
             {
                 _abortHandler.Dispose();
+
+                if (WebSocket != null)
+                {
+                    WebSocket.Dispose();
+                }
             }
         }
 
         private class WebSocketConnectionInfo
         {
-            public IConnection Connection { get; private set; }
-            public string Data { get; private set; }
+            public IConnection Connection;
+            public string Data;
+            public CancellationTokenSource CancellationTokenSource;
 
             public WebSocketConnectionInfo(IConnection connection, string data)
             {
                 Connection = connection;
                 Data = data;
+                CancellationTokenSource = new CancellationTokenSource();
             }
         }
     }
