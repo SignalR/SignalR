@@ -14,5 +14,10 @@ namespace Microsoft.AspNet.SignalR.Tests.Common.Hubs
         {
             return message;
         }
+
+        public Task SendToUser(string userId, string message)
+        {
+            return Clients.User(userId).echo(message);
+        }
     }
 }

@@ -19,7 +19,7 @@ namespace Microsoft.AspNet.SignalR.Samples.Hubs.Test
 
         public Task LongRunningMethod(int i)
         {
-            Clients.Caller.serverIsWaiting(i).Wait();
+            Clients.Caller.serverIsWaiting(i);
 
             return Task.Run(() =>
             {

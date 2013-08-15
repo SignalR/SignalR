@@ -228,6 +228,62 @@ namespace Microsoft.AspNet.SignalR.Tests
             }
         }
 
+        [Fact]
+        public async Task SendToUser()
+        {
+            using (var host = CreateHost(HostType.IISExpress))
+            {
+                host.Initialize();
+
+                var connection1 = CreateHubConnection(host, path: "/basicauth/signalr", useDefaultUrl: false);
+                var connection2 = CreateHubConnection(host, path: "/basicauth/signalr", useDefaultUrl: false);
+                var connection3 = CreateHubConnection(host, path: "/basicauth/signalr", useDefaultUrl: false);
+                var connection4 = CreateHubConnection(host, path: "/basicauth/signalr", useDefaultUrl: false);
+                connection1.Credentials = new System.Net.NetworkCredential("user1", "password");
+                connection2.Credentials = new System.Net.NetworkCredential("user1", "password");
+                connection3.Credentials = new System.Net.NetworkCredential("user1", "password");
+                connection4.Credentials = new System.Net.NetworkCredential("user2", "password");
+
+                var wh1 = new ManualResetEventSlim();
+                var wh2 = new ManualResetEventSlim();
+                var wh3 = new ManualResetEventSlim();
+                var wh4 = new ManualResetEventSlim();
+
+                var hub1 = connection1.CreateHubProxy("AuthenticatedEchoHub");
+                var hub2 = connection2.CreateHubProxy("AuthenticatedEchoHub");
+                var hub3 = connection3.CreateHubProxy("AuthenticatedEchoHub");
+                var hub4 = connection4.CreateHubProxy("AuthenticatedEchoHub");
+                hub1.On("echo", () => wh1.Set());
+                hub2.On("echo", () => wh2.Set());
+                hub3.On("echo", () => wh3.Set());
+                hub4.On("echo", () => wh4.Set());
+
+                using (connection1)
+                {
+                    using (connection2)
+                    {
+                        using (connection3)
+                        {
+                            using (connection4)
+                            {
+                                await connection1.Start(new Microsoft.AspNet.SignalR.Client.Transports.WebSocketTransport());
+                                await connection2.Start(new Microsoft.AspNet.SignalR.Client.Transports.ServerSentEventsTransport());
+                                await connection3.Start(new Microsoft.AspNet.SignalR.Client.Transports.LongPollingTransport());
+                                await connection4.Start();
+
+                                await hub4.Invoke("SendToUser", "user1", "message");
+
+                                Assert.True(wh1.Wait(TimeSpan.FromSeconds(5)));
+                                Assert.True(wh2.Wait(TimeSpan.FromSeconds(5)));
+                                Assert.True(wh3.Wait(TimeSpan.FromSeconds(5)));
+                                Assert.False(wh4.Wait(TimeSpan.FromSeconds(5)));
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
         [Theory]
         [InlineData(HostType.IISExpress, TransportType.ServerSentEvents)]
         [InlineData(HostType.IISExpress, TransportType.LongPolling)]
