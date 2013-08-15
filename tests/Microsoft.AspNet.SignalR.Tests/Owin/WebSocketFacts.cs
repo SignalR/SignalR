@@ -16,11 +16,6 @@ namespace Microsoft.AspNet.SignalR.Tests.Owin
             var webSocketHandler = new Mock<WebSocketHandler>(64 * 1024);
             var webSocket = new Mock<WebSocket>();
 
-            webSocketHandler.Setup(wsh => wsh.OnClose(It.IsAny<bool>())).Callback((bool clean) =>
-            {
-                Assert.False(clean);
-            });
-
             webSocketHandler.Setup(wsh => wsh.OnError()).Callback(() =>
             {
                 Assert.IsType<OperationCanceledException>(webSocketHandler.Object.Error);
@@ -32,7 +27,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Owin
             webSocketHandler.Object.ProcessWebSocketRequestAsync(webSocket.Object, CancellationToken.None);
 
             webSocketHandler.Verify(wsh => wsh.OnError(), Times.AtLeastOnce());
-            webSocketHandler.Verify(wsh => wsh.OnClose(It.IsAny<bool>()), Times.AtLeastOnce());
+            webSocketHandler.Verify(wsh => wsh.OnClose(), Times.AtLeastOnce());
         }
 
         [Fact]
@@ -41,12 +36,12 @@ namespace Microsoft.AspNet.SignalR.Tests.Owin
             var webSocketHandler = new Mock<WebSocketHandler>(64 * 1024);
             var webSocket = new Mock<WebSocket>();
             var cts = new CancellationTokenSource(); 
-            webSocketHandler.Setup(wsh => wsh.Close()).Throws(new Exception("It's disconnected"));
+            webSocketHandler.Setup(wsh => wsh.CloseAsync()).Throws(new Exception("It's disconnected"));
 
             cts.Cancel();
             webSocketHandler.Object.ProcessWebSocketRequestAsync(webSocket.Object, cts.Token);
 
-            webSocketHandler.Verify(wsh => wsh.OnClose(It.IsAny<bool>()), Times.AtLeastOnce());
+            webSocketHandler.Verify(wsh => wsh.OnClose(), Times.AtLeastOnce());
         }
 
         [Fact]
@@ -64,8 +59,8 @@ namespace Microsoft.AspNet.SignalR.Tests.Owin
                      .Returns(() => TaskAsyncHelper.FromResult(webSocketMessages[messageIndex++]));
 
             webSocketHandler.Setup(h => h.OnOpen());
-            webSocketHandler.Setup(h => h.OnClose(true));
-            webSocketHandler.Setup(h => h.Close());
+            webSocketHandler.Setup(h => h.OnClose());
+            webSocketHandler.Setup(h => h.CloseAsync());
 
             webSocketHandler.Object.ProcessWebSocketRequestAsync(webSocket.Object, CancellationToken.None).Wait();
 

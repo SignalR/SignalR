@@ -19,7 +19,7 @@ namespace Microsoft.AspNet.SignalR.Transports
         private bool _isAlive = true;
 
         private readonly Action<string> _message;
-        private readonly Action<bool> _closed;
+        private readonly Action _closed;
         private readonly Action<Exception> _error;
 
         public WebSocketTransport(HostContext context,
@@ -138,9 +138,9 @@ namespace Microsoft.AspNet.SignalR.Transports
             }
         }
 
-        private void OnClosed(bool clean)
+        private void OnClosed()
         {
-            Trace.TraceInformation("CloseSocket({0}, {1})", clean, ConnectionId);
+            Trace.TraceInformation("CloseSocket({0})", ConnectionId);
 
             // Require a request to /abort to stop tracking the connection. #2195
             _isAlive = false;

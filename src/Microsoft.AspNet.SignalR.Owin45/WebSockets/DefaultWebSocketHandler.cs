@@ -7,54 +7,36 @@ using Microsoft.AspNet.SignalR.Hosting;
 
 namespace Microsoft.AspNet.SignalR.WebSockets
 {
-    internal class DefaultWebSocketHandler : WebSocketHandler, IWebSocket
+    public class DefaultWebSocketHandler : WebSocketHandler, IWebSocket
     {
         // 64KB default max incoming message size
         private const int _maxIncomingMessageSize = 64 * 1024;
-
-        private volatile bool _raiseEvent = true;
         private static readonly byte[] _zeroByteBuffer = new byte[0];
+        private readonly IWebSocket _webSocket;
 
         public DefaultWebSocketHandler()
             : base(_maxIncomingMessageSize)
         {
+            _webSocket = this;
+
+            _webSocket.OnClose = () => { };
+            _webSocket.OnError = e => { };
+            _webSocket.OnMessage = msg => { };
         }
 
-        public override void OnClose(bool clean)
+        public override void OnClose()
         {
-            if (!_raiseEvent)
-            {
-                return;
-            }
-
-            Action<bool> onClose = ((IWebSocket)this).OnClose;
-            if (onClose != null)
-            {
-                onClose(clean);
-            }
+            _webSocket.OnClose();
         }
 
         public override void OnError()
         {
-            Action<Exception> onError = ((IWebSocket)this).OnError;
-            if (onError != null)
-            {
-                onError(Error);
-            }
+            _webSocket.OnError(Error);
         }
 
         public override void OnMessage(string message)
         {
-            Action<string> onMessage = ((IWebSocket)this).OnMessage;
-            if (onMessage != null)
-            {
-                onMessage(message);
-            }
-        }
-
-        public override void OnOpen()
-        {
-            base.OnOpen();
+            _webSocket.OnMessage(message);
         }
 
         Action<string> IWebSocket.OnMessage
@@ -63,7 +45,7 @@ namespace Microsoft.AspNet.SignalR.WebSockets
             set;
         }
 
-        Action<bool> IWebSocket.OnClose
+        Action IWebSocket.OnClose
         {
             get;
             set;
@@ -73,13 +55,6 @@ namespace Microsoft.AspNet.SignalR.WebSockets
         {
             get;
             set;
-        }
-
-        public void End()
-        {
-            _raiseEvent = false;
-
-            Close();
         }
 
         Task IWebSocket.Send(string value)
