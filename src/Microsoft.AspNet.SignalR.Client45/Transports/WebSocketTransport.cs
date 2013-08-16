@@ -233,6 +233,9 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
         {
             if (disposing)
             {
+                // Gracefully close the websocket message loop
+                _connectionInfo.CancellationTokenSource.Cancel();
+
                 _abortHandler.Dispose();
 
                 if (WebSocket != null)
