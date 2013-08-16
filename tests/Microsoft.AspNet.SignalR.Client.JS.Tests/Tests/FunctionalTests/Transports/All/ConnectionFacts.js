@@ -42,6 +42,36 @@ testUtilities.runWithAllTransports(function (transport) {
         });
     }
 
+    QUnit.asyncTimeoutTest(transport + ": Start -> Stop -> Start triggeres the correct deferred's.", testUtilities.defaultTestTimeout, function (end, assert, testName) {
+        var connection = testUtilities.createHubConnection(end, assert, testName, undefined, false),
+            firstFailTriggered = false;
+
+        connection.start({ transport: transport }).done(function () {
+            assert.fail("Connection started");
+            end();
+        }).fail(function () {
+            assert.comment("Fail handler was triggered on aborted negotiate.");
+            firstFailTriggered = true;
+        });
+
+        connection.stop();
+
+        connection.start({ transport: transport }).done(function () {
+            assert.comment("Connection started successfully.");
+            assert.isTrue(firstFailTriggered, "First connections fail was triggered.");
+
+            end();
+        }).fail(function () {
+            assert.fail("Connection failed to start.");
+            end();
+        });
+
+        // Cleanup
+        return function () {
+            connection.stop();
+        };
+    });
+
     QUnit.asyncTimeoutTest(transport + ": Ping interval stops the connection on 401's.", testUtilities.defaultTestTimeout, function (end, assert, testName) {
         var connection = buildStatusCodeConnection("ping", 401, end, assert, testName, false);
 
