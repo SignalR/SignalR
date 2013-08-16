@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.md in the project root for license information.
 
 using System;
+using System.Diagnostics;
 using System.Net.WebSockets;
 using System.Runtime.InteropServices;
 using System.Text;
@@ -63,16 +64,24 @@ namespace Microsoft.AspNet.SignalR.WebSockets
 
             var sendContext = new SendContext(this, message, messageType, endOfMessage);
 
-            return _sendQueue.Enqueue(state =>
+            return _sendQueue.Enqueue(async state =>
             {
                 var context = (SendContext)state;
 
                 if (context.Handler.WebSocket.State != WebSocketState.Open)
                 {
-                    return TaskAsyncHelper.Empty;
+                    return;
                 }
 
-                return context.Handler.WebSocket.SendAsync(context.Message, context.MessageType, context.EndOfMessage, CancellationToken.None);
+                try
+                {
+                    await context.Handler.WebSocket.SendAsync(context.Message, context.MessageType, context.EndOfMessage, CancellationToken.None);
+                }
+                catch (Exception ex)
+                {
+                    // Swallow exceptions on send
+                    Trace.TraceError("Error while sending: " + ex);
+                }
             },
             sendContext);
         }
@@ -86,16 +95,24 @@ namespace Microsoft.AspNet.SignalR.WebSockets
 
             var closeContext = new CloseContext(this);
 
-            return _sendQueue.Enqueue(state =>
+            return _sendQueue.Enqueue(async state =>
             {
                 var context = (CloseContext)state;
 
                 if (IsClosedOrClosedSent(context.Handler.WebSocket))
                 {
-                    return TaskAsyncHelper.Empty;
+                    return;
                 }
 
-                return context.Handler.WebSocket.CloseOutputAsync(WebSocketCloseStatus.NormalClosure, "", CancellationToken.None);
+                try
+                {
+                    await context.Handler.WebSocket.CloseOutputAsync(WebSocketCloseStatus.NormalClosure, "", CancellationToken.None);
+                }
+                catch (Exception ex)
+                {
+                    // Swallow exceptions on close
+                    Trace.TraceError("Error while closing the websocket: " + ex);
+                }
             },
             closeContext);
         }
@@ -183,7 +200,7 @@ namespace Microsoft.AspNet.SignalR.WebSockets
 
             try
             {
-                if (WebSocket.State == WebSocketState.Closed || 
+                if (WebSocket.State == WebSocketState.Closed ||
                     WebSocket.State == WebSocketState.Aborted)
                 {
                     // No-op if the socket is already closed or aborted
