@@ -1,6 +1,8 @@
 ﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.md in the project root for license information.
 
 using System;
+using System.Configuration;
+using System.Diagnostics;
 using Microsoft.AspNet.SignalR.Messaging;
 using Microsoft.AspNet.SignalR.ServiceBus;
 
@@ -33,7 +35,19 @@ namespace Microsoft.AspNet.SignalR
         public static IDependencyResolver UseServiceBus(this IDependencyResolver resolver, ServiceBusScaleoutConfiguration configuration)
         {
             var bus = new Lazy<ServiceBusMessageBus>(() => new ServiceBusMessageBus(resolver, configuration));
-            resolver.Register(typeof(IMessageBus), () => bus.Value);
+
+            resolver.Register(typeof(IMessageBus), () =>
+            {
+                try
+                {
+                    return bus.Value;
+                }
+                catch (ConfigurationErrorsException ex)
+                {
+                    Debug.WriteLine(ex.Message);
+                    throw ex;
+                }
+            });
 
             return resolver;
         }
