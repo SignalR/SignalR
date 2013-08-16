@@ -149,6 +149,8 @@ namespace Microsoft.AspNet.SignalR.WebSockets
 
         internal async Task ProcessWebSocketRequestAsync(WebSocket webSocket, CancellationToken disconnectToken, Func<object, Task<WebSocketMessage>> messageRetriever, object state)
         {
+            bool closedReceived = false;
+
             try
             {
                 // first, set primitives and initialize the object
@@ -156,7 +158,7 @@ namespace Microsoft.AspNet.SignalR.WebSockets
                 OnOpen();
 
                 // dispatch incoming messages
-                while (!disconnectToken.IsCancellationRequested)
+                while (!disconnectToken.IsCancellationRequested && !closedReceived)
                 {
                     WebSocketMessage incomingMessage = await messageRetriever(state);
                     switch (incomingMessage.MessageType)
@@ -170,11 +172,12 @@ namespace Microsoft.AspNet.SignalR.WebSockets
                             break;
 
                         default:
+                            closedReceived = true;
+
                             // If we received an incoming CLOSE message, we'll queue a CLOSE frame to be sent.
                             // We'll give the queued frame some amount of time to go out on the wire, and if a
                             // timeout occurs we'll give up and abort the connection.
-                            await Task.WhenAny(CloseAsync(), Task.Delay(_closeTimeout))
-                                .ContinueWith(_ => { }, TaskContinuationOptions.ExecuteSynchronously); // swallow exceptions occurring from sending the CLOSE
+                            await Task.WhenAny(CloseAsync(), Task.Delay(_closeTimeout));
                             break;
                     }
                 }
@@ -188,6 +191,10 @@ namespace Microsoft.AspNet.SignalR.WebSockets
                     Error = ex;
                     OnError();
                 }
+            }
+            catch (ObjectDisposedException)
+            {
+                // If the websocket was disposed while we were reading then noop
             }
             catch (Exception ex)
             {

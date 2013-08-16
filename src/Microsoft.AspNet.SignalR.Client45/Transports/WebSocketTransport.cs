@@ -17,6 +17,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
         private CancellationToken _disconnectToken;
         private WebSocketConnectionInfo _connectionInfo;
         private TaskCompletionSource<object> _startTcs;
+        private int _disposed;
 
         public WebSocketTransport()
             : this(new DefaultHttpClient())
@@ -73,6 +74,8 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
             // We don't need to await this task
             PerformConnect().ContinueWithNotComplete(_startTcs);
 
+            _startTcs.Task.ContinueWith(_ => Dispose(), TaskContinuationOptions.NotOnRanToCompletion);
+            
             return _startTcs.Task;
         }
 
@@ -197,10 +200,18 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
         {
             if (disposing)
             {
+                if (Interlocked.Exchange(ref _disposed, 1) == 1)
+                {
+                    return;
+                }
+
                 // Gracefully close the websocket message loop
                 _connectionInfo.CancellationTokenSource.Cancel();
 
                 _abortHandler.Dispose();
+
+                // Dispose the cts
+                _connectionInfo.CancellationTokenSource.Dispose();
             }
         }
 
