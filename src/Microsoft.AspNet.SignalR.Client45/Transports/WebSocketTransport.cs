@@ -17,6 +17,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
         private CancellationToken _disconnectToken;
         private TransportInitializationHandler _initializeHandler;
         private WebSocketConnectionInfo _connectionInfo;
+        private int _disposed;
 
         public WebSocketTransport()
             : this(new DefaultHttpClient())
@@ -76,13 +77,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
             // Tie into the OnFailure event so that we can stop the transport silently.
             _initializeHandler.OnFailure += () =>
             {
-                if (WebSocket == null)
-                {
-                    return;
-                }
-
-                // If the websocket was initialized then abort it
-                WebSocket.Abort();
+                Dispose();
             };
 
             _disconnectToken = disconnectToken;
@@ -233,6 +228,11 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
         {
             if (disposing)
             {
+                if (Interlocked.Exchange(ref _disposed, 1) == 1)
+                {
+                    return;
+                }
+
                 // Gracefully close the websocket message loop
                 _connectionInfo.CancellationTokenSource.Cancel();
 
@@ -242,6 +242,9 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
                 {
                     WebSocket.Dispose();
                 }
+
+                // Dispose the cts
+                _connectionInfo.CancellationTokenSource.Dispose();
             }
         }
 
