@@ -110,6 +110,36 @@ testUtilities.runWithAllTransports(function (transport) {
         });
     }
 
+    QUnit.asyncTimeoutTest(transport + ": Start -> Stop -> Start triggeres the correct deferred's.", testUtilities.defaultTestTimeout, function (end, assert, testName) {
+        var connection = testUtilities.createHubConnection($.noop, { ok: $.noop }, testName),
+            firstFailTriggered = false;
+
+        connection.start({ transport: transport }).done(function () {
+            assert.ok(false, "Connection started");
+            end();
+        }).fail(function () {
+            assert.ok(true, "Fail handler was triggered on aborted negotiate.");
+            firstFailTriggered = true;
+        });
+
+        connection.stop();
+
+        connection.start({ transport: transport }).done(function () {
+            assert.ok(true, "Connection started successfully.");
+            assert.ok(firstFailTriggered, "First connections fail was triggered.");
+
+            end();
+        }).fail(function () {
+            assert.ok(false, "Connection failed to start.");
+            end();
+        });
+
+        // Cleanup
+        return function () {
+            connection.stop();
+        };
+    });
+
     QUnit.asyncTimeoutTest(transport + " transport can send and receive messages on connect.", testUtilities.defaultTestTimeout, function (end, assert, testName) {
         var connection = testUtilities.createConnection("multisend", end, assert, testName),
             values = [];
