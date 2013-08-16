@@ -352,8 +352,8 @@ namespace Microsoft.AspNet.SignalR.Tests
             }
         }
 
-        [Fact]
-        public void HttpHandlersAreNotSetInIISIntegratedPipeline()
+        [Fact(Skip = "The katana fix isn't in yet")]
+        public async Task HttpHandlersAreNotSetInIISIntegratedPipeline()
         {
             using (var host = CreateHost(HostType.IISExpress, TransportType.LongPolling))
             {
@@ -363,9 +363,9 @@ namespace Microsoft.AspNet.SignalR.Tests
                 using (connection)
                 {
                     var hub = connection.CreateHubProxy("demo");
-                    connection.Start(host.Transport).Wait();
+                    await connection.Start(host.Transport);
 
-                    var result = hub.InvokeWithTimeout<string>("GetHttpContextHandler");
+                    var result = await hub.Invoke<string>("GetHttpContextHandler");
 
                     Assert.Null(result);
                 }
