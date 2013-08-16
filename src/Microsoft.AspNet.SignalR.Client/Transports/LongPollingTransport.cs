@@ -84,9 +84,14 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
                                   PollingRequestHandler requestHandler,
                                   Action onInitialized)
         {
-            // These are created new on each poll
+            // reconnectInvoker is created new on each poll
             var reconnectInvoker = new ThreadSafeInvoker();
-            var requestDisposer = new Disposer();
+
+            var disconnectRegistration = disconnectToken.SafeRegister(state =>
+            {
+                reconnectInvoker.Invoke();
+                requestHandler.Stop();
+            }, null);
 
             requestHandler.ResolveUrl = () =>
             {
@@ -173,18 +178,10 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
             {
                 // Capture the cleanup within a closure so it can persist through multiple requests
                 TryDelayedReconnect(connection, reconnectInvoker);
-
-                requestDisposer.Set(disconnectToken.SafeRegister(state =>
-                {
-                    reconnectInvoker.Invoke();
-                    requestHandler.Stop();
-                }, null));
             };
 
             requestHandler.OnAfterPoll = exception =>
             {
-                requestDisposer.Dispose();
-
                 if (AbortHandler.TryCompleteAbort())
                 {
                     // Abort() was called, so don't reconnect
@@ -192,7 +189,6 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
                 }
                 else
                 {
-                    requestDisposer = new Disposer();
                     reconnectInvoker = new ThreadSafeInvoker();
 
                     if (exception != null)
@@ -207,6 +203,8 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
 
             requestHandler.OnAbort += _ =>
             {
+                disconnectRegistration.Dispose();
+
                 // Complete any ongoing calls to Abort()
                 // If someone calls Abort() later, have it no-op
                 AbortHandler.CompleteAbort();

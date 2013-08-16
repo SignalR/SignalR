@@ -162,7 +162,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
         /// <summary>
         /// Aborts the currently active polling request, does not stop the Polling Request Handler.
         /// </summary>
-        public void Abort()
+        private void Abort()
         {
             OnAbort(_currentRequest);
 
