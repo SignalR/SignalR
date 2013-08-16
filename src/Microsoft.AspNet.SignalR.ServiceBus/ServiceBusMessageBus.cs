@@ -53,8 +53,12 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
 
             subscribeTask.ContinueWith(task =>
             {
-                if (task.IsFaulted)
+                if (task.IsFaulted && !task.Exception.InnerExceptions.Any(i => i is MessagingEntityAlreadyExistsException))
                 {
+                    if (task.Exception.InnerExceptions.Any(i => i is UnauthorizedAccessException))
+                        return;
+                    if (task.Exception.InnerExceptions.Any(i => i is QuotaExceededException))
+                        return;
                     TaskAsyncHelper.Delay(_retryDelay)
                                    .Then(bus => bus.SubscribeWithRetry(topicCount), this);
                 }
@@ -101,7 +105,12 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
         {
             var stream = ServiceBusMessage.ToStream(messages);
 
-            return _subscription.Publish(streamIndex, stream);
+            return _subscription.Publish(streamIndex, stream).Catch(exception =>
+            {
+                // re-up subscription
+                if (exception.InnerExceptions.Any(i => i is MessagingEntityNotFoundException))
+                    SubscribeWithRetry(_topics.Length);
+            });
         }
 
         private void OnMessage(int topicIndex, IEnumerable<BrokeredMessage> messages)
