@@ -83,6 +83,7 @@ namespace Microsoft.AspNet.SignalR.Owin
             try
             {
                 await _callback(handler);
+                await handler.CloseAsync();
             }
             finally
             {
