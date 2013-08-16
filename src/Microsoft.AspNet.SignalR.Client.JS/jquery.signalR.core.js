@@ -703,7 +703,10 @@
             /// <param name="async" type="Boolean">Whether or not to asynchronously abort the connection</param>
             /// <param name="notifyServer" type="Boolean">Whether we want to notify the server that we are aborting the connection</param>
             /// <returns type="signalR" />
-            var connection = this;
+            var connection = this,
+                // Save deferral because this is always cleaned up
+                deferral = connection._deferral,
+                config = connection._.config;
 
             // Verify that we've bound a load event.
             if (connection._.deferredStartHandler) {
@@ -711,25 +714,28 @@
                 _pageWindow.unbind("load", connection._.deferredStartHandler);
             }
 
+            // Always clean up private non-timeout based state.
+            delete connection._deferral;
+            delete connection._.config;
+            delete connection._.deferredStartHandler;
+
             // This needs to be checked despite the connection state because a connection start can be deferred until page load.
             // If we've deferred the start due to a page load we need to unbind the "onLoad" -> start event.
-            if (!_pageLoaded && (!connection._.config || connection._.config.waitForPageLoad === true)) {
+            if (!_pageLoaded && (!config || config.waitForPageLoad === true)) {
                 connection.log("Stopping connection prior to negotiate.");
 
-                // Reject any promises for the current connections deferred.
-                connection._deferral.reject("The connection was stopped during page load.");
+                // If we have a deferral we should reject it
+                if (deferral) {
+                    deferral.reject("The connection was stopped during page load.");
+                }
 
+                // Short-circuit because the start has not been fully started.
                 return;
             }
 
             if (connection.state === signalR.connectionState.disconnected) {
                 return;
             }
-
-            // Always clean up the private non-timeout based state.
-            delete connection._deferral;
-            delete connection._.config;
-            delete connection._.deferredStartHandler;
 
             try {
                 connection.log("Stopping connection.");
