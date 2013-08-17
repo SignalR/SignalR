@@ -187,7 +187,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Common
             {
                 map.Use((context, next) =>
                 {
-                    if (context.Request.Path.Contains("poll"))
+                    if (context.Request.Path.Value.Contains("poll"))
                     {
                         context.Response.StatusCode = 500;
                         return TaskAsyncHelper.Empty;

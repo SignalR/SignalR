@@ -19,7 +19,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Common.Connections
 
             var owinRequest = new OwinRequest(context.Environment);
 
-            if (owinRequest.Path.Contains("/" + redirectWhen))
+            if (owinRequest.Path.Value.Contains("/" + redirectWhen))
             {
                 var response = new OwinResponse(context.Environment);
 

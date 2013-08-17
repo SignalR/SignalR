@@ -24,7 +24,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Common.Connections
 
             var owinRequest = new OwinRequest(context.Environment);
 
-            if (owinRequest.Path.Contains("/" + alterWhen))
+            if (owinRequest.Path.Value.Contains("/" + alterWhen))
             {
                 var response = new OwinResponse(context.Environment);
 

@@ -352,7 +352,7 @@ namespace Microsoft.AspNet.SignalR.Tests
             }
         }
 
-        [Fact(Skip = "The katana fix isn't in yet")]
+        [Fact]
         public async Task HttpHandlersAreNotSetInIISIntegratedPipeline()
         {
             using (var host = CreateHost(HostType.IISExpress, TransportType.LongPolling))

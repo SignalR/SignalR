@@ -35,7 +35,7 @@ namespace Microsoft.AspNet.SignalR.Owin
         {
             get
             {
-                return _request.PathBase + _request.Path;
+                return (_request.PathBase + _request.Path).Value;
             }
         }
 

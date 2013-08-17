@@ -40,7 +40,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                             var request = new OwinRequest(env);
                             var response = new OwinResponse(env);
 
-                            if (!request.Path.Contains("negotiate") && !request.QueryString.Contains("longPolling"))
+                            if (!request.Path.Value.Contains("negotiate") && !request.QueryString.Value.Contains("longPolling"))
                             {
                                 response.Body = new MemoryStream();
                             }
