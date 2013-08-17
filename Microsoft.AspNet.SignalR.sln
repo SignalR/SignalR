@@ -17,7 +17,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "build", "build", "{1E4BA77C
 		src\Common\Microsoft.AspNet.SignalR.targets = src\Common\Microsoft.AspNet.SignalR.targets
 		build\Microsoft.AspNet.SignalR.UnitTests.OpenCover.xunit = build\Microsoft.AspNet.SignalR.UnitTests.OpenCover.xunit
 		Build\Microsoft.AspNet.SignalR.versions.targets = Build\Microsoft.AspNet.SignalR.versions.targets
-		ReleaseNotes.md = ReleaseNotes.md
 	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNet.SignalR.Stress", "src\Microsoft.AspNet.SignalR.Stress\Microsoft.AspNet.SignalR.Stress.csproj", "{758D93C8-7985-4F55-82DA-8BA5198CF4EF}"
