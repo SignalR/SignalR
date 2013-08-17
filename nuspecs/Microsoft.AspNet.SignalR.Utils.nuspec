@@ -13,6 +13,7 @@
     <description>Command line utilities for ASP.NET SignalR, including performance counter installation and Hub JavaScript proxy generation.</description>
     <language>en-US</language>
     <tags>Microsoft AspNet SignalR AspNetSignalR Utils</tags>
+    <releaseNotes>https://github.com/SignalR/SignalR/releases</releaseNotes>
   </metadata>
   <files>
     <file src="tools\signalr.exe" target="tools"/>

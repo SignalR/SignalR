@@ -13,6 +13,7 @@
     <description>.NET client for ASP.NET SignalR.</description>
     <language>en-US</language>
     <tags>Microsoft AspNet SignalR AspNetSignalR Client</tags>
+    <releaseNotes>https://github.com/SignalR/SignalR/releases</releaseNotes>
     <dependencies>
       <group targetFramework="net40">
         <dependency id="Newtonsoft.Json" version="5.0.0" />

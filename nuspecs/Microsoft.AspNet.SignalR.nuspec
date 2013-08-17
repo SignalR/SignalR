@@ -16,6 +16,7 @@
     </description>
     <language>en-US</language>
     <tags>Microsoft AspNet SignalR AspNetSignalR websockets real-time realtime comet HTTP streaming</tags>
+    <releaseNotes>https://github.com/SignalR/SignalR/releases</releaseNotes>
     <dependencies>
       <dependency id="Microsoft.AspNet.SignalR.JS" version="__SIGNALR_PACKAGE_VERSION__" />
       <dependency id="Microsoft.AspNet.SignalR.SystemWeb" version="__SIGNALR_PACKAGE_VERSION__" />

@@ -13,6 +13,7 @@
     <description>This package includes the required dependencies for self-hosting SignalR in a process outside of IIS using OWIN and HTTPListener.</description>
     <language>en-US</language>
     <tags>Microsoft AspNet SignalR AspNetSignalR SelfHost</tags>
+    <releaseNotes>https://github.com/SignalR/SignalR/releases</releaseNotes>
     <dependencies>
       <dependency id="Microsoft.AspNet.SignalR.Core" version="__SIGNALR_PACKAGE_VERSION__" />
       <dependency id="Microsoft.Owin.SelfHost" version="__KATANA_PACKAGE_VERSION__" />
