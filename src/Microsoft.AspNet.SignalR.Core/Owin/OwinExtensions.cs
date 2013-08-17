@@ -237,8 +237,8 @@ namespace Owin
 
             // BUG 2306: We need to make that SignalR runs before any handlers are
             // mapped in the IIS pipeline so that we avoid side effects like
-            // session being enabled by random modules. The session behavior can obviously be
-            // manually overridden if user calls SetSessionStateBehavior for that shouldn't
+            // session being enabled. The session behavior can be
+            // manually overridden if user calls SetSessionStateBehavior but that shouldn't
             // be a problem most of the time.
             builder.UseStageMarker(PipelineStage.PostAuthorize);
 
