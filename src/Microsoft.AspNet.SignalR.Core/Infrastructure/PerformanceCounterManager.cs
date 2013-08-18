@@ -33,7 +33,7 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
 #if !UTILS
         private readonly TraceSource _trace;
 
-        public PerformanceCounterManager(DefaultDependencyResolver resolver)
+        public PerformanceCounterManager(IDependencyResolver resolver)
             : this(resolver.Resolve<ITraceManager>())
         {
 

@@ -9,7 +9,6 @@ using System.Threading;
 using Microsoft.AspNet.SignalR.Configuration;
 using Microsoft.AspNet.SignalR.Hubs;
 using Microsoft.AspNet.SignalR.Infrastructure;
-using Microsoft.AspNet.SignalR.Json;
 using Microsoft.AspNet.SignalR.Messaging;
 using Microsoft.AspNet.SignalR.Tracing;
 using Microsoft.AspNet.SignalR.Transports;
@@ -23,89 +22,92 @@ namespace Microsoft.AspNet.SignalR
         private readonly HashSet<IDisposable> _trackedDisposables = new HashSet<IDisposable>();
         private int _disposed;
 
-        [SuppressMessage("Microsoft.Usage", "CA2214:DoNotCallOverridableMethodsInConstructors", Justification = "It's easiest")]
-        public DefaultDependencyResolver()
+        /// <summary>
+        /// Registers the services SignalR needs to function.
+        /// </summary>
+        /// <param name="resolver">The dependency resolver to populate</param>
+        public static void RegisterServices(IDependencyResolver resolver)
         {
-            RegisterDefaultServices();
+            RegisterDefaultServices(resolver);
 
             // Hubs
-            RegisterHubExtensions();
+            RegisterHubExtensions(resolver);
         }
 
         [SuppressMessage("Microsoft.Maintainability", "CA1506:AvoidExcessiveClassCoupling", Justification = "The resolver is the class that does the most coupling by design.")]
         [SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope", Justification = "The resolver disposes dependencies on Dispose.")]
-        private void RegisterDefaultServices()
+        private static void RegisterDefaultServices(IDependencyResolver resolver)
         {
             var traceManager = new Lazy<TraceManager>(() => new TraceManager());
-            Register(typeof(ITraceManager), () => traceManager.Value);
+            resolver.Register(typeof(ITraceManager), () => traceManager.Value);
 
             var serverIdManager = new ServerIdManager();
-            Register(typeof(IServerIdManager), () => serverIdManager);
+            resolver.Register(typeof(IServerIdManager), () => serverIdManager);
 
-            var serverMessageHandler = new Lazy<IServerCommandHandler>(() => new ServerCommandHandler(this));
-            Register(typeof(IServerCommandHandler), () => serverMessageHandler.Value);
+            var serverMessageHandler = new Lazy<IServerCommandHandler>(() => new ServerCommandHandler(resolver));
+            resolver.Register(typeof(IServerCommandHandler), () => serverMessageHandler.Value);
 
-            var newMessageBus = new Lazy<IMessageBus>(() => new MessageBus(this));
-            Register(typeof(IMessageBus), () => newMessageBus.Value);
+            var newMessageBus = new Lazy<IMessageBus>(() => new MessageBus(resolver));
+            resolver.Register(typeof(IMessageBus), () => newMessageBus.Value);
 
             var stringMinifier = new Lazy<IStringMinifier>(() => new StringMinifier());
-            Register(typeof(IStringMinifier), () => stringMinifier.Value);
+            resolver.Register(typeof(IStringMinifier), () => stringMinifier.Value);
 
             var jsonSerializer = new Lazy<JsonSerializer>();
-            Register(typeof(JsonSerializer), () => jsonSerializer.Value);
+            resolver.Register(typeof(JsonSerializer), () => jsonSerializer.Value);
 
-            var transportManager = new Lazy<TransportManager>(() => new TransportManager(this));
-            Register(typeof(ITransportManager), () => transportManager.Value);
+            var transportManager = new Lazy<TransportManager>(() => new TransportManager(resolver));
+            resolver.Register(typeof(ITransportManager), () => transportManager.Value);
 
             var configurationManager = new DefaultConfigurationManager();
-            Register(typeof(IConfigurationManager), () => configurationManager);
+            resolver.Register(typeof(IConfigurationManager), () => configurationManager);
 
-            var transportHeartbeat = new Lazy<TransportHeartbeat>(() => new TransportHeartbeat(this));
-            Register(typeof(ITransportHeartbeat), () => transportHeartbeat.Value);
+            var transportHeartbeat = new Lazy<TransportHeartbeat>(() => new TransportHeartbeat(resolver));
+            resolver.Register(typeof(ITransportHeartbeat), () => transportHeartbeat.Value);
 
-            var connectionManager = new Lazy<ConnectionManager>(() => new ConnectionManager(this));
-            Register(typeof(IConnectionManager), () => connectionManager.Value);
+            var connectionManager = new Lazy<ConnectionManager>(() => new ConnectionManager(resolver));
+            resolver.Register(typeof(IConnectionManager), () => connectionManager.Value);
 
             var ackHandler = new Lazy<AckHandler>();
-            Register(typeof(IAckHandler), () => ackHandler.Value);
+            resolver.Register(typeof(IAckHandler), () => ackHandler.Value);
 
-            var perfCounterWriter = new Lazy<PerformanceCounterManager>(() => new PerformanceCounterManager(this));
-            Register(typeof(IPerformanceCounterManager), () => perfCounterWriter.Value);
+            var perfCounterWriter = new Lazy<PerformanceCounterManager>(() => new PerformanceCounterManager(resolver));
+            resolver.Register(typeof(IPerformanceCounterManager), () => perfCounterWriter.Value);
 
             var userIdProvider = new PrincipalUserIdProvider();
-            Register(typeof(IUserIdProvider), () => userIdProvider);
+            resolver.Register(typeof(IUserIdProvider), () => userIdProvider);
         }
 
-        private void RegisterHubExtensions()
+        private static void RegisterHubExtensions(IDependencyResolver resolver)
         {
             var methodDescriptorProvider = new Lazy<ReflectedMethodDescriptorProvider>();
-            Register(typeof(IMethodDescriptorProvider), () => methodDescriptorProvider.Value);
+            resolver.Register(typeof(IMethodDescriptorProvider), () => methodDescriptorProvider.Value);
 
-            var hubDescriptorProvider = new Lazy<ReflectedHubDescriptorProvider>(() => new ReflectedHubDescriptorProvider(this));
-            Register(typeof(IHubDescriptorProvider), () => hubDescriptorProvider.Value);
+            var hubDescriptorProvider = new Lazy<ReflectedHubDescriptorProvider>(() => new ReflectedHubDescriptorProvider(resolver));
+            resolver.Register(typeof(IHubDescriptorProvider), () => hubDescriptorProvider.Value);
 
             var parameterBinder = new Lazy<DefaultParameterResolver>();
-            Register(typeof(IParameterResolver), () => parameterBinder.Value);
+            resolver.Register(typeof(IParameterResolver), () => parameterBinder.Value);
 
-            var activator = new Lazy<DefaultHubActivator>(() => new DefaultHubActivator(this));
-            Register(typeof(IHubActivator), () => activator.Value);
+            var activator = new Lazy<DefaultHubActivator>(() => new DefaultHubActivator(resolver));
+            resolver.Register(typeof(IHubActivator), () => activator.Value);
 
-            var hubManager = new Lazy<DefaultHubManager>(() => new DefaultHubManager(this));
-            Register(typeof(IHubManager), () => hubManager.Value);
+            var hubManager = new Lazy<DefaultHubManager>(() => new DefaultHubManager(resolver));
+            resolver.Register(typeof(IHubManager), () => hubManager.Value);
 
-            var proxyGenerator = new Lazy<DefaultJavaScriptProxyGenerator>(() => new DefaultJavaScriptProxyGenerator(this));
-            Register(typeof(IJavaScriptProxyGenerator), () => proxyGenerator.Value);
+            var proxyGenerator = new Lazy<DefaultJavaScriptProxyGenerator>(() => new DefaultJavaScriptProxyGenerator(resolver));
+            resolver.Register(typeof(IJavaScriptProxyGenerator), () => proxyGenerator.Value);
 
             var requestParser = new Lazy<HubRequestParser>();
-            Register(typeof(IHubRequestParser), () => requestParser.Value);
+            resolver.Register(typeof(IHubRequestParser), () => requestParser.Value);
 
             var assemblyLocator = new Lazy<DefaultAssemblyLocator>(() => new DefaultAssemblyLocator());
-            Register(typeof(IAssemblyLocator), () => assemblyLocator.Value);
+            resolver.Register(typeof(IAssemblyLocator), () => assemblyLocator.Value);
 
             // Setup the default hub pipeline
             var dispatcher = new Lazy<IHubPipeline>(() => new HubPipeline().AddModule(new AuthorizeModule()));
-            Register(typeof(IHubPipeline), () => dispatcher.Value);
-            Register(typeof(IHubPipelineInvoker), () => dispatcher.Value);
+            resolver.Register(typeof(IHubPipeline), () => dispatcher.Value);
+            resolver.Register(typeof(IHubPipelineInvoker), () => dispatcher.Value);
         }
 
         public virtual object GetService(Type serviceType)

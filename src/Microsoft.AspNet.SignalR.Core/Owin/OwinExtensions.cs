@@ -183,6 +183,8 @@ namespace Owin
                     throw new ArgumentException(Resources.Error_NoDepenendeyResolver);
                 }
 
+                DefaultDependencyResolver.RegisterServices(resolver);
+
                 var env = builder.Properties;
                 CancellationToken token = env.GetShutdownToken();
 
