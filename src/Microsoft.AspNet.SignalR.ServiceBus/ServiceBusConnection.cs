@@ -36,7 +36,7 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
             }
             catch (ConfigurationErrorsException ex)
             {
-                _trace.TraceInformation("Invalid connection string '{0}': {1}", configuration.ConnectionString, ex.Message);
+                _trace.TraceError("Invalid connection string '{0}': {1}", configuration.ConnectionString, ex.Message);
 
                 throw;
             }
