@@ -104,48 +104,6 @@ namespace Microsoft.AspNet.SignalR.Client.Samples
             connection.TraceWriter.WriteLine("transport.Name={0}", connection.Transport.Name);
         }
 
-        private async Task RunBasicAuth(string serverUrl)
-        {
-            string url = serverUrl + "basicauth";
-
-            var connection = new Connection(url + "/echo");
-            connection.TraceWriter = _traceWriter;
-            connection.Received += (data) => connection.TraceWriter.WriteLine(data);
-            connection.Credentials = new NetworkCredential("user", "password");
-            await connection.Start();
-            await connection.Send("sending to AuthenticatedEchoConnection");
-
-            var hubConnection = new HubConnection(url);
-            hubConnection.TraceWriter = _traceWriter;
-            hubConnection.Credentials = new NetworkCredential("user", "password");
-
-            var hubProxy = hubConnection.CreateHubProxy("AuthHub");
-            hubProxy.On<string, string>("invoked", (connectionId, date) => hubConnection.TraceWriter.WriteLine("connectionId={0}, date={1}", connectionId, date));
-
-            await hubConnection.Start();            
-            hubConnection.TraceWriter.WriteLine("transport.Name={0}", hubConnection.Transport.Name);
-
-            await hubProxy.Invoke("InvokedFromClient");            
-        }
-
-        private async Task RunWindowsAuth(string url)
-        {
-            var hubConnection = new HubConnection(url);
-            hubConnection.TraceWriter = _traceWriter;
-
-            // Windows Auth is not supported on SL and WindowsStore apps
-#if !SILVERLIGHT && !NETFX_CORE
-            hubConnection.Credentials = CredentialCache.DefaultCredentials;
-#endif
-            var hubProxy = hubConnection.CreateHubProxy("AuthHub");
-            hubProxy.On<string, string>("invoked", (connectionId, date) => hubConnection.TraceWriter.WriteLine("connectionId={0}, date={1}", connectionId, date));
-
-            await hubConnection.Start();
-            hubConnection.TraceWriter.WriteLine("transport.Name={0}", hubConnection.Transport.Name);
-
-            await hubProxy.Invoke("InvokedFromClient");
-        }
-
         private async Task RunHeaderAuthHub(string url)
         {
             var hubConnection = new HubConnection(url);
