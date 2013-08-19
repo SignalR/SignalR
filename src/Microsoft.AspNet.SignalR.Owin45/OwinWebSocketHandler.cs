@@ -78,17 +78,21 @@ namespace Microsoft.AspNet.SignalR.Owin
             return task;
         }
 
-        private async void RunWebSocketHandler(DefaultWebSocketHandler handler, CancellationTokenSource cts)
+        private void RunWebSocketHandler(DefaultWebSocketHandler handler, CancellationTokenSource cts)
         {
-            try
+            Task.Run(async () =>
             {
-                await _callback(handler);
-                await handler.CloseAsync();
-            }
-            finally
-            {
-                cts.Cancel();
-            }
+                // async void methods are not supported in ASP.NET and they throw a InvalidOperationException.
+                try
+                {
+                    await _callback(handler);
+                    await handler.CloseAsync();
+                }
+                finally
+                {
+                    cts.Cancel();
+                }
+            });
         }
 
         private class OwinWebSocket : WebSocket
