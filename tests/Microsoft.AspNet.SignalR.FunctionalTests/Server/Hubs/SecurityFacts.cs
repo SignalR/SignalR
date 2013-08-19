@@ -15,7 +15,7 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Server.Hubs
     public class SecurityFacts
     {
         [Fact]
-        public void GroupsTokenIsPerConnectionId()
+        public async Task GroupsTokenIsPerConnectionId()
         {
             using (var host = new MemoryHost())
             {
@@ -47,7 +47,7 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Server.Hubs
                         }
                     };
 
-                    connection.Start(host).Wait();
+                    await connection.Start(host);
 
                     inGroup.Wait();
 
@@ -60,7 +60,7 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Server.Hubs
                     };
 
                     var url = GetUrl(protectedData, connection, connection.GroupsToken);
-                    var response = host.Get(url).Result;
+                    var response = await host.Get(url);
                     var reader = new EventSourceStreamReader(hackerConnection, response.GetStream());
 
                     reader.Message = sseEvent =>
@@ -74,7 +74,7 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Server.Hubs
                     };
 
                     reader.Start();
-                    connection.Send("random").Wait();
+                    await connection.Send("random");
 
                     Assert.False(spyWh.Wait(TimeSpan.FromSeconds(5)));
                 }

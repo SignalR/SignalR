@@ -72,7 +72,7 @@ namespace Microsoft.AspNet.SignalR.Tests
         }
 
         [Fact]
-        public void DisconnectFiresForPersistentConnectionWhenClientGoesAway()
+        public async Task DisconnectFiresForPersistentConnectionWhenClientGoesAway()
         {
             using (var host = new MemoryHost())
             {
@@ -99,7 +99,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                 // Maximum wait time for disconnect to fire (3 heart beat intervals)
                 var disconnectWait = TimeSpan.FromTicks(configuration.HeartbeatInterval().Ticks * 3);
 
-                connection.Start(host).Wait();
+                await connection.Start(host);
 
                 Assert.True(connectWh.Wait(TimeSpan.FromSeconds(10)), "Connect never fired");
 
@@ -110,7 +110,7 @@ namespace Microsoft.AspNet.SignalR.Tests
         }
 
         [Fact]
-        public void DisconnectFiresForHubsWhenConnectionGoesAway()
+        public async Task DisconnectFiresForHubsWhenConnectionGoesAway()
         {
             using (var host = new MemoryHost())
             {
@@ -139,7 +139,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                 // Maximum wait time for disconnect to fire (3 heart beat intervals)
                 var disconnectWait = TimeSpan.FromTicks(configuration.HeartbeatInterval().Ticks * 3);
 
-                connection.Start(host).Wait();
+                await connection.Start(host);
 
                 Assert.True(connectWh.Wait(TimeSpan.FromSeconds(10)), "Connect never fired");
 
@@ -150,7 +150,7 @@ namespace Microsoft.AspNet.SignalR.Tests
         }
 
         [Fact]
-        public void FarmDisconnectOnlyRaisesEventOnce()
+        public async Task FarmDisconnectOnlyRaisesEventOnce()
         {
             EnableTracing();
 
@@ -190,7 +190,7 @@ namespace Microsoft.AspNet.SignalR.Tests
 
                 var connection = new Client.Connection("http://goo/echo");
 
-                connection.Start(transport).Wait();
+                await connection.Start(transport);
 
                 for (int i = 0; i < nodes.Count; i++)
                 {

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR.Client;
 using Microsoft.AspNet.SignalR.Tests.Common.Infrastructure;
 using Xunit;
@@ -17,7 +18,7 @@ namespace Microsoft.AspNet.SignalR.Tests
         [InlineData(HostType.IISExpress, TransportType.ServerSentEvents, MessageBusType.Default)]
         [InlineData(HostType.HttpListener, TransportType.Websockets, MessageBusType.Default)]
         [InlineData(HostType.HttpListener, TransportType.ServerSentEvents, MessageBusType.Default)]
-        public void ReconnectionSuccesfulTest(HostType hostType, TransportType transportType, MessageBusType messageBusType)
+        public async Task ReconnectionSuccesfulTest(HostType hostType, TransportType transportType, MessageBusType messageBusType)
         {
             using (var host = CreateHost(hostType, transportType))
             {
@@ -35,7 +36,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                         mre.Set();
                     };
 
-                    connection.Start(host.Transport).Wait();
+                    await connection.Start(host.Transport);
 
                     // Assert
                     Assert.True(mre.Wait(TimeSpan.FromSeconds(10)));
@@ -55,7 +56,7 @@ namespace Microsoft.AspNet.SignalR.Tests
         [InlineData(HostType.IISExpress, TransportType.ServerSentEvents, MessageBusType.Default)]
         [InlineData(HostType.HttpListener, TransportType.Websockets, MessageBusType.Default)]
         [InlineData(HostType.HttpListener, TransportType.ServerSentEvents, MessageBusType.Default)]
-        public void SuccessiveTimeoutTest(HostType hostType, TransportType transportType, MessageBusType messageBusType)
+        public async Task SuccessiveTimeoutTest(HostType hostType, TransportType transportType, MessageBusType messageBusType)
         {
             using (var host = CreateHost(hostType, transportType))
             {
@@ -71,7 +72,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                         mre.Set();
                     };
 
-                    connection.Start(host.Transport).Wait();
+                    await connection.Start(host.Transport);
 
                     ((Client.IConnection)connection).KeepAliveData = new KeepAliveData(TimeSpan.FromMilliseconds(500));
 
@@ -96,7 +97,7 @@ namespace Microsoft.AspNet.SignalR.Tests
         [InlineData(HostType.IISExpress, TransportType.ServerSentEvents, MessageBusType.Default)]
         [InlineData(HostType.HttpListener, TransportType.Websockets, MessageBusType.Default)]
         [InlineData(HostType.HttpListener, TransportType.ServerSentEvents, MessageBusType.Default)]
-        public void OnConnectionSlowTest(HostType hostType, TransportType transportType, MessageBusType messageBusType)
+        public async Task OnConnectionSlowTest(HostType hostType, TransportType transportType, MessageBusType messageBusType)
         {
             using (var host = CreateHost(hostType, transportType))
             {
@@ -114,7 +115,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                         mre.Set();
                     };
 
-                    connection.Start(host.Transport).Wait();
+                    await connection.Start(host.Transport);
 
                     // Assert
                     Assert.True(mre.Wait(TimeSpan.FromSeconds(15)));
@@ -129,7 +130,7 @@ namespace Microsoft.AspNet.SignalR.Tests
         [InlineData(HostType.IISExpress, TransportType.LongPolling)]
         [InlineData(HostType.HttpListener, TransportType.LongPolling)]
         [InlineData(HostType.Memory, TransportType.LongPolling)]
-        public void OnConnectionSlowDoesntFireForLongPolling(HostType hostType, TransportType transportType)
+        public async Task OnConnectionSlowDoesntFireForLongPolling(HostType hostType, TransportType transportType)
         {
             using (var host = CreateHost(hostType, transportType))
             {
@@ -147,7 +148,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                         mre.Set();
                     };
 
-                    connection.Start(host.Transport).Wait();
+                    await connection.Start(host.Transport);
 
                     // Assert
                     Assert.False(mre.Wait(TimeSpan.FromSeconds(10)));
