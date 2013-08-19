@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR.Client;
 using Microsoft.AspNet.SignalR.Tests.Common;
 using Microsoft.AspNet.SignalR.Tests.Common.Infrastructure;
@@ -13,7 +14,7 @@ namespace Microsoft.AspNet.SignalR.Tests
         [Theory]
         [InlineData(HostType.IISExpress, TransportType.Websockets)]
         [InlineData(HostType.HttpListener, TransportType.Websockets)]
-        public void ClientCanReceiveMessagesOver64KBViaWebSockets(HostType hostType, TransportType transportType)
+        public async Task ClientCanReceiveMessagesOver64KBViaWebSockets(HostType hostType, TransportType transportType)
         {
             using (var host = CreateHost(hostType, transportType))
             {
@@ -25,7 +26,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                 {
                     var hub = connection.CreateHubProxy("demo");
 
-                    connection.Start(host.Transport).Wait();
+                    await connection.Start(host.Transport);
 
                     var result = hub.InvokeWithTimeout<string>("ReturnLargePayload");
 
@@ -37,7 +38,7 @@ namespace Microsoft.AspNet.SignalR.Tests
         [Theory]
         [InlineData(HostType.IISExpress, TransportType.Websockets)]
         [InlineData(HostType.HttpListener, TransportType.Websockets)]
-        public void ServerCannotReceiveMessagesOver64KBViaWebSockets(HostType hostType, TransportType transportType)
+        public async Task ServerCannotReceiveMessagesOver64KBViaWebSockets(HostType hostType, TransportType transportType)
         {
             using (var host = CreateHost(hostType, transportType))
             {
@@ -49,7 +50,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                 {
                     var hub = connection.CreateHubProxy("EchoHub");
 
-                    connection.Start(host.Transport).Wait();
+                    await connection.Start(host.Transport);
 
                     TestUtilities.AssertUnwrappedException<InvalidOperationException>(() =>
                     {

@@ -18,7 +18,7 @@ namespace Microsoft.AspNet.SignalR.Tests
         [InlineData(TransportType.LongPolling, MessageBusType.Default)]
         [InlineData(TransportType.LongPolling, MessageBusType.Fake)]
         [InlineData(TransportType.LongPolling, MessageBusType.FakeMultiStream)]
-        public void ReconnectFiresAfterHostShutdown(TransportType transportType, MessageBusType messageBusType)
+        public async Task ReconnectFiresAfterHostShutdown(TransportType transportType, MessageBusType messageBusType)
         {
             var persistentConnections = new List<MyReconnect>();
             var host = new ServerRestarter(app =>
@@ -55,7 +55,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                         reconnectedEvent.Set();
                     };
 
-                    connection.Start(transport).Wait();
+                    await connection.Start(transport);
 
                     // Wait for the /poll before restarting the server
                     Assert.True(pollEvent.Wait(TimeSpan.FromSeconds(15)), "Timed out waiting for poll request");
