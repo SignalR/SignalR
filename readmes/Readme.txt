@@ -1,5 +1,10 @@
 Please see http://go.microsoft.com/fwlink/?LinkId=272764 for more information on using SignalR.
- 
+
+Upgrading from 1.x to 2.0
+-------------------------
+Please see http://go.microsoft.com/fwlink/?LinkId=320578 for more information on how to 
+upgrade your SignalR 1.x application to 2.0.
+
 Mapping the Hubs connection
 ----------------------------
 To enable SignalR in your application, create a class called Startup with the following:
