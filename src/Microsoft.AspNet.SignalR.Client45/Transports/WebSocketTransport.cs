@@ -118,7 +118,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
             var webSocket = new ClientWebSocket();
             _connectionInfo.Connection.PrepareRequest(new WebSocketWrapperRequest(webSocket, _connectionInfo.Connection));
 
-            CancellationTokenSource cts = CancellationTokenSource.CreateLinkedTokenSource(_connectionInfo.CancellationTokenSource.Token, _disconnectToken);
+            CancellationTokenSource cts = CancellationTokenSource.CreateLinkedTokenSource(_connectionInfo.Cts.Token, _disconnectToken);
             CancellationToken token = cts.Token;
 
             await webSocket.ConnectAsync(builder.Uri, token);
@@ -215,7 +215,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
         {
             _connectionInfo.Connection.Trace(TraceLevels.Events, "WS: LostConnection");
 
-            _connectionInfo.CancellationTokenSource.Cancel();
+            _connectionInfo.Cts.Cancel();
         }
 
         public void Dispose()
@@ -234,7 +234,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
                 }
 
                 // Gracefully close the websocket message loop
-                _connectionInfo.CancellationTokenSource.Cancel();
+                _connectionInfo.Cts.Cancel();
 
                 _abortHandler.Dispose();
 
@@ -244,7 +244,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
                 }
 
                 // Dispose the cts
-                _connectionInfo.CancellationTokenSource.Dispose();
+                _connectionInfo.Cts.Dispose();
             }
         }
 
@@ -252,13 +252,13 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
         {
             public IConnection Connection;
             public string Data;
-            public CancellationTokenSource CancellationTokenSource;
+            public CancellationTokenSource Cts;
 
             public WebSocketConnectionInfo(IConnection connection, string data)
             {
                 Connection = connection;
                 Data = data;
-                CancellationTokenSource = new CancellationTokenSource();
+                Cts = new CancellationTokenSource();
             }
         }
     }
