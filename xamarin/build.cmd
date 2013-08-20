@@ -1,4 +1,4 @@
-mono xamarin-component/xamarin-component.exe create-manually Microsoft.AspNet.SignalR.Client-2.0.0.xam \
+mono xamarin-component-new/xamarin-component.exe package Microsoft.AspNet.SignalR.Client-2.0.0.xam \
     --name="Microsoft.AspNet.SignalR.Client" \
     --summary="SignalR 2.0.0 Client for Android and iOS." \
     --publisher="Microsoft, Inc." \
