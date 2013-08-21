@@ -86,7 +86,7 @@ namespace Microsoft.AspNet.SignalR.WebSockets
             sendContext);
         }
 
-        public Task CloseAsync()
+        public virtual Task CloseAsync()
         {
             if (IsClosedOrClosedSent(WebSocket))
             {
