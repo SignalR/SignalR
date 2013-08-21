@@ -79,12 +79,10 @@ namespace Microsoft.AspNet.SignalR.Tests.Owin
                                             new WebSocketReceiveResult(0, WebSocketMessageType.Text, endOfMessage: false),
                                             new WebSocketReceiveResult(0, WebSocketMessageType.Close, endOfMessage: true)};
 
-            var webSocket = new Mock<WebSocket>(MockBehavior.Strict);
-
-            webSocket.Setup(w => w.ReceiveAsync(It.IsAny<ArraySegment<byte>>(), CancellationToken.None))
-                     .Returns(() => TaskAsyncHelper.FromResult(webSocketMessages[messageIndex++]));
-
             WebSocketState state = WebSocketState.Open;
+            var webSocket = new Mock<WebSocket>(MockBehavior.Strict);
+            var webSocketHandler = new WebSocketHandler(64 * 1024);
+
             webSocket.Setup(w => w.State).Returns(() => state);
             webSocket.Setup(w => w.CloseOutputAsync(WebSocketCloseStatus.NormalClosure, "", CancellationToken.None))
                 .Returns(() =>
@@ -100,7 +98,9 @@ namespace Microsoft.AspNet.SignalR.Tests.Owin
                     return TaskAsyncHelper.Empty;
                 });
 
-            var webSocketHandler = new WebSocketHandler(64 * 1024);
+            webSocket.Setup(w => w.ReceiveAsync(It.IsAny<ArraySegment<byte>>(), CancellationToken.None))
+                     .Returns(() => TaskAsyncHelper.FromResult(webSocketMessages[messageIndex++]));
+
             await webSocketHandler.ProcessWebSocketRequestAsync(webSocket.Object, CancellationToken.None);
 
             webSocket.VerifyAll();
