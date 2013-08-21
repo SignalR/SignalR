@@ -10,7 +10,7 @@ using System.Runtime.InteropServices;
 // associated with an assembly.
 [assembly: AssemblyCompany("Microsoft Open Technologies, Inc.")]
 [assembly: AssemblyCopyright("© Microsoft Open Technologies, Inc. All rights reserved.")]
-
+[assembly: AssemblyMetadata("Serviceable", "True")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 [assembly: AssemblyConfiguration("")]
@@ -20,3 +20,22 @@ using System.Runtime.InteropServices;
 [assembly: CLSCompliant(false)]
 
 [assembly: NeutralResourcesLanguage("en-US")]
+
+
+#if NET4 || PORTABLE
+namespace System.Reflection
+{
+    [AttributeUsage(AttributeTargets.Assembly, AllowMultiple = true, Inherited = false)]
+    internal sealed class AssemblyMetadataAttribute : Attribute
+    {
+        public AssemblyMetadataAttribute(string key, string value)
+        {
+            Key = key;
+            Value = value;
+        }
+
+        public string Key { get; set; }
+        public string Value { get; set; }
+    }
+}
+#endif
