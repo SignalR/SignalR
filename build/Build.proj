@@ -43,7 +43,7 @@
     <PrereleaseTagWithSeparator Condition="$(BuildQuality) != ''">-$(BuildQuality)</PrereleaseTagWithSeparator>
     <ScaleoutPrereleaseTagWithSeparator Condition="$(ScaleoutBuildQuality) != ''">-$(ScaleoutBuildQuality)</ScaleoutPrereleaseTagWithSeparator>
     <KatanaPrereleaseTagWithSeparator Condition="$(KatanaBuildQuality) != ''">-$(KatanaBuildQuality)</KatanaPrereleaseTagWithSeparator>
-    <AssemblyVersion>$(MajorVersion).$(MinorVersion).0</AssemblyVersion>
+    <AssemblyVersion>$(MajorVersion).$(MinorVersion).$(PatchVersion)</AssemblyVersion>
     <PackageVersion>$(MajorVersion).$(MinorVersion).$(PatchVersion)$(PrereleaseTagWithSeparator)</PackageVersion>
     <ScaleoutPackageVersion>$(MajorVersion).$(MinorVersion).$(PatchVersion)$(ScaleoutPrereleaseTagWithSeparator)</ScaleoutPackageVersion>
     <KatanaPackageVersion>$(KatanaVersion)$(KatanaPrereleaseTagWithSeparator)</KatanaPackageVersion>
