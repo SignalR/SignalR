@@ -1,0 +1,21 @@
+%YAML 1.2
+---
+name: Microsoft.AspNet.SignalR.Client
+id: microsoft-aspnet-signalr-client
+publisher: Microsoft
+license: License.md
+icons: 
+  - icons/microsoft-aspnet-signalr-client_128x128.png
+  - icons/microsoft-aspnet-signalr-client_512x512.png
+publisher-url: asp.net/signalr
+libraries: 
+  ios: ../lib/ios/Awesome.dll
+summary: real-time library
+details: Details.md
+screenshots: 
+  - screenshots/screenshot1.png
+getting-started: GettingStarted.md
+version: 2.0.0
+samples: 
+  iOS Sample: ../samples/AwesomeSample/AwesomeSample.sln
+...
