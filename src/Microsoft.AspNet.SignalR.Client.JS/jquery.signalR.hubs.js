@@ -271,6 +271,8 @@
                     // Invoke the callback
                     callback.method.call(callback.scope, minData);
                 }
+            } else if (typeof(minData.P) !== "undefined") {
+                
             } else {
                 data = this._maximizeClientHubInvocation(minData);
 
