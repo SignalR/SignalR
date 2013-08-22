@@ -283,11 +283,10 @@ testUtilities.runWithAllTransports(function (transport) {
         };
     });
 
-    QUnit.asyncTimeoutTest(transport + " transport will attempt to reconnect multiple times.", testUtilities.defaultTestTimeout, function (end, assert, testName) {
+    QUnit.asyncTimeoutTest(transport + " transport will attempt to reconnect multiple times.", testUtilities.defaultTestTimeout * 4, function (end, assert, testName) {
         var connection = testUtilities.createHubConnection(end, assert, testName),
             reconnectAttempts = 0,
             savedConnectionReconnectDelay = connection.reconnectDelay,
-            savedLongPollingReconnectDelay = $.connection.transports.longPolling.reconnectDelay,
             savedGetUrl = $.connection.transports._logic.getUrl;
 
         function connectIfSecondReconnectAttempt() {
@@ -337,8 +336,6 @@ testUtilities.runWithAllTransports(function (transport) {
 
         return function () {
             connection.reconnectDelay = savedConnectionReconnectDelay;
-            $.connection.transports.longPolling.reconnectDelay = savedLongPollingReconnectDelay;
-
             $.connection.transports._logic.getUrl = savedGetUrl;
 
             $.network.connect();
