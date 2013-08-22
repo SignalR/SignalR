@@ -192,7 +192,18 @@ namespace Microsoft.AspNet.SignalR.Hubs
 
             try
             {
+                var lastParameter = methodDescriptor.Parameters.LastOrDefault();
+                if (lastParameter != null
+                    && lastParameter.ParameterType.IsGenericType
+                    && lastParameter.ParameterType.GetGenericTypeDefinition() == typeof(IProgress<>) )
+                {
+                    var progressType = typeof(HubInvocationProgress<>).MakeGenericType(lastParameter.ParameterType.GetGenericArguments());
+                    var progress = Activator.CreateInstance(progressType);
+                    parameterValues = parameterValues.Concat(new IJsonValue[] { new JsonWrapper(progress) }).ToArray();
+                }
+
                 var args = _binder.ResolveMethodParameters(methodDescriptor, parameterValues);
+
                 var context = new HubInvokerContext(hub, tracker, methodDescriptor, args);
 
                 // Invoke the pipeline and save the task
@@ -220,6 +231,50 @@ namespace Microsoft.AspNet.SignalR.Hubs
                 }
             })
             .FastUnwrap();
+        }
+
+        private class HubInvocationProgress<T> : IProgress<T>
+        {
+            public HubInvocationProgress()
+            {
+
+            }
+
+            public static HubInvocationProgress<T> Create()
+            {
+                return new HubInvocationProgress<T>();
+            }
+
+            public void Report(T value)
+            {
+                // Send progress update to client
+
+            }
+        }
+
+        private class JsonWrapper : IJsonValue
+        {
+            private readonly object _value;
+
+            public JsonWrapper(object value)
+            {
+                _value = value;
+            }
+
+            public object ConvertTo(Type type)
+            {
+                if (CanConvertTo(type))
+                {
+                    return _value;
+                }
+
+                throw new InvalidOperationException();
+            }
+
+            public bool CanConvertTo(Type type)
+            {
+                return _value.GetType().IsAssignableFrom(type);
+            }
         }
 
         public override Task ProcessRequest(HostContext context)
