@@ -84,6 +84,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
             _connectionInfo.Connection.Trace(TraceLevels.Events, "WS: {0}", builder.Uri);
 
             var webSocket = new ClientWebSocket();
+            webSocket.Options.SetBuffer(1024 * 1024, 1024 * 1024);
             _connectionInfo.Connection.PrepareRequest(new WebSocketWrapperRequest(webSocket));
 
             await webSocket.ConnectAsync(builder.Uri, _disconnectToken);
