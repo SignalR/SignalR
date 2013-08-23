@@ -1,0 +1,15 @@
+mono xamarin-component-new/xamarin-component.exe package Microsoft.AspNet.SignalR.Client-2.0.0.xam \
+    --name="Microsoft.AspNet.SignalR.Client" \
+    --summary="SignalR 2.0.0 Client for Android and iOS." \
+    --publisher="Microsoft, Inc." \
+    --website="http://asp.net/signalr" \
+    --details="Details.md" \
+    --license="License.md" \
+    --getting-started="GettingStarted.md" \
+    --icon="icons/Microsoft.AspNet.SignalR.Client_128x128.png" \
+    --icon="icons/Microsoft.AspNet.SignalR.Client_512x512.png" \
+    --library="ios":"bin/Microsoft.AspNet.SignalR.Client.dll" \
+    --library="ios":"bin/Newtonsoft.Json.dll" \
+    --library="android":"bin/Microsoft.AspNet.SignalR.Client.dll" \
+    --library="android":"bin/Newtonsoft.Json.dll" \
+    --sample="Android and iOS Sample. Basic sample displaying client logging on the mobile screen":"samples/Microsoft.AspNet.SignalR.Mono.Mobile.sln" \
