@@ -39,7 +39,7 @@ namespace Microsoft.AspNet.SignalR.WebSockets
         public virtual void OnClose() { }
 
         // Sends a text message to the client
-        public Task Send(string message)
+        public virtual Task Send(string message)
         {
             if (message == null)
             {
@@ -49,7 +49,7 @@ namespace Microsoft.AspNet.SignalR.WebSockets
             return SendAsync(message);
         }
 
-        internal Task SendAsync(string message)
+        public Task SendAsync(string message)
         {
             var buffer = Encoding.UTF8.GetBytes(message);
             return SendAsync(new ArraySegment<byte>(buffer), WebSocketMessageType.Text);
@@ -86,7 +86,7 @@ namespace Microsoft.AspNet.SignalR.WebSockets
             sendContext);
         }
 
-        public Task CloseAsync()
+        public virtual Task CloseAsync()
         {
             if (IsClosedOrClosedSent(WebSocket))
             {

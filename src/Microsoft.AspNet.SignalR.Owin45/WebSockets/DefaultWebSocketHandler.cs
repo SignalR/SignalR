@@ -13,6 +13,7 @@ namespace Microsoft.AspNet.SignalR.WebSockets
         private const int _maxIncomingMessageSize = 64 * 1024;
         private static readonly byte[] _zeroByteBuffer = new byte[0];
         private readonly IWebSocket _webSocket;
+        private bool _closed;
 
         public DefaultWebSocketHandler()
             : base(_maxIncomingMessageSize)
@@ -26,6 +27,8 @@ namespace Microsoft.AspNet.SignalR.WebSockets
 
         public override void OnClose()
         {
+            _closed = true;
+
             _webSocket.OnClose();
         }
 
@@ -62,13 +65,43 @@ namespace Microsoft.AspNet.SignalR.WebSockets
             return Send(value);
         }
 
+        public override Task Send(string message)
+        {
+            if (_closed)
+            {
+                return TaskAsyncHelper.Empty;
+            }
+
+            return base.Send(message);
+        }
+
+        public override Task CloseAsync()
+        {
+            if (_closed)
+            {
+                return TaskAsyncHelper.Empty;
+            }
+
+            return base.CloseAsync();
+        }
+
         public Task SendChunk(ArraySegment<byte> message)
         {
+            if (_closed)
+            {
+                return TaskAsyncHelper.Empty;
+            }
+
             return SendAsync(message, WebSocketMessageType.Text, endOfMessage: false);
         }
 
         public Task Flush()
         {
+            if (_closed)
+            {
+                return TaskAsyncHelper.Empty;
+            }
+
             return SendAsync(new ArraySegment<byte>(_zeroByteBuffer), WebSocketMessageType.Text, endOfMessage: true);
         }
     }
