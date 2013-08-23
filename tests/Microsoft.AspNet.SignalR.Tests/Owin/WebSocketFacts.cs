@@ -1,9 +1,9 @@
-﻿using Microsoft.AspNet.SignalR.WebSockets;
-using Moq;
-using System;
+﻿using System;
 using System.Net.WebSockets;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNet.SignalR.WebSockets;
+using Moq;
 using Xunit;
 using Xunit.Extensions;
 
@@ -79,10 +79,12 @@ namespace Microsoft.AspNet.SignalR.Tests.Owin
                                             new WebSocketReceiveResult(0, WebSocketMessageType.Text, endOfMessage: false),
                                             new WebSocketReceiveResult(0, WebSocketMessageType.Close, endOfMessage: true)};
 
-            WebSocketState state = WebSocketState.Open;
             var webSocket = new Mock<WebSocket>(MockBehavior.Strict);
-            var webSocketHandler = new WebSocketHandler(64 * 1024);
 
+            webSocket.Setup(w => w.ReceiveAsync(It.IsAny<ArraySegment<byte>>(), CancellationToken.None))
+                     .Returns(() => TaskAsyncHelper.FromResult(webSocketMessages[messageIndex++]));
+
+            WebSocketState state = WebSocketState.Open;
             webSocket.Setup(w => w.State).Returns(() => state);
             webSocket.Setup(w => w.CloseOutputAsync(WebSocketCloseStatus.NormalClosure, "", CancellationToken.None))
                 .Returns(() =>
@@ -98,9 +100,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Owin
                     return TaskAsyncHelper.Empty;
                 });
 
-            webSocket.Setup(w => w.ReceiveAsync(It.IsAny<ArraySegment<byte>>(), CancellationToken.None))
-                     .Returns(() => TaskAsyncHelper.FromResult(webSocketMessages[messageIndex++]));
-
+            var webSocketHandler = new WebSocketHandler(64 * 1024);
             await webSocketHandler.ProcessWebSocketRequestAsync(webSocket.Object, CancellationToken.None);
 
             webSocket.VerifyAll();
@@ -140,6 +140,37 @@ namespace Microsoft.AspNet.SignalR.Tests.Owin
             await webSocketHandler.SendAsync("Hello");
 
             webSocket.Verify(m => m.SendAsync(It.IsAny<ArraySegment<byte>>(), WebSocketMessageType.Text, true, CancellationToken.None), Times.Never());
+        }
+
+        [Fact]
+        public async Task DefaultWebSocketHandlerOperationsNoopAfterClose()
+        {
+            var handler = new DefaultWebSocketHandler();
+
+            var initialWebSocket = new Mock<WebSocket>();
+
+            initialWebSocket.Setup(w => w.CloseOutputAsync(WebSocketCloseStatus.NormalClosure, "", CancellationToken.None))
+                .Returns(TaskAsyncHelper.Empty);
+
+            initialWebSocket.Setup(w => w.CloseAsync(WebSocketCloseStatus.NormalClosure, "", CancellationToken.None))
+                .Returns(TaskAsyncHelper.Empty);
+
+            initialWebSocket.Setup(w => w.ReceiveAsync(It.IsAny<ArraySegment<byte>>(), CancellationToken.None))
+                     .Returns(Task.FromResult(new WebSocketReceiveResult(0, WebSocketMessageType.Close, endOfMessage: true)));
+
+            await handler.ProcessWebSocketRequestAsync(initialWebSocket.Object, CancellationToken.None);
+            
+            // Swap the socket here so we can verify what happens after the task returns
+            var afterWebSocket = new Mock<WebSocket>();
+
+            handler.WebSocket = afterWebSocket.Object;
+
+            await handler.Send("Hello World");
+            await handler.CloseAsync();
+
+            afterWebSocket.Verify(m => m.State, Times.Never());
+            afterWebSocket.Verify(m => m.SendAsync(It.IsAny<ArraySegment<byte>>(), WebSocketMessageType.Text, true, CancellationToken.None), Times.Never());
+            afterWebSocket.Verify(m => m.CloseOutputAsync(WebSocketCloseStatus.NormalClosure, "", CancellationToken.None), Times.Never());
         }
     }
 }
