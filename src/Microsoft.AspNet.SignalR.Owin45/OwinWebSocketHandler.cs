@@ -80,18 +80,25 @@ namespace Microsoft.AspNet.SignalR.Owin
 
         private void RunWebSocketHandler(DefaultWebSocketHandler handler, CancellationTokenSource cts)
         {
+            // async void methods are not supported in ASP.NET and they throw a InvalidOperationException.
             Task.Run(async () =>
             {
-                // async void methods are not supported in ASP.NET and they throw a InvalidOperationException.
                 try
                 {
                     await _callback(handler);
-                    await handler.CloseAsync();
                 }
-                finally
+                catch
                 {
-                    cts.Cancel();
+                    // This error was already handled by other layers
+                    // we can no-op here so we don't cause an unobserved exception
                 }
+
+                // Always try to close async, if the websocket already closed
+                // then this will no-op
+                await handler.CloseAsync();
+
+                // Cancel the token
+                cts.Cancel();
             });
         }
 
