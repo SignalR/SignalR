@@ -158,6 +158,8 @@
     <Compile Include="Infrastructure\BasicAuthenticationProvider.cs" />
     <Compile Include="Hubs\OnConnectedBufferHub.cs" />
     <Compile Include="Infrastructure\ClientAssertExtensions.cs" />
+    <Compile Include="Infrastructure\CommonCommandLine.cs" />
+    <Compile Include="Infrastructure\CommonLog.cs" />
     <Compile Include="Infrastructure\FakeScaleoutBus.cs" />
     <Compile Include="Infrastructure\NameValueCollectionWrapper.cs" />
     <Compile Include="Infrastructure\OrderedCountDownRange.cs" />
