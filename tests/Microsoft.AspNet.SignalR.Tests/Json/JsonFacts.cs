@@ -1,5 +1,6 @@
 ﻿using System;
 using Microsoft.AspNet.SignalR.Json;
+using System.Globalization;
 using Newtonsoft.Json;
 using Xunit;
 using Xunit.Extensions;
@@ -30,14 +31,85 @@ namespace Microsoft.AspNet.SignalR.Tests.Json
         }
 
         [Fact]
+        public void CreateDefaultSerializerHasCorrectCulture()
+        {
+            // Arrange and Act
+            JsonUtility.SetCreateSerializerSettingsHandler(null);
+            JsonSerializer serializer = JsonUtility.CreateDefaultSerializer();
+
+            // Assert
+            Assert.NotNull(serializer);
+            Assert.Equal(CultureInfo.CurrentCulture, serializer.Culture);
+        }
+
+        [Fact]
         public void CreateDefaultJsonSerializerSettingsHasCorrectMaxDepth()
         {
             // Arrange and Act
-            JsonSerializerSettings settings = JsonUtility.CreateDefaultSerializerSettings();
+            JsonUtility.SetCreateSerializerSettingsHandler(null);
+            JsonSerializerSettings settings = JsonUtility.CreateSerializerSettings();
 
             // Assert
             Assert.NotNull(settings);
             Assert.Equal(20, settings.MaxDepth);
+        }
+
+        [Fact]
+        public void CreateDefaultJsonSerializerSettingsHasCorrectCulture()
+        {
+            // Arrange and Act
+            JsonUtility.SetCreateSerializerSettingsHandler(null);
+            JsonSerializerSettings settings = JsonUtility.CreateSerializerSettings();
+
+            // Assert
+            Assert.NotNull(settings);
+            Assert.Equal(CultureInfo.CurrentCulture, settings.Culture);
+        }
+
+        [Fact]
+        public void CreateSerializerHasCustomSerializerSettings()
+        {
+            // Arrange and Act
+            JsonUtility.SetCreateSerializerSettingsHandler(() =>
+                new JsonSerializerSettings
+                {
+                    MaxDepth = 10,
+                    Culture = new CultureInfo("pt-BR"),
+                    NullValueHandling = NullValueHandling.Ignore
+                });
+
+            JsonSerializer serializer = JsonUtility.CreateDefaultSerializer();
+
+            // Assert
+            Assert.NotNull(serializer);
+
+            //The currect value must be 20. This value is override in the function CreateDefaultSerializer
+            Assert.Equal(20, serializer.MaxDepth);
+            Assert.Equal(new CultureInfo("pt-BR"), serializer.Culture);
+            Assert.Equal(NullValueHandling.Ignore, serializer.NullValueHandling);
+        }
+
+        [Fact]
+        public void CreateCustomJsonSerializerSettings()
+        {
+            // Arrange and Act
+            JsonUtility.SetCreateSerializerSettingsHandler(() =>
+                new JsonSerializerSettings
+                {
+                    MaxDepth = 10,
+                    Culture = new CultureInfo("pt-BR"),
+                    NullValueHandling = NullValueHandling.Ignore
+                });
+
+            JsonSerializerSettings settings = JsonUtility.CreateSerializerSettings();
+
+            // Assert
+            Assert.NotNull(settings);
+             
+            //The currect value must be 20. This value is override in the function CreateDefaultSerializer
+            Assert.Equal(20, settings.MaxDepth);
+            Assert.Equal(new CultureInfo("pt-BR"), settings.Culture);
+            Assert.Equal(NullValueHandling.Ignore, settings.NullValueHandling);
         }
 
         [Fact]
@@ -73,7 +145,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Json
         [Fact]
         public void CreateJsonPCallbackThrowsWithInvalidIdentifier()
         {
-            Assert.Throws(typeof(InvalidOperationException),() => JsonUtility.CreateJsonpCallback("1nogood", "1"));
+            Assert.Throws(typeof(InvalidOperationException), () => JsonUtility.CreateJsonpCallback("1nogood", "1"));
         }
 
         [Theory]

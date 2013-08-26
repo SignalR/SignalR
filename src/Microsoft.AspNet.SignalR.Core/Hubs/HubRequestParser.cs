@@ -58,8 +58,8 @@ namespace Microsoft.AspNet.SignalR.Hubs
             {
                 throw new InvalidOperationException(Resources.Error_StateExceededMaximumLength);
             }
-
-            var settings = JsonUtility.CreateDefaultSerializerSettings();
+             
+            var settings = JsonUtility.CreateSerializerSettings();
             settings.Converters.Add(new SipHashBasedDictionaryConverter());
             var serializer = JsonSerializer.Create(settings);
             return serializer.Parse<IDictionary<string, object>>(json);
