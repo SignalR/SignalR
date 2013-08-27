@@ -8,19 +8,19 @@ namespace Owin
 {
     public static class ObsoleteOwinExtensions
     {
-        [Obsolete("Use IAppBuilder.MapSignalR in an Owin Startup class")]
+        [Obsolete("Use IAppBuilder.MapSignalR in an Owin Startup class. See http://go.microsoft.com/fwlink/?LinkId=320578 for more details.")]
         public static IAppBuilder MapHubs(this IAppBuilder builder)
         {
             return builder.MapSignalR();
         }
 
-        [Obsolete("Use IAppBuilder.MapSignalR in an Owin Startup class")]
+        [Obsolete("Use IAppBuilder.MapSignalR in an Owin Startup class. See http://go.microsoft.com/fwlink/?LinkId=320578 for more details.")]
         public static IAppBuilder MapHubs(this IAppBuilder builder, HubConfiguration configuration)
         {
             return builder.MapSignalR(configuration);
         }
 
-        [Obsolete("Use IAppBuilder.MapSignalR in an Owin Startup class")]
+        [Obsolete("Use IAppBuilder.MapSignalR in an Owin Startup class. See http://go.microsoft.com/fwlink/?LinkId=320578 for more details.")]
         public static IAppBuilder MapHubs(this IAppBuilder builder, string path, HubConfiguration configuration)
         {
             if (IsEmptyOrForwardSlash(path))
@@ -34,7 +34,7 @@ namespace Owin
             }
         }
 
-        [Obsolete("Use IAppBuilder.MapSignalR<TConnection> in an Owin Startup class")]
+        [Obsolete("Use IAppBuilder.MapSignalR<TConnection> in an Owin Startup class. See http://go.microsoft.com/fwlink/?LinkId=320578 for more details.")]
         public static IAppBuilder MapConnection<T>(this IAppBuilder builder, string path) where T : PersistentConnection
         {
             if (IsEmptyOrForwardSlash(path))
@@ -48,7 +48,7 @@ namespace Owin
             }
         }
 
-        [Obsolete("Use IAppBuilder.MapSignalR<TConnection> in an Owin Startup class")]
+        [Obsolete("Use IAppBuilder.MapSignalR<TConnection> in an Owin Startup class. See http://go.microsoft.com/fwlink/?LinkId=320578 for more details.")]
         public static IAppBuilder MapConnection<T>(this IAppBuilder builder, string path, ConnectionConfiguration configuration) where T : PersistentConnection
         {
             if (IsEmptyOrForwardSlash(path))
@@ -62,7 +62,7 @@ namespace Owin
             }
         }
 
-        [Obsolete("Use IAppBuilder.MapSignalR in an Owin Startup class")]
+        [Obsolete("Use IAppBuilder.MapSignalR in an Owin Startup class. See http://go.microsoft.com/fwlink/?LinkId=320578 for more details.")]
         public static IAppBuilder MapConnection(this IAppBuilder builder, string path, Type connectionType, ConnectionConfiguration configuration)
         {
             if (IsEmptyOrForwardSlash(path))
