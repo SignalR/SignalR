@@ -9,7 +9,8 @@
     var signalR = $.signalR,
         events = $.signalR.events,
         changeState = $.signalR.changeState,
-        transportLogic;
+        transportLogic,
+        ajaxSendManager;
 
     signalR.transports = {};
 
@@ -67,6 +68,73 @@
 
         return url;
     }
+
+    function AjaxManager(maxActiveRequests) {
+        var retryDelay = 250,
+            activeRequestCount = 0,
+            waitingRequests = [],
+            initiateRequest = function (tryNew, requestDetails) {
+                if (activeRequestCount > maxActiveRequests) {
+                    // Only log a notification if we've just hit the ajax threshold.
+                    if (waitingRequests.length === 0) {
+                        requestDetails.connection.log("There are too many concurrent ajax 'send' requests, delaying 'send' until an existing 'send' completes.");
+                    }
+
+                    // We only want to push waiting requests IF we've tried to start a new request
+                    if (tryNew) {
+                        waitingRequests.push(requestDetails);
+                    }
+
+                    // Wait 'retryDelay' milliseconds until trying to start the next request
+                    window.setTimeout(function () {
+                        // We pass in false because we're waiting on requests so we're not trying to start a brand new request
+                        initiateRequest(false);
+                    }, retryDelay);
+                } else {
+                    // If a slot has freed up and we're not trying to start a fresh request (we want to start a waiting request)
+                    if (!tryNew) {
+                        requestDetails = waitingRequests.shift();
+
+                        // If there's other requests that are waiting and we're trying to start a new request, let the waiting requests go first
+                    } else if (waitingRequests.length > 0) {
+                        waitingRequests.push(requestDetails);
+                        // Retrieve the waiting request
+                        requestDetails = waitingRequests.shift();
+                    }
+
+                    // Claim an active request slot
+                    activeRequestCount++;
+                    // Start the ajax request and complete the deferred.
+                    requestDetails.deferred.resolveWith($.ajax(requestDetails.settings));
+                }
+            };
+
+        this.create = function (connection, settings) {
+            var deferred = $.Deferred(),
+                savedCompleted = settings.completed || function () { };
+
+            // Monkey patch the complete function so we know when the request has completed
+            settings.complete = function () {
+                // Open up a new ajax request slot.
+                activeRequestCount--;
+                savedCompleted.apply(this, arguments);
+            };
+
+            // Try to start the ajax request
+            initiateRequest(true, {
+                connection: connection,
+                deferred: deferred,
+                settings: settings
+            });
+
+            return deferred.promise();
+        };
+    }
+
+    // Only allow 4 sends to occur concurrently
+    // The other 2 out of 6 ajax requests are utilized for user code and poll requests by the LongPolling transport
+    // TODO: Should this be configurable?
+    ajaxSendManager = new AjaxManager(4);
 
     transportLogic = signalR.transports._logic = {
         pingServer: function (connection) {
@@ -251,7 +319,7 @@
 
             url = transportLogic.prepareQueryString(connection, url);
 
-            return $.ajax(
+            return ajaxSendManager.create(connection,
                 $.extend({}, $.signalR.ajaxDefaults, {
                     xhrFields: { withCredentials: connection.withCredentials },
                     url: url,
