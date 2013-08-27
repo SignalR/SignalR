@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" DefaultTargets="Go" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="$(MSBuildProjectDirectory)\Build.tasks" />
-  <Import Project="$(MSBuildProjectDirectory)\Microsoft.AspNet.SignalR.versions.targets" />
 
   <PropertyGroup>
     <Configuration Condition="$(Configuration) == ''">Debug</Configuration>
+    <Nightly Condition="$(Nightly) == ''">true</Nightly>
     <ProjectRoot>$(MSBuildProjectDirectory)\..</ProjectRoot>
     <ArtifactsDir>$(ProjectRoot)\artifacts\$(Configuration)</ArtifactsDir>
     <ProjectArtifactsDir>$(ArtifactsDir)\projects</ProjectArtifactsDir>
@@ -32,6 +32,7 @@
     <MSBuildCommunityTasksPath>$(MSBuildProjectDirectory)</MSBuildCommunityTasksPath>
   </PropertyGroup>
 
+  <Import Project="$(MSBuildProjectDirectory)\Microsoft.AspNet.SignalR.versions.targets" />
   <Import Project="$(MSBuildProjectDirectory)\MSBuild.Community.Tasks.Targets" />
 
   <!-- Add extra properties to the build for signing -->
@@ -185,7 +186,8 @@
       <ReplaceWith>AssemblyVersion("$(AssemblyVersion)")</ReplaceWith>
     </RegexTransform>
     <RegexTransform Include="$(ProjectRoot)\src\Common\CommonVersionInfo.cs">
-      <Find>AssemblyInformationalVersion\("\d+\.\d+\.\d+(-\w+\d*(-\d+)?)?"\)</Find>
+      <!-- AssemblyInformationalVersion might also include a Git SHA -->
+      <Find>AssemblyInformationalVersion\("\d+\.\d+\.\d+(-\w+\d*(-\d+)?)?( \([A-Fa-f0-9]+\))?"\)</Find>
       <ReplaceWith>AssemblyInformationalVersion("$(PackageVersion)")</ReplaceWith>
     </RegexTransform>
     <RegexTransform Include="$(ProjectRoot)\src\Microsoft.AspNet.SignalR.Client\Connection.cs">
@@ -195,6 +197,10 @@
     <RegexTransform Include="$(ProjectRoot)\src\Microsoft.AspNet.SignalR.Client.JS\jquery.signalR.core.js">
       <Find>SignalR JavaScript Library v\d+\.\d+\.\d+(-\w+\d*(-\d+)?)?</Find>
       <ReplaceWith>SignalR JavaScript Library v$(PackageVersion)</ReplaceWith>
+    </RegexTransform>
+    <RegexTransform Include="$(ProjectRoot)\src\Microsoft.AspNet.SignalR.Client.JS\jquery.signalR.version.js">
+      <Find>\$\.signalR\.version = "\d+\.\d+\.\d+(-\w+\d*(-\d+)?)?";</Find>
+      <ReplaceWith>$.signalR.version = "$(PackageVersion)";</ReplaceWith>
     </RegexTransform>
     <RegexTransform Include="$(ProjectRoot)\src\Microsoft.AspNet.SignalR.Core\Scripts\hubs.js">
       <Find>SignalR JavaScript Library v\d+\.\d+\.\d+(-\w+\d*(-\d+)?)?</Find>
