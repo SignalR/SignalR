@@ -11,6 +11,16 @@ namespace Microsoft.AspNet.SignalR.Client.Http
     /// </summary>
     public class DefaultHttpClient : IHttpClient
     {
+        private readonly string _shortRunningGroup;
+        private readonly string _longRunningGroup;
+
+        public DefaultHttpClient()
+        {
+            string id = Guid.NewGuid().ToString();
+            _shortRunningGroup = "SignalR-short-running-" + id;
+            _longRunningGroup = "SignalR-long-running-" + id;
+        }
+
         /// <summary>
         /// Makes an asynchronous http GET request to the specified url.
         /// </summary>
@@ -20,10 +30,11 @@ namespace Microsoft.AspNet.SignalR.Client.Http
         /// <returns>A <see cref="T:Task{IResponse}"/>.</returns>
         public Task<IResponse> Get(string url, Action<IRequest> prepareRequest, bool isLongRunning)
         {
-            IRequest req = null;
             return HttpHelper.GetAsync(url, request =>
             {
-                req = new HttpWebRequestWrapper(request);
+                request.ConnectionGroupName = isLongRunning ? _longRunningGroup : _shortRunningGroup;
+
+                var req = new HttpWebRequestWrapper(request);
                 prepareRequest(req);
             }
             ).Then(response => (IResponse)new HttpWebResponseWrapper(response));
@@ -39,10 +50,11 @@ namespace Microsoft.AspNet.SignalR.Client.Http
         /// <returns>A <see cref="T:Task{IResponse}"/>.</returns>
         public Task<IResponse> Post(string url, Action<IRequest> prepareRequest, IDictionary<string, string> postData, bool isLongRunning)
         {
-            IRequest req = null;
             return HttpHelper.PostAsync(url, request =>
             {
-                req = new HttpWebRequestWrapper(request);
+                request.ConnectionGroupName = isLongRunning ? _longRunningGroup : _shortRunningGroup;
+
+                var req = new HttpWebRequestWrapper(request);
                 prepareRequest(req);
             },
             postData).Then(response => (IResponse)new HttpWebResponseWrapper(response));
