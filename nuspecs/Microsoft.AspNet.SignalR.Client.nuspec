@@ -6,7 +6,7 @@
     <version>__SIGNALR_PACKAGE_VERSION__</version>
     <authors>Microsoft</authors>
     <owners>Microsoft</owners>
-    <licenseUrl>__SIGNALR_LICENSE_URL__</licenseUrl>
+    <licenseUrl>__SIGNALR_CLIENT_LICENSE_URL__</licenseUrl>
     <copyright>__SIGNALR_COPYRIGHT_NOTICE__</copyright>
     <projectUrl>http://www.asp.net/signalr</projectUrl>
     <requireLicenseAcceptance>true</requireLicenseAcceptance>
