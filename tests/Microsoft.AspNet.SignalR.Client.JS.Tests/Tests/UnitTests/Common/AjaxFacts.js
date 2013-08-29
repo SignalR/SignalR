@@ -25,13 +25,20 @@ QUnit.test("Asynchronous flag defaults and is used correctly in ajaxAbort", func
 
     connection.transport = "foo";
 
-    $.ajax = function (obj) {
-        if (obj.async === expectedAsync) {
+    $.ajax = function (url, settings) {
+        if (!settings) {
+            settings = url;
+            url = settings.url;
+        }
+
+        if (settings.async === expectedAsync) {
             QUnit.ok(true, "Correct async value passed, expected: " + expectedAsync);
         }
         else {
             QUnit.ok(false, "Incorrect async value passed, expected: " + expectedAsync);
         }
+
+        return savedAjax.call(this, url, settings);
     };
 
     expectedAsync = true;

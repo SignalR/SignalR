@@ -4,7 +4,7 @@ QUnit.asyncTimeoutTest("Multiple sends that reach browser limit always allow for
     var connection = testUtilities.createConnection('/groups', end, assert, testName),
         transport = { transport: "longPolling" },
         handle,
-        requests = 15;
+        requests = 15; // Do not increase this value, increasing it will result in reaching the browser URL size limit
 
     connection.received(function (msg) {
         if (msg === "hello world") {

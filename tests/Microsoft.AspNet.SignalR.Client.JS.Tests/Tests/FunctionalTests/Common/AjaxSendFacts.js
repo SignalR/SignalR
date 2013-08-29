@@ -85,7 +85,7 @@ QUnit.asyncTimeoutTest("Overloading the concurrent ajax request limit still resu
     var connection = testUtilities.createConnection('/groups', end, assert, testName),
         transport = { transport: "longPolling" }, // Transport does not matter
         expectedRequest = 0,
-        requests = 20,
+        requests = 15, // Do not increase this value, increasing it will result in reaching the browser URL size limit
         prefix = "__________PREFIX_________",
         savedAjax = $.ajax;
 
