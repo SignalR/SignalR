@@ -21,7 +21,7 @@ testUtilities.runWithAllTransports(function (transport) {
         };
     });
 
-    QUnit.asyncTimeoutTest(transport + " transport buffers messages correctly.", testUtilities.defaultTestTimeout * 100, function (end, assert, testName) {
+    QUnit.asyncTimeoutTest(transport + " transport buffers messages correctly.", testUtilities.defaultTestTimeout, function (end, assert, testName) {
         var connection = testUtilities.createHubConnection(end, assert, testName),
             onConnectedBufferHub = connection.createHubProxies().onConnectedBufferHub,
             bufferMeCalls = 0,
