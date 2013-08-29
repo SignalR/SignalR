@@ -102,7 +102,7 @@
     ajaxSendManager = new AjaxManager(4);
 
     // Expose configuration of concurrent sends on 
-    signalR.transports.maxConcurrentSends = function (count) {
+    signalR.maxConcurrentSends = function (count) {
         // Check for undefined so this function can also be used to retrieve the current concurrency via $.signalR.transports.maxConcurrentSends()
         if (typeof count !== undefined) {
             ajaxSendManager.maxActiveRequests = count;
