@@ -31,6 +31,8 @@ testUtilities.runWithTransports(["serverSentEvents", "foreverFrame", "longPollin
                 setTimeout(function () {
                     end();
                 }, 0);
+
+                return savedAjax.call(this, url, settings);
             };
 
             connection.send("hello");
@@ -74,6 +76,8 @@ testUtilities.runWithTransports(["serverSentEvents", "foreverFrame", "longPollin
                 setTimeout(function () {
                     end();
                 }, 0);
+
+                return savedAjax.call(this, url, settings);
             };
 
             connection.stop();

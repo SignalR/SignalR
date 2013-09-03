@@ -9,7 +9,8 @@
     var signalR = $.signalR,
         events = $.signalR.events,
         changeState = $.signalR.changeState,
-        transportLogic;
+        transportLogic,
+        ajaxSendManager;
 
     signalR.transports = {};
 
@@ -67,6 +68,48 @@
 
         return url;
     }
+
+    function AjaxManager(maxActiveRequests) {
+        var activeRequestCount = 0,
+            waitingRequests = [],
+            initiateRequest = function (settings) {
+                activeRequestCount++;
+
+                $.ajax(settings).always(function () {
+                    activeRequestCount--;
+
+                    // Request completed, check to see if there are requests waiting
+                    if (waitingRequests.length > 0) {
+                        waitingRequests.shift()();
+                    }
+                });
+            };
+
+        this.create = function (settings) {
+            // Have we exceeded our request threshold?
+            if (activeRequestCount + 1 > this.maxActiveRequests) {
+                waitingRequests.push(function () { initiateRequest(settings); });
+            } else {
+                initiateRequest(settings);
+            }
+        };
+
+        this.maxActiveRequests = maxActiveRequests;
+    }
+
+    // Only allow 4 sends to occur concurrently
+    // The other 2 out of 6 ajax requests are utilized for user code and poll requests by the LongPolling transport
+    ajaxSendManager = new AjaxManager(4);
+
+    // Expose configuration of concurrent sends on 
+    signalR.maxConcurrentSends = function (count) {
+        // Check for undefined so this function can also be used to retrieve the current concurrency via $.signalR.transports.maxConcurrentSends()
+        if (typeof count !== undefined) {
+            ajaxSendManager.maxActiveRequests = count;
+        }
+
+        return ajaxSendManager.maxActiveRequests;
+    };
 
     transportLogic = signalR.transports._logic = {
         pingServer: function (connection) {
@@ -251,7 +294,7 @@
 
             url = transportLogic.prepareQueryString(connection, url);
 
-            return $.ajax(
+            ajaxSendManager.create(
                 $.extend({}, $.signalR.ajaxDefaults, {
                     xhrFields: { withCredentials: connection.withCredentials },
                     url: url,
