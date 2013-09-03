@@ -104,7 +104,7 @@
                                     minData = connection._parseResponse(result);
                                 }
                                 catch (error) {
-                                    transportLogic.handleParseFailure(instance, result, error, tryFailConnect);
+                                    transportLogic.handleParseFailure(instance, result, error, tryFailConnect, instance.pollXhr);
                                     return;
                                 }
 

@@ -73,7 +73,7 @@
             /// <summary>Pings the server</summary>
             /// <param name="connection" type="signalr">Connection associated with the server ping</param>
             /// <returns type="signalR" />
-            var baseUrl, url, deferral = $.Deferred();
+            var baseUrl, url, deferral = $.Deferred(), xhr;
 
             if (connection.transport) {
                 baseUrl = connection.transport.name === "webSockets" ? "" : connection.baseUrl;
@@ -81,7 +81,7 @@
 
                 url = transportLogic.prepareQueryString(connection, url);
 
-                $.ajax(
+                xhr = $.ajax(
                     $.extend({}, $.signalR.ajaxDefaults, {
                         xhrFields: { withCredentials: connection.withCredentials },
                         url: url,
@@ -96,13 +96,11 @@
                                 data = connection._parseResponse(result);
                             }
                             catch (error) {
-                                deferral.reject(
-                                    signalR._.transportError(
-                                        signalR.resources.pingServerFailedParse,
-                                        connection.transport,
-                                        error
-                                    )
-                                );
+                                deferral.reject(signalR._.transportError(
+                                            signalR.resources.pingServerFailedParse,
+                                            connection.transport,
+                                            error,
+                                            xhr));
                                 connection.stop();
                                 return;
                             }
@@ -245,13 +243,14 @@
         ajaxSend: function (connection, data) {
             var payload = transportLogic.stringifySend(connection, data),
                 url = connection.url + "/send" + "?transport=" + connection.transport.name + "&connectionToken=" + window.encodeURIComponent(connection.token),
+                xhr,
                 onFail = function (error, connection) {
-                    $(connection).triggerHandler(events.onError, [signalR._.transportError(signalR.resources.sendFailed, connection.transport, error), data]);
+                    $(connection).triggerHandler(events.onError, [signalR._.transportError(signalR.resources.sendFailed, connection.transport, error, xhr), data]);
                 };
 
             url = transportLogic.prepareQueryString(connection, url);
 
-            return $.ajax(
+            xhr = $.ajax(
                 $.extend({}, $.signalR.ajaxDefaults, {
                     xhrFields: { withCredentials: connection.withCredentials },
                     url: url,
@@ -289,6 +288,8 @@
                     }
                 }
             ));
+
+            return xhr;
         },
 
         ajaxAbort: function (connection, async) {
@@ -443,16 +444,18 @@
             }
         },
 
-        handleParseFailure: function (connection, result, error, onFailed) {
+        handleParseFailure: function (connection, result, error, onFailed, context) {
             // If we're in the initialization phase trigger onFailed, otherwise stop the connection.
             if (connection.state === signalR.connectionState.connecting) {
                 connection.log("Failed to parse server response while attempting to connect.");
                 onFailed();
             } else {
-                $(connection).triggerHandler(events.onError, [signalR._.transportError(
-                    signalR._.format(signalR.resources.parseFailed, result),
-                    connection.transport,
-                    error)]);
+                $(connection).triggerHandler(events.onError, [
+                    signalR._.transportError(
+                        signalR._.format(signalR.resources.parseFailed, result),
+                        connection.transport,
+                        error,
+                        context)]);
                 connection.stop();
             }
         },
