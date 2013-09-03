@@ -17,7 +17,14 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.NuGet
                     new []{"Production"},
                 };
             }
-        }        
+        }
+
+        [Theory]
+        [PropertyData("Feeds")]
+        public void SignalRi18n(string name)
+        {
+            CommonNuGet.Run("Microsoft.AspNet.SignalR.i18n", name);
+        }
 
         [Theory]
         [PropertyData("Feeds")]

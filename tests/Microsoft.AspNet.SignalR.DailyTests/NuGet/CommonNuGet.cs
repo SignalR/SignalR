@@ -48,7 +48,7 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.NuGet
                     return;
                 }
 
-                paths = @"\\wsr-teamcity\drops\Katana.Dev.Signed\latest\Release;https://nuget.org/api/v2/";
+                paths = @"\\wsr-teamcity\drops\Katana.Dev.Signed\latest\Release;\\wsr-teamcity\Drops\Main.Signed.AllLanguages\latest-successful\Signed\Packages\ENU;https://nuget.org/api/v2/";
             }
             else if (name == "OwinTeamCityRelease")
             {
@@ -58,7 +58,7 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.NuGet
                     return;
                 }
 
-                paths = @"\\wsr-teamcity\drops\Katana.Release.Signed\latest-successful\Release;https://nuget.org/api/v2/";
+                paths = @"\\wsr-teamcity\drops\Katana.Release.Signed\latest-successful\Release;\\wsr-teamcity\Drops\Main.Signed.AllLanguages\latest-successful\Signed\Packages\ENU;https://nuget.org/api/v2/";
             }
             else if (name == "aspnetwebstacknightly")
             {

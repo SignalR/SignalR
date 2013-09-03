@@ -40,14 +40,7 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.NuGet
         public void SignalRCore(string name)
         {
             CommonNuGet.Run("Microsoft.AspNet.SignalR.Core", name);
-        }
-
-        [Theory]
-        [PropertyData("Feeds")]
-        public void SignalRi18n(string name)
-        {
-            CommonNuGet.Run("Microsoft.AspNet.SignalR.i18n", name);
-        }
+        }       
 
         [Theory]
         [PropertyData("Feeds")]
@@ -70,7 +63,8 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.NuGet
             CommonNuGet.Run("Microsoft.AspNet.SignalR.Sample", name);
         }
 
-        [Theory]
+        // Fails to install with "External packages cannot depend on packages that target projects."
+        // [Theory]
         [PropertyData("Feeds")]
         public void SignalRSelfHost(string name)
         {

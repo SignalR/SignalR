@@ -26,7 +26,8 @@
         public CommonCommandLine()
         {
             this.process = new Process();
-            this.process.StartInfo.WindowStyle = ProcessWindowStyle.Minimized;
+            this.process.StartInfo.UseShellExecute = false;
+            this.process.StartInfo.CreateNoWindow = true;
             this.Timeout = 30000;
             this.ShowOutputInTestLog = true;
             this.IgnoreExitCodes = new List<int>();
