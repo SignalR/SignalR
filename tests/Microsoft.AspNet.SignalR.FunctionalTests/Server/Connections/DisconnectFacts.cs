@@ -56,7 +56,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                      });
 
             var connectionManager = new ConnectionManager(resolver);
-            var connection = connectionManager.GetConnectionCore("Foo");
+            var connection = connectionManager.GetDuplexConnection("Foo", "connectionId", new[] { "Foo" });
             var wh = new ManualResetEventSlim();
 
             transport.Object.ProcessRequest(connection).ContinueWith(task =>

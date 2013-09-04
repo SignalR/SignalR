@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Threading;
 using Microsoft.AspNet.SignalR.Samples.Hubs.DemoHub;
 using Microsoft.AspNet.SignalR.Samples.Streaming;
@@ -13,6 +14,21 @@ namespace Microsoft.AspNet.SignalR.Samples
             {
                 var context = GlobalHost.ConnectionManager.GetConnectionContext<StreamingConnection>();
                 var hubContext = GlobalHost.ConnectionManager.GetHubContext<DemoHub>();
+
+                context.Connection.Receive(async message =>
+                {
+                    Debug.WriteLine("Received a message on the streaming connection: {0}", (object)message);
+                });
+
+                hubContext.Connection.Receive(async message =>
+                {
+                    Debug.WriteLine("Received hub invocation: {0}", message);
+                });
+
+                hubContext.Subscribe(async invocation =>
+                {
+                    Debug.WriteLine("Invoked method {0} on {1}", invocation.Method, invocation.Hub);
+                });
 
                 while (true)
                 {

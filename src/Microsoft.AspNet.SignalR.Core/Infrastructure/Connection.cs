@@ -18,12 +18,11 @@ using Newtonsoft.Json;
 
 namespace Microsoft.AspNet.SignalR.Infrastructure
 {
-    public class Connection : IConnection, ITransportConnection, ISubscriber
+    public class Connection : IDuplexConnection, ISubscriber
     {
         private readonly IMessageBus _bus;
         private readonly JsonSerializer _serializer;
         private readonly string _baseSignal;
-        private readonly string _connectionId;
         private readonly IList<string> _signals;
         private readonly DiffSet<string> _groups;
         private readonly IPerformanceCounterManager _counters;
@@ -54,7 +53,7 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
             _bus = newMessageBus;
             _serializer = jsonSerializer;
             _baseSignal = baseSignal;
-            _connectionId = connectionId;
+            ConnectionId = connectionId;
             _signals = new List<string>(signals.Concat(groups));
             _groups = new DiffSet<string>(groups);
             _traceSource = traceManager["SignalR.Connection"];
@@ -70,6 +69,8 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
                 return _baseSignal;
             }
         }
+
+        public string ConnectionId { get; private set; }
 
         IList<string> ISubscriber.EventKeys
         {
@@ -89,7 +90,7 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
         {
             get
             {
-                return _connectionId;
+                return ConnectionId;
             }
         }
 
@@ -150,14 +151,14 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
 
             // Serialize once
             ArraySegment<byte> messageBuffer = GetMessageBuffer(value);
-            string filter = GetFilter(excludedSignals); 
+            string filter = GetFilter(excludedSignals);
 
             var tasks = new Task[signals.Count];
 
             // Send the same data to each connection id
             for (int i = 0; i < signals.Count; i++)
             {
-                var message = new Message(_connectionId, signals[i], messageBuffer);
+                var message = new Message(ConnectionId, signals[i], messageBuffer);
 
                 if (!String.IsNullOrEmpty(filter))
                 {
@@ -185,7 +186,7 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
         {
             ArraySegment<byte> messageBuffer = GetMessageBuffer(value);
 
-            var message = new Message(_connectionId, key, messageBuffer);
+            var message = new Message(ConnectionId, key, messageBuffer);
 
             var command = value as Command;
             if (command != null)
@@ -318,7 +319,7 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
                                                           // just trip it
                                                           if (!_ackHandler.TriggerAck(message.CommandId))
                                                           {
-                                                              _bus.Ack(_connectionId, message.CommandId).Catch();
+                                                              _bus.Ack(ConnectionId, message.CommandId).Catch();
                                                           }
                                                       }
                                                   }
@@ -365,7 +366,7 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
 
         private void PopulateResponseState(PersistentResponse response)
         {
-            PopulateResponseState(response, _groups, _serializer, _protectedData, _connectionId);
+            PopulateResponseState(response, _groups, _serializer, _protectedData, ConnectionId);
         }
 
         internal static void PopulateResponseState(PersistentResponse response,

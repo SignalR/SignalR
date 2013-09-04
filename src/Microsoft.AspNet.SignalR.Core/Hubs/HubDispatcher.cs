@@ -364,7 +364,12 @@ namespace Microsoft.AspNet.SignalR.Hubs
 
         protected override IList<string> GetSignals(string userId, string connectionId)
         {
-            var signals = _hubs.SelectMany(info =>
+            return GetSignals(_hubs, userId, connectionId);   
+        }
+
+        public static IList<string> GetSignals(IList<HubDescriptor> hubs, string userId, string connectionId)
+        {
+            var signals = hubs.SelectMany(info =>
             {
                 var items = new List<string>
                 { 

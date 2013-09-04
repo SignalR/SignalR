@@ -76,6 +76,7 @@
     <Compile Include="Hosting\IResponse.cs" />
     <Compile Include="Hub`T.cs" />
     <Compile Include="HubConfiguration.cs" />
+    <Compile Include="HubContextExtensions.cs" />
     <Compile Include="HubException.cs" />
     <Compile Include="Hubs\ConnectionIdProxy.cs" />
     <Compile Include="Hubs\HubBase.cs" />
@@ -100,6 +101,7 @@
     <Compile Include="ConnectionMessage.cs" />
     <Compile Include="Infrastructure\DataProtectionProviderProtectedData.cs" />
     <Compile Include="Infrastructure\DefaultProtectedData.cs" />
+    <Compile Include="IDuplexConnection.cs" />
     <Compile Include="Infrastructure\MonoUtility.cs" />
     <Compile Include="Infrastructure\PrincipalUserIdProvider.cs" />
     <Compile Include="Infrastructure\ProtocolResolver.cs" />

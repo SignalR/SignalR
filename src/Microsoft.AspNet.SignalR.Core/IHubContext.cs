@@ -2,6 +2,7 @@
 
 using System;
 using Microsoft.AspNet.SignalR.Hubs;
+using Newtonsoft.Json;
 
 namespace Microsoft.AspNet.SignalR
 {
@@ -10,6 +11,16 @@ namespace Microsoft.AspNet.SignalR
     /// </summary>
     public interface IHubContext
     {
+        /// <summary>
+        /// The serializer associated with the <see cref="IHubContext"/>.
+        /// </summary>
+        JsonSerializer Serializer { get; } 
+
+        /// <summary>
+        /// Gets the <see cref="IDuplexConnection" /> for the <see cref="IHub" />.
+        /// </summary>
+        IDuplexConnection Connection { get; }
+
         /// <summary>
         /// Encapsulates all information about a SignalR connection for an <see cref="IHub"/>.
         /// </summary>

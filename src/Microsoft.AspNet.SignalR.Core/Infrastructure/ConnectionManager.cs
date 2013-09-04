@@ -56,9 +56,12 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
 
             string rawConnectionName = type.FullName;
             string connectionName = PrefixHelper.GetPersistentConnectionName(rawConnectionName);
-            IConnection connection = GetConnectionCore(connectionName);
 
-            return new PersistentConnectionContext(connection, new GroupManager(connection, PrefixHelper.GetPersistentConnectionGroupName(rawConnectionName)));
+            var connectionId = Guid.NewGuid().ToString();
+            var signals = PersistentConnection.GetDefaultSignals(connectionName, connectionId);
+            IDuplexConnection connection = GetDuplexConnection(connectionName, connectionId, signals);
+
+            return new PersistentConnectionContext(connection);
         }
 
         /// <summary>
@@ -78,25 +81,26 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
         /// <returns>a <see cref="IHubContext"/> for the specified hub</returns>
         public IHubContext GetHubContext(string hubName)
         {
-            var connection = GetConnectionCore(connectionName: null);
             var hubManager = _resolver.Resolve<IHubManager>();
             var pipelineInvoker = _resolver.Resolve<IHubPipelineInvoker>();
+            var jsonSerializer = _resolver.Resolve<JsonSerializer>();
 
-            hubManager.EnsureHub(hubName,
-                _counters.ErrorsHubResolutionTotal,
-                _counters.ErrorsHubResolutionPerSec,
-                _counters.ErrorsAllTotal,
-                _counters.ErrorsAllPerSec);
+            var descriptor = hubManager.EnsureHub(hubName,
+                                                  _counters.ErrorsHubResolutionTotal,
+                                                  _counters.ErrorsHubResolutionPerSec,
+                                                  _counters.ErrorsAllTotal,
+                                                  _counters.ErrorsAllPerSec);
 
-            return new HubContext(connection, pipelineInvoker, hubName);
+            var connectionId = Guid.NewGuid().ToString();
+            var signals = HubDispatcher.GetSignals(new[] { descriptor }, userId: null, connectionId: connectionId);
+
+            var connection = GetDuplexConnection(connectionName: null, connectionId: connectionId, signals: signals);
+
+            return new HubContext(connection, pipelineInvoker, hubName, jsonSerializer);
         }
 
-        internal Connection GetConnectionCore(string connectionName)
+        public IDuplexConnection GetDuplexConnection(string connectionName, string connectionId, IList<string> signals)
         {
-            IList<string> signals = connectionName == null ? ListHelper<string>.Empty : new[] { connectionName };
-
-            // Give this a unique id
-            var connectionId = Guid.NewGuid().ToString();
             return new Connection(_resolver.Resolve<IMessageBus>(),
                                   _resolver.Resolve<JsonSerializer>(),
                                   connectionName,

@@ -47,6 +47,31 @@ namespace Microsoft.AspNet.SignalR.Samples
                 map.MapSignalR();
             });
 
+            app.Map("/streaming-api", map =>
+            {
+                // Streaming API using SignalR
+                var connectionContext = GlobalHost.ConnectionManager.GetConnectionContext<RawConnection>();
+
+                map.Run(async context =>
+                {
+                    var tcs = new TaskCompletionSource<object>();
+
+                    // Whenever a message is sent to this connection we're going to write it to the response
+                    IDisposable disposable = connectionContext.Connection.Receive(async message =>
+                    {
+                        await context.Response.WriteAsync(message.ToString());
+                        await context.Response.Body.FlushAsync();
+                    });
+
+                    context.Request.CallCancelled.Register(() => tcs.TrySetResult(null));
+
+                    await tcs.Task;
+
+                    disposable.Dispose();
+                });
+
+            });
+
             BackgroundThread.Start();
         }
 

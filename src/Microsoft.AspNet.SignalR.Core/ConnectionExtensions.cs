@@ -5,6 +5,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR.Infrastructure;
+using Microsoft.AspNet.SignalR.Messaging;
+using Microsoft.AspNet.SignalR.Transports;
+using Newtonsoft.Json.Linq;
 
 namespace Microsoft.AspNet.SignalR
 {
@@ -81,6 +84,70 @@ namespace Microsoft.AspNet.SignalR
                                                 PrefixHelper.GetPrefixedConnectionIds(excludeConnectionIds));
 
             return connection.Send(message);
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="connection"></param>
+        /// <param name="callback"></param>
+        /// <returns></returns>
+        public static IDisposable Receive(this ITransportConnection connection, Func<JToken, Task> callback)
+        {
+            return Receive(connection, (message, state) => ((Func<JToken, Task>)state).Invoke(message), callback);
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="connection"></param>
+        /// <param name="callback"></param>
+        /// <param name="state"></param>
+        /// <returns></returns>
+        public static IDisposable Receive(this ITransportConnection connection, Func<JToken, object, Task> callback, object state)
+        {
+            if (connection == null)
+            {
+                throw new ArgumentNullException("connection");
+            }
+
+            if (callback == null)
+            {
+                throw new ArgumentNullException("callback");
+            }
+
+            return connection.Receive(null, async (response, innerState) =>
+            {
+                // Do nothing if we get one of these commands
+                if (response.Initializing ||
+                    response.Terminal ||
+                    response.Aborted ||
+                    response.Disconnect)
+                {
+                    return true;
+                }
+
+                for (int i = 0; i < response.Messages.Count; i++)
+                {
+                    ArraySegment<Message> segment = response.Messages[i];
+                    for (int j = segment.Offset; j < segment.Offset + segment.Count; j++)
+                    {
+                        Message message = segment.Array[j];
+
+                        if (message.IsAck || message.IsCommand)
+                        {
+                            continue;
+                        }
+                        
+                        var token = JToken.Parse(message.GetString());
+                        await callback(token, innerState);
+                    }
+                }
+
+                return true;
+            },
+            10,
+            state);
         }
     }
 }

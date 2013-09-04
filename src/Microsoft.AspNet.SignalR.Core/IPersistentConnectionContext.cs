@@ -10,9 +10,9 @@ namespace Microsoft.AspNet.SignalR
     public interface IPersistentConnectionContext
     {
         /// <summary>
-        /// Gets the <see cref="IConnection" /> for the <see cref="PersistentConnection" />.
+        /// Gets the <see cref="IDuplexConnection" /> for the <see cref="PersistentConnection" />.
         /// </summary>
-        IConnection Connection { get; }
+        IDuplexConnection Connection { get; }
 
         /// <summary>
         /// Gets the <see cref="IConnectionGroupManager" /> for the <see cref="PersistentConnection" />.

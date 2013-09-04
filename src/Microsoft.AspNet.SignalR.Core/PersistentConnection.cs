@@ -363,7 +363,7 @@ namespace Microsoft.AspNet.SignalR
         }
 
         [SuppressMessage("Microsoft.Usage", "CA1801:ReviewUnusedParameters", MessageId = "userId", Justification = "This method is virtual and is used in the derived class")]
-        private IList<string> GetDefaultSignals(string userId, string connectionId)
+        public static IList<string> GetDefaultSignals(string connectionTypeName, string connectionId)
         {
             // The list of default signals this connection cares about:
             // 1. The default signal (the type name)
@@ -371,7 +371,7 @@ namespace Microsoft.AspNet.SignalR
             // 3. Ack signal
 
             return new string[] {
-                DefaultSignal,
+                connectionTypeName,
                 PrefixHelper.GetConnectionId(connectionId),
                 PrefixHelper.GetAck(connectionId)
             };
@@ -385,7 +385,7 @@ namespace Microsoft.AspNet.SignalR
         /// <returns>The signals used for this <see cref="PersistentConnection"/>.</returns>
         protected virtual IList<string> GetSignals(string userId, string connectionId)
         {
-            return GetDefaultSignals(userId, connectionId);
+            return GetDefaultSignals(DefaultSignal, connectionId);
         }
 
         /// <summary>
