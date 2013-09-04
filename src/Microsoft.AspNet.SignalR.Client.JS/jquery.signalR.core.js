@@ -178,7 +178,11 @@
         error: function (message, source, context) {
             var e = new Error(message);
             e.source = source;
-            e.context = context;
+
+            if (typeof context !== "undefined") {
+                e.context = context;
+            }
+
             return e;
         },
 
@@ -657,7 +661,7 @@
                             onFailed(error, connection);
                         } else {
                             // This rejection will noop if the deferred has already been resolved or rejected.
-                            deferred.reject(signalR._.error(resources.stoppedWhileNegotiating));
+                            deferred.reject(signalR._.error(resources.stoppedWhileNegotiating, null, connection._.negotiateRequest));
                         }
                     },
                     success: function (result) {

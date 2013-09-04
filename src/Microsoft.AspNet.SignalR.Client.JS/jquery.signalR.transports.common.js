@@ -96,11 +96,14 @@
                                 data = connection._parseResponse(result);
                             }
                             catch (error) {
-                                deferral.reject(signalR._.transportError(
-                                            signalR.resources.pingServerFailedParse,
-                                            connection.transport,
-                                            error,
-                                            xhr));
+                                deferral.reject(
+                                    signalR._.transportError(
+                                        signalR.resources.pingServerFailedParse,
+                                        connection.transport,
+                                        error,
+                                        xhr
+                                    )
+                                );
                                 connection.stop();
                                 return;
                             }
@@ -112,7 +115,9 @@
                                 deferral.reject(
                                     signalR._.transportError(
                                         signalR._.format(signalR.resources.pingServerFailedInvalidResponse, result.responseText),
-                                        connection.transport
+                                        connection.transport,
+                                        null,
+                                        xhr
                                     )
                                 );
                             }
@@ -123,7 +128,8 @@
                                     signalR._.transportError(
                                         signalR._.format(signalR.resources.pingServerFailedStatusCode, error.status),
                                         connection.transport,
-                                        error
+                                        error,
+                                        xhr
                                     )
                                 );
                                 connection.stop();
@@ -133,7 +139,8 @@
                                     signalR._.transportError(
                                         signalR.resources.pingServerFailed,
                                         connection.transport,
-                                        error
+                                        error,
+                                        xhr
                                     )
                                 );
                             }
@@ -146,7 +153,7 @@
                 deferral.reject(
                     signalR._.transportError(
                         signalR.resources.noConnectionTransport,
-                        connection.transport
+                        connection.transport 
                     )
                 );
             }

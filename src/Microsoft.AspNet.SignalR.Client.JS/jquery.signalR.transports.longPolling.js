@@ -172,7 +172,7 @@
 
                                     if (connection.state !== signalR.connectionState.reconnecting) {
                                         connection.log("An error occurred using longPolling. Status = " + textStatus + ".  Response = " + data.responseText + ".");
-                                        $(instance).triggerHandler(events.onError, [signalR._.transportError(signalR.resources.longPollFailed, connection.transport, data)]);
+                                        $(instance).triggerHandler(events.onError, [signalR._.transportError(signalR.resources.longPollFailed, connection.transport, data, instance.pollXhr)]);
                                     }
 
                                     // Transition into the reconnecting state
