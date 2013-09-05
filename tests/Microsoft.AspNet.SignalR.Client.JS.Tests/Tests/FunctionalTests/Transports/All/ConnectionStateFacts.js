@@ -286,7 +286,6 @@ testUtilities.runWithAllTransports(function (transport) {
     QUnit.asyncTimeoutTest(transport + " transport will attempt to reconnect multiple times.", testUtilities.defaultTestTimeout * 4, function (end, assert, testName) {
         var connection = testUtilities.createHubConnection(end, assert, testName),
             reconnectAttempts = 0,
-            savedConnectionReconnectDelay = connection.reconnectDelay,
             savedGetUrl = $.connection.transports._logic.getUrl;
 
         function connectIfSecondReconnectAttempt() {
@@ -294,9 +293,6 @@ testUtilities.runWithAllTransports(function (transport) {
                 $.network.connect();
             }
         }
-
-        // Shorten timeouts that slow down reconnect attempts ensure transports attempt reconnecting several times.
-        connection.reconnectDelay = 100;
 
         connection.reconnecting(function () {
             assert.equal(connection.state, $.signalR.connectionState.reconnecting, "Transport started reconnecting.");
@@ -335,7 +331,6 @@ testUtilities.runWithAllTransports(function (transport) {
         });
 
         return function () {
-            connection.reconnectDelay = savedConnectionReconnectDelay;
             $.connection.transports._logic.getUrl = savedGetUrl;
 
             $.network.connect();
