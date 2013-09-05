@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Configuration;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using System.Threading;
 using Microsoft.ServiceBus;
 using Microsoft.ServiceBus.Messaging;
 
@@ -17,7 +18,9 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
         private static readonly TimeSpan ErrorBackOffAmount = TimeSpan.FromSeconds(5);
         private static readonly TimeSpan DefaultReadTimeout = TimeSpan.FromSeconds(60);
         private static readonly TimeSpan ErrorReadTimeout = TimeSpan.FromSeconds(0.5);
-        private static readonly TimeSpan IdleSubscriptionTimeout = TimeSpan.FromMinutes(5);
+        private static readonly TimeSpan IdleSubscriptionTimeout = TimeSpan.FromHours(1);
+        private static readonly TimeSpan RetryDelay = TimeSpan.FromSeconds(10);
+
 
         private readonly NamespaceManager _namespaceManager;
         private readonly MessagingFactory _factory;
@@ -40,13 +43,14 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
             }
 
             _factory = MessagingFactory.CreateFromConnectionString(configuration.ConnectionString);
+            _factory.RetryPolicy = RetryExponential.Default;
             _configuration = configuration;
         }
 
         [SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope", Justification = "The disposable is returned to the caller")]
-        public ServiceBusSubscription Subscribe(IList<string> topicNames,
-                                                Action<int, IEnumerable<BrokeredMessage>> handler,
-                                                Action<int, Exception> errorHandler)
+        public ServiceBusConnectionContext Subscribe(IList<string> topicNames,
+                                                     Action<int, IEnumerable<BrokeredMessage>> handler,
+                                                     Action<int, Exception> errorHandler)
         {
             if (topicNames == null)
             {
@@ -60,12 +64,28 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
 
             _trace.TraceInformation("Subscribing to {0} topic(s) in the service bus...", topicNames.Count);
 
-            var subscriptions = new ServiceBusSubscription.SubscriptionContext[topicNames.Count];
-            var clients = new TopicClient[topicNames.Count];
+            var connectionContext = new ServiceBusConnectionContext(_configuration, _namespaceManager, topicNames, handler, errorHandler);
 
             for (var topicIndex = 0; topicIndex < topicNames.Count; ++topicIndex)
             {
-                string topicName = topicNames[topicIndex];
+                Retry(() => CreateTopic(connectionContext, topicIndex));
+            }
+
+            _trace.TraceInformation("Subscription to {0} topics in the service bus Topic service completed successfully.", topicNames.Count);
+
+            return connectionContext;
+        }
+
+        private void CreateTopic(ServiceBusConnectionContext connectionContext, int topicIndex)
+        {
+            lock (connectionContext.TopicClientsLock)
+            {
+                if (connectionContext.IsDisposed)
+                {
+                    return;
+                }
+
+                string topicName = connectionContext.TopicNames[topicIndex];
 
                 if (!_namespaceManager.TopicExists(topicName))
                 {
@@ -85,9 +105,25 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
                 }
 
                 // Create a client for this topic
-                clients[topicIndex] = TopicClient.CreateFromConnectionString(_configuration.ConnectionString, topicName);
+                TopicClient topicClient = TopicClient.CreateFromConnectionString(_configuration.ConnectionString, topicName);
+                connectionContext.UpdateTopicClients(topicClient, topicIndex);
 
                 _trace.TraceInformation("Creation of a new topic client {0} completed successfully.", topicName);
+            }
+
+            CreateSubscription(connectionContext, topicIndex);
+        }
+
+        private void CreateSubscription(ServiceBusConnectionContext connectionContext, int topicIndex)
+        {
+            lock (connectionContext.SubscriptionsLock)
+            {
+                if (connectionContext.IsDisposed)
+                {
+                    return;
+                }
+
+                string topicName = connectionContext.TopicNames[topicIndex];
 
                 // Create a random subscription
                 string subscriptionName = Guid.NewGuid().ToString();
@@ -115,16 +151,52 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
 
                 _trace.TraceInformation("Creation of a message receive for subscription entity path {0} in the service bus completed successfully.", subscriptionEntityPath);
 
-                subscriptions[topicIndex] = new ServiceBusSubscription.SubscriptionContext(topicName, subscriptionName, receiver);
+                connectionContext.UpdateSubscriptionContext(new SubscriptionContext(topicName, subscriptionName, receiver), topicIndex);
 
-                var receiverContext = new ReceiverContext(topicIndex, receiver, handler, errorHandler);
+                var receiverContext = new ReceiverContext(topicIndex, receiver, connectionContext);
 
                 ProcessMessages(receiverContext);
             }
+        }
 
-            _trace.TraceInformation("Subscription to {0} topics in the service bus Topic service completed successfully.", topicNames.Count);
-
-            return new ServiceBusSubscription(_configuration, _namespaceManager, subscriptions, clients);
+        [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "We retry to create the topics on exceptions")]
+        private void Retry(Action action)
+        {
+            while (true)
+            {
+                try
+                {
+                    action();
+                    break;
+                }
+                catch (UnauthorizedAccessException ex)
+                {
+                    _trace.TraceError("Failed to create service bus subscription or topic : {0}", ex.Message);
+                    throw;
+                }
+                catch (QuotaExceededException ex)
+                {
+                    _trace.TraceError("Failed to create service bus subscription or topic : {0}", ex.Message);
+                    throw;
+                }
+                catch (MessagingException ex)
+                {
+                    _trace.TraceError("Failed to create service bus subscription or topic : {0}", ex.Message);
+                    if (ex.IsTransient)
+                    {
+                        Thread.Sleep(RetryDelay);
+                    }
+                    else
+                    {
+                        throw;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    _trace.TraceError("Failed to create service bus subscription or topic : {0}", ex.Message);
+                    Thread.Sleep(RetryDelay);
+                }
+            }
         }
 
         protected virtual void Dispose(bool disposing)
@@ -181,8 +253,11 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
             }
             catch (Exception ex)
             {
+                _trace.TraceError(ex.Message);
                 receiverContext.OnError(ex);
 
+                Thread.Sleep(RetryDelay);
+                goto receive;
                 // REVIEW: What should we do here?
             }
         }
@@ -216,6 +291,13 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
 
                 return false;
             }
+            catch (MessagingEntityNotFoundException)
+            {
+                receiverContext.Receiver.CloseAsync();
+                TaskAsyncHelper.Delay(RetryDelay)
+                               .Then(() => Retry(() => CreateSubscription(receiverContext.ConnectionContext, receiverContext.TopicIndex)));
+                return false;
+            }
             catch (Exception ex)
             {
                 receiverContext.OnError(ex);
@@ -243,37 +325,35 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
 
         private class ReceiverContext
         {
-            private readonly int _topicIndex;
-            private readonly Action<int, IEnumerable<BrokeredMessage>> _handler;
-            private readonly Action<int, Exception> _errorHandler;
-
             public readonly MessageReceiver Receiver;
+            public readonly ServiceBusConnectionContext ConnectionContext;
 
-            public ReceiverContext(int topicIndex,
-                                   MessageReceiver receiver,
-                                   Action<int, IEnumerable<BrokeredMessage>> handler,
-                                   Action<int, Exception> errorHandler)
-            {
-                _topicIndex = topicIndex;
-                Receiver = receiver;
-                _handler = handler;
-                _errorHandler = errorHandler;
-                ReceiveTimeout = DefaultReadTimeout;
-                ReceiveBatchSize = DefaultReceiveBatchSize;
-            }
-
+            public int TopicIndex { get; private set; }
             public TimeSpan ReceiveTimeout { get; set; }
             public int ReceiveBatchSize { get; set; }
 
+            public ReceiverContext(int topicIndex,
+                                   MessageReceiver receiver,
+                                   ServiceBusConnectionContext connectionContext)
+            {
+                TopicIndex = topicIndex;
+                Receiver = receiver;
+                ReceiveTimeout = DefaultReadTimeout;
+                ReceiveBatchSize = DefaultReceiveBatchSize;
+                ConnectionContext = connectionContext;
+            }
+
             public void OnError(Exception ex)
             {
-                _errorHandler(_topicIndex, ex);
+                ConnectionContext.ErrorHandler(TopicIndex, ex);
             }
 
             public void OnMessage(IEnumerable<BrokeredMessage> messages)
             {
-                _handler(_topicIndex, messages);
+                ConnectionContext.Handler(TopicIndex, messages);
             }
         }
+
+
     }
 }
