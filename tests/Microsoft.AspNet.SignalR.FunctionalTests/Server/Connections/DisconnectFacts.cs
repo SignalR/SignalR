@@ -76,8 +76,8 @@ namespace Microsoft.AspNet.SignalR.Tests
         {
             using (var host = new MemoryHost())
             {
-                var connectWh = new ManualResetEventSlim();
-                var disconnectWh = new ManualResetEventSlim();
+                var connectWh = new AsyncManualResetEvent();
+                var disconnectWh = new AsyncManualResetEvent();
                 var dr = new DefaultDependencyResolver();
                 var configuration = dr.Resolve<IConfigurationManager>();
 
@@ -101,11 +101,11 @@ namespace Microsoft.AspNet.SignalR.Tests
 
                 await connection.Start(host);
 
-                Assert.True(connectWh.Wait(TimeSpan.FromSeconds(10)), "Connect never fired");
+                Assert.True(await connectWh.WaitAsync(TimeSpan.FromSeconds(10)), "Connect never fired");
 
                 connection.Stop();
 
-                Assert.True(disconnectWh.Wait(disconnectWait), "Disconnect never fired");
+                Assert.True(await disconnectWh.WaitAsync(disconnectWait), "Disconnect never fired");
             }
         }
 
@@ -117,8 +117,8 @@ namespace Microsoft.AspNet.SignalR.Tests
                 var dr = new DefaultDependencyResolver();
                 var configuration = dr.Resolve<IConfigurationManager>();
 
-                var connectWh = new ManualResetEventSlim();
-                var disconnectWh = new ManualResetEventSlim();
+                var connectWh = new AsyncManualResetEvent();
+                var disconnectWh = new AsyncManualResetEvent();
                 host.Configure(app =>
                 {
                     var config = new HubConfiguration
@@ -141,11 +141,11 @@ namespace Microsoft.AspNet.SignalR.Tests
 
                 await connection.Start(host);
 
-                Assert.True(connectWh.Wait(TimeSpan.FromSeconds(10)), "Connect never fired");
+                Assert.True(await connectWh.WaitAsync(TimeSpan.FromSeconds(10)), "Connect never fired");
 
                 connection.Stop();
 
-                Assert.True(disconnectWh.Wait(disconnectWait), "Disconnect never fired");
+                Assert.True(await disconnectWh.WaitAsync(disconnectWait), "Disconnect never fired");
             }
         }
 
@@ -287,10 +287,10 @@ namespace Microsoft.AspNet.SignalR.Tests
 
         public class MyHub : Hub
         {
-            private ManualResetEventSlim _connectWh;
-            private ManualResetEventSlim _disconnectWh;
+            private AsyncManualResetEvent _connectWh;
+            private AsyncManualResetEvent _disconnectWh;
 
-            public MyHub(ManualResetEventSlim connectWh, ManualResetEventSlim disconnectWh)
+            public MyHub(AsyncManualResetEvent connectWh, AsyncManualResetEvent disconnectWh)
             {
                 _connectWh = connectWh;
                 _disconnectWh = disconnectWh;
@@ -318,10 +318,10 @@ namespace Microsoft.AspNet.SignalR.Tests
 
         private class MyConnection : PersistentConnection
         {
-            private ManualResetEventSlim _connectWh;
-            private ManualResetEventSlim _disconnectWh;
+            private AsyncManualResetEvent _connectWh;
+            private AsyncManualResetEvent _disconnectWh;
 
-            public MyConnection(ManualResetEventSlim connectWh, ManualResetEventSlim disconnectWh)
+            public MyConnection(AsyncManualResetEvent connectWh, AsyncManualResetEvent disconnectWh)
             {
                 _connectWh = connectWh;
                 _disconnectWh = disconnectWh;

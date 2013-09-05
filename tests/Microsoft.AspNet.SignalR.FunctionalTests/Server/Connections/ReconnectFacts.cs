@@ -42,8 +42,8 @@ namespace Microsoft.AspNet.SignalR.Tests
                 using (var connection = CreateConnection("http://foo/endpoint"))
                 {
                     var transport = CreateTransport(transportType, host);
-                    var pollEvent = new ManualResetEventSlim();
-                    var reconnectedEvent = new ManualResetEventSlim();
+                    var pollEvent = new AsyncManualResetEvent();
+                    var reconnectedEvent = new AsyncManualResetEvent();
 
                     host.OnPoll = () =>
                     {
@@ -58,11 +58,11 @@ namespace Microsoft.AspNet.SignalR.Tests
                     await connection.Start(transport);
 
                     // Wait for the /poll before restarting the server
-                    Assert.True(pollEvent.Wait(TimeSpan.FromSeconds(15)), "Timed out waiting for poll request");
+                    Assert.True(await pollEvent.WaitAsync(TimeSpan.FromSeconds(15)), "Timed out waiting for poll request");
 
                     host.Restart();
 
-                    Assert.True(reconnectedEvent.Wait(TimeSpan.FromSeconds(15)), "Timed out waiting for client side reconnect");
+                    Assert.True(await reconnectedEvent.WaitAsync(TimeSpan.FromSeconds(15)), "Timed out waiting for client side reconnect");
 
                     Assert.Equal(2, persistentConnections.Count);
                     Assert.Equal(1, persistentConnections[1].Reconnects);

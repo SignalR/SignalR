@@ -23,7 +23,7 @@ namespace Microsoft.AspNet.SignalR.Tests
             using (var host = CreateHost(hostType, transportType))
             {
                 // Arrange
-                var mre = new ManualResetEventSlim(false);
+                var mre = new AsyncManualResetEvent(false);
                 host.Initialize(keepAlive: null, messageBusType: messageBusType);
                 var connection = CreateConnection(host, "/my-reconnect");
 
@@ -38,8 +38,7 @@ namespace Microsoft.AspNet.SignalR.Tests
 
                     await connection.Start(host.Transport);
 
-                    // Assert
-                    Assert.True(mre.Wait(TimeSpan.FromSeconds(10)));
+                    Assert.True(await mre.WaitAsync(TimeSpan.FromSeconds(10)));
 
                     // Clean-up
                     mre.Dispose();
@@ -61,7 +60,7 @@ namespace Microsoft.AspNet.SignalR.Tests
             using (var host = CreateHost(hostType, transportType))
             {
                 // Arrange
-                var mre = new ManualResetEventSlim(false);
+                var mre = new AsyncManualResetEvent(false);
                 host.Initialize(keepAlive: 5, messageBusType: messageBusType);
                 var connection = CreateConnection(host, "/my-reconnect");
 
@@ -77,11 +76,11 @@ namespace Microsoft.AspNet.SignalR.Tests
                     ((Client.IConnection)connection).KeepAliveData = new KeepAliveData(TimeSpan.FromMilliseconds(500));
 
                     // Assert that Reconnected is called
-                    Assert.True(mre.Wait(TimeSpan.FromSeconds(15)));
+                    Assert.True(await mre.WaitAsync(TimeSpan.FromSeconds(15)));
 
                     // Assert that Reconnected is called again
                     mre.Reset();
-                    Assert.True(mre.Wait(TimeSpan.FromSeconds(15)));
+                    Assert.True(await mre.WaitAsync(TimeSpan.FromSeconds(15)));
 
                     // Clean-up
                     mre.Dispose();
@@ -102,7 +101,7 @@ namespace Microsoft.AspNet.SignalR.Tests
             using (var host = CreateHost(hostType, transportType))
             {
                 // Arrange
-                var mre = new ManualResetEventSlim(false);
+                var mre = new AsyncManualResetEvent(false);
                 host.Initialize(keepAlive: null, messageBusType: messageBusType);
                 var connection = CreateConnection(host, "/my-reconnect");
 
@@ -118,7 +117,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                     await connection.Start(host.Transport);
 
                     // Assert
-                    Assert.True(mre.Wait(TimeSpan.FromSeconds(15)));
+                    Assert.True(await mre.WaitAsync(TimeSpan.FromSeconds(15)));
 
                     // Clean-up
                     mre.Dispose();
@@ -135,7 +134,7 @@ namespace Microsoft.AspNet.SignalR.Tests
             using (var host = CreateHost(hostType, transportType))
             {
                 // Arrange
-                var mre = new ManualResetEventSlim();
+                var mre = new AsyncManualResetEvent();
                 host.Initialize(keepAlive: 2);
                 var connection = CreateConnection(host, "/my-reconnect");
 
@@ -151,7 +150,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                     await connection.Start(host.Transport);
 
                     // Assert
-                    Assert.False(mre.Wait(TimeSpan.FromSeconds(10)));
+                    Assert.False(await mre.WaitAsync(TimeSpan.FromSeconds(10)));
 
                     // Clean-up
                     mre.Dispose();

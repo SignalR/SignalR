@@ -285,7 +285,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                 // Arrange
                 host.Initialize();
                 var connection = CreateConnection(host, "/examine-request");
-                var mre = new ManualResetEventSlim();
+                var mre = new AsyncManualResetEvent();
 
                 using (connection)
                 {
@@ -303,7 +303,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                     var ignore = connection.Send("message");
 
                     // Assert
-                    Assert.True(mre.Wait(TimeSpan.FromSeconds(10)));
+                    Assert.True(await mre.WaitAsync(TimeSpan.FromSeconds(10)));
                 }
 
             }
