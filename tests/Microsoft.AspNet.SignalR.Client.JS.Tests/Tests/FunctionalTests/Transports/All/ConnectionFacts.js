@@ -217,6 +217,33 @@ testUtilities.runWithAllTransports(function (transport) {
         };
     });
 
+    QUnit.asyncTimeoutTest(transport + ": Reconnect exceeding the reconnect window results in the connection disconnecting.", testUtilities.defaultTestTimeout * 2, function (end, assert, testName) {
+        var connection = testUtilities.createHubConnection(end, assert, testName, undefined, false);
+       
+        connection.reconnecting(function () {
+            assert.comment("Reconnecting fired.");
+            connection.reconnectWindow = 2000;
+        });
+
+        connection.disconnected(function () {
+            assert.comment("Disconnected fired.");
+            end();
+        });
+
+        connection.start({ transport: transport }).done(function () {
+            // Wait for the transports to settle (no messages flowing)
+            setTimeout(function () {
+                $.network.disconnect();
+            }, 1000);
+        });
+
+        // Cleanup
+        return function () {
+            $.network.connect();
+            connection.stop();
+        };
+    });
+
     QUnit.asyncTimeoutTest(transport + ": Start deferred triggers immediately after start.", testUtilities.defaultTestTimeout, function (end, assert, testName) {
         var connection = testUtilities.createHubConnection(end, assert, testName, undefined, false);
 
