@@ -155,8 +155,9 @@
     <Compile Include="Hubs\IValidClientContract.cs" />
     <Compile Include="Hubs\MyItemsHub.cs" />
     <Compile Include="Hubs\ValidTypedHub.cs" />
-    <Compile Include="Infrastructure\BasicAuthenticationProvider.cs" />
     <Compile Include="Hubs\OnConnectedBufferHub.cs" />
+    <Compile Include="Infrastructure\AsyncManualResetEvent.cs" />
+    <Compile Include="Infrastructure\BasicAuthenticationProvider.cs" />
     <Compile Include="Infrastructure\ClientAssertExtensions.cs" />
     <Compile Include="Infrastructure\CommonCommandLine.cs" />
     <Compile Include="Infrastructure\CommonLog.cs" />

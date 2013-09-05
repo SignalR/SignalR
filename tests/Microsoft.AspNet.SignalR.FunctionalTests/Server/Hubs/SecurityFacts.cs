@@ -6,6 +6,7 @@ using Microsoft.AspNet.SignalR.Client.Transports.ServerSentEvents;
 using Microsoft.AspNet.SignalR.Hosting.Memory;
 using Microsoft.AspNet.SignalR.Infrastructure;
 using Microsoft.AspNet.SignalR.Tests.Common;
+using Microsoft.AspNet.SignalR.Tests.Common.Infrastructure;
 using Newtonsoft.Json;
 using Owin;
 using Xunit;
@@ -37,7 +38,7 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Server.Hubs
 
                 using (connection)
                 {
-                    var inGroup = new ManualResetEventSlim();
+                    var inGroup = new AsyncManualResetEvent();
 
                     connection.Received += data =>
                     {
@@ -49,11 +50,11 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Server.Hubs
 
                     await connection.Start(host);
 
-                    inGroup.Wait();
+                    await inGroup.WaitAsync(TimeSpan.FromSeconds(10));
 
                     Assert.NotNull(connection.GroupsToken);
 
-                    var spyWh = new ManualResetEventSlim();
+                    var spyWh = new AsyncManualResetEvent();
                     var hackerConnection = new Client.Connection(connection.Url)
                     {
                         ConnectionId = "hacker"
@@ -76,7 +77,7 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Server.Hubs
                     reader.Start();
                     await connection.Send("random");
 
-                    Assert.False(spyWh.Wait(TimeSpan.FromSeconds(5)));
+                    Assert.False(await spyWh.WaitAsync(TimeSpan.FromSeconds(5)));
                 }
             }
         }

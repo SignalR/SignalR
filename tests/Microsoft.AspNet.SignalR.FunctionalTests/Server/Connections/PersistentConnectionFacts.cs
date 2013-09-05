@@ -116,7 +116,7 @@ namespace Microsoft.AspNet.SignalR.Tests
 
                     using (connection1)
                     {
-                        var wh1 = new ManualResetEventSlim(initialState: false);
+                        var wh1 = new AsyncManualResetEvent(initialState: false);
 
                         await connection1.Start(host);
 
@@ -128,7 +128,7 @@ namespace Microsoft.AspNet.SignalR.Tests
 
                         var ignore = connectionContext.Connection.Send(connection1.ConnectionId, "yay");
 
-                        Assert.True(wh1.Wait(TimeSpan.FromSeconds(10)));
+                        Assert.True(await wh1.WaitAsync(TimeSpan.FromSeconds(10)));
                     }
                 }
             }
@@ -154,7 +154,7 @@ namespace Microsoft.AspNet.SignalR.Tests
 
                     using (connection1)
                     {
-                        var wh1 = new ManualResetEventSlim(initialState: false);
+                        var wh1 = new AsyncManualResetEvent(initialState: false);
 
                         await connection1.Start(host);
 
@@ -166,11 +166,11 @@ namespace Microsoft.AspNet.SignalR.Tests
 
                         var ignore = connectionContext.Connection.Send(new[] { connection1.ConnectionId }, "yay");
 
-                        Assert.True(wh1.Wait(TimeSpan.FromSeconds(10)));
+                        Assert.True(await wh1.WaitAsync(TimeSpan.FromSeconds(10)));
                     }
                 }
             }
-            // TODO: Investigate why this intermittently fails
+            
             [Fact]
             public async Task SendToGroupFromOutsideOfConnection()
             {
@@ -192,7 +192,7 @@ namespace Microsoft.AspNet.SignalR.Tests
 
                     using (connection1)
                     {
-                        var wh1 = new ManualResetEventSlim(initialState: false);
+                        var wh1 = new AsyncManualResetEvent(initialState: false);
 
                         await connection1.Start(host);
 
@@ -202,10 +202,9 @@ namespace Microsoft.AspNet.SignalR.Tests
                             wh1.Set();
                         };
 
-                        await connectionContext.Groups.Add(connection1.ConnectionId, "Foo");
-                        var ignore = connectionContext.Groups.Send("Foo", "yay");
-
-                        Assert.True(wh1.Wait(TimeSpan.FromSeconds(10)));
+                        await connectionContext.Groups.Add(connection1.ConnectionId, "Foo");                        
+                        await connectionContext.Groups.Send("Foo", "yay");
+                        Assert.True(await wh1.WaitAsync(TimeSpan.FromSeconds(10)));
                     }
                 }
             }
@@ -231,7 +230,7 @@ namespace Microsoft.AspNet.SignalR.Tests
 
                     using (connection1)
                     {
-                        var wh1 = new ManualResetEventSlim(initialState: false);
+                        var wh1 = new AsyncManualResetEvent(initialState: false);
 
                         await connection1.Start(host);
 
@@ -244,7 +243,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                         connectionContext.Groups.Add(connection1.ConnectionId, "Foo").Wait();
                         var ignore = connectionContext.Groups.Send(new[] { "Foo", "Bar" }, "yay");
 
-                        Assert.True(wh1.Wait(TimeSpan.FromSeconds(10)));
+                        Assert.True(await wh1.WaitAsync(TimeSpan.FromSeconds(10)));
                     }
                 }
             }
@@ -300,7 +299,7 @@ namespace Microsoft.AspNet.SignalR.Tests
             {
                 using (var host = CreateHost(hostType, transportType))
                 {
-                    var wh = new ManualResetEventSlim();
+                    var wh = new AsyncManualResetEvent();
                     host.Initialize(messageBusType: messageBusType);
 
                     var connection = CreateConnection(host, "/protected");
@@ -325,7 +324,7 @@ namespace Microsoft.AspNet.SignalR.Tests
             {
                 using (var host = CreateHost(hostType, transportType))
                 {
-                    var wh = new ManualResetEventSlim();
+                    var wh = new AsyncManualResetEvent();
                     host.Initialize(messageBusType: messageBusType);
 
                     var connection = CreateConnection(host, "/add-group");
@@ -341,7 +340,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                         await connection.Start(host.Transport);
                         connection.SendWithTimeout("");
 
-                        Assert.True(wh.Wait(TimeSpan.FromSeconds(5)));
+                        Assert.True(await wh.WaitAsync(TimeSpan.FromSeconds(5)));
                     }
                 }
             }
@@ -640,8 +639,8 @@ namespace Microsoft.AspNet.SignalR.Tests
                     using (connection1)
                     using (connection2)
                     {
-                        var wh1 = new ManualResetEventSlim(initialState: false);
-                        var wh2 = new ManualResetEventSlim(initialState: false);
+                        var wh1 = new AsyncManualResetEvent(initialState: false);
+                        var wh2 = new AsyncManualResetEvent(initialState: false);
 
                         connection1.Received += data => wh1.Set();
                         connection2.Received += data => wh2.Set();
@@ -651,8 +650,8 @@ namespace Microsoft.AspNet.SignalR.Tests
 
                         connection1.SendWithTimeout("test");
 
-                        Assert.False(wh1.WaitHandle.WaitOne(TimeSpan.FromSeconds(5)));
-                        Assert.True(wh2.WaitHandle.WaitOne(TimeSpan.FromSeconds(5)));
+                        Assert.False(await wh1.WaitAsync(TimeSpan.FromSeconds(5)));
+                        Assert.True(await wh2.WaitAsync(TimeSpan.FromSeconds(5)));
                     }
                 }
             }

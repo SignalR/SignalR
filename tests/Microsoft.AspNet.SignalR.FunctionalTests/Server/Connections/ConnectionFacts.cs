@@ -491,8 +491,8 @@ namespace Microsoft.AspNet.SignalR.Client.Tests
 
                     using (connection)
                     {
-                        var reconnectWh = new ManualResetEventSlim();
-                        var disconnectWh = new ManualResetEventSlim();
+                        var reconnectWh = new AsyncManualResetEvent();
+                        var disconnectWh = new AsyncManualResetEvent();
 
                         connection.Reconnecting += () =>
                         {
@@ -509,8 +509,8 @@ namespace Microsoft.AspNet.SignalR.Client.Tests
                         await connection.Start(host.Transport);
                         host.Shutdown();
 
-                        Assert.True(reconnectWh.Wait(TimeSpan.FromSeconds(15)), "Reconnect never fired");
-                        Assert.True(disconnectWh.Wait(TimeSpan.FromSeconds(15)), "Closed never fired");
+                        Assert.True(await reconnectWh.WaitAsync(TimeSpan.FromSeconds(25)), "Reconnect never fired");
+                        Assert.True(await disconnectWh.WaitAsync(TimeSpan.FromSeconds(25)), "Closed never fired");
                     }
                 }
             }
@@ -541,8 +541,8 @@ namespace Microsoft.AspNet.SignalR.Client.Tests
 
                     using (connection)
                     {
-                        var reconnectingWh = new ManualResetEventSlim();
-                        var reconnectedWh = new ManualResetEventSlim();
+                        var reconnectingWh = new AsyncManualResetEvent();
+                        var reconnectedWh = new AsyncManualResetEvent();
 
                         connection.Reconnecting += () =>
                         {
@@ -558,8 +558,12 @@ namespace Microsoft.AspNet.SignalR.Client.Tests
 
                         await connection.Start(host.Transport);
 
-                        Assert.True(reconnectingWh.Wait(TimeSpan.FromSeconds(30)));
-                        Assert.True(reconnectedWh.Wait(TimeSpan.FromSeconds(30)));
+                        // Force reconnect
+                        Thread.Sleep(TimeSpan.FromSeconds(5));
+
+                        Assert.True(await reconnectingWh.WaitAsync(TimeSpan.FromSeconds(30)));
+                        Assert.True(await reconnectedWh.WaitAsync(TimeSpan.FromSeconds(30)));
+
                         Thread.Sleep(TimeSpan.FromSeconds(15));
                         Assert.NotEqual(ConnectionState.Disconnected, connection.State);
                     }
@@ -580,7 +584,7 @@ namespace Microsoft.AspNet.SignalR.Client.Tests
                 using (var host = CreateHost(hostType, transportType))
                 {
                     var errorsCaught = 0;
-                    var wh = new ManualResetEventSlim();
+                    var wh = new AsyncManualResetEvent();
                     Exception thrown = new Exception(),
                               caught = null;
 
@@ -606,7 +610,7 @@ namespace Microsoft.AspNet.SignalR.Client.Tests
 
                         await connection.Start(host.Transport);
 
-                        Assert.True(wh.Wait(TimeSpan.FromSeconds(5)));
+                        Assert.True(await wh.WaitAsync(TimeSpan.FromSeconds(5)));
                         Assert.Equal(thrown, caught);
                     }
                 }
@@ -637,7 +641,7 @@ namespace Microsoft.AspNet.SignalR.Client.Tests
                     {
                         Debug.WriteLine("Transport: {0}", (object)transport.Name);
 
-                        var wh = new ManualResetEventSlim();
+                        var wh = new AsyncManualResetEvent();
                         Exception thrown = new InvalidOperationException(),
                                   caught = null;
 
@@ -659,7 +663,7 @@ namespace Microsoft.AspNet.SignalR.Client.Tests
                             await connection.Start(transport);
                             var ignore = connection.Send("");
 
-                            Assert.True(wh.Wait(TimeSpan.FromSeconds(5)));
+                            Assert.True(await wh.WaitAsync(TimeSpan.FromSeconds(5)));
                             Assert.Equal(thrown, caught);
                         }
                     }
