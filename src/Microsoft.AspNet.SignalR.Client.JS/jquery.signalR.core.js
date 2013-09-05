@@ -326,7 +326,8 @@
                 connectingMessageBuffer: new ConnectingMessageBuffer(this, function (message) {
                     $connection.triggerHandler(events.onReceived, [message]);
                 }),
-                onFailedTimeoutHandle: null
+                onFailedTimeoutHandle: null,
+                lastMessageAt: new Date().getTime()
             };
             if (typeof (logging) === "boolean") {
                 this.logging = logging;
@@ -388,6 +389,8 @@
         transportConnectTimeout: 0, // This will be modified by the server in respone to the negotiate request.  It will add any value sent down from the server to the client value.
 
         disconnectTimeout: 30000, // This should be set by the server in response to the negotiate request (30s default)
+
+        reconnectWindow: 30000, // This should be set by the server in response to the negotiate request 
 
         keepAliveWarnAt: 2 / 3, // Warn user of slow connection if we breach the X% mark of the keep alive timeout
 
@@ -707,6 +710,8 @@
                         } else {
                             keepAliveData.activated = false;
                         }
+
+                        connection.reconnectWindow = connection.disconnectTimeout + (keepAliveData.timeout || 0);
 
                         if (!res.ProtocolVersion || res.ProtocolVersion !== connection.clientProtocol) {
                             protocolError = signalR._.error(signalR._.format(resources.protocolIncompatible, connection.clientProtocol, res.ProtocolVersion));

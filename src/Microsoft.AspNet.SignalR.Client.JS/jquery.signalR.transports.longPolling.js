@@ -136,8 +136,7 @@
                                 if (shouldReconnect) {
                                     // Transition into the reconnecting state
                                     // If this fails then that means that the user transitioned the connection into a invalid state in processMessages.
-                                    if (!transportLogic.ensureReconnectingState(instance))
-                                    {
+                                    if (!transportLogic.ensureReconnectingState(instance)) {
                                         return;
                                     }
                                 }
@@ -173,6 +172,13 @@
                                     if (connection.state !== signalR.connectionState.reconnecting) {
                                         connection.log("An error occurred using longPolling. Status = " + textStatus + ".  Response = " + data.responseText + ".");
                                         $(instance).triggerHandler(events.onError, [signalR._.transportError(signalR.resources.longPollFailed, connection.transport, data, instance.pollXhr)]);
+                                    }
+
+                                    // We check the state here to verify that we're not in an invalid state prior to verifying Reconnect.
+                                    // If we're not in connected or reconnecting then the next ensureReconnectingState check will fail and will return.
+                                    // Therefore we don't want to change that failure code path.
+                                    if ((connection.state === signalR.connectionState.connected || connection.state === signalR.connectionState.reconnecting) && !transportLogic.verifyReconnect(connection)) {
+                                        return;
                                     }
 
                                     // Transition into the reconnecting state

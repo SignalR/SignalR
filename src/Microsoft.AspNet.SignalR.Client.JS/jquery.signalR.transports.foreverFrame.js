@@ -111,6 +111,11 @@
         reconnect: function (connection) {
             var that = this;
             window.setTimeout(function () {
+                // Verify that we're ok to reconnect.
+                if (!transportLogic.verifyReconnect(connection)) {
+                    return;
+                }
+
                 if (connection.frame && transportLogic.ensureReconnectingState(connection)) {
                     var frame = connection.frame,
                         src = transportLogic.getUrl(connection, that.name, true) + "&frameId=" + connection.frameId;

@@ -336,6 +336,9 @@
             var data,
                 $connection = $(connection);
 
+            // Update the last message time stamp
+            connection._.lastMessageAt = new Date().getTime();
+
             // If our transport supports keep alive then we need to update the last keep alive time stamp.
             // Very rarely the transport can be null.
             if (connection.transport && connection.transport.supportsKeepAlive && connection.keepAliveData.activated) {
@@ -433,6 +436,16 @@
             }
         },
 
+        verifyReconnect: function (connection) {
+            if (new Date().getTime() - connection._.lastMessageAt >= connection.reconnectWindow) {
+                connection.log("There has not been an active server connection for an extended perior of time. Stopping connection.");
+                connection.stop();
+                return false;
+            }
+
+            return true;
+        },
+
         reconnect: function (connection, transportName) {
             var transport = signalR.transports[transportName],
                 that = this;
@@ -441,6 +454,10 @@
             // and a reconnectTimeout isn't already set.
             if (isConnectedOrReconnecting(connection) && !connection._.reconnectTimeout) {
                 connection._.reconnectTimeout = window.setTimeout(function () {
+                    if (!transportLogic.verifyReconnect(connection)) {
+                        return;
+                    }
+
                     transport.stop(connection);
 
                     if (that.ensureReconnectingState(connection)) {
