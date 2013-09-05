@@ -124,12 +124,12 @@ testUtilities.runWithAllTransports(function (transport) {
         demo.client.foo = function () { };
 
         connection.start(activeTransport).done(function () {
-            setTimeout(function () {
-                // Synchronously stop
-                connection.stop(false);
+            connection.stop();
+            assert.comment("Connection manually stopped, now restarting.");
 
-                assert.ok(true, "Connection manually stopped, now restarting.");
-
+            // We must wait for a timeout to restart the connection for this test to pass with the long polling transport.
+            // Without the timeout, the original polling loop will not terminate.
+            window.setTimeout(function () {
                 assert.equal($.signalR.connectionState.disconnected, connection.state, "SignalR state is disconnected prior to (re)start.");
 
                 connection.start(activeTransport).done(function () {
@@ -139,7 +139,7 @@ testUtilities.runWithAllTransports(function (transport) {
                     // In a later test we'll determine if reconnected gets called
                     connection.stateChanged(function () {
                         if (connection.state == $.signalR.connectionState.reconnecting) {
-                            assert.ok(true, "SignalR state is reconnecting.");
+                            assert.comment("SignalR state is reconnecting.");
                             end();
                         }
                     });
@@ -148,7 +148,7 @@ testUtilities.runWithAllTransports(function (transport) {
                 });
 
                 assert.equal($.signalR.connectionState.connecting, connection.state, "SignalR state is connecting prior to start deferred resolve.");
-            }, 250);
+            }, 1000);
         });
 
         // Cleanup
