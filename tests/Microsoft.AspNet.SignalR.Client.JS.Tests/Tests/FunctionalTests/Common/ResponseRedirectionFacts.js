@@ -55,8 +55,9 @@ QUnit.asyncTimeoutTest("Auto transport negotiate fails on response redirection."
     connection.start().done(function () {
         assert.fail("Connection was started successfully.");
         end();
-    }).fail(function () {
+    }).fail(function (error) {
         assert.comment("Connection start deferred failure was triggered.");
+        assert.isSet(error.context, "Context is passed with parse failure in negotiate.");
         end();
     });
 
@@ -73,8 +74,9 @@ testUtilities.runWithAllTransports(function (transport) {
         connection.start({ transport: transport }).done(function () {
             assert.fail("Connection was started successfully.");
             end();
-        }).fail(function () {
+        }).fail(function (error) {
             assert.comment("Connection start deferred failure was triggered.");
+            assert.isSet(error.context, "Context is passed with parse failure in negotiate.");
             end();
         });
 
@@ -91,8 +93,9 @@ testUtilities.runWithAllTransports(function (transport) {
                     // Successful ping
                     assert.fail("Successful ping with " + transport);
                     end();
-                }).fail(function () {
+                }).fail(function (error) {
                     assert.comment("Failed to ping server with " + transport);
+                    assert.isSet(error.context, "Context is passed with parse failure in ping.");
                     end();
                 });
             };
@@ -120,8 +123,9 @@ testUtilities.runWithTransports(["longPolling", "foreverFrame", "serverSentEvent
 
             connection.send("");
 
-            connection.error(function () {
+            connection.error(function (error) {
                 assert.comment("Connection triggered error function on bad send response.");
+                assert.isSet(error.context, "Context is passed with parse failure in send.");
                 end();
             });
         });
@@ -142,8 +146,9 @@ QUnit.asyncTimeoutTest("LongPolling poll fails on response redirection.", testUt
 
         connection.send("");
 
-        connection.error(function () {
+        connection.error(function (error) {
             assert.comment("Connection triggered error function on bad poll response.");
+            assert.isSet(error.context, "Context is passed with parse failure in poll.");
             end();
         });
     });
