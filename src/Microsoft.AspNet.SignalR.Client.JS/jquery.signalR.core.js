@@ -661,7 +661,7 @@
                             onFailed(error, connection);
                         } else {
                             // This rejection will noop if the deferred has already been resolved or rejected.
-                            deferred.reject(signalR._.error(resources.stoppedWhileNegotiating, null, connection._.negotiateRequest));
+                            deferred.reject(signalR._.error(resources.stoppedWhileNegotiating, null /* error */, connection._.negotiateRequest));
                         }
                     },
                     success: function (result) {

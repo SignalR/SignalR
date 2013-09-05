@@ -116,7 +116,7 @@
                                     signalR._.transportError(
                                         signalR._.format(signalR.resources.pingServerFailedInvalidResponse, result.responseText),
                                         connection.transport,
-                                        null,
+                                        null /* error */,
                                         xhr
                                     )
                                 );
@@ -153,7 +153,7 @@
                 deferral.reject(
                     signalR._.transportError(
                         signalR.resources.noConnectionTransport,
-                        connection.transport 
+                        connection.transport
                     )
                 );
             }
