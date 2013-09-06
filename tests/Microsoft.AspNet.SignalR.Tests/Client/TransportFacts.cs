@@ -92,7 +92,8 @@ namespace Microsoft.AspNet.SignalR.Tests
 
                     httpClient.Setup(h => h.Post(It.IsAny<string>(),
                                                  It.IsAny<Action<Client.Http.IRequest>>(),
-                                                 It.IsAny<IDictionary<string, string>>()))
+                                                 It.IsAny<IDictionary<string, string>>(),
+                                                 It.IsAny<bool>()))
                               .Returns(TaskAsyncHelper.FromResult(response.Object));
 
                     connection.Setup(c => c.Trace(TraceLevels.Messages, It.IsAny<string>(), It.IsAny<object[]>()));
