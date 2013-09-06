@@ -35,7 +35,7 @@
 
   <PropertyGroup>
     <PrereleaseTagWithSeparator Condition="$(BuildQuality) != ''">-$(BuildQuality)</PrereleaseTagWithSeparator>
-    <AssemblyVersion>$(MajorVersion).$(MinorVersion).0</AssemblyVersion>
+    <AssemblyVersion>$(MajorVersion).$(MinorVersion).$(PatchVersion)</AssemblyVersion>
     <PackageVersion>$(MajorVersion).$(MinorVersion).$(PatchVersion)$(PrereleaseTagWithSeparator)</PackageVersion>
   </PropertyGroup>
 
