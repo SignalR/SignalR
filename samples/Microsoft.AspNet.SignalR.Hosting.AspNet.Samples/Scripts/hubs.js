@@ -1,5 +1,5 @@
 /*!
- * ASP.NET SignalR JavaScript Library v1.1.3
+ * ASP.NET SignalR JavaScript Library v1.1.4
  * http://signalr.net/
  *
  * Copyright Microsoft Open Technologies, Inc. All rights reserved.

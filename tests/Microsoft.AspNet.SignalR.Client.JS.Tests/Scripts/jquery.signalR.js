@@ -1,7 +1,7 @@
 /* jquery.signalR.core.js */
 /*global window:false */
 /*!
- * ASP.NET SignalR JavaScript Library v1.1.3
+ * ASP.NET SignalR JavaScript Library v1.1.4
  * http://signalr.net/
  *
  * Copyright Microsoft Open Technologies, Inc. All rights reserved.
@@ -2189,5 +2189,5 @@
 /*global window:false */
 /// <reference path="jquery.signalR.core.js" />
 (function ($) {
-    $.signalR.version = "1.1.3";
+    $.signalR.version = "1.1.4";
 }(window.jQuery));
