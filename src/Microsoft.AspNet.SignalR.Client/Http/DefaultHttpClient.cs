@@ -11,6 +11,8 @@ namespace Microsoft.AspNet.SignalR.Client.Http
     /// </summary>
     public class DefaultHttpClient : IHttpClient
     {
+
+#if (!WINDOWS_PHONE && !SILVERLIGHT)
         private readonly string _shortRunningGroup;
         private readonly string _longRunningGroup;
 
@@ -20,6 +22,7 @@ namespace Microsoft.AspNet.SignalR.Client.Http
             _shortRunningGroup = "SignalR-short-running-" + id;
             _longRunningGroup = "SignalR-long-running-" + id;
         }
+#endif
 
         /// <summary>
         /// Makes an asynchronous http GET request to the specified url.
@@ -32,7 +35,9 @@ namespace Microsoft.AspNet.SignalR.Client.Http
         {
             return HttpHelper.GetAsync(url, request =>
             {
+#if (!WINDOWS_PHONE && !SILVERLIGHT)
                 request.ConnectionGroupName = isLongRunning ? _longRunningGroup : _shortRunningGroup;
+#endif
 
                 var req = new HttpWebRequestWrapper(request);
                 prepareRequest(req);
@@ -52,7 +57,9 @@ namespace Microsoft.AspNet.SignalR.Client.Http
         {
             return HttpHelper.PostAsync(url, request =>
             {
+#if (!WINDOWS_PHONE && !SILVERLIGHT)
                 request.ConnectionGroupName = isLongRunning ? _longRunningGroup : _shortRunningGroup;
+#endif
 
                 var req = new HttpWebRequestWrapper(request);
                 prepareRequest(req);
