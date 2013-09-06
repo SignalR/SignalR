@@ -50,7 +50,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
             }
         }
 
-        private static void WriteUlongAsHexToBuffer(ulong value, TextWriter textWriter)
+        internal static void WriteUlongAsHexToBuffer(ulong value, TextWriter textWriter)
         {
             // This tracks the length of the output and serves as the index for the next character to be written into the pBuffer.
             // The length could reach up to 16 characters, so at least that much space should remain in the pBuffer.
