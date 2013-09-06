@@ -72,20 +72,20 @@ namespace Microsoft.AspNet.SignalR.Hosting.Memory
 
         public Task<IClientResponse> Get(string url, bool disableWrites)
         {
-            return ProcessRequest("GET", url, req => { }, null, disableWrites);
+            return ProcessRequest("GET", url, req => { }, null, disableWrites: disableWrites);
         }
 
         public Task<IClientResponse> Post(string url, IDictionary<string, string> postData)
         {
-            return ((IHttpClient)this).Post(url, req => { }, postData);
+            return ((IHttpClient)this).Post(url, req => { }, postData, isLongRunning: false);
         }
 
-        Task<IClientResponse> IHttpClient.Get(string url, Action<IClientRequest> prepareRequest)
+        Task<IClientResponse> IHttpClient.Get(string url, Action<IClientRequest> prepareRequest, bool isLongRunning)
         {
             return ProcessRequest("GET", url, prepareRequest, postData: null);
         }
 
-        Task<IClientResponse> IHttpClient.Post(string url, Action<IClientRequest> prepareRequest, IDictionary<string, string> postData)
+        Task<IClientResponse> IHttpClient.Post(string url, Action<IClientRequest> prepareRequest, IDictionary<string, string> postData, bool isLongRunning)
         {
             return ProcessRequest("POST", url, prepareRequest, postData);
         }

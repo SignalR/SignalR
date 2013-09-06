@@ -100,7 +100,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
                 { "data", data }
             };
 
-            return _httpClient.Post(url, connection.PrepareRequest, postData)
+            return _httpClient.Post(url, connection.PrepareRequest, postData, isLongRunning: false)
                               .Then(response => response.ReadAsString())
                               .Then(raw =>
                               {
@@ -142,7 +142,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
 
                     url += TransportHelper.AppendCustomQueryString(connection, url);
 
-                    _httpClient.Post(url, connection.PrepareRequest).Catch((ex, state) =>
+                    _httpClient.Post(url, connection.PrepareRequest, isLongRunning: false).Catch((ex, state) =>
                     {
                         // If there's an error making an http request set the reset event
                         ((HttpBasedTransport)state).CompleteAbort();
@@ -214,15 +214,15 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
                 // Wait for any ongoing aborts to complete
                 // In practice, any aborts should have finished by the time Dispose is called
                 lock (_abortLock)
-                lock (_disposeLock)
-                {
-                    if (!_disposed)
+                    lock (_disposeLock)
                     {
-                        _abortResetEvent.Dispose();
-                        _disposed = true;
+                        if (!_disposed)
+                        {
+                            _abortResetEvent.Dispose();
+                            _disposed = true;
+                        }
                     }
-                }
-           }
+            }
         }
     }
 }
