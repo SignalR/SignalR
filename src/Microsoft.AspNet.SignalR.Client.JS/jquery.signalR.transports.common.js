@@ -15,15 +15,11 @@
 
     function checkIfAlive(connection) {
         var keepAliveData = connection.keepAliveData,
-            diff,
             timeElapsed;
 
         // Only check if we're connected
         if (connection.state === signalR.connectionState.connected) {
-            diff = new Date();
-
-            diff.setTime(diff - keepAliveData.lastKeepAlive);
-            timeElapsed = diff.getTime();
+            timeElapsed = new Date().getTime() - connection._.lastMessageAt;
 
             // Check if the keep alive has completely timed out
             if (timeElapsed >= keepAliveData.timeout) {
@@ -337,13 +333,7 @@
                 $connection = $(connection);
 
             // Update the last message time stamp
-            connection._.lastMessageAt = new Date().getTime();
-
-            // If our transport supports keep alive then we need to update the last keep alive time stamp.
-            // Very rarely the transport can be null.
-            if (connection.transport && connection.transport.supportsKeepAlive && connection.keepAliveData.activated) {
-                this.updateKeepAlive(connection);
-            }
+            transportLogic.markLastMessage(connection);
 
             if (minData) {
                 data = this.maximizePersistentResponse(minData);
@@ -373,19 +363,18 @@
         },
 
         monitorKeepAlive: function (connection) {
-            var keepAliveData = connection.keepAliveData,
-                that = this;
+            var keepAliveData = connection.keepAliveData;
 
             // If we haven't initiated the keep alive timeouts then we need to
             if (!keepAliveData.monitoring) {
                 keepAliveData.monitoring = true;
 
-                // Initialize the keep alive time stamp ping
-                that.updateKeepAlive(connection);
+                transportLogic.markLastMessage(connection);
 
                 // Save the function so we can unbind it on stop
                 connection.keepAliveData.reconnectKeepAliveUpdate = function () {
-                    that.updateKeepAlive(connection);
+                    // Mark a new message so that keep alive doesn't time out connections
+                    transportLogic.markLastMessage(connection);
                 };
 
                 // Update Keep alive on reconnect
@@ -416,8 +405,8 @@
             }
         },
 
-        updateKeepAlive: function (connection) {
-            connection.keepAliveData.lastKeepAlive = new Date();
+        markLastMessage: function (connection) {
+            connection._.lastMessageAt = new Date().getTime();
         },
 
         ensureReconnectingState: function (connection) {

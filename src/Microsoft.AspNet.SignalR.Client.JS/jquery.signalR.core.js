@@ -936,6 +936,7 @@
                 delete connection.groupsToken;
                 delete connection.id;
                 delete connection._.pingIntervalId;
+                delete connection._.lastMessageAt;
 
                 // Clear out our message buffer
                 connection._.connectingMessageBuffer.clear();
