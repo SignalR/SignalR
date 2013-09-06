@@ -322,6 +322,7 @@
 
             this.url = url;
             this.qs = qs;
+            this.keepAliveData = {};
             this._ = {
                 connectingMessageBuffer: new ConnectingMessageBuffer(this, function (message) {
                     $connection.triggerHandler(events.onReceived, [message]);
@@ -379,8 +380,6 @@
         logging: false,
 
         state: signalR.connectionState.disconnected,
-
-        keepAliveData: {},
 
         clientProtocol: "1.3",
 
