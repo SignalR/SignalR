@@ -95,7 +95,8 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
                 connection.PrepareRequest(_request);
 
                 _request.Accept = "text/event-stream";
-            }).ContinueWith(task =>
+            },
+            isLongRunning: true).ContinueWith(task =>
             {
                 if (task.IsFaulted)
                 {
