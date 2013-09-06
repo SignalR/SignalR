@@ -13,7 +13,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Owin
         [Fact]
         public void WebSocketHandlerThrowsCorrectly()
         {
-            var webSocketHandler = new Mock<WebSocketHandler>();
+            var webSocketHandler = new Mock<WebSocketHandler>(64 * 1024);
             var webSocket = new Mock<WebSocket>();
 
             webSocketHandler.Setup(wsh => wsh.OnClose(It.IsAny<bool>())).Callback((bool clean) =>
@@ -38,7 +38,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Owin
         [Fact]
         public void ThrowingErrorOnCloseRaisesOnClosed()
         {
-            var webSocketHandler = new Mock<WebSocketHandler>();
+            var webSocketHandler = new Mock<WebSocketHandler>(64 * 1024);
             var webSocket = new Mock<WebSocket>();
             var cts = new CancellationTokenSource(); 
             webSocketHandler.Setup(wsh => wsh.Close()).Throws(new Exception("It's disconnected"));
@@ -58,7 +58,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Owin
                                             new WebSocketReceiveResult(0, WebSocketMessageType.Close, endOfMessage: true)};
 
             var webSocket = new Mock<WebSocket>(MockBehavior.Strict);
-            var webSocketHandler = new Mock<WebSocketHandler>(MockBehavior.Strict);
+            var webSocketHandler = new Mock<WebSocketHandler>(MockBehavior.Strict, 64 * 1024);
 
             webSocket.Setup(w => w.ReceiveAsync(It.IsAny<ArraySegment<byte>>(), CancellationToken.None))
                      .Returns(() => TaskAsyncHelper.FromResult(webSocketMessages[messageIndex++]));
