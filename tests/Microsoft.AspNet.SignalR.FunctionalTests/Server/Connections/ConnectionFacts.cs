@@ -249,6 +249,7 @@ namespace Microsoft.AspNet.SignalR.Client.Tests
                     });
 
                     var tcs = new TaskCompletionSource<string>();
+                    var mre = new AsyncManualResetEvent();
                     var connection = new Connection("http://foo/echo2");
 
                     using (connection)
@@ -256,11 +257,13 @@ namespace Microsoft.AspNet.SignalR.Client.Tests
                         connection.Received += data =>
                         {
                             tcs.TrySetResult(data);
+                            mre.Set();
                         };
 
                         await connection.Start(host);
                         var ignore = connection.Send("");
 
+                        Assert.True(await mre.WaitAsync(TimeSpan.FromSeconds(5)));
                         Assert.Equal("MyConnection2", tcs.Task.Result);
                     }
                 }
@@ -283,6 +286,7 @@ namespace Microsoft.AspNet.SignalR.Client.Tests
                     });
 
                     var tcs = new TaskCompletionSource<string>();
+                    var mre = new AsyncManualResetEvent();
                     var connection = new Connection("http://foo/echo2");
 
                     using (connection)
@@ -290,11 +294,13 @@ namespace Microsoft.AspNet.SignalR.Client.Tests
                         connection.Received += data =>
                         {
                             tcs.TrySetResult(data);
+                            mre.Set();
                         };
 
                         await connection.Start(host);
                         var ignore = connection.Send("");
 
+                        Assert.True(await mre.WaitAsync(TimeSpan.FromSeconds(10)));
                         Assert.Equal("MyConnection2", tcs.Task.Result);
                     }
                 }
@@ -317,6 +323,7 @@ namespace Microsoft.AspNet.SignalR.Client.Tests
                     });
 
                     var tcs = new TaskCompletionSource<string>();
+                    var mre = new AsyncManualResetEvent();
                     var connection = new Connection("http://foo/echo");
 
                     using (connection)
@@ -324,11 +331,13 @@ namespace Microsoft.AspNet.SignalR.Client.Tests
                         connection.Received += data =>
                         {
                             tcs.TrySetResult(data);
+                            mre.Set();
                         };
 
                         await connection.Start(host);
                         var ignore = connection.Send("");
 
+                        Assert.True(await mre.WaitAsync(TimeSpan.FromSeconds(10)));
                         Assert.Equal("MyConnection", tcs.Task.Result);
                     }
                 }
@@ -559,12 +568,12 @@ namespace Microsoft.AspNet.SignalR.Client.Tests
                         await connection.Start(host.Transport);
 
                         // Force reconnect
-                        Thread.Sleep(TimeSpan.FromSeconds(5));
+                        await Task.Delay(TimeSpan.FromSeconds(5));
 
                         Assert.True(await reconnectingWh.WaitAsync(TimeSpan.FromSeconds(30)));
                         Assert.True(await reconnectedWh.WaitAsync(TimeSpan.FromSeconds(30)));
 
-                        Thread.Sleep(TimeSpan.FromSeconds(15));
+                        await Task.Delay(TimeSpan.FromSeconds(15));
                         Assert.NotEqual(ConnectionState.Disconnected, connection.State);
                     }
                 }

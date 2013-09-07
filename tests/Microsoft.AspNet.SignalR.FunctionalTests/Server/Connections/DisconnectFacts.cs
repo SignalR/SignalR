@@ -195,12 +195,12 @@ namespace Microsoft.AspNet.SignalR.Tests
                 for (int i = 0; i < nodes.Count; i++)
                 {
                     nodes[i].Broadcast(String.Format("From Node {0}: {1}", i, i + 1));
-                    Thread.Sleep(TimeSpan.FromSeconds(1));
+                    await Task.Delay(TimeSpan.FromSeconds(1));
                 }
 
                 ((Client.IConnection)connection).Disconnect();
 
-                Thread.Sleep(TimeSpan.FromTicks(timeout.Ticks * nodes.Count));
+                await Task.Delay(TimeSpan.FromTicks(timeout.Ticks * nodes.Count));
 
                 Assert.Equal(1, nodes.Sum(n => n.Connection.DisconnectCount));
             }
