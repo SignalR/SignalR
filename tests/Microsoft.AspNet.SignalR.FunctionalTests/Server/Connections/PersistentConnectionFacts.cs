@@ -263,6 +263,7 @@ namespace Microsoft.AspNet.SignalR.Tests
 
                     var connection = CreateConnection(host, "/basicauth/echo");
                     var tcs = new TaskCompletionSource<string>();
+                    var mre = new AsyncManualResetEvent();
 
                     using (connection)
                     {
@@ -271,13 +272,14 @@ namespace Microsoft.AspNet.SignalR.Tests
                         connection.Received += data =>
                         {
                             tcs.TrySetResult(data);
+                            mre.Set();
                         };
 
                         await connection.Start(host.Transport);
 
                         connection.SendWithTimeout("Hello World");
 
-                        Assert.True(tcs.Task.Wait(TimeSpan.FromSeconds(10)));
+                        Assert.True(await mre.WaitAsync(TimeSpan.FromSeconds(10)));
                         Assert.Equal("Hello World", tcs.Task.Result);
                     }
                 }
@@ -374,7 +376,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                     await connection.Start(host.Transport);
                     connection.SendWithTimeout("");
 
-                    Thread.Sleep(TimeSpan.FromSeconds(5));
+                    await Task.Delay(TimeSpan.FromSeconds(5));
 
                     connection.Stop();
 
@@ -424,7 +426,7 @@ namespace Microsoft.AspNet.SignalR.Tests
 
                     await connection.Start(host.Transport);
 
-                    Thread.Sleep(TimeSpan.FromSeconds(5));
+                    await Task.Delay(TimeSpan.FromSeconds(5));
 
                     connection.Stop();
 
@@ -463,7 +465,7 @@ namespace Microsoft.AspNet.SignalR.Tests
 
                         host.Shutdown();
 
-                        Thread.Sleep(TimeSpan.FromSeconds(5));
+                        await Task.Delay(TimeSpan.FromSeconds(5));
 
                         Assert.Equal(Client.ConnectionState.Reconnecting, connection.State);
                     }
@@ -501,7 +503,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                     var transport = CreateTransport(transportType, host);
                     await connection.Start(transport);
 
-                    Thread.Sleep(TimeSpan.FromSeconds(5));
+                    await Task.Delay(TimeSpan.FromSeconds(5));
 
                     connection.Stop();
 
@@ -549,7 +551,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                         connection.SendWithTimeout(new { type = 3, group = "test", message = "goodbye to group test" });
                     }
 
-                    Thread.Sleep(TimeSpan.FromSeconds(5));
+                    await Task.Delay(TimeSpan.FromSeconds(5));
 
                     connection.Stop();
 
@@ -596,12 +598,12 @@ namespace Microsoft.AspNet.SignalR.Tests
                     connection.SendWithTimeout(new { type = 3, group = "test", message = "hello to group test" });
 
                     // Force Reconnect
-                    Thread.Sleep(TimeSpan.FromSeconds(5));
+                    await Task.Delay(TimeSpan.FromSeconds(5));
 
                     // Send a message
                     connection.SendWithTimeout(new { type = 3, group = "test", message = "goodbye to group test" });
 
-                    Thread.Sleep(TimeSpan.FromSeconds(5));
+                    await Task.Delay(TimeSpan.FromSeconds(5));
 
                     connection.Stop();
 
@@ -708,10 +710,12 @@ namespace Microsoft.AspNet.SignalR.Tests
 
                     var connection = CreateConnection(host, "/preserialize");
                     var tcs = new TaskCompletionSource<string>();
+                    var mre = new AsyncManualResetEvent();
 
                     connection.Received += json =>
                     {
                         tcs.TrySetResult(json);
+                        mre.Set();
                     };
 
                     using (connection)
@@ -720,7 +724,7 @@ namespace Microsoft.AspNet.SignalR.Tests
 
                         connection.SendWithTimeout(new { preserialized = true });
 
-                        Assert.True(tcs.Task.Wait(TimeSpan.FromSeconds(5)));
+                        Assert.True(await mre.WaitAsync(TimeSpan.FromSeconds(5)));
                         var json = JObject.Parse(tcs.Task.Result);
                         Assert.True((bool)json["preserialized"]);
                     }
@@ -757,15 +761,15 @@ namespace Microsoft.AspNet.SignalR.Tests
                     await connection.Start(host.TransportFactory());
                     await connection2.Start(host.TransportFactory());
 
-                    Thread.Sleep(TimeSpan.FromSeconds(2));
+                    await Task.Delay(TimeSpan.FromSeconds(2));
 
                     connection.SendWithTimeout(null);
 
-                    Thread.Sleep(TimeSpan.FromSeconds(2));
+                    await Task.Delay(TimeSpan.FromSeconds(2));
 
                     connection.Stop();
 
-                    Thread.Sleep(TimeSpan.FromSeconds(2));
+                    await Task.Delay(TimeSpan.FromSeconds(2));
 
                     Debug.WriteLine(String.Join(", ", results));
 

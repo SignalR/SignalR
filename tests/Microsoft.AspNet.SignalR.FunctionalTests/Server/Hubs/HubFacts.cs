@@ -119,6 +119,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                 var proxy = connection.CreateHubProxy("AuthenticatedEchoHub");
 
                 var tcs = new TaskCompletionSource<string>();
+                var mre = new AsyncManualResetEvent();
 
                 using (connection)
                 {
@@ -127,13 +128,14 @@ namespace Microsoft.AspNet.SignalR.Tests
                     proxy.On<string>("echo", data =>
                     {
                         tcs.TrySetResult(data);
+                        mre.Set();
                     });
 
                     await connection.Start(host.Transport);
 
                     proxy.InvokeWithTimeout("EchoCallback", "Hello World");
 
-                    Assert.True(tcs.Task.Wait(TimeSpan.FromSeconds(10)));
+                    Assert.True(await mre.WaitAsync(TimeSpan.FromSeconds(10)));
                     Assert.Equal("Hello World", tcs.Task.Result);
                 }
             }
@@ -319,16 +321,16 @@ namespace Microsoft.AspNet.SignalR.Tests
                         await connection.Start(host.TransportFactory());
                         await connection2.Start(host.TransportFactory());
 
-                        Thread.Sleep(TimeSpan.FromSeconds(2));
+                        await Task.Delay(TimeSpan.FromSeconds(2));
 
                         hub1.InvokeWithTimeout("GetItems");
 
-                        Thread.Sleep(TimeSpan.FromSeconds(2));
+                        await Task.Delay(TimeSpan.FromSeconds(2));
 
                         connection.Stop();
                     }
 
-                    Thread.Sleep(TimeSpan.FromSeconds(2));
+                    await Task.Delay(TimeSpan.FromSeconds(2));
                     
                     Debug.WriteLine(String.Join(", ", results));
 
@@ -797,13 +799,18 @@ namespace Microsoft.AspNet.SignalR.Tests
                 {
                     var hub = connection.CreateHubProxy("echoHub");
                     var tcs = new TaskCompletionSource<string>();
-                    hub.On<string>("echo", tcs.SetResult);
+                    var mre = new AsyncManualResetEvent();
+                    hub.On<string>("echo", (data) =>
+                    {
+                        tcs.SetResult(data);
+                        mre.Set();
+                    });
 
                     await connection.Start(host.Transport);
 
                     hub.InvokeWithTimeout("EchoCallback", "+");
 
-                    Assert.True(tcs.Task.Wait(TimeSpan.FromSeconds(5)), "Timeout waiting for callback");
+                    Assert.True(await mre.WaitAsync(TimeSpan.FromSeconds(10)));
                     Assert.Equal("+", tcs.Task.Result);
                 }
             }
@@ -1215,7 +1222,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                     }
 
                     // Force Reconnect
-                    Thread.Sleep(TimeSpan.FromSeconds(3));
+                    await Task.Delay(TimeSpan.FromSeconds(3));
 
                     for (int i = max; i < 2 * max; i++)
                     {
@@ -1266,12 +1273,12 @@ namespace Microsoft.AspNet.SignalR.Tests
                     proxy2.InvokeWithTimeout("login", user);
 
                     // Force Reconnect
-                    Thread.Sleep(TimeSpan.FromSeconds(3));
+                    await Task.Delay(TimeSpan.FromSeconds(3));
 
                     proxy.InvokeWithTimeout("joinRoom", user);
                     proxy2.InvokeWithTimeout("joinRoom", user);
 
-                    Thread.Sleep(TimeSpan.FromSeconds(3));
+                    await Task.Delay(TimeSpan.FromSeconds(3));
 
                     Assert.True(logRejoiningGroups.GroupsRejoined["MultGroupHub"].Contains("foo"));
                     Assert.True(logRejoiningGroups.GroupsRejoined["MultGroupHub"].Contains("tester"));
@@ -1379,7 +1386,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                 await connection.Start(host);
 
                 connection.Stop();
-                Thread.Sleep(TimeSpan.FromSeconds(3));
+                await Task.Delay(TimeSpan.FromSeconds(3));
             }
 
             mockHub.Verify();
@@ -1416,11 +1423,11 @@ namespace Microsoft.AspNet.SignalR.Tests
                 await connection.Start(host);
 
                 // Force Reconnect
-                Thread.Sleep(TimeSpan.FromSeconds(3));
+                await Task.Delay(TimeSpan.FromSeconds(3));
 
                 hub.InvokeWithTimeout("AllFoo");
 
-                Thread.Sleep(TimeSpan.FromSeconds(3));
+                await Task.Delay(TimeSpan.FromSeconds(3));
 
                 connection.Stop();
 
@@ -1519,7 +1526,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                     hub.InvokeWithTimeout("JoinGroup", "a");
                     hub.InvokeWithTimeout("SendToGroup", "a");
 
-                    Thread.Sleep(TimeSpan.FromSeconds(3));
+                    await Task.Delay(TimeSpan.FromSeconds(3));
 
                     Assert.Equal(1, invocations);
                 }
@@ -2127,15 +2134,15 @@ namespace Microsoft.AspNet.SignalR.Tests
 
                     hub.InvokeWithTimeout("Join", "Foo");
 
-                    Thread.Sleep(100);
+                    await Task.Delay(100);
 
                     hub.InvokeWithTimeout("Send", "Foo", "1");
 
-                    Thread.Sleep(100);
+                    await Task.Delay(100);
 
                     hub.InvokeWithTimeout("Leave", "Foo");
 
-                    Thread.Sleep(100);
+                    await Task.Delay(100);
 
                     for (int i = 0; i < 10; i++)
                     {

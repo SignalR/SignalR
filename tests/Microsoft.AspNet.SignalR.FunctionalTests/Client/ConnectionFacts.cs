@@ -116,7 +116,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                     await connection.Start(host);
 
                     // Give SSE an opportunity to reconnect
-                    Thread.Sleep(TimeSpan.FromSeconds(5));
+                    await Task.Delay(TimeSpan.FromSeconds(5));
 
                     Assert.Equal(connection.State, ConnectionState.Connected);
                     Assert.Equal(connection.Transport.Name, "longPolling");
@@ -322,6 +322,7 @@ namespace Microsoft.AspNet.SignalR.Tests
             {
                 // Arrange
                 var tcs = new TaskCompletionSource<bool>();
+                var mre = new AsyncManualResetEvent();
                 var receivedMessage = false;
 
                 host.Initialize(keepAlive: null,
@@ -338,13 +339,14 @@ namespace Microsoft.AspNet.SignalR.Tests
                         {
                             tcs.TrySetResult(reconnectEndsPath == "True");
                             receivedMessage = true;
+                            mre.Set();
                         }
                     };
 
                     await connection.Start(host.Transport);
 
                     // Wait for reconnect
-                    Assert.True(tcs.Task.Wait(TimeSpan.FromSeconds(10)));
+                    Assert.True(await mre.WaitAsync(TimeSpan.FromSeconds(10)));
                     Assert.True(tcs.Task.Result);
                 }
             }

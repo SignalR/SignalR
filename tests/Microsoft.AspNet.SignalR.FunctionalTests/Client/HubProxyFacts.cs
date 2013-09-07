@@ -505,10 +505,12 @@ namespace Microsoft.AspNet.SignalR.Tests
                 host.Initialize();
                 HubConnection hubConnection = CreateHubConnection(host);
                 var tcs = new TaskCompletionSource<Exception>();
+                var mre = new AsyncManualResetEvent();
 
                 hubConnection.Error += (ex) =>
                 {
                     tcs.TrySetResult(ex);
+                    mre.Set();
                 };
 
                 using (hubConnection)
@@ -520,7 +522,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                     await hubConnection.Start(host.Transport);
                     await proxy.Invoke("SendOneArgument");
 
-                    Assert.True(tcs.Task.Wait(TimeSpan.FromSeconds(5)));
+                    Assert.True(await mre.WaitAsync(TimeSpan.FromSeconds(5)));
                     Assert.IsType(typeof(InvalidOperationException), tcs.Task.Result);
                     Assert.Equal(((InvalidOperationException)tcs.Task.Result).Message, "A client callback for event twoArgsMethod with 1 argument(s) could not be found");
                 }
