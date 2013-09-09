@@ -4,11 +4,11 @@ QUnit.test("Only starts monitoring keep alive if not already monitoring.", funct
     var connection = testUtilities.createHubConnection();
 
     $.signalR.transports._logic.monitorKeepAlive(connection);
-    connection.keepAliveData.monitoring = 1;
+    connection._.keepAliveData.monitoring = 1;
 
     $.signalR.transports._logic.monitorKeepAlive(connection);
 
-    QUnit.ok(connection.keepAliveData.monitoring === 1, "Monitoring should still be set to 1 because we should not have attempted to re-monitor the connection (otherwise it'd be set to true).");
+    QUnit.ok(connection._.keepAliveData.monitoring === 1, "Monitoring should still be set to 1 because we should not have attempted to re-monitor the connection (otherwise it'd be set to true).");
 
     // Cleanup
     $.signalR.transports._logic.stopMonitoringKeepAlive(connection);
@@ -17,14 +17,14 @@ QUnit.test("Only starts monitoring keep alive if not already monitoring.", funct
 QUnit.test("Save updateKeepAlive binding so it can be unbound later.", function () {
     var connection = testUtilities.createHubConnection();
 
-    QUnit.ok(!connection.keepAliveData.reconnectKeepAliveUpdate, "Binding does not exist prior to monitor");
+    QUnit.ok(!connection._.keepAliveData.reconnectKeepAliveUpdate, "Binding does not exist prior to monitor");
     $.signalR.transports._logic.monitorKeepAlive(connection);
     // Reset the last keep alive to false so we can determine if our saved updateKeepAlive binding is saved
     connection._.lastMessageAt = false;
 
-    QUnit.ok(connection.keepAliveData.reconnectKeepAliveUpdate, "Binding exists after monitor");
+    QUnit.ok(connection._.keepAliveData.reconnectKeepAliveUpdate, "Binding exists after monitor");
 
-    connection.keepAliveData.reconnectKeepAliveUpdate();
+    connection._.keepAliveData.reconnectKeepAliveUpdate();
     QUnit.ok(connection._.lastMessageAt !== false, "Last message time stamp should have changed due to the bound function executing.");
 
     // Cleanup
@@ -50,14 +50,14 @@ QUnit.test("Stop monitoring handles monitoring flag appropriately.", function ()
     var connection = testUtilities.createHubConnection();
 
     $.signalR.transports._logic.stopMonitoringKeepAlive(connection);
-    QUnit.isNotSet(connection.keepAliveData.monitoring, "The keep alive monitoring should still be unset, meaning stop did not trigger.");
+    QUnit.isNotSet(connection._.keepAliveData.monitoring, "The keep alive monitoring should still be unset, meaning stop did not trigger.");
 
     // Start monitoring so we can stop
     $.signalR.transports._logic.monitorKeepAlive(connection);
-    QUnit.ok(connection.keepAliveData.monitoring === true, "Keep alive monitoring flag set to true after monitorKeepAlive.");
+    QUnit.ok(connection._.keepAliveData.monitoring === true, "Keep alive monitoring flag set to true after monitorKeepAlive.");
 
     $.signalR.transports._logic.stopMonitoringKeepAlive(connection);
-    QUnit.isNotSet(connection.keepAliveData.monitoring, "Does not noop if monitor flag was enabled.");
+    QUnit.isNotSet(connection._.keepAliveData.monitoring, "Does not noop if monitor flag was enabled.");
 });
 
 QUnit.test("Check if alive triggers OnConnectionSlow when keep out warning threshold is surpassed.", function () {
@@ -72,7 +72,7 @@ QUnit.test("Check if alive triggers OnConnectionSlow when keep out warning thres
     // Null out the lastMessage function so our junk "markLastMessage" is used
     $.signalR.transports._logic.markLastMessage = function () { };
 
-    connection.keepAliveData = {
+    connection._.keepAliveData = {
         timeoutWarning: 1000, // We should warn if the time difference between now and the last keep alive is greater than 1 second
         timeout: 100000, // Large value so we don't timeout when we're looking for slow
         userNotified: false
@@ -105,7 +105,7 @@ QUnit.test("Check if alive detects transport timeout when keep out warning thres
     // Null out the lastMessage function so our junk "markLastMessage" is used
     $.signalR.transports._logic.markLastMessage = function () { };
 
-    connection.keepAliveData = {
+    connection._.keepAliveData = {
         timeoutWarning: 1000, // We should warn if the time difference between now and the last keep alive is greater than 1 second
         timeout: keepAliveTimeout,
         userNotified: false

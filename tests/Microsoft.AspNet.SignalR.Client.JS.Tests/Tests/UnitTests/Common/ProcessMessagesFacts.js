@@ -28,7 +28,7 @@ QUnit.test("Updates keep alive data on any message retrieval.", function () {
         lastMessageTimeStamp = 0;
 
     // Ensure the connection can utilize the keep alive features
-    connection.keepAliveData = {
+    connection._.keepAliveData = {
         activated: true
     };
 
