@@ -5,7 +5,7 @@ QUnit.asyncTimeoutTest("Long polling transport does not check keep alive.", test
 
     connection.start({ transport: "longPolling" }).done(function () {
         assert.ok(true, "Connected.");
-        assert.ok(!connection.keepAliveData.monitoring, "We should not be monitoring the keep alive for the long polling transport.");
+        assert.ok(!connection._.keepAliveData.monitoring, "We should not be monitoring the keep alive for the long polling transport.");
         end();
     });
 
@@ -22,7 +22,7 @@ testUtilities.runWithTransports(["foreverFrame", "serverSentEvents", "webSockets
 
         connection.start({ transport: transport }).done(function () {
             assert.ok(true, "Connected.");
-            assert.ok(connection.keepAliveData.monitoring === true, "We should be monitoring the keep alive for the " + transport + " transport.");
+            assert.ok(connection._.keepAliveData.monitoring === true, "We should be monitoring the keep alive for the " + transport + " transport.");
             end();
         });
 
@@ -44,7 +44,7 @@ QUnit.asyncTimeoutTest("Check if alive can recover from faulty connections.", te
         connection._.lastMessageAt = new Date().getTime(); // Set the lastMessageAt value to current date (we recovered!);
     });
 
-    connection.keepAliveData = {
+    connection._.keepAliveData = {
         timeoutWarning: 1000, // We should warn if the time difference between now and the last keep alive is greater than 1 second
         timeout: 100000,
         checkInterval: 100 // Check every 100 milliseconds
@@ -58,16 +58,16 @@ QUnit.asyncTimeoutTest("Check if alive can recover from faulty connections.", te
     // Start monitoring keep alive again
     $.signalR.transports._logic.monitorKeepAlive(connection);
 
-    assert.ok(connection.keepAliveData.userNotified === true, "User notified that they were slow (in faulty state).");
+    assert.ok(connection._.keepAliveData.userNotified === true, "User notified that they were slow (in faulty state).");
 
     // Turn off monitoring so checkIfAlive is not checked more than once
-    connection.keepAliveData.monitoring = false;
+    connection._.keepAliveData.monitoring = false;
 
     // Wait 4x the check interval, so it should have been registered as recovered by then (aka userNotified = false)
     setTimeout(function () {
-        assert.equal(connection.keepAliveData.userNotified, false, "CheckIfAlive recovers from faulty connection.");
+        assert.equal(connection._.keepAliveData.userNotified, false, "CheckIfAlive recovers from faulty connection.");
         end();
-    }, 4 * connection.keepAliveData.checkInterval);
+    }, 4 * connection._.keepAliveData.checkInterval);
 
     // Cleanup
     return function () {

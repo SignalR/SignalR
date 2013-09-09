@@ -14,7 +14,7 @@
     signalR.transports = {};
 
     function checkIfAlive(connection) {
-        var keepAliveData = connection.keepAliveData,
+        var keepAliveData = connection._.keepAliveData,
             timeElapsed;
 
         // Only check if we're connected
@@ -363,7 +363,7 @@
         },
 
         monitorKeepAlive: function (connection) {
-            var keepAliveData = connection.keepAliveData;
+            var keepAliveData = connection._.keepAliveData;
 
             // If we haven't initiated the keep alive timeouts then we need to
             if (!keepAliveData.monitoring) {
@@ -372,13 +372,13 @@
                 transportLogic.markLastMessage(connection);
 
                 // Save the function so we can unbind it on stop
-                connection.keepAliveData.reconnectKeepAliveUpdate = function () {
+                connection._.keepAliveData.reconnectKeepAliveUpdate = function () {
                     // Mark a new message so that keep alive doesn't time out connections
                     transportLogic.markLastMessage(connection);
                 };
 
                 // Update Keep alive on reconnect
-                $(connection).bind(events.onReconnect, connection.keepAliveData.reconnectKeepAliveUpdate);
+                $(connection).bind(events.onReconnect, connection._.keepAliveData.reconnectKeepAliveUpdate);
 
                 connection.log("Now monitoring keep alive with a warning timeout of " + keepAliveData.timeoutWarning + " and a connection lost timeout of " + keepAliveData.timeout + ".");
                 // Start the monitoring of the keep alive
@@ -389,7 +389,7 @@
         },
 
         stopMonitoringKeepAlive: function (connection) {
-            var keepAliveData = connection.keepAliveData;
+            var keepAliveData = connection._.keepAliveData;
 
             // Only attempt to stop the keep alive monitoring if its being monitored
             if (keepAliveData.monitoring) {
@@ -397,10 +397,10 @@
                 keepAliveData.monitoring = false;
 
                 // Remove the updateKeepAlive function from the reconnect event
-                $(connection).unbind(events.onReconnect, connection.keepAliveData.reconnectKeepAliveUpdate);
+                $(connection).unbind(events.onReconnect, connection._.keepAliveData.reconnectKeepAliveUpdate);
 
                 // Clear all the keep alive data
-                connection.keepAliveData = {};
+                connection._.keepAliveData = {};
                 connection.log("Stopping the monitoring of the keep alive.");
             }
         },
