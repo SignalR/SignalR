@@ -64,7 +64,7 @@
             // After connecting, if after the specified timeout there's no response stop the connection
             // and raise on failed
             connectTimeOut = window.setTimeout(function () {
-                if (opened === false) {
+                if (opened === false && connection.eventSource) {
                     connection.log("EventSource timed out trying to connect");
                     connection.log("EventSource readyState: " + connection.eventSource.readyState);
 
