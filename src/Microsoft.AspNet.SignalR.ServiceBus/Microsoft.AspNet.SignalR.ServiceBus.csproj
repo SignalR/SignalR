@@ -83,6 +83,7 @@
     <Compile Include="ServiceBusConnection.cs" />
     <Compile Include="ServiceBusMessageBus.cs" />
     <Compile Include="ServiceBusScaleoutConfiguration.cs" />
+    <Compile Include="SubscriptionContext.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Microsoft.AspNet.SignalR.Core\Microsoft.AspNet.SignalR.Core.csproj">
@@ -91,7 +92,6 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <None Include="app.config" />
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>

@@ -24,6 +24,31 @@ namespace Microsoft.AspNet.SignalR
                 throw new ArgumentNullException("topicPrefix");
             }
 
+            IdleSubscriptionTimeout = TimeSpan.FromHours(1);
+            ConnectionString = connectionString;
+            TopicPrefix = topicPrefix;
+            TopicCount = 1;
+            TimeToLive = TimeSpan.FromMinutes(1);
+        }
+
+        public ServiceBusScaleoutConfiguration(string connectionString, string topicPrefix, TimeSpan idleSubscriptionTimeout)
+        {
+            if (String.IsNullOrEmpty(connectionString))
+            {
+                throw new ArgumentNullException("connectionString");
+            }
+
+            if (String.IsNullOrEmpty(topicPrefix))
+            {
+                throw new ArgumentNullException("topicPrefix");
+            }
+
+            if (idleSubscriptionTimeout == null)
+            {
+                throw new ArgumentNullException("idleSubscriptionTimeout");
+            }
+
+            IdleSubscriptionTimeout = idleSubscriptionTimeout;
             ConnectionString = connectionString;
             TopicPrefix = topicPrefix;
             TopicCount = 1;
@@ -71,5 +96,10 @@ namespace Microsoft.AspNet.SignalR
         /// expired messages.
         /// </summary>
         public TimeSpan TimeToLive { get; set; }
+
+        /// <summary>
+        /// Specifies the time duration after which an idle subscription is deleted
+        /// </summary>
+        public TimeSpan IdleSubscriptionTimeout { get; private set; }
     }
 }
