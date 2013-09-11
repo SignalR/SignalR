@@ -181,4 +181,7 @@ values or invokes the AsyncCallback multiple times.</value>
   <data name="Error_ValueSuppliedMustBeBetween" xml:space="preserve">
     <value>The value supplied must be between {0} and {1}.</value>
   </data>
+  <data name="Error_CannotPublishClientClosed" xml:space="preserve">
+    <value>The message cannot be published as the specified topic client has been closed.</value>
+  </data>
 </root>

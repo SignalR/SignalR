@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 using System.IO;
 using System.Threading.Tasks;
 using Microsoft.ServiceBus;
@@ -16,12 +16,12 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
         private readonly SubscriptionContext[] _subscriptions;
         private readonly TopicClient[] _topicClients;
 
-        public object SubscriptionsLock { get; set; }
-        public object TopicClientsLock { get; set; }
+        public object SubscriptionsLock { get; private set; }
+        public object TopicClientsLock { get; private set; }
 
-        public IList<string> TopicNames { get; set; }
-        public Action<int, IEnumerable<BrokeredMessage>> Handler { get; set; }
-        public Action<int, Exception> ErrorHandler { get; set; }
+        public IList<string> TopicNames { get; private set; }
+        public Action<int, IEnumerable<BrokeredMessage>> Handler { get; private set; }
+        public Action<int, Exception> ErrorHandler { get; private set; }
 
         public bool IsDisposed { get; private set; }
 
@@ -52,6 +52,11 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
 
         public Task Publish(int topicIndex, Stream stream)
         {
+            if (IsDisposed)
+            {
+                return TaskAsyncHelper.Empty;
+            }
+
             var message = new BrokeredMessage(stream, ownsStream: true)
             {
                 TimeToLive = _configuration.TimeToLive
@@ -60,19 +65,25 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
             return _topicClients[topicIndex].SendAsync(message);
         }
 
-        public void UpdateSubscriptionContext(SubscriptionContext subscriptionContext, int topicIndex)
+        internal void SetSubscriptionContext(SubscriptionContext subscriptionContext, int topicIndex)
         {
-            if (!IsDisposed)
+            lock (SubscriptionsLock)
             {
-                _subscriptions[topicIndex] = subscriptionContext;
+                if (!IsDisposed)
+                {
+                    _subscriptions[topicIndex] = subscriptionContext;
+                }
             }
         }
 
-        public void UpdateTopicClients(TopicClient topicClient, int topicIndex)
+        internal void SetTopicClients(TopicClient topicClient, int topicIndex)
         {
-            if (!IsDisposed)
+            lock (TopicClientsLock)
             {
-                _topicClients[topicIndex] = topicClient;
+                if (!IsDisposed)
+                {
+                    _topicClients[topicIndex] = topicClient;
+                }
             }
         }
 
@@ -104,20 +115,6 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
         public void Dispose()
         {
             Dispose(true);
-        }
-    }
-
-    public class SubscriptionContext
-    {
-        public string TopicPath;
-        public string Name;
-        public MessageReceiver Receiver;
-
-        public SubscriptionContext(string topicPath, string subName, MessageReceiver receiver)
-        {
-            TopicPath = topicPath;
-            Name = subName;
-            Receiver = receiver;
         }
     }
 }

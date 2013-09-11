@@ -18,10 +18,9 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
         private static readonly TimeSpan ErrorBackOffAmount = TimeSpan.FromSeconds(5);
         private static readonly TimeSpan DefaultReadTimeout = TimeSpan.FromSeconds(60);
         private static readonly TimeSpan ErrorReadTimeout = TimeSpan.FromSeconds(0.5);
-        private static readonly TimeSpan IdleSubscriptionTimeout = TimeSpan.FromHours(1);
         private static readonly TimeSpan RetryDelay = TimeSpan.FromSeconds(10);
 
-
+        private readonly TimeSpan _idleSubscriptionTimeout;
         private readonly NamespaceManager _namespaceManager;
         private readonly MessagingFactory _factory;
         private readonly ServiceBusScaleoutConfiguration _configuration;
@@ -42,6 +41,7 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
                 throw;
             }
 
+            _idleSubscriptionTimeout = configuration.IdleSubscriptionTimeout;
             _factory = MessagingFactory.CreateFromConnectionString(configuration.ConnectionString);
             _factory.RetryPolicy = RetryExponential.Default;
             _configuration = configuration;
@@ -106,7 +106,7 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
 
                 // Create a client for this topic
                 TopicClient topicClient = TopicClient.CreateFromConnectionString(_configuration.ConnectionString, topicName);
-                connectionContext.UpdateTopicClients(topicClient, topicIndex);
+                connectionContext.SetTopicClients(topicClient, topicIndex);
 
                 _trace.TraceInformation("Creation of a new topic client {0} completed successfully.", topicName);
             }
@@ -133,7 +133,7 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
                     var subscriptionDescription = new SubscriptionDescription(topicName, subscriptionName);
 
                     // This cleans up the subscription while if it's been idle for more than the timeout.
-                    subscriptionDescription.AutoDeleteOnIdle = IdleSubscriptionTimeout;
+                    subscriptionDescription.AutoDeleteOnIdle = _idleSubscriptionTimeout;
 
                     _namespaceManager.CreateSubscription(subscriptionDescription);
 
@@ -151,7 +151,7 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
 
                 _trace.TraceInformation("Creation of a message receive for subscription entity path {0} in the service bus completed successfully.", subscriptionEntityPath);
 
-                connectionContext.UpdateSubscriptionContext(new SubscriptionContext(topicName, subscriptionName, receiver), topicIndex);
+                connectionContext.SetSubscriptionContext(new SubscriptionContext(topicName, subscriptionName, receiver), topicIndex);
 
                 var receiverContext = new ReceiverContext(topicIndex, receiver, connectionContext);
 
@@ -162,6 +162,7 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
         [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "We retry to create the topics on exceptions")]
         private void Retry(Action action)
         {
+            string errorMessage = "Failed to create service bus subscription or topic : {0}";
             while (true)
             {
                 try
@@ -171,17 +172,17 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
                 }
                 catch (UnauthorizedAccessException ex)
                 {
-                    _trace.TraceError("Failed to create service bus subscription or topic : {0}", ex.Message);
+                    _trace.TraceError(errorMessage, ex.Message);
                     throw;
                 }
                 catch (QuotaExceededException ex)
                 {
-                    _trace.TraceError("Failed to create service bus subscription or topic : {0}", ex.Message);
+                    _trace.TraceError(errorMessage, ex.Message);
                     throw;
                 }
                 catch (MessagingException ex)
                 {
-                    _trace.TraceError("Failed to create service bus subscription or topic : {0}", ex.Message);
+                    _trace.TraceError(errorMessage, ex.Message);
                     if (ex.IsTransient)
                     {
                         Thread.Sleep(RetryDelay);
@@ -193,7 +194,7 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
                 }
                 catch (Exception ex)
                 {
-                    _trace.TraceError("Failed to create service bus subscription or topic : {0}", ex.Message);
+                    _trace.TraceError(errorMessage, ex.Message);
                     Thread.Sleep(RetryDelay);
                 }
             }
@@ -220,7 +221,7 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
 
             try
             {
-                IAsyncResult result = receiverContext.Receiver.BeginReceiveBatch(receiverContext.ReceiveBatchSize, receiverContext.ReceiveTimeout, ar =>
+                IAsyncResult result = receiverContext.Receiver.BeginReceiveBatch(ReceiverContext.ReceiveBatchSize, receiverContext.ReceiveTimeout, ar =>
                 {
                     if (ar.CompletedSynchronously)
                     {
@@ -258,7 +259,6 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
 
                 Thread.Sleep(RetryDelay);
                 goto receive;
-                // REVIEW: What should we do here?
             }
         }
 
@@ -291,9 +291,11 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
 
                 return false;
             }
-            catch (MessagingEntityNotFoundException)
+            catch (MessagingEntityNotFoundException ex)
             {
-                receiverContext.Receiver.CloseAsync();
+                receiverContext.Receiver.CloseAsync().Catch();
+                receiverContext.OnError(ex);
+
                 TaskAsyncHelper.Delay(RetryDelay)
                                .Then(() => Retry(() => CreateSubscription(receiverContext.ConnectionContext, receiverContext.TopicIndex)));
                 return false;
@@ -325,12 +327,13 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
 
         private class ReceiverContext
         {
+            public const int ReceiveBatchSize = DefaultReceiveBatchSize;
+
             public readonly MessageReceiver Receiver;
             public readonly ServiceBusConnectionContext ConnectionContext;
 
             public int TopicIndex { get; private set; }
             public TimeSpan ReceiveTimeout { get; set; }
-            public int ReceiveBatchSize { get; set; }
 
             public ReceiverContext(int topicIndex,
                                    MessageReceiver receiver,
@@ -339,7 +342,6 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
                 TopicIndex = topicIndex;
                 Receiver = receiver;
                 ReceiveTimeout = DefaultReadTimeout;
-                ReceiveBatchSize = DefaultReceiveBatchSize;
                 ConnectionContext = connectionContext;
             }
 
