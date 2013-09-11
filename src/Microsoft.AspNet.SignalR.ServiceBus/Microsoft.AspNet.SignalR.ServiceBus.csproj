@@ -72,6 +72,7 @@
     <Compile Include="DependencyResolverExtensions.cs" />
     <Compile Include="Infrastructure\ServiceBusTaskExtensions.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="ServiceBusConnectionContext.cs" />
     <Compile Include="ServiceBusMessage.cs" />
     <Compile Include="Resources.Designer.cs">
       <AutoGen>True</AutoGen>
@@ -82,6 +83,7 @@
     <Compile Include="ServiceBusMessageBus.cs" />
     <Compile Include="ServiceBusScaleoutConfiguration.cs" />
     <Compile Include="ServiceBusSubscription.cs" />
+    <Compile Include="SubscriptionContext.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Microsoft.AspNet.SignalR.Core\Microsoft.AspNet.SignalR.Core.csproj">
