@@ -106,7 +106,7 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
 
                 // Create a client for this topic
                 TopicClient topicClient = TopicClient.CreateFromConnectionString(_configuration.ConnectionString, topicName);
-                connectionContext.UpdateTopicClients(topicClient, topicIndex);
+                connectionContext.SetTopicClients(topicClient, topicIndex);
 
                 _trace.TraceInformation("Creation of a new topic client {0} completed successfully.", topicName);
             }
@@ -151,7 +151,7 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
 
                 _trace.TraceInformation("Creation of a message receive for subscription entity path {0} in the service bus completed successfully.", subscriptionEntityPath);
 
-                connectionContext.UpdateSubscriptionContext(new SubscriptionContext(topicName, subscriptionName, receiver), topicIndex);
+                connectionContext.SetSubscriptionContext(new SubscriptionContext(topicName, subscriptionName, receiver), topicIndex);
 
                 var receiverContext = new ReceiverContext(topicIndex, receiver, connectionContext);
 

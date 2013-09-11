@@ -54,9 +54,7 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
         {
             if (IsDisposed)
             {
-                var tcs = new TaskCompletionSource<object>();
-                tcs.TrySetCanceled();
-                return tcs.Task;
+                return TaskAsyncHelper.Empty;
             }
 
             var message = new BrokeredMessage(stream, ownsStream: true)
@@ -67,7 +65,7 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
             return _topicClients[topicIndex].SendAsync(message);
         }
 
-        public void UpdateSubscriptionContext(SubscriptionContext subscriptionContext, int topicIndex)
+        internal void SetSubscriptionContext(SubscriptionContext subscriptionContext, int topicIndex)
         {
             lock (SubscriptionsLock)
             {
@@ -78,7 +76,7 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
             }
         }
 
-        public void UpdateTopicClients(TopicClient topicClient, int topicIndex)
+        internal void SetTopicClients(TopicClient topicClient, int topicIndex)
         {
             lock (TopicClientsLock)
             {

@@ -31,30 +31,6 @@ namespace Microsoft.AspNet.SignalR
             TimeToLive = TimeSpan.FromMinutes(1);
         }
 
-        public ServiceBusScaleoutConfiguration(string connectionString, string topicPrefix, TimeSpan idleSubscriptionTimeout)
-        {
-            if (String.IsNullOrEmpty(connectionString))
-            {
-                throw new ArgumentNullException("connectionString");
-            }
-
-            if (String.IsNullOrEmpty(topicPrefix))
-            {
-                throw new ArgumentNullException("topicPrefix");
-            }
-
-            if (idleSubscriptionTimeout == null)
-            {
-                throw new ArgumentNullException("idleSubscriptionTimeout");
-            }
-
-            IdleSubscriptionTimeout = idleSubscriptionTimeout;
-            ConnectionString = connectionString;
-            TopicPrefix = topicPrefix;
-            TopicCount = 1;
-            TimeToLive = TimeSpan.FromMinutes(1);
-        }
-
         /// <summary>
         /// The Service Bus connection string to use.
         /// </summary>
@@ -100,6 +76,6 @@ namespace Microsoft.AspNet.SignalR
         /// <summary>
         /// Specifies the time duration after which an idle subscription is deleted
         /// </summary>
-        public TimeSpan IdleSubscriptionTimeout { get; private set; }
+        public TimeSpan IdleSubscriptionTimeout { get; set; }
     }
 }

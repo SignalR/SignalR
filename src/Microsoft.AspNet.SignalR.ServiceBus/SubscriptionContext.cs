@@ -2,7 +2,7 @@
 
 namespace Microsoft.AspNet.SignalR.ServiceBus
 {
-    public class SubscriptionContext
+    internal class SubscriptionContext
     {
         public string TopicPath { get; private set; }
         public string Name { get; private set; }
