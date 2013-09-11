@@ -54,7 +54,7 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
                     }
                     catch (ObjectDisposedException)
                     {
-                        // Bug #1549, .NET 4.0 has a bug where this throws if the CTS
+                        // Bug #1549, .NET 4.0 has a bug where this throws if the CTS is disposed.
                     }
                 }
             }
