@@ -19,7 +19,7 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
     {
         private const string SignalRTopicPrefix = "SIGNALR_TOPIC";
 
-        private readonly ServiceBusSubscription _subscription;
+        private readonly ServiceBusConnectionContext _connectionContext;
         private readonly ServiceBusConnection _connection;
         private readonly string[] _topics;
         
@@ -41,7 +41,7 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
                                 .Select(topicIndex => SignalRTopicPrefix + "_" + configuration.TopicPrefix + "_" + topicIndex)
                                 .ToArray();
 
-            _subscription = _connection.Subscribe(_topics, OnMessage, OnError);
+            _connectionContext = _connection.Subscribe(_topics, OnMessage, OnError);
 
             // Open the streams after creating the subscription
             for (int i = 0; i < configuration.TopicCount; i++)
@@ -62,7 +62,7 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
         {
             var stream = ServiceBusMessage.ToStream(messages);
 
-            return _subscription.Publish(streamIndex, stream);
+            return _connectionContext.Publish(streamIndex, stream);
         }
 
         private void OnMessage(int topicIndex, IEnumerable<BrokeredMessage> messages)
@@ -90,9 +90,9 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
 
             if (disposing)
             {
-                if (_subscription != null)
+                if (_connectionContext != null)
                 {
-                    _subscription.Dispose();
+                    _connectionContext.Dispose();
                 }
 
                 if (_connection != null)
