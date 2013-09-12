@@ -217,7 +217,7 @@ testUtilities.runWithAllTransports(function (transport) {
         };
     });
 
-    QUnit.asyncTimeoutTest(transport + ": Reconnect exceeding the reconnect window results in the connection disconnecting.", testUtilities.defaultTestTimeout * 2, function (end, assert, testName) {
+    QUnit.asyncTimeoutTest(transport + ": Reconnect exceeding the reconnect window results in the connection disconnecting.", testUtilities.defaultTestTimeout, function (end, assert, testName) {
         var connection = testUtilities.createHubConnection(end, assert, testName, undefined, false);
        
         connection.reconnecting(function () {

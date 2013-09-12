@@ -427,7 +427,7 @@
 
         verifyReconnect: function (connection) {
             if (new Date().getTime() - connection._.lastMessageAt >= connection.reconnectWindow) {
-                connection.log("There has not been an active server connection for an extended perior of time. Stopping connection.");
+                connection.log("There has not been an active server connection for an extended periord of time. Stopping connection.");
                 connection.stop();
                 return false;
             }
