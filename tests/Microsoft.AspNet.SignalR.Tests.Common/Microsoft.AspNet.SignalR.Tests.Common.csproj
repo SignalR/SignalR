@@ -38,9 +38,6 @@
     <Reference Include="Microsoft.Owin.Cors">
       <HintPath>..\..\packages\Microsoft.Owin.Cors.2.0.1-rtw1-20912-624-dev\lib\net45\Microsoft.Owin.Cors.dll</HintPath>
     </Reference>
-    <Reference Include="Microsoft.Owin.Host.HttpListener">
-      <HintPath>..\..\packages\Microsoft.Owin.Host.HttpListener.2.0.1-rtw1-20912-624-dev\lib\net45\Microsoft.Owin.Host.HttpListener.dll</HintPath>
-    </Reference>
     <Reference Include="Microsoft.Owin.Hosting">
       <HintPath>..\..\packages\Microsoft.Owin.Hosting.2.0.1-rtw1-20912-624-dev\lib\net45\Microsoft.Owin.Hosting.dll</HintPath>
     </Reference>
