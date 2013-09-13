@@ -6,7 +6,7 @@ using Microsoft.AspNet.SignalR.Client.Transports;
 using Moq;
 using Xunit;
 
-namespace Microsoft.AspNet.SignalR.CSharp.Tests
+namespace Microsoft.AspNet.SignalR.Client.Tests
 {
     public class KeepAliveFacts
     {

@@ -7,8 +7,8 @@
     <ProjectGuid>{8B9D292A-0F2D-444D-9A61-2D96A0E7041E}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Microsoft.AspNet.SignalR.Client.CSharp.Tests</RootNamespace>
-    <AssemblyName>Microsoft.AspNet.SignalR.Client.CSharp.Tests</AssemblyName>
+    <RootNamespace>Microsoft.AspNet.SignalR.Client.Tests</RootNamespace>
+    <AssemblyName>Microsoft.AspNet.SignalR.Client.Tests</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\</SolutionDir>

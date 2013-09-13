@@ -91,8 +91,6 @@
     <Compile Include="Hosting\ResponseExtensionsFacts.cs" />
     <Compile Include="Json\JsonFacts.cs" />
     <Compile Include="Json\JsonNetSerializerFacts.cs" />
-    <Compile Include="Client\KeepAliveFacts.cs" />
-    <Compile Include="Json\JsonSerializerExtensionFacts.cs" />
     <Compile Include="Owin\ServerRequestFacts.cs" />
     <Compile Include="PersistentConnectionFactoryFacts.cs" />
     <Compile Include="PersistentConnectionFacts.cs" />
@@ -125,7 +123,6 @@
     <Compile Include="SipHashBasedStringEqualityComparerFacts.cs" />
     <Compile Include="StringMinifierFacts.cs" />
     <Compile Include="TaskQueueFacts.cs" />
-    <Compile Include="TestUtilities.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
@@ -151,9 +148,6 @@
       <Project>{f18a8896-10bd-469e-9aa1-aebacef4d7b7}</Project>
       <Name>Microsoft.AspNet.SignalR.Tests.Common</Name>
     </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Client\" />
   </ItemGroup>
   <Import Project="..\..\src\Common\Microsoft.AspNet.SignalR.targets" />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

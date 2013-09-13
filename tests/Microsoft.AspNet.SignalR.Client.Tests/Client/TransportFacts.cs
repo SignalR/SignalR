@@ -10,7 +10,7 @@ using Newtonsoft.Json.Linq;
 using Xunit;
 using Xunit.Extensions;
 
-namespace Microsoft.AspNet.SignalR.CSharp.Tests
+namespace Microsoft.AspNet.SignalR.Client.Tests
 {
     public class TransportFacts
     {

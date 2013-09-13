@@ -15,6 +15,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "build", "build", "{1E4BA77C
 		build\Microsoft.AspNet.SignalR.OpenCover.xunit = build\Microsoft.AspNet.SignalR.OpenCover.xunit
 		src\Common\Microsoft.AspNet.SignalR.ruleset = src\Common\Microsoft.AspNet.SignalR.ruleset
 		src\Common\Microsoft.AspNet.SignalR.targets = src\Common\Microsoft.AspNet.SignalR.targets
+		build\Microsoft.AspNet.SignalR.UnitTests.OpenCover.xunit = build\Microsoft.AspNet.SignalR.UnitTests.OpenCover.xunit
 		Build\Microsoft.AspNet.SignalR.versions.targets = Build\Microsoft.AspNet.SignalR.versions.targets
 		ReleaseNotes.md = ReleaseNotes.md
 	EndProjectSection
@@ -95,7 +96,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNet.SignalR.Cl
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNet.SignalR.Tests", "tests\Microsoft.AspNet.SignalR.Tests\Microsoft.AspNet.SignalR.Tests.csproj", "{FBA09237-84CC-4383-BD12-CDF58E4020E8}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNet.SignalR.Client.CSharp.Tests", "tests\Microsoft.AspNet.SignalR.Client.CSharp.Tests\Microsoft.AspNet.SignalR.Client.CSharp.Tests.csproj", "{8B9D292A-0F2D-444D-9A61-2D96A0E7041E}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNet.SignalR.Client.Tests", "tests\Microsoft.AspNet.SignalR.Client.Tests\Microsoft.AspNet.SignalR.Client.Tests.csproj", "{8B9D292A-0F2D-444D-9A61-2D96A0E7041E}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

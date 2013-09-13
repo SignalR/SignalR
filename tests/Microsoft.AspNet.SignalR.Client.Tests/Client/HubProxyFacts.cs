@@ -7,7 +7,7 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Xunit;
 
-namespace Microsoft.AspNet.SignalR.CSharp.Tests
+namespace Microsoft.AspNet.SignalR.Client.Tests
 {
     public class HubProxyFacts
     {

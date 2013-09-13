@@ -11,14 +11,10 @@ using Microsoft.AspNet.SignalR.Infrastructure;
 using Moq;
 using Xunit;
 
-namespace Microsoft.AspNet.SignalR.CSharp.Tests
+namespace Microsoft.AspNet.SignalR.Client.Tests
 {
     public class ConnectionFacts : IDisposable
     {
-
-            Console.BackgroundColor = ConsoleColor.DarkCyan;
-            Console.WriteLine("*********************************");
-            Console.ResetColor();
         [Fact]
         public void ConnectionStateChangedEventIsCalledWithAppropriateArguments()
         {
