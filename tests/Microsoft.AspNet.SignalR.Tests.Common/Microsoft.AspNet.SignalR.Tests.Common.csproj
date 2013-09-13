@@ -140,6 +140,7 @@
     <Compile Include="Infrastructure\RequestItemsResponse.cs" />
     <Compile Include="Infrastructure\MessageBusType.cs" />
     <Compile Include="Infrastructure\SystemNetLogging.cs" />
+    <Compile Include="Infrastructure\TestUtilities.cs" />
     <Compile Include="Infrastructure\TransportType.cs" />
     <Compile Include="Owin\BasicAuthApplication.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

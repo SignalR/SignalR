@@ -11,7 +11,7 @@ using Microsoft.AspNet.SignalR.Infrastructure;
 using Moq;
 using Xunit;
 
-namespace Microsoft.AspNet.SignalR.Tests
+namespace Microsoft.AspNet.SignalR.Client.Tests
 {
     public class ConnectionFacts : IDisposable
     {
