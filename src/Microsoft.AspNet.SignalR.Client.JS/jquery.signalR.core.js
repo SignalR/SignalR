@@ -323,10 +323,12 @@
             this.url = url;
             this.qs = qs;
             this._ = {
+                keepAliveData: {},
                 connectingMessageBuffer: new ConnectingMessageBuffer(this, function (message) {
                     $connection.triggerHandler(events.onReceived, [message]);
                 }),
-                onFailedTimeoutHandle: null
+                onFailedTimeoutHandle: null,
+                lastMessageAt: new Date().getTime()
             };
             if (typeof (logging) === "boolean") {
                 this.logging = logging;
@@ -379,8 +381,6 @@
 
         state: signalR.connectionState.disconnected,
 
-        keepAliveData: {},
-
         clientProtocol: "1.3",
 
         reconnectDelay: 2000,
@@ -388,6 +388,8 @@
         transportConnectTimeout: 0, // This will be modified by the server in respone to the negotiate request.  It will add any value sent down from the server to the client value.
 
         disconnectTimeout: 30000, // This should be set by the server in response to the negotiate request (30s default)
+
+        reconnectWindow: 30000, // This should be set by the server in response to the negotiate request 
 
         keepAliveWarnAt: 2 / 3, // Warn user of slow connection if we breach the X% mark of the keep alive timeout
 
@@ -580,7 +582,7 @@
 
                             window.clearTimeout(connection._.onFailedTimeoutHandle);
 
-                            if (transport.supportsKeepAlive && connection.keepAliveData.activated) {
+                            if (transport.supportsKeepAlive && connection._.keepAliveData.activated) {
                                 signalR.transports._logic.monitorKeepAlive(connection);
                             }
 
@@ -678,7 +680,7 @@
                             return;
                         }
 
-                        keepAliveData = connection.keepAliveData;
+                        keepAliveData = connection._.keepAliveData;
                         connection.appRelativeUrl = res.Url;
                         connection.id = res.ConnectionId;
                         connection.token = res.ConnectionToken;
@@ -707,6 +709,8 @@
                         } else {
                             keepAliveData.activated = false;
                         }
+
+                        connection.reconnectWindow = connection.disconnectTimeout + (keepAliveData.timeout || 0);
 
                         if (!res.ProtocolVersion || res.ProtocolVersion !== connection.clientProtocol) {
                             protocolError = signalR._.error(signalR._.format(resources.protocolIncompatible, connection.clientProtocol, res.ProtocolVersion));
@@ -911,7 +915,7 @@
                         connection.transport.abort(connection, async);
                     }
 
-                    if (connection.transport.supportsKeepAlive && connection.keepAliveData.activated) {
+                    if (connection.transport.supportsKeepAlive && connection._.keepAliveData.activated) {
                         signalR.transports._logic.stopMonitoringKeepAlive(connection);
                     }
 
@@ -932,6 +936,7 @@
                 delete connection.groupsToken;
                 delete connection.id;
                 delete connection._.pingIntervalId;
+                delete connection._.lastMessageAt;
 
                 // Clear out our message buffer
                 connection._.connectingMessageBuffer.clear();
