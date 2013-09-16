@@ -31,21 +31,18 @@ namespace Microsoft.AspNet.SignalR.Crank
                 ControllerHub.Start(Arguments);
             }
 
-            Run();
+            Task.Run(async () => await Run()).Wait();
         }
 
-        private static void Run()
+        private static async Task Run()
         {
             var remoteController = !Arguments.IsController || (Arguments.NumClients > 1);
             if (remoteController)
             {
-                OpenControllerConnection();
-            }
-
-            if (!Arguments.IsController)
-            {
+                await OpenControllerConnection();
                 Console.WriteLine("Waiting on Controller...");
             }
+
             while (TestPhase != ControllerEvents.Connect)
             {
                 if (TestPhase == ControllerEvents.Abort)
@@ -53,11 +50,11 @@ namespace Microsoft.AspNet.SignalR.Crank
                     Console.WriteLine("Test Aborted");
                     return;
                 }
-                Thread.Sleep(CrankArguments.ConnectionPollIntervalMS);
+                await Task.Delay(CrankArguments.ConnectionPollIntervalMS);
             }
 
-            RunConnect();
-            RunSend();
+            await RunConnect();
+            await RunSend();
             RunDisconnect();
 
             if (remoteController)
@@ -66,7 +63,7 @@ namespace Microsoft.AspNet.SignalR.Crank
             }
         }
 
-        private static void OpenControllerConnection()
+        private static async Task OpenControllerConnection()
         {
             ControllerConnection = new HubConnection(Arguments.ControllerUrl);
             ControllerProxy = ControllerConnection.CreateHubProxy("ControllerHub");
@@ -88,7 +85,7 @@ namespace Microsoft.AspNet.SignalR.Crank
             {
                 try
                 {
-                    ControllerConnection.Start().Wait();
+                    await ControllerConnection.Start();
                     break;
                 }
                 catch (Exception)
@@ -98,8 +95,8 @@ namespace Microsoft.AspNet.SignalR.Crank
                     {
                         throw new InvalidOperationException("Failed to connect to the controller hub");
                     }
-                    Thread.Sleep(CrankArguments.ConnectionPollIntervalMS);
                 }
+                await Task.Delay(CrankArguments.ConnectionPollIntervalMS);
             }
         }
 
@@ -153,7 +150,7 @@ namespace Microsoft.AspNet.SignalR.Crank
             e.SetObserved();
         }
 
-        private static void RunSend()
+        private static async Task RunSend()
         {
             var payload = (Arguments.SendBytes == 0) ? String.Empty : new string('a', Arguments.SendBytes);
 
@@ -161,13 +158,12 @@ namespace Microsoft.AspNet.SignalR.Crank
             {
                 if (!String.IsNullOrEmpty(payload))
                 {
-                    var send = Parallel.ForEach(Connections, c => c.Send(payload));
-                    while (!send.IsCompleted)
+                    Parallel.ForEach(Connections, async c =>
                     {
-                        Thread.Sleep(250);
-                    }
+                        await c.Send(payload);
+                    });
                 }
-                Thread.Sleep(Arguments.SendInterval);
+                await Task.Delay(Arguments.SendInterval);
             }
         }
 
@@ -177,82 +173,54 @@ namespace Microsoft.AspNet.SignalR.Crank
             {
                 if ((TestPhase == ControllerEvents.Disconnect) || (TestPhase == ControllerEvents.Abort))
                 {
-                    var dispose = Parallel.ForEach(Connections, c => c.Dispose());
-                    while (!dispose.IsCompleted)
-                    {
-                        Thread.Sleep(CrankArguments.ConnectionPollIntervalMS);
-                    }
+                    Parallel.ForEach(Connections, c => c.Dispose());
                 }
             }
         }
 
-        private static void RunConnect()
+        private static async Task RunConnect()
         {
             var batched = Arguments.BatchSize > 1;
             while (TestPhase == ControllerEvents.Connect)
             {
-                if (batched)
-                {
-                    ConnectBatch();
-                }
-                else
-                {
-                    ConnectSingle();
-                }
-                if (Arguments.ConnectInterval > 0)
-                {
-                    Thread.Sleep(Arguments.ConnectInterval);
-                }
+                await (batched ? ConnectBatch() : ConnectSingle());
+
+                await Task.Delay(Arguments.ConnectInterval);
             }
         }
 
-        private static void ConnectBatch()
+        private static Task ConnectBatch()
         {
-            var batch = Parallel.For(0, Arguments.BatchSize, new ParallelOptions { MaxDegreeOfParallelism = Arguments.BatchSize }, i =>
+            var options = new ParallelOptions
             {
-                ConnectSingle();
+                MaxDegreeOfParallelism = Arguments.BatchSize
+            };
+
+            var batchTcs = new TaskCompletionSource<object>();
+            Parallel.For(0, Arguments.BatchSize, options, async i =>
+            {
+                await ConnectSingle();
+                batchTcs.TrySetResult(null);
             });
-            while (!batch.IsCompleted)
-            {
-                Thread.Sleep(250);
-            }
+            return batchTcs.Task;
         }
 
-        private static void ConnectSingle()
+        private static async Task ConnectSingle()
         {
-            string failReason = "Unknown";
             var connection = CreateConnection();
-            for (int attempts = 0; attempts < CrankArguments.ConnectionPollAttempts; attempts++)
+            try
             {
-                try
-                {
-                    if (Arguments.Transport == null)
-                    {
-                        connection.Start().Wait();
-                    }
-                    else
-                    {
-                        connection.Start(Arguments.Transport).Wait();
-                    }
-                    break;
-                }
-                catch (Exception e)
-                {
-                    failReason = String.Format("{0}: {1}", e.GetType(), e.Message);
-                }
-            }
-            if (connection.State == ConnectionState.Connected)
-            {
+                await (Arguments.Transport == null ? connection.Start() : connection.Start(Arguments.Transport));
+
                 connection.Closed += () =>
                 {
                     Connections.TryTake(out connection);
                 };
                 Connections.Add(connection);
             }
-            else
+            catch (Exception e)
             {
-                Console.WriteLine("Connection.Start Failed: " + failReason);
-                connection.Dispose();
+                Console.WriteLine("Connection.Start Failed: {0}: {1}", e.GetType(), e.Message);
             }
         }
 

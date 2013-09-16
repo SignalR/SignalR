@@ -38,13 +38,6 @@ namespace Microsoft.AspNet.SignalR.Crank
             return base.OnDisconnected();
         }
 
-        public override Task OnReconnected()
-        {
-            HubClients = Clients;
-            ClientsConnected++;
-            return base.OnReconnected();
-        }
-
         public void Mark(int sampleId, int[] states)
         {
             MarkInternal(sampleId, states);
