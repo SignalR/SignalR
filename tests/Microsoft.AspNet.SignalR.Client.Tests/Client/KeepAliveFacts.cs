@@ -22,12 +22,12 @@ namespace Microsoft.AspNet.SignalR.Client.Tests
 
             // Setting the values such that a warning is thrown almost instantly and a timeout doesn't occur
             var keepAliveData = new KeepAliveData(
-                lastKeepAlive: DateTime.UtcNow,
                 timeoutWarning: TimeSpan.FromSeconds(1),
                 timeout: TimeSpan.FromSeconds(20),
                 checkInterval: TimeSpan.FromSeconds(2)
             );
 
+            connection.Setup(m => m.LastMessageAt).Returns(DateTime.UtcNow);
             connection.Setup(m => m.KeepAliveData).Returns(keepAliveData);
             connection.Setup(m => m.State).Returns(ConnectionState.Connected);
 
@@ -53,12 +53,12 @@ namespace Microsoft.AspNet.SignalR.Client.Tests
 
             // Setting the values such that a timeout happens almost instantly
             var keepAliveData = new KeepAliveData(
-                lastKeepAlive: DateTime.UtcNow,
                 timeoutWarning: TimeSpan.FromSeconds(10),
                 timeout: TimeSpan.FromSeconds(1),
                 checkInterval: TimeSpan.FromSeconds(2)
             );
 
+            connection.Setup(m => m.LastMessageAt).Returns(DateTime.UtcNow);
             connection.Setup(m => m.KeepAliveData).Returns(keepAliveData);
             connection.Setup(m => m.State).Returns(ConnectionState.Connected);
             connection.Setup(m => m.Transport).Returns(transport.Object);
@@ -85,12 +85,12 @@ namespace Microsoft.AspNet.SignalR.Client.Tests
 
             // Setting the values such that a timeout or timeout warning isn't issued
             var keepAliveData = new KeepAliveData(
-                lastKeepAlive: DateTime.UtcNow,
                 timeoutWarning: TimeSpan.FromSeconds(5),
                 timeout: TimeSpan.FromSeconds(10),
                 checkInterval: TimeSpan.FromSeconds(2)
             );
 
+            connection.Setup(m => m.LastMessageAt).Returns(DateTime.UtcNow);
             connection.Setup(m => m.KeepAliveData).Returns(keepAliveData);
             connection.Setup(m => m.State).Returns(ConnectionState.Connected);
             connection.Setup(m => m.Transport).Returns(transport.Object);

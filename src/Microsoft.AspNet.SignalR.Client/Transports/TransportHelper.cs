@@ -155,7 +155,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
                 throw new ArgumentNullException("connection");
             }
 
-            connection.UpdateLastKeepAlive();
+            connection.MarkLastMessage();
 
             shouldReconnect = false;
             disconnected = false;

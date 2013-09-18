@@ -67,6 +67,8 @@ namespace Microsoft.AspNet.SignalR.Client
         // Used to ensure we don't write to the Trace TextWriter from multiple threads simultaneously 
         private readonly object _traceLock = new object();
 
+        private DateTime _lastMessageAt;
+
         // Keeps track of when the last keep alive from the server was received
         private HeartbeatMonitor _monitor;
 
@@ -157,6 +159,7 @@ namespace Microsoft.AspNet.SignalR.Client
             QueryString = queryString;
             _disconnectTimeoutOperation = DisposableAction.Empty;
             _connectingMessageBuffer = new ConnectingMessageBuffer(this, OnMessageReceived);
+            _lastMessageAt = DateTime.UtcNow;
             Items = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
             State = ConnectionState.Disconnected;
             TraceLevel = TraceLevels.All;
@@ -188,6 +191,17 @@ namespace Microsoft.AspNet.SignalR.Client
             set
             {
                 _keepAliveData = value;
+            }
+        }
+
+        /// <summary>
+        /// Object to store the various keep alive timeout values
+        /// </summary>
+        DateTime IConnection.LastMessageAt
+        {
+            get
+            {
+                return _lastMessageAt;
             }
         }
 
@@ -499,7 +513,7 @@ namespace Microsoft.AspNet.SignalR.Client
                         Trace(TraceLevels.Events, "Error: {0}", ex.GetBaseException());
                     }
                 }
-                
+
                 // This is racy since it's outside the _stateLock, but we are trying to avoid 30s deadlocks when calling _transport.Abort()
                 if (State == ConnectionState.Disconnected)
                 {
@@ -723,7 +737,7 @@ namespace Microsoft.AspNet.SignalR.Client
                 Reconnected();
             }
 
-            ((IConnection)this).UpdateLastKeepAlive();
+            ((IConnection)this).MarkLastMessage();
         }
 
         void IConnection.OnConnectionSlow()
@@ -739,12 +753,9 @@ namespace Microsoft.AspNet.SignalR.Client
         /// <summary>
         /// Sets LastKeepAlive to the current time 
         /// </summary>
-        void IConnection.UpdateLastKeepAlive()
+        void IConnection.MarkLastMessage()
         {
-            if (_keepAliveData != null)
-            {
-                _keepAliveData.LastKeepAlive = DateTime.UtcNow;
-            }
+            _lastMessageAt = DateTime.UtcNow;
         }
 
         [SuppressMessage("Microsoft.Design", "CA1062:Validate arguments of public methods", MessageId = "0", Justification = "This is called by the transport layer")]
