@@ -29,6 +29,7 @@ namespace Microsoft.AspNet.SignalR.Client
         string QueryString { get; }
         ConnectionState State { get; }
         IClientTransport Transport { get; }
+        DateTime LastMessageAt { get; }
 
         bool ChangeState(ConnectionState oldState, ConnectionState newState);
 
@@ -48,7 +49,7 @@ namespace Microsoft.AspNet.SignalR.Client
         void OnReconnected();
         void OnConnectionSlow();
         void PrepareRequest(IRequest request);
-        void UpdateLastKeepAlive();
+        void MarkLastMessage();
 #if (NET4 || NET45)
         void AddClientCertificate(X509Certificate certificate);
 #endif

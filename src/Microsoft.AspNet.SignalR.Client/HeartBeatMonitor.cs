@@ -47,7 +47,7 @@ namespace Microsoft.AspNet.SignalR.Client
         /// </summary>
         public void Start()
         {
-            _connection.UpdateLastKeepAlive();
+            _connection.MarkLastMessage();
             HasBeenWarned = false;
             TimedOut = false;
 #if !NETFX_CORE
@@ -65,7 +65,7 @@ namespace Microsoft.AspNet.SignalR.Client
 #endif
         private void Beat()
         {
-            TimeSpan timeElapsed = DateTime.UtcNow - _connection.KeepAliveData.LastKeepAlive;
+            TimeSpan timeElapsed = DateTime.UtcNow - _connection.LastMessageAt;
             Beat(timeElapsed);
         }
 
