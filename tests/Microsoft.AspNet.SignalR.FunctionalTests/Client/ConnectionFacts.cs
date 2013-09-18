@@ -12,6 +12,48 @@ namespace Microsoft.AspNet.SignalR.Tests
     public class ConnectionFacts : HostedTest
     {
         [Theory]
+        [InlineData(HostType.Memory, TransportType.ServerSentEvents)]
+        [InlineData(HostType.Memory, TransportType.ServerSentEvents)]
+        [InlineData(HostType.Memory, TransportType.LongPolling)]
+        [InlineData(HostType.Memory, TransportType.LongPolling)]
+        [InlineData(HostType.IISExpress, TransportType.LongPolling)]
+        [InlineData(HostType.IISExpress, TransportType.ServerSentEvents)]
+        [InlineData(HostType.IISExpress, TransportType.Websockets)]
+        public void ReconnectExceedingReconnectWindowDisconnects(HostType hostType, TransportType transportType, MessageBusType messageBusType)
+        {
+            // Test cannot be async because if we do host.ShutDown() after an await the connection stops.
+
+            using (var host = CreateHost(hostType, transportType))
+            {
+                host.Initialize();
+                var connection = CreateHubConnection(host);
+
+                var reconnectWh = new ManualResetEventSlim();
+                var disconnectWh = new ManualResetEventSlim();
+
+                connection.Reconnecting += () =>
+                {
+                    ((Client.IConnection)connection).ReconnectWindow = TimeSpan.FromMilliseconds(500);
+                    reconnectWh.Set();
+                };
+
+                connection.Closed += () =>
+                {
+                    disconnectWh.Set();
+                };
+
+                connection.Start(host.Transport).Wait();
+
+                host.Shutdown();
+
+                Assert.True(reconnectWh.Wait(TimeSpan.FromSeconds(15)), "Reconnect never fired");
+                Assert.True(disconnectWh.Wait(TimeSpan.FromSeconds(15)), "Closed never fired");
+
+                connection.Stop();
+            }
+        }
+
+        [Theory]
         [InlineData(HostType.IISExpress, TransportType.LongPolling)]
         [InlineData(HostType.IISExpress, TransportType.ServerSentEvents)]
         [InlineData(HostType.IISExpress, TransportType.Websockets)]

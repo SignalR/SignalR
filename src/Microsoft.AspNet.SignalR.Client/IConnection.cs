@@ -19,6 +19,7 @@ namespace Microsoft.AspNet.SignalR.Client
 {
     public interface IConnection
     {
+        TimeSpan ReconnectWindow { get; set; }
         KeepAliveData KeepAliveData { get; set; }
         string MessageId { get; set; }
         string GroupsToken { get; set; }
@@ -30,6 +31,7 @@ namespace Microsoft.AspNet.SignalR.Client
         ConnectionState State { get; }
         IClientTransport Transport { get; }
         DateTime LastMessageAt { get; }
+        DateTime LastActiveAt { get; }
 
         bool ChangeState(ConnectionState oldState, ConnectionState newState);
 
@@ -53,6 +55,7 @@ namespace Microsoft.AspNet.SignalR.Client
 #if (NET4 || NET45)
         void AddClientCertificate(X509Certificate certificate);
 #endif
+        void MarkActive();
         void Trace(TraceLevels level, string format, params object[] args);
     }
 }

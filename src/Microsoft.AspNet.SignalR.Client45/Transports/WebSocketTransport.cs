@@ -159,7 +159,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
 
         private async void DoReconnect()
         {
-            while (_connectionInfo.Connection.EnsureReconnecting())
+            while (TransportHelper.VerifyReconnect(_connectionInfo.Connection) && _connectionInfo.Connection.EnsureReconnecting())
             {
                 try
                 {
