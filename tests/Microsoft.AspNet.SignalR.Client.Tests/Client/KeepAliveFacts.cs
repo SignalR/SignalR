@@ -29,20 +29,23 @@ namespace Microsoft.AspNet.SignalR.Client.Tests
                 checkInterval: TimeSpan.FromSeconds(2)
             );
 
-            var monitor = new HeartbeatMonitor(connection.Object, new object(), keepAliveData.CheckInterval);
+            using (var monitor = new HeartbeatMonitor(connection.Object, new object(), keepAliveData.CheckInterval))
+            {
+                connection.Setup(m => m.LastMessageAt).Returns(DateTime.UtcNow);
+                connection.Setup(m => m.KeepAliveData).Returns(keepAliveData);
+                connection.Setup(m => m.State).Returns(ConnectionState.Connected);
+                connection.Setup(m => m.Transport).Returns(transport.Object);
 
-            connection.Setup(m => m.LastMessageAt).Returns(DateTime.UtcNow);
-            connection.Setup(m => m.KeepAliveData).Returns(keepAliveData);
-            connection.Setup(m => m.State).Returns(ConnectionState.Connected);
-            connection.Setup(m => m.Transport).Returns(transport.Object);
+                monitor.Start();
 
-            // Act - Setting timespan to be greater than timeout warining but less than timeout
-            monitor.Beat(TimeSpan.FromSeconds(5));
+                // Act - Setting timespan to be greater than timeout warining but less than timeout
+                monitor.Beat(TimeSpan.FromSeconds(5));
 
-            // Assert
-            Assert.True(monitor.HasBeenWarned);
-            Assert.False(monitor.TimedOut);
-            connection.Verify(m => m.OnConnectionSlow(), Times.Once());
+                // Assert
+                Assert.True(monitor.HasBeenWarned);
+                Assert.False(monitor.TimedOut);
+                connection.Verify(m => m.OnConnectionSlow(), Times.Once());
+            }
         }
 
         /// <summary>
@@ -64,20 +67,23 @@ namespace Microsoft.AspNet.SignalR.Client.Tests
                 checkInterval: TimeSpan.FromSeconds(2)
             );
 
-            var monitor = new HeartbeatMonitor(connection.Object, new object(), keepAliveData.CheckInterval);
+            using (var monitor = new HeartbeatMonitor(connection.Object, new object(), keepAliveData.CheckInterval))
+            {
+                connection.Setup(m => m.LastMessageAt).Returns(DateTime.UtcNow);
+                connection.Setup(m => m.KeepAliveData).Returns(keepAliveData);
+                connection.Setup(m => m.State).Returns(ConnectionState.Connected);
+                connection.Setup(m => m.Transport).Returns(transport.Object);
 
-            connection.Setup(m => m.LastMessageAt).Returns(DateTime.UtcNow);
-            connection.Setup(m => m.KeepAliveData).Returns(keepAliveData);
-            connection.Setup(m => m.State).Returns(ConnectionState.Connected);
-            connection.Setup(m => m.Transport).Returns(transport.Object);
+                monitor.Start();
 
-            // Act - Setting timespan to be greater then timeout
-            monitor.Beat(TimeSpan.FromSeconds(5));
+                // Act - Setting timespan to be greater then timeout
+                monitor.Beat(TimeSpan.FromSeconds(5));
 
-            // Assert
-            Assert.True(monitor.TimedOut);
-            Assert.False(monitor.HasBeenWarned);
-            transport.Verify(m => m.LostConnection(connection.Object), Times.Once());
+                // Assert
+                Assert.True(monitor.TimedOut);
+                Assert.False(monitor.HasBeenWarned);
+                transport.Verify(m => m.LostConnection(connection.Object), Times.Once());
+            }
         }
 
         /// <summary>
@@ -97,19 +103,22 @@ namespace Microsoft.AspNet.SignalR.Client.Tests
                 checkInterval: TimeSpan.FromSeconds(2)
             );
 
-            var monitor = new HeartbeatMonitor(connection.Object, new object(), keepAliveData.CheckInterval);
+            using (var monitor = new HeartbeatMonitor(connection.Object, new object(), keepAliveData.CheckInterval))
+            {
+                connection.Setup(m => m.LastMessageAt).Returns(DateTime.UtcNow);
+                connection.Setup(m => m.KeepAliveData).Returns(keepAliveData);
+                connection.Setup(m => m.State).Returns(ConnectionState.Connected);
+                connection.Setup(m => m.Transport).Returns(transport.Object);
 
-            connection.Setup(m => m.LastMessageAt).Returns(DateTime.UtcNow);
-            connection.Setup(m => m.KeepAliveData).Returns(keepAliveData);
-            connection.Setup(m => m.State).Returns(ConnectionState.Connected);
-            connection.Setup(m => m.Transport).Returns(transport.Object);
+                monitor.Start();
 
-            // Act - Setting timespan to be less than timeout and timeout warning
-            monitor.Beat(TimeSpan.FromSeconds(2));
+                // Act - Setting timespan to be less than timeout and timeout warning
+                monitor.Beat(TimeSpan.FromSeconds(2));
 
-            // Assert
-            Assert.False(monitor.TimedOut);
-            Assert.False(monitor.HasBeenWarned);
+                // Assert
+                Assert.False(monitor.TimedOut);
+                Assert.False(monitor.HasBeenWarned);
+            }
         }
 
         private class DummyTextWriter : TextWriter

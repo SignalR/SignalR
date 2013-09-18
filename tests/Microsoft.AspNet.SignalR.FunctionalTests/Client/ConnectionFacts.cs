@@ -19,7 +19,7 @@ namespace Microsoft.AspNet.SignalR.Tests
         [InlineData(HostType.IISExpress, TransportType.LongPolling)]
         [InlineData(HostType.IISExpress, TransportType.ServerSentEvents)]
         [InlineData(HostType.IISExpress, TransportType.Websockets)]
-        public void ReconnectExceedingReconnectWindowDisconnects(HostType hostType, TransportType transportType, MessageBusType messageBusType)
+        public void ReconnectExceedingReconnectWindowDisconnects(HostType hostType, TransportType transportType)
         {
             // Test cannot be async because if we do host.ShutDown() after an await the connection stops.
 

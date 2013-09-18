@@ -28,6 +28,9 @@ namespace Microsoft.AspNet.SignalR.Client
         // How often to beat
         private TimeSpan _beatInterval;
 
+        // Whether to monitor the keep alive or not
+        private bool _monitorKeepAlive;
+
         // To keep track of whether the user has been notified
         public bool HasBeenWarned { get; private set; }
 
@@ -54,6 +57,7 @@ namespace Microsoft.AspNet.SignalR.Client
         {
             _connection.MarkLastMessage();
             _connection.MarkActive();
+            _monitorKeepAlive = _connection.KeepAliveData != null && _connection.Transport.SupportsKeepAlive;
 
             HasBeenWarned = false;
             TimedOut = false;
@@ -82,7 +86,7 @@ namespace Microsoft.AspNet.SignalR.Client
         /// <param name="timeElapsed"></param>
         public void Beat(TimeSpan timeElapsed)
         {
-            if (_connection.KeepAliveData != null && _connection.Transport.SupportsKeepAlive)
+            if (_monitorKeepAlive)
             {
                 CheckKeepAlive(timeElapsed);
             }
