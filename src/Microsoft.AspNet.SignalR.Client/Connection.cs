@@ -52,6 +52,8 @@ namespace Microsoft.AspNet.SignalR.Client
 
         private KeepAliveData _keepAliveData;
 
+        private TimeSpan _reconnectWindow;
+
         private Task _connectTask;
 
         private TextWriter _traceWriter;
@@ -68,6 +70,9 @@ namespace Microsoft.AspNet.SignalR.Client
         private readonly object _traceLock = new object();
 
         private DateTime _lastMessageAt;
+
+        // Indicates the last time we marked the C# code as running.
+        private DateTime _lastActiveAt;
 
         // Keeps track of when the last keep alive from the server was received
         private HeartbeatMonitor _monitor;
@@ -160,6 +165,7 @@ namespace Microsoft.AspNet.SignalR.Client
             _disconnectTimeoutOperation = DisposableAction.Empty;
             _connectingMessageBuffer = new ConnectingMessageBuffer(this, OnMessageReceived);
             _lastMessageAt = DateTime.UtcNow;
+            _reconnectWindow = TimeSpan.Zero;
             Items = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
             State = ConnectionState.Disconnected;
             TraceLevel = TraceLevels.All;
@@ -180,6 +186,22 @@ namespace Microsoft.AspNet.SignalR.Client
         public Version Protocol { get; set; }
 
         /// <summary>
+        /// The maximum amount of time a connection will allow to try and reconnect.
+        /// This value is equivalent to the summation of the servers disconnect and keep alive timeout values.
+        /// </summary>
+        TimeSpan IConnection.ReconnectWindow 
+        {
+            get
+            {
+                return _reconnectWindow;
+            }
+            set
+            {
+                _reconnectWindow = value;
+            }
+        }
+
+        /// <summary>
         /// Object to store the various keep alive timeout values
         /// </summary>
         KeepAliveData IConnection.KeepAliveData
@@ -195,13 +217,21 @@ namespace Microsoft.AspNet.SignalR.Client
         }
 
         /// <summary>
-        /// Object to store the various keep alive timeout values
+        /// The timestamp of the last message received by the connection.
         /// </summary>
         DateTime IConnection.LastMessageAt
         {
             get
             {
                 return _lastMessageAt;
+            }
+        }
+
+        DateTime IConnection.LastActiveAt
+        {
+            get
+            {
+                return _lastActiveAt;
             }
         }
 
@@ -417,6 +447,11 @@ namespace Microsoft.AspNet.SignalR.Client
                                 if (negotiationResponse.KeepAliveTimeout != null)
                                 {
                                     _keepAliveData = new KeepAliveData(TimeSpan.FromSeconds(negotiationResponse.KeepAliveTimeout.Value));
+                                    _reconnectWindow = _disconnectTimeout + _keepAliveData.Timeout;
+                                }
+                                else
+                                {
+                                    _reconnectWindow = _disconnectTimeout;
                                 }
 
                                 return StartTransport();
@@ -437,12 +472,9 @@ namespace Microsoft.AspNet.SignalR.Client
                                  {
                                      _connectingMessageBuffer.Drain();
                                  }
-
-                                 if (_keepAliveData != null && _transport.SupportsKeepAlive)
-                                 {
-                                     // Start the monitor to check for server activity
-                                     _monitor.Start();
-                                 }
+                                 
+                                 // Start the monitor to check for server activity
+                                _monitor.Start();
                              });
         }
 
@@ -751,11 +783,19 @@ namespace Microsoft.AspNet.SignalR.Client
         }
 
         /// <summary>
-        /// Sets LastKeepAlive to the current time 
+        /// Sets LastMessageAt to the current time 
         /// </summary>
         void IConnection.MarkLastMessage()
         {
             _lastMessageAt = DateTime.UtcNow;
+        }
+
+        /// <summary>
+        /// Sets LastActiveAt to the current time 
+        /// </summary>
+        void IConnection.MarkActive()
+        {
+            _lastActiveAt = DateTime.UtcNow;
         }
 
         [SuppressMessage("Microsoft.Design", "CA1062:Validate arguments of public methods", MessageId = "0", Justification = "This is called by the transport layer")]

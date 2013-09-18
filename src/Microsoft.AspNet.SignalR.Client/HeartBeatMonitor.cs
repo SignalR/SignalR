@@ -48,6 +48,8 @@ namespace Microsoft.AspNet.SignalR.Client
         public void Start()
         {
             _connection.MarkLastMessage();
+            _connection.MarkActive();
+
             HasBeenWarned = false;
             TimedOut = false;
 #if !NETFX_CORE
@@ -74,6 +76,16 @@ namespace Microsoft.AspNet.SignalR.Client
         /// </summary>
         /// <param name="timeElapsed"></param>
         public void Beat(TimeSpan timeElapsed)
+        {
+            if (_connection.KeepAliveData != null && _connection.Transport.SupportsKeepAlive)
+            {
+                CheckKeepAlive(timeElapsed);
+            }
+
+            _connection.MarkActive();
+        }
+
+        private void CheckKeepAlive(TimeSpan timeElapsed)
         {
             lock (_connectionStateLock)
             {
@@ -128,7 +140,7 @@ namespace Microsoft.AspNet.SignalR.Client
                 if (_timer != null)
                 {
 #if !NETFX_CORE
-                
+
                     _timer.Dispose();
                     _timer = null;
 #else
