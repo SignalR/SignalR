@@ -107,12 +107,12 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
                 // Create a client for this topic
                 TopicClient topicClient = TopicClient.CreateFromConnectionString(_configuration.ConnectionString, topicName);
                 connectionContext.SetTopicClients(topicClient, topicIndex);
-                openStream(topicIndex);
 
                 _trace.TraceInformation("Creation of a new topic client {0} completed successfully.", topicName);
             }
 
             CreateSubscription(connectionContext, topicIndex);
+            openStream(topicIndex);
         }
 
         private void CreateSubscription(ServiceBusConnectionContext connectionContext, int topicIndex)
