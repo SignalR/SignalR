@@ -328,7 +328,9 @@
                     $connection.triggerHandler(events.onReceived, [message]);
                 }),
                 onFailedTimeoutHandle: null,
-                lastMessageAt: new Date().getTime()
+                lastMessageAt: new Date().getTime(),
+                beatInterval: 5000, // Default value, will only be overridden if keep alive is enabled,
+                beatHandle: null
             };
             if (typeof (logging) === "boolean") {
                 this.logging = logging;
@@ -586,6 +588,8 @@
                                 signalR.transports._logic.monitorKeepAlive(connection);
                             }
 
+                            signalR.transports._logic.startHeartbeat(connection);
+
                             // Used to ensure low activity clients maintain their authentication.
                             // Must be configured once a transport has been decided to perform valid ping requests.
                             configurePingInterval(connection);
@@ -705,7 +709,7 @@
                             keepAliveData.timeoutWarning = keepAliveData.timeout * connection.keepAliveWarnAt;
 
                             // Instantiate the frequency in which we check the keep alive.  It must be short in order to not miss/pick up any changes
-                            keepAliveData.checkInterval = (keepAliveData.timeout - keepAliveData.timeoutWarning) / 3;
+                            connection._.beatInterval = (keepAliveData.timeout - keepAliveData.timeoutWarning) / 3;
                         } else {
                             keepAliveData.activated = false;
                         }
@@ -907,6 +911,7 @@
                 connection.log("Stopping connection.");
 
                 // Clear this no matter what
+                window.clearTimeout(connection._.beatHandle);
                 window.clearTimeout(connection._.onFailedTimeoutHandle);
                 window.clearInterval(connection._.pingIntervalId);
 

@@ -13,6 +13,17 @@
 
     signalR.transports = {};
 
+    function beat(connection) {
+        if (connection._.keepAliveData.monitoring) {
+            checkIfAlive(connection);
+        }
+
+
+        connection._.beatHandle = window.setTimeout(function () {
+            beat(connection);
+        }, connection._.beatInterval);
+    }
+
     function checkIfAlive(connection) {
         var keepAliveData = connection._.keepAliveData,
             timeElapsed;
@@ -37,15 +48,6 @@
             } else {
                 keepAliveData.userNotified = false;
             }
-        }
-
-        // Verify we're monitoring the keep alive
-        // We don't want this as a part of the inner if statement above because we want keep alives to continue to be checked
-        // in the event that the server comes back online (if it goes offline).
-        if (keepAliveData.monitoring) {
-            window.setTimeout(function () {
-                checkIfAlive(connection);
-            }, keepAliveData.checkInterval);
         }
     }
 
@@ -380,8 +382,6 @@
                 $(connection).bind(events.onReconnect, connection._.keepAliveData.reconnectKeepAliveUpdate);
 
                 connection.log("Now monitoring keep alive with a warning timeout of " + keepAliveData.timeoutWarning + " and a connection lost timeout of " + keepAliveData.timeout + ".");
-                // Start the monitoring of the keep alive
-                checkIfAlive(connection);
             } else {
                 connection.log("Tried to monitor keep alive but it's already being monitored.");
             }
@@ -402,6 +402,10 @@
                 connection._.keepAliveData = {};
                 connection.log("Stopping the monitoring of the keep alive.");
             }
+        },
+
+        startHeartbeat: function(connection) {
+            beat(connection);
         },
 
         markLastMessage: function (connection) {
