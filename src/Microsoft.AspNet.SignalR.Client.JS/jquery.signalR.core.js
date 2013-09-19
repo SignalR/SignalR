@@ -438,6 +438,15 @@
                         connection.stop(asyncAbort);
                     });
 
+                    if (signalR._.firefoxMajorVersion(window.navigator.userAgent) >= 11) {
+                        _pageWindow.bind("beforeunload", function () {
+                            // If connection.stop() runs in beforeunload and fails, it will also fail
+                            // in unload unless connection.stop() runs after a timeout.
+                            window.setTimeout(function () {
+                                connection.stop(asyncAbort);
+                            }, 0);
+                        });
+                    }
                 }, function () {
                     initialize(transports, index + 1);
                 });
