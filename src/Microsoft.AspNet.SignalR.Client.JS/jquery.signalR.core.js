@@ -136,7 +136,16 @@
 
             // undefined value means not IE
             return version;
-        })()
+        })(),
+        
+        firefoxMajorVersion: function (userAgent) {
+            // Firefox user agents: http://useragentstring.com/pages/Firefox/
+            var matches = userAgent.match(/Firefox\/(\d+)/);
+            if (!matches || !matches.length || matches.length < 2) {
+                return 0;
+            }
+            return parseInt(matches[1], 10 /* radix */);
+        }
     };
 
     signalR.events = events;
@@ -273,8 +282,7 @@
                 config = {
                     waitForPageLoad: true,
                     transport: "auto",
-                    jsonp: false,
-                    withCredentials: true
+                    jsonp: false
                 },
                 initialize,
                 deferred = connection._deferral || $.Deferred(), // Check to see if there is a pre-existing deferral that's being built on, if so we want to keep using it
@@ -297,7 +305,6 @@
                 throw new Error("SignalR: Invalid transport(s) specified, aborting start.");
             }
 
-            connection.withCredentials = config.withCredentials;
             // Check to see if start is being called prior to page load
             // If waitForPageLoad is true we then want to re-direct function call to the window load event
             if (!_pageLoaded && config.waitForPageLoad === true) {
@@ -351,6 +358,10 @@
                     config.transport = ["webSockets", "longPolling"];
                 }
 
+                if (config.withCredentials === undefined) {
+                    config.withCredentials = true;
+                }
+
                 // Determine if jsonp is the only choice for negotiation, ajaxSend and ajaxAbort.
                 // i.e. if the browser doesn't supports CORS
                 // If it is, ignore any preference to the contrary, and switch to jsonp.
@@ -364,6 +375,8 @@
 
                 connection.contentType = signalR._.defaultContentType;
             }
+
+            connection.withCredentials = config.withCredentials;
 
             connection.ajaxDataType = config.jsonp ? "jsonp" : "json";
 
@@ -397,10 +410,15 @@
                 }
 
                 transport.start(connection, function () { // success
-                        // The connection was aborted while initializing transports
-                        if (connection.state === signalR.connectionState.disconnected) {
-                            return;
-                        }
+                    // Firefox 11+ doesn't allow sync XHR withCredentials: https://developer.mozilla.org/en-US/docs/Web/API/XMLHttpRequest#withCredentials
+                    var isFirefox11OrGreater = signalR._.firefoxMajorVersion(window.navigator.userAgent) >= 11,
+                        asyncAbort = !!connection.withCredentials && isFirefox11OrGreater;
+
+                    // The connection was aborted while initializing transports
+                    if (connection.state === signalR.connectionState.disconnected) {
+                        return;
+                    }
+
                     if (transport.supportsKeepAlive && connection.keepAliveData.activated) {
                         signalR.transports._logic.monitorKeepAlive(connection);
                     }
@@ -413,10 +431,22 @@
 
                     $(connection).triggerHandler(events.onStart);
 
-                    _pageWindow.unload(function () { // failure
-                        connection.stop(false /* async */);
+                    // wire the stop handler for when the user leaves the page
+                    _pageWindow.bind("unload", function () {
+                        connection.log("Window unloading, stopping the connection");
+
+                        connection.stop(asyncAbort);
                     });
 
+                    if (signalR._.firefoxMajorVersion(window.navigator.userAgent) >= 11) {
+                        _pageWindow.bind("beforeunload", function () {
+                            // If connection.stop() runs in beforeunload and fails, it will also fail
+                            // in unload unless connection.stop() runs after a timeout.
+                            window.setTimeout(function () {
+                                connection.stop(asyncAbort);
+                            }, 0);
+                        });
+                    }
                 }, function () {
                     initialize(transports, index + 1);
                 });
