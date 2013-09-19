@@ -41,13 +41,7 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
                                 .Select(topicIndex => SignalRTopicPrefix + "_" + configuration.TopicPrefix + "_" + topicIndex)
                                 .ToArray();
 
-            _connectionContext = _connection.Subscribe(_topics, OnMessage, OnError);
-
-            // Open the streams after creating the subscription
-            for (int i = 0; i < configuration.TopicCount; i++)
-            {
-                Open(i);
-            }
+            _connectionContext = _connection.Subscribe(_topics, OnMessage, OnError, Open);
         }
 
         protected override int StreamCount
