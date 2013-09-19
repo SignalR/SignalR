@@ -33,24 +33,23 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
             try
             {
                 _namespaceManager = NamespaceManager.CreateFromConnectionString(configuration.ConnectionString);
+                _factory = MessagingFactory.CreateFromConnectionString(configuration.ConnectionString);
+                _factory.RetryPolicy = RetryExponential.Default;
             }
             catch (ConfigurationErrorsException ex)
             {
                 _trace.TraceError("Invalid connection string '{0}': {1}", configuration.ConnectionString, ex.Message);
-
-                throw;
             }
 
             _idleSubscriptionTimeout = configuration.IdleSubscriptionTimeout;
-            _factory = MessagingFactory.CreateFromConnectionString(configuration.ConnectionString);
-            _factory.RetryPolicy = RetryExponential.Default;
             _configuration = configuration;
         }
 
         [SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope", Justification = "The disposable is returned to the caller")]
         public ServiceBusConnectionContext Subscribe(IList<string> topicNames,
                                                      Action<int, IEnumerable<BrokeredMessage>> handler,
-                                                     Action<int, Exception> errorHandler)
+                                                     Action<int, Exception> errorHandler,
+                                                     Action<int> openStream)
         {
             if (topicNames == null)
             {
@@ -64,7 +63,7 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
 
             _trace.TraceInformation("Subscribing to {0} topic(s) in the service bus...", topicNames.Count);
 
-            var connectionContext = new ServiceBusConnectionContext(_configuration, _namespaceManager, topicNames, handler, errorHandler);
+            var connectionContext = new ServiceBusConnectionContext(_configuration, _namespaceManager, topicNames, handler, errorHandler, openStream);
 
             for (var topicIndex = 0; topicIndex < topicNames.Count; ++topicIndex)
             {
@@ -96,6 +95,7 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
                         _namespaceManager.CreateTopic(topicName);
 
                         _trace.TraceInformation("Creation of a new topic {0} in the service bus completed successfully.", topicName);
+
                     }
                     catch (MessagingEntityAlreadyExistsException)
                     {
@@ -112,6 +112,7 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
             }
 
             CreateSubscription(connectionContext, topicIndex);
+            connectionContext.OpenStream(topicIndex);
         }
 
         private void CreateSubscription(ServiceBusConnectionContext connectionContext, int topicIndex)
@@ -173,12 +174,19 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
                 catch (UnauthorizedAccessException ex)
                 {
                     _trace.TraceError(errorMessage, ex.Message);
-                    throw;
+                    break;
                 }
                 catch (QuotaExceededException ex)
                 {
                     _trace.TraceError(errorMessage, ex.Message);
-                    throw;
+                    if(ex.IsTransient)
+                    {
+                        Thread.Sleep(RetryDelay);
+                    }
+                    else
+                    {
+                        break;
+                    }
                 }
                 catch (MessagingException ex)
                 {
@@ -189,7 +197,7 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
                     }
                     else
                     {
-                        throw;
+                        break;
                     }
                 }
                 catch (Exception ex)
