@@ -33,24 +33,23 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
             try
             {
                 _namespaceManager = NamespaceManager.CreateFromConnectionString(configuration.ConnectionString);
+                _factory = MessagingFactory.CreateFromConnectionString(configuration.ConnectionString);
+                _factory.RetryPolicy = RetryExponential.Default;
             }
             catch (ConfigurationErrorsException ex)
             {
                 _trace.TraceError("Invalid connection string '{0}': {1}", configuration.ConnectionString, ex.Message);
-
-                throw;
             }
 
             _idleSubscriptionTimeout = configuration.IdleSubscriptionTimeout;
-            _factory = MessagingFactory.CreateFromConnectionString(configuration.ConnectionString);
-            _factory.RetryPolicy = RetryExponential.Default;
             _configuration = configuration;
         }
 
         [SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope", Justification = "The disposable is returned to the caller")]
         public ServiceBusConnectionContext Subscribe(IList<string> topicNames,
                                                      Action<int, IEnumerable<BrokeredMessage>> handler,
-                                                     Action<int, Exception> errorHandler)
+                                                     Action<int, Exception> errorHandler,
+                                                     Action<int> openStream)
         {
             if (topicNames == null)
             {
@@ -68,7 +67,7 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
 
             for (var topicIndex = 0; topicIndex < topicNames.Count; ++topicIndex)
             {
-                Retry(() => CreateTopic(connectionContext, topicIndex));
+                Retry(() => CreateTopic(connectionContext, topicIndex, openStream));
             }
 
             _trace.TraceInformation("Subscription to {0} topics in the service bus Topic service completed successfully.", topicNames.Count);
@@ -76,7 +75,7 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
             return connectionContext;
         }
 
-        private void CreateTopic(ServiceBusConnectionContext connectionContext, int topicIndex)
+        private void CreateTopic(ServiceBusConnectionContext connectionContext, int topicIndex, Action<int> openStream)
         {
             lock (connectionContext.TopicClientsLock)
             {
@@ -96,6 +95,7 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
                         _namespaceManager.CreateTopic(topicName);
 
                         _trace.TraceInformation("Creation of a new topic {0} in the service bus completed successfully.", topicName);
+
                     }
                     catch (MessagingEntityAlreadyExistsException)
                     {
@@ -107,6 +107,7 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
                 // Create a client for this topic
                 TopicClient topicClient = TopicClient.CreateFromConnectionString(_configuration.ConnectionString, topicName);
                 connectionContext.SetTopicClients(topicClient, topicIndex);
+                openStream(topicIndex);
 
                 _trace.TraceInformation("Creation of a new topic client {0} completed successfully.", topicName);
             }
@@ -173,12 +174,19 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
                 catch (UnauthorizedAccessException ex)
                 {
                     _trace.TraceError(errorMessage, ex.Message);
-                    throw;
+                    break;
                 }
                 catch (QuotaExceededException ex)
                 {
                     _trace.TraceError(errorMessage, ex.Message);
-                    throw;
+                    if(ex.IsTransient)
+                    {
+                        Thread.Sleep(RetryDelay);
+                    }
+                    else
+                    {
+                        break;
+                    }
                 }
                 catch (MessagingException ex)
                 {
@@ -189,7 +197,7 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
                     }
                     else
                     {
-                        throw;
+                        break;
                     }
                 }
                 catch (Exception ex)
