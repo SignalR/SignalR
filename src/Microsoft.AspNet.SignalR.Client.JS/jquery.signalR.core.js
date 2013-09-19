@@ -329,6 +329,7 @@
                 }),
                 onFailedTimeoutHandle: null,
                 lastMessageAt: new Date().getTime(),
+                lastActiveAt: new Date().getTime(),
                 beatInterval: 5000, // Default value, will only be overridden if keep alive is enabled,
                 beatHandle: null
             };

@@ -18,6 +18,7 @@
             checkIfAlive(connection);
         }
 
+        transportLogic.markActive(connection);
 
         connection._.beatHandle = window.setTimeout(function () {
             beat(connection);
@@ -412,6 +413,10 @@
             connection._.lastMessageAt = new Date().getTime();
         },
 
+        markActive: function(connection) {
+            connection._.lastActiveAt = new Date().getTime();
+        },
+
         ensureReconnectingState: function (connection) {
             if (changeState(connection,
                         signalR.connectionState.connected,
@@ -429,7 +434,7 @@
         },
 
         verifyReconnect: function (connection) {
-            if (new Date().getTime() - connection._.lastMessageAt >= connection.reconnectWindow) {
+            if (new Date().getTime() - connection._.lastActiveAt >= connection.reconnectWindow) {
                 connection.log("There has not been an active server connection for an extended period of time. Stopping connection.");
                 connection.stop();
                 return false;
