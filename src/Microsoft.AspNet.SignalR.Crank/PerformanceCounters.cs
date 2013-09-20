@@ -6,7 +6,7 @@ namespace Microsoft.AspNet.SignalR.Crank
     internal class PerformanceCounters
     {
         private PerformanceCounter ServerAvailableMBytesCounter;
-        private PerformanceCounter SignalRConnectionsConnectedCounter;
+        private PerformanceCounter SignalRConnectionsCurrentCounter;
         private PerformanceCounter SignalRConnectionsReconnectedCounter;
         private PerformanceCounter SignalRConnectionsDisconnectedCounter;
         private PerformanceCounter ServerTcpConnectionsEstCounter;
@@ -18,7 +18,7 @@ namespace Microsoft.AspNet.SignalR.Crank
 
             if (!String.IsNullOrEmpty(signalRInstance))
             {
-                SignalRConnectionsConnectedCounter = LoadCounter("SignalR", "Connections Connected", host, signalRInstance);
+                SignalRConnectionsCurrentCounter = LoadCounter("SignalR", "Connections Current", host, signalRInstance);
                 SignalRConnectionsReconnectedCounter = LoadCounter("SignalR", "Connections Reconnected", host, signalRInstance);
                 SignalRConnectionsDisconnectedCounter = LoadCounter("SignalR", "Connections Disconnected", host, signalRInstance);
             }
@@ -28,7 +28,7 @@ namespace Microsoft.AspNet.SignalR.Crank
         {
             get
             {
-                return (SignalRConnectionsConnectedCounter != null) && (SignalRConnectionsReconnectedCounter != null) && (SignalRConnectionsDisconnectedCounter != null);
+                return (SignalRConnectionsCurrentCounter != null) && (SignalRConnectionsReconnectedCounter != null) && (SignalRConnectionsDisconnectedCounter != null);
             }
         }
 
@@ -40,11 +40,11 @@ namespace Microsoft.AspNet.SignalR.Crank
             }
         }
 
-        public int SignalRConnectionsConnected
+        public int SignalRConnectionsCurrent
         {
             get
             {
-                return (SignalRConnectionsConnectedCounter == null) ? 0 : GetIntValue(SignalRConnectionsConnectedCounter);
+                return (SignalRConnectionsCurrentCounter == null) ? 0 : GetIntValue(SignalRConnectionsCurrentCounter);
             }
         }
 

@@ -93,7 +93,9 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
+    <None Include="CsvToExcel.ps1" />
     <None Include="packages.config" />
+    <None Include="SampleServer.ps1" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="TPlan.Perf.xml">

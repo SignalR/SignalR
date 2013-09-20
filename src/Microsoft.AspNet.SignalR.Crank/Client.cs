@@ -158,10 +158,7 @@ namespace Microsoft.AspNet.SignalR.Crank
             {
                 if (!String.IsNullOrEmpty(payload))
                 {
-                    Parallel.ForEach(Connections, async c =>
-                    {
-                        await c.Send(payload);
-                    });
+                    await Task.WhenAll(Connections.Select(c => c.Send(payload)));
                 }
                 await Task.Delay(Arguments.SendInterval);
             }
@@ -189,20 +186,14 @@ namespace Microsoft.AspNet.SignalR.Crank
             }
         }
 
-        private static Task ConnectBatch()
+        private static async Task ConnectBatch()
         {
-            var options = new ParallelOptions
+            var tasks = new Task[Arguments.BatchSize];
+            for (int i = 0; i < Arguments.BatchSize; i++)
             {
-                MaxDegreeOfParallelism = Arguments.BatchSize
-            };
-
-            var batchTcs = new TaskCompletionSource<object>();
-            Parallel.For(0, Arguments.BatchSize, options, async i =>
-            {
-                await ConnectSingle();
-                batchTcs.TrySetResult(null);
-            });
-            return batchTcs.Task;
+                tasks[i] = Task.Factory.StartNew(() => ConnectSingle());
+            }
+            await Task.WhenAll(tasks);
         }
 
         private static async Task ConnectSingle()
@@ -210,7 +201,7 @@ namespace Microsoft.AspNet.SignalR.Crank
             var connection = CreateConnection();
             try
             {
-                await (Arguments.Transport == null ? connection.Start() : connection.Start(Arguments.Transport));
+                await (Arguments.Transport == null ? connection.Start() : connection.Start(Arguments.GetTransport()));
 
                 connection.Closed += () =>
                 {
