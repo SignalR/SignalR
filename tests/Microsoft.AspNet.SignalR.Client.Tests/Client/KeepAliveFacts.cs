@@ -18,7 +18,9 @@ namespace Microsoft.AspNet.SignalR.Client.Tests
         {
             // Arrange
             var connection = new Mock<Client.IConnection>();
-            var monitor = new HeartbeatMonitor(connection.Object, new object());
+            var transport = new Mock<IClientTransport>();
+
+            transport.Setup(m => m.SupportsKeepAlive).Returns(true);
 
             // Setting the values such that a warning is thrown almost instantly and a timeout doesn't occur
             var keepAliveData = new KeepAliveData(
@@ -27,9 +29,12 @@ namespace Microsoft.AspNet.SignalR.Client.Tests
                 checkInterval: TimeSpan.FromSeconds(2)
             );
 
+            var monitor = new HeartbeatMonitor(connection.Object, new object(), keepAliveData.CheckInterval);
+
             connection.Setup(m => m.LastMessageAt).Returns(DateTime.UtcNow);
             connection.Setup(m => m.KeepAliveData).Returns(keepAliveData);
             connection.Setup(m => m.State).Returns(ConnectionState.Connected);
+            connection.Setup(m => m.Transport).Returns(transport.Object);
 
             // Act - Setting timespan to be greater than timeout warining but less than timeout
             monitor.Beat(TimeSpan.FromSeconds(5));
@@ -48,8 +53,9 @@ namespace Microsoft.AspNet.SignalR.Client.Tests
         {
             // Arrange
             var connection = new Mock<Client.IConnection>();
-            var monitor = new HeartbeatMonitor(connection.Object, new object());
             var transport = new Mock<IClientTransport>();
+
+            transport.Setup(m => m.SupportsKeepAlive).Returns(true);
 
             // Setting the values such that a timeout happens almost instantly
             var keepAliveData = new KeepAliveData(
@@ -57,6 +63,8 @@ namespace Microsoft.AspNet.SignalR.Client.Tests
                 timeout: TimeSpan.FromSeconds(1),
                 checkInterval: TimeSpan.FromSeconds(2)
             );
+
+            var monitor = new HeartbeatMonitor(connection.Object, new object(), keepAliveData.CheckInterval);
 
             connection.Setup(m => m.LastMessageAt).Returns(DateTime.UtcNow);
             connection.Setup(m => m.KeepAliveData).Returns(keepAliveData);
@@ -80,7 +88,6 @@ namespace Microsoft.AspNet.SignalR.Client.Tests
         {
             // Arrange
             var connection = new Mock<Client.IConnection>();
-            var monitor = new HeartbeatMonitor(connection.Object, new object());
             var transport = new Mock<IClientTransport>();
 
             // Setting the values such that a timeout or timeout warning isn't issued
@@ -89,6 +96,8 @@ namespace Microsoft.AspNet.SignalR.Client.Tests
                 timeout: TimeSpan.FromSeconds(10),
                 checkInterval: TimeSpan.FromSeconds(2)
             );
+
+            var monitor = new HeartbeatMonitor(connection.Object, new object(), keepAliveData.CheckInterval);
 
             connection.Setup(m => m.LastMessageAt).Returns(DateTime.UtcNow);
             connection.Setup(m => m.KeepAliveData).Returns(keepAliveData);
