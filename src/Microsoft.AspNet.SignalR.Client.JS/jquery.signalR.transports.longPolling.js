@@ -97,90 +97,89 @@
                         }
 
                         connection.log("Attempting to connect to '" + url + "' using longPolling.");
-                        instance.pollXhr = $.ajax({
-                        xhrFields: { withCredentials: connection.withCredentials },
-                            url: url,
-                            global: false,
-                            cache: false,
-                            type: "GET",
-                            dataType: connection.ajaxDataType,
-                            contentType: connection.contentType,
-                            success: function (minData) {
-                                var delay = 0,
-                                    data;
+                        instance.pollXhr = $.ajax(
+                            $.extend({}, $.signalR.ajaxDefaults, {
+                                xhrFields: { withCredentials: connection.withCredentials },
+                                url: url,
+                                type: "GET",
+                                dataType: connection.ajaxDataType,
+                                contentType: connection.contentType,
+                                success: function (minData) {
+                                    var delay = 0,
+                                        data;
 
-                                // Reset our reconnect errors so if we transition into a reconnecting state again we trigger
-                                // reconnected quickly
-                                reconnectErrors = 0;
+                                    // Reset our reconnect errors so if we transition into a reconnecting state again we trigger
+                                    // reconnected quickly
+                                    reconnectErrors = 0;
 
-                                // If there's currently a timeout to trigger reconnect, fire it now before processing messages
-                                if (reconnectTimeoutId !== null) {
-                                    fireReconnected();
-                                }
+                                    // If there's currently a timeout to trigger reconnect, fire it now before processing messages
+                                    if (reconnectTimeoutId !== null) {
+                                        fireReconnected();
+                                    }
 
-                                fireConnect();
+                                    fireConnect();
 
-                                if (minData) {
-                                    data = transportLogic.maximizePersistentResponse(minData);
-                                }
+                                    if (minData) {
+                                        data = transportLogic.maximizePersistentResponse(minData);
+                                    }
 
-                                transportLogic.processMessages(instance, minData);
+                                    transportLogic.processMessages(instance, minData);
 
-                                if (data &&
-                                    $.type(data.LongPollDelay) === "number") {
-                                    delay = data.LongPollDelay;
-                                }
+                                    if (data &&
+                                        $.type(data.LongPollDelay) === "number") {
+                                        delay = data.LongPollDelay;
+                                    }
 
-                                if (data && data.Disconnect) {
-                                    return;
-                                }
+                                    if (data && data.Disconnect) {
+                                        return;
+                                    }
 
-                                if (isDisconnecting(instance) === true) {
-                                    return;
-                                }
+                                    if (isDisconnecting(instance) === true) {
+                                        return;
+                                    }
 
-                                // We never want to pass a raiseReconnect flag after a successful poll.  This is handled via the error function
-                                if (delay > 0) {
-                                    window.setTimeout(function () {
+                                    // We never want to pass a raiseReconnect flag after a successful poll.  This is handled via the error function
+                                    if (delay > 0) {
+                                        window.setTimeout(function () {
+                                            poll(instance, false);
+                                        }, delay);
+                                    } else {
                                         poll(instance, false);
-                                    }, delay);
-                                } else {
-                                    poll(instance, false);
+                                    }
+                                },
+
+                                error: function (data, textStatus) {
+                                    // Stop trying to trigger reconnect, connection is in an error state
+                                    // If we're not in the reconnect state this will noop
+                                    window.clearTimeout(reconnectTimeoutId);
+                                    reconnectTimeoutId = null;
+
+                                    if (textStatus === "abort") {
+                                        connection.log("Aborted xhr requst.");
+                                        return;
+                                    }
+
+                                    // Increment our reconnect errors, we assume all errors to be reconnect errors
+                                    // In the case that it's our first error this will cause Reconnect to be fired
+                                    // after 1 second due to reconnectErrors being = 1.
+                                    reconnectErrors++;
+
+                                    if (connection.state !== signalR.connectionState.reconnecting) {
+                                        connection.log("An error occurred using longPolling. Status = " + textStatus + ". " + data.responseText);
+                                        $(instance).triggerHandler(events.onError, [data.responseText]);
+                                    }
+
+                                    // Transition into the reconnecting state
+                                    transportLogic.ensureReconnectingState(instance);
+
+                                    // If we've errored out we need to verify that the server is still there, so re-start initialization process
+                                    // This will ping the server until it successfully gets a response.
+                                    that.init(instance, function () {
+                                        // Call poll with the raiseReconnect flag as true
+                                        poll(instance, true);
+                                    });
                                 }
-                            },
-
-                            error: function (data, textStatus) {
-                                // Stop trying to trigger reconnect, connection is in an error state
-                                // If we're not in the reconnect state this will noop
-                                window.clearTimeout(reconnectTimeoutId);
-                                reconnectTimeoutId = null;
-
-                                if (textStatus === "abort") {
-                                    connection.log("Aborted xhr requst.");
-                                    return;
-                                }
-
-                                // Increment our reconnect errors, we assume all errors to be reconnect errors
-                                // In the case that it's our first error this will cause Reconnect to be fired
-                                // after 1 second due to reconnectErrors being = 1.
-                                reconnectErrors++;
-
-                                if (connection.state !== signalR.connectionState.reconnecting) {
-                                    connection.log("An error occurred using longPolling. Status = " + textStatus + ". " + data.responseText);
-                                    $(instance).triggerHandler(events.onError, [data.responseText]);
-                                }
-
-                                // Transition into the reconnecting state
-                                transportLogic.ensureReconnectingState(instance);
-
-                                // If we've errored out we need to verify that the server is still there, so re-start initialization process
-                                // This will ping the server until it successfully gets a response.
-                                that.init(instance, function () {
-                                    // Call poll with the raiseReconnect flag as true
-                                    poll(instance, true);
-                                });
-                            }
-                        });
+                            }));
 
 
                         // This will only ever pass after an error has occured via the poll ajax procedure.
