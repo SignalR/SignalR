@@ -25,6 +25,9 @@ namespace Microsoft.AspNet.SignalR.Client
         // Connection variable
         private readonly IConnection _connection;
 
+        // How often to beat
+        private TimeSpan _beatInterval;
+
         // To keep track of whether the user has been notified
         public bool HasBeenWarned { get; private set; }
 
@@ -36,10 +39,12 @@ namespace Microsoft.AspNet.SignalR.Client
         /// </summary>
         /// <param name="connection"></param>
         /// <param name="connectionStateLock"></param>
-        public HeartbeatMonitor(IConnection connection, object connectionStateLock)
+        /// <param name="beatInterval">How often to check connection status</param>
+        public HeartbeatMonitor(IConnection connection, object connectionStateLock, TimeSpan beatInterval)
         {
             _connection = connection;
             _connectionStateLock = connectionStateLock;
+            _beatInterval = beatInterval;
         }
 
         /// <summary>
@@ -53,9 +58,9 @@ namespace Microsoft.AspNet.SignalR.Client
             HasBeenWarned = false;
             TimedOut = false;
 #if !NETFX_CORE
-            _timer = new Timer(_ => Beat(), state: null, dueTime: _connection.KeepAliveData.CheckInterval, period: _connection.KeepAliveData.CheckInterval);
+            _timer = new Timer(_ => Beat(), state: null, dueTime: _beatInterval, period: _beatInterval);
 #else
-            _timer = ThreadPoolTimer.CreatePeriodicTimer((timer) => Beat(), period: _connection.KeepAliveData.CheckInterval);
+            _timer = ThreadPoolTimer.CreatePeriodicTimer((timer) => Beat(), period: _beatInterval);
 #endif
         }
 

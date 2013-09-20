@@ -76,11 +76,11 @@ namespace Microsoft.AspNet.SignalR.Tests
                     connection.Start(host.Transport).Wait();
 
                     // Assert that Reconnected is called
-                    Assert.True(mre.Wait(TimeSpan.FromSeconds(10)));
+                    Assert.True(mre.Wait(TimeSpan.FromSeconds(15)));
 
                     // Assert that Reconnected is called again
                     mre.Reset();
-                    Assert.True(mre.Wait(TimeSpan.FromSeconds(10)));
+                    Assert.True(mre.Wait(TimeSpan.FromSeconds(15)));
 
                     // Clean-up
                     mre.Dispose();
