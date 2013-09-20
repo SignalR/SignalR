@@ -22,7 +22,6 @@ namespace Microsoft.AspNet.SignalR.Crank
         {
             Arguments = CrankArguments.Parse();
 
-            ServicePointManager.DefaultConnectionLimit = Int32.MaxValue;
             ThreadPool.SetMinThreads(Arguments.Connections, 2);
             TaskScheduler.UnobservedTaskException += OnUnobservedTaskException;
 
