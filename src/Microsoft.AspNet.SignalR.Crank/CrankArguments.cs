@@ -13,7 +13,6 @@ namespace Microsoft.AspNet.SignalR.Crank
 
         private string controller;
         private string server;
-        private IClientTransport transport;
 
         [CommandLineParameter(Command = "?", Name = "Help", Default = false, Description = "Show Help", IsHelp = true)]
         public bool Help { get; set; }
@@ -22,7 +21,7 @@ namespace Microsoft.AspNet.SignalR.Crank
         public string Url { get; set; }
 
         [CommandLineParameter(Command = "Transport", Required = false, Default = "auto", Description = "Transport name. Default: auto")]
-        public string TransportName { get; set; }
+        public string Transport { get; set; }
 
         [CommandLineParameter(Command = "BatchSize", Required = false, Default = 1, Description = "(Connect phase) Batch size for parallel connections. Default: 1 (batch disabled)")]
         public int BatchSize { get; set; }
@@ -96,18 +95,6 @@ namespace Microsoft.AspNet.SignalR.Crank
             }
         }
 
-        public IClientTransport Transport
-        {
-            get
-            {
-                if (transport == null)
-                {
-                    transport = GetTransport(TransportName);
-                }
-                return transport;
-            }
-        }
-
         public static CrankArguments Parse()
         {
             CrankArguments args = null;
@@ -133,24 +120,24 @@ namespace Microsoft.AspNet.SignalR.Crank
             return String.Empty;
         }
 
-        private static IClientTransport GetTransport(string transport)
+        public IClientTransport GetTransport()
         {
-            if (!String.IsNullOrEmpty(transport))
+            if (!String.IsNullOrEmpty(Transport))
             {
                 var httpClient = new DefaultHttpClient();
-                if (transport.Equals("WebSockets", StringComparison.InvariantCultureIgnoreCase))
+                if (Transport.Equals("WebSockets", StringComparison.InvariantCultureIgnoreCase))
                 {
                     return new WebSocketTransport(httpClient);
                 }
-                else if (transport.Equals("ServerSentEvents", StringComparison.InvariantCultureIgnoreCase))
+                else if (Transport.Equals("ServerSentEvents", StringComparison.InvariantCultureIgnoreCase))
                 {
                     return new ServerSentEventsTransport(httpClient);
                 }
-                else if (transport.Equals("LongPolling", StringComparison.InvariantCultureIgnoreCase))
+                else if (Transport.Equals("LongPolling", StringComparison.InvariantCultureIgnoreCase))
                 {
                     return new LongPollingTransport(httpClient);
                 }
-                else if (transport.Equals("Auto", StringComparison.InvariantCultureIgnoreCase))
+                else if (Transport.Equals("Auto", StringComparison.InvariantCultureIgnoreCase))
                 {
                     return new AutoTransport(httpClient);
                 }

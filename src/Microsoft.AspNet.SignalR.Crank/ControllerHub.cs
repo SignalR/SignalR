@@ -15,7 +15,6 @@ namespace Microsoft.AspNet.SignalR.Crank
     {
         private static CrankArguments Arguments;
         private static IDisposable AppHost = null;
-        private static IHubCallerConnectionContext HubClients;
         private static int ClientsConnected;
         private static PerformanceCounters PerformanceCounters;
         private static List<ConnectionsSample> Samples = new List<ConnectionsSample>();
@@ -26,14 +25,12 @@ namespace Microsoft.AspNet.SignalR.Crank
 
         public override Task OnConnected()
         {
-            HubClients = Clients;
             ClientsConnected++;
             return base.OnConnected();
         }
 
         public override Task OnDisconnected()
         {
-            HubClients = Clients;
             ClientsConnected--;
             return base.OnDisconnected();
         }
@@ -259,7 +256,7 @@ namespace Microsoft.AspNet.SignalR.Crank
             if (PerformanceCounters.SignalRCountersAvailable)
             {
                 ControllerHub.MarkInternal(Samples.Count - 1, new int[] {
-                    PerformanceCounters.SignalRConnectionsConnected,
+                    PerformanceCounters.SignalRConnectionsCurrent,
                     PerformanceCounters.SignalRConnectionsReconnected,
                     PerformanceCounters.SignalRConnectionsDisconnected
                 });
@@ -280,10 +277,7 @@ namespace Microsoft.AspNet.SignalR.Crank
 
         private static void BroadcastEvent(ControllerEvents controllerEvent, int id = 0)
         {
-            if (HubClients != null)
-            {
-                HubClients.All.broadcast(controllerEvent, id);
-            }
+            GlobalHost.ConnectionManager.GetHubContext<ControllerHub>().Clients.All.broadcast(controllerEvent, id);
         }
 
         public class Startup
