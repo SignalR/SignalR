@@ -22,6 +22,7 @@ namespace Microsoft.AspNet.SignalR.Crank
         private static object FlushLock = new object();
         private static ControllerEvents TestPhase = ControllerEvents.None;
         private static Stopwatch TestTimer;
+        private static IHubContext HubContext;
 
         public override Task OnConnected()
         {
@@ -277,7 +278,11 @@ namespace Microsoft.AspNet.SignalR.Crank
 
         private static void BroadcastEvent(ControllerEvents controllerEvent, int id = 0)
         {
-            GlobalHost.ConnectionManager.GetHubContext<ControllerHub>().Clients.All.broadcast(controllerEvent, id);
+            if (HubContext == null)
+            {
+                HubContext = GlobalHost.ConnectionManager.GetHubContext<ControllerHub>();
+            }
+            HubContext.Clients.All.broadcast(controllerEvent, id);
         }
 
         public class Startup
