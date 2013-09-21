@@ -2,7 +2,6 @@
 using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Linq;
-using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR.Client;
@@ -30,12 +29,13 @@ namespace Microsoft.AspNet.SignalR.Crank
                 ControllerHub.Start(Arguments);
             }
 
-            Task.Run(async () => await Run()).Wait();
+            Run().Wait();
         }
 
         private static async Task Run()
         {
             var remoteController = !Arguments.IsController || (Arguments.NumClients > 1);
+
             if (remoteController)
             {
                 await OpenControllerConnection();
@@ -49,11 +49,13 @@ namespace Microsoft.AspNet.SignalR.Crank
                     Console.WriteLine("Test Aborted");
                     return;
                 }
+
                 await Task.Delay(CrankArguments.ConnectionPollIntervalMS);
             }
 
             await RunConnect();
             await RunSend();
+
             RunDisconnect();
 
             if (remoteController)
@@ -80,21 +82,25 @@ namespace Microsoft.AspNet.SignalR.Crank
             });
 
             int attempts = 0;
+
             while (true)
             {
                 try
                 {
                     await ControllerConnection.Start();
+
                     break;
                 }
-                catch (Exception)
+                catch
                 {
                     attempts++;
+
                     if (attempts > CrankArguments.ConnectionPollAttempts)
                     {
                         throw new InvalidOperationException("Failed to connect to the controller hub");
                     }
                 }
+
                 await Task.Delay(CrankArguments.ConnectionPollIntervalMS);
             }
         }
@@ -113,7 +119,9 @@ namespace Microsoft.AspNet.SignalR.Crank
         {
             Debug.Assert(phase != ControllerEvents.None);
             Debug.Assert(phase != ControllerEvents.Sample);
+
             TestPhase = phase;
+
             if (!Arguments.IsController)
             {
                 Console.WriteLine("Running: {0}", Enum.GetName(typeof(ControllerEvents), phase));
@@ -123,12 +131,14 @@ namespace Microsoft.AspNet.SignalR.Crank
         internal static void OnSample(int id)
         {
             var states = Connections.Select(c => c.State);
+
             var statesArr = new int[3]
             {
                 states.Where(s => s == ConnectionState.Connected).Count(),
                 states.Where(s => s == ConnectionState.Reconnecting).Count(),
                 states.Where(s => s == ConnectionState.Disconnected).Count()
             };
+
             if (ControllerProxy != null)
             {
                 ControllerProxy.Invoke("Mark", id, statesArr);
@@ -137,6 +147,7 @@ namespace Microsoft.AspNet.SignalR.Crank
             {
                 ControllerHub.MarkInternal(id, statesArr);
             }
+
             if (!Arguments.IsController)
             {
                 Console.WriteLine("{0} Connected, {1} Reconnected, {2} Disconnected", statesArr[0], statesArr[1], statesArr[2]);
@@ -159,6 +170,7 @@ namespace Microsoft.AspNet.SignalR.Crank
                 {
                     await Task.WhenAll(Connections.Select(c => c.Send(payload)));
                 }
+
                 await Task.Delay(Arguments.SendInterval);
             }
         }
@@ -167,7 +179,8 @@ namespace Microsoft.AspNet.SignalR.Crank
         {
             if (Connections.Count > 0)
             {
-                if ((TestPhase == ControllerEvents.Disconnect) || (TestPhase == ControllerEvents.Abort))
+                if ((TestPhase == ControllerEvents.Disconnect) ||
+                    (TestPhase == ControllerEvents.Abort))
                 {
                     Parallel.ForEach(Connections, c => c.Dispose());
                 }
@@ -177,9 +190,17 @@ namespace Microsoft.AspNet.SignalR.Crank
         private static async Task RunConnect()
         {
             var batched = Arguments.BatchSize > 1;
+
             while (TestPhase == ControllerEvents.Connect)
             {
-                await (batched ? ConnectBatch() : ConnectSingle());
+                if (batched)
+                {
+                    await ConnectBatch();
+                }
+                else
+                {
+                    await ConnectSingle();
+                }
 
                 await Task.Delay(Arguments.ConnectInterval);
             }
@@ -188,24 +209,35 @@ namespace Microsoft.AspNet.SignalR.Crank
         private static async Task ConnectBatch()
         {
             var tasks = new Task[Arguments.BatchSize];
+
             for (int i = 0; i < Arguments.BatchSize; i++)
             {
-                tasks[i] = Task.Factory.StartNew(() => ConnectSingle());
+                tasks[i] = ConnectSingle();
             }
+
             await Task.WhenAll(tasks);
         }
 
         private static async Task ConnectSingle()
         {
             var connection = CreateConnection();
+
             try
             {
-                await (Arguments.Transport == null ? connection.Start() : connection.Start(Arguments.GetTransport()));
+                if (Arguments.Transport == null)
+                {
+                    await connection.Start();
+                }
+                else
+                {
+                    await connection.Start(Arguments.GetTransport());
+                }
 
                 connection.Closed += () =>
                 {
                     Connections.TryTake(out connection);
                 };
+
                 Connections.Add(connection);
             }
             catch (Exception e)

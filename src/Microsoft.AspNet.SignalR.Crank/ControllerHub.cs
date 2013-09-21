@@ -61,6 +61,7 @@ namespace Microsoft.AspNet.SignalR.Crank
             if (Arguments.NumClients > 1)
             {
                 AppHost = WebApp.Start<Startup>(Arguments.ControllerUrl);
+
                 if (!WaitForClientsToConnect())
                 {
                     SignalPhaseChange(ControllerEvents.Abort);
@@ -68,6 +69,7 @@ namespace Microsoft.AspNet.SignalR.Crank
                     {
                         Thread.Sleep(CrankArguments.ConnectionPollIntervalMS);
                     }
+
                     AppHost.Dispose();
                     return;
                 }
@@ -78,10 +80,12 @@ namespace Microsoft.AspNet.SignalR.Crank
             RunDisconnect();
 
             WaitForLastSamples();
+
             if (AppHost != null)
             {
                 AppHost.Dispose();
             }
+
             FlushLog(force:true);
         }
 
@@ -119,10 +123,12 @@ namespace Microsoft.AspNet.SignalR.Crank
         private static void RunSend()
         {
             var timeout = TestTimer.Elapsed.Add(TimeSpan.FromSeconds(Arguments.SendTimeout));
+            
             BlockWhilePhase(ControllerEvents.Send, breakCondition: () =>
             {
                 return TestTimer.Elapsed >= timeout;
             });
+
             SignalPhaseChange(ControllerEvents.Disconnect);
         }
 
@@ -134,10 +140,12 @@ namespace Microsoft.AspNet.SignalR.Crank
                 {
                     return true;
                 }
+
                 var lastSample = Samples.Last();
                 var connections = lastSample.Connected + lastSample.Reconnected;
                 return connections == 0;
             });
+
             SignalPhaseChange(ControllerEvents.Complete);
         }
 
@@ -146,6 +154,7 @@ namespace Microsoft.AspNet.SignalR.Crank
             ThreadPool.QueueUserWorkItem(_ =>
             {
                 TestTimer = Stopwatch.StartNew();
+
                 while ((TestPhase != ControllerEvents.Abort) && (TestPhase != ControllerEvents.Complete))
                 {
                     SignalSample(TestTimer.Elapsed);
@@ -190,16 +199,20 @@ namespace Microsoft.AspNet.SignalR.Crank
         private static bool WaitForClientsToConnect()
         {
             Console.WriteLine("Waiting on Clients...");
+            
             int attempts = 0;
+
             while (ClientsConnected < Arguments.NumClients)
             {
                 Thread.Sleep(CrankArguments.ConnectionPollIntervalMS);
+
                 if (++attempts > CrankArguments.ConnectionPollAttempts)
                 {
                     Console.WriteLine("Aborting: Clients did not connect in time.");
                     return false;
                 }
             }
+
             return true;
         }
 
@@ -212,12 +225,14 @@ namespace Microsoft.AspNet.SignalR.Crank
         {
             var attempts = 0;
             var expectedSampleCount = GetExpectedSampleCount();
+
             while (Samples.Last().Count < expectedSampleCount)
             {
                 if (++attempts > CrankArguments.ConnectionPollAttempts)
                 {
                     break;
                 }
+
                 Thread.Sleep(CrankArguments.ConnectionPollIntervalMS);
             }
         }
@@ -230,6 +245,7 @@ namespace Microsoft.AspNet.SignalR.Crank
                 {
                     break;
                 }
+
                 Thread.Sleep(CrankArguments.ConnectionPollIntervalMS);
             }
         }
@@ -240,6 +256,7 @@ namespace Microsoft.AspNet.SignalR.Crank
             {
                 TestPhase = phase;
             }
+
             if (AppHost == null)
             {
                 Client.OnPhaseChanged(phase);
@@ -262,9 +279,9 @@ namespace Microsoft.AspNet.SignalR.Crank
                     PerformanceCounters.SignalRConnectionsDisconnected
                 });
             }
-            // use client connection states
             else
             {
+                // Use client connection states
                 if (AppHost == null)
                 {
                     Client.OnSample(Samples.Count - 1);
@@ -282,6 +299,7 @@ namespace Microsoft.AspNet.SignalR.Crank
             {
                 HubContext = GlobalHost.ConnectionManager.GetHubContext<ControllerHub>();
             }
+
             HubContext.Clients.All.broadcast(controllerEvent, id);
         }
 
