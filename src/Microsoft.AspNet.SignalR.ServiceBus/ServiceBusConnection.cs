@@ -63,11 +63,11 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
 
             _trace.TraceInformation("Subscribing to {0} topic(s) in the service bus...", topicNames.Count);
 
-            var connectionContext = new ServiceBusConnectionContext(_configuration, _namespaceManager, topicNames, handler, errorHandler);
+            var connectionContext = new ServiceBusConnectionContext(_configuration, _namespaceManager, topicNames, handler, errorHandler, openStream);
 
             for (var topicIndex = 0; topicIndex < topicNames.Count; ++topicIndex)
             {
-                Retry(() => CreateTopic(connectionContext, topicIndex, openStream));
+                Retry(() => CreateTopic(connectionContext, topicIndex));
             }
 
             _trace.TraceInformation("Subscription to {0} topics in the service bus Topic service completed successfully.", topicNames.Count);
@@ -75,7 +75,7 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
             return connectionContext;
         }
 
-        private void CreateTopic(ServiceBusConnectionContext connectionContext, int topicIndex, Action<int> openStream)
+        private void CreateTopic(ServiceBusConnectionContext connectionContext, int topicIndex)
         {
             lock (connectionContext.TopicClientsLock)
             {
@@ -107,12 +107,12 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
                 // Create a client for this topic
                 TopicClient topicClient = TopicClient.CreateFromConnectionString(_configuration.ConnectionString, topicName);
                 connectionContext.SetTopicClients(topicClient, topicIndex);
-                openStream(topicIndex);
 
                 _trace.TraceInformation("Creation of a new topic client {0} completed successfully.", topicName);
             }
 
             CreateSubscription(connectionContext, topicIndex);
+            connectionContext.OpenStream(topicIndex);
         }
 
         private void CreateSubscription(ServiceBusConnectionContext connectionContext, int topicIndex)
@@ -157,6 +157,9 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
                 var receiverContext = new ReceiverContext(topicIndex, receiver, connectionContext);
 
                 ProcessMessages(receiverContext);
+
+                // Open the stream
+                connectionContext.OpenStream(topicIndex);
             }
         }
 
