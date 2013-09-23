@@ -43,7 +43,7 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
 
             _idleSubscriptionTimeout = configuration.IdleSubscriptionTimeout;
             _factory = MessagingFactory.CreateFromConnectionString(configuration.ConnectionString);
-            //_factory.RetryPolicy = RetryExponential.Default;
+            _factory.RetryPolicy = RetryExponential.Default;
             _configuration = configuration;
         }
 
