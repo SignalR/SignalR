@@ -141,15 +141,15 @@ namespace Microsoft.AspNet.SignalR.Tests
                 IHubProxy proxy = hubConnection.CreateHubProxy("ExamineHeadersHub");
                 var tcs = new TaskCompletionSource<object>();
 
-                proxy.On("sendHeader", (headers) =>
+                proxy.On("sendHeader", headers =>
+            {
+                Assert.Equal("test-header", (string)headers.testHeader);
+                if (transportType != TransportType.Websockets)
                 {
-                    Assert.Equal<string>("test-header", (string)headers.testHeader);
-                    if (transportType != TransportType.Websockets)
-                    {
-                        Assert.Equal<string>("referer", (string)headers.refererHeader);
-                    }
-                    tcs.TrySetResult(null);
-                });
+                    Assert.Equal("referer", (string)headers.refererHeader);
+                }
+                tcs.TrySetResult(null);
+            });
 
                 hubConnection.Error += e => tcs.TrySetException(e);
 
@@ -160,20 +160,19 @@ namespace Microsoft.AspNet.SignalR.Tests
                 }
 
                 hubConnection.Start(host.Transport).Wait();
-                proxy.Invoke("Send", "Hello");
+                proxy.Invoke("Send");
 
                 Assert.True(tcs.Task.Wait(TimeSpan.FromSeconds(10)));
                 hubConnection.Stop();
             }
         }
 
-        [Theory]
         [InlineData(HostType.Memory, TransportType.ServerSentEvents)]
         [InlineData(HostType.Memory, TransportType.LongPolling)]
         [InlineData(HostType.IISExpress, TransportType.LongPolling)]
         [InlineData(HostType.IISExpress, TransportType.ServerSentEvents)]
         [InlineData(HostType.IISExpress, TransportType.Websockets)]
-        public void RequestHeadersCannotBeSetOnceConnected(HostType hostType, TransportType transportType)
+        public void RequestHeadersCanBeSetOnceConnected(HostType hostType, TransportType transportType)
         {
             using (var host = CreateHost(hostType, transportType))
             {
@@ -182,13 +181,16 @@ namespace Microsoft.AspNet.SignalR.Tests
                 HubConnection hubConnection = CreateHubConnection(host);
                 IHubProxy proxy = hubConnection.CreateHubProxy("ExamineHeadersHub");
 
-                hubConnection.Start(host.Transport).Wait();
+                var mre = new ManualResetEventSlim();
+                proxy.On("sendHeader", headers =>
+                {
+                    Assert.Equal("test-header", (string)headers.testHeader);
+                    mre.Set();
+                });
 
-                var ex = Assert.Throws<InvalidOperationException>(() => hubConnection.Headers.Add("test-header", "test-header"));
-                Assert.Equal("Request headers cannot be set after the connection has started.", ex.Message);
-
-                // Clean-up
-                hubConnection.Stop();
+                hubConnection.Headers.Add("test-header", "test-header");
+                proxy.Invoke("Send");
+                Assert.True(mre.Wait(TimeSpan.FromSeconds(5)));
             }
         }
 
