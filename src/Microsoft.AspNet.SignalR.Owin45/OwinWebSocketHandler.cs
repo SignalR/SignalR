@@ -71,11 +71,10 @@ namespace Microsoft.AspNet.SignalR.Owin
 
             var cts = new CancellationTokenSource();
             var webSocketHandler = new DefaultWebSocketHandler();
-            var task = webSocketHandler.ProcessWebSocketRequestAsync(webSocket, cts.Token);
 
             RunWebSocketHandler(webSocketHandler, cts);
 
-            return task;
+            return webSocketHandler.ProcessWebSocketRequestAsync(webSocket, cts.Token);
         }
 
         private void RunWebSocketHandler(DefaultWebSocketHandler handler, CancellationTokenSource cts)
