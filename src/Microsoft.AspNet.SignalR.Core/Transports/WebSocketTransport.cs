@@ -88,6 +88,9 @@ namespace Microsoft.AspNet.SignalR.Transports
                     throw new InvalidOperationException(Resources.Error_WebSocketsNotSupported);
                 }
 
+                Connection = connection;
+                InitializePersistentState();
+
                 return webSocketRequest.AcceptWebSocketRequest(socket =>
                 {
                     _socket = socket;
@@ -95,8 +98,9 @@ namespace Microsoft.AspNet.SignalR.Transports
                     socket.OnMessage = _message;
                     socket.OnError = _error;
 
-                    return ProcessRequestCore(connection);
-                });
+                    return ProcessReceiveRequest(connection);
+                },
+                InitializeTcs.Task);
             }
         }
 

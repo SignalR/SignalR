@@ -47,14 +47,16 @@ namespace Microsoft.AspNet.SignalR.Owin
     internal class OwinWebSocketHandler
     {
         private readonly Func<IWebSocket, Task> _callback;
+        private readonly Task _transportInit;
 
-        public OwinWebSocketHandler(Func<IWebSocket, Task> callback)
+        public OwinWebSocketHandler(Func<IWebSocket, Task> callback, Task initTask)
         {
             _callback = callback;
+            _transportInit = initTask;
         }
 
         [SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope", Justification = "The websocket handler disposes the socket when the receive loop is over.")]
-        public Task ProcessRequestAsync(IDictionary<string, object> env)
+        public async Task ProcessRequestAsync(IDictionary<string, object> env)
         {
             object value;
             WebSocket webSocket;
@@ -74,7 +76,10 @@ namespace Microsoft.AspNet.SignalR.Owin
 
             RunWebSocketHandler(webSocketHandler, cts);
 
-            return webSocketHandler.ProcessWebSocketRequestAsync(webSocket, cts.Token);
+            // Ensure OnConnected gets called before we start the receive loop
+            await _transportInit;
+
+            await webSocketHandler.ProcessWebSocketRequestAsync(webSocket, cts.Token);
         }
 
         private void RunWebSocketHandler(DefaultWebSocketHandler handler, CancellationTokenSource cts)
