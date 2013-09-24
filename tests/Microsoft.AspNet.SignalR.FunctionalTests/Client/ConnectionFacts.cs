@@ -25,15 +25,15 @@ namespace Microsoft.AspNet.SignalR.Tests
                 var connection = CreateConnection(host, "/examine-request");
 
                 connection.Received += arg =>
-            {
-                JObject headers = JsonConvert.DeserializeObject<JObject>(arg);
-                if (transportType != TransportType.Websockets)
                 {
-                    Assert.Equal("referer", (string)headers["refererHeader"]);
-                }
-                Assert.Equal("test-header", (string)headers["testHeader"]);
-                tcs.TrySetResult(null);
-            };
+                    JObject headers = JsonConvert.DeserializeObject<JObject>(arg);
+                    if (transportType != TransportType.Websockets)
+                    {
+                        Assert.Equal("referer", (string)headers["refererHeader"]);
+                    }
+                    Assert.Equal("test-header", (string)headers["testHeader"]);
+                    tcs.TrySetResult(null);
+                };
 
                 connection.Error += e => tcs.TrySetException(e);
 

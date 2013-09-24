@@ -142,14 +142,14 @@ namespace Microsoft.AspNet.SignalR.Tests
                 var tcs = new TaskCompletionSource<object>();
 
                 proxy.On("sendHeader", headers =>
-            {
-                Assert.Equal("test-header", (string)headers.testHeader);
-                if (transportType != TransportType.Websockets)
                 {
-                    Assert.Equal("referer", (string)headers.refererHeader);
-                }
-                tcs.TrySetResult(null);
-            });
+                    Assert.Equal("test-header", (string)headers.testHeader);
+                    if (transportType != TransportType.Websockets)
+                    {
+                        Assert.Equal("referer", (string)headers.refererHeader);
+                    }
+                    tcs.TrySetResult(null);
+                });
 
                 hubConnection.Error += e => tcs.TrySetException(e);
 
