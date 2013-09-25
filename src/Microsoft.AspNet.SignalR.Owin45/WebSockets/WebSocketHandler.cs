@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.md in the project root for license information.
 
 using System;
+using System.Diagnostics;
 using System.Net.WebSockets;
 using System.Runtime.InteropServices;
 using System.Text;
@@ -22,8 +23,6 @@ namespace Microsoft.AspNet.SignalR.WebSockets
         // Queue for sending messages
         private readonly TaskQueue _sendQueue = new TaskQueue();
 
-        private volatile bool _isClosed;
-
         public WebSocketHandler(int? maxIncomingMessageSize)
         {
             _maxIncomingMessageSize = maxIncomingMessageSize;
@@ -37,10 +36,10 @@ namespace Microsoft.AspNet.SignalR.WebSockets
 
         public virtual void OnError() { }
 
-        public virtual void OnClose(bool clean) { }
+        public virtual void OnClose() { }
 
         // Sends a text message to the client
-        public Task Send(string message)
+        public virtual Task Send(string message)
         {
             if (message == null)
             {
@@ -50,7 +49,7 @@ namespace Microsoft.AspNet.SignalR.WebSockets
             return SendAsync(message);
         }
 
-        internal Task SendAsync(string message)
+        public Task SendAsync(string message)
         {
             var buffer = Encoding.UTF8.GetBytes(message);
             return SendAsync(new ArraySegment<byte>(buffer), WebSocketMessageType.Text);
@@ -58,55 +57,64 @@ namespace Microsoft.AspNet.SignalR.WebSockets
 
         internal Task SendAsync(ArraySegment<byte> message, WebSocketMessageType messageType, bool endOfMessage = true)
         {
-            if (_isClosed)
+            if (WebSocket.State != WebSocketState.Open)
             {
                 return TaskAsyncHelper.Empty;
             }
 
             var sendContext = new SendContext(this, message, messageType, endOfMessage);
 
-            return _sendQueue.Enqueue(state =>
+            return _sendQueue.Enqueue(async state =>
             {
                 var context = (SendContext)state;
 
-                if (context.Handler._isClosed)
+                if (context.Handler.WebSocket.State != WebSocketState.Open)
                 {
-                    return TaskAsyncHelper.Empty;
+                    return;
                 }
 
-                return context.Handler.WebSocket.SendAsync(context.Message, context.MessageType, context.EndOfMessage, CancellationToken.None);
+                try
+                {
+                    await context.Handler.WebSocket.SendAsync(context.Message, context.MessageType, context.EndOfMessage, CancellationToken.None);
+                }
+                catch (Exception ex)
+                {
+                    // Swallow exceptions on send
+                    Trace.TraceError("Error while sending: " + ex);
+                }
             },
             sendContext);
         }
 
-        // Gracefully closes the connection
-        public virtual void Close()
+        public virtual Task CloseAsync()
         {
-            CloseAsync();
-        }
-
-        internal Task CloseAsync()
-        {
-            if (_isClosed)
+            if (IsClosedOrClosedSent(WebSocket))
             {
                 return TaskAsyncHelper.Empty;
             }
 
             var closeContext = new CloseContext(this);
 
-            return _sendQueue.Enqueue(state =>
+            return _sendQueue.Enqueue(async state =>
             {
                 var context = (CloseContext)state;
 
-                if (context.Handler._isClosed)
+                if (IsClosedOrClosedSent(context.Handler.WebSocket))
                 {
-                    return TaskAsyncHelper.Empty;
+                    return;
                 }
 
-                context.Handler._isClosed = true;
-                return context.Handler.WebSocket.CloseOutputAsync(WebSocketCloseStatus.NormalClosure, "", CancellationToken.None);
+                try
+                {
+                    await context.Handler.WebSocket.CloseOutputAsync(WebSocketCloseStatus.NormalClosure, "", CancellationToken.None);
+                }
+                catch (Exception ex)
+                {
+                    // Swallow exceptions on close
+                    Trace.TraceError("Error while closing the websocket: " + ex);
+                }
             },
-            closeContext).Catch();
+            closeContext);
         }
 
         public int? MaxIncomingMessageSize
@@ -141,17 +149,16 @@ namespace Microsoft.AspNet.SignalR.WebSockets
 
         internal async Task ProcessWebSocketRequestAsync(WebSocket webSocket, CancellationToken disconnectToken, Func<object, Task<WebSocketMessage>> messageRetriever, object state)
         {
-            bool cleanClose = true;
+            bool closedReceived = false;
+
             try
             {
-                _isClosed = false;
-
                 // first, set primitives and initialize the object
                 WebSocket = webSocket;
                 OnOpen();
 
                 // dispatch incoming messages
-                while (!disconnectToken.IsCancellationRequested)
+                while (!disconnectToken.IsCancellationRequested && !closedReceived)
                 {
                     WebSocketMessage incomingMessage = await messageRetriever(state);
                     switch (incomingMessage.MessageType)
@@ -165,12 +172,13 @@ namespace Microsoft.AspNet.SignalR.WebSockets
                             break;
 
                         default:
+                            closedReceived = true;
+
                             // If we received an incoming CLOSE message, we'll queue a CLOSE frame to be sent.
                             // We'll give the queued frame some amount of time to go out on the wire, and if a
                             // timeout occurs we'll give up and abort the connection.
-                            await Task.WhenAny(CloseAsync(), Task.Delay(_closeTimeout))
-                                .ContinueWith(_ => { }, TaskContinuationOptions.ExecuteSynchronously); // swallow exceptions occurring from sending the CLOSE
-                            return;
+                            await Task.WhenAny(CloseAsync(), Task.Delay(_closeTimeout));
+                            break;
                     }
                 }
 
@@ -182,8 +190,11 @@ namespace Microsoft.AspNet.SignalR.WebSockets
                 {
                     Error = ex;
                     OnError();
-                    cleanClose = false;
                 }
+            }
+            catch (ObjectDisposedException)
+            {
+                // If the websocket was disposed while we were reading then noop
             }
             catch (Exception ex)
             {
@@ -191,19 +202,25 @@ namespace Microsoft.AspNet.SignalR.WebSockets
                 {
                     Error = ex;
                     OnError();
-                    cleanClose = false;
+                }
+            }
+
+            try
+            {
+                if (WebSocket.State == WebSocketState.Closed ||
+                    WebSocket.State == WebSocketState.Aborted)
+                {
+                    // No-op if the socket is already closed or aborted
+                }
+                else
+                {
+                    // Close the socket
+                    await WebSocket.CloseAsync(WebSocketCloseStatus.NormalClosure, "", CancellationToken.None);
                 }
             }
             finally
             {
-                try
-                {
-                    Close();
-                }
-                finally
-                {
-                    OnClose(cleanClose);
-                }
+                OnClose();
             }
         }
 
@@ -227,6 +244,13 @@ namespace Microsoft.AspNet.SignalR.WebSockets
 
             // unknown exception; treat as fatal
             return true;
+        }
+
+        private static bool IsClosedOrClosedSent(WebSocket webSocket)
+        {
+            return webSocket.State == WebSocketState.Closed ||
+                   webSocket.State == WebSocketState.CloseSent ||
+                   webSocket.State == WebSocketState.Aborted;
         }
 
         private class CloseContext

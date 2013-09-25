@@ -125,7 +125,8 @@
             }
         },
 
-        abort: function (connection) {
+        abort: function (connection, async) {
+            transportLogic.ajaxAbort(connection, async);
         }
     };
 
