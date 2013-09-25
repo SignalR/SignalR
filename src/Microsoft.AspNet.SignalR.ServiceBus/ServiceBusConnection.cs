@@ -33,6 +33,14 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
             try
             {
                 _namespaceManager = NamespaceManager.CreateFromConnectionString(configuration.ConnectionString);
+            }
+            catch (ConfigurationErrorsException ex)
+            {
+                _trace.TraceError("Invalid connection string '{0}': {1}", configuration.ConnectionString, ex.Message);
+
+                throw;
+            }
+
                 _factory = MessagingFactory.CreateFromConnectionString(configuration.ConnectionString);
                 _factory.RetryPolicy = RetryExponential.Default;
             }
