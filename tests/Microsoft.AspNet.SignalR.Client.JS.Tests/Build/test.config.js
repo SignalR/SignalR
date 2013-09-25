@@ -5,6 +5,8 @@
 
     function failConnection() {
         $("iframe").each(function () {
+            var loadEvent;
+
             if (this.stop) {
                 this.stop();
             } else {
@@ -18,7 +20,20 @@
                     console.log("Network Mock Error occured, unable to stop iframe.  Message = " + e.message);
                 }
             }
-            $(this).triggerHandler("readystatechange");
+
+            if (window.document.createEvent) {
+                loadEvent = window.document.createEvent("Event");
+                loadEvent.initEvent("load", true, true);
+            } else {
+                loadEvent = window.document.createEventObject();
+                loadEvent.eventType = "load";
+            }
+
+            if (this.dispatchEvent) {
+                this.dispatchEvent(loadEvent);
+            } else {
+                this.fireEvent("onload", loadEvent);
+            }
         });
     }
 

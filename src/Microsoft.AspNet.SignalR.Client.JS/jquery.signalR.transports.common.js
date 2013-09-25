@@ -69,11 +69,10 @@
             /// <summary>Pings the server</summary>
             /// <param name="connection" type="signalr">Connection associated with the server ping</param>
             /// <returns type="signalR" />
-            var baseUrl, url, deferral = $.Deferred(), xhr;
+            var url, deferral = $.Deferred(), xhr;
 
             if (connection.transport) {
-                baseUrl = connection.transport.name === "webSockets" ? "" : connection.baseUrl;
-                url = baseUrl + connection.appRelativeUrl + "/ping";
+                url = connection.url + "/ping";
 
                 url = transportLogic.prepareQueryString(connection, url);
 
