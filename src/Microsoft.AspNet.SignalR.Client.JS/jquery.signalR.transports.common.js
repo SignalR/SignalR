@@ -64,10 +64,9 @@
             /// <summary>Pings the server</summary>
             /// <param name="connection" type="signalr">Connection associated with the server ping</param>
             /// <returns type="signalR" />
-            var baseUrl = transport === "webSockets" ? "" : connection.baseUrl,
-                url = baseUrl + connection.appRelativeUrl + "/ping",
-                deferral = $.Deferred();
+            var url, deferral = $.Deferred();
 
+            url = connection.url + "/ping";
             url = this.addQs(url, connection);
 
             $.ajax(
