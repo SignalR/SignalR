@@ -1,4 +1,6 @@
-﻿using System;
+﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.md in the project root for license information.
+
+using System;
 using CmdLine;
 using Microsoft.AspNet.SignalR.Client.Http;
 using Microsoft.AspNet.SignalR.Client.Transports;
