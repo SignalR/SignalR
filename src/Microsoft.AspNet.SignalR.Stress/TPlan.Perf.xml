@@ -27,13 +27,13 @@
       </metric>
     </trackingVariation>
     <trackingVariation name="SimpleEchoHub-Memory-LongPolling">
-      <metric name="Latency In Microseconds" selection="Average" units="Numeric">
-        <target value="2000" labConfig="XSPPERF8S_WIN8_X64" />
+      <metric name="Latency" selection="Average" units="Milliseconds">
+        <target value="2" labConfig="XSPPERF8S_WIN8_X64" />
       </metric>
     </trackingVariation>
     <trackingVariation name="SimpleEchoHub-Memory-ServerSentEvents">
-      <metric name="Latency In Microseconds" selection="Average" units="Numeric">
-        <target value="1000" labConfig="XSPPERF8S_WIN8_X64" />
+      <metric name="Latency" selection="Average" units="Milliseconds">
+        <target value="1" labConfig="XSPPERF8S_WIN8_X64" />
       </metric>
     </trackingVariation>
 
@@ -56,18 +56,18 @@
   
     <!-- External Host-->
     <trackingVariation name="SimpleEchoHub-External-LongPolling">
-      <metric name="Latency In Microseconds" selection="Average" units="Numeric">
-        <target value="6000" labConfig="XSPPERF8S_WIN8_X64" />
+      <metric name="Latency" selection="Average" units="Milliseconds">
+        <target value="3" labConfig="XSPPERF8S_WIN8_X64" />
       </metric>
     </trackingVariation>
     <trackingVariation name="SimpleEchoHub-External-ServerSentEvents">
-      <metric name="Latency In Microseconds" selection="Average" units="Numeric">
-        <target value="4000" labConfig="XSPPERF8S_WIN8_X64" />
+      <metric name="Latency" selection="Average" units="Milliseconds">
+        <target value="2" labConfig="XSPPERF8S_WIN8_X64" />
       </metric>
     </trackingVariation>
     <trackingVariation name="SimpleEchoHub-External-WebSockets">
-      <metric name="Latency In Microseconds" selection="Average" units="Numeric">
-        <target value="2000" labConfig="XSPPERF8S_WIN8_X64" />
+      <metric name="Latency" selection="Average" units="Milliseconds">
+        <target value="1" labConfig="XSPPERF8S_WIN8_X64" />
       </metric>
     </trackingVariation>
     
@@ -112,9 +112,6 @@
     <command name="SetupIIS" wait="Exit">
       powershell -executionpolicy remotesigned -command "{bin}\RegisterIIS.ps1 {currentdir}\www"
     </command>
-    <command name="IISReset" wait="Exit">
-      iisreset
-    </command>
     <command name="SimpleEchoHub-External-LongPolling" wait="Exit">
       Microsoft.AspNet.SignalR.Stress.exe /Run:SimpleEchoHub /Transport:LongPolling /Senders:5 /Connections:5 /Host:External /Url:http://{server-01}:81
     </command>
@@ -152,10 +149,10 @@
     <run command="SetupIIS" role="server-01" output="true" />
     <run command="SimpleEchoHub-External-LongPolling" role="client-01" output="true" measure="StartAndStop" />
     
-    <run command="IISReset" role="server-01" output="true" />
+    <run command="SetupIIS" role="server-01" output="true" />
     <run command="SimpleEchoHub-External-ServerSentEvents" role="client-01" output="true" measure="StartAndStop" />
     
-    <run command="IISReset" role="server-01" output="true" />
+    <run command="SetupIIS" role="server-01" output="true" />
     <run command="SimpleEchoHub-External-WebSockets" role="client-01" output="true" measure="StartAndStop" />
   </plan>
 </config>
