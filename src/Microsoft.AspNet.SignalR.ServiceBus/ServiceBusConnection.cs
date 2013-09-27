@@ -178,18 +178,6 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
                     _trace.TraceError(errorMessage, ex.Message);
                     break;
                 }
-                catch (QuotaExceededException ex)
-                {
-                    _trace.TraceError(errorMessage, ex.Message);
-                    if(ex.IsTransient)
-                    {
-                        Thread.Sleep(RetryDelay);
-                    }
-                    else
-                    {
-                        break;
-                    }
-                }
                 catch (MessagingException ex)
                 {
                     _trace.TraceError(errorMessage, ex.Message);
