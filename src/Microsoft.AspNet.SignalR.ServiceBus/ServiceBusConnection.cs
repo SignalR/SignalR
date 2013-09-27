@@ -175,11 +175,6 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
                     _trace.TraceError(errorMessage, ex.Message);
                     throw;
                 }
-                catch (QuotaExceededException ex)
-                {
-                    _trace.TraceError(errorMessage, ex.Message);
-                    throw;
-                }
                 catch (MessagingException ex)
                 {
                     _trace.TraceError(errorMessage, ex.Message);
