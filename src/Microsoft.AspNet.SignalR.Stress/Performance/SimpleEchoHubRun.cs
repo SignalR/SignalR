@@ -52,7 +52,7 @@ namespace Microsoft.AspNet.SignalR.Stress.Performance
             {
                 if (_sampling)
                 {
-                    var elapsedMilliseconds = Math.Round((double)(DateTime.Now.Ticks - startTicks) / TimeSpan.TicksPerMillisecond);
+                    var elapsedMilliseconds = Math.Round((double)(DateTime.UtcNow.Ticks - startTicks) / TimeSpan.TicksPerMillisecond);
 #if PERFRUN
                     Microsoft.VisualStudio.Diagnostics.Measurement.MeasurementBlock.Mark((ulong)elapsedMilliseconds, _categoryString);
 #endif
@@ -85,7 +85,7 @@ namespace Microsoft.AspNet.SignalR.Stress.Performance
         protected override async Task Send(int senderIndex, string source)
         {
             _callbacks[senderIndex] = new TaskCompletionSource<bool>();
-            await _proxies[senderIndex].Invoke("Echo", DateTime.Now.Ticks);
+            await _proxies[senderIndex].Invoke("Echo", DateTime.UtcNow.Ticks);
             await _callbacks[senderIndex].Task;
         }
     }
