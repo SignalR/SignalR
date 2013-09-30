@@ -13,6 +13,18 @@
 
     signalR.transports = {};
 
+    function beat(connection) {
+        if (connection._.keepAliveData.monitoring) {
+            checkIfAlive(connection);
+        }
+
+        transportLogic.markActive(connection);
+
+        connection._.beatHandle = window.setTimeout(function () {
+            beat(connection);
+        }, connection._.beatInterval);
+    }
+
     function checkIfAlive(connection) {
         var keepAliveData = connection._.keepAliveData,
             timeElapsed;
@@ -37,15 +49,6 @@
             } else {
                 keepAliveData.userNotified = false;
             }
-        }
-
-        // Verify we're monitoring the keep alive
-        // We don't want this as a part of the inner if statement above because we want keep alives to continue to be checked
-        // in the event that the server comes back online (if it goes offline).
-        if (keepAliveData.monitoring) {
-            window.setTimeout(function () {
-                checkIfAlive(connection);
-            }, keepAliveData.checkInterval);
         }
     }
 
@@ -380,8 +383,6 @@
                 $(connection).bind(events.onReconnect, connection._.keepAliveData.reconnectKeepAliveUpdate);
 
                 connection.log("Now monitoring keep alive with a warning timeout of " + keepAliveData.timeoutWarning + " and a connection lost timeout of " + keepAliveData.timeout + ".");
-                // Start the monitoring of the keep alive
-                checkIfAlive(connection);
             } else {
                 connection.log("Tried to monitor keep alive but it's already being monitored.");
             }
@@ -404,8 +405,16 @@
             }
         },
 
+        startHeartbeat: function(connection) {
+            beat(connection);
+        },
+
         markLastMessage: function (connection) {
             connection._.lastMessageAt = new Date().getTime();
+        },
+
+        markActive: function(connection) {
+            connection._.lastActiveAt = new Date().getTime();
         },
 
         ensureReconnectingState: function (connection) {
@@ -425,7 +434,7 @@
         },
 
         verifyReconnect: function (connection) {
-            if (new Date().getTime() - connection._.lastMessageAt >= connection.reconnectWindow) {
+            if (new Date().getTime() - connection._.lastActiveAt >= connection.reconnectWindow) {
                 connection.log("There has not been an active server connection for an extended period of time. Stopping connection.");
                 connection.stop();
                 return false;
