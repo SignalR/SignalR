@@ -84,6 +84,7 @@ QUnit.test("Check if alive triggers OnConnectionSlow when keep out warning thres
 
     // Start monitoring keep alive again
     $.signalR.transports._logic.monitorKeepAlive(connection);
+    $.signalR.transports._logic.startHeartbeat(connection);
 
     QUnit.ok(!failed, "ConnectionSlow triggered on checkIfAlive (via monitorKeepAlive) if we breach the warn threshold.");
 
@@ -122,11 +123,15 @@ QUnit.test("Check if alive detects transport timeout when keep out warning thres
 
     // Start monitoring keep alive again
     $.signalR.transports._logic.monitorKeepAlive(connection);
+    $.signalR.transports._logic.startHeartbeat(connection);
     // Set the last keep alive to a value that should trigger a timeout    
 
     QUnit.ok(!failed, "Lost Connection called on checkIfAlive (via monitorKeepAlive) if we breach the timeout threshold.");
 
     // Cleanup
     $.signalR.transports._logic.markLastMessage = savedMarkLastMessage;
-    $.signalR.transports._logic.stopMonitoringKeepAlive(connection);
+
+    connection.transport = null;
+
+    connection.stop();
 });

@@ -13,7 +13,7 @@ namespace Microsoft.AspNet.SignalR.Tests
             var config = new DefaultConfigurationManager();
 
             // Assert
-            Assert.Equal(30, config.ConnectionTimeout.TotalSeconds);
+            Assert.Equal(110, config.ConnectionTimeout.TotalSeconds);
             Assert.Equal(30, config.DisconnectTimeout.TotalSeconds);
             Assert.Equal(10, config.KeepAlive.Value.TotalSeconds);
             Assert.Equal(20, config.KeepAliveTimeout().Value.TotalSeconds);

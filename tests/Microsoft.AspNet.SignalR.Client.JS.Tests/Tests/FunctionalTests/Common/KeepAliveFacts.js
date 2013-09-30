@@ -46,9 +46,11 @@ QUnit.asyncTimeoutTest("Check if alive can recover from faulty connections.", te
 
     connection._.keepAliveData = {
         timeoutWarning: 1000, // We should warn if the time difference between now and the last keep alive is greater than 1 second
-        timeout: 100000,
-        checkInterval: 100 // Check every 100 milliseconds
+        timeout: 100000
     };
+
+    // Check every 100 milliseconds
+    connection._.beatInterval = 100;
 
     // Set the time to be 3 seconds ago so we trigger a slow event first
     connection._.lastMessageAt = new Date(new Date().valueOf() - 3000).getTime();
@@ -57,17 +59,17 @@ QUnit.asyncTimeoutTest("Check if alive can recover from faulty connections.", te
 
     // Start monitoring keep alive again
     $.signalR.transports._logic.monitorKeepAlive(connection);
+    $.signalR.transports._logic.startHeartbeat(connection);
 
     assert.ok(connection._.keepAliveData.userNotified === true, "User notified that they were slow (in faulty state).");
 
-    // Turn off monitoring so checkIfAlive is not checked more than once
-    connection._.keepAliveData.monitoring = false;
+    connection._.lastMessageAt = new Date().getTime();
 
-    // Wait 4x the check interval, so it should have been registered as recovered by then (aka userNotified = false)
+    // Wait 4x the beat interval, so it should have been registered as recovered by then (aka userNotified = false)
     setTimeout(function () {
         assert.equal(connection._.keepAliveData.userNotified, false, "CheckIfAlive recovers from faulty connection.");
         end();
-    }, 4 * connection._.keepAliveData.checkInterval);
+    }, 4 * connection._.beatInterval);
 
     // Cleanup
     return function () {

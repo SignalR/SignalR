@@ -22,9 +22,7 @@ namespace Microsoft.AspNet.SignalR.Configuration
 
         public DefaultConfigurationManager()
         {
-            // Make the connection timeout equivalent to the disconnect timeout so on the client we know when the
-            // server "may" have forgotten about us for the Long Polling transport.
-            ConnectionTimeout = TimeSpan.FromSeconds(30);
+            ConnectionTimeout = TimeSpan.FromSeconds(110);
             DisconnectTimeout = TimeSpan.FromSeconds(30);
             DefaultMessageBufferSize = 1000;
             TransportConnectTimeout = TimeSpan.FromSeconds(5);
