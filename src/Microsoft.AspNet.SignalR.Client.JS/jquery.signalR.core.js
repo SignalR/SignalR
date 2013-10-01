@@ -709,10 +709,10 @@
             // If we've deferred the start due to a page load we need to unbind the "onLoad" -> start event.
             if (!_pageLoaded && (!connection._.config || connection._.config.waitForPageLoad === true)) {
                 connection.log("Stopping connection prior to negotiate.");
-                
+
                 // Unbind the event so it's not triggered.
                 _pageWindow.unbind("load", connection._.deferredStartHandler);
-                
+
                 // Reject any promises for the current connections deferred.
                 connection._deferral.reject("The connection was stopped during page load.");
 
