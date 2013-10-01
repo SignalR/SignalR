@@ -56,11 +56,11 @@
                     onSuccess();
                     connection.log("Longpolling connected");
                 },
+                privateData = connection._,
                 reconnectErrors = 0,
-                reconnectTimeoutId = null,
                 fireReconnected = function (instance) {
-                    window.clearTimeout(reconnectTimeoutId);
-                    reconnectTimeoutId = null;
+                    window.clearTimeout(privateData.reconnectTimeoutId);
+                    privateData.reconnectTimeoutId = null;
 
                     if (changeState(connection,
                                     signalR.connectionState.reconnecting,
@@ -78,12 +78,15 @@
                 connection.stop();
             }
 
+            privateData.reconnectTimeoutId = null;
+            privateData.pollTimeoutId = null;
+
             // We start with an initialization procedure which pings the server to verify that it is there.
             // On scucessful initialization we'll then proceed with starting the transport.
             that.init(connection, function () {
                 connection.messageId = null;
 
-                window.setTimeout(function () {
+                privateData.pollTimeoutId = window.setTimeout(function () {
                     (function poll(instance, raiseReconnect) {
                         var messageId = instance.messageId,
                             connect = (messageId === null),
@@ -113,7 +116,7 @@
                                 reconnectErrors = 0;
 
                                 // If there's currently a timeout to trigger reconnect, fire it now before processing messages
-                                if (reconnectTimeoutId !== null) {
+                                if (privateData.reconnectTimeoutId !== null) {
                                     fireReconnected();
                                 }
 
@@ -140,7 +143,7 @@
 
                                 // We never want to pass a raiseReconnect flag after a successful poll.  This is handled via the error function
                                 if (delay > 0) {
-                                    window.setTimeout(function () {
+                                    privateData.pollTimeoutId = window.setTimeout(function () {
                                         poll(instance, false);
                                     }, delay);
                                 } else {
@@ -151,8 +154,8 @@
                             error: function (data, textStatus) {
                                 // Stop trying to trigger reconnect, connection is in an error state
                                 // If we're not in the reconnect state this will noop
-                                window.clearTimeout(reconnectTimeoutId);
-                                reconnectTimeoutId = null;
+                                window.clearTimeout(privateData.reconnectTimeoutId);
+                                privateData.reconnectTimeoutId = null;
 
                                 if (textStatus === "abort") {
                                     connection.log("Aborted xhr requst.");
@@ -172,12 +175,14 @@
                                 // Transition into the reconnecting state
                                 transportLogic.ensureReconnectingState(instance);
 
-                                // If we've errored out we need to verify that the server is still there, so re-start initialization process
-                                // This will ping the server until it successfully gets a response.
-                                that.init(instance, function () {
-                                    // Call poll with the raiseReconnect flag as true
-                                    poll(instance, true);
-                                });
+                                privateData.pollTimeoutId = window.setTimeout(function () {
+                                    // If we've errored out we need to verify that the server is still there, so re-start initialization process
+                                    // This will ping the server until it successfully gets a response.
+                                    that.init(instance, function () {
+                                        // Call poll with the raiseReconnect flag as true
+                                        poll(instance, true);
+                                    });
+                                }, that.reconnectDelay);
                             }
                         });
 
@@ -189,7 +194,7 @@
                             // triggering reconnected.  This depends on the "error" handler of Poll to cancel this 
                             // timeout if it triggers before the Reconnected event fires.
                             // The Math.min at the end is to ensure that the reconnect timeout does not overflow.
-                            reconnectTimeoutId = window.setTimeout(function () { fireReconnected(instance); }, Math.min(1000 * (Math.pow(2, reconnectErrors) - 1), maxFireReconnectedTimeout));
+                            privateData.reconnectTimeoutId = window.setTimeout(function () { fireReconnected(instance); }, Math.min(1000 * (Math.pow(2, reconnectErrors) - 1), maxFireReconnectedTimeout));
                         }
                     }(connection));
 
@@ -214,6 +219,12 @@
         stop: function (connection) {
             /// <summary>Stops the long polling connection</summary>
             /// <param name="connection" type="signalR">The SignalR connection to stop</param>
+            window.clearTimeout(connection._.pollTimeoutId);
+            window.clearTimeout(connection._.reconnectTimeoutId);
+
+            delete connection._.pollTimeoutId;
+            delete connection._.reconnectTimeoutId;
+
             if (connection.pollXhr) {
                 connection.pollXhr.abort();
                 connection.pollXhr = null;

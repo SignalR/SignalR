@@ -219,7 +219,10 @@
         init: function (url, qs, logging) {
             this.url = url;
             this.qs = qs;
-            this._ = {};
+            this._ = {
+                pollTimeoutId: null,
+                reconnectTimeoutId: null
+            };
             if (typeof (logging) === "boolean") {
                 this.logging = logging;
             }            
