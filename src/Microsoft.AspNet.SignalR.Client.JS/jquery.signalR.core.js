@@ -251,7 +251,9 @@
             this.qs = qs;
             this._ = {
                 pingIntervalId: null,
-                pingInterval: 300000
+                pingInterval: 300000,
+                pollTimeoutId: null,
+                reconnectTimeoutId: null
             };
             if (typeof (logging) === "boolean") {
                 this.logging = logging;
