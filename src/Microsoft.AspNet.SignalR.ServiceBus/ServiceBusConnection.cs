@@ -178,7 +178,6 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
                     _trace.TraceError(errorMessage, ex.Message);
                     break;
                 }
-                }
                 catch (MessagingException ex)
                 {
                     _trace.TraceError(errorMessage, ex.Message);
