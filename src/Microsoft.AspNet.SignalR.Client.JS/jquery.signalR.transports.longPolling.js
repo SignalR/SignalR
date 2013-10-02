@@ -37,7 +37,7 @@
             connection.log("Initializing long polling connection with server.");
             pingLoop = function () {
                 // Ping the server, on successful ping call the onComplete method, otherwise if we fail call the pingFail
-                transportLogic.pingServer(connection, that.name).done(onComplete).fail(pingFail);
+                transportLogic.pingServer(connection).done(onComplete).fail(pingFail);
             };
 
             pingLoop();

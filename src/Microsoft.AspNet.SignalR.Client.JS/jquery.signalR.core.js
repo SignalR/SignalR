@@ -77,6 +77,19 @@
             return connection.state === signalR.connectionState.disconnected;
         }, 
 
+        configurePingInterval = function (connection) {
+            var privateData = connection._,
+                onFail = function (error) {
+                    $(connection).triggerHandler(events.onError, [error]);
+                };
+
+            if (!privateData.pingIntervalId && privateData.pingInterval) {
+                privateData.pingIntervalId = window.setInterval(function () {
+                    signalR.transports._logic.pingServer(connection).fail(onFail);
+                }, privateData.pingInterval);
+            }
+        },
+
         configureStopReconnectingTimeout = function (connection) {
             var stopReconnectingTimeout,
                 onReconnectTimeout;
@@ -236,7 +249,10 @@
         init: function (url, qs, logging) {
             this.url = url;
             this.qs = qs;
-            this._ = {};
+            this._ = {
+                pingIntervalId: null,
+                pingInterval: 300000
+            };
             if (typeof (logging) === "boolean") {
                 this.logging = logging;
             }            
@@ -288,6 +304,7 @@
             /// <param name="callback" type="Function">A callback function to execute when the connection has started</param>
             var connection = this,
                 config = {
+                    pingInterval: 300000,
                     waitForPageLoad: true,
                     transport: "auto",
                     jsonp: false
@@ -313,6 +330,8 @@
                 throw new Error("SignalR: Invalid transport(s) specified, aborting start.");
             }
 
+            connection._.pingInterval = config.pingInterval;
+
             // Check to see if start is being called prior to page load
             // If waitForPageLoad is true we then want to re-direct function call to the window load event
             if (!_pageLoaded && config.waitForPageLoad === true) {
@@ -323,8 +342,6 @@
                 return deferred.promise();
             }
 
-            configureStopReconnectingTimeout(connection);
-
             if (changeState(connection,
                             signalR.connectionState.disconnected,
                             signalR.connectionState.connecting) === false) {
@@ -332,6 +349,8 @@
                 deferred.resolve(connection);
                 return deferred.promise();
             }
+
+            configureStopReconnectingTimeout(connection);
 
             // Resolve the full url
             parser.href = connection.url;
@@ -432,6 +451,10 @@
                     }
 
                     connection.transport = transport;
+
+                    // Used to ensure low activity clients maintain their authentication.
+                    // Must be configured once a transport has been decided to perform valid ping requests.
+                    configurePingInterval(connection);
 
                     changeState(connection,
                                 signalR.connectionState.connecting,
@@ -674,6 +697,8 @@
 
             try {
                 connection.log("Stopping connection.");
+                
+                window.clearInterval(connection._.pingIntervalId);
 
                 if (connection.transport) {
                     if (notifyServer !== false) {
@@ -697,6 +722,7 @@
                 // Remove the ID and the deferral on stop, this is to ensure that if a connection is restarted it takes on a new id/deferral.
                 delete connection.id;
                 delete connection._deferral;
+                delete connection._.pingIntervalId;
             }
             finally {
                 changeState(connection, connection.state, signalR.connectionState.disconnected);
