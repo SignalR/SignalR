@@ -42,11 +42,11 @@
             url = transportLogic.getUrl(connection, this.name, reconnecting);
 
             try {
-                connection.log("Attempting to connect to SSE endpoint '" + url + "'");
+                connection.log("Attempting to connect to SSE endpoint '" + url + "'.");
                 connection.eventSource = new window.EventSource(url);
             }
             catch (e) {
-                connection.log("EventSource failed trying to connect with error " + e.Message);
+                connection.log("EventSource failed trying to connect with error " + e.Message + ".");
                 if (onFailed) {
                     // The connection failed, call the failed callback
                     onFailed();
@@ -65,8 +65,8 @@
             // and raise on failed
             connectTimeOut = window.setTimeout(function () {
                 if (opened === false && connection.eventSource) {
-                    connection.log("EventSource timed out trying to connect");
-                    connection.log("EventSource readyState: " + connection.eventSource.readyState);
+                    connection.log("EventSource timed out trying to connect.");
+                    connection.log("EventSource readyState: " + connection.eventSource.readyState + ".");
 
                     if (!reconnecting) {
                         that.stop(connection);
@@ -87,7 +87,7 @@
             that.timeOut);
 
             connection.eventSource.addEventListener("open", function (e) {
-                connection.log("EventSource connected");
+                connection.log("EventSource connected.");
 
                 if (connectTimeOut) {
                     window.clearTimeout(connectTimeOut);
@@ -131,18 +131,18 @@
                         return;
                     }
 
-                    connection.log("EventSource readyState: " + connection.eventSource.readyState);
+                    connection.log("EventSource readyState: " + connection.eventSource.readyState + ".");
 
                     if (e.eventPhase === window.EventSource.CLOSED) {
                         // We don't use the EventSource's native reconnect function as it
                         // doesn't allow us to change the URL when reconnecting. We need
                         // to change the URL to not include the /connect suffix, and pass
                         // the last message id we received.
-                        connection.log("EventSource reconnecting due to the server connection ending");
+                        connection.log("EventSource reconnecting due to the server connection ending.");
                         that.reconnect(connection);
                     } else {
                         // connection error
-                        connection.log("EventSource error");
+                        connection.log("EventSource error.");
                         $connection.triggerHandler(events.onError);
                     }
                 }
@@ -166,7 +166,7 @@
             transportLogic.clearReconnectTimeout(connection);
 
             if (connection && connection.eventSource) {
-                connection.log("EventSource calling close()");
+                connection.log("EventSource calling close().");
                 connection.eventSource.close();
                 connection.eventSource = null;
                 delete connection.eventSource;

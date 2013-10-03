@@ -46,7 +46,9 @@
         var callbacks = connection._.invocationCallbacks,
             callback;
         
-        connection.log("Clearing hub invocation callbacks with error: " + error);
+        if (hasMembers(callbacks)) {
+            connection.log("Clearing hub invocation callbacks with error: " + error + ".");
+        }
         
         // Reset the callback cache now as we have a local var referencing it
         connection._.invocationCallbackId = 0;
@@ -167,7 +169,7 @@
                     if (result.Error) {
                         // Server hub method threw an exception, log it & reject the deferred
                         if (result.StackTrace) {
-                            connection.log(result.Error + "\n" + result.StackTrace);
+                            connection.log(result.Error + "\n" + result.StackTrace + ".");
                         }
                         d.rejectWith(self, [result.Error]);
                     } else {

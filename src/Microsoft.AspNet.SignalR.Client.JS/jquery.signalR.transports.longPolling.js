@@ -29,12 +29,12 @@
                 // pingFail is used to loop the re-ping behavior.  When we fail we want to re-try.
                 pingFail = function (reason) {
                     if (isDisconnecting(connection) === false) {
-                        connection.log("SignalR: Server ping failed because '" + reason + "', re-trying ping.");
+                        connection.log("Server ping failed because '" + reason + "', re-trying ping.");
                         window.setTimeout(pingLoop, that.reconnectDelay);
                     }
                 };
 
-            connection.log("SignalR: Initializing long polling connection with server.");
+            connection.log("Initializing long polling connection with server.");
             pingLoop = function () {
                 // Ping the server, on successful ping call the onComplete method, otherwise if we fail call the pingFail
                 transportLogic.pingServer(connection, that.name).done(onComplete).fail(pingFail);
@@ -54,7 +54,7 @@
                     }
                     initialConnectedFired = true;
                     onSuccess();
-                    connection.log("Longpolling connected");
+                    connection.log("Longpolling connected.");
                 },
                 reconnectErrors = 0,
                 reconnectTimeoutId = null,
@@ -66,7 +66,7 @@
                                     signalR.connectionState.reconnecting,
                                     signalR.connectionState.connected) === true) {
                         // Successfully reconnected!
-                        connection.log("Raising the reconnect event");
+                        connection.log("Raising the reconnect event.");
                         $(instance).triggerHandler(events.onReconnect);
                     }
                 },
@@ -96,7 +96,7 @@
                             return;
                         }
 
-                        connection.log("Attempting to connect to '" + url + "' using longPolling.");
+                        connection.log("Opening long polling request to '" + url + "'.");
                         instance.pollXhr = $.ajax(
                             $.extend({}, $.signalR.ajaxDefaults, {
                                 xhrFields: { withCredentials: connection.withCredentials },
@@ -107,6 +107,8 @@
                                 success: function (minData) {
                                     var delay = 0,
                                         data;
+
+                                    connection.log("Long poll complete.");
 
                                     // Reset our reconnect errors so if we transition into a reconnecting state again we trigger
                                     // reconnected quickly
@@ -165,7 +167,7 @@
                                     reconnectErrors++;
 
                                     if (connection.state !== signalR.connectionState.reconnecting) {
-                                        connection.log("An error occurred using longPolling. Status = " + textStatus + ". " + data.responseText);
+                                        connection.log("An error occurred using longPolling. Status = " + textStatus + ".  Response = " + data.responseText + ".");
                                         $(instance).triggerHandler(events.onError, [data.responseText]);
                                     }
 

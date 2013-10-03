@@ -227,7 +227,7 @@
                     data: {}
                 }));
 
-            connection.log("Fired ajax abort async = " + async);
+            connection.log("Fired ajax abort async = " + async + ".");
         },
 
         processMessages: function (connection, minData) {
@@ -249,7 +249,7 @@
                 data = this.maximizePersistentResponse(minData);
 
                 if (data.Disconnect) {
-                    connection.log("Disconnect command received from server");
+                    connection.log("Disconnect command received from server.");
 
                     // Disconnected by the server
                     connection.stop(false, false);
@@ -289,12 +289,12 @@
                 // Update Keep alive on reconnect
                 $(connection).bind(events.onReconnect, connection.keepAliveData.reconnectKeepAliveUpdate);
 
-                connection.log("Now monitoring keep alive with a warning timeout of " + keepAliveData.timeoutWarning + " and a connection lost timeout of " + keepAliveData.timeout);
+                connection.log("Now monitoring keep alive with a warning timeout of " + keepAliveData.timeoutWarning + " and a connection lost timeout of " + keepAliveData.timeout + ".");
                 // Start the monitoring of the keep alive
                 checkIfAlive(connection);
             }
             else {
-                connection.log("Tried to monitor keep alive but it's already being monitored");
+                connection.log("Tried to monitor keep alive but it's already being monitored.");
             }
         },
 
@@ -311,7 +311,7 @@
 
                 // Clear all the keep alive data
                 connection.keepAliveData = {};
-                connection.log("Stopping the monitoring of the keep alive");
+                connection.log("Stopping the monitoring of the keep alive.");
             }
         },
 
@@ -347,7 +347,7 @@
                     transport.stop(connection);
 
                     if (that.ensureReconnectingState(connection)) {
-                        connection.log(transportName + " reconnecting");
+                        connection.log(transportName + " reconnecting.");
                         transport.start(connection);
                     }
                 }, connection.reconnectDelay);

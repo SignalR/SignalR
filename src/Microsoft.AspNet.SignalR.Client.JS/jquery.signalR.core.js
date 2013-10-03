@@ -200,7 +200,7 @@
                 requestedTransport = null;
             }
         } else if ($.type(requestedTransport) !== "object" && !signalR.transports[requestedTransport] && requestedTransport !== "auto") {
-            connection.log("Invalid transport: " + requestedTransport.toString());
+            connection.log("Invalid transport: " + requestedTransport.toString() + ".");
             requestedTransport = null;
         }
         else if (requestedTransport === "auto" && signalR._.ieVersion <= 8)
@@ -377,7 +377,7 @@
                     config.jsonp = !$.support.cors;
 
                     if (config.jsonp) {
-                        connection.log("Using jsonp because this browser doesn't support CORS");
+                        connection.log("Using jsonp because this browser doesn't support CORS.");
                     }
                 }
 
@@ -441,7 +441,7 @@
 
                     // wire the stop handler for when the user leaves the page
                     _pageWindow.bind("unload", function () {
-                        connection.log("Window unloading, stopping the connection");
+                        connection.log("Window unloading, stopping the connection.");
 
                         connection.stop(asyncAbort);
                     });
@@ -673,6 +673,8 @@
             }
 
             try {
+                connection.log("Stopping connection.");
+
                 if (connection.transport) {
                     if (notifyServer !== false) {
                         connection.transport.abort(connection, async);

@@ -113,7 +113,10 @@
             connection.frameId = frameId;
 
             if (onSuccess) {
-                connection.onSuccess = onSuccess;
+                connection.onSuccess = function () {
+                    connection.log("Iframe transport started.");
+                    onSuccess();
+                };
             }
 
             // After connecting, if after the specified timeout there's no response stop the connection
@@ -188,7 +191,7 @@
                         }
                     }
                     catch (e) {
-                        connection.log("SignalR: Error occured when stopping foreverFrame transport. Message = " + e.message);
+                        connection.log("Error occured when stopping foreverFrame transport. Message = " + e.message + ".");
                     }
                 }
 
@@ -203,7 +206,7 @@
                 delete connection.frame;
                 delete connection.frameId;
                 delete connection.frameMessageCount;
-                connection.log("Stopping forever frame");
+                connection.log("Stopping forever frame.");
             }
         },
 
