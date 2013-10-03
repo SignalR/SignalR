@@ -299,8 +299,8 @@ testUtilities.runWithAllTransports(function (transport) {
                 // FIX: The longPolling transport currently needs to receive a message with a message ID before it can "reconnect"
                 // Issue #1700
                 connection.messageId = connection.messageId || "";
-                $.connection.transports._logic.pingServer = function (connection, transport) {
-                    return savedPingServer.call($.connection.transports._logic, connection, transport).fail(function () {
+                $.connection.transports._logic.pingServer = function (connection) {
+                    return savedPingServer.call($.connection.transports._logic, connection).fail(function () {
                         connectIfSecondReconnectAttempt();
                     });
                 };

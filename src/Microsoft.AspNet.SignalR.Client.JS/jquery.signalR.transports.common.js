@@ -60,7 +60,7 @@
     }
 
     signalR.transports._logic = {
-        pingServer: function (connection, transport) {
+        pingServer: function (connection) {
             /// <summary>Pings the server</summary>
             /// <param name="connection" type="signalr">Connection associated with the server ping</param>
             /// <returns type="signalR" />

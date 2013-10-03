@@ -11,12 +11,12 @@ QUnit.test("Default Connection Parameters", function () {
 });
 
 QUnit.test("Stopping Connection", function () {
-    var con = $.connection;
+    var con = testUtilities.createConnection("foo");
     // Need to be connected to stop a connection
-    QUnit.ok(con.changeState(con.fn, con.connectionState.disconnected, con.connectionState.connected), "Verify we can shift from disconnected into connected.");
-    QUnit.equal(con.fn.state, con.connectionState.connected, "Verifies connection is now disconnected.");
-    QUnit.equal(con.fn.stop(false), con.fn, "Verifying when conneciton is stopped that the same connection is returned.");
-    QUnit.equal(con.fn.state, con.connectionState.disconnected, "Verifies connection is disconnected after stop has been called.");
+    QUnit.ok($.signalR.changeState(con, $.signalR.connectionState.disconnected, $.signalR.connectionState.connected), "Verify we can shift from disconnected into connected.");
+    QUnit.equal(con.state, $.signalR.connectionState.connected, "Verifies connection is now disconnected.");
+    QUnit.equal(con.stop(false), con, "Verifying when conneciton is stopped that the same connection is returned.");
+    QUnit.equal(con.state, $.signalR.connectionState.disconnected, "Verifies connection is disconnected after stop has been called.");
 });
 
 QUnit.test("Error on send prior to connected state", function () {

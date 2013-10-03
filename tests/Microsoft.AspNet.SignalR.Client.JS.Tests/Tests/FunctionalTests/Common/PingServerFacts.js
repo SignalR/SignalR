@@ -4,7 +4,7 @@ testUtilities.runWithAllTransports(function (transport) {
     QUnit.asyncTimeoutTest(transport + " transport can initiate Ping Server.", testUtilities.defaultTestTimeout, function (end, assert, testName) {
         var connection = testUtilities.createHubConnection(end, assert, testName),
             testPingServer = function () {
-                $.signalR.transports._logic.pingServer(connection, transport).done(function () {
+                $.signalR.transports._logic.pingServer(connection).done(function () {
                     // Successful ping
                     assert.ok(true, "Successful ping with " + transport);
                     end();
@@ -32,7 +32,7 @@ testUtilities.runWithAllTransports(function (transport) {
             expectedQs = window.encodeURIComponent(testName),
             savedAjax = $.ajax,
             testPingServer = function () {
-                $.signalR.transports._logic.pingServer(connection, transport).done(function () {
+                $.signalR.transports._logic.pingServer(connection).done(function () {
                     // Successful ping
                     assert.ok(true, "Successful ping with " + transport);
                 }).fail(function () {
