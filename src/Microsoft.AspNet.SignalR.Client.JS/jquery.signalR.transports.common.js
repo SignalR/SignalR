@@ -8,7 +8,8 @@
 
     var signalR = $.signalR,
         events = $.signalR.events,
-        changeState = $.signalR.changeState;
+        changeState = $.signalR.changeState,
+        transportLogic;
 
     signalR.transports = {};
 
@@ -59,7 +60,17 @@
                connection.state === signalR.connectionState.reconnecting;
     }
 
-    signalR.transports._logic = {
+    function addConnectionData(url, connectionData) {
+        var appender = url.indexOf("?") !== -1 ? "&" : "?";
+
+        if (connectionData) {
+            url += appender + "connectionData=" + window.encodeURIComponent(connectionData);
+        }
+
+        return url;
+    }
+
+    transportLogic = signalR.transports._logic = {
         pingServer: function (connection) {
             /// <summary>Pings the server</summary>
             /// <param name="connection" type="signalr">Connection associated with the server ping</param>
@@ -67,7 +78,7 @@
             var url, deferral = $.Deferred();
 
             url = connection.url + "/ping";
-            url = this.addQs(url, connection);
+            url = transportLogic.prepareQueryString(connection, url);
 
             $.ajax(
                 $.extend({}, $.signalR.ajaxDefaults, {
@@ -78,6 +89,7 @@
                     data: {},
                     dataType: connection.ajaxDataType,
                     success: function (data) {
+
                         if (data.Response === "pong") {
                             deferral.resolve();
                         }
@@ -97,6 +109,12 @@
                 }));
 
             return deferral.promise();
+        },
+
+        prepareQueryString: function (connection, url) {
+            url = transportLogic.addQs(url, connection);
+
+            return addConnectionData(url, connection.data);
         },
 
         addQs: function (url, connection) {
@@ -130,10 +148,6 @@
                 url = baseUrl + connection.appRelativeUrl,
                 qs = "transport=" + transport + "&connectionToken=" + window.encodeURIComponent(connection.token);
 
-            if (connection.data) {
-                qs += "&connectionData=" + window.encodeURIComponent(connection.data);
-            }
-
             if (connection.groupsToken) {
                 qs += "&groupsToken=" + window.encodeURIComponent(connection.groupsToken);
             }
@@ -153,7 +167,7 @@
                 }
             }
             url += "?" + qs;
-            url = this.addQs(url, connection);
+            url = transportLogic.prepareQueryString(connection, url);
             url += "&tid=" + Math.floor(Math.random() * 11);
             return url;
         },
@@ -177,7 +191,8 @@
 
         ajaxSend: function (connection, data) {
             var url = connection.url + "/send" + "?transport=" + connection.transport.name + "&connectionToken=" + window.encodeURIComponent(connection.token);
-            url = this.addQs(url, connection);
+            url = transportLogic.prepareQueryString(connection, url);
+
             return $.ajax(
                 $.extend({}, $.signalR.ajaxDefaults, {
                     xhrFields: { withCredentials: connection.withCredentials },
@@ -214,7 +229,8 @@
             async = typeof async === "undefined" ? true : async;
 
             var url = connection.url + "/abort" + "?transport=" + connection.transport.name + "&connectionToken=" + window.encodeURIComponent(connection.token);
-            url = this.addQs(url, connection);
+            url = transportLogic.prepareQueryString(connection, url);
+
             $.ajax(
                 $.extend({}, $.signalR.ajaxDefaults, {
                     xhrFields: { withCredentials: connection.withCredentials },

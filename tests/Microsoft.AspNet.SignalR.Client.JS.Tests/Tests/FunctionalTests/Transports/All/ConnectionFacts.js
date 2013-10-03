@@ -1,7 +1,74 @@
 ﻿QUnit.module("Connection Facts");
 
 testUtilities.runWithAllTransports(function (transport) {
-   
+    // Cannot run with long polling because it uses the ping server as its initial init
+    if (transport !== "longPolling") {
+        QUnit.asyncTimeoutTest(transport + ": Connection data flows with all requests to server.", testUtilities.defaultTestTimeout * 2, function (end, assert, testName) {
+            var connection = testUtilities.createHubConnection(end, assert, testName, undefined, false),
+                connectionDataVerifierHub = connection.createHubProxies().connectionDataVerifierHub,
+                savedAjax = $.ajax,
+                transportSettings = {
+                    transport: transport
+                };
+
+            $.ajax = function (url, settings) {
+                if (!settings) {
+                    settings = url;
+                    url = settings.url;
+                }
+
+                // Check if it's the ping request;
+                if (url.indexOf("connectionData=") === -1 || url.toLowerCase().indexOf("connectiondataverifierhub") === -1) {
+                    connectionDataVerifierHub.client.fail();
+                }
+
+                // Persist the request through to the original ajax request
+                return savedAjax.call(this, url, settings);
+            };
+
+            connectionDataVerifierHub.client.pong = function () {
+                // Verify that ping server flows through the connection data
+                $.signalR.transports._logic.pingServer(connection, transport).done(function () {
+                    assert.ok(true, "All requests contained connection data within the query string.");
+                    end();
+                }).fail(function () {
+                    connectionDataVerifierHub.client.fail();
+                });
+            };
+
+            connectionDataVerifierHub.client.fail = function () {
+                assert.ok(false, "Query string did not contain connection data.");
+                end();
+            };
+
+            connection.reconnected(function () {
+                connectionDataVerifierHub.server.ping();
+            });
+
+            connection.start(transportSettings).done(function () {
+                // Test disconnected
+                connection.stop();
+
+                setTimeout(function () {
+                    connection.start(transportSettings).done(function () {
+                        // Delay the network disconnect so that transports can be 100% conneted with disconnect is triggered
+                        setTimeout(function () {
+                            // Cause a reconnect
+                            $.network.disconnect();
+                            $.network.connect();
+                        }, 250);
+                    });
+                }, 2000);
+            });
+
+            // Cleanup
+            return function () {
+                $.ajax = savedAjax;
+                connection.stop();
+            };
+        });
+    }
+
     // Can't run this for long polling because it still uses a ping server to begin its connection
     if (transport !== "longPolling") {
         QUnit.asyncTimeoutTest(transport + ": Ping interval behaves appropriately.", testUtilities.defaultTestTimeout * 2, function (end, assert, testName) {
