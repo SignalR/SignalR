@@ -239,20 +239,20 @@ namespace Microsoft.AspNet.SignalR.Tests
                 _servers = servers;
             }
 
-            public Task<IClientResponse> Get(string url, Action<IClientRequest> prepareRequest)
+            public Task<IClientResponse> Get(string url, Action<IClientRequest> prepareRequest, bool isLongRunning)
             {
                 Debug.WriteLine("Server {0}: GET {1}", _counter, url);
                 int index = _counter;
                 _counter = (_counter + 1) % _servers.Length;
-                return _servers[index].Get(url, prepareRequest);
+                return _servers[index].Get(url, prepareRequest, isLongRunning);
             }
 
-            public Task<IClientResponse> Post(string url, Action<IClientRequest> prepareRequest, IDictionary<string, string> postData)
+            public Task<IClientResponse> Post(string url, Action<IClientRequest> prepareRequest, IDictionary<string, string> postData, bool isLongRunning)
             {
                 Debug.WriteLine("Server {0}: POST {1}", _counter, url);
                 int index = _counter;
                 _counter = (_counter + 1) % _servers.Length;
-                return _servers[index].Post(url, prepareRequest, postData);
+                return _servers[index].Post(url, prepareRequest, postData, isLongRunning);
             }
         }
 

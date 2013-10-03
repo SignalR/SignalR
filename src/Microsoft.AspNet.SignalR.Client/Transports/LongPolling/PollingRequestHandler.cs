@@ -89,7 +89,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
                 if (_running == 0)
                 {
                     return;
-                }                
+                }
 
                 // A url is required
                 string url = ResolveUrl();
@@ -102,7 +102,8 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
                     // This is called just prior to posting the request to ensure that any in-flight polling request
                     // is always executed before an OnAfterPoll
                     OnPolling();
-                })
+                }, 
+                isLongRunning: true)
                 .ContinueWith(task =>
                 {
                     var next = TaskAsyncHelper.Empty;
@@ -134,7 +135,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
                     },
                     exception);
                 });
-            }            
+            }
         }
 
         /// <summary>

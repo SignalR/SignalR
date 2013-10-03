@@ -3,7 +3,7 @@
 /*global window:false */
 /// <reference path="jquery.signalR.core.js" />
 
-(function ($, window) {
+(function ($, window, undefined) {
     "use strict";
 
     // we use a global id for tracking callbacks so the server doesn't have to send extra info like hub name
@@ -45,9 +45,11 @@
         /// <param name="connection" type="hubConnection" />
         var callbacks = connection._.invocationCallbacks,
             callback;
-        
-        connection.log("Clearing hub invocation callbacks with error: " + error);
-        
+
+        if (hasMembers(callbacks)) {
+            connection.log("Clearing hub invocation callbacks with error: " + error + ".");
+        }
+
         // Reset the callback cache now as we have a local var referencing it
         connection._.invocationCallbackId = 0;
         delete connection._.invocationCallbacks;
@@ -167,7 +169,7 @@
                     if (result.Error) {
                         // Server hub method threw an exception, log it & reject the deferred
                         if (result.StackTrace) {
-                            connection.log(result.Error + "\n" + result.StackTrace);
+                            connection.log(result.Error + "\n" + result.StackTrace + ".");
                         }
                         d.rejectWith(self, [result.Error]);
                     } else {
@@ -182,7 +184,7 @@
             if (!$.isEmptyObject(self.state)) {
                 data.S = self.state;
             }
-            
+
             connection.send(window.JSON.stringify(data));
 
             return d.promise();
@@ -224,10 +226,10 @@
 
     hubConnection.fn.init = function (url, options) {
         var settings = {
-                qs: null,
-                logging: false,
-                useDefaultPath: true
-            },
+            qs: null,
+            logging: false,
+            useDefaultPath: true
+        },
             connection = this;
 
         $.extend(settings, options);
@@ -303,7 +305,7 @@
                 // The original data is not a JSON payload so this is not a send error
                 return;
             }
-            
+
             callbackId = data.I;
             callback = connection._.invocationCallbacks[callbackId];
 
@@ -340,6 +342,7 @@
         ///     Sets the starting event to loop through the known hubs and register any new hubs 
         ///     that have been added to the proxy.
         /// </summary>
+        var connection = this;
 
         if (!this._subscribedToHubs) {
             this._subscribedToHubs = true;
@@ -351,8 +354,13 @@
                 $.each(this.proxies, function (key) {
                     if (this.hasSubscriptions()) {
                         subscribedHubs.push({ name: key });
+                        connection.log("Client subscribed to hub '" + key + "'.");
                     }
                 });
+
+                if (subscribedHubs.length === 0) {
+                    connection.log("No hubs have been subscribed to.  The client will not receive data from hubs.  To fix, declare at least one client side function prior to connection start for each hub you wish to subscribe to.");
+                }
 
                 this.data = window.JSON.stringify(subscribedHubs);
             });

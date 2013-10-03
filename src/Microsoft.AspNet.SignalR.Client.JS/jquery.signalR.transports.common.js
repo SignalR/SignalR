@@ -3,7 +3,7 @@
 /*global window:false */
 /// <reference path="jquery.signalR.core.js" />
 
-(function ($, window) {
+(function ($, window, undefined) {
     "use strict";
 
     var signalR = $.signalR,
@@ -60,36 +60,41 @@
     }
 
     signalR.transports._logic = {
-        pingServer: function (connection, transport) {
+        pingServer: function (connection) {
             /// <summary>Pings the server</summary>
             /// <param name="connection" type="signalr">Connection associated with the server ping</param>
             /// <returns type="signalR" />
-            var baseUrl = transport === "webSockets" ? "" : connection.baseUrl,
-                url = baseUrl + connection.appRelativeUrl + "/ping",
-                deferral = $.Deferred();
+            var url, deferral = $.Deferred();
 
+            url = connection.url + "/ping";
             url = this.addQs(url, connection);
 
-            $.ajax({
-                url: url,
-                global: false,
-                cache: false,
-                type: "GET",
-                contentType: connection.contentType,
-                data: {},
-                dataType: connection.ajaxDataType,
-                success: function (data) {
-                    if (data.Response === "pong") {
-                        deferral.resolve();
+            $.ajax(
+                $.extend({}, $.signalR.ajaxDefaults, {
+                    xhrFields: { withCredentials: connection.withCredentials },
+                    url: url,
+                    type: "GET",
+                    contentType: connection.contentType,
+                    data: {},
+                    dataType: connection.ajaxDataType,
+                    success: function (data) {
+                        if (data.Response === "pong") {
+                            deferral.resolve();
+                        }
+                        else {
+                            deferral.reject("SignalR: Invalid ping response when pinging server: " + (data.responseText || data.statusText));
+                        }
+                    },
+                    error: function (data) {
+                        if (data.status === 401 || data.status === 403) {
+                            deferral.reject("Failed to ping server. Server responded with a " + data.status + " status code, stopping the connection.");
+                            connection.stop();
+                        }
+                        else {
+                            deferral.reject("SignalR: Error pinging server: " + (data.responseText || data.statusText));
+                        }
                     }
-                    else {
-                        deferral.reject("SignalR: Invalid ping response when pinging server: " + (data.responseText || data.statusText));
-                    }
-                },
-                error: function (data) {
-                    deferral.reject("SignalR: Error pinging server: " + (data.responseText || data.statusText));
-                }
-            });
+                }));
 
             return deferral.promise();
         },
@@ -173,30 +178,31 @@
         ajaxSend: function (connection, data) {
             var url = connection.url + "/send" + "?transport=" + connection.transport.name + "&connectionToken=" + window.encodeURIComponent(connection.token);
             url = this.addQs(url, connection);
-            return $.ajax({
-                url: url,
-                global: false,
-                type: connection.ajaxDataType === "jsonp" ? "GET" : "POST",
-                contentType: signalR._.defaultContentType,
-                dataType: connection.ajaxDataType,
-                data: {
-                    data: data
-                },
-                success: function (result) {
-                    if (result) {
-                        $(connection).triggerHandler(events.onReceived, [result]);
+            return $.ajax(
+                $.extend({}, $.signalR.ajaxDefaults, {
+                    xhrFields: { withCredentials: connection.withCredentials },
+                    url: url,
+                    type: connection.ajaxDataType === "jsonp" ? "GET" : "POST",
+                    contentType: signalR._.defaultContentType,
+                    dataType: connection.ajaxDataType,
+                    data: {
+                        data: data
+                    },
+                    success: function (result) {
+                        if (result) {
+                            $(connection).triggerHandler(events.onReceived, [result]);
+                        }
+                    },
+                    error: function (errData, textStatus) {
+                        if (textStatus === "abort" || textStatus === "parsererror") {
+                            // The parsererror happens for sends that don't return any data, and hence
+                            // don't write the jsonp callback to the response. This is harder to fix on the server
+                            // so just hack around it on the client for now.
+                            return;
+                        }
+                        $(connection).triggerHandler(events.onError, [errData, data]);
                     }
-                },
-                error: function (errData, textStatus) {
-                    if (textStatus === "abort" || textStatus === "parsererror") {
-                        // The parsererror happens for sends that don't return any data, and hence
-                        // don't write the jsonp callback to the response. This is harder to fix on the server
-                        // so just hack around it on the client for now.
-                        return;
-                    }
-                    $(connection).triggerHandler(events.onError, [errData, data]);
-                }
-            });
+                }));
         },
 
         ajaxAbort: function (connection, async) {
@@ -209,18 +215,19 @@
 
             var url = connection.url + "/abort" + "?transport=" + connection.transport.name + "&connectionToken=" + window.encodeURIComponent(connection.token);
             url = this.addQs(url, connection);
-            $.ajax({
-                url: url,
-                async: async,
-                timeout: 1000,
-                global: false,
-                type: "POST",
-                contentType: connection.contentType,
-                dataType: connection.ajaxDataType,
-                data: {}
-            });
+            $.ajax(
+                $.extend({}, $.signalR.ajaxDefaults, {
+                    xhrFields: { withCredentials: connection.withCredentials },
+                    url: url,
+                    async: async,
+                    timeout: 1000,
+                    type: "POST",
+                    contentType: connection.contentType,
+                    dataType: connection.ajaxDataType,
+                    data: {}
+                }));
 
-            connection.log("Fired ajax abort async = " + async);
+            connection.log("Fired ajax abort async = " + async + ".");
         },
 
         processMessages: function (connection, minData) {
@@ -242,7 +249,7 @@
                 data = this.maximizePersistentResponse(minData);
 
                 if (data.Disconnect) {
-                    connection.log("Disconnect command received from server");
+                    connection.log("Disconnect command received from server.");
 
                     // Disconnected by the server
                     connection.stop(false, false);
@@ -282,12 +289,12 @@
                 // Update Keep alive on reconnect
                 $(connection).bind(events.onReconnect, connection.keepAliveData.reconnectKeepAliveUpdate);
 
-                connection.log("Now monitoring keep alive with a warning timeout of " + keepAliveData.timeoutWarning + " and a connection lost timeout of " + keepAliveData.timeout);
+                connection.log("Now monitoring keep alive with a warning timeout of " + keepAliveData.timeoutWarning + " and a connection lost timeout of " + keepAliveData.timeout + ".");
                 // Start the monitoring of the keep alive
                 checkIfAlive(connection);
             }
             else {
-                connection.log("Tried to monitor keep alive but it's already being monitored");
+                connection.log("Tried to monitor keep alive but it's already being monitored.");
             }
         },
 
@@ -304,7 +311,7 @@
 
                 // Clear all the keep alive data
                 connection.keepAliveData = {};
-                connection.log("Stopping the monitoring of the keep alive");
+                connection.log("Stopping the monitoring of the keep alive.");
             }
         },
 
@@ -340,7 +347,7 @@
                     transport.stop(connection);
 
                     if (that.ensureReconnectingState(connection)) {
-                        connection.log(transportName + " reconnecting");
+                        connection.log(transportName + " reconnecting.");
                         transport.start(connection);
                     }
                 }, connection.reconnectDelay);

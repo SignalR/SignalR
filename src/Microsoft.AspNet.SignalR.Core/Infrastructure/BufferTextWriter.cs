@@ -31,7 +31,7 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
         }
 
         public BufferTextWriter(IWebSocket socket) :
-            this((data, state) => ((IWebSocket)state).SendChunk(data), socket, reuseBuffers: false, bufferSize: 128)
+            this((data, state) => ((IWebSocket)state).SendChunk(data), socket, reuseBuffers: false, bufferSize: 1024 * 4)
         {
 
         }

@@ -233,7 +233,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
                     }
                     finally
                     {
-                        if (!subscription.UnsetQueued() || workTask.IsFaulted)
+                        if (!subscription.UnsetQueued() || workTask.IsFaulted || workTask.IsCanceled)
                         {
                             // If we don't have more work to do just make the subscription null
                             subscription = null;
@@ -271,7 +271,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
                     Trace.TraceEvent(TraceEventType.Error, 0, "Work failed for " + subscription.Identity + ": " + task.Exception.GetBaseException());
                 }
 
-                if (moreWork && !task.IsFaulted)
+                if (moreWork && !task.IsFaulted && !task.IsCanceled)
                 {
                     PumpImpl(taskCompletionSource, subscription);
                 }

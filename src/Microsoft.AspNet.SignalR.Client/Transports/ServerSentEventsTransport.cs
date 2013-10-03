@@ -95,7 +95,8 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
                 connection.PrepareRequest(_request);
 
                 _request.Accept = "text/event-stream";
-            }).ContinueWith(task =>
+            },
+            isLongRunning: true).ContinueWith(task =>
             {
                 if (task.IsFaulted)
                 {
@@ -187,9 +188,9 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
 
                         if (stop)
                         {
-                            CompleteAbort();
+                            AbortHandler.CompleteAbort();
                         }
-                        else if (TryCompleteAbort())
+                        else if (AbortHandler.TryCompleteAbort())
                         {
                             // Abort() was called, so don't reconnect
                         }

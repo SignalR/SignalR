@@ -87,6 +87,7 @@
     <Content Include="Tests\FunctionalTests\Core\NegotiateFacts.js" />
     <Content Include="Tests\FunctionalTests\Hubs\HubEventHandlerFacts.js" />
     <Content Include="Tests\FunctionalTests\Hubs\HubGroupFacts.js" />
+    <Content Include="Tests\FunctionalTests\Transports\All\AjaxReplacementFacts.js" />
     <Content Include="Tests\FunctionalTests\Transports\All\ConnectionFacts.js" />
     <Content Include="Tests\FunctionalTests\Transports\All\HubConnectionFacts.js" />
     <Content Include="Tests\FunctionalTests\Transports\All\SendFacts.js" />
@@ -95,7 +96,9 @@
     <Content Include="Tests\FunctionalTests\Hubs\HubProxyFacts.js" />
     <Content Include="Tests\FunctionalTests\Common\PingServerFacts.js" />
     <Content Include="Tests\FunctionalTests\Transports\All\ConnectionStateFacts.js" />
+    <Content Include="Tests\FunctionalTests\Transports\ForeverFrame\FFConnectFacts.js" />
     <Content Include="Tests\FunctionalTests\Transports\ForeverFrame\TransportSelectionFacts.js" />
+    <Content Include="Tests\FunctionalTests\Transports\LongPolling\LPConnectFacts.js" />
     <Content Include="Tests\FunctionalTests\Transports\LongPolling\LPReconnectFacts.js" />
     <Content Include="Tests\UnitTests\Common\AjaxFacts.js" />
     <Content Include="Tests\UnitTests\Common\KeepAliveFacts.js" />
@@ -206,17 +209,18 @@
       <Using Namespace="System.IO" />
       <Using Namespace="System.Web" />
       <Using Namespace="Microsoft.Build.Framework" />
-      <Code Type="Fragment" Language="cs"><![CDATA[
-            ScriptTagsOutput = "";
+      <Code Type="Fragment" Language="cs">
+              <![CDATA[
+            ScriptTagsOutput = "\r\n";
             DirectoryInfo dirInfo = new DirectoryInfo(ProjectDirectory + "\\" + RelativePath.Replace("/", "\\"));
             FileInfo[] fileInfos = dirInfo.GetFiles("*.js", SearchOption.AllDirectories);
 
             foreach (FileInfo f in fileInfos)
             {
-                var scriptTag = "<script type=\"text/javascript\" src=\"";
+                var scriptTag = "        <script src=\"";
                 scriptTag += Uri.UnescapeDataString(f.FullName.Replace(ProjectDirectory + "\\", "").Replace("\\","/")) + "\"></script>";
                 
-                ScriptTagsOutput += scriptTag+"\n";
+                ScriptTagsOutput += scriptTag+"\r\n";
             }
     ]]></Code>
     </Task>

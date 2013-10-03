@@ -1,5 +1,5 @@
 /*!
- * ASP.NET SignalR JavaScript Library v1.1.4
+ * ASP.NET SignalR JavaScript Library v1.1.5
  * http://signalr.net/
  *
  * Copyright Microsoft Open Technologies, Inc. All rights reserved.
@@ -10,7 +10,7 @@
 
 /// <reference path="..\..\SignalR.Client.JS\Scripts\jquery-1.6.4.js" />
 /// <reference path="jquery.signalR.js" />
-(function ($, window) {
+(function ($, window, undefined) {
     /// <param name="$" type="jQuery" />
     "use strict";
 
@@ -232,6 +232,11 @@
             readStateValue: function () {
             /// <summary>Calls the ReadStateValue method on the server-side demo hub.&#10;Returns a jQuery.Deferred() promise.</summary>
                 return proxies.demo.invoke.apply(proxies.demo, $.merge(["ReadStateValue"], $.makeArray(arguments)));
+             },
+
+            returnLargePayload: function () {
+            /// <summary>Calls the ReturnLargePayload method on the server-side demo hub.&#10;Returns a jQuery.Deferred() promise.</summary>
+                return proxies.demo.invoke.apply(proxies.demo, $.merge(["ReturnLargePayload"], $.makeArray(arguments)));
              },
 
             setStateValue: function (value) {

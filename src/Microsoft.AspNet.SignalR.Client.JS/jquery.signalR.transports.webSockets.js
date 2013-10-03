@@ -3,7 +3,7 @@
 /*global window:false */
 /// <reference path="jquery.signalR.transports.common.js" />
 
-(function ($, window) {
+(function ($, window, undefined) {
     "use strict";
 
     var signalR = $.signalR,
@@ -16,6 +16,8 @@
 
         supportsKeepAlive: true,
 
+        timeOut : 3000,
+
         send: function (connection, data) {
             connection.socket.send(data);
         },
@@ -24,6 +26,8 @@
             var url,
                 opened = false,
                 that = this,
+                initialSocket,
+                timeOutHandle,
                 reconnecting = !onSuccess,
                 $connection = $(connection);
 
@@ -42,11 +46,24 @@
 
                 url += transportLogic.getUrl(connection, this.name, reconnecting);
 
-                connection.log("Connecting to websocket endpoint '" + url + "'");
+                connection.log("Connecting to websocket endpoint '" + url + "'.");
                 connection.socket = new window.WebSocket(url);
+
+                // Issue #1653: Galaxy S3 Android Stock Browser fails silently to establish websocket connections. 
+                if (onFailed) {
+                    initialSocket = connection.socket;
+                    timeOutHandle = window.setTimeout(function () {
+                        if (initialSocket === connection.socket) {
+                            connection.log("WebSocket timed out trying to connect.");
+                            onFailed();
+                        }
+                    }, that.timeOut);
+                }
+
                 connection.socket.onopen = function () {
+                    window.clearTimeout(timeOutHandle);
                     opened = true;
-                    connection.log("Websocket opened");
+                    connection.log("Websocket opened.");
 
                     transportLogic.clearReconnectTimeout(connection);
 
@@ -63,6 +80,8 @@
                     // Only handle a socket close if the close is from the current socket.
                     // Sometimes on disconnect the server will push down an onclose event
                     // to an expired socket.
+                    window.clearTimeout(timeOutHandle);
+
                     if (this === connection.socket) {
                         if (!opened) {
                             if (onFailed) {
@@ -77,10 +96,10 @@
                             // Ideally this would use the websocket.onerror handler (rather than checking wasClean in onclose) but
                             // I found in some circumstances Chrome won't call onerror. This implementation seems to work on all browsers.
                             $(connection).triggerHandler(events.onError, [event.reason]);
-                            connection.log("Unclean disconnect from websocket." + event.reason);
+                            connection.log("Unclean disconnect from websocket: " + event.reason || "[no reason given].");
                         }
                         else {
-                            connection.log("Websocket closed");
+                            connection.log("Websocket closed.");
                         }
 
                         that.reconnect(connection);
@@ -119,13 +138,14 @@
             transportLogic.clearReconnectTimeout(connection);
 
             if (connection.socket !== null) {
-                connection.log("Closing the Websocket");
+                connection.log("Closing the Websocket.");
                 connection.socket.close();
                 connection.socket = null;
             }
         },
 
-        abort: function (connection) {
+        abort: function (connection, async) {
+            transportLogic.ajaxAbort(connection, async);
         }
     };
 

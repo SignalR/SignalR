@@ -11,7 +11,7 @@ using Microsoft.AspNet.SignalR.Infrastructure;
 using Moq;
 using Xunit;
 
-namespace Microsoft.AspNet.SignalR.Tests
+namespace Microsoft.AspNet.SignalR.Client.Tests
 {
     public class ConnectionFacts : IDisposable
     {
@@ -257,18 +257,6 @@ namespace Microsoft.AspNet.SignalR.Tests
 
                 Assert.Equal(aggEx.Unwrap(), ex);
                 Assert.Equal(ConnectionState.Disconnected, connection.State);
-            }
-
-            [Fact]
-            public void HeaderDictionaryShouldThrowWhenConnectionStateInvalid()
-            {
-                var connection = new Client.Connection("http://test");
-                ((Client.IConnection)connection).ChangeState(ConnectionState.Disconnected, ConnectionState.Connecting);
-
-                var dictionary = new HeaderDictionary(connection);
-                var ex = Assert.Throws<InvalidOperationException>(() => dictionary.Add("test-header", "test-header"));
-
-                Assert.Equal("Request headers cannot be set after the connection has started.", ex.Message);
             }
         }
 

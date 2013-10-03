@@ -11,18 +11,35 @@ namespace Microsoft.AspNet.SignalR.Client.Http
     /// </summary>
     public class DefaultHttpClient : IHttpClient
     {
+
+#if (!WINDOWS_PHONE && !SILVERLIGHT)
+        private readonly string _shortRunningGroup;
+        private readonly string _longRunningGroup;
+
+        public DefaultHttpClient()
+        {
+            string id = Guid.NewGuid().ToString();
+            _shortRunningGroup = "SignalR-short-running-" + id;
+            _longRunningGroup = "SignalR-long-running-" + id;
+        }
+#endif
+
         /// <summary>
         /// Makes an asynchronous http GET request to the specified url.
         /// </summary>
         /// <param name="url">The url to send the request to.</param>
         /// <param name="prepareRequest">A callback that initializes the request with default values.</param>
+        /// <param name="isLongRunning">Indicates whether it is a long running request</param>
         /// <returns>A <see cref="T:Task{IResponse}"/>.</returns>
-        public Task<IResponse> Get(string url, Action<IRequest> prepareRequest)
+        public Task<IResponse> Get(string url, Action<IRequest> prepareRequest, bool isLongRunning)
         {
-            IRequest req = null;
             return HttpHelper.GetAsync(url, request =>
             {
-                req = new HttpWebRequestWrapper(request);
+#if (!WINDOWS_PHONE && !SILVERLIGHT)
+                request.ConnectionGroupName = isLongRunning ? _longRunningGroup : _shortRunningGroup;
+#endif
+
+                var req = new HttpWebRequestWrapper(request);
                 prepareRequest(req);
             }
             ).Then(response => (IResponse)new HttpWebResponseWrapper(response));
@@ -34,13 +51,17 @@ namespace Microsoft.AspNet.SignalR.Client.Http
         /// <param name="url">The url to send the request to.</param>
         /// <param name="prepareRequest">A callback that initializes the request with default values.</param>
         /// <param name="postData">form url encoded data.</param>
+        /// <param name="isLongRunning">Indicates whether it is a long running request</param>
         /// <returns>A <see cref="T:Task{IResponse}"/>.</returns>
-        public Task<IResponse> Post(string url, Action<IRequest> prepareRequest, IDictionary<string, string> postData)
+        public Task<IResponse> Post(string url, Action<IRequest> prepareRequest, IDictionary<string, string> postData, bool isLongRunning)
         {
-            IRequest req = null;
             return HttpHelper.PostAsync(url, request =>
             {
-                req = new HttpWebRequestWrapper(request);
+#if (!WINDOWS_PHONE && !SILVERLIGHT)
+                request.ConnectionGroupName = isLongRunning ? _longRunningGroup : _shortRunningGroup;
+#endif
+
+                var req = new HttpWebRequestWrapper(request);
                 prepareRequest(req);
             },
             postData).Then(response => (IResponse)new HttpWebResponseWrapper(response));

@@ -162,7 +162,7 @@ namespace Microsoft.AspNet.SignalR.Transports
         }
 
         [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "Exceptions are flowed to the caller.")]
-        private Task ProcessReceiveRequest(ITransportConnection connection)
+        protected Task ProcessReceiveRequest(ITransportConnection connection)
         {
             Func<Task> initialize = null;
 

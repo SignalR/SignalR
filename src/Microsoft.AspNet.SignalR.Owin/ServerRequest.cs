@@ -139,7 +139,7 @@ namespace Microsoft.AspNet.SignalR.Owin
         }
 
 #if NET45
-        public Task AcceptWebSocketRequest(Func<IWebSocket, Task> callback)
+        public Task AcceptWebSocketRequest(Func<IWebSocket, Task> callback, Task initTask)
         {
             var accept = _environment.Get<Action<IDictionary<string, object>, WebSocketFunc>>(OwinConstants.WebSocketAccept);
             if (accept == null)
@@ -147,7 +147,7 @@ namespace Microsoft.AspNet.SignalR.Owin
                 throw new InvalidOperationException(Resources.Error_NotWebSocketRequest);
             }
 
-            var handler = new OwinWebSocketHandler(callback);
+            var handler = new OwinWebSocketHandler(callback, initTask);
             accept(null, handler.ProcessRequestAsync);
             return TaskAsyncHelper.Empty;
         }

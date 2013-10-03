@@ -47,14 +47,16 @@ namespace Microsoft.AspNet.SignalR.Owin
     internal class OwinWebSocketHandler
     {
         private readonly Func<IWebSocket, Task> _callback;
+        private readonly Task _transportInit;
 
-        public OwinWebSocketHandler(Func<IWebSocket, Task> callback)
+        public OwinWebSocketHandler(Func<IWebSocket, Task> callback, Task initTask)
         {
             _callback = callback;
+            _transportInit = initTask;
         }
 
         [SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope", Justification = "The websocket handler disposes the socket when the receive loop is over.")]
-        public Task ProcessRequestAsync(IDictionary<string, object> env)
+        public async Task ProcessRequestAsync(IDictionary<string, object> env)
         {
             object value;
             WebSocket webSocket;
@@ -69,13 +71,39 @@ namespace Microsoft.AspNet.SignalR.Owin
                 webSocket = ((WebSocketContext)value).WebSocket;
             }
 
-            var handler = new DefaultWebSocketHandler();
-            var task = handler.ProcessWebSocketRequestAsync(webSocket, CancellationToken.None);
+            var cts = new CancellationTokenSource();
+            var webSocketHandler = new DefaultWebSocketHandler();
 
-            _callback(handler).Catch()
-                              .Finally(state => ((DefaultWebSocketHandler)state).End(), handler);
+            RunWebSocketHandler(webSocketHandler, cts);
 
-            return task;
+            // Ensure OnConnected gets called before we start the receive loop
+            await _transportInit;
+
+            await webSocketHandler.ProcessWebSocketRequestAsync(webSocket, cts.Token);
+        }
+
+        private void RunWebSocketHandler(DefaultWebSocketHandler handler, CancellationTokenSource cts)
+        {
+            // async void methods are not supported in ASP.NET and they throw a InvalidOperationException.
+            Task.Run(async () =>
+            {
+                try
+                {
+                    await _callback(handler);
+                }
+                catch
+                {
+                    // This error was already handled by other layers
+                    // we can no-op here so we don't cause an unobserved exception
+                }
+
+                // Always try to close async, if the websocket already closed
+                // then this will no-op
+                await handler.CloseAsync();
+
+                // Cancel the token
+                cts.Cancel();
+            });
         }
 
         private class OwinWebSocket : WebSocket

@@ -224,7 +224,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Owin
             var env = new Dictionary<string, object>();
             var request = new ServerRequest(env);
 
-            Assert.Throws<InvalidOperationException>(() => request.AcceptWebSocketRequest(socket => TaskAsyncHelper.Empty));
+            Assert.Throws<InvalidOperationException>(() => request.AcceptWebSocketRequest(socket => TaskAsyncHelper.Empty, TaskAsyncHelper.Empty));
         }
 
         internal static class OwinConstants
