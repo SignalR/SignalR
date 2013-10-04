@@ -1,4 +1,4 @@
-# ASP.NET SignalR 
+# ASP.NET SignalR  Boo
 Async signaling library for .NET to help build real-time, multi-user interactive web applications
 
 ## What can it be used for?
