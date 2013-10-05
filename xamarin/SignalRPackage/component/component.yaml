@@ -13,7 +13,7 @@ libraries:
     - lib/mobile/Microsoft.AspNet.SignalR.Client.dll
     - lib/mobile/Newtonsoft.Json.dll
     - lib/mobile/System.Net.Http.Extensions.dll
-summary: real-
+summary: Incredibly simple real-time web for .NET.
 details: Details.md
 getting-started: GettingStarted.md
 version: 2.0.0
