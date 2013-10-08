@@ -22,7 +22,7 @@
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
     <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <DefineConstants>DEBUG;TRACE;SELFHOST</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <Prefer32Bit>false</Prefer32Bit>
@@ -32,7 +32,7 @@
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
     <OutputPath>bin\Release\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
+    <DefineConstants>TRACE;SELFHOST</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <Prefer32Bit>false</Prefer32Bit>
@@ -69,6 +69,12 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="..\Microsoft.AspNet.SignalR.Samples\Hubs\DemoHub\DemoHub.cs">
+      <Link>Hubs\DemoHub.cs</Link>
+    </Compile>
+    <Compile Include="..\Microsoft.AspNet.SignalR.Samples\Hubs\DemoHub\TypedDemoHub.cs">
+      <Link>Hubs\TypedDemoHub.cs</Link>
+    </Compile>
     <Compile Include="..\Microsoft.AspNet.SignalR.Samples\Raw\RawConnection.cs">
       <Link>Connections\RawConnection.cs</Link>
     </Compile>

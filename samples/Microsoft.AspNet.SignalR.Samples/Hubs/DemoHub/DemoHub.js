@@ -28,15 +28,15 @@
     };
 
     typedDemo.client.echo = function (message, invokeCount) {
-        console.log("echo!", message, invokeCount);
-    }
+        $('#typed').append('<p>' + message + ' #' + invokeCount + ' triggered!</p>')
+    };
 
     $.connection.hub.logging = true;
 
     $.connection.hub.start({ transport: activeTransport }, function () {
 
-        typedDemo.server.echo("Typed callback!").done(function () {
-            console.log("done!");
+        typedDemo.server.echo("Typed echo callback").done(function () {
+            $('#typed').append('<p>TypedDemoHub.Echo(string message) invoked!</p>')
         });
 
         demo.server.getValue().done(function (value) {
@@ -80,16 +80,16 @@
         });
 
         demo.server.taskWithException().fail(function (e) {
-            $('#taskWithException').html(e);
+            $('#taskWithException').html(e.toString());
         });
 
         demo.server.genericTaskWithException().fail(function (e) {
-            $('#genericTaskWithException').html(e);
+            $('#genericTaskWithException').html(e.toString());
         });
 
 
         demo.server.synchronousException().fail(function (e) {
-            $('#synchronousException').html(e);
+            $('#synchronousException').html(e.toString());
         });
 
         demo.server.overload().done(function () {

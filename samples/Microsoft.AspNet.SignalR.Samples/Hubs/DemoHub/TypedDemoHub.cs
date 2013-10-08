@@ -7,9 +7,9 @@ namespace Microsoft.AspNet.SignalR.Samples.Hubs.DemoHub
     {
         private static int _invokeCount = 0;
 
-        public void Echo(string message)
+        public async Task Echo(string message)
         {
-            Clients.Caller.Echo(message, Interlocked.Increment(ref _invokeCount)).Wait();
+            await Clients.Caller.Echo(message, Interlocked.Increment(ref _invokeCount));
         }
     }
 
