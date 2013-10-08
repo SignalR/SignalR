@@ -17,7 +17,6 @@ namespace Microsoft.AspNet.SignalR.Tests
     {
         [Theory]
         [InlineData(TransportType.LongPolling, MessageBusType.Default)]
-        [InlineData(TransportType.LongPolling, MessageBusType.Fake)]
         public void ReconnectFiresAfterHostShutdown(TransportType transportType, MessageBusType messageBusType)
         {
             MyReconnect conn = null;
