@@ -3,7 +3,7 @@
   <metadata>
     <id>Microsoft.AspNet.SignalR.Redis</id>
     <title>Microsoft ASP.NET SignalR Redis Messaging Backplane</title>
-    <version>__SIGNALR_REDIS_PACKAGE_VERSION__</version>
+    <version>__SIGNALR_PACKAGE_VERSION__</version>
     <authors>Microsoft</authors>
     <owners>Microsoft</owners>
     <licenseUrl>__SIGNALR_LICENSE_URL__</licenseUrl>

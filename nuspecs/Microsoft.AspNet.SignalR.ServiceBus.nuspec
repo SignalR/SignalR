@@ -3,7 +3,7 @@
   <metadata>
     <id>Microsoft.AspNet.SignalR.ServiceBus</id>
     <title>Microsoft ASP.NET SignalR Service Bus Messaging Backplane</title>
-    <version>__SIGNALR_SERVICE_BUS_PACKAGE_VERSION__</version>
+    <version>__SIGNALR_PACKAGE_VERSION__</version>
     <authors>Microsoft</authors>
     <owners>Microsoft</owners>
     <licenseUrl>__SIGNALR_LICENSE_URL__</licenseUrl>
