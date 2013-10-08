@@ -125,7 +125,10 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
         }
 
         public static void ProcessResponse(IConnection connection, string response, out bool shouldReconnect, out bool disconnected)
+        {
             ProcessResponse(connection, response, out shouldReconnect, out disconnected, () => { });
+        }
+
         [SuppressMessage("Microsoft.Design", "CA1062:Validate arguments of public methods", MessageId = "0", Justification = "This is called internally.")]
         [SuppressMessage("Microsoft.Design", "CA1021:AvoidOutParameters", Justification = "This is called internally.")]
         [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "The client receives the exception in the OnError callback.")]

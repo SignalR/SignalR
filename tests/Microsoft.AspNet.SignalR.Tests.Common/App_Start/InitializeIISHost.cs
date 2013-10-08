@@ -69,7 +69,8 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure.IIS
             RouteTable.Routes.MapConnection<AddGroupOnConnectedConnection>("add-group", "add-group");
             RouteTable.Routes.MapConnection<UnusableProtectedConnection>("protected", "protected");
             RouteTable.Routes.MapConnection<FallbackToLongPollingConnection>("fall-back", "/fall-back");
-
+            RouteTable.Routes.MapConnection<ExamineReconnectPath>("force-lp-reconnect", "force-lp-reconnect/examine-reconnect", new ConnectionConfiguration { }, ReconnectFailedMiddleware);
+            RouteTable.Routes.MapHubs("force-lp-reconnect-hubs", "force-lp-reconnect/examine-reconnect", new HubConfiguration(), ReconnectFailedMiddleware);
 
             RouteTable.Routes.Add("ping", new Route("ping", new PingHandler()));
             RouteTable.Routes.Add("gc", new Route("gc", new GCHandler()));
@@ -112,5 +113,25 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure.IIS
 
             app.Use(middleware);
         }
+
+        private static void ReconnectFailedMiddleware(IAppBuilder app)
+        {
+            Func<AppFunc, AppFunc> middleware = (next) =>
+            {
+                return env =>
+                {
+                    var path = env["owin.RequestPath"];
+                    if (path.ToString().Contains("poll"))
+                    {
+                        env["owin.StatusCode"] = 500;
+                        return TaskAsyncHelper.Empty;
+                    }
+                    return next(env);
+                };
+            };
+
+            app.Use(middleware);
+        }
+
     }
 }

@@ -117,7 +117,7 @@ namespace Microsoft.AspNet.SignalR.Hosting.Memory
             var tcs = new TaskCompletionSource<IClientResponse>();
             var clientTokenSource = new SafeCancellationTokenSource();
 
-            var env = new Dictionary<string, object>();
+            var env = new Dictionary<string, object>(_appBuilder.Properties);
 
             // Server specific setup
             env[OwinConstants.Version] = "1.0";
