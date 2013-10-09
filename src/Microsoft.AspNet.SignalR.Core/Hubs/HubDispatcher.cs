@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.md in the project root for license information.
 
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
@@ -192,15 +193,7 @@ namespace Microsoft.AspNet.SignalR.Hubs
 
             try
             {
-                var lastParameter = methodDescriptor.Parameters.LastOrDefault();
-                if (lastParameter != null
-                    && lastParameter.ParameterType.IsGenericType
-                    && lastParameter.ParameterType.GetGenericTypeDefinition() == typeof(IProgress<>) )
-                {
-                    var progressType = typeof(HubInvocationProgress<>).MakeGenericType(lastParameter.ParameterType.GetGenericArguments());
-                    var progress = Activator.CreateInstance(progressType);
-                    parameterValues = parameterValues.Concat(new IJsonValue[] { new JsonWrapper(progress) }).ToArray();
-                }
+                parameterValues = AppendProgressParameter(parameterValues, methodDescriptor);
 
                 var args = _binder.ResolveMethodParameters(methodDescriptor, parameterValues);
 
@@ -233,7 +226,45 @@ namespace Microsoft.AspNet.SignalR.Hubs
             .FastUnwrap();
         }
 
-        private class HubInvocationProgress<T> : IProgress<T>
+        private static IJsonValue[] AppendProgressParameter(IJsonValue[] parameterValues, MethodDescriptor methodDescriptor)
+        {
+            var lastParameter = methodDescriptor.Parameters.LastOrDefault();
+            if (lastParameter != null
+                && lastParameter.ParameterType.IsGenericType
+                && lastParameter.ParameterType.GetGenericTypeDefinition() == typeof(IProgress<>))
+            {
+                var progressType = lastParameter.ParameterType.GenericTypeArguments[0];
+                var progress = HubInvocationProgress.Create(progressType);
+
+                parameterValues = parameterValues.Concat(progress).ToArray();
+            }
+            return parameterValues;
+        }
+
+        private class HubInvocationProgress
+        {
+            private static readonly ConcurrentDictionary<Type, Func<object>> _progressCreateCache = new ConcurrentDictionary<Type, Func<object>>();
+
+            public static IJsonValue[] Create(Type progressGenericType)
+            {
+                Func<object> createDelegate;
+                if (!_progressCreateCache.TryGetValue(progressGenericType, out createDelegate))
+                {
+                    var createMethod = typeof(HubInvocationProgress).GetMethod("Create", new Type[0]).MakeGenericMethod(progressGenericType);
+                    createDelegate = (Func<object>)createMethod.CreateDelegate(typeof(Func<object>));
+                    _progressCreateCache[progressGenericType] = createDelegate;
+                }
+                var progress = createDelegate.Invoke();
+                return new [] { new JsonWrapper(progress) };
+            }
+
+            public HubInvocationProgress<T> Create<T>()
+            {
+                return new HubInvocationProgress<T>();
+            }
+        }
+
+        private class HubInvocationProgress<T> : HubInvocationProgress, IProgress<T>
         {
             public HubInvocationProgress()
             {
