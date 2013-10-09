@@ -301,7 +301,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                 }
             }
 
-            public IHubCallerConnectionContext Clients
+            public IHubCallerConnectionContext<dynamic> Clients
             {
                 get
                 {

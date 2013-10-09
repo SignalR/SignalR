@@ -150,7 +150,11 @@
     <Compile Include="Hubs\EchoHub.cs" />
     <Compile Include="Hubs\ExamineHeadersHub.cs" />
     <Compile Include="Hubs\GroupJoiningHub.cs" />
+    <Compile Include="Hubs\IInvalidClientContract.cs" />
+    <Compile Include="Hubs\InvalidTypedHub.cs" />
+    <Compile Include="Hubs\IValidClientContract.cs" />
     <Compile Include="Hubs\MyItemsHub.cs" />
+    <Compile Include="Hubs\ValidTypedHub.cs" />
     <Compile Include="Infrastructure\BasicAuthenticationProvider.cs" />
     <Compile Include="Hubs\OnConnectedBufferHub.cs" />
     <Compile Include="Infrastructure\ClientAssertExtensions.cs" />

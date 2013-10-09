@@ -192,6 +192,15 @@
   <data name="Error_MethodLevelOutgoingAuthorization" xml:space="preserve">
     <value>Outgoing authorization can only be required for an entire Hub, not a specific method.</value>
   </data>
+  <data name="Error_MethodMustNotTakeOutParameter" xml:space="preserve">
+    <value>The '{0}' parameter of '{1}.{2}' must not be an out parameter.</value>
+  </data>
+  <data name="Error_MethodMustNotTakeRefParameter" xml:space="preserve">
+    <value>The '{0}' parameter of '{1}.{2}' must not be a ref parameter.</value>
+  </data>
+  <data name="Error_MethodMustReturnVoidOrTask" xml:space="preserve">
+    <value>The return type of '{0}.{1}' must be void or Task.</value>
+  </data>
   <data name="Error_MultipleActivatorsAreaRegisteredCallGetServices" xml:space="preserve">
     <value>Multiple activators for type {0} are registered. Please call GetServices instead.</value>
   </data>
@@ -224,6 +233,15 @@
   </data>
   <data name="Error_TaskQueueFull" xml:space="preserve">
     <value>The queue is full.</value>
+  </data>
+  <data name="Error_TypeMustBeInterface" xml:space="preserve">
+    <value>The type T, '{0}', passed to Hub&lt;T&gt; must be an interface.</value>
+  </data>
+  <data name="Error_TypeMustNotContainEvents" xml:space="preserve">
+    <value>The interface '{0}' must not contain any events.</value>
+  </data>
+  <data name="Error_TypeMustNotContainProperties" xml:space="preserve">
+    <value>The interface '{0}' must not contain any properties.</value>
   </data>
   <data name="Error_UnableToAddModulePiplineAlreadyInvoked" xml:space="preserve">
     <value>Unable to add module. The HubPipeline has already been invoked.</value>

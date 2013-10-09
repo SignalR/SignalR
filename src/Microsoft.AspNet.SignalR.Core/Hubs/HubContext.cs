@@ -14,7 +14,7 @@ namespace Microsoft.AspNet.SignalR.Hubs
             Groups = new GroupManager(connection, PrefixHelper.GetHubGroupName(hubName));
         }
 
-        public IHubConnectionContext Clients { get; private set; }
+        public IHubConnectionContext<dynamic> Clients { get; private set; }
 
         public IGroupManager Groups { get; private set; }
     }

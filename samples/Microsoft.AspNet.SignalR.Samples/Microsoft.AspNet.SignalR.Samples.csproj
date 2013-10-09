@@ -304,6 +304,7 @@
     <Compile Include="Hubs\Chat\ContentProviders\IContentProvider.cs" />
     <Compile Include="Hubs\Chat\ContentProviders\ImageContentProvider.cs" />
     <Compile Include="Hubs\Chat\ContentProviders\YouTubeContentProvider.cs" />
+    <Compile Include="Hubs\DemoHub\TypedDemoHub.cs" />
     <Compile Include="Hubs\DrawingPad\Default.aspx.cs">
       <DependentUpon>Default.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>

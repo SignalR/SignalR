@@ -8,11 +8,11 @@ namespace Microsoft.AspNet.SignalR.Hubs
     /// <summary>
     /// Encapsulates all information about an individual SignalR connection for an <see cref="IHub"/>.
     /// </summary>
-    public interface IHubCallerConnectionContext : IHubConnectionContext
+    public interface IHubCallerConnectionContext<T> : IHubConnectionContext<T>
     {
-        dynamic Caller { get; }
-        dynamic Others { get; }
-        dynamic OthersInGroup(string groupName);
-        dynamic OthersInGroups(IList<string> groupNames);
+        T Caller { get; }
+        T Others { get; }
+        T OthersInGroup(string groupName);
+        T OthersInGroups(IList<string> groupNames);
     }
 }

@@ -125,6 +125,7 @@ namespace Microsoft.AspNet.SignalR.Samples.Hubs.DemoHub
             return Clients.Caller.Company;
         }
 
+#if !SELFHOST
         public string GetHttpContextHandler()
         {
             object value;
@@ -139,6 +140,7 @@ namespace Microsoft.AspNet.SignalR.Samples.Hubs.DemoHub
 
             return null;
         }
+#endif
 
         public object ReadAnyState()
         {
