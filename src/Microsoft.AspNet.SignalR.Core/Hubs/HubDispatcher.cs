@@ -9,6 +9,7 @@ using System.Globalization;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR.Hosting;
 using Microsoft.AspNet.SignalR.Infrastructure;
@@ -189,11 +190,16 @@ namespace Microsoft.AspNet.SignalR.Hubs
                                        HubRequest hubRequest,
                                        StateChangeTracker tracker)
         {
-            Task<object> piplineInvocation;
+            // TODO: Make adding parameters here pluggable? IValueProvider? ;)
+            HubInvocationProgress progress = GetProgressParameterValue(parameterValues, methodDescriptor);
+            if (progress != null)
+            {
+                parameterValues = parameterValues.Concat(new[] { new JsonWrapper(progress) }).ToArray();
+            }
 
+            Task<object> piplineInvocation;
             try
             {
-                parameterValues = AppendProgressParameter(parameterValues, methodDescriptor);
 
                 var args = _binder.ResolveMethodParameters(methodDescriptor, parameterValues);
 
@@ -210,6 +216,11 @@ namespace Microsoft.AspNet.SignalR.Hubs
             // Determine if we have a faulted task or not and handle it appropriately.
             return piplineInvocation.ContinueWithPreservedCulture(task =>
             {
+                if (progress != null)
+                {
+                    progress.SetComplete();
+                }
+
                 if (task.IsFaulted)
                 {
                     return ProcessResponse(tracker, result: null, request: hubRequest, error: task.Exception);
@@ -226,86 +237,18 @@ namespace Microsoft.AspNet.SignalR.Hubs
             .FastUnwrap();
         }
 
-        private static IJsonValue[] AppendProgressParameter(IJsonValue[] parameterValues, MethodDescriptor methodDescriptor)
+        private static HubInvocationProgress GetProgressParameterValue(IJsonValue[] parameterValues, MethodDescriptor methodDescriptor)
         {
+            HubInvocationProgress progress = null;
             var lastParameter = methodDescriptor.Parameters.LastOrDefault();
             if (lastParameter != null
                 && lastParameter.ParameterType.IsGenericType
                 && lastParameter.ParameterType.GetGenericTypeDefinition() == typeof(IProgress<>))
             {
                 var progressType = lastParameter.ParameterType.GenericTypeArguments[0];
-                var progress = HubInvocationProgress.Create(progressType);
-
-                parameterValues = parameterValues.Concat(progress).ToArray();
+                progress = HubInvocationProgress.Create(progressType);
             }
-            return parameterValues;
-        }
-
-        private class HubInvocationProgress
-        {
-            private static readonly ConcurrentDictionary<Type, Func<object>> _progressCreateCache = new ConcurrentDictionary<Type, Func<object>>();
-
-            public static IJsonValue[] Create(Type progressGenericType)
-            {
-                Func<object> createDelegate;
-                if (!_progressCreateCache.TryGetValue(progressGenericType, out createDelegate))
-                {
-                    var createMethod = typeof(HubInvocationProgress).GetMethod("Create", new Type[0]).MakeGenericMethod(progressGenericType);
-                    createDelegate = (Func<object>)createMethod.CreateDelegate(typeof(Func<object>));
-                    _progressCreateCache[progressGenericType] = createDelegate;
-                }
-                var progress = createDelegate.Invoke();
-                return new [] { new JsonWrapper(progress) };
-            }
-
-            public HubInvocationProgress<T> Create<T>()
-            {
-                return new HubInvocationProgress<T>();
-            }
-        }
-
-        private class HubInvocationProgress<T> : HubInvocationProgress, IProgress<T>
-        {
-            public HubInvocationProgress()
-            {
-
-            }
-
-            public static HubInvocationProgress<T> Create()
-            {
-                return new HubInvocationProgress<T>();
-            }
-
-            public void Report(T value)
-            {
-                // Send progress update to client
-
-            }
-        }
-
-        private class JsonWrapper : IJsonValue
-        {
-            private readonly object _value;
-
-            public JsonWrapper(object value)
-            {
-                _value = value;
-            }
-
-            public object ConvertTo(Type type)
-            {
-                if (CanConvertTo(type))
-                {
-                    return _value;
-                }
-
-                throw new InvalidOperationException();
-            }
-
-            public bool CanConvertTo(Type type)
-            {
-                return _value.GetType().IsAssignableFrom(type);
-            }
+            return progress;
         }
 
         public override Task ProcessRequest(HostContext context)
@@ -553,6 +496,18 @@ namespace Microsoft.AspNet.SignalR.Hubs
             }
         }
 
+        private Task SendProgressUpdate(StateChangeTracker tracker, object progress, HubRequest request)
+        {
+            var hubResult = new HubResponse
+            {
+                State = tracker.GetChanges(),
+                Progress = progress,
+                Id = "P|" + request.Id,
+            };
+
+            return Transport.Send(hubResult); ;
+        }
+
         private Task ProcessResponse(StateChangeTracker tracker, object result, HubRequest request, Exception error)
         {
             var hubResult = new HubResponse
@@ -644,6 +599,93 @@ namespace Microsoft.AspNet.SignalR.Hubs
         private class ClientHubInfo
         {
             public string Name { get; set; }
+        }
+
+        private class HubInvocationProgress
+        {
+            private static readonly ConcurrentDictionary<Type, Func<HubInvocationProgress>> _progressCreateCache = new ConcurrentDictionary<Type, Func<HubInvocationProgress>>();
+
+            private long _complete = 0;
+
+            public static HubInvocationProgress Create(Type progressGenericType)
+            {
+                Func<HubInvocationProgress> createDelegate;
+                if (!_progressCreateCache.TryGetValue(progressGenericType, out createDelegate))
+                {
+                    var createMethod = typeof(HubInvocationProgress).GetMethod("Create", new Type[0]).MakeGenericMethod(progressGenericType);
+                    createDelegate = (Func<HubInvocationProgress>)createMethod.CreateDelegate(typeof(Func<HubInvocationProgress>));
+                    _progressCreateCache[progressGenericType] = createDelegate;
+                }
+                var progress = createDelegate.Invoke();
+                return progress;
+            }
+
+            public HubInvocationProgress<T> Create<T>()
+            {
+                return new HubInvocationProgress<T>();
+            }
+
+            public void SetComplete()
+            {
+                Interlocked.Exchange(ref _complete, 1);
+            }
+
+            protected bool IsComplete
+            {
+                get
+                {
+                    return Interlocked.Read(ref _complete) == 1;
+                }
+            }
+        }
+
+        private class HubInvocationProgress<T> : HubInvocationProgress, IProgress<T>
+        {
+            public HubInvocationProgress()
+            {
+
+            }
+
+            public static HubInvocationProgress<T> Create()
+            {
+                return new HubInvocationProgress<T>();
+            }
+
+            public void Report(T value)
+            {
+                if (IsComplete)
+                {
+                    throw new InvalidOperationException("You cannot report progress on a hub method invocation that has already completed.");
+                }
+
+                // Send progress update to client
+
+            }
+        }
+
+        private class JsonWrapper : IJsonValue
+        {
+            private readonly object _value;
+
+            public JsonWrapper(object value)
+            {
+                _value = value;
+            }
+
+            public object ConvertTo(Type type)
+            {
+                if (CanConvertTo(type))
+                {
+                    return _value;
+                }
+
+                throw new InvalidOperationException();
+            }
+
+            public bool CanConvertTo(Type type)
+            {
+                return _value.GetType().IsAssignableFrom(type);
+            }
         }
     }
 }

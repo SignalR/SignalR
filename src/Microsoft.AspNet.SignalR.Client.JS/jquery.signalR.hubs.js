@@ -259,7 +259,10 @@
                 return;
             }
 
-            if (typeof (minData.I) !== "undefined") {
+            if (typeof(minData.P) !== "undefined") {
+                // Process progress notification
+
+            } else if (typeof (minData.I) !== "undefined") {
                 // We received the return value from a server method invocation, look up callback by id and call it
                 dataCallbackId = minData.I.toString();
                 callback = connection._.invocationCallbacks[dataCallbackId];
@@ -271,8 +274,6 @@
                     // Invoke the callback
                     callback.method.call(callback.scope, minData);
                 }
-            } else if (typeof(minData.P) !== "undefined") {
-                
             } else {
                 data = this._maximizeClientHubInvocation(minData);
 

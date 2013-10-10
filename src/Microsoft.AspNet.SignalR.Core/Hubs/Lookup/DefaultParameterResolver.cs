@@ -48,7 +48,7 @@ namespace Microsoft.AspNet.SignalR.Hubs
                 throw new ArgumentNullException("method");
             }
 
-            return method.Parameters.Zip(v, ResolveParameter).ToArray();
+            return method.Parameters.Zip(values, ResolveParameter).ToArray();
         }
     }
 }
