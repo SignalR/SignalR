@@ -509,8 +509,8 @@ namespace Microsoft.AspNet.SignalR.Client.Tests
                         connection.Start(host.Transport).Wait();
                         host.Shutdown();
 
-                        Assert.True(reconnectWh.Wait(TimeSpan.FromSeconds(25)), "Reconnect never fired");
-                        Assert.True(disconnectWh.Wait(TimeSpan.FromSeconds(25)), "Closed never fired");
+                        Assert.True(reconnectWh.Wait(TimeSpan.FromSeconds(15)), "Reconnect never fired");
+                        Assert.True(disconnectWh.Wait(TimeSpan.FromSeconds(15)), "Closed never fired");
                     }
                 }
             }
@@ -534,11 +534,10 @@ namespace Microsoft.AspNet.SignalR.Client.Tests
                 {
                     host.Initialize(keepAlive: null,
                                     connectionTimeout: 2,
-                                    disconnectTimeout: 6,
+                                    disconnectTimeout: 8, // 8s because the default heartbeat time span is 5s
                                     messageBusType: messageBusType);
 
                     var connection = CreateHubConnection(host, "/force-lp-reconnect");
-
 
                     using (connection)
                     {
@@ -558,9 +557,6 @@ namespace Microsoft.AspNet.SignalR.Client.Tests
                         };
 
                         connection.Start(host.Transport).Wait();
-
-                        // Force reconnect
-                        Thread.Sleep(TimeSpan.FromSeconds(5));
 
                         Assert.True(reconnectingWh.Wait(TimeSpan.FromSeconds(30)));
                         Assert.True(reconnectedWh.Wait(TimeSpan.FromSeconds(30)));

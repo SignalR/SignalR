@@ -159,6 +159,11 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
             {
                 reconnectInvoker.Invoke();
 
+                if (!TransportHelper.VerifyReconnect(connection))
+                {
+                    return;
+                }
+
                 // Transition into reconnecting state
                 connection.EnsureReconnecting();
 
