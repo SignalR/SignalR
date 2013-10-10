@@ -16,7 +16,12 @@
         <dd id="arbitraryCode"></dd>
         
         <dt>Report Progress</dt>
-        <dd id="progress">not started</dd>
+        <dd id="progress">
+            <span>not started</span>
+            <div class="progress" style="width: 300px">
+                <div class="bar" style="width: 0"></div>
+            </div>
+        </dd>
 
         <dt>Group Added</dt>
         <dd id="groupAdded"></dd>

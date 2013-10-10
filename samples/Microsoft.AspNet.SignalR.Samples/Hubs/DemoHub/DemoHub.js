@@ -43,13 +43,22 @@
             $('#value').html('The value is ' + value + ' after 5 seconds');
         });
 
-        var $progress = $("#progress");
-        demo.server.reportProgress("Fake job")
+        var $progress = $("#progress"),
+            $progressBar = $progress.find(".bar"),
+            $progressStatus = $progress.find("span"),
+            reportProgress = demo.server.reportProgress("Fake job")
             .progress(function (value) {
-                $progress.html(value + "%");
+                $progressBar.width(value + "%");
+                // Give the CSS animation some time to finish
+                setTimeout(function () {
+                    $progressStatus.html(value + "%");
+                }, 250);
             })
-            .done(function () {
-                $progress.html("Done!");
+            .done(function (result) {
+                setTimeout(function () {
+                    $progressBar.width("100%");
+                    $progressStatus.html(result);
+                }, 250);
             });
 
         var p = {
@@ -61,8 +70,6 @@
         demo.server.complexType(p).done(function () {
             $('#complexType').html('Complex Type ->' + window.JSON.stringify(this.state.person));
         });
-
-        demo.server.multipleCalls();
 
         demo.server.simpleArray([5, 5, 6]).done(function () {
             $('#simpleArray').html('Simple array works!');
@@ -96,7 +103,6 @@
             $('#genericTaskWithException').html(e.toString());
         });
 
-
         demo.server.synchronousException().fail(function (e) {
             $('#synchronousException').html(e.toString());
         });
@@ -123,5 +129,10 @@
         });
 
         demo.server.mispelledClientMethod();
+
+        reportProgress.done(function () {
+            // Don't start this until now because it blocks on the server which holds up the websocket
+            demo.server.multipleCalls()
+        });
     });
 });

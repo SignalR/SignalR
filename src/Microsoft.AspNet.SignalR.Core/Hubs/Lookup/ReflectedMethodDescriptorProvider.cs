@@ -55,35 +55,21 @@ namespace Microsoft.AspNet.SignalR.Hubs
                 .ToDictionary(group => group.Key,
                               group => group.Select(oload =>
                               {
-                                  var oloadParams = oload.GetParameters();
-                                  var lastParameter = oloadParams.LastOrDefault();
+                                  IEnumerable<ParameterInfo> parameters = oload.GetParameters();
+                                  var lastParameter = parameters.LastOrDefault();
                                   Type progressReportingType = null;
-                                  IEnumerable<ParameterDescriptor> parameters;
 
                                   if (lastParameter != null
                                       && lastParameter.ParameterType.IsGenericType
                                       && lastParameter.ParameterType.GetGenericTypeDefinition() == typeof(IProgress<>))
                                   {
+                                      // This method takes an IProgress<T> as the last parameter and thus supports progress reporting
                                       progressReportingType = lastParameter.ParameterType.GenericTypeArguments[0];
+                                      
                                       // Strip the IProgress<T> param from the method descriptor params list
                                       // as we don't want to include it when trying to match methods
-                                      parameters = oloadParams
-                                          .Where(p => !(p.ParameterType.IsGenericType &&
-                                                        p.ParameterType.GetGenericTypeDefinition() == typeof(IProgress<>)))
-                                          .Select(p => new ParameterDescriptor
-                                          {
-                                              Name = p.Name,
-                                              ParameterType = p.ParameterType,
-                                          });
-                                  }
-                                  else
-                                  {
-                                      parameters = oloadParams
-                                          .Select(p => new ParameterDescriptor
-                                          {
-                                              Name = p.Name,
-                                              ParameterType = p.ParameterType,
-                                          });
+                                      parameters = parameters.Where(p => !(p.ParameterType.IsGenericType &&
+                                                                           p.ParameterType.GetGenericTypeDefinition() == typeof(IProgress<>)));
                                   }
 
                                   var method = new MethodDescriptor
@@ -95,7 +81,13 @@ namespace Microsoft.AspNet.SignalR.Hubs
                                       Hub = hub,
                                       Attributes = oload.GetCustomAttributes(typeof(Attribute), inherit: true).Cast<Attribute>(),
                                       ProgressReportingType = progressReportingType,
-                                      Parameters = parameters.ToList()
+                                      Parameters = parameters
+                                        .Select(p => new ParameterDescriptor
+                                        {
+                                            Name = p.Name,
+                                            ParameterType = p.ParameterType,
+                                        })
+                                        .ToList()
                                   };
                                   return method;
                               }),
