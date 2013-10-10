@@ -45,11 +45,11 @@
         /// <param name="connection" type="hubConnection" />
         var callbacks = connection._.invocationCallbacks,
             callback;
-        
+
         if (hasMembers(callbacks)) {
             connection.log("Clearing hub invocation callbacks with error: " + error + ".");
         }
-        
+
         // Reset the callback cache now as we have a local var referencing it
         connection._.invocationCallbackId = 0;
         delete connection._.invocationCallbacks;
@@ -198,7 +198,7 @@
             if (!$.isEmptyObject(that.state)) {
                 data.S = that.state;
             }
-            
+
             connection.send(data);
 
             return d.promise();
@@ -273,7 +273,7 @@
             // We have to handle progress updates first in order to ensure old clients that receive
             // progress updates enter the return value branch and then no-op when they can't find
             // the callback in the map (because the minData.I value will not be a valid callback ID)
-            if (typeof(minData.P) !== "undefined") {
+            if (typeof (minData.P) !== "undefined") {
                 // Process progress notification
                 dataCallbackId = minData.P.I.toString();
                 callback = connection._.invocationCallbacks[dataCallbackId];
@@ -335,7 +335,7 @@
                 // The original data is not a JSON payload so this is not a send error
                 return;
             }
-            
+
             callbackId = data.I;
             callback = connection._.invocationCallbacks[callbackId];
 

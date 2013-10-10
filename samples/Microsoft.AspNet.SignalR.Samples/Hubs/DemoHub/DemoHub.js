@@ -46,20 +46,20 @@
         var $progress = $("#progress"),
             $progressBar = $progress.find(".bar"),
             $progressStatus = $progress.find("span"),
-            reportProgress = demo.server.reportProgress("Fake job")
-            .progress(function (value) {
-                $progressBar.width(value + "%");
-                // Give the CSS animation some time to finish
-                setTimeout(function () {
-                    $progressStatus.html(value + "%");
-                }, 250);
-            })
-            .done(function (result) {
-                setTimeout(function () {
-                    $progressBar.width("100%");
-                    $progressStatus.html(result);
-                }, 250);
-            });
+            reportProgress = demo.server.reportProgress("Long running job")
+                .progress(function (value) {
+                    $progressBar.width(value + "%");
+                    // Give the CSS animation some time to finish
+                    setTimeout(function () {
+                        $progressStatus.html(value + "%");
+                    }, 250);
+                })
+                .done(function (result) {
+                    setTimeout(function () {
+                        $progressBar.width("100%");
+                        $progressStatus.html(result);
+                    }, 250);
+                });
 
         var p = {
             Name: "Foo",
