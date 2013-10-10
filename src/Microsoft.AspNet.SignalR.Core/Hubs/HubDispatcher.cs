@@ -192,16 +192,15 @@ namespace Microsoft.AspNet.SignalR.Hubs
                                        StateChangeTracker tracker)
         {
             // TODO: Make adding parameters here pluggable? IValueProvider? ;)
-            HubInvocationProgress progress = GetProgressInstance(methodDescriptor, value => SendProgressUpdate(tracker, value, hubRequest));
-            //if (progress != null)
-            //{
-            //    parameterValues = parameterValues.Concat(new[] { new JsonWrapper(progress) }).ToArray();
-            //}
-
+            HubInvocationProgress progress = GetProgressInstance(methodDescriptor, value => SendProgressUpdate(hub.Context.ConnectionId, tracker, value, hubRequest));
+            
             Task<object> piplineInvocation;
             try
             {
                 var args = _binder.ResolveMethodParameters(methodDescriptor, parameterValues);
+
+                // We need to add the IProgress<T> instance after resolving the method as the resolution
+                // itself looks for overload matches based on the incoming arg values
                 if (progress != null)
                 {
                     args = args.Concat(new [] { progress }).ToList();
@@ -222,6 +221,7 @@ namespace Microsoft.AspNet.SignalR.Hubs
             {
                 if (progress != null)
                 {
+                    // Stop ability to send any more progress updates
                     progress.SetComplete();
                 }
 
@@ -496,16 +496,18 @@ namespace Microsoft.AspNet.SignalR.Hubs
             }
         }
 
-        private Task SendProgressUpdate(StateChangeTracker tracker, object value, HubRequest request)
+        private Task SendProgressUpdate(string connectionId, StateChangeTracker tracker, object value, HubRequest request)
         {
             var hubResult = new HubResponse
             {
                 State = tracker.GetChanges(),
                 Progress = new { I = request.Id, D = value },
+                // We prefix the ID here to ensure old clients treat this as a hub response
+                // but fail to lookup a corresponding callback and thus no-op
                 Id = "P|" + request.Id,
             };
 
-            return Transport.Send(hubResult); ;
+            return Connection.Send(connectionId, hubResult);
         }
 
         private Task ProcessResponse(StateChangeTracker tracker, object result, HubRequest request, Exception error)
@@ -674,33 +676,7 @@ namespace Microsoft.AspNet.SignalR.Hubs
 
             public void Report(T value)
             {
-                // Send progress update to client
                 DoReport(value);
-            }
-        }
-
-        private class JsonWrapper : IJsonValue
-        {
-            private readonly object _value;
-
-            public JsonWrapper(object value)
-            {
-                _value = value;
-            }
-
-            public object ConvertTo(Type type)
-            {
-                if (CanConvertTo(type))
-                {
-                    return _value;
-                }
-
-                throw new InvalidOperationException();
-            }
-
-            public bool CanConvertTo(Type type)
-            {
-                return _value.GetType().IsAssignableFrom(type);
             }
         }
     }
