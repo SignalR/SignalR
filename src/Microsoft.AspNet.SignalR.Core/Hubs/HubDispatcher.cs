@@ -160,6 +160,7 @@ namespace Microsoft.AspNet.SignalR.Hubs
             IJsonValue[] parameterValues = hubRequest.ParameterValues;
 
             // Resolve the method
+
             MethodDescriptor methodDescriptor = _manager.GetHubMethod(descriptor.Name, hubRequest.Method, parameterValues);
 
             if (methodDescriptor == null)
@@ -191,17 +192,20 @@ namespace Microsoft.AspNet.SignalR.Hubs
                                        StateChangeTracker tracker)
         {
             // TODO: Make adding parameters here pluggable? IValueProvider? ;)
-            HubInvocationProgress progress = GetProgressParameterValue(parameterValues, methodDescriptor);
-            if (progress != null)
-            {
-                parameterValues = parameterValues.Concat(new[] { new JsonWrapper(progress) }).ToArray();
-            }
+            HubInvocationProgress progress = GetProgressInstance(methodDescriptor, value => SendProgressUpdate(tracker, value, hubRequest));
+            //if (progress != null)
+            //{
+            //    parameterValues = parameterValues.Concat(new[] { new JsonWrapper(progress) }).ToArray();
+            //}
 
             Task<object> piplineInvocation;
             try
             {
-
                 var args = _binder.ResolveMethodParameters(methodDescriptor, parameterValues);
+                if (progress != null)
+                {
+                    args = args.Concat(new [] { progress }).ToList();
+                }
 
                 var context = new HubInvokerContext(hub, tracker, methodDescriptor, args);
 
@@ -237,16 +241,12 @@ namespace Microsoft.AspNet.SignalR.Hubs
             .FastUnwrap();
         }
 
-        private static HubInvocationProgress GetProgressParameterValue(IJsonValue[] parameterValues, MethodDescriptor methodDescriptor)
+        private HubInvocationProgress GetProgressInstance(MethodDescriptor methodDescriptor, Func<object, Task> sendProgressFunc)
         {
             HubInvocationProgress progress = null;
-            var lastParameter = methodDescriptor.Parameters.LastOrDefault();
-            if (lastParameter != null
-                && lastParameter.ParameterType.IsGenericType
-                && lastParameter.ParameterType.GetGenericTypeDefinition() == typeof(IProgress<>))
+            if (methodDescriptor.ProgressReportingType != null)
             {
-                var progressType = lastParameter.ParameterType.GenericTypeArguments[0];
-                progress = HubInvocationProgress.Create(progressType);
+                progress = HubInvocationProgress.Create(methodDescriptor.ProgressReportingType, sendProgressFunc);
             }
             return progress;
         }
@@ -496,12 +496,12 @@ namespace Microsoft.AspNet.SignalR.Hubs
             }
         }
 
-        private Task SendProgressUpdate(StateChangeTracker tracker, object progress, HubRequest request)
+        private Task SendProgressUpdate(StateChangeTracker tracker, object value, HubRequest request)
         {
             var hubResult = new HubResponse
             {
                 State = tracker.GetChanges(),
-                Progress = progress,
+                Progress = new { I = request.Id, D = value },
                 Id = "P|" + request.Id,
             };
 
@@ -603,63 +603,79 @@ namespace Microsoft.AspNet.SignalR.Hubs
 
         private class HubInvocationProgress
         {
-            private static readonly ConcurrentDictionary<Type, Func<HubInvocationProgress>> _progressCreateCache = new ConcurrentDictionary<Type, Func<HubInvocationProgress>>();
+            private static readonly ConcurrentDictionary<Type, Func<Func<object, Task>, HubInvocationProgress>> _progressCreateCache = new ConcurrentDictionary<Type, Func<Func<object, Task>, HubInvocationProgress>>();
 
-            private long _complete = 0;
+            private volatile bool _complete = false;
 
-            public static HubInvocationProgress Create(Type progressGenericType)
+            private readonly object _statusLocker = new object();
+
+            private readonly Func<object, Task> _sendProgressFunc;
+
+            protected HubInvocationProgress(Func<object, Task> sendProgressFunc)
             {
-                Func<HubInvocationProgress> createDelegate;
+                _sendProgressFunc = sendProgressFunc;
+            }
+
+            public static HubInvocationProgress Create(Type progressGenericType, Func<object, Task> sendProgressFunc)
+            {
+                Func<Func<object, Task>, HubInvocationProgress> createDelegate;
                 if (!_progressCreateCache.TryGetValue(progressGenericType, out createDelegate))
                 {
-                    var createMethod = typeof(HubInvocationProgress).GetMethod("Create", new Type[0]).MakeGenericMethod(progressGenericType);
-                    createDelegate = (Func<HubInvocationProgress>)createMethod.CreateDelegate(typeof(Func<HubInvocationProgress>));
+                    var createMethodInfo = typeof(HubInvocationProgress)
+                        .GetMethod("Create", new [] { typeof(Func<object, Task>) })
+                        .MakeGenericMethod(progressGenericType);
+
+                    createDelegate = (Func<Func<object, Task>, HubInvocationProgress>)createMethodInfo.CreateDelegate(typeof(Func<Func<object, Task>, HubInvocationProgress>));
+                    
                     _progressCreateCache[progressGenericType] = createDelegate;
                 }
-                var progress = createDelegate.Invoke();
+                var progress = createDelegate.Invoke(sendProgressFunc);
                 return progress;
             }
 
-            public HubInvocationProgress<T> Create<T>()
+            public static HubInvocationProgress<T> Create<T>(Func<object, Task> sendProgressFunc)
             {
-                return new HubInvocationProgress<T>();
+                return new HubInvocationProgress<T>(sendProgressFunc);
             }
 
             public void SetComplete()
             {
-                Interlocked.Exchange(ref _complete, 1);
+                lock (_statusLocker)
+                {
+                    _complete = true;
+                }
             }
 
-            protected bool IsComplete
+            protected void DoReport(object value)
             {
-                get
+                Task progressTask;
+                lock (_statusLocker)
                 {
-                    return Interlocked.Read(ref _complete) == 1;
+                    if (_complete)
+                    {
+                        throw new InvalidOperationException("You cannot report progress on a hub method invocation that has already completed.");
+                    }
+
+                    // Send progress update to client
+                    progressTask = _sendProgressFunc(value);
                 }
+
+                // TODO: Do we need to do anything here? Trace/swallow exceptions, etc.
             }
         }
 
         private class HubInvocationProgress<T> : HubInvocationProgress, IProgress<T>
         {
-            public HubInvocationProgress()
+            public HubInvocationProgress(Func<object, Task> sendProgressFunc)
+                : base(sendProgressFunc)
             {
 
-            }
-
-            public static HubInvocationProgress<T> Create()
-            {
-                return new HubInvocationProgress<T>();
             }
 
             public void Report(T value)
             {
-                if (IsComplete)
-                {
-                    throw new InvalidOperationException("You cannot report progress on a hub method invocation that has already completed.");
-                }
-
                 // Send progress update to client
-
+                DoReport(value);
             }
         }
 

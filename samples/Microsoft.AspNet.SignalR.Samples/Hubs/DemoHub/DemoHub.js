@@ -43,6 +43,15 @@
             $('#value').html('The value is ' + value + ' after 5 seconds');
         });
 
+        var $progress = $("#progress");
+        demo.server.reportProgress("Fake job")
+            .progress(function (value) {
+                $progress.html(value + "%");
+            })
+            .done(function () {
+                $progress.html("Done!");
+            });
+
         var p = {
             Name: "Foo",
             Age: 20,

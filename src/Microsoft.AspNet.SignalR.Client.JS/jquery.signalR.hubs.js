@@ -167,7 +167,12 @@
                     // Update the hub state
                     $.extend(that.state, result.State);
 
-                    if (result.Error) {
+                    if (result.Progress) {
+                        if (d.notifyWith) {
+                            // Progress is only supported in jQuery 1.7+
+                            d.notifyWith(that, [result.Progress.Data]);
+                        }
+                    } else if (result.Error) {
                         // Server hub method threw an exception, log it & reject the deferred
                         if (result.StackTrace) {
                             connection.log(result.Error + "\n" + result.StackTrace + ".");
@@ -201,6 +206,10 @@
             return {
                 State: minHubResponse.S,
                 Result: minHubResponse.R,
+                Progress: minHubResponse.P ? {
+                    Id: minHubResponse.P.I,
+                    Data: minHubResponse.P.D
+                } : null,
                 Id: minHubResponse.I,
                 IsHubException: minHubResponse.H,
                 Error: minHubResponse.E,
@@ -259,9 +268,16 @@
                 return;
             }
 
+            // We have to handle progress updates first in order to ensure old clients that receive
+            // progress updates enter the return value branch and then no-op when they can't find
+            // the callback in the map (because the minData.I value will not be a valid callback ID)
             if (typeof(minData.P) !== "undefined") {
                 // Process progress notification
-
+                dataCallbackId = minData.P.I.toString();
+                callback = connection._.invocationCallbacks[dataCallbackId];
+                if (callback) {
+                    callback.method.call(callback.scope, minData);
+                }
             } else if (typeof (minData.I) !== "undefined") {
                 // We received the return value from a server method invocation, look up callback by id and call it
                 dataCallbackId = minData.I.toString();
