@@ -69,6 +69,11 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
             // Wait for a bit before reconnecting
             TaskAsyncHelper.Delay(ReconnectDelay).Then(() =>
             {
+                if (!TransportHelper.VerifyReconnect(connection))
+                {
+                    return;
+                }
+
                 // FIX: Race if Connection is stopped and completely restarted between checking the token and calling
                 //      connection.EnsureReconnecting()
                 if (!disconnectToken.IsCancellationRequested && connection.EnsureReconnecting())

@@ -61,13 +61,11 @@ namespace Microsoft.AspNet.SignalR.Tests
             {
                 // Arrange
                 var mre = new ManualResetEventSlim(false);
-                host.Initialize(keepAlive: null, messageBusType: messageBusType);
+                host.Initialize(keepAlive: 5, messageBusType: messageBusType);
                 var connection = CreateConnection(host, "/my-reconnect");
 
                 using (connection)
                 {
-                    ((Client.IConnection)connection).KeepAliveData = new KeepAliveData(TimeSpan.FromSeconds(2));
-
                     connection.Reconnected += () =>
                     {
                         mre.Set();
@@ -75,12 +73,14 @@ namespace Microsoft.AspNet.SignalR.Tests
 
                     connection.Start(host.Transport).Wait();
 
+                    ((Client.IConnection)connection).KeepAliveData = new KeepAliveData(TimeSpan.FromMilliseconds(500));
+
                     // Assert that Reconnected is called
-                    Assert.True(mre.Wait(TimeSpan.FromSeconds(10)));
+                    Assert.True(mre.Wait(TimeSpan.FromSeconds(15)));
 
                     // Assert that Reconnected is called again
                     mre.Reset();
-                    Assert.True(mre.Wait(TimeSpan.FromSeconds(10)));
+                    Assert.True(mre.Wait(TimeSpan.FromSeconds(15)));
 
                     // Clean-up
                     mre.Dispose();
@@ -107,7 +107,7 @@ namespace Microsoft.AspNet.SignalR.Tests
 
                 using (connection)
                 {
-                    ((Client.IConnection)connection).KeepAliveData = new KeepAliveData(TimeSpan.FromSeconds(2));
+                    ((Client.IConnection)connection).KeepAliveData = new KeepAliveData(TimeSpan.FromSeconds(21), TimeSpan.FromSeconds(7), TimeSpan.FromSeconds(5));
 
                     connection.ConnectionSlow += () =>
                     {
@@ -117,7 +117,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                     connection.Start(host.Transport).Wait();
 
                     // Assert
-                    Assert.True(mre.Wait(TimeSpan.FromSeconds(10)));
+                    Assert.True(mre.Wait(TimeSpan.FromSeconds(15)));
 
                     // Clean-up
                     mre.Dispose();
