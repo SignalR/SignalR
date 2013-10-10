@@ -164,11 +164,18 @@ namespace Microsoft.AspNet.SignalR.Hosting.Memory
 
             _appFunc(env).ContinueWith(task =>
             {
-                object statusCode;
-                if (env.TryGetValue(OwinConstants.ResponseStatusCode, out statusCode) &&
-                    (int)statusCode == 403)
+                object statusCodeObj;
+                if (env.TryGetValue(OwinConstants.ResponseStatusCode, out statusCodeObj))
                 {
-                    tcs.TrySetException(new InvalidOperationException("Forbidden"));
+                    var statusCode = (int)statusCodeObj;
+                    if (statusCode == 403)
+                    {
+                        tcs.TrySetException(new InvalidOperationException("Forbidden"));
+                    }
+                    else if (statusCode == 500)
+                    {
+                        tcs.TrySetException(new InvalidOperationException());
+                    }
                 }
                 else if (task.IsFaulted)
                 {

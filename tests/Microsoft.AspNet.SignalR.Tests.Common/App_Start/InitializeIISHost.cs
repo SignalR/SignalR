@@ -123,7 +123,7 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure.IIS
                     var path = env["owin.RequestPath"];
                     if (path.ToString().Contains("poll"))
                     {
-                        env["owin.StatusCode"] = 500;
+                        env["owin.ResponseStatusCode"] = 500;
                         return TaskAsyncHelper.Empty;
                     }
                     return next(env);

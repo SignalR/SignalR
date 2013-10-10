@@ -323,7 +323,7 @@ namespace Microsoft.AspNet.SignalR.Client.Tests
                                     connectionTimeout: 2,
                                     disconnectTimeout: 6);
 
-                    var connection = CreateHubConnection(host, "/force-lp-reconnect");
+                    var connection = CreateHubConnection(host, host.Url + "/force-lp-reconnect/examine-reconnect");
                     var reconnectingWh = new ManualResetEventSlim();
                     var reconnectedWh = new ManualResetEventSlim();
 
