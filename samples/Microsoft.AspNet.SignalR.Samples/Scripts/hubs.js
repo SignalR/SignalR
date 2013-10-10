@@ -248,6 +248,12 @@
                 return proxies.demo.invoke.apply(proxies.demo, $.merge(["ReadStateValue"], $.makeArray(arguments)));
              },
 
+            reportProgress: function (jobName) {
+            /// <summary>Calls the ReportProgress method on the server-side demo hub.&#10;Returns a jQuery.Deferred() promise.</summary>
+            /// <param name=\"jobName\" type=\"String\">Server side type is System.String</param>
+                return proxies.demo.invoke.apply(proxies.demo, $.merge(["ReportProgress"], $.makeArray(arguments)));
+             },
+
             returnLargePayload: function () {
             /// <summary>Calls the ReturnLargePayload method on the server-side demo hub.&#10;Returns a jQuery.Deferred() promise.</summary>
                 return proxies.demo.invoke.apply(proxies.demo, $.merge(["ReturnLargePayload"], $.makeArray(arguments)));

@@ -15,6 +15,9 @@
         <dt>Arbitrary Code</dt>
         <dd id="arbitraryCode"></dd>
         
+        <dt>Report Progress</dt>
+        <dd id="progress">not started</dd>
+
         <dt>Group Added</dt>
         <dd id="groupAdded"></dd>
         
