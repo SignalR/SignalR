@@ -7,7 +7,7 @@ namespace Microsoft.AspNet.SignalR
     /// <summary>
     /// Provides methods that communicate with SignalR connections that connected to a <see cref="Hub"/>.
     /// </summary>
-    public abstract class Hub<T> : HubBase
+    public abstract class Hub<T> : HubBase where T : class
     {
         /// <summary>
         /// 
