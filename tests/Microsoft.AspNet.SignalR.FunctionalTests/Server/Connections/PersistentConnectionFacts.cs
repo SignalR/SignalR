@@ -262,7 +262,7 @@ namespace Microsoft.AspNet.SignalR.Tests
             [InlineData(HostType.Memory, TransportType.LongPolling)]
             [InlineData(HostType.IISExpress, TransportType.Websockets)]
             [InlineData(HostType.IISExpress, TransportType.ServerSentEvents)]
-            // [InlineData(HostType.IISExpress, TransportType.LongPolling)]
+            [InlineData(HostType.IISExpress, TransportType.LongPolling)]
             public void ReconnectFiresAfterHostShutDown(HostType hostType, TransportType transportType)
             {
                 using (var host = CreateHost(hostType, transportType))
@@ -283,9 +283,9 @@ namespace Microsoft.AspNet.SignalR.Tests
             }
 
             [Theory]
-            [InlineData(TransportType.ServerSentEvents)]
-            [InlineData(TransportType.LongPolling)]
-            public void ReconnectFiresAfterTimeOut(TransportType transportType)
+            [InlineData(TransportType.LongPolling, MessageBusType.Default)]
+            [InlineData(TransportType.LongPolling, MessageBusType.Fake)]
+            public void ReconnectDoesntFireAfterTimeOut(TransportType transportType, MessageBusType messageBusType)
             {
                 using (var host = new MemoryHost())
                 {
@@ -314,7 +314,7 @@ namespace Microsoft.AspNet.SignalR.Tests
 
                     connection.Stop();
 
-                    Assert.InRange(conn.Reconnects, 1, 4);
+                    Assert.Equal(0, conn.Reconnects);
                 }
             }
         }
