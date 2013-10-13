@@ -1,6 +1,5 @@
 ﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.md in the project root for license information.
 
-using System;
 using System.Collections.Generic;
 
 namespace Microsoft.AspNet.SignalR.Hubs
@@ -20,5 +19,7 @@ namespace Microsoft.AspNet.SignalR.Hubs
         T Groups(IList<string> groupNames, params string[] excludeConnectionIds);
 
         T User(string userId);
+
+        T Users(IList<string> userIds);
     }
 }
