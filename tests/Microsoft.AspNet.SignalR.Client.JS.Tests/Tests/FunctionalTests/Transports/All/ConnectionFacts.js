@@ -69,6 +69,36 @@ testUtilities.runWithAllTransports(function (transport) {
         });
     }
 
+    QUnit.asyncTimeoutTest(transport + ": Reconnect exceeding the reconnect window results in the connection disconnecting.", testUtilities.defaultTestTimeout * 2, function (end, assert, testName) {
+        var connection = testUtilities.createHubConnection(end, assert, testName, undefined, false);
+
+        connection.reconnecting(function () {
+            assert.comment("Reconnecting fired.");
+        });
+
+        connection.disconnected(function () {
+            assert.comment("Disconnected fired.");
+            end();
+        });
+
+        connection.start({ transport: transport }).done(function () {
+            connection._.beatInterval = 5000;
+
+            // Wait for the transports to settle (no messages flowing)
+            setTimeout(function () {
+                connection.reconnectWindow = 0;
+                $.network.disconnect();
+                $.network.connect();
+            }, 1000);
+        });
+
+        // Cleanup
+        return function () {
+            $.network.connect();
+            connection.stop();
+        };
+    });
+
     // Can't run this for long polling because it still uses a ping server to begin its connection
     if (transport !== "longPolling") {
         QUnit.asyncTimeoutTest(transport + ": Ping interval behaves appropriately.", testUtilities.defaultTestTimeout * 2, function (end, assert, testName) {
@@ -99,7 +129,7 @@ testUtilities.runWithAllTransports(function (transport) {
                             }, 900);
                         });
                     }, 1500);
-                }, 2500);
+                }, 3000);
             });
 
             // Cleanup

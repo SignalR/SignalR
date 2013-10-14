@@ -249,11 +249,16 @@
             this.url = url;
             this.qs = qs;
             this._ = {
+                keepAliveData: {},
                 negotiateAbortText: "__Negotiate Aborted__",
                 pingIntervalId: null,
                 pingInterval: 300000,
                 pollTimeoutId: null,
-                reconnectTimeoutId: null
+                reconnectTimeoutId: null,
+                lastMessageAt: new Date().getTime(),
+                lastActiveAt: new Date().getTime(),
+                beatInterval: 5000, // Default value, will only be overridden if keep alive is enabled
+                beatHandle: null
             };
             if (typeof (logging) === "boolean") {
                 this.logging = logging;
@@ -292,11 +297,11 @@
 
         state: signalR.connectionState.disconnected,
 
-        keepAliveData: {},
-
         reconnectDelay: 2000,
 
         disconnectTimeout: 30000, // This should be set by the server in response to the negotiate request (30s default)
+
+        reconnectWindow: 30000, // This should be set by the server in response to the negotiate request
 
         keepAliveWarnAt: 2 / 3, // Warn user of slow connection if we breach the X% mark of the keep alive timeout
 
@@ -464,9 +469,11 @@
                         return;
                     }
 
-                    if (transport.supportsKeepAlive && connection.keepAliveData.activated) {
+                    if (transport.supportsKeepAlive && connection._.keepAliveData.activated) {
                         signalR.transports._logic.monitorKeepAlive(connection);
                     }
+
+                    signalR.transports._logic.startHeartbeat(connection);
 
                     // Used to ensure low activity clients maintain their authentication.
                     // Must be configured once a transport has been decided to perform valid ping requests.
@@ -528,7 +535,7 @@
                         }
                     },
                     success: function (res) {
-                        var keepAliveData = connection.keepAliveData;
+                        var keepAliveData = connection._.keepAliveData;
 
                         connection.appRelativeUrl = res.Url;
                         connection.id = res.ConnectionId;
@@ -552,7 +559,7 @@
                             keepAliveData.timeoutWarning = keepAliveData.timeout * connection.keepAliveWarnAt;
 
                             // Instantiate the frequency in which we check the keep alive.  It must be short in order to not miss/pick up any changes
-                            keepAliveData.checkInterval = (keepAliveData.timeout - keepAliveData.timeoutWarning) / 3;
+                            connection._.beatInterval = (keepAliveData.timeout - keepAliveData.timeoutWarning) / 3;
                         }
                         else {
                             keepAliveData.activated = false;
@@ -749,6 +756,7 @@
             try {
                 connection.log("Stopping connection.");
 
+                window.clearTimeout(connection._.beatHandle);
                 window.clearInterval(connection._.pingIntervalId);
 
                 if (connection.transport) {
@@ -756,7 +764,7 @@
                         connection.transport.abort(connection, async);
                     }
 
-                    if (connection.transport.supportsKeepAlive && connection.keepAliveData.activated) {
+                    if (connection.transport.supportsKeepAlive && connection._.keepAliveData.activated) {
                         signalR.transports._logic.stopMonitoringKeepAlive(connection);
                     }
 
@@ -777,6 +785,7 @@
                 delete connection.groupsToken;
                 delete connection.id;
                 delete connection._.pingIntervalId;
+                delete connection._.lastMessageAt;
             }
             finally {
                 changeState(connection, connection.state, signalR.connectionState.disconnected);
