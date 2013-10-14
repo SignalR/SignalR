@@ -241,7 +241,7 @@ namespace Microsoft.AspNet.SignalR.Hubs
             .FastUnwrap();
         }
 
-        private HubInvocationProgress GetProgressInstance(MethodDescriptor methodDescriptor, Func<object, Task> sendProgressFunc)
+        private static HubInvocationProgress GetProgressInstance(MethodDescriptor methodDescriptor, Func<object, Task> sendProgressFunc)
         {
             HubInvocationProgress progress = null;
             if (methodDescriptor.ProgressReportingType != null)
@@ -650,7 +650,6 @@ namespace Microsoft.AspNet.SignalR.Hubs
 
             protected void DoReport(object value)
             {
-                Task progressTask;
                 lock (_statusLocker)
                 {
                     if (_complete)
@@ -659,10 +658,9 @@ namespace Microsoft.AspNet.SignalR.Hubs
                     }
 
                     // Send progress update to client
-                    progressTask = _sendProgressFunc(value);
+                    _sendProgressFunc(value);
+                    // TODO: Do we need to do anything here? Trace/swallow exceptions, etc.
                 }
-
-                // TODO: Do we need to do anything here? Trace/swallow exceptions, etc.
             }
         }
 
