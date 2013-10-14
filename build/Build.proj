@@ -66,7 +66,7 @@
       <RunFxCop>true</RunFxCop>
       <Sample>false</Sample>
       <BuildTargets>Build</BuildTargets>
-      <BuildProperties>Configuration=$(Configuration);ArtifactsDir=$(ProjectArtifactsDir);SolutionDir=$(ProjectRoot)\;$(ExtraProperties)</BuildProperties>
+      <BuildProperties>VisualStudioVersion=$(VisualStudioVersion);Configuration=$(Configuration);ArtifactsDir=$(ProjectArtifactsDir);SolutionDir=$(ProjectRoot)\;$(ExtraProperties)</BuildProperties>
       <CopyArtifacts>true</CopyArtifacts>
       <Platform>Net45</Platform>
     </Projects>
@@ -371,7 +371,7 @@
     <Copy SourceFiles="@(JavaScript)" DestinationFiles="$(PackageSrcDir)\Content\%(VersionedFileName)" />
   </Target>
 
-  <Target Name="RunCodeAnalysis" DependsOnTargets="CreateOutputDirs" Condition="Exists('$(MSBuildExtensionsPath)\Microsoft\VisualStudio\v11.0\CodeAnalysis\fxcoptask.dll')">
+  <Target Name="RunCodeAnalysis" DependsOnTargets="CreateOutputDirs" Condition="Exists('$(MSBuildExtensionsPath)\Microsoft\VisualStudio\v$(VisualStudioVersion)\CodeAnalysis\fxcoptask.dll')">
     <ItemGroup>
       <ProjectsToAnalyze Include="@(Projects)" Condition="%(Build) And %(RunFxCop) And !%(Sample)">
         <BuildProperties>%(BuildProperties);RunCodeAnalysis=true</BuildProperties>
