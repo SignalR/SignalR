@@ -141,8 +141,15 @@ namespace Microsoft.AspNet.SignalR.Tests
             }
         }
 
-        [Fact]
-        public async Task CanSendToMultipleUsers()
+        [Theory]
+        [InlineData("SendToSome")]
+        [InlineData("SendToSomeTyped")]
+        public Task CanSendToMultipleUsers(string hubName)
+        {
+            return SendToMultipleUsers(hubName);
+        }
+
+        private async Task SendToMultipleUsers(string hubName)
         {
             using (var host = new MemoryHost())
             {
@@ -157,8 +164,8 @@ namespace Microsoft.AspNet.SignalR.Tests
                 using (connection1)
                 using (connection2)
                 {
-                    var proxy1 = connection1.CreateHubProxy("SendToSome");
-                    var proxy2 = connection2.CreateHubProxy("SendToSome");
+                    var proxy1 = connection1.CreateHubProxy(hubName);
+                    var proxy2 = connection2.CreateHubProxy(hubName);
 
                     proxy1.On("send", wh1.Set);
                     proxy1.On("send", wh2.Set);
@@ -2309,6 +2316,13 @@ namespace Microsoft.AspNet.SignalR.Tests
             return hubContext;
         }
 
+        public class SendToSomeTyped : Hub<IBasicClient>
+        {
+            public Task SendToUsers(IList<string> userIds)
+            {
+                return Clients.Users(userIds).Send();
+            }
+        }
 
         public class SendToSome : Hub
         {
@@ -2472,6 +2486,11 @@ namespace Microsoft.AspNet.SignalR.Tests
             public int Index { get; set; }
             public string Name { get; set; }
             public string Room { get; set; }
+        }
+
+        public interface IBasicClient
+        {
+            Task Send();
         }
     }
 }
