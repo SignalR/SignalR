@@ -141,6 +141,46 @@ namespace Microsoft.AspNet.SignalR.Tests
             }
         }
 
+        [Theory]
+        [InlineData("SendToSome")]
+        [InlineData("SendToSomeTyped")]
+        public Task CanSendToMultipleUsers(string hubName)
+        {
+            return SendToMultipleUsers(hubName);
+        }
+
+        private async Task SendToMultipleUsers(string hubName)
+        {
+            using (var host = new MemoryHost())
+            {
+                InitializeUserByQuerystring(host);
+
+                var wh1 = new AsyncManualResetEvent();
+                var wh2 = new AsyncManualResetEvent();
+
+                var connection1 = GetUserConnection("myUser");
+                var connection2 = GetUserConnection("myUser2");
+
+                using (connection1)
+                using (connection2)
+                {
+                    var proxy1 = connection1.CreateHubProxy(hubName);
+                    var proxy2 = connection2.CreateHubProxy(hubName);
+
+                    proxy1.On("send", wh1.Set);
+                    proxy1.On("send", wh2.Set);
+
+                    await connection1.Start(host);
+                    await connection2.Start(host);
+
+                    await proxy1.Invoke("SendToUsers", new List<string> { "myUser", "myUser2" });
+
+                    Assert.True(await wh1.WaitAsync(TimeSpan.FromSeconds(5)));
+                    Assert.True(await wh2.WaitAsync(TimeSpan.FromSeconds(5)));
+                }
+            }
+        }
+
         [Fact]
         public async Task CanSendViaUser()
         {
@@ -331,7 +371,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                     }
 
                     await Task.Delay(TimeSpan.FromSeconds(2));
-                    
+
                     Debug.WriteLine(String.Join(", ", results));
 
                     Assert.Equal(3, results.Count);
@@ -354,7 +394,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                     Assert.True(results[2].Headers.Count > 0);
                     Assert.True(results[2].Query.Count > 0);
                     Assert.True(results[2].OwinKeys.Length > 0);
-                    
+
                     connection2.Stop();
                 }
             }
@@ -1229,7 +1269,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                         user.Index = i;
                         proxy.InvokeWithTimeout("joinRoom", user);
                     }
-                    
+
                     Assert.True(countDown.Wait(TimeSpan.FromSeconds(30)), "Didn't receive " + max + " messages. Got " + (max - countDown.Count) + " missed " + String.Join(",", countDown.Left.Select(i => i.ToString())));
                     Assert.True(countDownAfterReconnect.Wait(TimeSpan.FromSeconds(30)), "Didn't receive " + max + " messages. Got " + (max - countDownAfterReconnect.Count) + " missed " + String.Join(",", countDownAfterReconnect.Left.Select(i => i.ToString())));
                 }
@@ -1909,35 +1949,11 @@ namespace Microsoft.AspNet.SignalR.Tests
         {
             using (var host = new MemoryHost())
             {
-                IHubContext hubContext = null;
-                host.Configure(app =>
-                {
-                    var configuration = new HubConfiguration
-                    {
-                        Resolver = new DefaultDependencyResolver()
-                    };
-
-                    var provider = new Mock<IUserIdProvider>();
-                    provider.Setup(m => m.GetUserId(It.IsAny<IRequest>()))
-                            .Returns<IRequest>(request =>
-                            {
-                                return request.QueryString["name"];
-                            });
-
-                    configuration.Resolver.Register(typeof(IUserIdProvider), () => provider.Object);
-
-                    app.MapSignalR(configuration);
-                    hubContext = configuration.Resolver.Resolve<IConnectionManager>().GetHubContext("SendToSome");
-                });
-
-                var qs = new Dictionary<string, string>
-                {
-                    { "name", "myuser" }
-                };
+                IHubContext hubContext = InitializeUserByQuerystring(host);
 
                 var wh = new AsyncManualResetEvent();
 
-                using (var connection = new HubConnection("http://memoryhost", qs))
+                using (var connection = GetUserConnection("myuser"))
                 {
                     var hub = connection.CreateHubProxy("SendToSome");
 
@@ -1948,6 +1964,39 @@ namespace Microsoft.AspNet.SignalR.Tests
                     await hubContext.Clients.User("myuser").send();
 
                     Assert.True(await wh.WaitAsync(TimeSpan.FromSeconds(10)));
+                }
+            }
+        }
+
+        [Fact]
+        public async Task SendToUsersFromOutsideOfHub()
+        {
+            using (var host = new MemoryHost())
+            {
+                IHubContext hubContext = InitializeUserByQuerystring(host);
+
+                var wh1 = new AsyncManualResetEvent();
+                var wh2 = new AsyncManualResetEvent();
+
+                var connection1 = GetUserConnection("myuser");
+                var connection2 = GetUserConnection("myuser2");
+
+                using (connection1)
+                using (connection2)
+                {
+                    var proxy1 = connection1.CreateHubProxy("SendToSome");
+                    var proxy2 = connection2.CreateHubProxy("SendToSome");
+
+                    await connection1.Start(host);
+                    await connection2.Start(host);
+
+                    proxy1.On("send", wh1.Set);
+                    proxy2.On("send", wh2.Set);
+
+                    await hubContext.Clients.Users(new List<string> { "myuser", "myuser2" }).send();
+
+                    Assert.True(await wh1.WaitAsync(TimeSpan.FromSeconds(10)));
+                    Assert.True(await wh2.WaitAsync(TimeSpan.FromSeconds(10)));
                 }
             }
         }
@@ -1983,7 +2032,7 @@ namespace Microsoft.AspNet.SignalR.Tests
 
                     await hubContext.Groups.Add(connection1.ConnectionId, "Foo");
                     hubContext.Clients.Groups(new[] { "Foo" }).send();
-                    
+
                     Assert.True(await wh1.WaitAsync(TimeSpan.FromSeconds(10)));
                 }
             }
@@ -2231,12 +2280,60 @@ namespace Microsoft.AspNet.SignalR.Tests
                 }
             }
         }
+        private HubConnection GetUserConnection(string userName)
+        {
+            var qs = new Dictionary<string, string>
+            {
+                { "name", userName }
+            };
+
+            return new HubConnection("http://memoryhost", qs);
+        }
+
+        private static IHubContext InitializeUserByQuerystring(MemoryHost host)
+        {
+            IHubContext hubContext = null;
+            host.Configure(app =>
+            {
+                var configuration = new HubConfiguration
+                {
+                    Resolver = new DefaultDependencyResolver()
+                };
+
+                var provider = new Mock<IUserIdProvider>();
+                provider.Setup(m => m.GetUserId(It.IsAny<IRequest>()))
+                        .Returns<IRequest>(request =>
+                        {
+                            return request.QueryString["name"];
+                        });
+
+                configuration.Resolver.Register(typeof(IUserIdProvider), () => provider.Object);
+
+                app.MapSignalR(configuration);
+                hubContext = configuration.Resolver.Resolve<IConnectionManager>().GetHubContext("SendToSome");
+            });
+
+            return hubContext;
+        }
+
+        public class SendToSomeTyped : Hub<IBasicClient>
+        {
+            public Task SendToUsers(IList<string> userIds)
+            {
+                return Clients.Users(userIds).Send();
+            }
+        }
 
         public class SendToSome : Hub
         {
             public Task SendToUser(string userId)
             {
                 return Clients.User(userId).send();
+            }
+
+            public Task SendToUsers(IList<string> userIds)
+            {
+                return Clients.Users(userIds).send();
             }
 
             public Task SendToAllButCaller()
@@ -2389,6 +2486,11 @@ namespace Microsoft.AspNet.SignalR.Tests
             public int Index { get; set; }
             public string Name { get; set; }
             public string Room { get; set; }
+        }
+
+        public interface IBasicClient
+        {
+            Task Send();
         }
     }
 }

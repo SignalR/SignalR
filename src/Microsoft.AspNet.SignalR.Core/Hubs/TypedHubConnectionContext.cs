@@ -76,5 +76,10 @@ namespace Microsoft.AspNet.SignalR.Hubs
         {
             return TypedClientBuilder<T>.Build(_dynamicContext.User(userId));
         }
+
+        public T Users(IList<string> userIds)
+        {
+            return TypedClientBuilder<T>.Build(_dynamicContext.Users(userIds));
+        }
     }
 }
