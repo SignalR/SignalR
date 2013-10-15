@@ -66,7 +66,7 @@
       <RunFxCop>true</RunFxCop>
       <Sample>false</Sample>
       <BuildTargets>Build</BuildTargets>
-      <BuildProperties>VisualStudioVersion=$(VisualStudioVersion);Configuration=$(Configuration);ArtifactsDir=$(ProjectArtifactsDir);SolutionDir=$(ProjectRoot)\;$(ExtraProperties)</BuildProperties>
+      <BuildProperties>Configuration=$(Configuration);ArtifactsDir=$(ProjectArtifactsDir);SolutionDir=$(ProjectRoot)\;$(ExtraProperties)</BuildProperties>
       <CopyArtifacts>true</CopyArtifacts>
       <Platform>Net45</Platform>
     </Projects>
