@@ -71,7 +71,6 @@ namespace Microsoft.AspNet.SignalR.Client.Hubs
             return Invoke<object>(method, args);
         }
 
-        [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "Exceptions are flown to the caller")]
         public Task<T> Invoke<T>(string method, params object[] args)
         {
             return Invoke<T, object>(method, /* onProgress */ null, args);
@@ -82,6 +81,7 @@ namespace Microsoft.AspNet.SignalR.Client.Hubs
             return Invoke<object, T>(method, onProgress, args);
         }
 
+        [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "Exceptions are flown to the caller")]
         public Task<TResult> Invoke<TResult, TProgress>(string method, Action<TProgress> onProgress, params object[] args)
         {
             if (method == null)
