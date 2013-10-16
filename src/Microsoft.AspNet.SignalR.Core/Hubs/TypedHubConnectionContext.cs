@@ -21,6 +21,14 @@ namespace Microsoft.AspNet.SignalR.Hubs
             }
         }
 
+        public dynamic CallerState
+        {
+            get
+            {
+                return _dynamicContext.CallerState;
+            }
+        }
+
         public T Others
         {
             get

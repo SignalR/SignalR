@@ -413,6 +413,10 @@
       <Project>{efcf27ec-cb9b-4f3a-91be-154b8ab5b5e0}</Project>
       <Name>Microsoft.AspNet.SignalR.SqlServer</Name>
     </ProjectReference>
+    <ProjectReference Include="..\Microsoft.AspNet.SignalR.Samples.VB\Microsoft.AspNet.SignalR.Samples.VB.vbproj">
+      <Project>{44ffd296-2fc1-4159-80ac-4f6c8ae9887c}</Project>
+      <Name>Microsoft.AspNet.SignalR.Samples.VB</Name>
+    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <Content Include="SignalR.Master" />

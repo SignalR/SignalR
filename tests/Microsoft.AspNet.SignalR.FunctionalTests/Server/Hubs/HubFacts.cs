@@ -63,6 +63,43 @@ namespace Microsoft.AspNet.SignalR.Tests
         [InlineData(HostType.IISExpress, TransportType.Websockets, MessageBusType.Default)]
         [InlineData(HostType.HttpListener, TransportType.ServerSentEvents, MessageBusType.Default)]
         [InlineData(HostType.HttpListener, TransportType.Websockets, MessageBusType.Default)]
+        public async Task ReadingStateFromVB(HostType hostType, TransportType transportType, MessageBusType messageBusType)
+        {
+            // Force the VB Sample assembly to be loaded into the current AppDomain for MemoryHost
+            var foo = new Microsoft.AspNet.SignalR.Samples.VB.VBDemoHub();
+
+            using (var host = CreateHost(hostType, transportType))
+            {
+                host.Initialize(messageBusType: messageBusType);
+
+                HubConnection connection = CreateHubConnection(host);
+
+                using (connection)
+                {
+                    var hub = connection.CreateHubProxy("VBDemo");
+
+                    await connection.Start(host.Transport);
+
+                    var originalMessage = hub.InvokeWithTimeout<string>("ReadStateValue");
+
+                    hub["message"] = "test VB.NET";
+
+                    var newMessage = hub.InvokeWithTimeout<string>("ReadStateValue");
+
+                    Assert.Equal("Why?", originalMessage);
+                    Assert.Equal("test VB.NET", newMessage);
+                }
+            }
+        }
+
+        [Theory]
+        [InlineData(HostType.Memory, TransportType.ServerSentEvents, MessageBusType.Default)]
+        [InlineData(HostType.Memory, TransportType.ServerSentEvents, MessageBusType.Fake)]
+        [InlineData(HostType.Memory, TransportType.ServerSentEvents, MessageBusType.FakeMultiStream)]
+        [InlineData(HostType.IISExpress, TransportType.ServerSentEvents, MessageBusType.Default)]
+        [InlineData(HostType.IISExpress, TransportType.Websockets, MessageBusType.Default)]
+        [InlineData(HostType.HttpListener, TransportType.ServerSentEvents, MessageBusType.Default)]
+        [InlineData(HostType.HttpListener, TransportType.Websockets, MessageBusType.Default)]
         public async Task ReadingComplexState(HostType hostType, TransportType transportType, MessageBusType messageBusType)
         {
             using (var host = CreateHost(hostType, transportType))
