@@ -74,6 +74,16 @@ namespace Microsoft.AspNet.SignalR.Client.Hubs
         [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "Exceptions are flown to the caller")]
         public Task<T> Invoke<T>(string method, params object[] args)
         {
+            return Invoke<T, object>(method, /* onProgress */ null, args);
+        }
+
+        public Task Invoke<T>(string method, Action<T> onProgress, params object[] args)
+        {
+            return Invoke<object, T>(method, onProgress, args);
+        }
+
+        public Task<TResult> Invoke<TResult, TProgress>(string method, Action<TProgress> onProgress, params object[] args)
+        {
             if (method == null)
             {
                 throw new ArgumentNullException("method");
@@ -90,7 +100,7 @@ namespace Microsoft.AspNet.SignalR.Client.Hubs
                 tokenifiedArguments[i] = JToken.FromObject(args[i], JsonSerializer);
             }
 
-            var tcs = new TaskCompletionSource<T>();
+            var tcs = new TaskCompletionSource<TResult>();
             var callbackId = _connection.RegisterCallback(result =>
             {
                 if (result != null)
@@ -119,13 +129,17 @@ namespace Microsoft.AspNet.SignalR.Client.Hubs
                                 }
                             }
 
-                            if (result.Result != null)
+                            if (result.ProgressUpdate != null)
                             {
-                                tcs.TrySetResult(result.Result.ToObject<T>(JsonSerializer));
+                                onProgress(result.ProgressUpdate.Data.ToObject<TProgress>(JsonSerializer));
+                            }
+                            else if (result.Result != null)
+                            {
+                                tcs.TrySetResult(result.Result.ToObject<TResult>(JsonSerializer));
                             }
                             else
                             {
-                                tcs.TrySetResult(default(T));
+                                tcs.TrySetResult(default(TResult));
                             }
                         }
                         catch (Exception ex)

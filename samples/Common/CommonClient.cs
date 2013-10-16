@@ -20,7 +20,8 @@ namespace Microsoft.AspNet.SignalR.Client.Samples
         {
             try
             {
-                await RunHubConnectionAPI(url);
+                //await RunHubConnectionAPI(url);
+                await RunDemo(url);
             }
             catch (HttpClientException httpClientException)
             {
@@ -74,6 +75,12 @@ namespace Microsoft.AspNet.SignalR.Client.Samples
 
             await hubConnection.Start();
             hubConnection.TraceWriter.WriteLine("transport.Name={0}", hubConnection.Transport.Name);
+
+            hubConnection.TraceWriter.WriteLine("Invoking long running hub method with progress...");
+            var result = await hubProxy.Invoke<string, int>("ReportProgress",
+                percent => hubConnection.TraceWriter.WriteLine("{0}% complete", percent),
+                /* jobName */ "Long running job");
+            hubConnection.TraceWriter.WriteLine("{0}", result);
 
             await hubProxy.Invoke("multipleCalls");
         }
