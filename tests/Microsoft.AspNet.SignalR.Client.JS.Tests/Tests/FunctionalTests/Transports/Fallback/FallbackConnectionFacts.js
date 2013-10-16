@@ -14,6 +14,26 @@ QUnit.asyncTimeoutTest("Default transports fall back and connect.", testUtilitie
     };
 });
 
+QUnit.asyncTimeoutTest("Transport as object is not supported.", testUtilities.defaultTestTimeout, function (end, assert, testName) {
+    var connection = testUtilities.createHubConnection(end, assert, testName, undefined, false);
+
+    try {
+        connection.start({ transport: $.signalR.transports.longPolling });
+        assert.fail("start should throw");
+    } catch (ex) {
+        assert.comment(ex);        
+    }
+
+    window.setTimeout(function () {
+        end();
+    }, 0);
+
+    // Cleanup
+    return function () {
+        connection.stop();
+    };
+});
+
 QUnit.module("Fallback Facts", testUtilities.transports.webSockets.enabled);
 
 QUnit.asyncTimeoutTest("WebSockets fall back to next transport.", testUtilities.defaultTestTimeout, function (end, assert, testName) {

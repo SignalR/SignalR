@@ -38,3 +38,26 @@ QUnit.test("Pinging server with WebSockets uses correct URL", function () {
 
     QUnit.isTrue(ajaxCalled, "Ajax was called.");
 });
+
+QUnit.asyncTimeoutTest("Client forces webSockets but server does not suppport it.", testUtilities.defaultTestTimeout, function (end, assert, testName) {
+    var connection = testUtilities.createHubConnection(end, assert, testName, undefined, false),
+        oldParse = connection._parseResponse;
+    connection._parseResponse = function (response) {
+        var result = oldParse.call(this, response);
+        result.TryWebSockets = false;
+        return result;
+    }
+
+    connection.start({ transport: "webSockets" }).done(function () {
+        assert.fail("Connection started");
+        end();
+    }).fail(function (error) {
+        assert.comment(error);
+        end();
+    });
+
+    // Cleanup
+    return function () {
+        connection.stop();
+    };
+});
