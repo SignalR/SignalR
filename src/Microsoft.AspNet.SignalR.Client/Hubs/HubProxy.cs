@@ -73,7 +73,7 @@ namespace Microsoft.AspNet.SignalR.Client.Hubs
 
         public Task<T> Invoke<T>(string method, params object[] args)
         {
-            return Invoke<T, object>(method, /* onProgress */ null, args);
+            return Invoke<T, object>(method, onProgress: null, args: args);
         }
 
         public Task Invoke<T>(string method, Action<T> onProgress, params object[] args)

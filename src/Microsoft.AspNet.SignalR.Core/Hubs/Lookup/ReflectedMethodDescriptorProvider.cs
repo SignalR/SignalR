@@ -53,45 +53,57 @@ namespace Microsoft.AspNet.SignalR.Hubs
             return ReflectionHelper.GetExportedHubMethods(hub.HubType)
                 .GroupBy(GetMethodName, StringComparer.OrdinalIgnoreCase)
                 .ToDictionary(group => group.Key,
-                              group => group.Select(oload =>
-                              {
-                                  IEnumerable<ParameterInfo> parameters = oload.GetParameters();
-                                  var lastParameter = parameters.LastOrDefault();
-                                  Type progressReportingType = null;
-
-                                  if (lastParameter != null
-                                      && lastParameter.ParameterType.IsGenericType
-                                      && lastParameter.ParameterType.GetGenericTypeDefinition() == typeof(IProgress<>))
-                                  {
-                                      // This method takes an IProgress<T> as the last parameter and thus supports progress reporting
-                                      progressReportingType = lastParameter.ParameterType.GenericTypeArguments[0];
-                                      
-                                      // Strip the IProgress<T> param from the method descriptor params list
-                                      // as we don't want to include it when trying to match methods
-                                      parameters = parameters.Where(p => !(p.ParameterType.IsGenericType &&
-                                                                           p.ParameterType.GetGenericTypeDefinition() == typeof(IProgress<>)));
-                                  }
-
-                                  var method = new MethodDescriptor
-                                  {
-                                      ReturnType = oload.ReturnType,
-                                      Name = group.Key,
-                                      NameSpecified = (GetMethodAttributeName(oload) != null),
-                                      Invoker = new HubMethodDispatcher(oload).Execute,
-                                      Hub = hub,
-                                      Attributes = oload.GetCustomAttributes(typeof(Attribute), inherit: true).Cast<Attribute>(),
-                                      ProgressReportingType = progressReportingType,
-                                      Parameters = parameters
-                                        .Select(p => new ParameterDescriptor
-                                        {
-                                            Name = p.Name,
-                                            ParameterType = p.ParameterType,
-                                        })
-                                        .ToList()
-                                  };
-                                  return method;
-                              }),
+                              group => group.Select(oload => GetMethodDescriptor(group.Key, hub, oload)),
                               StringComparer.OrdinalIgnoreCase);
+        }
+
+        private static MethodDescriptor GetMethodDescriptor(string methodName, HubDescriptor hub, MethodInfo methodInfo)
+        {
+            Type progressReportingType;
+            var parameters = ExtractProgressParameter(methodInfo.GetParameters(), out progressReportingType);
+            
+            return new MethodDescriptor
+            {
+                ReturnType = methodInfo.ReturnType,
+                Name = methodName,
+                NameSpecified = (GetMethodAttributeName(methodInfo) != null),
+                Invoker = new HubMethodDispatcher(methodInfo).Execute,
+                Hub = hub,
+                Attributes = methodInfo.GetCustomAttributes(typeof(Attribute), inherit: true).Cast<Attribute>(),
+                ProgressReportingType = progressReportingType,
+                Parameters = parameters
+                .Select(p => new ParameterDescriptor
+                {
+                    Name = p.Name,
+                    ParameterType = p.ParameterType,
+                })
+                .ToList()
+            };
+        }
+
+        private static IEnumerable<ParameterInfo> ExtractProgressParameter(ParameterInfo[] parameters, out Type progressReportingType)
+        {
+            var lastParameter = parameters.LastOrDefault();
+            progressReportingType = null;
+
+            if (IsProgressType(lastParameter))
+            {
+                // This method takes an IProgress<T> as the last parameter and thus supports progress reporting
+                progressReportingType = lastParameter.ParameterType.GenericTypeArguments[0];
+
+                // Strip the IProgress<T> param from the method descriptor params list
+                // as we don't want to include it when trying to match methods
+                return parameters.Take(parameters.Length - 1);
+            }
+
+            return parameters;
+        }
+
+        private static bool IsProgressType(ParameterInfo parameter)
+        {
+            return parameter != null
+                && parameter.ParameterType.IsGenericType
+                && parameter.ParameterType.GetGenericTypeDefinition() == typeof(IProgress<>);
         }
 
         /// <summary>
