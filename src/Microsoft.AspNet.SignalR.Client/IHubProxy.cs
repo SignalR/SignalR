@@ -7,6 +7,11 @@ using Newtonsoft.Json.Linq;
 
 namespace Microsoft.AspNet.SignalR.Client
 {
+    public interface IHubProxy<T> : IHubProxy
+    {
+        T Server { get; }
+    }
+
     /// <summary>
     ///  A client side proxy for a server side hub.
     /// </summary>

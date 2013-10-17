@@ -168,7 +168,41 @@ namespace Microsoft.AspNet.SignalR.Client
                 hubProxy = new HubProxy(this, hubName);
                 _hubs[hubName] = hubProxy;
             }
+
             return hubProxy;
+        }
+
+        public IHubProxy<TServer> CreateHubProxy<TServer, TClient>(string hubName, TClient instance)
+        {
+            HubProxy hubProxy;
+            if (!_hubs.TryGetValue(hubName, out hubProxy))
+            {
+                hubProxy = new HubProxy(this, hubName);
+                _hubs[hubName] = hubProxy;
+
+
+                foreach (var m in typeof(TClient).GetMethods())
+                {
+                    var sub = hubProxy.Subscribe(m.Name);
+                    sub.Received += args =>
+                    {
+                        var parameters = m.GetParameters()
+                                          .Zip(args, (pi, a) =>
+                                              a.ToObject(pi.ParameterType, JsonSerializer))
+                                          .ToArray();
+
+                        m.Invoke(instance, parameters);
+                    };
+                }
+
+            }
+
+            return new TypedHubProxy<TServer>(hubProxy);
+        }
+
+        public IHubProxy<TServer> CreateHubProxy<TServer>(string hubName)
+        {
+            return null;
         }
 
         string IHubConnection.RegisterCallback(Action<HubResult> callback)
