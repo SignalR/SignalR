@@ -158,6 +158,7 @@
     <Compile Include="Hubs\InvalidTypedHub.cs" />
     <Compile Include="Hubs\IValidClientContract.cs" />
     <Compile Include="Hubs\MyItemsHub.cs" />
+    <Compile Include="Hubs\ProgressHub.cs" />
     <Compile Include="Hubs\ValidTypedHub.cs" />
     <Compile Include="Hubs\OnConnectedBufferHub.cs" />
     <Compile Include="Infrastructure\AsyncManualResetEvent.cs" />
