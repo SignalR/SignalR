@@ -202,7 +202,7 @@ namespace Microsoft.AspNet.SignalR.Client
 
         public IHubProxy<TServer> CreateHubProxy<TServer>(string hubName)
         {
-            return null;
+            return new TypedHubProxy<TServer>(CreateHubProxy(hubName));
         }
 
         string IHubConnection.RegisterCallback(Action<HubResult> callback)
