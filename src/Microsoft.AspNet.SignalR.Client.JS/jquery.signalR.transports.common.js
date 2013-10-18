@@ -194,7 +194,7 @@
                         // so just hack around it on the client for now.
                         return;
                     }
-                    $(connection).triggerHandler(events.onError, [errData]);
+                    $(connection).triggerHandler(events.onError, [errData, data]);
                 }
             });
         },
