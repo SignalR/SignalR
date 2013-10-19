@@ -9,11 +9,10 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR.Client.Http;
 using Microsoft.AspNet.SignalR.Infrastructure;
-using Microsoft.AspNet.SignalR.Owin;
 using Microsoft.AspNet.SignalR.Owin.Infrastructure;
 using Microsoft.Owin;
+using Microsoft.Owin.Builder;
 using Owin;
-using Owin.Builder;
 using IClientRequest = Microsoft.AspNet.SignalR.Client.Http.IRequest;
 using IClientResponse = Microsoft.AspNet.SignalR.Client.Http.IResponse;
 
