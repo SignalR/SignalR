@@ -7,4 +7,3 @@ using System.Reflection;
 // associated with an assembly.
 [assembly: AssemblyTitle("Microsoft.AspNet.SignalR.Client.iOS")]
 [assembly: AssemblyDescription("")]
-[assembly: AssemblyProduct("Microsoft.AspNet.SignalR.Client.iOS")]

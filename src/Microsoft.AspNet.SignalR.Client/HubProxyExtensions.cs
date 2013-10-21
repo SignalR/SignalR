@@ -234,7 +234,7 @@ namespace Microsoft.AspNet.SignalR.Client
             return new DisposableAction(() => subscription.Received -= handler);
         }
 
-#if !PORTABLE && !__ANDROID__ && !IOS
+#if !PORTABLE && !__ANDROID__ && !__IOS__
         /// <summary>
         /// Registers for an event with the specified name and callback
         /// </summary>
