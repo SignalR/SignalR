@@ -34,6 +34,50 @@ QUnit.asyncTimeoutTest("Transport as object is not supported.", testUtilities.de
     };
 });
 
+QUnit.asyncTimeoutTest("Client forces webSockets but server does not suppport it.", testUtilities.defaultTestTimeout, function (end, assert, testName) {
+    var connection = testUtilities.createHubConnection(end, assert, testName, undefined, false),
+        oldParse = connection._parseResponse;
+    connection._parseResponse = function (response) {
+        var result = oldParse.call(this, response);
+        result.TryWebSockets = false;
+        return result;
+    }
+
+    connection.start({ transport: "webSockets" }).done(function () {
+        assert.fail("Connection started");
+        end();
+    }).fail(function (error) {
+        assert.comment(error);
+        end();
+    });
+
+    // Cleanup
+    return function () {
+        connection.stop();
+    };
+});
+
+QUnit.asyncTimeoutTest("Client defines array of transports, server does not support webSockets.", testUtilities.defaultTestTimeout, function (end, assert, testName) {
+    var connection = testUtilities.createHubConnection(end, assert, testName),
+        oldParse = connection._parseResponse;
+    connection._parseResponse = function (response) {
+        var result = oldParse.call(this, response);
+        result.TryWebSockets = false;
+        return result;
+    }
+
+    connection.start({ transport: ["webSockets", "longPolling"] }).done(function () {
+        assert.ok(connection.transport.name === "longPolling", "Connected");
+        end();
+    });
+
+    // Cleanup
+    return function () {
+        connection.stop();
+    };
+});
+
+
 QUnit.module("Fallback Facts", testUtilities.transports.webSockets.enabled);
 
 QUnit.asyncTimeoutTest("WebSockets fall back to next transport.", testUtilities.defaultTestTimeout, function (end, assert, testName) {
