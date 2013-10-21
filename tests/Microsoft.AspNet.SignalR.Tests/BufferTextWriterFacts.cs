@@ -13,7 +13,7 @@ namespace Microsoft.AspNet.SignalR.Tests
         public void CanEncodingSurrogatePairsCorrectly()
         {
             var bytes = new List<byte>();
-            var writer = new BufferTextWriter((buffer, state) =>
+            var writer = new BinaryTextWriter((buffer, state) =>
             {
                 for (int i = buffer.Offset; i < buffer.Count; i++)
                 {
@@ -34,7 +34,7 @@ namespace Microsoft.AspNet.SignalR.Tests
         public void WriteNewBufferIsUsedForWritingChunksIfReuseBuffersFalse()
         {
             var buffers = new List<ArraySegment<byte>>();
-            var writer = new BufferTextWriter((buffer, state) =>
+            var writer = new BinaryTextWriter((buffer, state) =>
             {
                 buffers.Add(buffer);
             },
@@ -55,7 +55,7 @@ namespace Microsoft.AspNet.SignalR.Tests
         public void WriteSameBufferIsUsedForWritingChunksIfReuseBuffersTrue()
         {
             var buffers = new List<ArraySegment<byte>>();
-            var writer = new BufferTextWriter((buffer, state) =>
+            var writer = new BinaryTextWriter((buffer, state) =>
             {
                 buffers.Add(buffer);
             },
@@ -79,7 +79,7 @@ namespace Microsoft.AspNet.SignalR.Tests
             int size = 3000;
 
             var buffers = new List<ArraySegment<byte>>();
-            var writer = new BufferTextWriter((buffer, state) =>
+            var writer = new BinaryTextWriter((buffer, state) =>
             {
                 buffers.Add(buffer);
             },
@@ -121,7 +121,7 @@ namespace Microsoft.AspNet.SignalR.Tests
         public void CanInterleaveStringsAndRawBinary()
         {
             var buffers = new List<ArraySegment<byte>>();
-            var writer = new BufferTextWriter((buffer, state) =>
+            var writer = new BinaryTextWriter((buffer, state) =>
             {
                 buffers.Add(buffer);
             },

@@ -20,7 +20,7 @@ namespace Microsoft.AspNet.SignalR.Transports
         private readonly Action<TextWriter> _writeCursor;
 
         public PersistentResponse()
-            : this(message => true, writer => { })
+            : this(message => false, writer => { })
         {
 
         }

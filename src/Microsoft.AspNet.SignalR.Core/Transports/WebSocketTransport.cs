@@ -106,7 +106,7 @@ namespace Microsoft.AspNet.SignalR.Transports
 
         protected override TextWriter CreateResponseWriter()
         {
-            return new BufferTextWriter(_socket);
+            return new BinaryTextWriter(_socket);
         }
 
         public override Task Send(object value)
