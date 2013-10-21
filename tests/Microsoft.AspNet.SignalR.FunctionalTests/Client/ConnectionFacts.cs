@@ -21,8 +21,56 @@ namespace Microsoft.AspNet.SignalR.Tests
 
     public class ConnectionFacts : HostedTest
     {
+        [Theory]
+        [InlineData(HostType.Memory, TransportType.ServerSentEvents, MessageBusType.Default)]
+        [InlineData(HostType.Memory, TransportType.ServerSentEvents, MessageBusType.Fake)]
+        [InlineData(HostType.Memory, TransportType.ServerSentEvents, MessageBusType.FakeMultiStream)]
+        [InlineData(HostType.Memory, TransportType.LongPolling, MessageBusType.Default)]
+        [InlineData(HostType.Memory, TransportType.LongPolling, MessageBusType.Fake)]
+        [InlineData(HostType.Memory, TransportType.LongPolling, MessageBusType.FakeMultiStream)]
+        [InlineData(HostType.IISExpress, TransportType.LongPolling, MessageBusType.Default)]
+        [InlineData(HostType.IISExpress, TransportType.ServerSentEvents, MessageBusType.Default)]
+        [InlineData(HostType.IISExpress, TransportType.Websockets, MessageBusType.Default)]
+        [InlineData(HostType.HttpListener, TransportType.LongPolling, MessageBusType.Default)]
+        [InlineData(HostType.HttpListener, TransportType.ServerSentEvents, MessageBusType.Default)]
+        [InlineData(HostType.HttpListener, TransportType.Websockets, MessageBusType.Default)]
+        public void ReconnectExceedingReconnectWindowDisconnects(HostType hostType, TransportType transportType, MessageBusType messageBusType)
+        {
+            // Test cannot be async because if we do host.ShutDown() after an await the connection stops.
+
+            using (var host = CreateHost(hostType, transportType))
+            {
+                host.Initialize(messageBusType: messageBusType);
+                var connection = CreateHubConnection(host);
+
+                using (connection)
+                {
+                    var reconnectWh = new ManualResetEventSlim();
+                    var disconnectWh = new ManualResetEventSlim();
+
+                    connection.Reconnecting += () =>
+                    {
+                        ((Client.IConnection)connection).ReconnectWindow = TimeSpan.FromMilliseconds(500);
+                        reconnectWh.Set();
+                    };
+
+                    connection.Closed += () =>
+                    {
+                        disconnectWh.Set();
+                    };
+
+                    connection.Start(host.Transport).Wait();
+
+                    host.Shutdown();
+
+                    Assert.True(reconnectWh.Wait(TimeSpan.FromSeconds(15)), "Reconnect never fired");
+                    Assert.True(disconnectWh.Wait(TimeSpan.FromSeconds(15)), "Closed never fired");
+                }
+            }
+        }
+
         [Fact]
-        public void NoReconnectsAfterFallback()
+        public async Task NoReconnectsAfterFallback()
         {
             // There was a regression where the SSE transport would try to reconnect after it times out.
             // This test ensures that no longer happens.
@@ -65,10 +113,10 @@ namespace Microsoft.AspNet.SignalR.Tests
 
                 using (connection)
                 {
-                    connection.Start(host).Wait();
+                    await connection.Start(host);
 
                     // Give SSE an opportunity to reconnect
-                    Thread.Sleep(TimeSpan.FromSeconds(5));
+                    await Task.Delay(TimeSpan.FromSeconds(5));
 
                     Assert.Equal(connection.State, ConnectionState.Connected);
                     Assert.Equal(connection.Transport.Name, "longPolling");
@@ -118,21 +166,28 @@ namespace Microsoft.AspNet.SignalR.Tests
         [InlineData("0.1337", HostType.HttpListener, TransportType.LongPolling, MessageBusType.Default)]
         [InlineData("0.1337", HostType.HttpListener, TransportType.ServerSentEvents, MessageBusType.Default)]
         [InlineData("0.1337", HostType.HttpListener, TransportType.Websockets, MessageBusType.Default)]
-        public void ConnectionFailsToStartWithInvalidOldProtocol(string protocolVersion, HostType hostType, TransportType transportType, MessageBusType messageBusType)
+        public async Task ConnectionFailsToStartWithInvalidOldProtocol(string protocolVersion, HostType hostType, TransportType transportType, MessageBusType messageBusType)
         {
             using (var host = CreateHost(hostType, transportType))
             {
                 host.Initialize(messageBusType: messageBusType);
                 var connection = CreateConnection(host, "/signalr");
+                Boolean faulted = false;
 
                 connection.Protocol = new Version(protocolVersion);
 
                 using (connection)
                 {
-                    connection.Start(host.Transport).ContinueWith(task =>
+                    try
                     {
-                        Assert.True(task.IsFaulted);
-                    }).Wait();
+                        await connection.Start(host.Transport);
+                    }
+                    catch
+                    {
+                        faulted = true;
+                    }
+
+                    Assert.True(faulted);
                 }
             }
         }
@@ -150,7 +205,7 @@ namespace Microsoft.AspNet.SignalR.Tests
         [InlineData(HostType.HttpListener, TransportType.LongPolling, MessageBusType.Default)]
         [InlineData(HostType.HttpListener, TransportType.ServerSentEvents, MessageBusType.Default)]
         [InlineData(HostType.HttpListener, TransportType.Websockets, MessageBusType.Default)]
-        public void ConnectionDisposeTriggersStop(HostType hostType, TransportType transportType, MessageBusType messageBusType)
+        public async Task ConnectionDisposeTriggersStop(HostType hostType, TransportType transportType, MessageBusType messageBusType)
         {
             using (var host = CreateHost(hostType, transportType))
             {
@@ -159,7 +214,7 @@ namespace Microsoft.AspNet.SignalR.Tests
 
                 using (connection)
                 {
-                    connection.Start(host.Transport).Wait();
+                    await connection.Start(host.Transport);
                     Assert.Equal(connection.State, Client.ConnectionState.Connected);
                 }
 
@@ -175,7 +230,7 @@ namespace Microsoft.AspNet.SignalR.Tests
         [InlineData(HostType.HttpListener, TransportType.LongPolling)]
         [InlineData(HostType.HttpListener, TransportType.ServerSentEvents)]
         [InlineData(HostType.HttpListener, TransportType.Websockets)]
-        public void RequestHeadersSetCorrectly(HostType hostType, TransportType transportType)
+        public async Task RequestHeadersSetCorrectly(HostType hostType, TransportType transportType)
         {
             using (var host = CreateHost(hostType, transportType))
             {
@@ -209,8 +264,8 @@ namespace Microsoft.AspNet.SignalR.Tests
                         connection.Headers.Add(System.Net.HttpRequestHeader.Referer.ToString(), "referer");
                     }
 
-                    connection.Start(host.Transport).Wait();
-                    connection.Send("Hello");
+                    await connection.Start(host.Transport);
+                    var ignore = connection.Send("Hello");
 
                     // Assert
                     Assert.True(tcs.Task.Wait(TimeSpan.FromSeconds(10)));
@@ -223,14 +278,14 @@ namespace Microsoft.AspNet.SignalR.Tests
         [InlineData(HostType.IISExpress, TransportType.ServerSentEvents)]
         [InlineData(HostType.HttpListener, TransportType.LongPolling)]
         [InlineData(HostType.HttpListener, TransportType.ServerSentEvents)]
-        public void RequestHeadersCanBeSetOnceConnected(HostType hostType, TransportType transportType)
+        public async Task RequestHeadersCanBeSetOnceConnected(HostType hostType, TransportType transportType)
         {
             using (var host = CreateHost(hostType, transportType))
             {
                 // Arrange
                 host.Initialize();
                 var connection = CreateConnection(host, "/examine-request");
-                var mre = new ManualResetEventSlim();
+                var mre = new AsyncManualResetEvent();
 
                 using (connection)
                 {
@@ -242,13 +297,13 @@ namespace Microsoft.AspNet.SignalR.Tests
                         mre.Set();
                     };
 
-                    connection.Start(host.Transport).Wait();
+                    await connection.Start(host.Transport);
 
                     connection.Headers.Add("test-header", "test-header");
-                    connection.Send("message");
+                    var ignore = connection.Send("message");
 
                     // Assert
-                    Assert.True(mre.Wait(TimeSpan.FromSeconds(10)));
+                    Assert.True(await mre.WaitAsync(TimeSpan.FromSeconds(10)));
                 }
 
             }
@@ -261,12 +316,13 @@ namespace Microsoft.AspNet.SignalR.Tests
         [InlineData(HostType.HttpListener, TransportType.LongPolling)]
         [InlineData(HostType.HttpListener, TransportType.ServerSentEvents)]
         [InlineData(HostType.HttpListener, TransportType.Websockets)]
-        public void ReconnectRequestPathEndsInReconnect(HostType hostType, TransportType transportType)
+        public async Task ReconnectRequestPathEndsInReconnect(HostType hostType, TransportType transportType)
         {
             using (var host = CreateHost(hostType, transportType))
             {
                 // Arrange
                 var tcs = new TaskCompletionSource<bool>();
+                var mre = new AsyncManualResetEvent();
                 var receivedMessage = false;
 
                 host.Initialize(keepAlive: null,
@@ -283,13 +339,14 @@ namespace Microsoft.AspNet.SignalR.Tests
                         {
                             tcs.TrySetResult(reconnectEndsPath == "True");
                             receivedMessage = true;
+                            mre.Set();
                         }
                     };
 
-                    connection.Start(host.Transport).Wait();
+                    await connection.Start(host.Transport);
 
                     // Wait for reconnect
-                    Assert.True(tcs.Task.Wait(TimeSpan.FromSeconds(10)));
+                    Assert.True(await mre.WaitAsync(TimeSpan.FromSeconds(10)));
                     Assert.True(tcs.Task.Result);
                 }
             }

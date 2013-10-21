@@ -60,6 +60,9 @@
         <dt>Generic Task With ContinueWith</dt>
         <dd id="genericTaskWithContinueWith"></dd>
         
+        <dt>Typed callback</dt>
+        <dd id="typed"></dd>
+
         <dt>Message Pump</dt>
         <dd id="msg"></dd>
     </dl>

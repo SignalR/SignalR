@@ -1,5 +1,5 @@
 /*!
- * ASP.NET SignalR JavaScript Library v2.0.1-pre
+ * ASP.NET SignalR JavaScript Library v2.1.0-pre
  * http://signalr.net/
  *
  * Copyright Microsoft Open Technologies, Inc. All rights reserved.
@@ -674,6 +674,16 @@
             /// <param name=\"groupName\" type=\"String\">Server side type is System.String</param>
             /// <param name=\"message\" type=\"String\">Server side type is System.String</param>
                 return proxies.testHub.invoke.apply(proxies.testHub, $.merge(["SendToGroup"], $.makeArray(arguments)));
+             }
+        };
+
+        proxies.typedDemoHub = this.createHubProxy('typedDemoHub'); 
+        proxies.typedDemoHub.client = { };
+        proxies.typedDemoHub.server = {
+            echo: function (message) {
+            /// <summary>Calls the Echo method on the server-side TypedDemoHub hub.&#10;Returns a jQuery.Deferred() promise.</summary>
+            /// <param name=\"message\" type=\"String\">Server side type is System.String</param>
+                return proxies.typedDemoHub.invoke.apply(proxies.typedDemoHub, $.merge(["Echo"], $.makeArray(arguments)));
              }
         };
 

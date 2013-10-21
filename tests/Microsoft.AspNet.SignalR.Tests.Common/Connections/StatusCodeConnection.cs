@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR.Hosting;
 using Microsoft.Owin;
@@ -30,6 +31,12 @@ namespace Microsoft.AspNet.SignalR.Tests.Common.Connections
 
                 // Alter status code
                 response.StatusCode = statusCode;
+
+                using (var sw = new StreamWriter(response.Body))
+                {
+                    sw.WriteLine("Hello world");
+                    sw.Flush();
+                }
 
                 return TaskAsyncHelper.Empty;
             }

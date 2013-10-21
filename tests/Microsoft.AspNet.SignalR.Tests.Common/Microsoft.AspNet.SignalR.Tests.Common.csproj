@@ -34,18 +34,17 @@
   <ItemGroup>
     <Reference Include="Microsoft.Owin, Version=2.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\packages\Microsoft.Owin.2.0.0-rtw2-20817-574-dev\lib\net45\Microsoft.Owin.dll</HintPath>
+      <HintPath>..\..\packages\Microsoft.Owin.2.0.0\lib\net45\Microsoft.Owin.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.Owin.Cors, Version=2.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\packages\Microsoft.Owin.Cors.2.0.0-rtw2-20817-574-dev\lib\net45\Microsoft.Owin.Cors.dll</HintPath>
+      <HintPath>..\..\packages\Microsoft.Owin.Cors.2.0.0\lib\net45\Microsoft.Owin.Cors.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.Owin.Hosting, Version=2.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\packages\Microsoft.Owin.Hosting.2.0.0-rtw2-20817-574-dev\lib\net45\Microsoft.Owin.Hosting.dll</HintPath>
+      <HintPath>..\..\packages\Microsoft.Owin.Hosting.2.0.0\lib\net45\Microsoft.Owin.Hosting.dll</HintPath>
     </Reference>
-    <Reference Include="Microsoft.Owin.Security.Basic, Version=2.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
+    <Reference Include="Microsoft.Owin.Security.Basic">
       <HintPath>..\..\packages\Microsoft.Owin.Security.Basic.0.24.0-pre-20725-492-dev\lib\net45\Microsoft.Owin.Security.Basic.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.Web.Administration, Version=7.9.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
@@ -71,8 +70,9 @@
     <Reference Include="System.Core" />
     <Reference Include="System.Management" />
     <Reference Include="System.Web.ApplicationServices" />
-    <Reference Include="System.Web.Cors">
-      <HintPath>..\..\packages\Microsoft.AspNet.Cors.5.0.0-rc1-130816\lib\net45\System.Web.Cors.dll</HintPath>
+    <Reference Include="System.Web.Cors, Version=5.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\packages\Microsoft.AspNet.Cors.5.0.0\lib\net45\System.Web.Cors.dll</HintPath>
     </Reference>
     <Reference Include="System.Web.DynamicData" />
     <Reference Include="System.Web.Entity" />
@@ -154,9 +154,14 @@
     <Compile Include="Hubs\EchoHub.cs" />
     <Compile Include="Hubs\ExamineHeadersHub.cs" />
     <Compile Include="Hubs\GroupJoiningHub.cs" />
+    <Compile Include="Hubs\IInvalidClientContract.cs" />
+    <Compile Include="Hubs\InvalidTypedHub.cs" />
+    <Compile Include="Hubs\IValidClientContract.cs" />
     <Compile Include="Hubs\MyItemsHub.cs" />
-    <Compile Include="Infrastructure\BasicAuthenticationProvider.cs" />
+    <Compile Include="Hubs\ValidTypedHub.cs" />
     <Compile Include="Hubs\OnConnectedBufferHub.cs" />
+    <Compile Include="Infrastructure\AsyncManualResetEvent.cs" />
+    <Compile Include="Infrastructure\BasicAuthenticationProvider.cs" />
     <Compile Include="Infrastructure\ClientAssertExtensions.cs" />
     <Compile Include="Infrastructure\CommonCommandLine.cs" />
     <Compile Include="Infrastructure\CommonLog.cs" />

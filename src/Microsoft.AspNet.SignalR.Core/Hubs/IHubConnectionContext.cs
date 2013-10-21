@@ -1,6 +1,5 @@
 ﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.md in the project root for license information.
 
-using System;
 using System.Collections.Generic;
 
 namespace Microsoft.AspNet.SignalR.Hubs
@@ -8,17 +7,19 @@ namespace Microsoft.AspNet.SignalR.Hubs
     /// <summary>
     /// Encapsulates all information about a SignalR connection for an <see cref="IHub"/>.
     /// </summary>
-    public interface IHubConnectionContext
+    public interface IHubConnectionContext<T>
     {
-        dynamic All { get; }
-        dynamic AllExcept(params string[] excludeConnectionIds);
-        
-        dynamic Client(string connectionId);
-        dynamic Clients(IList<string> connectionIds);
+        T All { get; }
+        T AllExcept(params string[] excludeConnectionIds);
 
-        dynamic Group(string groupName, params string[] excludeConnectionIds);
-        dynamic Groups(IList<string> groupNames, params string[] excludeConnectionIds);
+        T Client(string connectionId);
+        T Clients(IList<string> connectionIds);
 
-        dynamic User(string userId);
+        T Group(string groupName, params string[] excludeConnectionIds);
+        T Groups(IList<string> groupNames, params string[] excludeConnectionIds);
+
+        T User(string userId);
+
+        T Users(IList<string> userIds);
     }
 }

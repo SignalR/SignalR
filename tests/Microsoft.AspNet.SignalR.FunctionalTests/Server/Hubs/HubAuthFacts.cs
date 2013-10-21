@@ -18,7 +18,7 @@ namespace Microsoft.AspNet.SignalR.Tests
     public class HubAuthFacts : HostedTest
     {
         [Fact]
-        public void UnauthenticatedUserCanReceiveHubMessagesByDefault()
+        public async Task UnauthenticatedUserCanReceiveHubMessagesByDefault()
         {
             using (var host = new MemoryHost())
             {
@@ -46,7 +46,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                         wh.Set();
                     });
 
-                    connection.Start(host).Wait();
+                    await connection.Start(host);
 
                     Assert.True(wh.WaitOne(TimeSpan.FromSeconds(3)));
                 }
@@ -54,7 +54,7 @@ namespace Microsoft.AspNet.SignalR.Tests
         }
 
         [Fact]
-        public void AuthenticatedUserCanReceiveHubMessagesByDefault()
+        public async Task AuthenticatedUserCanReceiveHubMessagesByDefault()
         {
             using (var host = new MemoryHost())
             {
@@ -82,7 +82,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                         wh.Set();
                     });
 
-                    connection.Start(host).Wait();
+                    await connection.Start(host);
 
                     Assert.True(wh.WaitOne(TimeSpan.FromSeconds(3)));
                 }
@@ -90,7 +90,7 @@ namespace Microsoft.AspNet.SignalR.Tests
         }
 
         [Fact]
-        public void UnauthenticatedUserCanInvokeMethodsByDefault()
+        public async Task UnauthenticatedUserCanInvokeMethodsByDefault()
         {
             using (var host = new MemoryHost())
             {
@@ -118,7 +118,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                         wh.Set();
                     });
 
-                    connection.Start(host).Wait();
+                    await connection.Start(host);
 
                     hub.InvokeWithTimeout("InvokedFromClient");
 
@@ -128,7 +128,7 @@ namespace Microsoft.AspNet.SignalR.Tests
         }
 
         [Fact]
-        public void AuthenticatedUserCanInvokeMethodsByDefault()
+        public async Task AuthenticatedUserCanInvokeMethodsByDefault()
         {
             using (var host = new MemoryHost())
             {
@@ -141,7 +141,6 @@ namespace Microsoft.AspNet.SignalR.Tests
 
                     WithUser(app, new GenericPrincipal(new GenericIdentity("test"), new string[] { }));
                     app.MapSignalR("/signalr", configuration);
-
                 });
 
                 var connection = CreateHubConnection("http://foo/");
@@ -156,7 +155,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                         wh.Set();
                     });
 
-                    connection.Start(host).Wait();
+                    await connection.Start(host);
 
                     hub.InvokeWithTimeout("InvokedFromClient");
 
@@ -201,7 +200,7 @@ namespace Microsoft.AspNet.SignalR.Tests
         }
 
         [Fact]
-        public void AuthenticatedUserCanReceiveHubMessagesWhenAuthenticationRequiredGlobally()
+        public async Task AuthenticatedUserCanReceiveHubMessagesWhenAuthenticationRequiredGlobally()
         {
             using (var host = new MemoryHost())
             {
@@ -230,7 +229,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                         wh.Set();
                     });
 
-                    connection.Start(host).Wait();
+                    await connection.Start(host);
 
                     Assert.True(wh.WaitOne(TimeSpan.FromSeconds(3)));
                 }
@@ -273,7 +272,7 @@ namespace Microsoft.AspNet.SignalR.Tests
         }
 
         [Fact]
-        public void AuthenticatedUserCanInvokeMethodsWhenAuthenticationRequiredGlobally()
+        public async Task AuthenticatedUserCanInvokeMethodsWhenAuthenticationRequiredGlobally()
         {
             using (var host = new MemoryHost())
             {
@@ -302,7 +301,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                         wh.Set();
                     });
 
-                    connection.Start(host).Wait();
+                    await connection.Start(host);
 
                     hub.InvokeWithTimeout("InvokedFromClient");
 
@@ -345,7 +344,7 @@ namespace Microsoft.AspNet.SignalR.Tests
         }
 
         [Fact]
-        public void AuthenticatedUserCanReceiveHubMessagesFromAuthorizedHubs()
+        public async Task AuthenticatedUserCanReceiveHubMessagesFromAuthorizedHubs()
         {
             using (var host = new MemoryHost())
             {
@@ -372,7 +371,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                         wh.Set();
                     });
 
-                    connection.Start(host).Wait();
+                    await connection.Start(host);
 
                     Assert.True(wh.WaitOne(TimeSpan.FromSeconds(3)));
                 }
@@ -413,7 +412,7 @@ namespace Microsoft.AspNet.SignalR.Tests
         }
 
         [Fact]
-        public void AuthenticatedUserCanInvokeMethodsInAuthorizedHubs()
+        public async Task AuthenticatedUserCanInvokeMethodsInAuthorizedHubs()
         {
             using (var host = new MemoryHost())
             {
@@ -440,7 +439,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                         wh.Set();
                     });
 
-                    connection.Start(host).Wait();
+                    await connection.Start(host);
 
                     hub.InvokeWithTimeout("InvokedFromClient");
 
@@ -482,7 +481,7 @@ namespace Microsoft.AspNet.SignalR.Tests
         }
 
         [Fact]
-        public void AuthenticatedUserCanReceiveHubMessagesFromHubsInheritingFromAuthorizedHubs()
+        public async Task AuthenticatedUserCanReceiveHubMessagesFromHubsInheritingFromAuthorizedHubs()
         {
             using (var host = new MemoryHost())
             {
@@ -509,7 +508,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                         wh.Set();
                     });
 
-                    connection.Start(host).Wait();
+                    await connection.Start(host);
 
                     Assert.True(wh.WaitOne(TimeSpan.FromSeconds(3)));
                 }
@@ -550,7 +549,7 @@ namespace Microsoft.AspNet.SignalR.Tests
         }
 
         [Fact]
-        public void AuthenticatedUserCanInvokeMethodsInHubsInheritingFromAuthorizedHubs()
+        public async Task AuthenticatedUserCanInvokeMethodsInHubsInheritingFromAuthorizedHubs()
         {
             using (var host = new MemoryHost())
             {
@@ -577,7 +576,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                         wh.Set();
                     });
 
-                    connection.Start(host).Wait();
+                    await connection.Start(host);
 
                     hub.InvokeWithTimeout("InvokedFromClient");
 
@@ -719,7 +718,7 @@ namespace Microsoft.AspNet.SignalR.Tests
         }
 
         [Fact]
-        public void AuthenticatedAndAuthorizedUserCanReceiveHubMessagesFromHubsAuthorizedWithRoles()
+        public async Task AuthenticatedAndAuthorizedUserCanReceiveHubMessagesFromHubsAuthorizedWithRoles()
         {
             using (var host = new MemoryHost())
             {
@@ -746,7 +745,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                         wh.Set();
                     });
 
-                    connection.Start(host).Wait();
+                    await connection.Start(host);
 
                     Assert.True(wh.WaitOne(TimeSpan.FromSeconds(3)));
                 }
@@ -754,7 +753,7 @@ namespace Microsoft.AspNet.SignalR.Tests
         }
 
         [Fact]
-        public void AuthenticatedAndAuthorizedUserCanInvokeMethodsInHubsAuthorizedWithRoles()
+        public async Task AuthenticatedAndAuthorizedUserCanInvokeMethodsInHubsAuthorizedWithRoles()
         {
             using (var host = new MemoryHost())
             {
@@ -781,7 +780,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                         wh.Set();
                     });
 
-                    connection.Start(host).Wait();
+                    await connection.Start(host);
 
                     hub.InvokeWithTimeout("InvokedFromClient");
 
@@ -857,7 +856,7 @@ namespace Microsoft.AspNet.SignalR.Tests
         }
 
         [Fact]
-        public void AuthenticatedAndAuthorizedUserCanReceiveHubMessagesFromHubsAuthorizedSpecifyingUserAndRole()
+        public async Task AuthenticatedAndAuthorizedUserCanReceiveHubMessagesFromHubsAuthorizedSpecifyingUserAndRole()
         {
             using (var host = new MemoryHost())
             {
@@ -884,7 +883,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                         wh.Set();
                     });
 
-                    connection.Start(host).Wait();
+                    await connection.Start(host);
 
                     Assert.True(wh.WaitOne(TimeSpan.FromSeconds(3)));
                 }
@@ -892,7 +891,7 @@ namespace Microsoft.AspNet.SignalR.Tests
         }
 
         [Fact]
-        public void AuthenticatedAndAuthorizedUserCanInvokeMethodsInHubsAuthorizedSpecifyingUserAndRole()
+        public async Task AuthenticatedAndAuthorizedUserCanInvokeMethodsInHubsAuthorizedSpecifyingUserAndRole()
         {
             using (var host = new MemoryHost())
             {
@@ -919,7 +918,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                         wh.Set();
                     });
 
-                    connection.Start(host).Wait();
+                    await connection.Start(host);
 
                     hub.InvokeWithTimeout("InvokedFromClient");
 
@@ -929,7 +928,7 @@ namespace Microsoft.AspNet.SignalR.Tests
         }
 
         [Fact]
-        public void UnauthenticatedUserCanReceiveHubMessagesFromIncomingAuthorizedHubs()
+        public async Task UnauthenticatedUserCanReceiveHubMessagesFromIncomingAuthorizedHubs()
         {
             using (var host = new MemoryHost())
             {
@@ -956,7 +955,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                         wh.Set();
                     });
 
-                    connection.Start(host).Wait();
+                    await connection.Start(host);
 
                     Assert.True(wh.WaitOne(TimeSpan.FromSeconds(3)));
                 }
@@ -964,7 +963,7 @@ namespace Microsoft.AspNet.SignalR.Tests
         }
 
         [Fact]
-        public void UnauthenticatedUserCannotInvokeMethodsInIncomingAuthorizedHubs()
+        public async Task UnauthenticatedUserCannotInvokeMethodsInIncomingAuthorizedHubs()
         {
             using (var host = new MemoryHost())
             {
@@ -991,7 +990,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                         wh.Set();
                     });
 
-                    connection.Start(host).Wait();
+                    await connection.Start(host);
 
                     Assert.Throws<AggregateException>(() => hub.InvokeWithTimeout("InvokedFromClient"));
 
@@ -1001,7 +1000,7 @@ namespace Microsoft.AspNet.SignalR.Tests
         }
 
         [Fact]
-        public void AuthenticatedUserCanReceiveHubMessagesFromIncomingAuthorizedHubs()
+        public async Task AuthenticatedUserCanReceiveHubMessagesFromIncomingAuthorizedHubs()
         {
             using (var host = new MemoryHost())
             {
@@ -1028,7 +1027,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                         wh.Set();
                     });
 
-                    connection.Start(host).Wait();
+                    await connection.Start(host);
 
                     Assert.True(wh.WaitOne(TimeSpan.FromSeconds(3)));
                 }
@@ -1036,7 +1035,7 @@ namespace Microsoft.AspNet.SignalR.Tests
         }
 
         [Fact]
-        public void AuthenticatedUserCanInvokeMethodsInIncomingAuthorizedHubs()
+        public async Task AuthenticatedUserCanInvokeMethodsInIncomingAuthorizedHubs()
         {
             using (var host = new MemoryHost())
             {
@@ -1063,7 +1062,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                         wh.Set();
                     });
 
-                    connection.Start(host).Wait();
+                    await connection.Start(host);
 
                     hub.InvokeWithTimeout("InvokedFromClient");
 
@@ -1073,7 +1072,7 @@ namespace Microsoft.AspNet.SignalR.Tests
         }
 
         [Fact]
-        public void UnauthenticatedUserCannotInvokeAuthorizedHubMethods()
+        public async Task UnauthenticatedUserCannotInvokeAuthorizedHubMethods()
         {
             using (var host = new MemoryHost())
             {
@@ -1100,7 +1099,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                         wh.Set();
                     });
 
-                    connection.Start(host).Wait();
+                    await connection.Start(host);
 
                     Assert.Throws<AggregateException>(() => hub.InvokeWithTimeout("InvokedFromClient"));
 
@@ -1110,7 +1109,7 @@ namespace Microsoft.AspNet.SignalR.Tests
         }
 
         [Fact]
-        public void UnauthorizedUserCannotInvokeAuthorizedHubMethods()
+        public async Task UnauthorizedUserCannotInvokeAuthorizedHubMethods()
         {
             using (var host = new MemoryHost())
             {
@@ -1137,7 +1136,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                         wh.Set();
                     });
 
-                    connection.Start(host).Wait();
+                    await connection.Start(host);
 
                     Assert.Throws<AggregateException>(() => hub.InvokeWithTimeout("InvokedFromClient"));
 
@@ -1147,7 +1146,7 @@ namespace Microsoft.AspNet.SignalR.Tests
         }
 
         [Fact]
-        public void AuthenticatedAndAuthorizedUserCanInvokeAuthorizedHubMethods()
+        public async Task AuthenticatedAndAuthorizedUserCanInvokeAuthorizedHubMethods()
         {
             using (var host = new MemoryHost())
             {
@@ -1174,7 +1173,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                         wh.Set();
                     });
 
-                    connection.Start(host).Wait();
+                    await connection.Start(host);
 
                     hub.InvokeWithTimeout("InvokedFromClient");
 

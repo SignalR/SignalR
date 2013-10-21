@@ -6,7 +6,7 @@ using Microsoft.AspNet.SignalR.Infrastructure;
 
 namespace Microsoft.AspNet.SignalR.Hubs
 {
-    public class HubConnectionContextBase : IHubConnectionContext
+    public class HubConnectionContextBase : IHubConnectionContext<object>
     {
         public HubConnectionContextBase()
         {
@@ -128,6 +128,21 @@ namespace Microsoft.AspNet.SignalR.Hubs
             }
 
             return new UserProxy(Connection, Invoker, userId, HubName);
+        }
+
+        public dynamic Users(IList<string> userIds)
+        {
+            if (userIds == null)
+            {
+                throw new ArgumentNullException("userIds");
+            }
+
+            return new MultipleSignalProxy(Connection,
+                                           Invoker,
+                                           userIds,
+                                           HubName,
+                                           PrefixHelper.HubUserPrefix,
+                                           ListHelper<string>.Empty);
         }
     }
 }

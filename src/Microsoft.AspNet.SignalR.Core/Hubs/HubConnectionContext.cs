@@ -10,7 +10,7 @@ namespace Microsoft.AspNet.SignalR.Hubs
     /// <summary>
     /// Encapsulates all information about an individual SignalR connection for an <see cref="IHub"/>.
     /// </summary>
-    public class HubConnectionContext : HubConnectionContextBase, IHubCallerConnectionContext
+    public class HubConnectionContext : HubConnectionContextBase, IHubCallerConnectionContext<object>
     {
         private readonly string _connectionId;
         

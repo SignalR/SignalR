@@ -1,6 +1,6 @@
 /*global window:false */
 /*!
- * ASP.NET SignalR JavaScript Library v2.0.1-pre
+ * ASP.NET SignalR JavaScript Library v2.1.0-pre
  * http://signalr.net/
  *
  * Copyright Microsoft Open Technologies, Inc. All rights reserved.
@@ -247,7 +247,7 @@
             // Go through transport array and remove an "invalid" tranports
             for (var i = requestedTransport.length - 1; i >= 0; i--) {
                 var transport = requestedTransport[i];
-                if ($.type(requestedTransport) !== "object" && ($.type(transport) !== "string" || !signalR.transports[transport])) {
+                if ($.type(transport) !== "string" || !signalR.transports[transport]) {
                     connection.log("Invalid transport: " + transport + ", removing it from the transports list.");
                     requestedTransport.splice(i, 1);
                 }
@@ -258,7 +258,7 @@
                 connection.log("No transports remain within the specified transport array.");
                 requestedTransport = null;
             }
-        } else if ($.type(requestedTransport) !== "object" && !signalR.transports[requestedTransport] && requestedTransport !== "auto") {
+        } else if (!signalR.transports[requestedTransport] && requestedTransport !== "auto") {
             connection.log("Invalid transport: " + requestedTransport.toString() + ".");
             requestedTransport = null;
         } else if (requestedTransport === "auto" && signalR._.ieVersion <= 8) {
@@ -323,10 +323,15 @@
             this.url = url;
             this.qs = qs;
             this._ = {
+                keepAliveData: {},
                 connectingMessageBuffer: new ConnectingMessageBuffer(this, function (message) {
                     $connection.triggerHandler(events.onReceived, [message]);
                 }),
-                onFailedTimeoutHandle: null
+                onFailedTimeoutHandle: null,
+                lastMessageAt: new Date().getTime(),
+                lastActiveAt: new Date().getTime(),
+                beatInterval: 5000, // Default value, will only be overridden if keep alive is enabled,
+                beatHandle: null
             };
             if (typeof (logging) === "boolean") {
                 this.logging = logging;
@@ -379,8 +384,6 @@
 
         state: signalR.connectionState.disconnected,
 
-        keepAliveData: {},
-
         clientProtocol: "1.3",
 
         reconnectDelay: 2000,
@@ -388,6 +391,8 @@
         transportConnectTimeout: 0, // This will be modified by the server in respone to the negotiate request.  It will add any value sent down from the server to the client value.
 
         disconnectTimeout: 30000, // This should be set by the server in response to the negotiate request (30s default)
+
+        reconnectWindow: 30000, // This should be set by the server in response to the negotiate request 
 
         keepAliveWarnAt: 2 / 3, // Warn user of slow connection if we breach the X% mark of the keep alive timeout
 
@@ -539,7 +544,7 @@
                 }
 
                 var transportName = transports[index],
-                    transport = $.type(transportName) === "object" ? transportName : signalR.transports[transportName],
+                    transport = signalR.transports[transportName],
                     initializationComplete = false,
                     onFailed = function () {
                         // Check if we've already triggered onFailed, onStart
@@ -552,12 +557,6 @@
                     };
 
                 connection.transport = transport;
-
-                if (transportName.indexOf("_") === 0) {
-                    // Private member
-                    initialize(transports, index + 1);
-                    return;
-                }
 
                 try {
                     connection._.onFailedTimeoutHandle = window.setTimeout(function () {
@@ -580,9 +579,11 @@
 
                             window.clearTimeout(connection._.onFailedTimeoutHandle);
 
-                            if (transport.supportsKeepAlive && connection.keepAliveData.activated) {
+                            if (transport.supportsKeepAlive && connection._.keepAliveData.activated) {
                                 signalR.transports._logic.monitorKeepAlive(connection);
                             }
+
+                            signalR.transports._logic.startHeartbeat(connection);
 
                             // Used to ensure low activity clients maintain their authentication.
                             // Must be configured once a transport has been decided to perform valid ping requests.
@@ -678,7 +679,7 @@
                             return;
                         }
 
-                        keepAliveData = connection.keepAliveData;
+                        keepAliveData = connection._.keepAliveData;
                         connection.appRelativeUrl = res.Url;
                         connection.id = res.ConnectionId;
                         connection.token = res.ConnectionToken;
@@ -703,10 +704,12 @@
                             keepAliveData.timeoutWarning = keepAliveData.timeout * connection.keepAliveWarnAt;
 
                             // Instantiate the frequency in which we check the keep alive.  It must be short in order to not miss/pick up any changes
-                            keepAliveData.checkInterval = (keepAliveData.timeout - keepAliveData.timeoutWarning) / 3;
+                            connection._.beatInterval = (keepAliveData.timeout - keepAliveData.timeoutWarning) / 3;
                         } else {
                             keepAliveData.activated = false;
                         }
+
+                        connection.reconnectWindow = connection.disconnectTimeout + (keepAliveData.timeout || 0);
 
                         if (!res.ProtocolVersion || res.ProtocolVersion !== connection.clientProtocol) {
                             protocolError = signalR._.error(signalR._.format(resources.protocolIncompatible, connection.clientProtocol, res.ProtocolVersion));
@@ -717,30 +720,24 @@
                         }
 
                         $.each(signalR.transports, function (key) {
-                            if (key === "webSockets" && !res.TryWebSockets) {
-                                // Server said don't even try WebSockets, but keep processing the loop
-                                // BUG: We should check to see if the user passed in only the webSockets transport
-                                //      in which case we should exit right now.
+                            if ((key.indexOf("_") === 0) || (key === "webSockets" && !res.TryWebSockets)) {
                                 return true;
                             }
                             supportedTransports.push(key);
                         });
 
                         if ($.isArray(config.transport)) {
-                            // ordered list provided
-                            $.each(config.transport, function () {
-                                var transport = this;
-                                if ($.type(transport) === "object" || ($.type(transport) === "string" && $.inArray("" + transport, supportedTransports) >= 0)) {
-                                    transports.push($.type(transport) === "string" ? "" + transport : transport);
+                            $.each(config.transport, function (transport) {
+                                if ($.inArray(transport, supportedTransports) >= 0) {
+                                    transports.push(transport);
                                 }
-                            });
-                        } else if ($.type(config.transport) === "object" ||
-                                        $.inArray(config.transport, supportedTransports) >= 0) {
-                            // specific transport provided, as object or a named transport, e.g. "longPolling"
-                            transports.push(config.transport);
-                        } else { // default "auto"
+                            });                        
+                        } else if (config.transport === "auto") {
                             transports = supportedTransports;
+                        } else if ($.inArray(config.transport, supportedTransports) >= 0) {
+                            transports.push(config.transport);
                         }
+
                         initialize(transports);
                     }
                 }
@@ -903,6 +900,7 @@
                 connection.log("Stopping connection.");
 
                 // Clear this no matter what
+                window.clearTimeout(connection._.beatHandle);
                 window.clearTimeout(connection._.onFailedTimeoutHandle);
                 window.clearInterval(connection._.pingIntervalId);
 
@@ -911,7 +909,7 @@
                         connection.transport.abort(connection, async);
                     }
 
-                    if (connection.transport.supportsKeepAlive && connection.keepAliveData.activated) {
+                    if (connection.transport.supportsKeepAlive && connection._.keepAliveData.activated) {
                         signalR.transports._logic.stopMonitoringKeepAlive(connection);
                     }
 
@@ -932,6 +930,7 @@
                 delete connection.groupsToken;
                 delete connection.id;
                 delete connection._.pingIntervalId;
+                delete connection._.lastMessageAt;
 
                 // Clear out our message buffer
                 connection._.connectingMessageBuffer.clear();

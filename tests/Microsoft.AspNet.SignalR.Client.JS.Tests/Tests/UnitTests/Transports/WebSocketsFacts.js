@@ -12,3 +12,52 @@ QUnit.test("Named Correctly", function () {
     var con = $.connection;
     QUnit.equal(con.transports.webSockets.name, "webSockets", "Verifies WebSockets is named correctly.");
 });
+
+QUnit.test("Pinging server with WebSockets uses correct URL", function () {
+    var savedAjax = $.ajax,
+        connection = {
+            baseUrl: "foo",
+            appRelativeUrl: "bar",
+            url: "correct",
+            transport: "webSockets"
+        },
+        ajaxCalled = false;
+
+    try {
+        $.ajax = function (settings) {
+            QUnit.equal(settings.url, connection.url + "/ping", "Connection URL was correct for ping.");
+            ajaxCalled = true;
+        };
+
+        $.signalR.transports._logic.pingServer(connection);
+    } catch (e) {
+        QUnit.fail("Something threw when it shouldn't have: " + e.toString());
+    } finally {
+        $.ajax = savedAjax;
+    }
+
+    QUnit.isTrue(ajaxCalled, "Ajax was called.");
+});
+
+QUnit.asyncTimeoutTest("Client forces webSockets but server does not suppport it.", testUtilities.defaultTestTimeout, function (end, assert, testName) {
+    var connection = testUtilities.createHubConnection(end, assert, testName, undefined, false),
+        oldParse = connection._parseResponse;
+    connection._parseResponse = function (response) {
+        var result = oldParse.call(this, response);
+        result.TryWebSockets = false;
+        return result;
+    }
+
+    connection.start({ transport: "webSockets" }).done(function () {
+        assert.fail("Connection started");
+        end();
+    }).fail(function (error) {
+        assert.comment(error);
+        end();
+    });
+
+    // Cleanup
+    return function () {
+        connection.stop();
+    };
+});

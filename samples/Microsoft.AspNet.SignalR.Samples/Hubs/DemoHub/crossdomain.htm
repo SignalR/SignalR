@@ -4,12 +4,12 @@
     <title></title>
     <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
     <script src="../../Scripts/signalr.samples.js" type="text/javascript"></script>
-    <script src="../../Scripts/jquery-1.6.4.min.js" type="text/javascript"></script>
+    <script src="../../Scripts/jquery-1.8.2.min.js" type="text/javascript"></script>
     <script src="../../Scripts/json2.min.js" type="text/javascript"></script>
     <script src="../../Scripts/jquery.signalR.js" type="text/javascript"></script>
-    <script src="http://localhost:8081/signalr/js" type="text/javascript"></script>
+    <script src="http://localhost:8080/signalr/js" type="text/javascript"></script>
     <script type="text/javascript">
-        $.connection.hub.url = 'http://localhost:8081/signalr';
+        $.connection.hub.url = 'http://localhost:8080/signalr';
     </script>
     <script src="DemoHub.js" type="text/javascript"></script>
 </head>
@@ -66,8 +66,8 @@
     <div id="plainTask">
     </div>
 
-    <h3>Generic Task With ContinueWith</h3>
-    <div id="genericTaskWithContinueWith">
+    <h3>Typed Callback</h3>
+    <div id="typed">
     </div>
 
     <h3>Message Pump</h3>

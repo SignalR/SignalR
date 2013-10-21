@@ -1,5 +1,6 @@
 ﻿$(function () {
     var demo = $.connection.demo,
+        typedDemo = $.connection.typedDemoHub,
         groupAddedCalled = false;
 
     demo.client.invoke = function (index) {
@@ -26,9 +27,17 @@
         throw new "This should never called because it's mispelled on the server side";
     };
 
+    typedDemo.client.echo = function (message, invokeCount) {
+        $('#typed').append('<p>' + message + ' #' + invokeCount + ' triggered!</p>')
+    };
+
     $.connection.hub.logging = true;
 
     $.connection.hub.start({ transport: activeTransport }, function () {
+
+        typedDemo.server.echo("Typed echo callback").done(function () {
+            $('#typed').append('<p>TypedDemoHub.Echo(string message) invoked!</p>')
+        });
 
         demo.server.getValue().done(function (value) {
             $('#value').html('The value is ' + value + ' after 5 seconds');
@@ -71,16 +80,16 @@
         });
 
         demo.server.taskWithException().fail(function (e) {
-            $('#taskWithException').html(e);
+            $('#taskWithException').html(e.toString());
         });
 
         demo.server.genericTaskWithException().fail(function (e) {
-            $('#genericTaskWithException').html(e);
+            $('#genericTaskWithException').html(e.toString());
         });
 
 
         demo.server.synchronousException().fail(function (e) {
-            $('#synchronousException').html(e);
+            $('#synchronousException').html(e.toString());
         });
 
         demo.server.overload().done(function () {

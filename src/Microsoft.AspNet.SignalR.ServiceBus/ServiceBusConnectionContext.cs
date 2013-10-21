@@ -1,4 +1,6 @@
-﻿using System;
+﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.md in the project root for license information.
+
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
@@ -22,6 +24,7 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
         public IList<string> TopicNames { get; private set; }
         public Action<int, IEnumerable<BrokeredMessage>> Handler { get; private set; }
         public Action<int, Exception> ErrorHandler { get; private set; }
+        public Action<int> OpenStream { get; private set; }
 
         public bool IsDisposed { get; private set; }
 
@@ -29,7 +32,8 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
                                            NamespaceManager namespaceManager,
                                            IList<string> topicNames,
                                            Action<int, IEnumerable<BrokeredMessage>> handler,
-                                           Action<int, Exception> errorHandler)
+                                           Action<int, Exception> errorHandler,
+                                           Action<int> openStream)
         {
             if (topicNames == null)
             {
@@ -45,6 +49,7 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
             TopicNames = topicNames;
             Handler = handler;
             ErrorHandler = errorHandler;
+            OpenStream = openStream;
 
             TopicClientsLock = new object();
             SubscriptionsLock = new object();

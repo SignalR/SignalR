@@ -142,7 +142,7 @@ testUtilities.runWithAllTransports(function (transport) {
                         }, 900);
                     });
                 }, 1500);
-            }, 2500);
+            }, 3000);
         });
 
         // Cleanup
@@ -213,6 +213,35 @@ testUtilities.runWithAllTransports(function (transport) {
         // Cleanup
         return function () {
             $.ajax = savedAjax;
+            connection.stop();
+        };
+    });
+
+    QUnit.asyncTimeoutTest(transport + ": Reconnect exceeding the reconnect window results in the connection disconnecting.", testUtilities.defaultTestTimeout * 2, function (end, assert, testName) {
+        var connection = testUtilities.createHubConnection(end, assert, testName, undefined, false);
+       
+        connection.reconnecting(function () {
+            assert.comment("Reconnecting fired.");
+            connection.reconnectWindow = 500;
+        });
+
+        connection.disconnected(function () {
+            assert.comment("Disconnected fired.");
+            end();
+        });
+
+        connection.start({ transport: transport }).done(function () {
+            connection._.beatInterval = 5000;
+
+            // Wait for the transports to settle (no messages flowing)
+            setTimeout(function () {
+                $.network.disconnect();
+            }, 1000);
+        });
+
+        // Cleanup
+        return function () {
+            $.network.connect();
             connection.stop();
         };
     });

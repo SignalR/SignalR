@@ -13,17 +13,25 @@
 
     signalR.transports = {};
 
+    function beat(connection) {
+        if (connection._.keepAliveData.monitoring) {
+            checkIfAlive(connection);
+        }
+
+        transportLogic.markActive(connection);
+
+        connection._.beatHandle = window.setTimeout(function () {
+            beat(connection);
+        }, connection._.beatInterval);
+    }
+
     function checkIfAlive(connection) {
-        var keepAliveData = connection.keepAliveData,
-            diff,
+        var keepAliveData = connection._.keepAliveData,
             timeElapsed;
 
         // Only check if we're connected
         if (connection.state === signalR.connectionState.connected) {
-            diff = new Date();
-
-            diff.setTime(diff - keepAliveData.lastKeepAlive);
-            timeElapsed = diff.getTime();
+            timeElapsed = new Date().getTime() - connection._.lastMessageAt;
 
             // Check if the keep alive has completely timed out
             if (timeElapsed >= keepAliveData.timeout) {
@@ -41,15 +49,6 @@
             } else {
                 keepAliveData.userNotified = false;
             }
-        }
-
-        // Verify we're monitoring the keep alive
-        // We don't want this as a part of the inner if statement above because we want keep alives to continue to be checked
-        // in the event that the server comes back online (if it goes offline).
-        if (keepAliveData.monitoring) {
-            window.setTimeout(function () {
-                checkIfAlive(connection);
-            }, keepAliveData.checkInterval);
         }
     }
 
@@ -73,11 +72,10 @@
             /// <summary>Pings the server</summary>
             /// <param name="connection" type="signalr">Connection associated with the server ping</param>
             /// <returns type="signalR" />
-            var baseUrl, url, deferral = $.Deferred(), xhr;
+            var url, deferral = $.Deferred(), xhr;
 
             if (connection.transport) {
-                baseUrl = connection.transport.name === "webSockets" ? "" : connection.baseUrl;
-                url = baseUrl + connection.appRelativeUrl + "/ping";
+                url = connection.url + "/ping";
 
                 url = transportLogic.prepareQueryString(connection, url);
 
@@ -336,11 +334,8 @@
             var data,
                 $connection = $(connection);
 
-            // If our transport supports keep alive then we need to update the last keep alive time stamp.
-            // Very rarely the transport can be null.
-            if (connection.transport && connection.transport.supportsKeepAlive && connection.keepAliveData.activated) {
-                this.updateKeepAlive(connection);
-            }
+            // Update the last message time stamp
+            transportLogic.markLastMessage(connection);
 
             if (minData) {
                 data = this.maximizePersistentResponse(minData);
@@ -370,34 +365,31 @@
         },
 
         monitorKeepAlive: function (connection) {
-            var keepAliveData = connection.keepAliveData,
-                that = this;
+            var keepAliveData = connection._.keepAliveData;
 
             // If we haven't initiated the keep alive timeouts then we need to
             if (!keepAliveData.monitoring) {
                 keepAliveData.monitoring = true;
 
-                // Initialize the keep alive time stamp ping
-                that.updateKeepAlive(connection);
+                transportLogic.markLastMessage(connection);
 
                 // Save the function so we can unbind it on stop
-                connection.keepAliveData.reconnectKeepAliveUpdate = function () {
-                    that.updateKeepAlive(connection);
+                connection._.keepAliveData.reconnectKeepAliveUpdate = function () {
+                    // Mark a new message so that keep alive doesn't time out connections
+                    transportLogic.markLastMessage(connection);
                 };
 
                 // Update Keep alive on reconnect
-                $(connection).bind(events.onReconnect, connection.keepAliveData.reconnectKeepAliveUpdate);
+                $(connection).bind(events.onReconnect, connection._.keepAliveData.reconnectKeepAliveUpdate);
 
                 connection.log("Now monitoring keep alive with a warning timeout of " + keepAliveData.timeoutWarning + " and a connection lost timeout of " + keepAliveData.timeout + ".");
-                // Start the monitoring of the keep alive
-                checkIfAlive(connection);
             } else {
                 connection.log("Tried to monitor keep alive but it's already being monitored.");
             }
         },
 
         stopMonitoringKeepAlive: function (connection) {
-            var keepAliveData = connection.keepAliveData;
+            var keepAliveData = connection._.keepAliveData;
 
             // Only attempt to stop the keep alive monitoring if its being monitored
             if (keepAliveData.monitoring) {
@@ -405,16 +397,24 @@
                 keepAliveData.monitoring = false;
 
                 // Remove the updateKeepAlive function from the reconnect event
-                $(connection).unbind(events.onReconnect, connection.keepAliveData.reconnectKeepAliveUpdate);
+                $(connection).unbind(events.onReconnect, connection._.keepAliveData.reconnectKeepAliveUpdate);
 
                 // Clear all the keep alive data
-                connection.keepAliveData = {};
+                connection._.keepAliveData = {};
                 connection.log("Stopping the monitoring of the keep alive.");
             }
         },
 
-        updateKeepAlive: function (connection) {
-            connection.keepAliveData.lastKeepAlive = new Date();
+        startHeartbeat: function(connection) {
+            beat(connection);
+        },
+
+        markLastMessage: function (connection) {
+            connection._.lastMessageAt = new Date().getTime();
+        },
+
+        markActive: function(connection) {
+            connection._.lastActiveAt = new Date().getTime();
         },
 
         ensureReconnectingState: function (connection) {
@@ -433,6 +433,16 @@
             }
         },
 
+        verifyReconnect: function (connection) {
+            if (new Date().getTime() - connection._.lastActiveAt >= connection.reconnectWindow) {
+                connection.log("There has not been an active server connection for an extended period of time. Stopping connection.");
+                connection.stop();
+                return false;
+            }
+
+            return true;
+        },
+
         reconnect: function (connection, transportName) {
             var transport = signalR.transports[transportName],
                 that = this;
@@ -441,6 +451,10 @@
             // and a reconnectTimeout isn't already set.
             if (isConnectedOrReconnecting(connection) && !connection._.reconnectTimeout) {
                 connection._.reconnectTimeout = window.setTimeout(function () {
+                    if (!transportLogic.verifyReconnect(connection)) {
+                        return;
+                    }
+
                     transport.stop(connection);
 
                     if (that.ensureReconnectingState(connection)) {
