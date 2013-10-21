@@ -68,10 +68,11 @@ window.sessionStorage.clear();
 
             return defaultTestTimeout;
         })(),
-        createHubConnection: function (end, assert, testName, url) {
+        createHubConnection: function (end, assert, testName, url, wrapStart) {
             var connection,
-                qs = (testName ? "test=" + window.encodeURIComponent(testName) : ""),
-                urlSet = !!url;
+                qs = (testName ? "test=" + window.encodeURIComponent(testName) : "");
+
+            wrapStart = typeof wrapStart === "undefined" ? true : false;
 
             url = url ? url : 'signalr';
             if (window.document.testUrl !== 'auto') {
@@ -80,13 +81,18 @@ window.sessionStorage.clear();
 
             connection = $.hubConnection(url, { useDefaultPath: false, qs: qs })
             connection.logging = true;
-            wrapConnectionStart(connection, end, assert);
+
+            if (wrapStart) {
+                wrapConnectionStart(connection, end, assert);
+            }
 
             return connection;
         },
-        createConnection: function (url, end, assert, testName) {
+        createConnection: function (url, end, assert, testName, wrapStart) {
             var connection,
                 qs = (testName ? "test=" + window.encodeURIComponent(testName) : "");
+
+            wrapStart = typeof wrapStart === "undefined" ? true : false;
 
             if (window.document.testUrl !== 'auto') {
                 url = window.document.testUrl + url;
@@ -94,7 +100,10 @@ window.sessionStorage.clear();
 
             connection = $.connection(url, qs);
             connection.logging = true;
-            wrapConnectionStart(connection, end, assert);
+
+            if (wrapStart) {
+                wrapConnectionStart(connection, end, assert);
+            }
 
             return connection;
         }

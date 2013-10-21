@@ -768,43 +768,40 @@
                 return;
             }
 
-            try {
-                connection.log("Stopping connection.");
+            connection.log("Stopping connection.");
 
-                window.clearTimeout(connection._.beatHandle);
-                window.clearInterval(connection._.pingIntervalId);
+            changeState(connection, connection.state, signalR.connectionState.disconnected);
 
-                if (connection.transport) {
-                    if (notifyServer !== false) {
-                        connection.transport.abort(connection, async);
-                    }
+            window.clearTimeout(connection._.beatHandle);
+            window.clearInterval(connection._.pingIntervalId);
 
-                    if (connection.transport.supportsKeepAlive && connection._.keepAliveData.activated) {
-                        signalR.transports._logic.stopMonitoringKeepAlive(connection);
-                    }
-
-                    connection.transport.stop(connection);
-                    connection.transport = null;
+            if (connection.transport) {
+                if (notifyServer !== false) {
+                    connection.transport.abort(connection, async);
                 }
 
-                if (connection._.negotiateRequest) {
-                    // If the negotiation request has already completed this will noop.
+                if (connection.transport.supportsKeepAlive && connection._.keepAliveData.activated) {
+                    signalR.transports._logic.stopMonitoringKeepAlive(connection);
+                }
+
+                connection.transport.stop(connection);
+                connection.transport = null;
+            }
+
+            if (connection._.negotiateRequest) {
+                // If the negotiation request has already completed this will noop.
                     connection._.negotiateRequest.abort(connection._.negotiateAbortText);
-                    delete connection._.negotiateRequest;
-                }
-
-                // Trigger the disconnect event
-                $(connection).triggerHandler(events.onDisconnect);
-
-                delete connection.messageId;
-                delete connection.groupsToken;
-                delete connection.id;
-                delete connection._.pingIntervalId;
-                delete connection._.lastMessageAt;
+                delete connection._.negotiateRequest;
             }
-            finally {
-                changeState(connection, connection.state, signalR.connectionState.disconnected);
-            }
+
+            // Trigger the disconnect event
+            $(connection).triggerHandler(events.onDisconnect);
+
+            delete connection.messageId;
+            delete connection.groupsToken;
+            delete connection.id;
+            delete connection._.pingIntervalId;
+            delete connection._.lastMessageAt;
 
             return connection;
         },
