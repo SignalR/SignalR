@@ -727,7 +727,7 @@
                         });
 
                         if ($.isArray(config.transport)) {
-                            $.each(config.transport, function (transport) {
+                            $.each(config.transport, function (_, transport) {
                                 if ($.inArray(transport, supportedTransports) >= 0) {
                                     transports.push(transport);
                                 }
