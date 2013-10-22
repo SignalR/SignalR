@@ -40,6 +40,10 @@ $(function () {
     var connection = $.connection.hub;
     connection.logging = true;
 
+    connection.log = function (msg) {
+        writeLine(msg);
+    }
+
     connection.connectionSlow(function () {
         writeEvent("connectionSlow id: " + connection.id + " state: " + printState(connection.state) + " transport: " + connection.transport.name);
     });

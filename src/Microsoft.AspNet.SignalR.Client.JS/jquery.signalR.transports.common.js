@@ -32,6 +32,7 @@
         // Only check if we're connected
         if (connection.state === signalR.connectionState.connected) {
             timeElapsed = new Date().getTime() - connection._.lastMessageAt;
+            connection.log("checkIfAlive timeElapsed: " + timeElapsed);
 
             // Check if the keep alive has completely timed out
             if (timeElapsed >= keepAliveData.timeout) {
@@ -47,7 +48,7 @@
                     keepAliveData.userNotified = true;
                 }
             } else {
-                keepAliveData.userNotified = false;
+                keepAliveData.userNotified = false;                
             }
         }
     }
@@ -411,10 +412,12 @@
 
         markLastMessage: function (connection) {
             connection._.lastMessageAt = new Date().getTime();
+            connection.log("markLastMessage");
         },
 
         markActive: function(connection) {
             connection._.lastActiveAt = new Date().getTime();
+            connection.log("markActive");
         },
 
         ensureReconnectingState: function (connection) {
@@ -434,6 +437,7 @@
         },
 
         verifyReconnect: function (connection) {
+            connection.log("verifyReconnect");
             if (new Date().getTime() - connection._.lastActiveAt >= connection.reconnectWindow) {
                 connection.log("There has not been an active server connection for an extended period of time. Stopping connection.");
                 connection.stop();
