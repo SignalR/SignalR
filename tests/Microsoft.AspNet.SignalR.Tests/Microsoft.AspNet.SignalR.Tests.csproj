@@ -89,6 +89,7 @@
     <Compile Include="BufferTextWriterFacts.cs" />
     <Compile Include="Server\AckHandlerFacts.cs" />
     <Compile Include="Server\Hubs\HubFacts.cs" />
+    <Compile Include="Server\Hubs\HubProgressFacts.cs" />
     <Compile Include="Server\Hubs\TypedClientBuilderFacts.cs" />
     <Compile Include="Server\ProtocolResolverFacts.cs" />
     <Compile Include="Server\ServiceBusConfigurationFacts.cs" />

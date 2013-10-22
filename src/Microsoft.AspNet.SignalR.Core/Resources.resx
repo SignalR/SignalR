@@ -168,6 +168,9 @@
   <data name="Error_HubInvocationFailed" xml:space="preserve">
     <value>There was an error invoking Hub method '{0}.{1}'.</value>
   </data>
+  <data name="Error_HubProgressOnlyReportableBeforeMethodReturns" xml:space="preserve">
+    <value>You cannot report progress on a hub method invocation that has already completed.</value>
+  </data>
   <data name="Error_InvalidCursorFormat" xml:space="preserve">
     <value>Invalid cursor.</value>
   </data>

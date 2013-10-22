@@ -57,7 +57,7 @@ namespace Microsoft.AspNet.SignalR.Hubs
             {
                 if (_complete)
                 {
-                    throw new InvalidOperationException("You cannot report progress on a hub method invocation that has already completed.");
+                    throw new InvalidOperationException(Resources.Error_HubProgressOnlyReportableBeforeMethodReturns);
                 }
 
                 // Send progress update to client

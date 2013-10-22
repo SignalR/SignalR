@@ -41,5 +41,146 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Server.Hubs
                 }
             }
         }
+
+        [Theory]
+        [InlineData(HostType.IISExpress, TransportType.Websockets, MessageBusType.Default)]
+        [InlineData(HostType.IISExpress, TransportType.LongPolling, MessageBusType.Default)]
+        [InlineData(HostType.HttpListener, TransportType.Websockets, MessageBusType.FakeMultiStream)]
+        [InlineData(HostType.HttpListener, TransportType.ServerSentEvents, MessageBusType.Default)]
+        [InlineData(HostType.HttpListener, TransportType.LongPolling, MessageBusType.Default)]
+        [InlineData(HostType.HttpListener, TransportType.LongPolling, MessageBusType.FakeMultiStream)]
+        public async Task HubProgressThrowsInvalidOperationExceptionIfAttemptToReportProgressAfterMethodReturn(HostType hostType, TransportType transportType, MessageBusType messageBusType)
+        {
+            using (var host = CreateHost(hostType, transportType))
+            {
+                host.Initialize(messageBusType: messageBusType);
+
+                HubConnection hubConnection = CreateHubConnection(host);
+                IHubProxy proxy = hubConnection.CreateHubProxy("progress");
+                
+                proxy.On<bool>("sendProgressAfterMethodReturnResult", result => Assert.True(result));
+
+                using (hubConnection)
+                {
+                    await hubConnection.Start(host.Transport);
+
+                    await proxy.Invoke<int>("SendProgressAfterMethodReturn", _ => { });
+                }
+            }
+        }
+
+        [Theory]
+        [InlineData(HostType.IISExpress, TransportType.Websockets, MessageBusType.Default)]
+        [InlineData(HostType.IISExpress, TransportType.LongPolling, MessageBusType.Default)]
+        [InlineData(HostType.HttpListener, TransportType.Websockets, MessageBusType.FakeMultiStream)]
+        [InlineData(HostType.HttpListener, TransportType.ServerSentEvents, MessageBusType.Default)]
+        [InlineData(HostType.HttpListener, TransportType.LongPolling, MessageBusType.Default)]
+        [InlineData(HostType.HttpListener, TransportType.LongPolling, MessageBusType.FakeMultiStream)]
+        public async Task HubProgressReportsProgressForInt(HostType hostType, TransportType transportType, MessageBusType messageBusType)
+        {
+            using (var host = CreateHost(hostType, transportType))
+            {
+                host.Initialize(messageBusType: messageBusType);
+
+                HubConnection hubConnection = CreateHubConnection(host);
+                IHubProxy proxy = hubConnection.CreateHubProxy("progress");
+
+                using (hubConnection)
+                {
+                    await hubConnection.Start(host.Transport);
+
+                    await proxy.Invoke<int>("ReportProgressInt", progress => Assert.Equal(100, progress));
+                }
+            }
+        }
+
+        [Theory]
+        [InlineData(HostType.IISExpress, TransportType.Websockets, MessageBusType.Default)]
+        [InlineData(HostType.IISExpress, TransportType.LongPolling, MessageBusType.Default)]
+        [InlineData(HostType.HttpListener, TransportType.Websockets, MessageBusType.FakeMultiStream)]
+        [InlineData(HostType.HttpListener, TransportType.ServerSentEvents, MessageBusType.Default)]
+        [InlineData(HostType.HttpListener, TransportType.LongPolling, MessageBusType.Default)]
+        [InlineData(HostType.HttpListener, TransportType.LongPolling, MessageBusType.FakeMultiStream)]
+        public async Task HubProgressReportsProgressForString(HostType hostType, TransportType transportType, MessageBusType messageBusType)
+        {
+            using (var host = CreateHost(hostType, transportType))
+            {
+                host.Initialize(messageBusType: messageBusType);
+
+                HubConnection hubConnection = CreateHubConnection(host);
+                IHubProxy proxy = hubConnection.CreateHubProxy("progress");
+
+                using (hubConnection)
+                {
+                    await hubConnection.Start(host.Transport);
+
+                    await proxy.Invoke<string>("ReportProgressString", progress => Assert.Equal("Progress is 100%", progress));
+                }
+            }
+        }
+
+        [Theory]
+        [InlineData(HostType.IISExpress, TransportType.Websockets, MessageBusType.Default)]
+        [InlineData(HostType.IISExpress, TransportType.LongPolling, MessageBusType.Default)]
+        [InlineData(HostType.HttpListener, TransportType.Websockets, MessageBusType.FakeMultiStream)]
+        [InlineData(HostType.HttpListener, TransportType.ServerSentEvents, MessageBusType.Default)]
+        [InlineData(HostType.HttpListener, TransportType.LongPolling, MessageBusType.Default)]
+        [InlineData(HostType.HttpListener, TransportType.LongPolling, MessageBusType.FakeMultiStream)]
+        public async Task HubProgressReportsProgressForCustomType(HostType hostType, TransportType transportType, MessageBusType messageBusType)
+        {
+            using (var host = CreateHost(hostType, transportType))
+            {
+                host.Initialize(messageBusType: messageBusType);
+
+                HubConnection hubConnection = CreateHubConnection(host);
+                IHubProxy proxy = hubConnection.CreateHubProxy("progress");
+
+                using (hubConnection)
+                {
+                    await hubConnection.Start(host.Transport);
+
+                    await proxy.Invoke<ProgressUpdate>("ReportProgressTyped", progress =>
+                    {
+                        Assert.Equal(100, progress.Percent);
+                        Assert.Equal("Progress is 100%", progress.Message);
+                    });
+                }
+            }
+        }
+
+        [Theory]
+        [InlineData(HostType.IISExpress, TransportType.Websockets, MessageBusType.Default)]
+        [InlineData(HostType.IISExpress, TransportType.LongPolling, MessageBusType.Default)]
+        [InlineData(HostType.HttpListener, TransportType.Websockets, MessageBusType.FakeMultiStream)]
+        [InlineData(HostType.HttpListener, TransportType.ServerSentEvents, MessageBusType.Default)]
+        [InlineData(HostType.HttpListener, TransportType.LongPolling, MessageBusType.Default)]
+        [InlineData(HostType.HttpListener, TransportType.LongPolling, MessageBusType.FakeMultiStream)]
+        public async Task HubProgressReportsProgressForDynamic(HostType hostType, TransportType transportType, MessageBusType messageBusType)
+        {
+            using (var host = CreateHost(hostType, transportType))
+            {
+                host.Initialize(messageBusType: messageBusType);
+
+                HubConnection hubConnection = CreateHubConnection(host);
+                IHubProxy proxy = hubConnection.CreateHubProxy("progress");
+
+                using (hubConnection)
+                {
+                    await hubConnection.Start(host.Transport);
+
+                    await proxy.Invoke<dynamic>("ReportProgressDynamic", progress =>
+                    {
+                        Assert.Equal(100, (int)progress.Percent);
+                        Assert.Equal("Progress is 100%", (string)progress.Message);
+                    });
+                }
+            }
+        }
+
+        public class ProgressUpdate
+        {
+            public int Percent { get; set; }
+            public string Message { get; set; }
+        }
     }
 }
