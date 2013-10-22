@@ -14,10 +14,13 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Server.Hubs
     {
         [Theory]
         [InlineData(HostType.IISExpress, TransportType.Websockets, MessageBusType.Default)]
+        [InlineData(HostType.IISExpress, TransportType.ServerSentEvents, MessageBusType.Default)]
         [InlineData(HostType.IISExpress, TransportType.LongPolling, MessageBusType.Default)]
-        [InlineData(HostType.HttpListener, TransportType.Websockets, MessageBusType.FakeMultiStream)]
+        [InlineData(HostType.HttpListener, TransportType.Websockets, MessageBusType.Default)]
         [InlineData(HostType.HttpListener, TransportType.ServerSentEvents, MessageBusType.Default)]
         [InlineData(HostType.HttpListener, TransportType.LongPolling, MessageBusType.Default)]
+        [InlineData(HostType.HttpListener, TransportType.Websockets, MessageBusType.FakeMultiStream)]
+        [InlineData(HostType.HttpListener, TransportType.ServerSentEvents, MessageBusType.FakeMultiStream)]
         [InlineData(HostType.HttpListener, TransportType.LongPolling, MessageBusType.FakeMultiStream)]
         public async Task HubProgressIsReportedSuccessfully(HostType hostType, TransportType transportType, MessageBusType messageBusType)
         {
@@ -44,10 +47,13 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Server.Hubs
 
         [Theory]
         [InlineData(HostType.IISExpress, TransportType.Websockets, MessageBusType.Default)]
+        [InlineData(HostType.IISExpress, TransportType.ServerSentEvents, MessageBusType.Default)]
         [InlineData(HostType.IISExpress, TransportType.LongPolling, MessageBusType.Default)]
-        [InlineData(HostType.HttpListener, TransportType.Websockets, MessageBusType.FakeMultiStream)]
+        [InlineData(HostType.HttpListener, TransportType.Websockets, MessageBusType.Default)]
         [InlineData(HostType.HttpListener, TransportType.ServerSentEvents, MessageBusType.Default)]
         [InlineData(HostType.HttpListener, TransportType.LongPolling, MessageBusType.Default)]
+        [InlineData(HostType.HttpListener, TransportType.Websockets, MessageBusType.FakeMultiStream)]
+        [InlineData(HostType.HttpListener, TransportType.ServerSentEvents, MessageBusType.FakeMultiStream)]
         [InlineData(HostType.HttpListener, TransportType.LongPolling, MessageBusType.FakeMultiStream)]
         public async Task HubProgressThrowsInvalidOperationExceptionIfAttemptToReportProgressAfterMethodReturn(HostType hostType, TransportType transportType, MessageBusType messageBusType)
         {
@@ -71,10 +77,13 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Server.Hubs
 
         [Theory]
         [InlineData(HostType.IISExpress, TransportType.Websockets, MessageBusType.Default)]
+        [InlineData(HostType.IISExpress, TransportType.ServerSentEvents, MessageBusType.Default)]
         [InlineData(HostType.IISExpress, TransportType.LongPolling, MessageBusType.Default)]
-        [InlineData(HostType.HttpListener, TransportType.Websockets, MessageBusType.FakeMultiStream)]
+        [InlineData(HostType.HttpListener, TransportType.Websockets, MessageBusType.Default)]
         [InlineData(HostType.HttpListener, TransportType.ServerSentEvents, MessageBusType.Default)]
         [InlineData(HostType.HttpListener, TransportType.LongPolling, MessageBusType.Default)]
+        [InlineData(HostType.HttpListener, TransportType.Websockets, MessageBusType.FakeMultiStream)]
+        [InlineData(HostType.HttpListener, TransportType.ServerSentEvents, MessageBusType.FakeMultiStream)]
         [InlineData(HostType.HttpListener, TransportType.LongPolling, MessageBusType.FakeMultiStream)]
         public async Task HubProgressReportsProgressForInt(HostType hostType, TransportType transportType, MessageBusType messageBusType)
         {
@@ -96,10 +105,13 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Server.Hubs
 
         [Theory]
         [InlineData(HostType.IISExpress, TransportType.Websockets, MessageBusType.Default)]
+        [InlineData(HostType.IISExpress, TransportType.ServerSentEvents, MessageBusType.Default)]
         [InlineData(HostType.IISExpress, TransportType.LongPolling, MessageBusType.Default)]
-        [InlineData(HostType.HttpListener, TransportType.Websockets, MessageBusType.FakeMultiStream)]
+        [InlineData(HostType.HttpListener, TransportType.Websockets, MessageBusType.Default)]
         [InlineData(HostType.HttpListener, TransportType.ServerSentEvents, MessageBusType.Default)]
         [InlineData(HostType.HttpListener, TransportType.LongPolling, MessageBusType.Default)]
+        [InlineData(HostType.HttpListener, TransportType.Websockets, MessageBusType.FakeMultiStream)]
+        [InlineData(HostType.HttpListener, TransportType.ServerSentEvents, MessageBusType.FakeMultiStream)]
         [InlineData(HostType.HttpListener, TransportType.LongPolling, MessageBusType.FakeMultiStream)]
         public async Task HubProgressReportsProgressForString(HostType hostType, TransportType transportType, MessageBusType messageBusType)
         {
@@ -121,10 +133,13 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Server.Hubs
 
         [Theory]
         [InlineData(HostType.IISExpress, TransportType.Websockets, MessageBusType.Default)]
+        [InlineData(HostType.IISExpress, TransportType.ServerSentEvents, MessageBusType.Default)]
         [InlineData(HostType.IISExpress, TransportType.LongPolling, MessageBusType.Default)]
-        [InlineData(HostType.HttpListener, TransportType.Websockets, MessageBusType.FakeMultiStream)]
+        [InlineData(HostType.HttpListener, TransportType.Websockets, MessageBusType.Default)]
         [InlineData(HostType.HttpListener, TransportType.ServerSentEvents, MessageBusType.Default)]
         [InlineData(HostType.HttpListener, TransportType.LongPolling, MessageBusType.Default)]
+        [InlineData(HostType.HttpListener, TransportType.Websockets, MessageBusType.FakeMultiStream)]
+        [InlineData(HostType.HttpListener, TransportType.ServerSentEvents, MessageBusType.FakeMultiStream)]
         [InlineData(HostType.HttpListener, TransportType.LongPolling, MessageBusType.FakeMultiStream)]
         public async Task HubProgressReportsProgressForCustomType(HostType hostType, TransportType transportType, MessageBusType messageBusType)
         {
@@ -150,10 +165,13 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Server.Hubs
 
         [Theory]
         [InlineData(HostType.IISExpress, TransportType.Websockets, MessageBusType.Default)]
+        [InlineData(HostType.IISExpress, TransportType.ServerSentEvents, MessageBusType.Default)]
         [InlineData(HostType.IISExpress, TransportType.LongPolling, MessageBusType.Default)]
-        [InlineData(HostType.HttpListener, TransportType.Websockets, MessageBusType.FakeMultiStream)]
+        [InlineData(HostType.HttpListener, TransportType.Websockets, MessageBusType.Default)]
         [InlineData(HostType.HttpListener, TransportType.ServerSentEvents, MessageBusType.Default)]
         [InlineData(HostType.HttpListener, TransportType.LongPolling, MessageBusType.Default)]
+        [InlineData(HostType.HttpListener, TransportType.Websockets, MessageBusType.FakeMultiStream)]
+        [InlineData(HostType.HttpListener, TransportType.ServerSentEvents, MessageBusType.FakeMultiStream)]
         [InlineData(HostType.HttpListener, TransportType.LongPolling, MessageBusType.FakeMultiStream)]
         public async Task HubProgressReportsProgressForDynamic(HostType hostType, TransportType transportType, MessageBusType messageBusType)
         {
