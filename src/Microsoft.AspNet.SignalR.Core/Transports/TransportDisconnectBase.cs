@@ -26,7 +26,8 @@ namespace Microsoft.AspNet.SignalR.Transports
         private int _ended;
         private TransportConnectionStates _state;
 
-        internal static readonly Func<Task> _emptyTaskFunc = () => TaskAsyncHelper.Empty;
+        internal static readonly Func<Task> _emptyTaskFunc = () => TaskAsyncHelper.Empty; // TODO
+        internal static readonly Func<HostContext,Task> _emptyContextTaskFunc = (context) => TaskAsyncHelper.Empty;
 
         // The TCS that completes when the task returned by PersistentConnection.OnConnected does.
         internal TaskCompletionSource<object> _connectTcs;
@@ -109,7 +110,7 @@ namespace Microsoft.AspNet.SignalR.Transports
             set;
         }
 
-        public Func<Task> Disconnected { get; set; }
+        public Func<HostContext, Task> Disconnected { get; set; }
 
         public virtual CancellationToken CancellationToken
         {
@@ -251,10 +252,10 @@ namespace Microsoft.AspNet.SignalR.Transports
             // End the connection
             End();
 
-            var disconnected = Disconnected ?? _emptyTaskFunc;
+            var disconnected = Disconnected ?? _emptyContextTaskFunc;
 
             // Ensure delegate continues to use the C# Compiler static delegate caching optimization.
-            return disconnected().Catch((ex, state) => OnDisconnectError(ex, state), Trace)
+            return disconnected(Context).Catch((ex, state) => OnDisconnectError(ex, state), Trace)
                                  .Then(counters => counters.ConnectionsDisconnected.Increment(), _counters);
         }
 

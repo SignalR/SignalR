@@ -17,6 +17,8 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
         private volatile bool _drained;
         private readonly int? _maxSize;
         private long _size;
+        private Action<object> _dequeueAction;
+        private Action<Func<object, Task>, object> _invokeNextAction;
 
         public TaskQueue()
             : this(TaskAsyncHelper.Empty)
@@ -26,6 +28,8 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
         public TaskQueue(Task initialTask)
         {
             _lastQueuedTask = initialTask;
+            _dequeueAction = queue => Dequeue(queue);
+            _invokeNextAction = (next, nextState) => InvokeNext(next, nextState);
         }
 
         [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode", Justification = "This is shared code")]        
@@ -33,6 +37,8 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
         {
             _lastQueuedTask = initialTask;
             _maxSize = maxSize;
+            _dequeueAction = queue => Dequeue(queue);
+            _invokeNextAction = (next, nextState) => InvokeNext(next, nextState);
         }
 
 #if !CLIENT_NET45
@@ -83,31 +89,36 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
 #endif
                 }
 
-                Task newTask = _lastQueuedTask.Then((next, nextState) =>
-                {
-                    return next(nextState).Finally(s =>
-                    {
-                        var queue = (TaskQueue)s;
-                        if (queue._maxSize != null)
-                        {
-                            // Decrement the number of items left in the queue
-                            Interlocked.Decrement(ref queue._size);
-
-#if !CLIENT_NET45
-                            var counter = QueueSizeCounter;
-                            if (counter != null)
-                            {
-                                counter.Decrement();
-                            }
-#endif
-                        }
-                    },
-                    this);
-                },
-                taskFunc, state);
-
+                Task newTask = _lastQueuedTask.Then(_invokeNextAction, taskFunc, state);
                 _lastQueuedTask = newTask;
                 return newTask;
+            }
+        }
+
+        private Task InvokeNext(Func<object, Task> next, object nextState)
+        {
+            return next(nextState).Finally(_dequeueAction, this);
+        }
+
+#if !CLIENT_NET45
+        private void Dequeue(object state)
+#else
+        private static void Dequeue(object state)
+#endif
+        {
+            var queue = (TaskQueue)state;
+            if (queue._maxSize != null)
+            {
+                // Decrement the number of items left in the queue
+                Interlocked.Decrement(ref queue._size);
+
+#if !CLIENT_NET45
+                var counter = QueueSizeCounter;
+                if (counter != null)
+                {
+                    counter.Decrement();
+                }
+#endif
             }
         }
 

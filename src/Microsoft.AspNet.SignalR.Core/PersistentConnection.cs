@@ -234,40 +234,53 @@ namespace Microsoft.AspNet.SignalR
             string groupName = PrefixHelper.GetPersistentConnectionGroupName(DefaultSignalRaw);
             Groups = new GroupManager(connection, groupName);
 
-            Transport.TransportConnected = () =>
-            {
-                var command = new ServerCommand
-                {
-                    ServerCommandType = ServerCommandType.RemoveConnection,
-                    Value = connectionId
-                };
-
-                return _serverMessageHandler.SendCommand(command);
-            };
-
-            Transport.Connected = () =>
-            {
-                return TaskAsyncHelper.FromMethod(() => OnConnected(context.Request, connectionId).OrEmpty());
-            };
-
-            Transport.Reconnected = () =>
-            {
-                return TaskAsyncHelper.FromMethod(() => OnReconnected(context.Request, connectionId).OrEmpty());
-            };
-
-            Transport.Received = data =>
-            {
-                Counters.ConnectionMessagesSentTotal.Increment();
-                Counters.ConnectionMessagesSentPerSec.Increment();
-                return TaskAsyncHelper.FromMethod(() => OnReceived(context.Request, connectionId, data).OrEmpty());
-            };
-
-            Transport.Disconnected = () =>
-            {
-                return TaskAsyncHelper.FromMethod(() => OnDisconnected(context.Request, connectionId).OrEmpty());
-            };
+            Transport.TransportConnected = c => TransportConnected(c);
+            Transport.Connected = c => ConnectionConnected(c);
+            Transport.Reconnected = c => ConnectionReconnected(c);
+            Transport.Received = (c, data) => ConnectionReceived(c, data);
+            Transport.Disconnected = c => ConnectionDisconnected(c);
 
             return Transport.ProcessRequest(connection).OrEmpty().Catch(Counters.ErrorsAllTotal, Counters.ErrorsAllPerSec);
+        }
+
+        private Task TransportConnected(HostContext context)
+        {
+            var command = new ServerCommand
+            {
+                ServerCommandType = ServerCommandType.RemoveConnection,
+                Value = GetConnectionId(context)
+            };
+
+            return _serverMessageHandler.SendCommand(command);
+        }
+
+        private Task ConnectionConnected(HostContext context)
+        {
+            return TaskAsyncHelper.FromMethod(c => OnConnected(c.Request, GetConnectionId(c)).OrEmpty(), context);
+        }
+
+        private Task ConnectionReconnected(HostContext context)
+        {
+            return TaskAsyncHelper.FromMethod(c => OnReconnected(c.Request, GetConnectionId(c)).OrEmpty(), context);
+        }
+
+        private Task ConnectionReceived(HostContext context, string data)
+        {
+            Counters.ConnectionMessagesSentTotal.Increment();
+            Counters.ConnectionMessagesSentPerSec.Increment();
+
+            return TaskAsyncHelper.FromMethod((c, d) => OnReceived(c.Request, GetConnectionId(c), d).OrEmpty(), context, data);
+        }
+
+        private Task ConnectionDisconnected(HostContext context)
+        {
+            return TaskAsyncHelper.FromMethod(c => OnDisconnected(c.Request, GetConnectionId(c)), context);
+        }
+
+        private string GetConnectionId(HostContext context)
+        {
+            // todo: cache connectionId on context or request?
+            return GetTransport(context).ConnectionId;
         }
 
         [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "We want to catch any exception when unprotecting data.")]
@@ -528,7 +541,11 @@ namespace Microsoft.AspNet.SignalR
 
         private ITransport GetTransport(HostContext context)
         {
-            return _transportManager.GetTransport(context);
+            if (context.Transport == null)
+            {
+                context.Transport = _transportManager.GetTransport(context);
+            }
+            return context.Transport;
         }
     }
 }

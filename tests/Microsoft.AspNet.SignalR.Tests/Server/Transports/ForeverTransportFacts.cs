@@ -43,7 +43,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Server.Transports
                 CallBase = true
             };
 
-            transport.Object.Received = data =>
+            transport.Object.Received = (context, data) =>
             {
                 tcs.TrySetResult(data);
                 return TaskAsyncHelper.Empty;
@@ -267,7 +267,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Server.Transports
 
             bool ended = false;
 
-            transport.Object.Connected = () => TaskAsyncHelper.Empty;
+            transport.Object.Connected = (context) => TaskAsyncHelper.Empty;
 
             transport.Object.AfterRequestEnd = (ex) =>
             {
@@ -310,7 +310,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Server.Transports
                 CallBase = true
             };
 
-            transport.Object.Connected = postReceive;
+            transport.Object.Connected = context => postReceive();
 
             // Act
             transport.Object.ProcessRequest(transportConnection.Object);
@@ -536,7 +536,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Server.Transports
 
             transport.Object.EnqueueOperation(writeAsync);
 
-            transport.Object.Connected = () => TaskAsyncHelper.Empty;
+            transport.Object.Connected = (context) => TaskAsyncHelper.Empty;
 
             transport.Object.AfterRequestEnd = (ex) =>
             {

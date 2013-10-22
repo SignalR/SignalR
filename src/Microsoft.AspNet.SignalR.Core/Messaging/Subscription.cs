@@ -12,6 +12,9 @@ namespace Microsoft.AspNet.SignalR.Messaging
 {
     public abstract class Subscription : ISubscription, IDisposable
     {
+        private static readonly Action<Subscription, object> _beforeInvokeAction = (s, o) => s.BeforeInvoke(o);
+        private static readonly Action<Subscription, object> _emptyInvokeAction = (s, o) => { };
+
         private readonly Func<MessageResult, object, Task<bool>> _callback;
         private readonly object _callbackState;
         private readonly IPerformanceCounterManager _counters;
@@ -76,10 +79,10 @@ namespace Microsoft.AspNet.SignalR.Messaging
 
         public virtual Task<bool> Invoke(MessageResult result)
         {
-            return Invoke(result, state => { }, state: null);
+            return Invoke(result, _emptyInvokeAction, state: null);
         }
 
-        private async Task<bool> Invoke(MessageResult result, Action<object> beforeInvoke, object state)
+        private async Task<bool> Invoke(MessageResult result, Action<Subscription, object> beforeInvoke, object state)
         {
             // Change the state from idle to invoking callback
             var prevState = Interlocked.CompareExchange(ref _subscriptionState,
@@ -95,7 +98,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
                 }
             }
 
-            beforeInvoke(state);
+            beforeInvoke(this, state);
 
             _counters.MessageBusMessagesReceivedTotal.IncrementBy(result.TotalCount);
             _counters.MessageBusMessagesReceivedPerSec.IncrementBy(result.TotalCount);
@@ -119,9 +122,10 @@ namespace Microsoft.AspNet.SignalR.Messaging
             // Set the state to working
             Interlocked.Exchange(ref _state, State.Working);
 
+            // perf sensitive: re-use messages list to minimize allocations
+            var items = new List<ArraySegment<Message>>();
             while (Alive)
             {
-                var items = new List<ArraySegment<Message>>();
                 int totalCount;
                 object state;
 
@@ -131,7 +135,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
                 {
                     var messageResult = new MessageResult(items, totalCount);
 
-                    bool result = await Invoke(messageResult, s => BeforeInvoke(s), state);
+                    bool result = await Invoke(messageResult, _beforeInvokeAction, state);
 
                     if (!result)
                     {
@@ -145,6 +149,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
                 {
                     break;
                 }
+                items.Clear();
             }
         }
 

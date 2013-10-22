@@ -19,6 +19,8 @@ namespace Microsoft.AspNet.SignalR
         private static readonly Task _emptyTask = MakeTask<object>(null);
         private static readonly Task<bool> _trueTask = MakeTask<bool>(true);
         private static readonly Task<bool> _falseTask = MakeTask<bool>(false);
+        private static readonly Action<AggregateException> _emptyCatchAction = ex => { };
+        private static readonly Action<AggregateException, object> _catchAggregateHandler = (ex, state) => ((Action<AggregateException>)state).Invoke(ex);
 
         private static Task<T> MakeTask<T>(T value)
         {
@@ -110,7 +112,7 @@ namespace Microsoft.AspNet.SignalR
         [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode", Justification = "This is a shared file")]
         public static TTask Catch<TTask>(this TTask task) where TTask : Task
         {
-            return Catch(task, ex => { });
+            return Catch(task, _emptyCatchAction);
         }
 
 #if PERFCOUNTERS
@@ -171,8 +173,7 @@ namespace Microsoft.AspNet.SignalR
         [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode", Justification = "This is a shared file")]
         public static TTask Catch<TTask>(this TTask task, Action<AggregateException> handler) where TTask : Task
         {
-            return task.Catch((ex, state) => ((Action<AggregateException>)state).Invoke(ex),
-                              handler);
+            return task.Catch(_catchAggregateHandler, handler);
         }
 
         [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode", Justification = "This is a shared file")]

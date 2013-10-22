@@ -245,27 +245,30 @@ namespace Microsoft.AspNet.SignalR.Stress
         /// <param name="values"></param>
         protected void RecordAggregates(string key, long[] values)
         {
-            Array.Sort(values);
-            double median = values[values.Length / 2];
-            if (values.Length % 2 == 0)
+            if (values.Length > 0)
             {
-                median = (median + values[(values.Length / 2) - 1]) / 2;
-            }
+                Array.Sort(values);
+                double median = values[values.Length / 2];
+                if (values.Length % 2 == 0)
+                {
+                    median = (median + values[(values.Length / 2) - 1]) / 2;
+                }
 
-            var sum = values.Select(i => new BigInteger(i)).Aggregate((aggregate, bi) => aggregate + bi);
-            BigInteger remainder;
-            var average = (double)BigInteger.DivRem(sum, values.Length, out remainder) + ((double)remainder / values.Length);
-            
-            double stdDevP = 0;
-            if (average > 0)
-            {
-                var sumOfSquares = values.Sum(i => Math.Pow(i - average, 2.0));
-                stdDevP = Math.Sqrt(sumOfSquares / values.Length) / average * 100;
+                var sum = values.Select(i => new BigInteger(i)).Aggregate((aggregate, bi) => aggregate + bi);
+                BigInteger remainder;
+                var average = (double)BigInteger.DivRem(sum, values.Length, out remainder) + ((double)remainder / values.Length);
+
+                double stdDevP = 0;
+                if (average > 0)
+                {
+                    var sumOfSquares = values.Sum(i => Math.Pow(i - average, 2.0));
+                    stdDevP = Math.Sqrt(sumOfSquares / values.Length) / average * 100;
+                }
+
+                Console.WriteLine("{0} (MEDIAN):  {1}", key, Math.Round(median));
+                Console.WriteLine("{0} (AVERAGE): {1}", key, Math.Round(average));
+                Console.WriteLine("{0} (STDDEV%): {1}%", key, Math.Round(stdDevP));
             }
-            
-            Console.WriteLine("{0} (MEDIAN):  {1}", key, Math.Round(median));
-            Console.WriteLine("{0} (AVERAGE): {1}", key, Math.Round(average));
-            Console.WriteLine("{0} (STDDEV%): {1}%", key, Math.Round(stdDevP));
         }
 
         protected string GetContractName()

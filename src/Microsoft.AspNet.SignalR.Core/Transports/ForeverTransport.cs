@@ -72,13 +72,13 @@ namespace Microsoft.AspNet.SignalR.Transports
             Heartbeat.MarkConnection(this);
         }
 
-        public Func<string, Task> Received { get; set; }
+        public Func<HostContext, string, Task> Received { get; set; }
 
-        public Func<Task> TransportConnected { get; set; }
+        public Func<HostContext, Task> TransportConnected { get; set; }
 
-        public Func<Task> Connected { get; set; }
+        public Func<HostContext, Task> Connected { get; set; }
 
-        public Func<Task> Reconnected { get; set; }
+        public Func<HostContext, Task> Reconnected { get; set; }
 
         // Unit testing hooks
         internal Action AfterReceive;
@@ -158,14 +158,14 @@ namespace Microsoft.AspNet.SignalR.Transports
 
             if (Received != null)
             {
-                await Received(data);
+                await Received(Context, data);
             }
         }
 
         [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "Exceptions are flowed to the caller.")]
         private Task ProcessReceiveRequest(ITransportConnection connection)
         {
-            Func<Task> initialize = null;
+            Func<HostContext, Task> initialize = null;
 
             // If this transport isn't replacing an existing transport, oldConnection will be null.
             ITrackingConnection oldConnection = Heartbeat.AddOrUpdateConnection(this);
@@ -173,22 +173,22 @@ namespace Microsoft.AspNet.SignalR.Transports
 
             if (IsConnectRequest)
             {
-                Func<Task> connected;
+                Func<HostContext, Task> connected;
                 if (newConnection)
                 {
-                    connected = Connected ?? _emptyTaskFunc;
+                    connected = Connected ?? _emptyContextTaskFunc;
                     _counters.ConnectionsConnected.Increment();
                 }
                 else
                 {
                     // Wait until the previous call to Connected completes.
                     // We don't want to call Connected twice
-                    connected = () => oldConnection.ConnectTask;
+                    connected = (context) => oldConnection.ConnectTask;
                 }
 
-                initialize = () =>
+                initialize = (context) =>
                 {
-                    return connected().Then((conn, id) => conn.Initialize(id), connection, ConnectionId);
+                    return connected(context).Then((conn, id) => conn.Initialize(id), connection, ConnectionId);
                 };
             }
             else
@@ -202,17 +202,13 @@ namespace Microsoft.AspNet.SignalR.Transports
                 state => ((Func<Task>)state).Invoke()
             };
 
-            var states = new object[] { TransportConnected ?? _emptyTaskFunc,
-                                        initialize ?? _emptyTaskFunc };
-
-            Func<Task> fullInit = () => TaskAsyncHelper.Series(series, states).ContinueWith(_connectTcs);
-
-            return ProcessMessages(connection, fullInit);
+            // TODO: default to _emptyContextTaskFunc
+            return ProcessMessages(connection, context => TransportConnected(context).Then(initialize, context));
         }
 
         [SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope", Justification = "The object is disposed otherwise")]
         [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "Exceptions are flowed to the caller.")]
-        private Task ProcessMessages(ITransportConnection connection, Func<Task> initialize)
+        private Task ProcessMessages(ITransportConnection connection, Func<HostContext, Task> initialize)
         {
             var disposer = new Disposer();
 
@@ -255,7 +251,7 @@ namespace Microsoft.AspNet.SignalR.Transports
                 }
 
                 // Ensure delegate continues to use the C# Compiler static delegate caching optimization.
-                initialize().Then(tcs => tcs.TrySetResult(null), InitializeTcs)
+                initialize(Context).Then(tcs => tcs.TrySetResult(null), InitializeTcs)
                             .Catch((ex, state) => OnError(ex, state), messageContext);
             }
             catch (OperationCanceledException ex)

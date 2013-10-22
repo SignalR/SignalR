@@ -18,6 +18,10 @@ namespace Microsoft.AspNet.SignalR.Owin
 
         private readonly OwinRequest _request;
 
+        private static Func<object, INameValueCollection> _queryStringGetter = queryString => new ReadableStringCollectionWrapper((IReadableStringCollection)queryString);
+        private static Func<object, INameValueCollection> _headersGetter = headers => new ReadableStringCollectionWrapper((IHeaderDictionary)headers);
+        private static Func<object, IDictionary<string, Cookie>> _cookiesGetter = cookies => GetCookies((RequestCookieCollection)cookies);
+
         public ServerRequest(IDictionary<string, object> environment)
         {
             _request = new OwinRequest(environment);
@@ -43,11 +47,7 @@ namespace Microsoft.AspNet.SignalR.Owin
         {
             get
             {
-                return LazyInitializer.EnsureInitialized(
-                    ref _queryString, () =>
-                    {
-                        return new ReadableStringCollectionWrapper(_request.Query);
-                    });
+                return EnsureInitialized(ref _queryString, _queryStringGetter, _request.Query);
             }
         }
 
@@ -55,11 +55,7 @@ namespace Microsoft.AspNet.SignalR.Owin
         {
             get
             {
-                return LazyInitializer.EnsureInitialized(
-                    ref _headers, () =>
-                    {
-                        return new ReadableStringCollectionWrapper(_request.Headers);
-                    });
+                return EnsureInitialized(ref _headers, _headersGetter, _request.Headers);
             }
         }
 
@@ -67,19 +63,7 @@ namespace Microsoft.AspNet.SignalR.Owin
         {
             get
             {
-                return LazyInitializer.EnsureInitialized(
-                    ref _cookies, () =>
-                    {
-                        var cookies = new Dictionary<string, Cookie>(StringComparer.OrdinalIgnoreCase);
-                        foreach (var kv in _request.Cookies)
-                        {
-                            if (!cookies.ContainsKey(kv.Key))
-                            {
-                                cookies.Add(kv.Key, new Cookie(kv.Key, kv.Value));
-                            }
-                        }
-                        return cookies;
-                    });
+                return EnsureInitialized(ref _cookies, _cookiesGetter, _request.Cookies);
             }
         }
 
@@ -100,6 +84,36 @@ namespace Microsoft.AspNet.SignalR.Owin
         {
             IFormCollection form = await _request.ReadFormAsync();
             return new ReadableStringCollectionWrapper(form);
+        }
+
+        private static IDictionary<string, Cookie> GetCookies(RequestCookieCollection requestCookies)
+        {
+            var cookies = new Dictionary<string, Cookie>(StringComparer.OrdinalIgnoreCase);
+            foreach (var kv in requestCookies)
+            {
+                if (!cookies.ContainsKey(kv.Key))
+                {
+                    cookies.Add(kv.Key, new Cookie(kv.Key, kv.Value));
+                }
+            }
+            return cookies;
+        }
+
+        // Support factory state in order to cache delegates
+        private static T EnsureInitialized<T>(ref T target, Func<object, T> valueFactory, object state) where T : class
+        {
+            if (Volatile.Read<T>(ref target) != null)
+            {
+                return target;
+            }
+
+            T value = valueFactory(state);
+            if (value == null)
+            {
+                throw new InvalidOperationException(); // todo
+            }
+            Interlocked.CompareExchange(ref target, value, null);
+            return target;
         }
     }
 }

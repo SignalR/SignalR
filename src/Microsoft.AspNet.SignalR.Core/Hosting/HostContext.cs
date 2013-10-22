@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using Microsoft.AspNet.SignalR.Owin;
 using Microsoft.Owin;
+using Microsoft.AspNet.SignalR.Transports;
 
 namespace Microsoft.AspNet.SignalR.Hosting
 {
@@ -16,6 +17,8 @@ namespace Microsoft.AspNet.SignalR.Hosting
 
         // Owin environment dictionary
         public IDictionary<string, object> Environment { get; private set; }
+
+        internal ITransport Transport { get; set; }
 
         public HostContext(IRequest request, IResponse response)
         {

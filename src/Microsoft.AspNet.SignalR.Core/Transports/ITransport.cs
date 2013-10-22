@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Microsoft.AspNet.SignalR.Hosting;
 using Microsoft.AspNet.SignalR.Infrastructure;
 
 namespace Microsoft.AspNet.SignalR.Transports
@@ -15,27 +16,27 @@ namespace Microsoft.AspNet.SignalR.Transports
         /// <summary>
         /// Gets or sets a callback that is invoked when the transport receives data.
         /// </summary>
-        Func<string, Task> Received { get; set; }
+        Func<HostContext, string, Task> Received { get; set; }
 
         /// <summary>
         /// Gets or sets a callback that is invoked when the initial connection connects to the transport.
         /// </summary>
-        Func<Task> Connected { get; set; }
+        Func<HostContext, Task> Connected { get; set; }
 
         /// <summary>
         /// Gets or sets a callback that is invoked when the transport connects.
         /// </summary>
-        Func<Task> TransportConnected { get; set; }
+        Func<HostContext, Task> TransportConnected { get; set; }
 
         /// <summary>
         /// Gets or sets a callback that is invoked when the transport reconnects.
         /// </summary>
-        Func<Task> Reconnected { get; set; }
+        Func<HostContext, Task> Reconnected { get; set; }
 
         /// <summary>
         /// Gets or sets a callback that is invoked when the transport disconnects.
         /// </summary>
-        Func<Task> Disconnected { get; set; }
+        Func<HostContext, Task> Disconnected { get; set; }
 
         /// <summary>
         /// Gets or sets the connection id for the transport.

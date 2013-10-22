@@ -34,6 +34,9 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
         private readonly TraceSource _traceSource;
         private readonly IAckHandler _ackHandler;
         private readonly IProtectedData _protectedData;
+        private readonly Func<Message, bool> _excludeMessage;
+
+        private static readonly Action<Connection, Message> _processResultsAction = (connection, message) => ProcessResultsHelper(connection, message);
 
         public Connection(IMessageBus newMessageBus,
                           JsonSerializer jsonSerializer,
@@ -61,6 +64,7 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
             _ackHandler = ackHandler;
             _counters = performanceCounterManager;
             _protectedData = protectedData;
+            _excludeMessage = m => ExcludeMessage(m);
         }
 
         public string DefaultSignal
@@ -261,7 +265,7 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
 
             Debug.Assert(WriteCursor != null, "Unable to resolve the cursor since the method is null");
 
-            var response = new PersistentResponse(ExcludeMessage, WriteCursor);
+            var response = new PersistentResponse(_excludeMessage, WriteCursor);
             response.Terminal = result.Terminal;
 
             if (!result.Terminal)
@@ -299,30 +303,31 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
 
         private void ProcessResults(MessageResult result)
         {
-            result.Messages.Enumerate<object>(message => message.IsAck || message.IsCommand,
-                                              (state, message) =>
-                                              {
-                                                  if (message.IsAck)
-                                                  {
-                                                      _ackHandler.TriggerAck(message.CommandId);
-                                                  }
-                                                  else if (message.IsCommand)
-                                                  {
-                                                      var command = _serializer.Parse<Command>(message.Value, message.Encoding);
-                                                      ProcessCommand(command);
+            result.Messages.Enumerate<Connection>(message => message.IsAck || message.IsCommand, _processResultsAction, this);
+        }
 
-                                                      // Only send the ack if this command is waiting for it
-                                                      if (message.WaitForAck)
-                                                      {
-                                                          // If we're on the same box and there's a pending ack for this command then
-                                                          // just trip it
-                                                          if (!_ackHandler.TriggerAck(message.CommandId))
-                                                          {
-                                                              _bus.Ack(_connectionId, message.CommandId).Catch();
-                                                          }
-                                                      }
-                                                  }
-                                              }, null);
+        private static void ProcessResultsHelper(Connection connection, Message message)
+        {
+            if (message.IsAck)
+            {
+                connection._ackHandler.TriggerAck(message.CommandId);
+            }
+            else if (message.IsCommand)
+            {
+                var command = connection._serializer.Parse<Command>(message.Value, message.Encoding);
+                connection.ProcessCommand(command);
+
+                // Only send the ack if this command is waiting for it
+                if (message.WaitForAck)
+                {
+                    // If we're on the same box and there's a pending ack for this command then
+                    // just trip it
+                    if (!connection._ackHandler.TriggerAck(message.CommandId))
+                    {
+                        connection._bus.Ack(connection._connectionId, message.CommandId).Catch();
+                    }
+                }
+            }
         }
 
         private void ProcessCommand(Command command)
