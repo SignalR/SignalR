@@ -6,6 +6,7 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR.Client.Hubs;
 using Newtonsoft.Json.Linq;
@@ -110,7 +111,14 @@ namespace Microsoft.AspNet.SignalR.Client
 
                 if (callback != null)
                 {
-                    callback(result);
+#if NETFX_CORE
+                    Task.Run(() =>
+#else
+                    ThreadPool.QueueUserWorkItem(_ =>
+#endif
+                    {
+                        callback(result);
+                    });
                 }
             }
             else
@@ -214,7 +222,14 @@ namespace Microsoft.AspNet.SignalR.Client
             {
                 foreach (var callback in _callbacks.Values)
                 {
-                    callback(result);
+#if NETFX_CORE
+                    Task.Run(() =>
+#else
+                    ThreadPool.QueueUserWorkItem(_ =>
+#endif
+                    {
+                        callback(result);
+                    });
                 }
 
                 _callbacks.Clear();
