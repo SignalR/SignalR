@@ -76,10 +76,10 @@ namespace Microsoft.AspNet.SignalR.Messaging
 
         public virtual Task<bool> Invoke(MessageResult result)
         {
-            return Invoke(result, state => { }, state: null);
+            return Invoke(result, (s, o) => { }, state: null);
         }
 
-        private async Task<bool> Invoke(MessageResult result, Action<object> beforeInvoke, object state)
+        private async Task<bool> Invoke(MessageResult result, Action<Subscription, object> beforeInvoke, object state)
         {
             // Change the state from idle to invoking callback
             var prevState = Interlocked.CompareExchange(ref _subscriptionState,
@@ -95,7 +95,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
                 }
             }
 
-            beforeInvoke(state);
+            beforeInvoke(this, state);
 
             _counters.MessageBusMessagesReceivedTotal.IncrementBy(result.TotalCount);
             _counters.MessageBusMessagesReceivedPerSec.IncrementBy(result.TotalCount);
@@ -131,7 +131,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
                 {
                     var messageResult = new MessageResult(items, totalCount);
 
-                    bool result = await Invoke(messageResult, s => BeforeInvoke(s), state);
+                    bool result = await Invoke(messageResult, (s, o) => s.BeforeInvoke(o), state);
 
                     if (!result)
                     {
