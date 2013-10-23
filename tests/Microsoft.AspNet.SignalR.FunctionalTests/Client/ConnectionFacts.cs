@@ -61,6 +61,9 @@ namespace Microsoft.AspNet.SignalR.Tests
 
                     connection.Start(host.Transport).Wait();
 
+                    // Without this the connection start and reconnect can race with eachother resulting in a deadlock.
+                    Thread.Sleep(TimeSpan.FromSeconds(3));
+
                     host.Shutdown();
 
                     Assert.True(reconnectWh.Wait(TimeSpan.FromSeconds(15)), "Reconnect never fired");
