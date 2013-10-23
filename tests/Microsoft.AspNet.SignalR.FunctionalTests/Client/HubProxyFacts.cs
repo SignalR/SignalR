@@ -639,7 +639,7 @@ namespace Microsoft.AspNet.SignalR.Tests
             }
         }
 
-        [Theory(Timeout=25000)]
+        [Theory(Timeout = 25000)]
         [InlineData(HostType.IISExpress, TransportType.Websockets)]
         [InlineData(HostType.IISExpress, TransportType.ServerSentEvents)]
         [InlineData(HostType.IISExpress, TransportType.LongPolling)]
@@ -653,15 +653,15 @@ namespace Microsoft.AspNet.SignalR.Tests
                 using (hubConnection)
                 {
                     var proxy = hubConnection.CreateHubProxy("EchoHub");
-                    
+
                     await hubConnection.Start(host.Transport);
-                    
+
                     await proxy.Invoke("EchoCallback", "message");
                 }
             }
         }
 
-        [Theory(Timeout=25000, Skip="Issue #2535")]
+        [Theory(Timeout = 25000, Skip = "Issue #2535")]
         [InlineData(HostType.IISExpress, TransportType.Websockets)]
         [InlineData(HostType.IISExpress, TransportType.ServerSentEvents)]
         [InlineData(HostType.IISExpress, TransportType.LongPolling)]
