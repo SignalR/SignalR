@@ -3,5 +3,5 @@
 /*global window:false */
 /// <reference path="jquery.signalR.core.js" />
 (function ($, undefined) {
-    $.signalR.version = "2.0.0-rtm1";
+    $.signalR.version = "2.0.1-rtm1";
 }(window.jQuery));
