@@ -8,7 +8,7 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Owin
         public void Configuration(IAppBuilder app)
         {
             // TODO: Figure out how to not have this on all the time
-            app.UseType<BasicAuthModule>("user", "password");
+            app.UseType<BasicAuthModule>("user", "password", "");
             app.MapHubs(new HubConfiguration());
         }
     }

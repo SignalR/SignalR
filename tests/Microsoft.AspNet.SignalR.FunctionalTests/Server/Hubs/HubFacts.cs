@@ -124,6 +124,44 @@ namespace Microsoft.AspNet.SignalR.Tests
         }
 
         [Theory]
+        [InlineData(HostType.IISExpress, TransportType.Websockets)]
+        [InlineData(HostType.IISExpress, TransportType.ServerSentEvents)]
+        [InlineData(HostType.IISExpress, TransportType.LongPolling)]
+        public void BasicAuthCredentialsFlowThroughIISExpress(HostType hostType, TransportType transportType)
+        {
+            using (var host = CreateHost(hostType, transportType))
+            {
+                host.Initialize();
+
+                var connection = CreateHubConnection(host, "/basicauth");
+                var proxy = connection.CreateHubProxy("AuthenticatedEchoHub");
+
+                var tcs = new TaskCompletionSource<string>();
+
+                try
+                {
+                    connection.Credentials = new System.Net.NetworkCredential("user", "password");
+
+                    proxy.On<string>("echo", data =>
+                    {
+                        tcs.TrySetResult(data);
+                    });
+
+                    connection.Start(host.Transport).Wait();
+
+                    proxy.InvokeWithTimeout("EchoCallback", "Hello World");
+
+                    Assert.True(tcs.Task.Wait(TimeSpan.FromSeconds(10)));
+                    Assert.Equal("Hello World", tcs.Task.Result);
+                }
+                finally
+                {
+                    connection.Stop();
+                }
+            }
+        }
+
+        [Theory]
         [InlineData(HostType.IISExpress, TransportType.ServerSentEvents)]
         [InlineData(HostType.IISExpress, TransportType.LongPolling)]
         [InlineData(HostType.IISExpress, TransportType.Websockets)]
