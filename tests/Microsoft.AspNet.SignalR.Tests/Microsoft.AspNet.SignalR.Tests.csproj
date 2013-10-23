@@ -89,6 +89,7 @@
     <Compile Include="BufferTextWriterFacts.cs" />
     <Compile Include="Server\AckHandlerFacts.cs" />
     <Compile Include="Server\Hubs\HubFacts.cs" />
+    <Compile Include="Server\Hubs\HubProgressFacts.cs" />
     <Compile Include="Server\Hubs\TypedClientBuilderFacts.cs" />
     <Compile Include="Server\ProtocolResolverFacts.cs" />
     <Compile Include="Server\ServiceBusConfigurationFacts.cs" />
@@ -134,6 +135,9 @@
       <Project>{f18a8896-10bd-469e-9aa1-aebacef4d7b7}</Project>
       <Name>Microsoft.AspNet.SignalR.Tests.Common</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Service Include="{82A7F48D-3B50-4B1E-B82E-3ADA8210C358}" />
   </ItemGroup>
   <Import Project="..\..\src\Common\Microsoft.AspNet.SignalR.targets" />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

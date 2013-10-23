@@ -27,6 +27,8 @@ namespace Microsoft.AspNet.SignalR.Hubs
         [SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly", Justification = "This is supposed to be mutable")]
         public virtual IList<ParameterDescriptor> Parameters { get; set; }
 
+        public Type ProgressReportingType { get; set; }
+
         /// <summary>
         /// Method invocation delegate.
         /// Takes a target hub and an array of invocation arguments as it's arguments.

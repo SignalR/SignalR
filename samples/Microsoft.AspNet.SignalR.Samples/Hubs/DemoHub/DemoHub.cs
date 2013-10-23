@@ -192,6 +192,16 @@ namespace Microsoft.AspNet.SignalR.Samples.Hubs.DemoHub
             }
         }
 
+        public async Task<string> ReportProgress(string jobName, IProgress<int> progress)
+        {
+            for (int i = 0; i <= 100; i += 10)
+            {
+                await Task.Delay(250);
+                progress.Report(i);
+            }
+            return String.Format("{0} done!", jobName);
+        }
+
         public void Overload()
         {
 
