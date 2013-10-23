@@ -527,8 +527,15 @@
             };
 
             $(connection).triggerHandler(events.onStarting);
+            
+            var url = connection.url + "/negotiate",
+                onFailed = function (error, connection) {
+                    $(connection).triggerHandler(events.onError, [error.responseText]);
+                    deferred.reject("SignalR: Error during negotiation request: " + error.responseText);
+                    // Stop the connection if negotiate failed
+                    connection.stop();
+                };
 
-            var url = connection.url + "/negotiate";
             url = signalR.transports._logic.prepareQueryString(connection, url);
 
             connection.log("Negotiating with '" + url + "'.");
@@ -545,19 +552,25 @@
                     error: function (error, statusText) {
                         // We don't want to cause any errors if we're aborting our own negotiate request.
                         if (statusText !== connection._.negotiateAbortText) {
-                            $(connection).triggerHandler(events.onError, [error.responseText]);
-                            deferred.reject("SignalR: Error during negotiation request: " + error.responseText);
-                            // Stop the connection if negotiate failed
-                            connection.stop();
+                            onFailed(error, connection);
                         } else {
                             // This rejection will noop if the deferred has already been resolved or rejected.
                             deferred.reject("Stopped the connection while negotiating.");
                         }
                     },
                     success: function (result) {
-                        var res = connection._parseResponse(result),
+                        var res,
                             keepAliveData = connection._.keepAliveData;
 
+                        try {
+                            res = connection._parseResponse(result);
+                        }
+                        catch (error) {
+                            onFailed(error, connection);
+                            return;
+                        }
+
+                        keepAliveData = connection._.keepAliveData;
                         connection.appRelativeUrl = res.Url;
                         connection.id = res.ConnectionId;
                         connection.token = res.ConnectionToken;

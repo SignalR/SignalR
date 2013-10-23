@@ -110,12 +110,22 @@
             }, false);
 
             connection.eventSource.addEventListener("message", function (e) {
+                var res;
+
                 // process messages
                 if (e.data === "initialized") {
                     return;
                 }
 
-                transportLogic.processMessages(connection, connection._parseResponse(e.data));
+                try {
+                    res = connection._parseResponse(e.data);
+                }
+                catch (error) {
+                    $(connection).triggerHandler(events.onError, ["SignalR: failed at parsing response: " + e.data + ".  With error: " + error.message]);
+                    return;
+                }
+
+                transportLogic.processMessages(connection, res, onSuccess);
             }, false);
 
             connection.eventSource.addEventListener("error", function (e) {
