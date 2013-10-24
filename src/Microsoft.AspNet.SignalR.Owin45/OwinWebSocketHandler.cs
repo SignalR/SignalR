@@ -72,7 +72,7 @@ namespace Microsoft.AspNet.SignalR.Owin
             }
 
             var cts = new CancellationTokenSource();
-            var webSocketHandler = new DefaultWebSocketHandler();
+            var webSocketHandler = new DefaultWebSocketHandler(new TaskCompletionSource<object>());
 
             RunWebSocketHandler(webSocketHandler, cts);
 
