@@ -639,6 +639,55 @@ namespace Microsoft.AspNet.SignalR.Tests
             }
         }
 
+        [Theory(Timeout = 25000)]
+        [InlineData(HostType.IISExpress, TransportType.Websockets)]
+        [InlineData(HostType.IISExpress, TransportType.ServerSentEvents)]
+        [InlineData(HostType.IISExpress, TransportType.LongPolling)]
+        public async Task CallingStopAfterAwaitingInvocationReturnsFast(HostType hostType, TransportType transportType)
+        {
+            using (var host = CreateHost(hostType, transportType))
+            {
+                host.Initialize();
+                HubConnection hubConnection = CreateHubConnection(host);
+
+                using (hubConnection)
+                {
+                    var proxy = hubConnection.CreateHubProxy("EchoHub");
+
+                    await hubConnection.Start(host.Transport);
+
+                    await proxy.Invoke("EchoCallback", "message");
+                }
+            }
+        }
+
+        [Theory(Timeout = 25000, Skip = "Issue #2535")]
+        [InlineData(HostType.IISExpress, TransportType.Websockets)]
+        [InlineData(HostType.IISExpress, TransportType.ServerSentEvents)]
+        [InlineData(HostType.IISExpress, TransportType.LongPolling)]
+        public async Task CallingStopInClientMethodWorks(HostType hostType, TransportType transportType)
+        {
+            using (var host = CreateHost(hostType, transportType))
+            {
+                host.Initialize();
+                HubConnection hubConnection = CreateHubConnection(host);
+
+                using (hubConnection)
+                {
+                    var proxy = hubConnection.CreateHubProxy("EchoHub");
+
+                    proxy.On<string>("echo", message =>
+                    {
+                        hubConnection.Stop();
+                    });
+
+                    await hubConnection.Start(host.Transport);
+
+                    await proxy.Invoke("EchoCallback", "message");
+                }
+            }
+        }
+
         public class MyHub2 : Hub
         {
             public MyHub2(int n)
