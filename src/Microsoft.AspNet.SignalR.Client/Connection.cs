@@ -199,6 +199,7 @@ namespace Microsoft.AspNet.SignalR.Client
             set
             {
                 _reconnectWindow = value;
+                Trace(TraceLevels.Events, "_reconnectWindow=" + _reconnectWindow);
             }
         }
 
@@ -458,6 +459,8 @@ namespace Microsoft.AspNet.SignalR.Client
                                 {
                                     _reconnectWindow = _disconnectTimeout;
                                 }
+
+                                Trace(TraceLevels.Events, "_reconnectWindow=" + _reconnectWindow);
 
                                 _monitor = new HeartbeatMonitor(this, _stateLock, beatInterval);
 
@@ -799,6 +802,7 @@ namespace Microsoft.AspNet.SignalR.Client
         void IConnection.MarkLastMessage()
         {
             _lastMessageAt = DateTime.UtcNow;
+            Trace(TraceLevels.Events, "MarkLastMessage");
         }
 
         /// <summary>
@@ -807,6 +811,7 @@ namespace Microsoft.AspNet.SignalR.Client
         void IConnection.MarkActive()
         {
             _lastActiveAt = DateTime.UtcNow;
+            Trace(TraceLevels.Events, "markActive");
         }
 
         [SuppressMessage("Microsoft.Design", "CA1062:Validate arguments of public methods", MessageId = "0", Justification = "This is called by the transport layer")]

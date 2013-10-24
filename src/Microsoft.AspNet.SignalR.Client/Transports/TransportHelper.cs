@@ -211,6 +211,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
 
         public static bool VerifyReconnect(IConnection connection)
         {
+            connection.Trace(TraceLevels.Events, "verifyReconnect");
             if (connection == null)
             {
                 throw new ArgumentNullException("connection");
