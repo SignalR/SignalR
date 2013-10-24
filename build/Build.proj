@@ -217,7 +217,7 @@
   <Target Name="CI" DependsOnTargets="RunCodeAnalysis; Build; CopyArtifacts; RunUnitTests;">
   </Target>
 
-  <Target Name="FunctionalCI" DependsOnTargets="RunCodeAnalysis; Build; CopyArtifacts; RunTests; AnalyzeLogs;">
+  <Target Name="FunctionalCI" DependsOnTargets="RunFunctionalTests; AnalyzeLogs;">
   </Target>
 
   <Target Name="Go" DependsOnTargets="RunCodeAnalysis; Build; CopyArtifacts; RunTests;">
