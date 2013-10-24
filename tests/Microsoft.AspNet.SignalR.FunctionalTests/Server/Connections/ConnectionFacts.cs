@@ -322,7 +322,7 @@ namespace Microsoft.AspNet.SignalR.Client.Tests
                     host.Initialize(keepAlive: null,
                                     connectionTimeout: 2,
                                     disconnectTimeout: 8); // 8s because the default heartbeat time span is 5s
-                    var connection = CreateHubConnection(host, host.Url + "/force-lp-reconnect/examine-reconnect");
+                    var connection = CreateConnection(host, "/force-lp-reconnect/examine-reconnect");
                     var reconnectingWh = new ManualResetEventSlim();
                     var reconnectedWh = new ManualResetEventSlim();
 

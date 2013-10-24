@@ -53,7 +53,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
         }
 
         protected override void OnStart(IConnection connection,
-                                        string data,
+                                        string connectionData,
                                         CancellationToken disconnectToken,
                                         Action initializeCallback,
                                         Action<Exception> errorCallback)
@@ -78,7 +78,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
             };
 
             // Add additional actions to each of the PollingRequestHandler events
-            PollingSetup(connection, data, disconnectToken, requestHandler);
+            PollingSetup(connection, connectionData, disconnectToken, requestHandler);
 
             requestHandler.Start();
             // Start initialization, essentially if we have an assume sucess clause in our negotiateInitializer

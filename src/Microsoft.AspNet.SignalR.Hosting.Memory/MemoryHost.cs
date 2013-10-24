@@ -164,20 +164,41 @@ namespace Microsoft.AspNet.SignalR.Hosting.Memory
 
             _appFunc(env).ContinueWith(task =>
             {
+                // Close the server stream when the request has ended
+                serverStream.Close();
+                clientTokenSource.Dispose();
+
                 object statusCodeObj;
                 if (env.TryGetValue(OwinConstants.ResponseStatusCode, out statusCodeObj))
                 {
+                    InvalidOperationException ex;
                     var statusCode = (int)statusCodeObj;
-                    if (statusCode == 403)
+
+                    // Only fail the response if the status is NOT 2XX
+                    if (statusCode / 100 != 2)
                     {
-                        tcs.TrySetException(new InvalidOperationException("Forbidden"));
-                    }
-                    else if (statusCode == 500)
-                    {
-                        tcs.TrySetException(new InvalidOperationException());
+                        switch (statusCode)
+                        {
+                            case 401:
+                                ex = new InvalidOperationException("Unauthorized");
+                                break;
+                            case 403:
+                                ex = new InvalidOperationException("Forbidden");
+                                break;
+                            default:
+                                // 5XX... or really any status code that's not 2XX, 401 or 403
+                                ex = new InvalidOperationException();
+                                break;
+                        }
+
+                        tcs.TrySetException(ex);
+
+                        // No reason to continue and try setting the tcs when we already hav
+                        return;
                     }
                 }
-                else if (task.IsFaulted)
+                
+                if (task.IsFaulted)
                 {
                     tcs.TrySetException(task.Exception.InnerExceptions);
                 }
@@ -189,10 +210,6 @@ namespace Microsoft.AspNet.SignalR.Hosting.Memory
                 {
                     tcs.TrySetResult(response);
                 }
-
-                // Close the server stream when the request has ended
-                serverStream.Close();
-                clientTokenSource.Dispose();
             });
 
             return tcs.Task;

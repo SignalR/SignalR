@@ -11,6 +11,7 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure
         private readonly Func<IDictionary<string, object>, Task> _next;
         private readonly string _user;
         private readonly string _password;
+        private readonly string _pathPrefix;
 
         private const string WwwAuthenticateHeader = "WWW-Authenticate";
         private const string AuthorizationHeader = "Authorization";
@@ -18,14 +19,16 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure
         private const string OwinRequestHeadersKey = "owin.RequestHeaders";
         private const string OwinResponseHeadersKey = "owin.ResponseHeaders";
         private const string OwinResponseStatusCode = "owin.ResponseStatusCode";
+        private const string OwinRequestPath = "owin.RequestPath";
 
         private const string ServerUserKey = "server.User";
 
-        public BasicAuthModule(Func<IDictionary<string, object>, Task> next, string user, string password)
+        public BasicAuthModule(Func<IDictionary<string, object>, Task> next, string user, string password, string pathPrefix)
         {
             _next = next;
             _user = user;
             _password = password;
+            _pathPrefix = pathPrefix ?? String.Empty;
         }
 
         public Task Invoke(IDictionary<string, object> env)
@@ -33,6 +36,13 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure
             var requestHeaders = (IDictionary<string, string[]>)env[OwinRequestHeadersKey];
             string[] authHeaders;
             string authHeader = null;
+            string requestPath = (string)env[OwinRequestPath];
+
+            // Noop if the requests doesn't begin with the correct prefix
+            if (!requestPath.StartsWith(_pathPrefix))
+            {
+                return _next(env);
+            }
 
             if (requestHeaders.TryGetValue(AuthorizationHeader, out authHeaders))
             {
