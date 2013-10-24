@@ -731,7 +731,7 @@
                                 if ($.inArray(transport, supportedTransports) >= 0) {
                                     transports.push(transport);
                                 }
-                            });                        
+                            });
                         } else if (config.transport === "auto") {
                             transports = supportedTransports;
                         } else if ($.inArray(config.transport, supportedTransports) >= 0) {
@@ -896,48 +896,45 @@
                 return;
             }
 
-            try {
-                connection.log("Stopping connection.");
+            connection.log("Stopping connection.");
 
-                // Clear this no matter what
-                window.clearTimeout(connection._.beatHandle);
-                window.clearTimeout(connection._.onFailedTimeoutHandle);
-                window.clearInterval(connection._.pingIntervalId);
+            changeState(connection, connection.state, signalR.connectionState.disconnected);
 
-                if (connection.transport) {
-                    if (notifyServer !== false) {
-                        connection.transport.abort(connection, async);
-                    }
+            // Clear this no matter what
+            window.clearTimeout(connection._.beatHandle);
+            window.clearTimeout(connection._.onFailedTimeoutHandle);
+            window.clearInterval(connection._.pingIntervalId);
 
-                    if (connection.transport.supportsKeepAlive && connection._.keepAliveData.activated) {
-                        signalR.transports._logic.stopMonitoringKeepAlive(connection);
-                    }
-
-                    connection.transport.stop(connection);
-                    connection.transport = null;
+            if (connection.transport) {
+                if (notifyServer !== false) {
+                    connection.transport.abort(connection, async);
                 }
 
-                if (connection._.negotiateRequest) {
-                    // If the negotiation request has already completed this will noop.
-                    connection._.negotiateRequest.abort(_negotiateAbortText);
-                    delete connection._.negotiateRequest;
+                if (connection.transport.supportsKeepAlive && connection._.keepAliveData.activated) {
+                    signalR.transports._logic.stopMonitoringKeepAlive(connection);
                 }
 
-                // Trigger the disconnect event
-                $(connection).triggerHandler(events.onDisconnect);
-
-                delete connection.messageId;
-                delete connection.groupsToken;
-                delete connection.id;
-                delete connection._.pingIntervalId;
-                delete connection._.lastMessageAt;
-
-                // Clear out our message buffer
-                connection._.connectingMessageBuffer.clear();
+                connection.transport.stop(connection);
+                connection.transport = null;
             }
-            finally {
-                changeState(connection, connection.state, signalR.connectionState.disconnected);
+
+            if (connection._.negotiateRequest) {
+                // If the negotiation request has already completed this will noop.
+                connection._.negotiateRequest.abort(_negotiateAbortText);
+                delete connection._.negotiateRequest;
             }
+
+            // Trigger the disconnect event
+            $(connection).triggerHandler(events.onDisconnect);
+
+            delete connection.messageId;
+            delete connection.groupsToken;
+            delete connection.id;
+            delete connection._.pingIntervalId;
+            delete connection._.lastMessageAt;
+
+            // Clear out our message buffer
+            connection._.connectingMessageBuffer.clear();
 
             return connection;
         },

@@ -2,6 +2,21 @@
 
 QUnit.module("Connection State Facts");
 
+QUnit.test("Connection state is disconnected in disconnected callback.", function () {
+    var connection = testUtilities.createHubConnection(function () { }, QUnit, "", undefined, false),
+        triggered = false;
+
+    connection.disconnected(function () {
+        QUnit.equal(connection.state, $.signalR.connectionState.disconnected, "Connection state is disconnected in disconnected callback.");
+        triggered = true;
+    });
+
+    connection.start();
+    connection.stop();
+
+    QUnit.isTrue(triggered, "Disconnected handler triggered.");
+});
+
 QUnit.test("Connection State Values", function () {
     var con = $.connection;
     QUnit.equal(con.connectionState.connecting, 0, "Verifies connecting state is 0.");
