@@ -32,7 +32,7 @@ window.sessionStorage.clear();
                 enabled: true
             },
             foreverFrame: {
-                enabled: !window.EventSource && !window.document.commandLineTest && navigator.appName === "Microsoft Internet Explorer"
+                enabled: !window.EventSource && !window.document.commandLineTest
             },
             serverSentEvents: {
                 enabled: !!window.EventSource
