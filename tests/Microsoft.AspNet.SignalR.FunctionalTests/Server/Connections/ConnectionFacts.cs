@@ -486,11 +486,12 @@ namespace Microsoft.AspNet.SignalR.Client.Tests
             [InlineData(HostType.Memory, TransportType.LongPolling, MessageBusType.Default)]
             [InlineData(HostType.Memory, TransportType.LongPolling, MessageBusType.Fake)]
             [InlineData(HostType.Memory, TransportType.LongPolling, MessageBusType.FakeMultiStream)]
-            [InlineData(HostType.IISExpress, TransportType.ServerSentEvents, MessageBusType.Default)]
             [InlineData(HostType.IISExpress, TransportType.Websockets, MessageBusType.Default)]
-            [InlineData(HostType.HttpListener, TransportType.ServerSentEvents, MessageBusType.Default)]
+            [InlineData(HostType.IISExpress, TransportType.ServerSentEvents, MessageBusType.Default)]
+            [InlineData(HostType.IISExpress, TransportType.LongPolling, MessageBusType.Default)]
             [InlineData(HostType.HttpListener, TransportType.Websockets, MessageBusType.Default)]
-            //[InlineData(HostType.IISExpress, TransportType.LongPolling)]
+            [InlineData(HostType.HttpListener, TransportType.ServerSentEvents, MessageBusType.Default)]
+            [InlineData(HostType.HttpListener, TransportType.LongPolling, MessageBusType.Default)]
             public async Task ClientStopsReconnectingAfterDisconnectTimeout(HostType hostType, TransportType transportType, MessageBusType messageBusType)
             {
                 using (var host = CreateHost(hostType, transportType))
