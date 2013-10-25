@@ -23,15 +23,15 @@ namespace Microsoft.AspNet.SignalR.WebSockets
         // Queue for sending messages
         private readonly TaskQueue _sendQueue;
 
-        private TaskCompletionSource<object> _tcs;
+        private TaskCompletionSource<object> _initializeTcs;
 
-        public WebSocketHandler(TaskCompletionSource<object> taskCompletionSource, int? maxIncomingMessageSize)
+        public WebSocketHandler(TaskCompletionSource<object> initializeTcs, int? maxIncomingMessageSize)
         {
             _maxIncomingMessageSize = maxIncomingMessageSize;
-            _tcs = taskCompletionSource;
-            if (_tcs != null)
+            _initializeTcs = initializeTcs;
+            if (_initializeTcs != null)
             {
-                _sendQueue = new TaskQueue(_tcs.Task);
+                _sendQueue = new TaskQueue(_initializeTcs.Task);
             }
             else
             {
@@ -68,7 +68,7 @@ namespace Microsoft.AspNet.SignalR.WebSockets
 
         internal Task SendAsync(ArraySegment<byte> message, WebSocketMessageType messageType, bool endOfMessage = true)
         {
-            if (_tcs == null && WebSocket.State != WebSocketState.Open)
+            if (_initializeTcs == null && WebSocket.State != WebSocketState.Open)
             {
                 return TaskAsyncHelper.Empty;
             }
@@ -168,9 +168,9 @@ namespace Microsoft.AspNet.SignalR.WebSockets
                 WebSocket = webSocket;
                 OnOpen();
 
-                if (_tcs != null)
+                if (_initializeTcs != null)
                 {
-                    _tcs.TrySetResult(null);
+                    _initializeTcs.TrySetResult(null);
                 }
 
                 // dispatch incoming messages
