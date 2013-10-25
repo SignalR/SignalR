@@ -61,7 +61,7 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Server.Hubs
                     };
 
                     var url = GetUrl(protectedData, connection, connection.GroupsToken);
-                    var response = await host.Get(url);
+                    var response = await host.Get(url, r => { }, isLongRunning: true);
                     var reader = new EventSourceStreamReader(hackerConnection, response.GetStream());
 
                     reader.Message = sseEvent =>
@@ -123,7 +123,7 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Server.Hubs
                         try
                         {
                             string url = GetUrl(protectedData, connection);
-                            var response = await host.Get(url);
+                            var response = await host.Get(url, r => { }, isLongRunning: true);
                             reader = new EventSourceStreamReader(connection, response.GetStream());
 
                             reader.Message = sseEvent =>

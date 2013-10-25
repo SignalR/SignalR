@@ -29,7 +29,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Common.Infrastructure
                         bool enableAutoRejoiningGroups = false,
                         MessageBusType messageBusType = MessageBusType.Default);
 
-        Task Get(string uri, bool disableWrites);
+        Task Get(string uri);
 
         Task Post(string uri, IDictionary<string, string> data);
 

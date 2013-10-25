@@ -1,0 +1,573 @@
+Microsoft (R) Build Engine version 4.0.30319.33440
+[Microsoft .NET Framework, version 4.0.30319.34003]
+Copyright (C) Microsoft Corporation. All rights reserved.
+
+Build started 10/18/2013 12:44:48 PM.
+Project "C:\signalr\TestServer\Build\Build.proj" on node 1 (RunTests target(s)).
+CreateOutputDirs:
+  Removing directory "C:\signalr\TestServer\Build\..\artifacts\Debug".
+  Creating directory "C:\signalr\TestServer\Build\..\artifacts\Debug".
+  Creating directory "C:\signalr\TestServer\Build\..\artifacts\Debug\packages".
+  Creating directory "C:\signalr\TestServer\Build\..\artifacts\Debug\TestResults".
+  Creating directory "C:\signalr\TestServer\Build\..\artifacts\Debug\docs".
+Project "C:\signalr\TestServer\Build\Build.proj" (1) is building "C:\signalr\TestServer\tests\Microsoft.AspNet.SignalR.Tests\Microsoft.AspNet.SignalR.Tests.csproj" (2) on node 1 (Build target(s)).
+RestorePackages:
+  "C:\signalr\TestServer\Build\..\.nuget\NuGet.exe" install "C:\signalr\TestServer\tests\Microsoft.AspNet.SignalR.Tests\packages.config" -source "https://nuget.org/api/v2/;http://www.myget.org/F/aspnetwebstacknightly/"  -NonInteractive -RequireConsent -solutionDir "C:\signalr\TestServer\Build\..\ " -nocache
+  All packages listed in packages.config are already installed.
+PrepareForBuild:
+  Creating directory "C:\signalr\TestServer\Build\..\artifacts\Debug\projects\Microsoft.AspNet.SignalR.Tests\".
+Project "C:\signalr\TestServer\tests\Microsoft.AspNet.SignalR.Tests\Microsoft.AspNet.SignalR.Tests.csproj" (2) is building "C:\signalr\TestServer\src\Microsoft.AspNet.SignalR.Core\Microsoft.AspNet.SignalR.Core.csproj" (4) on node 1 (default targets).
+RestorePackages:
+  "C:\signalr\TestServer\Build\..\.nuget\NuGet.exe" install "C:\signalr\TestServer\src\Microsoft.AspNet.SignalR.Core\packages.config" -source "https://nuget.org/api/v2/;http://www.myget.org/F/aspnetwebstacknightly/"  -NonInteractive -RequireConsent -solutionDir "C:\signalr\TestServer\Build\..\ " -nocache
+  All packages listed in packages.config are already installed.
+PrepareForBuild:
+  Creating directory "C:\signalr\TestServer\Build\..\artifacts\Debug\projects\Microsoft.AspNet.SignalR.Core\".
+CoreResGen:
+  No resources are out of date with respect to their source files. Skipping resource generation.
+GenerateTargetFrameworkMonikerAttribute:
+Skipping target "GenerateTargetFrameworkMonikerAttribute" because all output files are up-to-date with respect to the input files.
+CoreCompile:
+Skipping target "CoreCompile" because all output files are up-to-date with respect to the input files.
+_CopyFilesMarkedCopyLocal:
+  Copying file from "C:\signalr\TestServer\packages\Microsoft.Owin.2.0.1\lib\net45\Microsoft.Owin.dll" to "C:\signalr\TestServer\Build\..\artifacts\Debug\projects\Microsoft.AspNet.SignalR.Core\Microsoft.Owin.dll".
+  Copying file from "C:\signalr\TestServer\packages\Microsoft.Owin.Security.2.0.1\lib\net45\Microsoft.Owin.Security.dll" to "C:\signalr\TestServer\Build\..\artifacts\Debug\projects\Microsoft.AspNet.SignalR.Core\Microsoft.Owin.Security.dll".
+  Copying file from "C:\signalr\TestServer\packages\Newtonsoft.Json.5.0.6\lib\net45\Newtonsoft.Json.dll" to "C:\signalr\TestServer\Build\..\artifacts\Debug\projects\Microsoft.AspNet.SignalR.Core\Newtonsoft.Json.dll".
+  Copying file from "C:\signalr\TestServer\packages\Owin.1.0\lib\net40\Owin.dll" to "C:\signalr\TestServer\Build\..\artifacts\Debug\projects\Microsoft.AspNet.SignalR.Core\Owin.dll".
+  Copying file from "C:\signalr\TestServer\packages\Microsoft.Owin.2.0.1\lib\net45\Microsoft.Owin.xml" to "C:\signalr\TestServer\Build\..\artifacts\Debug\projects\Microsoft.AspNet.SignalR.Core\Microsoft.Owin.xml".
+  Copying file from "C:\signalr\TestServer\packages\Microsoft.Owin.Security.2.0.1\lib\net45\Microsoft.Owin.Security.xml" to "C:\signalr\TestServer\Build\..\artifacts\Debug\projects\Microsoft.AspNet.SignalR.Core\Microsoft.Owin.Security.xml".
+  Copying file from "C:\signalr\TestServer\packages\Newtonsoft.Json.5.0.6\lib\net45\Newtonsoft.Json.xml" to "C:\signalr\TestServer\Build\..\artifacts\Debug\projects\Microsoft.AspNet.SignalR.Core\Newtonsoft.Json.xml".
+CopyFilesToOutputDirectory:
+  Copying file from "obj\Debug\Microsoft.AspNet.SignalR.Core.dll" to "C:\signalr\TestServer\Build\..\artifacts\Debug\projects\Microsoft.AspNet.SignalR.Core\Microsoft.AspNet.SignalR.Core.dll".
+  Microsoft.AspNet.SignalR.Core -> C:\signalr\TestServer\artifacts\Debug\projects\Microsoft.AspNet.SignalR.Core\Microsoft.AspNet.SignalR.Core.dll
+  Copying file from "obj\Debug\Microsoft.AspNet.SignalR.Core.pdb" to "C:\signalr\TestServer\Build\..\artifacts\Debug\projects\Microsoft.AspNet.SignalR.Core\Microsoft.AspNet.SignalR.Core.pdb".
+  Copying file from "bin\Debug\Microsoft.AspNet.SignalR.Core.XML" to "C:\signalr\TestServer\Build\..\artifacts\Debug\projects\Microsoft.AspNet.SignalR.Core\Microsoft.AspNet.SignalR.Core.XML".
+Done Building Project "C:\signalr\TestServer\src\Microsoft.AspNet.SignalR.Core\Microsoft.AspNet.SignalR.Core.csproj" (default targets).
+Project "C:\signalr\TestServer\tests\Microsoft.AspNet.SignalR.Tests\Microsoft.AspNet.SignalR.Tests.csproj" (2) is building "C:\signalr\TestServer\src\Microsoft.AspNet.SignalR.ServiceBus\Microsoft.AspNet.SignalR.ServiceBus.csproj" (5) on node 1 (default targets).
+RestorePackages:
+  "C:\signalr\TestServer\Build\..\.nuget\NuGet.exe" install "C:\signalr\TestServer\src\Microsoft.AspNet.SignalR.ServiceBus\packages.config" -source "https://nuget.org/api/v2/;http://www.myget.org/F/aspnetwebstacknightly/"  -NonInteractive -RequireConsent -solutionDir "C:\signalr\TestServer\Build\..\ " -nocache
+  All packages listed in packages.config are already installed.
+PrepareForBuild:
+  Creating directory "C:\signalr\TestServer\Build\..\artifacts\Debug\projects\Microsoft.AspNet.SignalR.ServiceBus\".
+CoreResGen:
+  No resources are out of date with respect to their source files. Skipping resource generation.
+GenerateTargetFrameworkMonikerAttribute:
+Skipping target "GenerateTargetFrameworkMonikerAttribute" because all output files are up-to-date with respect to the input files.
+CoreCompile:
+Skipping target "CoreCompile" because all output files are up-to-date with respect to the input files.
+_CopyFilesMarkedCopyLocal:
+  Copying file from "C:\signalr\TestServer\artifacts\Debug\projects\Microsoft.AspNet.SignalR.Core\Microsoft.AspNet.SignalR.Core.dll" to "C:\signalr\TestServer\Build\..\artifacts\Debug\projects\Microsoft.AspNet.SignalR.ServiceBus\Microsoft.AspNet.SignalR.Core.dll".
+  Copying file from "C:\signalr\TestServer\packages\WindowsAzure.ServiceBus.2.1.2.0\lib\net40-full\Microsoft.ServiceBus.dll" to "C:\signalr\TestServer\Build\..\artifacts\Debug\projects\Microsoft.AspNet.SignalR.ServiceBus\Microsoft.ServiceBus.dll".
+  Copying file from "C:\signalr\TestServer\packages\Microsoft.WindowsAzure.ConfigurationManager.2.0.0.0\lib\net40\Microsoft.WindowsAzure.Configuration.dll" to "C:\signalr\TestServer\Build\..\artifacts\Debug\projects\Microsoft.AspNet.SignalR.ServiceBus\Microsoft.WindowsAzure.Configuration.dll".
+  Copying file from "C:\signalr\TestServer\artifacts\Debug\projects\Microsoft.AspNet.SignalR.Core\Newtonsoft.Json.dll" to "C:\signalr\TestServer\Build\..\artifacts\Debug\projects\Microsoft.AspNet.SignalR.ServiceBus\Newtonsoft.Json.dll".
+  Copying file from "C:\signalr\TestServer\artifacts\Debug\projects\Microsoft.AspNet.SignalR.Core\Microsoft.Owin.dll" to "C:\signalr\TestServer\Build\..\artifacts\Debug\projects\Microsoft.AspNet.SignalR.ServiceBus\Microsoft.Owin.dll".
+  Copying file from "C:\signalr\TestServer\artifacts\Debug\projects\Microsoft.AspNet.SignalR.Core\Microsoft.Owin.Security.dll" to "C:\signalr\TestServer\Build\..\artifacts\Debug\projects\Microsoft.AspNet.SignalR.ServiceBus\Microsoft.Owin.Security.dll".
+  Copying file from "C:\signalr\TestServer\artifacts\Debug\projects\Microsoft.AspNet.SignalR.Core\Owin.dll" to "C:\signalr\TestServer\Build\..\artifacts\Debug\projects\Microsoft.AspNet.SignalR.ServiceBus\Owin.dll".
+  Copying file from "C:\signalr\TestServer\artifacts\Debug\projects\Microsoft.AspNet.SignalR.Core\Microsoft.AspNet.SignalR.Core.pdb" to "C:\signalr\TestServer\Build\..\artifacts\Debug\projects\Microsoft.AspNet.SignalR.ServiceBus\Microsoft.AspNet.SignalR.Core.pdb".
+  Copying file from "C:\signalr\TestServer\artifacts\Debug\projects\Microsoft.AspNet.SignalR.Core\Microsoft.AspNet.SignalR.Core.xml" to "C:\signalr\TestServer\Build\..\artifacts\Debug\projects\Microsoft.AspNet.SignalR.ServiceBus\Microsoft.AspNet.SignalR.Core.xml".
+  Copying file from "C:\signalr\TestServer\packages\WindowsAzure.ServiceBus.2.1.2.0\lib\net40-full\Microsoft.ServiceBus.xml" to "C:\signalr\TestServer\Build\..\artifacts\Debug\projects\Microsoft.AspNet.SignalR.ServiceBus\Microsoft.ServiceBus.xml".
+  Copying file from "C:\signalr\TestServer\artifacts\Debug\projects\Microsoft.AspNet.SignalR.Core\Newtonsoft.Json.xml" to "C:\signalr\TestServer\Build\..\artifacts\Debug\projects\Microsoft.AspNet.SignalR.ServiceBus\Newtonsoft.Json.xml".
+  Copying file from "C:\signalr\TestServer\artifacts\Debug\projects\Microsoft.AspNet.SignalR.Core\Microsoft.Owin.xml" to "C:\signalr\TestServer\Build\..\artifacts\Debug\projects\Microsoft.AspNet.SignalR.ServiceBus\Microsoft.Owin.xml".
+  Copying file from "C:\signalr\TestServer\artifacts\Debug\projects\Microsoft.AspNet.SignalR.Core\Microsoft.Owin.Security.xml" to "C:\signalr\TestServer\Build\..\artifacts\Debug\projects\Microsoft.AspNet.SignalR.ServiceBus\Microsoft.Owin.Security.xml".
+CopyFilesToOutputDirectory:
+  Copying file from "obj\Debug\Microsoft.AspNet.SignalR.ServiceBus.dll" to "C:\signalr\TestServer\Build\..\artifacts\Debug\projects\Microsoft.AspNet.SignalR.ServiceBus\Microsoft.AspNet.SignalR.ServiceBus.dll".
+  Microsoft.AspNet.SignalR.ServiceBus -> C:\signalr\TestServer\artifacts\Debug\projects\Microsoft.AspNet.SignalR.ServiceBus\Microsoft.AspNet.SignalR.ServiceBus.dll
+  Copying file from "obj\Debug\Microsoft.AspNet.SignalR.ServiceBus.pdb" to "C:\signalr\TestServer\Build\..\artifacts\Debug\projects\Microsoft.AspNet.SignalR.ServiceBus\Microsoft.AspNet.SignalR.ServiceBus.pdb".
+  Copying file from "bin\Debug\Microsoft.AspNet.SignalR.ServiceBus.XML" to "C:\signalr\TestServer\Build\..\artifacts\Debug\projects\Microsoft.AspNet.SignalR.ServiceBus\Microsoft.AspNet.SignalR.ServiceBus.XML".
+Done Building Project "C:\signalr\TestServer\src\Microsoft.AspNet.SignalR.ServiceBus\Microsoft.AspNet.SignalR.ServiceBus.csproj" (default targets).
+Project "C:\signalr\TestServer\tests\Microsoft.AspNet.SignalR.Tests\Microsoft.AspNet.SignalR.Tests.csproj" (2) is building "C:\signalr\TestServer\tests\Microsoft.AspNet.SignalR.Tests.Common\Microsoft.AspNet.SignalR.Tests.Common.csproj" (6) on node 1 (default targets).
+RestorePackages:
+  "C:\signalr\TestServer\Build\..\.nuget\NuGet.exe" install "C:\signalr\TestServer\tests\Microsoft.AspNet.SignalR.Tests.Common\packages.config" -source "https://nuget.org/api/v2/;http://www.myget.org/F/aspnetwebstacknightly/"  -NonInteractive -RequireConsent -solutionDir "C:\signalr\TestServer\Build\..\ " -nocache
+  All packages listed in packages.config are already installed.
+Project "C:\signalr\TestServer\tests\Microsoft.AspNet.SignalR.Tests.Common\Microsoft.AspNet.SignalR.Tests.Common.csproj" (6) is building "C:\signalr\TestServer\src\Microsoft.AspNet.SignalR.Client45\Microsoft.AspNet.SignalR.Client45.csproj" (7) on node 1 (default targets).
+RestorePackages:
+  "C:\signalr\TestServer\Build\..\.nuget\NuGet.exe" install "C:\signalr\TestServer\src\Microsoft.AspNet.SignalR.Client45\packages.config" -source "https://nuget.org/api/v2/;http://www.myget.org/F/aspnetwebstacknightly/"  -NonInteractive -RequireConsent -solutionDir "C:\signalr\TestServer\Build\..\ " -nocache
+  All packages listed in packages.config are already installed.
+PrepareForBuild:
+  Creating directory "C:\signalr\TestServer\Build\..\artifacts\Debug\projects\Microsoft.AspNet.SignalR.Client45\".
+CoreResGen:
+  No resources are out of date with respect to their source files. Skipping resource generation.
+GenerateTargetFrameworkMonikerAttribute:
+Skipping target "GenerateTargetFrameworkMonikerAttribute" because all output files are up-to-date with respect to the input files.
+CoreCompile:
+Skipping target "CoreCompile" because all output files are up-to-date with respect to the input files.
+_CopyFilesMarkedCopyLocal:
+  Copying file from "C:\signalr\TestServer\packages\Newtonsoft.Json.5.0.6\lib\net45\Newtonsoft.Json.dll" to "C:\signalr\TestServer\Build\..\artifacts\Debug\projects\Microsoft.AspNet.SignalR.Client45\Newtonsoft.Json.dll".
+  Copying file from "C:\signalr\TestServer\packages\Newtonsoft.Json.5.0.6\lib\net45\Newtonsoft.Json.xml" to "C:\signalr\TestServer\Build\..\artifacts\Debug\projects\Microsoft.AspNet.SignalR.Client45\Newtonsoft.Json.xml".
+_CopyAppConfigFile:
+  Copying file from "app.config" to "C:\signalr\TestServer\Build\..\artifacts\Debug\projects\Microsoft.AspNet.SignalR.Client45\Microsoft.AspNet.SignalR.Client.dll.config".
+CopyFilesToOutputDirectory:
+  Copying file from "obj\Debug\Microsoft.AspNet.SignalR.Client.dll" to "C:\signalr\TestServer\Build\..\artifacts\Debug\projects\Microsoft.AspNet.SignalR.Client45\Microsoft.AspNet.SignalR.Client.dll".
+  Microsoft.AspNet.SignalR.Client45 -> C:\signalr\TestServer\artifacts\Debug\projects\Microsoft.AspNet.SignalR.Client45\Microsoft.AspNet.SignalR.Client.dll
+  Copying file from "obj\Debug\Microsoft.AspNet.SignalR.Client.pdb" to "C:\signalr\TestServer\Build\..\artifacts\Debug\projects\Microsoft.AspNet.SignalR.Client45\Microsoft.AspNet.SignalR.Client.pdb".
+  Copying file from "bin\Debug\Microsoft.AspNet.SignalR.Client.XML" to "C:\signalr\TestServer\Build\..\artifacts\Debug\projects\Microsoft.AspNet.SignalR.Client45\Microsoft.AspNet.SignalR.Client.XML".
+Done Building Project "C:\signalr\TestServer\src\Microsoft.AspNet.SignalR.Client45\Microsoft.AspNet.SignalR.Client45.csproj" (default targets).
+Project "C:\signalr\TestServer\tests\Microsoft.AspNet.SignalR.Tests.Common\Microsoft.AspNet.SignalR.Tests.Common.csproj" (6) is building "C:\signalr\TestServer\src\Microsoft.AspNet.SignalR.StressServer\Microsoft.AspNet.SignalR.StressServer.csproj" (8) on node 1 (default targets).
+RestorePackages:
+  "C:\signalr\TestServer\Build\..\.nuget\NuGet.exe" install "C:\signalr\TestServer\src\Microsoft.AspNet.SignalR.StressServer\packages.config" -source "https://nuget.org/api/v2/;http://www.myget.org/F/aspnetwebstacknightly/"  -NonInteractive -RequireConsent -solutionDir "C:\signalr\TestServer\Build\..\ " -nocache
+  All packages listed in packages.config are already installed.
+GenerateTargetFrameworkMonikerAttribute:
+Skipping target "GenerateTargetFrameworkMonikerAttribute" because all output files are up-to-date with respect to the input files.
+CoreCompile:
+Skipping target "CoreCompile" because all output files are up-to-date with respect to the input files.
+CopyFilesToOutputDirectory:
+  Microsoft.AspNet.SignalR.StressServer -> C:\signalr\TestServer\src\Microsoft.AspNet.SignalR.StressServer\bin\Debug\Microsoft.AspNet.SignalR.StressServer.dll
+Done Building Project "C:\signalr\TestServer\src\Microsoft.AspNet.SignalR.StressServer\Microsoft.AspNet.SignalR.StressServer.csproj" (default targets).
+GenerateTargetFrameworkMonikerAttribute:
+Skipping target "GenerateTargetFrameworkMonikerAttribute" because all output files are up-to-date with respect to the input files.
+CoreCompile:
+Skipping target "CoreCompile" because all output files are up-to-date with respect to the input files.
+CopyFilesToOutputDirectory:
+  Microsoft.AspNet.SignalR.Tests.Common -> C:\signalr\TestServer\tests\Microsoft.AspNet.SignalR.Tests.Common\bin\Debug\Microsoft.AspNet.SignalR.Tests.Common.dll
+Done Building Project "C:\signalr\TestServer\tests\Microsoft.AspNet.SignalR.Tests.Common\Microsoft.AspNet.SignalR.Tests.Common.csproj" (default targets).
+GenerateTargetFrameworkMonikerAttribute:
+Skipping target "GenerateTargetFrameworkMonikerAttribute" because all output files are up-to-date with respect to the input files.
+CoreCompile:
+  C:\Windows\Microsoft.NET\Framework\v4.0.30319\Csc.exe /noconfig /unsafe+ /nowarn:1591,1701,1702 /nostdlib+ /errorreport:prompt /warn:4 /define:DEBUG;TRACE /highentropyva+ /reference:C:\signalr\TestServer\artifacts\Debug\projects\Microsoft.AspNet.SignalR.Core\Microsoft.AspNet.SignalR.Core.dll /reference:C:\signalr\TestServer\artifacts\Debug\projects\Microsoft.AspNet.SignalR.ServiceBus\Microsoft.AspNet.SignalR.ServiceBus.dll /reference:C:\signalr\TestServer\tests\Microsoft.AspNet.SignalR.Tests.Common\bin\Debug\Microsoft.AspNet.SignalR.Tests.Common.dll /reference:"C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.5\Microsoft.CSharp.dll" /reference:C:\signalr\TestServer\packages\Microsoft.Owin.2.0.1\lib\net45\Microsoft.Owin.dll /reference:C:\signalr\TestServer\packages\Moq.4.0.10827\lib\NET40\Moq.dll /reference:"C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.5\mscorlib.dll" /reference:C:\signalr\TestServer\packages\Newtonsoft.Json.5.0.6\lib\net45\Newtonsoft.Json.dll /reference:C:\signalr\TestServer\packages\Owin.1.0\lib\net40\Owin.dll /reference:"C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.5\System.Core.dll" /reference:"C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.5\System.Data.dll" /reference:"C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.5\System.dll" /reference:"C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.5\System.Web.dll" /reference:"C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.5\System.Xml.dll" /reference:C:\signalr\TestServer\packages\xunit.1.9.1\lib\net20\xunit.dll /reference:C:\signalr\TestServer\packages\xunit.extensions.1.9.1\lib\net20\xunit.extensions.dll /debug+ /debug:full /filealign:512 /optimize- /out:obj\Debug\Microsoft.AspNet.SignalR.Tests.dll /subsystemversion:6.00 /target:library /warnaserror+ /utf8output ..\..\src\Common\CommonVersionInfo.cs ArrayTextReaderFacts.cs ConfigurationManagerFacts.cs Core\ConnectionExtensionsFacts.cs Core\Hubs\DefaultJavaScriptProxyGeneratorFacts.cs Core\Hubs\Extensions\HubManagerExtensionsFacts.cs Core\Hubs\Extensions\HubTypeExtensions.cs Core\Hubs\Extensions\MethodExtensionsFacts.cs Core\Hubs\HubConnectionContextFacts.cs Core\Hubs\HubContextFacts.cs Core\Hubs\Lookup\DefaultHubManagerFacts.cs Core\Hubs\Lookup\Descriptors\HubDescriptorFacts.cs Core\Hubs\Lookup\HubMethodDispatcherFacts.cs Core\Hubs\TestHubs.cs Core\Transports\ForeverFrameTransportFacts.cs GroupManagerFacts.cs Hosting\CookieFacts.cs Hosting\ResponseExtensionsFacts.cs Json\JsonFacts.cs Json\JsonSerializerExtensionFacts.cs Owin\ServerRequestFacts.cs PersistentConnectionFactoryFacts.cs PersistentConnectionFacts.cs PersistentResponseFacts.cs BufferTextWriterFacts.cs Server\AckHandlerFacts.cs Server\Hubs\HubFacts.cs Server\Hubs\TypedClientBuilderFacts.cs Server\ProtocolResolverFacts.cs Server\ServiceBusConfigurationFacts.cs Server\DiffSetFacts.cs Server\Hubs\HubDispatcherFacts.cs Server\MessageResultExtensions.cs Server\ConnectionFacts.cs Server\Connections\ConnectionFacts.cs CursorFacts.cs DefaultHubResolverFacts.cs Server\DisposerFacts.cs DefaultActionResolverFacts.cs Properties\AssemblyInfo.cs Server\MessageBusFacts.cs Server\ScaleOutMessageBusFacts.cs Server\ScaleoutStoreFacts.cs Server\ScaleoutStreamFacts.cs Server\ScaleoutConfigurationFacts.cs Server\SubscriptionFacts.cs Server\TestSubscriber.cs Server\TopicFacts.cs Server\Transports\ForeverTransportFacts.cs Owin\WebSocketFacts.cs SipHashBasedStringEqualityComparerFacts.cs StringMinifierFacts.cs TaskAsyncHelperFacts.cs TaskQueueFacts.cs Tracing\TraceManagerFacts.cs C:\signalr\TestServer\src\Common\GlobalSuppressions.cs "C:\Users\gustavoa\AppData\Local\Temp\.NETFramework,Version=v4.5.AssemblyAttributes.cs"
+_CopyFilesMarkedCopyLocal:
+  Copying file from "C:\signalr\TestServer\artifacts\Debug\projects\Microsoft.AspNet.SignalR.Core\Microsoft.AspNet.SignalR.Core.dll" to "C:\signalr\TestServer\Build\..\artifacts\Debug\projects\Microsoft.AspNet.SignalR.Tests\Microsoft.AspNet.SignalR.Core.dll".
+  Copying file from "C:\signalr\TestServer\artifacts\Debug\projects\Microsoft.AspNet.SignalR.ServiceBus\Microsoft.AspNet.SignalR.ServiceBus.dll" to "C:\signalr\TestServer\Build\..\artifacts\Debug\projects\Microsoft.AspNet.SignalR.Tests\Microsoft.AspNet.SignalR.ServiceBus.dll".
+  Copying file from "C:\signalr\TestServer\tests\Microsoft.AspNet.SignalR.Tests.Common\bin\Debug\Microsoft.AspNet.SignalR.Tests.Common.dll" to "C:\signalr\TestServer\Build\..\artifacts\Debug\projects\Microsoft.AspNet.SignalR.Tests\Microsoft.AspNet.SignalR.Tests.Common.dll".
+  Copying file from "C:\signalr\TestServer\packages\Microsoft.Owin.2.0.1\lib\net45\Microsoft.Owin.dll" to "C:\signalr\TestServer\Build\..\artifacts\Debug\projects\Microsoft.AspNet.SignalR.Tests\Microsoft.Owin.dll".
+  Copying file from "C:\signalr\TestServer\packages\Moq.4.0.10827\lib\NET40\Moq.dll" to "C:\signalr\TestServer\Build\..\artifacts\Debug\projects\Microsoft.AspNet.SignalR.Tests\Moq.dll".
+  Copying file from "C:\signalr\TestServer\packages\Newtonsoft.Json.5.0.6\lib\net45\Newtonsoft.Json.dll" to "C:\signalr\TestServer\Build\..\artifacts\Debug\projects\Microsoft.AspNet.SignalR.Tests\Newtonsoft.Json.dll".
+  Copying file from "C:\signalr\TestServer\packages\Owin.1.0\lib\net40\Owin.dll" to "C:\signalr\TestServer\Build\..\artifacts\Debug\projects\Microsoft.AspNet.SignalR.Tests\Owin.dll".
+  Copying file from "C:\signalr\TestServer\packages\xunit.1.9.1\lib\net20\xunit.dll" to "C:\signalr\TestServer\Build\..\artifacts\Debug\projects\Microsoft.AspNet.SignalR.Tests\xunit.dll".
+  Copying file from "C:\signalr\TestServer\packages\xunit.extensions.1.9.1\lib\net20\xunit.extensions.dll" to "C:\signalr\TestServer\Build\..\artifacts\Debug\projects\Microsoft.AspNet.SignalR.Tests\xunit.extensions.dll".
+  Copying file from "C:\signalr\TestServer\artifacts\Debug\projects\Microsoft.AspNet.SignalR.Core\Microsoft.Owin.Security.dll" to "C:\signalr\TestServer\Build\..\artifacts\Debug\projects\Microsoft.AspNet.SignalR.Tests\Microsoft.Owin.Security.dll".
+  Copying file from "C:\signalr\TestServer\artifacts\Debug\projects\Microsoft.AspNet.SignalR.ServiceBus\Microsoft.ServiceBus.dll" to "C:\signalr\TestServer\Build\..\artifacts\Debug\projects\Microsoft.AspNet.SignalR.Tests\Microsoft.ServiceBus.dll".
+  Copying file from "C:\signalr\TestServer\tests\Microsoft.AspNet.SignalR.Tests.Common\bin\Debug\Microsoft.Owin.Security.Basic.dll" to "C:\signalr\TestServer\Build\..\artifacts\Debug\projects\Microsoft.AspNet.SignalR.Tests\Microsoft.Owin.Security.Basic.dll".
+  Copying file from "C:\signalr\TestServer\tests\Microsoft.AspNet.SignalR.Tests.Common\bin\Debug\Microsoft.AspNet.SignalR.Client.dll" to "C:\signalr\TestServer\Build\..\artifacts\Debug\projects\Microsoft.AspNet.SignalR.Tests\Microsoft.AspNet.SignalR.Client.dll".
+  Copying file from "C:\signalr\TestServer\tests\Microsoft.AspNet.SignalR.Tests.Common\bin\Debug\Microsoft.Owin.Testing.dll" to "C:\signalr\TestServer\Build\..\artifacts\Debug\projects\Microsoft.AspNet.SignalR.Tests\Microsoft.Owin.Testing.dll".
+  Copying file from "C:\signalr\TestServer\tests\Microsoft.AspNet.SignalR.Tests.Common\bin\Debug\Microsoft.Owin.Cors.dll" to "C:\signalr\TestServer\Build\..\artifacts\Debug\projects\Microsoft.AspNet.SignalR.Tests\Microsoft.Owin.Cors.dll".
+  Copying file from "C:\signalr\TestServer\tests\Microsoft.AspNet.SignalR.Tests.Common\bin\Debug\Microsoft.AspNet.SignalR.StressServer.dll" to "C:\signalr\TestServer\Build\..\artifacts\Debug\projects\Microsoft.AspNet.SignalR.Tests\Microsoft.AspNet.SignalR.StressServer.dll".
+  Copying file from "C:\signalr\TestServer\tests\Microsoft.AspNet.SignalR.Tests.Common\bin\Debug\Microsoft.Owin.Hosting.dll" to "C:\signalr\TestServer\Build\..\artifacts\Debug\projects\Microsoft.AspNet.SignalR.Tests\Microsoft.Owin.Hosting.dll".
+  Copying file from "C:\signalr\TestServer\tests\Microsoft.AspNet.SignalR.Tests.Common\bin\Debug\System.Web.Cors.dll" to "C:\signalr\TestServer\Build\..\artifacts\Debug\projects\Microsoft.AspNet.SignalR.Tests\System.Web.Cors.dll".
+  Copying file from "C:\signalr\TestServer\artifacts\Debug\projects\Microsoft.AspNet.SignalR.Core\Microsoft.AspNet.SignalR.Core.pdb" to "C:\signalr\TestServer\Build\..\artifacts\Debug\projects\Microsoft.AspNet.SignalR.Tests\Microsoft.AspNet.SignalR.Core.pdb".
+  Copying file from "C:\signalr\TestServer\artifacts\Debug\projects\Microsoft.AspNet.SignalR.Core\Microsoft.AspNet.SignalR.Core.xml" to "C:\signalr\TestServer\Build\..\artifacts\Debug\projects\Microsoft.AspNet.SignalR.Tests\Microsoft.AspNet.SignalR.Core.xml".
+  Copying file from "C:\signalr\TestServer\artifacts\Debug\projects\Microsoft.AspNet.SignalR.ServiceBus\Microsoft.AspNet.SignalR.ServiceBus.pdb" to "C:\signalr\TestServer\Build\..\artifacts\Debug\projects\Microsoft.AspNet.SignalR.Tests\Microsoft.AspNet.SignalR.ServiceBus.pdb".
+  Copying file from "C:\signalr\TestServer\artifacts\Debug\projects\Microsoft.AspNet.SignalR.ServiceBus\Microsoft.AspNet.SignalR.ServiceBus.xml" to "C:\signalr\TestServer\Build\..\artifacts\Debug\projects\Microsoft.AspNet.SignalR.Tests\Microsoft.AspNet.SignalR.ServiceBus.xml".
+  Copying file from "C:\signalr\TestServer\tests\Microsoft.AspNet.SignalR.Tests.Common\bin\Debug\Microsoft.AspNet.SignalR.Tests.Common.pdb" to "C:\signalr\TestServer\Build\..\artifacts\Debug\projects\Microsoft.AspNet.SignalR.Tests\Microsoft.AspNet.SignalR.Tests.Common.pdb".
+  Copying file from "C:\signalr\TestServer\packages\Microsoft.Owin.2.0.1\lib\net45\Microsoft.Owin.xml" to "C:\signalr\TestServer\Build\..\artifacts\Debug\projects\Microsoft.AspNet.SignalR.Tests\Microsoft.Owin.xml".
+  Copying file from "C:\signalr\TestServer\packages\Moq.4.0.10827\lib\NET40\Moq.pdb" to "C:\signalr\TestServer\Build\..\artifacts\Debug\projects\Microsoft.AspNet.SignalR.Tests\Moq.pdb".
+  Copying file from "C:\signalr\TestServer\packages\Moq.4.0.10827\lib\NET40\Moq.xml" to "C:\signalr\TestServer\Build\..\artifacts\Debug\projects\Microsoft.AspNet.SignalR.Tests\Moq.xml".
+  Copying file from "C:\signalr\TestServer\packages\Newtonsoft.Json.5.0.6\lib\net45\Newtonsoft.Json.xml" to "C:\signalr\TestServer\Build\..\artifacts\Debug\projects\Microsoft.AspNet.SignalR.Tests\Newtonsoft.Json.xml".
+  Copying file from "C:\signalr\TestServer\packages\xunit.1.9.1\lib\net20\xunit.xml" to "C:\signalr\TestServer\Build\..\artifacts\Debug\projects\Microsoft.AspNet.SignalR.Tests\xunit.xml".
+  Copying file from "C:\signalr\TestServer\packages\xunit.extensions.1.9.1\lib\net20\xunit.extensions.xml" to "C:\signalr\TestServer\Build\..\artifacts\Debug\projects\Microsoft.AspNet.SignalR.Tests\xunit.extensions.xml".
+  Copying file from "C:\signalr\TestServer\artifacts\Debug\projects\Microsoft.AspNet.SignalR.Core\Microsoft.Owin.Security.xml" to "C:\signalr\TestServer\Build\..\artifacts\Debug\projects\Microsoft.AspNet.SignalR.Tests\Microsoft.Owin.Security.xml".
+  Copying file from "C:\signalr\TestServer\artifacts\Debug\projects\Microsoft.AspNet.SignalR.ServiceBus\Microsoft.ServiceBus.xml" to "C:\signalr\TestServer\Build\..\artifacts\Debug\projects\Microsoft.AspNet.SignalR.Tests\Microsoft.ServiceBus.xml".
+  Copying file from "C:\signalr\TestServer\tests\Microsoft.AspNet.SignalR.Tests.Common\bin\Debug\Microsoft.Owin.Security.Basic.xml" to "C:\signalr\TestServer\Build\..\artifacts\Debug\projects\Microsoft.AspNet.SignalR.Tests\Microsoft.Owin.Security.Basic.xml".
+  Copying file from "C:\signalr\TestServer\tests\Microsoft.AspNet.SignalR.Tests.Common\bin\Debug\Microsoft.AspNet.SignalR.Client.pdb" to "C:\signalr\TestServer\Build\..\artifacts\Debug\projects\Microsoft.AspNet.SignalR.Tests\Microsoft.AspNet.SignalR.Client.pdb".
+  Copying file from "C:\signalr\TestServer\tests\Microsoft.AspNet.SignalR.Tests.Common\bin\Debug\Microsoft.AspNet.SignalR.Client.xml" to "C:\signalr\TestServer\Build\..\artifacts\Debug\projects\Microsoft.AspNet.SignalR.Tests\Microsoft.AspNet.SignalR.Client.xml".
+  Copying file from "C:\signalr\TestServer\tests\Microsoft.AspNet.SignalR.Tests.Common\bin\Debug\Microsoft.Owin.Testing.xml" to "C:\signalr\TestServer\Build\..\artifacts\Debug\projects\Microsoft.AspNet.SignalR.Tests\Microsoft.Owin.Testing.xml".
+  Copying file from "C:\signalr\TestServer\tests\Microsoft.AspNet.SignalR.Tests.Common\bin\Debug\Microsoft.Owin.Cors.xml" to "C:\signalr\TestServer\Build\..\artifacts\Debug\projects\Microsoft.AspNet.SignalR.Tests\Microsoft.Owin.Cors.xml".
+  Copying file from "C:\signalr\TestServer\tests\Microsoft.AspNet.SignalR.Tests.Common\bin\Debug\Microsoft.AspNet.SignalR.StressServer.pdb" to "C:\signalr\TestServer\Build\..\artifacts\Debug\projects\Microsoft.AspNet.SignalR.Tests\Microsoft.AspNet.SignalR.StressServer.pdb".
+  Copying file from "C:\signalr\TestServer\tests\Microsoft.AspNet.SignalR.Tests.Common\bin\Debug\Microsoft.Owin.Hosting.xml" to "C:\signalr\TestServer\Build\..\artifacts\Debug\projects\Microsoft.AspNet.SignalR.Tests\Microsoft.Owin.Hosting.xml".
+CopyFilesToOutputDirectory:
+  Copying file from "obj\Debug\Microsoft.AspNet.SignalR.Tests.dll" to "C:\signalr\TestServer\Build\..\artifacts\Debug\projects\Microsoft.AspNet.SignalR.Tests\Microsoft.AspNet.SignalR.Tests.dll".
+  Microsoft.AspNet.SignalR.Tests -> C:\signalr\TestServer\artifacts\Debug\projects\Microsoft.AspNet.SignalR.Tests\Microsoft.AspNet.SignalR.Tests.dll
+  Copying file from "obj\Debug\Microsoft.AspNet.SignalR.Tests.pdb" to "C:\signalr\TestServer\Build\..\artifacts\Debug\projects\Microsoft.AspNet.SignalR.Tests\Microsoft.AspNet.SignalR.Tests.pdb".
+Done Building Project "C:\signalr\TestServer\tests\Microsoft.AspNet.SignalR.Tests\Microsoft.AspNet.SignalR.Tests.csproj" (Build target(s)).
+Project "C:\signalr\TestServer\Build\Build.proj" (1) is building "C:\signalr\TestServer\tests\Microsoft.AspNet.SignalR.Client.Tests\Microsoft.AspNet.SignalR.Client.Tests.csproj" (9) on node 1 (Build target(s)).
+RestorePackages:
+  "C:\signalr\TestServer\Build\..\.nuget\NuGet.exe" install "C:\signalr\TestServer\tests\Microsoft.AspNet.SignalR.Client.Tests\packages.config" -source "https://nuget.org/api/v2/;http://www.myget.org/F/aspnetwebstacknightly/"  -NonInteractive -RequireConsent -solutionDir "C:\signalr\TestServer\Build\..\ " -nocache
+  All packages listed in packages.config are already installed.
+PrepareForBuild:
+  Creating directory "C:\signalr\TestServer\Build\..\artifacts\Debug\projects\Microsoft.AspNet.SignalR.Client.Tests\".
+GenerateTargetFrameworkMonikerAttribute:
+Skipping target "GenerateTargetFrameworkMonikerAttribute" because all output files are up-to-date with respect to the input files.
+CoreCompile:
+  C:\Windows\Microsoft.NET\Framework\v4.0.30319\Csc.exe /noconfig /nowarn:1591,1701,1702 /nostdlib+ /errorreport:prompt /warn:4 /define:DEBUG;TRACE /highentropyva+ /reference:C:\signalr\TestServer\artifacts\Debug\projects\Microsoft.AspNet.SignalR.Client45\Microsoft.AspNet.SignalR.Client.dll /reference:C:\signalr\TestServer\tests\Microsoft.AspNet.SignalR.Tests.Common\bin\Debug\Microsoft.AspNet.SignalR.Tests.Common.dll /reference:"C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.5\Microsoft.CSharp.dll" /reference:C:\signalr\TestServer\packages\Moq.4.0.10827\lib\NET40\Moq.dll /reference:"C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.5\mscorlib.dll" /reference:C:\signalr\TestServer\packages\Newtonsoft.Json.5.0.6\lib\net45\Newtonsoft.Json.dll /reference:"C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.5\System.Core.dll" /reference:"C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.5\System.Data.DataSetExtensions.dll" /reference:"C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.5\System.Data.dll" /reference:"C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.5\System.dll" /reference:"C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.5\System.Xml.dll" /reference:"C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.5\System.Xml.Linq.dll" /reference:C:\signalr\TestServer\packages\xunit.1.9.1\lib\net20\xunit.dll /reference:C:\signalr\TestServer\packages\xunit.extensions.1.9.1\lib\net20\xunit.extensions.dll /debug+ /debug:full /filealign:512 /optimize- /out:obj\Debug\Microsoft.AspNet.SignalR.Client.Tests.dll /subsystemversion:6.00 /target:library /warnaserror+ /utf8output ChunkBufferFacts.cs Client\ConnectionFacts.cs Client\HubProxyFacts.cs Client\KeepAliveFacts.cs EventSourceStreamReaderFacts.cs Properties\AssemblyInfo.cs Client\TransportFacts.cs C:\signalr\TestServer\src\Common\GlobalSuppressions.cs "C:\Users\gustavoa\AppData\Local\Temp\.NETFramework,Version=v4.5.AssemblyAttributes.cs"
+_CopyFilesMarkedCopyLocal:
+  Copying file from "C:\signalr\TestServer\artifacts\Debug\projects\Microsoft.AspNet.SignalR.Client45\Microsoft.AspNet.SignalR.Client.dll" to "C:\signalr\TestServer\Build\..\artifacts\Debug\projects\Microsoft.AspNet.SignalR.Client.Tests\Microsoft.AspNet.SignalR.Client.dll".
+  Copying file from "C:\signalr\TestServer\tests\Microsoft.AspNet.SignalR.Tests.Common\bin\Debug\Microsoft.AspNet.SignalR.Tests.Common.dll" to "C:\signalr\TestServer\Build\..\artifacts\Debug\projects\Microsoft.AspNet.SignalR.Client.Tests\Microsoft.AspNet.SignalR.Tests.Common.dll".
+  Copying file from "C:\signalr\TestServer\packages\Moq.4.0.10827\lib\NET40\Moq.dll" to "C:\signalr\TestServer\Build\..\artifacts\Debug\projects\Microsoft.AspNet.SignalR.Client.Tests\Moq.dll".
+  Copying file from "C:\signalr\TestServer\packages\Newtonsoft.Json.5.0.6\lib\net45\Newtonsoft.Json.dll" to "C:\signalr\TestServer\Build\..\artifacts\Debug\projects\Microsoft.AspNet.SignalR.Client.Tests\Newtonsoft.Json.dll".
+  Copying file from "C:\signalr\TestServer\packages\xunit.1.9.1\lib\net20\xunit.dll" to "C:\signalr\TestServer\Build\..\artifacts\Debug\projects\Microsoft.AspNet.SignalR.Client.Tests\xunit.dll".
+  Copying file from "C:\signalr\TestServer\packages\xunit.extensions.1.9.1\lib\net20\xunit.extensions.dll" to "C:\signalr\TestServer\Build\..\artifacts\Debug\projects\Microsoft.AspNet.SignalR.Client.Tests\xunit.extensions.dll".
+  Copying file from "C:\signalr\TestServer\tests\Microsoft.AspNet.SignalR.Tests.Common\bin\Debug\Microsoft.AspNet.SignalR.Core.dll" to "C:\signalr\TestServer\Build\..\artifacts\Debug\projects\Microsoft.AspNet.SignalR.Client.Tests\Microsoft.AspNet.SignalR.Core.dll".
+  Copying file from "C:\signalr\TestServer\tests\Microsoft.AspNet.SignalR.Tests.Common\bin\Debug\Microsoft.Owin.Security.Basic.dll" to "C:\signalr\TestServer\Build\..\artifacts\Debug\projects\Microsoft.AspNet.SignalR.Client.Tests\Microsoft.Owin.Security.Basic.dll".
+  Copying file from "C:\signalr\TestServer\tests\Microsoft.AspNet.SignalR.Tests.Common\bin\Debug\Owin.dll" to "C:\signalr\TestServer\Build\..\artifacts\Debug\projects\Microsoft.AspNet.SignalR.Client.Tests\Owin.dll".
+  Copying file from "C:\signalr\TestServer\tests\Microsoft.AspNet.SignalR.Tests.Common\bin\Debug\Microsoft.Owin.Testing.dll" to "C:\signalr\TestServer\Build\..\artifacts\Debug\projects\Microsoft.AspNet.SignalR.Client.Tests\Microsoft.Owin.Testing.dll".
+  Copying file from "C:\signalr\TestServer\tests\Microsoft.AspNet.SignalR.Tests.Common\bin\Debug\Microsoft.Owin.dll" to "C:\signalr\TestServer\Build\..\artifacts\Debug\projects\Microsoft.AspNet.SignalR.Client.Tests\Microsoft.Owin.dll".
+  Copying file from "C:\signalr\TestServer\tests\Microsoft.AspNet.SignalR.Tests.Common\bin\Debug\Microsoft.Owin.Cors.dll" to "C:\signalr\TestServer\Build\..\artifacts\Debug\projects\Microsoft.AspNet.SignalR.Client.Tests\Microsoft.Owin.Cors.dll".
+  Copying file from "C:\signalr\TestServer\tests\Microsoft.AspNet.SignalR.Tests.Common\bin\Debug\Microsoft.AspNet.SignalR.StressServer.dll" to "C:\signalr\TestServer\Build\..\artifacts\Debug\projects\Microsoft.AspNet.SignalR.Client.Tests\Microsoft.AspNet.SignalR.StressServer.dll".
+  Copying file from "C:\signalr\TestServer\tests\Microsoft.AspNet.SignalR.Tests.Common\bin\Debug\Microsoft.Owin.Hosting.dll" to "C:\signalr\TestServer\Build\..\artifacts\Debug\projects\Microsoft.AspNet.SignalR.Client.Tests\Microsoft.Owin.Hosting.dll".
+  Copying file from "C:\signalr\TestServer\tests\Microsoft.AspNet.SignalR.Tests.Common\bin\Debug\Microsoft.Owin.Security.dll" to "C:\signalr\TestServer\Build\..\artifacts\Debug\projects\Microsoft.AspNet.SignalR.Client.Tests\Microsoft.Owin.Security.dll".
+  Copying file from "C:\signalr\TestServer\tests\Microsoft.AspNet.SignalR.Tests.Common\bin\Debug\System.Web.Cors.dll" to "C:\signalr\TestServer\Build\..\artifacts\Debug\projects\Microsoft.AspNet.SignalR.Client.Tests\System.Web.Cors.dll".
+  Copying file from "C:\signalr\TestServer\artifacts\Debug\projects\Microsoft.AspNet.SignalR.Client45\Microsoft.AspNet.SignalR.Client.pdb" to "C:\signalr\TestServer\Build\..\artifacts\Debug\projects\Microsoft.AspNet.SignalR.Client.Tests\Microsoft.AspNet.SignalR.Client.pdb".
+  Copying file from "C:\signalr\TestServer\artifacts\Debug\projects\Microsoft.AspNet.SignalR.Client45\Microsoft.AspNet.SignalR.Client.xml" to "C:\signalr\TestServer\Build\..\artifacts\Debug\projects\Microsoft.AspNet.SignalR.Client.Tests\Microsoft.AspNet.SignalR.Client.xml".
+  Copying file from "C:\signalr\TestServer\tests\Microsoft.AspNet.SignalR.Tests.Common\bin\Debug\Microsoft.AspNet.SignalR.Tests.Common.pdb" to "C:\signalr\TestServer\Build\..\artifacts\Debug\projects\Microsoft.AspNet.SignalR.Client.Tests\Microsoft.AspNet.SignalR.Tests.Common.pdb".
+  Copying file from "C:\signalr\TestServer\packages\Moq.4.0.10827\lib\NET40\Moq.pdb" to "C:\signalr\TestServer\Build\..\artifacts\Debug\projects\Microsoft.AspNet.SignalR.Client.Tests\Moq.pdb".
+  Copying file from "C:\signalr\TestServer\packages\Moq.4.0.10827\lib\NET40\Moq.xml" to "C:\signalr\TestServer\Build\..\artifacts\Debug\projects\Microsoft.AspNet.SignalR.Client.Tests\Moq.xml".
+  Copying file from "C:\signalr\TestServer\packages\Newtonsoft.Json.5.0.6\lib\net45\Newtonsoft.Json.xml" to "C:\signalr\TestServer\Build\..\artifacts\Debug\projects\Microsoft.AspNet.SignalR.Client.Tests\Newtonsoft.Json.xml".
+  Copying file from "C:\signalr\TestServer\packages\xunit.1.9.1\lib\net20\xunit.xml" to "C:\signalr\TestServer\Build\..\artifacts\Debug\projects\Microsoft.AspNet.SignalR.Client.Tests\xunit.xml".
+  Copying file from "C:\signalr\TestServer\packages\xunit.extensions.1.9.1\lib\net20\xunit.extensions.xml" to "C:\signalr\TestServer\Build\..\artifacts\Debug\projects\Microsoft.AspNet.SignalR.Client.Tests\xunit.extensions.xml".
+  Copying file from "C:\signalr\TestServer\tests\Microsoft.AspNet.SignalR.Tests.Common\bin\Debug\Microsoft.AspNet.SignalR.Core.pdb" to "C:\signalr\TestServer\Build\..\artifacts\Debug\projects\Microsoft.AspNet.SignalR.Client.Tests\Microsoft.AspNet.SignalR.Core.pdb".
+  Copying file from "C:\signalr\TestServer\tests\Microsoft.AspNet.SignalR.Tests.Common\bin\Debug\Microsoft.AspNet.SignalR.Core.xml" to "C:\signalr\TestServer\Build\..\artifacts\Debug\projects\Microsoft.AspNet.SignalR.Client.Tests\Microsoft.AspNet.SignalR.Core.xml".
+  Copying file from "C:\signalr\TestServer\tests\Microsoft.AspNet.SignalR.Tests.Common\bin\Debug\Microsoft.Owin.Security.Basic.xml" to "C:\signalr\TestServer\Build\..\artifacts\Debug\projects\Microsoft.AspNet.SignalR.Client.Tests\Microsoft.Owin.Security.Basic.xml".
+  Copying file from "C:\signalr\TestServer\tests\Microsoft.AspNet.SignalR.Tests.Common\bin\Debug\Microsoft.Owin.Testing.xml" to "C:\signalr\TestServer\Build\..\artifacts\Debug\projects\Microsoft.AspNet.SignalR.Client.Tests\Microsoft.Owin.Testing.xml".
+  Copying file from "C:\signalr\TestServer\tests\Microsoft.AspNet.SignalR.Tests.Common\bin\Debug\Microsoft.Owin.xml" to "C:\signalr\TestServer\Build\..\artifacts\Debug\projects\Microsoft.AspNet.SignalR.Client.Tests\Microsoft.Owin.xml".
+  Copying file from "C:\signalr\TestServer\tests\Microsoft.AspNet.SignalR.Tests.Common\bin\Debug\Microsoft.Owin.Cors.xml" to "C:\signalr\TestServer\Build\..\artifacts\Debug\projects\Microsoft.AspNet.SignalR.Client.Tests\Microsoft.Owin.Cors.xml".
+  Copying file from "C:\signalr\TestServer\tests\Microsoft.AspNet.SignalR.Tests.Common\bin\Debug\Microsoft.AspNet.SignalR.StressServer.pdb" to "C:\signalr\TestServer\Build\..\artifacts\Debug\projects\Microsoft.AspNet.SignalR.Client.Tests\Microsoft.AspNet.SignalR.StressServer.pdb".
+  Copying file from "C:\signalr\TestServer\tests\Microsoft.AspNet.SignalR.Tests.Common\bin\Debug\Microsoft.Owin.Hosting.xml" to "C:\signalr\TestServer\Build\..\artifacts\Debug\projects\Microsoft.AspNet.SignalR.Client.Tests\Microsoft.Owin.Hosting.xml".
+  Copying file from "C:\signalr\TestServer\tests\Microsoft.AspNet.SignalR.Tests.Common\bin\Debug\Microsoft.Owin.Security.xml" to "C:\signalr\TestServer\Build\..\artifacts\Debug\projects\Microsoft.AspNet.SignalR.Client.Tests\Microsoft.Owin.Security.xml".
+CopyFilesToOutputDirectory:
+  Copying file from "obj\Debug\Microsoft.AspNet.SignalR.Client.Tests.dll" to "C:\signalr\TestServer\Build\..\artifacts\Debug\projects\Microsoft.AspNet.SignalR.Client.Tests\Microsoft.AspNet.SignalR.Client.Tests.dll".
+  Microsoft.AspNet.SignalR.Client.Tests -> C:\signalr\TestServer\artifacts\Debug\projects\Microsoft.AspNet.SignalR.Client.Tests\Microsoft.AspNet.SignalR.Client.Tests.dll
+  Copying file from "obj\Debug\Microsoft.AspNet.SignalR.Client.Tests.pdb" to "C:\signalr\TestServer\Build\..\artifacts\Debug\projects\Microsoft.AspNet.SignalR.Client.Tests\Microsoft.AspNet.SignalR.Client.Tests.pdb".
+Done Building Project "C:\signalr\TestServer\tests\Microsoft.AspNet.SignalR.Client.Tests\Microsoft.AspNet.SignalR.Client.Tests.csproj" (Build target(s)).
+Project "C:\signalr\TestServer\Build\Build.proj" (1) is building "C:\signalr\TestServer\tests\Microsoft.AspNet.SignalR.SqlServer.Tests\Microsoft.AspNet.SignalR.SqlServer.Tests.csproj" (10) on node 1 (Build target(s)).
+RestorePackages:
+  "C:\signalr\TestServer\Build\..\.nuget\NuGet.exe" install "C:\signalr\TestServer\tests\Microsoft.AspNet.SignalR.SqlServer.Tests\packages.config" -source "https://nuget.org/api/v2/;http://www.myget.org/F/aspnetwebstacknightly/"  -NonInteractive -RequireConsent -solutionDir "C:\signalr\TestServer\Build\..\ " -nocache
+  All packages listed in packages.config are already installed.
+PrepareForBuild:
+  Creating directory "C:\signalr\TestServer\Build\..\artifacts\Debug\projects\Microsoft.AspNet.SignalR.SqlServer.Tests\".
+Project "C:\signalr\TestServer\tests\Microsoft.AspNet.SignalR.SqlServer.Tests\Microsoft.AspNet.SignalR.SqlServer.Tests.csproj" (10) is building "C:\signalr\TestServer\src\Microsoft.AspNet.SignalR.SqlServer\Microsoft.AspNet.SignalR.SqlServer.csproj" (11) on node 1 (default targets).
+PrepareForBuild:
+  Creating directory "C:\signalr\TestServer\Build\..\artifacts\Debug\projects\Microsoft.AspNet.SignalR.SqlServer\".
+CoreResGen:
+  No resources are out of date with respect to their source files. Skipping resource generation.
+GenerateTargetFrameworkMonikerAttribute:
+Skipping target "GenerateTargetFrameworkMonikerAttribute" because all output files are up-to-date with respect to the input files.
+CoreCompile:
+Skipping target "CoreCompile" because all output files are up-to-date with respect to the input files.
+_CopyFilesMarkedCopyLocal:
+  Copying file from "C:\signalr\TestServer\artifacts\Debug\projects\Microsoft.AspNet.SignalR.Core\Microsoft.AspNet.SignalR.Core.dll" to "C:\signalr\TestServer\Build\..\artifacts\Debug\projects\Microsoft.AspNet.SignalR.SqlServer\Microsoft.AspNet.SignalR.Core.dll".
+  Copying file from "C:\signalr\TestServer\artifacts\Debug\projects\Microsoft.AspNet.SignalR.Core\Newtonsoft.Json.dll" to "C:\signalr\TestServer\Build\..\artifacts\Debug\projects\Microsoft.AspNet.SignalR.SqlServer\Newtonsoft.Json.dll".
+  Copying file from "C:\signalr\TestServer\artifacts\Debug\projects\Microsoft.AspNet.SignalR.Core\Microsoft.Owin.dll" to "C:\signalr\TestServer\Build\..\artifacts\Debug\projects\Microsoft.AspNet.SignalR.SqlServer\Microsoft.Owin.dll".
+  Copying file from "C:\signalr\TestServer\artifacts\Debug\projects\Microsoft.AspNet.SignalR.Core\Microsoft.Owin.Security.dll" to "C:\signalr\TestServer\Build\..\artifacts\Debug\projects\Microsoft.AspNet.SignalR.SqlServer\Microsoft.Owin.Security.dll".
+  Copying file from "C:\signalr\TestServer\artifacts\Debug\projects\Microsoft.AspNet.SignalR.Core\Owin.dll" to "C:\signalr\TestServer\Build\..\artifacts\Debug\projects\Microsoft.AspNet.SignalR.SqlServer\Owin.dll".
+  Copying file from "C:\signalr\TestServer\artifacts\Debug\projects\Microsoft.AspNet.SignalR.Core\Microsoft.AspNet.SignalR.Core.pdb" to "C:\signalr\TestServer\Build\..\artifacts\Debug\projects\Microsoft.AspNet.SignalR.SqlServer\Microsoft.AspNet.SignalR.Core.pdb".
+  Copying file from "C:\signalr\TestServer\artifacts\Debug\projects\Microsoft.AspNet.SignalR.Core\Microsoft.AspNet.SignalR.Core.xml" to "C:\signalr\TestServer\Build\..\artifacts\Debug\projects\Microsoft.AspNet.SignalR.SqlServer\Microsoft.AspNet.SignalR.Core.xml".
+  Copying file from "C:\signalr\TestServer\artifacts\Debug\projects\Microsoft.AspNet.SignalR.Core\Newtonsoft.Json.xml" to "C:\signalr\TestServer\Build\..\artifacts\Debug\projects\Microsoft.AspNet.SignalR.SqlServer\Newtonsoft.Json.xml".
+  Copying file from "C:\signalr\TestServer\artifacts\Debug\projects\Microsoft.AspNet.SignalR.Core\Microsoft.Owin.xml" to "C:\signalr\TestServer\Build\..\artifacts\Debug\projects\Microsoft.AspNet.SignalR.SqlServer\Microsoft.Owin.xml".
+  Copying file from "C:\signalr\TestServer\artifacts\Debug\projects\Microsoft.AspNet.SignalR.Core\Microsoft.Owin.Security.xml" to "C:\signalr\TestServer\Build\..\artifacts\Debug\projects\Microsoft.AspNet.SignalR.SqlServer\Microsoft.Owin.Security.xml".
+_CopyOutOfDateSourceItemsToOutputDirectoryAlways:
+  Copying file from "C:\signalr\TestServer\src\Microsoft.AspNet.SignalR.SqlServer\install.sql" to "C:\signalr\TestServer\Build\..\artifacts\Debug\projects\Microsoft.AspNet.SignalR.SqlServer\install.sql".
+CopyFilesToOutputDirectory:
+  Copying file from "obj\Debug\Microsoft.AspNet.SignalR.SqlServer.dll" to "C:\signalr\TestServer\Build\..\artifacts\Debug\projects\Microsoft.AspNet.SignalR.SqlServer\Microsoft.AspNet.SignalR.SqlServer.dll".
+  Microsoft.AspNet.SignalR.SqlServer -> C:\signalr\TestServer\artifacts\Debug\projects\Microsoft.AspNet.SignalR.SqlServer\Microsoft.AspNet.SignalR.SqlServer.dll
+  Copying file from "obj\Debug\Microsoft.AspNet.SignalR.SqlServer.pdb" to "C:\signalr\TestServer\Build\..\artifacts\Debug\projects\Microsoft.AspNet.SignalR.SqlServer\Microsoft.AspNet.SignalR.SqlServer.pdb".
+  Copying file from "bin\Debug\Microsoft.AspNet.SignalR.SqlServer.XML" to "C:\signalr\TestServer\Build\..\artifacts\Debug\projects\Microsoft.AspNet.SignalR.SqlServer\Microsoft.AspNet.SignalR.SqlServer.XML".
+Done Building Project "C:\signalr\TestServer\src\Microsoft.AspNet.SignalR.SqlServer\Microsoft.AspNet.SignalR.SqlServer.csproj" (default targets).
+GenerateTargetFrameworkMonikerAttribute:
+Skipping target "GenerateTargetFrameworkMonikerAttribute" because all output files are up-to-date with respect to the input files.
+CoreCompile:
+Skipping target "CoreCompile" because all output files are up-to-date with respect to the input files.
+_CopyFilesMarkedCopyLocal:
+  Copying file from "C:\signalr\TestServer\artifacts\Debug\projects\Microsoft.AspNet.SignalR.Core\Microsoft.AspNet.SignalR.Core.dll" to "C:\signalr\TestServer\Build\..\artifacts\Debug\projects\Microsoft.AspNet.SignalR.SqlServer.Tests\Microsoft.AspNet.SignalR.Core.dll".
+  Copying file from "C:\signalr\TestServer\artifacts\Debug\projects\Microsoft.AspNet.SignalR.SqlServer\Microsoft.AspNet.SignalR.SqlServer.dll" to "C:\signalr\TestServer\Build\..\artifacts\Debug\projects\Microsoft.AspNet.SignalR.SqlServer.Tests\Microsoft.AspNet.SignalR.SqlServer.dll".
+  Copying file from "C:\signalr\TestServer\packages\Moq.4.0.10827\lib\NET40\Moq.dll" to "C:\signalr\TestServer\Build\..\artifacts\Debug\projects\Microsoft.AspNet.SignalR.SqlServer.Tests\Moq.dll".
+  Copying file from "C:\signalr\TestServer\packages\Newtonsoft.Json.5.0.6\lib\net45\Newtonsoft.Json.dll" to "C:\signalr\TestServer\Build\..\artifacts\Debug\projects\Microsoft.AspNet.SignalR.SqlServer.Tests\Newtonsoft.Json.dll".
+  Copying file from "C:\signalr\TestServer\packages\xunit.1.9.1\lib\net20\xunit.dll" to "C:\signalr\TestServer\Build\..\artifacts\Debug\projects\Microsoft.AspNet.SignalR.SqlServer.Tests\xunit.dll".
+  Copying file from "C:\signalr\TestServer\packages\xunit.extensions.1.9.1\lib\net20\xunit.extensions.dll" to "C:\signalr\TestServer\Build\..\artifacts\Debug\projects\Microsoft.AspNet.SignalR.SqlServer.Tests\xunit.extensions.dll".
+  Copying file from "C:\signalr\TestServer\artifacts\Debug\projects\Microsoft.AspNet.SignalR.Core\Microsoft.Owin.dll" to "C:\signalr\TestServer\Build\..\artifacts\Debug\projects\Microsoft.AspNet.SignalR.SqlServer.Tests\Microsoft.Owin.dll".
+  Copying file from "C:\signalr\TestServer\artifacts\Debug\projects\Microsoft.AspNet.SignalR.Core\Microsoft.Owin.Security.dll" to "C:\signalr\TestServer\Build\..\artifacts\Debug\projects\Microsoft.AspNet.SignalR.SqlServer.Tests\Microsoft.Owin.Security.dll".
+  Copying file from "C:\signalr\TestServer\artifacts\Debug\projects\Microsoft.AspNet.SignalR.Core\Owin.dll" to "C:\signalr\TestServer\Build\..\artifacts\Debug\projects\Microsoft.AspNet.SignalR.SqlServer.Tests\Owin.dll".
+  Copying file from "C:\signalr\TestServer\artifacts\Debug\projects\Microsoft.AspNet.SignalR.Core\Microsoft.AspNet.SignalR.Core.pdb" to "C:\signalr\TestServer\Build\..\artifacts\Debug\projects\Microsoft.AspNet.SignalR.SqlServer.Tests\Microsoft.AspNet.SignalR.Core.pdb".
+  Copying file from "C:\signalr\TestServer\artifacts\Debug\projects\Microsoft.AspNet.SignalR.Core\Microsoft.AspNet.SignalR.Core.xml" to "C:\signalr\TestServer\Build\..\artifacts\Debug\projects\Microsoft.AspNet.SignalR.SqlServer.Tests\Microsoft.AspNet.SignalR.Core.xml".
+  Copying file from "C:\signalr\TestServer\artifacts\Debug\projects\Microsoft.AspNet.SignalR.SqlServer\Microsoft.AspNet.SignalR.SqlServer.pdb" to "C:\signalr\TestServer\Build\..\artifacts\Debug\projects\Microsoft.AspNet.SignalR.SqlServer.Tests\Microsoft.AspNet.SignalR.SqlServer.pdb".
+  Copying file from "C:\signalr\TestServer\artifacts\Debug\projects\Microsoft.AspNet.SignalR.SqlServer\Microsoft.AspNet.SignalR.SqlServer.xml" to "C:\signalr\TestServer\Build\..\artifacts\Debug\projects\Microsoft.AspNet.SignalR.SqlServer.Tests\Microsoft.AspNet.SignalR.SqlServer.xml".
+  Copying file from "C:\signalr\TestServer\packages\Moq.4.0.10827\lib\NET40\Moq.pdb" to "C:\signalr\TestServer\Build\..\artifacts\Debug\projects\Microsoft.AspNet.SignalR.SqlServer.Tests\Moq.pdb".
+  Copying file from "C:\signalr\TestServer\packages\Moq.4.0.10827\lib\NET40\Moq.xml" to "C:\signalr\TestServer\Build\..\artifacts\Debug\projects\Microsoft.AspNet.SignalR.SqlServer.Tests\Moq.xml".
+  Copying file from "C:\signalr\TestServer\packages\Newtonsoft.Json.5.0.6\lib\net45\Newtonsoft.Json.xml" to "C:\signalr\TestServer\Build\..\artifacts\Debug\projects\Microsoft.AspNet.SignalR.SqlServer.Tests\Newtonsoft.Json.xml".
+  Copying file from "C:\signalr\TestServer\packages\xunit.1.9.1\lib\net20\xunit.xml" to "C:\signalr\TestServer\Build\..\artifacts\Debug\projects\Microsoft.AspNet.SignalR.SqlServer.Tests\xunit.xml".
+  Copying file from "C:\signalr\TestServer\packages\xunit.extensions.1.9.1\lib\net20\xunit.extensions.xml" to "C:\signalr\TestServer\Build\..\artifacts\Debug\projects\Microsoft.AspNet.SignalR.SqlServer.Tests\xunit.extensions.xml".
+  Copying file from "C:\signalr\TestServer\artifacts\Debug\projects\Microsoft.AspNet.SignalR.Core\Microsoft.Owin.xml" to "C:\signalr\TestServer\Build\..\artifacts\Debug\projects\Microsoft.AspNet.SignalR.SqlServer.Tests\Microsoft.Owin.xml".
+  Copying file from "C:\signalr\TestServer\artifacts\Debug\projects\Microsoft.AspNet.SignalR.Core\Microsoft.Owin.Security.xml" to "C:\signalr\TestServer\Build\..\artifacts\Debug\projects\Microsoft.AspNet.SignalR.SqlServer.Tests\Microsoft.Owin.Security.xml".
+_CopyOutOfDateSourceItemsToOutputDirectoryAlways:
+  Copying file from "C:\signalr\TestServer\src\Microsoft.AspNet.SignalR.SqlServer\install.sql" to "C:\signalr\TestServer\Build\..\artifacts\Debug\projects\Microsoft.AspNet.SignalR.SqlServer.Tests\install.sql".
+CopyFilesToOutputDirectory:
+  Copying file from "obj\Debug\Microsoft.AspNet.SignalR.SqlServer.Tests.dll" to "C:\signalr\TestServer\Build\..\artifacts\Debug\projects\Microsoft.AspNet.SignalR.SqlServer.Tests\Microsoft.AspNet.SignalR.SqlServer.Tests.dll".
+  Microsoft.AspNet.SignalR.SqlServer.Tests -> C:\signalr\TestServer\artifacts\Debug\projects\Microsoft.AspNet.SignalR.SqlServer.Tests\Microsoft.AspNet.SignalR.SqlServer.Tests.dll
+  Copying file from "obj\Debug\Microsoft.AspNet.SignalR.SqlServer.Tests.pdb" to "C:\signalr\TestServer\Build\..\artifacts\Debug\projects\Microsoft.AspNet.SignalR.SqlServer.Tests\Microsoft.AspNet.SignalR.SqlServer.Tests.pdb".
+Done Building Project "C:\signalr\TestServer\tests\Microsoft.AspNet.SignalR.SqlServer.Tests\Microsoft.AspNet.SignalR.SqlServer.Tests.csproj" (Build target(s)).
+Project "C:\signalr\TestServer\Build\Build.proj" (1) is building "C:\signalr\TestServer\tests\Microsoft.AspNet.SignalR.Client.JS.Tests\Microsoft.AspNet.SignalR.Client.JS.Tests.csproj" (12) on node 1 (pipelinePreDeployCopyAllFilesToOneFolder target(s)).
+ValidateGlobalPackageSetting:
+  $(PackageAsSingleFile) is True
+  $(PackageFileName) is obj\Debug\Package\Microsoft.AspNet.SignalR.Client.JS.Tests.zip. Validating...
+Project "C:\signalr\TestServer\tests\Microsoft.AspNet.SignalR.Client.JS.Tests\Microsoft.AspNet.SignalR.Client.JS.Tests.csproj" (12) is building "C:\signalr\TestServer\tests\Microsoft.AspNet.SignalR.Tests.Common\Microsoft.AspNet.SignalR.Tests.Common.csproj" (6:7) on node 1 (default targets).
+RestorePackages:
+  "C:\signalr\TestServer\Build\..\.nuget\NuGet.exe" install "C:\signalr\TestServer\tests\Microsoft.AspNet.SignalR.Tests.Common\packages.config" -source "https://nuget.org/api/v2/;http://www.myget.org/F/aspnetwebstacknightly/"  -NonInteractive -RequireConsent -solutionDir "C:\signalr\TestServer\Build\..\ " -nocache
+  All packages listed in packages.config are already installed.
+Project "C:\signalr\TestServer\tests\Microsoft.AspNet.SignalR.Tests.Common\Microsoft.AspNet.SignalR.Tests.Common.csproj" (6:7) is building "C:\signalr\TestServer\src\Microsoft.AspNet.SignalR.Client45\Microsoft.AspNet.SignalR.Client45.csproj" (7:7) on node 1 (default targets).
+RestorePackages:
+  "C:\signalr\TestServer\Build\..\.nuget\NuGet.exe" install "C:\signalr\TestServer\src\Microsoft.AspNet.SignalR.Client45\packages.config" -source "https://nuget.org/api/v2/;http://www.myget.org/F/aspnetwebstacknightly/"  -NonInteractive -RequireConsent -solutionDir "C:\signalr\TestServer\Build\..\ " -nocache
+  All packages listed in packages.config are already installed.
+CoreResGen:
+  No resources are out of date with respect to their source files. Skipping resource generation.
+GenerateTargetFrameworkMonikerAttribute:
+Skipping target "GenerateTargetFrameworkMonikerAttribute" because all output files are up-to-date with respect to the input files.
+CoreCompile:
+Skipping target "CoreCompile" because all output files are up-to-date with respect to the input files.
+_CopyAppConfigFile:
+Skipping target "_CopyAppConfigFile" because all output files are up-to-date with respect to the input files.
+CopyFilesToOutputDirectory:
+  Microsoft.AspNet.SignalR.Client45 -> C:\signalr\TestServer\artifacts\Debug\projects\Microsoft.AspNet.SignalR.Client45\Microsoft.AspNet.SignalR.Client.dll
+Done Building Project "C:\signalr\TestServer\src\Microsoft.AspNet.SignalR.Client45\Microsoft.AspNet.SignalR.Client45.csproj" (default targets).
+Project "C:\signalr\TestServer\tests\Microsoft.AspNet.SignalR.Tests.Common\Microsoft.AspNet.SignalR.Tests.Common.csproj" (6:7) is building "C:\signalr\TestServer\src\Microsoft.AspNet.SignalR.Core\Microsoft.AspNet.SignalR.Core.csproj" (4:19) on node 1 (default targets).
+RestorePackages:
+  "C:\signalr\TestServer\Build\..\.nuget\NuGet.exe" install "C:\signalr\TestServer\src\Microsoft.AspNet.SignalR.Core\packages.config" -source "https://nuget.org/api/v2/;http://www.myget.org/F/aspnetwebstacknightly/"  -NonInteractive -RequireConsent -solutionDir "C:\signalr\TestServer\Build\..\ " -nocache
+  All packages listed in packages.config are already installed.
+CoreResGen:
+  No resources are out of date with respect to their source files. Skipping resource generation.
+GenerateTargetFrameworkMonikerAttribute:
+Skipping target "GenerateTargetFrameworkMonikerAttribute" because all output files are up-to-date with respect to the input files.
+CoreCompile:
+Skipping target "CoreCompile" because all output files are up-to-date with respect to the input files.
+CopyFilesToOutputDirectory:
+  Microsoft.AspNet.SignalR.Core -> C:\signalr\TestServer\artifacts\Debug\projects\Microsoft.AspNet.SignalR.Core\Microsoft.AspNet.SignalR.Core.dll
+Done Building Project "C:\signalr\TestServer\src\Microsoft.AspNet.SignalR.Core\Microsoft.AspNet.SignalR.Core.csproj" (default targets).
+Project "C:\signalr\TestServer\tests\Microsoft.AspNet.SignalR.Tests.Common\Microsoft.AspNet.SignalR.Tests.Common.csproj" (6:7) is building "C:\signalr\TestServer\src\Microsoft.AspNet.SignalR.StressServer\Microsoft.AspNet.SignalR.StressServer.csproj" (8:4) on node 1 (default targets).
+RestorePackages:
+  "C:\signalr\TestServer\Build\..\.nuget\NuGet.exe" install "C:\signalr\TestServer\src\Microsoft.AspNet.SignalR.StressServer\packages.config" -source "https://nuget.org/api/v2/;http://www.myget.org/F/aspnetwebstacknightly/"  -NonInteractive -RequireConsent -solutionDir "C:\signalr\TestServer\Build\..\ " -nocache
+  All packages listed in packages.config are already installed.
+GenerateTargetFrameworkMonikerAttribute:
+Skipping target "GenerateTargetFrameworkMonikerAttribute" because all output files are up-to-date with respect to the input files.
+CoreCompile:
+Skipping target "CoreCompile" because all output files are up-to-date with respect to the input files.
+CopyFilesToOutputDirectory:
+  Microsoft.AspNet.SignalR.StressServer -> C:\signalr\TestServer\src\Microsoft.AspNet.SignalR.StressServer\bin\Debug\Microsoft.AspNet.SignalR.StressServer.dll
+Done Building Project "C:\signalr\TestServer\src\Microsoft.AspNet.SignalR.StressServer\Microsoft.AspNet.SignalR.StressServer.csproj" (default targets).
+GenerateTargetFrameworkMonikerAttribute:
+Skipping target "GenerateTargetFrameworkMonikerAttribute" because all output files are up-to-date with respect to the input files.
+CoreCompile:
+Skipping target "CoreCompile" because all output files are up-to-date with respect to the input files.
+CopyFilesToOutputDirectory:
+  Microsoft.AspNet.SignalR.Tests.Common -> C:\signalr\TestServer\tests\Microsoft.AspNet.SignalR.Tests.Common\bin\Debug\Microsoft.AspNet.SignalR.Tests.Common.dll
+Done Building Project "C:\signalr\TestServer\tests\Microsoft.AspNet.SignalR.Tests.Common\Microsoft.AspNet.SignalR.Tests.Common.csproj" (default targets).
+Project "C:\signalr\TestServer\tests\Microsoft.AspNet.SignalR.Client.JS.Tests\Microsoft.AspNet.SignalR.Client.JS.Tests.csproj" (12) is building "C:\signalr\TestServer\src\Microsoft.AspNet.SignalR.Client.JS\Microsoft.AspNet.SignalR.Client.JS.csproj" (13) on node 1 (default targets).
+RestorePackages:
+  "C:\signalr\TestServer\Build\..\.nuget\NuGet.exe" install "C:\signalr\TestServer\src\Microsoft.AspNet.SignalR.Client.JS\packages.config" -source "https://nuget.org/api/v2/;http://www.myget.org/F/aspnetwebstacknightly/"  -NonInteractive -RequireConsent -solutionDir "C:\signalr\TestServer\Build\..\ " -nocache
+  All packages listed in packages.config are already installed.
+PrepareForBuild:
+  Creating directory "C:\signalr\TestServer\Build\..\artifacts\Debug\projects\Microsoft.AspNet.SignalR.Client.JS\".
+GenerateTargetFrameworkMonikerAttribute:
+Skipping target "GenerateTargetFrameworkMonikerAttribute" because all output files are up-to-date with respect to the input files.
+CoreCompile:
+Skipping target "CoreCompile" because all output files are up-to-date with respect to the input files.
+CopyFilesToOutputDirectory:
+  Copying file from "obj\Debug\Microsoft.AspNet.SignalR.Client.JS.dll" to "C:\signalr\TestServer\Build\..\artifacts\Debug\projects\Microsoft.AspNet.SignalR.Client.JS\Microsoft.AspNet.SignalR.Client.JS.dll".
+  Microsoft.AspNet.SignalR.Client.JS -> C:\signalr\TestServer\artifacts\Debug\projects\Microsoft.AspNet.SignalR.Client.JS\Microsoft.AspNet.SignalR.Client.JS.dll
+  Copying file from "obj\Debug\Microsoft.AspNet.SignalR.Client.JS.pdb" to "C:\signalr\TestServer\Build\..\artifacts\Debug\projects\Microsoft.AspNet.SignalR.Client.JS\Microsoft.AspNet.SignalR.Client.JS.pdb".
+AfterBuild:
+  powershell -NoProfile -ExecutionPolicy Bypass .\build.ps1 C:\signalr\TestServer\Build\..\artifacts\Debug\projects\Microsoft.AspNet.SignalR.Client.JS\
+  Running JSHint...
+  jquery.signalR.core.js... no issues found
+  jquery.signalR.transports.common.js... no issues found
+  jquery.signalR.transports.webSockets.js... no issues found
+  jquery.signalR.transports.serverSentEvents.js... no issues found
+  jquery.signalR.transports.foreverFrame.js... no issues found
+  jquery.signalR.transports.longPolling.js... no issues found
+  jquery.signalR.hubs.js... no issues found
+  jquery.signalR.version.js... no issues found
+  Building bin\jquery.signalR.js... done
+  Building bin\jquery.signalR.min.js... Original Size: 114590 bytes; reduced size: 32814 bytes (71.4% minification)
+Done Building Project "C:\signalr\TestServer\src\Microsoft.AspNet.SignalR.Client.JS\Microsoft.AspNet.SignalR.Client.JS.csproj" (default targets).
+PrepareForBuild:
+  Creating directory "C:\signalr\TestServer\Build\..\artifacts\Debug\projects\Microsoft.AspNet.SignalR.Client.JS.Tests\".
+RestorePackages:
+  "C:\signalr\TestServer\Build\..\.nuget\NuGet.exe" install "C:\signalr\TestServer\tests\Microsoft.AspNet.SignalR.Client.JS.Tests\packages.config" -source "https://nuget.org/api/v2/;http://www.myget.org/F/aspnetwebstacknightly/"  -NonInteractive -RequireConsent -solutionDir "C:\signalr\TestServer\Build\..\ " -nocache
+  All packages listed in packages.config are already installed.
+GenerateTargetFrameworkMonikerAttribute:
+Skipping target "GenerateTargetFrameworkMonikerAttribute" because all output files are up-to-date with respect to the input files.
+CoreCompile:
+Skipping target "CoreCompile" because all output files are up-to-date with respect to the input files.
+_CopyFilesMarkedCopyLocal:
+  Copying file from "C:\signalr\TestServer\artifacts\Debug\projects\Microsoft.AspNet.SignalR.Client.JS\Microsoft.AspNet.SignalR.Client.JS.dll" to "C:\signalr\TestServer\Build\..\artifacts\Debug\projects\Microsoft.AspNet.SignalR.Client.JS.Tests\Microsoft.AspNet.SignalR.Client.JS.dll".
+  Copying file from "C:\signalr\TestServer\artifacts\Debug\projects\Microsoft.AspNet.SignalR.Core\Microsoft.AspNet.SignalR.Core.dll" to "C:\signalr\TestServer\Build\..\artifacts\Debug\projects\Microsoft.AspNet.SignalR.Client.JS.Tests\Microsoft.AspNet.SignalR.Core.dll".
+  Copying file from "C:\signalr\TestServer\tests\Microsoft.AspNet.SignalR.Tests.Common\bin\Debug\Microsoft.AspNet.SignalR.Tests.Common.dll" to "C:\signalr\TestServer\Build\..\artifacts\Debug\projects\Microsoft.AspNet.SignalR.Client.JS.Tests\Microsoft.AspNet.SignalR.Tests.Common.dll".
+  Copying file from "C:\signalr\TestServer\packages\Microsoft.Owin.2.0.1\lib\net45\Microsoft.Owin.dll" to "C:\signalr\TestServer\Build\..\artifacts\Debug\projects\Microsoft.AspNet.SignalR.Client.JS.Tests\Microsoft.Owin.dll".
+  Copying file from "C:\signalr\TestServer\packages\Microsoft.Owin.Host.SystemWeb.2.0.1\lib\net45\Microsoft.Owin.Host.SystemWeb.dll" to "C:\signalr\TestServer\Build\..\artifacts\Debug\projects\Microsoft.AspNet.SignalR.Client.JS.Tests\Microsoft.Owin.Host.SystemWeb.dll".
+  Copying file from "C:\signalr\TestServer\packages\Owin.1.0\lib\net40\Owin.dll" to "C:\signalr\TestServer\Build\..\artifacts\Debug\projects\Microsoft.AspNet.SignalR.Client.JS.Tests\Owin.dll".
+  Copying file from "C:\signalr\TestServer\tests\Microsoft.AspNet.SignalR.Tests.Common\bin\Debug\Microsoft.Owin.Security.Basic.dll" to "C:\signalr\TestServer\Build\..\artifacts\Debug\projects\Microsoft.AspNet.SignalR.Client.JS.Tests\Microsoft.Owin.Security.Basic.dll".
+  Copying file from "C:\signalr\TestServer\tests\Microsoft.AspNet.SignalR.Tests.Common\bin\Debug\Microsoft.AspNet.SignalR.Client.dll" to "C:\signalr\TestServer\Build\..\artifacts\Debug\projects\Microsoft.AspNet.SignalR.Client.JS.Tests\Microsoft.AspNet.SignalR.Client.dll".
+  Copying file from "C:\signalr\TestServer\tests\Microsoft.AspNet.SignalR.Tests.Common\bin\Debug\Microsoft.Owin.Testing.dll" to "C:\signalr\TestServer\Build\..\artifacts\Debug\projects\Microsoft.AspNet.SignalR.Client.JS.Tests\Microsoft.Owin.Testing.dll".
+  Copying file from "C:\signalr\TestServer\tests\Microsoft.AspNet.SignalR.Tests.Common\bin\Debug\Microsoft.Owin.Cors.dll" to "C:\signalr\TestServer\Build\..\artifacts\Debug\projects\Microsoft.AspNet.SignalR.Client.JS.Tests\Microsoft.Owin.Cors.dll".
+  Copying file from "C:\signalr\TestServer\tests\Microsoft.AspNet.SignalR.Tests.Common\bin\Debug\Microsoft.AspNet.SignalR.StressServer.dll" to "C:\signalr\TestServer\Build\..\artifacts\Debug\projects\Microsoft.AspNet.SignalR.Client.JS.Tests\Microsoft.AspNet.SignalR.StressServer.dll".
+  Copying file from "C:\signalr\TestServer\tests\Microsoft.AspNet.SignalR.Tests.Common\bin\Debug\Newtonsoft.Json.dll" to "C:\signalr\TestServer\Build\..\artifacts\Debug\projects\Microsoft.AspNet.SignalR.Client.JS.Tests\Newtonsoft.Json.dll".
+  Copying file from "C:\signalr\TestServer\tests\Microsoft.AspNet.SignalR.Tests.Common\bin\Debug\xunit.dll" to "C:\signalr\TestServer\Build\..\artifacts\Debug\projects\Microsoft.AspNet.SignalR.Client.JS.Tests\xunit.dll".
+  Copying file from "C:\signalr\TestServer\tests\Microsoft.AspNet.SignalR.Tests.Common\bin\Debug\xunit.extensions.dll" to "C:\signalr\TestServer\Build\..\artifacts\Debug\projects\Microsoft.AspNet.SignalR.Client.JS.Tests\xunit.extensions.dll".
+  Copying file from "C:\signalr\TestServer\tests\Microsoft.AspNet.SignalR.Tests.Common\bin\Debug\Microsoft.Owin.Hosting.dll" to "C:\signalr\TestServer\Build\..\artifacts\Debug\projects\Microsoft.AspNet.SignalR.Client.JS.Tests\Microsoft.Owin.Hosting.dll".
+  Copying file from "C:\signalr\TestServer\artifacts\Debug\projects\Microsoft.AspNet.SignalR.Core\Microsoft.Owin.Security.dll" to "C:\signalr\TestServer\Build\..\artifacts\Debug\projects\Microsoft.AspNet.SignalR.Client.JS.Tests\Microsoft.Owin.Security.dll".
+  Copying file from "C:\signalr\TestServer\tests\Microsoft.AspNet.SignalR.Tests.Common\bin\Debug\System.Web.Cors.dll" to "C:\signalr\TestServer\Build\..\artifacts\Debug\projects\Microsoft.AspNet.SignalR.Client.JS.Tests\System.Web.Cors.dll".
+  Copying file from "C:\signalr\TestServer\tests\Microsoft.AspNet.SignalR.Tests.Common\bin\Debug\Microsoft.AspNet.SignalR.Tests.Common.pdb" to "C:\signalr\TestServer\Build\..\artifacts\Debug\projects\Microsoft.AspNet.SignalR.Client.JS.Tests\Microsoft.AspNet.SignalR.Tests.Common.pdb".
+  Copying file from "C:\signalr\TestServer\artifacts\Debug\projects\Microsoft.AspNet.SignalR.Client.JS\Microsoft.AspNet.SignalR.Client.JS.pdb" to "C:\signalr\TestServer\Build\..\artifacts\Debug\projects\Microsoft.AspNet.SignalR.Client.JS.Tests\Microsoft.AspNet.SignalR.Client.JS.pdb".
+  Copying file from "C:\signalr\TestServer\artifacts\Debug\projects\Microsoft.AspNet.SignalR.Core\Microsoft.AspNet.SignalR.Core.pdb" to "C:\signalr\TestServer\Build\..\artifacts\Debug\projects\Microsoft.AspNet.SignalR.Client.JS.Tests\Microsoft.AspNet.SignalR.Core.pdb".
+  Copying file from "C:\signalr\TestServer\artifacts\Debug\projects\Microsoft.AspNet.SignalR.Core\Microsoft.AspNet.SignalR.Core.xml" to "C:\signalr\TestServer\Build\..\artifacts\Debug\projects\Microsoft.AspNet.SignalR.Client.JS.Tests\Microsoft.AspNet.SignalR.Core.xml".
+  Copying file from "C:\signalr\TestServer\packages\Microsoft.Owin.2.0.1\lib\net45\Microsoft.Owin.xml" to "C:\signalr\TestServer\Build\..\artifacts\Debug\projects\Microsoft.AspNet.SignalR.Client.JS.Tests\Microsoft.Owin.xml".
+  Copying file from "C:\signalr\TestServer\packages\Microsoft.Owin.Host.SystemWeb.2.0.1\lib\net45\Microsoft.Owin.Host.SystemWeb.xml" to "C:\signalr\TestServer\Build\..\artifacts\Debug\projects\Microsoft.AspNet.SignalR.Client.JS.Tests\Microsoft.Owin.Host.SystemWeb.xml".
+  Copying file from "C:\signalr\TestServer\tests\Microsoft.AspNet.SignalR.Tests.Common\bin\Debug\Microsoft.Owin.Security.Basic.xml" to "C:\signalr\TestServer\Build\..\artifacts\Debug\projects\Microsoft.AspNet.SignalR.Client.JS.Tests\Microsoft.Owin.Security.Basic.xml".
+  Copying file from "C:\signalr\TestServer\tests\Microsoft.AspNet.SignalR.Tests.Common\bin\Debug\Microsoft.AspNet.SignalR.Client.pdb" to "C:\signalr\TestServer\Build\..\artifacts\Debug\projects\Microsoft.AspNet.SignalR.Client.JS.Tests\Microsoft.AspNet.SignalR.Client.pdb".
+  Copying file from "C:\signalr\TestServer\tests\Microsoft.AspNet.SignalR.Tests.Common\bin\Debug\Microsoft.AspNet.SignalR.Client.xml" to "C:\signalr\TestServer\Build\..\artifacts\Debug\projects\Microsoft.AspNet.SignalR.Client.JS.Tests\Microsoft.AspNet.SignalR.Client.xml".
+  Copying file from "C:\signalr\TestServer\tests\Microsoft.AspNet.SignalR.Tests.Common\bin\Debug\Microsoft.Owin.Testing.xml" to "C:\signalr\TestServer\Build\..\artifacts\Debug\projects\Microsoft.AspNet.SignalR.Client.JS.Tests\Microsoft.Owin.Testing.xml".
+  Copying file from "C:\signalr\TestServer\tests\Microsoft.AspNet.SignalR.Tests.Common\bin\Debug\Microsoft.Owin.Cors.xml" to "C:\signalr\TestServer\Build\..\artifacts\Debug\projects\Microsoft.AspNet.SignalR.Client.JS.Tests\Microsoft.Owin.Cors.xml".
+  Copying file from "C:\signalr\TestServer\tests\Microsoft.AspNet.SignalR.Tests.Common\bin\Debug\Microsoft.AspNet.SignalR.StressServer.pdb" to "C:\signalr\TestServer\Build\..\artifacts\Debug\projects\Microsoft.AspNet.SignalR.Client.JS.Tests\Microsoft.AspNet.SignalR.StressServer.pdb".
+  Copying file from "C:\signalr\TestServer\tests\Microsoft.AspNet.SignalR.Tests.Common\bin\Debug\Newtonsoft.Json.xml" to "C:\signalr\TestServer\Build\..\artifacts\Debug\projects\Microsoft.AspNet.SignalR.Client.JS.Tests\Newtonsoft.Json.xml".
+  Copying file from "C:\signalr\TestServer\tests\Microsoft.AspNet.SignalR.Tests.Common\bin\Debug\xunit.xml" to "C:\signalr\TestServer\Build\..\artifacts\Debug\projects\Microsoft.AspNet.SignalR.Client.JS.Tests\xunit.xml".
+  Copying file from "C:\signalr\TestServer\tests\Microsoft.AspNet.SignalR.Tests.Common\bin\Debug\xunit.extensions.xml" to "C:\signalr\TestServer\Build\..\artifacts\Debug\projects\Microsoft.AspNet.SignalR.Client.JS.Tests\xunit.extensions.xml".
+  Copying file from "C:\signalr\TestServer\tests\Microsoft.AspNet.SignalR.Tests.Common\bin\Debug\Microsoft.Owin.Hosting.xml" to "C:\signalr\TestServer\Build\..\artifacts\Debug\projects\Microsoft.AspNet.SignalR.Client.JS.Tests\Microsoft.Owin.Hosting.xml".
+  Copying file from "C:\signalr\TestServer\artifacts\Debug\projects\Microsoft.AspNet.SignalR.Core\Microsoft.Owin.Security.xml" to "C:\signalr\TestServer\Build\..\artifacts\Debug\projects\Microsoft.AspNet.SignalR.Client.JS.Tests\Microsoft.Owin.Security.xml".
+_CopyOutOfDateSourceItemsToOutputDirectoryAlways:
+  Creating directory "C:\signalr\TestServer\Build\..\artifacts\Debug\projects\Microsoft.AspNet.SignalR.Client.JS.Tests\config".
+  Copying file from "C:\signalr\TestServer\tests\Microsoft.AspNet.SignalR.FunctionalTests\config\applicationhost.config" to "C:\signalr\TestServer\Build\..\artifacts\Debug\projects\Microsoft.AspNet.SignalR.Client.JS.Tests\config\applicationhost.config".
+  Copying file from "C:\signalr\TestServer\tests\Microsoft.AspNet.SignalR.FunctionalTests\config\aspnet.config" to "C:\signalr\TestServer\Build\..\artifacts\Debug\projects\Microsoft.AspNet.SignalR.Client.JS.Tests\config\aspnet.config".
+  Copying file from "C:\signalr\TestServer\tests\Microsoft.AspNet.SignalR.FunctionalTests\config\redirection.config" to "C:\signalr\TestServer\Build\..\artifacts\Debug\projects\Microsoft.AspNet.SignalR.Client.JS.Tests\config\redirection.config".
+CopyFilesToOutputDirectory:
+  Copying file from "obj\Debug\Microsoft.AspNet.SignalR.Client.JS.Tests.dll" to "C:\signalr\TestServer\Build\..\artifacts\Debug\projects\Microsoft.AspNet.SignalR.Client.JS.Tests\Microsoft.AspNet.SignalR.Client.JS.Tests.dll".
+  Microsoft.AspNet.SignalR.Client.JS.Tests -> C:\signalr\TestServer\artifacts\Debug\projects\Microsoft.AspNet.SignalR.Client.JS.Tests\Microsoft.AspNet.SignalR.Client.JS.Tests.dll
+  Copying file from "obj\Debug\Microsoft.AspNet.SignalR.Client.JS.Tests.pdb" to "C:\signalr\TestServer\Build\..\artifacts\Debug\projects\Microsoft.AspNet.SignalR.Client.JS.Tests\Microsoft.AspNet.SignalR.Client.JS.Tests.pdb".
+AfterBuild:
+  Copying file from "C:\signalr\TestServer\Build\..\artifacts\Debug\projects\Microsoft.AspNet.SignalR.Client.JS\jquery.signalR.js" to "Scripts\jquery.signalR.js".
+  Updating File "default.html".
+  powershell -NoProfile -ExecutionPolicy Bypass .\build.ps1
+  Building bin/jquery.network.mock.js... done
+  Copying file from "C:\signalr\TestServer\tests\Microsoft.AspNet.SignalR.Client.JS.Tests\\bin\jquery.network.mock.js" to "C:\signalr\TestServer\tests\Microsoft.AspNet.SignalR.Client.JS.Tests\\Scripts\jquery.network.mock.js".
+CollectFilesFromIntermediateAssembly:
+  Gather all files from Project items @(IntermediateAssembly). Adding:
+  C:\signalr\TestServer\Build\..\artifacts\Debug\projects\Microsoft.AspNet.SignalR.Client.JS.Tests\Microsoft.AspNet.SignalR.Client.JS.Tests.dll to bin\Microsoft.AspNet.SignalR.Client.JS.Tests.dll
+  C:\signalr\TestServer\Build\..\artifacts\Debug\projects\Microsoft.AspNet.SignalR.Client.JS.Tests\Microsoft.AspNet.SignalR.Client.JS.Tests.pdb to bin\Microsoft.AspNet.SignalR.Client.JS.Tests.pdb
+CollectFilesFromContent:
+  Gather all files from Project items @(Content). Adding:
+  Build\disableCrossDomain.js;default.html;NetworkMock\jquery.network.mock.ajax.js;NetworkMock\jquery.network.mock.core.js;NetworkMock\jquery.network.mock.eventsource.js;NetworkMock\jquery.network.mock.mask.js;NetworkMock\jquery.network.mock.websocket.js;Scripts\jquery-1.6.4.js;Scripts\jquery-1.7.2.js;Scripts\jquery-1.8.3.js;Scripts\jquery-1.9.1.js;Scripts\jquery-2.0.0.js;Scripts\jquery.network.mock.js;Scripts\jquery.signalR.js;Build\test.config.js;Scripts\qunit-1.12.0.js;Scripts\_references.js;Styles\qunit-1.12.0.css;Tests\FunctionalTests\Common\AjaxAbortFacts.js;Tests\FunctionalTests\Common\AjaxSendFacts.js;Tests\FunctionalTests\Common\KeepAliveFacts.js;Tests\FunctionalTests\Common\ResponseRedirectionFacts.js;Tests\FunctionalTests\Core\JsonFacts.js;Tests\FunctionalTests\Core\NegotiateFacts.js;Tests\FunctionalTests\Hubs\HubEventHandlerFacts.js;Tests\FunctionalTests\Hubs\HubGroupFacts.js;Tests\FunctionalTests\Transports\All\AjaxReplacementFacts.js;Tests\FunctionalTests\Transports\All\ConnectionFacts.js;Tests\FunctionalTests\Transports\All\HubConnectionFacts.js;Tests\FunctionalTests\Transports\All\SendFacts.js;Tests\FunctionalTests\Transports\Fallback\FallbackConnectionFacts.js;Tests\FunctionalTests\Transports\Fallback\FallbackSendFacts.js;Tests\FunctionalTests\Hubs\HubProxyFacts.js;Tests\FunctionalTests\Common\PingServerFacts.js;Tests\FunctionalTests\Transports\All\ConnectionStateFacts.js;Tests\FunctionalTests\Transports\ForeverFrame\FFConnectFacts.js;Tests\FunctionalTests\Transports\ForeverFrame\TransportSelectionFacts.js;Tests\FunctionalTests\Transports\LongPolling\LPConnectFacts.js;Tests\FunctionalTests\Transports\LongPolling\LPReconnectFacts.js;Tests\FunctionalTests\Transports\ServerSentEvents\SSEReconnectFacts.js;Tests\UnitTests\Common\AjaxFacts.js;Tests\UnitTests\Common\KeepAliveFacts.js;Tests\UnitTests\Common\ProcessMessagesFacts.js;Tests\UnitTests\Common\ResponseFacts.js;Tests\UnitTests\Common\UtilityFacts.js;Tests\UnitTests\Connections\ConnectionUtilityFacts.js;Tests\UnitTests\Common\UrlFacts.js;Tests\UnitTests\Connections\ConnectionFacts.js;Tests\UnitTests\Connections\ConnectionStateFacts.js;Tests\UnitTests\Connections\HubConnectionFacts.js;Tests\UnitTests\SignalRFacts.js;Tests\UnitTests\Transports\CommonTransportFacts.js;Tests\UnitTests\Transports\ForeverFrameFacts.js;Tests\UnitTests\Transports\LongPollingFacts.js;Tests\UnitTests\Transports\ServerSentEventsFacts.js;Tests\UnitTests\Transports\WebSocketsFacts.js;Web.config;..\Microsoft.AspNet.SignalR.FunctionalTests\config\applicationhost.config;..\Microsoft.AspNet.SignalR.FunctionalTests\config\aspnet.config;..\Microsoft.AspNet.SignalR.FunctionalTests\config\redirection.config;Scripts\qunit.extensions.js;Scripts\test.utilities.js;packages.config
+CollectFilesFromIntermediateSatelliteAssembliesWithTargetPath:
+  Gather all files from Project output (IntermediateSatelliteAssembliesWithTargetPath). Adding:
+CollectFilesFromReference:
+  Gather all files from Project items @(ReferenceCopyLocalPaths,ReferenceComWrappersToCopyLocal,ResolvedIsolatedComModules,_DeploymentLooseManifestFile,NativeReferenceFile).
+CollectFilesFromAllExtraReferenceFiles:
+  Gather all files from Project items @(AllExtraReferenceFiles). Adding:
+CollectFilesFrom_SourceItemsToCopyToOutputDirectory:
+  Gather all files from Project items @(_SourceItemsToCopyToOutputDirectoryAlways,_SourceItemsToCopyToOutputDirectory). Adding:
+  bin\config\applicationhost.config;bin\config\aspnet.config;bin\config\redirection.config
+CollectFilesFrom_binDeployableAssemblies:
+  Gather all files from Project items @(_binDeployableAssemblies). Adding:
+PipelineCollectFilesPhase:
+  Publish Pipeline Collect Files Phase
+ExcludeFilesByExtension:
+  ExcludeFilesByExtension
+ExcludeFilesByExtension:
+  ExcludeFilesByExtension
+PreTransformWebConfig:
+  Found The following for Config tranformation:
+  Web.config
+  Creating directory "C:\signalr\TestServer\tests\Microsoft.AspNet.SignalR.Client.JS.Tests\obj\Debug\TransformWebConfig\transformed\".
+  Copying Web.config to obj\Debug\TransformWebConfig\original\Web.config.
+  Copying C:\signalr\TestServer\tests\Microsoft.AspNet.SignalR.Client.JS.Tests\Web.Debug.config to obj\Debug\TransformWebConfig\assist\Web.config.
+TransformWebConfigCore:
+  Transforming Source File: C:\signalr\TestServer\tests\Microsoft.AspNet.SignalR.Client.JS.Tests\Web.config
+    Applying Transform File: C:\signalr\TestServer\tests\Microsoft.AspNet.SignalR.Client.JS.Tests\Web.Debug.config
+    Output File: obj\Debug\TransformWebConfig\transformed\Web.config
+  Transformation succeeded
+PostTransformWebConfig:
+  Transformed Web.config using C:\signalr\TestServer\tests\Microsoft.AspNet.SignalR.Client.JS.Tests\Web.Debug.config into obj\Debug\TransformWebConfig\transformed\Web.config.
+PipelineTransformPhase:
+  Publish Pipeline Transform Phase
+CopyAllFilesToSingleFolderForPackage:
+  Creating directory "C:\signalr\TestServer\Build\..\artifacts\Debug\projects\JsTestHarness".
+  Copying all files to temporary location below for package/publish:
+  C:\signalr\TestServer\Build\..\artifacts\Debug\projects\JsTestHarness.
+  Copying C:\signalr\TestServer\Build\..\artifacts\Debug\projects\Microsoft.AspNet.SignalR.Client.JS.Tests\Microsoft.AspNet.SignalR.Client.JS.Tests.dll to C:\signalr\TestServer\Build\..\artifacts\Debug\projects\JsTestHarness\bin\Microsoft.AspNet.SignalR.Client.JS.Tests.dll.
+  Copying C:\signalr\TestServer\Build\..\artifacts\Debug\projects\Microsoft.AspNet.SignalR.Client.JS.Tests\Microsoft.AspNet.SignalR.Client.JS.Tests.pdb to C:\signalr\TestServer\Build\..\artifacts\Debug\projects\JsTestHarness\bin\Microsoft.AspNet.SignalR.Client.JS.Tests.pdb.
+  Copying Build\disableCrossDomain.js to C:\signalr\TestServer\Build\..\artifacts\Debug\projects\JsTestHarness\Build\disableCrossDomain.js.
+  Copying default.html to C:\signalr\TestServer\Build\..\artifacts\Debug\projects\JsTestHarness\default.html.
+  Copying NetworkMock\jquery.network.mock.ajax.js to C:\signalr\TestServer\Build\..\artifacts\Debug\projects\JsTestHarness\NetworkMock\jquery.network.mock.ajax.js.
+  Copying NetworkMock\jquery.network.mock.core.js to C:\signalr\TestServer\Build\..\artifacts\Debug\projects\JsTestHarness\NetworkMock\jquery.network.mock.core.js.
+  Copying NetworkMock\jquery.network.mock.eventsource.js to C:\signalr\TestServer\Build\..\artifacts\Debug\projects\JsTestHarness\NetworkMock\jquery.network.mock.eventsource.js.
+  Copying NetworkMock\jquery.network.mock.mask.js to C:\signalr\TestServer\Build\..\artifacts\Debug\projects\JsTestHarness\NetworkMock\jquery.network.mock.mask.js.
+  Copying NetworkMock\jquery.network.mock.websocket.js to C:\signalr\TestServer\Build\..\artifacts\Debug\projects\JsTestHarness\NetworkMock\jquery.network.mock.websocket.js.
+  Copying Scripts\jquery-1.6.4.js to C:\signalr\TestServer\Build\..\artifacts\Debug\projects\JsTestHarness\Scripts\jquery-1.6.4.js.
+  Copying Scripts\jquery-1.7.2.js to C:\signalr\TestServer\Build\..\artifacts\Debug\projects\JsTestHarness\Scripts\jquery-1.7.2.js.
+  Copying Scripts\jquery-1.8.3.js to C:\signalr\TestServer\Build\..\artifacts\Debug\projects\JsTestHarness\Scripts\jquery-1.8.3.js.
+  Copying Scripts\jquery-1.9.1.js to C:\signalr\TestServer\Build\..\artifacts\Debug\projects\JsTestHarness\Scripts\jquery-1.9.1.js.
+  Copying Scripts\jquery-2.0.0.js to C:\signalr\TestServer\Build\..\artifacts\Debug\projects\JsTestHarness\Scripts\jquery-2.0.0.js.
+  Copying Scripts\jquery.network.mock.js to C:\signalr\TestServer\Build\..\artifacts\Debug\projects\JsTestHarness\Scripts\jquery.network.mock.js.
+  Copying Scripts\jquery.signalR.js to C:\signalr\TestServer\Build\..\artifacts\Debug\projects\JsTestHarness\Scripts\jquery.signalR.js.
+  Copying Build\test.config.js to C:\signalr\TestServer\Build\..\artifacts\Debug\projects\JsTestHarness\Build\test.config.js.
+  Copying Scripts\qunit-1.12.0.js to C:\signalr\TestServer\Build\..\artifacts\Debug\projects\JsTestHarness\Scripts\qunit-1.12.0.js.
+  Copying Scripts\_references.js to C:\signalr\TestServer\Build\..\artifacts\Debug\projects\JsTestHarness\Scripts\_references.js.
+  Copying Styles\qunit-1.12.0.css to C:\signalr\TestServer\Build\..\artifacts\Debug\projects\JsTestHarness\Styles\qunit-1.12.0.css.
+  Copying Tests\FunctionalTests\Common\AjaxAbortFacts.js to C:\signalr\TestServer\Build\..\artifacts\Debug\projects\JsTestHarness\Tests\FunctionalTests\Common\AjaxAbortFacts.js.
+  Copying Tests\FunctionalTests\Common\AjaxSendFacts.js to C:\signalr\TestServer\Build\..\artifacts\Debug\projects\JsTestHarness\Tests\FunctionalTests\Common\AjaxSendFacts.js.
+  Copying Tests\FunctionalTests\Common\KeepAliveFacts.js to C:\signalr\TestServer\Build\..\artifacts\Debug\projects\JsTestHarness\Tests\FunctionalTests\Common\KeepAliveFacts.js.
+  Copying Tests\FunctionalTests\Common\ResponseRedirectionFacts.js to C:\signalr\TestServer\Build\..\artifacts\Debug\projects\JsTestHarness\Tests\FunctionalTests\Common\ResponseRedirectionFacts.js.
+  Copying Tests\FunctionalTests\Core\JsonFacts.js to C:\signalr\TestServer\Build\..\artifacts\Debug\projects\JsTestHarness\Tests\FunctionalTests\Core\JsonFacts.js.
+  Copying Tests\FunctionalTests\Core\NegotiateFacts.js to C:\signalr\TestServer\Build\..\artifacts\Debug\projects\JsTestHarness\Tests\FunctionalTests\Core\NegotiateFacts.js.
+  Copying Tests\FunctionalTests\Hubs\HubEventHandlerFacts.js to C:\signalr\TestServer\Build\..\artifacts\Debug\projects\JsTestHarness\Tests\FunctionalTests\Hubs\HubEventHandlerFacts.js.
+  Copying Tests\FunctionalTests\Hubs\HubGroupFacts.js to C:\signalr\TestServer\Build\..\artifacts\Debug\projects\JsTestHarness\Tests\FunctionalTests\Hubs\HubGroupFacts.js.
+  Copying Tests\FunctionalTests\Transports\All\AjaxReplacementFacts.js to C:\signalr\TestServer\Build\..\artifacts\Debug\projects\JsTestHarness\Tests\FunctionalTests\Transports\All\AjaxReplacementFacts.js.
+  Copying Tests\FunctionalTests\Transports\All\ConnectionFacts.js to C:\signalr\TestServer\Build\..\artifacts\Debug\projects\JsTestHarness\Tests\FunctionalTests\Transports\All\ConnectionFacts.js.
+  Copying Tests\FunctionalTests\Transports\All\HubConnectionFacts.js to C:\signalr\TestServer\Build\..\artifacts\Debug\projects\JsTestHarness\Tests\FunctionalTests\Transports\All\HubConnectionFacts.js.
+  Copying Tests\FunctionalTests\Transports\All\SendFacts.js to C:\signalr\TestServer\Build\..\artifacts\Debug\projects\JsTestHarness\Tests\FunctionalTests\Transports\All\SendFacts.js.
+  Copying Tests\FunctionalTests\Transports\Fallback\FallbackConnectionFacts.js to C:\signalr\TestServer\Build\..\artifacts\Debug\projects\JsTestHarness\Tests\FunctionalTests\Transports\Fallback\FallbackConnectionFacts.js.
+  Copying Tests\FunctionalTests\Transports\Fallback\FallbackSendFacts.js to C:\signalr\TestServer\Build\..\artifacts\Debug\projects\JsTestHarness\Tests\FunctionalTests\Transports\Fallback\FallbackSendFacts.js.
+  Copying Tests\FunctionalTests\Hubs\HubProxyFacts.js to C:\signalr\TestServer\Build\..\artifacts\Debug\projects\JsTestHarness\Tests\FunctionalTests\Hubs\HubProxyFacts.js.
+  Copying Tests\FunctionalTests\Common\PingServerFacts.js to C:\signalr\TestServer\Build\..\artifacts\Debug\projects\JsTestHarness\Tests\FunctionalTests\Common\PingServerFacts.js.
+  Copying Tests\FunctionalTests\Transports\All\ConnectionStateFacts.js to C:\signalr\TestServer\Build\..\artifacts\Debug\projects\JsTestHarness\Tests\FunctionalTests\Transports\All\ConnectionStateFacts.js.
+  Copying Tests\FunctionalTests\Transports\ForeverFrame\FFConnectFacts.js to C:\signalr\TestServer\Build\..\artifacts\Debug\projects\JsTestHarness\Tests\FunctionalTests\Transports\ForeverFrame\FFConnectFacts.js.
+  Copying Tests\FunctionalTests\Transports\ForeverFrame\TransportSelectionFacts.js to C:\signalr\TestServer\Build\..\artifacts\Debug\projects\JsTestHarness\Tests\FunctionalTests\Transports\ForeverFrame\TransportSelectionFacts.js.
+  Copying Tests\FunctionalTests\Transports\LongPolling\LPConnectFacts.js to C:\signalr\TestServer\Build\..\artifacts\Debug\projects\JsTestHarness\Tests\FunctionalTests\Transports\LongPolling\LPConnectFacts.js.
+  Copying Tests\FunctionalTests\Transports\LongPolling\LPReconnectFacts.js to C:\signalr\TestServer\Build\..\artifacts\Debug\projects\JsTestHarness\Tests\FunctionalTests\Transports\LongPolling\LPReconnectFacts.js.
+  Copying Tests\FunctionalTests\Transports\ServerSentEvents\SSEReconnectFacts.js to C:\signalr\TestServer\Build\..\artifacts\Debug\projects\JsTestHarness\Tests\FunctionalTests\Transports\ServerSentEvents\SSEReconnectFacts.js.
+  Copying Tests\UnitTests\Common\AjaxFacts.js to C:\signalr\TestServer\Build\..\artifacts\Debug\projects\JsTestHarness\Tests\UnitTests\Common\AjaxFacts.js.
+  Copying Tests\UnitTests\Common\KeepAliveFacts.js to C:\signalr\TestServer\Build\..\artifacts\Debug\projects\JsTestHarness\Tests\UnitTests\Common\KeepAliveFacts.js.
+  Copying Tests\UnitTests\Common\ProcessMessagesFacts.js to C:\signalr\TestServer\Build\..\artifacts\Debug\projects\JsTestHarness\Tests\UnitTests\Common\ProcessMessagesFacts.js.
+  Copying Tests\UnitTests\Common\ResponseFacts.js to C:\signalr\TestServer\Build\..\artifacts\Debug\projects\JsTestHarness\Tests\UnitTests\Common\ResponseFacts.js.
+  Copying Tests\UnitTests\Common\UtilityFacts.js to C:\signalr\TestServer\Build\..\artifacts\Debug\projects\JsTestHarness\Tests\UnitTests\Common\UtilityFacts.js.
+  Copying Tests\UnitTests\Connections\ConnectionUtilityFacts.js to C:\signalr\TestServer\Build\..\artifacts\Debug\projects\JsTestHarness\Tests\UnitTests\Connections\ConnectionUtilityFacts.js.
+  Copying Tests\UnitTests\Common\UrlFacts.js to C:\signalr\TestServer\Build\..\artifacts\Debug\projects\JsTestHarness\Tests\UnitTests\Common\UrlFacts.js.
+  Copying Tests\UnitTests\Connections\ConnectionFacts.js to C:\signalr\TestServer\Build\..\artifacts\Debug\projects\JsTestHarness\Tests\UnitTests\Connections\ConnectionFacts.js.
+  Copying Tests\UnitTests\Connections\ConnectionStateFacts.js to C:\signalr\TestServer\Build\..\artifacts\Debug\projects\JsTestHarness\Tests\UnitTests\Connections\ConnectionStateFacts.js.
+  Copying Tests\UnitTests\Connections\HubConnectionFacts.js to C:\signalr\TestServer\Build\..\artifacts\Debug\projects\JsTestHarness\Tests\UnitTests\Connections\HubConnectionFacts.js.
+  Copying Tests\UnitTests\SignalRFacts.js to C:\signalr\TestServer\Build\..\artifacts\Debug\projects\JsTestHarness\Tests\UnitTests\SignalRFacts.js.
+  Copying Tests\UnitTests\Transports\CommonTransportFacts.js to C:\signalr\TestServer\Build\..\artifacts\Debug\projects\JsTestHarness\Tests\UnitTests\Transports\CommonTransportFacts.js.
+  Copying Tests\UnitTests\Transports\ForeverFrameFacts.js to C:\signalr\TestServer\Build\..\artifacts\Debug\projects\JsTestHarness\Tests\UnitTests\Transports\ForeverFrameFacts.js.
+  Copying Tests\UnitTests\Transports\LongPollingFacts.js to C:\signalr\TestServer\Build\..\artifacts\Debug\projects\JsTestHarness\Tests\UnitTests\Transports\LongPollingFacts.js.
+  Copying Tests\UnitTests\Transports\ServerSentEventsFacts.js to C:\signalr\TestServer\Build\..\artifacts\Debug\projects\JsTestHarness\Tests\UnitTests\Transports\ServerSentEventsFacts.js.
+  Copying Tests\UnitTests\Transports\WebSocketsFacts.js to C:\signalr\TestServer\Build\..\artifacts\Debug\projects\JsTestHarness\Tests\UnitTests\Transports\WebSocketsFacts.js.
+  Copying Scripts\qunit.extensions.js to C:\signalr\TestServer\Build\..\artifacts\Debug\projects\JsTestHarness\Scripts\qunit.extensions.js.
+  Copying Scripts\test.utilities.js to C:\signalr\TestServer\Build\..\artifacts\Debug\projects\JsTestHarness\Scripts\test.utilities.js.
+  Copying packages.config to C:\signalr\TestServer\Build\..\artifacts\Debug\projects\JsTestHarness\packages.config.
+  Copying ..\Microsoft.AspNet.SignalR.FunctionalTests\config\applicationhost.config to C:\signalr\TestServer\Build\..\artifacts\Debug\projects\JsTestHarness\config\applicationhost.config.
+  Copying ..\Microsoft.AspNet.SignalR.FunctionalTests\config\aspnet.config to C:\signalr\TestServer\Build\..\artifacts\Debug\projects\JsTestHarness\config\aspnet.config.
+  Copying ..\Microsoft.AspNet.SignalR.FunctionalTests\config\redirection.config to C:\signalr\TestServer\Build\..\artifacts\Debug\projects\JsTestHarness\config\redirection.config.
+  Copying C:\signalr\TestServer\artifacts\Debug\projects\Microsoft.AspNet.SignalR.Client.JS\Microsoft.AspNet.SignalR.Client.JS.dll to C:\signalr\TestServer\Build\..\artifacts\Debug\projects\JsTestHarness\bin\Microsoft.AspNet.SignalR.Client.JS.dll.
+  Copying C:\signalr\TestServer\artifacts\Debug\projects\Microsoft.AspNet.SignalR.Core\Microsoft.AspNet.SignalR.Core.dll to C:\signalr\TestServer\Build\..\artifacts\Debug\projects\JsTestHarness\bin\Microsoft.AspNet.SignalR.Core.dll.
+  Copying C:\signalr\TestServer\tests\Microsoft.AspNet.SignalR.Tests.Common\bin\Debug\Microsoft.AspNet.SignalR.Tests.Common.dll to C:\signalr\TestServer\Build\..\artifacts\Debug\projects\JsTestHarness\bin\Microsoft.AspNet.SignalR.Tests.Common.dll.
+  Copying C:\signalr\TestServer\packages\Microsoft.Owin.2.0.1\lib\net45\Microsoft.Owin.dll to C:\signalr\TestServer\Build\..\artifacts\Debug\projects\JsTestHarness\bin\Microsoft.Owin.dll.
+  Copying C:\signalr\TestServer\packages\Microsoft.Owin.Host.SystemWeb.2.0.1\lib\net45\Microsoft.Owin.Host.SystemWeb.dll to C:\signalr\TestServer\Build\..\artifacts\Debug\projects\JsTestHarness\bin\Microsoft.Owin.Host.SystemWeb.dll.
+  Copying C:\signalr\TestServer\packages\Owin.1.0\lib\net40\Owin.dll to C:\signalr\TestServer\Build\..\artifacts\Debug\projects\JsTestHarness\bin\Owin.dll.
+  Copying C:\signalr\TestServer\tests\Microsoft.AspNet.SignalR.Tests.Common\bin\Debug\Microsoft.Owin.Security.Basic.dll to C:\signalr\TestServer\Build\..\artifacts\Debug\projects\JsTestHarness\bin\Microsoft.Owin.Security.Basic.dll.
+  Copying C:\signalr\TestServer\tests\Microsoft.AspNet.SignalR.Tests.Common\bin\Debug\Microsoft.AspNet.SignalR.Client.dll to C:\signalr\TestServer\Build\..\artifacts\Debug\projects\JsTestHarness\bin\Microsoft.AspNet.SignalR.Client.dll.
+  Copying C:\signalr\TestServer\tests\Microsoft.AspNet.SignalR.Tests.Common\bin\Debug\Microsoft.Owin.Testing.dll to C:\signalr\TestServer\Build\..\artifacts\Debug\projects\JsTestHarness\bin\Microsoft.Owin.Testing.dll.
+  Copying C:\signalr\TestServer\tests\Microsoft.AspNet.SignalR.Tests.Common\bin\Debug\Microsoft.Owin.Cors.dll to C:\signalr\TestServer\Build\..\artifacts\Debug\projects\JsTestHarness\bin\Microsoft.Owin.Cors.dll.
+  Copying C:\signalr\TestServer\tests\Microsoft.AspNet.SignalR.Tests.Common\bin\Debug\Microsoft.AspNet.SignalR.StressServer.dll to C:\signalr\TestServer\Build\..\artifacts\Debug\projects\JsTestHarness\bin\Microsoft.AspNet.SignalR.StressServer.dll.
+  Copying C:\signalr\TestServer\tests\Microsoft.AspNet.SignalR.Tests.Common\bin\Debug\Newtonsoft.Json.dll to C:\signalr\TestServer\Build\..\artifacts\Debug\projects\JsTestHarness\bin\Newtonsoft.Json.dll.
+  Copying C:\signalr\TestServer\tests\Microsoft.AspNet.SignalR.Tests.Common\bin\Debug\xunit.dll to C:\signalr\TestServer\Build\..\artifacts\Debug\projects\JsTestHarness\bin\xunit.dll.
+  Copying C:\signalr\TestServer\tests\Microsoft.AspNet.SignalR.Tests.Common\bin\Debug\xunit.extensions.dll to C:\signalr\TestServer\Build\..\artifacts\Debug\projects\JsTestHarness\bin\xunit.extensions.dll.
+  Copying C:\signalr\TestServer\tests\Microsoft.AspNet.SignalR.Tests.Common\bin\Debug\Microsoft.Owin.Hosting.dll to C:\signalr\TestServer\Build\..\artifacts\Debug\projects\JsTestHarness\bin\Microsoft.Owin.Hosting.dll.
+  Copying C:\signalr\TestServer\artifacts\Debug\projects\Microsoft.AspNet.SignalR.Core\Microsoft.Owin.Security.dll to C:\signalr\TestServer\Build\..\artifacts\Debug\projects\JsTestHarness\bin\Microsoft.Owin.Security.dll.
+  Copying C:\signalr\TestServer\tests\Microsoft.AspNet.SignalR.Tests.Common\bin\Debug\System.Web.Cors.dll to C:\signalr\TestServer\Build\..\artifacts\Debug\projects\JsTestHarness\bin\System.Web.Cors.dll.
+  Copying C:\signalr\TestServer\tests\Microsoft.AspNet.SignalR.Tests.Common\bin\Debug\Microsoft.AspNet.SignalR.Tests.Common.pdb to C:\signalr\TestServer\Build\..\artifacts\Debug\projects\JsTestHarness\bin\Microsoft.AspNet.SignalR.Tests.Common.pdb.
+  Copying C:\signalr\TestServer\artifacts\Debug\projects\Microsoft.AspNet.SignalR.Client.JS\Microsoft.AspNet.SignalR.Client.JS.pdb to C:\signalr\TestServer\Build\..\artifacts\Debug\projects\JsTestHarness\bin\Microsoft.AspNet.SignalR.Client.JS.pdb.
+  Copying C:\signalr\TestServer\artifacts\Debug\projects\Microsoft.AspNet.SignalR.Core\Microsoft.AspNet.SignalR.Core.pdb to C:\signalr\TestServer\Build\..\artifacts\Debug\projects\JsTestHarness\bin\Microsoft.AspNet.SignalR.Core.pdb.
+  Copying C:\signalr\TestServer\tests\Microsoft.AspNet.SignalR.Tests.Common\bin\Debug\Microsoft.AspNet.SignalR.Client.pdb to C:\signalr\TestServer\Build\..\artifacts\Debug\projects\JsTestHarness\bin\Microsoft.AspNet.SignalR.Client.pdb.
+  Copying C:\signalr\TestServer\tests\Microsoft.AspNet.SignalR.Tests.Common\bin\Debug\Microsoft.AspNet.SignalR.StressServer.pdb to C:\signalr\TestServer\Build\..\artifacts\Debug\projects\JsTestHarness\bin\Microsoft.AspNet.SignalR.StressServer.pdb.
+  Copying C:\signalr\TestServer\tests\Microsoft.AspNet.SignalR.FunctionalTests\config\applicationhost.config to C:\signalr\TestServer\Build\..\artifacts\Debug\projects\JsTestHarness\bin\config\applicationhost.config.
+  Copying C:\signalr\TestServer\tests\Microsoft.AspNet.SignalR.FunctionalTests\config\aspnet.config to C:\signalr\TestServer\Build\..\artifacts\Debug\projects\JsTestHarness\bin\config\aspnet.config.
+  Copying C:\signalr\TestServer\tests\Microsoft.AspNet.SignalR.FunctionalTests\config\redirection.config to C:\signalr\TestServer\Build\..\artifacts\Debug\projects\JsTestHarness\bin\config\redirection.config.
+  Copying obj\Debug\TransformWebConfig\transformed\Web.config to C:\signalr\TestServer\Build\..\artifacts\Debug\projects\JsTestHarness\Web.config.
+PipelinePreDeployCopyAllFilesToOneFolder:
+  Publish Pipeline Deploy phase Stage PipelinePreDeployCopyAllFilesToOneFolder
+Done Building Project "C:\signalr\TestServer\tests\Microsoft.AspNet.SignalR.Client.JS.Tests\Microsoft.AspNet.SignalR.Client.JS.Tests.csproj" (pipelinePreDeployCopyAllFilesToOneFolder target(s)).
+RunUnitTests:
+  Updating File "C:\signalr\TestServer\Build\..\artifacts\Debug\projects\JsTestHarness\default.html".
+  Updating File "C:\signalr\TestServer\Build\..\artifacts\Debug\projects\JsTestHarness\default.html".
+  Updating File "C:\signalr\TestServer\Build\..\artifacts\Debug\projects\JsTestHarness\Build\test.config.js".
+  Updating File "C:\signalr\TestServer\Build\..\artifacts\Debug\projects\JsTestHarness\Build\test.config.js".
+  "C:\signalr\TestServer\Build\..\tools\chutzpah\chutzpah.console.exe" "C:\signalr\TestServer\Build\..\artifacts\Debug\projects\JsTestHarness\default.html" /silent /timeoutMilliseconds 30000
+  Chutzpah console test runner (64-bit .NET 4.0.30319.34003)
+  Copyright (C) 2013 Matthew Manela (http://matthewmanela.com).
+  
+  chutzpah.dll:     Version 2.4.3.281
+  
+Attempting to cancel the build...
