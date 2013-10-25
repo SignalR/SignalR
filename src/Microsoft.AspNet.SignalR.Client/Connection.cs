@@ -48,8 +48,6 @@ namespace Microsoft.AspNet.SignalR.Client
         // The default connection state is disconnected
         private ConnectionState _state;
 
-        private ConnectingMessageBuffer _connectingMessageBuffer;
-
         private KeepAliveData _keepAliveData;
 
         private TimeSpan _reconnectWindow;
@@ -59,6 +57,10 @@ namespace Microsoft.AspNet.SignalR.Client
         private TextWriter _traceWriter;
 
         private string _connectionData;
+
+        private TaskQueue _receiveQueue;
+
+        private TaskCompletionSource<object> _startTcs;
 
         // Used to synchronize state changes
         private readonly object _stateLock = new object();
@@ -163,7 +165,6 @@ namespace Microsoft.AspNet.SignalR.Client
             Url = url;
             QueryString = queryString;
             _disconnectTimeoutOperation = DisposableAction.Empty;
-            _connectingMessageBuffer = new ConnectingMessageBuffer(this, OnMessageReceived);
             _lastMessageAt = DateTime.UtcNow;
             _lastActiveAt = DateTime.UtcNow;
             _reconnectWindow = TimeSpan.Zero;
@@ -409,6 +410,8 @@ namespace Microsoft.AspNet.SignalR.Client
             {
                 _connectTask = TaskAsyncHelper.Empty;
                 _disconnectCts = new CancellationTokenSource();
+                _startTcs = new TaskCompletionSource<object>();
+                _receiveQueue = new TaskQueue(_startTcs.Task);
 
                 if (!ChangeState(ConnectionState.Disconnected, ConnectionState.Connecting))
                 {
@@ -471,14 +474,12 @@ namespace Microsoft.AspNet.SignalR.Client
             return _transport.Start(this, _connectionData, _disconnectCts.Token)
                              .RunSynchronously(() =>
                              {
+                                 // NOTE: We have tests that rely on this state change occuring *BEFORE* the start task is complete
                                  ChangeState(ConnectionState.Connecting, ConnectionState.Connected);
 
-                                 // Now that we're connected drain any messages within the buffer
-                                 // We want to protect against state changes when draining
-                                 lock (_stateLock)
-                                 {
-                                     _connectingMessageBuffer.Drain();
-                                 }
+                                 // Now that we're connected complete the start task that the
+                                 // receive queue is waiting on
+                                 _startTcs.SetResult(null);
                                  
                                  // Start the monitor to check for server activity
                                 _monitor.Start();
@@ -553,6 +554,10 @@ namespace Microsoft.AspNet.SignalR.Client
                     }
                 }
 
+                // Close the receive queue so currently running receive callback finishes and no more are run.
+                // We can't wait on the result of the drain because this method may be on the stack of the task returned (aka deadlock).
+                _receiveQueue.Drain().Catch();
+
                 // This is racy since it's outside the _stateLock, but we are trying to avoid 30s deadlocks when calling _transport.Abort()
                 if (State == ConnectionState.Disconnected)
                 {
@@ -590,10 +595,6 @@ namespace Microsoft.AspNet.SignalR.Client
                     State = ConnectionState.Disconnected;
 
                     Trace(TraceLevels.StateChanges, "Disconnected");
-
-                    // If we've connected then instantly disconnected we may have data in the incomingMessageBuffer
-                    // Therefore we need to clear it incase we start the connection again.
-                    _connectingMessageBuffer.Clear();
 
                     _disconnectTimeoutOperation.Dispose();
                     _disconnectCts.Cancel();
@@ -705,17 +706,24 @@ namespace Microsoft.AspNet.SignalR.Client
 
 
         [SuppressMessage("Microsoft.Design", "CA1062:Validate arguments of public methods", MessageId = "0", Justification = "This is called by the transport layer")]
+        [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "The exception is raised via an event.")]
         void IConnection.OnReceived(JToken message)
         {
-            // Try to buffer only if we're still trying to connect to the server.
-            // Need to protect against state changes here
-            if (!_connectingMessageBuffer.TryBuffer(message, _stateLock))
+            _receiveQueue.Enqueue(() => Task.Factory.StartNew(() =>
             {
-                OnMessageReceived(message);
-            }
+                try
+                {
+                    OnMessageReceived(message);
+                }
+                catch (Exception ex)
+                {
+                    OnError(ex);
+                }
+            }));
         }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "The exception can be from user code, needs to be a catch all."), SuppressMessage("Microsoft.Design", "CA1062:Validate arguments of public methods", MessageId = "0", Justification = "This is called by the transport layer")]
+        [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "The exception can be from user code, needs to be a catch all.")]
+        [SuppressMessage("Microsoft.Design", "CA1062:Validate arguments of public methods", MessageId = "0", Justification = "This is called by the transport layer")]
         protected virtual void OnMessageReceived(JToken message)
         {
             if (Received != null)

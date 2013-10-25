@@ -606,8 +606,6 @@ namespace Microsoft.AspNet.SignalR.Tests
 
                     connection.Start(host.TransportFactory()).Wait();
 
-                    connection.Start(host.TransportFactory()).Wait();
-
                     var ex = Assert.Throws<AggregateException>(() => hub.InvokeWithTimeout("TaskWithException"));
 
                     Assert.IsType<InvalidOperationException>(ex.GetBaseException());
