@@ -702,6 +702,15 @@
              }
         };
 
+        proxies.VBDemo = this.createHubProxy('VBDemo'); 
+        proxies.VBDemo.client = { };
+        proxies.VBDemo.server = {
+            readStateValue: function () {
+            /// <summary>Calls the ReadStateValue method on the server-side VBDemo hub.&#10;Returns a jQuery.Deferred() promise.</summary>
+                return proxies.VBDemo.invoke.apply(proxies.VBDemo, $.merge(["ReadStateValue"], $.makeArray(arguments)));
+             }
+        };
+
         return proxies;
     };
 

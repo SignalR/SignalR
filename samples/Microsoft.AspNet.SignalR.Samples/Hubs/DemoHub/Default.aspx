@@ -56,10 +56,13 @@
         <dt>Overloads</dt>
         <dd id="overloads"></dd>
 
-        <dt>Read State Value</dtRead>
+        <dt>Read State Value</dt>
         <dd id="readStateValue"></dd>
+
+        <dt>Read VB.NET State Value</dt>
+        <dd id="readVBStateValue"></dd>
         
-        <dt>Inline Script Tag</dtRead>
+        <dt>Inline Script Tag</dt>
         <dd id="inlineScriptTag"></dd>
 
         <dt>Plain Task</dt>

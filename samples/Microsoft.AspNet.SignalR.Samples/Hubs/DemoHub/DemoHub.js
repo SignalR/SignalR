@@ -1,6 +1,7 @@
 ﻿$(function () {
     var demo = $.connection.demo,
         typedDemo = $.connection.typedDemoHub,
+        vbDemo = $.connection.VBDemo,
         groupAddedCalled = false;
 
     demo.client.invoke = function (index) {
@@ -30,6 +31,10 @@
     typedDemo.client.echo = function (message, invokeCount) {
         $('#typed').append('<p>' + message + ' #' + invokeCount + ' triggered!</p>')
     };
+
+    vbDemo.client.uncalledMethod = function () {
+        throw new "This should never called. It's only around so we subscribe to VbDemoHub and OnConnected fires.";
+    }
 
     $.connection.hub.logging = true;
 
@@ -126,6 +131,10 @@
         demo.state.name = 'Testing state!';
         demo.server.readStateValue().done(function (name) {
             $('#readStateValue').html('Read some state! => ' + name);
+        });
+
+        vbDemo.server.readStateValue().done(function (message) {
+            $('#readVBStateValue').html('Read some state from VB.NET! => ' + message);
         });
 
         demo.server.mispelledClientMethod();
