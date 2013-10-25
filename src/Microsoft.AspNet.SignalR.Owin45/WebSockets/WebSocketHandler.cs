@@ -21,11 +21,22 @@ namespace Microsoft.AspNet.SignalR.WebSockets
         private int? _maxIncomingMessageSize;
 
         // Queue for sending messages
-        private readonly TaskQueue _sendQueue = new TaskQueue();
+        private readonly TaskQueue _sendQueue;
 
-        public WebSocketHandler(int? maxIncomingMessageSize)
+        private TaskCompletionSource<object> _initializeTaskCompletionSource;
+
+        public WebSocketHandler(TaskCompletionSource<object> initializeTaskCompletionSource, int? maxIncomingMessageSize)
         {
             _maxIncomingMessageSize = maxIncomingMessageSize;
+            _initializeTaskCompletionSource = initializeTaskCompletionSource;
+            if (_initializeTaskCompletionSource != null)
+            {
+                _sendQueue = new TaskQueue(_initializeTaskCompletionSource.Task);
+            }
+            else
+            {
+                _sendQueue = new TaskQueue();
+            }
         }
 
         public virtual void OnOpen() { }
@@ -57,7 +68,7 @@ namespace Microsoft.AspNet.SignalR.WebSockets
 
         internal Task SendAsync(ArraySegment<byte> message, WebSocketMessageType messageType, bool endOfMessage = true)
         {
-            if (WebSocket.State != WebSocketState.Open)
+            if (_initializeTaskCompletionSource == null && WebSocket.State != WebSocketState.Open)
             {
                 return TaskAsyncHelper.Empty;
             }
@@ -156,6 +167,11 @@ namespace Microsoft.AspNet.SignalR.WebSockets
                 // first, set primitives and initialize the object
                 WebSocket = webSocket;
                 OnOpen();
+
+                if (_initializeTaskCompletionSource != null)
+                {
+                    _initializeTaskCompletionSource.TrySetResult(null);
+                }
 
                 // dispatch incoming messages
                 while (!disconnectToken.IsCancellationRequested && !closedReceived)

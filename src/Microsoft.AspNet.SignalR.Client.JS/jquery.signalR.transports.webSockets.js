@@ -28,8 +28,7 @@
                 that = this,
                 initialSocket,
                 timeOutHandle,
-                reconnecting = !onSuccess,
-                $connection = $(connection);
+                reconnecting = !onSuccess;
 
             if (!window.WebSocket) {
                 onFailed();
@@ -64,16 +63,6 @@
                     window.clearTimeout(timeOutHandle);
                     opened = true;
                     connection.log("Websocket opened.");
-
-                    transportLogic.clearReconnectTimeout(connection);
-
-                    if (onSuccess) {
-                        onSuccess();
-                    } else if (changeState(connection,
-                                         signalR.connectionState.reconnecting,
-                                         signalR.connectionState.connected) === true) {
-                        $connection.triggerHandler(events.onReconnect);
-                    }
                 };
 
                 connection.socket.onclose = function (event) {
@@ -109,6 +98,17 @@
                 connection.socket.onmessage = function (event) {
                     var data = connection._parseResponse(event.data),
                         $connection = $(connection);
+
+                    if (onSuccess) {
+                        onSuccess();
+                        onSuccess = null;
+                    } else if (changeState(connection,
+                                         signalR.connectionState.reconnecting,
+                                         signalR.connectionState.connected) === true) {
+                        $connection.triggerHandler(events.onReconnect);
+                    }
+
+                    transportLogic.clearReconnectTimeout(connection);
 
                     if (data) {
                         // data.M is PersistentResponse.Messages

@@ -28,7 +28,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
         }
 
         public WebSocketTransport(IHttpClient client)
-            : base(maxIncomingMessageSize: null) // Disable max incoming message size on the client
+            : base(initializeTaskCompletionSource: null, maxIncomingMessageSize: null) // Disable max incoming message size on the client
         {
             _client = client;
             _disconnectToken = CancellationToken.None;
