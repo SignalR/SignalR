@@ -19,6 +19,47 @@ namespace Microsoft.AspNet.SignalR.Tests
         [InlineData(HostType.IISExpress, TransportType.LongPolling)]
         [InlineData(HostType.IISExpress, TransportType.ServerSentEvents)]
         [InlineData(HostType.IISExpress, TransportType.Websockets)]
+        public void ReconnectExceedingReconnectWindowDisconnectsWithFastBeatInterval(HostType hostType, TransportType transportType)
+        {
+            // Test cannot be async because if we do host.ShutDown() after an await the connection stops.
+
+            using (var host = CreateHost(hostType, transportType))
+            {
+                host.Initialize(keepAlive: 9);
+                var connection = CreateHubConnection(host);
+                var disconnectWh = new ManualResetEventSlim();
+
+                connection.Closed += () =>
+                {
+                    disconnectWh.Set();
+                };
+
+                SetReconnectDelay(host.Transport, TimeSpan.FromSeconds(15));
+
+                connection.Start(host.Transport).Wait();
+
+                // Set reconnect window to zero so the second we attempt to reconnect we can ensure that the reconnect window is verified.
+                ((Client.IConnection)connection).ReconnectWindow = TimeSpan.FromSeconds(0);
+
+                // Without this the connection start and reconnect can race with eachother resulting in a deadlock.
+                Thread.Sleep(TimeSpan.FromSeconds(3));
+
+                host.Shutdown();
+
+                Assert.True(disconnectWh.Wait(TimeSpan.FromSeconds(15)), "Closed never fired");
+
+                connection.Stop();
+            }
+        }
+
+        [Theory]
+        [InlineData(HostType.Memory, TransportType.ServerSentEvents)]
+        [InlineData(HostType.Memory, TransportType.ServerSentEvents)]
+        [InlineData(HostType.Memory, TransportType.LongPolling)]
+        [InlineData(HostType.Memory, TransportType.LongPolling)]
+        [InlineData(HostType.IISExpress, TransportType.LongPolling)]
+        [InlineData(HostType.IISExpress, TransportType.ServerSentEvents)]
+        [InlineData(HostType.IISExpress, TransportType.Websockets)]
         public void ReconnectExceedingReconnectWindowDisconnects(HostType hostType, TransportType transportType)
         {
             // Test cannot be async because if we do host.ShutDown() after an await the connection stops.
