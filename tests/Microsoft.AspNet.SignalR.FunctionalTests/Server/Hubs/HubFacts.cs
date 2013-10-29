@@ -1181,7 +1181,7 @@ namespace Microsoft.AspNet.SignalR.Tests
             {
                 host.Initialize(keepAlive: null,
                                 disconnectTimeout: 6,
-                                connectionTimeout: 1,
+                                connectionTimeout: 2,
                                 enableAutoRejoiningGroups: true,
                                 messageBusType: messageBusType);
 
