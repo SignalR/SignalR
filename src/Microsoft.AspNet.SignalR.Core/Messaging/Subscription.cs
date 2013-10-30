@@ -15,6 +15,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
         private readonly Func<MessageResult, object, Task<bool>> _callback;
         private readonly object _callbackState;
         private readonly IPerformanceCounterManager _counters;
+        private readonly List<ArraySegment<Message>> _messagesList;
 
         private int _state;
         private int _subscriptionState;
@@ -68,6 +69,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
             MaxMessages = maxMessages;
             _counters = counters;
             _callbackState = state;
+            _messagesList = new List<ArraySegment<Message>>(MaxMessages);
 
             _counters.MessageBusSubscribersTotal.Increment();
             _counters.MessageBusSubscribersCurrent.Increment();
@@ -121,15 +123,14 @@ namespace Microsoft.AspNet.SignalR.Messaging
 
             while (Alive)
             {
-                var items = new List<ArraySegment<Message>>();
                 int totalCount;
                 object state;
 
-                PerformWork(items, out totalCount, out state);
+                PerformWork(_messagesList, out totalCount, out state);
 
-                if (items.Count > 0)
+                if (_messagesList.Count > 0)
                 {
-                    var messageResult = new MessageResult(items, totalCount);
+                    var messageResult = new MessageResult(_messagesList, totalCount);
 
                     bool result = await Invoke(messageResult, (s, o) => s.BeforeInvoke(o), state);
 
@@ -140,6 +141,8 @@ namespace Microsoft.AspNet.SignalR.Messaging
                         // If the callback said it's done then stop
                         break;
                     }
+
+                    _messagesList.Clear();
                 }
                 else
                 {
