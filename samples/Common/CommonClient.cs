@@ -1,6 +1,8 @@
 using System;
 using System.IO;
 using System.Net;
+using System.Net.Http;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR.Client.Hubs;
@@ -104,20 +106,28 @@ namespace Microsoft.AspNet.SignalR.Client.Samples
             connection.TraceWriter.WriteLine("transport.Name={0}", connection.Transport.Name);
         }
 
-        private async Task RunBasicAuth(string serverUrl)
+        private async Task RunAuth(string serverUrl)
         {
-            string url = serverUrl + "basicauth";
+            string url = serverUrl + "cookieauth";
+
+            var handler = new HttpClientHandler();
+            handler.CookieContainer = new CookieContainer();
+            using (var httpClient = new HttpClient(handler))
+            {
+                var content = string.Format("UserName={0}&Password={1}", "user", "password");
+                var response = httpClient.PostAsync(url + "/Account/Login", new StringContent(content, Encoding.UTF8, "application/x-www-form-urlencoded")).Result;
+            }
 
             var connection = new Connection(url + "/echo");
             connection.TraceWriter = _traceWriter;
             connection.Received += (data) => connection.TraceWriter.WriteLine(data);
-            connection.Credentials = new NetworkCredential("user", "password");
+            connection.CookieContainer = handler.CookieContainer;
             await connection.Start();
             await connection.Send("sending to AuthenticatedEchoConnection");
 
             var hubConnection = new HubConnection(url);
             hubConnection.TraceWriter = _traceWriter;
-            hubConnection.Credentials = new NetworkCredential("user", "password");
+            hubConnection.CookieContainer = handler.CookieContainer;
 
             var hubProxy = hubConnection.CreateHubProxy("AuthHub");
             hubProxy.On<string, string>("invoked", (connectionId, date) => hubConnection.TraceWriter.WriteLine("connectionId={0}, date={1}", connectionId, date));

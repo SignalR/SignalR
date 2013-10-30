@@ -37,14 +37,14 @@ namespace Microsoft.AspNet.SignalR.Tests.Common.Infrastructure
             });
         }
 
-        public override Task Get(string uri, bool disableWrites)
+        public override Task Get(string uri)
         {
-            return _host.Get(uri, disableWrites);
+            return _host.Get(uri, r => { }, isLongRunning: false);
         }
 
         public override Task Post(string uri, IDictionary<string, string> data)
         {
-            return _host.Post(uri, data, isLongRunning: false);
+            return _host.Post(uri, r => { }, data, isLongRunning: false);
         }
 
         public override void Dispose()
