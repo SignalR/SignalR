@@ -7,6 +7,7 @@ using Microsoft.AspNet.SignalR.Tests.Common;
 using Microsoft.AspNet.SignalR.Tests.Common.Connections;
 using Microsoft.Owin;
 using Microsoft.Owin.Cors;
+using Microsoft.Owin.Security.Cookies;
 using Owin;
 
 [assembly: OwinStartup(typeof(Startup))]
@@ -40,9 +41,38 @@ namespace Microsoft.AspNet.SignalR.Samples
                 map.MapSignalR();
             });
 
-            app.Map("/basicauth", map =>
+            app.Map("/cookieauth", map =>
             {
-                map.UseBasicAuthentication(new BasicAuthenticationProvider());
+                var options = new CookieAuthenticationOptions()
+                {
+                    AuthenticationType = CookieAuthenticationDefaults.AuthenticationType,
+                    LoginPath = CookieAuthenticationDefaults.LoginPath,
+                    LogoutPath = CookieAuthenticationDefaults.LogoutPath,
+                };
+
+                map.UseCookieAuthentication(options);
+
+                map.Use(async (context, next) =>
+                {
+                    if (context.Request.Path.Value.Contains(options.LoginPath.Value))
+                    {
+                        if (context.Request.Method == "POST")
+                        {
+                            var form = await context.Request.ReadFormAsync();
+                            var userName = form["UserName"];
+                            var password = form["Password"];
+
+                            var identity = new ClaimsIdentity(options.AuthenticationType);
+                            identity.AddClaim(new Claim(ClaimTypes.Name, userName));
+                            context.Authentication.SignIn(identity);
+                        }
+                    }
+                    else
+                    {
+                        await next();
+                    }
+                });
+
                 map.MapSignalR<AuthenticatedEchoConnection>("/echo");
                 map.MapSignalR();
             });

@@ -63,22 +63,3 @@ function runHubConnectionAPI(url) {
         log("Failed to connect: " + error);
     });
 }
-
-function runBasicAuth() {
-    var hub = $.connection.authHub;
-    connection.url = url + "basicauth/signalr";
-    // increase connect timeout to give time to user to input credentials
-    connection.transportConnectTimeout = 10000;
-    hub.client.invoked = function (connectionId, date) {
-        log(connectionId);
-    }
-
-    connection.start().
-    done(function () {
-        log("transport.name=" + connection.transport.name);
-        hub.server.invokedFromClient();
-    }).
-    fail(function (error) {
-        log("Failed to connect: " + error);
-    });
-}

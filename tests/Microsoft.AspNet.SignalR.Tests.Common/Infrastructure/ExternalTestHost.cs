@@ -47,7 +47,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Common.Infrastructure
             // nothing to initialize since it is external! 
         }
 
-        public Task Get(string uri, bool disableWrites)
+        public Task Get(string uri)
         {
             throw new NotImplementedException();
         }
