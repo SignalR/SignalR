@@ -3,7 +3,10 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Net;
+using System.Net.Http;
 using System.Reflection;
+using System.Text;
 using System.Threading;
 using Microsoft.AspNet.SignalR.Client;
 using Microsoft.AspNet.SignalR.Client.Http;
@@ -95,6 +98,28 @@ namespace Microsoft.AspNet.SignalR.Tests.Common.Infrastructure
             return connection;
         }
 
+        protected HubConnection CreateAuthHubConnection(ITestHost host, string user, string password)
+        {
+            var path = "/cookieauth/signalr";
+            var useDefaultUrl = false;
+            var query = new Dictionary<string, string>();
+            query["test"] = GetTestName() + "." + Interlocked.Increment(ref _id);
+            SetHostData(host, query);
+
+            var handler = new HttpClientHandler();
+            handler.CookieContainer = new CookieContainer();
+            using (var httpClient = new HttpClient(handler))
+            {
+                var content = string.Format("UserName={0}&Password={1}", user, password);
+                var response = httpClient.PostAsync(host.Url + "/cookieauth/Account/Login", new StringContent(content, Encoding.UTF8, "application/x-www-form-urlencoded")).Result;
+            }
+
+            var connection = new HubConnection(host.Url + path, query, useDefaultUrl);
+            connection.TraceWriter = host.ClientTraceOutput ?? connection.TraceWriter;
+            connection.CookieContainer = handler.CookieContainer;
+            return connection;
+        }
+
         protected Client.Connection CreateConnection(ITestHost host, string path)
         {
             var query = new Dictionary<string, string>();
@@ -102,6 +127,27 @@ namespace Microsoft.AspNet.SignalR.Tests.Common.Infrastructure
             SetHostData(host, query);
             var connection = new Client.Connection(host.Url + path, query);
             connection.TraceWriter = host.ClientTraceOutput ?? connection.TraceWriter;
+            return connection;
+        }
+
+        protected Client.Connection CreateAuthConnection(ITestHost host, string path, string user, string password)
+        {
+            var query = new Dictionary<string, string>();
+            query["test"] = GetTestName() + "." + Interlocked.Increment(ref _id);
+            SetHostData(host, query);
+
+            var handler = new HttpClientHandler();
+            handler.CookieContainer = new CookieContainer();
+            using (var httpClient = new HttpClient(handler))
+            {
+                var content = string.Format("UserName={0}&Password={1}", user, password);
+                var response = httpClient.PostAsync(host.Url + "/cookieauth/Account/Login", new StringContent(content, Encoding.UTF8, "application/x-www-form-urlencoded")).Result;
+            }
+            
+            var connection = new Client.Connection(host.Url + "/cookieauth" + path, query);
+            connection.TraceWriter = host.ClientTraceOutput ?? connection.TraceWriter;
+            connection.CookieContainer = handler.CookieContainer;
+            
             return connection;
         }
 
