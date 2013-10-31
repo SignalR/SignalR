@@ -450,6 +450,11 @@
             // We should only set a reconnectTimeout if we are currently connected
             // and a reconnectTimeout isn't already set.
             if (isConnectedOrReconnecting(connection) && !connection._.reconnectTimeout) {
+                // Need to verify before the setTimeout occurs because an application sleep could occur during the setTimeout duration.
+                if (!transportLogic.verifyReconnect(connection)) {
+                    return;
+                }
+
                 connection._.reconnectTimeout = window.setTimeout(function () {
                     if (!transportLogic.verifyReconnect(connection)) {
                         return;
