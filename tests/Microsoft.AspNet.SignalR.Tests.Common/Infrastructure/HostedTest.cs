@@ -61,6 +61,25 @@ namespace Microsoft.AspNet.SignalR.Tests.Common.Infrastructure
             }
         }
 
+        protected void SetReconnectDelay(IClientTransport transport, TimeSpan delay)
+        {
+            // SUPER ugly, alternative is adding an overload to the create host function, adding a member to the
+            // IClientTransport object or using Reflection.  Adding a member to IClientTransport isn't horrible
+            // but we want to avoid making a breaking change... Therefore this is the least of the evils.
+            if (transport is ServerSentEventsTransport)
+            {
+                (transport as ServerSentEventsTransport).ReconnectDelay = delay;
+            }
+            else if (transport is LongPollingTransport)
+            {
+                (transport as LongPollingTransport).ReconnectDelay = delay;
+            }
+            else if (transport is WebSocketTransport)
+            {
+                (transport as WebSocketTransport).ReconnectDelay = delay;
+            }
+        }
+
         protected void EnableTracing()
         {
             string testName = GetTestName() + "." + Interlocked.Increment(ref _id);
