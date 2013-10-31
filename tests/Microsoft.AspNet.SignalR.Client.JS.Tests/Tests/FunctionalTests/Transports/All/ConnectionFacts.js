@@ -217,8 +217,41 @@ testUtilities.runWithAllTransports(function (transport) {
         };
     });
 
+    QUnit.asyncTimeoutTest(transport + ": Reconnect exceeding the reconnect window results in the connection disconnecting even with a fast beat interval.", testUtilities.defaultTestTimeout, function (end, assert, testName) {
+        var connection = testUtilities.createHubConnection(end, assert, testName, undefined, false),
+            handle;
+
+        connection.disconnected(function () {
+            assert.comment("Disconnected fired.");
+
+            // Let callstack finish
+            setTimeout(function () {
+                end();
+            },0);
+        });
+
+        connection.start({ transport: transport }).done(function () {
+            connection._.beatInterval = 100;
+            connection.reconnectWindow = 0;
+            connection.reconnectDelay = testUtilities.defaultTestTimeout + 1000;
+
+            // Wait for the transports to settle (no messages flowing)
+            handle = setTimeout(function () {
+                $.network.disconnect();
+            }, 1000);
+        });
+
+        // Cleanup
+        return function () {
+            clearTimeout(handle);
+            $.network.connect();
+            connection.stop();
+        };
+    });
+
     QUnit.asyncTimeoutTest(transport + ": Reconnect exceeding the reconnect window results in the connection disconnecting.", testUtilities.defaultTestTimeout * 2, function (end, assert, testName) {
-        var connection = testUtilities.createHubConnection(end, assert, testName, undefined, false);
+        var connection = testUtilities.createHubConnection(end, assert, testName, undefined, false),
+            handle;
        
         connection.reconnecting(function () {
             assert.comment("Reconnecting fired.");
@@ -234,13 +267,14 @@ testUtilities.runWithAllTransports(function (transport) {
             connection._.beatInterval = 5000;
 
             // Wait for the transports to settle (no messages flowing)
-            setTimeout(function () {
+            handle = setTimeout(function () {
                 $.network.disconnect();
             }, 1000);
         });
 
         // Cleanup
         return function () {
+            clearTimeout(handle);
             $.network.connect();
             connection.stop();
         };

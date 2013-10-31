@@ -120,6 +120,12 @@
 
         reconnect: function (connection) {
             var that = this;
+
+            // Need to verify before the setTimeout occurs because an application sleep could occur during the setTimeout duration.
+            if (!transportLogic.verifyReconnect(connection)) {
+                return;
+            }
+
             window.setTimeout(function () {
                 // Verify that we're ok to reconnect.
                 if (!transportLogic.verifyReconnect(connection)) {
