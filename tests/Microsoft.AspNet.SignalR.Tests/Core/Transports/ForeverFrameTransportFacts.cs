@@ -94,6 +94,8 @@ namespace Microsoft.AspNet.SignalR.Tests.Core
                 get { return CancellationToken.None; }
             }
 
+            public int StatusCode { get; set; }
+
             public string ContentType { get; set; }
 
             public void Write(ArraySegment<byte> data)

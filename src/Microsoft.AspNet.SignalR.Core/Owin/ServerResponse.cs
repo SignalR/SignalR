@@ -28,6 +28,12 @@ namespace Microsoft.AspNet.SignalR.Owin
             get { return _callCancelled; }
         }
 
+        public int StatusCode
+        {
+            get { return _response.StatusCode; }
+            set { _response.StatusCode = value; }
+        }
+
         public string ContentType
         {
             get { return _response.ContentType; }
