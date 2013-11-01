@@ -22,7 +22,9 @@ testUtilities.runWithAllTransports(function (transport) {
                 }
             });
 
-            $.network.disconnect();
+            setTimeout(function () {
+                $.network.disconnect();
+            }, 0);
         });
 
         assert.equal($.signalR.connectionState.connecting, connection.state, "SignalR state is connecting prior to start deferred resolve.");
@@ -62,7 +64,9 @@ testUtilities.runWithAllTransports(function (transport) {
         demo.client.foo = function () { };
 
         connection.start({ transport: transport }).done(function () {
-            $.network.disconnect();
+            setTimeout(function () {
+                $.network.disconnect();
+            }, 0);
         });
 
         // Cleanup
@@ -101,7 +105,9 @@ testUtilities.runWithAllTransports(function (transport) {
                         }
                     });
 
-                    $.network.disconnect();
+                    setTimeout(function () {
+                        $.network.disconnect();
+                    }, 0);
                 });
 
                 assert.equal($.signalR.connectionState.connecting, connection.state, "SignalR state is connecting prior to start deferred resolve.");
@@ -160,8 +166,10 @@ testUtilities.runWithAllTransports(function (transport) {
                 return url;
             };
 
-            $.network.disconnect();
-            $.network.connect();
+            setTimeout(function () {
+                $.network.disconnect();
+                $.network.connect();
+            }, 0);
         });
 
         // Cleanup
@@ -202,7 +210,7 @@ testUtilities.runWithAllTransports(function (transport) {
                 promises = [];
 
             $.each(connections, function (key, connection) {
-                deferreds[key] = $.Deferred(); 
+                deferreds[key] = $.Deferred();
                 promises[key] = deferreds[key].promise();
                 connection[eventName](function () {
                     deferreds[key].resolve();
@@ -231,8 +239,9 @@ testUtilities.runWithAllTransports(function (transport) {
                     connection.messageId = connection.messageId || "";
                 });
             }
-
-            $.network.disconnect();
+            setTimeout(function () {
+                $.network.disconnect();
+            }, 0);
             return promise;
         }).pipe(function () {
             verifyState("reconnecting");
@@ -311,7 +320,9 @@ testUtilities.runWithAllTransports(function (transport) {
                 };
             }
 
-            $.network.disconnect();
+            setTimeout(function () {
+                $.network.disconnect();
+            }, 0);
         });
 
         return function () {
