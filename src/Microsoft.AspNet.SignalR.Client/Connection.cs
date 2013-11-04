@@ -60,6 +60,8 @@ namespace Microsoft.AspNet.SignalR.Client
 
         private TaskQueue _receiveQueue;
 
+        private Task _lastQueuedReceiveTask;
+
         private TaskCompletionSource<object> _startTcs;
 
         // Used to synchronize state changes
@@ -412,6 +414,7 @@ namespace Microsoft.AspNet.SignalR.Client
                 _disconnectCts = new CancellationTokenSource();
                 _startTcs = new TaskCompletionSource<object>();
                 _receiveQueue = new TaskQueue(_startTcs.Task);
+                _lastQueuedReceiveTask = TaskAsyncHelper.Empty;
 
                 if (!ChangeState(ConnectionState.Disconnected, ConnectionState.Connecting))
                 {
@@ -483,7 +486,10 @@ namespace Microsoft.AspNet.SignalR.Client
                                  
                                  // Start the monitor to check for server activity
                                 _monitor.Start();
-                             });
+                             })
+                             // Don't return until the last receive has been processed to ensure messages/state sent in OnConnected
+                             // are processed prior to the Start() method task finishing
+                             .Then(() => _lastQueuedReceiveTask);
         }
 
         private bool ChangeState(ConnectionState oldState, ConnectionState newState)
@@ -709,7 +715,7 @@ namespace Microsoft.AspNet.SignalR.Client
         [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "The exception is raised via an event.")]
         void IConnection.OnReceived(JToken message)
         {
-            _receiveQueue.Enqueue(() => Task.Factory.StartNew(() =>
+            _lastQueuedReceiveTask = _receiveQueue.Enqueue(() => Task.Factory.StartNew(() =>
             {
                 try
                 {
