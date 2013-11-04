@@ -158,7 +158,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
             {
                 reconnectInvoker.Invoke();
 
-                if (!TransportHelper.VerifyReconnect(connection))
+                if (!TransportHelper.VerifyLastActive(connection))
                 {
                     return;
                 }

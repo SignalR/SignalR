@@ -19,6 +19,38 @@ namespace Microsoft.AspNet.SignalR.Tests
         [InlineData(HostType.IISExpress, TransportType.LongPolling)]
         [InlineData(HostType.IISExpress, TransportType.ServerSentEvents)]
         [InlineData(HostType.IISExpress, TransportType.Websockets)]
+        public void MarkActiveStopsConnectionIfCalledAfterExtendedPeriod(HostType hostType, TransportType transportType)
+        {
+            using (var host = CreateHost(hostType, transportType))
+            {
+                host.Initialize();
+                var connection = CreateHubConnection(host);
+                var disconnectWh = new ManualResetEventSlim();
+
+                connection.Closed += () =>
+                {
+                    disconnectWh.Set();
+                };
+
+                connection.Start(host.Transport).Wait();
+
+                // The MarkActive interval should check the reconnect window. Since this is short it should force the connection to disconnect.
+                ((Client.IConnection)connection).ReconnectWindow = TimeSpan.FromSeconds(1);
+
+                Assert.True(disconnectWh.Wait(TimeSpan.FromSeconds(15)), "Closed never fired");
+
+                connection.Stop();
+            }
+        }
+
+        [Theory]
+        [InlineData(HostType.Memory, TransportType.ServerSentEvents)]
+        [InlineData(HostType.Memory, TransportType.ServerSentEvents)]
+        [InlineData(HostType.Memory, TransportType.LongPolling)]
+        [InlineData(HostType.Memory, TransportType.LongPolling)]
+        [InlineData(HostType.IISExpress, TransportType.LongPolling)]
+        [InlineData(HostType.IISExpress, TransportType.ServerSentEvents)]
+        [InlineData(HostType.IISExpress, TransportType.Websockets)]
         public void ReconnectExceedingReconnectWindowDisconnectsWithFastBeatInterval(HostType hostType, TransportType transportType)
         {
             // Test cannot be async because if we do host.ShutDown() after an await the connection stops.
@@ -38,11 +70,11 @@ namespace Microsoft.AspNet.SignalR.Tests
 
                 connection.Start(host.Transport).Wait();
 
-                // Set reconnect window to zero so the second we attempt to reconnect we can ensure that the reconnect window is verified.
-                ((Client.IConnection)connection).ReconnectWindow = TimeSpan.FromSeconds(0);
-
                 // Without this the connection start and reconnect can race with eachother resulting in a deadlock.
                 Thread.Sleep(TimeSpan.FromSeconds(3));
+
+                // Set reconnect window to zero so the second we attempt to reconnect we can ensure that the reconnect window is verified.
+                ((Client.IConnection)connection).ReconnectWindow = TimeSpan.FromSeconds(0);
 
                 host.Shutdown();
 
@@ -222,7 +254,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                 host.Initialize();
 
                 var connection = CreateConnection(host, "/echo");
-                
+
                 var tcs = new TaskCompletionSource<object>();
                 connection.Received += _ => tcs.TrySetResult(null);
 
@@ -234,7 +266,7 @@ namespace Microsoft.AspNet.SignalR.Tests
 
                 // Wait for message to be received
                 Assert.True(tcs.Task.Wait(TimeSpan.FromSeconds(10)));
-                
+
                 connection.Stop();
             }
         }

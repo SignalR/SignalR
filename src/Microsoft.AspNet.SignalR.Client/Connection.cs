@@ -534,9 +534,12 @@ namespace Microsoft.AspNet.SignalR.Client
                     }
                 }
 
-                // Close the receive queue so currently running receive callback finishes and no more are run.
-                // We can't wait on the result of the drain because this method may be on the stack of the task returned (aka deadlock).
-                _receiveQueue.Drain().Catch();
+                if (_receiveQueue != null)
+                {
+                    // Close the receive queue so currently running receive callback finishes and no more are run.
+                    // We can't wait on the result of the drain because this method may be on the stack of the task returned (aka deadlock).
+                    _receiveQueue.Drain().Catch();
+                }
 
                 lock (_stateLock)
                 {
@@ -776,7 +779,11 @@ namespace Microsoft.AspNet.SignalR.Client
         /// </summary>
         void IConnection.MarkActive()
         {
-            _lastActiveAt = DateTime.UtcNow;
+            // Ensure that we haven't gone to sleep since our last "active" marking.
+            if (TransportHelper.VerifyLastActive(this))
+            {
+                _lastActiveAt = DateTime.UtcNow;
+            }
         }
 
         [SuppressMessage("Microsoft.Design", "CA1062:Validate arguments of public methods", MessageId = "0", Justification = "This is called by the transport layer")]

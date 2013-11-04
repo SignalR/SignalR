@@ -200,7 +200,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
             }
         }
 
-        public static bool VerifyReconnect(IConnection connection)
+        public static bool VerifyLastActive(IConnection connection)
         {
             if (connection == null)
             {

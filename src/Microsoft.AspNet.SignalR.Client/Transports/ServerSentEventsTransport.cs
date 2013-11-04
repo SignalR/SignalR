@@ -60,7 +60,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
         private void Reconnect(IConnection connection, string data, CancellationToken disconnectToken)
         {
             // Need to verify before the task delay occurs because an application sleep could occur during the delayed duration.
-            if (!TransportHelper.VerifyReconnect(connection))
+            if (!TransportHelper.VerifyLastActive(connection))
             {
                 return;
             }
@@ -68,7 +68,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
             // Wait for a bit before reconnecting
             TaskAsyncHelper.Delay(ReconnectDelay).Then(() =>
             {
-                if (!TransportHelper.VerifyReconnect(connection))
+                if (!TransportHelper.VerifyLastActive(connection))
                 {
                     return;
                 }
