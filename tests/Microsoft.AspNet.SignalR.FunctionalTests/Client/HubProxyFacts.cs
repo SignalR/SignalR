@@ -190,17 +190,11 @@ namespace Microsoft.AspNet.SignalR.Tests
 
                         wh.Set();
                     });
-
-                    hubConnection.StateChanged += change =>
-                    {
-                        if (change.OldState == ConnectionState.Connecting && change.NewState == ConnectionState.Connected)
-                        {
-                            // This code will run *BEFORE* the start task has complete so it's safe to assert the count here
-                            Assert.Equal(0, bufferMeCalls);
-                        }
-                    };
                     
                     hubConnection.Start(host.Transport).Wait();
+
+                    // The calls should be complete once the start task returns
+                    Assert.Equal(2, bufferMeCalls);
 
                     proxy.Invoke("Ping").Wait();
 
