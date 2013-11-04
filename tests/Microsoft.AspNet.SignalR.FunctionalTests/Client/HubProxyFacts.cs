@@ -204,7 +204,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                         }
                     };
                     
-                    await hubConnection.Start(host.Transport);
+                    hubConnection.Start(host.Transport).Wait();
 
                     proxy.Invoke("Ping").Wait();
 

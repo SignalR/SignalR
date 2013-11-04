@@ -82,19 +82,6 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
 
                 Task newTask = _lastQueuedTask.Then((n, ns, q) => InvokeNext(n, ns, q), taskFunc, state, this);
 
-#if !CLIENT_NET45 && !CLIENT_NET4 && !PORTABLE && !NETFX_CORE
-                            var counter = QueueSizeCounter;
-                            if (counter != null)
-                            {
-                                counter.Decrement();
-                            }
-#endif
-                        }
-                    },
-                    this);
-                },
-                taskFunc, state);
-
                 _lastQueuedTask = newTask;
                 return newTask;
             }
@@ -113,7 +100,7 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
                 // Decrement the number of items left in the queue
                 Interlocked.Decrement(ref queue._size);
 
-#if !CLIENT_NET45
+#if !CLIENT_NET45 && !CLIENT_NET4 && !PORTABLE && !NETFX_CORE
                 var counter = queue.QueueSizeCounter;
                 if (counter != null)
                 {
