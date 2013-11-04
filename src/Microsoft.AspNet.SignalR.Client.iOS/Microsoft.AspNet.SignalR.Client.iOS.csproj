@@ -17,7 +17,7 @@
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
     <OutputPath>bin\iPhoneSimulator\Debug</OutputPath>
-    <DefineConstants>DEBUG;IOS</DefineConstants>
+    <DefineConstants>DEBUG;IOS;XAMARIN</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <ConsolePause>false</ConsolePause>
@@ -32,7 +32,7 @@
     <WarningLevel>4</WarningLevel>
     <ConsolePause>false</ConsolePause>
     <MtouchLink>None</MtouchLink>
-    <DefineConstants>IOS</DefineConstants>
+    <DefineConstants>IOS;XAMARIN</DefineConstants>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|iPhone' ">
     <DebugSymbols>true</DebugSymbols>
@@ -159,9 +159,6 @@
     <Compile Include="..\Microsoft.AspNet.SignalR.Client45\Http\HttpResponseMessageWrapper.cs">
       <Link>Http\HttpResponseMessageWrapper.cs</Link>
     </Compile>
-    <Compile Include="..\Microsoft.AspNet.SignalR.Client\Transports\ConnectingMessageBuffer.cs">
-      <Link>Transports\ConnectingMessageBuffer.cs</Link>
-    </Compile>
     <Compile Include="..\Microsoft.AspNet.SignalR.Client45\Http\HttpRequestMessageWrapper.cs">
       <Link>Http\HttpRequestMessageWrapper.cs</Link>
     </Compile>
@@ -179,6 +176,12 @@
     </Compile>
     <Compile Include="..\Microsoft.AspNet.SignalR.Client\Infrastructure\TransportInitializationHandler.cs">
       <Link>Infrastructure\TransportInitializationHandler.cs</Link>
+    </Compile>
+    <Compile Include="..\Microsoft.AspNet.SignalR.Core\Infrastructure\TaskQueue.cs">
+      <Link>Infrastructure\TaskQueue.cs</Link>
+    </Compile>
+    <Compile Include="..\Microsoft.AspNet.SignalR.Client\Hubs\HubProgressUpdate.cs">
+      <Link>Hubs\HubProgressUpdate.cs</Link>
     </Compile>
   </ItemGroup>
   <ItemGroup>

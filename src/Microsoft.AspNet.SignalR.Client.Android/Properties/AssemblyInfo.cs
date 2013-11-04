@@ -8,7 +8,7 @@ using Android.App;
 // associated with an assembly.
 [assembly: AssemblyTitle("Microsoft.AspNet.SignalR.Client.Android")]
 [assembly: AssemblyDescription("")]
-[assembly: AssemblyProduct("Microsoft.AspNet.SignalR.Client.Android")]
+//[assembly: AssemblyProduct("Microsoft.AspNet.SignalR.Client.Android")]
 
 // Add some common permissions, these can be removed if not needed
 [assembly: UsesPermission(Android.Manifest.Permission.Internet)]
