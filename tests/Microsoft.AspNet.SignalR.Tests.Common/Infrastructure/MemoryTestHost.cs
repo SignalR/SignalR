@@ -108,6 +108,7 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure
 
                 app.MapConnection<MyBadConnection>("/ErrorsAreFun", config);
                 app.MapConnection<MyGroupEchoConnection>("/group-echo", config);
+                app.MapConnection<EchoConnection>("/echo", config);
                 app.MapConnection<MySendingConnection>("/multisend", config);
                 app.MapConnection<MyReconnect>("/my-reconnect", config);
                 app.MapConnection<MyGroupConnection>("/groups", config);

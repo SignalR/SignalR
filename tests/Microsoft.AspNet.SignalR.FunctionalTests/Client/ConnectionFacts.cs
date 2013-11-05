@@ -209,5 +209,34 @@ namespace Microsoft.AspNet.SignalR.Tests
                 connection.Stop();
             }
         }
+
+        [Theory]
+        [InlineData(HostType.Memory, TransportType.ServerSentEvents)]
+        [InlineData(HostType.IISExpress, TransportType.Websockets)]
+        [InlineData(HostType.IISExpress, TransportType.ServerSentEvents)]
+        [InlineData(HostType.IISExpress, TransportType.LongPolling)]
+        public void ConnectionFunctionsCorrectlyAfterCallingStartMutlipleTimes(HostType hostType, TransportType transportType)
+        {
+            using (var host = CreateHost(hostType, transportType))
+            {
+                host.Initialize();
+
+                var connection = CreateConnection(host, "/echo");
+                
+                var tcs = new TaskCompletionSource<object>();
+                connection.Received += _ => tcs.TrySetResult(null);
+
+                // We're purposely calling Start().Wait() twice here
+                connection.Start(host.TransportFactory()).Wait();
+                connection.Start(host.TransportFactory()).Wait();
+
+                connection.Send("test").Wait();
+
+                // Wait for message to be received
+                Assert.True(tcs.Task.Wait(TimeSpan.FromSeconds(10)));
+                
+                connection.Stop();
+            }
+        }
     }
 }

@@ -58,6 +58,12 @@ namespace Microsoft.AspNet.SignalR.Client
 
         private string _connectionData;
 
+        private TaskQueue _receiveQueue;
+
+        private Task _lastQueuedReceiveTask;
+
+        private TaskCompletionSource<object> _startTcs;
+
         // Used to synchronize state changes
         private readonly object _stateLock = new object();
 
@@ -382,14 +388,15 @@ namespace Microsoft.AspNet.SignalR.Client
         {
             lock (_startLock)
             {
-                _connectTask = TaskAsyncHelper.Empty;
-                _disconnectCts = new CancellationTokenSource();
-
                 if (!ChangeState(ConnectionState.Disconnected, ConnectionState.Connecting))
                 {
-                    return _connectTask;
+                    return _connectTask ?? TaskAsyncHelper.Empty;
                 }
 
+                _disconnectCts = new CancellationTokenSource();
+                _startTcs = new TaskCompletionSource<object>();
+                _receiveQueue = new TaskQueue(_startTcs.Task);
+                _lastQueuedReceiveTask = TaskAsyncHelper.Empty;
                 _transport = transport;
 
                 _connectTask = Negotiate(transport);
@@ -447,9 +454,16 @@ namespace Microsoft.AspNet.SignalR.Client
                              {
                                 ChangeState(ConnectionState.Connecting, ConnectionState.Connected);
 
+                                // Now that we're connected complete the start task that the
+                                // receive queue is waiting on
+                                _startTcs.SetResult(null);
+
                                 // Start the monitor to check for server activity
                                 _monitor.Start();
-                             });
+                             })
+                             // Don't return until the last receive has been processed to ensure messages/state sent in OnConnected
+                             // are processed prior to the Start() method task finishing
+                             .Then(() => _lastQueuedReceiveTask);
         }
 
         private bool ChangeState(ConnectionState oldState, ConnectionState newState)
@@ -519,6 +533,10 @@ namespace Microsoft.AspNet.SignalR.Client
                         Trace(TraceLevels.Events, "Error: {0}", ex.GetBaseException());
                     }
                 }
+
+                // Close the receive queue so currently running receive callback finishes and no more are run.
+                // We can't wait on the result of the drain because this method may be on the stack of the task returned (aka deadlock).
+                _receiveQueue.Drain().Catch();
 
                 lock (_stateLock)
                 {
@@ -668,9 +686,20 @@ namespace Microsoft.AspNet.SignalR.Client
 
 
         [SuppressMessage("Microsoft.Design", "CA1062:Validate arguments of public methods", MessageId = "0", Justification = "This is called by the transport layer")]
+        [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "The exception is raised via an event.")]
         void IConnection.OnReceived(JToken message)
         {
-            OnMessageReceived(message);
+            _lastQueuedReceiveTask = _receiveQueue.Enqueue(() => Task.Factory.StartNew(() =>
+            {
+                try
+                {
+                    OnMessageReceived(message);
+                }
+                catch (Exception ex)
+                {
+                    OnError(ex);
+                }
+            }));
         }
 
         [SuppressMessage("Microsoft.Design", "CA1062:Validate arguments of public methods", MessageId = "0", Justification = "This is called by the transport layer")]
@@ -682,7 +711,7 @@ namespace Microsoft.AspNet.SignalR.Client
             }
         }
 
-        void IConnection.OnError(Exception error)
+        private void OnError(Exception error)
         {
             Trace(TraceLevels.Events, "OnError({0})", error);
 
@@ -690,6 +719,11 @@ namespace Microsoft.AspNet.SignalR.Client
             {
                 Error(error);
             }
+        }
+
+        void IConnection.OnError(Exception error)
+        {
+            OnError(error);
         }
 
         public virtual void OnReconnecting()

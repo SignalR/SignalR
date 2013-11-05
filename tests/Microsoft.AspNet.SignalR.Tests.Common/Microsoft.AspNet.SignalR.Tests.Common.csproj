@@ -103,6 +103,7 @@
       <Link>Hubs\DemoHub.cs</Link>
     </Compile>
     <Compile Include="App_Start\InitializeIISHost.cs" />
+    <Compile Include="Connections\EchoConnection.cs" />
     <Compile Include="Connections\ExamineHeadersConnection.cs" />
     <Compile Include="Connections\ExamineReconnectPath.cs" />
     <Compile Include="Handlers\GCHandler.cs" />
@@ -128,6 +129,7 @@
     <Compile Include="Hubs\EchoHub.cs" />
     <Compile Include="Hubs\ExamineHeadersHub.cs" />
     <Compile Include="Hubs\MyItemsHub.cs" />
+    <Compile Include="Hubs\OnConnectedBufferHub.cs" />
     <Compile Include="Infrastructure\BasicAuthModule.cs" />
     <Compile Include="Infrastructure\ClientAssertExtensions.cs" />
     <Compile Include="Infrastructure\OrderedCountDownRange.cs" />

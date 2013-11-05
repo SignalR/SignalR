@@ -194,6 +194,61 @@ namespace Microsoft.AspNet.SignalR.Tests
             }
         }
 
+        [Theory(Timeout = 10000)]
+        [InlineData(HostType.IISExpress, TransportType.Websockets)]
+        [InlineData(HostType.IISExpress, TransportType.ServerSentEvents)]
+        [InlineData(HostType.IISExpress, TransportType.LongPolling)]
+        public void CallingStopAfterAwaitingInvocationReturnsFast(HostType hostType, TransportType transportType)
+        {
+            using (var host = CreateHost(hostType, transportType))
+            {
+                host.Initialize();
+                HubConnection hubConnection = CreateHubConnection(host);
+
+                var proxy = hubConnection.CreateHubProxy("EchoHub");
+
+                hubConnection.Start(host.Transport).Wait();
+
+                proxy.Invoke("EchoCallback", "message").Wait();
+
+                hubConnection.Stop();
+            }
+        }
+
+        [Theory(Timeout = 10000)]
+        [InlineData(HostType.IISExpress, TransportType.Websockets)]
+        [InlineData(HostType.IISExpress, TransportType.ServerSentEvents)]
+        [InlineData(HostType.IISExpress, TransportType.LongPolling)]
+        public void CallingStopInClientMethodWorks(HostType hostType, TransportType transportType)
+        {
+            using (var host = CreateHost(hostType, transportType))
+            {
+                host.Initialize();
+                HubConnection hubConnection = CreateHubConnection(host);
+
+                var proxy = hubConnection.CreateHubProxy("EchoHub");
+
+                proxy.On<string>("echo", message =>
+                {
+                    hubConnection.Stop();   
+                });
+
+                hubConnection.Start(host.Transport).Wait();
+
+                try
+                {
+                    proxy.Invoke("EchoCallback", "message").Wait();
+
+                    Assert.True(false, "The hub method invocation should fail.");
+                }
+                catch (AggregateException)
+                {
+                    // This should throw as the invocation result will not be received due to the connection stopping
+                    Assert.True(true);
+                }
+            }
+        }
+
         public class MyHub2 : Hub
         {
             public MyHub2(int n)

@@ -56,6 +56,7 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure.IIS
             RouteTable.Routes.MapHubs(config);
 
             RouteTable.Routes.MapConnection<MyBadConnection>("errors-are-fun", "ErrorsAreFun");
+            RouteTable.Routes.MapConnection<EchoConnection>("echo", "echo");
             RouteTable.Routes.MapConnection<MyGroupEchoConnection>("group-echo", "group-echo");
             RouteTable.Routes.MapConnection<MySendingConnection>("multisend", "multisend", new ConnectionConfiguration { EnableCrossDomain = true });
             RouteTable.Routes.MapConnection<MyReconnect>("my-reconnect", "my-reconnect");
