@@ -410,16 +410,15 @@ namespace Microsoft.AspNet.SignalR.Client
         {
             lock (_startLock)
             {
-                _connectTask = TaskAsyncHelper.Empty;
+                if (!ChangeState(ConnectionState.Disconnected, ConnectionState.Connecting))
+                {
+                    return _connectTask ?? TaskAsyncHelper.Empty;
+                }
+
                 _disconnectCts = new CancellationTokenSource();
                 _startTcs = new TaskCompletionSource<object>();
                 _receiveQueue = new TaskQueue(_startTcs.Task);
                 _lastQueuedReceiveTask = TaskAsyncHelper.Empty;
-
-                if (!ChangeState(ConnectionState.Disconnected, ConnectionState.Connecting))
-                {
-                    return _connectTask;
-                }
 
                 _transport = transport;
 
