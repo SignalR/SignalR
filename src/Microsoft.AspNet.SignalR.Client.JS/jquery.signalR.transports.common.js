@@ -413,8 +413,10 @@
             connection._.lastMessageAt = new Date().getTime();
         },
 
-        markActive: function(connection) {
-            connection._.lastActiveAt = new Date().getTime();
+        markActive: function (connection) {
+            if (transportLogic.verifyLastActive(connection)) {
+                connection._.lastActiveAt = new Date().getTime();
+            }
         },
 
         ensureReconnectingState: function (connection) {
@@ -433,7 +435,7 @@
             }
         },
 
-        verifyReconnect: function (connection) {
+        verifyLastActive: function (connection) {
             if (new Date().getTime() - connection._.lastActiveAt >= connection.reconnectWindow) {
                 connection.log("There has not been an active server connection for an extended period of time. Stopping connection.");
                 connection.stop();
@@ -451,12 +453,12 @@
             // and a reconnectTimeout isn't already set.
             if (isConnectedOrReconnecting(connection) && !connection._.reconnectTimeout) {
                 // Need to verify before the setTimeout occurs because an application sleep could occur during the setTimeout duration.
-                if (!transportLogic.verifyReconnect(connection)) {
+                if (!transportLogic.verifyLastActive(connection)) {
                     return;
                 }
 
                 connection._.reconnectTimeout = window.setTimeout(function () {
-                    if (!transportLogic.verifyReconnect(connection)) {
+                    if (!transportLogic.verifyLastActive(connection)) {
                         return;
                     }
 
