@@ -17,6 +17,7 @@ using Xunit.Extensions;
 
 namespace Microsoft.AspNet.SignalR.Tests
 {
+    using System.Diagnostics;
     using AppFunc = Func<IDictionary<string, object>, Task>;
 
     public class ConnectionFacts : HostedTest
@@ -36,8 +37,6 @@ namespace Microsoft.AspNet.SignalR.Tests
         [InlineData(HostType.HttpListener, TransportType.Websockets, MessageBusType.Default)]
         public void MarkActiveStopsConnectionIfCalledAfterExtendedPeriod(HostType hostType, TransportType transportType, MessageBusType messageBusType)
         {
-            // Test cannot be async because if we do host.ShutDown() after an await the connection stops.
-
             using (var host = CreateHost(hostType, transportType))
             {
                 host.Initialize(messageBusType: messageBusType);
@@ -49,6 +48,7 @@ namespace Microsoft.AspNet.SignalR.Tests
 
                     connection.Closed += () =>
                     {
+                        Trace.TraceInformation("************** Connection Disconnected **************");
                         disconnectWh.Set();
                     };
 
