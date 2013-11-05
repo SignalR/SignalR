@@ -34,10 +34,8 @@ namespace Microsoft.AspNet.SignalR.Tests
         [InlineData(HostType.HttpListener, TransportType.LongPolling, MessageBusType.Default)]
         [InlineData(HostType.HttpListener, TransportType.ServerSentEvents, MessageBusType.Default)]
         [InlineData(HostType.HttpListener, TransportType.Websockets, MessageBusType.Default)]
-        public void MarkActiveStopsConnectionIfCalledAfterExtendedPeriod(HostType hostType, TransportType transportType, MessageBusType messageBusType)
+        public async void MarkActiveStopsConnectionIfCalledAfterExtendedPeriod(HostType hostType, TransportType transportType, MessageBusType messageBusType)
         {
-            // Test cannot be async because if we do host.ShutDown() after an await the connection stops.
-
             using (var host = CreateHost(hostType, transportType))
             {
                 host.Initialize(messageBusType: messageBusType);
@@ -52,7 +50,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                         disconnectWh.Set();
                     };
 
-                    connection.Start(host.Transport).Wait();
+                    await connection.Start(host.Transport);
 
                     // The MarkActive interval should check the reconnect window. Since this is short it should force the connection to disconnect.
                     ((Client.IConnection)connection).ReconnectWindow = TimeSpan.FromSeconds(1);
