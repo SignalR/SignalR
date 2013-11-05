@@ -416,8 +416,8 @@ namespace Microsoft.AspNet.SignalR.Tests
                     connection.Received += _ => tcs.TrySetResult(null);
 
                     // We're purposely calling Start().Wait() twice here
-                    connection.Start(host.Transport).Wait();
-                    connection.Start(host.Transport).Wait();
+                    connection.Start(host.TransportFactory()).Wait();
+                    connection.Start(host.TransportFactory()).Wait();
 
                     connection.Send("test").Wait();
 
