@@ -18,11 +18,12 @@
             checkIfAlive(connection);
         }
 
-        transportLogic.markActive(connection);
-
-        connection._.beatHandle = window.setTimeout(function () {
-            beat(connection);
-        }, connection._.beatInterval);
+        // Ensure that we successfully marked active before continuing the heartbeat.
+        if (transportLogic.markActive(connection)) {
+            connection._.beatHandle = window.setTimeout(function () {
+                beat(connection);
+            }, connection._.beatInterval);
+        }
     }
 
     function checkIfAlive(connection) {
@@ -405,7 +406,7 @@
             }
         },
 
-        startHeartbeat: function(connection) {
+        startHeartbeat: function (connection) {
             beat(connection);
         },
 
@@ -416,7 +417,10 @@
         markActive: function (connection) {
             if (transportLogic.verifyLastActive(connection)) {
                 connection._.lastActiveAt = new Date().getTime();
+                return true;
             }
+
+            return false;
         },
 
         ensureReconnectingState: function (connection) {
