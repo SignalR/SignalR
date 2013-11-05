@@ -393,5 +393,38 @@ namespace Microsoft.AspNet.SignalR.Tests
                 }
             }
         }
+
+        [Theory]
+        [InlineData(HostType.Memory, TransportType.ServerSentEvents, MessageBusType.Default)]
+        [InlineData(HostType.Memory, TransportType.ServerSentEvents, MessageBusType.Fake)]
+        [InlineData(HostType.Memory, TransportType.ServerSentEvents, MessageBusType.FakeMultiStream)]
+        [InlineData(HostType.IISExpress, TransportType.ServerSentEvents, MessageBusType.Default)]
+        [InlineData(HostType.IISExpress, TransportType.Websockets, MessageBusType.Default)]
+        [InlineData(HostType.IISExpress, TransportType.LongPolling, MessageBusType.Default)]
+        [InlineData(HostType.HttpListener, TransportType.ServerSentEvents, MessageBusType.Default)]
+        [InlineData(HostType.HttpListener, TransportType.Websockets, MessageBusType.Default)]
+        [InlineData(HostType.HttpListener, TransportType.LongPolling, MessageBusType.Default)]
+        public void ConnectionFunctionsCorrectlyAfterCallingStartMutlipleTimes(HostType hostType, TransportType transportType, MessageBusType messageBusType)
+        {
+            using (var host = CreateHost(hostType, transportType))
+            {
+                host.Initialize(messageBusType: messageBusType);
+
+                using (var connection = CreateConnection(host, "/autoencodedjson"))
+                {
+                    var tcs = new TaskCompletionSource<object>();
+                    connection.Received += _ => tcs.TrySetResult(null);
+
+                    // We're purposely calling Start().Wait() twice here
+                    connection.Start(host.Transport).Wait();
+                    connection.Start(host.Transport).Wait();
+
+                    connection.Send("test").Wait();
+
+                    // Wait for message to be received
+                    Assert.True(tcs.Task.Wait(TimeSpan.FromSeconds(10)));
+                }
+            }
+        }
     }
 }
