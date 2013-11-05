@@ -23,3 +23,19 @@ QUnit.test("Validate ensureReconnectingState functionality.", function () {
     QUnit.ok(stateChangedCalled, "StateChanged event handler was called.");
     QUnit.equal(connection.state, $.signalR.connectionState.reconnecting, "Connection state is reconnecting.");
 });
+
+QUnit.test("markActive stops connection if called after extended period of time.", function () {
+    var connection = testUtilities.createConnection(),
+        stopCalled = false;
+
+    connection._.lastActiveAt = new Date(new Date().valueOf() - 3000).getTime()
+    connection.reconnectWindow = 2900;
+
+    connection.stop = function () {
+        stopCalled = true;
+    };
+
+    $.signalR.transports._logic.markActive(connection);
+
+    QUnit.equal(stopCalled, true, "Stop was called.");
+});
