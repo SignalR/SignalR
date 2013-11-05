@@ -16,6 +16,7 @@
     <MonoAndroidAssetsPrefix>Assets</MonoAndroidAssetsPrefix>
     <AssemblyName>Microsoft.AspNet.SignalR.Client.Android.Samples</AssemblyName>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <AndroidManifest>Properties\AndroidManifest.xml</AndroidManifest>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -41,6 +42,15 @@
     <Reference Include="System.Core" />
     <Reference Include="Mono.Android" />
     <Reference Include="System.Net.Http" />
+    <Reference Include="Microsoft.AspNet.SignalR.Client">
+      <HintPath>..\..\Components\signalr-2.0.0\lib\mobile\Microsoft.AspNet.SignalR.Client.dll</HintPath>
+    </Reference>
+    <Reference Include="Newtonsoft.Json">
+      <HintPath>..\..\Components\signalr-2.0.0\lib\mobile\Newtonsoft.Json.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Net.Http.Extensions">
+      <HintPath>..\..\Components\signalr-2.0.0\lib\mobile\System.Net.Http.Extensions.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="MainActivity.cs" />
@@ -54,6 +64,7 @@
   <ItemGroup>
     <None Include="Resources\AboutResources.txt" />
     <None Include="Assets\AboutAssets.txt" />
+    <None Include="Properties\AndroidManifest.xml" />
   </ItemGroup>
   <ItemGroup>
     <AndroidResource Include="Resources\layout\Main.axml" />
@@ -62,9 +73,10 @@
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\Novell\Novell.MonoDroid.CSharp.targets" />
   <ItemGroup>
-    <ProjectReference Include="..\..\src\Microsoft.AspNet.SignalR.Client.Android\Microsoft.AspNet.SignalR.Client.Android.csproj">
-      <Project>{677A3843-1774-48D8-B00C-01F1151AF2BC}</Project>
-      <Name>Microsoft.AspNet.SignalR.Client.Android</Name>
-    </ProjectReference>
+    <XamarinComponentReference Include="signalr">
+      <InstallationInProgress>True</InstallationInProgress>
+      <Version>2.0.0</Version>
+      <Visible>False</Visible>
+    </XamarinComponentReference>
   </ItemGroup>
 </Project>
