@@ -84,6 +84,7 @@
     <Compile Include="Performance\ClientServerMemoryRun.cs" />
     <Compile Include="Performance\ConnectionRun.cs" />
     <Compile Include="Performance\HostedRun.cs" />
+    <Compile Include="Performance\ServerPushRun.cs" />
     <Compile Include="Performance\SimpleEchoHubRun.cs" />
     <Compile Include="Performance\ServiceBusMessageBusRun.cs" />
     <Compile Include="Performance\HubInvocationRun.cs" />
