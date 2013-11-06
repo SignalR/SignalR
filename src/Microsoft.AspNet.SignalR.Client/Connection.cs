@@ -697,7 +697,9 @@ namespace Microsoft.AspNet.SignalR.Client
                 }
                 catch (Exception ex)
                 {
-                    OnError(ex);
+                    // NOTE: We're manually wrapping in an AggregateException here to preserve previous 1.x client behavior.
+                    //       In 2.x this behavior changed anyway but we don't want to introduce exception type changes in a point release.
+                    OnError(new AggregateException(ex));
                 }
             }));
         }
