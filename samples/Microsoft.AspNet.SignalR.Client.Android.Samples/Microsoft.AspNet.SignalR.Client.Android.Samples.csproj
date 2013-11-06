@@ -35,6 +35,7 @@
     <WarningLevel>4</WarningLevel>
     <ConsolePause>false</ConsolePause>
     <AndroidUseSharedRuntime>false</AndroidUseSharedRuntime>
+    <DefineConstants>ANDROID</DefineConstants>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />

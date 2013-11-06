@@ -30,6 +30,7 @@
     <WarningLevel>4</WarningLevel>
     <ConsolePause>false</ConsolePause>
     <MtouchLink>None</MtouchLink>
+    <DefineConstants>iOS</DefineConstants>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|iPhone' ">
     <DebugSymbols>true</DebugSymbols>
@@ -102,6 +103,7 @@
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>
     <XamarinComponentReference Include="signalr">
+      <InstallationInProgress>True</InstallationInProgress>
       <Version>2.0.0</Version>
       <Visible>False</Visible>
     </XamarinComponentReference>
