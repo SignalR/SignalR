@@ -1,10 +1,6 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 11.00
 # Visual Studio 2010
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNet.SignalR.Client.Android", "src\Microsoft.AspNet.SignalR.Client.Android\Microsoft.AspNet.SignalR.Client.Android.csproj", "{677A3843-1774-48D8-B00C-01F1151AF2BC}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNet.SignalR.Client.iOS", "src\Microsoft.AspNet.SignalR.Client.iOS\Microsoft.AspNet.SignalR.Client.iOS.csproj", "{44FABCC9-52E0-43AD-ABA9-C1FA909941E0}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNet.SignalR.Client.Android.Samples", "samples\Microsoft.AspNet.SignalR.Client.Android.Samples\Microsoft.AspNet.SignalR.Client.Android.Samples.csproj", "{AA8BF4BF-7805-40C0-977F-0D5D7AA4D948}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNet.SignalR.Client.iOS.Samples", "samples\Microsoft.AspNet.SignalR.Client.iOS.Samples\Microsoft.AspNet.SignalR.Client.iOS.Samples.csproj", "{DBFB861C-DF65-4784-B2B7-85DBFF01E787}"
@@ -23,52 +19,12 @@ Global
 		AppStore|iPhoneSimulator = AppStore|iPhoneSimulator
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{44FABCC9-52E0-43AD-ABA9-C1FA909941E0}.Ad-Hoc|iPhone.ActiveCfg = Ad-Hoc|iPhone
-		{44FABCC9-52E0-43AD-ABA9-C1FA909941E0}.Ad-Hoc|iPhone.Build.0 = Ad-Hoc|iPhone
-		{44FABCC9-52E0-43AD-ABA9-C1FA909941E0}.Ad-Hoc|iPhoneSimulator.ActiveCfg = Ad-Hoc|iPhoneSimulator
-		{44FABCC9-52E0-43AD-ABA9-C1FA909941E0}.Ad-Hoc|iPhoneSimulator.Build.0 = Ad-Hoc|iPhoneSimulator
-		{44FABCC9-52E0-43AD-ABA9-C1FA909941E0}.AppStore|iPhone.ActiveCfg = AppStore|iPhone
-		{44FABCC9-52E0-43AD-ABA9-C1FA909941E0}.AppStore|iPhone.Build.0 = AppStore|iPhone
-		{44FABCC9-52E0-43AD-ABA9-C1FA909941E0}.AppStore|iPhoneSimulator.ActiveCfg = AppStore|iPhoneSimulator
-		{44FABCC9-52E0-43AD-ABA9-C1FA909941E0}.AppStore|iPhoneSimulator.Build.0 = AppStore|iPhoneSimulator
-		{44FABCC9-52E0-43AD-ABA9-C1FA909941E0}.Debug|Any CPU.ActiveCfg = Debug|iPhoneSimulator
-		{44FABCC9-52E0-43AD-ABA9-C1FA909941E0}.Debug|Any CPU.Build.0 = Debug|iPhoneSimulator
-		{44FABCC9-52E0-43AD-ABA9-C1FA909941E0}.Debug|iPhone.ActiveCfg = Debug|iPhone
-		{44FABCC9-52E0-43AD-ABA9-C1FA909941E0}.Debug|iPhone.Build.0 = Debug|iPhone
-		{44FABCC9-52E0-43AD-ABA9-C1FA909941E0}.Debug|iPhoneSimulator.ActiveCfg = Debug|iPhoneSimulator
-		{44FABCC9-52E0-43AD-ABA9-C1FA909941E0}.Debug|iPhoneSimulator.Build.0 = Debug|iPhoneSimulator
-		{44FABCC9-52E0-43AD-ABA9-C1FA909941E0}.Release|Any CPU.ActiveCfg = Release|iPhoneSimulator
-		{44FABCC9-52E0-43AD-ABA9-C1FA909941E0}.Release|Any CPU.Build.0 = Release|iPhoneSimulator
-		{44FABCC9-52E0-43AD-ABA9-C1FA909941E0}.Release|iPhone.ActiveCfg = Release|iPhone
-		{44FABCC9-52E0-43AD-ABA9-C1FA909941E0}.Release|iPhone.Build.0 = Release|iPhone
-		{44FABCC9-52E0-43AD-ABA9-C1FA909941E0}.Release|iPhoneSimulator.ActiveCfg = Release|iPhoneSimulator
-		{44FABCC9-52E0-43AD-ABA9-C1FA909941E0}.Release|iPhoneSimulator.Build.0 = Release|iPhoneSimulator
-		{677A3843-1774-48D8-B00C-01F1151AF2BC}.Ad-Hoc|iPhone.ActiveCfg = Debug|Any CPU
-		{677A3843-1774-48D8-B00C-01F1151AF2BC}.Ad-Hoc|iPhone.Build.0 = Debug|Any CPU
-		{677A3843-1774-48D8-B00C-01F1151AF2BC}.Ad-Hoc|iPhoneSimulator.ActiveCfg = Debug|Any CPU
-		{677A3843-1774-48D8-B00C-01F1151AF2BC}.Ad-Hoc|iPhoneSimulator.Build.0 = Debug|Any CPU
-		{677A3843-1774-48D8-B00C-01F1151AF2BC}.AppStore|iPhone.ActiveCfg = Debug|Any CPU
-		{677A3843-1774-48D8-B00C-01F1151AF2BC}.AppStore|iPhone.Build.0 = Debug|Any CPU
-		{677A3843-1774-48D8-B00C-01F1151AF2BC}.AppStore|iPhoneSimulator.ActiveCfg = Debug|Any CPU
-		{677A3843-1774-48D8-B00C-01F1151AF2BC}.AppStore|iPhoneSimulator.Build.0 = Debug|Any CPU
-		{677A3843-1774-48D8-B00C-01F1151AF2BC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{677A3843-1774-48D8-B00C-01F1151AF2BC}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{677A3843-1774-48D8-B00C-01F1151AF2BC}.Debug|iPhone.ActiveCfg = Debug|Any CPU
-		{677A3843-1774-48D8-B00C-01F1151AF2BC}.Debug|iPhone.Build.0 = Debug|Any CPU
-		{677A3843-1774-48D8-B00C-01F1151AF2BC}.Debug|iPhoneSimulator.ActiveCfg = Debug|Any CPU
-		{677A3843-1774-48D8-B00C-01F1151AF2BC}.Debug|iPhoneSimulator.Build.0 = Debug|Any CPU
-		{677A3843-1774-48D8-B00C-01F1151AF2BC}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{677A3843-1774-48D8-B00C-01F1151AF2BC}.Release|Any CPU.Build.0 = Release|Any CPU
-		{677A3843-1774-48D8-B00C-01F1151AF2BC}.Release|iPhone.ActiveCfg = Release|Any CPU
-		{677A3843-1774-48D8-B00C-01F1151AF2BC}.Release|iPhone.Build.0 = Release|Any CPU
-		{677A3843-1774-48D8-B00C-01F1151AF2BC}.Release|iPhoneSimulator.ActiveCfg = Release|Any CPU
-		{677A3843-1774-48D8-B00C-01F1151AF2BC}.Release|iPhoneSimulator.Build.0 = Release|Any CPU
-		{AA8BF4BF-7805-40C0-977F-0D5D7AA4D948}.Ad-Hoc|iPhone.ActiveCfg = Debug|Any CPU
-		{AA8BF4BF-7805-40C0-977F-0D5D7AA4D948}.Ad-Hoc|iPhone.Build.0 = Debug|Any CPU
+		{AA8BF4BF-7805-40C0-977F-0D5D7AA4D948}.Ad-Hoc|iPhone.ActiveCfg = Release|Any CPU
+		{AA8BF4BF-7805-40C0-977F-0D5D7AA4D948}.Ad-Hoc|iPhone.Build.0 = Release|Any CPU
 		{AA8BF4BF-7805-40C0-977F-0D5D7AA4D948}.Ad-Hoc|iPhoneSimulator.ActiveCfg = Debug|Any CPU
 		{AA8BF4BF-7805-40C0-977F-0D5D7AA4D948}.Ad-Hoc|iPhoneSimulator.Build.0 = Debug|Any CPU
-		{AA8BF4BF-7805-40C0-977F-0D5D7AA4D948}.AppStore|iPhone.ActiveCfg = Debug|Any CPU
-		{AA8BF4BF-7805-40C0-977F-0D5D7AA4D948}.AppStore|iPhone.Build.0 = Debug|Any CPU
+		{AA8BF4BF-7805-40C0-977F-0D5D7AA4D948}.AppStore|iPhone.ActiveCfg = Release|Any CPU
+		{AA8BF4BF-7805-40C0-977F-0D5D7AA4D948}.AppStore|iPhone.Build.0 = Release|Any CPU
 		{AA8BF4BF-7805-40C0-977F-0D5D7AA4D948}.AppStore|iPhoneSimulator.ActiveCfg = Debug|Any CPU
 		{AA8BF4BF-7805-40C0-977F-0D5D7AA4D948}.AppStore|iPhoneSimulator.Build.0 = Debug|Any CPU
 		{AA8BF4BF-7805-40C0-977F-0D5D7AA4D948}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
@@ -105,6 +61,6 @@ Global
 		{DBFB861C-DF65-4784-B2B7-85DBFF01E787}.Release|iPhoneSimulator.Build.0 = Release|iPhoneSimulator
 	EndGlobalSection
 	GlobalSection(MonoDevelopProperties) = preSolution
-		StartupItem = samples\Microsoft.AspNet.SignalR.Client.iOS.Samples\Microsoft.AspNet.SignalR.Client.iOS.Samples.csproj
+		StartupItem = samples\Microsoft.AspNet.SignalR.Client.Android.Samples\Microsoft.AspNet.SignalR.Client.Android.Samples.csproj
 	EndGlobalSection
 EndGlobal
