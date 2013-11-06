@@ -292,11 +292,6 @@
 
             against = against || window.location;
 
-            // If the url is protocol relative, prepend the current windows protocol to the url. 
-            if (url.indexOf("//") === 0) {
-                url = against.protocol + url;
-            }
-
             if (url.indexOf("http") !== 0) {
                 return false;
             }
@@ -412,6 +407,12 @@
             // as demonstrated by Issue #623.
             if (config.transport === "auto" && config.jsonp === true) {
                 config.transport = "longPolling";
+            }
+
+            // If the url is protocol relative, prepend the current windows protocol to the url. 
+            if (connection.url.indexOf("//") === 0) {
+                connection.url = window.location.protocol + connection.url;
+                connection.log("Protocol relative URL detected, normalizing it to '" + connection.url + "'.");
             }
 
             if (this.isCrossDomain(connection.url)) {
