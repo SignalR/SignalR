@@ -241,7 +241,7 @@ namespace Microsoft.AspNet.SignalR.Tests
 
                     Assert.True(false, "The hub method invocation should fail.");
                 }
-                catch (AggregateException)
+                catch (Exception)
                 {
                     // This should throw as the invocation result will not be received due to the connection stopping
                     Assert.True(true);
