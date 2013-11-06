@@ -18,8 +18,7 @@ details: Details.md
 getting-started: GettingStarted.md
 version: 2.0.0
 samples: 
-  iOS Sample: samples/Microsoft.AspNet.SignalR.Client.iOS.Samples/Microsoft.AspNet.SignalR.Client.iOS.Samples.sln
-  Android Sample: samples/Microsoft.AspNet.SignalR.Client.Android.Samples/Microsoft.AspNet.SignalR.Client.Android.Samples.sln
+  iOS and Android Samples: samples/SignalRSample.sln
 no_build: true
 skip_docs: true
 ...
