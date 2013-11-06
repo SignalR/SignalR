@@ -96,9 +96,17 @@
                 };
 
                 connection.socket.onmessage = function (event) {
-                    var data = connection._parseResponse(event.data),
+                    var data,
                         $connection = $(connection);
 
+                    try {
+                        data = connection._parseResponse(event.data);
+                    }
+                    catch (error) {
+                        transportLogic.handleParseFailure(connection, event.data, error.message, onFailed);
+                        return;
+                    }
+                    
                     if (onSuccess) {
                         onSuccess();
                         onSuccess = null;

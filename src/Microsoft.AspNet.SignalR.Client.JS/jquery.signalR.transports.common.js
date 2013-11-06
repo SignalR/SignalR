@@ -88,22 +88,31 @@
                     data: {},
                     dataType: connection.ajaxDataType,
                     success: function (result) {
-                        var data = connection._parseResponse(result);
+                        var data;
+                        
+                        try {
+                            data = connection._parseResponse(result);
+                        }
+                        catch (error) {
+                            deferral.reject("Failed to parse ping server response, stopping the connection: " + result);
+                            connection.stop();
+                            return;
+                        }
 
                         if (data.Response === "pong") {
                             deferral.resolve();
                         }
                         else {
-                            deferral.reject("SignalR: Invalid ping response when pinging server: " + (data.responseText || data.statusText));
+                            deferral.reject("SignalR: Invalid ping response when pinging server: " + data.Response);
                         }
                     },
-                    error: function (data) {
-                        if (data.status === 401 || data.status === 403) {
-                            deferral.reject("Failed to ping server. Server responded with a " + data.status + " status code, stopping the connection.");
+                    error: function (error) {
+                        if (error.status === 401 || error.status === 403) {
+                            deferral.reject("Failed to ping server. Server responded with a " + error.status + " status code, stopping the connection.");
                             connection.stop();
                         }
                         else {
-                            deferral.reject("SignalR: Error pinging server: " + (data.responseText || data.statusText));
+                            deferral.reject("SignalR: Error pinging server: " + (error.responseText || error.statusText));
                         }
                     }
                 }));
@@ -190,9 +199,13 @@
         },
 
         ajaxSend: function (connection, data) {
-            var url = connection.url + "/send" + "?transport=" + connection.transport.name + "&connectionToken=" + window.encodeURIComponent(connection.token);
-            url = transportLogic.prepareQueryString(connection, url);
+            var url = connection.url + "/send" + "?transport=" + connection.transport.name + "&connectionToken=" + window.encodeURIComponent(connection.token),
+                onFail = function (error, connection) {
+                    $(connection).triggerHandler(events.onError, [error]);
+                };
 
+            url = transportLogic.prepareQueryString(connection, url);
+            
             return $.ajax(
                 $.extend({}, $.signalR.ajaxDefaults, {
                     xhrFields: { withCredentials: connection.withCredentials },
@@ -204,18 +217,30 @@
                         data: data
                     },
                     success: function (result) {
+                        var res;
+
                         if (result) {
-                            $(connection).triggerHandler(events.onReceived, [connection._parseResponse(result)]);
+                            try {
+                                res = connection._parseResponse(result);
+                            }
+                            catch (error) {
+                                onFail(error, connection);
+                                connection.stop();
+                                return;
+                            }
+
+                            $(connection).triggerHandler(events.onReceived, [res]);
                         }
                     },
-                    error: function (errData, textStatus) {
+                    error: function (error, textStatus) {
                         if (textStatus === "abort" || textStatus === "parsererror") {
                             // The parsererror happens for sends that don't return any data, and hence
                             // don't write the jsonp callback to the response. This is harder to fix on the server
                             // so just hack around it on the client for now.
                             return;
                         }
-                        $(connection).triggerHandler(events.onError, [errData, data]);
+
+                        onFail(error, connection);
                     }
                 }));
         },
@@ -388,6 +413,18 @@
                         transport.start(connection);
                     }
                 }, connection.reconnectDelay);
+            }
+        },
+
+        handleParseFailure: function (connection, result, errorMessage, onFailed) {
+            // If we're in the initialization phase trigger onFailed, otherwise stop the connection.
+            if (connection.state === signalR.connectionState.connecting) {
+                connection.log("Failed to parse server response while attempting to connect.");
+                onFailed();
+            }
+            else {
+                $(connection).triggerHandler(events.onError, ["SignalR: failed at parsing response: " + result + ".  With error: " + errorMessage]);
+                connection.stop();
             }
         },
 

@@ -3,10 +3,12 @@ using System.Collections.Generic;
 using System.Configuration;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using System.Web;
 using System.Web.Routing;
+using Microsoft.AspNet.SignalR.Tests.Common.Connections;
 using Owin;
 
 [assembly: PreApplicationStartMethod(typeof(Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure.IIS.InitializeIISHost), "Start")]
@@ -59,6 +61,7 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure.IIS
             RouteTable.Routes.MapConnection<EchoConnection>("echo", "echo");
             RouteTable.Routes.MapConnection<MyGroupEchoConnection>("group-echo", "group-echo");
             RouteTable.Routes.MapConnection<MySendingConnection>("multisend", "multisend", new ConnectionConfiguration { EnableCrossDomain = true });
+            RouteTable.Routes.MapConnection<RedirectionConnection>("redirectionConnection", "redirectionConnection", new ConnectionConfiguration { EnableCrossDomain = true }, ResponseRedirectionMiddleware);
             RouteTable.Routes.MapConnection<MyReconnect>("my-reconnect", "my-reconnect");
             RouteTable.Routes.MapConnection<ExamineHeadersConnection>("examine-request", "examine-request");
             RouteTable.Routes.MapConnection<ExamineReconnectPath>("examine-reconnect", "examine-reconnect");
@@ -112,7 +115,41 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure.IIS
                 };
             };
 
+
+
             app.Use(middleware);
+        }
+
+        private static void ResponseRedirectionMiddleware(IAppBuilder app)
+        {
+            Func<AppFunc, AppFunc> middlewareRedirection = (next) =>
+            {
+                return env =>
+                {
+                    string redirectWhen = "____Never____";
+                    string queryString = ((string)env["owin.RequestQueryString"]);
+
+                    if (queryString.Contains("redirectWhen="))
+                    {
+                        redirectWhen = queryString.Replace("?", "")
+                            .Split('&')
+                            .Select(val => val.Split('='))
+                            .First(val => val[0] == "redirectWhen")[1];
+                    }
+
+                    if (env["owin.RequestPath"].ToString().Contains("/" + redirectWhen))
+                    {
+                        env["owin.ResponseStatusCode"] = 301;
+                        ((IDictionary<string, string[]>)env["owin.ResponseHeaders"]).Add("Location", new string[] { "http://" + ((RequestContext)env["System.Web.Routing.RequestContext"]).HttpContext.Request.Url.Authority });
+
+                        return TaskAsyncHelper.Empty;
+                    }
+
+                    return next(env);
+                };
+            };
+
+            app.Use(middlewareRedirection);
         }
 
         private static void ReconnectFailedMiddleware(IAppBuilder app)

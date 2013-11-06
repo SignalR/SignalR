@@ -1,4 +1,14 @@
-﻿QUnit.module("Connection Facts");
+﻿var buildRedirectConnection = function (redirectWhen, end, assert, testName, wrapStart) {
+    var connection = testUtilities.createConnection("redirectionConnection", end, assert, testName, wrapStart);
+
+    connection.qs = {
+        redirectWhen: redirectWhen
+    };
+
+    return connection;
+};
+
+QUnit.module("Connection Facts");
 
 testUtilities.runWithAllTransports(function (transport) {
     // Cannot run with long polling because it uses the ping server as its initial init
@@ -305,6 +315,7 @@ testUtilities.runWithAllTransports(function (transport) {
             connection.stop();
         };
     });
+
 });
 
 QUnit.module("Connection Facts", !window.document.commandLineTest);
@@ -335,4 +346,3 @@ testUtilities.runWithTransports(["longPolling", "serverSentEvents", "webSockets"
     });
 
 });
-
