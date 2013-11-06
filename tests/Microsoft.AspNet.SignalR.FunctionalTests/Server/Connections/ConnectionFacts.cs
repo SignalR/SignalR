@@ -428,8 +428,7 @@ namespace Microsoft.AspNet.SignalR.Client.Tests
                         connection.Send("");
 
                         Assert.True(wh.Wait(TimeSpan.FromSeconds(5)));
-                        Assert.IsType(typeof(AggregateException), caught);
-                        Assert.Equal(thrown, caught.InnerException);
+                        Assert.Equal(thrown, caught);
                     }
                 }
             }
