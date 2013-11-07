@@ -206,6 +206,11 @@ namespace Microsoft.AspNet.SignalR.Transports
             get { return _context.Request.Url; }
         }
 
+        public bool SkipTracking
+        {
+            get { return String.Equals(_context.Request.QueryString["__track"], "false", StringComparison.OrdinalIgnoreCase); }
+        }
+
         protected virtual TextWriter CreateResponseWriter()
         {
             return new BufferTextWriter(Context.Response);

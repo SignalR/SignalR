@@ -602,6 +602,9 @@
                             // Drain any incoming buffered messages (messages that came in prior to connect)
                             connection._.connectingMessageBuffer.drain();
 
+                            connection.log("If GlobalHost.Configuration.AllowConnectionTrackingOverride is enabled, you can monitor the messages to this connection by using the following URL in a new browser window or a tool like curl: " +
+                                           signalR.transports._logic.getUrl(connection, "serverSentEvents", "notrack"));
+                            
                             $(connection).triggerHandler(events.onStart);
 
                             // wire the stop handler for when the user leaves the page

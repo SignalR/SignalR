@@ -210,7 +210,9 @@
                     url += "/reconnect";
                 }
 
-                if (connection.messageId) {
+                if (reconnecting === "notrack") {
+                    qs += "&__track=false";
+                } else if (connection.messageId) {
                     qs += "&messageId=" + window.encodeURIComponent(connection.messageId);
                 }
             }
