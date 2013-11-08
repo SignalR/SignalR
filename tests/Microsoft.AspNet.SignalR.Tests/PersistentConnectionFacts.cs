@@ -28,7 +28,7 @@ namespace Microsoft.AspNet.SignalR.Tests
             }
 
             [Fact]
-            public void UnknownTransportThrows()
+            public void UnknownTransportFails()
             {
                 var connection = new Mock<PersistentConnection>() { CallBase = true };
                 var req = new Mock<IRequest>();
@@ -36,15 +36,22 @@ namespace Microsoft.AspNet.SignalR.Tests
                 var qs = new NameValueCollection();
                 req.Setup(m => m.QueryString).Returns(qs);
 
+                var res = new Mock<IResponse>();
+                res.SetupProperty(m => m.StatusCode);
+                res.Setup(m => m.End()).Returns(TaskAsyncHelper.Empty);
+
                 var dr = new DefaultDependencyResolver();
-                var context = new HostContext(req.Object, null);
+                var context = new HostContext(req.Object, res.Object);
                 connection.Object.Initialize(dr, context);
 
-                Assert.Throws<InvalidOperationException>(() => connection.Object.ProcessRequest(context));
+                var task = connection.Object.ProcessRequest(context);
+
+                Assert.True(task.IsCompleted);
+                Assert.Equal(400, context.Response.StatusCode);
             }
 
             [Fact]
-            public void MissingConnectionTokenThrows()
+            public void MissingConnectionTokenFails()
             {
                 var connection = new Mock<PersistentConnection>() { CallBase = true };
                 var req = new Mock<IRequest>();
@@ -53,11 +60,18 @@ namespace Microsoft.AspNet.SignalR.Tests
                 qs["transport"] = "serverSentEvents";
                 req.Setup(m => m.QueryString).Returns(qs);
 
+                var res = new Mock<IResponse>();
+                res.SetupProperty(m => m.StatusCode);
+                res.Setup(m => m.End()).Returns(TaskAsyncHelper.Empty);
+
                 var dr = new DefaultDependencyResolver();
-                var context = new HostContext(req.Object, null);
+                var context = new HostContext(req.Object, res.Object);
                 connection.Object.Initialize(dr, context);
 
-                Assert.Throws<InvalidOperationException>(() => connection.Object.ProcessRequest(context));
+                var task = connection.Object.ProcessRequest(context);
+
+                Assert.True(task.IsCompleted);
+                Assert.Equal(400, context.Response.StatusCode);
             }
         }
 
@@ -128,7 +142,7 @@ namespace Microsoft.AspNet.SignalR.Tests
         public class GetConnectionId
         {
             [Fact]
-            public void UnprotectedConnectionTokenThrows()
+            public void UnprotectedConnectionTokenFails()
             {
                 var connection = new Mock<PersistentConnection>() { CallBase = true };
                 var req = new Mock<IRequest>();
@@ -144,11 +158,17 @@ namespace Microsoft.AspNet.SignalR.Tests
                 var context = new HostContext(req.Object, null);
                 connection.Object.Initialize(dr, context);
 
-                Assert.Throws<InvalidOperationException>(() => connection.Object.GetConnectionId(context, "1"));
+                string connectionId;
+                string message;
+                int statusCode;
+
+                Assert.Equal(false, connection.Object.TryGetConnectionId(context, "1", out connectionId, out message, out statusCode));
+                Assert.Equal(null, connectionId);
+                Assert.Equal(400, statusCode);
             }
 
             [Fact]
-            public void NullUnprotectedConnectionTokenThrows()
+            public void NullUnprotectedConnectionTokenFails()
             {
                 var connection = new Mock<PersistentConnection>() { CallBase = true };
                 var req = new Mock<IRequest>();
@@ -163,11 +183,17 @@ namespace Microsoft.AspNet.SignalR.Tests
                 var context = new HostContext(req.Object, null);
                 connection.Object.Initialize(dr, context);
 
-                Assert.Throws<InvalidOperationException>(() => connection.Object.GetConnectionId(context, "1"));
+                string connectionId;
+                string message;
+                int statusCode;
+
+                Assert.Equal(false, connection.Object.TryGetConnectionId(context, "1", out connectionId, out message, out statusCode));
+                Assert.Equal(null, connectionId);
+                Assert.Equal(400, statusCode);
             }
 
             [Fact]
-            public void UnauthenticatedUserWithAuthenticatedTokenThrows()
+            public void UnauthenticatedUserWithAuthenticatedTokenFails()
             {
                 var connection = new Mock<PersistentConnection>() { CallBase = true };
                 var req = new Mock<IRequest>();
@@ -182,7 +208,12 @@ namespace Microsoft.AspNet.SignalR.Tests
                 var context = new HostContext(req.Object, null);
                 connection.Object.Initialize(dr, context);
 
-                Assert.Throws<InvalidOperationException>(() => connection.Object.GetConnectionId(context, "1:::11:::::::1:1"));
+                string connectionId;
+                string message;
+                int statusCode;
+
+                Assert.Equal(false, connection.Object.TryGetConnectionId(context, "1:::11:::::::1:1", out connectionId, out message, out statusCode));
+                Assert.Equal(403, statusCode);
             }
 
             [Fact]
@@ -202,8 +233,11 @@ namespace Microsoft.AspNet.SignalR.Tests
                 var context = new HostContext(req.Object, null);
                 connection.Object.Initialize(dr, context);
 
-                var connectionId = connection.Object.GetConnectionId(context, "1:Name");
+                string connectionId;
+                string message;
+                int statusCode;
 
+                Assert.Equal(true, connection.Object.TryGetConnectionId(context, "1:Name", out connectionId, out message, out statusCode));
                 Assert.Equal("1", connectionId);
             }
 
@@ -226,8 +260,11 @@ namespace Microsoft.AspNet.SignalR.Tests
                 var context = new HostContext(req.Object, null);
                 connection.Object.Initialize(dr, context);
 
-                string cid = connection.Object.GetConnectionId(context, connectionId + ":::11:::::::1:1");
+                string cid;
+                string message;
+                int statusCode;
 
+                Assert.Equal(true, connection.Object.TryGetConnectionId(context, connectionId + ":::11:::::::1:1", out cid, out message, out statusCode));
                 Assert.Equal(connectionId, cid);
             }
         }

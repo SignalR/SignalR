@@ -144,7 +144,9 @@ namespace Microsoft.AspNet.SignalR.Owin
             var accept = _environment.Get<Action<IDictionary<string, object>, WebSocketFunc>>(OwinConstants.WebSocketAccept);
             if (accept == null)
             {
-                throw new InvalidOperationException(Resources.Error_NotWebSocketRequest);
+                var response = new ServerResponse(_environment);
+                response.StatusCode = 400;
+                return response.End(Resources.Error_NotWebSocketRequest);
             }
 
             var handler = new OwinWebSocketHandler(callback, initTask);

@@ -163,7 +163,7 @@ namespace Microsoft.AspNet.SignalR
         {
             // observe Exception
 #if !WINDOWS_PHONE && !SILVERLIGHT && !NETFX_CORE
-            Trace.TraceError("SignalR exception thrown by Task: {0}", exception);
+            Trace.TraceWarning("SignalR exception thrown by Task: {0}", exception);
 #endif
             handler(exception, state);
         }

@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Net;
 using Microsoft.AspNet.SignalR.Owin;
+using Moq;
 using Xunit;
 
 namespace Microsoft.AspNet.SignalR.Tests.Owin
@@ -219,12 +221,21 @@ namespace Microsoft.AspNet.SignalR.Tests.Owin
         }
 
         [Fact]
-        public void NotAWebSocketRequestThrowsSynchronously()
+        public void NotAWebSocketRequestRespondsWith400StatusCode()
         {
-            var env = new Dictionary<string, object>();
-            var request = new ServerRequest(env);
+            var mockResponseStream = new Mock<Stream>();
+            mockResponseStream.Setup(m => m.Write(It.IsAny<byte[]>(), It.IsAny<int>(), It.IsAny<int>()));
 
-            Assert.Throws<InvalidOperationException>(() => request.AcceptWebSocketRequest(socket => TaskAsyncHelper.Empty, TaskAsyncHelper.Empty));
+            var env = new Dictionary<string, object>();
+            env[OwinConstants.ResponseBody] = mockResponseStream.Object;
+
+            var request = new ServerRequest(env);
+            var response = new ServerResponse(env);
+
+            request.AcceptWebSocketRequest(socket => TaskAsyncHelper.Empty, TaskAsyncHelper.Empty);
+
+            mockResponseStream.VerifyAll();
+            Assert.Equal(400, response.StatusCode);
         }
 
         internal static class OwinConstants
@@ -239,6 +250,8 @@ namespace Microsoft.AspNet.SignalR.Tests.Owin
             public const string RequestPath = "owin.RequestPath";
             public const string RequestQueryString = "owin.RequestQueryString";
             public const string RequestProtocol = "owin.RequestProtocol";
+
+            public const string ResponseBody = "owin.ResponseBody";
 
             public const string RemoteIpAddress = "server.RemoteIpAddress";
             public const string RemotePort = "server.RemotePort";
