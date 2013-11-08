@@ -163,7 +163,7 @@ namespace Microsoft.AspNet.SignalR
         {
             // observe Exception
 #if !PORTABLE && !NETFX_CORE && !__ANDROID__ && !IOS
-            Trace.TraceError("SignalR exception thrown by Task: {0}", exception);
+            Trace.TraceWarning("SignalR exception thrown by Task: {0}", exception);
 #endif
             handler(exception, state);
         }
