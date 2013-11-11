@@ -179,7 +179,8 @@ namespace Microsoft.AspNet.SignalR.Client.Tests
                          .Returns(TaskAsyncHelper.FromResult(new NegotiationResponse
                          {
                              ProtocolVersion = connection.Protocol.ToString(),
-                             ConnectionId = "Something"
+                             ConnectionId = "Something",
+                             DisconnectTimeout = 120
                          }));
 
                 transport.Setup(m => m.Start(connection, null, It.IsAny<CancellationToken>()))
@@ -201,7 +202,8 @@ namespace Microsoft.AspNet.SignalR.Client.Tests
                          .Returns(TaskAsyncHelper.FromResult(new NegotiationResponse
                          {
                              ProtocolVersion = connection.Protocol.ToString(),
-                             ConnectionId = "Something"
+                             ConnectionId = "Something",
+                             DisconnectTimeout = 120
                          }));
 
                 transport.Setup(m => m.Start(connection, null, It.IsAny<CancellationToken>()))
@@ -227,7 +229,8 @@ namespace Microsoft.AspNet.SignalR.Client.Tests
                          .Returns(TaskAsyncHelper.FromResult(new NegotiationResponse
                          {
                              ProtocolVersion = connection.Protocol.ToString(),
-                             ConnectionId = "Something"
+                             ConnectionId = "Something",
+                             DisconnectTimeout = 120
                          }));
 
                 transport.Setup(m => m.Start(connection, null, It.IsAny<CancellationToken>()))
@@ -246,7 +249,8 @@ namespace Microsoft.AspNet.SignalR.Client.Tests
                          .Returns(TaskAsyncHelper.FromResult(new NegotiationResponse
                          {
                              ProtocolVersion = connection.Protocol.ToString(),
-                             ConnectionId = "Something"
+                             ConnectionId = "Something",
+                             DisconnectTimeout = 120
                          }));
 
                 transport.Setup(m => m.Start(connection, null, It.IsAny<CancellationToken>()))
@@ -266,7 +270,8 @@ namespace Microsoft.AspNet.SignalR.Client.Tests
                          .Returns(TaskAsyncHelper.FromResult(new NegotiationResponse
                          {
                              ProtocolVersion = connection.Protocol.ToString(),
-                             ConnectionId = "Something"
+                             ConnectionId = "Something",
+                             DisconnectTimeout = 120
                          }));
 
                 transport.Setup(m => m.Start(connection, null, It.IsAny<CancellationToken>()))
