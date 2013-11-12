@@ -21,3 +21,19 @@ QUnit.theory("firefoxMajorVersion parses user agent version correctly",
 
         QUnit.assert.equal(actual, expect, "firefoxMajorVersion should return correct major version from user agent");
     });
+
+QUnit.test("markActive stops connection if called after extended period of time.", function () {
+    var connection = testUtilities.createConnection(),
+        stopCalled = false;
+
+    connection._.lastActiveAt = new Date(new Date().valueOf() - 3000).getTime()
+    connection.reconnectWindow = 2900;
+
+    connection.stop = function () {
+        stopCalled = true;
+    };
+
+    $.signalR.transports._logic.markActive(connection);
+
+    QUnit.equal(stopCalled, true, "Stop was called.");
+});

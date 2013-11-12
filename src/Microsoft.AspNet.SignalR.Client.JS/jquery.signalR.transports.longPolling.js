@@ -179,7 +179,7 @@
                                     // Therefore we don't want to change that failure code path.
                                     if ((connection.state === signalR.connectionState.connected ||
                                         connection.state === signalR.connectionState.reconnecting) &&
-                                        !transportLogic.verifyReconnect(connection)) {
+                                        !transportLogic.verifyLastActive(connection)) {
                                         return;
                                     }
 
