@@ -17,7 +17,6 @@ using Xunit.Extensions;
 
 namespace Microsoft.AspNet.SignalR.Tests
 {
-    using System.Diagnostics;
     using AppFunc = Func<IDictionary<string, object>, Task>;
 
     public class ConnectionFacts : HostedTest
@@ -48,7 +47,6 @@ namespace Microsoft.AspNet.SignalR.Tests
 
                     connection.Closed += () =>
                     {
-                        Trace.TraceInformation("************** Connection Disconnected **************");
                         disconnectWh.Set();
                     };
 
