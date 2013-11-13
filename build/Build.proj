@@ -26,7 +26,7 @@
     <ChutzpahPath>$(ProjectRoot)\tools\chutzpah</ChutzpahPath>
     <ChutzpahExePath>$(ChutzpahPath)\$(ChutzpahExe)</ChutzpahExePath>
     <JSTestsURL>http://localhost:1337/</JSTestsURL>
-    <JSTester>$(JSTestsPath)\default.html</JSTester>
+    <JSTester>$(JSTestsURL)default.html</JSTester>
     <DocuExePath>$(ToolsPath)docu\docu.exe</DocuExePath>
     <ZipExe>$(ToolsPath)7za920\7za.exe</ZipExe>
     <MSBuildCommunityTasksPath>$(MSBuildProjectDirectory)</MSBuildCommunityTasksPath>
@@ -249,17 +249,14 @@
          Condition=" '$(OS)' == 'Windows_NT'"/>
 
     <!-- Replaces files for -->
-    <FileUpdate Files="$(JSTestsPath)\default.html" Regex="&lt;!-- ##SIGNALRHUBS## --&gt;((.|\r|\n)*?)&lt;!-- ##SIGNALRHUBS## --&gt;" ReplacementText="&lt;!-- ##SIGNALRHUBS## --&gt;&lt;script type='text/javascript' src='/signalr/js'&gt;&lt;/script&gt;&lt;!-- ##SIGNALRHUBS## --&gt;"  Condition=" '$(OS)' == 'Windows_NT'" />
-    <FileUpdate Files="$(JSTestsPath)\default.html" Regex="&lt;!-- ##SIGNALRHUBS## --&gt;((.|\r|\n)*?)&lt;!-- ##SIGNALRHUBS## --&gt;" ReplacementText="&lt;!-- ##SIGNALRHUBS## --&gt;&lt;script type='text/javascript' src='$(JSTestsURL)signalr/js'&gt;&lt;/script&gt;&lt;!-- ##SIGNALRHUBS## --&gt;" Condition=" '$(OS)' == 'Windows_NT'" />
     <!-- Allow a single JS test script to be run by specifying the script via the JSTestScript property.
          Ex: MSBuild.exe .\build\Build.proj /t:RunUnitTests /p:"JSTestScript=Tests/FunctionalTests/Common/AjaxSendFacts.js" -->
     <FileUpdate Files="$(JSTestsPath)\default.html" Regex="&lt;!-- ##JS## --&gt;((.|\r|\n)*?)&lt;!-- ##JS## --&gt;" ReplacementText="&lt;!-- ##JS## --&gt;&lt;script type='text/javascript' src='$(JSTestScript)'&gt;&lt;/script&gt;&lt;!-- ##JS## --&gt;" Condition=" '$(OS)' == 'Windows_NT' And '$(JSTestScript)' != ''" />
-    <FileUpdate Files="$(JSTestsPath)\Build\test.config.js" Regex="/\*URL\*/(.*?)/\*URL\*/" ReplacementText="/*URL*/'$(JSTestsURL)'/*URL*/" Condition=" '$(OS)' == 'Windows_NT'" />
+    
     <FileUpdate Files="$(JSTestsPath)\Build\test.config.js" Regex="/\*CMDLineTest\*/(.*?)/\*CMDLineTest\*/" ReplacementText="/*CMDLineTest*/true/*CMDLineTest*/" Condition=" '$(OS)' == 'Windows_NT'" />
 
     <StartIISTask HostLocation="$(JSTestsPath)" Condition=" '$(OS)' == 'Windows_NT'" />
 
-    <!-- Debugging is required in order to pump data from phantomjs to TeamCity -->
     <Exec Command="&quot;$(ChutzpahExePath)&quot; &quot;$(JSTester)&quot; /silent /timeoutMilliseconds 30000" Condition=" '$(OS)' == 'Windows_NT'" />
 
     <xunit Assembly="$(ProjectArtifactsDir)\Microsoft.AspNet.SignalR.Tests\Microsoft.AspNet.SignalR.Tests.dll"
