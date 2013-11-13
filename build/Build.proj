@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" DefaultTargets="Go" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="$(MSBuildProjectDirectory)\Build.tasks" />
-   <Import Project="Build-ItemDefinitionGroup.proj"
-    Condition=" '$(OS)' == 'Windows_NT' " />
-  
+  <Import Project="Build-ItemDefinitionGroup.proj"
+   Condition=" '$(OS)' == 'Windows_NT' " />
+
   <PropertyGroup>
     <Configuration Condition="$(Configuration) == ''">Debug</Configuration>
     <Nightly Condition="$(Nightly) == ''">true</Nightly>
@@ -41,6 +41,10 @@
   <!-- Add extra properties to the build for signing -->
   <PropertyGroup Condition="Exists('$(KeyFile)')">
     <ExtraProperties>KeyFile=$(KeyFile)</ExtraProperties>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="Exists('$(XamarinClientPath)')">
+    <ExtraProperties>XamarinClientPath=$(XamarinClientPath)</ExtraProperties>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -435,15 +439,22 @@
   <Target Name="BuildXamarinComponent">
     <MSBuild Projects="$(ProjectRoot)\src\Microsoft.AspNet.SignalR.Client.Portable\Microsoft.AspNet.SignalR.Client.Portable.csproj"
           Properties="Configuration=$(Configuration);ArtifactsDir=$(ArtifactsDir);$(ExtraProperties)"
-          Condition="!Exists('$(ArtifactsDir)\Microsoft.AspNet.SignalR.Client.Portable\Microsoft.AspNet.SignalR.Client.dll')"/>
+          Condition=" '$(XamarinClientPath)' == '' "/>
 
-    <ItemGroup>
-      <XamarinArtifacts Include="$(ArtifactsDir)\Microsoft.AspNet.SignalR.Client.Portable\Microsoft.AspNet.SignalR.Client.dll;
-                          $(ArtifactsDir)\Microsoft.AspNet.SignalR.Client.Portable\System.Net.Http.Extensions.dll;
-                          $(ArtifactsDir)\Microsoft.AspNet.SignalR.Client.Portable\Newtonsoft.Json.dll">
-      </XamarinArtifacts>
+    <ItemGroup Condition=" '$(XamarinClientPath)' != '' ">
+      <XamarinArtifacts Include="$(XamarinClientPath)\Microsoft.AspNet.SignalR.Client.dll"></XamarinArtifacts>
     </ItemGroup>
 
+    <ItemGroup Condition=" '$(XamarinClientPath)' == '' ">
+      <XamarinArtifacts Include="$(ArtifactsDir)\Microsoft.AspNet.SignalR.Client.Portable\Microsoft.AspNet.SignalR.Client.dll"></XamarinArtifacts>
+    </ItemGroup>
+
+    <ItemGroup>
+      <XamarinArtifacts Include ="$(ProjectRoot)\packages\Newtonsoft.Json.5.0.6\lib\portable-net40+sl4+wp7+win8\Newtonsoft.Json.dll;
+                                  $(ProjectRoot)\packages\Microsoft.Net.Http.2.1.10\lib\portable-net40+sl4+win8+wp71\System.Net.Http.Extensions.dll">
+      </XamarinArtifacts>
+    </ItemGroup>
+    
     <Copy SourceFiles="@(XamarinArtifacts)" DestinationFolder="$(XamarinDir)\SignalRPackage\component\lib\mobile"/>
 
     <Exec Command='mono $(XamarinDir)\xamarin-component\xamarin-component.exe package "$(XamarinDir)\SignalRPackage\component"' ContinueOnError="true" />
