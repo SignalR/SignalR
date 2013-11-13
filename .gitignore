@@ -25,11 +25,10 @@ PublishProfiles/
 *DS_Store
 *.ncrunchsolution
 *.log
-tests/Microsoft.AspNet.SignalR.Client.JS.Tests/temp/*
-tests/Microsoft.AspNet.SignalR.Client.JS.Tests/CommandLineBridge.js
 *.vspx
 *.log.txt
 /tests/Microsoft.AspNet.SignalR.FunctionalTests/artifacts/
 /samples/Microsoft.AspNet.SignalR.Client.WindowsStoreJavaScript.Samples/bld/
 jquery.signalR.js
 jquery.signalR.min.js
+*_Chutzpah.coverage*

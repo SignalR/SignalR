@@ -1,13 +1,11 @@
 /**
- * QUnit v1.9.0pre - A JavaScript Unit Testing Framework
+ * QUnit v1.11.0 - A JavaScript Unit Testing Framework
  *
- * http://docs.jquery.com/QUnit
+ * http://qunitjs.com
  *
  * Copyright 2012 jQuery Foundation and other contributors
- * Dual licensed under the MIT or GPL Version 2 licenses.
+ * Released under the MIT license.
  * http://jquery.org/license
- * Pulled Live from Git Mon Jul  9 21:35:01 UTC 2012
- * Last Commit: b0c3da8d09b1dcbe5dd0877e27386f4b9e8050a1
  */
 
 /** Font Family and Sizes */
@@ -22,7 +20,7 @@
 
 /** Resets */
 
-#qunit-tests, #qunit-tests ol, #qunit-header, #qunit-banner, #qunit-userAgent, #qunit-testresult {
+#qunit-tests, #qunit-header, #qunit-banner, #qunit-userAgent, #qunit-testresult, #qunit-modulefilter {
 	margin: 0;
 	padding: 0;
 }
@@ -69,6 +67,7 @@
 	padding: 0.5em 0 0.5em 2em;
 	color: #5E740B;
 	background-color: #eee;
+	overflow: hidden;
 }
 
 #qunit-userAgent {
@@ -78,6 +77,9 @@
 	text-shadow: rgba(0, 0, 0, 0.5) 2px 2px 1px;
 }
 
+#qunit-modulefilter-container {
+	float: right;
+}
 
 /** Tests: Pass/Fail */
 
@@ -109,7 +111,12 @@
 	color: #000;
 }
 
-#qunit-tests ol {
+#qunit-tests li .runtime {
+	float: right;
+	font-size: smaller;
+}
+
+.qunit-assert-list {
 	margin-top: 0.5em;
 	padding: 0.5em;
 
@@ -118,6 +125,10 @@
 	border-radius: 5px;
 	-moz-border-radius: 5px;
 	-webkit-border-radius: 5px;
+}
+
+.qunit-collapsed {
+	display: none;
 }
 
 #qunit-tests table {
