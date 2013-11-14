@@ -21,6 +21,8 @@
         $(function () {
             var connection = $.connection('/streaming-connection');
 
+            connection.logging = true;
+
             connection.received(function (data) {
                 $('#messages').append('<li>' + data + '</li>');
             });

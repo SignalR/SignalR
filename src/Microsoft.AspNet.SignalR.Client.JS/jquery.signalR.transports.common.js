@@ -211,7 +211,9 @@
                     url += "/reconnect";
                 }
 
-                if (connection.messageId) {
+                if (typeof(reconnecting) === "string" && reconnecting.toLowerCase() === "notrack") {
+                    qs += "&__track=false";
+                } else if (connection.messageId) {
                     qs += "&messageId=" + window.encodeURIComponent(connection.messageId);
                 }
             }

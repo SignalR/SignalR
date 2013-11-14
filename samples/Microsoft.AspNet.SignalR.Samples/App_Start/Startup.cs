@@ -25,6 +25,8 @@ namespace Microsoft.AspNet.SignalR.Samples
 
             app.Use(typeof(ClaimsMiddleware));
 
+            GlobalHost.Configuration.AllowConnectionTrackingOverride = true;
+
             ConfigureSignalR(GlobalHost.DependencyResolver, GlobalHost.HubPipeline);
 
             var config = new HubConfiguration()

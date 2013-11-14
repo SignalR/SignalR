@@ -64,7 +64,7 @@ namespace Microsoft.AspNet.SignalR.Transports
         {
             get
             {
-                return Context.Request.LocalPath.EndsWith("/reconnect", StringComparison.OrdinalIgnoreCase);
+                return Context.Request.LocalPath.EndsWith("/reconnect", StringComparison.OrdinalIgnoreCase) && !SkipTracking;
             }
         }
 

@@ -99,5 +99,11 @@ namespace Microsoft.AspNet.SignalR.Configuration
             get;
             set;
         }
+
+        public bool AllowConnectionTrackingOverride
+        {
+            get;
+            set;
+        }
     }
 }
