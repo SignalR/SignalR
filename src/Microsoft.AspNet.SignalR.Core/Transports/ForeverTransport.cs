@@ -193,7 +193,10 @@ namespace Microsoft.AspNet.SignalR.Transports
             }
             else
             {
-                initialize = Reconnected;
+                if (!SkipTracking)
+                {
+                    initialize = Reconnected;
+                }
             }
 
             var series = new Func<object, Task>[]

@@ -52,7 +52,7 @@ namespace Microsoft.AspNet.SignalR.Configuration
 
         /// <summary>
         /// Gets or sets a flag that enables connection requests to opt-out of tracking.
-        /// This is useful in debug scenarios when you want to watch the messages bein sent to a given connection
+        /// This is useful in debug scenarios when you want to watch the messages being sent to a given connection
         /// from a separate HTTP request.
         /// </summary>
         bool AllowConnectionTrackingOverride { get; set; }

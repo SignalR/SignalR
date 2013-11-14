@@ -118,6 +118,8 @@
     <Compile Include="TaskAsyncHelperFacts.cs" />
     <Compile Include="TaskQueueFacts.cs" />
     <Compile Include="Tracing\TraceManagerFacts.cs" />
+    <Compile Include="Transports\TransportDisconnectBaseFacts.cs" />
+    <Compile Include="Transports\TransportHeartBeatFacts.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
