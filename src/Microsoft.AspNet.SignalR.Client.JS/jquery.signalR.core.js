@@ -698,10 +698,10 @@
             /// <param name="callback" type="Function">A callback function to execute when an error occurs on the connection</param>
             /// <returns type="signalR" />
             var connection = this;
-            $(connection).bind(events.onError, function (e, a, b) {
-                // In practice 'a' is the SignalR built error object.
-                // In practice 'b' is undefined for all error events except those triggered by ajaxSend.  For ajaxSend 'b' is the original send payload.
-                callback.call(connection, a, b);
+            $(connection).bind(events.onError, function (e, errorData, sendData) {
+                // In practice 'errorData' is the SignalR built error object.
+                // In practice 'sendData' is undefined for all error events except those triggered by ajaxSend.  For ajaxSend 'sendData' is the original send payload.
+                callback.call(connection, errorData, sendData);
             });
             return connection;
         },
