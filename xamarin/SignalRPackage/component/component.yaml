@@ -16,9 +16,9 @@ libraries:
 summary: Incredibly simple real-time web for .NET.
 details: Details.md
 getting-started: GettingStarted.md
-version: 2.0.0
+version: 2.0.1-pre
 samples: 
-  iOS and Android Samples: samples/SignalRSample.sln
+  iOS and Android Samples: samples/Microsoft Visual Studio Solution.sln
 no_build: true
 skip_docs: true
 ...

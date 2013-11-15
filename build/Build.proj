@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" DefaultTargets="Go" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="$(MSBuildProjectDirectory)\Build.tasks" />
-  <Import Project="Build-ItemDefinitionGroup.proj"
+  <Import Project="Microsoft.AspNet.SignalR.Projects.Properties.proj"
    Condition=" '$(OS)' == 'Windows_NT' " />
 
   <PropertyGroup>
@@ -173,6 +173,10 @@
     <RegexTransform Include="$(ProjectRoot)\src\Common\CommonVersionInfo.cs">
       <Find>AssemblyVersion\("\d+\.\d+\.\d+"\)</Find>
       <ReplaceWith>AssemblyVersion("$(AssemblyVersion)")</ReplaceWith>
+    </RegexTransform>
+    <RegexTransform Include="$(XamarinDir)\SignalRPackage\component\component.yaml">
+      <Find>version: \d+\.\d+\.\d+(-\w+\d*(-\d+)?)?</Find>
+      <ReplaceWith>version: $(PackageVersion)</ReplaceWith>
     </RegexTransform>
     <RegexTransform Include="$(ProjectRoot)\src\Common\CommonVersionInfo.cs">
       <Find>AssemblyInformationalVersion\("\d+\.\d+\.\d+(-\w+\d*(-\d+)?)?"\)</Find>
@@ -454,7 +458,7 @@
                                   $(ProjectRoot)\packages\Microsoft.Net.Http.2.1.10\lib\portable-net40+sl4+win8+wp71\System.Net.Http.Extensions.dll">
       </XamarinArtifacts>
     </ItemGroup>
-    
+
     <Copy SourceFiles="@(XamarinArtifacts)" DestinationFolder="$(XamarinDir)\SignalRPackage\component\lib\mobile"/>
 
     <Exec Command='mono $(XamarinDir)\xamarin-component\xamarin-component.exe package "$(XamarinDir)\SignalRPackage\component"' ContinueOnError="true" />

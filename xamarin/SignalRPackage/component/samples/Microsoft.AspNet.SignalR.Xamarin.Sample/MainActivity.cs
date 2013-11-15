@@ -6,9 +6,9 @@ using Android.Views;
 using Android.Widget;
 using Android.OS;
 
-namespace SignalRSample
+namespace Microsoft.AspNet.SignalR.Xamarin.Sample
 {
-	// Please refer to github.com/signalr/signalr for iOS and Android samples
+	// Please refer to http://github.com/signalr/signalr for iOS and Android samples
 }
 
 
