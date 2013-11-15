@@ -282,7 +282,7 @@
         });
 
         connection.error(function (errData, origData) {
-            var data, callbackId, callback;
+            var callbackId, callback;
 
             if (connection.transport && connection.transport.name === "webSockets") {
                 // WebSockets connections have all callbacks removed on reconnect instead
@@ -296,25 +296,24 @@
             }
 
             try {
-                data = connection.json.parse(origData);
-                if (!data.I) {
-                    // The original data doesn't have a callback ID so not a send error
-                    return;
-                }
+                origData = connection.json.parse(origData);
             } catch (e) {
                 // The original data is not a JSON payload so this is not a send error
                 return;
             }
 
-            callbackId = data.I;
+            callbackId = origData.I;
             callback = connection._.invocationCallbacks[callbackId];
 
-            // Invoke the callback with an error to reject the promise
-            callback.method.call(callback.scope, { E: errData });
+            // Verify that there is a callback bound (could have been cleared)
+            if (callback) {
+                // Delete the callback
+                connection._.invocationCallbacks[callbackId] = null;
+                delete connection._.invocationCallbacks[callbackId];
 
-            // Delete the callback
-            connection._.invocationCallbacks[callbackId] = null;
-            delete connection._.invocationCallbacks[callbackId];
+                // Invoke the callback with an error to reject the promise
+                callback.method.call(callback.scope, { E: errData });
+            }
         });
 
         connection.reconnecting(function () {

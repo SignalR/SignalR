@@ -45,6 +45,39 @@ testUtilities.runWithTransports(["foreverFrame", "serverSentEvents", "webSockets
         };
     });
 
+    QUnit.asyncTimeoutTest(transport + " hub connection clears invocation callbacks after failed invocation.", testUtilities.defaultTestTimeout * 3, function (end, assert, testName) {
+        var connection = testUtilities.createHubConnection(end, assert, testName),
+            demo = connection.createHubProxies().demo,
+            url = connection.url;
+
+        connection.start({ transport: transport }).done(function () {
+            assert.isNotSet(connection._.invocationCallbacks["0"], "Callback list should be empty before invocation.");
+
+            // Provide faulty url so the ajaxSend fails.
+            connection.url = "http://foo";
+            var invokePromise = demo.server.synchronousException();
+            // Reset back to original url so background network tasks function properly.
+            connection.url = url;
+
+            assert.isSet(connection._.invocationCallbacks["0"], "Callback should be in the callback list.");
+
+            invokePromise.done(function (result) {
+                assert.fail("Invocation succeeded.");
+                end();
+            }).fail(function () {
+                assert.isNotSet(connection._.invocationCallbacks["0"], "Callback should be cleared.");
+                end();
+            });
+        });
+
+        // Cleanup
+        return function () {
+            // Replace url with a valid url so stop completes successfully.
+            connection.url = url;
+            connection.stop();
+        };
+    });
+
     QUnit.asyncTimeoutTest(transport + " hub connection clears all invocation callbacks on stop.", testUtilities.defaultTestTimeout, function (end, assert, testName) {
         var connection = testUtilities.createHubConnection(end, assert, testName),
             demo = connection.createHubProxies().demo,
