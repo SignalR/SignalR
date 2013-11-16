@@ -17,7 +17,7 @@ Right click on the Components folder in your project and click on Edit Component
     Install-Package Microsoft.AspNet.SignalR.Sample
 	
 ## LICENSE
-[Apache 2.0 License](https://github.com/SignalR/SignalR/blob/master/LICENSE.md)
+See License.md
 
 ## Building the source
 

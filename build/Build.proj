@@ -174,9 +174,10 @@
       <Find>AssemblyVersion\("\d+\.\d+\.\d+"\)</Find>
       <ReplaceWith>AssemblyVersion("$(AssemblyVersion)")</ReplaceWith>
     </RegexTransform>
+    <!--Using Assembly version instead of Package version for component.yaml because Xamarin doesn't allow version numbers with "-pre"-->
     <RegexTransform Include="$(XamarinDir)\SignalRPackage\component\component.yaml">
-      <Find>version: \d+\.\d+\.\d+(-\w+\d*(-\d+)?)?</Find>
-      <ReplaceWith>version: $(PackageVersion)</ReplaceWith>
+      <Find>version: \d+\.\d+\.\d+</Find>
+      <ReplaceWith>version: $(AssemblyVersion)</ReplaceWith>
     </RegexTransform>
     <RegexTransform Include="$(ProjectRoot)\src\Common\CommonVersionInfo.cs">
       <Find>AssemblyInformationalVersion\("\d+\.\d+\.\d+(-\w+\d*(-\d+)?)?"\)</Find>
