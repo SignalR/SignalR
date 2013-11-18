@@ -1,12 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" DefaultTargets="Go" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="$(MSBuildProjectDirectory)\Build.tasks" />
+  <Import Project="Microsoft.AspNet.SignalR.Projects.Properties.proj"
+   Condition=" '$(OS)' == 'Windows_NT' " />
 
   <PropertyGroup>
     <Configuration Condition="$(Configuration) == ''">Debug</Configuration>
     <Nightly Condition="$(Nightly) == ''">true</Nightly>
     <ProjectRoot>$(MSBuildProjectDirectory)\..</ProjectRoot>
     <ArtifactsDir>$(ProjectRoot)\artifacts\$(Configuration)</ArtifactsDir>
+    <XamarinDir>$(ProjectRoot)\xamarin</XamarinDir>
     <ProjectArtifactsDir>$(ArtifactsDir)\projects</ProjectArtifactsDir>
     <JSTestsPath>$(ProjectArtifactsDir)\JsTestHarness</JSTestsPath>
     <PackageSrcDir>$(ArtifactsDir)\package-src</PackageSrcDir>
@@ -40,6 +43,10 @@
     <ExtraProperties>KeyFile=$(KeyFile)</ExtraProperties>
   </PropertyGroup>
 
+  <PropertyGroup Condition="Exists('$(XamarinClientPath)')">
+    <ExtraProperties>XamarinClientPath=$(XamarinClientPath)</ExtraProperties>
+  </PropertyGroup>
+
   <PropertyGroup>
     <PrereleaseTagWithSeparator Condition="$(BuildQuality) != ''">-$(BuildQuality)</PrereleaseTagWithSeparator>
     <ScaleoutPrereleaseTagWithSeparator Condition="$(ScaleoutBuildQuality) != ''">-$(ScaleoutBuildQuality)</ScaleoutPrereleaseTagWithSeparator>
@@ -58,19 +65,6 @@
     <WinRTSDKInstalled Condition="Exists('$(MSBuildExtensionsPath)\Microsoft\WindowsXaml')">true</WinRTSDKInstalled>
     <WinRTSDKInstalled Condition="!Exists('$(MSBuildExtensionsPath)\Microsoft\WindowsXaml')">false</WinRTSDKInstalled>
   </PropertyGroup>
-
-  <ItemDefinitionGroup>
-    <Projects>
-      <Build>true</Build>
-      <!-- RunFxCop is only relevant if Build also evaluates to true -->
-      <RunFxCop>true</RunFxCop>
-      <Sample>false</Sample>
-      <BuildTargets>Build</BuildTargets>
-      <BuildProperties>Configuration=$(Configuration);ArtifactsDir=$(ProjectArtifactsDir);SolutionDir=$(ProjectRoot)\;$(ExtraProperties)</BuildProperties>
-      <CopyArtifacts>true</CopyArtifacts>
-      <Platform>Net45</Platform>
-    </Projects>
-  </ItemDefinitionGroup>
 
   <ItemGroup>
     <!-- Platform Specific Client Projects -->
@@ -179,6 +173,11 @@
     <RegexTransform Include="$(ProjectRoot)\src\Common\CommonVersionInfo.cs">
       <Find>AssemblyVersion\("\d+\.\d+\.\d+"\)</Find>
       <ReplaceWith>AssemblyVersion("$(AssemblyVersion)")</ReplaceWith>
+    </RegexTransform>
+    <!--Using Assembly version instead of Package version for component.yaml because Xamarin doesn't allow version numbers with "-pre"-->
+    <RegexTransform Include="$(XamarinDir)\SignalRPackage\component\component.yaml">
+      <Find>version: \d+\.\d+\.\d+</Find>
+      <ReplaceWith>version: $(AssemblyVersion)</ReplaceWith>
     </RegexTransform>
     <RegexTransform Include="$(ProjectRoot)\src\Common\CommonVersionInfo.cs">
       <Find>AssemblyInformationalVersion\("\d+\.\d+\.\d+(-\w+\d*(-\d+)?)?"\)</Find>
@@ -317,8 +316,8 @@
              Condition="%(Build) And '$(OS)' == 'Windows_NT'"/>
 
     <MSBuild Projects="$(ProjectRoot)\Microsoft.AspNet.SignalR.Mono.sln"
-             Properties="Configuration=$(Configuration);ArtifactsDir=$(ProjectArtifactsDir);$(ExtraProperties)"
-             Condition=" '$(OS)' != 'Windows_NT'" />
+            Properties="Configuration=$(Configuration);ArtifactsDir=$(ProjectArtifactsDir);$(ExtraProperties)"
+            Condition=" '$(OS)' != 'Windows_NT'" />
   </Target>
 
   <Target Name="CopyArtifacts" DependsOnTargets="Build">
@@ -440,5 +439,29 @@
     <RegexTransform Items="@(NuspecTransform)" />
     <Exec Command="&quot;$(NuGetExePath)&quot; pack &quot;%(Nuspecs.Identity)&quot; -o &quot;$(PackagesDestinationDir)&quot; -basePath &quot;$(PackageSrcDir)&quot;"
             LogStandardErrorAsError="true" />
+  </Target>
+
+  <Target Name="BuildXamarinComponent">
+    <MSBuild Projects="$(ProjectRoot)\src\Microsoft.AspNet.SignalR.Client.Portable\Microsoft.AspNet.SignalR.Client.Portable.csproj"
+          Properties="Configuration=$(Configuration);ArtifactsDir=$(ArtifactsDir);$(ExtraProperties)"
+          Condition=" '$(XamarinClientPath)' == '' "/>
+
+    <ItemGroup Condition=" '$(XamarinClientPath)' != '' ">
+      <XamarinArtifacts Include="$(XamarinClientPath)\Microsoft.AspNet.SignalR.Client.dll"></XamarinArtifacts>
+    </ItemGroup>
+
+    <ItemGroup Condition=" '$(XamarinClientPath)' == '' ">
+      <XamarinArtifacts Include="$(ArtifactsDir)\Microsoft.AspNet.SignalR.Client.Portable\Microsoft.AspNet.SignalR.Client.dll"></XamarinArtifacts>
+    </ItemGroup>
+
+    <ItemGroup>
+      <XamarinArtifacts Include ="$(ProjectRoot)\packages\Newtonsoft.Json.5.0.6\lib\portable-net40+sl4+wp7+win8\Newtonsoft.Json.dll;
+                                  $(ProjectRoot)\packages\Microsoft.Net.Http.2.1.10\lib\portable-net40+sl4+win8+wp71\System.Net.Http.Extensions.dll">
+      </XamarinArtifacts>
+    </ItemGroup>
+
+    <Copy SourceFiles="@(XamarinArtifacts)" DestinationFolder="$(XamarinDir)\SignalRPackage\component\lib\mobile"/>
+
+    <Exec Command='mono $(XamarinDir)\xamarin-component\xamarin-component.exe package "$(XamarinDir)\SignalRPackage\component"' ContinueOnError="true" />
   </Target>
 </Project>

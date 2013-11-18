@@ -31,3 +31,4 @@ PublishProfiles/
 /samples/Microsoft.AspNet.SignalR.Client.WindowsStoreJavaScript.Samples/bld/
 jquery.signalR.js
 jquery.signalR.min.js
+xamarin/SignalRPackage/component/lib/mobile/
