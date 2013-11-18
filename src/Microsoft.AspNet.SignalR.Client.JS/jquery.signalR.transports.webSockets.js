@@ -18,7 +18,18 @@
 
         send: function (connection, data) {
             var payload = transportLogic.stringifySend(connection, data);
-            connection.socket.send(payload);
+
+            try {
+                connection.socket.send(payload);
+            } catch (ex) {
+                $(connection).triggerHandler(events.onError,
+                    [signalR._.transportError(
+                        signalR.resources.webSocketsInvalidState,
+                        connection.transport,
+                        ex,
+                        connection.socket
+                    )]);
+            }
         },
 
         start: function (connection, onSuccess, onFailed) {
