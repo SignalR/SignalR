@@ -68,13 +68,6 @@
 
   <ItemGroup>
     <!-- Platform Specific Client Projects -->
-    <!-- Don't build Mono clients -->
-    <Projects Include="$(ProjectRoot)\src\Microsoft.AspNet.SignalR.Client.Android\Microsoft.AspNet.SignalR.Client.Android.csproj">
-      <Build>false</Build>
-    </Projects>
-    <Projects Include="$(ProjectRoot)\src\Microsoft.AspNet.SignalR.Client.iOS\Microsoft.AspNet.SignalR.Client.iOS.csproj">
-      <Build>false</Build>
-    </Projects>
     <!-- Don't copy dll's from JS project -->
     <Projects Include="$(ProjectRoot)\src\Microsoft.AspNet.SignalR.Client.JS\Microsoft.AspNet.SignalR.Client.JS.csproj">
       <CopyArtifacts>false</CopyArtifacts>
