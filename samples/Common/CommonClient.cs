@@ -43,7 +43,7 @@ namespace Microsoft.AspNet.SignalR.Client.Samples
 
             var hubProxy = hubConnection.CreateHubProxy("HubConnectionAPI");
             hubProxy.On<string>("displayMessage", (data) => hubConnection.TraceWriter.WriteLine(data));
-            
+
             await hubConnection.Start();
             hubConnection.TraceWriter.WriteLine("transport.Name={0}", hubConnection.Transport.Name);
 
@@ -51,7 +51,7 @@ namespace Microsoft.AspNet.SignalR.Client.Samples
 
             string joinGroupResponse = await hubProxy.Invoke<string>("JoinGroup", hubConnection.ConnectionId, "CommonClientGroup");
             hubConnection.TraceWriter.WriteLine("joinGroupResponse={0}", joinGroupResponse);
-            
+
             await hubProxy.Invoke("DisplayMessageGroup", "CommonClientGroup", "Hello Group Members!");
 
             string leaveGroupResponse = await hubProxy.Invoke<string>("LeaveGroup", hubConnection.ConnectionId, "CommonClientGroup");
@@ -68,7 +68,7 @@ namespace Microsoft.AspNet.SignalR.Client.Samples
             hubConnection.TraceWriter = _traceWriter;
 
             var hubProxy = hubConnection.CreateHubProxy("demo");
-            hubProxy.On<int>("invoke", (i) => 
+            hubProxy.On<int>("invoke", (i) =>
             {
                 int n = hubProxy.GetValue<int>("index");
                 hubConnection.TraceWriter.WriteLine("{0} client state index -> {1}", i, n);
@@ -127,21 +127,24 @@ namespace Microsoft.AspNet.SignalR.Client.Samples
             var connection = new Connection(url + "/echo");
             connection.TraceWriter = _traceWriter;
             connection.Received += (data) => connection.TraceWriter.WriteLine(data);
+#if !ANDROID && !iOS
             connection.CookieContainer = handler.CookieContainer;
+#endif
             await connection.Start();
             await connection.Send("sending to AuthenticatedEchoConnection");
 
             var hubConnection = new HubConnection(url);
             hubConnection.TraceWriter = _traceWriter;
+#if !ANDROID && !iOS
             hubConnection.CookieContainer = handler.CookieContainer;
-
+#endif
             var hubProxy = hubConnection.CreateHubProxy("AuthHub");
             hubProxy.On<string, string>("invoked", (connectionId, date) => hubConnection.TraceWriter.WriteLine("connectionId={0}, date={1}", connectionId, date));
 
-            await hubConnection.Start();            
+            await hubConnection.Start();
             hubConnection.TraceWriter.WriteLine("transport.Name={0}", hubConnection.Transport.Name);
 
-            await hubProxy.Invoke("InvokedFromClient");            
+            await hubProxy.Invoke("InvokedFromClient");
         }
 
         private async Task RunWindowsAuth(string url)
@@ -150,7 +153,7 @@ namespace Microsoft.AspNet.SignalR.Client.Samples
             hubConnection.TraceWriter = _traceWriter;
 
             // Windows Auth is not supported on SL and WindowsStore apps
-#if !SILVERLIGHT && !NETFX_CORE
+#if !SILVERLIGHT && !NETFX_CORE && !ANDROID && !iOS
             hubConnection.Credentials = CredentialCache.DefaultCredentials;
 #endif
             var hubProxy = hubConnection.CreateHubProxy("AuthHub");
@@ -228,6 +231,6 @@ namespace Microsoft.AspNet.SignalR.Client.Samples
             await Task.Factory.StartNew(() => event2.WaitOne());
             hubConnection.TraceWriter.WriteLine("check memory size after all callbacks completed");
         }
-    }    
+    }
 }
 
