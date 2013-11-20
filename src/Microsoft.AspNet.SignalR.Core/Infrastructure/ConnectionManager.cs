@@ -62,21 +62,21 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
         }
 
         /// <summary>
-        /// Returns a <see cref="IHubContext"/> for the specified <see cref="IHub"/>.
+        /// Returns a <see cref="IHubContext{dynamic}"/> for the specified <see cref="IHub"/>.
         /// </summary>
         /// <typeparam name="T">Type of the <see cref="IHub"/></typeparam>
-        /// <returns>a <see cref="IHubContext"/> for the specified <see cref="IHub"/></returns>
-        public IHubContext GetHubContext<T>() where T : IHub
+        /// <returns>a <see cref="IHubContext{dynamic}"/> for the specified <see cref="IHub"/></returns>
+        public IHubContext<dynamic> GetHubContext<T>() where T : IHub
         {
             return GetHubContext(typeof(T).GetHubName());
         }
 
         /// <summary>
-        /// Returns a <see cref="IHubContext"/>for the specified hub.
+        /// Returns a <see cref="IHubContext{dynamic}"/>for the specified hub.
         /// </summary>
         /// <param name="hubName">Name of the hub</param>
-        /// <returns>a <see cref="IHubContext"/> for the specified hub</returns>
-        public IHubContext GetHubContext(string hubName)
+        /// <returns>a <see cref="IHubContext{dynamic}"/> for the specified hub</returns>
+        public IHubContext<dynamic> GetHubContext(string hubName)
         {
             var connection = GetConnectionCore(connectionName: null);
             var hubManager = _resolver.Resolve<IHubManager>();
@@ -89,6 +89,31 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
                 _counters.ErrorsAllPerSec);
 
             return new HubContext(connection, pipelineInvoker, hubName);
+        }
+
+        /// <summary>
+        /// Returns a <see cref="IHubContext{TClient}"/> for the specified <see cref="IHub"/>.
+        /// </summary>
+        /// <typeparam name="T">Type of the <see cref="IHub"/></typeparam>
+        /// <typeparam name="TClient">Interface implemented by the client proxy</typeparam>
+        /// <returns>a <see cref="IHubContext{TClient}"/> for the specified <see cref="IHub"/></returns>
+        public IHubContext<TClient> GetHubContext<T, TClient>()
+            where T : IHub
+            where TClient : class
+        {
+            return GetHubContext<TClient>(typeof(T).GetHubName());
+        }
+
+        /// <summary>
+        /// Returns a <see cref="IHubContext{TClient}"/>for the specified hub.
+        /// </summary>
+        /// <param name="hubName">Name of the hub</param>
+        /// <typeparam name="TClient">Interface implemented by the client proxy</typeparam>
+        /// <returns>a <see cref="IHubContext{TClient}"/> for the specified hub</returns>
+        public IHubContext<TClient> GetHubContext<TClient>(string hubName) where TClient : class
+        {
+            var dynamicContext = GetHubContext(hubName);
+            return new HubContext<TClient>(dynamicContext);
         }
 
         internal Connection GetConnectionCore(string connectionName)

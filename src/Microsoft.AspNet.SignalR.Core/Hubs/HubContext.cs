@@ -6,7 +6,7 @@ using Microsoft.AspNet.SignalR.Infrastructure;
 
 namespace Microsoft.AspNet.SignalR.Hubs
 {
-    internal class HubContext : IHubContext
+    internal class HubContext : IHubContext<object>
     {
         public HubContext(IConnection connection, IHubPipelineInvoker invoker, string hubName)
         {

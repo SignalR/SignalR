@@ -1943,7 +1943,7 @@ namespace Microsoft.AspNet.SignalR.Tests
         {
             using (var host = new MemoryHost())
             {
-                IHubContext hubContext = null;
+                IHubContext<dynamic> hubContext = null;
                 host.Configure(app =>
                 {
                     var configuration = new HubConfiguration
@@ -1980,7 +1980,7 @@ namespace Microsoft.AspNet.SignalR.Tests
         {
             using (var host = new MemoryHost())
             {
-                IHubContext hubContext = InitializeUserByQuerystring(host);
+                IHubContext<dynamic> hubContext = InitializeUserByQuerystring(host);
 
                 var wh = new AsyncManualResetEvent();
 
@@ -2004,7 +2004,7 @@ namespace Microsoft.AspNet.SignalR.Tests
         {
             using (var host = new MemoryHost())
             {
-                IHubContext hubContext = InitializeUserByQuerystring(host);
+                IHubContext<dynamic> hubContext = InitializeUserByQuerystring(host);
 
                 var wh1 = new AsyncManualResetEvent();
                 var wh2 = new AsyncManualResetEvent();
@@ -2037,7 +2037,7 @@ namespace Microsoft.AspNet.SignalR.Tests
         {
             using (var host = new MemoryHost())
             {
-                IHubContext hubContext = null;
+                IHubContext<dynamic> hubContext = null;
                 host.Configure(app =>
                 {
                     var configuration = new HubConfiguration
@@ -2074,7 +2074,7 @@ namespace Microsoft.AspNet.SignalR.Tests
         {
             using (var host = new MemoryHost())
             {
-                IHubContext hubContext = null;
+                IHubContext<dynamic> hubContext = null;
                 host.Configure(app =>
                 {
                     var configuration = new HubConfiguration
@@ -2110,7 +2110,7 @@ namespace Microsoft.AspNet.SignalR.Tests
         {
             using (var host = new MemoryHost())
             {
-                IHubContext hubContext = null;
+                IHubContext<dynamic> hubContext = null;
                 host.Configure(app =>
                 {
                     var configuration = new HubConfiguration
@@ -2146,7 +2146,7 @@ namespace Microsoft.AspNet.SignalR.Tests
         {
             using (var host = new MemoryHost())
             {
-                IHubContext hubContext = null;
+                IHubContext<dynamic> hubContext = null;
                 host.Configure(app =>
                 {
                     var configuration = new HubConfiguration
@@ -2321,9 +2321,9 @@ namespace Microsoft.AspNet.SignalR.Tests
             return new HubConnection("http://memoryhost", qs);
         }
 
-        private static IHubContext InitializeUserByQuerystring(MemoryHost host)
+        private static IHubContext<dynamic> InitializeUserByQuerystring(MemoryHost host)
         {
-            IHubContext hubContext = null;
+            IHubContext<dynamic> hubContext = null;
             host.Configure(app =>
             {
                 var configuration = new HubConfiguration

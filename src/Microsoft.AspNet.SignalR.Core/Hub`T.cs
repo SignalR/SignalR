@@ -17,7 +17,7 @@ namespace Microsoft.AspNet.SignalR
             get
             {
                 var clients = ((IHub)this).Clients;
-                return new TypedHubConnectionContext<T>(clients);
+                return new TypedHubCallerConnectionContext<T>(clients);
             }
         }
     }

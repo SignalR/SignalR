@@ -24,7 +24,7 @@ namespace Microsoft.AspNet.SignalR.Crank
         private static object FlushLock = new object();
         private static ControllerEvents TestPhase = ControllerEvents.None;
         private static Stopwatch TestTimer;
-        private static IHubContext HubContext;
+        private static IHubContext<dynamic> HubContext;
 
         public override Task OnConnected()
         {

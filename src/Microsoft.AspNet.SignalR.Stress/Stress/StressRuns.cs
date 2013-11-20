@@ -93,7 +93,7 @@ namespace Microsoft.AspNet.SignalR.Stress
         public static IDisposable BrodcastFromServer()
         {
             var host = new MemoryHost();
-            IHubContext context = null;
+            IHubContext<dynamic> context = null;
 
             host.Configure(app =>
             {

@@ -4,47 +4,13 @@ using System.Collections.Generic;
 
 namespace Microsoft.AspNet.SignalR.Hubs
 {
-    public class TypedHubConnectionContext<T> : IHubCallerConnectionContext<T>
+    public class TypedHubConnectionContext<T> : IHubConnectionContext<T>
     {
-        private IHubCallerConnectionContext<dynamic> _dynamicContext;
+        private IHubConnectionContext<dynamic> _dynamicContext;
 
-        public TypedHubConnectionContext(IHubCallerConnectionContext<dynamic> dynamicContext)
+        public TypedHubConnectionContext(IHubConnectionContext<dynamic> dynamicContext)
         {
             _dynamicContext = dynamicContext;
-        }
-
-        public T Caller
-        {
-            get
-            {
-                return TypedClientBuilder<T>.Build(_dynamicContext.Caller);
-            }
-        }
-
-        public dynamic CallerState
-        {
-            get
-            {
-                return _dynamicContext.CallerState;
-            }
-        }
-
-        public T Others
-        {
-            get
-            {
-                return TypedClientBuilder<T>.Build(_dynamicContext.Others);
-            }
-        }
-
-        public T OthersInGroup(string groupName)
-        {
-            return TypedClientBuilder<T>.Build(_dynamicContext.OthersInGroup(groupName));
-        }
-
-        public T OthersInGroups(IList<string> groupNames)
-        {
-            return TypedClientBuilder<T>.Build(_dynamicContext.OthersInGroups(groupNames));
         }
 
         public T All
