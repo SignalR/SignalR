@@ -2,10 +2,13 @@
 
 namespace Microsoft.AspNet.SignalR.Hubs
 {
-    class HubContext<T> : IHubContext<T>
+    internal class HubContext<T> : IHubContext<T>
     {
         public HubContext(IHubContext<dynamic> dynamicContext)
         {
+            // Validate will throw an InvalidOperationException if T is an invalid type
+            TypedClientBuilder<T>.Validate();
+
             Clients = new TypedHubConnectionContext<T>(dynamicContext.Clients);
             Groups = dynamicContext.Groups;
         }
