@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR.Hubs;
+using Microsoft.AspNet.SignalR.Infrastructure;
+using Microsoft.AspNet.SignalR.Samples.Hubs.DemoHub;
 using Moq;
 using Xunit;
 
@@ -52,7 +54,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Server.Hubs
         }
 
         [Fact]
-        public void InvalidReturnTypesAreRejected()
+        public void InvalidTypesAreRejected()
         {
             var mockClientProxy = new Mock<IClientProxy>(MockBehavior.Strict);
 
@@ -66,6 +68,21 @@ namespace Microsoft.AspNet.SignalR.Tests.Server.Hubs
             Assert.Throws<InvalidOperationException>(() => TypedClientBuilder<AlsoNotAnInterface>.Build(mockClientProxy.Object));
 
             mockClientProxy.Verify();
+        }
+
+        [Fact]
+        public void GetHubContextRejectsInvalidTypes()
+        {
+            var resolver = new DefaultDependencyResolver();
+            var manager = resolver.Resolve<IConnectionManager>();
+
+            Assert.Throws<InvalidOperationException>(() => manager.GetHubContext<DemoHub, IDontReturnVoidOrTask>());
+            Assert.Throws<InvalidOperationException>(() => manager.GetHubContext<DemoHub, IHaveOutParameter>());
+            Assert.Throws<InvalidOperationException>(() => manager.GetHubContext<DemoHub, IHaveRefParameter>());
+            Assert.Throws<InvalidOperationException>(() => manager.GetHubContext<DemoHub, IHaveProperties>());
+            Assert.Throws<InvalidOperationException>(() => manager.GetHubContext<DemoHub, IHaveIndexer>());
+            Assert.Throws<InvalidOperationException>(() => manager.GetHubContext<DemoHub, IHaveEvent>());
+            Assert.Throws<InvalidOperationException>(() => manager.GetHubContext<DemoHub, NotAnInterface>());
         }
 
         // Valid type parameters
