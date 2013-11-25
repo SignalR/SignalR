@@ -11,19 +11,19 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
     public interface IConnectionManager
     {
         /// <summary>
-        /// Returns a <see cref="IHubContext{dynamic}"/> for the specified <see cref="IHub"/>.
+        /// Returns a <see cref="IHubContext"/> for the specified <see cref="IHub"/>.
         /// </summary>
         /// <typeparam name="T">Type of the <see cref="IHub"/></typeparam>
-        /// <returns>a <see cref="IHubContext{dynamic}"/> for the specified <see cref="IHub"/></returns>
+        /// <returns>a <see cref="IHubContext"/> for the specified <see cref="IHub"/></returns>
         [SuppressMessage("Microsoft.Design", "CA1004:GenericMethodsShouldProvideTypeParameter", Justification = "The hub type needs to be specified")]
-        IHubContext<dynamic> GetHubContext<T>() where T : IHub;
+        IHubContext GetHubContext<T>() where T : IHub;
 
         /// <summary>
-        /// Returns a <see cref="IHubContext{dynamic}"/>for the specified hub.
+        /// Returns a <see cref="IHubContext"/>for the specified hub.
         /// </summary>
         /// <param name="hubName">Name of the hub</param>
-        /// <returns>a <see cref="IHubContext{dynamic}"/> for the specified hub</returns>
-        IHubContext<dynamic> GetHubContext(string hubName);
+        /// <returns>a <see cref="IHubContext"/> for the specified hub</returns>
+        IHubContext GetHubContext(string hubName);
 
 
         /// <summary>

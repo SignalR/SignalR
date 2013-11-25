@@ -4,7 +4,7 @@ namespace Microsoft.AspNet.SignalR.Hubs
 {
     internal class HubContext<T> : IHubContext<T>
     {
-        public HubContext(IHubContext<dynamic> dynamicContext)
+        public HubContext(IHubContext dynamicContext)
         {
             // Validate will throw an InvalidOperationException if T is an invalid type
             TypedClientBuilder<T>.Validate();

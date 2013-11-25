@@ -97,6 +97,7 @@
     <Compile Include="Hubs\UserProxy.cs" />
     <Compile Include="Hubs\IHubCallerConnectionContext.cs" />
     <Compile Include="Hubs\TypedHubConnectionContext.cs" />
+    <Compile Include="IHubContext.cs" />
     <Compile Include="Infrastructure\AckHandler.cs" />
     <Compile Include="Configuration\DefaultConfigurationManager.cs" />
     <Compile Include="Infrastructure\ArraySegmentTextReader.cs" />
@@ -145,7 +146,7 @@
     <Compile Include="Hubs\HubRequestParser.cs" />
     <Compile Include="Hubs\HubResponse.cs" />
     <Compile Include="Hubs\IClientProxy.cs" />
-    <Compile Include="IHubContext.cs" />
+    <Compile Include="IHubContext`T.cs" />
     <Compile Include="Hubs\IHubRequestParser.cs" />
     <Compile Include="Hubs\Lookup\Descriptors\Descriptor.cs" />
     <Compile Include="Hubs\Pipeline\Auth\NotAuthorizedException.cs" />
