@@ -21,6 +21,8 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
 
         private ServiceBusConnectionContext _connectionContext;
 
+        private TraceSource _trace;
+
         private readonly ServiceBusConnection _connection;
         private readonly string[] _topics;
         
@@ -34,9 +36,9 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
 
             // Retrieve the trace manager
             var traceManager = resolver.Resolve<ITraceManager>();
-            TraceSource trace = traceManager["SignalR." + typeof(ServiceBusMessageBus).Name];
+            _trace = traceManager["SignalR." + typeof(ServiceBusMessageBus).Name];
 
-            _connection = new ServiceBusConnection(configuration, trace);
+            _connection = new ServiceBusConnection(configuration, _trace);
 
             _topics = Enumerable.Range(0, configuration.TopicCount)
                                 .Select(topicIndex => SignalRTopicPrefix + "_" + configuration.TopicPrefix + "_" + topicIndex)
@@ -56,6 +58,8 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
         protected override Task Send(int streamIndex, IList<Message> messages)
         {
             var stream = ServiceBusMessage.ToStream(messages);
+
+            TraceSentMessages(messages);
 
             return _connectionContext.Publish(streamIndex, stream);
         }
@@ -82,6 +86,14 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
         private void Subscribe(object state)
         {
             _connectionContext = _connection.Subscribe(_topics, OnMessage, OnError, Open);
+        }
+
+        private void TraceSentMessages(IList<Message> messages)
+        {
+            foreach (Message message in messages)
+            {
+                _trace.TraceEvent(TraceEventType.Verbose, 1, "Sending message of size {0} bytes over Azure Service Bus : {1}", message.Value.Array.Length, message.Encoding.GetString(message.Value.Array));
+            }
         }
 
         protected override void Dispose(bool disposing)
