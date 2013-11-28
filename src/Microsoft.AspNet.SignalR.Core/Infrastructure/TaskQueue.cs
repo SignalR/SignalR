@@ -35,7 +35,7 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
             _maxSize = maxSize;
         }
 
-#if !CLIENT_NET45
+#if !CLIENT_NET45 && !CLIENT_NET4 && !PORTABLE && !NETFX_CORE
         [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode", Justification = "This is shared code.")]
         public IPerformanceCounter QueueSizeCounter { get; set; }
 #endif
@@ -62,19 +62,16 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
 
                 if (_maxSize != null)
                 {
-                    if (Interlocked.Read(ref _size) == _maxSize)
+                    // Increment the size if the queue
+                    if (Interlocked.Increment(ref _size) > _maxSize)
                     {
-                        // REVIEW: Do we need to make the contract more clear between the
-                        // queue full case and the queue drained case? Should we throw an exeception instead?
-                        
+                        Interlocked.Decrement(ref _size);
+
                         // We failed to enqueue because the size limit was reached
                         return null;
                     }
 
-                    // Increment the size if the queue
-                    Interlocked.Increment(ref _size);
-                    
-#if !CLIENT_NET45
+#if !CLIENT_NET45 && !CLIENT_NET4 && !PORTABLE && !NETFX_CORE
                     var counter = QueueSizeCounter;
                     if (counter != null)
                     {
@@ -83,31 +80,33 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
 #endif
                 }
 
-                Task newTask = _lastQueuedTask.Then((next, nextState) =>
-                {
-                    return next(nextState).Finally(s =>
-                    {
-                        var queue = (TaskQueue)s;
-                        if (queue._maxSize != null)
-                        {
-                            // Decrement the number of items left in the queue
-                            Interlocked.Decrement(ref queue._size);
-
-#if !CLIENT_NET45
-                            var counter = QueueSizeCounter;
-                            if (counter != null)
-                            {
-                                counter.Decrement();
-                            }
-#endif
-                        }
-                    },
-                    this);
-                },
-                taskFunc, state);
+                Task newTask = _lastQueuedTask.Then((n, ns, q) => InvokeNext(n, ns, q), taskFunc, state, this);
 
                 _lastQueuedTask = newTask;
                 return newTask;
+            }
+        }
+
+        private static Task InvokeNext(Func<object, Task> next, object nextState, object queueState)
+        {
+            return next(nextState).Finally(s => Dequeue(s), queueState);
+        }
+
+        private static void Dequeue(object queueState)
+        {
+            var queue = (TaskQueue)queueState;
+            if (queue._maxSize != null)
+            {
+                // Decrement the number of items left in the queue
+                Interlocked.Decrement(ref queue._size);
+
+#if !CLIENT_NET45 && !CLIENT_NET4 && !PORTABLE && !NETFX_CORE
+                var counter = queue.QueueSizeCounter;
+                if (counter != null)
+                {
+                    counter.Decrement();
+                }
+#endif
             }
         }
 

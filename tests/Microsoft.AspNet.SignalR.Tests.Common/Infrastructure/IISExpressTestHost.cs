@@ -105,7 +105,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Common.Infrastructure
             }
         }
 
-        public Task Get(string uri, bool disableWrites)
+        public Task Get(string uri)
         {
             throw new NotImplementedException();
         }

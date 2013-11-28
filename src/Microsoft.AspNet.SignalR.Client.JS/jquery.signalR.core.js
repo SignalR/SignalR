@@ -362,11 +362,12 @@
             var link;
 
             url = $.trim(url);
+
+            against = against || window.location;
+
             if (url.indexOf("http") !== 0) {
                 return false;
             }
-
-            against = against || window.location;
 
             // Create an anchor tag.
             link = window.document.createElement("a");
@@ -485,6 +486,12 @@
             // as demonstrated by Issue #623.
             if (config.transport === "auto" && config.jsonp === true) {
                 config.transport = "longPolling";
+            }
+
+            // If the url is protocol relative, prepend the current windows protocol to the url. 
+            if (connection.url.indexOf("//") === 0) {
+                connection.url = window.location.protocol + connection.url;
+                connection.log("Protocol relative URL detected, normalizing it to '" + connection.url + "'.");
             }
 
             if (this.isCrossDomain(connection.url)) {
@@ -727,11 +734,11 @@
                         });
 
                         if ($.isArray(config.transport)) {
-                            $.each(config.transport, function (transport) {
+                            $.each(config.transport, function (_, transport) {
                                 if ($.inArray(transport, supportedTransports) >= 0) {
                                     transports.push(transport);
                                 }
-                            });                        
+                            });
                         } else if (config.transport === "auto") {
                             transports = supportedTransports;
                         } else if ($.inArray(config.transport, supportedTransports) >= 0) {
@@ -807,8 +814,10 @@
             /// <param name="callback" type="Function">A callback function to execute when an error occurs on the connection</param>
             /// <returns type="signalR" />
             var connection = this;
-            $(connection).bind(events.onError, function (e, data) {
-                callback.call(connection, data);
+            $(connection).bind(events.onError, function (e, errorData, sendData) {
+                // In practice 'errorData' is the SignalR built error object.
+                // In practice 'sendData' is undefined for all error events except those triggered by ajaxSend.  For ajaxSend 'sendData' is the original send payload.
+                callback.call(connection, errorData, sendData);
             });
             return connection;
         },
@@ -896,48 +905,45 @@
                 return;
             }
 
-            try {
-                connection.log("Stopping connection.");
+            connection.log("Stopping connection.");
 
-                // Clear this no matter what
-                window.clearTimeout(connection._.beatHandle);
-                window.clearTimeout(connection._.onFailedTimeoutHandle);
-                window.clearInterval(connection._.pingIntervalId);
+            changeState(connection, connection.state, signalR.connectionState.disconnected);
 
-                if (connection.transport) {
-                    if (notifyServer !== false) {
-                        connection.transport.abort(connection, async);
-                    }
+            // Clear this no matter what
+            window.clearTimeout(connection._.beatHandle);
+            window.clearTimeout(connection._.onFailedTimeoutHandle);
+            window.clearInterval(connection._.pingIntervalId);
 
-                    if (connection.transport.supportsKeepAlive && connection._.keepAliveData.activated) {
-                        signalR.transports._logic.stopMonitoringKeepAlive(connection);
-                    }
-
-                    connection.transport.stop(connection);
-                    connection.transport = null;
+            if (connection.transport) {
+                if (notifyServer !== false) {
+                    connection.transport.abort(connection, async);
                 }
 
-                if (connection._.negotiateRequest) {
-                    // If the negotiation request has already completed this will noop.
-                    connection._.negotiateRequest.abort(_negotiateAbortText);
-                    delete connection._.negotiateRequest;
+                if (connection.transport.supportsKeepAlive && connection._.keepAliveData.activated) {
+                    signalR.transports._logic.stopMonitoringKeepAlive(connection);
                 }
 
-                // Trigger the disconnect event
-                $(connection).triggerHandler(events.onDisconnect);
-
-                delete connection.messageId;
-                delete connection.groupsToken;
-                delete connection.id;
-                delete connection._.pingIntervalId;
-                delete connection._.lastMessageAt;
-
-                // Clear out our message buffer
-                connection._.connectingMessageBuffer.clear();
+                connection.transport.stop(connection);
+                connection.transport = null;
             }
-            finally {
-                changeState(connection, connection.state, signalR.connectionState.disconnected);
+
+            if (connection._.negotiateRequest) {
+                // If the negotiation request has already completed this will noop.
+                connection._.negotiateRequest.abort(_negotiateAbortText);
+                delete connection._.negotiateRequest;
             }
+
+            // Trigger the disconnect event
+            $(connection).triggerHandler(events.onDisconnect);
+
+            delete connection.messageId;
+            delete connection.groupsToken;
+            delete connection.id;
+            delete connection._.pingIntervalId;
+            delete connection._.lastMessageAt;
+
+            // Clear out our message buffer
+            connection._.connectingMessageBuffer.clear();
 
             return connection;
         },

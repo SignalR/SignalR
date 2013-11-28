@@ -11,6 +11,7 @@ namespace Microsoft.AspNet.SignalR.Hubs
     public interface IHubCallerConnectionContext<T> : IHubConnectionContext<T>
     {
         T Caller { get; }
+        dynamic CallerState { get; }
         T Others { get; }
         T OthersInGroup(string groupName);
         T OthersInGroups(IList<string> groupNames);

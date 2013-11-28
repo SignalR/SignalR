@@ -41,11 +41,11 @@
   <ItemGroup>
     <Reference Include="Microsoft.Owin, Version=2.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\packages\Microsoft.Owin.2.0.0\lib\net45\Microsoft.Owin.dll</HintPath>
+      <HintPath>..\..\packages\Microsoft.Owin.2.0.1\lib\net45\Microsoft.Owin.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.Owin.Security, Version=2.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\packages\Microsoft.Owin.Security.2.0.0\lib\net45\Microsoft.Owin.Security.dll</HintPath>
+      <HintPath>..\..\packages\Microsoft.Owin.Security.2.0.1\lib\net45\Microsoft.Owin.Security.dll</HintPath>
     </Reference>
     <Reference Include="Newtonsoft.Json, Version=4.5.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
@@ -74,6 +74,10 @@
     <Compile Include="ConnectionConfiguration.cs" />
     <Compile Include="Hosting\INameValueCollection.cs" />
     <Compile Include="Hosting\IResponse.cs" />
+    <Compile Include="Hubs\HubInvocationProgress.cs" />
+    <Compile Include="Hubs\CallerStateProxy.cs" />
+    <Compile Include="Hubs\TypedHubCallerConnectionContext.cs" />
+    <Compile Include="Hubs\HubContext`T.cs" />
     <Compile Include="Hub`T.cs" />
     <Compile Include="HubConfiguration.cs" />
     <Compile Include="HubException.cs" />
@@ -93,6 +97,7 @@
     <Compile Include="Hubs\UserProxy.cs" />
     <Compile Include="Hubs\IHubCallerConnectionContext.cs" />
     <Compile Include="Hubs\TypedHubConnectionContext.cs" />
+    <Compile Include="IHubContext.cs" />
     <Compile Include="Infrastructure\AckHandler.cs" />
     <Compile Include="Configuration\DefaultConfigurationManager.cs" />
     <Compile Include="Infrastructure\ArraySegmentTextReader.cs" />
@@ -141,7 +146,7 @@
     <Compile Include="Hubs\HubRequestParser.cs" />
     <Compile Include="Hubs\HubResponse.cs" />
     <Compile Include="Hubs\IClientProxy.cs" />
-    <Compile Include="IHubContext.cs" />
+    <Compile Include="IHubContext`T.cs" />
     <Compile Include="Hubs\IHubRequestParser.cs" />
     <Compile Include="Hubs\Lookup\Descriptors\Descriptor.cs" />
     <Compile Include="Hubs\Pipeline\Auth\NotAuthorizedException.cs" />

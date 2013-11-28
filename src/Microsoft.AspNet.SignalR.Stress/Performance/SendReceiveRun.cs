@@ -60,7 +60,7 @@ namespace Microsoft.AspNet.SignalR.Stress
 
         private Task ProcessRequest(string connectionToken)
         {
-            return Host.Get("http://foo/" + Endpoint + "/connect?transport=" + RunData.Transport + "&connectionToken=" + connectionToken, disableWrites: true);
+            return Host.Get("http://foo/" + Endpoint + "/connect?transport=" + RunData.Transport + "&connectionToken=" + connectionToken + "&disableResponseBody=true");
         }
 
         private Task Abort(string connectionToken)

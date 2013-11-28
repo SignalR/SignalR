@@ -128,7 +128,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
             _createTopic = CreateTopic;
             _addEvent = AddEvent;
             _removeEvent = RemoveEvent;
-            _disposeSubscription = DisposeSubscription;
+            _disposeSubscription = o => DisposeSubscription(o);
 
             Topics = new TopicLookup();
         }

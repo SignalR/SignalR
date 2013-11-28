@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Security.Principal;
-using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR.Client;
 using Microsoft.AspNet.SignalR.Configuration;
@@ -51,6 +50,43 @@ namespace Microsoft.AspNet.SignalR.Tests
                     var result = hub.InvokeWithTimeout<string>("ReadStateValue");
 
                     Assert.Equal("test", result);
+                }
+            }
+        }
+
+        [Theory]
+        [InlineData(HostType.Memory, TransportType.ServerSentEvents, MessageBusType.Default)]
+        [InlineData(HostType.Memory, TransportType.ServerSentEvents, MessageBusType.Fake)]
+        [InlineData(HostType.Memory, TransportType.ServerSentEvents, MessageBusType.FakeMultiStream)]
+        [InlineData(HostType.IISExpress, TransportType.ServerSentEvents, MessageBusType.Default)]
+        [InlineData(HostType.IISExpress, TransportType.Websockets, MessageBusType.Default)]
+        [InlineData(HostType.HttpListener, TransportType.ServerSentEvents, MessageBusType.Default)]
+        [InlineData(HostType.HttpListener, TransportType.Websockets, MessageBusType.Default)]
+        public async Task ReadingStateFromVB(HostType hostType, TransportType transportType, MessageBusType messageBusType)
+        {
+            // Force the VB Sample assembly to be loaded into the current AppDomain for MemoryHost
+            var foo = new Microsoft.AspNet.SignalR.Samples.VB.VBDemoHub();
+
+            using (var host = CreateHost(hostType, transportType))
+            {
+                host.Initialize(messageBusType: messageBusType);
+
+                HubConnection connection = CreateHubConnection(host);
+
+                using (connection)
+                {
+                    var hub = connection.CreateHubProxy("VBDemo");
+
+                    await connection.Start(host.Transport);
+
+                    var originalMessage = hub.InvokeWithTimeout<string>("ReadStateValue");
+
+                    hub["message"] = "test VB.NET";
+
+                    var newMessage = hub.InvokeWithTimeout<string>("ReadStateValue");
+
+                    Assert.Equal("Why?", originalMessage);
+                    Assert.Equal("test VB.NET", newMessage);
                 }
             }
         }
@@ -277,15 +313,11 @@ namespace Microsoft.AspNet.SignalR.Tests
             {
                 host.Initialize();
 
-                var connection1 = CreateHubConnection(host, path: "/basicauth/signalr", useDefaultUrl: false);
-                var connection2 = CreateHubConnection(host, path: "/basicauth/signalr", useDefaultUrl: false);
-                var connection3 = CreateHubConnection(host, path: "/basicauth/signalr", useDefaultUrl: false);
-                var connection4 = CreateHubConnection(host, path: "/basicauth/signalr", useDefaultUrl: false);
-                connection1.Credentials = new System.Net.NetworkCredential("user1", "password");
-                connection2.Credentials = new System.Net.NetworkCredential("user1", "password");
-                connection3.Credentials = new System.Net.NetworkCredential("user1", "password");
-                connection4.Credentials = new System.Net.NetworkCredential("user2", "password");
-
+                var connection1 = CreateAuthHubConnection(host, "user1", "password");
+                var connection2 = CreateAuthHubConnection(host, "user1", "password");
+                var connection3 = CreateAuthHubConnection(host, "user1", "password");
+                var connection4 = CreateAuthHubConnection(host, "user2", "password");
+                
                 var wh1 = new AsyncManualResetEvent();
                 var wh2 = new AsyncManualResetEvent();
                 var wh3 = new AsyncManualResetEvent();
@@ -645,8 +677,6 @@ namespace Microsoft.AspNet.SignalR.Tests
                     connection.TraceWriter = host.ClientTraceOutput;
 
                     var hub = connection.CreateHubProxy("demo");
-
-                    await connection.Start(host.TransportFactory());
 
                     await connection.Start(host.TransportFactory());
 
@@ -1907,252 +1937,6 @@ namespace Microsoft.AspNet.SignalR.Tests
             }
         }
 
-        [Fact]
-        public async Task SendToGroupFromOutsideOfHub()
-        {
-            using (var host = new MemoryHost())
-            {
-                IHubContext hubContext = null;
-                host.Configure(app =>
-                {
-                    var configuration = new HubConfiguration
-                    {
-                        Resolver = new DefaultDependencyResolver()
-                    };
-
-                    app.MapSignalR(configuration);
-                    hubContext = configuration.Resolver.Resolve<IConnectionManager>().GetHubContext("SendToSome");
-                });
-
-                var connection1 = new HubConnection("http://foo/");
-
-                using (connection1)
-                {
-                    var wh1 = new AsyncManualResetEvent(initialState: false);
-
-                    var hub1 = connection1.CreateHubProxy("SendToSome");
-
-                    await connection1.Start(host);
-
-                    hub1.On("send", wh1.Set);
-
-                    hubContext.Groups.Add(connection1.ConnectionId, "Foo").Wait();
-                    hubContext.Clients.Group("Foo").send();
-
-                    Assert.True(await wh1.WaitAsync(TimeSpan.FromSeconds(10)));
-                }
-            }
-        }
-
-        [Fact]
-        public async Task SendToUserFromOutsideOfHub()
-        {
-            using (var host = new MemoryHost())
-            {
-                IHubContext hubContext = InitializeUserByQuerystring(host);
-
-                var wh = new AsyncManualResetEvent();
-
-                using (var connection = GetUserConnection("myuser"))
-                {
-                    var hub = connection.CreateHubProxy("SendToSome");
-
-                    await connection.Start(host);
-
-                    hub.On("send", wh.Set);
-
-                    await hubContext.Clients.User("myuser").send();
-
-                    Assert.True(await wh.WaitAsync(TimeSpan.FromSeconds(10)));
-                }
-            }
-        }
-
-        [Fact]
-        public async Task SendToUsersFromOutsideOfHub()
-        {
-            using (var host = new MemoryHost())
-            {
-                IHubContext hubContext = InitializeUserByQuerystring(host);
-
-                var wh1 = new AsyncManualResetEvent();
-                var wh2 = new AsyncManualResetEvent();
-
-                var connection1 = GetUserConnection("myuser");
-                var connection2 = GetUserConnection("myuser2");
-
-                using (connection1)
-                using (connection2)
-                {
-                    var proxy1 = connection1.CreateHubProxy("SendToSome");
-                    var proxy2 = connection2.CreateHubProxy("SendToSome");
-
-                    await connection1.Start(host);
-                    await connection2.Start(host);
-
-                    proxy1.On("send", wh1.Set);
-                    proxy2.On("send", wh2.Set);
-
-                    await hubContext.Clients.Users(new List<string> { "myuser", "myuser2" }).send();
-
-                    Assert.True(await wh1.WaitAsync(TimeSpan.FromSeconds(10)));
-                    Assert.True(await wh2.WaitAsync(TimeSpan.FromSeconds(10)));
-                }
-            }
-        }
-
-        [Fact]
-        public async Task SendToGroupsFromOutsideOfHub()
-        {
-            using (var host = new MemoryHost())
-            {
-                IHubContext hubContext = null;
-                host.Configure(app =>
-                {
-                    var configuration = new HubConfiguration
-                    {
-                        Resolver = new DefaultDependencyResolver()
-                    };
-
-                    app.MapSignalR(configuration);
-                    hubContext = configuration.Resolver.Resolve<IConnectionManager>().GetHubContext("SendToSome");
-                });
-
-                var connection1 = new HubConnection("http://foo/");
-
-                using (connection1)
-                {
-                    var wh1 = new AsyncManualResetEvent(initialState: false);
-
-                    var hub1 = connection1.CreateHubProxy("SendToSome");
-
-                    await connection1.Start(host);
-
-                    hub1.On("send", () => wh1.Set());
-
-                    await hubContext.Groups.Add(connection1.ConnectionId, "Foo");
-                    hubContext.Clients.Groups(new[] { "Foo" }).send();
-
-                    Assert.True(await wh1.WaitAsync(TimeSpan.FromSeconds(10)));
-                }
-            }
-        }
-
-        [Fact]
-        public async Task SendToSpecificClientFromOutsideOfHub()
-        {
-            using (var host = new MemoryHost())
-            {
-                IHubContext hubContext = null;
-                host.Configure(app =>
-                {
-                    var configuration = new HubConfiguration
-                    {
-                        Resolver = new DefaultDependencyResolver()
-                    };
-
-                    app.MapSignalR(configuration);
-                    hubContext = configuration.Resolver.Resolve<IConnectionManager>().GetHubContext("SendToSome");
-                });
-
-                var connection1 = new HubConnection("http://foo/");
-
-                using (connection1)
-                {
-                    var wh1 = new AsyncManualResetEvent(initialState: false);
-
-                    var hub1 = connection1.CreateHubProxy("SendToSome");
-
-                    await connection1.Start(host);
-
-                    hub1.On("send", wh1.Set);
-
-                    hubContext.Clients.Client(connection1.ConnectionId).send();
-
-                    Assert.True(await wh1.WaitAsync(TimeSpan.FromSeconds(10)));
-                }
-            }
-        }
-
-        [Fact]
-        public async Task SendToSpecificClientsFromOutsideOfHub()
-        {
-            using (var host = new MemoryHost())
-            {
-                IHubContext hubContext = null;
-                host.Configure(app =>
-                {
-                    var configuration = new HubConfiguration
-                    {
-                        Resolver = new DefaultDependencyResolver()
-                    };
-
-                    app.MapSignalR(configuration);
-                    hubContext = configuration.Resolver.Resolve<IConnectionManager>().GetHubContext("SendToSome");
-                });
-
-                var connection1 = new HubConnection("http://foo/");
-
-                using (connection1)
-                {
-                    var wh1 = new AsyncManualResetEvent(initialState: false);
-
-                    var hub1 = connection1.CreateHubProxy("SendToSome");
-
-                    await connection1.Start(host);
-
-                    hub1.On("send", wh1.Set);
-
-                    hubContext.Clients.Clients(new[] { connection1.ConnectionId }).send();
-
-                    Assert.True(await wh1.WaitAsync(TimeSpan.FromSeconds(10)));
-                }
-            }
-        }
-
-        [Fact]
-        public async Task SendToAllFromOutsideOfHub()
-        {
-            using (var host = new MemoryHost())
-            {
-                IHubContext hubContext = null;
-                host.Configure(app =>
-                {
-                    var configuration = new HubConfiguration
-                    {
-                        Resolver = new DefaultDependencyResolver()
-                    };
-
-                    app.MapSignalR(configuration);
-                    hubContext = configuration.Resolver.Resolve<IConnectionManager>().GetHubContext("SendToSome");
-                });
-
-                var connection1 = new HubConnection("http://foo/");
-                var connection2 = new HubConnection("http://foo/");
-
-                using (connection1)
-                using (connection2)
-                {
-                    var wh1 = new AsyncManualResetEvent(initialState: false);
-                    var wh2 = new AsyncManualResetEvent(initialState: false);
-
-                    var hub1 = connection1.CreateHubProxy("SendToSome");
-                    var hub2 = connection2.CreateHubProxy("SendToSome");
-
-                    await connection1.Start(host);
-                    await connection2.Start(host);
-
-                    hub1.On("send", wh1.Set);
-                    hub2.On("send", wh2.Set);
-
-                    hubContext.Clients.All.send();
-
-                    Assert.True(await wh1.WaitAsync(TimeSpan.FromSeconds(10)));
-                    Assert.True(await wh2.WaitAsync(TimeSpan.FromSeconds(10)));
-                }
-            }
-        }
-
         [Theory]
         [InlineData(HostType.Memory, TransportType.LongPolling, MessageBusType.Default)]
         [InlineData(HostType.Memory, TransportType.LongPolling, MessageBusType.Fake)]
@@ -2280,7 +2064,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                 }
             }
         }
-        private HubConnection GetUserConnection(string userName)
+        internal static HubConnection GetUserConnection(string userName)
         {
             var qs = new Dictionary<string, string>
             {
@@ -2290,9 +2074,9 @@ namespace Microsoft.AspNet.SignalR.Tests
             return new HubConnection("http://memoryhost", qs);
         }
 
-        private static IHubContext InitializeUserByQuerystring(MemoryHost host)
+        internal static IHubContext<IBasicClient> InitializeUserByQuerystring(MemoryHost host)
         {
-            IHubContext hubContext = null;
+            IHubContext<IBasicClient> hubContext = null;
             host.Configure(app =>
             {
                 var configuration = new HubConfiguration
@@ -2310,76 +2094,10 @@ namespace Microsoft.AspNet.SignalR.Tests
                 configuration.Resolver.Register(typeof(IUserIdProvider), () => provider.Object);
 
                 app.MapSignalR(configuration);
-                hubContext = configuration.Resolver.Resolve<IConnectionManager>().GetHubContext("SendToSome");
+                hubContext = configuration.Resolver.Resolve<IConnectionManager>().GetHubContext<SendToSome, IBasicClient>();
             });
 
             return hubContext;
-        }
-
-        public class SendToSomeTyped : Hub<IBasicClient>
-        {
-            public Task SendToUsers(IList<string> userIds)
-            {
-                return Clients.Users(userIds).Send();
-            }
-        }
-
-        public class SendToSome : Hub
-        {
-            public Task SendToUser(string userId)
-            {
-                return Clients.User(userId).send();
-            }
-
-            public Task SendToUsers(IList<string> userIds)
-            {
-                return Clients.Users(userIds).send();
-            }
-
-            public Task SendToAllButCaller()
-            {
-                return Clients.Others.send();
-            }
-
-            public Task SendToAll()
-            {
-                return Clients.All.send();
-            }
-
-            public Task JoinGroup(string group)
-            {
-                return Groups.Add(Context.ConnectionId, group);
-            }
-
-            public Task SendToGroup(string group)
-            {
-                return Clients.Group(group).send();
-            }
-
-            public Task AllInGroupButCaller(string group)
-            {
-                return Clients.OthersInGroup(group).send();
-            }
-
-            public Task SendToSelf()
-            {
-                return Clients.Client(Context.ConnectionId).send();
-            }
-
-            public Task SendToConnections(IList<string> connectionIds)
-            {
-                return Clients.Clients(connectionIds).send();
-            }
-
-            public Task SendToGroups(IList<string> groups)
-            {
-                return Clients.Groups(groups).send();
-            }
-
-            public Task AllInGroupsButCaller(IList<string> groups)
-            {
-                return Clients.OthersInGroups(groups).send();
-            }
         }
 
         public class SomeHub : Hub
@@ -2487,10 +2205,77 @@ namespace Microsoft.AspNet.SignalR.Tests
             public string Name { get; set; }
             public string Room { get; set; }
         }
+    }
 
-        public interface IBasicClient
+    public class SendToSome : Hub
+    {
+        public Task SendToUser(string userId)
         {
-            Task Send();
+            return Clients.User(userId).send();
+        }
+
+        public Task SendToUsers(IList<string> userIds)
+        {
+            return Clients.Users(userIds).send();
+        }
+
+        public Task SendToAllButCaller()
+        {
+            return Clients.Others.send();
+        }
+
+        public Task SendToAll()
+        {
+            return Clients.All.send();
+        }
+
+        public Task JoinGroup(string group)
+        {
+            return Groups.Add(Context.ConnectionId, group);
+        }
+
+        public Task SendToGroup(string group)
+        {
+            return Clients.Group(group).send();
+        }
+
+        public Task AllInGroupButCaller(string group)
+        {
+            return Clients.OthersInGroup(group).send();
+        }
+
+        public Task SendToSelf()
+        {
+            return Clients.Client(Context.ConnectionId).send();
+        }
+
+        public Task SendToConnections(IList<string> connectionIds)
+        {
+            return Clients.Clients(connectionIds).send();
+        }
+
+        public Task SendToGroups(IList<string> groups)
+        {
+            return Clients.Groups(groups).send();
+        }
+
+        public Task AllInGroupsButCaller(IList<string> groups)
+        {
+            return Clients.OthersInGroups(groups).send();
+        }
+    }
+
+
+    public interface IBasicClient
+    {
+        void send();
+    }
+
+    public class SendToSomeTyped : Hub<IBasicClient>
+    {
+        public void SendToUsers(IList<string> userIds)
+        {
+            Clients.Users(userIds).send();
         }
     }
 }

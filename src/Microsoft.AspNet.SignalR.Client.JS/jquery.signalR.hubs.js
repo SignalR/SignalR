@@ -45,11 +45,11 @@
         /// <param name="connection" type="hubConnection" />
         var callbacks = connection._.invocationCallbacks,
             callback;
-        
+
         if (hasMembers(callbacks)) {
             connection.log("Clearing hub invocation callbacks with error: " + error + ".");
         }
-        
+
         // Reset the callback cache now as we have a local var referencing it
         connection._.invocationCallbackId = 0;
         delete connection._.invocationCallbacks;
@@ -167,7 +167,15 @@
                     // Update the hub state
                     $.extend(that.state, result.State);
 
-                    if (result.Error) {
+                    if (result.Progress) {
+                        if (d.notifyWith) {
+                            // Progress is only supported in jQuery 1.7+
+                            d.notifyWith(that, [result.Progress.Data]);
+                        } else if(!connection._.progressjQueryVersionLogged) {
+                            connection.log("A hub method invocation progress update was received but the version of jQuery in use (" + $.prototype.jquery + ") does not support progress updates. Upgrade to jQuery 1.7+ to receive progress notifications.");
+                            connection._.progressjQueryVersionLogged = true;
+                        }
+                    } else if (result.Error) {
                         // Server hub method threw an exception, log it & reject the deferred
                         if (result.StackTrace) {
                             connection.log(result.Error + "\n" + result.StackTrace + ".");
@@ -191,7 +199,7 @@
             if (!$.isEmptyObject(that.state)) {
                 data.S = that.state;
             }
-            
+
             connection.send(data);
 
             return d.promise();
@@ -201,6 +209,10 @@
             return {
                 State: minHubResponse.S,
                 Result: minHubResponse.R,
+                Progress: minHubResponse.P ? {
+                    Id: minHubResponse.P.I,
+                    Data: minHubResponse.P.D
+                } : null,
                 Id: minHubResponse.I,
                 IsHubException: minHubResponse.H,
                 Error: minHubResponse.E,
@@ -259,7 +271,17 @@
                 return;
             }
 
-            if (typeof (minData.I) !== "undefined") {
+            // We have to handle progress updates first in order to ensure old clients that receive
+            // progress updates enter the return value branch and then no-op when they can't find
+            // the callback in the map (because the minData.I value will not be a valid callback ID)
+            if (typeof (minData.P) !== "undefined") {
+                // Process progress notification
+                dataCallbackId = minData.P.I.toString();
+                callback = connection._.invocationCallbacks[dataCallbackId];
+                if (callback) {
+                    callback.method.call(callback.scope, minData);
+                }
+            } else if (typeof (minData.I) !== "undefined") {
                 // We received the return value from a server method invocation, look up callback by id and call it
                 dataCallbackId = minData.I.toString();
                 callback = connection._.invocationCallbacks[dataCallbackId];
@@ -291,7 +313,7 @@
         });
 
         connection.error(function (errData, origData) {
-            var data, callbackId, callback;
+            var callbackId, callback;
 
             if (connection.transport && connection.transport.name === "webSockets") {
                 // WebSockets connections have all callbacks removed on reconnect instead
@@ -304,26 +326,18 @@
                 return;
             }
 
-            try {
-                data = window.JSON.parse(origData);
-                if (!data.I) {
-                    // The original data doesn't have a callback ID so not a send error
-                    return;
-                }
-            } catch (e) {
-                // The original data is not a JSON payload so this is not a send error
-                return;
-            }
-            
-            callbackId = data.I;
+            callbackId = origData.I;
             callback = connection._.invocationCallbacks[callbackId];
 
-            // Invoke the callback with an error to reject the promise
-            callback.method.call(callback.scope, { E: errData });
+            // Verify that there is a callback bound (could have been cleared)
+            if (callback) {
+                // Delete the callback
+                connection._.invocationCallbacks[callbackId] = null;
+                delete connection._.invocationCallbacks[callbackId];
 
-            // Delete the callback
-            connection._.invocationCallbacks[callbackId] = null;
-            delete connection._.invocationCallbacks[callbackId];
+                // Invoke the callback with an error to reject the promise
+                callback.method.call(callback.scope, { E: errData });
+            }
         });
 
         connection.reconnecting(function () {

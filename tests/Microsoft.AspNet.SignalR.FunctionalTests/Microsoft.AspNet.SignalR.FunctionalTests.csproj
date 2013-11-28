@@ -35,14 +35,15 @@
   <ItemGroup>
     <Reference Include="Microsoft.Owin, Version=2.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\packages\Microsoft.Owin.2.0.0\lib\net45\Microsoft.Owin.dll</HintPath>
+      <HintPath>..\..\packages\Microsoft.Owin.2.0.1\lib\net45\Microsoft.Owin.dll</HintPath>
     </Reference>
-    <Reference Include="Microsoft.Owin.Host.HttpListener">
-      <HintPath>..\..\packages\Microsoft.Owin.Host.HttpListener.2.0.0\lib\net45\Microsoft.Owin.Host.HttpListener.dll</HintPath>
+    <Reference Include="Microsoft.Owin.Host.HttpListener, Version=2.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\packages\Microsoft.Owin.Host.HttpListener.2.0.1\lib\net45\Microsoft.Owin.Host.HttpListener.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.Owin.Host.SystemWeb, Version=2.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\packages\Microsoft.Owin.Host.SystemWeb.2.0.0\lib\net45\Microsoft.Owin.Host.SystemWeb.dll</HintPath>
+      <HintPath>..\..\packages\Microsoft.Owin.Host.SystemWeb.2.0.1\lib\net45\Microsoft.Owin.Host.SystemWeb.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.Web.Administration, Version=7.9.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
@@ -87,8 +88,10 @@
     <Compile Include="Server\Connections\DisconnectFacts.cs" />
     <Compile Include="Server\Connections\PersistentConnectionFacts.cs" />
     <Compile Include="Server\Connections\ReconnectFacts.cs" />
+    <Compile Include="Server\Hubs\GetHubContextFacts.cs" />
     <Compile Include="Server\Hubs\HubAuthFacts.cs" />
     <Compile Include="Server\Hubs\HubFacts.cs" />
+    <Compile Include="Server\Hubs\HubProgressFacts.cs" />
     <Compile Include="Server\Hubs\SecurityFacts.cs" />
     <Compile Include="Server\Hubs\TypedHubFacts.cs" />
   </ItemGroup>
@@ -110,6 +113,10 @@
       <Project>{F18A8896-10BD-469E-9AA1-AEBACEF4D7B7}</Project>
       <Name>Microsoft.AspNet.SignalR.Tests.Common</Name>
     </ProjectReference>
+    <ProjectReference Include="..\..\samples\Microsoft.AspNet.SignalR.Samples.VB\Microsoft.AspNet.SignalR.Samples.VB.vbproj">
+      <Project>{44ffd296-2fc1-4159-80ac-4f6c8ae9887c}</Project>
+      <Name>Microsoft.AspNet.SignalR.Samples.VB</Name>
+    </ProjectReference>
     <ProjectReference Include="..\..\src\Microsoft.AspNet.SignalR.Client45\Microsoft.AspNet.SignalR.Client45.csproj">
       <Project>{50f8a174-695e-498c-b105-bdbe6b398646}</Project>
       <Name>Microsoft.AspNet.SignalR.Client45</Name>
@@ -118,10 +125,9 @@
       <Project>{1b9a82c4-bca1-4834-a33e-226f17be070b}</Project>
       <Name>Microsoft.AspNet.SignalR.Core</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\src\Microsoft.AspNet.SignalR.Hosting.Memory\Microsoft.AspNet.SignalR.Hosting.Memory.csproj">
-      <Project>{055f2118-fe29-4219-a28a-3d6f0889652e}</Project>
-      <Name>Microsoft.AspNet.SignalR.Hosting.Memory</Name>
-    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Service Include="{82A7F48D-3B50-4B1E-B82E-3ADA8210C358}" />
   </ItemGroup>
   <Import Project="..\..\src\Common\Microsoft.AspNet.SignalR.targets" />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

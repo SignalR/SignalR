@@ -23,6 +23,13 @@ namespace Microsoft.AspNet.SignalR.Hubs
             return _builder.Value(proxy);
         }
 
+        [SuppressMessage("Microsoft.Performance", "CA1804:RemoveUnusedLocals", MessageId = "forceEvaluation", Justification = "Give me a better way to force the evaluation of Lazy<T>")]
+        public static void Validate()
+        {
+            // The following will throw if T is not a valid type
+            var forceEvaluation = _builder.Value;
+        }
+
         private static Func<IClientProxy, T> GenerateClientBuilder()
         {
             VerifyInterface();

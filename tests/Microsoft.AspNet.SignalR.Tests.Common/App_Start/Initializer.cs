@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Configuration;
 using System.Diagnostics;
 using System.IO;
+using System.Security.Claims;
 using System.Threading.Tasks;
 using System.Web;
 using System.Web.Cors;
@@ -14,6 +15,7 @@ using Microsoft.AspNet.SignalR.Tests.Common.Connections;
 using Microsoft.AspNet.SignalR.Tests.Common.Handlers;
 using Microsoft.Owin;
 using Microsoft.Owin.Cors;
+using Microsoft.Owin.Security.Cookies;
 using Owin;
 
 [assembly: PreApplicationStartMethod(typeof(Initializer), "Start")]
@@ -166,7 +168,74 @@ namespace Microsoft.AspNet.SignalR.Tests.Common
             // This subpipeline is protected by basic auth
             app.Map("/basicauth", map =>
             {
-                map.UseBasicAuthentication(new BasicAuthenticationProvider());
+                map.Use(async (context, next) =>
+                {
+                    var authorization = context.Request.Headers.Get("Authorization");
+                    if (string.IsNullOrEmpty(authorization))
+                    {
+                        context.Response.StatusCode = 401;
+                        context.Response.Headers.Add("WWW-Authenticate", new string[] { "Basic" });
+                    }
+                    else
+                    {
+                        var base64Encoded = authorization.Replace("Basic ", "");
+                        byte[] base64EncodedBytes = Convert.FromBase64String(base64Encoded);
+                        var base64Decoded = System.Text.ASCIIEncoding.ASCII.GetString(base64EncodedBytes);
+                        var credentials = base64Decoded.Split(':');
+                        var identity = new ClaimsIdentity("Basic");
+                        identity.AddClaim(new Claim(ClaimTypes.Name, credentials[0]));
+                        context.Request.User = new ClaimsPrincipal(identity);
+                        await next();
+                    }
+                });
+
+                var subConfig = new ConnectionConfiguration
+                {
+                    Resolver = resolver
+                };
+
+                map.MapSignalR<AuthenticatedEchoConnection>("/echo", subConfig);
+
+                var subHubsConfig = new HubConfiguration
+                {
+                    Resolver = resolver
+                };
+
+                map.MapSignalR(subHubsConfig);
+            });
+
+            // This subpipeline is protected by cookie auth
+            app.Map("/cookieauth", map =>
+            {
+                var options = new CookieAuthenticationOptions()
+                {
+                    AuthenticationType = CookieAuthenticationDefaults.AuthenticationType,
+                    LoginPath = CookieAuthenticationDefaults.LoginPath,
+                    LogoutPath = CookieAuthenticationDefaults.LogoutPath,
+                };
+
+                map.UseCookieAuthentication(options);
+
+                map.Use(async (context, next) =>
+                {
+                    if (context.Request.Path.Value.Contains(options.LoginPath.Value))
+                    {
+                        if (context.Request.Method == "POST")
+                        {
+                            var form = await context.Request.ReadFormAsync();
+                            var userName = form["UserName"];
+                            var password = form["Password"];
+
+                            var identity = new ClaimsIdentity(options.AuthenticationType);
+                            identity.AddClaim(new Claim(ClaimTypes.Name, userName));
+                            context.Authentication.SignIn(identity);
+                        }
+                    }
+                    else
+                    {
+                        await next();
+                    }
+                });
 
                 var subConfig = new ConnectionConfiguration
                 {
