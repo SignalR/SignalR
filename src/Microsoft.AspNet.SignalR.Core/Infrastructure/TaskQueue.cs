@@ -35,7 +35,7 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
             _maxSize = maxSize;
         }
 
-#if !CLIENT_NET45 && !CLIENT_NET4 && !PORTABLE && !NETFX_CORE
+#if !CLIENT_NET45 && !CLIENT_NET4 && !PORTABLE && !NETFX_CORE && !__IOS__ && !__ANDROID__	
         [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode", Justification = "This is shared code.")]
         public IPerformanceCounter QueueSizeCounter { get; set; }
 #endif
@@ -71,7 +71,7 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
                         return null;
                     }
 
-#if !CLIENT_NET45 && !CLIENT_NET4 && !PORTABLE && !NETFX_CORE
+#if !CLIENT_NET45 && !CLIENT_NET4 && !PORTABLE && !NETFX_CORE && !__IOS__ && !__ANDROID__
                     var counter = QueueSizeCounter;
                     if (counter != null)
                     {
@@ -100,7 +100,7 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
                 // Decrement the number of items left in the queue
                 Interlocked.Decrement(ref queue._size);
 
-#if !CLIENT_NET45 && !CLIENT_NET4 && !PORTABLE && !NETFX_CORE
+#if !CLIENT_NET45 && !CLIENT_NET4 && !PORTABLE && !NETFX_CORE && !__IOS__ && !__ANDROID__
                 var counter = queue.QueueSizeCounter;
                 if (counter != null)
                 {
