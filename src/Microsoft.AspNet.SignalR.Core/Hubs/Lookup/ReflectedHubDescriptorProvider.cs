@@ -78,6 +78,10 @@ namespace Microsoft.AspNet.SignalR.Hubs
             {
                 return a.GetTypes();
             }
+            catch (ReflectionTypeLoadException ex)
+            {
+                return ex.Types;
+            }
             catch
             {
                 return Enumerable.Empty<Type>();
