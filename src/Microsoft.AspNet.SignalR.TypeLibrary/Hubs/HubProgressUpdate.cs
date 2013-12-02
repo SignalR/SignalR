@@ -3,7 +3,7 @@
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
-namespace Microsoft.AspNet.SignalR.Client.Hubs
+namespace Microsoft.AspNet.SignalR.Hubs
 {
     public class HubProgressUpdate
     {
@@ -17,6 +17,6 @@ namespace Microsoft.AspNet.SignalR.Client.Hubs
         /// The progress value
         /// </summary>
         [JsonProperty("D")]
-        public JToken Data { get; set; }
+        public object Data { get; set; }
     }
 }

@@ -72,7 +72,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Core
         {
             var resolver = new DefaultDependencyResolver();
             var hubManager = new DefaultHubManager(resolver);
-            var methodDescriptor = hubManager.GetHubMethod("CoreTestHubWithMethod", "AddNumbers", new IJsonValue[] { null, null });
+            var methodDescriptor = hubManager.GetHubMethod("CoreTestHubWithMethod", "AddNumbers", new object[] { null, null });
 
             Assert.NotNull(methodDescriptor);
             Assert.Equal(methodDescriptor.Name, "AddNumbers");
@@ -103,7 +103,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Core
             var resolver = new DefaultDependencyResolver();
             var hubManager = new DefaultHubManager(resolver);
             // There is no ________________CoreTestHubWithMethod________________ name
-            var methodDescriptor = hubManager.GetHubMethod("________________CoreTestHubWithMethod________________", "AddNumbers", new IJsonValue[] { null, null });
+            var methodDescriptor = hubManager.GetHubMethod("________________CoreTestHubWithMethod________________", "AddNumbers", new object[] { null, null });
 
             Assert.Null(methodDescriptor);
         }

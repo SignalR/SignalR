@@ -11,9 +11,9 @@ namespace Microsoft.AspNet.SignalR.Client.Hubs
     /// </summary>
     public class Subscription
     {
-        public event Action<IList<JToken>> Received;
+        public event Action<IList<object>> Received;
 
-        internal void OnReceived(IList<JToken> data)
+        internal void OnReceived(IList<object> data)
         {
             if (Received != null)
             {

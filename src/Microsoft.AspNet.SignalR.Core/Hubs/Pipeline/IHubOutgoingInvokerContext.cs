@@ -17,7 +17,7 @@ namespace Microsoft.AspNet.SignalR.Hubs
         /// <summary>
         /// A description of the method call to be made on the client.
         /// </summary>
-        ClientHubInvocation Invocation { get; }
+        HubRequest Invocation { get; }
 
         /// <summary>
         /// The signal (ConnectionId, hub type name or hub type name + "." + group name) belonging to clients that

@@ -10,11 +10,13 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNet.SignalR.Hubs;
 using Microsoft.AspNet.SignalR.Json;
 using Microsoft.AspNet.SignalR.Messaging;
 using Microsoft.AspNet.SignalR.Tracing;
 using Microsoft.AspNet.SignalR.Transports;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace Microsoft.AspNet.SignalR.Infrastructure
 {
@@ -139,6 +141,14 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
                 }
 
                 return _bus.Publish(busMessage);
+            }
+        }
+
+        public JsonSerializer JsonSerializer
+        {
+            get
+            {
+                return _serializer;
             }
         }
 

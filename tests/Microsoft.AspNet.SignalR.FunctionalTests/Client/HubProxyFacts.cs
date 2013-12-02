@@ -10,6 +10,7 @@ using Microsoft.AspNet.SignalR.Tests.Common;
 using Microsoft.AspNet.SignalR.Tests.Common.Infrastructure;
 using Microsoft.AspNet.SignalR.Tests.Infrastructure;
 using Moq;
+using Newtonsoft.Json;
 using Xunit;
 using Xunit.Extensions;
 
@@ -706,6 +707,115 @@ namespace Microsoft.AspNet.SignalR.Tests
             }
         }
 
+        [Theory]
+        [InlineData(HostType.Memory, TransportType.LongPolling)]
+        public async Task SerializationIncludesTypeName(HostType hostType, TransportType transportType)
+        {
+            using (var host = CreateHost(hostType, transportType))
+            {
+                host.Initialize();
+                HubConnection hubConnection = CreateHubConnection(host, path: "/TypeNameHandlingObjects/signalr", useDefaultUrl: false);
+                hubConnection.JsonSerializer = JsonSerializer.Create(new JsonSerializerSettings
+                {
+                    TypeNameHandling = TypeNameHandling.Objects
+                });
+
+                using (hubConnection)
+                {
+                    var proxy = hubConnection.CreateHubProxy("SerializerHub");
+                    var mre = new AsyncManualResetEvent();
+
+                    proxy.On<Person>("echo", message =>
+                    {
+                        Assert.IsType(typeof(Engineer), message);
+                        mre.Set();
+                    });
+
+                    await hubConnection.Start(host.Transport);
+
+                    Person person = new Engineer
+                    {
+                        Name = "David Fowler",
+                        Career = "Jabbr Guy"
+                    };
+
+                    Person response = await proxy.Invoke<Person>("ReturnDerivedType", person);
+                    Assert.IsType(typeof(Engineer), response);
+                    Assert.True(await mre.WaitAsync(TimeSpan.FromSeconds(10)));
+                }
+            }
+        }
+
+        [Theory]
+        [InlineData(HostType.Memory, TransportType.LongPolling)]
+        public async Task SerializationIncludesTypeNameOnlyOnServerSide(HostType hostType, TransportType transportType)
+        {
+            using (var host = CreateHost(hostType, transportType))
+            {
+                host.Initialize();
+                HubConnection hubConnection = CreateHubConnection(host, path: "/TypeNameHandlingObjects/signalr", useDefaultUrl: false);
+
+                using (hubConnection)
+                {
+                    var proxy = hubConnection.CreateHubProxy("SerializerHub");
+                    var mre = new AsyncManualResetEvent();
+
+                    proxy.On<Person>("echo", message =>
+                    {
+                        Assert.IsType(typeof(Person), message);
+                        mre.Set();
+                    });
+
+                    await hubConnection.Start(host.Transport);
+
+                    Person person = new Engineer
+                    {
+                        Name = "David Fowler",
+                        Career = "Jabbr Guy"
+                    };
+
+                    Person response = await proxy.Invoke<Person>("ReturnDerivedType", person);
+                    Assert.IsType(typeof(Person), response);
+                    Assert.True(await mre.WaitAsync(TimeSpan.FromSeconds(10)));
+                }
+            }
+        }
+
+        [Theory]
+        [InlineData(HostType.Memory, TransportType.LongPolling)]
+        public async Task Serialization(HostType hostType, TransportType transportType)
+        {
+            using (var host = CreateHost(hostType, transportType))
+            {
+                host.Initialize();
+                HubConnection hubConnection = CreateHubConnection(host);
+
+                using (hubConnection)
+                {
+                    var proxy = hubConnection.CreateHubProxy("SerializerHub");
+                    var mre = new AsyncManualResetEvent();
+
+                    proxy.On<Person>("echo", message =>
+                    {
+                        Assert.IsType(typeof(Person), message);
+                        mre.Set();
+                    });
+
+                    await hubConnection.Start(host.Transport);
+
+                    Person person = new Engineer
+                    {
+                        Name = "David Fowler",
+                        Career = "Jabbr Guy"
+                    };
+
+                    Person response = await proxy.Invoke<Person>("ReturnDerivedType", person);
+                    Assert.IsType(typeof(Person), response);
+                    Assert.True(await mre.WaitAsync(TimeSpan.FromSeconds(10)));
+                }
+            }
+        }
+
         public class MyHub2 : Hub
         {
             public MyHub2(int n)
@@ -724,6 +834,25 @@ namespace Microsoft.AspNet.SignalR.Tests
             public Task Send(string message)
             {
                 return Clients.All.addMessage(message);
+            }
+        }
+
+        public class Person
+        {
+            public string Name { get; set; }
+        }
+
+        public class Engineer : Person 
+        {
+            public string Career { get; set; }
+        }
+
+        public class SerializerHub : Hub
+        {
+            public Person ReturnDerivedType(Person person)
+            {
+                Clients.Caller.echo(person);
+                return person;
             }
         }
     }

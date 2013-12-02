@@ -90,20 +90,8 @@
     <Compile Include="..\Microsoft.AspNet.SignalR.Client\HubProxyExtensions.cs">
       <Link>HubProxyExtensions.cs</Link>
     </Compile>
-    <Compile Include="..\Microsoft.AspNet.SignalR.Client\Hubs\HubInvocation.cs">
-      <Link>Hubs\HubInvocation.cs</Link>
-    </Compile>
-    <Compile Include="..\Microsoft.AspNet.SignalR.Client\Hubs\HubProgressUpdate.cs">
-      <Link>Hubs\HubProgressUpdate.cs</Link>
-    </Compile>
     <Compile Include="..\Microsoft.AspNet.SignalR.Client\Hubs\HubProxy.cs">
       <Link>Hubs\HubProxy.cs</Link>
-    </Compile>
-    <Compile Include="..\Microsoft.AspNet.SignalR.Client\Hubs\HubRegistrationData.cs">
-      <Link>Hubs\HubRegistrationData.cs</Link>
-    </Compile>
-    <Compile Include="..\Microsoft.AspNet.SignalR.Client\Hubs\HubResult.cs">
-      <Link>Hubs\HubResult.cs</Link>
     </Compile>
     <Compile Include="..\Microsoft.AspNet.SignalR.Client\Hubs\Hubservable.cs">
       <Link>Hubs\Hubservable.cs</Link>
@@ -245,6 +233,12 @@
   <ItemGroup>
     <None Include="app.config" />
     <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Microsoft.AspNet.SignalR.TypeLibrary\Microsoft.AspNet.SignalR.TypeLibrary.csproj">
+      <Project>{3d36c80c-27a0-4c56-8751-5905badd2607}</Project>
+      <Name>Microsoft.AspNet.SignalR.TypeLibrary</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="..\Common\Microsoft.AspNet.SignalR.targets" />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

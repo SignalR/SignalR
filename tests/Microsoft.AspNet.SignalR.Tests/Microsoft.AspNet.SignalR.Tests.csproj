@@ -131,6 +131,10 @@
       <Project>{3da5e69c-ba4c-4ec1-9fde-688a1bc34b17}</Project>
       <Name>Microsoft.AspNet.SignalR.ServiceBus</Name>
     </ProjectReference>
+    <ProjectReference Include="..\..\src\Microsoft.AspNet.SignalR.TypeLibrary\Microsoft.AspNet.SignalR.TypeLibrary.csproj">
+      <Project>{3d36c80c-27a0-4c56-8751-5905badd2607}</Project>
+      <Name>Microsoft.AspNet.SignalR.TypeLibrary</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Microsoft.AspNet.SignalR.Tests.Common\Microsoft.AspNet.SignalR.Tests.Common.csproj">
       <Project>{f18a8896-10bd-469e-9aa1-aebacef4d7b7}</Project>
       <Name>Microsoft.AspNet.SignalR.Tests.Common</Name>

@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.md in the project root for license information.
 
 using System.Threading.Tasks;
+using Newtonsoft.Json;
 
 namespace Microsoft.AspNet.SignalR
 {
@@ -20,5 +21,7 @@ namespace Microsoft.AspNet.SignalR
         /// <param name="message">The message to send.</param>
         /// <returns>A task that returns when the message has be sent.</returns>
         Task Send(ConnectionMessage message);
+
+        JsonSerializer JsonSerializer { get; }
     }
 }

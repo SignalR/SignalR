@@ -50,9 +50,9 @@ namespace Microsoft.AspNet.SignalR.Hubs
             return _invoker.Send(context);
         }
 
-        protected virtual ClientHubInvocation GetInvocationData(string method, object[] args)
+        protected virtual HubRequest GetInvocationData(string method, object[] args)
         {
-            return new ClientHubInvocation
+            return new HubRequest
             {
                 Hub = _hubName,
                 Method = method,

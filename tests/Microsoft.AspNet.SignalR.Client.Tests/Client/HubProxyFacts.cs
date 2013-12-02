@@ -10,6 +10,7 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Xunit;
 using System.Threading;
+using Microsoft.AspNet.SignalR.Hubs;
 
 namespace Microsoft.AspNet.SignalR.Client.Tests
 {
@@ -18,14 +19,14 @@ namespace Microsoft.AspNet.SignalR.Client.Tests
         [Fact]
         public void InvokeWithErrorInHubResultReturnsFaultedTask()
         {
-            var hubResult = new HubResult
+            var hubResult = new HubResponse
             {
                 Error = "This in an error"
             };
 
             var connection = new Mock<IHubConnection>();
-            connection.Setup(m => m.RegisterCallback(It.IsAny<Action<HubResult>>()))
-                      .Callback<Action<HubResult>>(callback =>
+            connection.Setup(m => m.RegisterCallback(It.IsAny<Action<HubResponse>>()))
+                      .Callback<Action<HubResponse>>(callback =>
                       {
                           callback(hubResult);
                       });
@@ -44,17 +45,17 @@ namespace Microsoft.AspNet.SignalR.Client.Tests
         [Fact]
         public void InvokeWithStateCopiesStateToHubProxy()
         {
-            var hubResult = new HubResult
+            var hubResult = new HubResponse
             {
-                State = new Dictionary<string, JToken>
+                State = new Dictionary<string, object>
                 {
-                    { "state", JToken.FromObject(1) }
+                    { "state", 1 }
                 }
             };
 
             var connection = new Mock<IHubConnection>();
-            connection.Setup(m => m.RegisterCallback(It.IsAny<Action<HubResult>>()))
-                      .Callback<Action<HubResult>>(callback =>
+            connection.Setup(m => m.RegisterCallback(It.IsAny<Action<HubResponse>>()))
+                      .Callback<Action<HubResponse>>(callback =>
                       {
                           callback(hubResult);
                       });
@@ -74,14 +75,14 @@ namespace Microsoft.AspNet.SignalR.Client.Tests
         [Fact]
         public void InvokeReturnsHubsResult()
         {
-            var hubResult = new HubResult
+            var hubResult = new HubResponse
             {
                 Result = "Something"
             };
 
             var connection = new Mock<IHubConnection>();
-            connection.Setup(m => m.RegisterCallback(It.IsAny<Action<HubResult>>()))
-                      .Callback<Action<HubResult>>(callback =>
+            connection.Setup(m => m.RegisterCallback(It.IsAny<Action<HubResponse>>()))
+                      .Callback<Action<HubResponse>>(callback =>
                       {
                           callback(hubResult);
                       });

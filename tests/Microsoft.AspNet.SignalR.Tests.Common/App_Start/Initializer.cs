@@ -23,6 +23,7 @@ using Owin;
 
 namespace Microsoft.AspNet.SignalR.Tests.Common
 {
+    using Newtonsoft.Json;
     using AppFunc = Func<IDictionary<string, object>, Task>;
 
     public static class Initializer
@@ -284,6 +285,17 @@ namespace Microsoft.AspNet.SignalR.Tests.Common
             app.Map("/session", map =>
             {
                 map.MapSignalR();
+            });
+
+            app.Map("/TypeNameHandlingObjects", map =>
+            {
+                var serializer = JsonSerializer.Create(new JsonSerializerSettings
+                {
+                    TypeNameHandling = TypeNameHandling.Objects
+                });
+                var hubConfigObjects = new HubConfiguration();
+                hubConfigObjects.Resolver.Register(typeof(JsonSerializer), () => serializer);
+                map.MapSignalR(hubConfigObjects);
             });
         }
     }

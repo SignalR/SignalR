@@ -6,6 +6,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR.Client;
+using Microsoft.AspNet.SignalR.Hubs;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
@@ -15,7 +16,7 @@ namespace Microsoft.AspNet.SignalR.Client.Hubs
     {
         private readonly string _hubName;
         private readonly IHubConnection _connection;
-        private readonly Dictionary<string, JToken> _state = new Dictionary<string, JToken>(StringComparer.OrdinalIgnoreCase);
+        private readonly Dictionary<string, object> _state = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
         private readonly Dictionary<string, Subscription> _subscriptions = new Dictionary<string, Subscription>(StringComparer.OrdinalIgnoreCase);
 
         public HubProxy(IHubConnection connection, string hubName)
@@ -24,13 +25,13 @@ namespace Microsoft.AspNet.SignalR.Client.Hubs
             _hubName = hubName;
         }
 
-        public JToken this[string name]
+        public object this[string name]
         {
             get
             {
                 lock (_state)
                 {
-                    JToken value;
+                    object value;
                     _state.TryGetValue(name, out value);
                     return value;
                 }
@@ -94,12 +95,6 @@ namespace Microsoft.AspNet.SignalR.Client.Hubs
                 throw new ArgumentNullException("args");
             }
 
-            var tokenifiedArguments = new JToken[args.Length];
-            for (int i = 0; i < tokenifiedArguments.Length; i++)
-            {
-                tokenifiedArguments[i] = JToken.FromObject(args[i], JsonSerializer);
-            }
-
             var tcs = new TaskCompletionSource<TResult>();
             var callbackId = _connection.RegisterCallback(result =>
             {
@@ -129,13 +124,13 @@ namespace Microsoft.AspNet.SignalR.Client.Hubs
                                 }
                             }
 
-                            if (result.ProgressUpdate != null)
+                            if (result.Progress != null)
                             {
-                                onProgress(result.ProgressUpdate.Data.ToObject<TProgress>(JsonSerializer));
+                                onProgress(HubProxyExtensions.Convert<TProgress>(result.Progress.Data, JsonSerializer));
                             }
                             else if (result.Result != null)
                             {
-                                tcs.TrySetResult(result.Result.ToObject<TResult>(JsonSerializer));
+                                tcs.TrySetResult(HubProxyExtensions.Convert<TResult>(result.Result, JsonSerializer));
                             }
                             else
                             {
@@ -156,12 +151,12 @@ namespace Microsoft.AspNet.SignalR.Client.Hubs
                 }
             });
 
-            var hubData = new HubInvocation
+            var hubData = new HubRequest
             {
                 Hub = _hubName,
                 Method = method,
-                Args = tokenifiedArguments,
-                CallbackId = callbackId
+                Args = args,
+                Id = callbackId
             };
 
             if (_state.Count != 0)
@@ -189,7 +184,7 @@ namespace Microsoft.AspNet.SignalR.Client.Hubs
             return tcs.Task;
         }
 
-        public void InvokeEvent(string eventName, IList<JToken> args)
+        public void InvokeEvent(string eventName, IList<object> args)
         {
             Subscription subscription;
             if (_subscriptions.TryGetValue(eventName, out subscription))

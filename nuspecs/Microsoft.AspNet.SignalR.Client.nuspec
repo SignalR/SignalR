@@ -30,9 +30,15 @@
   <files>
     <file src="Net40\Microsoft.AspNet.SignalR.Client.dll" target="lib\net40" />
     <file src="Net40\Microsoft.AspNet.SignalR.Client.xml" target="lib\net40" />
+    <file src="Net40\Microsoft.AspNet.SignalR.TypeLibrary.dll" target="lib\net40" />
+    <file src="Net40\Microsoft.AspNet.SignalR.TypeLibrary.xml" target="lib\net40" />
     <file src="Net45\Microsoft.AspNet.SignalR.Client.dll" target="lib\net45" />
     <file src="Net45\Microsoft.AspNet.SignalR.Client.xml" target="lib\net45" />
+    <file src="Net45\Microsoft.AspNet.SignalR.TypeLibrary.dll" target="lib\net45" />
+    <file src="Net45\Microsoft.AspNet.SignalR.TypeLibrary.xml" target="lib\net45" />
     <file src="portable-net45+sl5+netcore45+wp8\Microsoft.AspNet.SignalR.Client.dll" target="lib\portable-net45+sl5+netcore45+wp8" />
     <file src="portable-net45+sl5+netcore45+wp8\Microsoft.AspNet.SignalR.Client.xml" target="lib\portable-net45+sl5+netcore45+wp8" />
+    <file src="portable-net45+sl5+netcore45+wp8\Microsoft.AspNet.SignalR.TypeLibrary.dll" target="lib\portable-net45+sl5+netcore45+wp8" />
+    <file src="portable-net45+sl5+netcore45+wp8\Microsoft.AspNet.SignalR.TypeLibrary.xml" target="lib\portable-net45+sl5+netcore45+wp8" />
   </files>
 </package>

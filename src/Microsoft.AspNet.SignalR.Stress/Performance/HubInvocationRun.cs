@@ -4,6 +4,7 @@ using System.ComponentModel.Composition;
 using System.Globalization;
 using System.IO;
 using Microsoft.AspNet.SignalR.Client.Hubs;
+using Microsoft.AspNet.SignalR.Hubs;
 using Microsoft.AspNet.SignalR.Infrastructure;
 using Microsoft.AspNet.SignalR.Stress.Performance;
 using Newtonsoft.Json;
@@ -43,12 +44,12 @@ namespace Microsoft.AspNet.SignalR.Stress
         {
             var jsonSerializer = new JsonSerializer();
 
-            var hubInvocation = new HubInvocation
+            var hubInvocation = new HubRequest
             {
                 Hub = "SimpleEchoHub",
                 Method = "Echo",
                 Args = new[] { JToken.FromObject(runData.Payload, jsonSerializer) },
-                CallbackId = ""
+                Id = ""
             };
 
             using (var writer = new StringWriter(CultureInfo.InvariantCulture))

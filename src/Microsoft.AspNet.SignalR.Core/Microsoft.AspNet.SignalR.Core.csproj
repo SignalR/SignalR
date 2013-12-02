@@ -133,7 +133,6 @@
     <Compile Include="Hubs\Pipeline\Auth\AuthorizeModule.cs" />
     <Compile Include="AuthorizeAttribute.cs" />
     <Compile Include="Hubs\Pipeline\HubOutgoingInvokerContext.cs" />
-    <Compile Include="Hubs\ClientHubInvocation.cs" />
     <Compile Include="Hubs\HubContext.cs" />
     <Compile Include="Hubs\Pipeline\HubPipelineExtensions.cs" />
     <Compile Include="Hubs\Pipeline\HubPipelineModule.cs" />
@@ -142,9 +141,7 @@
     <Compile Include="Hubs\Pipeline\IHubOutgoingInvokerContext.cs" />
     <Compile Include="Hubs\Pipeline\IHubPipelineInvoker.cs" />
     <Compile Include="Hubs\Pipeline\HubInvokerContext.cs" />
-    <Compile Include="Hubs\HubRequest.cs" />
     <Compile Include="Hubs\HubRequestParser.cs" />
-    <Compile Include="Hubs\HubResponse.cs" />
     <Compile Include="Hubs\IClientProxy.cs" />
     <Compile Include="IHubContext`T.cs" />
     <Compile Include="Hubs\IHubRequestParser.cs" />
@@ -168,9 +165,7 @@
     <Compile Include="Infrastructure\CancellationTokenExtensions.cs" />
     <Compile Include="Infrastructure\SafeCancellationTokenSource.cs" />
     <Compile Include="Infrastructure\TaskQueue.cs" />
-    <Compile Include="Json\IJsonValue.cs" />
     <Compile Include="Json\IJsonWritable.cs" />
-    <Compile Include="Json\JRawValue.cs" />
     <Compile Include="Hubs\StatefulSignalProxy.cs" />
     <Compile Include="ConnectionExtensions.cs" />
     <Compile Include="Hubs\Extensions\HubTypeExtensions.cs" />
@@ -314,6 +309,12 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Microsoft.AspNet.SignalR.TypeLibrary\Microsoft.AspNet.SignalR.TypeLibrary.csproj">
+      <Project>{3d36c80c-27a0-4c56-8751-5905badd2607}</Project>
+      <Name>Microsoft.AspNet.SignalR.TypeLibrary</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="..\Common\Microsoft.AspNet.SignalR.targets" />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
