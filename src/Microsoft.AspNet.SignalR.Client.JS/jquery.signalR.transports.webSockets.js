@@ -88,8 +88,7 @@
                 };
 
                 connection.socket.onmessage = function (event) {
-                    var data,
-                        $connection = $(connection);
+                    var data;
 
                     try {
                         data = connection._parseResponse(event.data);
@@ -106,7 +105,7 @@
                         } else {
                             // For websockets we need to trigger onReceived
                             // for callbacks to outgoing hub calls.
-                            $connection.triggerHandler(events.onReceived, [data]);
+                            transportLogic.triggerReceived(connection, data);
                         }
                     }
                 };
