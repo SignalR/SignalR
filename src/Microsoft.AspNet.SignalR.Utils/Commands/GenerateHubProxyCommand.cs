@@ -94,7 +94,7 @@ namespace Microsoft.AspNet.SignalR.Utils
 
             var generator = (JavaScriptGenerator)domain.CreateInstanceAndUnwrap(typeof(Program).Assembly.FullName,
                                                                                 typeof(JavaScriptGenerator).FullName);
-            var js = generator.GenerateProxy(path, url);
+            var js = generator.GenerateProxy(path, url, Warning);
 
             Generate(outputPath, js);
         }
@@ -202,11 +202,18 @@ namespace Microsoft.AspNet.SignalR.Utils
         public class JavaScriptGenerator : MarshalByRefObject
         {
             [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1822:MarkMembersAsStatic", Justification = "Called from non-static.")]
-            public string GenerateProxy(string path, string url)
+            public string GenerateProxy(string path, string url, Action<string> warning)
             {
                 foreach (var assemblyPath in Directory.GetFiles(path, "*.dll", SearchOption.AllDirectories))
                 {
-                    Assembly.Load(AssemblyName.GetAssemblyName(assemblyPath));
+                    try
+                    {
+                        Assembly.Load(AssemblyName.GetAssemblyName(assemblyPath));
+                    }
+                    catch (BadImageFormatException e)
+                    {
+                         warning(e.Message);
+                    }
                 }
 
                 var signalrAssembly = (from a in AppDomain.CurrentDomain.GetAssemblies()
