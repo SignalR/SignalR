@@ -59,7 +59,7 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
         {
             var stream = ServiceBusMessage.ToStream(messages);
 
-            TraceSentMessages(messages);
+            TraceMessages(messages, "Sending");
 
             return _connectionContext.Publish(streamIndex, stream);
         }
@@ -78,6 +78,8 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
                 {
                     ScaleoutMessage scaleoutMessage = ServiceBusMessage.FromBrokeredMessage(message);
 
+                    TraceMessages(scaleoutMessage.Messages, "Receiving");
+
                     OnReceived(topicIndex, (ulong)message.EnqueuedSequenceNumber, scaleoutMessage);
                 }
             }
@@ -88,11 +90,16 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
             _connectionContext = _connection.Subscribe(_topics, OnMessage, OnError, Open);
         }
 
-        private void TraceSentMessages(IList<Message> messages)
+        private void TraceMessages(IList<Message> messages, string messageType)
         {
+            if (!_trace.Switch.ShouldTrace(TraceEventType.Verbose))
+            {
+                return;
+            }
+
             foreach (Message message in messages)
             {
-                _trace.TraceEvent(TraceEventType.Verbose, 1, "Sending message of size {0} bytes over Azure Service Bus : {1}", message.Value.Array.Length, message.Encoding.GetString(message.Value.Array));
+                _trace.TraceVerbose("{0} {1} bytes over Service Bus: {2}", messageType, message.Value.Array.Length, message.GetString());
             }
         }
 
