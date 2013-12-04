@@ -163,7 +163,12 @@
         prepareQueryString: function (connection, url) {
             url = transportLogic.addQs(url, connection.qs);
 
-            return addConnectionData(url, connection.data);
+            if (url.indexOf("ping") === -1) {
+                // If url doesn't contain ping
+                return addConnectionData(url, connection.data);
+            } else {
+                return url;
+            }
         },
 
         addQs: function (url, qs) {
