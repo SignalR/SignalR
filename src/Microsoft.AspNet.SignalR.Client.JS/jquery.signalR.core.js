@@ -32,7 +32,8 @@
         pingServerFailed: "Failed to ping server.",
         pingServerFailedStatusCode: "Failed to ping server.  Server responded with status code {0}, stopping the connection.",
         pingServerFailedParse: "Failed to parse ping server response, stopping the connection.",
-        noConnectionTransport: "Connection is in an invalid state, there is no transport active."
+        noConnectionTransport: "Connection is in an invalid state, there is no transport active.",
+        reconnectWindowTimeout: "Connection has been inactive since {0} and it has exceeded reconnect window of {1} ms. Stopping connection."
     };
 
     if (typeof ($) !== "function") {
