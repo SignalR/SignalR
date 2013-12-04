@@ -150,7 +150,10 @@
   <data name="Error_DoNotReadRequireOutgoing" xml:space="preserve">
     <value>Do not read RequireOutgoing. Use protected _requireOutgoing instead.</value>
   </data>
-  <data name="Error_DuplicateHubs" xml:space="preserve">
+  <data name="Error_DuplicateHubNames" xml:space="preserve">
+    <value>Two Hubs must not share the same name. '{0}' and '{1}' both share the name '{2}'.</value>
+  </data>
+  <data name="Error_DuplicateHubNamesInConnectionData" xml:space="preserve">
     <value>Duplicate Hub names found.</value>
   </data>
   <data name="Error_DuplicatePayloadsForStream" xml:space="preserve">
