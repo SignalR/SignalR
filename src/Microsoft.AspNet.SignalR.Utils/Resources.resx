@@ -169,6 +169,9 @@ For more information, visit http://go.microsoft.com/fwlink/?LinkId=275833</value
     <value>Uninstalls SignalR performance counters.</value>
   </data>
   <data name="Notify_Warning" xml:space="preserve">
-    <value>Warning:</value>
+    <value>Warning: </value>
+  </data>
+  <data name="Notify_BadImage" xml:space="preserve">
+    <value>Assembly '{0}' could not be loaded because it is a bad image. http://support.microsoft.com/kb/967163</value>
   </data>
 </root>
