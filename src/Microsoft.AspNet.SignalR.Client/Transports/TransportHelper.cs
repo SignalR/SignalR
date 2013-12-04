@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.md in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Text;
@@ -190,7 +191,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
 
                 UpdateGroups(connection, groupsToken: result["G"]);
 
-                var messages = result["M"] as JArray;
+                var messages = result["M"] as IEnumerable<JToken>;
                 if (messages != null)
                 {
                     connection.MessageId = (string)result["C"];
