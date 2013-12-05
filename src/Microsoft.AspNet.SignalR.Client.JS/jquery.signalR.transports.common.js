@@ -78,7 +78,7 @@
             if (connection.transport) {
                 url = connection.url + "/ping";
 
-                url = transportLogic.prepareQueryString(connection, url);
+                url = transportLogic.addQs(url, connection.qs);
 
                 xhr = $.ajax(
                     $.extend({}, $.signalR.ajaxDefaults, {
