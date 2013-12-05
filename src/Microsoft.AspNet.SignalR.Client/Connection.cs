@@ -175,7 +175,7 @@ namespace Microsoft.AspNet.SignalR.Client
             TraceLevel = TraceLevels.All;
             TraceWriter = new DebugTextWriter();
             Headers = new HeaderDictionary(this);
-            TransportConnectTimeout = TimeSpan.Zero;
+            ConfigurableTransportConnectTimeout = TimeSpan.Zero;
 
             // Current client protocol
             Protocol = new Version(1, 3);
@@ -185,7 +185,13 @@ namespace Microsoft.AspNet.SignalR.Client
         /// The amount of time a transport will wait (while connecting) before failing.
         /// This value is modified by adding the server's TransportConnectTimeout configuration value.
         /// </summary>
-        public TimeSpan TransportConnectTimeout { get; set; }
+        public TimeSpan ConfigurableTransportConnectTimeout { get; set; }
+
+        /// <summary>
+        /// The amount of time a transport will wait (while connecting) before failing.
+        /// This value is determined by adding the server's TransportConnectTimeout value and the value provided by the client.
+        /// </summary>
+        public TimeSpan TotalTransportConnectTimeout { get; private set; }
 
         public Version Protocol { get; set; }
 
@@ -193,7 +199,7 @@ namespace Microsoft.AspNet.SignalR.Client
         /// The maximum amount of time a connection will allow to try and reconnect.
         /// This value is equivalent to the summation of the servers disconnect and keep alive timeout values.
         /// </summary>
-        TimeSpan IConnection.ReconnectWindow 
+        TimeSpan IConnection.ReconnectWindow
         {
             get
             {
@@ -446,7 +452,7 @@ namespace Microsoft.AspNet.SignalR.Client
                                 ConnectionId = negotiationResponse.ConnectionId;
                                 ConnectionToken = negotiationResponse.ConnectionToken;
                                 _disconnectTimeout = TimeSpan.FromSeconds(negotiationResponse.DisconnectTimeout);
-                                TransportConnectTimeout = TransportConnectTimeout + TimeSpan.FromSeconds(negotiationResponse.TransportConnectTimeout);
+                                TotalTransportConnectTimeout = ConfigurableTransportConnectTimeout + TimeSpan.FromSeconds(negotiationResponse.TransportConnectTimeout);
 
                                 // Default the beat interval to be 5 seconds in case keep alive is disabled.
                                 var beatInterval = TimeSpan.FromSeconds(5);
@@ -482,12 +488,12 @@ namespace Microsoft.AspNet.SignalR.Client
                                  // Now that we're connected complete the start task that the
                                  // receive queue is waiting on
                                  _startTcs.SetResult(null);
-                                 
+
                                  // Start the monitor to check for server activity
-                                _monitor.Start();
+                                 _monitor.Start();
                              })
-                             // Don't return until the last receive has been processed to ensure messages/state sent in OnConnected
-                             // are processed prior to the Start() method task finishing
+                // Don't return until the last receive has been processed to ensure messages/state sent in OnConnected
+                // are processed prior to the Start() method task finishing
                              .Then(() => _lastQueuedReceiveTask);
         }
 

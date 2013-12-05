@@ -20,7 +20,8 @@ namespace Microsoft.AspNet.SignalR.Client
     public interface IConnection
     {
         Version Protocol { get; set; }
-        TimeSpan TransportConnectTimeout { get; set; }
+        TimeSpan ConfigurableTransportConnectTimeout { get; set; }
+        TimeSpan TotalTransportConnectTimeout { get; }
         TimeSpan ReconnectWindow { get; set; }
         KeepAliveData KeepAliveData { get; set; }
         string MessageId { get; set; }
