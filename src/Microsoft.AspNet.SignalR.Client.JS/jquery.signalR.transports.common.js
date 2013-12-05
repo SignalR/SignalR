@@ -78,7 +78,7 @@
             if (connection.transport) {
                 url = connection.url + "/ping";
 
-                url = transportLogic.prepareQueryString(connection, url);
+                url = transportLogic.addQs(url, connection.qs);
 
                 xhr = $.ajax(
                     $.extend({}, $.signalR.ajaxDefaults, {
@@ -279,7 +279,7 @@
                                 return;
                             }
 
-                            $(connection).triggerHandler(events.onReceived, [res]);
+                            transportLogic.triggerReceived(connection, res);
                         }
                     },
                     error: function (error, textStatus) {
@@ -331,15 +331,20 @@
             }
         },
 
+        triggerReceived: function (connection, data) {
+            if (!connection._.connectingMessageBuffer.tryBuffer(data)) {
+                $(connection).triggerHandler(events.onReceived, [data]);
+            }
+        },
+
         processMessages: function (connection, minData, onInitialized) {
-            var data,
-                $connection = $(connection);
+            var data;
 
             // Update the last message time stamp
             transportLogic.markLastMessage(connection);
 
             if (minData) {
-                data = this.maximizePersistentResponse(minData);
+                data = transportLogic.maximizePersistentResponse(minData);
 
                 if (data.Disconnect) {
                     connection.log("Disconnect command received from server.");
@@ -349,7 +354,7 @@
                     return;
                 }
 
-                this.updateGroups(connection, data.GroupsToken);
+                transportLogic.updateGroups(connection, data.GroupsToken);
 
                 if (data.MessageId) {
                     connection.messageId = data.MessageId;
@@ -357,7 +362,7 @@
 
                 if (data.Messages) {
                     $.each(data.Messages, function (index, message) {
-                        $connection.triggerHandler(events.onReceived, [message]);
+                        transportLogic.triggerReceived(connection, message);
                     });
 
                     transportLogic.tryInitialize(data, onInitialized);
@@ -450,8 +455,7 @@
         },
 
         reconnect: function (connection, transportName) {
-            var transport = signalR.transports[transportName],
-                that = this;
+            var transport = signalR.transports[transportName];
 
             // We should only set a reconnectTimeout if we are currently connected
             // and a reconnectTimeout isn't already set.
@@ -468,7 +472,7 @@
 
                     transport.stop(connection);
 
-                    if (that.ensureReconnectingState(connection)) {
+                    if (transportLogic.ensureReconnectingState(connection)) {
                         connection.log(transportName + " reconnecting.");
                         transport.start(connection);
                     }

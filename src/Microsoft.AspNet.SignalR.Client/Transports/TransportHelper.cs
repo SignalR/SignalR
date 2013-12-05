@@ -191,12 +191,12 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
 
                 UpdateGroups(connection, groupsToken: result["G"]);
 
-                var messages = result["M"] as IEnumerable<JToken>;
+                var messages = result["M"] as JArray;
                 if (messages != null)
                 {
                     connection.MessageId = (string)result["C"];
 
-                    foreach (JToken message in messages)
+                    foreach (JToken message in (IEnumerable<JToken>)messages)
                     {
                         connection.OnReceived(message);
                     }

@@ -791,9 +791,7 @@
             /// <returns type="signalR" />
             var connection = this;
             $(connection).bind(events.onReceived, function (e, data) {
-                if (!connection._.connectingMessageBuffer.tryBuffer(data)) {
-                    callback.call(connection, data);
-                }
+                callback.call(connection, data);
             });
             return connection;
         },

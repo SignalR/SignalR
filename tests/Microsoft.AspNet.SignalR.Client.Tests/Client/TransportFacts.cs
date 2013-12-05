@@ -75,7 +75,6 @@ namespace Microsoft.AspNet.SignalR.Client.Tests
             connection.Setup(c => c.OnReceived(It.IsAny<JToken>())).Throws(ex);
             connection.Setup(c => c.OnError(ex));
             connection.Setup(c => c.MarkLastMessage());
-            connection.SetupSet(c => c.MessageId = null);
 
             // PersistentResponse
             TransportHelper.ProcessResponse(connection.Object, "{\"M\":{}}", out timedOut, out disconnected);

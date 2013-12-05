@@ -40,6 +40,9 @@ testUtilities.runWithAllTransports(function (transport) {
             assert.equal(connection.state, $.signalR.connectionState.connected, "Buffer me triggers after the connection is in the connected state.");
         };
 
+        // Issue #2595
+        connection.received(function () { });
+
         connection.start({ transport: transport }).done(function () {
             assert.equal(bufferMeCalls, 2, "After start's deferred completes the buffer has already been drained.");
 
@@ -50,7 +53,6 @@ testUtilities.runWithAllTransports(function (transport) {
             connection.stop();
         };
     });
-
 
     QUnit.asyncTimeoutTest(transport + " hub connection clears invocation callbacks after successful invocation.", testUtilities.defaultTestTimeout, function (end, assert, testName) {
         var connection = testUtilities.createHubConnection(end, assert, testName),
