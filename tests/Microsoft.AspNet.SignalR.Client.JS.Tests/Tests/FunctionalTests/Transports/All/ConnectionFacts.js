@@ -167,7 +167,7 @@ testUtilities.runWithAllTransports(function (transport) {
             }
 
             // Check if it's the ping request;
-            if (url.indexOf("connectionData=") === -1 || url.toLowerCase().indexOf("connectiondataverifierhub") === -1) {
+            if (url.indexOf("/ping") === -1 && (url.indexOf("connectionData=") === -1 || url.toLowerCase().indexOf("connectiondataverifierhub") === -1)) {
                 connectionDataVerifierHub.client.fail();
             }
 
