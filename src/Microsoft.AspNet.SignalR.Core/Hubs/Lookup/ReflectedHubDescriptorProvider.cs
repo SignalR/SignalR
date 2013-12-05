@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Reflection;
 
@@ -41,16 +42,33 @@ namespace Microsoft.AspNet.SignalR.Hubs
             // Building cache entries for each descriptor
             // Each descriptor is stored in dictionary under a key
             // that is it's name or the name provided by an attribute
-            var cacheEntries = types
+            var hubDescriptors = types
                 .Select(type => new HubDescriptor
                                 {
                                     NameSpecified = (type.GetHubAttributeName() != null),
                                     Name = type.GetHubName(),
                                     HubType = type
-                                })
-                .ToDictionary(hub => hub.Name,
-                              hub => hub,
-                              StringComparer.OrdinalIgnoreCase);
+                                });
+
+            var cacheEntries = new Dictionary<string, HubDescriptor>(StringComparer.OrdinalIgnoreCase);
+
+            foreach (var descriptor in hubDescriptors)
+            {
+                HubDescriptor oldDescriptor = null;
+                if (!cacheEntries.TryGetValue(descriptor.Name, out oldDescriptor))
+                {
+                    cacheEntries[descriptor.Name] = descriptor;
+                }
+                else
+                {
+                    throw new InvalidOperationException(
+                        String.Format(CultureInfo.CurrentCulture,
+                            Resources.Error_DuplicateHubNames,
+                            oldDescriptor.HubType.AssemblyQualifiedName,
+                            descriptor.HubType.AssemblyQualifiedName,
+                            descriptor.Name));
+                }
+            }
 
             return cacheEntries;
         }
