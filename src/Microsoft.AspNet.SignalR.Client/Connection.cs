@@ -42,6 +42,9 @@ namespace Microsoft.AspNet.SignalR.Client
         // The amount of time the client should attempt to reconnect before stopping.
         private TimeSpan _disconnectTimeout;
 
+        // The amount of time a transport will wait (while connecting) before failing. 
+        private TimeSpan _totalTransportConnectTimeout;
+
         // Provides a way to cancel the the timeout that stops a reconnect cycle
         private IDisposable _disconnectTimeoutOperation;
 
@@ -176,6 +179,7 @@ namespace Microsoft.AspNet.SignalR.Client
             TraceWriter = new DebugTextWriter();
             Headers = new HeaderDictionary(this);
             TransportConnectTimeout = TimeSpan.Zero;
+            _totalTransportConnectTimeout = TimeSpan.Zero;
 
             // Current client protocol
             Protocol = new Version(1, 3);
@@ -186,6 +190,18 @@ namespace Microsoft.AspNet.SignalR.Client
         /// This value is modified by adding the server's TransportConnectTimeout configuration value.
         /// </summary>
         public TimeSpan TransportConnectTimeout { get; set; }
+
+        /// <summary>
+        /// The amount of time a transport will wait (while connecting) before failing.
+        /// This is the total vaue obtained by adding the server's configuration value and the timeout specified by the user
+        /// </summary>
+        TimeSpan IConnection.TotalTransportConnectTimeout
+        {
+            get
+            {
+                return _totalTransportConnectTimeout;
+            }
+        }
 
         public Version Protocol { get; set; }
 
@@ -446,7 +462,7 @@ namespace Microsoft.AspNet.SignalR.Client
                                 ConnectionId = negotiationResponse.ConnectionId;
                                 ConnectionToken = negotiationResponse.ConnectionToken;
                                 _disconnectTimeout = TimeSpan.FromSeconds(negotiationResponse.DisconnectTimeout);
-                                TransportConnectTimeout = TransportConnectTimeout + TimeSpan.FromSeconds(negotiationResponse.TransportConnectTimeout);
+                                _totalTransportConnectTimeout = TransportConnectTimeout + TimeSpan.FromSeconds(negotiationResponse.TransportConnectTimeout);
 
                                 // Default the beat interval to be 5 seconds in case keep alive is disabled.
                                 var beatInterval = TimeSpan.FromSeconds(5);
@@ -624,6 +640,7 @@ namespace Microsoft.AspNet.SignalR.Client
                     Trace(TraceLevels.Events, "Closed");
 
                     // Clear the state for this connection
+                    _totalTransportConnectTimeout = TimeSpan.Zero;
                     ConnectionId = null;
                     ConnectionToken = null;
                     GroupsToken = null;

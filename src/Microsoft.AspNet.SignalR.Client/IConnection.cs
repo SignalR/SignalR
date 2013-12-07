@@ -21,6 +21,7 @@ namespace Microsoft.AspNet.SignalR.Client
     {
         Version Protocol { get; set; }
         TimeSpan TransportConnectTimeout { get; set; }
+        TimeSpan TotalTransportConnectTimeout { get; }
         TimeSpan ReconnectWindow { get; set; }
         KeepAliveData KeepAliveData { get; set; }
         string MessageId { get; set; }
