@@ -220,7 +220,7 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
         {
             using (var stream = new MemoryStream(128))
             {
-                var bufferWriter = new BufferTextWriter((buffer, state) =>
+                var bufferWriter = new BinaryTextWriter((buffer, state) =>
                 {
                     ((MemoryStream)state).Write(buffer.Array, buffer.Offset, buffer.Count);
                 },
