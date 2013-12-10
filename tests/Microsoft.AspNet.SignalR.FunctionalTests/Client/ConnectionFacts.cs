@@ -231,6 +231,26 @@ namespace Microsoft.AspNet.SignalR.Tests
             }
         }
 
+        [Fact]
+        public void TransportConnectTimeoutDoesNotAddupOverNegotiateRequests()
+        {
+            using (ITestHost host = CreateHost(HostType.IISExpress))
+            {
+                host.Initialize();
+                var connection = CreateConnection(host, "/signalr");
+                connection.TransportConnectTimeout = TimeSpan.FromSeconds(5);
+
+                using (connection)
+                {
+                    connection.Start().Wait();
+                    var totalTransportConnectTimeout = ((Client.IConnection)connection).TotalTransportConnectTimeout;
+                    connection.Stop();
+                    connection.Start().Wait();
+                    Assert.Equal(((Client.IConnection)connection).TotalTransportConnectTimeout, totalTransportConnectTimeout);
+                }
+            }
+        }
+
         [Theory]
         [InlineData("1337.0", HostType.Memory, TransportType.ServerSentEvents, MessageBusType.Default)]
         [InlineData("1337.0", HostType.Memory, TransportType.ServerSentEvents, MessageBusType.Fake)]

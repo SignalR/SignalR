@@ -640,7 +640,6 @@ namespace Microsoft.AspNet.SignalR.Client
                     Trace(TraceLevels.Events, "Closed");
 
                     // Clear the state for this connection
-                    _totalTransportConnectTimeout = TimeSpan.Zero;
                     ConnectionId = null;
                     ConnectionToken = null;
                     GroupsToken = null;

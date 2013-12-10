@@ -75,7 +75,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
                 throw new ArgumentNullException("connection");
             }
 
-            _initializeHandler = new TransportInitializationHandler(connection.TransportConnectTimeout, disconnectToken);
+            _initializeHandler = new TransportInitializationHandler(connection.TotalTransportConnectTimeout, disconnectToken);
 
             // Tie into the OnFailure event so that we can stop the transport silently.
             _initializeHandler.OnFailure += () =>
