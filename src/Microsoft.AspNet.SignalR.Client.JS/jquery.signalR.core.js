@@ -913,6 +913,8 @@
             window.clearInterval(connection._.pingIntervalId);
 
             if (connection.transport) {
+                connection.transport.stop(connection);
+
                 if (notifyServer !== false) {
                     connection.transport.abort(connection, async);
                 }
@@ -921,7 +923,6 @@
                     signalR.transports._logic.stopMonitoringKeepAlive(connection);
                 }
 
-                connection.transport.stop(connection);
                 connection.transport = null;
             }
 
