@@ -77,5 +77,10 @@ namespace Microsoft.AspNet.SignalR
         /// Specifies the time duration after which an idle subscription is deleted
         /// </summary>
         public TimeSpan IdleSubscriptionTimeout { get; set; }
+
+        /// <summary>
+        /// Sets the operation timeout for all Service Bus operations 
+        /// </summary>
+        public TimeSpan OperationTimeout { get; set; }
     }
 }
