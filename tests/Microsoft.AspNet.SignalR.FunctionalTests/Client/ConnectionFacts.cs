@@ -232,7 +232,7 @@ namespace Microsoft.AspNet.SignalR.Tests
         }
 
         [Fact]
-        public void TransportConnectTimeoutDoesNotAddupOverNegotiateRequests()
+        public async Task TransportConnectTimeoutDoesNotAddupOverNegotiateRequests()
         {
             using (ITestHost host = CreateHost(HostType.IISExpress))
             {
@@ -242,10 +242,10 @@ namespace Microsoft.AspNet.SignalR.Tests
 
                 using (connection)
                 {
-                    connection.Start().Wait();
+                    await connection.Start();
                     var totalTransportConnectTimeout = ((Client.IConnection)connection).TotalTransportConnectTimeout;
                     connection.Stop();
-                    connection.Start().Wait();
+                    await connection.Start();
                     Assert.Equal(((Client.IConnection)connection).TotalTransportConnectTimeout, totalTransportConnectTimeout);
                 }
             }
