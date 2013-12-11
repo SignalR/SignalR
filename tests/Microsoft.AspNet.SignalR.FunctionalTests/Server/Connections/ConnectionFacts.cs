@@ -185,10 +185,10 @@ namespace Microsoft.AspNet.SignalR.Client.Tests
 
                     using (connection)
                     {
-                        Assert.Equal(connection.TransportConnectTimeout, TimeSpan.Zero);
+                        Assert.Equal(((IConnection)connection).TotalTransportConnectTimeout, TimeSpan.Zero);
                         connection.TransportConnectTimeout = newTimeout;
                         connection.Start(host).Wait();
-                        Assert.Equal(connection.TransportConnectTimeout - defaultTransportConnectTimeout, newTimeout);
+                        Assert.Equal(((IConnection)connection).TotalTransportConnectTimeout - defaultTransportConnectTimeout, newTimeout);
                     }
                 }
             }
