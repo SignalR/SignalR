@@ -28,7 +28,8 @@
                         connection.transport,
                         ex,
                         connection.socket
-                    )]);
+                    ),
+                    data]);
             }
         },
 
