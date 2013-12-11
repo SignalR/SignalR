@@ -20,24 +20,26 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
         private int _startIndex = 0;
 
         // List of transports in fallback order
-        private readonly IList<IClientTransport> _transports;
+        private readonly List<IClientTransport> _transports;
 
         public AutoTransport(IHttpClient httpClient)
         {
             _httpClient = httpClient;
-            _transports = new IClientTransport[] { 
+
+            _transports = new List<IClientTransport>()
+            {
 #if NET45
                 new WebSocketTransport(httpClient),
 #endif
-                new ServerSentEventsTransport(httpClient), 
-                new LongPollingTransport(httpClient) 
+                new ServerSentEventsTransport(httpClient),
+                new LongPollingTransport(httpClient)
             };
         }
 
         public AutoTransport(IHttpClient httpClient, IList<IClientTransport> transports)
         {
             _httpClient = httpClient;
-            _transports = transports;
+            _transports = new List<IClientTransport>(transports);
         }
 
         /// <summary>
@@ -64,15 +66,15 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
             }
         }
 
-        public Task<NegotiationResponse> Negotiate(IConnection connection)
+        public Task<NegotiationResponse> Negotiate(IConnection connection, string connectionData)
         {
-            var task = _httpClient.GetNegotiationResponse(connection);
+            var task = GetNegotiateResponse(connection, connectionData);
 #if NET45
             return task.Then(response =>
             {
                 if (!response.TryWebSockets)
                 {
-                    _startIndex = 1;
+                    _transports.RemoveAll(transport => transport.Name == "webSockets");
                 }
 
                 return response;
@@ -82,12 +84,17 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
 #endif
         }
 
-        public Task Start(IConnection connection, string data, CancellationToken disconnectToken)
+        public virtual Task<NegotiationResponse> GetNegotiateResponse(IConnection connection, string connectionData)
+        {
+            return _httpClient.GetNegotiationResponse(connection, connectionData);
+        }
+
+        public Task Start(IConnection connection, string connectionData, CancellationToken disconnectToken)
         {
             var tcs = new TaskCompletionSource<object>();
 
             // Resolve the transport
-            ResolveTransport(connection, data, disconnectToken, tcs, _startIndex);
+            ResolveTransport(connection, connectionData, disconnectToken, tcs, _startIndex);
 
             return tcs.Task;
         }
@@ -99,10 +106,17 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
 
             transport.Start(connection, data, disconnectToken).ContinueWith(task =>
             {
-                if (task.IsFaulted)
+                if (task.IsFaulted || task.IsCanceled)
                 {
-                    // Make sure we observe the exception
-                    var ex = task.Exception.GetBaseException();
+                    Exception ex;
+                    if (task.IsCanceled)
+                    {
+                        ex = new OperationCanceledException(Resources.Error_TaskCancelledException);
+                    }
+                    else
+                    {
+                        ex = task.Exception.GetBaseException();
+                    }
 
                     connection.Trace(TraceLevels.Events, "Auto: Failed to connect to using transport {0}. {1}", transport.Name, ex);
 
@@ -116,7 +130,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
                     else
                     {
                         // If there's nothing else to try then just fail
-                        tcs.SetException(task.Exception);
+                        tcs.SetException(ex);
                     }
                 }
                 else
@@ -132,16 +146,16 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
             TaskContinuationOptions.ExecuteSynchronously);
         }
 
-        public Task Send(IConnection connection, string data)
+        public Task Send(IConnection connection, string data, string connectionData)
         {
-            return _transport.Send(connection, data);
+            return _transport.Send(connection, data, connectionData);
         }
 
-        public void Abort(IConnection connection, TimeSpan timeout)
+        public void Abort(IConnection connection, TimeSpan timeout, string connectionData)
         {
             if (_transport != null)
             {
-                _transport.Abort(connection, timeout);
+                _transport.Abort(connection, timeout, connectionData);
             }
         }
 

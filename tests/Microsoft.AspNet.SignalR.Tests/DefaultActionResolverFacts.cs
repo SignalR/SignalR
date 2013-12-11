@@ -301,7 +301,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                 }
             }
 
-            public HubConnectionContext Clients
+            public IHubCallerConnectionContext Clients
             {
                 get
                 {

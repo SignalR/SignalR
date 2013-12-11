@@ -1,4 +1,6 @@
-﻿using System;
+﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.md in the project root for license information.
+
+using System;
 using System.Threading;
 using Microsoft.AspNet.SignalR.Client.Infrastructure;
 
@@ -9,13 +11,11 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
         private readonly ThreadSafeInvoker _callbackInvoker;
         private readonly Action _initializeCallback;
         private readonly Action<Exception> _errorCallback;
-        private readonly TimeSpan _assumeSuccessAfter;
 
-        public NegotiateInitializer(Action initializeCallback, Action<Exception> errorCallback, TimeSpan assumeSuccessAfter)
+        public NegotiateInitializer(TransportInitializationHandler initializeHandler)
         {
-            _initializeCallback = initializeCallback;
-            _errorCallback = errorCallback;
-            _assumeSuccessAfter = assumeSuccessAfter;
+            _initializeCallback = initializeHandler.Success;
+            _errorCallback = initializeHandler.Fail;
             _callbackInvoker = new ThreadSafeInvoker();
 
             // Set default initialized function
@@ -23,18 +23,6 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
         }
 
         public event Action Initialized;
-
-        public void Initialize()
-        {
-            TaskAsyncHelper.Delay(_assumeSuccessAfter).Then(() =>
-            {
-                _callbackInvoker.Invoke(() =>
-                {
-                    Initialized();
-                    _initializeCallback();
-                });
-            });
-        }
 
         public void Complete()
         {
@@ -59,11 +47,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
             _callbackInvoker.Invoke((cb, token) =>
             {
                 Initialized();
-#if NET35 || WINDOWS_PHONE
-                cb(new OperationCanceledException(Resources.Error_ConnectionCancelled));
-#else
                 cb(new OperationCanceledException(Resources.Error_ConnectionCancelled, token));
-#endif
             }, _errorCallback, disconnectToken);
         }
     }

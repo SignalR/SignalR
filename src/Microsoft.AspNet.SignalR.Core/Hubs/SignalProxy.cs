@@ -1,29 +1,27 @@
 ﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.md in the project root for license information.
 
-using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Dynamic;
 using System.Threading.Tasks;
-using Microsoft.AspNet.SignalR.Infrastructure;
 
 namespace Microsoft.AspNet.SignalR.Hubs
 {
     public abstract class SignalProxy : DynamicObject, IClientProxy
     {
         private readonly IList<string> _exclude;
-        private readonly string _prefix;
 
-        protected SignalProxy(Func<string, ClientHubInvocation, IList<string>, Task> send, string signal, string hubName, string prefix, IList<string> exclude)
+        protected SignalProxy(IConnection connection, IHubPipelineInvoker invoker, string signal, string hubName, string prefix, IList<string> exclude)
         {
-            Send = send;
-            Signal = signal;
+            Connection = connection;
+            Invoker = invoker;
             HubName = hubName;
-            _prefix = prefix;
+            Signal = prefix + hubName + "." + signal;
             _exclude = exclude;
         }
 
-        protected Func<string, ClientHubInvocation, IList<string>, Task> Send { get; private set; }
+        protected IConnection Connection { get; private set; }
+        protected IHubPipelineInvoker Invoker { get; private set; }
         protected string Signal { get; private set; }
         protected string HubName { get; private set; }
 
@@ -44,9 +42,12 @@ namespace Microsoft.AspNet.SignalR.Hubs
         {
             var invocation = GetInvocationData(method, args);
 
-            string signal = _prefix + HubName + "." + Signal;
+            var context = new HubOutgoingInvokerContext(Connection, Signal, invocation)
+            {
+                ExcludedSignals = _exclude
+            };
 
-            return Send(signal, invocation, _exclude);
+            return Invoker.Send(context);
         }
 
         protected virtual ClientHubInvocation GetInvocationData(string method, object[] args)
@@ -55,8 +56,7 @@ namespace Microsoft.AspNet.SignalR.Hubs
             {
                 Hub = HubName,
                 Method = method,
-                Args = args,
-                Target = Signal
+                Args = args
             };
         }
     }

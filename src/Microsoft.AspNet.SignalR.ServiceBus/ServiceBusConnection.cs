@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Configuration;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.ServiceBus;
@@ -25,10 +26,21 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
 
         public ServiceBusConnection(ServiceBusScaleoutConfiguration configuration, TraceSource traceSource)
         {
-            _namespaceManager = NamespaceManager.CreateFromConnectionString(configuration.ConnectionString);
+            _trace = traceSource;
+
+            try
+            {
+                _namespaceManager = NamespaceManager.CreateFromConnectionString(configuration.ConnectionString);
+            }
+            catch (ConfigurationErrorsException ex)
+            {
+                _trace.TraceError("Invalid connection string '{0}': {1}", configuration.ConnectionString, ex.Message);
+
+                throw;
+            }
+
             _factory = MessagingFactory.CreateFromConnectionString(configuration.ConnectionString);
             _configuration = configuration;
-            _trace = traceSource;
         }
 
         [SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope", Justification = "The disposable is returned to the caller")]

@@ -5,8 +5,6 @@ using System.Text;
 
 namespace Microsoft.AspNet.SignalR.Infrastructure
 {
-    // Taken from System.Net.Http.Formatting.Internal.UrlEncoder.cs (http://aspnetwebstack.codeplex.com/)
-
     /// <summary>
     /// Helpers for encoding URI query components.
     /// </summary>
@@ -120,7 +118,7 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
 
             return false;
         }
-        
+
         private static bool ValidateUrlEncodingParameters(byte[] bytes, int offset, int count)
         {
             if (bytes == null && count == 0)

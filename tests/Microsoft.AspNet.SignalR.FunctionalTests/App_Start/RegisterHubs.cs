@@ -54,7 +54,7 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure.IIS
                 GlobalHost.HubPipeline.EnableAutoRejoiningGroups();
             }
 
-            // Register the default hubs route: ~/signalr/hubs
+            // Register the default hubs route: ~/signalr/js
             RouteTable.Routes.MapHubs();
             RouteTable.Routes.MapConnection<MyBadConnection>("errors-are-fun", "ErrorsAreFun/{*operation}");
             RouteTable.Routes.MapConnection<MyGroupEchoConnection>("group-echo", "group-echo/{*operation}");

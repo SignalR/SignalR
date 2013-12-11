@@ -46,7 +46,7 @@
         <PackageOutputDir Condition="$(PackageOutputDir) == ''">$(TargetDir.Trim('\\'))</PackageOutputDir>
 
         <!-- Commands -->
-        <RestoreCommand>$(NuGetCommand) install "$(PackagesConfig)" -source "$(PackageSources)" -o "$(PackagesDir)"</RestoreCommand>
+        <RestoreCommand>$(NuGetCommand) install "$(PackagesConfig)" -source "$(PackageSources)" -o "$(PackagesDir)" -nocache</RestoreCommand>
 
         <BuildCommand>$(NuGetCommand) pack "$(ProjectPath)" -p "Configuration=$(Configuration);LocalToolsPath=$(LocalToolsPath)" -o "$(PackageOutputDir)" -symbols</BuildCommand>
 
@@ -55,6 +55,11 @@
             RestorePackages;
             $(BuildDependsOn);
         </BuildDependsOn>
+
+      <PipelinePreDeployCopyAllFilesToOneFolderDependsOn Condition="$(RestorePackages) == 'true'">
+        RestorePackages;
+        $(PipelinePreDeployCopyAllFilesToOneFolderDependsOn);
+      </PipelinePreDeployCopyAllFilesToOneFolderDependsOn>
 
         <!-- Make the build depend on restore packages -->
         <BuildDependsOn Condition="$(BuildPackage) == 'true'">

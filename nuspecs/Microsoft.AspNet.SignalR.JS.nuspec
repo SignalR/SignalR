@@ -1,0 +1,25 @@
+﻿<?xml version="1.0"?>
+<package>
+  <metadata>
+    <id>Microsoft.AspNet.SignalR.JS</id>
+    <title>Microsoft ASP.NET SignalR JavaScript Client</title>
+    <version>__SIGNALR_PACKAGE_VERSION__</version>
+    <authors>Microsoft</authors>
+    <owners>Microsoft</owners>
+    <licenseUrl>__SIGNALR_CLIENT_LICENSE_URL__</licenseUrl>
+    <copyright>__SIGNALR_COPYRIGHT_NOTICE__</copyright>
+    <projectUrl>http://www.asp.net/signalr</projectUrl>
+    <requireLicenseAcceptance>true</requireLicenseAcceptance>
+    <description>JavaScript client for ASP.NET SignalR.</description>
+    <language>en-US</language>
+    <tags>Microsoft AspNet SignalR AspNetSignalR JS</tags>
+    <releaseNotes>https://github.com/SignalR/SignalR/releases</releaseNotes>
+    <dependencies>
+      <dependency id="jQuery" version="1.6.4" />
+    </dependencies>
+  </metadata>
+  <files>
+    <file src="Content\jquery.signalr-__SIGNALR_PACKAGE_VERSION__.js" target="content\Scripts" />
+    <file src="Content\jquery.signalr-__SIGNALR_PACKAGE_VERSION__.min.js" target="content\Scripts" />
+  </files>
+</package>

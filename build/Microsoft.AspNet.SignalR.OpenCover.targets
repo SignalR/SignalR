@@ -15,10 +15,10 @@
                ToolExe="@(OpenCoverConsole->'%(Filename)%(Extension)')"
                Target="@(XunitConsoleRunner)"
                TargetArgs="$(XunitArgs) /silent"
-               TargetWorkingDir="$(ArtifactsDir)"
                MergeByHash="True"
                Filter="+[Microsoft.AspNet.SignalR*]*
                        -[Microsoft.AspNet.SignalR.Tests*]*
+                       -[Microsoft.AspNet.SignalR.Client.Tests*]*
                        -[Microsoft.AspNet.SignalR.FunctionalTests*]*
                        -[Microsoft.AspNet.SignalR.Hosting.Memory*]*
                        -[Microsoft.AspNet.SignalR.TaskAsyncHelper]*"

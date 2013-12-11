@@ -4,6 +4,7 @@ using System.Collections.Specialized;
 using System.Security.Principal;
 using Microsoft.AspNet.SignalR.Hosting;
 using Microsoft.AspNet.SignalR.Infrastructure;
+using Microsoft.AspNet.SignalR.Tests.Common.Infrastructure;
 using Moq;
 using Xunit;
 
@@ -17,7 +18,7 @@ namespace Microsoft.AspNet.SignalR.Tests
             public void NullContextThrows()
             {
                 var connection = new Mock<PersistentConnection>() { CallBase = true };
-                Assert.Throws<ArgumentNullException>(() => connection.Object.ProcessRequest(null));
+                Assert.Throws<ArgumentNullException>(() => connection.Object.ProcessRequest((HostContext)null));
             }
 
             [Fact]
@@ -33,12 +34,13 @@ namespace Microsoft.AspNet.SignalR.Tests
                 var connection = new Mock<PersistentConnection>() { CallBase = true };
                 var req = new Mock<IRequest>();
                 req.Setup(m => m.Url).Returns(new Uri("http://foo"));
+                req.Setup(m => m.LocalPath).Returns("");
                 var qs = new NameValueCollection();
-                req.Setup(m => m.QueryString).Returns(qs);
+                req.Setup(m => m.QueryString).Returns(new NameValueCollectionWrapper(qs));
 
                 var dr = new DefaultDependencyResolver();
                 var context = new HostContext(req.Object, null);
-                connection.Object.Initialize(dr, context);
+                connection.Object.Initialize(dr);
 
                 Assert.Throws<InvalidOperationException>(() => connection.Object.ProcessRequest(context));
             }
@@ -49,13 +51,14 @@ namespace Microsoft.AspNet.SignalR.Tests
                 var connection = new Mock<PersistentConnection>() { CallBase = true };
                 var req = new Mock<IRequest>();
                 req.Setup(m => m.Url).Returns(new Uri("http://foo"));
+                req.Setup(m => m.LocalPath).Returns("");
                 var qs = new NameValueCollection();
                 qs["transport"] = "serverSentEvents";
-                req.Setup(m => m.QueryString).Returns(qs);
+                req.Setup(m => m.QueryString).Returns(new NameValueCollectionWrapper(qs));
 
                 var dr = new DefaultDependencyResolver();
                 var context = new HostContext(req.Object, null);
-                connection.Object.Initialize(dr, context);
+                connection.Object.Initialize(dr);
 
                 Assert.Throws<InvalidOperationException>(() => connection.Object.ProcessRequest(context));
             }
@@ -102,12 +105,13 @@ namespace Microsoft.AspNet.SignalR.Tests
                 var connection = new Mock<PersistentConnection>() { CallBase = true };
                 var req = new Mock<IRequest>();
                 req.Setup(m => m.Url).Returns(new Uri("http://foo"));
+                req.Setup(m => m.LocalPath).Returns("");
                 var qs = new NameValueCollection();
                 qs["transport"] = "serverSentEvents";
                 qs["connectionToken"] = "1";
                 qs["groupsToken"] = groupsToken;
 
-                req.Setup(m => m.QueryString).Returns(qs);
+                req.Setup(m => m.QueryString).Returns(new NameValueCollectionWrapper(qs));
 
                 var protectedData = new Mock<IProtectedData>();
                 protectedData.Setup(m => m.Protect(It.IsAny<string>(), It.IsAny<string>()))
@@ -119,7 +123,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                 var dr = new DefaultDependencyResolver();
                 dr.Register(typeof(IProtectedData), () => protectedData.Object);
                 var context = new HostContext(req.Object, null);
-                connection.Object.Initialize(dr, context);
+                connection.Object.Initialize(dr);
 
                 return connection.Object.VerifyGroups(context, connectionId);
             }
@@ -142,7 +146,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                 var dr = new DefaultDependencyResolver();
                 dr.Register(typeof(IProtectedData), () => protectedData.Object);
                 var context = new HostContext(req.Object, null);
-                connection.Object.Initialize(dr, context);
+                connection.Object.Initialize(dr);
 
                 Assert.Throws<InvalidOperationException>(() => connection.Object.GetConnectionId(context, "1"));
             }
@@ -161,7 +165,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                 var dr = new DefaultDependencyResolver();
                 dr.Register(typeof(IProtectedData), () => protectedData.Object);
                 var context = new HostContext(req.Object, null);
-                connection.Object.Initialize(dr, context);
+                connection.Object.Initialize(dr);
 
                 Assert.Throws<InvalidOperationException>(() => connection.Object.GetConnectionId(context, "1"));
             }
@@ -180,7 +184,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                 var dr = new DefaultDependencyResolver();
                 dr.Register(typeof(IProtectedData), () => protectedData.Object);
                 var context = new HostContext(req.Object, null);
-                connection.Object.Initialize(dr, context);
+                connection.Object.Initialize(dr);
 
                 Assert.Throws<InvalidOperationException>(() => connection.Object.GetConnectionId(context, "1:::11:::::::1:1"));
             }
@@ -200,7 +204,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                 var dr = new DefaultDependencyResolver();
                 dr.Register(typeof(IProtectedData), () => protectedData.Object);
                 var context = new HostContext(req.Object, null);
-                connection.Object.Initialize(dr, context);
+                connection.Object.Initialize(dr);
 
                 var connectionId = connection.Object.GetConnectionId(context, "1:Name");
 
@@ -224,7 +228,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                 var dr = new DefaultDependencyResolver();
                 dr.Register(typeof(IProtectedData), () => protectedData.Object);
                 var context = new HostContext(req.Object, null);
-                connection.Object.Initialize(dr, context);
+                connection.Object.Initialize(dr);
 
                 string cid = connection.Object.GetConnectionId(context, connectionId + ":::11:::::::1:1");
 

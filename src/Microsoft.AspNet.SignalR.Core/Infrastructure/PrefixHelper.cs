@@ -13,6 +13,7 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
         internal const string HubPrefix = "h-";
         internal const string HubGroupPrefix = "hg-";
         internal const string HubConnectionIdPrefix = "hc-";
+        internal const string HubUserPrefix = "hu-";
 
         // Persistent Connections
         internal const string PersistentConnectionPrefix = "pc-";
@@ -46,6 +47,11 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
         public static string GetHubGroupName(string groupName)
         {
             return HubGroupPrefix + groupName;
+        }
+
+        public static string GetHubUserId(string userId)
+        {
+            return HubUserPrefix + userId;
         }
 
         public static string GetPersistentConnectionGroupName(string groupName)

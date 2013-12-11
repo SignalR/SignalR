@@ -1,5 +1,5 @@
 /*!
- * ASP.NET SignalR JavaScript Library v1.1.3
+ * ASP.NET SignalR JavaScript Library v2.0.1-rtm1
  * http://signalr.net/
  *
  * Copyright Microsoft Open Technologies, Inc. All rights reserved.
@@ -10,12 +10,12 @@
 
 /// <reference path="..\..\SignalR.Client.JS\Scripts\jquery-1.6.4.js" />
 /// <reference path="jquery.signalR.js" />
-(function ($, window) {
+(function ($, window, undefined) {
     /// <param name="$" type="jQuery" />
     "use strict";
 
     if (typeof ($.signalR) !== "function") {
-        throw new Error("SignalR: SignalR is not loaded. Please ensure jquery.signalR-x.js is referenced before ~/signalr/hubs.");
+        throw new Error("SignalR: SignalR is not loaded. Please ensure jquery.signalR-x.js is referenced before ~/signalr/js.");
     }
 
     var signalR = $.signalR;
@@ -42,8 +42,7 @@
                 if (shouldSubscribe) {
                     // We want to subscribe to the hub events
                     subscriptionMethod = hub.on;
-                }
-                else {
+                } else {
                     // We want to unsubscribe from the hub events
                     subscriptionMethod = hub.off;
                 }

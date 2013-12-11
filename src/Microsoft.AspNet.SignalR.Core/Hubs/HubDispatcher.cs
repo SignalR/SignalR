@@ -12,6 +12,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR.Hosting;
 using Microsoft.AspNet.SignalR.Infrastructure;
 using Microsoft.AspNet.SignalR.Json;
+using Newtonsoft.Json;
 
 namespace Microsoft.AspNet.SignalR.Hubs
 {
@@ -22,6 +23,7 @@ namespace Microsoft.AspNet.SignalR.Hubs
     public class HubDispatcher : PersistentConnection
     {
         private const string HubsSuffix = "/hubs";
+        private const string JsSuffix = "/js";
 
         private readonly List<HubDescriptor> _hubs = new List<HubDescriptor>();
         private readonly bool _enableJavaScriptProxies;
@@ -30,6 +32,7 @@ namespace Microsoft.AspNet.SignalR.Hubs
         private IJavaScriptProxyGenerator _proxyGenerator;
         private IHubManager _manager;
         private IHubRequestParser _requestParser;
+        private JsonSerializer _serializer;
         private IParameterResolver _binder;
         private IHubPipelineInvoker _pipelineInvoker;
         private IPerformanceCounterManager _counters;
@@ -68,16 +71,11 @@ namespace Microsoft.AspNet.SignalR.Hubs
             }
         }
 
-        public override void Initialize(IDependencyResolver resolver, HostContext context)
+        public override void Initialize(IDependencyResolver resolver)
         {
             if (resolver == null)
             {
                 throw new ArgumentNullException("resolver");
-            }
-
-            if (context == null)
-            {
-                throw new ArgumentNullException("context");
             }
 
             _proxyGenerator = _enableJavaScriptProxies ? resolver.Resolve<IJavaScriptProxyGenerator>()
@@ -86,16 +84,22 @@ namespace Microsoft.AspNet.SignalR.Hubs
             _manager = resolver.Resolve<IHubManager>();
             _binder = resolver.Resolve<IParameterResolver>();
             _requestParser = resolver.Resolve<IHubRequestParser>();
+            _serializer = resolver.Resolve<JsonSerializer>();
             _pipelineInvoker = resolver.Resolve<IHubPipelineInvoker>();
             _counters = resolver.Resolve<IPerformanceCounterManager>();
 
-            base.Initialize(resolver, context);
+            base.Initialize(resolver);
         }
 
         protected override bool AuthorizeRequest(IRequest request)
         {
+            if (request == null)
+            {
+                throw new ArgumentNullException("request");
+            }
+
             // Populate _hubs
-            string data = request.QueryStringOrForm("connectionData");
+            string data = request.QueryString["connectionData"];
 
             if (!String.IsNullOrEmpty(data))
             {
@@ -142,7 +146,7 @@ namespace Microsoft.AspNet.SignalR.Hubs
         /// </summary>
         protected override Task OnReceived(IRequest request, string connectionId, string data)
         {
-            HubRequest hubRequest = _requestParser.Parse(data);
+            HubRequest hubRequest = _requestParser.Parse(data, _serializer);
 
             // Create the hub
             HubDescriptor descriptor = _manager.EnsureHub(hubRequest.Hub,
@@ -174,7 +178,7 @@ namespace Microsoft.AspNet.SignalR.Hubs
             var hub = CreateHub(request, descriptor, connectionId, tracker, throwIfFailedToCreate: true);
 
             return InvokeHubPipeline(hub, parameterValues, methodDescriptor, hubRequest, tracker)
-                .ContinueWith(task => hub.Dispose(), TaskContinuationOptions.ExecuteSynchronously);
+                .ContinueWithPreservedCulture(task => hub.Dispose(), TaskContinuationOptions.ExecuteSynchronously);
         }
 
         [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "Exceptions are flown to the caller.")]
@@ -200,7 +204,7 @@ namespace Microsoft.AspNet.SignalR.Hubs
             }
 
             // Determine if we have a faulted task or not and handle it appropriately.
-            return piplineInvocation.ContinueWith(task =>
+            return piplineInvocation.ContinueWithPreservedCulture(task =>
             {
                 if (task.IsFaulted)
                 {
@@ -226,19 +230,29 @@ namespace Microsoft.AspNet.SignalR.Hubs
             }
 
             // Trim any trailing slashes
-            string normalized = context.Request.Url.LocalPath.TrimEnd('/');
+            string normalized = context.Request.LocalPath.TrimEnd('/');
 
+            int suffixLength = -1;
             if (normalized.EndsWith(HubsSuffix, StringComparison.OrdinalIgnoreCase))
             {
-                // Generate the proper hub url
-                string hubUrl = normalized.Substring(0, normalized.Length - HubsSuffix.Length);
+                suffixLength = HubsSuffix.Length;
+            }
+            else if (normalized.EndsWith(JsSuffix, StringComparison.OrdinalIgnoreCase))
+            {
+                suffixLength = JsSuffix.Length;
+            }
+
+            if (suffixLength != -1)
+            {
+                // Generate the proper JS proxy url
+                string hubUrl = normalized.Substring(0, normalized.Length - suffixLength);
 
                 // Generate the proxy
                 context.Response.ContentType = JsonUtility.JavaScriptMimeType;
                 return context.Response.End(_proxyGenerator.GenerateProxy(hubUrl));
             }
 
-            _isDebuggingEnabled = context.IsDebuggingEnabled();
+            _isDebuggingEnabled = context.Environment.IsDebugEnabled();
 
             return base.ProcessRequest(context);
         }
@@ -312,7 +326,7 @@ namespace Microsoft.AspNet.SignalR.Hubs
 
         internal static Task Outgoing(IHubOutgoingInvokerContext context)
         {
-            var message = new ConnectionMessage(context.Signal, context.Invocation, context.ExcludedSignals);
+            ConnectionMessage message = context.GetConnectionMessage();
 
             return context.Connection.Send(message);
         }
@@ -348,17 +362,36 @@ namespace Microsoft.AspNet.SignalR.Hubs
             return ExecuteHubEvent(request, connectionId, hub => _pipelineInvoker.Disconnect(hub));
         }
 
-        protected override IList<string> GetSignals(string connectionId)
+        protected override IList<string> GetSignals(string userId, string connectionId)
         {
-            return _hubs.SelectMany(info => new[] { PrefixHelper.GetHubName(info.Name), PrefixHelper.GetHubConnectionId(info.CreateQualifiedName(connectionId)) })
-                        .Concat(new[] { PrefixHelper.GetConnectionId(connectionId), PrefixHelper.GetAck(connectionId) })
-                        .ToList();
+            var signals = _hubs.SelectMany(info =>
+            {
+                var items = new List<string>
+                { 
+                    PrefixHelper.GetHubName(info.Name), 
+                    PrefixHelper.GetHubConnectionId(info.CreateQualifiedName(connectionId)),
+                };
+
+                if (!String.IsNullOrEmpty(userId))
+                {
+                    items.Add(PrefixHelper.GetHubUserId(info.CreateQualifiedName(userId)));
+                }
+
+                return items;
+            })
+            .Concat(new[] 
+            { 
+                PrefixHelper.GetConnectionId(connectionId), 
+                PrefixHelper.GetAck(connectionId) 
+            });
+
+            return signals.ToList();
         }
 
         private Task ExecuteHubEvent(IRequest request, string connectionId, Func<IHub, Task> action)
         {
             var hubs = GetHubs(request, connectionId).ToList();
-            var operations = hubs.Select(instance => action(instance).Catch().OrEmpty()).ToArray();
+            var operations = hubs.Select(instance => action(instance).OrEmpty().Catch()).ToArray();
 
             if (operations.Length == 0)
             {
@@ -450,11 +483,19 @@ namespace Microsoft.AspNet.SignalR.Hubs
                 _counters.ErrorsAllTotal.Increment();
                 _counters.ErrorsAllPerSec.Increment();
 
-                if (_enableDetailedErrors)
+                var hubError = error.InnerException as HubException;
+
+                if (_enableDetailedErrors || hubError != null)
                 {
                     var exception = error.InnerException ?? error;
                     hubResult.StackTrace = _isDebuggingEnabled ? exception.StackTrace : null;
                     hubResult.Error = exception.Message;
+
+                    if (hubError != null)
+                    {
+                        hubResult.IsHubException = true;
+                        hubResult.ErrorData = hubError.ErrorData;
+                    }
                 }
                 else
                 {
@@ -496,7 +537,7 @@ namespace Microsoft.AspNet.SignalR.Hubs
 
         private static void ContinueAsync<T>(Task<T> task, TaskCompletionSource<object> tcs)
         {
-            task.ContinueWith(t =>
+            task.ContinueWithPreservedCulture(t =>
             {
                 if (t.IsFaulted)
                 {

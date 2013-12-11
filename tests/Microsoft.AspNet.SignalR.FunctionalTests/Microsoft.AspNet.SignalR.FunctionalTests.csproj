@@ -33,8 +33,16 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Microsoft.Owin, Version=2.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\packages\Microsoft.Owin.2.0.0\lib\net45\Microsoft.Owin.dll</HintPath>
+    </Reference>
     <Reference Include="Microsoft.Owin.Host.HttpListener">
-      <HintPath>..\..\packages\Microsoft.Owin.Host.HttpListener.0.18.0-alpha\lib\net45\Microsoft.Owin.Host.HttpListener.dll</HintPath>
+      <HintPath>..\..\packages\Microsoft.Owin.Host.HttpListener.2.0.0\lib\net45\Microsoft.Owin.Host.HttpListener.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.Owin.Host.SystemWeb, Version=2.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\packages\Microsoft.Owin.Host.SystemWeb.2.0.0\lib\net45\Microsoft.Owin.Host.SystemWeb.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.Web.Administration, Version=7.9.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
@@ -44,7 +52,7 @@
     </Reference>
     <Reference Include="Newtonsoft.Json, Version=4.5.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\packages\Newtonsoft.Json.4.5.11\lib\net40\Newtonsoft.Json.dll</HintPath>
+      <HintPath>..\..\packages\Newtonsoft.Json.5.0.6\lib\net45\Newtonsoft.Json.dll</HintPath>
     </Reference>
     <Reference Include="Owin, Version=1.0.0.0, Culture=neutral, PublicKeyToken=f0ebd12fd5e55cc5, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
@@ -73,10 +81,13 @@
     <Compile Include="Client\HubProxyFacts.cs" />
     <Compile Include="Client\KeepAliveFacts.cs" />
     <Compile Include="Client\LongPollingFacts.cs" />
+    <Compile Include="Client\WebSocketFacts.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Server\Connections\ConnectionFacts.cs" />
     <Compile Include="Server\Connections\DisconnectFacts.cs" />
+    <Compile Include="Server\Connections\NameValueCollectionWrapper.cs" />
     <Compile Include="Server\Connections\PersistentConnectionFacts.cs" />
+    <Compile Include="Server\Connections\ReconnectFacts.cs" />
     <Compile Include="Server\Hubs\HubAuthFacts.cs" />
     <Compile Include="Server\Hubs\HubFacts.cs" />
     <Compile Include="Server\Hubs\SecurityFacts.cs" />
@@ -110,18 +121,6 @@
     <ProjectReference Include="..\..\src\Microsoft.AspNet.SignalR.Hosting.Memory\Microsoft.AspNet.SignalR.Hosting.Memory.csproj">
       <Project>{055f2118-fe29-4219-a28a-3d6f0889652e}</Project>
       <Name>Microsoft.AspNet.SignalR.Hosting.Memory</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\src\Microsoft.AspNet.SignalR.Owin45\Microsoft.AspNet.SignalR.Owin45.csproj">
-      <Project>{45892477-ef4e-4f45-a431-822755a38ea0}</Project>
-      <Name>Microsoft.AspNet.SignalR.Owin45</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\src\Microsoft.AspNet.SignalR.SystemWeb45\Microsoft.AspNet.SignalR.SystemWeb45.csproj">
-      <Project>{202fa02d-cc05-40d2-a574-4bd34e47f575}</Project>
-      <Name>Microsoft.AspNet.SignalR.SystemWeb45</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Microsoft.AspNet.SignalR.Tests\Microsoft.AspNet.SignalR.Tests.csproj">
-      <Project>{fba09237-84cc-4383-bd12-cdf58e4020e8}</Project>
-      <Name>Microsoft.AspNet.SignalR.Tests</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="..\..\src\Common\Microsoft.AspNet.SignalR.targets" />

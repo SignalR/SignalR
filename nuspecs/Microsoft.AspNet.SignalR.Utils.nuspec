@@ -1,0 +1,21 @@
+﻿<?xml version="1.0"?>
+<package>
+  <metadata>
+    <id>Microsoft.AspNet.SignalR.Utils</id>
+    <title>Microsoft ASP.NET SignalR Utilities</title>
+    <version>__SIGNALR_PACKAGE_VERSION__</version>
+    <authors>Microsoft</authors>
+    <owners>Microsoft</owners>
+    <licenseUrl>__SIGNALR_LICENSE_URL__</licenseUrl>
+    <copyright>__SIGNALR_COPYRIGHT_NOTICE__</copyright>
+    <projectUrl>http://www.asp.net/signalr</projectUrl>
+    <requireLicenseAcceptance>true</requireLicenseAcceptance>
+    <description>Command line utilities for ASP.NET SignalR, including performance counter installation and Hub JavaScript proxy generation.</description>
+    <language>en-US</language>
+    <tags>Microsoft AspNet SignalR AspNetSignalR Utils</tags>
+    <releaseNotes>https://github.com/SignalR/SignalR/releases</releaseNotes>
+  </metadata>
+  <files>
+    <file src="tools\signalr.exe" target="tools"/>
+  </files>
+</package>

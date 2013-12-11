@@ -123,6 +123,9 @@
   <data name="DynamicComment_ServerSideTypeIs" xml:space="preserve">
     <value>            /// &lt;param name=\"{0}\" type=\"{1}\"&gt;Server side type is {2}&lt;/param&gt;</value>
   </data>
+  <data name="Error_AmbiguousMessage" xml:space="preserve">
+    <value>Ambiguous message. Unable to send to both '{0}' and '{1}'.</value>
+  </data>
   <data name="Error_ArgumentNullOrEmpty" xml:space="preserve">
     <value>Argument cannot be null or empty</value>
   </data>
@@ -133,7 +136,7 @@
     <value>Caller is not authorized to invoke the {0} method on {1}.</value>
   </data>
   <data name="Error_ConnectionIdIncorrectFormat" xml:space="preserve">
-    <value>The connection id is in the incorrect format.</value>
+    <value>The ConnectionId is in the incorrect format.</value>
   </data>
   <data name="Error_ConnectionNotInitialized" xml:space="preserve">
     <value>The PersistentConnection is not initialized.</value>
@@ -148,13 +151,16 @@
     <value>Do not read RequireOutgoing. Use protected _requireOutgoing instead.</value>
   </data>
   <data name="Error_DuplicateHubs" xml:space="preserve">
-    <value>Duplicate hub names found.</value>
+    <value>Duplicate Hub names found.</value>
   </data>
   <data name="Error_DuplicatePayloadsForStream" xml:space="preserve">
     <value>Duplicate payload id detected for stream '{0}'.</value>
   </data>
   <data name="Error_ErrorCreatingHub" xml:space="preserve">
     <value>Error creating Hub {0}. </value>
+  </data>
+  <data name="Error_ExceptionContextCanOnlyBeModifiedOnce" xml:space="preserve">
+    <value>The ExceptionContext has already been modified once and cannot be modified again.</value>
   </data>
   <data name="Error_HubCouldNotBeResolved" xml:space="preserve">
     <value>'{0}' Hub could not be resolved.</value>
@@ -175,10 +181,10 @@
     <value>SignalR: JavaScript Hub proxy generation has been disabled.</value>
   </data>
   <data name="Error_KeepAliveMustBeGreaterThanTwoSeconds" xml:space="preserve">
-    <value>Keep Alive value must be greater than two seconds.</value>
+    <value>KeepAlive value must be greater than two seconds.</value>
   </data>
   <data name="Error_KeepAliveMustBeNoMoreThanAThirdOfTheDisconnectTimeout" xml:space="preserve">
-    <value>Keep Alive value must be no more than a third of the DisconnectTimeout.</value>
+    <value>KeepAlive value must be no more than a third of the DisconnectTimeout.</value>
   </data>
   <data name="Error_MethodCouldNotBeResolved" xml:space="preserve">
     <value>'{0}' method could not be resolved.</value>
@@ -188,6 +194,15 @@
   </data>
   <data name="Error_MultipleActivatorsAreaRegisteredCallGetServices" xml:space="preserve">
     <value>Multiple activators for type {0} are registered. Please call GetServices instead.</value>
+  </data>
+  <data name="Error_NoConfiguration" xml:space="preserve">
+    <value>A configuration object must be specified.</value>
+  </data>
+  <data name="Error_NoDepenendeyResolver" xml:space="preserve">
+    <value>A dependency resolver must be specified.</value>
+  </data>
+  <data name="Error_NotWebSocketRequest" xml:space="preserve">
+    <value>Not a valid web socket request.</value>
   </data>
   <data name="Error_ParseObjectFailed" xml:space="preserve">
     <value>Unexpected end when reading object.</value>
@@ -221,5 +236,8 @@
   </data>
   <data name="Error_WebSocketsNotSupported" xml:space="preserve">
     <value>WebSockets is not supported.</value>
+  </data>
+  <data name="Forbidden_JSONPDisabled" xml:space="preserve">
+    <value>Forbidden: JSONP is disabled.</value>
   </data>
 </root>

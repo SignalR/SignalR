@@ -12,12 +12,6 @@ namespace Microsoft.AspNet.SignalR.Hubs
     public class ClientHubInvocation
     {
         /// <summary>
-        /// The signal that clients receiving this invocation are subscribed to.
-        /// </summary>
-        [JsonIgnore]
-        public string Target { get; set; }
-
-        /// <summary>
         /// The name of the hub that the method being invoked belongs to.
         /// </summary>
         [JsonProperty("H")]

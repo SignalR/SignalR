@@ -64,6 +64,7 @@ chutzpah.runner = function (onInitialized, onPageLoaded, isFrameworkLoaded, onFr
             case 'TestDone':
             case 'Log':
             case 'Error':
+            case 'CoverageObject':
                 console.log(wrap(eventObj.type) + json);
                 break;
                 
@@ -136,7 +137,7 @@ chutzpah.runner = function (onInitialized, onPageLoaded, isFrameworkLoaded, onFr
                 window.chutzpah = { testMode: 'execution' };
             });
         }
-        
+
         page.evaluate(onInitialized);
     };
     

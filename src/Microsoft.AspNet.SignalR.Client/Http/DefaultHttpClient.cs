@@ -11,19 +11,32 @@ namespace Microsoft.AspNet.SignalR.Client.Http
     /// </summary>
     public class DefaultHttpClient : IHttpClient
     {
+        private const string ShortRunningGroup = "SignalR-short-running";
+        private const string LongRunningGroup = "SignalR-long-running";
+
+        private IConnection _connection;
+
+        public void Initialize(IConnection connection)
+        {
+            _connection = connection;
+        }
+
         /// <summary>
         /// Makes an asynchronous http GET request to the specified url.
         /// </summary>
         /// <param name="url">The url to send the request to.</param>
         /// <param name="prepareRequest">A callback that initializes the request with default values.</param>
+        /// <param name="isLongRunning">Indicates whether the request is long running</param>
         /// <returns>A <see cref="T:Task{IResponse}"/>.</returns>
-        public Task<IResponse> Get(string url, Action<IRequest> prepareRequest)
+        public Task<IResponse> Get(string url, Action<IRequest> prepareRequest, bool isLongRunning)
         {
-            IRequest req = null;
             return HttpHelper.GetAsync(url, request =>
             {
-                req = new HttpWebRequestWrapper(request);
+                request.ConnectionGroupName = isLongRunning ? LongRunningGroup : ShortRunningGroup;
+
+                var req = new HttpWebRequestWrapper(request);
                 prepareRequest(req);
+                PrepareClientRequest(req);
             }
             ).Then(response => (IResponse)new HttpWebResponseWrapper(response));
         }
@@ -34,16 +47,48 @@ namespace Microsoft.AspNet.SignalR.Client.Http
         /// <param name="url">The url to send the request to.</param>
         /// <param name="prepareRequest">A callback that initializes the request with default values.</param>
         /// <param name="postData">form url encoded data.</param>
+        /// <param name="isLongRunning">Indicates whether the request is long running</param>
         /// <returns>A <see cref="T:Task{IResponse}"/>.</returns>
-        public Task<IResponse> Post(string url, Action<IRequest> prepareRequest, IDictionary<string, string> postData)
+        public Task<IResponse> Post(string url, Action<IRequest> prepareRequest, IDictionary<string, string> postData, bool isLongRunning)
         {
-            IRequest req = null;
             return HttpHelper.PostAsync(url, request =>
             {
-                req = new HttpWebRequestWrapper(request);
+                request.ConnectionGroupName = isLongRunning ? LongRunningGroup : ShortRunningGroup;
+
+                var req = new HttpWebRequestWrapper(request);
                 prepareRequest(req);
+                PrepareClientRequest(req);
             },
             postData).Then(response => (IResponse)new HttpWebResponseWrapper(response));
+        }
+
+        /// <summary>
+        /// Adds certificates, credentials, proxies and cookies to the request
+        /// </summary>
+        /// <param name="req">Request object</param>
+        private void PrepareClientRequest(HttpWebRequestWrapper req)
+        {
+#if NET4
+            if (_connection.Certificates != null)
+            {
+                req.AddClientCerts(_connection.Certificates);
+            }
+#endif
+
+            if (_connection.CookieContainer != null)
+            {
+                req.CookieContainer = _connection.CookieContainer;
+            }
+
+            if (_connection.Credentials != null)
+            {
+                req.Credentials = _connection.Credentials;
+            }
+
+            if (_connection.Proxy != null)
+            {
+                req.Proxy = _connection.Proxy;
+            }
         }
     }
 }

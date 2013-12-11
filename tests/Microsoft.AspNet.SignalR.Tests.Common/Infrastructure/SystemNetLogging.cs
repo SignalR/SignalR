@@ -4,7 +4,7 @@ using System.Diagnostics;
 using System.Reflection;
 using Microsoft.AspNet.SignalR.Infrastructure;
 
-namespace Microsoft.AspNet.SignalR.Tests.FunctionalTests.Infrastructure
+namespace Microsoft.AspNet.SignalR.Tests.Common.Infrastructure
 {
     public static class SystemNetLogging
     {

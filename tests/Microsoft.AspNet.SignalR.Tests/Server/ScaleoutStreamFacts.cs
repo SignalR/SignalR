@@ -46,7 +46,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
         }
 
 
-        [Fact(Timeout = 1000)]
+        [Fact(Timeout = 10000)]
         public void OpenAfterErrorRunsQueue()
         {
             int x = 0;
@@ -200,7 +200,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
             Assert.Equal(1, x);
         }
 
-        [Fact(Timeout = 1000)]
+        [Fact(Timeout = 10000)]
         public void InitialToClosed()
         {
             var perfCounters = new Microsoft.AspNet.SignalR.Infrastructure.PerformanceCounterManager();

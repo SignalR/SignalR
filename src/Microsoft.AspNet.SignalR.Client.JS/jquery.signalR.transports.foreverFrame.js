@@ -3,7 +3,7 @@
 /*global window:false */
 /// <reference path="jquery.signalR.transports.common.js" />
 
-(function ($, window) {
+(function ($, window, undefined) {
     "use strict";
 
     var signalR = $.signalR,
@@ -55,7 +55,8 @@
 
         supportsKeepAlive: true,
 
-        timeOut: 3000,
+        // Added as a value here so we can create tests to verify functionality
+        iframeClearThreshold: 50,
 
         start: function (connection, onSuccess, onFailed) {
             var that = this,
@@ -89,7 +90,7 @@
             connection.log("Binding to iframe's readystatechange event.");
             frame.bind("readystatechange", function () {
                 if ($.inArray(this.readyState, ["loaded", "complete"]) >= 0) {
-                    connection.log("Forever frame iframe readyState changed to " + this.readyState + ", reconnecting");
+                    connection.log("Forever frame iframe readyState changed to " + this.readyState + ", reconnecting.");
 
                     that.reconnect(connection);
                 }
@@ -99,21 +100,12 @@
             connection.frameId = frameId;
 
             if (onSuccess) {
-                connection.onSuccess = onSuccess;
+                connection.onSuccess = function () {
+                    connection.log("Iframe transport started.");
+                    onSuccess();
+                    delete connection.onSuccess;
+                };
             }
-
-            // After connecting, if after the specified timeout there's no response stop the connection
-            // and raise on failed
-            window.setTimeout(function () {
-                if (connection.onSuccess) {
-                    connection.log("Failed to connect using forever frame source, it timed out after " + that.timeOut + "ms.");
-                    that.stop(connection);
-
-                    if (onFailed) {
-                        onFailed();
-                    }
-                }
-            }, that.timeOut);
         },
 
         reconnect: function (connection) {
@@ -139,14 +131,18 @@
         receive: function (connection, data) {
             var cw;
 
-            transportLogic.processMessages(connection, data);
-            // Delete the script & div elements
-            connection.frameMessageCount = (connection.frameMessageCount || 0) + 1;
-            if (connection.frameMessageCount > 50) {
-                connection.frameMessageCount = 0;
-                cw = connection.frame.contentWindow || connection.frame.contentDocument;
-                if (cw && cw.document) {
-                    $("body", cw.document).empty();
+            transportLogic.processMessages(connection, data, connection.onSuccess);
+
+            // Protect against connection stopping from a callback trigger within the processMessages above.
+            if (connection.state === $.signalR.connectionState.connected) {
+                // Delete the script & div elements
+                connection.frameMessageCount = (connection.frameMessageCount || 0) + 1;
+                if (connection.frameMessageCount > signalR.transports.foreverFrame.iframeClearThreshold) {
+                    connection.frameMessageCount = 0;
+                    cw = connection.frame.contentWindow || connection.frame.contentDocument;
+                    if (cw && cw.document) {
+                        $("body", cw.document).empty();
+                    }
                 }
             }
         },
@@ -168,7 +164,7 @@
                         }
                     }
                     catch (e) {
-                        connection.log("SignalR: Error occured when stopping foreverFrame transport. Message = " + e.message);
+                        connection.log("Error occured when stopping foreverFrame transport. Message = " + e.message + ".");
                     }
                 }
                 $(connection.frame).remove();
@@ -177,7 +173,9 @@
                 connection.frameId = null;
                 delete connection.frame;
                 delete connection.frameId;
-                connection.log("Stopping forever frame");
+                delete connection.onSuccess;
+                delete connection.frameMessageCount;
+                connection.log("Stopping forever frame.");
             }
         },
 
@@ -190,13 +188,9 @@
         },
 
         started: function (connection) {
-            if (connection.onSuccess) {
-                connection.onSuccess();
-                connection.onSuccess = null;
-                delete connection.onSuccess;
-            } else if (changeState(connection,
-                                   signalR.connectionState.reconnecting,
-                                   signalR.connectionState.connected) === true) {
+            if (changeState(connection,
+                signalR.connectionState.reconnecting,
+                signalR.connectionState.connected) === true) {
                 // If there's no onSuccess handler we assume this is a reconnect
                 $(connection).triggerHandler(events.onReconnect);
             }

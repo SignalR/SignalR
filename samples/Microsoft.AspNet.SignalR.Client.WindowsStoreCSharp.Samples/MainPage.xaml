@@ -1,0 +1,16 @@
+﻿<Page
+    x:Class="Microsoft.AspNet.SignalR.Client.WindowsStoreCSharp.Samples.MainPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:Microsoft.AspNet.SignalR.Client.WindowsStoreCSharp.Samples"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d">
+
+    <Grid Background="{StaticResource ApplicationPageBackgroundThemeBrush}">
+        <StackPanel>
+            <TextBlock>SignalR Client</TextBlock>
+            <TextBox Name="Messages" HorizontalAlignment="Left" TextWrapping="Wrap" VerticalAlignment="Top" Width="1400" Height="700" FontSize="10"/>
+        </StackPanel>
+    </Grid>
+</Page>

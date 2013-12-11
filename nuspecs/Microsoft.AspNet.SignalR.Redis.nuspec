@@ -1,0 +1,26 @@
+﻿<?xml version="1.0"?>
+<package>
+  <metadata>
+    <id>Microsoft.AspNet.SignalR.Redis</id>
+    <title>Microsoft ASP.NET SignalR Redis Messaging Backplane</title>
+    <version>__SIGNALR_PACKAGE_VERSION__</version>
+    <authors>Microsoft</authors>
+    <owners>Microsoft</owners>
+    <licenseUrl>__SIGNALR_LICENSE_URL__</licenseUrl>
+    <copyright>__SIGNALR_COPYRIGHT_NOTICE__</copyright>
+    <projectUrl>http://www.asp.net/signalr</projectUrl>
+    <requireLicenseAcceptance>true</requireLicenseAcceptance>
+    <description>Redis messaging backplane for scaling out of ASP.NET SignalR applications in a web-farm.</description>
+    <language>en-US</language>
+    <tags>Microsoft AspNet SignalR AspNetSignalR Redis</tags>
+    <releaseNotes>https://github.com/SignalR/SignalR/releases</releaseNotes>
+    <dependencies>
+      <dependency id="Microsoft.AspNet.SignalR.Core" version="__SIGNALR_PACKAGE_VERSION__" />
+      <dependency id="BookSleeve" version="1.3.31" />
+    </dependencies>
+  </metadata>
+  <files>
+    <file src="Net45\Microsoft.AspNet.SignalR.Redis.dll" target="lib\net45" />
+    <file src="Net45\Microsoft.AspNet.SignalR.Redis.xml" target="lib\net45" />
+  </files>
+</package>

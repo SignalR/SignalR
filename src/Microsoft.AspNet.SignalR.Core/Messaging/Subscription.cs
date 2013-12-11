@@ -2,7 +2,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Threading;
@@ -80,7 +79,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
             return Invoke(result, state => { }, state: null);
         }
 
-        private Task<bool> Invoke(MessageResult result, Action<object> beforeInvoke, object state)
+        private async Task<bool> Invoke(MessageResult result, Action<object> beforeInvoke, object state)
         {
             // Change the state from idle to invoking callback
             var prevState = Interlocked.CompareExchange(ref _subscriptionState,
@@ -92,7 +91,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
                 // Only allow terminal messages after dispose
                 if (!result.Terminal)
                 {
-                    return TaskAsyncHelper.False;
+                    return false;
                 }
             }
 
@@ -101,33 +100,52 @@ namespace Microsoft.AspNet.SignalR.Messaging
             _counters.MessageBusMessagesReceivedTotal.IncrementBy(result.TotalCount);
             _counters.MessageBusMessagesReceivedPerSec.IncrementBy(result.TotalCount);
 
-            return _callback.Invoke(result, _callbackState).ContinueWith(task =>
+            try
+            {
+                return await _callback(result, _callbackState);
+            }
+            finally
             {
                 // Go from invoking callback to idle
                 Interlocked.CompareExchange(ref _subscriptionState,
                                             SubscriptionState.Idle,
                                             SubscriptionState.InvokingCallback);
-                return task;
-            },
-            TaskContinuationOptions.ExecuteSynchronously).FastUnwrap();
+            }
         }
 
-        public Task Work()
+        [SuppressMessage("Microsoft.Usage", "CA2202:Do not dispose objects multiple times", Justification = "We have a sync and async code path.")]
+        public async Task Work()
         {
             // Set the state to working
             Interlocked.Exchange(ref _state, State.Working);
 
-            var tcs = new TaskCompletionSource<object>();
-
-            WorkImpl(tcs);
-
-            // Fast Path
-            if (tcs.Task.IsCompleted)
+            while (Alive)
             {
-                return tcs.Task;
-            }
+                var items = new List<ArraySegment<Message>>();
+                int totalCount;
+                object state;
 
-            return FinishAsync(tcs);
+                PerformWork(items, out totalCount, out state);
+
+                if (items.Count > 0)
+                {
+                    var messageResult = new MessageResult(items, totalCount);
+
+                    bool result = await Invoke(messageResult, s => BeforeInvoke(s), state);
+
+                    if (!result)
+                    {
+                        Dispose();
+
+                        // If the callback said it's done then stop
+                        break;
+                    }
+                }
+                else
+                {
+                    break;
+                }
+            }
         }
 
         public bool SetQueued()
@@ -141,80 +159,6 @@ namespace Microsoft.AspNet.SignalR.Messaging
             return Interlocked.CompareExchange(ref _state, State.Idle, State.Working) != State.Working;
         }
 
-        private static Task FinishAsync(TaskCompletionSource<object> tcs)
-        {
-            return tcs.Task.ContinueWith(task =>
-            {
-                if (task.IsFaulted)
-                {
-                    return TaskAsyncHelper.FromError(task.Exception);
-                }
-
-                return TaskAsyncHelper.Empty;
-            }).FastUnwrap();
-        }
-
-        [SuppressMessage("Microsoft.Usage", "CA2202:Do not dispose objects multiple times", Justification = "We have a sync and async code path.")]
-        [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "We want to avoid user code taking the process down.")]
-        private void WorkImpl(TaskCompletionSource<object> taskCompletionSource)
-        {
-        Process:
-            if (!Alive)
-            {
-                // If this subscription is dead then return immediately
-                taskCompletionSource.TrySetResult(null);
-                return;
-            }
-
-            var items = new List<ArraySegment<Message>>();
-            int totalCount;
-            object state;
-
-            PerformWork(items, out totalCount, out state);
-
-            if (items.Count > 0)
-            {
-                var messageResult = new MessageResult(items, totalCount);
-                Task<bool> callbackTask = Invoke(messageResult, s => BeforeInvoke(s), state);
-
-                if (callbackTask.IsCompleted)
-                {
-                    try
-                    {
-                        // Make sure exceptions propagate
-                        callbackTask.Wait();
-
-                        if (callbackTask.Result)
-                        {
-                            // Sync path
-                            goto Process;
-                        }
-                        else
-                        {
-                            // If we're done pumping messages through to this subscription
-                            // then dispose
-                            Dispose();
-
-                            // If the callback said it's done then stop
-                            taskCompletionSource.TrySetResult(null);
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        taskCompletionSource.TrySetUnwrappedException(ex);
-                    }
-                }
-                else
-                {
-                    WorkImplAsync(callbackTask, taskCompletionSource);
-                }
-            }
-            else
-            {
-                taskCompletionSource.TrySetResult(null);
-            }
-        }
-
         protected virtual void BeforeInvoke(object state)
         {
         }
@@ -224,31 +168,6 @@ namespace Microsoft.AspNet.SignalR.Messaging
         [SuppressMessage("Microsoft.Design", "CA1021:AvoidOutParameters", MessageId = "1#", Justification = "The count needs to be returned")]
         [SuppressMessage("Microsoft.Design", "CA1021:AvoidOutParameters", MessageId = "2#", Justification = "The state needs to be set by the callee")]
         protected abstract void PerformWork(IList<ArraySegment<Message>> items, out int totalCount, out object state);
-
-        private void WorkImplAsync(Task<bool> callbackTask, TaskCompletionSource<object> taskCompletionSource)
-        {
-            // Async path
-            callbackTask.ContinueWith(task =>
-            {
-                if (task.IsFaulted)
-                {
-                    taskCompletionSource.TrySetUnwrappedException(task.Exception);
-                }
-                else if (task.Result)
-                {
-                    WorkImpl(taskCompletionSource);
-                }
-                else
-                {
-                    // If we're done pumping messages through to this subscription
-                    // then dispose
-                    Dispose();
-
-                    // If the callback said it's done then stop
-                    taskCompletionSource.TrySetResult(null);
-                }
-            });
-        }
 
         public virtual bool AddEvent(string key, Topic topic)
         {

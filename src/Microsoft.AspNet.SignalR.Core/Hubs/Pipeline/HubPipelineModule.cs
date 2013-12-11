@@ -25,16 +25,37 @@ namespace Microsoft.AspNet.SignalR.Hubs
         /// <returns>A wrapped function that invokes a server-side hub method.</returns>
         public virtual Func<IHubIncomingInvokerContext, Task<object>> BuildIncoming(Func<IHubIncomingInvokerContext, Task<object>> invoke)
         {
-            return context =>
+            return async context =>
             {
                 if (OnBeforeIncoming(context))
                 {
-                    return invoke(context).OrEmpty()
-                                          .Then(result => OnAfterIncoming(result, context))
-                                          .Catch(ex => OnIncomingError(ex, context));
+                    try
+                    {
+                        var result = await invoke(context).OrEmpty();
+                        return OnAfterIncoming(result, context);
+                    }
+                    catch (Exception ex)
+                    {
+                        var exContext = new ExceptionContext(ex);
+                        OnIncomingError(exContext, context);
+
+                        var error = exContext.Error;
+                        if (error == ex)
+                        {
+                            throw;
+                        }
+                        else if (error != null)
+                        {
+                            throw error;
+                        }
+                        else
+                        {
+                            return exContext.Result;
+                        }
+                    }
                 }
 
-                return TaskAsyncHelper.FromResult<object>(null);
+                return null;
             };
         }
 
@@ -301,9 +322,12 @@ namespace Microsoft.AspNet.SignalR.Hubs
         /// module added later to the <see cref="IHubPipeline"/>. Observing the exception using this method will not prevent
         /// it from bubbling up to other modules.
         /// </summary>
-        /// <param name="ex">The exception that was thrown during the server-side invocation.</param>
-        /// <param name="context">A description of the server-side hub method invocation.</param>
-        protected virtual void OnIncomingError(Exception ex, IHubIncomingInvokerContext context)
+        /// <param name="exceptionContext">
+        /// Represents the exception that was thrown during the server-side invocation.
+        /// It is possible to change the error or set a result using this context.
+        /// </param>
+        /// <param name="invokerContext">A description of the server-side hub method invocation.</param>
+        protected virtual void OnIncomingError(ExceptionContext exceptionContext, IHubIncomingInvokerContext invokerContext)
         {
 
         }

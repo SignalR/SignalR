@@ -2,6 +2,7 @@
 (function ($, window, undefined) {
     var enabled = !!window.EventSource,
         savedEventSource = window.EventSource,
+        modifiedEventSource,
         network = $.network,
         eventSourceData = {},
         eventSourceIds = 0,
@@ -58,9 +59,22 @@
         $.extend(CustomEventSource, window.EventSource);
 
         window.EventSource = CustomEventSource;
+        modifiedEventSource = CustomEventSource;
     }
 
     network.eventsource = {
+        enable: function () {
+            /// <summary>Enables the EventSource network mock functionality.</summary>
+            if (enabled) {
+                window.EventSource = modifiedEventSource;
+            }
+        },
+        disable: function () {
+            /// <summary>Disables the EventSource network mock functionality.</summary>
+            if (enabled) {
+                window.EventSource = savedEventSource;
+            }
+        },
         disconnect: function (soft) {
             /// <summary>Disconnects the network so javascript transport methods are unable to communicate with a server.</summary>
             /// <param name="soft" type="Boolean">Whether the disconnect should be soft.  A soft disconnect indicates that transport methods are not notified of disconnect.</param>

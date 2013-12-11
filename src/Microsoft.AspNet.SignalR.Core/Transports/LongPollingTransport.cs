@@ -3,19 +3,21 @@
 using System;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
-using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNet.SignalR.Configuration;
 using Microsoft.AspNet.SignalR.Hosting;
 using Microsoft.AspNet.SignalR.Infrastructure;
 using Microsoft.AspNet.SignalR.Json;
 using Microsoft.AspNet.SignalR.Tracing;
+using Newtonsoft.Json;
 
 namespace Microsoft.AspNet.SignalR.Transports
 {
     public class LongPollingTransport : TransportDisconnectBase, ITransport
     {
-        private readonly IJsonSerializer _jsonSerializer;
+        private readonly JsonSerializer _jsonSerializer;
         private readonly IPerformanceCounterManager _counters;
+        private readonly IConfigurationManager _configurationManager;
 
         // This should be ok to do since long polling request never hang around too long
         // so we won't bloat memory
@@ -23,46 +25,38 @@ namespace Microsoft.AspNet.SignalR.Transports
 
         public LongPollingTransport(HostContext context, IDependencyResolver resolver)
             : this(context,
-                   resolver.Resolve<IJsonSerializer>(),
+                   resolver.Resolve<JsonSerializer>(),
                    resolver.Resolve<ITransportHeartbeat>(),
                    resolver.Resolve<IPerformanceCounterManager>(),
-                   resolver.Resolve<ITraceManager>())
+                   resolver.Resolve<ITraceManager>(),
+                   resolver.Resolve<IConfigurationManager>())
         {
 
         }
 
         public LongPollingTransport(HostContext context,
-                                    IJsonSerializer jsonSerializer,
+                                    JsonSerializer jsonSerializer,
                                     ITransportHeartbeat heartbeat,
                                     IPerformanceCounterManager performanceCounterManager,
-                                    ITraceManager traceManager)
+                                    ITraceManager traceManager,
+                                    IConfigurationManager configurationManager)
             : base(context, heartbeat, performanceCounterManager, traceManager)
         {
             _jsonSerializer = jsonSerializer;
             _counters = performanceCounterManager;
-        }
-
-        /// <summary>
-        /// The number of milliseconds to tell the browser to wait before restablishing a
-        /// long poll connection after data is sent from the server. Defaults to 0.
-        /// </summary>
-        [SuppressMessage("Microsoft.Naming", "CA1720:IdentifiersShouldNotContainTypeNames", MessageId = "long", Justification = "Longpolling is a well known term")]
-        public static long LongPollDelay
-        {
-            get;
-            set;
+            _configurationManager = configurationManager;
         }
 
         public override TimeSpan DisconnectThreshold
         {
-            get { return TimeSpan.FromMilliseconds(LongPollDelay); }
+            get { return _configurationManager.LongPollDelay; }
         }
 
         public override bool IsConnectRequest
         {
             get
             {
-                return Context.Request.Url.LocalPath.EndsWith("/connect", StringComparison.OrdinalIgnoreCase);
+                return Context.Request.LocalPath.EndsWith("/connect", StringComparison.OrdinalIgnoreCase);
             }
         }
 
@@ -70,7 +64,7 @@ namespace Microsoft.AspNet.SignalR.Transports
         {
             get
             {
-                return Context.Request.Url.LocalPath.EndsWith("/reconnect", StringComparison.OrdinalIgnoreCase);
+                return Context.Request.LocalPath.EndsWith("/reconnect", StringComparison.OrdinalIgnoreCase);
             }
         }
 
@@ -86,7 +80,7 @@ namespace Microsoft.AspNet.SignalR.Transports
         {
             get
             {
-                return Context.Request.Url.LocalPath.EndsWith("/send", StringComparison.OrdinalIgnoreCase);
+                return Context.Request.LocalPath.EndsWith("/send", StringComparison.OrdinalIgnoreCase);
             }
         }
 
@@ -158,32 +152,45 @@ namespace Microsoft.AspNet.SignalR.Transports
             return EnqueueOperation(state => PerformSend(state), context);
         }
 
-        private Task ProcessSendRequest()
+        private async Task ProcessSendRequest()
         {
-            string data = Context.Request.Form["data"] ?? Context.Request.QueryString["data"];
+            INameValueCollection form = await Context.Request.ReadForm();
+
+            string data = form["data"] ?? Context.Request.QueryString["data"];
 
             if (Received != null)
             {
-                return Received(data);
+                await Received(data);
             }
-
-            return TaskAsyncHelper.Empty;
         }
 
         private Task ProcessReceiveRequest(ITransportConnection connection)
         {
             Func<Task> initialize = null;
 
-            bool newConnection = Heartbeat.AddConnection(this);
+            // If this transport isn't replacing an existing transport, oldConnection will be null.
+            ITrackingConnection oldConnection = Heartbeat.AddOrUpdateConnection(this);
+            bool newConnection = oldConnection == null;
 
             if (IsConnectRequest)
             {
+                Func<Task> connected;
                 if (newConnection)
                 {
-                    initialize = Connected;
-
+                    connected = Connected ?? _emptyTaskFunc;
                     _counters.ConnectionsConnected.Increment();
                 }
+                else
+                {
+                    // Wait until the previous call to Connected completes.
+                    // We don't want to call Connected twice
+                    connected = () => oldConnection.ConnectTask;
+                }
+
+                initialize = () =>
+                {
+                    return connected().Then((conn, id) => conn.Initialize(id), connection, ConnectionId);
+                };
             }
             else if (IsReconnectRequest)
             {
@@ -199,7 +206,7 @@ namespace Microsoft.AspNet.SignalR.Transports
             var states = new object[] { TransportConnected ?? _emptyTaskFunc, 
                                         initialize ?? _emptyTaskFunc };
 
-            Func<Task> fullInit = () => TaskAsyncHelper.Series(series, states);
+            Func<Task> fullInit = () => TaskAsyncHelper.Series(series, states).ContinueWith(_connectTcs);
 
             return ProcessMessages(connection, fullInit);
         }
@@ -253,7 +260,7 @@ namespace Microsoft.AspNet.SignalR.Transports
         {
             var context = (MessageContext)state;
 
-            response.TimedOut = context.Transport.IsTimedOut;
+            response.Reconnect = context.Transport.HostShutdownToken.IsCancellationRequested;
 
             Task task = TaskAsyncHelper.Empty;
 
@@ -305,7 +312,7 @@ namespace Microsoft.AspNet.SignalR.Transports
                 return TaskAsyncHelper.Empty;
             }
 
-            context.Transport.Context.Response.ContentType = context.Transport.IsJsonp ? JsonUtility.JavaScriptMimeType : JsonUtility.JsonMimeType;
+            context.Transport.Context.Response.ContentType = context.Transport.IsJsonp ? JsonUtility.JavaScriptMimeType : JsonUtility.JsonMimeType; 
 
             if (context.Transport.IsJsonp)
             {
@@ -322,7 +329,7 @@ namespace Microsoft.AspNet.SignalR.Transports
 
             context.Transport.OutputWriter.Flush();
 
-            return context.Transport.Context.Response.End();
+            return TaskAsyncHelper.Empty;
         }
 
         private static void OnError(AggregateException ex, object state)
@@ -334,11 +341,11 @@ namespace Microsoft.AspNet.SignalR.Transports
             context.Lifetime.Complete(ex);
         }
 
-        private static void AddTransportData(PersistentResponse response)
+        private void AddTransportData(PersistentResponse response)
         {
-            if (LongPollDelay > 0)
+            if (_configurationManager.LongPollDelay != TimeSpan.Zero)
             {
-                response.LongPollDelay = LongPollDelay;
+                response.LongPollDelay = (long)_configurationManager.LongPollDelay.TotalMilliseconds;
             }
         }
 

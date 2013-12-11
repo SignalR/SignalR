@@ -3,7 +3,7 @@ using System;
 using System.ComponentModel.Composition;
 using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR.Infrastructure;
-using Microsoft.AspNet.SignalR.Stress.Connections;
+using Microsoft.AspNet.SignalR.StressServer.Connections;
 using Microsoft.AspNet.SignalR.Transports;
 
 namespace Microsoft.AspNet.SignalR.Stress

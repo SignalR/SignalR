@@ -6,6 +6,8 @@ using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq;
 using System.Text;
+using Microsoft.Owin;
+using Newtonsoft.Json;
 
 namespace Microsoft.AspNet.SignalR.Json
 {
@@ -14,6 +16,8 @@ namespace Microsoft.AspNet.SignalR.Json
     /// </summary>
     public static class JsonUtility
     {
+        private const int DefaultMaxDepth = 20;
+
         // JavaScript keywords taken from http://www.ecma-international.org/publications/files/ECMA-ST/Ecma-262.pdf
         //   Sections: 7.6.1.1, 7.6.1.2
         // Plus the implicity globals "NaN", "undefined", "Infinity"
@@ -61,6 +65,24 @@ namespace Microsoft.AspNet.SignalR.Json
             return sb.ToString();
         }
 
+        /// <summary>
+        /// Creates a default <see cref="T:Newtonsoft.Json.JsonSerializerSettings"/> instance.
+        /// </summary>
+        /// <returns>The newly created <see cref="T:Newtonsoft.Json.JsonSerializerSettings"/>.</returns>
+        public static JsonSerializerSettings CreateDefaultSerializerSettings()
+        {
+            return new JsonSerializerSettings() { MaxDepth = DefaultMaxDepth };
+        }
+
+        /// <summary>
+        /// Creates a <see cref="T:Newtonsoft.Json.JsonSerializer"/> instance with the default setting. 
+        /// </summary>
+        /// <returns>The newly created <see cref="T:Newtonsoft.Json.JsonSerializerSettings"/>.</returns>
+        public static JsonSerializer CreateDefaultSerializer()
+        {
+            return JsonSerializer.Create(CreateDefaultSerializerSettings());
+        }
+
         internal static bool IsValidJavaScriptCallback(string callback)
         {
             if (String.IsNullOrWhiteSpace(callback))
@@ -105,6 +127,29 @@ namespace Microsoft.AspNet.SignalR.Json
                 }
             }
 
+            return true;
+        }
+
+        internal static bool TryRejectJSONPRequest(ConnectionConfiguration config,
+                                                   IOwinContext context)
+        {
+            // If JSONP is enabled then do nothing
+            if (config.EnableJSONP)
+            {
+                return false;
+            }
+
+            string callback = context.Request.Query.Get("callback");
+
+            // The request isn't a JSONP request so do nothing
+            if (String.IsNullOrEmpty(callback))
+            {
+                return false;
+            }
+
+            // Disable the JSONP request with a 403
+            context.Response.StatusCode = 403;
+            context.Response.ReasonPhrase = Resources.Forbidden_JSONPDisabled;
             return true;
         }
 

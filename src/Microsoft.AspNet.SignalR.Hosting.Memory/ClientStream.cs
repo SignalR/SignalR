@@ -15,11 +15,21 @@ namespace Microsoft.AspNet.SignalR.Hosting.Memory
         private readonly object _streamLock = new object();
         private readonly MemoryStream _ms = new MemoryStream();
         private readonly SafeCancellationTokenSource _cancelTokenSource = new SafeCancellationTokenSource();
+        private readonly SafeCancellationTokenSource _callCancelledTokenSource;
         private readonly Reader _reader = new Reader();
+        private readonly CancellationToken _cancelToken;
 
-        public ClientStream(INetworkObserver networkObserver)
+        public ClientStream(INetworkObserver networkObserver, SafeCancellationTokenSource callCancelledTokenSource)
         {
-            networkObserver.OnCancel = _cancelTokenSource.Cancel;
+            _cancelToken = _cancelTokenSource.Token;
+            _callCancelledTokenSource = callCancelledTokenSource;
+
+            networkObserver.OnCancel = () =>
+            {
+                _cancelTokenSource.Cancel(useNewThread: false);
+                _callCancelledTokenSource.Cancel();
+            };
+
             networkObserver.OnClose = OnClose;
             networkObserver.OnWrite = OnWrite;
         }
@@ -86,7 +96,7 @@ namespace Microsoft.AspNet.SignalR.Hosting.Memory
 
         public override IAsyncResult BeginRead(byte[] buffer, int offset, int count, AsyncCallback callback, object state)
         {
-            var ar = new AsyncResult<int>(callback, state, _cancelTokenSource.Token);
+            var ar = new AsyncResult<int>(callback, state, _cancelToken);
 
             _reader.Read(completedSynchronously =>
             {

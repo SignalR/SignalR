@@ -129,13 +129,13 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
         /// <summary>
         /// Gets the performance counter representing the total number of messages published to the message bus since the application was started.
         /// </summary>
-        [PerformanceCounter(Name = "Messages Bus Messages Published Total", Description = "The total number of messages published to the message bus since the application was started.", CounterType = PerformanceCounterType.NumberOfItems64)]
+        [PerformanceCounter(Name = "Message Bus Messages Published Total", Description = "The total number of messages published to the message bus since the application was started.", CounterType = PerformanceCounterType.NumberOfItems64)]
         public IPerformanceCounter MessageBusMessagesPublishedTotal { get; private set; }
 
         /// <summary>
         /// Gets the performance counter representing the number of messages published to the message bus per second.
         /// </summary>
-        [PerformanceCounter(Name = "Messages Bus Messages Published/Sec", Description = "The number of messages published to the message bus per second.", CounterType = PerformanceCounterType.RateOfCountsPerSecond32)]
+        [PerformanceCounter(Name = "Message Bus Messages Published/Sec", Description = "The number of messages published to the message bus per second.", CounterType = PerformanceCounterType.RateOfCountsPerSecond32)]
         public IPerformanceCounter MessageBusMessagesPublishedPerSec { get; private set; }
 
         /// <summary>

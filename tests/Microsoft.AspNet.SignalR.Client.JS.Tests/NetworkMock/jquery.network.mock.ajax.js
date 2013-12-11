@@ -1,6 +1,7 @@
 ﻿// Ajax network mock
 (function ($, window) {
     var savedAjax = $.ajax,
+        modifiedAjax,
         network = $.network,
         ajaxData = {},
         ajaxIds = 0,
@@ -80,7 +81,17 @@
         return request;
     };
 
+    modifiedAjax = $.ajax;
+
     network.ajax = {
+        enable: function () {
+            /// <summary>Enables the Ajax network mock functionality.</summary>
+            $.ajax = modifiedAjax;
+        },
+        disable: function () {
+            /// <summary>Disables the Ajax network mock functionality.</summary>
+            $.ajax = savedAjax;
+        },
         disconnect: function (soft) {
             /// <summary>Disconnects the network so javascript transport methods are unable to communicate with a server.</summary>
             /// <param name="soft" type="Boolean">Whether the disconnect should be soft.  A soft disconnect indicates that transport methods are not notified of disconnect.</param>

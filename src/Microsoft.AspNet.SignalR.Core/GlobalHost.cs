@@ -4,6 +4,7 @@ using System;
 using Microsoft.AspNet.SignalR.Configuration;
 using Microsoft.AspNet.SignalR.Hubs;
 using Microsoft.AspNet.SignalR.Infrastructure;
+using Microsoft.AspNet.SignalR.Tracing;
 
 namespace Microsoft.AspNet.SignalR
 {
@@ -49,6 +50,17 @@ namespace Microsoft.AspNet.SignalR
             get
             {
                 return DependencyResolver.Resolve<IConnectionManager>();
+            }
+        }
+
+        /// <summary>
+        /// Gets the default <see cref="ITraceManager"/>
+        /// </summary>
+        public static ITraceManager TraceManager
+        {
+            get
+            {
+                return DependencyResolver.Resolve<ITraceManager>();
             }
         }
 

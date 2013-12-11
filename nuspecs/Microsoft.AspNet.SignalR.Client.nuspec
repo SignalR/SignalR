@@ -1,0 +1,38 @@
+﻿<?xml version="1.0"?>
+<package>
+  <metadata>
+    <id>Microsoft.AspNet.SignalR.Client</id>
+    <title>Microsoft ASP.NET SignalR .NET Client</title>
+    <version>__SIGNALR_PACKAGE_VERSION__</version>
+    <authors>Microsoft</authors>
+    <owners>Microsoft</owners>
+    <licenseUrl>__SIGNALR_CLIENT_LICENSE_URL__</licenseUrl>
+    <copyright>__SIGNALR_COPYRIGHT_NOTICE__</copyright>
+    <projectUrl>http://www.asp.net/signalr</projectUrl>
+    <requireLicenseAcceptance>true</requireLicenseAcceptance>
+    <description>.NET client for ASP.NET SignalR.</description>
+    <language>en-US</language>
+    <tags>Microsoft AspNet SignalR AspNetSignalR Client</tags>
+    <releaseNotes>https://github.com/SignalR/SignalR/releases</releaseNotes>
+    <dependencies>
+      <group targetFramework="net40">
+        <dependency id="Newtonsoft.Json" version="5.0.0" />
+      </group>
+      <group targetFramework="net45">
+        <dependency id="Newtonsoft.Json" version="5.0.0" />
+      </group>
+      <group targetFramework="portable-net45+sl5+netcore45+wp8">
+        <dependency id="Newtonsoft.Json" version="5.0.0" />
+        <dependency id="Microsoft.Net.Http" version="2.1.10" />
+      </group>
+    </dependencies>
+  </metadata>
+  <files>
+    <file src="Net40\Microsoft.AspNet.SignalR.Client.dll" target="lib\net40" />
+    <file src="Net40\Microsoft.AspNet.SignalR.Client.xml" target="lib\net40" />
+    <file src="Net45\Microsoft.AspNet.SignalR.Client.dll" target="lib\net45" />
+    <file src="Net45\Microsoft.AspNet.SignalR.Client.xml" target="lib\net45" />
+    <file src="portable-net45+sl5+netcore45+wp8\Microsoft.AspNet.SignalR.Client.dll" target="lib\portable-net45+sl5+netcore45+wp8" />
+    <file src="portable-net45+sl5+netcore45+wp8\Microsoft.AspNet.SignalR.Client.xml" target="lib\portable-net45+sl5+netcore45+wp8" />
+  </files>
+</package>

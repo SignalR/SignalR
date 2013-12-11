@@ -13,8 +13,8 @@ namespace Microsoft.AspNet.SignalR.Hubs
     {
         private readonly StateChangeTracker _tracker;
 
-        public StatefulSignalProxy(Func<string, ClientHubInvocation, IList<string>, Task> send, string signal, string hubName, string prefix, StateChangeTracker tracker)
-            : base(send, signal, prefix, hubName, ListHelper<string>.Empty)
+        public StatefulSignalProxy(IConnection connection, IHubPipelineInvoker invoker, string signal, string hubName, string prefix, StateChangeTracker tracker)
+            : base(connection, invoker, signal, prefix, hubName, ListHelper<string>.Empty)
         {
             _tracker = tracker;
         }
@@ -40,7 +40,6 @@ namespace Microsoft.AspNet.SignalR.Hubs
                 Hub = HubName,
                 Method = method,
                 Args = args,
-                Target = Signal,
                 State = _tracker.GetChanges()
             };
         }

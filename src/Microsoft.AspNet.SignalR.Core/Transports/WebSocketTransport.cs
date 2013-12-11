@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.md in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Threading;
@@ -8,10 +9,14 @@ using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR.Hosting;
 using Microsoft.AspNet.SignalR.Infrastructure;
 using Microsoft.AspNet.SignalR.Json;
+using Microsoft.AspNet.SignalR.Owin;
 using Microsoft.AspNet.SignalR.Tracing;
+using Newtonsoft.Json;
 
 namespace Microsoft.AspNet.SignalR.Transports
 {
+    using WebSocketFunc = Func<IDictionary<string, object>, Task>; 
+
     public class WebSocketTransport : ForeverTransport
     {
         private readonly HostContext _context;
@@ -19,13 +24,13 @@ namespace Microsoft.AspNet.SignalR.Transports
         private bool _isAlive = true;
 
         private readonly Action<string> _message;
-        private readonly Action<bool> _closed;
+        private readonly Action _closed;
         private readonly Action<Exception> _error;
 
         public WebSocketTransport(HostContext context,
                                   IDependencyResolver resolver)
             : this(context,
-                   resolver.Resolve<IJsonSerializer>(),
+                   resolver.Resolve<JsonSerializer>(),
                    resolver.Resolve<ITransportHeartbeat>(),
                    resolver.Resolve<IPerformanceCounterManager>(),
                    resolver.Resolve<ITraceManager>())
@@ -33,7 +38,7 @@ namespace Microsoft.AspNet.SignalR.Transports
         }
 
         public WebSocketTransport(HostContext context,
-                                  IJsonSerializer serializer,
+                                  JsonSerializer serializer,
                                   ITransportHeartbeat heartbeat,
                                   IPerformanceCounterManager performanceCounterWriter,
                                   ITraceManager traceManager)
@@ -74,28 +79,27 @@ namespace Microsoft.AspNet.SignalR.Transports
 
         public override Task ProcessRequest(ITransportConnection connection)
         {
-            var webSocketRequest = _context.Request as IWebSocketRequest;
-
-            // Throw if the server implementation doesn't support websockets
-            if (webSocketRequest == null)
+            if (IsAbortRequest)
             {
-                throw new InvalidOperationException(Resources.Error_WebSocketsNotSupported);
+                return connection.Abort(ConnectionId);
             }
-
-            return webSocketRequest.AcceptWebSocketRequest(socket =>
+            else
             {
-                _socket = socket;
-                socket.OnClose = _closed;
-                socket.OnMessage = _message;
-                socket.OnError = _error;
+                return AcceptWebSocketRequest(socket =>
+                {
+                    _socket = socket;
+                    socket.OnClose = _closed;
+                    socket.OnMessage = _message;
+                    socket.OnError = _error;
 
-                return ProcessRequestCore(connection);
-            });
+                    return ProcessRequestCore(connection);
+                });
+            }
         }
 
         protected override TextWriter CreateResponseWriter()
         {
-            return new BufferTextWriter(_socket);
+            return new BinaryTextWriter(_socket);
         }
 
         public override Task Send(object value)
@@ -111,6 +115,20 @@ namespace Microsoft.AspNet.SignalR.Transports
             OnSendingResponse(response);
 
             return Send((object)response);
+        }
+
+        private Task AcceptWebSocketRequest(Func<IWebSocket, Task> callback)
+        {
+            var accept = _context.Environment.Get<Action<IDictionary<string, object>, WebSocketFunc>>(OwinConstants.WebSocketAccept);
+
+            if (accept == null)
+            {
+                throw new InvalidOperationException(Resources.Error_NotWebSocketRequest);
+            }
+
+            var handler = new OwinWebSocketHandler(callback);
+            accept(null, handler.ProcessRequest);
+            return TaskAsyncHelper.Empty;
         }
 
         private static Task PerformSend(object state)
@@ -131,18 +149,11 @@ namespace Microsoft.AspNet.SignalR.Transports
             }
         }
 
-        private void OnClosed(bool clean)
+        private void OnClosed()
         {
-            Trace.TraceInformation("CloseSocket({0}, {1})", clean, ConnectionId);
+            Trace.TraceInformation("CloseSocket({0})", ConnectionId);
 
-            // If we performed a clean disconnect then we go through the normal disconnect routine.  However,
-            // If we performed an unclean disconnect we want to mark the connection as "not alive" and let the
-            // HeartBeat clean it up.  This is to maintain consistency across the transports.
-            if (clean)
-            {
-                Abort();
-            }
-
+            // Require a request to /abort to stop tracking the connection. #2195
             _isAlive = false;
         }
 

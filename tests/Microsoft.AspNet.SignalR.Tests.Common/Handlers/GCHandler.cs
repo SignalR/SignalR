@@ -2,7 +2,7 @@
 using System.Web;
 using System.Web.Routing;
 
-namespace Microsoft.AspNet.SignalR.FunctionalTests
+namespace Microsoft.AspNet.SignalR.Tests.Common.Handlers
 {
     public class GCHandler : IRouteHandler, IHttpHandler
     {

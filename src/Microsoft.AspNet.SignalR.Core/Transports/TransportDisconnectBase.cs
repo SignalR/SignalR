@@ -28,6 +28,9 @@ namespace Microsoft.AspNet.SignalR.Transports
 
         internal static readonly Func<Task> _emptyTaskFunc = () => TaskAsyncHelper.Empty;
 
+        // The TCS that completes when the task returned by PersistentConnection.OnConnected does.
+        internal TaskCompletionSource<object> _connectTcs;
+
         // Token that represents the end of the connection based on a combination of
         // conditions (timeout, disconnect, connection forcibly ended, host shutdown)
         private CancellationToken _connectionEndToken;
@@ -110,7 +113,10 @@ namespace Microsoft.AspNet.SignalR.Transports
 
         public virtual CancellationToken CancellationToken
         {
-            get { return _context.Response.CancellationToken; }
+            get
+            {
+                return _context.Response.CancellationToken;
+            }
         }
 
         public virtual bool IsAlive
@@ -122,11 +128,27 @@ namespace Microsoft.AspNet.SignalR.Transports
             }
         }
 
+        public Task ConnectTask
+        {
+            get
+            {
+                return _connectTcs.Task;
+            }
+        }
+
         protected CancellationToken ConnectionEndToken
         {
             get
             {
                 return _connectionEndToken;
+            }
+        }
+
+        protected CancellationToken HostShutdownToken
+        {
+            get
+            {
+                return _hostShutdownToken;
             }
         }
 
@@ -155,7 +177,7 @@ namespace Microsoft.AspNet.SignalR.Transports
         {
             get
             {
-                return Context.Request.Url.LocalPath.EndsWith("/connect", StringComparison.OrdinalIgnoreCase);
+                return Context.Request.LocalPath.EndsWith("/connect", StringComparison.OrdinalIgnoreCase);
             }
         }
 
@@ -163,7 +185,7 @@ namespace Microsoft.AspNet.SignalR.Transports
         {
             get
             {
-                return Context.Request.Url.LocalPath.EndsWith("/abort", StringComparison.OrdinalIgnoreCase);
+                return Context.Request.LocalPath.EndsWith("/abort", StringComparison.OrdinalIgnoreCase);
             }
         }
 
@@ -186,7 +208,7 @@ namespace Microsoft.AspNet.SignalR.Transports
 
         protected virtual TextWriter CreateResponseWriter()
         {
-            return new BufferTextWriter(Context.Response);
+            return new BinaryTextWriter(Context.Response);
         }
 
         protected void IncrementErrors()
@@ -305,9 +327,12 @@ namespace Microsoft.AspNet.SignalR.Transports
 
         protected virtual void InitializePersistentState()
         {
-            _hostShutdownToken = _context.HostShutdownToken();
+            _hostShutdownToken = _context.Environment.GetShutdownToken();
 
             _requestLifeTime = new HttpRequestLifeTime(this, WriteQueue, Trace, ConnectionId);
+
+            // Create the TCS that completes when the task returned by PersistentConnection.OnConnected does.
+            _connectTcs = new TaskCompletionSource<object>();
 
             // Create a token that represents the end of this connection's life
             _connectionEndTokenSource = new SafeCancellationTokenSource();

@@ -1,0 +1,53 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <title>SignalR Chat</title>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <link rel="stylesheet" href="../../Content/jquery.mobile-1.2.0.min.css" />
+    <link href="Mobile.css" rel="Stylesheet" />
+    <script src="../../Scripts/jquery-1.6.4.min.js" type="text/javascript"></script>
+    <script src="../../Scripts/json2.min.js" type="text/javascript"></script>
+    <script src="../../Scripts/jquery.signalR.js" type="text/javascript"></script>
+    <script src="../../signalr/js" type="text/javascript"></script>
+    <script src="../../Scripts/jQuery.tmpl.min.js" type="text/javascript"></script>
+    <script src="../../Scripts/jquery.cookie.js" type="text/javascript"></script>
+    <script src="Chat.js" type="text/javascript"></script>
+    <script src="../../Scripts/jquery.mobile-1.2.0.js" type="text/javascript"></script>
+    <script id="new-message-template" type="text/x-jquery-tmpl">
+        <li class="message" id="m-${id}">
+            <strong>${name}:</strong>
+            {{html message}}
+        </li>
+    </script>
+    <script id="new-user-template" type="text/x-jquery-tmpl"> 
+        <li class="user" id="u-${name}">
+            <img src="http://www.gravatar.com/avatar/${hash}?s=16&d=mm" class="gravatar ui-li-icon" /> ${name}
+        </li>
+    </script>
+</head>
+<body>
+    <div id="chat-area" data-role="page">
+        <div data-role="header">
+            <h1>SignalR Chat</h1>
+        </div>
+        <div data-role="content">
+            <div data-role="collapsible" data-collapsed="false">
+                <h3>Messages</h3>
+                <ul id="messages" data-role="listview" data-inset="true">
+                </ul>
+            </div>
+            <div data-role="collapsible" data-collapsed="true">
+                <h3>Users</h3>
+                <ul id="users" data-role="listview" data-inset="true">
+                </ul>
+            </div>
+            <div class="clear">
+            </div>
+            <form id="send-message" action="#">
+                <input type="text" id="new-message" />
+                <input type="submit" id="send" value="Send" class="send" data-theme="b"/>
+            </form>
+        </div>
+    </div>
+</body>
+</html>

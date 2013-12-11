@@ -5,20 +5,20 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNet.SignalR.Client;
 using Microsoft.AspNet.SignalR.Configuration;
 using Microsoft.AspNet.SignalR.Hosting;
 using Microsoft.AspNet.SignalR.Hosting.Memory;
-using Microsoft.AspNet.SignalR.Hubs;
 using Microsoft.AspNet.SignalR.Infrastructure;
 using Microsoft.AspNet.SignalR.Messaging;
+using Microsoft.AspNet.SignalR.Tests.Common.Infrastructure;
 using Microsoft.AspNet.SignalR.Tracing;
 using Microsoft.AspNet.SignalR.Transports;
 using Moq;
+using Owin;
 using Xunit;
 using IClientRequest = Microsoft.AspNet.SignalR.Client.Http.IRequest;
 using IClientResponse = Microsoft.AspNet.SignalR.Client.Http.IResponse;
-using Owin;
-using Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure;
 
 namespace Microsoft.AspNet.SignalR.Tests
 {
@@ -30,9 +30,10 @@ namespace Microsoft.AspNet.SignalR.Tests
             var request = new Mock<IRequest>();
             var response = new Mock<IResponse>();
             var qs = new NameValueCollection();
-            request.Setup(m => m.QueryString).Returns(qs);
-            request.Setup(m => m.Url).Returns(new Uri("http://test/echo/connect"));
-            response.Setup(m => m.End()).Returns(TaskAsyncHelper.Empty);
+            request.Setup(m => m.QueryString).Returns(new NameValueCollectionWrapper(qs));
+            var url = new Uri("http://test/echo/connect");
+            request.Setup(m => m.Url).Returns(url);
+            request.Setup(m => m.LocalPath).Returns(url.LocalPath);
             var cts = new CancellationTokenSource();
             response.Setup(m => m.CancellationToken).Returns(cts.Token);
             response.Setup(m => m.Flush()).Returns(TaskAsyncHelper.Empty);
@@ -87,7 +88,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                         Resolver = dr
                     };
 
-                    app.MapConnection<MyConnection>("/echo", config);
+                    app.MapSignalR<MyConnection>("/echo", config);
 
                     configuration.DisconnectTimeout = TimeSpan.FromSeconds(6);
 
@@ -125,13 +126,13 @@ namespace Microsoft.AspNet.SignalR.Tests
                         Resolver = dr
                     };
 
-                    app.MapHubs("/signalr", config);
+                    app.MapSignalR("/signalr", config);
 
                     configuration.DisconnectTimeout = TimeSpan.FromSeconds(6);
                     dr.Register(typeof(MyHub), () => new MyHub(connectWh, disconnectWh));
                 });
 
-                var connection = new Client.Hubs.HubConnection("http://foo/");
+                var connection = new HubConnection("http://foo/");
 
                 connection.CreateHubProxy("MyHub");
 
@@ -156,6 +157,7 @@ namespace Microsoft.AspNet.SignalR.Tests
             // Each node shares the same bus but are indepenent servers
             var counters = new SignalR.Infrastructure.PerformanceCounterManager();
             var configurationManager = new DefaultConfigurationManager();
+            var protectedData = new DefaultProtectedData();
             using (var bus = new MessageBus(new StringMinifier(), new TraceManager(), counters, configurationManager, 5000))
             {
                 var nodeCount = 3;
@@ -174,10 +176,12 @@ namespace Microsoft.AspNet.SignalR.Tests
                     IDependencyResolver resolver = node.Resolver;
                     node.Server.Configure(app =>
                     {
-                        app.MapConnection<FarmConnection>("/echo", new ConnectionConfiguration
+                        app.MapSignalR<FarmConnection>("/echo", new ConnectionConfiguration
                         {
                             Resolver = resolver
                         });
+
+                        resolver.Register(typeof(IProtectedData), () => protectedData);
                     });
                 }
 
@@ -234,25 +238,34 @@ namespace Microsoft.AspNet.SignalR.Tests
         {
             private int _counter;
             private readonly SignalR.Client.Http.IHttpClient[] _servers;
+
+            public void Initialize(SignalR.Client.IConnection connection)
+            {
+                foreach (SignalR.Client.Http.IHttpClient server in _servers)
+                {
+                    server.Initialize(connection);
+                }
+            }
+
             public LoadBalancer(params SignalR.Client.Http.IHttpClient[] servers)
             {
                 _servers = servers;
             }
 
-            public Task<IClientResponse> Get(string url, Action<IClientRequest> prepareRequest)
+            public Task<IClientResponse> Get(string url, Action<IClientRequest> prepareRequest, bool isLongRunning)
             {
                 Debug.WriteLine("Server {0}: GET {1}", _counter, url);
                 int index = _counter;
                 _counter = (_counter + 1) % _servers.Length;
-                return _servers[index].Get(url, prepareRequest);
+                return _servers[index].Get(url, prepareRequest, isLongRunning);
             }
 
-            public Task<IClientResponse> Post(string url, Action<IClientRequest> prepareRequest, IDictionary<string, string> postData)
+            public Task<IClientResponse> Post(string url, Action<IClientRequest> prepareRequest, IDictionary<string, string> postData, bool isLongRunning)
             {
                 Debug.WriteLine("Server {0}: POST {1}", _counter, url);
                 int index = _counter;
                 _counter = (_counter + 1) % _servers.Length;
-                return _servers[index].Post(url, prepareRequest, postData);
+                return _servers[index].Post(url, prepareRequest, postData, isLongRunning); ;
             }
         }
 

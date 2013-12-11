@@ -7,34 +7,22 @@ using System.Diagnostics;
 using System.Threading;
 using CmdLine;
 using Microsoft.AspNet.SignalR.Stress.Infrastructure;
+using Microsoft.AspNet.SignalR.StressServer.Hubs;
 
 namespace Microsoft.AspNet.SignalR.Stress
 {
     class Program
-    {
-        private static readonly int _sampleRateMilliseconds = 500;
-
+    {   
         static void Main(string[] args)
         {
             IRun run = CreateRun();
+
             long memory = 0;
 
+            // When you specify the incorrect run name, the CreateRun() will throw exception
             using (run)
             {
                 run.Run();
-                Console.WriteLine("Warming up: " + run.Warmup);
-                Thread.Sleep(run.Warmup * 1000);
-
-                Console.WriteLine("Test started: " + run.Duration);
-                var endTime = TimeSpan.FromSeconds(run.Duration);
-                var timer = Stopwatch.StartNew();
-                do
-                {
-                    run.Sample();
-                    Thread.Sleep(_sampleRateMilliseconds);
-                }
-                while (timer.Elapsed < endTime);
-                Console.WriteLine("Test finished");
 
                 memory = GC.GetTotalMemory(forceFullCollection: false);
 
@@ -43,9 +31,8 @@ namespace Microsoft.AspNet.SignalR.Stress
                 memory = GC.GetTotalMemory(forceFullCollection: true);
 
                 Console.WriteLine("After GC and before dispose {0}", Utility.FormatBytes(memory));
-                run.Record();
             }
-
+            
             memory = GC.GetTotalMemory(forceFullCollection: true);
 
             Console.WriteLine("After GC and dispose {0}", Utility.FormatBytes(memory));
@@ -77,12 +64,16 @@ namespace Microsoft.AspNet.SignalR.Stress
 
             compositionContainer.ComposeExportedValue(new RunData
             {
+                SampleRate = args.SampleRate,
                 Warmup = args.Warmup,
                 Duration = args.Duration,
                 Connections = args.Connections,
                 Payload = GetPayload(args.PayloadSize),
                 Senders = args.Senders,
                 Transport = args.Transport,
+                Host = args.Host,
+                Url = args.Url,
+                SendDelay = args.SendDelay,
 
                 // Scaleout
                 RedisServer = args.RedisServer,
@@ -106,8 +97,17 @@ namespace Microsoft.AspNet.SignalR.Stress
             [CommandLineParameter(Command = "?", Name = "Help", Default = false, Description = "Show Help", IsHelp = true)]
             public bool Help { get; set; }
 
-            [CommandLineParameter(Command = "Run", Required = false, Default = "MemoryHost", Description = "The type of run to perform (MemoryHost, MessageBus, ConnectionRun, RedisMessageBus). Default: MemoryHost")]
+            [CommandLineParameter(Command = "Url", Required = false, Default = "http://localhost", Description = "URL for external host.")]
+            public string Url { get; set; }
+
+            [CommandLineParameter(Command = "Run", Required = false, Default = "SendReceive", Description = "The type of run to perform. Default: SendReceive")]
             public string RunName { get; set; }
+
+            [CommandLineParameter(Command = "SampleRate", Required = false, Default = 500, Description = "The sampling rate in miliseconds. Default: 500")]
+            public int SampleRate { get; set; }
+
+            [CommandLineParameter(Command = "SendDelay", Required = false, Default = 0, Description = "The send delay in miliseconds. Default: 0")]
+            public int SendDelay { get; set; }
 
             [CommandLineParameter(Command = "Connections", Required = false, Default = 5000, Description = "Number of connections. Default: 5000")]
             public int Connections { get; set; }
@@ -120,6 +120,9 @@ namespace Microsoft.AspNet.SignalR.Stress
 
             [CommandLineParameter(Command = "Transport", Required = false, Default = "serverSentEvents", Description = "Transport name. Default: serverSentEvents")]
             public string Transport { get; set; }
+
+            [CommandLineParameter(Command = "Host", Required = false, Default = "Memory", Description = "Host type name ( Memory, IISExpress, Owin, External ). Default: Memory")]
+            public string Host { get; set; }
 
             [CommandLineParameter(Command = "Duration", Required = false, Default = 30, Description = "Duration in seconds. Default: 30")]
             public int Duration { get; set; }

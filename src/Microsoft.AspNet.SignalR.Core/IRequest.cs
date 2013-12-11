@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Security.Principal;
 using System.Threading.Tasks;
+using Microsoft.AspNet.SignalR.Hosting;
 
 namespace Microsoft.AspNet.SignalR
 {
@@ -17,21 +18,21 @@ namespace Microsoft.AspNet.SignalR
         /// Gets the url for this request.
         /// </summary>
         Uri Url { get; }
+
+        /// <summary>
+        /// The local path part of the url
+        /// </summary>
+        string LocalPath { get; }
         
         /// <summary>
         /// Gets the querystring for this request.
         /// </summary>
-        NameValueCollection QueryString { get; }
+        INameValueCollection QueryString { get; }
 
         /// <summary>
         /// Gets the headers for this request.
         /// </summary>
-        NameValueCollection Headers { get; }
-
-        /// <summary>
-        /// Gets the form for this request.
-        /// </summary>
-        NameValueCollection Form { get; }
+        INameValueCollection Headers { get; }
 
         /// <summary>
         /// Gets the cookies for this request.
@@ -44,8 +45,14 @@ namespace Microsoft.AspNet.SignalR
         IPrincipal User { get; }
 
         /// <summary>
-        /// Gets state for the current HTTP request.
+        /// Gets the owin enviornment
         /// </summary>
-        IDictionary<string, object> Items { get; }
+        IDictionary<string, object> Environment { get; }
+
+        /// <summary>
+        /// Reads the form of the http request
+        /// </summary>
+        /// <returns></returns>
+        Task<INameValueCollection> ReadForm();
     }
 }

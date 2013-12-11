@@ -1,6 +1,6 @@
 ﻿using System.Threading.Tasks;
 
-namespace Microsoft.AspNet.SignalR.FunctionalTests
+namespace Microsoft.AspNet.SignalR.Tests.Common
 {
     public class ExamineHeadersConnection : PersistentConnection
     {
@@ -8,11 +8,13 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests
         {
             string refererHeader = request.Headers[System.Net.HttpRequestHeader.Referer.ToString()];
             string testHeader = request.Headers["test-header"];
+            string userAgentHeader = request.Headers["User-Agent"];
 
             return Connection.Send(connectionId, new
             {
                 refererHeader = refererHeader,
-                testHeader = testHeader
+                testHeader = testHeader,
+                userAgentHeader = userAgentHeader
             });
         }
     }
