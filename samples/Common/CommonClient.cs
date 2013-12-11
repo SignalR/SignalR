@@ -22,7 +22,7 @@ namespace Microsoft.AspNet.SignalR.Client.Samples
         {
             try
             {
-                await RunDemo(url);
+                await RunHubConnectionAPI(url);
             }
             catch (HttpClientException httpClientException)
             {
