@@ -41,7 +41,7 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
                 _trace.TraceError("Invalid connection string '{0}': {1}", configuration.ConnectionString, ex.Message);
             }
 
-            _namespaceManager.Settings.OperationTimeout = configuration.OperationTimeout;
+            _factory.GetSettings().OperationTimeout = configuration.OperationTimeout;
             _idleSubscriptionTimeout = configuration.IdleSubscriptionTimeout;
             _configuration = configuration;
         }
@@ -64,7 +64,7 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
 
             _trace.TraceInformation("Subscribing to {0} topic(s) in the service bus...", topicNames.Count);
 
-            var connectionContext = new ServiceBusConnectionContext(_configuration, _namespaceManager, topicNames, handler, errorHandler, openStream);
+            var connectionContext = new ServiceBusConnectionContext(_configuration, _namespaceManager, topicNames, _trace, handler, errorHandler, openStream);
 
             for (var topicIndex = 0; topicIndex < topicNames.Count; ++topicIndex)
             {
