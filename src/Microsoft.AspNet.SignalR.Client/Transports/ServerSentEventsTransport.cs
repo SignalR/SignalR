@@ -73,20 +73,28 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
             }
 
             // Wait for a bit before reconnecting
+            connection.Trace(TraceLevels.Events, "ReconnectDelay=" + ReconnectDelay);
             TaskAsyncHelper.Delay(ReconnectDelay).Then(() =>
             {
+                connection.Trace(TraceLevels.Events, "ReconnectDelay");
                 if (!TransportHelper.VerifyLastActive(connection))
                 {
                     return;
                 }
 
+                connection.Trace(TraceLevels.Events, "ReconnectDelay 1");
+                connection.Trace(TraceLevels.Events, "disconnectToken.IsCancellationRequested=" + disconnectToken.IsCancellationRequested);
+                
                 // FIX: Race if Connection is stopped and completely restarted between checking the token and calling
                 //      connection.EnsureReconnecting()
                 if (!disconnectToken.IsCancellationRequested && connection.EnsureReconnecting())
                 {
+                    connection.Trace(TraceLevels.Events, "ReconnectDelay 2");
                     // Now attempt a reconnect
                     OpenConnection(connection, data, disconnectToken, initializeCallback: null, errorCallback: null);
+                    connection.Trace(TraceLevels.Events, "ReconnectDelay 3");
                 }
+                connection.Trace(TraceLevels.Events, "ReconnectDelay 4");
             });
         }
 
@@ -204,6 +212,8 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
 
                     eventSource.Closed = exception =>
                     {
+                        connection.Trace(TraceLevels.Events, "eventSource.Closed");
+                        connection.Trace(TraceLevels.Events, exception.ToString());
                         if (exception != null)
                         {
                             // Check if the request is aborted
@@ -222,14 +232,17 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
 
                         if (_stop)
                         {
+                            connection.Trace(TraceLevels.Events, "eventSource.Closed 1");
                             AbortHandler.CompleteAbort();
                         }
                         else if (AbortHandler.TryCompleteAbort())
                         {
+                            connection.Trace(TraceLevels.Events, "eventSource.Closed 2");
                             // Abort() was called, so don't reconnect
                         }
                         else
                         {
+                            connection.Trace(TraceLevels.Events, "eventSource.Closed 3");
                             Reconnect(connection, data, disconnectToken);
                         }
                     };
@@ -260,9 +273,13 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
 
         public override void LostConnection(IConnection connection)
         {
+            connection.Trace(TraceLevels.Events, "SSE.LostConnection");
             if (_request != null)
             {
+                connection.Trace(TraceLevels.Events, "SSE.LostConnection 1");
+                connection.Trace(TraceLevels.Events, _request.GetType().ToString());
                 _request.Abort();
+                connection.Trace(TraceLevels.Events, "SSE.LostConnection 2");
             }
         }
     }

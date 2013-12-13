@@ -11,8 +11,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports.ServerSentEvents
     /// </summary>
     public class EventSourceStreamReader : AsyncStreamReader
     {
-        private readonly ChunkBuffer _buffer;
-        private readonly IConnection _connection;
+        private readonly ChunkBuffer _buffer;        
 
         /// <summary>
         /// Invoked when there's a message if received in the stream.
@@ -25,9 +24,8 @@ namespace Microsoft.AspNet.SignalR.Client.Transports.ServerSentEvents
         /// <param name="connection">The connection associated with this event source</param>
         /// <param name="stream">The stream to read event source payloads from.</param>
         public EventSourceStreamReader(IConnection connection, Stream stream)
-            : base(stream)
+            : base(connection, stream)
         {
-            _connection = connection;
             _buffer = new ChunkBuffer();
 
             Data = ProcessBuffer;

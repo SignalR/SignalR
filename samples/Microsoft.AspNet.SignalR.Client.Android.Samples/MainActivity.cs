@@ -18,10 +18,11 @@ namespace Microsoft.AspNet.SignalR.Client.Android.Samples
 			base.OnCreate(bundle);
 			SetContentView(Resource.Layout.Main);
 			var textView = FindViewById<TextView>(Resource.Id.textView);
+            textView.TextSize = 7.0f;
 			var traceWriter = new TextViewWriter(SynchronizationContext.Current, textView);
 
 			var client = new CommonClient(traceWriter);
-			client.RunAsync("http://signalr-test1.cloudapp.net:83/");
+			client.RunAsync("https://gustavoa2.azurewebsites.net/");
 		}
 	}
 }

@@ -75,6 +75,7 @@ namespace Microsoft.AspNet.SignalR.Client
 
         public static bool EnsureReconnecting(this IConnection connection)
         {
+            connection.Trace(TraceLevels.Events, "EnsureReconnecting");
             if (connection == null)
             {
                 throw new ArgumentNullException("connection");

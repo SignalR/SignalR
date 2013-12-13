@@ -13,6 +13,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
     {
         private readonly object _bufferLock = new object();
         private readonly Stream _stream;
+        protected readonly IConnection _connection;
         private byte[] _readBuffer;
         private int _reading;
         private Action _setOpened;
@@ -43,9 +44,11 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
         /// <summary>
         /// Initializes a new instance of the <see cref="AsyncStreamReader"/> class.
         /// </summary>
+        /// <param name="connection">The stream to read asynchronously payloads from.</param>
         /// <param name="stream">The stream to read asynchronously payloads from.</param>
-        public AsyncStreamReader(Stream stream)
+        public AsyncStreamReader(IConnection connection, Stream stream)
         {
+            _connection = connection;
             _stream = stream;
         }
 
@@ -94,7 +97,14 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
             {
                 if (Processing && _readBuffer != null)
                 {
-                    readTask = _stream.ReadAsync(_readBuffer);
+                    if (StreamExtensions._connection == null)
+                    {
+                        StreamExtensions._connection = _connection;
+                    }
+                    readTask = _stream.ReadAsync(_readBuffer).ContinueWith<int>(task =>
+                    {
+                        return task.Result;
+                    });
                 }
                 else
                 {
@@ -131,6 +141,10 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
         {
             readTask.ContinueWith(task =>
             {
+                if (_connection != null)
+                {
+                    _connection.Trace(TraceLevels.Events, "ASR.ReadAsync " + task.IsFaulted + task.IsCanceled + task.IsCompleted);
+                }
                 if (task.IsFaulted)
                 {
                     Close(task.Exception);

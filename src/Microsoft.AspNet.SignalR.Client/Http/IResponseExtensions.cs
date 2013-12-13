@@ -17,7 +17,7 @@ namespace Microsoft.AspNet.SignalR.Client.Http
             }
 
             var stream = response.GetStream();
-            var reader = new AsyncStreamReader(stream);
+            var reader = new AsyncStreamReader(null, stream);
             var result = new StringBuilder();
             var resultTcs = new TaskCompletionSource<string>();
 

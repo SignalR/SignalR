@@ -20,7 +20,7 @@ namespace Microsoft.AspNet.SignalR.Client.Android.Samples
         {
             _context.Post(delegate
             {
-                _textView.Text = _textView.Text + value + Environment.NewLine;
+                _textView.Text = value + Environment.NewLine + _textView.Text;
             }, state: null);
         }
         
@@ -38,7 +38,7 @@ namespace Microsoft.AspNet.SignalR.Client.Android.Samples
         {
             _context.Post(delegate
             {
-                _textView.Text = _textView.Text + string.Format(format, args) + Environment.NewLine;
+                _textView.Text = string.Format(format, args) + Environment.NewLine + _textView.Text;
             }, state: null);
         }
 

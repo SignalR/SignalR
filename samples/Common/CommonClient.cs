@@ -22,7 +22,7 @@ namespace Microsoft.AspNet.SignalR.Client.Samples
         {
             try
             {
-                await RunDemo(url);
+                await RunHubConnectionAPI(url);
             }
             catch (HttpClientException httpClientException)
             {
@@ -44,22 +44,10 @@ namespace Microsoft.AspNet.SignalR.Client.Samples
             var hubProxy = hubConnection.CreateHubProxy("HubConnectionAPI");
             hubProxy.On<string>("displayMessage", (data) => hubConnection.TraceWriter.WriteLine(data));
 
-            await hubConnection.Start();
+            await hubConnection.Start(new Microsoft.AspNet.SignalR.Client.Transports.ServerSentEventsTransport());
             hubConnection.TraceWriter.WriteLine("transport.Name={0}", hubConnection.Transport.Name);
 
             await hubProxy.Invoke("DisplayMessageCaller", "Hello Caller!");
-
-            string joinGroupResponse = await hubProxy.Invoke<string>("JoinGroup", hubConnection.ConnectionId, "CommonClientGroup");
-            hubConnection.TraceWriter.WriteLine("joinGroupResponse={0}", joinGroupResponse);
-
-            await hubProxy.Invoke("DisplayMessageGroup", "CommonClientGroup", "Hello Group Members!");
-
-            string leaveGroupResponse = await hubProxy.Invoke<string>("LeaveGroup", hubConnection.ConnectionId, "CommonClientGroup");
-            hubConnection.TraceWriter.WriteLine("leaveGroupResponse={0}", leaveGroupResponse);
-
-            await hubProxy.Invoke("DisplayMessageGroup", "CommonClientGroup", "Hello Group Members! (caller should not see this message)");
-
-            await hubProxy.Invoke("DisplayMessageCaller", "Hello Caller again!");
         }
 
         private async Task RunDemo(string url)
