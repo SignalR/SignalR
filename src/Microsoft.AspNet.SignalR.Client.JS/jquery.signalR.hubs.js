@@ -293,12 +293,6 @@
         connection.error(function (errData, origData) {
             var callbackId, callback;
 
-            if (connection.transport && connection.transport.name === "webSockets") {
-                // WebSockets connections have all callbacks removed on reconnect instead
-                // as WebSockets sends are fire & forget
-                return;
-            }
-
             if (!origData) {
                 // No original data passed so this is not a send error
                 return;
