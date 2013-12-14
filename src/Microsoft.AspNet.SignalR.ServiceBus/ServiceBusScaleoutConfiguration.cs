@@ -29,6 +29,8 @@ namespace Microsoft.AspNet.SignalR
             TopicPrefix = topicPrefix;
             TopicCount = 1;
             TimeToLive = TimeSpan.FromMinutes(1);
+            MaximumMessageSize = 256;
+            OperationTimeout = null;
         }
 
         /// <summary>
@@ -77,5 +79,16 @@ namespace Microsoft.AspNet.SignalR
         /// Specifies the time duration after which an idle subscription is deleted
         /// </summary>
         public TimeSpan IdleSubscriptionTimeout { get; set; }
+
+        /// <summary>
+        /// Sets the operation timeout for all Service Bus operations 
+        /// </summary>
+        public TimeSpan? OperationTimeout { get; set; }
+
+        /// <summary>
+        /// Sets the maximum message size (in KB) that can be sent or received
+        /// Default value is set to 256KB which is the maximum recommended size for Service Bus operations
+        /// </summary>
+        public int MaximumMessageSize { get; set; }
     }
 }
