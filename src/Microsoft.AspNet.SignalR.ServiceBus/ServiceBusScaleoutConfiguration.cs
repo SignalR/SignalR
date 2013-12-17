@@ -29,7 +29,7 @@ namespace Microsoft.AspNet.SignalR
             TopicPrefix = topicPrefix;
             TopicCount = 1;
             TimeToLive = TimeSpan.FromMinutes(1);
-            MaximumMessageSize = 256;
+            MaximumMessageSize = 256 * 1024;
             OperationTimeout = null;
         }
 
@@ -81,12 +81,12 @@ namespace Microsoft.AspNet.SignalR
         public TimeSpan IdleSubscriptionTimeout { get; set; }
 
         /// <summary>
-        /// Sets the operation timeout for all Service Bus operations 
+        /// Gets or Sets the operation timeout for all Service Bus operations 
         /// </summary>
         public TimeSpan? OperationTimeout { get; set; }
 
         /// <summary>
-        /// Sets the maximum message size (in KB) that can be sent or received
+        /// Gets or Sets the maximum message size (in bytes) that can be sent or received
         /// Default value is set to 256KB which is the maximum recommended size for Service Bus operations
         /// </summary>
         public int MaximumMessageSize { get; set; }

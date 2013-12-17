@@ -20,6 +20,8 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
         private readonly SubscriptionContext[] _subscriptions;
         private readonly TopicClient[] _topicClients;
 
+        private readonly TraceSource _trace;
+
         public object SubscriptionsLock { get; private set; }
         public object TopicClientsLock { get; private set; }
 
@@ -29,8 +31,6 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
         public Action<int> OpenStream { get; private set; }
 
         public bool IsDisposed { get; private set; }
-
-        private TraceSource _trace;
 
         public ServiceBusConnectionContext(ServiceBusScaleoutConfiguration configuration,
                                            NamespaceManager namespaceManager,
@@ -52,7 +52,7 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
             _topicClients = new TopicClient[topicNames.Count];
 
             _trace = traceSource;
-                 
+
             TopicNames = topicNames;
             Handler = handler;
             ErrorHandler = errorHandler;
@@ -74,11 +74,9 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
                 TimeToLive = _configuration.TimeToLive
             };
 
-            long messageSize = message.Size / 1024;
-
-            if (messageSize > _configuration.MaximumMessageSize)
+            if (message.Size > _configuration.MaximumMessageSize)
             {
-                _trace.TraceError("Message size {0}KB exceeds the maximum size limit of 256KB : {1}", messageSize, message);
+                _trace.TraceError("Message size {0}KB exceeds the maximum size limit of {1}KB : {2}", message.Size / 1024, _configuration.MaximumMessageSize / 1024, message);
             }
 
             return _topicClients[topicIndex].SendAsync(message);
