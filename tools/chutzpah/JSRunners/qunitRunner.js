@@ -7,21 +7,21 @@
     phantom.injectJs('chutzpahRunner.js');
 
     function onInitialized() {
-        //console.log("onInitialized");
+        console.log("!!_!! onInitialized");
     }
 
     function isTestingDone() {
-        //console.log("isTestingDone");
+        console.log("!!_!! isTestingDone");
         return window.chutzpah.isTestingFinished === true;
     }
 
     function isQunitLoaded() {
-        //console.log("isQunitLoaded");
+        console.log("!!_!! isQunitLoaded");
         return window.QUnit;
     }
 
     function onQUnitLoaded() {
-        //console.log("onQUnitLoaded");
+        console.log("!!_!! onQUnitLoaded");
 
         // Prevent QUnit from autostarting so have better control of the timing
         window.QUnit.config.autostart = false;
@@ -177,9 +177,21 @@
     }
 
     function onPageLoaded() {
-        //console.log("onPageLoaded");
+        console.log("!!_!! onPageLoaded");
+        
+        if (window.chutzpah.usingModuleLoader) {
+            console.log("!!_!! Test file is using module loader.");
+            // Since we are using a module loader let the harness determine when its ready to run tests
+            return;
+        }
+        
+        function startQUnit() {
+        	console.log("!!_!! Starting QUnit...");
+                window.QUnit.start();
+        }
+        
         if (!window._Chutzpah_covobj_name) {
-            window.QUnit.start();
+            startQUnit();
         }
     }
 
