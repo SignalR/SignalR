@@ -2,10 +2,36 @@
 <html>
 <head>
     @@TestFrameworkDependencies@@
+    @@CodeCoverageDependencies@@
     @@ReferencedCSSFiles@@
     @@TestHtmlTemplateFiles@@
     @@ReferencedJSFiles@@
     @@TestJSFile@@
+    
+    <script>
+        var amdTestPath = "@@AMDTestPath@@";
+        if (window.require && typeof window.require === "function" && amdTestPath !== "") {
+            if (window.chutzpah) {
+                window.chutzpah.usingModuleLoader = true;
+            }
+            
+            requirejs.config({
+                map: {
+                    '*': {
+                        @@AMDModuleMap@@
+                        }
+                }
+            });
+
+            window.QUnit.config.autostart = false;
+            window.require([amdTestPath], function () {
+                console.log("!!_!! Starting QUnit from inline AMD call...");
+                if (!window._Chutzpah_covobj_name) {
+                    window.QUnit.start();
+                }
+            });
+        }
+    </script>
 </head>
 
 <body>
