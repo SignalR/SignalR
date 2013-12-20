@@ -2,9 +2,11 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Threading.Tasks;
+using Microsoft.AspNet.SignalR.Tracing;
 using Microsoft.ServiceBus;
 using Microsoft.ServiceBus.Messaging;
 
@@ -17,6 +19,8 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
 
         private readonly SubscriptionContext[] _subscriptions;
         private readonly TopicClient[] _topicClients;
+
+        private readonly TraceSource _trace;
 
         public object SubscriptionsLock { get; private set; }
         public object TopicClientsLock { get; private set; }
@@ -31,6 +35,7 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
         public ServiceBusConnectionContext(ServiceBusScaleoutConfiguration configuration,
                                            NamespaceManager namespaceManager,
                                            IList<string> topicNames,
+                                           TraceSource traceSource,
                                            Action<int, IEnumerable<BrokeredMessage>> handler,
                                            Action<int, Exception> errorHandler,
                                            Action<int> openStream)
@@ -45,6 +50,8 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
 
             _subscriptions = new SubscriptionContext[topicNames.Count];
             _topicClients = new TopicClient[topicNames.Count];
+
+            _trace = traceSource;
 
             TopicNames = topicNames;
             Handler = handler;
@@ -66,6 +73,11 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
             {
                 TimeToLive = _configuration.TimeToLive
             };
+
+            if (message.Size > _configuration.MaximumMessageSize)
+            {
+                _trace.TraceError("Message size {0}KB exceeds the maximum size limit of {1}KB : {2}", message.Size / 1024, _configuration.MaximumMessageSize / 1024, message);
+            }
 
             return _topicClients[topicIndex].SendAsync(message);
         }
