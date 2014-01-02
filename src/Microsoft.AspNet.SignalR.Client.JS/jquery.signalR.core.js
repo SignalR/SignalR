@@ -77,19 +77,6 @@
             return connection.state === signalR.connectionState.disconnected;
         },
 
-        configurePingInterval = function (connection) {
-            var privateData = connection._,
-                onFail = function (error) {
-                    $(connection).triggerHandler(events.onError, [error]);
-                };
-
-            if (!privateData.pingIntervalId && privateData.pingInterval) {
-                privateData.pingIntervalId = window.setInterval(function () {
-                    signalR.transports._logic.pingServer(connection).fail(onFail);
-                }, privateData.pingInterval);
-            }
-        },
-
         configureStopReconnectingTimeout = function (connection) {
             var stopReconnectingTimeout,
                 onReconnectTimeout;
@@ -164,6 +151,19 @@
                 return 0;
             }
             return parseInt(matches[1], 10 /* radix */);
+        },
+        
+        configurePingInterval: function (connection) {
+            var privateData = connection._,
+                onFail = function (error) {
+                    $(connection).triggerHandler(events.onError, [error]);
+                };
+
+            if (!privateData.pingIntervalId && privateData.pingInterval) {
+                privateData.pingIntervalId = window.setInterval(function () {
+                    signalR.transports._logic.pingServer(connection).fail(onFail);
+                }, privateData.pingInterval);
+            }
         }
     };
 
@@ -498,7 +498,7 @@
 
                     // Used to ensure low activity clients maintain their authentication.
                     // Must be configured once a transport has been decided to perform valid ping requests.
-                    configurePingInterval(connection);
+                    signalR._.configurePingInterval(connection);
 
                     changeState(connection,
                                 signalR.connectionState.connecting,
@@ -824,6 +824,7 @@
             delete connection.id;
             delete connection._.pingIntervalId;
             delete connection._.lastMessageAt;
+            delete connection._.lastActiveAt;
 
             return connection;
         },
