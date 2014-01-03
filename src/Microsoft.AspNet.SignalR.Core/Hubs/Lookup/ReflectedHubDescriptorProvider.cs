@@ -2,9 +2,11 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
 using System.Reflection;
+using Microsoft.AspNet.SignalR.Tracing;
 
 namespace Microsoft.AspNet.SignalR.Hubs
 {
@@ -12,11 +14,16 @@ namespace Microsoft.AspNet.SignalR.Hubs
     {
         private readonly Lazy<IDictionary<string, HubDescriptor>> _hubs;
         private readonly Lazy<IAssemblyLocator> _locator;
+        private readonly TraceSource _trace;
 
         public ReflectedHubDescriptorProvider(IDependencyResolver resolver)
         {
             _locator = new Lazy<IAssemblyLocator>(resolver.Resolve<IAssemblyLocator>);
             _hubs = new Lazy<IDictionary<string, HubDescriptor>>(BuildHubsCache);
+
+
+            var traceManager = resolver.Resolve<ITraceManager>();
+            _trace = traceManager["SignalR." + typeof(ReflectedHubDescriptorProvider).Name];
         }
 
         public IList<HubDescriptor> GetHubs()
@@ -90,14 +97,24 @@ namespace Microsoft.AspNet.SignalR.Hubs
         }
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "If we throw then we have an empty type")]
-        private static IEnumerable<Type> GetTypesSafe(Assembly a)
+        private IEnumerable<Type> GetTypesSafe(Assembly a)
         {
             try
             {
                 return a.GetTypes();
             }
-            catch
+            catch (ReflectionTypeLoadException ex)
             {
+                _trace.TraceWarning(Resources.Warning_ReflectionTypeLoadException, a.FullName, a.Location, ex.Message);
+
+                // Apparently ex.Types can include null elements.
+                // http://msdn.microsoft.com/en-us/library/system.reflection.reflectiontypeloadexception.types(v=vs.110).aspx
+                return ex.Types.Where(t => t != null);
+            }
+            catch (Exception ex)
+            {
+                _trace.TraceWarning(Resources.Warning_GeneralGetTypesException, a.FullName, a.Location, ex.Message);
+
                 return Enumerable.Empty<Type>();
             }
         }

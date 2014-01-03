@@ -437,5 +437,27 @@ namespace Microsoft.AspNet.SignalR {
                 return ResourceManager.GetString("Forbidden_JSONPDisabled", resourceCulture);
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to None of the classes from assembly &quot;{0}&quot; could be loaded when searching for Hubs. [{1}]
+        ///
+        ///{2}.
+        /// </summary>
+        internal static string Warning_GeneralGetTypesException {
+            get {
+                return ResourceManager.GetString("Warning_GeneralGetTypesException", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Some or all of the classes from assembly &quot;{0}&quot; could not be loaded when searching for Hubs. [{1}]
+        ///
+        ///{2}.
+        /// </summary>
+        internal static string Warning_ReflectionTypeLoadException {
+            get {
+                return ResourceManager.GetString("Warning_ReflectionTypeLoadException", resourceCulture);
+            }
+        }
     }
 }
