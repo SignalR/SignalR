@@ -98,3 +98,13 @@ QUnit.test("pingIntervalId does not change on multiple calls to configurePingInt
 
     QUnit.equal(con._.pingIntervalId, 1);
 });
+
+QUnit.test("lastActiveAt is deleted when a connection stops", function () {
+    var con = testUtilities.createConnection("/signalr", function () { }, QUnit, "", false);
+
+    con.start();
+
+    con.stop();
+    
+    QUnit.isNotSet(con._.lastActiveAt, "lastActiveAt is removed from connection after stop is called");
+});
