@@ -88,3 +88,23 @@ QUnit.test("connection.withCredentials manual override to false for cross-domain
 
     QUnit.ok(!con.withCredentials, "connection.withCredentials overridden to false for cross-domain connection.");
 });
+
+QUnit.test("pingIntervalId does not change on multiple calls to configurePingInterval", function () {
+    var con = testUtilities.createConnection("/signalr", function () { }, QUnit, "", false);
+
+    con._.pingIntervalId = 1;
+
+    $.signalR._.configurePingInterval(con);
+
+    QUnit.equal(con._.pingIntervalId, 1);
+});
+
+QUnit.test("lastActiveAt is deleted when a connection stops", function () {
+    var con = testUtilities.createConnection("/signalr", function () { }, QUnit, "", false);
+
+    con.start();
+
+    con.stop();
+    
+    QUnit.isNotSet(con._.lastActiveAt, "lastActiveAt is removed from connection after stop is called");
+});
