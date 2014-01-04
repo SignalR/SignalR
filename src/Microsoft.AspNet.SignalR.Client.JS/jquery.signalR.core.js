@@ -95,19 +95,6 @@
             return connection.state === signalR.connectionState.disconnected;
         },
 
-        configurePingInterval = function (connection) {
-            var config = connection._.config,
-                onFail = function (error) {
-                    $(connection).triggerHandler(events.onError, [error]);
-                };
-
-            if (!config.pingIntervalId && config.pingInterval) {
-                connection._.pingIntervalId = window.setInterval(function () {
-                    signalR.transports._logic.pingServer(connection).fail(onFail);
-                }, config.pingInterval);
-            }
-        },
-
         configureStopReconnectingTimeout = function (connection) {
             var stopReconnectingTimeout,
                 onReconnectTimeout;
@@ -209,6 +196,19 @@
                 return 0;
             }
             return parseInt(matches[1], 10 /* radix */);
+        },
+
+        configurePingInterval: function (connection) {
+            var config = connection._.config,
+                onFail = function (error) {
+                    $(connection).triggerHandler(events.onError, [error]);
+                };
+
+            if (!connection._.pingIntervalId && config.pingInterval) {
+                connection._.pingIntervalId = window.setInterval(function () {
+                    signalR.transports._logic.pingServer(connection).fail(onFail);
+                }, config.pingInterval);
+            }
         }
     };
 
@@ -595,7 +595,7 @@
 
                             // Used to ensure low activity clients maintain their authentication.
                             // Must be configured once a transport has been decided to perform valid ping requests.
-                            configurePingInterval(connection);
+                            signalR._.configurePingInterval(connection);
 
                             changeState(connection,
                                         signalR.connectionState.connecting,
@@ -942,6 +942,7 @@
             delete connection.id;
             delete connection._.pingIntervalId;
             delete connection._.lastMessageAt;
+            delete connection._.lastActiveAt;
 
             // Clear out our message buffer
             connection._.connectingMessageBuffer.clear();
