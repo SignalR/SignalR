@@ -202,6 +202,7 @@
                 data.S = that.state;
             }
 
+            connection.log("Invoking " + that.hubName + "." + methodName);
             connection.send(data);
 
             return d.promise();
