@@ -243,14 +243,12 @@
   <data name="Forbidden_JSONPDisabled" xml:space="preserve">
     <value>Forbidden: JSONP is disabled.</value>
   </data>
-  <data name="Warning_GeneralGetTypesException" xml:space="preserve">
+  <data name="Warning_AssemblyGetTypesException" xml:space="preserve">
     <value>None of the classes from assembly "{0}" could be loaded when searching for Hubs. [{1}]
 
-{2}</value>
-  </data>
-  <data name="Warning_ReflectionTypeLoadException" xml:space="preserve">
-    <value>Some or all of the classes from assembly "{0}" could not be loaded when searching for Hubs. [{1}]
+Original exception type: {2}
+Original exception message: {3}
 
-{2}</value>
+</value>
   </data>
 </root>

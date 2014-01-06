@@ -103,17 +103,13 @@ namespace Microsoft.AspNet.SignalR.Hubs
             {
                 return a.GetTypes();
             }
-            catch (ReflectionTypeLoadException ex)
-            {
-                _trace.TraceWarning(Resources.Warning_ReflectionTypeLoadException, a.FullName, a.Location, ex.Message);
-
-                // Apparently ex.Types can include null elements.
-                // http://msdn.microsoft.com/en-us/library/system.reflection.reflectiontypeloadexception.types(v=vs.110).aspx
-                return ex.Types.Where(t => t != null);
-            }
             catch (Exception ex)
             {
-                _trace.TraceWarning(Resources.Warning_GeneralGetTypesException, a.FullName, a.Location, ex.Message);
+                _trace.TraceWarning(Resources.Warning_AssemblyGetTypesException,
+                                    a.FullName,
+                                    a.Location,
+                                    ex.GetType().Name,
+                                    ex.Message);
 
                 return Enumerable.Empty<Type>();
             }

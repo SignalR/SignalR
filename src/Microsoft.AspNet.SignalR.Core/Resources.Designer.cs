@@ -441,22 +441,14 @@ namespace Microsoft.AspNet.SignalR {
         /// <summary>
         ///   Looks up a localized string similar to None of the classes from assembly &quot;{0}&quot; could be loaded when searching for Hubs. [{1}]
         ///
-        ///{2}.
-        /// </summary>
-        internal static string Warning_GeneralGetTypesException {
-            get {
-                return ResourceManager.GetString("Warning_GeneralGetTypesException", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Some or all of the classes from assembly &quot;{0}&quot; could not be loaded when searching for Hubs. [{1}]
+        ///Original exception type: {2}
+        ///Original exception message: {3}
         ///
-        ///{2}.
+        ///.
         /// </summary>
-        internal static string Warning_ReflectionTypeLoadException {
+        internal static string Warning_AssemblyGetTypesException {
             get {
-                return ResourceManager.GetString("Warning_ReflectionTypeLoadException", resourceCulture);
+                return ResourceManager.GetString("Warning_AssemblyGetTypesException", resourceCulture);
             }
         }
     }
