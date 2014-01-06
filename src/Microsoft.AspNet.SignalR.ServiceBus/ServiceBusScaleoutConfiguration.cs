@@ -27,7 +27,7 @@ namespace Microsoft.AspNet.SignalR
             IdleSubscriptionTimeout = TimeSpan.FromHours(1);
             ConnectionString = connectionString;
             TopicPrefix = topicPrefix;
-            TopicCount = 1;
+            TopicCount = 5;
             TimeToLive = TimeSpan.FromMinutes(1);
             MaximumMessageSize = 256 * 1024;
             OperationTimeout = null;
