@@ -344,7 +344,7 @@
 
             if (!response) {
                 return response;
-            } else if (that.ajaxDataType === "text") {
+            } else if (typeof response === "string") {
                 return that.json.parse(response);
             } else {
                 return response;
