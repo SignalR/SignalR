@@ -90,9 +90,9 @@ namespace Microsoft.AspNet.SignalR.Hubs
             var methods = GetMethods(hubManager, descriptor);
             var hubName = GetDescriptorName(descriptor);
 
-            sb.AppendFormat("    proxies.{0} = this.createHubProxy('{1}'); ", hubName, hubName).AppendLine();
-            sb.AppendFormat("        proxies.{0}.client = {{ }};", hubName).AppendLine();
-            sb.AppendFormat("        proxies.{0}.server = {{", hubName);
+            sb.AppendFormat("    proxies['{0}'] = this.createHubProxy('{1}'); ", hubName, hubName).AppendLine();
+            sb.AppendFormat("        proxies['{0}'].client = {{ }};", hubName).AppendLine();
+            sb.AppendFormat("        proxies['{0}'].server = {{", hubName);
 
             bool first = true;
 
@@ -152,7 +152,7 @@ namespace Microsoft.AspNet.SignalR.Hubs
                     sb.AppendLine(String.Join(Environment.NewLine, parameterDoc));
                 }
             }
-            sb.AppendFormat("                return proxies.{0}.invoke.apply(proxies.{0}, $.merge([\"{1}\"], $.makeArray(arguments)));", hubName, method.Name).AppendLine();
+            sb.AppendFormat("                return proxies['{0}'].invoke.apply(proxies['{0}'], $.merge([\"{1}\"], $.makeArray(arguments)));", hubName, method.Name).AppendLine();
             sb.Append("             }");
         }
 
