@@ -2,6 +2,8 @@
 
 using System;
 using Microsoft.AspNet.SignalR.Messaging;
+using Microsoft.ServiceBus;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Microsoft.AspNet.SignalR
 {
@@ -90,5 +92,20 @@ namespace Microsoft.AspNet.SignalR
         /// Default value is set to 256KB which is the maximum recommended size for Service Bus operations
         /// </summary>
         public int MaximumMessageSize { get; set; }
+
+        /// <summary>
+        /// Returns Service Bus connection string to use.
+        /// </summary>
+        public string BuildConnectionString()
+        {
+            if (OperationTimeout != null)
+            {
+                var connectionStringBuilder = new ServiceBusConnectionStringBuilder(ConnectionString);
+                connectionStringBuilder.OperationTimeout = OperationTimeout.Value;
+                return connectionStringBuilder.ToString();
+            }
+
+            return ConnectionString;
+        }
     }
 }
