@@ -47,7 +47,7 @@ namespace Microsoft.AspNet.SignalR.Transports
             _context = context;
             _message = OnMessage;
             _closed = OnClosed;
-            _error = OnError;
+            _error = OnSocketError;
         }
 
         public override bool IsAlive
@@ -133,14 +133,24 @@ namespace Microsoft.AspNet.SignalR.Transports
             return TaskAsyncHelper.Empty;
         }
 
-        private static Task PerformSend(object state)
+        private static async Task PerformSend(object state)
         {
             var context = (WebSocketTransportContext)state;
 
-            context.Transport.JsonSerializer.Serialize(context.State, context.Transport.OutputWriter);
-            context.Transport.OutputWriter.Flush();
+            try
+            {
+                context.Transport.JsonSerializer.Serialize(context.State, context.Transport.OutputWriter);
+                context.Transport.OutputWriter.Flush();
 
-            return context.Transport._socket.Flush();
+                await context.Transport._socket.Flush();
+            }
+            catch (Exception ex)
+            {
+                // OnError will close the socket in the event of a JSON serialization or flush error.
+                // The client should then immediately reconnect instead of simply missing keep-alives.
+                context.Transport.OnError(ex);
+                throw;
+            }
         }
 
         private void OnMessage(string message)
@@ -159,7 +169,7 @@ namespace Microsoft.AspNet.SignalR.Transports
             _isAlive = false;
         }
 
-        private void OnError(Exception error)
+        private void OnSocketError(Exception error)
         {
             Trace.TraceError("OnError({0}, {1})", ConnectionId, error);
         }
