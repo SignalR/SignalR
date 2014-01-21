@@ -55,7 +55,7 @@ namespace Microsoft.AspNet.SignalR.WebSockets
             return SendAsync(new ArraySegment<byte>(buffer), WebSocketMessageType.Text);
         }
 
-        internal Task SendAsync(ArraySegment<byte> message, WebSocketMessageType messageType, bool endOfMessage = true)
+        public virtual Task SendAsync(ArraySegment<byte> message, WebSocketMessageType messageType, bool endOfMessage = true)
         {
             if (WebSocket.State != WebSocketState.Open)
             {

@@ -2065,6 +2065,32 @@ namespace Microsoft.AspNet.SignalR.Tests
             }
         }
         internal static HubConnection GetUserConnection(string userName)
+        [Fact]
+        public void SendEmptyStringWebsockets()
+        {
+            using (var host = CreateHost(HostType.IISExpress, TransportType.Websockets))
+            {
+                host.Initialize();
+
+                var connection = CreateHubConnection(host);
+
+                using (connection)
+                {
+                    var echoHub = connection.CreateHubProxy("EchoHub");
+
+                    connection.Start(host.TransportFactory()).Wait();
+
+                    var result = String.Empty;
+
+                    echoHub.On("echo", (message) => { result = message; });
+
+                    echoHub.Invoke<string>("EchoCallback", "").Wait();
+
+                    Assert.Equal("", result);
+                }
+            }
+        }
+
         {
             var qs = new Dictionary<string, string>
             {
