@@ -40,7 +40,7 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
             }
             catch (ConfigurationErrorsException ex)
             {
-                _trace.TraceError("Invalid connection string '{0}': {1}", _connectionString, ex.Message);
+                _trace.TraceError("Invalid connection string: {0}", ex.Message);
             }
 
             _idleSubscriptionTimeout = configuration.IdleSubscriptionTimeout;
