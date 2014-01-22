@@ -18,7 +18,7 @@ namespace Microsoft.AspNet.SignalR.WebSockets
 
         // 4KB default fragment size (we expect most messages to be very short)
         private const int _receiveLoopBufferSize = 4 * 1024;
-        private int? _maxIncomingMessageSize;
+        private readonly int? _maxIncomingMessageSize;
 
         // Queue for sending messages
         private readonly TaskQueue _sendQueue = new TaskQueue();

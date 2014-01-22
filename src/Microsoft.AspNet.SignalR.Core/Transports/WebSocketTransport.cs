@@ -6,6 +6,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNet.SignalR.Configuration;
 using Microsoft.AspNet.SignalR.Hosting;
 using Microsoft.AspNet.SignalR.Infrastructure;
 using Microsoft.AspNet.SignalR.Json;
@@ -15,13 +16,15 @@ using Newtonsoft.Json;
 
 namespace Microsoft.AspNet.SignalR.Transports
 {
-    using WebSocketFunc = Func<IDictionary<string, object>, Task>; 
+    using WebSocketFunc = Func<IDictionary<string, object>, Task>;
 
     public class WebSocketTransport : ForeverTransport
     {
         private readonly HostContext _context;
         private IWebSocket _socket;
         private bool _isAlive = true;
+
+        private readonly int? _maxIncomingMessageSize;
 
         private readonly Action<string> _message;
         private readonly Action _closed;
@@ -33,7 +36,8 @@ namespace Microsoft.AspNet.SignalR.Transports
                    resolver.Resolve<JsonSerializer>(),
                    resolver.Resolve<ITransportHeartbeat>(),
                    resolver.Resolve<IPerformanceCounterManager>(),
-                   resolver.Resolve<ITraceManager>())
+                   resolver.Resolve<ITraceManager>(),
+                   resolver.Resolve<IConfigurationManager>().MaxIncomingWebSocketMessageSize)
         {
         }
 
@@ -41,10 +45,13 @@ namespace Microsoft.AspNet.SignalR.Transports
                                   JsonSerializer serializer,
                                   ITransportHeartbeat heartbeat,
                                   IPerformanceCounterManager performanceCounterWriter,
-                                  ITraceManager traceManager)
+                                  ITraceManager traceManager,
+                                  int? maxIncomingMessageSize)
             : base(context, serializer, heartbeat, performanceCounterWriter, traceManager)
         {
             _context = context;
+            _maxIncomingMessageSize = maxIncomingMessageSize;
+
             _message = OnMessage;
             _closed = OnClosed;
             _error = OnSocketError;
@@ -128,7 +135,7 @@ namespace Microsoft.AspNet.SignalR.Transports
                 return _context.Response.End(Resources.Error_NotWebSocketRequest);
             }
 
-            var handler = new OwinWebSocketHandler(callback);
+            var handler = new OwinWebSocketHandler(callback, _maxIncomingMessageSize);
             accept(null, handler.ProcessRequest);
             return TaskAsyncHelper.Empty;
         }
