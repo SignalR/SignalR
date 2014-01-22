@@ -76,7 +76,7 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
 
             if (message.Size > _configuration.MaximumMessageSize)
             {
-                _trace.TraceError("Message size {0}KB exceeds the maximum size limit of {1}KB : {2}", message.Size / 1024, _configuration.MaximumMessageSize / 1024, message);
+                _trace.TraceWarning("Message size {0}KB exceeds the maximum size limit of {1}KB : {2}", message.Size / 1024, _configuration.MaximumMessageSize / 1024, message);
             }
 
             return _topicClients[topicIndex].SendAsync(message);

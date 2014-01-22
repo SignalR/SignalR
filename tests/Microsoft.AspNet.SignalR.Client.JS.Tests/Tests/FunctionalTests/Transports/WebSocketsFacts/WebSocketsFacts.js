@@ -49,3 +49,21 @@ QUnit.asyncTimeoutTest("Hub invocations fail when the WebSocket in in an invalid
         connection.stop();
     };
 });
+
+QUnit.asyncTimeoutTest("WebSocket transport functions with JSONP enabled.", testUtilities.defaultTestTimeout, function (end, assert, testName) {
+    var connection = testUtilities.createHubConnection(end, assert, testName, 'jsonp/signalr'),
+        demo = connection.createHubProxies().demo,
+        echoNum = 73;
+
+    connection.start({ transport: "webSockets", jsonp: true }).done(function () {
+        demo.server.overload(echoNum).done(function (result) {
+            assert.equal(result, echoNum, "Received invocation result");
+            end();
+        });
+    });
+
+    // Cleanup
+    return function () {
+        connection.stop();
+    };
+});
