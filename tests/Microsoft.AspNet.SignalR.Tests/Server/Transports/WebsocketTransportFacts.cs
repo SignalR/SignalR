@@ -30,6 +30,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Server.Transports
             webSocketHandler.Object.SendChunk(new ArraySegment<byte>(new byte[1] { (byte)'a' })).Wait();
 
             Assert.False(sendAsyncMethodExecuted);
+            Assert.False(endOfMessage);
 
             webSocketHandler.Object.Flush();
 
