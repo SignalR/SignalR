@@ -499,9 +499,8 @@
                 connection.log("Auto detected cross domain url.");
 
                 if (config.transport === "auto") {
-                    // Try webSockets and longPolling since SSE doesn't support CORS
                     // TODO: Support XDM with foreverFrame
-                    config.transport = ["webSockets", "longPolling"];
+                    config.transport = ["webSockets", "serverSentEvents", "longPolling"];
                 }
 
                 if (typeof (config.withCredentials) === "undefined") {
