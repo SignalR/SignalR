@@ -34,7 +34,6 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
             {
                 _namespaceManager = NamespaceManager.CreateFromConnectionString(configuration.ConnectionString);
                 _factory = MessagingFactory.CreateFromConnectionString(configuration.ConnectionString);
-                _factory.RetryPolicy = RetryExponential.Default;
             }
             catch (ConfigurationErrorsException ex)
             {
@@ -45,6 +44,16 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
             {
                 _factory.GetSettings().OperationTimeout = configuration.OperationTimeout.Value;
             }
+
+            if (configuration.RetryPolicy != null)
+            {
+                _factory.RetryPolicy = configuration.RetryPolicy;
+            }
+            else
+            {
+                _factory.RetryPolicy = RetryExponential.Default;
+            }
+
             _idleSubscriptionTimeout = configuration.IdleSubscriptionTimeout;
             _configuration = configuration;
         }

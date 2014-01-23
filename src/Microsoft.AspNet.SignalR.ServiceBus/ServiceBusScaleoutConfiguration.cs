@@ -2,6 +2,7 @@
 
 using System;
 using Microsoft.AspNet.SignalR.Messaging;
+using Microsoft.ServiceBus;
 
 namespace Microsoft.AspNet.SignalR
 {
@@ -90,5 +91,11 @@ namespace Microsoft.AspNet.SignalR
         /// Default value is set to 256KB which is the maximum recommended size for Service Bus operations
         /// </summary>
         public int MaximumMessageSize { get; set; }
+
+        /// <summary>
+        /// Gets or sets the retry policy for service bus
+        /// Default value is RetryExponential.Default
+        /// </summary>
+        public RetryPolicy RetryPolicy { get; set; }
     }
 }
