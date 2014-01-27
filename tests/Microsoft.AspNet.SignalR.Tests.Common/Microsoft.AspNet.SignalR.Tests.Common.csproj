@@ -165,6 +165,7 @@
     <Compile Include="Hubs\GroupJoiningHub.cs" />
     <Compile Include="Hubs\MyItemsHub.cs" />
     <Compile Include="Hubs\OnConnectedBufferHub.cs" />
+    <Compile Include="Infrastructure\AsyncManualResetEvent.cs" />
     <Compile Include="Infrastructure\ClientAssertExtensions.cs" />
     <Compile Include="Infrastructure\CommonCommandLine.cs" />
     <Compile Include="Infrastructure\CommonLog.cs" />
