@@ -10,7 +10,7 @@
 
 namespace Microsoft.AspNet.SignalR.Client {
     using System;
-    using System.Reflection;
+    
     
     /// <summary>
     ///   A strongly-typed resource class, for looking up localized strings, etc.
@@ -143,6 +143,24 @@ namespace Microsoft.AspNet.SignalR.Client {
         internal static string Error_ProxiesCannotBeAddedConnectionStarted {
             get {
                 return ResourceManager.GetString("Error_ProxiesCannotBeAddedConnectionStarted", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Couldn&apos;t reconnect within the configured timeout of {0}, disconnecting..
+        /// </summary>
+        internal static string Error_ReconnectTimeout {
+            get {
+                return ResourceManager.GetString("Error_ReconnectTimeout", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Connection has been inactive since {0} and it has exceeded the reconnect window of {1}. Stopping the connection..
+        /// </summary>
+        internal static string Error_ReconnectWindowTimeout {
+            get {
+                return ResourceManager.GetString("Error_ReconnectWindowTimeout", resourceCulture);
             }
         }
         

@@ -33,7 +33,9 @@
         pingServerFailedStatusCode: "Failed to ping server.  Server responded with status code {0}, stopping the connection.",
         pingServerFailedParse: "Failed to parse ping server response, stopping the connection.",
         noConnectionTransport: "Connection is in an invalid state, there is no transport active.",
-        webSocketsInvalidState: "The Web Socket transport is in an invalid state, transitioning into reconnecting."
+        webSocketsInvalidState: "The Web Socket transport is in an invalid state, transitioning into reconnecting.",
+        reconnectTimeout: "Couldn't reconnect within the configured timeout of {0} ms, disconnecting.",
+        reconnectWindowTimeout: "Connection has been inactive since {0} and it has exceeded the reconnect window of {1} ms. Stopping the connection."
     };
 
     if (typeof ($) !== "function") {
@@ -103,8 +105,10 @@
             // Without this check if a connection is stopped then started events will be bound multiple times.
             if (!connection._.configuredStopReconnectingTimeout) {
                 onReconnectTimeout = function (connection) {
-                    connection.log("Couldn't reconnect within the configured timeout (" + connection.disconnectTimeout + "ms), disconnecting.");
-                    connection.stop(/* async */ false, /* notifyServer */ false);
+                    var message = signalR._.format(signalR.resources.reconnectTimeout, connection.disconnectTimeout),
+                        error = signalR._.error(message, /* source */ "TimeoutException");
+                    connection.log(message);
+                    connection.stop(/* async */ false, /* notifyServer */ false, error);
                 };
 
                 connection.reconnecting(function () {
@@ -828,7 +832,7 @@
             /// <returns type="signalR" />
             var connection = this;
             $(connection).bind(events.onDisconnect, function (e, data) {
-                callback.call(connection);
+                callback.call(connection, data);
             });
             return connection;
         },
@@ -867,10 +871,11 @@
             return connection;
         },
 
-        stop: function (async, notifyServer) {
+        stop: function (async, notifyServer, error) {
             /// <summary>Stops listening</summary>
             /// <param name="async" type="Boolean">Whether or not to asynchronously abort the connection</param>
             /// <param name="notifyServer" type="Boolean">Whether we want to notify the server that we are aborting the connection</param>
+            /// <param name="error" type="Object">This object is passed to the onDisconnect event</param>
             /// <returns type="signalR" />
             var connection = this,
                 // Save deferral because this is always cleaned up
@@ -935,7 +940,7 @@
             }
 
             // Trigger the disconnect event
-            $(connection).triggerHandler(events.onDisconnect);
+            $(connection).triggerHandler(events.onDisconnect, [error]);
 
             delete connection.messageId;
             delete connection.groupsToken;

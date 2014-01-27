@@ -220,8 +220,8 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
             // Ensure that we have not exceeded the reconnect window
             if(DateTime.UtcNow - connection.LastActiveAt >= connection.ReconnectWindow)
             {
-                connection.Trace(TraceLevels.Events, "There has not been an active server connection for an extended period of time. Stopping connection.");
-                connection.Stop();
+                connection.Stop(new TimeoutException(String.Format(CultureInfo.CurrentCulture, Resources.Error_ReconnectWindowTimeout,
+                    connection.LastActiveAt, connection.ReconnectWindow)));
                 return false;
             }
 
