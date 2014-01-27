@@ -88,6 +88,7 @@
     <Compile Include="Server\Connections\DisconnectFacts.cs" />
     <Compile Include="Server\Connections\PersistentConnectionFacts.cs" />
     <Compile Include="Server\Connections\ReconnectFacts.cs" />
+    <Compile Include="Server\Hubs\DateFacts.cs" />
     <Compile Include="Server\Hubs\GetHubContextFacts.cs" />
     <Compile Include="Server\Hubs\HubAuthFacts.cs" />
     <Compile Include="Server\Hubs\HubFacts.cs" />
