@@ -38,9 +38,9 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
                 _factory = MessagingFactory.CreateFromConnectionString(_connectionString);
                 _factory.RetryPolicy = RetryExponential.Default;
             }
-            catch (ConfigurationErrorsException ex)
+            catch (ConfigurationErrorsException)
             {
-                _trace.TraceError("Invalid connection string: {0}", ex.Message);
+                _trace.TraceError("The configured Service Bus connection string contains an invalid property. Check the exception details for more information.");
             }
 
             _idleSubscriptionTimeout = configuration.IdleSubscriptionTimeout;
