@@ -3,8 +3,8 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR.Messaging;
 using Microsoft.AspNet.SignalR.Tracing;
@@ -19,7 +19,10 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
     {
         private const string SignalRTopicPrefix = "SIGNALR_TOPIC";
 
-        private readonly ServiceBusSubscription _subscription;
+        private ServiceBusConnectionContext _connectionContext;
+
+        private TraceSource _trace;
+
         private readonly ServiceBusConnection _connection;
         private readonly string[] _topics;
         
@@ -33,21 +36,15 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
 
             // Retrieve the trace manager
             var traceManager = resolver.Resolve<ITraceManager>();
-            TraceSource trace = traceManager["SignalR." + typeof(ServiceBusMessageBus).Name];
+            _trace = traceManager["SignalR." + typeof(ServiceBusMessageBus).Name];
 
-            _connection = new ServiceBusConnection(configuration, trace);
+            _connection = new ServiceBusConnection(configuration, _trace);
 
             _topics = Enumerable.Range(0, configuration.TopicCount)
                                 .Select(topicIndex => SignalRTopicPrefix + "_" + configuration.TopicPrefix + "_" + topicIndex)
                                 .ToArray();
 
-            _subscription = _connection.Subscribe(_topics, OnMessage, OnError);
-
-            // Open the streams after creating the subscription
-            for (int i = 0; i < configuration.TopicCount; i++)
-            {
-                Open(i);
-            }
+            ThreadPool.QueueUserWorkItem(Subscribe);
         }
 
         protected override int StreamCount
@@ -62,7 +59,9 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
         {
             var stream = ServiceBusMessage.ToStream(messages);
 
-            return _subscription.Publish(streamIndex, stream);
+            TraceMessages(messages, "Sending");
+
+            return _connectionContext.Publish(streamIndex, stream);
         }
 
         private void OnMessage(int topicIndex, IEnumerable<BrokeredMessage> messages)
@@ -79,8 +78,28 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
                 {
                     ScaleoutMessage scaleoutMessage = ServiceBusMessage.FromBrokeredMessage(message);
 
+                    TraceMessages(scaleoutMessage.Messages, "Receiving");
+
                     OnReceived(topicIndex, (ulong)message.EnqueuedSequenceNumber, scaleoutMessage);
                 }
+            }
+        }
+
+        private void Subscribe(object state)
+        {
+            _connectionContext = _connection.Subscribe(_topics, OnMessage, OnError, Open);
+        }
+
+        private void TraceMessages(IList<Message> messages, string messageType)
+        {
+            if (!_trace.Switch.ShouldTrace(TraceEventType.Verbose))
+            {
+                return;
+            }
+
+            foreach (Message message in messages)
+            {
+                _trace.TraceVerbose("{0} {1} bytes over Service Bus: {2}", messageType, message.Value.Array.Length, message.GetString());
             }
         }
 
@@ -90,9 +109,9 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
 
             if (disposing)
             {
-                if (_subscription != null)
+                if (_connectionContext != null)
                 {
-                    _subscription.Dispose();
+                    _connectionContext.Dispose();
                 }
 
                 if (_connection != null)

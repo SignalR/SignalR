@@ -142,7 +142,7 @@ testUtilities.runWithAllTransports(function (transport) {
                         }, 900);
                     });
                 }, 1500);
-            }, 2500);
+            }, 3000);
         });
 
         // Cleanup
@@ -167,7 +167,7 @@ testUtilities.runWithAllTransports(function (transport) {
             }
 
             // Check if it's the ping request;
-            if (url.indexOf("connectionData=") === -1 || url.toLowerCase().indexOf("connectiondataverifierhub") === -1) {
+            if (url.indexOf("/ping") === -1 && (url.indexOf("connectionData=") === -1 || url.toLowerCase().indexOf("connectiondataverifierhub") === -1)) {
                 connectionDataVerifierHub.client.fail();
             }
 
@@ -213,6 +213,69 @@ testUtilities.runWithAllTransports(function (transport) {
         // Cleanup
         return function () {
             $.ajax = savedAjax;
+            connection.stop();
+        };
+    });
+
+    QUnit.asyncTimeoutTest(transport + ": Reconnect exceeding the reconnect window results in the connection disconnecting even with a fast beat interval.", testUtilities.defaultTestTimeout, function (end, assert, testName) {
+        var connection = testUtilities.createHubConnection(end, assert, testName, undefined, false),
+            handle;
+
+        connection.disconnected(function () {
+            assert.comment("Disconnected fired.");
+
+            // Let callstack finish
+            setTimeout(function () {
+                end();
+            },0);
+        });
+
+        connection.start({ transport: transport }).done(function () {
+            connection._.beatInterval = 100;
+            connection.reconnectWindow = 0;
+            connection.reconnectDelay = testUtilities.defaultTestTimeout + 1000;
+
+            // Wait for the transports to settle (no messages flowing)
+            handle = setTimeout(function () {
+                $.network.disconnect();
+            }, 1000);
+        });
+
+        // Cleanup
+        return function () {
+            clearTimeout(handle);
+            $.network.connect();
+            connection.stop();
+        };
+    });
+
+    QUnit.asyncTimeoutTest(transport + ": Reconnect exceeding the reconnect window results in the connection disconnecting.", testUtilities.defaultTestTimeout * 2, function (end, assert, testName) {
+        var connection = testUtilities.createHubConnection(end, assert, testName, undefined, false),
+            handle;
+       
+        connection.reconnecting(function () {
+            assert.comment("Reconnecting fired.");
+            connection.reconnectWindow = 500;
+        });
+
+        connection.disconnected(function () {
+            assert.comment("Disconnected fired.");
+            end();
+        });
+
+        connection.start({ transport: transport }).done(function () {
+            connection._.beatInterval = 5000;
+
+            // Wait for the transports to settle (no messages flowing)
+            handle = setTimeout(function () {
+                $.network.disconnect();
+            }, 1000);
+        });
+
+        // Cleanup
+        return function () {
+            clearTimeout(handle);
+            $.network.connect();
             connection.stop();
         };
     });

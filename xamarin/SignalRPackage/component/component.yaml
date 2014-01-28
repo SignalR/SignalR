@@ -1,0 +1,24 @@
+%YAML 1.2
+---
+name: SignalR
+id: signalr
+publisher: Microsoft
+license: License.md
+icons: 
+  - icons/signalr_128x128.png
+  - icons/signalr_512x512.png
+publisher-url: http://asp.net/signalr
+libraries: 
+  mobile:
+    - lib/mobile/Microsoft.AspNet.SignalR.Client.dll
+    - lib/mobile/Newtonsoft.Json.dll
+    - lib/mobile/System.Net.Http.Extensions.dll
+summary: Incredibly simple real-time web for .NET.
+details: Details.md
+getting-started: GettingStarted.md
+version: 2.0.2
+samples: 
+  iOS and Android Samples: samples/Microsoft.AspNet.SignalR.Xamarin.Sample.sln
+no_build: true
+skip_docs: true
+...

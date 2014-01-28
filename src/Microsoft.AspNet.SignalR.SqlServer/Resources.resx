@@ -117,19 +117,10 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="Error_SignalRSQLScaleOutNewerThanCurrentVersion" xml:space="preserve">
-    <value>SignalR SQL scale out schema is newer than the currently executing version.</value>
-  </data>
-  <data name="Error_StreamIndexOutOfRange" xml:space="preserve">
-    <value>The streamIndex value {0} is higher than the maximum configured index {1}</value>
-  </data>
   <data name="Error_UnexpectedSqlNotificationType" xml:space="preserve">
     <value>An unexpected SqlNotificationType was received. Details: Type={0}, Source={1}, Info={2}</value>
   </data>
   <data name="Error_UnsupportedSqlEdition" xml:space="preserve">
     <value>The SQL Server edition of the target server is unsupported, e.g. SQL Azure.</value>
-  </data>
-  <data name="Error_ValueMustBeGreaterThan1" xml:space="preserve">
-    <value>Unsupported value for parameter '{0}'. The value must be greater than 1.</value>
   </data>
 </root>

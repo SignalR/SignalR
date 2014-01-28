@@ -234,13 +234,15 @@ namespace Microsoft.AspNet.SignalR.Tests.Common.Infrastructure.IIS
             }
 
             int id = process.Id;
-            string name = process.ProcessName;
 
             bool killed = false;
             Exception exception = null;
+            string name = String.Empty;
 
             try
             {
+                name = process.ProcessName;
+
                 process.Kill();
 
                 process.WaitForExit();

@@ -11,10 +11,17 @@ namespace Microsoft.AspNet.SignalR.Client.Http
     /// </summary>
     public class DefaultHttpClient : IHttpClient
     {
-        private const string ShortRunningGroup = "SignalR-short-running";
-        private const string LongRunningGroup = "SignalR-long-running";
+        private readonly string _shortRunningGroup;
+        private readonly string _longRunningGroup;
 
         private IConnection _connection;
+
+        public DefaultHttpClient()
+        {
+            string id = Guid.NewGuid().ToString();
+            _shortRunningGroup = "SignalR-short-running-" + id;
+            _longRunningGroup = "SignalR-long-running-" + id;
+        }
 
         public void Initialize(IConnection connection)
         {
@@ -32,7 +39,7 @@ namespace Microsoft.AspNet.SignalR.Client.Http
         {
             return HttpHelper.GetAsync(url, request =>
             {
-                request.ConnectionGroupName = isLongRunning ? LongRunningGroup : ShortRunningGroup;
+                request.ConnectionGroupName = isLongRunning ? _longRunningGroup : _shortRunningGroup;
 
                 var req = new HttpWebRequestWrapper(request);
                 prepareRequest(req);
@@ -53,7 +60,7 @@ namespace Microsoft.AspNet.SignalR.Client.Http
         {
             return HttpHelper.PostAsync(url, request =>
             {
-                request.ConnectionGroupName = isLongRunning ? LongRunningGroup : ShortRunningGroup;
+                request.ConnectionGroupName = isLongRunning ? _longRunningGroup : _shortRunningGroup;
 
                 var req = new HttpWebRequestWrapper(request);
                 prepareRequest(req);

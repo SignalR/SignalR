@@ -114,7 +114,7 @@ namespace Microsoft.AspNet.SignalR.Hubs
                     {
                         if (hubCache.ContainsKey(hubInfo.Name))
                         {
-                            throw new InvalidOperationException(Resources.Error_DuplicateHubs);
+                            throw new InvalidOperationException(Resources.Error_DuplicateHubNamesInConnectionData);
                         }
 
                         // Try to find the associated hub type

@@ -1,12 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" DefaultTargets="Go" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="$(MSBuildProjectDirectory)\Build.tasks" />
+  <Import Project="Microsoft.AspNet.SignalR.Projects.Properties.proj"
+   Condition=" '$(OS)' == 'Windows_NT' " />
 
   <PropertyGroup>
     <Configuration Condition="$(Configuration) == ''">Debug</Configuration>
     <Nightly Condition="$(Nightly) == ''">true</Nightly>
     <ProjectRoot>$(MSBuildProjectDirectory)\..</ProjectRoot>
     <ArtifactsDir>$(ProjectRoot)\artifacts\$(Configuration)</ArtifactsDir>
+    <XamarinDir>$(ProjectRoot)\xamarin</XamarinDir>
     <ProjectArtifactsDir>$(ArtifactsDir)\projects</ProjectArtifactsDir>
     <JSTestsPath>$(ProjectArtifactsDir)\JsTestHarness</JSTestsPath>
     <PackageSrcDir>$(ArtifactsDir)\package-src</PackageSrcDir>
@@ -26,7 +29,7 @@
     <ChutzpahPath>$(ProjectRoot)\tools\chutzpah</ChutzpahPath>
     <ChutzpahExePath>$(ChutzpahPath)\$(ChutzpahExe)</ChutzpahExePath>
     <JSTestsURL>http://localhost:1337/</JSTestsURL>
-    <JSTester>$(JSTestsPath)\default.html</JSTester>
+    <JSTester>$(JSTestsURL)default.html</JSTester>
     <DocuExePath>$(ToolsPath)docu\docu.exe</DocuExePath>
     <ZipExe>$(ToolsPath)7za920\7za.exe</ZipExe>
     <MSBuildCommunityTasksPath>$(MSBuildProjectDirectory)</MSBuildCommunityTasksPath>
@@ -40,11 +43,15 @@
     <ExtraProperties>KeyFile=$(KeyFile)</ExtraProperties>
   </PropertyGroup>
 
+  <PropertyGroup Condition="Exists('$(XamarinClientPath)')">
+    <ExtraProperties>XamarinClientPath=$(XamarinClientPath)</ExtraProperties>
+  </PropertyGroup>
+
   <PropertyGroup>
     <PrereleaseTagWithSeparator Condition="$(BuildQuality) != ''">-$(BuildQuality)</PrereleaseTagWithSeparator>
     <ScaleoutPrereleaseTagWithSeparator Condition="$(ScaleoutBuildQuality) != ''">-$(ScaleoutBuildQuality)</ScaleoutPrereleaseTagWithSeparator>
     <KatanaPrereleaseTagWithSeparator Condition="$(KatanaBuildQuality) != ''">-$(KatanaBuildQuality)</KatanaPrereleaseTagWithSeparator>
-    <AssemblyVersion>$(MajorVersion).$(MinorVersion).0</AssemblyVersion>
+    <AssemblyVersion>$(MajorVersion).$(MinorVersion).$(PatchVersion)</AssemblyVersion>
     <PackageVersion>$(MajorVersion).$(MinorVersion).$(PatchVersion)$(PrereleaseTagWithSeparator)</PackageVersion>
     <ScaleoutPackageVersion>$(MajorVersion).$(MinorVersion).$(PatchVersion)$(ScaleoutPrereleaseTagWithSeparator)</ScaleoutPackageVersion>
     <KatanaPackageVersion>$(KatanaVersion)$(KatanaPrereleaseTagWithSeparator)</KatanaPackageVersion>
@@ -59,28 +66,8 @@
     <WinRTSDKInstalled Condition="!Exists('$(MSBuildExtensionsPath)\Microsoft\WindowsXaml')">false</WinRTSDKInstalled>
   </PropertyGroup>
 
-  <ItemDefinitionGroup>
-    <Projects>
-      <Build>true</Build>
-      <!-- RunFxCop is only relevant if Build also evaluates to true -->
-      <RunFxCop>true</RunFxCop>
-      <Sample>false</Sample>
-      <BuildTargets>Build</BuildTargets>
-      <BuildProperties>Configuration=$(Configuration);ArtifactsDir=$(ProjectArtifactsDir);SolutionDir=$(ProjectRoot)\;$(ExtraProperties)</BuildProperties>
-      <CopyArtifacts>true</CopyArtifacts>
-      <Platform>Net45</Platform>
-    </Projects>
-  </ItemDefinitionGroup>
-
   <ItemGroup>
     <!-- Platform Specific Client Projects -->
-    <!-- Don't build Mono clients -->
-    <Projects Include="$(ProjectRoot)\src\Microsoft.AspNet.SignalR.Client.Android\Microsoft.AspNet.SignalR.Client.Android.csproj">
-      <Build>false</Build>
-    </Projects>
-    <Projects Include="$(ProjectRoot)\src\Microsoft.AspNet.SignalR.Client.iOS\Microsoft.AspNet.SignalR.Client.iOS.csproj">
-      <Build>false</Build>
-    </Projects>
     <!-- Don't copy dll's from JS project -->
     <Projects Include="$(ProjectRoot)\src\Microsoft.AspNet.SignalR.Client.JS\Microsoft.AspNet.SignalR.Client.JS.csproj">
       <CopyArtifacts>false</CopyArtifacts>
@@ -117,11 +104,6 @@
       <RunFxCop>false</RunFxCop>
       <!-- InternalsVisibleTo("Microsoft.AspNet.SignalR.Tests.Common, PublicKey=...") is broken in the wsr-teamcity build and Stress depends on Tests.Common -->
       <Build Condition="'$(KeyFile)' != ''">false</Build>
-    </Projects>
-
-    <!-- The MemoryHost dll is not referenced by any package, so don't copy its artifacts to package-src -->
-    <Projects Include="$(ProjectRoot)\src\Microsoft.AspNet.SignalR.Hosting.Memory\Microsoft.AspNet.SignalR.Hosting.Memory.csproj">
-      <CopyArtifacts>false</CopyArtifacts>
     </Projects>
 
     <!-- Add any src projects that have not been defined manually -->
@@ -185,6 +167,11 @@
       <Find>AssemblyVersion\("\d+\.\d+\.\d+"\)</Find>
       <ReplaceWith>AssemblyVersion("$(AssemblyVersion)")</ReplaceWith>
     </RegexTransform>
+    <!--Using Assembly version instead of Package version for component.yaml because Xamarin doesn't allow version numbers with "-pre"-->
+    <RegexTransform Include="$(XamarinDir)\SignalRPackage\component\component.yaml">
+      <Find>version: \d+\.\d+\.\d+</Find>
+      <ReplaceWith>version: $(AssemblyVersion)</ReplaceWith>
+    </RegexTransform>
     <RegexTransform Include="$(ProjectRoot)\src\Common\CommonVersionInfo.cs">
       <Find>AssemblyInformationalVersion\("\d+\.\d+\.\d+(-\w+\d*(-\d+)?)?"\)</Find>
       <ReplaceWith>AssemblyInformationalVersion("$(PackageVersion)")</ReplaceWith>
@@ -217,7 +204,7 @@
   <Target Name="CI" DependsOnTargets="RunCodeAnalysis; Build; CopyArtifacts; RunUnitTests;">
   </Target>
 
-  <Target Name="FunctionalCI" DependsOnTargets="RunCodeAnalysis; Build; CopyArtifacts; RunTests; AnalyzeLogs;">
+  <Target Name="FunctionalCI" DependsOnTargets="RunFunctionalTests; AnalyzeLogs;">
   </Target>
 
   <Target Name="Go" DependsOnTargets="RunCodeAnalysis; Build; CopyArtifacts; RunTests;">
@@ -254,18 +241,15 @@
          Condition=" '$(OS)' == 'Windows_NT'"/>
 
     <!-- Replaces files for -->
-    <FileUpdate Files="$(JSTestsPath)\default.html" Regex="&lt;!-- ##SIGNALRHUBS## --&gt;((.|\r|\n)*?)&lt;!-- ##SIGNALRHUBS## --&gt;" ReplacementText="&lt;!-- ##SIGNALRHUBS## --&gt;&lt;script type='text/javascript' src='/signalr/js'&gt;&lt;/script&gt;&lt;!-- ##SIGNALRHUBS## --&gt;"  Condition=" '$(OS)' == 'Windows_NT'" />
-    <FileUpdate Files="$(JSTestsPath)\default.html" Regex="&lt;!-- ##SIGNALRHUBS## --&gt;((.|\r|\n)*?)&lt;!-- ##SIGNALRHUBS## --&gt;" ReplacementText="&lt;!-- ##SIGNALRHUBS## --&gt;&lt;script type='text/javascript' src='$(JSTestsURL)signalr/js'&gt;&lt;/script&gt;&lt;!-- ##SIGNALRHUBS## --&gt;" Condition=" '$(OS)' == 'Windows_NT'" />
     <!-- Allow a single JS test script to be run by specifying the script via the JSTestScript property.
          Ex: MSBuild.exe .\build\Build.proj /t:RunUnitTests /p:"JSTestScript=Tests/FunctionalTests/Common/AjaxSendFacts.js" -->
     <FileUpdate Files="$(JSTestsPath)\default.html" Regex="&lt;!-- ##JS## --&gt;((.|\r|\n)*?)&lt;!-- ##JS## --&gt;" ReplacementText="&lt;!-- ##JS## --&gt;&lt;script type='text/javascript' src='$(JSTestScript)'&gt;&lt;/script&gt;&lt;!-- ##JS## --&gt;" Condition=" '$(OS)' == 'Windows_NT' And '$(JSTestScript)' != ''" />
-    <FileUpdate Files="$(JSTestsPath)\Build\test.config.js" Regex="/\*URL\*/(.*?)/\*URL\*/" ReplacementText="/*URL*/'$(JSTestsURL)'/*URL*/" Condition=" '$(OS)' == 'Windows_NT'" />
+    
     <FileUpdate Files="$(JSTestsPath)\Build\test.config.js" Regex="/\*CMDLineTest\*/(.*?)/\*CMDLineTest\*/" ReplacementText="/*CMDLineTest*/true/*CMDLineTest*/" Condition=" '$(OS)' == 'Windows_NT'" />
 
     <StartIISTask HostLocation="$(JSTestsPath)" Condition=" '$(OS)' == 'Windows_NT'" />
 
-    <!-- Debugging is required in order to pump data from phantomjs to TeamCity -->
-    <Exec Command="&quot;$(ChutzpahExePath)&quot; &quot;$(JSTester)&quot; /silent /timeoutMilliseconds 30000" Condition=" '$(OS)' == 'Windows_NT'" />
+    <Exec Command="&quot;$(ChutzpahExePath)&quot; &quot;$(JSTester)&quot; /showFailureReport /silent /timeoutMilliseconds 30000" Condition=" '$(OS)' == 'Windows_NT'" />
 
     <xunit Assembly="$(ProjectArtifactsDir)\Microsoft.AspNet.SignalR.Tests\Microsoft.AspNet.SignalR.Tests.dll"
            Xml="$(TestResultsPath)\Microsoft.AspNet.SignalR.Tests.XunitResults.xml"
@@ -325,8 +309,8 @@
              Condition="%(Build) And '$(OS)' == 'Windows_NT'"/>
 
     <MSBuild Projects="$(ProjectRoot)\Microsoft.AspNet.SignalR.Mono.sln"
-             Properties="Configuration=$(Configuration);ArtifactsDir=$(ProjectArtifactsDir);$(ExtraProperties)"
-             Condition=" '$(OS)' != 'Windows_NT'" />
+            Properties="Configuration=$(Configuration);ArtifactsDir=$(ProjectArtifactsDir);$(ExtraProperties)"
+            Condition=" '$(OS)' != 'Windows_NT'" />
   </Target>
 
   <Target Name="CopyArtifacts" DependsOnTargets="Build">
@@ -448,5 +432,29 @@
     <RegexTransform Items="@(NuspecTransform)" />
     <Exec Command="&quot;$(NuGetExePath)&quot; pack &quot;%(Nuspecs.Identity)&quot; -o &quot;$(PackagesDestinationDir)&quot; -basePath &quot;$(PackageSrcDir)&quot;"
             LogStandardErrorAsError="true" />
+  </Target>
+
+  <Target Name="BuildXamarinComponent">
+    <MSBuild Projects="$(ProjectRoot)\src\Microsoft.AspNet.SignalR.Client.Portable\Microsoft.AspNet.SignalR.Client.Portable.csproj"
+          Properties="Configuration=$(Configuration);ArtifactsDir=$(ArtifactsDir);$(ExtraProperties)"
+          Condition=" '$(XamarinClientPath)' == '' "/>
+
+    <ItemGroup Condition=" '$(XamarinClientPath)' != '' ">
+      <XamarinArtifacts Include="$(XamarinClientPath)\Microsoft.AspNet.SignalR.Client.dll"></XamarinArtifacts>
+    </ItemGroup>
+
+    <ItemGroup Condition=" '$(XamarinClientPath)' == '' ">
+      <XamarinArtifacts Include="$(ArtifactsDir)\Microsoft.AspNet.SignalR.Client.Portable\Microsoft.AspNet.SignalR.Client.dll"></XamarinArtifacts>
+    </ItemGroup>
+
+    <ItemGroup>
+      <XamarinArtifacts Include ="$(ProjectRoot)\packages\Newtonsoft.Json.5.0.6\lib\portable-net40+sl4+wp7+win8\Newtonsoft.Json.dll;
+                                  $(ProjectRoot)\packages\Microsoft.Net.Http.2.1.10\lib\portable-net40+sl4+win8+wp71\System.Net.Http.Extensions.dll">
+      </XamarinArtifacts>
+    </ItemGroup>
+
+    <Copy SourceFiles="@(XamarinArtifacts)" DestinationFolder="$(XamarinDir)\SignalRPackage\component\lib\mobile"/>
+
+    <Exec Command='mono $(XamarinDir)\xamarin-component\xamarin-component.exe package "$(XamarinDir)\SignalRPackage\component"' ContinueOnError="true" />
   </Target>
 </Project>

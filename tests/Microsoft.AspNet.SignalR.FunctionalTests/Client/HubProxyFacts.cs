@@ -161,20 +161,28 @@ namespace Microsoft.AspNet.SignalR.Tests
         [InlineData(HostType.HttpListener, TransportType.Websockets, MessageBusType.Default)]
         [InlineData(HostType.HttpListener, TransportType.ServerSentEvents, MessageBusType.Default)]
         [InlineData(HostType.HttpListener, TransportType.LongPolling, MessageBusType.Default)]
-        public void TransportsBufferMessagesCorrectly(HostType hostType, TransportType transportType, MessageBusType messageBusType)
+        public void TransportsQueueIncomingMessagesCorrectly(HostType hostType, TransportType transportType, MessageBusType messageBusType)
         {
             using (var host = CreateHost(hostType, transportType))
             {
                 host.Initialize(messageBusType: messageBusType);
 
-                HubConnection hubConnection = CreateHubConnection(host);
-                IHubProxy proxy = hubConnection.CreateHubProxy("OnConnectedBufferHub");
+                var hubConnection = CreateHubConnection(host);
+                var proxy = hubConnection.CreateHubProxy("OnConnectedBufferHub");
                 var bufferCountdown = new OrderedCountDownRange<int>(new[] { 0, 1 });
-                int bufferMeCalls = 0;
+                var bufferMeCalls = 0;
 
                 using (hubConnection)
                 {
                     var wh = new ManualResetEvent(false);
+
+                    proxy.On<int>("bufferMe", (val) =>
+                    {
+                        // Ensure correct ordering of the incoming messages
+                        Assert.True(bufferCountdown.Expect(val));
+                        bufferMeCalls++;
+                        Assert.Equal(hubConnection.State, ConnectionState.Connected);
+                    });
 
                     proxy.On("pong", () =>
                     {
@@ -182,20 +190,13 @@ namespace Microsoft.AspNet.SignalR.Tests
 
                         wh.Set();
                     });
-
-                    proxy.On<int>("bufferMe", (val) =>
-                    {
-                        // Ensure correct ordering of the buffered messages
-                        Assert.True(bufferCountdown.Expect(val));
-                        bufferMeCalls++;
-                        Assert.Equal(hubConnection.State, ConnectionState.Connected);
-                    });
-
+                    
                     hubConnection.Start(host.Transport).Wait();
 
+                    // The calls should be complete once the start task returns
                     Assert.Equal(2, bufferMeCalls);
 
-                    proxy.Invoke("Ping").Catch();
+                    proxy.Invoke("Ping").Wait();
 
                     Assert.True(wh.WaitOne(TimeSpan.FromSeconds(10)));
                 }
@@ -635,6 +636,64 @@ namespace Microsoft.AspNet.SignalR.Tests
                     hubConnection.Start(host.Transport).Wait();
                     proxy.Invoke("EchoCallback", "message").Catch();
                     Assert.True(mre.Wait(TimeSpan.FromSeconds(10)));
+                }
+            }
+        }
+
+        [Theory(Timeout = 10000)]
+        [InlineData(HostType.IISExpress, TransportType.Websockets)]
+        [InlineData(HostType.IISExpress, TransportType.ServerSentEvents)]
+        [InlineData(HostType.IISExpress, TransportType.LongPolling)]
+        public async Task CallingStopAfterAwaitingInvocationReturnsFast(HostType hostType, TransportType transportType)
+        {
+            using (var host = CreateHost(hostType, transportType))
+            {
+                host.Initialize();
+                HubConnection hubConnection = CreateHubConnection(host);
+
+                using (hubConnection)
+                {
+                    var proxy = hubConnection.CreateHubProxy("EchoHub");
+
+                    await hubConnection.Start(host.Transport);
+
+                    await proxy.Invoke("EchoCallback", "message");
+                }
+            }
+        }
+
+        [Theory(Timeout = 10000)]
+        [InlineData(HostType.IISExpress, TransportType.Websockets)]
+        [InlineData(HostType.IISExpress, TransportType.ServerSentEvents)]
+        [InlineData(HostType.IISExpress, TransportType.LongPolling)]
+        public async Task CallingStopInClientMethodWorks(HostType hostType, TransportType transportType)
+        {
+            using (var host = CreateHost(hostType, transportType))
+            {
+                host.Initialize();
+                HubConnection hubConnection = CreateHubConnection(host);
+
+                using (hubConnection)
+                {
+                    var proxy = hubConnection.CreateHubProxy("EchoHub");
+
+                    proxy.On<string>("echo", message =>
+                    {
+                        hubConnection.Stop();
+                    });
+
+                    await hubConnection.Start(host.Transport);
+
+                    try
+                    {
+                        await proxy.Invoke("EchoCallback", "message");
+                        Assert.True(false, "The hub method invocation should fail.");
+                    }
+                    catch (InvalidOperationException)
+                    {
+                        // This should throw as the invocation result will not be received due to the connection stopping
+                        Assert.True(true);
+                    }
                 }
             }
         }

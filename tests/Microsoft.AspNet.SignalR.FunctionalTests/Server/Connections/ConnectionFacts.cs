@@ -185,10 +185,10 @@ namespace Microsoft.AspNet.SignalR.Client.Tests
 
                     using (connection)
                     {
-                        Assert.Equal(connection.TransportConnectTimeout, TimeSpan.Zero);
+                        Assert.Equal(((IConnection)connection).TotalTransportConnectTimeout, TimeSpan.Zero);
                         connection.TransportConnectTimeout = newTimeout;
                         connection.Start(host).Wait();
-                        Assert.Equal(connection.TransportConnectTimeout - defaultTransportConnectTimeout, newTimeout);
+                        Assert.Equal(((IConnection)connection).TotalTransportConnectTimeout - defaultTransportConnectTimeout, newTimeout);
                     }
                 }
             }
@@ -477,11 +477,12 @@ namespace Microsoft.AspNet.SignalR.Client.Tests
             [InlineData(HostType.Memory, TransportType.LongPolling, MessageBusType.Default)]
             [InlineData(HostType.Memory, TransportType.LongPolling, MessageBusType.Fake)]
             [InlineData(HostType.Memory, TransportType.LongPolling, MessageBusType.FakeMultiStream)]
-            [InlineData(HostType.IISExpress, TransportType.ServerSentEvents, MessageBusType.Default)]
             [InlineData(HostType.IISExpress, TransportType.Websockets, MessageBusType.Default)]
-            [InlineData(HostType.HttpListener, TransportType.ServerSentEvents, MessageBusType.Default)]
+            [InlineData(HostType.IISExpress, TransportType.ServerSentEvents, MessageBusType.Default)]
+            [InlineData(HostType.IISExpress, TransportType.LongPolling, MessageBusType.Default)]
             [InlineData(HostType.HttpListener, TransportType.Websockets, MessageBusType.Default)]
-            //[InlineData(HostType.IISExpress, TransportType.LongPolling)]
+            [InlineData(HostType.HttpListener, TransportType.ServerSentEvents, MessageBusType.Default)]
+            [InlineData(HostType.HttpListener, TransportType.LongPolling, MessageBusType.Default)]
             public void ClientStopsReconnectingAfterDisconnectTimeout(HostType hostType, TransportType transportType, MessageBusType messageBusType)
             {
                 using (var host = CreateHost(hostType, transportType))
@@ -509,8 +510,8 @@ namespace Microsoft.AspNet.SignalR.Client.Tests
                         connection.Start(host.Transport).Wait();
                         host.Shutdown();
 
-                        Assert.True(reconnectWh.Wait(TimeSpan.FromSeconds(25)), "Reconnect never fired");
-                        Assert.True(disconnectWh.Wait(TimeSpan.FromSeconds(25)), "Closed never fired");
+                        Assert.True(reconnectWh.Wait(TimeSpan.FromSeconds(15)), "Reconnect never fired");
+                        Assert.True(disconnectWh.Wait(TimeSpan.FromSeconds(15)), "Closed never fired");
                     }
                 }
             }
@@ -534,11 +535,10 @@ namespace Microsoft.AspNet.SignalR.Client.Tests
                 {
                     host.Initialize(keepAlive: null,
                                     connectionTimeout: 2,
-                                    disconnectTimeout: 6,
+                                    disconnectTimeout: 8, // 8s because the default heartbeat time span is 5s
                                     messageBusType: messageBusType);
 
                     var connection = CreateHubConnection(host, "/force-lp-reconnect");
-
 
                     using (connection)
                     {
@@ -558,9 +558,6 @@ namespace Microsoft.AspNet.SignalR.Client.Tests
                         };
 
                         connection.Start(host.Transport).Wait();
-
-                        // Force reconnect
-                        Thread.Sleep(TimeSpan.FromSeconds(5));
 
                         Assert.True(reconnectingWh.Wait(TimeSpan.FromSeconds(30)));
                         Assert.True(reconnectedWh.Wait(TimeSpan.FromSeconds(30)));

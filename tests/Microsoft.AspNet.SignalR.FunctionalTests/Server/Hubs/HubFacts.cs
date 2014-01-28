@@ -235,15 +235,11 @@ namespace Microsoft.AspNet.SignalR.Tests
             {
                 host.Initialize();
 
-                var connection1 = CreateHubConnection(host, path: "/basicauth/signalr", useDefaultUrl: false);
-                var connection2 = CreateHubConnection(host, path: "/basicauth/signalr", useDefaultUrl: false);
-                var connection3 = CreateHubConnection(host, path: "/basicauth/signalr", useDefaultUrl: false);
-                var connection4 = CreateHubConnection(host, path: "/basicauth/signalr", useDefaultUrl: false);
-                connection1.Credentials = new System.Net.NetworkCredential("user1", "password");
-                connection2.Credentials = new System.Net.NetworkCredential("user1", "password");
-                connection3.Credentials = new System.Net.NetworkCredential("user1", "password");
-                connection4.Credentials = new System.Net.NetworkCredential("user2", "password");
-
+                var connection1 = CreateAuthHubConnection(host, "user1", "password");
+                var connection2 = CreateAuthHubConnection(host, "user1", "password");
+                var connection3 = CreateAuthHubConnection(host, "user1", "password");
+                var connection4 = CreateAuthHubConnection(host, "user2", "password");
+                
                 var wh1 = new ManualResetEventSlim();
                 var wh2 = new ManualResetEventSlim();
                 var wh3 = new ManualResetEventSlim();
@@ -607,8 +603,6 @@ namespace Microsoft.AspNet.SignalR.Tests
                     connection.TraceWriter = host.ClientTraceOutput;
 
                     var hub = connection.CreateHubProxy("demo");
-
-                    connection.Start(host.TransportFactory()).Wait();
 
                     connection.Start(host.TransportFactory()).Wait();
 
@@ -1181,7 +1175,7 @@ namespace Microsoft.AspNet.SignalR.Tests
             {
                 host.Initialize(keepAlive: null,
                                 disconnectTimeout: 6,
-                                connectionTimeout: 1,
+                                connectionTimeout: 2,
                                 enableAutoRejoiningGroups: true,
                                 messageBusType: messageBusType);
 

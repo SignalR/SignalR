@@ -42,21 +42,30 @@ namespace Microsoft.AspNet.SignalR.Client
         // The amount of time the client should attempt to reconnect before stopping.
         private TimeSpan _disconnectTimeout;
 
+        // The amount of time a transport will wait (while connecting) before failing. 
+        private TimeSpan _totalTransportConnectTimeout;
+
         // Provides a way to cancel the the timeout that stops a reconnect cycle
         private IDisposable _disconnectTimeoutOperation;
 
         // The default connection state is disconnected
         private ConnectionState _state;
 
-        private ConnectingMessageBuffer _connectingMessageBuffer;
-
         private KeepAliveData _keepAliveData;
+
+        private TimeSpan _reconnectWindow;
 
         private Task _connectTask;
 
         private TextWriter _traceWriter;
 
         private string _connectionData;
+
+        private TaskQueue _receiveQueue;
+
+        private Task _lastQueuedReceiveTask;
+
+        private TaskCompletionSource<object> _startTcs;
 
         // Used to synchronize state changes
         private readonly object _stateLock = new object();
@@ -66,6 +75,11 @@ namespace Microsoft.AspNet.SignalR.Client
 
         // Used to ensure we don't write to the Trace TextWriter from multiple threads simultaneously 
         private readonly object _traceLock = new object();
+
+        private DateTime _lastMessageAt;
+
+        // Indicates the last time we marked the C# code as running.
+        private DateTime _lastActiveAt;
 
         // Keeps track of when the last keep alive from the server was received
         private HeartbeatMonitor _monitor;
@@ -156,13 +170,16 @@ namespace Microsoft.AspNet.SignalR.Client
             Url = url;
             QueryString = queryString;
             _disconnectTimeoutOperation = DisposableAction.Empty;
-            _connectingMessageBuffer = new ConnectingMessageBuffer(this, OnMessageReceived);
+            _lastMessageAt = DateTime.UtcNow;
+            _lastActiveAt = DateTime.UtcNow;
+            _reconnectWindow = TimeSpan.Zero;
             Items = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
             State = ConnectionState.Disconnected;
             TraceLevel = TraceLevels.All;
             TraceWriter = new DebugTextWriter();
             Headers = new HeaderDictionary(this);
             TransportConnectTimeout = TimeSpan.Zero;
+            _totalTransportConnectTimeout = TimeSpan.Zero;
 
             // Current client protocol
             Protocol = new Version(1, 3);
@@ -174,7 +191,35 @@ namespace Microsoft.AspNet.SignalR.Client
         /// </summary>
         public TimeSpan TransportConnectTimeout { get; set; }
 
+        /// <summary>
+        /// The amount of time a transport will wait (while connecting) before failing.
+        /// This is the total vaue obtained by adding the server's configuration value and the timeout specified by the user
+        /// </summary>
+        TimeSpan IConnection.TotalTransportConnectTimeout
+        {
+            get
+            {
+                return _totalTransportConnectTimeout;
+            }
+        }
+
         public Version Protocol { get; set; }
+
+        /// <summary>
+        /// The maximum amount of time a connection will allow to try and reconnect.
+        /// This value is equivalent to the summation of the servers disconnect and keep alive timeout values.
+        /// </summary>
+        TimeSpan IConnection.ReconnectWindow 
+        {
+            get
+            {
+                return _reconnectWindow;
+            }
+            set
+            {
+                _reconnectWindow = value;
+            }
+        }
 
         /// <summary>
         /// Object to store the various keep alive timeout values
@@ -188,6 +233,25 @@ namespace Microsoft.AspNet.SignalR.Client
             set
             {
                 _keepAliveData = value;
+            }
+        }
+
+        /// <summary>
+        /// The timestamp of the last message received by the connection.
+        /// </summary>
+        DateTime IConnection.LastMessageAt
+        {
+            get
+            {
+                return _lastMessageAt;
+            }
+        }
+
+        DateTime IConnection.LastActiveAt
+        {
+            get
+            {
+                return _lastActiveAt;
             }
         }
 
@@ -362,15 +426,16 @@ namespace Microsoft.AspNet.SignalR.Client
         {
             lock (_startLock)
             {
-                _connectTask = TaskAsyncHelper.Empty;
-                _disconnectCts = new CancellationTokenSource();
-
                 if (!ChangeState(ConnectionState.Disconnected, ConnectionState.Connecting))
                 {
-                    return _connectTask;
+                    return _connectTask ?? TaskAsyncHelper.Empty;
                 }
 
-                _monitor = new HeartbeatMonitor(this, _stateLock);
+                _disconnectCts = new CancellationTokenSource();
+                _startTcs = new TaskCompletionSource<object>();
+                _receiveQueue = new TaskQueue(_startTcs.Task);
+                _lastQueuedReceiveTask = TaskAsyncHelper.Empty;
+
                 _transport = transport;
 
                 _connectTask = Negotiate(transport);
@@ -397,13 +462,25 @@ namespace Microsoft.AspNet.SignalR.Client
                                 ConnectionId = negotiationResponse.ConnectionId;
                                 ConnectionToken = negotiationResponse.ConnectionToken;
                                 _disconnectTimeout = TimeSpan.FromSeconds(negotiationResponse.DisconnectTimeout);
-                                TransportConnectTimeout = TransportConnectTimeout + TimeSpan.FromSeconds(negotiationResponse.TransportConnectTimeout);
+                                _totalTransportConnectTimeout = TransportConnectTimeout + TimeSpan.FromSeconds(negotiationResponse.TransportConnectTimeout);
+
+                                // Default the beat interval to be 5 seconds in case keep alive is disabled.
+                                var beatInterval = TimeSpan.FromSeconds(5);
 
                                 // If we have a keep alive
                                 if (negotiationResponse.KeepAliveTimeout != null)
                                 {
                                     _keepAliveData = new KeepAliveData(TimeSpan.FromSeconds(negotiationResponse.KeepAliveTimeout.Value));
+                                    _reconnectWindow = _disconnectTimeout + _keepAliveData.Timeout;
+
+                                    beatInterval = _keepAliveData.CheckInterval;
                                 }
+                                else
+                                {
+                                    _reconnectWindow = _disconnectTimeout;
+                                }
+
+                                _monitor = new HeartbeatMonitor(this, _stateLock, beatInterval);
 
                                 return StartTransport();
                             })
@@ -415,21 +492,19 @@ namespace Microsoft.AspNet.SignalR.Client
             return _transport.Start(this, _connectionData, _disconnectCts.Token)
                              .RunSynchronously(() =>
                              {
+                                 // NOTE: We have tests that rely on this state change occuring *BEFORE* the start task is complete
                                  ChangeState(ConnectionState.Connecting, ConnectionState.Connected);
 
-                                 // Now that we're connected drain any messages within the buffer
-                                 // We want to protect against state changes when draining
-                                 lock (_stateLock)
-                                 {
-                                     _connectingMessageBuffer.Drain();
-                                 }
-
-                                 if (_keepAliveData != null && _transport.SupportsKeepAlive)
-                                 {
-                                     // Start the monitor to check for server activity
-                                     _monitor.Start();
-                                 }
-                             });
+                                 // Now that we're connected complete the start task that the
+                                 // receive queue is waiting on
+                                 _startTcs.SetResult(null);
+                                 
+                                 // Start the monitor to check for server activity
+                                _monitor.Start();
+                             })
+                             // Don't return until the last receive has been processed to ensure messages/state sent in OnConnected
+                             // are processed prior to the Start() method task finishing
+                             .Then(() => _lastQueuedReceiveTask);
         }
 
         private bool ChangeState(ConnectionState oldState, ConnectionState newState)
@@ -499,7 +574,14 @@ namespace Microsoft.AspNet.SignalR.Client
                         Trace(TraceLevels.Events, "Error: {0}", ex.GetBaseException());
                     }
                 }
-                
+
+                if (_receiveQueue != null)
+                {
+                    // Close the receive queue so currently running receive callback finishes and no more are run.
+                    // We can't wait on the result of the drain because this method may be on the stack of the task returned (aka deadlock).
+                    _receiveQueue.Drain().Catch();
+                }
+
                 // This is racy since it's outside the _stateLock, but we are trying to avoid 30s deadlocks when calling _transport.Abort()
                 if (State == ConnectionState.Disconnected)
                 {
@@ -538,14 +620,14 @@ namespace Microsoft.AspNet.SignalR.Client
 
                     Trace(TraceLevels.StateChanges, "Disconnected");
 
-                    // If we've connected then instantly disconnected we may have data in the incomingMessageBuffer
-                    // Therefore we need to clear it incase we start the connection again.
-                    _connectingMessageBuffer.Clear();
-
                     _disconnectTimeoutOperation.Dispose();
                     _disconnectCts.Cancel();
                     _disconnectCts.Dispose();
-                    _monitor.Dispose();
+
+                    if (_monitor != null)
+                    {
+                        _monitor.Dispose();
+                    }
 
                     if (_transport != null)
                     {
@@ -648,17 +730,24 @@ namespace Microsoft.AspNet.SignalR.Client
 
 
         [SuppressMessage("Microsoft.Design", "CA1062:Validate arguments of public methods", MessageId = "0", Justification = "This is called by the transport layer")]
+        [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "The exception is raised via an event.")]
         void IConnection.OnReceived(JToken message)
         {
-            // Try to buffer only if we're still trying to connect to the server.
-            // Need to protect against state changes here
-            if (!_connectingMessageBuffer.TryBuffer(message, _stateLock))
+            _lastQueuedReceiveTask = _receiveQueue.Enqueue(() => Task.Factory.StartNew(() =>
             {
-                OnMessageReceived(message);
-            }
+                try
+                {
+                    OnMessageReceived(message);
+                }
+                catch (Exception ex)
+                {
+                    OnError(ex);
+                }
+            }));
         }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "The exception can be from user code, needs to be a catch all."), SuppressMessage("Microsoft.Design", "CA1062:Validate arguments of public methods", MessageId = "0", Justification = "This is called by the transport layer")]
+        [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "The exception can be from user code, needs to be a catch all.")]
+        [SuppressMessage("Microsoft.Design", "CA1062:Validate arguments of public methods", MessageId = "0", Justification = "This is called by the transport layer")]
         protected virtual void OnMessageReceived(JToken message)
         {
             if (Received != null)
@@ -723,7 +812,7 @@ namespace Microsoft.AspNet.SignalR.Client
                 Reconnected();
             }
 
-            ((IConnection)this).UpdateLastKeepAlive();
+            ((IConnection)this).MarkLastMessage();
         }
 
         void IConnection.OnConnectionSlow()
@@ -737,13 +826,22 @@ namespace Microsoft.AspNet.SignalR.Client
         }
 
         /// <summary>
-        /// Sets LastKeepAlive to the current time 
+        /// Sets LastMessageAt to the current time 
         /// </summary>
-        void IConnection.UpdateLastKeepAlive()
+        void IConnection.MarkLastMessage()
         {
-            if (_keepAliveData != null)
+            _lastMessageAt = DateTime.UtcNow;
+        }
+
+        /// <summary>
+        /// Sets LastActiveAt to the current time 
+        /// </summary>
+        void IConnection.MarkActive()
+        {
+            // Ensure that we haven't gone to sleep since our last "active" marking.
+            if (TransportHelper.VerifyLastActive(this))
             {
-                _keepAliveData.LastKeepAlive = DateTime.UtcNow;
+                _lastActiveAt = DateTime.UtcNow;
             }
         }
 
@@ -768,7 +866,7 @@ namespace Microsoft.AspNet.SignalR.Client
             if (_assemblyVersion == null)
             {
 #if NETFX_CORE
-                _assemblyVersion = new Version("2.0.0");
+                _assemblyVersion = new Version("2.0.2");
 #else
                 _assemblyVersion = new AssemblyName(typeof(Connection).Assembly.FullName).Version;
 #endif

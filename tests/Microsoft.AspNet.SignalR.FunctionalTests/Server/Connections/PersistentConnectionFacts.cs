@@ -92,7 +92,7 @@ namespace Microsoft.AspNet.SignalR.Tests
 
             private static Task ProcessRequest(MemoryHost host, string transport, string connectionToken)
             {
-                return host.Get("http://foo/echo/connect?transport=" + transport + "&connectionToken=" + connectionToken);
+                return host.Get("http://foo/echo/connect?transport=" + transport + "&connectionToken=" + connectionToken, r => { }, isLongRunning: true);
             }
 
             [Fact]

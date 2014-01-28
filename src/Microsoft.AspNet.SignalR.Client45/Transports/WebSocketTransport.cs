@@ -75,7 +75,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
                 throw new ArgumentNullException("connection");
             }
 
-            _initializeHandler = new TransportInitializationHandler(connection.TransportConnectTimeout, disconnectToken);
+            _initializeHandler = new TransportInitializationHandler(connection.TotalTransportConnectTimeout, disconnectToken);
 
             // Tie into the OnFailure event so that we can stop the transport silently.
             _initializeHandler.OnFailure += () =>
@@ -138,6 +138,20 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
 
         public Task Send(IConnection connection, string data, string connectionData)
         {
+            if (connection == null)
+            {
+                throw new ArgumentNullException("connection");
+            }
+
+            // If we don't throw here when the WebSocket isn't open, WebSocketHander.SendAsync will noop.
+            if (WebSocket.State != WebSocketState.Open)
+            {
+                // Make this a faulted task and trigger the OnError even to maintain consistency with the HttpBasedTransports
+                var ex = new InvalidOperationException(Resources.Error_DataCannotBeSentDuringWebSocketReconnect);
+                connection.OnError(ex);
+                return TaskAsyncHelper.FromError(ex);
+            }
+
             return SendAsync(data);
         }
 
@@ -187,7 +201,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
 
         private async void DoReconnect()
         {
-            while (_connectionInfo.Connection.EnsureReconnecting())
+            while (TransportHelper.VerifyLastActive(_connectionInfo.Connection) && _connectionInfo.Connection.EnsureReconnecting())
             {
                 try
                 {

@@ -1,5 +1,8 @@
 ﻿var testUtilities;
 
+// Clear session storage so QUnit does not try to re-run failed tests first.
+window.sessionStorage.clear();
+
 (function ($, window) {
     var ios = !!navigator.userAgent.match(/iPod|iPhone|iPad/),
         rfcWebSockets = !!window.WebSocket,
@@ -29,7 +32,7 @@
                 enabled: true
             },
             foreverFrame: {
-                enabled: !window.EventSource && !window.document.commandLineTest && navigator.appName === "Microsoft Internet Explorer"
+                enabled: !window.EventSource && !window.document.commandLineTest
             },
             serverSentEvents: {
                 enabled: !!window.EventSource

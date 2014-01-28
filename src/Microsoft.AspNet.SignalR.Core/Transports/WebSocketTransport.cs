@@ -123,7 +123,9 @@ namespace Microsoft.AspNet.SignalR.Transports
 
             if (accept == null)
             {
-                throw new InvalidOperationException(Resources.Error_NotWebSocketRequest);
+                // Bad Request
+                _context.Response.StatusCode = 400;
+                return _context.Response.End(Resources.Error_NotWebSocketRequest);
             }
 
             var handler = new OwinWebSocketHandler(callback);

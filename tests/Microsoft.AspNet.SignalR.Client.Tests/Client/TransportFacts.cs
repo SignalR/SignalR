@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Net.WebSockets;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.AspNet.SignalR.Client;
 using Microsoft.AspNet.SignalR.Client.Http;
 using Microsoft.AspNet.SignalR.Client.Transports;
 using Moq;
@@ -74,7 +74,7 @@ namespace Microsoft.AspNet.SignalR.Client.Tests
             var connection = new Mock<Client.IConnection>(MockBehavior.Strict);
             connection.Setup(c => c.OnReceived(It.IsAny<JToken>())).Throws(ex);
             connection.Setup(c => c.OnError(ex));
-            connection.Setup(c => c.UpdateLastKeepAlive());
+            connection.Setup(c => c.MarkLastMessage());
 
             // PersistentResponse
             TransportHelper.ProcessResponse(connection.Object, "{\"M\":{}}", out timedOut, out disconnected);
@@ -237,6 +237,34 @@ namespace Microsoft.AspNet.SignalR.Client.Tests
                     connection.VerifyAll();
                 }
             }
+        }
+
+        [Theory]
+        [InlineData(WebSocketState.Aborted)]
+        [InlineData(WebSocketState.Closed)]
+        [InlineData(WebSocketState.CloseReceived)]
+        [InlineData(WebSocketState.CloseSent)]
+        [InlineData(WebSocketState.Connecting)]
+        [InlineData(WebSocketState.Connecting)]
+        public void WebSocketSendReturnsAFaultedTaskWhenNotConnected(WebSocketState state)
+        {
+            var mockConnection = new Mock<Client.IConnection>(MockBehavior.Strict);
+            var mockWebSocket = new Mock<WebSocket>(MockBehavior.Strict);
+
+            mockWebSocket.SetupGet(ws => ws.State).Returns(state);
+            mockConnection.Setup(c => c.OnError(It.IsAny<InvalidOperationException>()));
+
+            var wsTransport = new WebSocketTransport();
+
+            wsTransport.WebSocket = mockWebSocket.Object;
+
+            var task = wsTransport.Send(mockConnection.Object, "", "");
+
+            Assert.True(task.IsFaulted);
+            Assert.IsType(typeof(InvalidOperationException), task.Exception.InnerException);
+
+            mockConnection.VerifyAll();
+            mockWebSocket.VerifyAll();
         }
     }
 }

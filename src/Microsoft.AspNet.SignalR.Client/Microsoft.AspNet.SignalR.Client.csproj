@@ -28,7 +28,7 @@
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
     <OutputPath>bin\Release\</OutputPath>
-    <DefineConstants>TRACE;STABLE_VERSION;NET4</DefineConstants>
+    <DefineConstants>TRACE;STABLE_VERSION;NET4;CLIENT_NET4</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <DocumentationFile>bin\Release\Microsoft.AspNet.SignalR.Client.XML</DocumentationFile>
@@ -63,6 +63,9 @@
     </Compile>
     <Compile Include="..\Microsoft.AspNet.SignalR.Core\Infrastructure\MonoUtility.cs">
       <Link>Infrastructure\MonoUtility.cs</Link>
+    </Compile>
+    <Compile Include="..\Microsoft.AspNet.SignalR.Core\Infrastructure\TaskQueue.cs">
+      <Link>Infrastructure\TaskQueue.cs</Link>
     </Compile>
     <Compile Include="..\Microsoft.AspNet.SignalR.Core\TaskAsyncHelper.cs">
       <Link>Infrastructure\TaskAsyncHelper.cs</Link>
@@ -108,7 +111,6 @@
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
     <Compile Include="Transports\AsyncStreamReader.cs" />
-    <Compile Include="Transports\ConnectingMessageBuffer.cs" />
     <Compile Include="Transports\LongPolling\NegotiateInitializer.cs" />
     <Compile Include="Transports\LongPolling\PollingRequestHandler.cs" />
     <Compile Include="Transports\ServerSentEvents\ChunkBuffer.cs" />

@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using System.Net;
+using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR.Client;
 using Microsoft.AspNet.SignalR.Client.Hubs;
@@ -99,20 +100,35 @@ namespace Microsoft.AspNet.SignalR.Client40.Samples
             connection.TraceWriter.WriteLine("transport.Name={0}", connection.Transport.Name);
         }
 
-        private void RunBasicAuth(string serverUrl)
+        private void RunAuth(string serverUrl)
         {
-            string url = serverUrl + "basicauth";
+            string url = serverUrl + "cookieauth";
+
+            var cookieContainer = new CookieContainer();
+            var request = (HttpWebRequest)HttpWebRequest.Create(url + "/Account/Login");
+            request.CookieContainer = cookieContainer;
+            request.ContentType = "application/x-www-form-urlencoded";
+            request.Method = "POST";
+
+            var content = string.Format("UserName={0}&Password={1}", "user", "password");
+            byte[] bytedata = Encoding.UTF8.GetBytes(content);
+            request.ContentLength = bytedata.Length;
+
+            Stream requestStream = request.GetRequestStream();
+            requestStream.Write(bytedata, 0, bytedata.Length);
+            requestStream.Close();
+            var response = request.GetResponse();
 
             var connection = new Connection(url + "/echo");
             connection.TraceWriter = _traceWriter;
             connection.Received += (data) => connection.TraceWriter.WriteLine(data);
-            connection.Credentials = new NetworkCredential("user", "password");
+            connection.CookieContainer = cookieContainer;
             connection.Start().Wait();
             connection.Send("sending to AuthenticatedEchoConnection").Wait();
 
             var hubConnection = new HubConnection(url);
             hubConnection.TraceWriter = _traceWriter;
-            hubConnection.Credentials = new NetworkCredential("user", "password");
+            hubConnection.CookieContainer = cookieContainer;
 
             var hubProxy = hubConnection.CreateHubProxy("AuthHub");
             hubProxy.On<string, string>("invoked", (connectionId, date) => hubConnection.TraceWriter.WriteLine("connectionId={0}, date={1}", connectionId, date));
