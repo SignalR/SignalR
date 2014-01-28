@@ -69,6 +69,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Common.Infrastructure
                                        int? connectionTimeout = 110,
                                        int? disconnectTimeout = 30,
                                        int? transportConnectTimeout = 5,
+                                       int? maxIncomingWebSocketMessageSize = 64 * 1024,
                                        bool enableAutoRejoiningGroups = false,
                                        MessageBusType type = MessageBusType.Default)
         {
@@ -99,6 +100,8 @@ namespace Microsoft.AspNet.SignalR.Tests.Common.Infrastructure
             {
                 configuration.TransportConnectTimeout = TimeSpan.FromSeconds(transportConnectTimeout.Value);
             }
+
+            configuration.MaxIncomingWebSocketMessageSize = maxIncomingWebSocketMessageSize;
 
             if (!keepAlive.HasValue)
             {

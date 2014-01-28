@@ -12,7 +12,8 @@ namespace Microsoft.AspNet.SignalR.Tests.Server.Transports
         [Fact]
         public void MessageChunksAreSentCorrectly()
         {
-            var webSocketHandler = new Mock<DefaultWebSocketHandler>();
+            // Disable DefaultWebSocketHandler's maxIncomingMessageSize
+            var webSocketHandler = new Mock<DefaultWebSocketHandler>(null);
             webSocketHandler.CallBase = true;
 
             bool sendAsyncMethodExecuted = false;

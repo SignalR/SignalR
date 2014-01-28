@@ -71,6 +71,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Common.Infrastructure
                                int? connectionTimeout,
                                int? disconnectTimeout,
                                int? transportConnectTimeout,
+                               int? maxIncomingWebSocketMessageSize,
                                bool enableAutoRejoiningGroups,
                                MessageBusType type = MessageBusType.Default)
         {
@@ -85,6 +86,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Common.Infrastructure
                                            connectionTimeout,
                                            disconnectTimeout,
                                            transportConnectTimeout,
+                                           maxIncomingWebSocketMessageSize,
                                            enableAutoRejoiningGroups,
                                            _logFileName);
 
