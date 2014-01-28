@@ -20,6 +20,8 @@ namespace Microsoft.AspNet.SignalR.Transports
         private JsonSerializer _jsonSerializer;
         private string _lastMessageId;
 
+        private RequestLifetime _transportLifetime;
+
         private const int MaxMessages = 10;
 
         protected ForeverTransport(HostContext context, IDependencyResolver resolver)
@@ -91,9 +93,16 @@ namespace Microsoft.AspNet.SignalR.Transports
             // PersistentConnection.OnConnected must complete before we can write to the output stream,
             // so clients don't indicate the connection has started too early.
             InitializeTcs = new TaskCompletionSource<object>();
+
+            // WriteQueue must be reinitialized before calling base.InitializePersistentState to ensure
+            // _requestLifeTime will be properly initialized.
             WriteQueue = new TaskQueue(InitializeTcs.Task);
 
             base.InitializePersistentState();
+
+            // The _transportLifetime must be initialized after calling base.InitializePersistentState since
+            // _transportLifetime depends on _requestLifetime.
+            _transportLifetime = new RequestLifetime(this, _requestLifeTime);
         }
 
         protected Task ProcessRequestCore(ITransportConnection connection)
@@ -149,6 +158,18 @@ namespace Microsoft.AspNet.SignalR.Transports
             }
 
             return TaskAsyncHelper.Empty;
+        }
+
+        
+        protected void OnError(Exception ex)
+        {
+            IncrementErrors();
+
+            // Cancel any pending writes in the queue
+            InitializeTcs.TrySetCanceled();
+
+            // Complete the http request
+            _transportLifetime.Complete(ex);
         }
 
         private async Task ProcessSendRequest()
@@ -226,8 +247,7 @@ namespace Microsoft.AspNet.SignalR.Transports
             // Ensure delegate continues to use the C# Compiler static delegate caching optimization.
             IDisposable registration = ConnectionEndToken.SafeRegister(state => Cancel(state), cancelContext);
 
-            var lifetime = new RequestLifetime(this, _requestLifeTime);
-            var messageContext = new MessageContext(this, lifetime, registration);
+            var messageContext = new MessageContext(this, _transportLifetime, registration);
 
             if (BeforeReceive != null)
             {
@@ -262,13 +282,13 @@ namespace Microsoft.AspNet.SignalR.Transports
             {
                 InitializeTcs.TrySetCanceled();
 
-                lifetime.Complete(ex);
+                _transportLifetime.Complete(ex);
             }
             catch (Exception ex)
             {
                 InitializeTcs.TrySetCanceled();
 
-                lifetime.Complete(ex);
+                _transportLifetime.Complete(ex);
             }
 
             return _requestLifeTime.Task;
@@ -352,13 +372,7 @@ namespace Microsoft.AspNet.SignalR.Transports
         {
             var context = (MessageContext)state;
 
-            context.Transport.IncrementErrors();
-
-            // Cancel any pending writes in the queue
-            context.Transport.InitializeTcs.TrySetCanceled();
-
-            // Complete the http request
-            context.Lifetime.Complete(ex);
+            context.Transport.OnError(ex);
         }
 
         private class ForeverTransportContext
