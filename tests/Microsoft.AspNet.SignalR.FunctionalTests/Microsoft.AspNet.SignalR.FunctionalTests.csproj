@@ -94,6 +94,7 @@
     <Compile Include="Server\Hubs\HubProgressFacts.cs" />
     <Compile Include="Server\Hubs\SecurityFacts.cs" />
     <Compile Include="Server\Hubs\TypedHubFacts.cs" />
+    <Compile Include="Server\Transports\WebSocketFacts.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
