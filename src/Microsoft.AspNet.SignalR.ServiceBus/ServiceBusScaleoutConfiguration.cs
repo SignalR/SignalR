@@ -107,5 +107,11 @@ namespace Microsoft.AspNet.SignalR
 
             return ConnectionString;
         }
+
+        /// <summary>
+        /// Gets or sets the retry policy for service bus
+        /// Default value is RetryExponential.Default
+        /// </summary>
+        public RetryPolicy RetryPolicy { get; set; }
     }
 }
