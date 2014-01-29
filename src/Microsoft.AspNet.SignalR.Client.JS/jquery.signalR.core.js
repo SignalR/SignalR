@@ -796,6 +796,7 @@
 
             window.clearTimeout(connection._.beatHandle);
             window.clearInterval(connection._.pingIntervalId);
+            window.clearInterval(connection._.pingLoopId);
 
             if (connection.transport) {
                 if (notifyServer !== false) {
@@ -825,6 +826,7 @@
             delete connection._.pingIntervalId;
             delete connection._.lastMessageAt;
             delete connection._.lastActiveAt;
+            delete connection._.pingLoopId;
 
             return connection;
         },
