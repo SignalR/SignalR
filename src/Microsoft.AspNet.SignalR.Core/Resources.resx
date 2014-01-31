@@ -216,7 +216,7 @@
   <data name="Error_NoConfiguration" xml:space="preserve">
     <value>A configuration object must be specified.</value>
   </data>
-  <data name="Error_NoDepenendeyResolver" xml:space="preserve">
+  <data name="Error_NoDependencyResolver" xml:space="preserve">
     <value>A dependency resolver must be specified.</value>
   </data>
   <data name="Error_NotWebSocketRequest" xml:space="preserve">

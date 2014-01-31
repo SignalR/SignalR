@@ -360,9 +360,9 @@ namespace Microsoft.AspNet.SignalR {
         /// <summary>
         ///   Looks up a localized string similar to A dependency resolver must be specified..
         /// </summary>
-        internal static string Error_NoDepenendeyResolver {
+        internal static string Error_NoDependencyResolver {
             get {
-                return ResourceManager.GetString("Error_NoDepenendeyResolver", resourceCulture);
+                return ResourceManager.GetString("Error_NoDependencyResolver", resourceCulture);
             }
         }
         
