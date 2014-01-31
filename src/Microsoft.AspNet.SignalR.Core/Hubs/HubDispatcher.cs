@@ -173,7 +173,8 @@ namespace Microsoft.AspNet.SignalR.Hubs
                 //      Encapsulating it in the HubDispatcher prevents the error from bubbling up to the transport level.
                 //      Specifically this allows us to return a faulted task (call .fail on client) and to not cause the
                 //      transport to unintentionally fail.
-                methodDescriptor = new NullMethodDescriptor(descriptor, hubRequest.Method);
+                IEnumerable<MethodDescriptor> availableMethods = _manager.GetHubMethods(descriptor.Name, m => m.Name == hubRequest.Method);
+                methodDescriptor = new NullMethodDescriptor(descriptor, hubRequest.Method, availableMethods);
             }
 
             // Resolving the actual state object
