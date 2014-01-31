@@ -6,6 +6,7 @@ using Microsoft.AspNet.SignalR.Client.Transports.ServerSentEvents;
 using Microsoft.AspNet.SignalR.Hosting.Memory;
 using Microsoft.AspNet.SignalR.Infrastructure;
 using Microsoft.AspNet.SignalR.Tests.Common;
+using Microsoft.AspNet.SignalR.Tests.Common.Infrastructure;
 using Newtonsoft.Json;
 using Owin;
 using Xunit;
@@ -15,7 +16,7 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Server.Hubs
     public class SecurityFacts
     {
         [Fact]
-        public void GroupsTokenIsPerConnectionId()
+        public async Task GroupsTokenIsPerConnectionId()
         {
             using (var host = new MemoryHost())
             {
@@ -37,7 +38,7 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Server.Hubs
 
                 using (connection)
                 {
-                    var inGroup = new ManualResetEventSlim();
+                    var inGroup = new AsyncManualResetEvent();
 
                     connection.Received += data =>
                     {
@@ -47,20 +48,20 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Server.Hubs
                         }
                     };
 
-                    connection.Start(host).Wait();
+                    await connection.Start(host);
 
-                    inGroup.Wait();
+                    await inGroup.WaitAsync(TimeSpan.FromSeconds(10));
 
                     Assert.NotNull(connection.GroupsToken);
 
-                    var spyWh = new ManualResetEventSlim();
+                    var spyWh = new AsyncManualResetEvent();
                     var hackerConnection = new Client.Connection(connection.Url)
                     {
                         ConnectionId = "hacker"
                     };
 
                     var url = GetUrl(protectedData, connection, connection.GroupsToken);
-                    var response = host.Get(url, r => { }, isLongRunning: true).Result;
+                    var response = await host.Get(url, r => { }, isLongRunning: true);
                     var reader = new EventSourceStreamReader(hackerConnection, response.GetStream());
 
                     reader.Message = sseEvent =>
@@ -74,9 +75,9 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Server.Hubs
                     };
 
                     reader.Start();
-                    connection.Send("random").Wait();
+                    await connection.Send("random");
 
-                    Assert.False(spyWh.Wait(TimeSpan.FromSeconds(5)));
+                    Assert.False(await spyWh.WaitAsync(TimeSpan.FromSeconds(5)));
                 }
             }
         }

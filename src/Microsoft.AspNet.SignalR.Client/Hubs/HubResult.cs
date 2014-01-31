@@ -19,6 +19,12 @@ namespace Microsoft.AspNet.SignalR.Client.Hubs
         public string Id { get; set; }
 
         /// <summary>
+        /// The progress update of the invocation
+        /// </summary>
+        [JsonProperty("P")]
+        public HubProgressUpdate ProgressUpdate { get; set; }
+
+        /// <summary>
         /// The return value of the hub
         /// </summary>
         [JsonProperty("R")]

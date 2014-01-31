@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.md in the project root for license information.
 
+using System;
 using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR.Client.Hubs;
 using Newtonsoft.Json;
@@ -30,11 +31,31 @@ namespace Microsoft.AspNet.SignalR.Client
         /// <summary>
         /// Executes a method on the server side hub asynchronously.
         /// </summary>
-        /// <typeparam name="T">The type of result returned from the hub</typeparam>
+        /// <typeparam name="T">The type of result returned from the hub.</typeparam>
         /// <param name="method">The name of the method.</param>
         /// <param name="args">The arguments</param>
         /// <returns>A task that represents when invocation returned.</returns>
         Task<T> Invoke<T>(string method, params object[] args);
+
+        /// <summary>
+        /// Executes a method on the server side hub asynchronously with progress updates.
+        /// </summary>
+        /// <param name="method">The name of the method.</param>
+        /// <param name="onProgress">The callback to invoke when progress updates are received.</param>
+        /// <param name="args">The arguments</param>
+        /// <returns>A task that represents when invocation returned.</returns>
+        Task Invoke<T>(string method, Action<T> onProgress, params object[] args);
+
+        /// <summary>
+        /// Executes a method on the server side hub asynchronously with progress updates.
+        /// </summary>
+        /// <typeparam name="TResult">The type of result returned from the hub.</typeparam>
+        /// <typeparam name="TProgress">The type of progress update value.</typeparam>
+        /// <param name="method">The name of the method.</param>
+        /// <param name="onProgress">The callback to invoke when progress updates are received.</param>
+        /// <param name="args">The arguments</param>
+        /// <returns>A task that represents when invocation returned.</returns>
+        Task<TResult> Invoke<TResult, TProgress>(string method, Action<TProgress> onProgress, params object[] args);
 
         /// <summary>
         /// Registers an event for the hub.

@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.md in the project root for license information.
 
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
@@ -8,6 +9,7 @@ using System.Globalization;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR.Hosting;
 using Microsoft.AspNet.SignalR.Infrastructure;
@@ -158,6 +160,7 @@ namespace Microsoft.AspNet.SignalR.Hubs
             IJsonValue[] parameterValues = hubRequest.ParameterValues;
 
             // Resolve the method
+
             MethodDescriptor methodDescriptor = _manager.GetHubMethod(descriptor.Name, hubRequest.Method, parameterValues);
 
             if (methodDescriptor == null)
@@ -188,11 +191,21 @@ namespace Microsoft.AspNet.SignalR.Hubs
                                        HubRequest hubRequest,
                                        StateChangeTracker tracker)
         {
+            // TODO: Make adding parameters here pluggable? IValueProvider? ;)
+            HubInvocationProgress progress = GetProgressInstance(methodDescriptor, value => SendProgressUpdate(hub.Context.ConnectionId, tracker, value, hubRequest));
+            
             Task<object> piplineInvocation;
-
             try
             {
                 var args = _binder.ResolveMethodParameters(methodDescriptor, parameterValues);
+
+                // We need to add the IProgress<T> instance after resolving the method as the resolution
+                // itself looks for overload matches based on the incoming arg values
+                if (progress != null)
+                {
+                    args = args.Concat(new [] { progress }).ToList();
+                }
+
                 var context = new HubInvokerContext(hub, tracker, methodDescriptor, args);
 
                 // Invoke the pipeline and save the task
@@ -206,6 +219,12 @@ namespace Microsoft.AspNet.SignalR.Hubs
             // Determine if we have a faulted task or not and handle it appropriately.
             return piplineInvocation.ContinueWithPreservedCulture(task =>
             {
+                if (progress != null)
+                {
+                    // Stop ability to send any more progress updates
+                    progress.SetComplete();
+                }
+
                 if (task.IsFaulted)
                 {
                     return ProcessResponse(tracker, result: null, request: hubRequest, error: task.Exception);
@@ -220,6 +239,16 @@ namespace Microsoft.AspNet.SignalR.Hubs
                 }
             })
             .FastUnwrap();
+        }
+
+        private static HubInvocationProgress GetProgressInstance(MethodDescriptor methodDescriptor, Func<object, Task> sendProgressFunc)
+        {
+            HubInvocationProgress progress = null;
+            if (methodDescriptor.ProgressReportingType != null)
+            {
+                progress = HubInvocationProgress.Create(methodDescriptor.ProgressReportingType, sendProgressFunc);
+            }
+            return progress;
         }
 
         public override Task ProcessRequest(HostContext context)
@@ -465,6 +494,20 @@ namespace Microsoft.AspNet.SignalR.Hubs
             {
                 hub.Dispose();
             }
+        }
+
+        private Task SendProgressUpdate(string connectionId, StateChangeTracker tracker, object value, HubRequest request)
+        {
+            var hubResult = new HubResponse
+            {
+                State = tracker.GetChanges(),
+                Progress = new { I = request.Id, D = value },
+                // We prefix the ID here to ensure old clients treat this as a hub response
+                // but fail to lookup a corresponding callback and thus no-op
+                Id = "P|" + request.Id,
+            };
+
+            return Connection.Send(connectionId, hubResult);
         }
 
         private Task ProcessResponse(StateChangeTracker tracker, object result, HubRequest request, Exception error)

@@ -25,6 +25,7 @@ namespace Microsoft.AspNet.SignalR.Configuration
             ConnectionTimeout = TimeSpan.FromSeconds(110);
             DisconnectTimeout = TimeSpan.FromSeconds(30);
             DefaultMessageBufferSize = 1000;
+            MaxIncomingWebSocketMessageSize = 64 * 1024; // 64 KB
             TransportConnectTimeout = TimeSpan.FromSeconds(5);
             LongPollDelay = TimeSpan.Zero;
         }
@@ -83,6 +84,12 @@ namespace Microsoft.AspNet.SignalR.Configuration
         }
 
         public int DefaultMessageBufferSize
+        {
+            get;
+            set;
+        }
+
+        public int? MaxIncomingWebSocketMessageSize
         {
             get;
             set;

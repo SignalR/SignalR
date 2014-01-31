@@ -17,6 +17,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
 
         private List<Cursor> _cursors;
         private List<Topic> _cursorTopics;
+        private ulong[] _cursorsState;
 
         private readonly IStringMinifier _stringMinifier;
 
@@ -82,7 +83,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
             lock (_cursors)
             {
                 // O(n), but small n and it's not common
-                var index = _cursors.FindIndex(c => c.Key == eventKey);
+                var index = FindCursorIndex(eventKey);
                 if (index == -1)
                 {
                     _cursors.Add(new Cursor(eventKey, GetMessageId(topic), _stringMinifier.Minify(eventKey)));
@@ -102,7 +103,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
 
             lock (_cursors)
             {
-                var index = _cursors.FindIndex(c => c.Key == eventKey);
+                var index = FindCursorIndex(eventKey);
                 if (index != -1)
                 {
                     _cursors.RemoveAt(index);
@@ -118,7 +119,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
             lock (_cursors)
             {
                 // O(n), but small n and it's not common
-                var index = _cursors.FindIndex(c => c.Key == eventKey);
+                var index = FindCursorIndex(eventKey);
                 if (index != -1)
                 {
                     _cursorTopics[index] = topic;
@@ -141,11 +142,15 @@ namespace Microsoft.AspNet.SignalR.Messaging
 
             lock (_cursors)
             {
-                var cursors = new ulong[_cursors.Count];
+                // perf sensitive: re-use cursors array to minimize allocations
+                if ((_cursorsState == null) || (_cursorsState.Length != _cursors.Count))
+                {
+                    _cursorsState = new ulong[_cursors.Count];
+                }
                 for (int i = 0; i < _cursors.Count; i++)
                 {
                     MessageStoreResult<Message> storeResult = _cursorTopics[i].Store.GetMessages(_cursors[i].Id, MaxMessages);
-                    cursors[i] = storeResult.FirstMessageId + (ulong)storeResult.Messages.Count;
+                    _cursorsState[i] = storeResult.FirstMessageId + (ulong)storeResult.Messages.Count;
 
                     if (storeResult.Messages.Count > 0)
                     {
@@ -155,7 +160,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
                 }
 
                 // Return the state as a list of cursors
-                state = cursors;
+                state = _cursorsState;
             }
         }
 
@@ -177,7 +182,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
             lock (_cursors)
             {
                 // O(n), but small n and it's not common
-                var index = _cursors.FindIndex(c => c.Key == key);
+                var index = FindCursorIndex(key);
                 if (index != -1)
                 {
                     _cursors[index].Id = id;
@@ -186,6 +191,19 @@ namespace Microsoft.AspNet.SignalR.Messaging
 
                 return false;
             }
+        }
+
+        // perf: avoid List<T>.FindIndex which uses stateless predicate which requires closure
+        private int FindCursorIndex(string eventKey)
+        {
+            for (int i = 0; i < _cursors.Count; i++)
+            {
+                if (_cursors[i].Key == eventKey)
+                {
+                    return i;
+                }
+            }
+            return -1;
         }
 
         private List<Cursor> GetCursorsFromEventKeys(IList<string> eventKeys, TopicLookup topics)

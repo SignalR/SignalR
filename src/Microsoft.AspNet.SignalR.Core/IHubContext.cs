@@ -13,7 +13,7 @@ namespace Microsoft.AspNet.SignalR
         /// <summary>
         /// Encapsulates all information about a SignalR connection for an <see cref="IHub"/>.
         /// </summary>
-        IHubConnectionContext Clients { get; }
+        IHubConnectionContext<dynamic> Clients { get; }
 
         /// <summary>
         /// Gets the <see cref="IGroupManager"/> the hub.

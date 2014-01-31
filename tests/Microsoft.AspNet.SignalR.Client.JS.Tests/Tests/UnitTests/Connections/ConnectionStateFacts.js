@@ -26,17 +26,16 @@ QUnit.test("Connection State Values", function () {
 });
 
 QUnit.test("Changing State", function () {
-    var con = $.connection;
-    QUnit.equal(con.changeState(con.fn, con.connectionState.disconnected, con.connectionState.connecting), true, "Changes state from disconnected to connecting.");
-    QUnit.equal(con.changeState(con.fn, con.connectionState.connected, con.connectionState.reconnecting), false, "Changing state from connected to connecting when state is connecting.");
+    var con = testUtilities.createHubConnection(),
+        signalR = $.signalR;
 
-    con.fn.stateChanged(function (change) {
-        QUnit.equal(change.oldState, con.connectionState.connecting, "Verifies that the proper old state is passed to the stateChanged event handler.");
-        QUnit.equal(change.newState, con.connectionState.connected, "Verifies that the proper new state is passed to the stateChanged event handler.");
-        $(this).unbind(con.events.onStateChanged);
+    QUnit.equal(signalR.changeState(con, signalR.connectionState.disconnected, signalR.connectionState.connecting), true, "Changes state from disconnected to connecting.");
+    QUnit.equal(signalR.changeState(con, signalR.connectionState.connected, signalR.connectionState.reconnecting), false, "Changing state from connected to reconnecting when state is connecting.");
+
+    con.stateChanged(function (change) {
+        QUnit.equal(change.oldState, signalR.connectionState.connecting, "Verifies that the proper old state is passed to the stateChanged event handler.");
+        QUnit.equal(change.newState, signalR.connectionState.connected, "Verifies that the proper new state is passed to the stateChanged event handler.");
     });
-    con.changeState(con.fn, con.connectionState.connecting, con.connectionState.connected);
 
-    // Reset the connection state back to disconnected
-    con.changeState(con.fn, con.connectionState.connected, con.connectionState.disconnected);
+    signalR.changeState(con, signalR.connectionState.connecting, signalR.connectionState.connected);
 });

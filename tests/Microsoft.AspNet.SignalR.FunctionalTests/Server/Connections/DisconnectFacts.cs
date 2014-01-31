@@ -72,12 +72,12 @@ namespace Microsoft.AspNet.SignalR.Tests
         }
 
         [Fact]
-        public void DisconnectFiresForPersistentConnectionWhenClientGoesAway()
+        public async Task DisconnectFiresForPersistentConnectionWhenClientGoesAway()
         {
             using (var host = new MemoryHost())
             {
-                var connectWh = new ManualResetEventSlim();
-                var disconnectWh = new ManualResetEventSlim();
+                var connectWh = new AsyncManualResetEvent();
+                var disconnectWh = new AsyncManualResetEvent();
                 var dr = new DefaultDependencyResolver();
                 var configuration = dr.Resolve<IConfigurationManager>();
 
@@ -99,26 +99,26 @@ namespace Microsoft.AspNet.SignalR.Tests
                 // Maximum wait time for disconnect to fire (3 heart beat intervals)
                 var disconnectWait = TimeSpan.FromTicks(configuration.HeartbeatInterval().Ticks * 3);
 
-                connection.Start(host).Wait();
+                await connection.Start(host);
 
-                Assert.True(connectWh.Wait(TimeSpan.FromSeconds(10)), "Connect never fired");
+                Assert.True(await connectWh.WaitAsync(TimeSpan.FromSeconds(10)), "Connect never fired");
 
                 connection.Stop();
 
-                Assert.True(disconnectWh.Wait(disconnectWait), "Disconnect never fired");
+                Assert.True(await disconnectWh.WaitAsync(disconnectWait), "Disconnect never fired");
             }
         }
 
         [Fact]
-        public void DisconnectFiresForHubsWhenConnectionGoesAway()
+        public async Task DisconnectFiresForHubsWhenConnectionGoesAway()
         {
             using (var host = new MemoryHost())
             {
                 var dr = new DefaultDependencyResolver();
                 var configuration = dr.Resolve<IConfigurationManager>();
 
-                var connectWh = new ManualResetEventSlim();
-                var disconnectWh = new ManualResetEventSlim();
+                var connectWh = new AsyncManualResetEvent();
+                var disconnectWh = new AsyncManualResetEvent();
                 host.Configure(app =>
                 {
                     var config = new HubConfiguration
@@ -139,18 +139,18 @@ namespace Microsoft.AspNet.SignalR.Tests
                 // Maximum wait time for disconnect to fire (3 heart beat intervals)
                 var disconnectWait = TimeSpan.FromTicks(configuration.HeartbeatInterval().Ticks * 3);
 
-                connection.Start(host).Wait();
+                await connection.Start(host);
 
-                Assert.True(connectWh.Wait(TimeSpan.FromSeconds(10)), "Connect never fired");
+                Assert.True(await connectWh.WaitAsync(TimeSpan.FromSeconds(10)), "Connect never fired");
 
                 connection.Stop();
 
-                Assert.True(disconnectWh.Wait(disconnectWait), "Disconnect never fired");
+                Assert.True(await disconnectWh.WaitAsync(disconnectWait), "Disconnect never fired");
             }
         }
 
         [Fact]
-        public void FarmDisconnectOnlyRaisesEventOnce()
+        public async Task FarmDisconnectOnlyRaisesEventOnce()
         {
             EnableTracing();
 
@@ -190,17 +190,17 @@ namespace Microsoft.AspNet.SignalR.Tests
 
                 var connection = new Client.Connection("http://goo/echo");
 
-                connection.Start(transport).Wait();
+                await connection.Start(transport);
 
                 for (int i = 0; i < nodes.Count; i++)
                 {
                     nodes[i].Broadcast(String.Format("From Node {0}: {1}", i, i + 1));
-                    Thread.Sleep(TimeSpan.FromSeconds(1));
+                    await Task.Delay(TimeSpan.FromSeconds(1));
                 }
 
                 ((Client.IConnection)connection).Disconnect();
 
-                Thread.Sleep(TimeSpan.FromTicks(timeout.Ticks * nodes.Count));
+                await Task.Delay(TimeSpan.FromTicks(timeout.Ticks * nodes.Count));
 
                 Assert.Equal(1, nodes.Sum(n => n.Connection.DisconnectCount));
             }
@@ -287,10 +287,10 @@ namespace Microsoft.AspNet.SignalR.Tests
 
         public class MyHub : Hub
         {
-            private ManualResetEventSlim _connectWh;
-            private ManualResetEventSlim _disconnectWh;
+            private AsyncManualResetEvent _connectWh;
+            private AsyncManualResetEvent _disconnectWh;
 
-            public MyHub(ManualResetEventSlim connectWh, ManualResetEventSlim disconnectWh)
+            public MyHub(AsyncManualResetEvent connectWh, AsyncManualResetEvent disconnectWh)
             {
                 _connectWh = connectWh;
                 _disconnectWh = disconnectWh;
@@ -318,10 +318,10 @@ namespace Microsoft.AspNet.SignalR.Tests
 
         private class MyConnection : PersistentConnection
         {
-            private ManualResetEventSlim _connectWh;
-            private ManualResetEventSlim _disconnectWh;
+            private AsyncManualResetEvent _connectWh;
+            private AsyncManualResetEvent _disconnectWh;
 
-            public MyConnection(ManualResetEventSlim connectWh, ManualResetEventSlim disconnectWh)
+            public MyConnection(AsyncManualResetEvent connectWh, AsyncManualResetEvent disconnectWh)
             {
                 _connectWh = connectWh;
                 _disconnectWh = disconnectWh;

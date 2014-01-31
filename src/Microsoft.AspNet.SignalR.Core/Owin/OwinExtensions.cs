@@ -180,7 +180,7 @@ namespace Owin
 
                 if (resolver == null)
                 {
-                    throw new ArgumentException(Resources.Error_NoDepenendeyResolver);
+                    throw new ArgumentException(Resources.Error_NoDependencyResolver);
                 }
 
                 var env = builder.Properties;
