@@ -116,6 +116,16 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
 
                 // Create a client for this topic
                 TopicClient topicClient = TopicClient.CreateFromConnectionString(_connectionString, topicName);
+
+                if (_configuration.RetryPolicy != null)
+                {
+                    topicClient.RetryPolicy = _configuration.RetryPolicy;
+                }
+                else
+                {
+                    topicClient.RetryPolicy = RetryExponential.Default;
+                }
+
                 connectionContext.SetTopicClients(topicClient, topicIndex);
 
                 _trace.TraceInformation("Creation of a new topic client {0} completed successfully.", topicName);
