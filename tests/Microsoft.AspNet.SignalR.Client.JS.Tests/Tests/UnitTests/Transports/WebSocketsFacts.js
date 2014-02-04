@@ -19,7 +19,10 @@ QUnit.test("Pinging server with WebSockets uses correct URL", function () {
             baseUrl: "foo",
             appRelativeUrl: "bar",
             url: "correct",
-            transport: "webSockets"
+            transport: "webSockets",
+            _: {
+                activePings: {}
+            }
         },
         ajaxCalled = false;
 

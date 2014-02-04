@@ -251,6 +251,7 @@
             this._ = {
                 keepAliveData: {},
                 negotiateAbortText: "__Negotiate Aborted__",
+                pingAbortText: "__Ping Aborted__",
                 pingIntervalId: null,
                 pingInterval: 300000,
                 pollTimeoutId: null,
@@ -258,7 +259,9 @@
                 lastMessageAt: new Date().getTime(),
                 lastActiveAt: new Date().getTime(),
                 beatInterval: 5000, // Default value, will only be overridden if keep alive is enabled
-                beatHandle: null
+                beatHandle: null,
+                activePings: {},
+                nextPingId: 0
             };
             if (typeof (logging) === "boolean") {
                 this.logging = logging;
@@ -816,6 +819,11 @@
                     connection._.negotiateRequest.abort(connection._.negotiateAbortText);
                 delete connection._.negotiateRequest;
             }
+
+            $.each(connection._.activePings, function (i, pingXhr) {
+                connection.log("Aborting ping " + i + ".");
+                pingXhr.abort(connection._.pingAbortText);
+            });
 
             // Trigger the disconnect event
             $(connection).triggerHandler(events.onDisconnect);

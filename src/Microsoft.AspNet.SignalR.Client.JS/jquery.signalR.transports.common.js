@@ -75,12 +75,15 @@
             /// <summary>Pings the server</summary>
             /// <param name="connection" type="signalr">Connection associated with the server ping</param>
             /// <returns type="signalR" />
-            var url, deferral = $.Deferred();
+            var url,
+                deferral = $.Deferred(),
+                activePings = connection._.activePings,
+                pingId = connection._.nextPingId++;
 
             url = connection.url + "/ping";
             url = transportLogic.prepareQueryString(connection, url);
 
-            $.ajax(
+            activePings[pingId] = $.ajax(
                 $.extend({}, $.signalR.ajaxDefaults, {
                     xhrFields: { withCredentials: connection.withCredentials },
                     url: url,
@@ -107,14 +110,23 @@
                             deferral.reject("SignalR: Invalid ping response when pinging server: " + data.Response);
                         }
                     },
-                    error: function (error) {
+                    error: function (error, statusText) {
                         if (error.status === 401 || error.status === 403) {
                             deferral.reject("Failed to ping server. Server responded with a " + error.status + " status code, stopping the connection.");
                             connection.stop();
                         }
+                        else if (statusText === connection._.pingAbortText)
+                        {
+                            // We don't want to cause any errors if we're aborting our own ping request.
+                            // Don't reject or resolve the deferred, because we want the long-polling pingLoop to stop.
+                            connection.log("Ping " + pingId + " aborted.");
+                        }
                         else {
                             deferral.reject("SignalR: Error pinging server: " + (error.responseText || error.statusText));
                         }
+                    },
+                    complete: function () {
+                        delete activePings[pingId];
                     }
                 }));
 
