@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.md in the project root for license information.
 
 using System;
-using System.Collections.Specialized;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
@@ -17,12 +16,11 @@ namespace Microsoft.AspNet.SignalR.Transports
     public abstract class ForeverTransport : TransportDisconnectBase, ITransport
     {
         private readonly IPerformanceCounterManager _counters;
-        private JsonSerializer _jsonSerializer;
+        private readonly JsonSerializer _jsonSerializer;
         private string _lastMessageId;
+        private IDisposable _busRegistration;
 
-        private RequestLifetime _transportLifetime;
-
-        private const int MaxMessages = 10;
+        internal RequestLifetime _transportLifetime;
 
         protected ForeverTransport(HostContext context, IDependencyResolver resolver)
             : this(context,
@@ -42,6 +40,14 @@ namespace Microsoft.AspNet.SignalR.Transports
         {
             _jsonSerializer = jsonSerializer;
             _counters = performanceCounterWriter;
+        }
+
+        protected virtual int MaxMessages
+        {
+            get
+            {
+                return 10;
+            }
         }
 
         protected string LastMessageId
@@ -109,7 +115,7 @@ namespace Microsoft.AspNet.SignalR.Transports
         {
             Connection = connection;
 
-            if (Context.Request.LocalPath.EndsWith("/send", StringComparison.OrdinalIgnoreCase))
+            if (IsSendRequest)
             {
                 return ProcessSendRequest();
             }
@@ -160,7 +166,6 @@ namespace Microsoft.AspNet.SignalR.Transports
             return TaskAsyncHelper.Empty;
         }
 
-        
         protected void OnError(Exception ex)
         {
             IncrementErrors();
@@ -172,7 +177,7 @@ namespace Microsoft.AspNet.SignalR.Transports
             _transportLifetime.Complete(ex);
         }
 
-        private async Task ProcessSendRequest()
+        protected virtual async Task ProcessSendRequest()
         {
             INameValueCollection form = await Context.Request.ReadForm();
             string data = form["data"];
@@ -212,7 +217,7 @@ namespace Microsoft.AspNet.SignalR.Transports
                     return connected().Then((conn, id) => conn.Initialize(id), connection, ConnectionId);
                 };
             }
-            else
+            else if (!IsPollRequest)
             {
                 initialize = Reconnected;
             }
@@ -245,9 +250,7 @@ namespace Microsoft.AspNet.SignalR.Transports
             var cancelContext = new ForeverTransportContext(this, disposer);
 
             // Ensure delegate continues to use the C# Compiler static delegate caching optimization.
-            IDisposable registration = ConnectionEndToken.SafeRegister(state => Cancel(state), cancelContext);
-
-            var messageContext = new MessageContext(this, _transportLifetime, registration);
+            _busRegistration = ConnectionEndToken.SafeRegister(state => Cancel(state), cancelContext);
 
             if (BeforeReceive != null)
             {
@@ -258,13 +261,13 @@ namespace Microsoft.AspNet.SignalR.Transports
             {
                 // Ensure we enqueue the response initialization before any messages are received
                 EnqueueOperation(state => InitializeResponse((ITransportConnection)state), connection)
-                    .Catch((ex, state) => OnError(ex, state), messageContext);
+                    .Catch((ex, state) => ((ForeverTransport)state).OnError(ex), this);
 
                 // Ensure delegate continues to use the C# Compiler static delegate caching optimization.
                 IDisposable subscription = connection.Receive(LastMessageId,
-                                                              (response, state) => OnMessageReceived(response, state),
+                                                              (response, state) => ((ForeverTransport)state).OnMessageReceived(response),
                                                                MaxMessages,
-                                                               messageContext);
+                                                               this);
 
 
                 disposer.Set(subscription);
@@ -276,7 +279,7 @@ namespace Microsoft.AspNet.SignalR.Transports
 
                 // Ensure delegate continues to use the C# Compiler static delegate caching optimization.
                 initialize().Then(tcs => tcs.TrySetResult(null), InitializeTcs)
-                            .Catch((ex, state) => OnError(ex, state), messageContext);
+                            .Catch((ex, state) => ((ForeverTransport)state).OnError(ex), this);
             }
             catch (OperationCanceledException ex)
             {
@@ -303,52 +306,53 @@ namespace Microsoft.AspNet.SignalR.Transports
             ((IDisposable)context.State).Dispose();
         }
 
-        private static Task<bool> OnMessageReceived(PersistentResponse response, object state)
+        protected virtual Task<bool> OnMessageReceived(PersistentResponse response)
         {
-            var context = (MessageContext)state;
+            if (response == null)
+            {
+                throw new ArgumentNullException("response");
+            }
 
-            response.Reconnect = context.Transport.HostShutdownToken.IsCancellationRequested;
+            response.Reconnect = HostShutdownToken.IsCancellationRequested;
 
             // If we're telling the client to disconnect then clean up the instantiated connection.
             if (response.Disconnect)
             {
                 // Send the response before removing any connection data
-                return context.Transport.Send(response).Then(c => OnDisconnectMessage(c), context)
+                return Send(response).Then(state => ((ForeverTransport)state).OnDisconnectMessage(), this)
                                         .Then(() => TaskAsyncHelper.False);
             }
-            else if (context.Transport.IsTimedOut || response.Aborted)
+            else if (IsTimedOut || response.Aborted)
             {
-                context.Registration.Dispose();
+                _busRegistration.Dispose();
 
                 if (response.Aborted)
                 {
                     // If this was a clean disconnect raise the event.
-                    return context.Transport.Abort()
-                                            .Then(() => TaskAsyncHelper.False);
+                    return Abort().Then(() => TaskAsyncHelper.False);
                 }
             }
 
             if (response.Terminal)
             {
                 // End the request on the terminal response
-                context.Lifetime.Complete();
+                _transportLifetime.Complete();
 
                 return TaskAsyncHelper.False;
             }
 
             // Ensure delegate continues to use the C# Compiler static delegate caching optimization.
-            return context.Transport.Send(response)
-                                    .Then(() => TaskAsyncHelper.True);
+            return Send(response).Then(() => TaskAsyncHelper.True);
         }
 
-        private static void OnDisconnectMessage(MessageContext context)
+        private void OnDisconnectMessage()
         {
-            context.Transport.ApplyState(TransportConnectionStates.DisconnectMessageReceived);
+            ApplyState(TransportConnectionStates.DisconnectMessageReceived);
 
-            context.Registration.Dispose();
+            _busRegistration.Dispose();
 
             // Remove connection without triggering disconnect
-            context.Transport.Heartbeat.RemoveConnection(context.Transport);
+            Heartbeat.RemoveConnection(this);
         }
 
         private static Task PerformSend(object state)
@@ -368,13 +372,6 @@ namespace Microsoft.AspNet.SignalR.Transports
             return TaskAsyncHelper.Empty;
         }
 
-        private static void OnError(AggregateException ex, object state)
-        {
-            var context = (MessageContext)state;
-
-            context.Transport.OnError(ex);
-        }
-
         private class ForeverTransportContext
         {
             public object State;
@@ -387,21 +384,7 @@ namespace Microsoft.AspNet.SignalR.Transports
             }
         }
 
-        private class MessageContext
-        {
-            public ForeverTransport Transport;
-            public RequestLifetime Lifetime;
-            public IDisposable Registration;
-
-            public MessageContext(ForeverTransport transport, RequestLifetime lifetime, IDisposable registration)
-            {
-                Registration = registration;
-                Lifetime = lifetime;
-                Transport = transport;
-            }
-        }
-
-        private class RequestLifetime
+        internal class RequestLifetime
         {
             private readonly HttpRequestLifeTime _lifetime;
             private readonly ForeverTransport _transport;
