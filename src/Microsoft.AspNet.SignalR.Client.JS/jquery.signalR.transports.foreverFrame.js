@@ -75,7 +75,12 @@
                 };
 
             if (window.EventSource) {
-                connection.log("Since this browser supports SSE, you can prioritize SSE higher to use that instead.");
+                // If the browser supports SSE, don't use Forever Frame
+                if (onFailed) {
+                    connection.log("Forever Frames is not supported for browsers with SSE support.");
+                    onFailed();
+                }
+                return;
             }
 
             frame.setAttribute("data-signalr-connection-id", connection.id);
