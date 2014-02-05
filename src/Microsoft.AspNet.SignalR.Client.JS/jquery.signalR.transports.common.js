@@ -89,65 +89,63 @@
                         type: "GET",
                         contentType: connection.contentType,
                         data: {},
-                        dataType: connection.ajaxDataType,
-                        success: function (result) {
-                            var data;
-
-                            try {
-                                data = connection._parseResponse(result);
-                            }
-                            catch (error) {
-                                deferral.reject(
-                                    signalR._.transportError(
-                                        signalR.resources.pingServerFailedParse,
-                                        connection.transport,
-                                        error,
-                                        xhr
-                                    )
-                                );
-                                connection.stop();
-                                return;
-                            }
-
-                            if (data.Response === "pong") {
-                                deferral.resolve();
-                            }
-                            else {
-                                deferral.reject(
-                                    signalR._.transportError(
-                                        signalR._.format(signalR.resources.pingServerFailedInvalidResponse, result.responseText),
-                                        connection.transport,
-                                        null /* error */,
-                                        xhr
-                                    )
-                                );
-                            }
-                        },
-                        error: function (error) {
-                            if (error.status === 401 || error.status === 403) {
-                                deferral.reject(
-                                    signalR._.transportError(
-                                        signalR._.format(signalR.resources.pingServerFailedStatusCode, error.status),
-                                        connection.transport,
-                                        error,
-                                        xhr
-                                    )
-                                );
-                                connection.stop();
-                            }
-                            else {
-                                deferral.reject(
-                                    signalR._.transportError(
-                                        signalR.resources.pingServerFailed,
-                                        connection.transport,
-                                        error,
-                                        xhr
-                                    )
-                                );
-                            }
-                        }
+                        dataType: connection.ajaxDataType
                     }
-                ));
+                )).done(function (result) {
+                    var data;
+
+                    try {
+                        data = connection._parseResponse(result);
+                    }
+                    catch (error) {
+                        deferral.reject(
+                            signalR._.transportError(
+                                signalR.resources.pingServerFailedParse,
+                                connection.transport,
+                                error,
+                                xhr
+                            )
+                        );
+                        connection.stop();
+                        return;
+                    }
+
+                    if (data.Response === "pong") {
+                        deferral.resolve();
+                    }
+                    else {
+                        deferral.reject(
+                            signalR._.transportError(
+                                signalR._.format(signalR.resources.pingServerFailedInvalidResponse, result.responseText),
+                                connection.transport,
+                                null /* error */,
+                                xhr
+                            )
+                        );
+                    }
+                }).fail( function (error) {
+                    if (error.status === 401 || error.status === 403) {
+                        deferral.reject(
+                            signalR._.transportError(
+                                signalR._.format(signalR.resources.pingServerFailedStatusCode, error.status),
+                                connection.transport,
+                                error,
+                                xhr
+                            )
+                        );
+                        connection.stop();
+                    }
+                    else {
+                        deferral.reject(
+                            signalR._.transportError(
+                                signalR.resources.pingServerFailed,
+                                connection.transport,
+                                error,
+                                xhr
+                            )
+                        );
+                    }
+                });
 
             }
             else {
@@ -268,34 +266,32 @@
                     data: {
                         data: payload
                     },
-                    success: function (result) {
-                        var res;
-
-                        if (result) {
-                            try {
-                                res = connection._parseResponse(result);
-                            }
-                            catch (error) {
-                                onFail(error, connection);
-                                connection.stop();
-                                return;
-                            }
-
-                            transportLogic.triggerReceived(connection, res);
-                        }
-                    },
-                    error: function (error, textStatus) {
-                        if (textStatus === "abort" || textStatus === "parsererror") {
-                            // The parsererror happens for sends that don't return any data, and hence
-                            // don't write the jsonp callback to the response. This is harder to fix on the server
-                            // so just hack around it on the client for now.
-                            return;
-                        }
-
-                        onFail(error, connection);
-                    }
                 }
-            ));
+            )).done(function (result) {
+                var res;
+
+                if (result) {
+                    try {
+                        res = connection._parseResponse(result);
+                    }
+                    catch (error) {
+                        onFail(error, connection);
+                        connection.stop();
+                        return;
+                    }
+
+                    transportLogic.triggerReceived(connection, res);
+                }
+            }).fail(function (error, textStatus) {
+                if (textStatus === "abort" || textStatus === "parsererror") {
+                    // The parsererror happens for sends that don't return any data, and hence
+                    // don't write the jsonp callback to the response. This is harder to fix on the server
+                    // so just hack around it on the client for now.
+                    return;
+                }
+
+                onFail(error, connection);
+            });
 
             return xhr;
         },
