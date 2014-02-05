@@ -41,7 +41,7 @@ namespace Microsoft.AspNet.SignalR.Hubs
 
         private IEnumerable<string> GetAvailableMethodSignatures()
         {
-            return _availableMethods.Select(m => m.Name + "(" + string.Join(", ", m.Parameters.Select(p => p.Name + ":" + p.ParameterType.Name)) + "):" + m.ReturnType.Name);
+            return _availableMethods.Select(m => m.Name + "(" + String.Join(", ", m.Parameters.Select(p => p.Name + ":" + p.ParameterType.Name)) + "):" + m.ReturnType.Name);
         }
 
         public override IList<ParameterDescriptor> Parameters
