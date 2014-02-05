@@ -30,7 +30,7 @@
                 pingFail = function (reason) {
                     if (isDisconnecting(connection) === false) {
                         connection.log("Server ping failed because '" + reason + "', re-trying ping.");
-                        window.setTimeout(pingLoop, that.reconnectDelay);
+                        connection._.pingLoopId = window.setTimeout(pingLoop, that.reconnectDelay);
                     }
                 };
 
