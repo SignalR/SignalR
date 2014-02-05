@@ -59,7 +59,9 @@
     signalR.transports.foreverFrame = {
         name: "foreverFrame",
 
-        supportsKeepAlive: true,
+        supportsKeepAlive: function () {
+            return true;
+        },
 
         // Added as a value here so we can create tests to verify functionality
         iframeClearThreshold: 50,

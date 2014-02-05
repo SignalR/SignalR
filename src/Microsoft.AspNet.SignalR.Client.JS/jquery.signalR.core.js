@@ -94,6 +94,11 @@
         isDisconnecting = function (connection) {
             return connection.state === signalR.connectionState.disconnected;
         },
+        
+        supportsKeepAlive = function (connection) {
+            return connection._.keepAliveData.activated &&
+                   connection.transport.supportsKeepAlive(connection);
+        },
 
         configureStopReconnectingTimeout = function (connection) {
             var stopReconnectingTimeout,
@@ -589,7 +594,7 @@
 
                             window.clearTimeout(connection._.onFailedTimeoutHandle);
 
-                            if (transport.supportsKeepAlive && connection._.keepAliveData.activated) {
+                            if (supportsKeepAlive(connection)) {
                                 signalR.transports._logic.monitorKeepAlive(connection);
                             }
 
@@ -923,7 +928,7 @@
                     connection.transport.abort(connection, async);
                 }
 
-                if (connection.transport.supportsKeepAlive && connection._.keepAliveData.activated) {
+                if (supportsKeepAlive(connection)) {
                     signalR.transports._logic.stopMonitoringKeepAlive(connection);
                 }
 

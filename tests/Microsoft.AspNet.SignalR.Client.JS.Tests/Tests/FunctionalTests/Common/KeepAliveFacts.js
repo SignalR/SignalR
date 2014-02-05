@@ -1,22 +1,6 @@
-﻿QUnit.module("Transports Common - Keep Alive Facts", testUtilities.transports.longPolling.enabled);
+﻿QUnit.module("Transports Common - Keep Alive Facts");
 
-QUnit.asyncTimeoutTest("Long polling transport does not check keep alive.", testUtilities.defaultTestTimeout, function (end, assert, testName) {
-    var connection = testUtilities.createHubConnection(end, assert, testName);
-
-    connection.start({ transport: "longPolling" }).done(function () {
-        assert.ok(true, "Connected.");
-        assert.ok(!connection._.keepAliveData.monitoring, "We should not be monitoring the keep alive for the long polling transport.");
-        end();
-    });
-
-    return function () {
-        connection.stop();
-    };
-});
-
-QUnit.module("Transports Common - Keep Alive Facts");
-
-testUtilities.runWithTransports(["foreverFrame", "serverSentEvents", "webSockets"], function (transport) {
+testUtilities.runWithAllTransports(function (transport) {
     QUnit.asyncTimeoutTest(transport + " transport attempts to check keep alive.", testUtilities.defaultTestTimeout, function (end, assert, testName) {
         var connection = testUtilities.createHubConnection(end, assert, testName);
 
