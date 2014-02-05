@@ -174,16 +174,32 @@ namespace Microsoft.AspNet.SignalR.Transports
             }
         }
 
+        public virtual bool RequiresTimeout
+        {
+            get
+            {
+                return false;
+            }
+        }
+
         public virtual TimeSpan DisconnectThreshold
         {
             get { return TimeSpan.FromSeconds(5); }
         }
 
-        public virtual bool IsConnectRequest
+        protected bool IsConnectRequest
         {
             get
             {
                 return Context.Request.LocalPath.EndsWith("/connect", StringComparison.OrdinalIgnoreCase);
+            }
+        }
+
+        protected bool IsSendRequest
+        {
+            get
+            {
+                return Context.Request.LocalPath.EndsWith("/send", StringComparison.OrdinalIgnoreCase);
             }
         }
 
@@ -192,6 +208,14 @@ namespace Microsoft.AspNet.SignalR.Transports
             get
             {
                 return Context.Request.LocalPath.EndsWith("/abort", StringComparison.OrdinalIgnoreCase);
+            }
+        }
+
+        protected virtual bool IsPollRequest
+        {
+            get
+            {
+                return false;
             }
         }
 
@@ -321,6 +345,11 @@ namespace Microsoft.AspNet.SignalR.Transports
         }
 
         protected virtual internal Task EnqueueOperation(Func<object, Task> writeAsync, object state)
+        {
+            return EnqueueOperationCore(writeAsync, state);
+        }
+
+        protected internal Task EnqueueOperationCore(Func<object, Task> writeAsync, object state)
         {
             if (!IsAlive)
             {
