@@ -13,9 +13,11 @@ namespace Microsoft.AspNet.SignalR.Hubs
 
         private string _methodName;
 
-        public NullMethodDescriptor(string methodName)
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2214:DoNotCallOverridableMethodsInConstructors")]
+        public NullMethodDescriptor(HubDescriptor descriptor, string methodName)
         {
             _methodName = methodName;
+            Hub = descriptor;
         }
 
         public override Func<IHub, object[], object> Invoker
