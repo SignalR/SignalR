@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR.Client.Http;
 using Microsoft.AspNet.SignalR.Client.Transports;
 using Moq;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Xunit;
 using Xunit.Extensions;
@@ -72,6 +73,7 @@ namespace Microsoft.AspNet.SignalR.Client.Tests
             bool timedOut, disconnected;
             var ex = new Exception();
             var connection = new Mock<Client.IConnection>(MockBehavior.Strict);
+            connection.SetupGet(c => c.JsonSerializer).Returns(JsonSerializer.CreateDefault());
             connection.Setup(c => c.OnReceived(It.IsAny<JToken>())).Throws(ex);
             connection.Setup(c => c.OnError(ex));
             connection.Setup(c => c.MarkLastMessage());
@@ -212,6 +214,7 @@ namespace Microsoft.AspNet.SignalR.Client.Tests
                     connection.SetupGet(c => c.Url).Returns("");
                     connection.SetupGet(c => c.QueryString).Returns("");
                     connection.SetupGet(c => c.ConnectionToken).Returns("");
+                    connection.SetupGet(c => c.JsonSerializer).Returns(JsonSerializer.CreateDefault());
                     connection.Setup(c => c.OnReceived(It.IsAny<JToken>())).Throws(ex);
                     connection.Setup(c => c.OnError(It.IsAny<AggregateException>())).Callback<Exception>(e =>
                     {
