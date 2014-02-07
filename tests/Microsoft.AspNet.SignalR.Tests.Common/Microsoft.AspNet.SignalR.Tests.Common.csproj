@@ -160,6 +160,7 @@
     <Compile Include="Hubs\ClientCallbackHub.cs" />
     <Compile Include="Hubs\ConnectionDataVerifierHub.cs" />
     <Compile Include="Hubs\DelayedOnConnectedHub.cs" />
+    <Compile Include="Hubs\DateAsStringHub.cs" />
     <Compile Include="Hubs\EchoHub.cs" />
     <Compile Include="Hubs\ExamineHeadersHub.cs" />
     <Compile Include="Hubs\GroupJoiningHub.cs" />

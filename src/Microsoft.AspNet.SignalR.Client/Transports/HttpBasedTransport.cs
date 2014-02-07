@@ -107,7 +107,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
                                   {
                                       connection.Trace(TraceLevels.Messages, "OnMessage({0})", raw);
 
-                                      connection.OnReceived(JObject.Parse(raw));
+                                      connection.OnReceived(connection.JsonDeserializeObject<JObject>(raw));
                                   }
                               })
                               .Catch(connection.OnError);

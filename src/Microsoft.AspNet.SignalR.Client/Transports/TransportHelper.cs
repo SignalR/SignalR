@@ -168,7 +168,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
 
             try
             {
-                var result = JValue.Parse(response);
+                var result = connection.JsonDeserializeObject<JObject>(response);
 
                 if (!result.HasValues)
                 {
