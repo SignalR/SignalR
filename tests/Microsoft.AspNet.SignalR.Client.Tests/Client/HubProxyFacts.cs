@@ -113,6 +113,7 @@ namespace Microsoft.AspNet.SignalR.Client.Tests
             });
 
             hubProxy.InvokeEvent("foo", new JToken[] { });
+            Thread.Sleep(100);
             Assert.True(eventRaised);
         }
 
@@ -132,6 +133,7 @@ namespace Microsoft.AspNet.SignalR.Client.Tests
             });
 
             hubProxy.InvokeEvent("foo", new[] { JToken.FromObject(1) });
+            Thread.Sleep(100);
             Assert.True(eventRaised);
         }
 
