@@ -84,7 +84,8 @@ namespace Microsoft.AspNet.SignalR.SqlServer
 
                 try
                 {
-                    _lastPayloadId = (long?)lastPayloadIdOperation.ExecuteScalar();
+                    var lastPayloadId = (long?)lastPayloadIdOperation.ExecuteScalar();
+                    _lastPayloadId = lastPayloadId.HasValue ? lastPayloadId : 0;
                     Queried();
 
                     // Complete the StartReceiving task as we've successfully initialized the payload ID
