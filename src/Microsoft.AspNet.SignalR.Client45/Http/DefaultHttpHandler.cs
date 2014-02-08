@@ -43,9 +43,9 @@ namespace Microsoft.AspNet.SignalR.Client.Http
             }
 
 #if !PORTABLE
-            if (Proxy != null)
+            if (_connection.Proxy != null)
             {
-                Proxy = Proxy;
+                Proxy = _connection.Proxy;
             }
 #endif
 
