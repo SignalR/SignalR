@@ -390,7 +390,9 @@
 
         reconnectDelay: 2000,
 
-        transportConnectTimeout: 0, // This will be modified by the server in respone to the negotiate request.  It will add any value sent down from the server to the client value.
+        transportConnectTimeout: 0,
+
+        _totalTransportConnectTimeout: 0, // This will add the value TransportConnectTimeout sent down from the server in respone to the negotiate request and the client value transportConnectTimeout
 
         disconnectTimeout: 30000, // This should be set by the server in response to the negotiate request (30s default)
 
@@ -569,7 +571,7 @@
                     connection._.onFailedTimeoutHandle = window.setTimeout(function () {
                         connection.log(transport.name + " timed out when trying to connect.");
                         onFailed();
-                    }, connection.transportConnectTimeout);
+                    }, connection._totalTransportConnectTimeout);
 
                     transport.start(connection, function () { // success
                         // Firefox 11+ doesn't allow sync XHR withCredentials: https://developer.mozilla.org/en-US/docs/Web/API/XMLHttpRequest#withCredentials
@@ -697,7 +699,7 @@
                         connection.disconnectTimeout = res.DisconnectTimeout * 1000; // in ms
 
                         // If the connection already has a transportConnectTimeout set then keep it, otherwise use the servers value.
-                        connection.transportConnectTimeout = connection.transportConnectTimeout + res.TransportConnectTimeout * 1000;
+                        connection._totalTransportConnectTimeout = connection.transportConnectTimeout + res.TransportConnectTimeout * 1000;
 
                         // If we have a keep alive
                         if (res.KeepAliveTimeout) {
