@@ -799,7 +799,7 @@
 
             window.clearTimeout(connection._.beatHandle);
             window.clearInterval(connection._.pingIntervalId);
-            window.clearInterval(connection._.pingLoopId);
+            window.clearTimeout(connection._.pingLoopId);
 
             if (connection.transport) {
                 if (notifyServer !== false) {
