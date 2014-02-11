@@ -332,7 +332,8 @@
                 lastMessageAt: new Date().getTime(),
                 lastActiveAt: new Date().getTime(),
                 beatInterval: 5000, // Default value, will only be overridden if keep alive is enabled,
-                beatHandle: null
+                beatHandle: null,
+                totalTransportConnectTimeout: 0 // This will be the sum of the TransportConnectTimeout sent in response to negotiate and connection.transportConnectTimeout
             };
             if (typeof (logging) === "boolean") {
                 this.logging = logging;
@@ -391,8 +392,6 @@
         reconnectDelay: 2000,
 
         transportConnectTimeout: 0,
-
-        _totalTransportConnectTimeout: 0, // This will add the value TransportConnectTimeout sent down from the server in respone to the negotiate request and the client value transportConnectTimeout
 
         disconnectTimeout: 30000, // This should be set by the server in response to the negotiate request (30s default)
 
@@ -571,7 +570,7 @@
                     connection._.onFailedTimeoutHandle = window.setTimeout(function () {
                         connection.log(transport.name + " timed out when trying to connect.");
                         onFailed();
-                    }, connection._totalTransportConnectTimeout);
+                    }, connection._.totalTransportConnectTimeout);
 
                     transport.start(connection, function () { // success
                         // Firefox 11+ doesn't allow sync XHR withCredentials: https://developer.mozilla.org/en-US/docs/Web/API/XMLHttpRequest#withCredentials
@@ -698,8 +697,8 @@
                         // after res.DisconnectTimeout seconds.
                         connection.disconnectTimeout = res.DisconnectTimeout * 1000; // in ms
 
-                        // If the connection already has a transportConnectTimeout set then keep it, otherwise use the servers value.
-                        connection._totalTransportConnectTimeout = connection.transportConnectTimeout + res.TransportConnectTimeout * 1000;
+                        // Add the TransportConnectTimeout from the response to the transportConnectTimeout from the client to calculate the total timeout
+                        connection._.totalTransportConnectTimeout = connection.transportConnectTimeout + res.TransportConnectTimeout * 1000;
 
                         // If we have a keep alive
                         if (res.KeepAliveTimeout) {
