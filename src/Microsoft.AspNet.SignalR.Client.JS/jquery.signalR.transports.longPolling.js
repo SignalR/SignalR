@@ -30,7 +30,13 @@
         name: "longPolling",
 
         supportsKeepAlive: function (connection) {
-            return browserSupportsXHRProgress && connection.ajaxDataType !== "jsonp";
+            return browserSupportsXHRProgress &&
+                   connection.ajaxDataType !== "jsonp" &&
+                   // Don't check for keep alives if there is a delay configured between poll requests.
+                   // Don't check for keep alives if the server didn't send back the "LongPollDelay" as
+                   // part of the response to /negotiate. That indicates the server is running an older
+                   // version of SignalR that doesn't send long polling keep alives.
+                   connection._.longPollDelay === 0;
         },
 
         reconnectDelay: 3000,
@@ -235,7 +241,9 @@
         },
 
         lostConnection: function (connection) {
-            connection.pollXhr.abort("lostConnection");
+            if (connection.pollXhr) {
+                connection.pollXhr.abort("lostConnection");
+            }
         },
 
         send: function (connection, data) {

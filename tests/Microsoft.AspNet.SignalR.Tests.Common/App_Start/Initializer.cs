@@ -6,8 +6,8 @@ using System.IO;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using System.Web;
-using System.Web.Cors;
 using System.Web.Routing;
+using Microsoft.AspNet.SignalR.Configuration;
 using Microsoft.AspNet.SignalR.Infrastructure;
 using Microsoft.AspNet.SignalR.StressServer.Connections;
 using Microsoft.AspNet.SignalR.Tests.Common;
@@ -277,6 +277,19 @@ namespace Microsoft.AspNet.SignalR.Tests.Common
                 });
                 map.MapSignalR<ExamineReconnectPath>("/examine-reconnect", config);
                 map.MapSignalR(hubConfig);
+            });
+
+            var longPollDelayResolver = new DefaultDependencyResolver();
+            var configManager = longPollDelayResolver.Resolve<IConfigurationManager>();
+
+            configManager.LongPollDelay = TimeSpan.FromSeconds(60);
+            // Make the disconnect timeout and the keep alive interval short so we can
+            // complete our tests quicker.
+            configManager.DisconnectTimeout = TimeSpan.FromSeconds(6);
+
+            app.MapSignalR<EchoConnection>("/longPollDelay", new ConnectionConfiguration
+            {
+                Resolver = longPollDelayResolver
             });
 
             // Perf/stress test related
