@@ -43,7 +43,11 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
         {
             get
             {
-                return true;
+                // Don't check for keep alives if the server didn't send back the "LongPollDelay" as
+                // part of the response to /negotiate. That indicates the server is running an older
+                // version of SignalR that doesn't send long polling keep alives.
+                return NegotiationResponse != null &&
+                       NegotiationResponse.LongPollDelay.HasValue;
             }
         }
 

@@ -99,6 +99,33 @@ QUnit.asyncTimeoutTest("Starting and stopping repeatedly doesn't result in multi
     };
 });
 
+QUnit.asyncTimeoutTest("LongPollDelays do not cause keep alive timeouts", testUtilities.defaultTestTimeout * 3, function (end, assert, testName) {
+    var connection = testUtilities.createConnection("/longPollDelay", end, assert, testName, undefined, false),
+        transport = { transport: "longPolling" };
+
+    connection.connectionSlow(function () {
+        assert.fail("connectionSlow fired with a non-zero LongPollDelay")
+        end();
+    });
+
+    connection.reconnecting(function () {
+        assert.fail("The connection started reconnecting.")
+        end();
+    });
+
+    connection.start(transport).done(function () {
+        setTimeout(function () {
+            assert.equal(connection.state, $.signalR.connectionState.connected, "The connection did not stay connected.");
+            end();
+        }, 5000);
+    });
+
+    // Cleanup
+    return function () {
+        connection.stop();
+    };
+});
+
 // TODO: Investigate why these tests don't work in phantom.js. Seems like jsonp is borked in phantom
 QUnit.module("JSONP Facts", testUtilities.transports.longPolling.enabled && !window.document.commandLineTest);
 
