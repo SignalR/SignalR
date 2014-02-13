@@ -587,12 +587,6 @@
 
                             window.clearTimeout(connection._.onFailedTimeoutHandle);
 
-                            if (transport.supportsKeepAlive && connection._.keepAliveData.activated) {
-                                signalR.transports._logic.monitorKeepAlive(connection);
-                            }
-
-                            signalR.transports._logic.startHeartbeat(connection);
-
                             // Used to ensure low activity clients maintain their authentication.
                             // Must be configured once a transport has been decided to perform valid ping requests.
                             signalR._.configurePingInterval(connection);
@@ -603,8 +597,15 @@
 
                             // Drain any incoming buffered messages (messages that came in prior to connect)
                             connection._.connectingMessageBuffer.drain();
+                            
+                            if (transport.supportsKeepAlive && connection._.keepAliveData.activated) {
+                                signalR.transports._logic.monitorKeepAlive(connection);
+                            }
+                            
+                            signalR.transports._logic.startHeartbeat(connection);
 
                             $(connection).triggerHandler(events.onStart);
+
 
                             // wire the stop handler for when the user leaves the page
                             _pageWindow.bind("unload", function () {
