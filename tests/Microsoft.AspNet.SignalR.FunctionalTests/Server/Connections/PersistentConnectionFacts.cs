@@ -84,7 +84,7 @@ namespace Microsoft.AspNet.SignalR.Tests
 
                     ProcessRequest(host, "longPolling", id);
 
-                    Task.WaitAll(tasks.ToArray());
+                    Assert.True(Task.WaitAll(tasks.ToArray(), TimeSpan.FromSeconds(30)));
 
                     Assert.True(tasks.All(t => !t.IsFaulted));
                 }
