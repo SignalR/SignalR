@@ -51,12 +51,10 @@ namespace Microsoft.AspNet.SignalR.Client
         }
 
         /// <summary>
-        /// Updates LastKeepAlive and starts the timer
+        /// Starts the timer that triggers heartbeats  
         /// </summary>
         public void Start()
         {
-            _connection.MarkLastMessage();
-            _connection.MarkActive();
             _monitorKeepAlive = _connection.KeepAliveData != null && _connection.Transport.SupportsKeepAlive;
 
             HasBeenWarned = false;
