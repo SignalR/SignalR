@@ -1,8 +1,9 @@
 ﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.md in the project root for license information.
 
 using System;
-using System.Collections.Generic;
+using System.Collections.Concurrent;
 using System.ComponentModel.Composition;
+using System.Diagnostics;
 using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR.Client;
 using Microsoft.AspNet.SignalR.Client.Hubs;
@@ -14,20 +15,21 @@ namespace Microsoft.AspNet.SignalR.Stress.Performance
     {
         private HubConnection[] _connections;
         private IHubProxy[] _proxies;
-        private bool _startedSampling;
+        private bool _sampling;
         private string _categoryString;
-        
-#if !PERFRUN
-        List<long> _latencySamples = new List<long>();
-#endif
+        private TaskCompletionSource<bool>[] _callbacks;
+        private ConcurrentBag<long> _latencySamples = new ConcurrentBag<long>();
 
         [ImportingConstructor]
         public SimpleEchoHubRun(RunData runData)
             : base(runData)
         {
-            _categoryString = String.Format("{0};{1}", ScenarioName, "Latency in Milliseconds");
+            Debug.Assert(Connections == Senders);
+
+            _categoryString = String.Format("{0};{1}", ScenarioName, "Latency;Milliseconds");
             _connections = new HubConnection[Connections];
             _proxies = new HubProxy[Connections];
+            _callbacks = new TaskCompletionSource<bool>[Connections];
         }
 
         public override void Initialize()
@@ -46,23 +48,20 @@ namespace Microsoft.AspNet.SignalR.Stress.Performance
             HubConnection connection = _connections[connectionIndex];
             IHubProxy proxy = connection.CreateHubProxy("SimpleEchoHub");
 
-            proxy.On<string>("echo", message =>
+            proxy.On<long>("echo", startTicks =>
             {
-                if (_startedSampling)
+                if (_sampling)
                 {
-                    // now we can measure the latency
-                    DateTime receiveTime = DateTime.UtcNow;
-                    DateTime sentTime = Convert.ToDateTime(message);
-                    TimeSpan latency = receiveTime - sentTime;
+                    var elapsedMilliseconds = Math.Round((double)(DateTime.UtcNow.Ticks - startTicks) / TimeSpan.TicksPerMillisecond);
 #if PERFRUN
-                    Microsoft.VisualStudio.Diagnostics.Measurement.MeasurementBlock.Mark((ulong)latency.TotalMilliseconds, _categoryString);
-#else
-                    _latencySamples.Add((long)latency.TotalMilliseconds);
+                    Microsoft.VisualStudio.Diagnostics.Measurement.MeasurementBlock.Mark((ulong)elapsedMilliseconds, _categoryString);
 #endif
+                    _latencySamples.Add((long)elapsedMilliseconds);
                 }
+                _callbacks[connectionIndex].SetResult(true);
             });
 
-            connection.Start(Host.Transport).Wait();
+            connection.Start(Host.TransportFactory()).Wait();
 
             _proxies[connectionIndex] = proxy;
 
@@ -71,24 +70,23 @@ namespace Microsoft.AspNet.SignalR.Stress.Performance
 
         public override void Record()
         {
+            _sampling = false;
             base.Record();
-
-#if !PERFRUN
             base.RecordAggregates(_categoryString, _latencySamples.ToArray());
-#endif
         }
 
         public override void Sample()
         {
-            _startedSampling = true;
+            _sampling = true;
 
             base.Sample();
         }
 
-        // client sends message. Note senderIndex could be smaller than the #connections
-        protected override Task Send(int senderIndex, string source)
+        protected override async Task Send(int senderIndex, string source)
         {
-            return _proxies[senderIndex].Invoke("Echo", DateTime.UtcNow);
+            _callbacks[senderIndex] = new TaskCompletionSource<bool>();
+            await _proxies[senderIndex].Invoke("Echo", DateTime.UtcNow.Ticks);
+            await _callbacks[senderIndex].Task;
         }
     }
 }

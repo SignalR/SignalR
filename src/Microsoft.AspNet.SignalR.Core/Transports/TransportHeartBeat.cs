@@ -317,10 +317,10 @@ namespace Microsoft.AspNet.SignalR.Transports
                 return false;
             }
 
+            // If keep alives are enabled and the transport doesn't require timeouts,
+            // i.e. anything but long-polling, don't ever timeout.
             var keepAlive = _configurationManager.KeepAlive;
-            // If keep alive is configured and the connection supports keep alive
-            // don't ever time out
-            if (keepAlive != null && metadata.Connection.SupportsKeepAlive)
+            if (keepAlive != null && !metadata.Connection.RequiresTimeout)
             {
                 return false;
             }

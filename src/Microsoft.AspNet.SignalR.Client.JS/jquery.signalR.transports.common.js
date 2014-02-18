@@ -73,7 +73,9 @@
             /// <summary>Pings the server</summary>
             /// <param name="connection" type="signalr">Connection associated with the server ping</param>
             /// <returns type="signalR" />
-            var url, deferral = $.Deferred(), xhr;
+            var url,
+                xhr,
+                deferral = $.Deferred();
 
             if (connection.transport) {
                 url = connection.url + "/ping";

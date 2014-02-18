@@ -7,16 +7,15 @@ using Microsoft.AspNet.SignalR.Hosting;
 
 namespace Microsoft.AspNet.SignalR.WebSockets
 {
-    internal class DefaultWebSocketHandler : WebSocketHandler, IWebSocket
+    public class DefaultWebSocketHandler : WebSocketHandler, IWebSocket
     {
-        // 64KB default max incoming message size
-        private const int _maxIncomingMessageSize = 64 * 1024;
-        private static readonly byte[] _zeroByteBuffer = new byte[0];
         private readonly IWebSocket _webSocket;
         private volatile bool _closed;
 
-        public DefaultWebSocketHandler()
-            : base(_maxIncomingMessageSize)
+        internal ArraySegment<byte> NextMessageToSend { get; private set; }
+
+        public DefaultWebSocketHandler(int? maxIncomingMessageSize)
+            : base(maxIncomingMessageSize)
         {
             _webSocket = this;
 
@@ -92,7 +91,17 @@ namespace Microsoft.AspNet.SignalR.WebSockets
                 return TaskAsyncHelper.Empty;
             }
 
-            return SendAsync(message, WebSocketMessageType.Text, endOfMessage: false);
+            if (NextMessageToSend.Count == 0)
+            {
+                NextMessageToSend = message;
+                return TaskAsyncHelper.Empty;
+            }
+            else
+            {
+                ArraySegment<byte> messageToSend = NextMessageToSend;
+                NextMessageToSend = message;
+                return SendAsync(messageToSend, WebSocketMessageType.Text, endOfMessage: false);
+            }
         }
 
         public Task Flush()
@@ -102,7 +111,10 @@ namespace Microsoft.AspNet.SignalR.WebSockets
                 return TaskAsyncHelper.Empty;
             }
 
-            return SendAsync(new ArraySegment<byte>(_zeroByteBuffer), WebSocketMessageType.Text, endOfMessage: true);
+            var messageToSend = NextMessageToSend;
+            NextMessageToSend = new ArraySegment<byte>();
+
+            return SendAsync(messageToSend, WebSocketMessageType.Text, endOfMessage: true);
         }
     }
 }

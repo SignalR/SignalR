@@ -15,7 +15,7 @@ namespace Microsoft.AspNet.SignalR.Tests
         [Theory]
         [InlineData(HostType.IISExpress, TransportType.Websockets)]
         [InlineData(HostType.HttpListener, TransportType.Websockets)]
-        public void ClientCanReceiveMessagesOver64KBViaWebSockets(HostType hostType, TransportType transportType)
+        public async Task ClientCanReceiveMessagesOver64KBViaWebSockets(HostType hostType, TransportType transportType)
         {
             using (var host = CreateHost(hostType, transportType))
             {
@@ -27,7 +27,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                 {
                     var hub = connection.CreateHubProxy("demo");
 
-                    connection.Start(host.Transport).Wait();
+                    await connection.Start(host.Transport);
 
                     var result = hub.InvokeWithTimeout<string>("ReturnLargePayload");
 
@@ -39,7 +39,7 @@ namespace Microsoft.AspNet.SignalR.Tests
         [Theory]
         [InlineData(HostType.IISExpress, TransportType.Websockets)]
         [InlineData(HostType.HttpListener, TransportType.Websockets)]
-        public void ServerCannotReceiveMessagesOver64KBViaWebSockets(HostType hostType, TransportType transportType)
+        public async Task ServerCannotReceiveMessagesOver64KBViaWebSockets(HostType hostType, TransportType transportType)
         {
             using (var host = CreateHost(hostType, transportType))
             {
@@ -51,11 +51,89 @@ namespace Microsoft.AspNet.SignalR.Tests
                 {
                     var hub = connection.CreateHubProxy("EchoHub");
 
-                    connection.Start(host.Transport).Wait();
+                    await connection.Start(host.Transport);
 
                     TestUtilities.AssertUnwrappedException<InvalidOperationException>(() =>
                     {
                         hub.Invoke<string>("EchoReturn", new string('a', 64 * 1024)).Wait();
+                    });
+                }
+            }
+        }
+
+        [Theory]
+        [InlineData(HostType.IISExpress, TransportType.Websockets)]
+        [InlineData(HostType.HttpListener, TransportType.Websockets)]
+        public void MaxIncomingWebSocketMessageSizeCanBeDisabled(HostType hostType, TransportType transportType)
+        {
+            using (var host = CreateHost(hostType, transportType))
+            {
+                // Disable max message size
+                host.Initialize(maxIncomingWebSocketMessageSize: null);
+
+                HubConnection connection = CreateHubConnection(host);
+
+                using (connection)
+                {
+                    var hub = connection.CreateHubProxy("EchoHub");
+
+                    connection.Start(host.Transport).Wait();
+
+                    var payload = new string('a', 64 * 1024);
+                    var result = hub.InvokeWithTimeout<string>("EchoReturn", payload);
+
+                    Assert.Equal(payload, result);
+                }
+            }
+        }
+
+        [Theory]
+        [InlineData(HostType.IISExpress, TransportType.Websockets)]
+        [InlineData(HostType.HttpListener, TransportType.Websockets)]
+        public void MaxIncomingWebSocketMessageSizeCanBeIncreased(HostType hostType, TransportType transportType)
+        {
+            using (var host = CreateHost(hostType, transportType))
+            {
+                // Increase max message size
+                host.Initialize(maxIncomingWebSocketMessageSize: 128 * 1024);
+
+                HubConnection connection = CreateHubConnection(host);
+
+                using (connection)
+                {
+                    var hub = connection.CreateHubProxy("EchoHub");
+
+                    connection.Start(host.Transport).Wait();
+
+                    var payload = new string('a', 64 * 1024);
+                    var result = hub.InvokeWithTimeout<string>("EchoReturn", payload);
+
+                    Assert.Equal(payload, result);
+                }
+            }
+        }
+
+        [Theory]
+        [InlineData(HostType.IISExpress, TransportType.Websockets)]
+        [InlineData(HostType.HttpListener, TransportType.Websockets)]
+        public void MaxIncomingWebSocketMessageSizeCanBeReduced(HostType hostType, TransportType transportType)
+        {
+            using (var host = CreateHost(hostType, transportType))
+            {
+                // Reduce max message size
+                host.Initialize(maxIncomingWebSocketMessageSize: 8 * 1024);
+
+                HubConnection connection = CreateHubConnection(host);
+
+                using (connection)
+                {
+                    var hub = connection.CreateHubProxy("EchoHub");
+
+                    connection.Start(host.Transport).Wait();
+
+                    TestUtilities.AssertUnwrappedException<InvalidOperationException>(() =>
+                    {
+                        hub.Invoke<string>("EchoReturn", new string('a', 8 * 1024)).Wait();
                     });
                 }
             }

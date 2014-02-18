@@ -80,16 +80,16 @@ testUtilities.runWithAllTransports(function (transport) {
     QUnit.asyncTimeoutTest(transport + " hub connection clears invocation callbacks after failed invocation.", testUtilities.defaultTestTimeout * 3, function (end, assert, testName) {
         var connection = testUtilities.createHubConnection(end, assert, testName),
             demo = connection.createHubProxies().demo,
-            url = connection.url;
+            token = connection.token;
 
         connection.start({ transport: transport }).done(function () {
             assert.isNotSet(connection._.invocationCallbacks["0"], "Callback list should be empty before invocation.");
 
-            // Provide faulty url so the ajaxSend fails.
-            connection.url = "http://foo";
+            // Provide faulty token so the ajaxSend fails.
+            connection.token = "hello world";
             var invokePromise = demo.server.synchronousException();
-            // Reset back to original url so background network tasks function properly.
-            connection.url = url;
+            // Reset back to original token so background network tasks function properly.
+            connection.token = token;
 
             assert.isSet(connection._.invocationCallbacks["0"], "Callback should be in the callback list.");
 
@@ -105,7 +105,7 @@ testUtilities.runWithAllTransports(function (transport) {
         // Cleanup
         return function () {
             // Replace url with a valid url so stop completes successfully.
-            connection.url = url;
+            connection.token = token;
             connection.stop();
         };
     });

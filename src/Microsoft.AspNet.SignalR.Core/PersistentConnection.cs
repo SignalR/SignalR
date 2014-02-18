@@ -508,7 +508,8 @@ namespace Microsoft.AspNet.SignalR
                 DisconnectTimeout = _configurationManager.DisconnectTimeout.TotalSeconds,
                 TryWebSockets = _transportManager.SupportsTransport(WebSocketsTransportName) && context.Environment.SupportsWebSockets(),
                 ProtocolVersion = _protocolResolver.Resolve(context.Request).ToString(),
-                TransportConnectTimeout = _configurationManager.TransportConnectTimeout.TotalSeconds
+                TransportConnectTimeout = _configurationManager.TransportConnectTimeout.TotalSeconds,
+                LongPollDelay = _configurationManager.LongPollDelay.TotalSeconds
             };
 
             if (!String.IsNullOrEmpty(context.Request.QueryString["callback"]))

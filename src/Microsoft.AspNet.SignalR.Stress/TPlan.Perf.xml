@@ -6,58 +6,68 @@
     <!-- Connection Based Tests -->
     <trackingVariation name="ConnectionRun">
       <metric name="Message Bus Messages Received/Sec" selection="Average" units="Numeric">
-        <target value="11954417.38" labConfig="XSPPERF8S_WIN8_X64" />
+        <target value="11954417.38" labConfig="XSPPERF8S_WIN8_X64" priority="1" />
       </metric>
     </trackingVariation>
     <trackingVariation name="SendReceive-Memory-LongPolling">
       <metric name="Message Bus Messages Received/Sec" selection="Average" units="Numeric">
-        <target value="18676.65" labConfig="XSPPERF8S_WIN8_X64" />
+        <target value="18676.65" labConfig="XSPPERF8S_WIN8_X64" priority="1" />
       </metric>
     </trackingVariation>
     <trackingVariation name="SendReceive-Memory-ServerSentEvents">
       <metric name="Message Bus Messages Received/Sec" selection="Average" units="Numeric">
-        <target value="4000000" labConfig="XSPPERF8S_WIN8_X64" />
+        <target value="4000000" labConfig="XSPPERF8S_WIN8_X64" priority="1" />
       </metric>
     </trackingVariation>
     
     <!--Memory Host with Hubs-->
     <trackingVariation name="HubInvocation">
       <metric name="Message Bus Messages Published/Sec" selection="Average" units="Numeric">
-        <target value="17000" labConfig="XSPPERF8S_WIN8_X64" />
+        <target value="17000" labConfig="XSPPERF8S_WIN8_X64" priority="1" />
       </metric>
     </trackingVariation>
     <trackingVariation name="SimpleEchoHub-Memory-LongPolling">
-      <metric name="Latency In Milliseconds" selection="Average" units="Numeric">
-        <target value="250" labConfig="XSPPERF8S_WIN8_X64" />
+      <metric name="Latency" selection="Average" units="Milliseconds">
+        <target value="2" labConfig="XSPPERF8S_WIN8_X64" priority="1" />
       </metric>
     </trackingVariation>
     <trackingVariation name="SimpleEchoHub-Memory-ServerSentEvents">
-      <metric name="Latency In Milliseconds" selection="Average" units="Numeric">
-        <target value="250" labConfig="XSPPERF8S_WIN8_X64" />
+      <metric name="Latency" selection="Average" units="Milliseconds">
+        <target value="1" labConfig="XSPPERF8S_WIN8_X64" priority="1" />
       </metric>
     </trackingVariation>
 
     <!-- Message Bus related-->
     <trackingVariation name="MessageBus">
       <metric name="Message Bus Messages Received/Sec" selection="Average" units="Numeric">
-        <target value="13816648.43" labConfig="XSPPERF8S_WIN8_X64" />
+        <target value="13816648.43" labConfig="XSPPERF8S_WIN8_X64" priority="1" />
       </metric>
     </trackingVariation>
     <trackingVariation name="RedisMessageBus">
       <metric name="Message Bus Messages Received/Sec" selection="Average" units="Numeric">
-        <target value="780000" labConfig="XSPPERF8S_WIN8_X64" />
+        <target value="780000" labConfig="XSPPERF8S_WIN8_X64" priority="1" />
       </metric>
     </trackingVariation>
     <trackingVariation name="SqlMessageBus">
       <metric name="Message Bus Messages Received/Sec" selection="Average" units="Numeric">
-        <target value="655000" labConfig="XSPPERF8S_WIN8_X64" />
+        <target value="655000" labConfig="XSPPERF8S_WIN8_X64" priority="1" />
       </metric>
     </trackingVariation>
   
     <!-- External Host-->
     <trackingVariation name="SimpleEchoHub-External-LongPolling">
-      <metric name="Latency In Milliseconds" selection="Average" units="Numeric">
-        <target value="250" labConfig="XSPPERF8S_WIN8_X64" />
+      <metric name="Latency" selection="Average" units="Milliseconds">
+        <target value="3" labConfig="XSPPERF8S_WIN8_X64" priority="1" />
+      </metric>
+    </trackingVariation>
+    <trackingVariation name="SimpleEchoHub-External-ServerSentEvents">
+      <metric name="Latency" selection="Average" units="Milliseconds">
+        <target value="2" labConfig="XSPPERF8S_WIN8_X64" priority="1" />
+      </metric>
+    </trackingVariation>
+    <trackingVariation name="SimpleEchoHub-External-WebSockets">
+      <metric name="Latency" selection="Average" units="Milliseconds">
+        <target value="1" labConfig="XSPPERF8S_WIN8_X64" priority="1" />
       </metric>
     </trackingVariation>
     
@@ -80,7 +90,7 @@
       Microsoft.AspNet.SignalR.Stress.exe /Run:SimpleEchoHub /Transport:LongPolling /Senders:5 /Connections:5
     </command>
     <command name="SimpleEchoHub-ServerSentEvents" wait="Exit">
-      Microsoft.AspNet.SignalR.Stress.exe /Run:SimpleEchoHub /Transport:ServerSentEvents /Senders:5
+      Microsoft.AspNet.SignalR.Stress.exe /Run:SimpleEchoHub /Transport:ServerSentEvents /Senders:5 /Connections:5
     </command>
     <command name="MessageBus" wait="Exit">
       Microsoft.AspNet.SignalR.Stress.exe /Run:MessageBus /Senders:5
@@ -103,7 +113,13 @@
       powershell -executionpolicy remotesigned -command "{bin}\RegisterIIS.ps1 {currentdir}\www"
     </command>
     <command name="SimpleEchoHub-External-LongPolling" wait="Exit">
-      Microsoft.AspNet.SignalR.Stress.exe /Run:SimpleEchoHub /Transport:LongPolling /Host:External /Connections:5 /Url:http://{server-01}:81/ /Duration:150
+      Microsoft.AspNet.SignalR.Stress.exe /Run:SimpleEchoHub /Transport:LongPolling /Senders:5 /Connections:5 /Host:External /Url:http://{server-01}:81
+    </command>
+    <command name="SimpleEchoHub-External-ServerSentEvents" wait="Exit">
+      Microsoft.AspNet.SignalR.Stress.exe /Run:SimpleEchoHub /Transport:ServerSentEvents /Senders:5 /Connections:5 /Host:External /Url:http://{server-01}:81
+    </command>
+    <command name="SimpleEchoHub-External-WebSockets" wait="Exit">
+      Microsoft.AspNet.SignalR.Stress.exe /Run:SimpleEchoHub /Transport:WebSockets /Senders:5 /Connections:5 /Host:External /Url:http://{server-01}:81
     </command>
   
   </commands>
@@ -132,5 +148,11 @@
     <run command="CopyWWW" role="controller" output="true" />
     <run command="SetupIIS" role="server-01" output="true" />
     <run command="SimpleEchoHub-External-LongPolling" role="client-01" output="true" measure="StartAndStop" />
+    
+    <run command="SetupIIS" role="server-01" output="true" />
+    <run command="SimpleEchoHub-External-ServerSentEvents" role="client-01" output="true" measure="StartAndStop" />
+    
+    <run command="SetupIIS" role="server-01" output="true" />
+    <run command="SimpleEchoHub-External-WebSockets" role="client-01" output="true" measure="StartAndStop" />
   </plan>
 </config>

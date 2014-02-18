@@ -80,31 +80,33 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
 #endif
                 }
 
-                Task newTask = _lastQueuedTask.Then((next, nextState) =>
-                {
-                    return next(nextState).Finally(s =>
-                    {
-                        var queue = (TaskQueue)s;
-                        if (queue._maxSize != null)
-                        {
-                            // Decrement the number of items left in the queue
-                            Interlocked.Decrement(ref queue._size);
-
-#if !CLIENT_NET45 && !CLIENT_NET4 && !PORTABLE && !NETFX_CORE
-                            var counter = QueueSizeCounter;
-                            if (counter != null)
-                            {
-                                counter.Decrement();
-                            }
-#endif
-                        }
-                    },
-                    this);
-                },
-                taskFunc, state);
+                Task newTask = _lastQueuedTask.Then((n, ns, q) => InvokeNext(n, ns, q), taskFunc, state, this);
 
                 _lastQueuedTask = newTask;
                 return newTask;
+            }
+        }
+
+        private static Task InvokeNext(Func<object, Task> next, object nextState, object queueState)
+        {
+            return next(nextState).Finally(s => Dequeue(s), queueState);
+        }
+
+        private static void Dequeue(object queueState)
+        {
+            var queue = (TaskQueue)queueState;
+            if (queue._maxSize != null)
+            {
+                // Decrement the number of items left in the queue
+                Interlocked.Decrement(ref queue._size);
+
+#if !CLIENT_NET45 && !CLIENT_NET4 && !PORTABLE && !NETFX_CORE
+                var counter = queue.QueueSizeCounter;
+                if (counter != null)
+                {
+                    counter.Decrement();
+                }
+#endif
             }
         }
 

@@ -14,7 +14,6 @@
 
   <PropertyGroup Condition="'$(RunCodeAnalysis)' == 'true'">
       <DefineConstants>$(DefineConstants);CODE_ANALYSIS</DefineConstants>
-      <VisualStudioVersion>11.0</VisualStudioVersion>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(OS)' != 'Windows_NT'">

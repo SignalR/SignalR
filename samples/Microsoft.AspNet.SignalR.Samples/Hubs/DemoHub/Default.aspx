@@ -15,6 +15,14 @@
         <dt>Arbitrary Code</dt>
         <dd id="arbitraryCode"></dd>
         
+        <dt>Report Progress</dt>
+        <dd id="progress">
+            <span>not started</span>
+            <div class="progress" style="width: 300px">
+                <div class="bar" style="width: 0"></div>
+            </div>
+        </dd>
+
         <dt>Group Added</dt>
         <dd id="groupAdded"></dd>
         
@@ -48,10 +56,13 @@
         <dt>Overloads</dt>
         <dd id="overloads"></dd>
 
-        <dt>Read State Value</dtRead>
+        <dt>Read State Value</dt>
         <dd id="readStateValue"></dd>
+
+        <dt>Read VB.NET State Value</dt>
+        <dd id="readVBStateValue"></dd>
         
-        <dt>Inline Script Tag</dtRead>
+        <dt>Inline Script Tag</dt>
         <dd id="inlineScriptTag"></dd>
 
         <dt>Plain Task</dt>
@@ -60,6 +71,9 @@
         <dt>Generic Task With ContinueWith</dt>
         <dd id="genericTaskWithContinueWith"></dd>
         
+        <dt>Typed callback</dt>
+        <dd id="typed"></dd>
+
         <dt>Message Pump</dt>
         <dd id="msg"></dd>
     </dl>

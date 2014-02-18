@@ -86,12 +86,16 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Server\Connections\ConnectionFacts.cs" />
     <Compile Include="Server\Connections\DisconnectFacts.cs" />
-    <Compile Include="Server\Connections\NameValueCollectionWrapper.cs" />
     <Compile Include="Server\Connections\PersistentConnectionFacts.cs" />
     <Compile Include="Server\Connections\ReconnectFacts.cs" />
+    <Compile Include="Server\Hubs\GetHubContextFacts.cs" />
+    <Compile Include="Server\Hubs\DateFacts.cs" />
     <Compile Include="Server\Hubs\HubAuthFacts.cs" />
     <Compile Include="Server\Hubs\HubFacts.cs" />
+    <Compile Include="Server\Hubs\HubProgressFacts.cs" />
     <Compile Include="Server\Hubs\SecurityFacts.cs" />
+    <Compile Include="Server\Hubs\TypedHubFacts.cs" />
+    <Compile Include="Server\Transports\WebSocketFacts.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
@@ -111,6 +115,10 @@
       <Project>{F18A8896-10BD-469E-9AA1-AEBACEF4D7B7}</Project>
       <Name>Microsoft.AspNet.SignalR.Tests.Common</Name>
     </ProjectReference>
+    <ProjectReference Include="..\..\samples\Microsoft.AspNet.SignalR.Samples.VB\Microsoft.AspNet.SignalR.Samples.VB.vbproj">
+      <Project>{44ffd296-2fc1-4159-80ac-4f6c8ae9887c}</Project>
+      <Name>Microsoft.AspNet.SignalR.Samples.VB</Name>
+    </ProjectReference>
     <ProjectReference Include="..\..\src\Microsoft.AspNet.SignalR.Client45\Microsoft.AspNet.SignalR.Client45.csproj">
       <Project>{50f8a174-695e-498c-b105-bdbe6b398646}</Project>
       <Name>Microsoft.AspNet.SignalR.Client45</Name>
@@ -119,6 +127,9 @@
       <Project>{1b9a82c4-bca1-4834-a33e-226f17be070b}</Project>
       <Name>Microsoft.AspNet.SignalR.Core</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Service Include="{82A7F48D-3B50-4B1E-B82E-3ADA8210C358}" />
   </ItemGroup>
   <Import Project="..\..\src\Common\Microsoft.AspNet.SignalR.targets" />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

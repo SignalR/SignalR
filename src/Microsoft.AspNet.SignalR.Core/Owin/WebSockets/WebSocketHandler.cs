@@ -18,7 +18,7 @@ namespace Microsoft.AspNet.SignalR.WebSockets
 
         // 4KB default fragment size (we expect most messages to be very short)
         private const int _receiveLoopBufferSize = 4 * 1024;
-        private int? _maxIncomingMessageSize;
+        private readonly int? _maxIncomingMessageSize;
 
         // Queue for sending messages
         private readonly TaskQueue _sendQueue = new TaskQueue();
@@ -55,7 +55,8 @@ namespace Microsoft.AspNet.SignalR.WebSockets
             return SendAsync(new ArraySegment<byte>(buffer), WebSocketMessageType.Text);
         }
 
-        internal Task SendAsync(ArraySegment<byte> message, WebSocketMessageType messageType, bool endOfMessage = true)
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1026:DefaultParametersShouldNotBeUsed")]
+        public virtual Task SendAsync(ArraySegment<byte> message, WebSocketMessageType messageType, bool endOfMessage = true)
         {
             if (WebSocket.State != WebSocketState.Open)
             {

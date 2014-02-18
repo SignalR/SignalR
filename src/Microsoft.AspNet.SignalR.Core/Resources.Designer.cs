@@ -223,6 +223,15 @@ namespace Microsoft.AspNet.SignalR {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to You cannot report progress on a hub method invocation that has already completed..
+        /// </summary>
+        internal static string Error_HubProgressOnlyReportableBeforeMethodReturns {
+            get {
+                return ResourceManager.GetString("Error_HubProgressOnlyReportableBeforeMethodReturns", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Invalid cursor..
         /// </summary>
         internal static string Error_InvalidCursorFormat {
@@ -291,6 +300,33 @@ namespace Microsoft.AspNet.SignalR {
         internal static string Error_MethodLevelOutgoingAuthorization {
             get {
                 return ResourceManager.GetString("Error_MethodLevelOutgoingAuthorization", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The &apos;{0}&apos; parameter of &apos;{1}.{2}&apos; must not be an out parameter..
+        /// </summary>
+        internal static string Error_MethodMustNotTakeOutParameter {
+            get {
+                return ResourceManager.GetString("Error_MethodMustNotTakeOutParameter", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The &apos;{0}&apos; parameter of &apos;{1}.{2}&apos; must not be a ref parameter..
+        /// </summary>
+        internal static string Error_MethodMustNotTakeRefParameter {
+            get {
+                return ResourceManager.GetString("Error_MethodMustNotTakeRefParameter", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The return type of &apos;{0}.{1}&apos; must be void or Task..
+        /// </summary>
+        internal static string Error_MethodMustReturnVoidOrTask {
+            get {
+                return ResourceManager.GetString("Error_MethodMustReturnVoidOrTask", resourceCulture);
             }
         }
         
@@ -390,6 +426,33 @@ namespace Microsoft.AspNet.SignalR {
         internal static string Error_TaskQueueFull {
             get {
                 return ResourceManager.GetString("Error_TaskQueueFull", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The type T, &apos;{0}&apos;, passed to Hub&lt;T&gt; must be an interface..
+        /// </summary>
+        internal static string Error_TypeMustBeInterface {
+            get {
+                return ResourceManager.GetString("Error_TypeMustBeInterface", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The interface &apos;{0}&apos; must not contain any events..
+        /// </summary>
+        internal static string Error_TypeMustNotContainEvents {
+            get {
+                return ResourceManager.GetString("Error_TypeMustNotContainEvents", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The interface &apos;{0}&apos; must not contain any properties..
+        /// </summary>
+        internal static string Error_TypeMustNotContainProperties {
+            get {
+                return ResourceManager.GetString("Error_TypeMustNotContainProperties", resourceCulture);
             }
         }
         

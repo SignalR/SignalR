@@ -16,7 +16,7 @@ namespace Microsoft.AspNet.SignalR.Hubs
         /// <summary>
         /// Gets a dynamic object that represents all clients connected to this hub (not hub instance).
         /// </summary>
-        IHubCallerConnectionContext Clients { get; set; }
+        IHubCallerConnectionContext<dynamic> Clients { get; set; }
 
         /// <summary>
         /// Gets the <see cref="IGroupManager"/> the hub instance.

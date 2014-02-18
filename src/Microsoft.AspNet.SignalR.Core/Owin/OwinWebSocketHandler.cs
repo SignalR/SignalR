@@ -48,9 +48,12 @@ namespace Microsoft.AspNet.SignalR.Owin
     {
         private readonly Func<IWebSocket, Task> _callback;
 
-        public OwinWebSocketHandler(Func<IWebSocket, Task> callback)
+        private readonly int? _maxIncomingMessageSize;
+
+        public OwinWebSocketHandler(Func<IWebSocket, Task> callback, int? maxIncomingMessageSize)
         {
             _callback = callback;
+            _maxIncomingMessageSize = maxIncomingMessageSize;
         }
 
         [SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope", Justification = "The websocket handler disposes the socket when the receive loop is over.")]
@@ -70,7 +73,7 @@ namespace Microsoft.AspNet.SignalR.Owin
             }
 
             var cts = new CancellationTokenSource();
-            var webSocketHandler = new DefaultWebSocketHandler();
+            var webSocketHandler = new DefaultWebSocketHandler(_maxIncomingMessageSize);
             var task = webSocketHandler.ProcessWebSocketRequestAsync(webSocket, cts.Token);
 
             RunWebSocketHandler(webSocketHandler, cts);

@@ -35,6 +35,7 @@ namespace Microsoft.AspNet.SignalR.Transports
         // conditions (timeout, disconnect, connection forcibly ended, host shutdown)
         private CancellationToken _connectionEndToken;
         private SafeCancellationTokenSource _connectionEndTokenSource;
+        private Task _lastWriteTask = TaskAsyncHelper.Empty;
 
         // Token that represents the host shutting down
         private CancellationToken _hostShutdownToken;
@@ -124,7 +125,12 @@ namespace Microsoft.AspNet.SignalR.Transports
             get
             {
                 // If the CTS is tripped or the request has ended then the connection isn't alive
-                return !(CancellationToken.IsCancellationRequested || (_requestLifeTime != null && _requestLifeTime.Task.IsCompleted));
+                return !(
+                    CancellationToken.IsCancellationRequested || 
+                    (_requestLifeTime != null && _requestLifeTime.Task.IsCompleted) ||
+                    _lastWriteTask.IsCanceled ||
+                    _lastWriteTask.IsFaulted
+                );
             }
         }
 
@@ -168,16 +174,32 @@ namespace Microsoft.AspNet.SignalR.Transports
             }
         }
 
+        public virtual bool RequiresTimeout
+        {
+            get
+            {
+                return false;
+            }
+        }
+
         public virtual TimeSpan DisconnectThreshold
         {
             get { return TimeSpan.FromSeconds(5); }
         }
 
-        public virtual bool IsConnectRequest
+        protected bool IsConnectRequest
         {
             get
             {
                 return Context.Request.LocalPath.EndsWith("/connect", StringComparison.OrdinalIgnoreCase);
+            }
+        }
+
+        protected bool IsSendRequest
+        {
+            get
+            {
+                return Context.Request.LocalPath.EndsWith("/send", StringComparison.OrdinalIgnoreCase);
             }
         }
 
@@ -186,6 +208,14 @@ namespace Microsoft.AspNet.SignalR.Transports
             get
             {
                 return Context.Request.LocalPath.EndsWith("/abort", StringComparison.OrdinalIgnoreCase);
+            }
+        }
+
+        protected virtual bool IsPollRequest
+        {
+            get
+            {
+                return false;
             }
         }
 
@@ -316,13 +346,20 @@ namespace Microsoft.AspNet.SignalR.Transports
 
         protected virtual internal Task EnqueueOperation(Func<object, Task> writeAsync, object state)
         {
+            return EnqueueOperationCore(writeAsync, state);
+        }
+
+        protected internal Task EnqueueOperationCore(Func<object, Task> writeAsync, object state)
+        {
             if (!IsAlive)
             {
                 return TaskAsyncHelper.Empty;
             }
 
             // Only enqueue new writes if the connection is alive
-            return WriteQueue.Enqueue(writeAsync, state);
+            Task writeTask = WriteQueue.Enqueue(writeAsync, state);
+            _lastWriteTask = writeTask;
+            return writeTask;
         }
 
         protected virtual void InitializePersistentState()

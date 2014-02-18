@@ -159,6 +159,9 @@
     <Compile Include="..\Microsoft.AspNet.SignalR.Client\HubProxyExtensions.cs">
       <Link>HubProxyExtensions.cs</Link>
     </Compile>
+    <Compile Include="..\Microsoft.AspNet.SignalR.Client\Hubs\HubProgressUpdate.cs">
+      <Link>Hubs\HubProgressUpdate.cs</Link>
+    </Compile>
     <Compile Include="..\Microsoft.AspNet.SignalR.Client\IHubProxy.cs">
       <Link>IHubProxy.cs</Link>
     </Compile>

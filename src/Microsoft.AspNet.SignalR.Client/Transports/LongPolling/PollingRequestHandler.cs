@@ -30,6 +30,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
             OnPolling = () => { };
             OnAfterPoll = _ => TaskAsyncHelper.Empty;
             OnAbort = _ => { };
+            OnKeepAlive = () => { };
         }
 
         /// <summary>
@@ -68,6 +69,11 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
         /// Fired when the current poll request was aborted, passing in the soon to be aborted request.
         /// </summary>
         public event Action<IRequest> OnAbort;
+
+        /// <summary>
+        /// Fired when the current poll request receives a keep alive.
+        /// </summary>
+        public event Action OnKeepAlive;
 
         /// <summary>
         /// Starts the Polling Request Handler.
@@ -126,7 +132,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
                     {
                         try
                         {
-                            next = task.Result.ReadAsString().Then(raw => OnMessage(raw));
+                            next = task.Result.ReadAsString(OnChunk).Then(raw => OnMessage(raw));
                         }
                         catch (Exception ex)
                         {
@@ -143,6 +149,21 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
                     exception);
                 });
             }            
+        }
+
+        /// <summary>
+        /// Aborts the currently active polling request thereby forcing a reconnect.
+        /// This will not trigger OnAbort.
+        /// </summary>
+        public void LostConnection()
+        {
+            lock (_stopLock)
+            {
+                if (_currentRequest != null)
+                {
+                    _currentRequest.Abort();
+                }
+            }
         }
 
         /// <summary>
@@ -171,6 +192,23 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
                 // This will no-op if the request is already finished
                 _currentRequest.Abort();
             }
+        }
+
+        private static bool IsKeepAlive(ArraySegment<byte> readBuffer)
+        {
+            return readBuffer.Count == 1
+                && readBuffer.Array[readBuffer.Offset] == (byte)' ';
+        }
+
+        private bool OnChunk(ArraySegment<byte> readBuffer)
+        {
+            if (IsKeepAlive(readBuffer))
+            {
+                OnKeepAlive();
+                return false;
+            }
+
+            return true;
         }
     }
 }

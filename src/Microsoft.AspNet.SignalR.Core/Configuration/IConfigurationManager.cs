@@ -37,10 +37,17 @@ namespace Microsoft.AspNet.SignalR.Configuration
         TimeSpan? KeepAlive { get; set; }
 
         /// <summary>
-        /// Gets of sets the number of messages to buffer for a specific signal.
+        /// Gets or sets the number of messages to buffer for a specific signal.
         /// The default value is 1000.
         /// </summary>
         int DefaultMessageBufferSize { get; set; }
+
+        /// <summary>
+        /// Gets or sets the maximum size in bytes of messages sent from client to the server via WebSockets.
+        /// Set to null to disable this limit.
+        /// The default value is 65536 or 64 KB.
+        /// </summary>
+        int? MaxIncomingWebSocketMessageSize { get; set; }
 
         /// <summary>
         /// Gets or sets a <see cref="TimeSpan"/> representing tell the client to wait before restablishing a

@@ -10,12 +10,34 @@
         events = $.signalR.events,
         changeState = $.signalR.changeState,
         isDisconnecting = $.signalR.isDisconnecting,
-        transportLogic = signalR.transports._logic;
+        transportLogic = signalR.transports._logic,
+        browserSupportsXHRProgress = (function () {
+                try {
+                    var xhr = new window.XMLHttpRequest();
+
+                    if ('onprogress' in xhr) {
+                        return true;
+                    } else {
+                        return false;
+                    }
+                } catch (e) {
+                    // No XHR means no XHR progress event
+                    return false;
+                }
+            })();
 
     signalR.transports.longPolling = {
         name: "longPolling",
 
-        supportsKeepAlive: false,
+        supportsKeepAlive: function (connection) {
+            return browserSupportsXHRProgress &&
+                   connection.ajaxDataType !== "jsonp" &&
+                   // Don't check for keep alives if there is a delay configured between poll requests.
+                   // Don't check for keep alives if the server didn't send back the "LongPollDelay" as
+                   // part of the response to /negotiate. That indicates the server is running an older
+                   // version of SignalR that doesn't send long polling keep alives.
+                   connection._.longPollDelay === 0;
+        },
 
         reconnectDelay: 3000,
 
@@ -83,7 +105,12 @@
                     connection.log("Opening long polling request to '" + url + "'.");
                     instance.pollXhr = $.ajax(
                         $.extend({}, $.signalR.ajaxDefaults, {
-                            xhrFields: { withCredentials: connection.withCredentials },
+                            xhrFields: {
+                                withCredentials: connection.withCredentials,
+                                onprogress: function () {
+                                    transportLogic.markLastMessage(connection);
+                                }
+                            },
                             url: url,
                             type: "GET",
                             dataType: connection.ajaxDataType,
@@ -101,6 +128,7 @@
                                 reconnectErrors = 0;
 
                                 try {
+                                    // Remove any keep-alives from the beginning of the result
                                     minData = connection._parseResponse(result);
                                 }
                                 catch (error) {
@@ -213,7 +241,9 @@
         },
 
         lostConnection: function (connection) {
-            throw new Error("Lost Connection not handled for LongPolling");
+            if (connection.pollXhr) {
+                connection.pollXhr.abort("lostConnection");
+            }
         },
 
         send: function (connection, data) {

@@ -91,7 +91,28 @@ namespace Microsoft.AspNet.SignalR.Client
         [SuppressMessage("Microsoft.Design", "CA1062:Validate arguments of public methods", MessageId = "0", Justification = "")]
         protected override void OnMessageReceived(JToken message)
         {
-            if (message["I"] != null)
+            // We have to handle progress updates first in order to ensure old clients that receive
+            // progress updates enter the return value branch and then no-op when they can't find
+            // the callback in the map (because the message["I"[ value will not be a valid callback ID)
+            if (message["P"] != null)
+            {
+                var result = message.ToObject<HubResult>(JsonSerializer);
+                Action<HubResult> callback;
+
+                lock (_callbacks)
+                {
+                    if (!_callbacks.TryGetValue(result.ProgressUpdate.Id, out callback))
+                    {
+                        Trace(TraceLevels.Messages, "Callback with id " + result.ProgressUpdate.Id + " not found!");
+                    }
+                }
+
+                if (callback != null)
+                {
+                    callback(result);
+                }
+            }
+            else if (message["I"] != null)
             {
                 var result = message.ToObject<HubResult>(JsonSerializer);
                 Action<HubResult> callback;
