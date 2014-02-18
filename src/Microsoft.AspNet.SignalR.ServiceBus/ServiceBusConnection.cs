@@ -36,11 +36,19 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
             {
                 _namespaceManager = NamespaceManager.CreateFromConnectionString(_connectionString);
                 _factory = MessagingFactory.CreateFromConnectionString(_connectionString);
-                _factory.RetryPolicy = RetryExponential.Default;
             }
             catch (ConfigurationErrorsException)
             {
                 _trace.TraceError("The configured Service Bus connection string contains an invalid property. Check the exception details for more information.");
+            }
+
+            if (configuration.RetryPolicy != null)
+            {
+                _factory.RetryPolicy = configuration.RetryPolicy;
+            }
+            else
+            {
+                _factory.RetryPolicy = RetryExponential.Default;
             }
 
             _idleSubscriptionTimeout = configuration.IdleSubscriptionTimeout;
@@ -108,6 +116,16 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
 
                 // Create a client for this topic
                 TopicClient topicClient = TopicClient.CreateFromConnectionString(_connectionString, topicName);
+
+                if (_configuration.RetryPolicy != null)
+                {
+                    topicClient.RetryPolicy = _configuration.RetryPolicy;
+                }
+                else
+                {
+                    topicClient.RetryPolicy = RetryExponential.Default;
+                }
+
                 connectionContext.SetTopicClients(topicClient, topicIndex);
 
                 _trace.TraceInformation("Creation of a new topic client {0} completed successfully.", topicName);

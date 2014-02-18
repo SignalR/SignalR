@@ -52,6 +52,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Common
             string keepAliveRaw = ConfigurationManager.AppSettings["keepAlive"];
             string connectionTimeoutRaw = ConfigurationManager.AppSettings["connectionTimeout"];
             string transportConnectTimeoutRaw = ConfigurationManager.AppSettings["transportConnectTimeout"];
+            string maxIncomingWebSocketMessageSizeRaw = ConfigurationManager.AppSettings["maxIncomingWebSocketMessageSize"];
             string disconnectTimeoutRaw = ConfigurationManager.AppSettings["disconnectTimeout"];
 
             int connectionTimeout;
@@ -70,6 +71,16 @@ namespace Microsoft.AspNet.SignalR.Tests.Common
             if (Int32.TryParse(transportConnectTimeoutRaw, out transportConnectTimeout))
             {
                 GlobalHost.Configuration.TransportConnectTimeout = TimeSpan.FromSeconds(transportConnectTimeout);
+            }
+
+            int maxIncomingWebSocketMessageSize;
+            if (String.IsNullOrEmpty(maxIncomingWebSocketMessageSizeRaw))
+            {
+                GlobalHost.Configuration.MaxIncomingWebSocketMessageSize = null;
+            }
+            else if (Int32.TryParse(maxIncomingWebSocketMessageSizeRaw, out maxIncomingWebSocketMessageSize))
+            {
+                GlobalHost.Configuration.MaxIncomingWebSocketMessageSize = maxIncomingWebSocketMessageSize;
             }
 
             int keepAlive;
