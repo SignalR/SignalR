@@ -70,8 +70,8 @@
                 url,
                 frame = createFrame(),
                 frameLoadHandler = function () {
-                    connection.log("Forever frame iframe finished loading and is no longer receiving messages, reconnecting.");
                     if (connection.state !== $.signalR.connectionState.connecting) {
+                        connection.log("Forever frame iframe finished loading and is no longer receiving messages, reconnecting.");
                         that.reconnect(connection);
                     }
                 };
