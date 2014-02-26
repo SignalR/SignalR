@@ -204,7 +204,7 @@
                     $(connection).triggerHandler(events.onError, [error]);
                 };
 
-            if (!connection._.pingIntervalId && config.pingInterval) {
+            if (config && !connection._.pingIntervalId && config.pingInterval) {
                 connection._.pingIntervalId = window.setInterval(function () {
                     signalR.transports._logic.pingServer(connection).fail(onFail);
                 }, config.pingInterval);
