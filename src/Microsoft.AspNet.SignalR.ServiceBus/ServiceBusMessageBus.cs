@@ -25,7 +25,9 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
 
         private readonly ServiceBusConnection _connection;
         private readonly string[] _topics;
-        
+
+        internal static ManualResetEvent mre = new ManualResetEvent(false);
+
         public ServiceBusMessageBus(IDependencyResolver resolver, ServiceBusScaleoutConfiguration configuration)
             : base(resolver, configuration)
         {
@@ -45,6 +47,8 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
                                 .ToArray();
 
             ThreadPool.QueueUserWorkItem(Subscribe);
+
+            mre.WaitOne();
         }
 
         protected override int StreamCount

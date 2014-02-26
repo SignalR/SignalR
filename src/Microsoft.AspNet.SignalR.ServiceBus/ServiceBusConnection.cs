@@ -26,6 +26,7 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
         private readonly ServiceBusScaleoutConfiguration _configuration;
         private readonly string _connectionString;
         private readonly TraceSource _trace;
+        private int _topicCount;
 
         public ServiceBusConnection(ServiceBusScaleoutConfiguration configuration, TraceSource traceSource)
         {
@@ -74,6 +75,8 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
             _trace.TraceInformation("Subscribing to {0} topic(s) in the service bus...", topicNames.Count);
 
             var connectionContext = new ServiceBusConnectionContext(_configuration, _namespaceManager, topicNames, _trace, handler, errorHandler, openStream);
+
+            _topicCount = topicNames.Count;
 
             for (var topicIndex = 0; topicIndex < topicNames.Count; ++topicIndex)
             {
@@ -132,6 +135,11 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
             }
 
             CreateSubscription(connectionContext, topicIndex);
+
+            if (topicIndex == _topicCount - 1)
+            {
+                ServiceBusMessageBus.mre.Set();
+            }
         }
 
         private void CreateSubscription(ServiceBusConnectionContext connectionContext, int topicIndex)
@@ -196,11 +204,13 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
                 catch (UnauthorizedAccessException ex)
                 {
                     _trace.TraceError(errorMessage, ex.Message);
+                    ServiceBusMessageBus.mre.Set();
                     break;
                 }
                 catch (MessagingException ex)
                 {
                     _trace.TraceError(errorMessage, ex.Message);
+                    ServiceBusMessageBus.mre.Set();
                     if (ex.IsTransient)
                     {
                         Thread.Sleep(RetryDelay);
@@ -213,6 +223,7 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
                 catch (Exception ex)
                 {
                     _trace.TraceError(errorMessage, ex.Message);
+                    ServiceBusMessageBus.mre.Set();
                     Thread.Sleep(RetryDelay);
                 }
             }
