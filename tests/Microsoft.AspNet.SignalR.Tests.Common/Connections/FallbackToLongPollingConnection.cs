@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
 
-namespace Microsoft.AspNet.SignalR.FunctionalTests
+namespace Microsoft.AspNet.SignalR.Tests.Common
 {
     public class FallbackToLongPollingConnection : PersistentConnection
     {
@@ -11,7 +11,7 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests
 
             if (transport != "longPolling")
             {
-                await Task.Delay(3000);
+                await Task.Delay(7000);
             }
 
             await base.OnConnected(request, connectionId);

@@ -3,21 +3,29 @@
 
 (function () {
     'use strict';
-    
+
     phantom.injectJs('chutzpahRunner.js');
 
     function onInitialized() {
+        console.log("!!_!! onInitialized");
     }
 
     function isTestingDone() {
+        console.log("!!_!! isTestingDone");
         return window.chutzpah.isTestingFinished === true;
     }
-    
+
     function isQunitLoaded() {
+        console.log("!!_!! isQunitLoaded");
         return window.QUnit;
     }
-    
+
     function onQUnitLoaded() {
+        console.log("!!_!! onQUnitLoaded");
+
+        // Prevent QUnit from autostarting so have better control of the timing
+        window.QUnit.config.autostart = false;
+
         function log(obj) {
             console.log(JSON.stringify(obj));
         }
@@ -28,7 +36,7 @@
             testStartTime = null,
             beginCallbackContent = QUnit.begin.toString(),
             callback = {};
-        
+
         window.chutzpah.isTestingFinished = false;
         window.chutzpah.testCases = [];
         window.chutzpah.currentModule = null;
@@ -40,53 +48,53 @@
                 window.chutzpah.currentModule = name;
             };
             window.test = window.asyncTest = QUnit.test = QUnit.asyncTest = function (name) {
-
                 if (name === 'global failure') return;
                 var testCase = { moduleName: window.chutzpah.currentModule, testName: name };
                 log({ type: "TestDone", testCase: testCase });
             };
         }
-        
+
         callback.begin = function () {
             // Testing began
             fileStartTime = new Date().getTime();
             log({ type: "FileStart" });
         };
 
-        callback.moduleStart = function(info) {
+        callback.moduleStart = function (info) {
             window.chutzpah.currentModule = info.name;
         };
-        
+
         callback.moduleDone = function (info) {
             window.chutzpah.currentModule = null;
         };
 
         callback.testStart = function (info) {
-
             if (info.name === 'global failure') {
                 isGlobalError = true;
                 return;
             }
-            
+
             isGlobalError = false;
             testStartTime = new Date().getTime();
             var newTestCase = { moduleName: info.module || window.chutzpah.currentModule, testName: info.name, testResults: [] };
             window.chutzpah.testCases.push(newTestCase);
             activeTestCase = newTestCase;
-            
+
             log({ type: "TestStart", testCase: activeTestCase });
         };
 
         callback.log = function (info) {
             if (!isGlobalError && info.result !== undefined) {
                 var testResult = {};
-                
+
                 testResult.passed = info.result;
                 QUnit.jsDump.multiline = false; // Make jsDump use single line
-                testResult.actual = QUnit.jsDump.parse(info.actual);
-                testResult.expected = QUnit.jsDump.parse(info.expected);
+                if (info.actual !== undefined || info.expected !== undefined) {
+                    testResult.actual = QUnit.jsDump.parse(info.actual);
+                    testResult.expected = QUnit.jsDump.parse(info.expected);
+                }
                 testResult.message = (info.message || "") + "";
-                
+
                 activeTestCase.testResults.push(testResult);
             }
         };
@@ -99,17 +107,24 @@
             log({ type: "TestDone", testCase: activeTestCase });
         };
 
+        function logCoverage() {
+            if (window._Chutzpah_covobj_name && window[window._Chutzpah_covobj_name]) {
+                log({ type: "CoverageObject", object: window[window._Chutzpah_covobj_name] });
+            }
+        }
+
         callback.done = function (info) {
             var timetaken = new Date().getTime() - fileStartTime;
+            logCoverage();
             log({ type: "FileDone", timetaken: timetaken, passed: info.passed, failed: info.failed });
             window.chutzpah.isTestingFinished = true;
         };
 
         /*
-            Check to see if we are running on a very old version of QUnit
-            in newer version the callbacks are register functions. In older versions
-            they are empty functions. The heuristic below is too look for 'config[key]'.
-            If we see that it is a newer version of qunit. Otherwise we need to do some more work. 
+        Check to see if we are running on a very old version of QUnit
+        in newer version the callbacks are register functions. In older versions
+        they are empty functions. The heuristic below is too look for 'config[key]'.
+        If we see that it is a newer version of qunit. Otherwise we need to do some more work. 
         */
         if (beginCallbackContent.indexOf('config[key]') < 0) {
             var oldCallback = {
@@ -121,9 +136,8 @@
                 moduleStart: QUnit.moduleStart,
                 moduleDone: QUnit.moduleDone
             };
-
             // For each event, call out callback and then any existing registered callback
-            QUnit.begin = function() {
+            QUnit.begin = function () {
                 callback.begin.apply(this, arguments);
                 oldCallback.begin.apply(this, arguments);
             };
@@ -159,11 +173,26 @@
             QUnit.testStart(callback.testStart);
             QUnit.testDone(callback.testDone);
         }
-        
+
     }
-    
+
     function onPageLoaded() {
+        console.log("!!_!! onPageLoaded");
         
+        if (window.chutzpah.usingModuleLoader) {
+            console.log("!!_!! Test file is using module loader.");
+            // Since we are using a module loader let the harness determine when its ready to run tests
+            return;
+        }
+        
+        function startQUnit() {
+        	console.log("!!_!! Starting QUnit...");
+                window.QUnit.start();
+        }
+        
+        if (!window._Chutzpah_covobj_name) {
+            startQUnit();
+        }
     }
 
     try {

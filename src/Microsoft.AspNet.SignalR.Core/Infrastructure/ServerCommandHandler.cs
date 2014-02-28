@@ -6,6 +6,7 @@ using System.IO;
 using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR.Json;
 using Microsoft.AspNet.SignalR.Messaging;
+using Newtonsoft.Json;
 
 namespace Microsoft.AspNet.SignalR.Infrastructure
 {
@@ -16,7 +17,7 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
     {
         private readonly IMessageBus _messageBus;
         private readonly IServerIdManager _serverIdManager;
-        private readonly IJsonSerializer _serializer;
+        private readonly JsonSerializer _serializer;
         private IDisposable _subscription;
 
         private const int MaxMessages = 10;
@@ -28,12 +29,12 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
         public ServerCommandHandler(IDependencyResolver resolver) :
             this(resolver.Resolve<IMessageBus>(),
                  resolver.Resolve<IServerIdManager>(),
-                 resolver.Resolve<IJsonSerializer>())
+                 resolver.Resolve<JsonSerializer>())
         {
 
         }
 
-        public ServerCommandHandler(IMessageBus messageBus, IServerIdManager serverIdManager, IJsonSerializer serializer)
+        public ServerCommandHandler(IMessageBus messageBus, IServerIdManager serverIdManager, JsonSerializer serializer)
         {
             _messageBus = messageBus;
             _serverIdManager = serverIdManager;

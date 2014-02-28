@@ -99,7 +99,7 @@
   </Target>
   -->
   <Target Name="AfterBuild">
-     <Exec Command="powershell -NoProfile -ExecutionPolicy Bypass .\build.ps1" 
+     <Exec Command="powershell -NoProfile -ExecutionPolicy Bypass .\build.ps1 $(OutputPath)" 
            WorkingDirectory="$(ProjectDir)"
            Condition=" '$(OS)' == 'Windows_NT'" />
   </Target>

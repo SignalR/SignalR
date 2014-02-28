@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.ComponentModel.Composition;
 using System.Diagnostics;
 using System.Linq;
+using System.Numerics;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR.Stress.Infrastructure;
@@ -12,19 +13,20 @@ using Microsoft.AspNet.SignalR.Infrastructure;
 
 namespace Microsoft.AspNet.SignalR.Stress
 {
-    public class RunBase : IRun
+    public abstract class RunBase : IRun
     {
         private readonly CountdownEvent _countDown;
         private readonly List<IDisposable> _receivers = new List<IDisposable>();
         private IPerformanceCounter[] _counters;
         private Dictionary<IPerformanceCounter, List<CounterSample>> _samples;
+        private string _contractName;
+        private bool _disposed;
 
         public RunBase(RunData runData)
         {
             RunData = runData;
             Resolver = new DefaultDependencyResolver();
             CancellationTokenSource = new CancellationTokenSource();
-
             _countDown = new CountdownEvent(runData.Senders);
         }
 
@@ -37,14 +39,52 @@ namespace Microsoft.AspNet.SignalR.Stress
         public IDependencyResolver Resolver { get; private set; }
         public CancellationTokenSource CancellationTokenSource { get; private set; }
 
-        public virtual void InitializePerformanceCounters()
+        protected virtual string ScenarioName
         {
-            // Initialize performance counters for this run
-            Utility.InitializePerformanceCounters(Resolver, CancellationTokenSource.Token);
+            get
+            {
+                return GetContractName();
+            }
         }
 
+        /// <summary>
+        /// This is the starting point. 
+        /// </summary>
+        public void Run()
+        {
+            // Step 1: Initialize the Run
+            Console.WriteLine("{0}: Starting the test.", DateTime.Now);
+            Initialize();
+            Console.WriteLine("{0}: Initialized completed", DateTime.Now);
+
+            // Step 2: Start the Run and have it run for (Warmup + Duration) time
+            RunTest();
+            Console.WriteLine("{0}: Warming up: {1} ", DateTime.Now, Warmup);
+            Thread.Sleep(Warmup * 1000);
+            
+            // Step 3: Start the sampling after some warm up period
+            Console.WriteLine("{0}: Sampling started: {1}", DateTime.Now, Duration);
+            TimeSpan endTime = TimeSpan.FromSeconds(Duration);
+            Stopwatch timer = Stopwatch.StartNew();
+            do
+            {
+                Sample();
+                Thread.Sleep(RunData.SampleRate);
+            }
+            while (timer.Elapsed < endTime);
+            Console.WriteLine("{0}: Test finished.", DateTime.Now);
+
+            // Step 4: Time to collect some samples
+            Record();
+            Console.WriteLine("{0}: Recording finished.", DateTime.Now);
+        }
+
+        /// <summary>
+        /// Step 1: Initialize the run. For example, initialize the performance counters. 
+        /// </summary>
         public virtual void Initialize()
         {
+            // set up the perf counter for recording purpose
             InitializePerformanceCounters();
 
             _counters = GetPerformanceCounters(Resolver.Resolve<IPerformanceCounterManager>());
@@ -56,12 +96,8 @@ namespace Microsoft.AspNet.SignalR.Stress
                     _samples[_counters[i]] = new List<CounterSample>();
                 }
             }
-        }
 
-        public virtual void Run()
-        {
-            Initialize();
-
+            // set up the client
             for (int i = 0; i < Connections; i++)
             {
                 IDisposable receiver = CreateReceiver(i);
@@ -70,13 +106,23 @@ namespace Microsoft.AspNet.SignalR.Stress
                     _receivers.Add(receiver);
                 }
             }
+        }
 
+        /// <summary>
+        /// Step 2: Run the test by scheduling multiple background threads to send the messages to the server.
+        /// </summary>
+        public virtual void RunTest()
+        {
             for (var i = 0; i < Senders; i++)
             {
                 ThreadPool.QueueUserWorkItem(state => Sender(state), Tuple.Create(i, Guid.NewGuid().ToString()));
             }
         }
 
+        /// <summary>
+        /// Step 3: Collect samples data at certain sampling rate ( configurable ) while the test is still running but after
+        /// certain warm up time.
+        /// </summary>
         public virtual void Sample()
         {
             for (int i = 0; i < _counters.Length; i++)
@@ -89,6 +135,9 @@ namespace Microsoft.AspNet.SignalR.Stress
             }
         }
 
+        /// <summary>
+        /// Step 4: Now let us record the sampling data we just collected for this run, and aggregate the results if necessary.
+        /// </summary>
         public virtual void Record()
         {
             long[] bytesPerSec = null;
@@ -98,7 +147,7 @@ namespace Microsoft.AspNet.SignalR.Stress
             foreach (var item in _samples)
             {
                 var counterName = item.Key.CounterName;
-                var key = String.Format("{0};{1}", GetType().Name, counterName);
+                var key = String.Format("{0};{1}", ScenarioName, counterName);
                 var samplesList = item.Value;
 
                 long[] values = new long[samplesList.Count - 1];
@@ -136,21 +185,98 @@ namespace Microsoft.AspNet.SignalR.Stress
             }
         }
 
-        private void RecordAggregates(string key, long[] values)
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!_disposed)
+            {
+                if (disposing)
+                {
+                    CancellationTokenSource.Cancel();
+
+                    // Wait for all senders to stop
+                    _countDown.Wait(TimeSpan.FromMilliseconds(1000 * Senders));
+
+                    _receivers.ForEach(s => s.Dispose());
+
+                    _receivers.Clear();
+                }
+
+                _disposed = true;
+            }
+        }
+
+        /// <summary>
+        /// Sets up the receivers for the messages. For example, it can set up the client connection and HubProxies 
+        /// so that in the hub cases, this can receives messages from the server. In the low level case, it can set up the subscribers 
+        /// for the messagebus. 
+        /// </summary>
+        /// <param name="connectionIndex"></param>
+        /// <returns></returns>
+        protected abstract IDisposable CreateReceiver(int connectionIndex);
+
+        /// <summary>
+        /// Sends the messages from client to the server or inject message into connection or the message bus. 
+        /// </summary>
+        /// <param name="senderIndex"></param>
+        /// <param name="source"></param>
+        /// <returns></returns>
+        protected abstract Task Send(int senderIndex, string source);
+        
+        /// <summary>
+        /// Called by the Initialize method to initialize a default set of perf counters
+        /// </summary>
+        protected virtual void InitializePerformanceCounters()
+        {
+            // Initialize performance counters for this run
+            Utility.InitializePerformanceCounters(Resolver, CancellationTokenSource.Token);
+        }
+
+        /// <summary>
+        /// Aggregate the sample data by sorting the input array and dispaly the Median/Average/Stddev
+        /// for a particular measurement
+        /// </summary>
+        /// <param name="key"></param>
+        /// <param name="values"></param>
+        protected void RecordAggregates(string key, long[] values)
         {
             Array.Sort(values);
             double median = values[values.Length / 2];
             if (values.Length % 2 == 0)
             {
-                median = median + values[(values.Length / 2) - 1] / 2;
+                median = (median + values[(values.Length / 2) - 1]) / 2;
             }
 
-            var average = values.Average();
-            var sumOfSquaresDiffs = values.Select(v => (v - average) * (v - average)).Sum();
-            var stdDevP = Math.Sqrt(sumOfSquaresDiffs / values.Length) / average * 100;
+            var sum = values.Select(i => new BigInteger(i)).Aggregate((aggregate, bi) => aggregate + bi);
+            BigInteger remainder;
+            var average = (double)BigInteger.DivRem(sum, values.Length, out remainder) + ((double)remainder / values.Length);
+            
+            double stdDevP = 0;
+            if (average > 0)
+            {
+                var sumOfSquares = values.Sum(i => Math.Pow(i - average, 2.0));
+                stdDevP = Math.Sqrt(sumOfSquares / values.Length) / average * 100;
+            }
+            
             Console.WriteLine("{0} (MEDIAN):  {1}", key, Math.Round(median));
             Console.WriteLine("{0} (AVERAGE): {1}", key, Math.Round(average));
             Console.WriteLine("{0} (STDDEV%): {1}%", key, Math.Round(stdDevP));
+        }
+
+        protected string GetContractName()
+        {
+            if (String.IsNullOrEmpty(_contractName))
+            {
+                var type = GetType();
+                var export = (ExportAttribute)type.GetCustomAttributes(typeof(ExportAttribute), true).FirstOrDefault();
+                _contractName = (export == null) ? type.Name : export.ContractName;
+            }
+            return _contractName;
         }
 
         protected virtual IPerformanceCounter[] GetPerformanceCounters(IPerformanceCounterManager counterManager)
@@ -168,28 +294,6 @@ namespace Microsoft.AspNet.SignalR.Stress
             };
         }
 
-        protected virtual IDisposable CreateReceiver(int connectionIndex)
-        {
-            return null;
-        }
-
-        protected virtual Task Send(int senderIndex, string source)
-        {
-            return TaskAsyncHelper.Empty;
-        }
-
-        public virtual void Dispose()
-        {
-            CancellationTokenSource.Cancel();
-
-            // Wait for all senders to stop
-            _countDown.Wait(TimeSpan.FromMilliseconds(1000 * Senders));
-
-            _receivers.ForEach(s => s.Dispose());
-
-            _receivers.Clear();
-        }
-
         private async void Sender(object state)
         {
             var senderState = (Tuple<int, string>)state;
@@ -199,6 +303,11 @@ namespace Microsoft.AspNet.SignalR.Stress
                 try
                 {
                     await Send(senderState.Item1, senderState.Item2);
+
+                    if (RunData.SendDelay > 0)
+                    {
+                        await Task.Delay(RunData.SendDelay);
+                    }
                 }
                 catch (Exception)
                 {

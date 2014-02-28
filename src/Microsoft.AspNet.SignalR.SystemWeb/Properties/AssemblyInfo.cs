@@ -3,4 +3,4 @@
 using System.Reflection;
 
 [assembly: AssemblyTitle("Microsoft.AspNet.SignalR.SystemWeb")]
-[assembly: AssemblyDescription("Assembly containing SignalR extensions for ASP.NET.")]
+[assembly: AssemblyDescription("SystemWeb component for SignalR")]

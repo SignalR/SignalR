@@ -1,7 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Net;
-using Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure;
+using Microsoft.AspNet.SignalR.Tests.Common.Infrastructure;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
 
@@ -21,6 +21,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Common
                 myHost.Initialize(keepAlive: -1, // default
                                   connectionTimeout: 110,
                                   disconnectTimeout: 30,
+                                  transportConnectTimeout: 5,
                                   enableAutoRejoiningGroups: false);
             }
             catch (WebException ex)

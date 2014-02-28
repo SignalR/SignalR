@@ -8,30 +8,44 @@ using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR.Hosting;
 using Microsoft.AspNet.SignalR.Hubs;
 using Microsoft.AspNet.SignalR.Infrastructure;
+using Microsoft.AspNet.SignalR.Tests.Common.Infrastructure;
 using Moq;
 using Newtonsoft.Json;
 using Xunit;
+using Xunit.Extensions;
 
 namespace Microsoft.AspNet.SignalR.Tests.Server.Hubs
 {
     public class HubDispatcherFacts
     {
-        [Fact]
-        public void RequestingSignalrHubsUrlReturnsProxy()
+        public static IEnumerable<string[]> JSProxyUrls
+        {
+            get
+            {
+                return new List<string[]>()
+                {
+                    new []{"http://something/signalr/hubs"},
+                    new []{"http://something/signalr/js"}
+                };
+            }
+        }
+
+        [Theory]
+        [PropertyData("JSProxyUrls")]
+        public void RequestingSignalrHubsUrlReturnsProxy(string proxyUrl)
         {
             // Arrange
             var dispatcher = new HubDispatcher(new HubConfiguration());
-            var request = GetRequestForUrl("http://something/signalr/hubs");
+            var request = GetRequestForUrl(proxyUrl);
             var response = new Mock<IResponse>();
             string contentType = null;
             var buffer = new List<string>();
             response.SetupSet(m => m.ContentType = It.IsAny<string>()).Callback<string>(type => contentType = type);
             response.Setup(m => m.Write(It.IsAny<ArraySegment<byte>>())).Callback<ArraySegment<byte>>(data => buffer.Add(Encoding.UTF8.GetString(data.Array, data.Offset, data.Count)));
-            response.Setup(m => m.End()).Returns(TaskAsyncHelper.Empty);
 
             // Act
             var context = new HostContext(request.Object, response.Object);
-            dispatcher.Initialize(new DefaultDependencyResolver(), context);
+            dispatcher.Initialize(new DefaultDependencyResolver());
             dispatcher.ProcessRequest(context).Wait();
 
             // Assert
@@ -41,22 +55,22 @@ namespace Microsoft.AspNet.SignalR.Tests.Server.Hubs
             Assert.False(buffer[0].StartsWith("throw new Error("));
         }
 
-        [Fact]
-        public void RequestingSignalrHubsUrlWithTrailingSlashReturnsProxy()
+        [Theory]
+        [PropertyData("JSProxyUrls")]
+        public void RequestingSignalrHubsUrlWithTrailingSlashReturnsProxy(string proxyUrl)
         {
             // Arrange
             var dispatcher = new HubDispatcher(new HubConfiguration());
-            var request = GetRequestForUrl("http://something/signalr/hubs/");
+            var request = GetRequestForUrl(proxyUrl);
             var response = new Mock<IResponse>();
             string contentType = null;
             var buffer = new List<string>();
             response.SetupSet(m => m.ContentType = It.IsAny<string>()).Callback<string>(type => contentType = type);
             response.Setup(m => m.Write(It.IsAny<ArraySegment<byte>>())).Callback<ArraySegment<byte>>(data => buffer.Add(Encoding.UTF8.GetString(data.Array, data.Offset, data.Count)));
-            response.Setup(m => m.End()).Returns(TaskAsyncHelper.Empty);
 
             // Act
             var context = new HostContext(request.Object, response.Object);
-            dispatcher.Initialize(new DefaultDependencyResolver(), context);
+            dispatcher.Initialize(new DefaultDependencyResolver());
             dispatcher.ProcessRequest(context).Wait();
 
             // Assert
@@ -66,22 +80,22 @@ namespace Microsoft.AspNet.SignalR.Tests.Server.Hubs
             Assert.False(buffer[0].StartsWith("throw new Error("));
         }
 
-        [Fact]
-        public void RequestingSignalrHubsUrlWithJavaScriptProxiesDesabledDoesNotReturnProxy()
+        [Theory]
+        [PropertyData("JSProxyUrls")]
+        public void RequestingSignalrHubsUrlWithJavaScriptProxiesDesabledDoesNotReturnProxy(string proxyUrl)
         {
             // Arrange
             var dispatcher = new HubDispatcher(new HubConfiguration() { EnableJavaScriptProxies = false });
-            var request = GetRequestForUrl("http://something/signalr/hubs");
+            var request = GetRequestForUrl(proxyUrl);
             var response = new Mock<IResponse>();
             string contentType = null;
             var buffer = new List<string>();
             response.SetupSet(m => m.ContentType = It.IsAny<string>()).Callback<string>(type => contentType = type);
             response.Setup(m => m.Write(It.IsAny<ArraySegment<byte>>())).Callback<ArraySegment<byte>>(data => buffer.Add(Encoding.UTF8.GetString(data.Array, data.Offset, data.Count)));
-            response.Setup(m => m.End()).Returns(TaskAsyncHelper.Empty);
 
             // Act
             var context = new HostContext(request.Object, response.Object);
-            dispatcher.Initialize(new DefaultDependencyResolver(), context);
+            dispatcher.Initialize(new DefaultDependencyResolver());
             dispatcher.ProcessRequest(context).Wait();
 
             // Assert
@@ -96,15 +110,14 @@ namespace Microsoft.AspNet.SignalR.Tests.Server.Hubs
             // Arrange
             var dispatcher = new HubDispatcher(new HubConfiguration());
 
-            var request = new Mock<IRequest>();
-            request.Setup(m => m.Url).Returns(new Uri("http://something/signalr/send"));
-            request.Setup(m => m.QueryString).Returns(new NameValueCollection()
+            var request = GetRequestForUrl("http://something/signalr/send");
+            request.Setup(m => m.QueryString).Returns(new NameValueCollectionWrapper(new NameValueCollection()
                                                       {
                                                           {"transport", "longPolling"},
                                                           {"connectionToken", "0"},
                                                           {"data", "{\"H\":\"ErrorHub\",\"M\":\"Error\",\"A\":[],\"I\":0}"}
-                                                      });
-            request.Setup(m => m.Form).Returns(new NameValueCollection());
+                                                      }));
+            request.Setup(m => m.ReadForm()).Returns(Task.FromResult<INameValueCollection>(new NameValueCollectionWrapper()));
 
             string contentType = null;
             var buffer = new List<string>();
@@ -113,14 +126,13 @@ namespace Microsoft.AspNet.SignalR.Tests.Server.Hubs
             response.SetupGet(m => m.CancellationToken).Returns(CancellationToken.None);
             response.SetupSet(m => m.ContentType = It.IsAny<string>()).Callback<string>(type => contentType = type);
             response.Setup(m => m.Write(It.IsAny<ArraySegment<byte>>())).Callback<ArraySegment<byte>>(data => buffer.Add(Encoding.UTF8.GetString(data.Array, data.Offset, data.Count)));
-            response.Setup(m => m.End()).Returns(TaskAsyncHelper.Empty);
 
             // Act
             var context = new HostContext(request.Object, response.Object);
             var resolver = new DefaultDependencyResolver();
             resolver.Register(typeof(IProtectedData), () => new EmptyProtectedData());
             resolver.Register(typeof(ErrorHub), () => new ErrorHub());
-            dispatcher.Initialize(resolver, context);
+            dispatcher.Initialize(resolver);
 
             dispatcher.ProcessRequest(context).Wait();
 
@@ -145,15 +157,14 @@ namespace Microsoft.AspNet.SignalR.Tests.Server.Hubs
             // Arrange
             var dispatcher = new HubDispatcher(new HubConfiguration());
 
-            var request = new Mock<IRequest>();
-            request.Setup(m => m.Url).Returns(new Uri("http://something/signalr/send"));
-            request.Setup(m => m.QueryString).Returns(new NameValueCollection()
+            var request = GetRequestForUrl("http://something/signalr/send");
+            request.Setup(m => m.QueryString).Returns(new NameValueCollectionWrapper(new NameValueCollection()
                                                       {
                                                           {"transport", "longPolling"},
                                                           {"connectionToken", "0"},
                                                           {"data", "{\"H\":\"ErrorHub\",\"M\":\"ErrorTask\",\"A\":[],\"I\":0}"}
-                                                      });
-            request.Setup(m => m.Form).Returns(new NameValueCollection());
+                                                      }));
+            request.Setup(m => m.ReadForm()).Returns(Task.FromResult<INameValueCollection>(new NameValueCollectionWrapper()));
 
             string contentType = null;
             var buffer = new List<string>();
@@ -162,14 +173,13 @@ namespace Microsoft.AspNet.SignalR.Tests.Server.Hubs
             response.SetupGet(m => m.CancellationToken).Returns(CancellationToken.None);
             response.SetupSet(m => m.ContentType = It.IsAny<string>()).Callback<string>(type => contentType = type);
             response.Setup(m => m.Write(It.IsAny<ArraySegment<byte>>())).Callback<ArraySegment<byte>>(data => buffer.Add(Encoding.UTF8.GetString(data.Array, data.Offset, data.Count)));
-            response.Setup(m => m.End()).Returns(TaskAsyncHelper.Empty);
 
             // Act
             var context = new HostContext(request.Object, response.Object);
             var resolver = new DefaultDependencyResolver();
             resolver.Register(typeof(IProtectedData), () => new EmptyProtectedData());
             resolver.Register(typeof(ErrorHub), () => new ErrorHub());
-            dispatcher.Initialize(resolver, context);
+            dispatcher.Initialize(resolver);
 
             dispatcher.ProcessRequest(context).Wait();
 
@@ -194,15 +204,14 @@ namespace Microsoft.AspNet.SignalR.Tests.Server.Hubs
             // Arrange
             var dispatcher = new HubDispatcher(new HubConfiguration() { EnableDetailedErrors = true });
 
-            var request = new Mock<IRequest>();
-            request.Setup(m => m.Url).Returns(new Uri("http://something/signalr/send"));
-            request.Setup(m => m.QueryString).Returns(new NameValueCollection()
+            var request = GetRequestForUrl("http://something/signalr/send");
+            request.Setup(m => m.QueryString).Returns(new NameValueCollectionWrapper(new NameValueCollection()
                                                       {
                                                           {"transport", "longPolling"},
                                                           {"connectionToken", "0"},
                                                           {"data", "{\"H\":\"ErrorHub\",\"M\":\"Error\",\"A\":[],\"I\":0}"}
-                                                      });
-            request.Setup(m => m.Form).Returns(new NameValueCollection());
+                                                      }));
+            request.Setup(m => m.ReadForm()).Returns(Task.FromResult<INameValueCollection>(new NameValueCollectionWrapper()));
 
             string contentType = null;
             var buffer = new List<string>();
@@ -211,14 +220,13 @@ namespace Microsoft.AspNet.SignalR.Tests.Server.Hubs
             response.SetupGet(m => m.CancellationToken).Returns(CancellationToken.None);
             response.SetupSet(m => m.ContentType = It.IsAny<string>()).Callback<string>(type => contentType = type);
             response.Setup(m => m.Write(It.IsAny<ArraySegment<byte>>())).Callback<ArraySegment<byte>>(data => buffer.Add(Encoding.UTF8.GetString(data.Array, data.Offset, data.Count)));
-            response.Setup(m => m.End()).Returns(TaskAsyncHelper.Empty);
 
             // Act
             var context = new HostContext(request.Object, response.Object);
             var resolver = new DefaultDependencyResolver();
             resolver.Register(typeof(IProtectedData), () => new EmptyProtectedData());
             resolver.Register(typeof(ErrorHub), () => new ErrorHub());
-            dispatcher.Initialize(resolver, context);
+            dispatcher.Initialize(resolver);
 
             dispatcher.ProcessRequest(context).Wait();
 
@@ -242,15 +250,15 @@ namespace Microsoft.AspNet.SignalR.Tests.Server.Hubs
             // Arrange
             var dispatcher = new HubDispatcher(new HubConfiguration() { EnableDetailedErrors = true });
 
-            var request = new Mock<IRequest>();
-            request.Setup(m => m.Url).Returns(new Uri("http://something/signalr/send"));
-            request.Setup(m => m.QueryString).Returns(new NameValueCollection()
+            var request = GetRequestForUrl("http://something/signalr/send");
+            request.Setup(m => m.QueryString).Returns(new NameValueCollectionWrapper(new NameValueCollection()
                                                       {
                                                           {"transport", "longPolling"},
                                                           {"connectionToken", "0"},
                                                           {"data", "{\"H\":\"ErrorHub\",\"M\":\"ErrorTask\",\"A\":[],\"I\":0}"}
-                                                      });
-            request.Setup(m => m.Form).Returns(new NameValueCollection());
+                                                      }));
+
+            request.Setup(m => m.ReadForm()).Returns(Task.FromResult<INameValueCollection>(new NameValueCollectionWrapper()));
 
             string contentType = null;
             var buffer = new List<string>();
@@ -259,14 +267,13 @@ namespace Microsoft.AspNet.SignalR.Tests.Server.Hubs
             response.SetupGet(m => m.CancellationToken).Returns(CancellationToken.None);
             response.SetupSet(m => m.ContentType = It.IsAny<string>()).Callback<string>(type => contentType = type);
             response.Setup(m => m.Write(It.IsAny<ArraySegment<byte>>())).Callback<ArraySegment<byte>>(data => buffer.Add(Encoding.UTF8.GetString(data.Array, data.Offset, data.Count)));
-            response.Setup(m => m.End()).Returns(TaskAsyncHelper.Empty);
 
             // Act
             var context = new HostContext(request.Object, response.Object);
             var resolver = new DefaultDependencyResolver();
             resolver.Register(typeof(IProtectedData), () => new EmptyProtectedData());
             resolver.Register(typeof(ErrorHub), () => new ErrorHub());
-            dispatcher.Initialize(resolver, context);
+            dispatcher.Initialize(resolver);
 
             dispatcher.ProcessRequest(context).Wait();
 
@@ -291,7 +298,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Server.Hubs
             var dispatcher = new HubDispatcher(new HubConfiguration());
             var request = new Mock<IRequest>();
             var qs = new NameValueCollection();
-            request.Setup(m => m.QueryString).Returns(qs);
+            request.Setup(m => m.QueryString).Returns(new NameValueCollectionWrapper(qs));
             qs["connectionData"] = @"[{name: ""foo""}, {name: ""Foo""}]";
 
             var mockHub = new Mock<IHub>();
@@ -301,16 +308,17 @@ namespace Microsoft.AspNet.SignalR.Tests.Server.Hubs
             var dr = new DefaultDependencyResolver();
             dr.Register(typeof(IHubManager), () => mockHubManager.Object);
 
-            dispatcher.Initialize(dr, new HostContext(null, null));
+            dispatcher.Initialize(dr);
             Assert.Throws<InvalidOperationException>(() => dispatcher.Authorize(request.Object));
         }
 
         private static Mock<IRequest> GetRequestForUrl(string url)
         {
             var request = new Mock<IRequest>();
-            request.Setup(m => m.Url).Returns(new Uri(url));
-            request.Setup(m => m.QueryString).Returns(new NameValueCollection());
-            request.Setup(m => m.Form).Returns(new NameValueCollection());
+            var uri = new Uri(url);
+            request.Setup(m => m.Url).Returns(uri);
+            request.Setup(m => m.LocalPath).Returns(uri.LocalPath);
+            request.Setup(m => m.QueryString).Returns(new NameValueCollectionWrapper());
             return request;
         }
 

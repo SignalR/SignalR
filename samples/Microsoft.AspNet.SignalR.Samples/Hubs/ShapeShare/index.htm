@@ -1,0 +1,47 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <title>SignalR Shape Share</title>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <link href="ShapeShare.css" rel="Stylesheet" />
+    <script src="../../Scripts/signalr.samples.js" type="text/javascript"></script>
+    <script src="../../Scripts/jquery-1.8.2.min.js" type="text/javascript"></script>
+    <script src="../../Scripts/jquery-ui-1.9.0.min.js" type="text/javascript"></script>
+    <script src="../../Scripts/json2.min.js" type="text/javascript"></script>
+    <script src="../../Scripts/jquery.signalR.js" type="text/javascript"></script>
+    <script src="../../signalr/js" type="text/javascript"></script>
+    <script src="../../Scripts/jquery.cookie.js" type="text/javascript"></script>
+    <script src="ShapeShare.js" type="text/javascript"></script>
+</head>
+<body>
+    <!--<div id="new-user">
+        <form id="join" action="#">
+            <label for="username">Name:</label>
+            <input type="text" id="username" />
+            <input type="submit" value="Join" />
+        </form>
+    </div>-->
+    <div id="shape-area">
+        <menu id="toolbar">
+            <li>
+                <menu label="add">
+                    <li><a href="#" class="rectangle" title="add rectangle" accesskey="R">R</a></li>
+                    <li><a href="#" class="square" title="add square" accesskey="S">S</a></li>
+                    <li><a href="#" class="circle" title="add circle" accesskey="C">C</a></li>
+                    <li><a href="#" class="picture" title="add picture" accesskey="P">P</a></li>
+                </menu>
+            </li>
+            <li>
+                <a href="#" class="delete" title="delete all shapes">D</a>
+            </li>
+            <li>
+                <label for="user">User: </label>
+                <input id="user" type="text" value="" />
+            </li>
+        </menu>
+
+        <ul id="shapes">
+        </ul>
+    </div>
+</body>
+</html>

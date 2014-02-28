@@ -9,8 +9,8 @@ namespace Microsoft.AspNet.SignalR.Hubs
 {
     public class ConnectionIdProxy : SignalProxy
     {
-        public ConnectionIdProxy(Func<string, ClientHubInvocation, IList<string>, Task> send, string signal, string hubName, params string[] exclude) :
-            base(send, signal, hubName, PrefixHelper.HubConnectionIdPrefix, exclude)
+        public ConnectionIdProxy(IConnection connection, IHubPipelineInvoker invoker, string signal, string hubName, params string[] exclude) :
+            base(connection, invoker, signal, hubName, PrefixHelper.HubConnectionIdPrefix, exclude)
         {
 
         }

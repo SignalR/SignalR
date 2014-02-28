@@ -35,6 +35,7 @@ chutzpah.runner = function (onInitialized, onPageLoaded, isFrameworkLoaded, onFr
 
         function intervalHandler() {
             var now = new Date().getTime();
+
             if (!isDone && (now - startTime < maxtimeOutMillis)) {
                 isDone = testIfDone();
             } else {
@@ -42,6 +43,7 @@ chutzpah.runner = function (onInitialized, onPageLoaded, isFrameworkLoaded, onFr
                     phantom.exit(3); // Timeout
                 } else {
                     clearInterval(interval);
+                    phantom.exit(0);
                 }
             }
         }
@@ -64,6 +66,7 @@ chutzpah.runner = function (onInitialized, onPageLoaded, isFrameworkLoaded, onFr
             case 'TestDone':
             case 'Log':
             case 'Error':
+            case 'CoverageObject':
                 console.log(wrap(eventObj.type) + json);
                 break;
                 
@@ -87,9 +90,13 @@ chutzpah.runner = function (onInitialized, onPageLoaded, isFrameworkLoaded, onFr
         }
         catch (e) {
             // The message was not a test status object so log as message
-            var log = { type: 'Log', log: { message: message } };
-            writeEvent(log, JSON.stringify(log));
+            rawLog(message);
         }
+    }
+
+    function rawLog(message) {
+        var log = { type: 'Log', log: { message: message } };
+        writeEvent(log, JSON.stringify(log));
     }
 
     function onError(msg, stack) {
@@ -136,12 +143,12 @@ chutzpah.runner = function (onInitialized, onPageLoaded, isFrameworkLoaded, onFr
                 window.chutzpah = { testMode: 'execution' };
             });
         }
-        
+
         page.evaluate(onInitialized);
     };
-    
 
-    page.onResourceReceived = function (url) {
+    page.onResourceReceived = function (res) {
+        rawLog("!!_!! Resource Recieved: " + res.url);
         trySetupTestFramework();
     };
 

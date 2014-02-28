@@ -5,6 +5,7 @@ using Xunit;
 using Microsoft.AspNet.SignalR.Json;
 using Microsoft.AspNet.SignalR.Messaging;
 using Microsoft.AspNet.SignalR.Tracing;
+using Newtonsoft.Json;
 
 namespace Microsoft.AspNet.SignalR.Tests.Server
 {
@@ -22,7 +23,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
                 return TaskAsyncHelper.Empty;
             });
 
-            var serializer = new JsonNetSerializer();
+            var serializer = JsonUtility.CreateDefaultSerializer();
             var traceManager = new Mock<ITraceManager>();
             var connection = new Connection(messageBus.Object,
                                             serializer,

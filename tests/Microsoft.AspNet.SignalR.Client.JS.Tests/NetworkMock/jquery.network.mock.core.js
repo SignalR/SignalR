@@ -15,6 +15,14 @@
         });
     },
     network = {
+        enable: function () {
+            /// <summary>Enables the network mock functionality.</summary>
+            invoke("enable");
+        },
+        disable: function () {
+            /// <summary>Disables the network mock functionality.</summary>
+            invoke("disable");
+        },
         disconnect: function (soft) {
             /// <summary>Disconnects the network so javascript transport methods are unable to communicate with a server.</summary>
             /// <param name="soft" type="Boolean">Whether the disconnect should be soft.  A soft disconnect indicates that transport methods are not notified of disconnect.</param>

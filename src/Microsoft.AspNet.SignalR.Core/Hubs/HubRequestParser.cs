@@ -14,9 +14,8 @@ namespace Microsoft.AspNet.SignalR.Hubs
     {
         private static readonly IJsonValue[] _emptyArgs = new IJsonValue[0];
 
-        public HubRequest Parse(string data)
+        public HubRequest Parse(string data, JsonSerializer serializer)
         {
-            var serializer = new JsonNetSerializer();
             var deserializedData = serializer.Parse<HubInvocation>(data);
 
             var request = new HubRequest();
@@ -60,9 +59,9 @@ namespace Microsoft.AspNet.SignalR.Hubs
                 throw new InvalidOperationException(Resources.Error_StateExceededMaximumLength);
             }
 
-            var settings = new JsonSerializerSettings();
+            var settings = JsonUtility.CreateDefaultSerializerSettings();
             settings.Converters.Add(new SipHashBasedDictionaryConverter());
-            var serializer = new JsonNetSerializer(settings);
+            var serializer = JsonSerializer.Create(settings);
             return serializer.Parse<IDictionary<string, object>>(json);
         }
     }

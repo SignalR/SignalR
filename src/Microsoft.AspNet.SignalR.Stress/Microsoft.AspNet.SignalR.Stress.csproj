@@ -37,20 +37,23 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <Prefer32Bit>false</Prefer32Bit>
+    <UseVSHostingProcess>false</UseVSHostingProcess>
   </PropertyGroup>
   <PropertyGroup Condition="'$(PerfRun)'=='True'">
     <DefineConstants>$(DefineConstants);PERFRUN</DefineConstants>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Microsoft.VisualStudio.Diagnostics.Measurement" Condition="'$(PerfRun)'=='True'">
-      <HintPath>..\..\lib\Microsoft.VisualStudio.Diagnostics.Measurement.dll</HintPath>
+      <SpecificVersion>false</SpecificVersion>
+      <HintPath>$(PerfToolsBin)\Microsoft.VisualStudio.Diagnostics.Measurement.dll</HintPath>
+      <Private>true</Private>
     </Reference>
     <Reference Include="CmdLine">
       <HintPath>..\..\packages\CmdLine.1.0.7.509\lib\net40-Client\CmdLine.dll</HintPath>
     </Reference>
     <Reference Include="Newtonsoft.Json, Version=4.5.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\packages\Newtonsoft.Json.4.5.11\lib\net40\Newtonsoft.Json.dll</HintPath>
+      <HintPath>..\..\packages\Newtonsoft.Json.5.0.6\lib\net45\Newtonsoft.Json.dll</HintPath>
     </Reference>
     <Reference Include="Owin">
       <HintPath>..\..\packages\Owin.1.0\lib\net40\Owin.dll</HintPath>
@@ -58,6 +61,7 @@
     <Reference Include="System" />
     <Reference Include="System.ComponentModel.Composition" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Numerics" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -65,12 +69,6 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="..\..\samples\Microsoft.AspNet.SignalR.Hosting.AspNet.Samples\Raw\RawConnection.cs">
-      <Link>Connections\RawConnection.cs</Link>
-    </Compile>
-    <Compile Include="..\..\tests\Microsoft.AspNet.SignalR.Tests.Common\Infrastructure\CountDownRange.cs">
-      <Link>Infrastructure\CountDownRange.cs</Link>
-    </Compile>
     <Compile Include="..\Common\CommonVersionInfo.cs">
       <Link>Properties\CommonVersionInfo.cs</Link>
     </Compile>
@@ -85,15 +83,14 @@
     </Compile>
     <Compile Include="Performance\ClientServerMemoryRun.cs" />
     <Compile Include="Performance\ConnectionRun.cs" />
-    <Compile Include="Connections\StressConnection.cs" />
+    <Compile Include="Performance\HostedRun.cs" />
+    <Compile Include="Performance\SimpleEchoHubRun.cs" />
     <Compile Include="Performance\ServiceBusMessageBusRun.cs" />
-    <Compile Include="Performance\MemoryHostHubInvocationRun.cs" />
+    <Compile Include="Performance\HubInvocationRun.cs" />
     <Compile Include="Performance\EmptyProtectedData.cs" />
-    <Compile Include="Hubs\EchoHub.cs" />
-    <Compile Include="Hubs\HubWithGroups.cs" />
     <Compile Include="Infrastructure\Utility.cs" />
     <Compile Include="IRun.cs" />
-    <Compile Include="Performance\MemoryHostRun.cs" />
+    <Compile Include="Performance\SendReceiveRun.cs" />
     <Compile Include="Performance\MessageBusRun.cs" />
     <Compile Include="Performance\RedisMessageBusRun.cs" />
     <Compile Include="Performance\SqlMessageBusRun.cs" />
@@ -101,25 +98,24 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="RunBase.cs" />
     <Compile Include="RunData.cs" />
+    <Compile Include="Stress\ConcurrentCallsRun.cs" />
+    <Compile Include="Stress\HostedStressRun.cs" />
+    <Compile Include="Stress\StressRunBase.cs" />
     <Compile Include="Stress\StressRuns.cs" />
     <Compile Include="Performance\Subscriber.cs" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\tests\Microsoft.AspNet.SignalR.Tests.Common\Microsoft.AspNet.SignalR.Tests.Common.csproj">
+      <Project>{f18a8896-10bd-469e-9aa1-aebacef4d7b7}</Project>
+      <Name>Microsoft.AspNet.SignalR.Tests.Common</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Microsoft.AspNet.SignalR.Client45\Microsoft.AspNet.SignalR.Client45.csproj">
       <Project>{50f8a174-695e-498c-b105-bdbe6b398646}</Project>
       <Name>Microsoft.AspNet.SignalR.Client45</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Microsoft.AspNet.SignalR.Hosting.Memory\Microsoft.AspNet.SignalR.Hosting.Memory.csproj">
-      <Project>{055F2118-FE29-4219-A28A-3D6F0889652E}</Project>
-      <Name>Microsoft.AspNet.SignalR.Hosting.Memory</Name>
-    </ProjectReference>
     <ProjectReference Include="..\Microsoft.AspNet.SignalR.Core\Microsoft.AspNet.SignalR.Core.csproj">
       <Project>{1B9A82C4-BCA1-4834-A33E-226F17BE070B}</Project>
       <Name>Microsoft.AspNet.SignalR.Core</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Microsoft.AspNet.SignalR.Owin45\Microsoft.AspNet.SignalR.Owin45.csproj">
-      <Project>{45892477-ef4e-4f45-a431-822755a38ea0}</Project>
-      <Name>Microsoft.AspNet.SignalR.Owin45</Name>
     </ProjectReference>
     <ProjectReference Include="..\Microsoft.AspNet.SignalR.Redis\Microsoft.AspNet.SignalR.Redis.csproj">
       <Project>{fd48578f-e825-47ea-a846-9764e01f523a}</Project>
@@ -133,12 +129,20 @@
       <Project>{efcf27ec-cb9b-4f3a-91be-154b8ab5b5e0}</Project>
       <Name>Microsoft.AspNet.SignalR.SqlServer</Name>
     </ProjectReference>
+    <ProjectReference Include="..\Microsoft.AspNet.SignalR.StressServer\Microsoft.AspNet.SignalR.StressServer.csproj">
+      <Project>{9ac65ed5-48c2-4c5c-8498-dc340b313fdf}</Project>
+      <Name>Microsoft.AspNet.SignalR.StressServer</Name>
+    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
     <None Include="packages.config" />
+    <None Include="CreateStressDatabase.sql">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Include="TPlan.Perf.xml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <SubType>Designer</SubType>
     </None>
   </ItemGroup>
   <Import Project="..\Common\Microsoft.AspNet.SignalR.targets" />

@@ -14,7 +14,8 @@ namespace Microsoft.AspNet.SignalR.Transports
         /// Adds a new connection to the list of tracked connections.
         /// </summary>
         /// <param name="connection">The connection to be added.</param>
-        bool AddConnection(ITrackingConnection connection);
+        /// <returns>The connection it replaced, if any.</returns>
+        ITrackingConnection AddOrUpdateConnection(ITrackingConnection connection);
 
         /// <summary>
         /// Marks an existing connection as active.

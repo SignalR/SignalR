@@ -1,25 +1,39 @@
-﻿QUnit.module("Transports Common - Utility Facts");
+﻿QUnit.module("Common - Utility Facts");
 
-QUnit.test("Validate ensureReconnectingState functionality.", function () {
-    var connection = testUtilities.createHubConnection(),
-        reconnectingCalled = false,
-        stateChangedCalled = false;
+QUnit.theory("firefoxMajorVersion parses user agent version correctly",
+    // Theory data
+    [
+        { userAgent: "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.8; rv:24.0) Gecko/20100101 Firefox/24.0", expect: 24 },
+        { userAgent: "Mozilla/5.0 (Windows NT 6.1; rv:22.0) Gecko/20130405 Firefox/22.0", expect: 22 },
+        { userAgent: "Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:22.0) Gecko/20130328 Firefox/22.0", expect: 22 },
+        { userAgent: "Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:14.0) Gecko/20120405 Firefox/14.0a1", expect: 14 },
+        { userAgent: "Mozilla/5.0 (Windows NT 6.1; WOW64; rv:11.0) Gecko Firefox/11.0", expect: 11 },
+        { userAgent: "Mozilla/5.0 (X11; Mageia; Linux x86_64; rv:10.0.9) Gecko/20100101 Firefox/10.0.9", expect: 10 },
+        { userAgent: "Mozilla/5.0 (Windows NT 6.2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/28.0.1467.0 Safari/537.36", expect: 0 },
+        { userAgent: "Mozilla/5.0 (compatible; MSIE 10.0; Windows NT 6.1; WOW64; Trident/6.0)", expect: 0 },
+        { userAgent: "This is not a user agent string", expect: 0 },
+        { userAgent: "Firefox/24.0", expect: 24 },
+        { userAgent: "Firefox/24.0 ", expect: 24 }
+    ],
+    // Test function
+    function (userAgent, expect) {
+        var actual = $.signalR._.firefoxMajorVersion(userAgent);
 
-    connection.reconnecting(function () {
-        reconnectingCalled = true;
+        QUnit.assert.equal(actual, expect, "firefoxMajorVersion should return correct major version from user agent");
     });
 
-    connection.stateChanged(function (state) {
-        QUnit.equal(state.oldState, $.signalR.connectionState.connected, "State changed called with connected as the old state.");
-        QUnit.equal(state.newState, $.signalR.connectionState.reconnecting, "State changed called with reconnecting as the new state.");
-        stateChangedCalled = true;
-    });
+QUnit.test("markActive stops connection if called after extended period of time.", function () {
+    var connection = testUtilities.createConnection(),
+        stopCalled = false;
 
-    connection.state = $.signalR.connectionState.connected;
+    connection._.lastActiveAt = new Date(new Date().valueOf() - 3000).getTime()
+    connection.reconnectWindow = 2900;
 
-    $.signalR.transports._logic.ensureReconnectingState(connection);
+    connection.stop = function () {
+        stopCalled = true;
+    };
 
-    QUnit.ok(reconnectingCalled, "Reconnecting event handler was called.");
-    QUnit.ok(stateChangedCalled, "StateChanged event handler was called.");
-    QUnit.equal(connection.state, $.signalR.connectionState.reconnecting, "Connection state is reconnecting.");
+    $.signalR.transports._logic.markActive(connection);
+
+    QUnit.equal(stopCalled, true, "Stop was called.");
 });

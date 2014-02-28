@@ -13,6 +13,7 @@ using Microsoft.AspNet.SignalR.Json;
 using Microsoft.AspNet.SignalR.Messaging;
 using Microsoft.AspNet.SignalR.Tracing;
 using Microsoft.AspNet.SignalR.Transports;
+using Newtonsoft.Json;
 
 namespace Microsoft.AspNet.SignalR
 {
@@ -50,8 +51,8 @@ namespace Microsoft.AspNet.SignalR
             var stringMinifier = new Lazy<IStringMinifier>(() => new StringMinifier());
             Register(typeof(IStringMinifier), () => stringMinifier.Value);
 
-            var serializer = new Lazy<JsonNetSerializer>();
-            Register(typeof(IJsonSerializer), () => serializer.Value);
+            var jsonSerializer = new Lazy<JsonSerializer>();
+            Register(typeof(JsonSerializer), () => jsonSerializer.Value);
 
             var transportManager = new Lazy<TransportManager>(() => new TransportManager(this));
             Register(typeof(ITransportManager), () => transportManager.Value);
@@ -71,8 +72,8 @@ namespace Microsoft.AspNet.SignalR
             var perfCounterWriter = new Lazy<PerformanceCounterManager>(() => new PerformanceCounterManager(this));
             Register(typeof(IPerformanceCounterManager), () => perfCounterWriter.Value);
 
-            var protectedData = new DefaultProtectedData();
-            Register(typeof(IProtectedData), () => protectedData);
+            var userIdProvider = new PrincipalUserIdProvider();
+            Register(typeof(IUserIdProvider), () => userIdProvider);
         }
 
         private void RegisterHubExtensions()

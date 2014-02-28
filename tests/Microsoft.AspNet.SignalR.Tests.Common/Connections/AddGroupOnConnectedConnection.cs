@@ -2,7 +2,7 @@
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Microsoft.AspNet.SignalR.FunctionalTests
+namespace Microsoft.AspNet.SignalR.Tests.Common
 {
     class AddGroupOnConnectedConnection : PersistentConnection
     {

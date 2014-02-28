@@ -1,5 +1,6 @@
 ﻿using System;
 using Microsoft.AspNet.SignalR.Json;
+using Newtonsoft.Json;
 using Xunit;
 using Xunit.Extensions;
 
@@ -15,6 +16,28 @@ namespace Microsoft.AspNet.SignalR.Tests.Json
 
             // Assert
             Assert.Equal("someMethod", name);
+        }
+
+        [Fact]
+        public void CreateDefaultSerializerHasCorrectMaxDepth()
+        {
+            // Arrange and Act
+            JsonSerializer serializer = JsonUtility.CreateDefaultSerializer();
+
+            // Assert
+            Assert.NotNull(serializer);
+            Assert.Equal(20, serializer.MaxDepth);
+        }
+
+        [Fact]
+        public void CreateDefaultJsonSerializerSettingsHasCorrectMaxDepth()
+        {
+            // Arrange and Act
+            JsonSerializerSettings settings = JsonUtility.CreateDefaultSerializerSettings();
+
+            // Assert
+            Assert.NotNull(settings);
+            Assert.Equal(20, settings.MaxDepth);
         }
 
         [Fact]

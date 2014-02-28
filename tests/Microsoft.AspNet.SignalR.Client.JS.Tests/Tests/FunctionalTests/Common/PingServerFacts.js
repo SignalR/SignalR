@@ -4,7 +4,7 @@ testUtilities.runWithAllTransports(function (transport) {
     QUnit.asyncTimeoutTest(transport + " transport can initiate Ping Server.", testUtilities.defaultTestTimeout, function (end, assert, testName) {
         var connection = testUtilities.createHubConnection(end, assert, testName),
             testPingServer = function () {
-                $.signalR.transports._logic.pingServer(connection, transport).done(function () {
+                $.signalR.transports._logic.pingServer(connection).done(function () {
                     // Successful ping
                     assert.ok(true, "Successful ping with " + transport);
                     end();
@@ -17,7 +17,6 @@ testUtilities.runWithAllTransports(function (transport) {
         // Starting/Stopping a connection to have it instantiated with all the appropriate variables
         connection.start({ transport: transport }).done(function () {
             assert.ok(true, "Connected");
-            connection.stop();
             testPingServer();
         });
 
@@ -32,7 +31,7 @@ testUtilities.runWithAllTransports(function (transport) {
             expectedQs = window.encodeURIComponent(testName),
             savedAjax = $.ajax,
             testPingServer = function () {
-                $.signalR.transports._logic.pingServer(connection, transport).done(function () {
+                $.signalR.transports._logic.pingServer(connection).done(function () {
                     // Successful ping
                     assert.ok(true, "Successful ping with " + transport);
                 }).fail(function () {
@@ -61,13 +60,12 @@ testUtilities.runWithAllTransports(function (transport) {
             }
 
             // Persist the request through to the original ajax request
-            savedAjax.call(this, url, settings);
+            return savedAjax.call(this, url, settings);
         };
 
         // Starting/Stopping a connection to have it instantiated with all the appropriate variables
         connection.start({ transport: transport }).done(function () {
             assert.ok(true, "Connected");
-            connection.stop();
             $.ajax = ajaxReplacement;
             testPingServer();
         });

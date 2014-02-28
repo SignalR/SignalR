@@ -8,7 +8,7 @@ using Microsoft.AspNet.SignalR.Client;
 namespace Microsoft.AspNet.SignalR.Stress.Performance
 {
     [Export("ClientServerMemory", typeof(IRun))]
-    public class ClientServerMemoryRun : MemoryHostRun
+    public class ClientServerMemoryRun : SendReceiveRun
     {
         private readonly Client.Connection[] _connections;
 
@@ -26,8 +26,7 @@ namespace Microsoft.AspNet.SignalR.Stress.Performance
         protected override IDisposable CreateReceiver(int connectionIndex)
         {
             Connection connection = _connections[connectionIndex];
-
-            connection.Start(Host).Wait();
+            connection.Start(Host.Transport).Wait();
 
             return Microsoft.AspNet.SignalR.Infrastructure.DisposableAction.Empty;
         }

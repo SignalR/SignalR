@@ -1,0 +1,18 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+</head>
+<body>
+    <script src="../../Scripts/signalr.samples.js" type="text/javascript"></script>
+    <script src="../../Scripts/jquery-1.8.2.js"></script>
+    <script src="../../Scripts/jquery.signalR.js"></script>
+    <script src="../../Scripts/jquery.color-2.1.0.js" type="text/javascript"></script>
+    <script src="../../signalr/js"></script>    
+    <script type="text/javascript">
+        var options = { transport: activeTransport };
+    </script>
+    <script src="Benchmark.js"></script>
+    <button id="hitme">hit me</button> | <button id="hitus">hit us</button> <select id="clientCalls"><option value="10">10</option> <option value="100">100</option><option value="1000">1000</option><option value="10000">10000</option><option value="100000">100000</option></select>
+    <ul id="messages"></ul>
+</body>
+</html>

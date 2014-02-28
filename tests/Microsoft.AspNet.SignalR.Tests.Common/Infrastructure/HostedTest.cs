@@ -1,23 +1,21 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Configuration;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Net;
+using System.Net.Http;
 using System.Reflection;
+using System.Text;
 using System.Threading;
-using System.Threading.Tasks;
+using Microsoft.AspNet.SignalR.Client;
 using Microsoft.AspNet.SignalR.Client.Http;
-using Microsoft.AspNet.SignalR.Client.Hubs;
 using Microsoft.AspNet.SignalR.Client.Transports;
-using Microsoft.AspNet.SignalR.Hosting.Memory;
-using Microsoft.AspNet.SignalR.Infrastructure;
 using Microsoft.AspNet.SignalR.Messaging;
-using Microsoft.AspNet.SignalR.Tests.FunctionalTests.Infrastructure;
 using Xunit;
 using Xunit.Extensions;
 
-namespace Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure
+namespace Microsoft.AspNet.SignalR.Tests.Common.Infrastructure
 {
     public abstract class HostedTest : IDisposable
     {
@@ -30,84 +28,22 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure
 
         protected ITestHost CreateHost(HostType hostType, TransportType transportType)
         {
-            string testName = GetTestName() + "." + hostType + "." + transportType + "." + Interlocked.Increment(ref _id);
-            ITestHost host = null;
+            string detailedTestName = GetTestName() + "." + hostType + "." + transportType + "." + Interlocked.Increment(ref _id);
 
-            string logBasePath = Path.Combine(Directory.GetCurrentDirectory(), "..");
-
-            switch (hostType)
-            {
-                case HostType.IISExpress:
-                    host = new IISExpressTestHost(testName);
-                    host.TransportFactory = () => CreateTransport(transportType);
-                    host.Transport = host.TransportFactory();
-                    break;
-                case HostType.Memory:
-                    var mh = new MemoryHost();
-                    host = new MemoryTestHost(mh, Path.Combine(logBasePath, testName));
-                    host.TransportFactory = () => CreateTransport(transportType, mh);
-                    host.Transport = host.TransportFactory();
-                    break;
-                case HostType.Owin:
-                    host = new OwinTestHost();
-                    host.TransportFactory = () => CreateTransport(transportType);
-                    host.Transport = host.TransportFactory();
-                    break;
-                default:
-                    break;
-            }
-
-            var writer = CreateClientTraceWriter(testName);
-            host.ClientTraceOutput = writer;
-
-            if (hostType != HostType.Memory)
-            {
-                string clientNetworkPath = Path.Combine(logBasePath, testName + ".client.network.log");
-                host.Disposables.Add(SystemNetLogging.Enable(clientNetworkPath));
-
-                string httpSysTracePath = Path.Combine(logBasePath, testName + ".httpSys");
-                IDisposable httpSysTracing = StartHttpSysTracing(httpSysTracePath);
-
-                // If tracing is enabled then turn it off on host dispose
-                if (httpSysTracing != null)
-                {
-                    host.Disposables.Add(httpSysTracing);
-                }
-            }
-
-            TraceListener traceListener = EnableTracing(testName, logBasePath);
-
-            host.Disposables.Add(new DisposableAction(() =>
-            {
-                traceListener.Close();
-                Trace.Listeners.Remove(traceListener);
-            }));
-
-            EventHandler<UnobservedTaskExceptionEventArgs> handler = (sender, args) =>
-            {
-                Trace.TraceError("Unobserved task exception: " + args.Exception.GetBaseException());
-
-                args.SetObserved();
-            };
-
-            TaskScheduler.UnobservedTaskException += handler;
-            host.Disposables.Add(new DisposableAction(() =>
-            {
-                TaskScheduler.UnobservedTaskException -= handler;
-            }));
-
-            return host;
+            return HostedTestFactory.CreateHost(hostType, transportType, detailedTestName);
         }
 
-        protected void UseMessageBus(MessageBusType type, IDependencyResolver resolver, ScaleoutConfiguration configuration = null, int streams = 1)
+        protected void UseMessageBus(MessageBusType type, IDependencyResolver resolver, int streams = 1)
         {
+            IMessageBus bus = null;
+
             switch (type)
             {
                 case MessageBusType.Default:
                     break;
                 case MessageBusType.Fake:
-                    var bus = new FakeScaleoutBus(resolver, streams);
-                    resolver.Register(typeof(IMessageBus), () => bus);
+                case MessageBusType.FakeMultiStream:
+                    bus = new FakeScaleoutBus(resolver, streams);
                     break;
                 case MessageBusType.SqlServer:
                     break;
@@ -118,80 +54,119 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure
                 default:
                     break;
             }
+
+            if (bus != null)
+            {
+                resolver.Register(typeof(IMessageBus), () => bus);
+            }
+        }
+
+        protected void SetReconnectDelay(IClientTransport transport, TimeSpan delay)
+        {
+            // SUPER ugly, alternative is adding an overload to the create host function, adding a member to the
+            // IClientTransport object or using Reflection.  Adding a member to IClientTransport isn't horrible
+            // but we want to avoid making a breaking change... Therefore this is the least of the evils.
+            if (transport is ServerSentEventsTransport)
+            {
+                (transport as ServerSentEventsTransport).ReconnectDelay = delay;
+            }
+            else if (transport is LongPollingTransport)
+            {
+                (transport as LongPollingTransport).ReconnectDelay = delay;
+            }
+            else if (transport is WebSocketTransport)
+            {
+                (transport as WebSocketTransport).ReconnectDelay = delay;
+            }
         }
 
         protected void EnableTracing()
         {
-            string testName = GetTestName();
+            string testName = GetTestName() + "." + Interlocked.Increment(ref _id);
             string logBasePath = Path.Combine(Directory.GetCurrentDirectory(), "..");
-            EnableTracing(GetTestName(), logBasePath);
-        }
-
-        private TextWriterTraceListener EnableTracing(string testName, string logBasePath)
-        {
-            string testTracePath = Path.Combine(logBasePath, testName + ".test.trace.log");
-            var traceListener = new TextWriterTraceListener(testTracePath);
-            Trace.Listeners.Add(traceListener);
-            Trace.AutoFlush = true;
-            return traceListener;
-        }
-
-        private static StreamWriter CreateClientTraceWriter(string testName)
-        {
-            string logBasePath = Path.Combine(Directory.GetCurrentDirectory(), "..");
-            string clientTracePath = Path.Combine(logBasePath, testName + ".client.trace.log");
-            var writer = new StreamWriter(clientTracePath);
-            writer.AutoFlush = true;
-            return writer;
-        }
-
-        private IDisposable StartHttpSysTracing(string path)
-        {
-            var httpSysLoggingEnabledValue = ConfigurationManager.AppSettings["httpSysLoggingEnabled"];
-            bool httpSysLoggingEnabled;
-
-            if (!Boolean.TryParse(httpSysLoggingEnabledValue, out httpSysLoggingEnabled) ||
-                !httpSysLoggingEnabled)
-            {
-                return null;
-            }
-
-            var etw = new HttpSysEtwWrapper(path);
-            if (etw.StartLogging())
-            {
-                return etw;
-            }
-
-            return null;
+            HostedTestFactory.EnableTracing(testName, logBasePath);
         }
 
         protected HubConnection CreateHubConnection(string url)
         {
-            string testName = GetTestName();
+            string testName = GetTestName() + "." + Interlocked.Increment(ref _id);
             var query = new Dictionary<string, string>();
             query["test"] = testName;
             var connection = new HubConnection(url, query);
-            connection.TraceWriter = CreateClientTraceWriter(testName);
+            connection.TraceWriter = HostedTestFactory.CreateClientTraceWriter(testName);
             return connection;
         }
 
-        protected HubConnection CreateHubConnection(ITestHost host, string url = null, bool useDefaultUrl = true)
+        protected Connection CreateConnection(string url)
+        {
+            string testName = GetTestName() + "." + Interlocked.Increment(ref _id);
+            var query = new Dictionary<string, string>();
+            query["test"] = testName;
+            var connection = new Connection(url, query);
+            connection.TraceWriter = HostedTestFactory.CreateClientTraceWriter(testName);
+            return connection;
+        }
+
+        protected HubConnection CreateHubConnection(ITestHost host, string path = null, bool useDefaultUrl = true)
         {
             var query = new Dictionary<string, string>();
-            query["test"] = GetTestName();
+            query["test"] = GetTestName() + "." + Interlocked.Increment(ref _id);
             SetHostData(host, query);
-            var connection = new HubConnection(url ?? host.Url, query, useDefaultUrl);
+            var connection = new HubConnection(host.Url + path, query, useDefaultUrl);
             connection.TraceWriter = host.ClientTraceOutput ?? connection.TraceWriter;
+            return connection;
+        }
+
+        protected HubConnection CreateAuthHubConnection(ITestHost host, string user, string password)
+        {
+            var path = "/cookieauth/signalr";
+            var useDefaultUrl = false;
+            var query = new Dictionary<string, string>();
+            query["test"] = GetTestName() + "." + Interlocked.Increment(ref _id);
+            SetHostData(host, query);
+
+            var handler = new HttpClientHandler();
+            handler.CookieContainer = new CookieContainer();
+            using (var httpClient = new HttpClient(handler))
+            {
+                var content = string.Format("UserName={0}&Password={1}", user, password);
+                var response = httpClient.PostAsync(host.Url + "/cookieauth/Account/Login", new StringContent(content, Encoding.UTF8, "application/x-www-form-urlencoded")).Result;
+            }
+
+            var connection = new HubConnection(host.Url + path, query, useDefaultUrl);
+            connection.TraceWriter = host.ClientTraceOutput ?? connection.TraceWriter;
+            connection.CookieContainer = handler.CookieContainer;
             return connection;
         }
 
         protected Client.Connection CreateConnection(ITestHost host, string path)
         {
             var query = new Dictionary<string, string>();
-            query["test"] = GetTestName();
+            query["test"] = GetTestName() + "." + Interlocked.Increment(ref _id);
             SetHostData(host, query);
             var connection = new Client.Connection(host.Url + path, query);
             connection.TraceWriter = host.ClientTraceOutput ?? connection.TraceWriter;
+            return connection;
+        }
+
+        protected Client.Connection CreateAuthConnection(ITestHost host, string path, string user, string password)
+        {
+            var query = new Dictionary<string, string>();
+            query["test"] = GetTestName() + "." + Interlocked.Increment(ref _id);
+            SetHostData(host, query);
+
+            var handler = new HttpClientHandler();
+            handler.CookieContainer = new CookieContainer();
+            using (var httpClient = new HttpClient(handler))
+            {
+                var content = string.Format("UserName={0}&Password={1}", user, password);
+                var response = httpClient.PostAsync(host.Url + "/cookieauth/Account/Login", new StringContent(content, Encoding.UTF8, "application/x-www-form-urlencoded")).Result;
+            }
+            
+            var connection = new Client.Connection(host.Url + "/cookieauth" + path, query);
+            connection.TraceWriter = host.ClientTraceOutput ?? connection.TraceWriter;
+            connection.CookieContainer = handler.CookieContainer;
+            
             return connection;
         }
 
@@ -226,24 +201,7 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure
 
         protected IClientTransport CreateTransport(TransportType transportType, IHttpClient client)
         {
-            switch (transportType)
-            {
-                case TransportType.Websockets:
-                    return new WebSocketTransport(client);
-                case TransportType.ServerSentEvents:
-                    return new ServerSentEventsTransport(client)
-                    {
-                        ConnectionTimeout = TimeSpan.FromSeconds(10)
-                    };
-                case TransportType.ForeverFrame:
-                    break;
-                case TransportType.LongPolling:
-                    return new LongPollingTransport(client);
-                default:
-                    return new AutoTransport(client);
-            }
-
-            throw new NotSupportedException("Transport not supported");
+            return HostedTestFactory.CreateTransport(transportType, client);
         }
 
         protected virtual void Dispose(bool disposing)
@@ -258,47 +216,6 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure
         public virtual void Dispose()
         {
             Dispose(true);
-        }
-
-        private class FakeScaleoutBus : ScaleoutMessageBus
-        {
-            private int _streams;
-            private ulong _id;
-
-            public FakeScaleoutBus(IDependencyResolver resolver)
-                : this(resolver, streams: 1)
-            {
-            }
-
-            public FakeScaleoutBus(IDependencyResolver dr, int streams)
-                : base(dr, new ScaleoutConfiguration())
-            {
-                _streams = streams;
-
-                for (int i = 0; i < _streams; i++)
-                {
-                    Open(i);
-                }
-            }
-
-            protected override int StreamCount
-            {
-                get
-                {
-                    return _streams;
-                }
-            }
-
-            protected override Task Send(int streamIndex, IList<Message> messages)
-            {
-                var message = new ScaleoutMessage(messages);
-
-                OnReceived(streamIndex, _id, message);
-
-                _id++;
-
-                return TaskAsyncHelper.Empty;
-            }
         }
     }
 }

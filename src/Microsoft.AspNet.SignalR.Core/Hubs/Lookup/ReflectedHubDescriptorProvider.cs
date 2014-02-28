@@ -2,8 +2,11 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.Globalization;
 using System.Linq;
 using System.Reflection;
+using Microsoft.AspNet.SignalR.Tracing;
 
 namespace Microsoft.AspNet.SignalR.Hubs
 {
@@ -11,11 +14,16 @@ namespace Microsoft.AspNet.SignalR.Hubs
     {
         private readonly Lazy<IDictionary<string, HubDescriptor>> _hubs;
         private readonly Lazy<IAssemblyLocator> _locator;
+        private readonly TraceSource _trace;
 
         public ReflectedHubDescriptorProvider(IDependencyResolver resolver)
         {
             _locator = new Lazy<IAssemblyLocator>(resolver.Resolve<IAssemblyLocator>);
             _hubs = new Lazy<IDictionary<string, HubDescriptor>>(BuildHubsCache);
+
+
+            var traceManager = resolver.Resolve<ITraceManager>();
+            _trace = traceManager["SignalR." + typeof(ReflectedHubDescriptorProvider).Name];
         }
 
         public IList<HubDescriptor> GetHubs()
@@ -41,16 +49,33 @@ namespace Microsoft.AspNet.SignalR.Hubs
             // Building cache entries for each descriptor
             // Each descriptor is stored in dictionary under a key
             // that is it's name or the name provided by an attribute
-            var cacheEntries = types
+            var hubDescriptors = types
                 .Select(type => new HubDescriptor
                                 {
                                     NameSpecified = (type.GetHubAttributeName() != null),
                                     Name = type.GetHubName(),
                                     HubType = type
-                                })
-                .ToDictionary(hub => hub.Name,
-                              hub => hub,
-                              StringComparer.OrdinalIgnoreCase);
+                                });
+
+            var cacheEntries = new Dictionary<string, HubDescriptor>(StringComparer.OrdinalIgnoreCase);
+
+            foreach (var descriptor in hubDescriptors)
+            {
+                HubDescriptor oldDescriptor = null;
+                if (!cacheEntries.TryGetValue(descriptor.Name, out oldDescriptor))
+                {
+                    cacheEntries[descriptor.Name] = descriptor;
+                }
+                else
+                {
+                    throw new InvalidOperationException(
+                        String.Format(CultureInfo.CurrentCulture,
+                            Resources.Error_DuplicateHubNames,
+                            oldDescriptor.HubType.AssemblyQualifiedName,
+                            descriptor.HubType.AssemblyQualifiedName,
+                            descriptor.Name));
+                }
+            }
 
             return cacheEntries;
         }
@@ -72,14 +97,20 @@ namespace Microsoft.AspNet.SignalR.Hubs
         }
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "If we throw then we have an empty type")]
-        private static IEnumerable<Type> GetTypesSafe(Assembly a)
+        private IEnumerable<Type> GetTypesSafe(Assembly a)
         {
             try
             {
                 return a.GetTypes();
             }
-            catch
+            catch (Exception ex)
             {
+                _trace.TraceWarning(Resources.Warning_AssemblyGetTypesException,
+                                    a.FullName,
+                                    a.Location,
+                                    ex.GetType().Name,
+                                    ex.Message);
+
                 return Enumerable.Empty<Type>();
             }
         }

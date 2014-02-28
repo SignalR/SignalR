@@ -1,0 +1,156 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <title>SignalR Raw Connection Sample</title>
+    <style type="text/css">
+        body {
+            font-family: "Segoe UI";
+            font-size: 12px;
+        }
+        form {
+            margin-bottom: 10px;
+            display: block;
+        }
+        label {
+            display: block;
+        }
+    </style>
+    <script src="../Scripts/signalr.samples.js" type="text/javascript"></script>
+    <script src="../Scripts/jquery-1.8.2.js"></script>
+    <script src="../Scripts/jquery.cookie.js" type="text/javascript"></script>
+    <script src="../Scripts/json2.min.js" type="text/javascript"></script>
+    <script src="../Scripts/jquery.signalR.js"></script>
+    <script>
+        $(function () {
+            "use strict";
+            var connection = $.connection('http://localhost:8080/raw-connection');
+            connection.logging = true;
+
+            connection.received(function (data) {
+                $("<li/>").html(window.JSON.stringify(data)).appendTo($("#messages"));
+                if (data.type == 2) {
+                    $.cookie('user', data.data);
+                }
+            });
+
+            connection.reconnected(function () {
+                $("<li/>").css("background-color", "green")
+                          .css("color", "white")
+                          .html("[" + new Date().toTimeString() + "]: Connection re-established")
+                          .appendTo($("#messages"));
+            });
+
+            connection.error(function (err) {
+                $("<li/>").html(err || "Error occurred")
+                          .appendTo($("#messages"));
+            });
+
+            connection.stateChanged(function (change) {
+                var oldState = null,
+                    newState = null;
+                for (var p in $.signalR.connectionState) {
+                    if ($.signalR.connectionState[p] === change.oldState) {
+                        oldState = p;
+                    }
+
+                    if ($.signalR.connectionState[p] === change.newState) {
+                        newState = p;
+                    }
+                }
+
+                $("<li/>").html(oldState + " => " + newState)
+                          .appendTo($("#messages"));
+            });
+
+            var start = function () {
+                connection.start({ transport: activeTransport, jsonp: isJsonp })
+                    .then(function () {
+                        $("#stopStart").prop("disabled", false);
+                    });
+            };
+            start();
+
+            $("#send").click(function () {
+                connection.send(window.JSON.stringify({ type: 0, value: $("#me").val() }));
+            });
+
+            $("#broadcast").click(function () {
+                connection.send(window.JSON.stringify({ type: 1, value: $("#msg").val() }));
+            });
+
+            $("#broadcast-exceptme").click(function () {
+                connection.send(window.JSON.stringify({ type: 7, value: $("#msg").val() }));
+            });
+
+            $("#join").click(function () {
+                connection.send(window.JSON.stringify({ type: 2, value: $("#msg").val() }));
+            });
+
+            $("#privatemsg").click(function () {
+                connection.send(window.JSON.stringify({ type: 3, value: $("#user").val() + "|" + $("#message").val() }));
+            });
+
+            $('#join-group').click(function () {
+                connection.send(window.JSON.stringify({ type: 4, value: $("#msg").val() }));
+            });
+
+            $('#leave-group').click(function () {
+                connection.send(window.JSON.stringify({ type: 5, value: $("#msg").val() }));
+            });
+
+            $("#groupmsg").click(function () {
+                connection.send(window.JSON.stringify({ type: 6, value: $("#user").val() + "|" + $("#message").val() }));
+            });
+
+            $("#stopStart").click(function () {
+                var $el = $(this);
+                $el.prop("disabled", true);
+                if ($el.val() === "Stop") {
+                    connection.stop();
+                    $el.val("Start")
+                       .prop("disabled", false);
+                } else {
+                    start();
+                    $el.val("Stop");
+                }
+            });
+        });
+    </script>
+</head>
+<body>
+    <h2>
+        To Everybody</h2>
+    <form>
+    <input type="text" id="msg" />
+    <input type="button" id="broadcast" value="Broadcast" />
+    <input type="button" id="broadcast-exceptme" value="Broadcast (All Except Me)" />
+    <input type="button" id="join" value="Enter Name" />
+    <input type="button" id="join-group" value="Join Group" />
+    <input type="button" id="leave-group" value="Leave Group" />
+    </form>
+    <h2>
+        To Me</h2>
+    <form>
+    <input type="text" id="me" />
+    <input type="button" id="send" value="Send" />
+    </form>
+    <h2>
+        Private Message</h2>
+    <form>
+    <label for="message">
+        Message:
+    </label>
+    <input type="text" name="message" id="message" />
+    <label for="user">
+        User/Group:
+    </label>
+    <input type="text" name="user" id="user" />
+    <input type="button" id="privatemsg" value="Send to user" />
+    <input type="button" id="groupmsg" value="Send to group" />
+    </form>
+    <ul id="messages">
+    </ul>
+    <input id="stopStart" type="button" value="Stop" disabled="disabled" />
+</body>
+</html>

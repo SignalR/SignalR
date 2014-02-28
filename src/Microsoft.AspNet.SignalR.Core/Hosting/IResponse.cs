@@ -19,6 +19,11 @@ namespace Microsoft.AspNet.SignalR.Hosting
         CancellationToken CancellationToken { get; }
 
         /// <summary>
+        /// Gets or sets the status code of the response.
+        /// </summary>
+        int StatusCode { get; set; }
+
+        /// <summary>
         /// Gets or sets the content type of the response.
         /// </summary>
         string ContentType { get; set; }
@@ -34,12 +39,5 @@ namespace Microsoft.AspNet.SignalR.Hosting
         /// </summary>
         /// <returns>A task that represents when the data has been flushed.</returns>
         Task Flush();
-
-        /// <summary>
-        /// Closes the connection to the client.
-        /// </summary>
-        /// <returns>A task that represents when the connection is closed.</returns>
-        [SuppressMessage("Microsoft.Naming", "CA1716:IdentifiersShouldNotMatchKeywords", MessageId = "End", Justification = "Ends the response thus the name is appropriate.")]
-        Task End();
     }
 }

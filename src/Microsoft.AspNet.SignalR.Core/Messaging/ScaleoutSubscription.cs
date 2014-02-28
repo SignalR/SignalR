@@ -12,6 +12,8 @@ namespace Microsoft.AspNet.SignalR.Messaging
 {
     public class ScaleoutSubscription : Subscription
     {
+        private const string _scaleoutCursorPrefix = "s-";
+
         private readonly IList<ScaleoutMappingStore> _streams;
         private readonly List<Cursor> _cursors;
 
@@ -40,7 +42,27 @@ namespace Microsoft.AspNet.SignalR.Messaging
             }
             else
             {
-                cursors = Cursor.GetCursors(cursor);
+                cursors = Cursor.GetCursors(cursor, _scaleoutCursorPrefix);
+
+                // If the cursor had a default prefix, "d-", cursors might be null
+                if (cursors == null)
+                {
+                    cursors = new List<Cursor>();
+                }
+                // If the streams don't match the cursors then throw it out
+                else if (cursors.Count != _streams.Count)
+                {
+                    cursors.Clear();
+                }
+            }
+
+            // No cursors so we need to populate them from the list of streams
+            if (cursors.Count == 0)
+            {
+                for (int streamIndex = 0; streamIndex < _streams.Count; streamIndex++)
+                {
+                    AddCursorForStream(streamIndex, cursors);
+                }
 
                 // If the streams don't match the cursors then throw it out
                 if (cursors.Count != _streams.Count)
@@ -63,7 +85,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
 
         public override void WriteCursor(TextWriter textWriter)
         {
-            Cursor.WriteCursors(textWriter, _cursors);
+            Cursor.WriteCursors(textWriter, _cursors, _scaleoutCursorPrefix);
         }
 
         [SuppressMessage("Microsoft.Design", "CA1002:DoNotExposeGenericLists", Justification = "The list needs to be populated")]

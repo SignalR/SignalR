@@ -1,5 +1,87 @@
 ﻿QUnit.module("Long Polling Facts", testUtilities.transports.longPolling.enabled);
 
+QUnit.asyncTimeoutTest("Messages received immediately after connectivity re-establishment triggers the reconnected event.", testUtilities.defaultTestTimeout, function (end, assert, testName) {
+    var connection = testUtilities.createHubConnection(end, assert, testName),
+        transport = { transport: "longPolling" },
+        demo = connection.createHubProxies().demo,
+        reconnectingTriggered = false;
+
+    demo.client.testGuid = function () { };
+
+    connection.reconnecting(function () {
+        reconnectingTriggered = true;
+    });
+
+    connection.reconnected(function () {
+        assert.isTrue(reconnectingTriggered, "Reconnecting triggered.");
+        assert.comment("Reconnected triggered.");
+        end();
+    });
+
+    connection.start(transport).done(function () {
+        assert.comment("Connected, turning off/on network.");
+
+        // Wait for next poll to be established.
+        setTimeout(function () {
+            $.network.disconnect();
+            $.network.connect();
+
+            demo.server.testGuid();
+        }, 1000);
+    });
+
+    // Cleanup
+    return function () {
+        $.network.connect();
+        connection.stop();
+    };
+});
+
+QUnit.asyncTimeoutTest("Connection start mid-reconnect does not cause double connections.", testUtilities.defaultTestTimeout, function (end, assert, testName) {
+    var connection = testUtilities.createHubConnection(end, assert, testName),
+        transport = { transport: "longPolling" },
+        savedAjax = $.ajax;
+
+    connection.start(transport).done(function () {
+        assert.comment("Connected");
+
+        $.network.disconnect();
+
+        setTimeout(function () {
+            $.network.connect();
+
+            connection.stop();
+            connection.start(transport).done(function () {
+                setTimeout(function () {
+                    $.ajax = function () {
+                        // Let ajax request finish
+                        setTimeout(function () {
+                            assert.fail("Ajax called when we weren't expecting.");
+                            end();
+                        }, 0);
+
+                        // Persist the request through to the original ajax request
+                        return savedAjax.apply(this, arguments);
+                    };
+
+                    setTimeout(function () {
+                        assert.comment("No ajax requests were triggered.");
+                        end();
+                    }, $.signalR.transports.longPolling.reconnectDelay + 1500);
+                }, 500);
+            });
+        }, 0);
+
+    });
+
+    // Cleanup
+    return function () {
+        $.ajax = savedAjax;
+        $.network.connect();
+        connection.stop();
+    };
+});
+
 QUnit.asyncTimeoutTest("Can reconnect.", testUtilities.defaultTestTimeout, function (end, assert, testName) {
     var connection = testUtilities.createHubConnection(end, assert, testName),
         demo = connection.createHubProxies().demo;
@@ -144,7 +226,7 @@ QUnit.asyncTimeoutTest("Clears stop reconnecting timeout on stop inside of state
             if (connection.state === $.signalR.connectionState.reconnecting) {
                 assert.ok(true, "Connection now in reconnecting state (via stateChanged), stopping the connection.");
                 connection.stop();
-                
+
                 // Set a timeout for 3x the disconnectTimeout.  If it hasn't triggered by then we were successful.
                 timeoutId = setTimeout(function () {
                     assert.ok(true, "Stop Reconnect timeout was not triggered, success!");
@@ -182,8 +264,8 @@ QUnit.asyncTimeoutTest("Clears stop reconnecting timeout on stop inside of state
     };
 });
 
-QUnit.asyncTimeoutTest("Can remain connected to /signalr/hubs.", testUtilities.defaultTestTimeout, function (end, assert, testName) {
-    var connection = testUtilities.createHubConnection(end, assert, testName, "signalr/hubs"),
+QUnit.asyncTimeoutTest("Can remain connected to /signalr/js.", testUtilities.defaultTestTimeout, function (end, assert, testName) {
+    var connection = testUtilities.createHubConnection(end, assert, testName, "signalr/js"),
         demo = connection.createHubProxies().demo,
         testGuidInvocations = 0;
 
@@ -220,25 +302,13 @@ QUnit.asyncTimeoutTest("Can remain connected to /signalr/hubs.", testUtilities.d
 });
 
 // For #1809
-QUnit.asyncTimeoutTest("Does not reconnect infinitely if ping succeeds", testUtilities.defaultTestTimeout * 2, function (end, assert, testName) {
+QUnit.asyncTimeoutTest("Does not reconnect infinitely if network is down", testUtilities.defaultTestTimeout * 2, function (end, assert, testName) {
     var connection = testUtilities.createHubConnection(end, assert, testName),
         demo = connection.createHubProxies().demo,
-        savedPingServer = $.signalR.transports._logic.pingServer,
         reconnectingTriggered = false;
 
     // Need to have at least one client function in order to be subscribed to a hub
     demo.client.TestGuid = function () {
-        $.signalR.transports._logic.pingServer = function () {
-            var deferral = $.Deferred();
-
-            // Force the ping server to resolve in a timeout (act like an actual ajax request)
-            window.setTimeout(function () {
-                deferral.resolve();
-            }, 100);
-
-            return deferral.promise();
-        };
-
         // Stop reconnecting after 6 seconds ( this overrides the negotiate value ).
         connection.disconnectTimeout = 6000;
 
@@ -263,7 +333,6 @@ QUnit.asyncTimeoutTest("Does not reconnect infinitely if ping succeeds", testUti
 
     // Cleanup
     return function () {
-        $.signalR.transports._logic.pingServer = savedPingServer;
         connection.stop();
         $.network.connect();
     };

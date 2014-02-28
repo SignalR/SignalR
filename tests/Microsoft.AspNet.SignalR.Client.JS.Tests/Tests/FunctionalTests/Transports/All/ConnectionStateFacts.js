@@ -1,6 +1,49 @@
 ﻿QUnit.module("Connection State Facts");
 
 testUtilities.runWithAllTransports(function (transport) {
+
+    QUnit.asyncTimeoutTest(transport + " transport triggers start after initialize message.", testUtilities.defaultTestTimeout, function (end, assert, testName) {
+        var connections = [testUtilities.createHubConnection(end, assert, testName), testUtilities.createConnection("signalr", end, assert, testName)],
+            savedProcessMessage = $.signalR.transports._logic.processMessages,
+            runWith = function (connection) {
+                var initialized = false,
+                    deferred = $.Deferred();
+
+                $.signalR.transports._logic.processMessages = function (connection, minData, onInitialize) {
+                    // We could be buffering so ensure that we have the initialize message
+                    if (minData.S) {
+                        assert.ok(onInitialize, "On initialize passed to process messages.");
+                        assert.ok(true, "Initialized");
+                        initialized = true;
+                    }
+
+                    savedProcessMessage.apply(this, arguments);
+                }
+
+                connection.start({ transport: transport }).done(function () {
+                    assert.isTrue(initialized, "Start triggered after initialization.");
+                    connection.stop();
+                    deferred.resolve();
+                });
+
+                return deferred.promise();
+            };
+
+        runWith(connections[0]).done(function () {
+            runWith(connections[1]).done(function () {
+                end();
+            });
+        });
+
+        // Cleanup
+        return function () {
+            $.signalR.transports._logic.processMessages = savedProcessMessage;
+            $.each(connections, function (_, connection) {
+                connection.stop();
+            });
+        };
+    });
+
     QUnit.asyncTimeoutTest(transport + " transport connection shifts into appropriate states.", testUtilities.defaultTestTimeout, function (end, assert, testName) {
         var connection = testUtilities.createHubConnection(end, assert, testName),
             demo = connection.createHubProxies().demo;
@@ -81,12 +124,12 @@ testUtilities.runWithAllTransports(function (transport) {
         demo.client.foo = function () { };
 
         connection.start(activeTransport).done(function () {
-            setTimeout(function () {
-                // Synchronously stop
-                connection.stop(false);
+            connection.stop();
+            assert.comment("Connection manually stopped, now restarting.");
 
-                assert.ok(true, "Connection manually stopped, now restarting.");
-
+            // We must wait for a timeout to restart the connection for this test to pass with the long polling transport.
+            // Without the timeout, the original polling loop will not terminate.
+            window.setTimeout(function () {
                 assert.equal($.signalR.connectionState.disconnected, connection.state, "SignalR state is disconnected prior to (re)start.");
 
                 connection.start(activeTransport).done(function () {
@@ -96,7 +139,7 @@ testUtilities.runWithAllTransports(function (transport) {
                     // In a later test we'll determine if reconnected gets called
                     connection.stateChanged(function () {
                         if (connection.state == $.signalR.connectionState.reconnecting) {
-                            assert.ok(true, "SignalR state is reconnecting.");
+                            assert.comment("SignalR state is reconnecting.");
                             end();
                         }
                     });
@@ -105,7 +148,7 @@ testUtilities.runWithAllTransports(function (transport) {
                 });
 
                 assert.equal($.signalR.connectionState.connecting, connection.state, "SignalR state is connecting prior to start deferred resolve.");
-            }, 250);
+            }, 1000);
         });
 
         // Cleanup
@@ -137,31 +180,26 @@ testUtilities.runWithAllTransports(function (transport) {
                 return connection.start({ transport: transport });
             })
         ).done(function () {
-            // FIX: The longPolling transport currently needs to receive a message with a message ID before it can "reconnect"
-            // Issue #1700
-            if (transport === "longPolling") {
-                $.each(connections, function (_, connection) {
-                    connection.messageId = connection.messageId || "";
-                });
-            }
+            // We wait 1 second before wiring up the getUrl to ensure that no more requests go through
+            window.setTimeout(function () {
+                $.connection.transports._logic.getUrl = function (connection) {
+                    var url = savedGetUrl.apply($.connection.transports._logic, arguments),
+                        urlWithoutQS = url.split("?", 1)[0];
 
-            $.connection.transports._logic.getUrl = function (connection) {
-                var url = savedGetUrl.apply($.connection.transports._logic, arguments),
-                    urlWithoutQS = url.split("?", 1)[0];
+                    $.each(connections, function (i, conn) {
+                        if (conn === connection) {
+                            getUrlCalled[i] = true;
+                            return false; // Finish looping
+                        }
+                    });
 
-                $.each(connections, function (i, conn) {
-                    if (conn === connection) {
-                        getUrlCalled[i] = true;
-                        return false; // Finish looping
-                    }
-                });
+                    assert.ok(urlWithoutQS.match(/\/reconnect$/), "URL ends with reconnect");
+                    return url;
+                };
 
-                assert.ok(urlWithoutQS.match(/\/reconnect$/), "URL ends with reconnect");
-                return url;
-            };
-
-            $.network.disconnect();
-            $.network.connect();
+                $.network.disconnect();
+                $.network.connect();
+            }, 1000);
         });
 
         // Cleanup
@@ -202,7 +240,7 @@ testUtilities.runWithAllTransports(function (transport) {
                 promises = [];
 
             $.each(connections, function (key, connection) {
-                deferreds[key] = $.Deferred(); 
+                deferreds[key] = $.Deferred();
                 promises[key] = deferreds[key].promise();
                 connection[eventName](function () {
                     deferreds[key].resolve();
@@ -223,14 +261,6 @@ testUtilities.runWithAllTransports(function (transport) {
         ).pipe(function () {
             var promise = createPromise("reconnecting");
             verifyState("connected");
-
-            // FIX: The longPolling transport currently needs to receive a message with a message ID before it can "reconnect"
-            // Issue #1700
-            if (transport === "longPolling") {
-                $.each(connections, function (_, connection) {
-                    connection.messageId = connection.messageId || "";
-                });
-            }
 
             $.network.disconnect();
             return promise;
@@ -253,23 +283,16 @@ testUtilities.runWithAllTransports(function (transport) {
         };
     });
 
-    QUnit.asyncTimeoutTest(transport + " transport will attempt to reconnect multiple times.", testUtilities.defaultTestTimeout, function (end, assert, testName) {
+    QUnit.asyncTimeoutTest(transport + " transport will attempt to reconnect multiple times.", testUtilities.defaultTestTimeout * 4, function (end, assert, testName) {
         var connection = testUtilities.createHubConnection(end, assert, testName),
             reconnectAttempts = 0,
-            savedConnectionReconnectDelay = connection.reconnectDelay,
-            savedLongPollingReconnectDelay = $.connection.transports.longPolling.reconnectDelay,
-            savedReconnect = $.connection.transports[transport].reconnect,
-            savedPingServer = $.connection.transports._logic.pingServer;
+            savedGetUrl = $.connection.transports._logic.getUrl;
 
         function connectIfSecondReconnectAttempt() {
             if (++reconnectAttempts === 2) {
                 $.network.connect();
             }
         }
-
-        // Shorten timeouts that slow down reconnect attempts ensure transports attempt reconnecting several times.
-        connection.reconnectDelay = 10;
-        $.connection.transports.longPolling.reconnectDelay = 10;
 
         connection.reconnecting(function () {
             assert.equal(connection.state, $.signalR.connectionState.reconnecting, "Transport started reconnecting.");
@@ -294,32 +317,21 @@ testUtilities.runWithAllTransports(function (transport) {
         connection.start({ transport: transport }).done(function () {
             assert.equal(connection.state, $.signalR.connectionState.connected, "Connection started.");
 
-            // Monkey patch reconnect functions so we can count how many reconnect attempts have been made
-            if (transport === "longPolling") {
-                // FIX: The longPolling transport currently needs to receive a message with a message ID before it can "reconnect"
-                // Issue #1700
-                connection.messageId = connection.messageId || "";
-                $.connection.transports._logic.pingServer = function (connection, transport) {
-                    return savedPingServer.call($.connection.transports._logic, connection, transport).fail(function () {
-                        connectIfSecondReconnectAttempt();
-                    });
-                };
-            } else {
-                $.connection.transports[transport].reconnect = function (connection) {
-                    savedReconnect.call($.connection.transports[transport], connection);
+            $.connection.transports._logic.getUrl = function () {
+                var url = savedGetUrl.apply(this, arguments);
+
+                if (url.indexOf("/reconnect") >= 0) {
                     connectIfSecondReconnectAttempt();
-                };
+                }
+
+                return url;
             }
 
             $.network.disconnect();
         });
 
         return function () {
-            connection.reconnectDelay = savedConnectionReconnectDelay;
-            $.connection.transports.longPolling.reconnectDelay = savedLongPollingReconnectDelay;
-
-            $.connection.transports[transport].reconnect = savedReconnect;
-            $.connection.transports._logic.pingServer = savedPingServer;
+            $.connection.transports._logic.getUrl = savedGetUrl;
 
             $.network.connect();
             connection.stop();

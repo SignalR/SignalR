@@ -25,6 +25,12 @@ namespace Microsoft.AspNet.SignalR.Client
         // Connection variable
         private readonly IConnection _connection;
 
+        // How often to beat
+        private TimeSpan _beatInterval;
+
+        // Whether to monitor the keep alive or not
+        private bool _monitorKeepAlive;
+
         // To keep track of whether the user has been notified
         public bool HasBeenWarned { get; private set; }
 
@@ -36,10 +42,12 @@ namespace Microsoft.AspNet.SignalR.Client
         /// </summary>
         /// <param name="connection"></param>
         /// <param name="connectionStateLock"></param>
-        public HeartbeatMonitor(IConnection connection, object connectionStateLock)
+        /// <param name="beatInterval">How often to check connection status</param>
+        public HeartbeatMonitor(IConnection connection, object connectionStateLock, TimeSpan beatInterval)
         {
             _connection = connection;
             _connectionStateLock = connectionStateLock;
+            _beatInterval = beatInterval;
         }
 
         /// <summary>
@@ -47,13 +55,16 @@ namespace Microsoft.AspNet.SignalR.Client
         /// </summary>
         public void Start()
         {
-            _connection.UpdateLastKeepAlive();
+            _connection.MarkLastMessage();
+            _connection.MarkActive();
+            _monitorKeepAlive = _connection.KeepAliveData != null && _connection.Transport.SupportsKeepAlive;
+
             HasBeenWarned = false;
             TimedOut = false;
 #if !NETFX_CORE
-            _timer = new Timer(_ => Beat(), state: null, dueTime: _connection.KeepAliveData.CheckInterval, period: _connection.KeepAliveData.CheckInterval);
+            _timer = new Timer(_ => Beat(), state: null, dueTime: _beatInterval, period: _beatInterval);
 #else
-            _timer = ThreadPoolTimer.CreatePeriodicTimer((timer) => Beat(), period: _connection.KeepAliveData.CheckInterval);
+            _timer = ThreadPoolTimer.CreatePeriodicTimer((timer) => Beat(), period: _beatInterval);
 #endif
         }
 
@@ -65,7 +76,7 @@ namespace Microsoft.AspNet.SignalR.Client
 #endif
         private void Beat()
         {
-            TimeSpan timeElapsed = DateTime.UtcNow - _connection.KeepAliveData.LastKeepAlive;
+            TimeSpan timeElapsed = DateTime.UtcNow - _connection.LastMessageAt;
             Beat(timeElapsed);
         }
 
@@ -74,6 +85,16 @@ namespace Microsoft.AspNet.SignalR.Client
         /// </summary>
         /// <param name="timeElapsed"></param>
         public void Beat(TimeSpan timeElapsed)
+        {
+            if (_monitorKeepAlive)
+            {
+                CheckKeepAlive(timeElapsed);
+            }
+
+            _connection.MarkActive();
+        }
+
+        private void CheckKeepAlive(TimeSpan timeElapsed)
         {
             lock (_connectionStateLock)
             {
@@ -128,7 +149,7 @@ namespace Microsoft.AspNet.SignalR.Client
                 if (_timer != null)
                 {
 #if !NETFX_CORE
-                
+
                     _timer.Dispose();
                     _timer = null;
 #else

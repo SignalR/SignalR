@@ -13,8 +13,11 @@ using Microsoft.AspNet.SignalR.Hosting;
 using Microsoft.AspNet.SignalR.Infrastructure;
 using Microsoft.AspNet.SignalR.Json;
 using Microsoft.AspNet.SignalR.Messaging;
+using Microsoft.AspNet.SignalR.Owin;
 using Microsoft.AspNet.SignalR.Tracing;
 using Microsoft.AspNet.SignalR.Transports;
+using Microsoft.Owin;
+using Newtonsoft.Json;
 
 namespace Microsoft.AspNet.SignalR
 {
@@ -25,22 +28,18 @@ namespace Microsoft.AspNet.SignalR
     {
         private const string WebSocketsTransportName = "webSockets";
         private static readonly char[] SplitChars = new[] { ':' };
+        private static readonly ProtocolResolver _protocolResolver = new ProtocolResolver();
 
         private IConfigurationManager _configurationManager;
         private ITransportManager _transportManager;
         private bool _initialized;
         private IServerCommandHandler _serverMessageHandler;
 
-        public virtual void Initialize(IDependencyResolver resolver, HostContext context)
+        public virtual void Initialize(IDependencyResolver resolver)
         {
             if (resolver == null)
             {
                 throw new ArgumentNullException("resolver");
-            }
-
-            if (context == null)
-            {
-                throw new ArgumentNullException("context");
             }
 
             if (_initialized)
@@ -49,11 +48,12 @@ namespace Microsoft.AspNet.SignalR
             }
 
             MessageBus = resolver.Resolve<IMessageBus>();
-            JsonSerializer = resolver.Resolve<IJsonSerializer>();
+            JsonSerializer = resolver.Resolve<JsonSerializer>();
             TraceManager = resolver.Resolve<ITraceManager>();
             Counters = resolver.Resolve<IPerformanceCounterManager>();
             AckHandler = resolver.Resolve<IAckHandler>();
             ProtectedData = resolver.Resolve<IProtectedData>();
+            UserIdProvider = resolver.Resolve<IUserIdProvider>();
 
             _configurationManager = resolver.Resolve<IConfigurationManager>();
             _transportManager = resolver.Resolve<ITransportManager>();
@@ -79,7 +79,7 @@ namespace Microsoft.AspNet.SignalR
 
         protected IMessageBus MessageBus { get; private set; }
 
-        protected IJsonSerializer JsonSerializer { get; private set; }
+        protected JsonSerializer JsonSerializer { get; private set; }
 
         protected IAckHandler AckHandler { get; private set; }
 
@@ -88,6 +88,8 @@ namespace Microsoft.AspNet.SignalR
         protected IPerformanceCounterManager Counters { get; private set; }
 
         protected ITransport Transport { get; private set; }
+
+        protected IUserIdProvider UserIdProvider { get; private set; }
 
         /// <summary>
         /// Gets the <see cref="IConnection"/> for the <see cref="PersistentConnection"/>.
@@ -132,6 +134,44 @@ namespace Microsoft.AspNet.SignalR
         }
 
         /// <summary>
+        /// OWIN entry point.
+        /// </summary>
+        /// <param name="environment"></param>
+        /// <returns></returns>
+        public Task ProcessRequest(IDictionary<string, object> environment)
+        {
+            var context = new HostContext(environment);
+
+            // Disable request compression and buffering on IIS
+            environment.DisableRequestCompression();
+            environment.DisableResponseBuffering();
+
+            var response = new OwinResponse(environment);
+
+            // Add the nosniff header for all responses to prevent IE from trying to sniff mime type from contents
+            response.Headers.Set("X-Content-Type-Options", "nosniff");
+
+            if (Authorize(context.Request))
+            {
+                return ProcessRequest(context);
+            }
+
+            if (context.Request.User != null &&
+                context.Request.User.Identity.IsAuthenticated)
+            {
+                // If the user is authenticated and authorize failed then 403
+                response.StatusCode = 403;
+            }
+            else
+            {
+                // If we failed to authorize the request then return a 401
+                response.StatusCode = 401;
+            }
+
+            return TaskAsyncHelper.Empty;
+        }
+
+        /// <summary>
         /// Handles all requests for <see cref="PersistentConnection"/>s.
         /// </summary>
         /// <param name="context">The <see cref="HostContext"/> for the current request.</param>
@@ -166,7 +206,7 @@ namespace Microsoft.AspNet.SignalR
 
             if (Transport == null)
             {
-                throw new InvalidOperationException(String.Format(CultureInfo.CurrentCulture, Resources.Error_ProtocolErrorUnknownTransport));
+                return FailResponse(context.Response, String.Format(CultureInfo.CurrentCulture, Resources.Error_ProtocolErrorUnknownTransport));
             }
 
             string connectionToken = context.Request.QueryString["connectionToken"];
@@ -174,15 +214,25 @@ namespace Microsoft.AspNet.SignalR
             // If there's no connection id then this is a bad request
             if (String.IsNullOrEmpty(connectionToken))
             {
-                throw new InvalidOperationException(String.Format(CultureInfo.CurrentCulture, Resources.Error_ProtocolErrorMissingConnectionToken));
+                return FailResponse(context.Response, String.Format(CultureInfo.CurrentCulture, Resources.Error_ProtocolErrorMissingConnectionToken));
             }
 
-            string connectionId = GetConnectionId(context, connectionToken);
+            string connectionId;
+            string message;
+            int statusCode;
+            
+            if (!TryGetConnectionId(context, connectionToken, out connectionId, out message, out statusCode))
+            {
+                return FailResponse(context.Response, message, statusCode);
+            }
 
             // Set the transport's connection id to the unprotected one
             Transport.ConnectionId = connectionId;
 
-            IList<string> signals = GetSignals(connectionId);
+            // Get the user id from the request
+            string userId = UserIdProvider.GetUserId(context.Request);
+
+            IList<string> signals = GetSignals(userId, connectionId);
             IList<string> groups = AppendGroupPrefixes(context, connectionId);
 
             Connection connection = CreateConnection(connectionId, signals, groups);
@@ -228,9 +278,20 @@ namespace Microsoft.AspNet.SignalR
         }
 
         [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "We want to catch any exception when unprotecting data.")]
-        internal string GetConnectionId(HostContext context, string connectionToken)
+        internal bool TryGetConnectionId(HostContext context,
+                                           string connectionToken,
+                                           out string connectionId,
+                                           out string message,
+                                           out int statusCode)
         {
             string unprotectedConnectionToken = null;
+
+            // connectionId is only valid when this method returns true
+            connectionId = null;
+
+            // message and statusCode are only valid when this method returns false
+            message = null;
+            statusCode = 400;
 
             try
             {
@@ -243,21 +304,24 @@ namespace Microsoft.AspNet.SignalR
 
             if (String.IsNullOrEmpty(unprotectedConnectionToken))
             {
-                throw new InvalidOperationException(String.Format(CultureInfo.CurrentCulture, Resources.Error_ConnectionIdIncorrectFormat));
+                message = String.Format(CultureInfo.CurrentCulture, Resources.Error_ConnectionIdIncorrectFormat);
+                return false;
             }
 
             var tokens = unprotectedConnectionToken.Split(SplitChars, 2);
 
-            string connectionId = tokens[0];
+            connectionId = tokens[0];
             string tokenUserName = tokens.Length > 1 ? tokens[1] : String.Empty;
             string userName = GetUserIdentity(context);
 
             if (!String.Equals(tokenUserName, userName, StringComparison.OrdinalIgnoreCase))
             {
-                throw new InvalidOperationException(String.Format(CultureInfo.CurrentCulture, Resources.Error_UnrecognizedUserIdentity));
+                message = String.Format(CultureInfo.CurrentCulture, Resources.Error_UnrecognizedUserIdentity);
+                statusCode = 403;
+                return false;
             }
 
-            return connectionId;
+            return true;
         }
 
         [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "We want to prevent any failures in unprotecting")]
@@ -267,8 +331,6 @@ namespace Microsoft.AspNet.SignalR
 
             if (String.IsNullOrEmpty(groupsToken))
             {
-                Trace.TraceInformation("The groups token is missing");
-
                 return ListHelper<string>.Empty;
             }
 
@@ -321,12 +383,8 @@ namespace Microsoft.AspNet.SignalR
                                   ProtectedData);
         }
 
-        /// <summary>
-        /// Returns the default signals for the <see cref="PersistentConnection"/>.
-        /// </summary>
-        /// <param name="connectionId">The id of the incoming connection.</param>
-        /// <returns>The default signals for this <see cref="PersistentConnection"/>.</returns>
-        private IList<string> GetDefaultSignals(string connectionId)
+        [SuppressMessage("Microsoft.Usage", "CA1801:ReviewUnusedParameters", MessageId = "userId", Justification = "This method is virtual and is used in the derived class")]
+        private IList<string> GetDefaultSignals(string userId, string connectionId)
         {
             // The list of default signals this connection cares about:
             // 1. The default signal (the type name)
@@ -343,11 +401,12 @@ namespace Microsoft.AspNet.SignalR
         /// <summary>
         /// Returns the signals used in the <see cref="PersistentConnection"/>.
         /// </summary>
+        /// <param name="userId">The user id for the current connection.</param>
         /// <param name="connectionId">The id of the incoming connection.</param>
         /// <returns>The signals used for this <see cref="PersistentConnection"/>.</returns>
-        protected virtual IList<string> GetSignals(string connectionId)
+        protected virtual IList<string> GetSignals(string userId, string connectionId)
         {
-            return GetDefaultSignals(connectionId);
+            return GetDefaultSignals(userId, connectionId);
         }
 
         /// <summary>
@@ -442,14 +501,14 @@ namespace Microsoft.AspNet.SignalR
 
             var payload = new
             {
-                Url = context.Request.Url.LocalPath.Replace("/negotiate", ""),
+                Url = context.Request.LocalPath.Replace("/negotiate", ""),
                 ConnectionToken = ProtectedData.Protect(connectionToken, Purposes.ConnectionToken),
                 ConnectionId = connectionId,
                 KeepAliveTimeout = keepAliveTimeout != null ? keepAliveTimeout.Value.TotalSeconds : (double?)null,
                 DisconnectTimeout = _configurationManager.DisconnectTimeout.TotalSeconds,
-                TryWebSockets = _transportManager.SupportsTransport(WebSocketsTransportName) && context.SupportsWebSockets(),
-                WebSocketServerUrl = context.WebSocketServerUrl(),
-                ProtocolVersion = "1.2"
+                TryWebSockets = _transportManager.SupportsTransport(WebSocketsTransportName) && context.Environment.SupportsWebSockets(),
+                ProtocolVersion = _protocolResolver.Resolve(context.Request).ToString(),
+                TransportConnectTimeout = _configurationManager.TransportConnectTimeout.TotalSeconds
             };
 
             if (!String.IsNullOrEmpty(context.Request.QueryString["callback"]))
@@ -478,14 +537,20 @@ namespace Microsoft.AspNet.SignalR
             return context.Response.End(data);
         }
 
+        private static Task FailResponse(IResponse response, string message, int statusCode = 400)
+        {
+            response.StatusCode = statusCode;
+            return response.End(message);
+        }
+
         private static bool IsNegotiationRequest(IRequest request)
         {
-            return request.Url.LocalPath.EndsWith("/negotiate", StringComparison.OrdinalIgnoreCase);
+            return request.LocalPath.EndsWith("/negotiate", StringComparison.OrdinalIgnoreCase);
         }
 
         private static bool IsPingRequest(IRequest request)
         {
-            return request.Url.LocalPath.EndsWith("/ping", StringComparison.OrdinalIgnoreCase);
+            return request.LocalPath.EndsWith("/ping", StringComparison.OrdinalIgnoreCase);
         }
 
         private ITransport GetTransport(HostContext context)

@@ -2,6 +2,8 @@
 
 using System;
 using Microsoft.AspNet.SignalR.Messaging;
+using Microsoft.ServiceBus;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Microsoft.AspNet.SignalR
 {
@@ -24,10 +26,13 @@ namespace Microsoft.AspNet.SignalR
                 throw new ArgumentNullException("topicPrefix");
             }
 
+            IdleSubscriptionTimeout = TimeSpan.FromHours(1);
             ConnectionString = connectionString;
             TopicPrefix = topicPrefix;
-            TopicCount = 1;
+            TopicCount = 5;
             TimeToLive = TimeSpan.FromMinutes(1);
+            MaximumMessageSize = 256 * 1024;
+            OperationTimeout = null;
         }
 
         /// <summary>
@@ -71,5 +76,36 @@ namespace Microsoft.AspNet.SignalR
         /// expired messages.
         /// </summary>
         public TimeSpan TimeToLive { get; set; }
+
+        /// <summary>
+        /// Specifies the time duration after which an idle subscription is deleted
+        /// </summary>
+        public TimeSpan IdleSubscriptionTimeout { get; set; }
+
+        /// <summary>
+        /// Gets or Sets the operation timeout for all Service Bus operations 
+        /// </summary>
+        public TimeSpan? OperationTimeout { get; set; }
+
+        /// <summary>
+        /// Gets or Sets the maximum message size (in bytes) that can be sent or received
+        /// Default value is set to 256KB which is the maximum recommended size for Service Bus operations
+        /// </summary>
+        public int MaximumMessageSize { get; set; }
+
+        /// <summary>
+        /// Returns Service Bus connection string to use.
+        /// </summary>
+        public string BuildConnectionString()
+        {
+            if (OperationTimeout != null)
+            {
+                var connectionStringBuilder = new ServiceBusConnectionStringBuilder(ConnectionString);
+                connectionStringBuilder.OperationTimeout = OperationTimeout.Value;
+                return connectionStringBuilder.ToString();
+            }
+
+            return ConnectionString;
+        }
     }
 }

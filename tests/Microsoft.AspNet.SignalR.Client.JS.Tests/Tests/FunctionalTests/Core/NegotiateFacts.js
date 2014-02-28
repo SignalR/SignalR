@@ -23,12 +23,22 @@
             }
 
             // Persist the request through to the original ajax request
-            savedAjax.call(this, url, settings);
+            return savedAjax.call(this, url, settings);
         };
 
         connection.start({ transport: transport });
 
         return savedAjax;
+    },
+    testInvalidProtocol = function (connection, transport, end, assert, protocol) {
+        connection.clientProtocol = protocol;
+
+        connection.start({ transport: transport }).done(function () {
+            assert.ok(false, "Transport started successfully.");
+        }).fail(function () {
+            assert.comment("Transport failed to start with incorrect protocol.");
+            end();
+        });
     };
 
     testUtilities.runWithAllTransports(function (transport) {
@@ -53,5 +63,75 @@
                 connection.stop();
             };
         });
+
+        QUnit.asyncTimeoutTest(transport + " transport negotiate passes client protocol.", testUtilities.defaultTestTimeout, function (end, assert, testName) {
+            var connection = testUtilities.createConnection("signalr", end, assert, testName),
+                // Need to ensure that we have a reference to the savedAjax method so we can then reset it in end()
+                savedAjax = $.ajax;
+
+            $.ajax = function (url, settings) {
+                if (!settings) {
+                    settings = url;
+                    url = settings.url;
+                }
+
+                // Check if it's the negotiate request;
+                if (url.indexOf("/negotiate") >= 0) {
+                    // Verify that the query string parameter on the connection is passed via the ajax request
+                    assert.ok(url.indexOf("clientProtocol=" + connection.clientProtocol) >= 0, "Client protocol passed in negotiate request");
+                    // Let the ajax request finish out
+                    setTimeout(end, 0);
+                }
+
+                // Persist the request through to the original ajax request
+                return savedAjax.call(this, url, settings);
+            };
+
+            connection.start({ transport: transport });
+
+            return function () {
+                $.ajax = savedAjax;
+                connection.stop();
+            };
+        });
+
+        QUnit.asyncTimeoutTest(transport + ": connection fails to start with newer protocol.", testUtilities.defaultTestTimeout, function (end, assert, testName) {
+            var connection = testUtilities.createConnection("signalr", end, assert, testName, false);
+
+            testInvalidProtocol(connection, transport, end, assert, 1337);
+
+            return function () {
+                connection.stop();
+            };
+        });
+
+        QUnit.asyncTimeoutTest(transport + ": connection fails to start with older protocol.", testUtilities.defaultTestTimeout, function (end, assert, testName) {
+            var connection = testUtilities.createConnection("signalr", end, assert, testName, false);
+
+            testInvalidProtocol(connection, transport, end, assert, .1337);
+
+            return function () {
+                connection.stop();
+            };
+        });
+
+        QUnit.asyncTimeoutTest(transport + ": connection uses client set transportConnectTimeout.", testUtilities.defaultTestTimeout, function (end, assert, testName) {
+            var connection = testUtilities.createConnection("signalr", end, assert, testName, false),
+                newTimeout = 4000;
+
+            assert.equal(connection.transportConnectTimeout, 0, "Transport connect timeout is 0 prior to connection start.");
+            connection.transportConnectTimeout = newTimeout;
+
+            connection.start().done(function () {
+                // Subtract the default timeout from server to get the client side timeout
+                assert.equal(connection.transportConnectTimeout - 5000, newTimeout, "Transport utilized existing transportConnectTimeout instead of using server value.");
+                end();
+            });
+
+            return function () {
+                connection.stop();
+            };
+        });
+
     });
 })($, window);

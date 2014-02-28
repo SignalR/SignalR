@@ -1,18 +1,37 @@
 ﻿<!DOCTYPE html>
 <html>
 <head>
-    <link rel="stylesheet" href="qunit.css" type="text/css" />
+    @@TestFrameworkDependencies@@
+    @@CodeCoverageDependencies@@
     @@ReferencedCSSFiles@@
-    <script type="text/javascript" src="qunit.js"></script>
+    @@TestHtmlTemplateFiles@@
     @@ReferencedJSFiles@@
-    <script type="text/javascript">
-        if (window.require && typeof (window.require.config) === 'function') {
-            require.config({
-                baseUrl: '@@TestJSFileDir@@'
+    @@TestJSFile@@
+    
+    <script>
+        var amdTestPath = "@@AMDTestPath@@";
+        if (window.require && typeof window.require === "function" && amdTestPath !== "") {
+            if (window.chutzpah) {
+                window.chutzpah.usingModuleLoader = true;
+            }
+            
+            requirejs.config({
+                map: {
+                    '*': {
+                        @@AMDModuleMap@@
+                        }
+                }
+            });
+
+            window.QUnit.config.autostart = false;
+            window.require([amdTestPath], function () {
+                console.log("!!_!! Starting QUnit from inline AMD call...");
+                if (!window._Chutzpah_covobj_name) {
+                    window.QUnit.start();
+                }
             });
         }
     </script>
-    @@TestJSFile@@
 </head>
 
 <body>

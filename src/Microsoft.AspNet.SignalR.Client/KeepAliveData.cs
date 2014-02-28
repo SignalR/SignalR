@@ -12,8 +12,6 @@ namespace Microsoft.AspNet.SignalR.Client
         // Determines when we warn the developer that the connection may be lost
         private const double _keepAliveWarnAt = 2.0 / 3.0;
 
-        public DateTime LastKeepAlive { get; set; }
-
         // Timeout to designate when to force the connection into reconnecting
         public TimeSpan Timeout { get; private set; }
 
@@ -30,9 +28,8 @@ namespace Microsoft.AspNet.SignalR.Client
             CheckInterval = TimeSpan.FromTicks((Timeout.Ticks - TimeoutWarning.Ticks) / 3);
         }
 
-        public KeepAliveData(DateTime lastKeepAlive, TimeSpan timeout, TimeSpan timeoutWarning, TimeSpan checkInterval)
+        public KeepAliveData(TimeSpan timeout, TimeSpan timeoutWarning, TimeSpan checkInterval)
         {
-            LastKeepAlive = lastKeepAlive;
             Timeout = timeout;
             TimeoutWarning = timeoutWarning;
             CheckInterval = checkInterval;

@@ -17,7 +17,6 @@ using CmdLine;
 
 namespace Microsoft.AspNet.SignalR.Crank
 {
-
     class Program
     {
         private static volatile bool _running = true;
@@ -58,11 +57,13 @@ namespace Microsoft.AspNet.SignalR.Crank
             {
                 if (stopwatch != null)
                 {
+                    // Breaking out of the loop because i am either timed out or i am done running
                     if ((stopwatch.Elapsed > endTime) || (stopwatch.Elapsed > timeoutTime))
                     {
                         _running = false;
                         break;
                     }
+
                     Sample(arguments, connections, stopwatch.Elapsed);
                 }
                 Thread.Sleep(arguments.BatchInterval);
@@ -237,7 +238,7 @@ namespace Microsoft.AspNet.SignalR.Crank
             double median = values[values.Length / 2];
             if (values.Length % 2 == 0)
             {
-                median = median + values[(values.Length / 2) - 1] / 2;
+                median = (median + values[(values.Length / 2) - 1]) / 2;
             }
             Console.WriteLine("{0} (MEDIAN):  {1}", key, Math.Round(median));
 

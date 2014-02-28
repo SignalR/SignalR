@@ -1,0 +1,26 @@
+﻿<?xml version="1.0"?>
+<package>
+  <metadata>
+    <id>Microsoft.AspNet.SignalR.ServiceBus</id>
+    <title>Microsoft ASP.NET SignalR Service Bus Messaging Backplane</title>
+    <version>__SIGNALR_PACKAGE_VERSION__</version>
+    <authors>Microsoft</authors>
+    <owners>Microsoft</owners>
+    <licenseUrl>__SIGNALR_LICENSE_URL__</licenseUrl>
+    <copyright>__SIGNALR_COPYRIGHT_NOTICE__</copyright>
+    <projectUrl>http://www.asp.net/signalr</projectUrl>
+    <requireLicenseAcceptance>true</requireLicenseAcceptance>
+    <description>Service Bus messaging backplane for scaling out of ASP.NET SignalR applications in a web-farm.</description>
+    <language>en-US</language>
+    <tags>Microsoft AspNet SignalR AspNetSignalR ServiceBus</tags>
+    <releaseNotes>https://github.com/SignalR/SignalR/releases</releaseNotes>
+    <dependencies>
+      <dependency id="Microsoft.AspNet.SignalR.Core" version="__SIGNALR_PACKAGE_VERSION__" />
+      <dependency id="WindowsAzure.ServiceBus" version="2.1.0" />
+    </dependencies>
+  </metadata>
+  <files>
+    <file src="Net45\Microsoft.AspNet.SignalR.ServiceBus.dll" target="lib\net45" />
+    <file src="Net45\Microsoft.AspNet.SignalR.ServiceBus.xml" target="lib\net45" />
+  </files>
+</package>

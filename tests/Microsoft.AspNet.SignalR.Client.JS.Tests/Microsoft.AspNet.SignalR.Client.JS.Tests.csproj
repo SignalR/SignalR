@@ -46,6 +46,18 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Microsoft.CSharp" />
+    <Reference Include="Microsoft.Owin, Version=2.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\packages\Microsoft.Owin.2.0.1\lib\net45\Microsoft.Owin.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.Owin.Host.SystemWeb, Version=2.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\packages\Microsoft.Owin.Host.SystemWeb.2.0.1\lib\net45\Microsoft.Owin.Host.SystemWeb.dll</HintPath>
+    </Reference>
+    <Reference Include="Owin, Version=1.0.0.0, Culture=neutral, PublicKeyToken=f0ebd12fd5e55cc5, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\packages\Owin.1.0\lib\net40\Owin.dll</HintPath>
+    </Reference>
     <Reference Include="System.Web.DynamicData" />
     <Reference Include="System.Web.Entity" />
     <Reference Include="System.Web.ApplicationServices" />
@@ -66,7 +78,6 @@
   <ItemGroup>
     <None Include="Build\build.ps1" />
     <Content Include="Build\disableCrossDomain.js" />
-    <Content Include="Build\teamCityIntegration.js" />
     <Content Include="default.html" />
     <Content Include="NetworkMock\jquery.network.mock.ajax.js" />
     <Content Include="NetworkMock\jquery.network.mock.core.js" />
@@ -77,16 +88,22 @@
     <Content Include="Scripts\jquery-1.7.2.js" />
     <Content Include="Scripts\jquery-1.8.3.js" />
     <Content Include="Scripts\jquery-1.9.1.js" />
+    <Content Include="Scripts\jquery-2.0.0.js" />
     <Content Include="Scripts\jquery.network.mock.js" />
     <Content Include="Scripts\jquery.signalR.js" />
     <Content Include="Build\test.config.js" />
+    <Content Include="Scripts\qunit-1.12.0.js" />
     <Content Include="Scripts\_references.js" />
+    <Content Include="Styles\qunit-1.12.0.css" />
     <Content Include="Tests\FunctionalTests\Common\AjaxAbortFacts.js" />
     <Content Include="Tests\FunctionalTests\Common\AjaxSendFacts.js" />
     <Content Include="Tests\FunctionalTests\Common\KeepAliveFacts.js" />
+    <Content Include="Tests\FunctionalTests\Common\ResponseRedirectionFacts.js" />
+    <Content Include="Tests\FunctionalTests\Core\JsonFacts.js" />
     <Content Include="Tests\FunctionalTests\Core\NegotiateFacts.js" />
     <Content Include="Tests\FunctionalTests\Hubs\HubEventHandlerFacts.js" />
     <Content Include="Tests\FunctionalTests\Hubs\HubGroupFacts.js" />
+    <Content Include="Tests\FunctionalTests\Transports\All\AjaxReplacementFacts.js" />
     <Content Include="Tests\FunctionalTests\Transports\All\ConnectionFacts.js" />
     <Content Include="Tests\FunctionalTests\Transports\All\HubConnectionFacts.js" />
     <Content Include="Tests\FunctionalTests\Transports\All\SendFacts.js" />
@@ -95,8 +112,12 @@
     <Content Include="Tests\FunctionalTests\Hubs\HubProxyFacts.js" />
     <Content Include="Tests\FunctionalTests\Common\PingServerFacts.js" />
     <Content Include="Tests\FunctionalTests\Transports\All\ConnectionStateFacts.js" />
+    <Content Include="Tests\FunctionalTests\Transports\ForeverFrame\FFConnectFacts.js" />
     <Content Include="Tests\FunctionalTests\Transports\ForeverFrame\TransportSelectionFacts.js" />
+    <Content Include="Tests\FunctionalTests\Transports\LongPolling\LPConnectFacts.js" />
     <Content Include="Tests\FunctionalTests\Transports\LongPolling\LPReconnectFacts.js" />
+    <Content Include="Tests\FunctionalTests\Transports\ServerSentEvents\SSEReconnectFacts.js" />
+    <Content Include="Tests\FunctionalTests\Transports\WebSocketsFacts\WebSocketsFacts.js" />
     <Content Include="Tests\UnitTests\Common\AjaxFacts.js" />
     <Content Include="Tests\UnitTests\Common\KeepAliveFacts.js" />
     <Content Include="Tests\UnitTests\Common\ProcessMessagesFacts.js" />
@@ -105,11 +126,10 @@
     <Content Include="Tests\UnitTests\Connections\ConnectionUtilityFacts.js" />
     <Content Include="Tests\UnitTests\Common\UrlFacts.js" />
     <Content Include="Tests\UnitTests\Connections\ConnectionFacts.js" />
-    <Content Include="Styles\qunit.css" />
-    <Content Include="Scripts\qunit.js" />
     <Content Include="Tests\UnitTests\Connections\ConnectionStateFacts.js" />
     <Content Include="Tests\UnitTests\Connections\HubConnectionFacts.js" />
     <Content Include="Tests\UnitTests\SignalRFacts.js" />
+    <Content Include="Tests\UnitTests\Transports\CommonTransportFacts.js" />
     <Content Include="Tests\UnitTests\Transports\ForeverFrameFacts.js" />
     <Content Include="Tests\UnitTests\Transports\LongPollingFacts.js" />
     <Content Include="Tests\UnitTests\Transports\ServerSentEventsFacts.js" />
@@ -139,6 +159,7 @@
     </Content>
     <Content Include="Scripts\qunit.extensions.js" />
     <Content Include="Scripts\test.utilities.js" />
+    <Content Include="packages.config" />
     <None Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
     </None>
@@ -163,14 +184,6 @@
     <ProjectReference Include="..\..\src\Microsoft.AspNet.SignalR.Core\Microsoft.AspNet.SignalR.Core.csproj">
       <Project>{1b9a82c4-bca1-4834-a33e-226f17be070b}</Project>
       <Name>Microsoft.AspNet.SignalR.Core</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\src\Microsoft.AspNet.SignalR.Owin45\Microsoft.AspNet.SignalR.Owin45.csproj">
-      <Project>{45892477-ef4e-4f45-a431-822755a38ea0}</Project>
-      <Name>Microsoft.AspNet.SignalR.Owin45</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\src\Microsoft.AspNet.SignalR.SystemWeb45\Microsoft.AspNet.SignalR.SystemWeb45.csproj">
-      <Project>{202fa02d-cc05-40d2-a574-4bd34e47f575}</Project>
-      <Name>Microsoft.AspNet.SignalR.SystemWeb45</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="..\..\src\Common\Microsoft.AspNet.SignalR.targets" />
@@ -207,16 +220,16 @@
       <Using Namespace="System.Web" />
       <Using Namespace="Microsoft.Build.Framework" />
       <Code Type="Fragment" Language="cs"><![CDATA[
-            ScriptTagsOutput = "";
+            ScriptTagsOutput = "\r\n";
             DirectoryInfo dirInfo = new DirectoryInfo(ProjectDirectory + "\\" + RelativePath.Replace("/", "\\"));
             FileInfo[] fileInfos = dirInfo.GetFiles("*.js", SearchOption.AllDirectories);
 
             foreach (FileInfo f in fileInfos)
             {
-                var scriptTag = "<script type=\"text/javascript\" src=\"";
+                var scriptTag = "        <script src=\"";
                 scriptTag += Uri.UnescapeDataString(f.FullName.Replace(ProjectDirectory + "\\", "").Replace("\\","/")) + "\"></script>";
                 
-                ScriptTagsOutput += scriptTag+"\n";
+                ScriptTagsOutput += scriptTag+"\r\n";
             }
     ]]></Code>
     </Task>
@@ -225,7 +238,8 @@
     <BuildScriptTags ProjectDirectory="$(MSBuildProjectDirectory)" RelativePath="$(QUnitTestsFolder)">
       <Output PropertyName="JSTests" TaskParameter="ScriptTagsOutput" />
     </BuildScriptTags>
-    <Copy SourceFiles="$(SolutionDir)src\Microsoft.AspNet.SignalR.Client.JS\bin\jquery.signalR.js" DestinationFiles="Scripts\jquery.signalR.js" Condition=" '$(OS)' == 'Windows_NT' " />
+    <Copy Condition="'$(ArtifactsDir)' == '' And '$(OS)' == 'Windows_NT'" SourceFiles="$(SolutionDir)src\Microsoft.AspNet.SignalR.Client.JS\bin\jquery.signalR.js" DestinationFiles="Scripts\jquery.signalR.js" />
+    <Copy Condition="'$(ArtifactsDir)' != '' And '$(OS)' == 'Windows_NT'" SourceFiles="$(ArtifactsDir)\Microsoft.AspNet.SignalR.Client.JS\jquery.signalR.js" DestinationFiles="Scripts\jquery.signalR.js" />
     <!-- Update the default.html file with tests that need to run. -->
     <FileUpdate Files="default.html" Regex="&lt;!-- ##JS## --&gt;((.|\r|\n)*?)&lt;!-- ##JS## --&gt;" ReplacementText="&lt;!-- ##JS## --&gt;$(JSTests)&lt;!-- ##JS## --&gt;" Condition=" '$(OS)' == 'Windows_NT'" />
     <Exec Command="powershell -NoProfile -ExecutionPolicy Bypass .\build.ps1" WorkingDirectory="$(ProjectDir)\Build" Condition=" '$(OS)' == 'Windows_NT'" />

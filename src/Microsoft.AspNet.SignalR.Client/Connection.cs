@@ -28,7 +28,7 @@ namespace Microsoft.AspNet.SignalR.Client
     /// Provides client connections for SignalR services.
     /// </summary>
     [SuppressMessage("Microsoft.Design", "CA1001:TypesThatOwnDisposableFieldsShouldBeDisposable", Justification = "_disconnectCts is disposed on disconnect.")]
-    public class Connection : IConnection
+    public class Connection : IConnection, IDisposable
     {
         internal static readonly TimeSpan DefaultAbortTimeout = TimeSpan.FromSeconds(30);
 
@@ -42,6 +42,9 @@ namespace Microsoft.AspNet.SignalR.Client
         // The amount of time the client should attempt to reconnect before stopping.
         private TimeSpan _disconnectTimeout;
 
+        // The amount of time a transport will wait (while connecting) before failing. 
+        private TimeSpan _totalTransportConnectTimeout;
+
         // Provides a way to cancel the the timeout that stops a reconnect cycle
         private IDisposable _disconnectTimeoutOperation;
 
@@ -50,9 +53,19 @@ namespace Microsoft.AspNet.SignalR.Client
 
         private KeepAliveData _keepAliveData;
 
+        private TimeSpan _reconnectWindow;
+
         private Task _connectTask;
 
         private TextWriter _traceWriter;
+
+        private string _connectionData;
+
+        private TaskQueue _receiveQueue;
+
+        private Task _lastQueuedReceiveTask;
+
+        private TaskCompletionSource<object> _startTcs;
 
         // Used to synchronize state changes
         private readonly object _stateLock = new object();
@@ -63,6 +76,11 @@ namespace Microsoft.AspNet.SignalR.Client
         // Used to ensure we don't write to the Trace TextWriter from multiple threads simultaneously 
         private readonly object _traceLock = new object();
 
+        private DateTime _lastMessageAt;
+
+        // Indicates the last time we marked the C# code as running.
+        private DateTime _lastActiveAt;
+
         // Keeps track of when the last keep alive from the server was received
         private HeartbeatMonitor _monitor;
 
@@ -70,7 +88,7 @@ namespace Microsoft.AspNet.SignalR.Client
         private JsonSerializer _jsonSerializer = new JsonSerializer();
 
 #if (NET4 || NET45)
-        private readonly X509CertificateCollection certCollection = new X509CertificateCollection();
+        private readonly X509CertificateCollection _certCollection = new X509CertificateCollection();
 #endif
 
         /// <summary>
@@ -125,7 +143,6 @@ namespace Microsoft.AspNet.SignalR.Client
         public Connection(string url, IDictionary<string, string> queryString)
             : this(url, CreateQueryString(queryString))
         {
-
         }
 
         /// <summary>
@@ -153,11 +170,55 @@ namespace Microsoft.AspNet.SignalR.Client
             Url = url;
             QueryString = queryString;
             _disconnectTimeoutOperation = DisposableAction.Empty;
+            _lastMessageAt = DateTime.UtcNow;
+            _lastActiveAt = DateTime.UtcNow;
+            _reconnectWindow = TimeSpan.Zero;
             Items = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
             State = ConnectionState.Disconnected;
             TraceLevel = TraceLevels.All;
             TraceWriter = new DebugTextWriter();
             Headers = new HeaderDictionary(this);
+            TransportConnectTimeout = TimeSpan.Zero;
+            _totalTransportConnectTimeout = TimeSpan.Zero;
+
+            // Current client protocol
+            Protocol = new Version(1, 3);
+        }
+
+        /// <summary>
+        /// The amount of time a transport will wait (while connecting) before failing.
+        /// This value is modified by adding the server's TransportConnectTimeout configuration value.
+        /// </summary>
+        public TimeSpan TransportConnectTimeout { get; set; }
+
+        /// <summary>
+        /// The amount of time a transport will wait (while connecting) before failing.
+        /// This is the total vaue obtained by adding the server's configuration value and the timeout specified by the user
+        /// </summary>
+        TimeSpan IConnection.TotalTransportConnectTimeout
+        {
+            get
+            {
+                return _totalTransportConnectTimeout;
+            }
+        }
+
+        public Version Protocol { get; set; }
+
+        /// <summary>
+        /// The maximum amount of time a connection will allow to try and reconnect.
+        /// This value is equivalent to the summation of the servers disconnect and keep alive timeout values.
+        /// </summary>
+        TimeSpan IConnection.ReconnectWindow 
+        {
+            get
+            {
+                return _reconnectWindow;
+            }
+            set
+            {
+                _reconnectWindow = value;
+            }
         }
 
         /// <summary>
@@ -174,6 +235,35 @@ namespace Microsoft.AspNet.SignalR.Client
                 _keepAliveData = value;
             }
         }
+
+        /// <summary>
+        /// The timestamp of the last message received by the connection.
+        /// </summary>
+        DateTime IConnection.LastMessageAt
+        {
+            get
+            {
+                return _lastMessageAt;
+            }
+        }
+
+        DateTime IConnection.LastActiveAt
+        {
+            get
+            {
+                return _lastActiveAt;
+            }
+        }
+
+#if NET4 || NET45
+        X509CertificateCollection IConnection.Certificates
+        {
+            get
+            {
+                return _certCollection;
+            }
+        }
+#endif
 
         public TraceLevels TraceLevel { get; set; }
 
@@ -229,7 +319,7 @@ namespace Microsoft.AspNet.SignalR.Client
         /// </summary>
         public IDictionary<string, string> Headers { get; private set; }
 
-#if !SILVERLIGHT
+#if !PORTABLE
         /// <summary>
         /// Gets of sets proxy information for the connection.
         /// </summary>
@@ -296,6 +386,7 @@ namespace Microsoft.AspNet.SignalR.Client
                     {
                         var stateChange = new StateChange(oldState: _state, newState: value);
                         _state = value;
+
                         if (StateChanged != null)
                         {
                             StateChanged(stateChange);
@@ -335,15 +426,16 @@ namespace Microsoft.AspNet.SignalR.Client
         {
             lock (_startLock)
             {
-                _connectTask = TaskAsyncHelper.Empty;
-                _disconnectCts = new CancellationTokenSource();
-
                 if (!ChangeState(ConnectionState.Disconnected, ConnectionState.Connecting))
                 {
-                    return _connectTask;
+                    return _connectTask ?? TaskAsyncHelper.Empty;
                 }
 
-                _monitor = new HeartbeatMonitor(this, _stateLock);
+                _disconnectCts = new CancellationTokenSource();
+                _startTcs = new TaskCompletionSource<object>();
+                _receiveQueue = new TaskQueue(_startTcs.Task);
+                _lastQueuedReceiveTask = TaskAsyncHelper.Empty;
+
                 _transport = transport;
 
                 _connectTask = Negotiate(transport);
@@ -360,7 +452,9 @@ namespace Microsoft.AspNet.SignalR.Client
         [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "The exception is flowed back to the caller via the tcs.")]
         private Task Negotiate(IClientTransport transport)
         {
-            return transport.Negotiate(this)
+            _connectionData = OnSending();
+
+            return transport.Negotiate(this, _connectionData)
                             .Then(negotiationResponse =>
                             {
                                 VerifyProtocolVersion(negotiationResponse.ProtocolVersion);
@@ -368,32 +462,49 @@ namespace Microsoft.AspNet.SignalR.Client
                                 ConnectionId = negotiationResponse.ConnectionId;
                                 ConnectionToken = negotiationResponse.ConnectionToken;
                                 _disconnectTimeout = TimeSpan.FromSeconds(negotiationResponse.DisconnectTimeout);
+                                _totalTransportConnectTimeout = TransportConnectTimeout + TimeSpan.FromSeconds(negotiationResponse.TransportConnectTimeout);
+
+                                // Default the beat interval to be 5 seconds in case keep alive is disabled.
+                                var beatInterval = TimeSpan.FromSeconds(5);
 
                                 // If we have a keep alive
                                 if (negotiationResponse.KeepAliveTimeout != null)
                                 {
                                     _keepAliveData = new KeepAliveData(TimeSpan.FromSeconds(negotiationResponse.KeepAliveTimeout.Value));
+                                    _reconnectWindow = _disconnectTimeout + _keepAliveData.Timeout;
+
+                                    beatInterval = _keepAliveData.CheckInterval;
+                                }
+                                else
+                                {
+                                    _reconnectWindow = _disconnectTimeout;
                                 }
 
-                                var data = OnSending();
-                                return StartTransport(data);
+                                _monitor = new HeartbeatMonitor(this, _stateLock, beatInterval);
+
+                                return StartTransport();
                             })
                             .ContinueWithNotComplete(() => Disconnect());
         }
 
-        private Task StartTransport(string data)
+        private Task StartTransport()
         {
-            return _transport.Start(this, data, _disconnectCts.Token)
+            return _transport.Start(this, _connectionData, _disconnectCts.Token)
                              .RunSynchronously(() =>
                              {
+                                 // NOTE: We have tests that rely on this state change occuring *BEFORE* the start task is complete
                                  ChangeState(ConnectionState.Connecting, ConnectionState.Connected);
 
-                                 if (_keepAliveData != null)
-                                 {
-                                     // Start the monitor to check for server activity
-                                     _monitor.Start();
-                                 }
-                             });
+                                 // Now that we're connected complete the start task that the
+                                 // receive queue is waiting on
+                                 _startTcs.SetResult(null);
+                                 
+                                 // Start the monitor to check for server activity
+                                _monitor.Start();
+                             })
+                             // Don't return until the last receive has been processed to ensure messages/state sent in OnConnected
+                             // are processed prior to the Start() method task finishing
+                             .Then(() => _lastQueuedReceiveTask);
         }
 
         private bool ChangeState(ConnectionState oldState, ConnectionState newState)
@@ -419,17 +530,17 @@ namespace Microsoft.AspNet.SignalR.Client
             return false;
         }
 
-        private static void VerifyProtocolVersion(string versionString)
+        private void VerifyProtocolVersion(string versionString)
         {
             Version version;
 
             if (String.IsNullOrEmpty(versionString) ||
                 !TryParseVersion(versionString, out version) ||
-                !(version.Major == 1 && version.Minor == 2))
+                version != Protocol)
             {
                 throw new InvalidOperationException(String.Format(CultureInfo.CurrentCulture,
                                                                   Resources.Error_IncompatibleProtocolVersion,
-                                                                  "1.2",
+                                                                  Protocol,
                                                                   versionString ?? "null"));
             }
         }
@@ -464,33 +575,27 @@ namespace Microsoft.AspNet.SignalR.Client
                     }
                 }
 
-                lock (_stateLock)
+                if (_receiveQueue != null)
                 {
-                    // Do nothing if the connection is offline
-                    if (State != ConnectionState.Disconnected)
-                    {
-                        string connectionId = ConnectionId;
-
-                        Trace(TraceLevels.Events, "Stop");
-
-                        // Dispose the heart beat monitor so we don't fire notifications when waiting to abort
-                        _monitor.Dispose();
-
-                        _transport.Abort(this, timeout);
-
-                        Disconnect();
-
-                        _disconnectCts.Dispose();
-
-                        if (_transport != null)
-                        {
-                            Trace(TraceLevels.Events, "Transport.Dispose({0})", connectionId);
-
-                            _transport.Dispose();
-                            _transport = null;
-                        }
-                    }
+                    // Close the receive queue so currently running receive callback finishes and no more are run.
+                    // We can't wait on the result of the drain because this method may be on the stack of the task returned (aka deadlock).
+                    _receiveQueue.Drain().Catch();
                 }
+
+                // This is racy since it's outside the _stateLock, but we are trying to avoid 30s deadlocks when calling _transport.Abort()
+                if (State == ConnectionState.Disconnected)
+                {
+                    return;
+                }
+
+                Trace(TraceLevels.Events, "Stop");
+
+                // Dispose the heart beat monitor so we don't fire notifications when waiting to abort
+                _monitor.Dispose();
+
+                _transport.Abort(this, timeout, _connectionData);
+
+                Disconnect();
             }
         }
 
@@ -513,11 +618,24 @@ namespace Microsoft.AspNet.SignalR.Client
                     // Change state before doing anything else in case something later in the method throws
                     State = ConnectionState.Disconnected;
 
-                    Trace(TraceLevels.StateChanges, "Disconnect");
+                    Trace(TraceLevels.StateChanges, "Disconnected");
 
                     _disconnectTimeoutOperation.Dispose();
                     _disconnectCts.Cancel();
-                    _monitor.Dispose();
+                    _disconnectCts.Dispose();
+
+                    if (_monitor != null)
+                    {
+                        _monitor.Dispose();
+                    }
+
+                    if (_transport != null)
+                    {
+                        Trace(TraceLevels.Events, "Transport.Dispose({0})", ConnectionId);
+
+                        _transport.Dispose();
+                        _transport = null;
+                    }
 
                     Trace(TraceLevels.Events, "Closed");
 
@@ -526,7 +644,12 @@ namespace Microsoft.AspNet.SignalR.Client
                     ConnectionToken = null;
                     GroupsToken = null;
                     MessageId = null;
+                    _connectionData = null;
 
+#if NETFX_CORE || PORTABLE
+                    // Clear the buffer
+                    _traceWriter.Flush();
+#endif
                     // TODO: Do we want to trigger Closed if we are connecting?
                     OnClosed();
                 }
@@ -550,7 +673,7 @@ namespace Microsoft.AspNet.SignalR.Client
         {
             if (State == ConnectionState.Disconnected)
             {
-                throw new InvalidOperationException(String.Format(CultureInfo.CurrentCulture, Resources.Error_StartMustBeCalledBeforeDataCanBeSent));
+                throw new InvalidOperationException(String.Format(CultureInfo.CurrentCulture, Resources.Error_DataCannotBeSentConnectionDisconnected));
             }
 
             if (State == ConnectionState.Connecting)
@@ -558,7 +681,7 @@ namespace Microsoft.AspNet.SignalR.Client
                 throw new InvalidOperationException(String.Format(CultureInfo.CurrentCulture, Resources.Error_ConnectionHasNotBeenEstablished));
             }
 
-            return _transport.Send(this, data);
+            return _transport.Send(this, data, _connectionData);
         }
 
         /// <summary>
@@ -585,7 +708,7 @@ namespace Microsoft.AspNet.SignalR.Client
                     throw new InvalidOperationException(Resources.Error_CertsCanOnlyBeAddedWhenDisconnected);
                 }
 
-                certCollection.Add(certificate);
+                _certCollection.Add(certificate);
             }
         }
 #endif
@@ -607,21 +730,44 @@ namespace Microsoft.AspNet.SignalR.Client
 
 
         [SuppressMessage("Microsoft.Design", "CA1062:Validate arguments of public methods", MessageId = "0", Justification = "This is called by the transport layer")]
+        [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "The exception is raised via an event.")]
         void IConnection.OnReceived(JToken message)
         {
-            OnMessageReceived(message);
+            _lastQueuedReceiveTask = _receiveQueue.Enqueue(() => Task.Factory.StartNew(() =>
+            {
+                try
+                {
+                    OnMessageReceived(message);
+                }
+                catch (Exception ex)
+                {
+                    OnError(ex);
+                }
+            }));
         }
 
+        [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "The exception can be from user code, needs to be a catch all.")]
         [SuppressMessage("Microsoft.Design", "CA1062:Validate arguments of public methods", MessageId = "0", Justification = "This is called by the transport layer")]
         protected virtual void OnMessageReceived(JToken message)
         {
             if (Received != null)
             {
-                Received(message.ToString());
+                // #1889: We now have a try-catch in the OnMessageReceived handler.  One note about this change is that
+                // messages that are triggered via responses to server invocations will no longer be wrapped in an
+                // aggregate exception due to this change.  This makes the exception throwing behavior consistent across
+                // all types of receive triggers.
+                try
+                {
+                    Received(message.ToString());
+                }
+                catch (Exception ex)
+                {
+                    OnError(ex);
+                }
             }
         }
 
-        void IConnection.OnError(Exception error)
+        private void OnError(Exception error)
         {
             Trace(TraceLevels.Events, "OnError({0})", error);
 
@@ -631,6 +777,11 @@ namespace Microsoft.AspNet.SignalR.Client
             }
         }
 
+        void IConnection.OnError(Exception error)
+        {
+            OnError(error);
+        }
+
         public virtual void OnReconnecting()
         {
             // Only allow the client to attempt to reconnect for a _disconnectTimout TimeSpan which is set by
@@ -638,6 +789,12 @@ namespace Microsoft.AspNet.SignalR.Client
             // If the client tries to reconnect for longer the server will likely have deleted its ConnectionId
             // topic along with the contained disconnect message.
             _disconnectTimeoutOperation = SetTimeout(_disconnectTimeout, Disconnect);
+
+#if NETFX_CORE || PORTABLE
+            // Clear the buffer
+            _traceWriter.Flush();
+#endif
+
             if (Reconnecting != null)
             {
                 Reconnecting();
@@ -655,7 +812,7 @@ namespace Microsoft.AspNet.SignalR.Client
                 Reconnected();
             }
 
-            ((IConnection)this).UpdateLastKeepAlive();
+            ((IConnection)this).MarkLastMessage();
         }
 
         void IConnection.OnConnectionSlow()
@@ -669,50 +826,38 @@ namespace Microsoft.AspNet.SignalR.Client
         }
 
         /// <summary>
-        /// Sets LastKeepAlive to the current time 
+        /// Sets LastMessageAt to the current time 
         /// </summary>
-        void IConnection.UpdateLastKeepAlive()
+        void IConnection.MarkLastMessage()
         {
-            if (_keepAliveData != null)
+            _lastMessageAt = DateTime.UtcNow;
+        }
+
+        /// <summary>
+        /// Sets LastActiveAt to the current time 
+        /// </summary>
+        void IConnection.MarkActive()
+        {
+            // Ensure that we haven't gone to sleep since our last "active" marking.
+            if (TransportHelper.VerifyLastActive(this))
             {
-                _keepAliveData.LastKeepAlive = DateTime.UtcNow;
+                _lastActiveAt = DateTime.UtcNow;
             }
         }
 
         [SuppressMessage("Microsoft.Design", "CA1062:Validate arguments of public methods", MessageId = "0", Justification = "This is called by the transport layer")]
         void IConnection.PrepareRequest(IRequest request)
         {
-#if WINDOWS_PHONE
-            // http://msdn.microsoft.com/en-us/library/ff637320(VS.95).aspx
-            request.UserAgent = CreateUserAgentString("SignalR.Client.WP7");
+#if PORTABLE
+            // Cannot set user agent for Portable because SL does not support it.
+#elif NETFX_CORE
+            request.UserAgent = CreateUserAgentString("SignalR.Client.WinRT");
+#elif NET45
+            request.UserAgent = CreateUserAgentString("SignalR.Client.NET45");
 #else
-#if SILVERLIGHT
-            // Useragent is not possible to set with Silverlight, not on the UserAgent property of the request nor in the Headers key/value in the request
-#else
-            request.UserAgent = CreateUserAgentString("SignalR.Client");
-#endif
-#endif
-            if (Credentials != null)
-            {
-                request.Credentials = Credentials;
-            }
-
-            if (CookieContainer != null)
-            {
-                request.CookieContainer = CookieContainer;
-            }
-
-#if !SILVERLIGHT
-            if (Proxy != null)
-            {
-                request.Proxy = Proxy;
-            }
+            request.UserAgent = CreateUserAgentString("SignalR.Client.NET4");
 #endif
             request.SetRequestHeaders(Headers);
-
-#if (NET4 || NET45)
-            request.AddClientCerts(certCollection);
-#endif
         }
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode", Justification = "Can be called via other clients.")]
@@ -721,13 +866,13 @@ namespace Microsoft.AspNet.SignalR.Client
             if (_assemblyVersion == null)
             {
 #if NETFX_CORE
-                _assemblyVersion = new Version("1.1.0");
+                _assemblyVersion = new Version("2.0.2");
 #else
                 _assemblyVersion = new AssemblyName(typeof(Connection).Assembly.FullName).Version;
 #endif
             }
 
-#if NETFX_CORE
+#if NETFX_CORE || PORTABLE
             return String.Format(CultureInfo.InvariantCulture, "{0}/{1} ({2})", client, _assemblyVersion, "Unknown OS");
 #else
             return String.Format(CultureInfo.InvariantCulture, "{0}/{1} ({2})", client, _assemblyVersion, Environment.OSVersion);
@@ -737,7 +882,7 @@ namespace Microsoft.AspNet.SignalR.Client
         [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "The Version constructor can throw exceptions of many different types. Failure is indicated by returning false.")]
         private static bool TryParseVersion(string versionString, out Version version)
         {
-#if WINDOWS_PHONE || NET35
+#if PORTABLE
             try
             {
                 version = new Version(versionString);
@@ -774,9 +919,16 @@ namespace Microsoft.AspNet.SignalR.Client
         /// </summary>
         private class DebugTextWriter : TextWriter
         {
+#if NETFX_CORE || PORTABLE
+            private readonly StringBuilder _buffer;
+#endif
+
             public DebugTextWriter()
                 : base(CultureInfo.InvariantCulture)
             {
+#if NETFX_CORE || PORTABLE
+                _buffer = new StringBuilder();
+#endif
             }
 
             public override void WriteLine(string value)
@@ -784,17 +936,55 @@ namespace Microsoft.AspNet.SignalR.Client
                 Debug.WriteLine(value);
             }
 
-#if NETFX_CORE
+#if NETFX_CORE || PORTABLE
             public override void Write(char value)
             {
-                // This is wrong we don't call it
-                Debug.WriteLine(value);
+                lock (_buffer)
+                {
+                    if (value == '\n')
+                    {
+                        Flush();
+                    }
+                    else
+                    {
+                        _buffer.Append(value);
+                    }
+                }
             }
 #endif
 
             public override Encoding Encoding
             {
                 get { return Encoding.UTF8; }
+            }
+
+#if NETFX_CORE || PORTABLE
+            public override void Flush()
+            {
+                Debug.WriteLine(_buffer.ToString());
+                _buffer.Clear();
+            }
+#endif
+        }
+
+        /// <summary>
+        /// Stop the connection, equivalent to calling connection.stop
+        /// </summary>
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        /// <summary>
+        /// Stop the connection, equivalent to calling connection.stop
+        /// </summary>
+        /// <param name="disposing">Set this to true to perform the dispose, false to do nothing</param>
+        protected virtual void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                Stop();
             }
         }
     }

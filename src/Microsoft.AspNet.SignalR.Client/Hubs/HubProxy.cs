@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR.Client;
 using Newtonsoft.Json;
@@ -96,7 +97,15 @@ namespace Microsoft.AspNet.SignalR.Client.Hubs
                 {
                     if (result.Error != null)
                     {
-                        tcs.TrySetUnwrappedException(new InvalidOperationException(result.Error));
+                        if (result.IsHubException.HasValue && result.IsHubException.Value)
+                        {
+                            // A HubException was thrown
+                            tcs.TrySetException(new HubException(result.Error, result.ErrorData));
+                        }
+                        else
+                        {
+                            tcs.TrySetException(new InvalidOperationException(result.Error));
+                        }
                     }
                     else
                     {

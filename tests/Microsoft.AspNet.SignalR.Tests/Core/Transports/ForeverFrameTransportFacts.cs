@@ -1,9 +1,13 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.IO;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR.Hosting;
+using Microsoft.AspNet.SignalR.Messaging;
+using Microsoft.AspNet.SignalR.Tests.Common.Infrastructure;
 using Microsoft.AspNet.SignalR.Transports;
 using Moq;
 using Xunit;
@@ -13,17 +17,31 @@ namespace Microsoft.AspNet.SignalR.Tests.Core
 {
     public class ForeverFrameTransportFacts
     {
-        [Fact]
-        public void ForeverFrameTransportEscapesTags()
+        [Theory]
+        [InlineData("</sCRiPT>", "\\u003c/sCRiPT\\u003e")]
+        [InlineData("</SCRIPT dosomething='false'>", "\\u003c/SCRIPT dosomething='false'\\u003e")]
+        [InlineData("<p>ELLO</p>", "\\u003cp\\u003eELLO\\u003c/p\\u003e")]
+        public void ForeverFrameTransportEscapesTags(string data, string expected)
         {
             var request = new Mock<IRequest>();
             var response = new CustomResponse();
             var context = new HostContext(request.Object, response);
             var fft = new ForeverFrameTransport(context, new DefaultDependencyResolver());
 
-            AssertEscaped(fft, response, "</sCRiPT>", "\\u003c/sCRiPT\\u003e");
-            AssertEscaped(fft, response, "</SCRIPT dosomething='false'>", "\\u003c/SCRIPT dosomething='false'\\u003e");
-            AssertEscaped(fft, response, "<p>ELLO</p>", "\\u003cp\\u003eELLO\\u003c/p\\u003e");
+            AssertEscaped(fft, response, data, expected);
+        }
+
+        [Theory]
+        [InlineData("<script type=\"\"></script>", "\\u003cscript type=\"\"\\u003e\\u003c/script\\u003e")]
+        [InlineData("<script type=''></script>", "\\u003cscript type=''\\u003e\\u003c/script\\u003e")]
+        public void ForeverFrameTransportEscapesTagsWithPersistentResponse(string data, string expected)
+        {
+            var request = new Mock<IRequest>();
+            var response = new CustomResponse();
+            var context = new HostContext(request.Object, response);
+            var fft = new ForeverFrameTransport(context, new DefaultDependencyResolver());
+
+            AssertEscaped(fft, response, GetWrappedResponse(data), expected);
         }
 
         [Theory]
@@ -37,12 +55,12 @@ namespace Microsoft.AspNet.SignalR.Tests.Core
         {
             var request = new Mock<IRequest>();
             var qs = new NameValueCollection { { "frameId", frameId } };
-            request.Setup(r => r.QueryString).Returns(qs);
+            request.Setup(r => r.QueryString).Returns(new NameValueCollectionWrapper(qs));
             var response = new CustomResponse();
             var context = new HostContext(request.Object, response);
             var connection = new Mock<ITransportConnection>();
             var fft = new ForeverFrameTransport(context, new DefaultDependencyResolver());
-            
+
             Assert.Throws(typeof(InvalidOperationException), () => fft.InitializeResponse(connection.Object));
         }
 
@@ -51,7 +69,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Core
         {
             var request = new Mock<IRequest>();
             var qs = new NameValueCollection { { "frameId", "1" } };
-            request.Setup(r => r.QueryString).Returns(qs);
+            request.Setup(r => r.QueryString).Returns(new NameValueCollectionWrapper(qs));
             var response = new CustomResponse();
             var context = new HostContext(request.Object, response);
             var connection = new Mock<ITransportConnection>();
@@ -62,7 +80,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Core
             Assert.Equal("text/html; charset=UTF-8", response.ContentType);
         }
 
-        private static void AssertEscaped(ForeverFrameTransport fft, CustomResponse response, string input, string expectedOutput)
+        private static void AssertEscaped(ForeverFrameTransport fft, CustomResponse response, object input, string expectedOutput)
         {
             fft.Send(input).Wait();
 
@@ -71,6 +89,22 @@ namespace Microsoft.AspNet.SignalR.Tests.Core
 
             // Doing contains due to all the stuff that gets sent through the buffer
             Assert.True(rawResponse.Contains(expectedOutput));
+        }
+
+        private static PersistentResponse GetWrappedResponse(string raw)
+        {
+            var data = Encoding.Default.GetBytes(raw);
+            var message = new Message("foo", "key", new ArraySegment<byte>(data));
+
+            var response = new PersistentResponse
+            {
+                Messages = new List<ArraySegment<Message>> 
+                {
+                    new ArraySegment<Message>(new Message[] { message })
+                }
+            };
+
+            return response;
         }
 
         private class CustomResponse : IResponse
@@ -92,6 +126,8 @@ namespace Microsoft.AspNet.SignalR.Tests.Core
             {
                 get { return CancellationToken.None; }
             }
+
+            public int StatusCode { get; set; }
 
             public string ContentType { get; set; }
 

@@ -1,14 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Security.Principal;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR.Client.Http;
 using Microsoft.AspNet.SignalR.Client.Transports;
-using Microsoft.AspNet.SignalR.FunctionalTests.Infrastructure;
+using Microsoft.AspNet.SignalR.Configuration;
 using Microsoft.AspNet.SignalR.Hosting.Memory;
+using Microsoft.AspNet.SignalR.Tests.Common.Infrastructure;
+using Microsoft.Owin;
 using Owin;
 using Xunit;
 using Xunit.Extensions;
@@ -21,6 +24,51 @@ namespace Microsoft.AspNet.SignalR.Client.Tests
     {
         public class Start : HostedTest
         {
+            [Fact]
+            public void InitMessageSentToFallbackTransports()
+            {
+                using (var host = new MemoryHost())
+                {
+                    host.Configure(app =>
+                    {
+                        Func<AppFunc, AppFunc> middleware = (next) =>
+                        {
+                            return env =>
+                            {
+                                var request = new OwinRequest(env);
+                                var response = new OwinResponse(env);
+
+                                if (!request.Path.Value.Contains("negotiate") && !request.QueryString.Value.Contains("longPolling"))
+                                {
+                                    response.Body = new MemoryStream();
+                                }
+
+                                return next(env);
+                            };
+                        };
+
+                        app.Use(middleware);
+
+                        var config = new ConnectionConfiguration
+                        {
+                            Resolver = new DefaultDependencyResolver()
+                        };
+
+                        app.MapSignalR<MyConnection>("/echo", config);
+                    });
+
+                    var connection = new Connection("http://foo/echo");
+
+                    using (connection)
+                    {
+                        connection.Start(host).Wait();
+
+                        Assert.Equal(connection.State, ConnectionState.Connected);
+                        Assert.Equal(connection.Transport.Name, "longPolling");
+                    }
+                }
+            }
+
             [Fact]
             public void ConnectionCanStartWithAuthenicatedUserAndQueryString()
             {
@@ -51,30 +99,43 @@ namespace Microsoft.AspNet.SignalR.Client.Tests
                         };
 
                         app.Use(middleware);
-                        app.MapConnection<MyAuthenticatedConnection>("/authenticatedConnection", new ConnectionConfiguration());
+
+                        var config = new ConnectionConfiguration
+                        {
+                            Resolver = new DefaultDependencyResolver()
+                        };
+
+                        app.MapSignalR<MyAuthenticatedConnection>("/authenticatedConnection", config);
 
                     });
 
                     var connection = new Connection("http://foo/authenticatedConnection", "access_token=1234");
 
-                    connection.Start(host).Wait();
+                    using (connection)
+                    {
+                        connection.Start(host).Wait();
 
-                    Assert.Equal(connection.State, ConnectionState.Connected);
-
-                    connection.Stop();
+                        Assert.Equal(connection.State, ConnectionState.Connected);
+                    }
                 }
             }
 
             [Theory]
-            [InlineData(HostType.Memory, TransportType.ServerSentEvents)]
-            [InlineData(HostType.Memory, TransportType.LongPolling)]
-            [InlineData(HostType.IISExpress, TransportType.ServerSentEvents)]
-            // [InlineData(HostType.IISExpress, TransportType.LongPolling)] // Connect has issues with LP
-            public void ThrownWebExceptionShouldBeUnwrapped(HostType hostType, TransportType transportType)
+            [InlineData(HostType.Memory, TransportType.ServerSentEvents, MessageBusType.Default)]
+            [InlineData(HostType.Memory, TransportType.ServerSentEvents, MessageBusType.Fake)]
+            [InlineData(HostType.Memory, TransportType.ServerSentEvents, MessageBusType.FakeMultiStream)]
+            [InlineData(HostType.Memory, TransportType.LongPolling, MessageBusType.Default)]
+            [InlineData(HostType.Memory, TransportType.LongPolling, MessageBusType.Fake)]
+            [InlineData(HostType.Memory, TransportType.LongPolling, MessageBusType.FakeMultiStream)]
+            [InlineData(HostType.IISExpress, TransportType.ServerSentEvents, MessageBusType.Default)]
+            [InlineData(HostType.IISExpress, TransportType.LongPolling, MessageBusType.Default)]
+            [InlineData(HostType.HttpListener, TransportType.ServerSentEvents, MessageBusType.Default)]
+            [InlineData(HostType.HttpListener, TransportType.LongPolling, MessageBusType.Default)]
+            public void ThrownWebExceptionShouldBeUnwrapped(HostType hostType, TransportType transportType, MessageBusType messageBusType)
             {
                 using (var host = CreateHost(hostType, transportType))
                 {
-                    host.Initialize();
+                    host.Initialize(messageBusType: messageBusType, transportConnectTimeout: 30);
 
                     var connection = CreateConnection(host, "/ErrorsAreFun");
 
@@ -85,7 +146,7 @@ namespace Microsoft.AspNet.SignalR.Client.Tests
 
                     using (var ser = aggEx.GetError())
                     {
-                        if (hostType == HostType.IISExpress)
+                        if (hostType == HostType.IISExpress || hostType == HostType.HttpListener)
                         {
                             Assert.Equal(System.Net.HttpStatusCode.InternalServerError, ser.StatusCode);
                         }
@@ -101,38 +162,73 @@ namespace Microsoft.AspNet.SignalR.Client.Tests
             }
 
             [Fact]
+            public void ConnectionUsesClientSetTransportConnectTimeout()
+            {
+                TimeSpan defaultTransportConnectTimeout = TimeSpan.Zero;
+                using (var host = new MemoryHost())
+                {
+                    host.Configure(app =>
+                    {
+                        var config = new ConnectionConfiguration
+                        {
+                            Resolver = new DefaultDependencyResolver()
+                        };
+
+                        defaultTransportConnectTimeout = config.Resolver.Resolve<IConfigurationManager>().TransportConnectTimeout;
+
+                        app.MapSignalR<MyConnection>("/echo", config);
+                    });
+
+                    var tcs = new TaskCompletionSource<string>();
+                    var connection = new Connection("http://foo/echo");
+                    var newTimeout = TimeSpan.FromSeconds(4);
+
+                    using (connection)
+                    {
+                        Assert.Equal(((IConnection)connection).TotalTransportConnectTimeout, TimeSpan.Zero);
+                        connection.TransportConnectTimeout = newTimeout;
+                        connection.Start(host).Wait();
+                        Assert.Equal(((IConnection)connection).TotalTransportConnectTimeout - defaultTransportConnectTimeout, newTimeout);
+                    }
+                }
+            }
+
+            [Fact]
             public void FallbackToLongPollingIIS()
             {
                 using (ITestHost host = CreateHost(HostType.IISExpress))
                 {
-                    host.Initialize();
+                    // Reduce transportConnectionTimeout to 5 seconds
+                    host.Initialize(transportConnectTimeout: 5);
 
                     var connection = CreateConnection(host, "/fall-back");
-                    var tcs = new TaskCompletionSource<object>();
 
-                    connection.StateChanged += change =>
+                    using (connection)
                     {
-                        if (change.NewState == ConnectionState.Reconnecting)
+                        var tcs = new TaskCompletionSource<object>();
+
+                        connection.StateChanged += change =>
                         {
-                            tcs.TrySetException(new Exception("The connection should not be reconnecting"));
-                        }
-                    };
+                            if (change.NewState == ConnectionState.Reconnecting)
+                            {
+                                tcs.TrySetException(new Exception("The connection should not be reconnecting"));
+                            }
+                        };
 
-                    var client = new DefaultHttpClient();
-                    var transports = new IClientTransport[]  {
-                        new ServerSentEventsTransport(client) { ConnectionTimeout = TimeSpan.Zero },
-                        new LongPollingTransport(client)
-                    };
+                        var client = new DefaultHttpClient();
+                        var transports = new IClientTransport[]  {
+                            new ServerSentEventsTransport(client),
+                            new LongPollingTransport(client)
+                        };
 
-                    var transport = new AutoTransport(client, transports);
+                        var transport = new AutoTransport(client, transports);
 
-                    connection.Start(transport).Wait();
+                        connection.Start(transport).Wait();
 
-                    Assert.Equal(connection.Transport.Name, "longPolling");
+                        Assert.Equal(connection.Transport.Name, "longPolling");
 
-                    Assert.False(tcs.Task.Wait(TimeSpan.FromSeconds(5)));
-
-                    connection.Stop();
+                        Assert.False(tcs.Task.Wait(TimeSpan.FromSeconds(5)));
+                    }
                 }
             }
 
@@ -143,22 +239,30 @@ namespace Microsoft.AspNet.SignalR.Client.Tests
                 {
                     host.Configure(app =>
                     {
-                        app.MapConnection<MyConnection>("/echo");
-                        app.MapConnection<MyConnection2>("/echo2");
+                        var config = new ConnectionConfiguration
+                        {
+                            Resolver = new DefaultDependencyResolver()
+                        };
+
+                        app.MapSignalR<MyConnection>("/echo", config);
+                        app.MapSignalR<MyConnection2>("/echo2", config);
                     });
 
                     var tcs = new TaskCompletionSource<string>();
                     var connection = new Connection("http://foo/echo2");
 
-                    connection.Received += data =>
+                    using (connection)
                     {
-                        tcs.TrySetResult(data);
-                    };
+                        connection.Received += data =>
+                        {
+                            tcs.TrySetResult(data);
+                        };
 
-                    connection.Start(host).Wait();
-                    connection.Send("");
+                        connection.Start(host).Wait();
+                        connection.Send("");
 
-                    Assert.Equal("MyConnection2", tcs.Task.Result);
+                        Assert.Equal("MyConnection2", tcs.Task.Result);
+                    }
                 }
             }
 
@@ -169,22 +273,30 @@ namespace Microsoft.AspNet.SignalR.Client.Tests
                 {
                     host.Configure(app =>
                     {
-                        app.MapConnection<MyConnection>("echo");
-                        app.MapConnection<MyConnection2>("echo2");
+                        var config = new ConnectionConfiguration
+                        {
+                            Resolver = new DefaultDependencyResolver()
+                        };
+
+                        app.MapSignalR<MyConnection>("/echo", config);
+                        app.MapSignalR<MyConnection2>("/echo2", config);
                     });
 
                     var tcs = new TaskCompletionSource<string>();
                     var connection = new Connection("http://foo/echo2");
 
-                    connection.Received += data =>
+                    using (connection)
                     {
-                        tcs.TrySetResult(data);
-                    };
+                        connection.Received += data =>
+                        {
+                            tcs.TrySetResult(data);
+                        };
 
-                    connection.Start(host).Wait();
-                    connection.Send("");
+                        connection.Start(host).Wait();
+                        connection.Send("");
 
-                    Assert.Equal("MyConnection2", tcs.Task.Result);
+                        Assert.Equal("MyConnection2", tcs.Task.Result);
+                    }
                 }
             }
 
@@ -195,22 +307,30 @@ namespace Microsoft.AspNet.SignalR.Client.Tests
                 {
                     host.Configure(app =>
                     {
-                        app.MapConnection<MyConnection>("echo");
-                        app.MapConnection<MyConnection2>("echo2");
+                        var config = new ConnectionConfiguration
+                        {
+                            Resolver = new DefaultDependencyResolver()
+                        };
+
+                        app.MapSignalR<MyConnection>("/echo", config);
+                        app.MapSignalR<MyConnection2>("/echo2", config);
                     });
 
                     var tcs = new TaskCompletionSource<string>();
                     var connection = new Connection("http://foo/echo");
 
-                    connection.Received += data =>
+                    using (connection)
                     {
-                        tcs.TrySetResult(data);
-                    };
+                        connection.Received += data =>
+                        {
+                            tcs.TrySetResult(data);
+                        };
 
-                    connection.Start(host).Wait();
-                    connection.Send("");
+                        connection.Start(host).Wait();
+                        connection.Send("");
 
-                    Assert.Equal("MyConnection", tcs.Task.Result);
+                        Assert.Equal("MyConnection", tcs.Task.Result);
+                    }
                 }
             }
 
@@ -218,6 +338,9 @@ namespace Microsoft.AspNet.SignalR.Client.Tests
             [InlineData(HostType.IISExpress, TransportType.Websockets)]
             [InlineData(HostType.IISExpress, TransportType.ServerSentEvents)]
             [InlineData(HostType.IISExpress, TransportType.LongPolling)]
+            [InlineData(HostType.HttpListener, TransportType.Websockets)]
+            [InlineData(HostType.HttpListener, TransportType.ServerSentEvents)]
+            [InlineData(HostType.HttpListener, TransportType.LongPolling)]
             public void StoppingDoesntRaiseErrorEvent(HostType hostType, TransportType transportType)
             {
                 using (var host = CreateHost(hostType, transportType))
@@ -240,16 +363,23 @@ namespace Microsoft.AspNet.SignalR.Client.Tests
             }
 
             [Theory]
-            [InlineData(HostType.Memory, TransportType.ServerSentEvents)]
-            [InlineData(HostType.Memory, TransportType.LongPolling)]
-            [InlineData(HostType.IISExpress, TransportType.ServerSentEvents)]
-            [InlineData(HostType.IISExpress, TransportType.Websockets)]
-            [InlineData(HostType.IISExpress, TransportType.LongPolling)]
-            public void ManuallyRestartedClientMaintainsConsistentState(HostType hostType, TransportType transportType)
+            [InlineData(HostType.Memory, TransportType.ServerSentEvents, MessageBusType.Default)]
+            [InlineData(HostType.Memory, TransportType.ServerSentEvents, MessageBusType.Fake)]
+            [InlineData(HostType.Memory, TransportType.ServerSentEvents, MessageBusType.FakeMultiStream)]
+            [InlineData(HostType.Memory, TransportType.LongPolling, MessageBusType.Default)]
+            [InlineData(HostType.Memory, TransportType.LongPolling, MessageBusType.Fake)]
+            [InlineData(HostType.Memory, TransportType.LongPolling, MessageBusType.FakeMultiStream)]
+            [InlineData(HostType.IISExpress, TransportType.ServerSentEvents, MessageBusType.Default)]
+            [InlineData(HostType.IISExpress, TransportType.Websockets, MessageBusType.Default)]
+            [InlineData(HostType.IISExpress, TransportType.LongPolling, MessageBusType.Default)]
+            [InlineData(HostType.HttpListener, TransportType.ServerSentEvents, MessageBusType.Default)]
+            [InlineData(HostType.HttpListener, TransportType.Websockets, MessageBusType.Default)]
+            [InlineData(HostType.HttpListener, TransportType.LongPolling, MessageBusType.Default)]
+            public void ManuallyRestartedClientMaintainsConsistentState(HostType hostType, TransportType transportType, MessageBusType messageBusType)
             {
                 using (var host = CreateHost(hostType, transportType))
                 {
-                    host.Initialize();
+                    host.Initialize(messageBusType: messageBusType);
                     var connection = CreateHubConnection(host);
                     int timesStopped = 0;
 
@@ -272,91 +402,181 @@ namespace Microsoft.AspNet.SignalR.Client.Tests
                     Assert.Equal(15, timesStopped);
                 }
             }
-
+            
             [Theory]
-            [InlineData(HostType.Memory, TransportType.ServerSentEvents)]
-            [InlineData(HostType.Memory, TransportType.LongPolling)]
-            [InlineData(HostType.IISExpress, TransportType.ServerSentEvents)]
-            [InlineData(HostType.IISExpress, TransportType.Websockets)]
-            //[InlineData(HostType.IISExpress, TransportType.LongPolling)]
-            public void ClientStopsReconnectingAfterDisconnectTimeout(HostType hostType, TransportType transportType)
+            [InlineData(HostType.Memory, TransportType.ServerSentEvents, MessageBusType.Default)]
+            [InlineData(HostType.Memory, TransportType.ServerSentEvents, MessageBusType.Fake)]
+            [InlineData(HostType.Memory, TransportType.ServerSentEvents, MessageBusType.FakeMultiStream)]
+            [InlineData(HostType.Memory, TransportType.LongPolling, MessageBusType.Default)]
+            [InlineData(HostType.Memory, TransportType.LongPolling, MessageBusType.Fake)]
+            [InlineData(HostType.Memory, TransportType.LongPolling, MessageBusType.FakeMultiStream)]
+            [InlineData(HostType.IISExpress, TransportType.ServerSentEvents, MessageBusType.Default)]
+            [InlineData(HostType.IISExpress, TransportType.Websockets, MessageBusType.Default)]
+            [InlineData(HostType.IISExpress, TransportType.LongPolling, MessageBusType.Default)]
+            [InlineData(HostType.HttpListener, TransportType.ServerSentEvents, MessageBusType.Default)]
+            [InlineData(HostType.HttpListener, TransportType.Websockets, MessageBusType.Default)]
+            [InlineData(HostType.HttpListener, TransportType.LongPolling, MessageBusType.Default)]
+            public async Task AwaitingOnStartAndThenStoppingDoesntHang(HostType hostType, TransportType transportType, MessageBusType messageBusType)
             {
                 using (var host = CreateHost(hostType, transportType))
                 {
-                    host.Initialize(disconnectTimeout: 6);
+                    host.Initialize(messageBusType: messageBusType);
                     var connection = CreateHubConnection(host);
-                    var reconnectWh = new ManualResetEventSlim();
-                    var disconnectWh = new ManualResetEventSlim();
 
-                    connection.Reconnecting += () =>
-                    {
-                        reconnectWh.Set();
-                        Assert.Equal(ConnectionState.Reconnecting, connection.State);
-                    };
+                    var startTime = DateTime.UtcNow;
 
-                    connection.Closed += () =>
-                    {
-                        disconnectWh.Set();
-                        Assert.Equal(ConnectionState.Disconnected, connection.State);
-                    };
+                    await connection.Start(host.TransportFactory());
+                    connection.Stop();
 
-                    connection.Start(host.Transport).Wait();
-                    host.Shutdown();
-
-                    Assert.True(reconnectWh.Wait(TimeSpan.FromSeconds(25)), "Reconnect never fired");
-                    Assert.True(disconnectWh.Wait(TimeSpan.FromSeconds(25)), "Closed never fired");
+                    Assert.True(DateTime.UtcNow - startTime < TimeSpan.FromSeconds(10));
                 }
             }
 
             [Theory]
-            [InlineData(HostType.Memory, TransportType.ServerSentEvents)]
-            [InlineData(HostType.Memory, TransportType.LongPolling)]
-            [InlineData(HostType.IISExpress, TransportType.ServerSentEvents)]
-            [InlineData(HostType.IISExpress, TransportType.Websockets)]
-            [InlineData(HostType.IISExpress, TransportType.LongPolling)]
-            public void ClientStaysReconnectedAfterDisconnectTimeout(HostType hostType, TransportType transportType)
+            [InlineData(HostType.Memory, TransportType.ServerSentEvents, MessageBusType.Default)]
+            [InlineData(HostType.Memory, TransportType.ServerSentEvents, MessageBusType.Fake)]
+            [InlineData(HostType.Memory, TransportType.ServerSentEvents, MessageBusType.FakeMultiStream)]
+            [InlineData(HostType.Memory, TransportType.LongPolling, MessageBusType.Default)]
+            [InlineData(HostType.Memory, TransportType.LongPolling, MessageBusType.Fake)]
+            [InlineData(HostType.Memory, TransportType.LongPolling, MessageBusType.FakeMultiStream)]
+            [InlineData(HostType.IISExpress, TransportType.ServerSentEvents, MessageBusType.Default)]
+            [InlineData(HostType.IISExpress, TransportType.Websockets, MessageBusType.Default)]
+            [InlineData(HostType.IISExpress, TransportType.LongPolling, MessageBusType.Default)]
+            [InlineData(HostType.HttpListener, TransportType.ServerSentEvents, MessageBusType.Default)]
+            [InlineData(HostType.HttpListener, TransportType.Websockets, MessageBusType.Default)]
+            [InlineData(HostType.HttpListener, TransportType.LongPolling, MessageBusType.Default)]
+            public async Task AwaitingOnFailedStartAndThenStoppingDoesntHang(HostType hostType, TransportType transportType, MessageBusType messageBusType)
+            {
+                using (var host = CreateHost(hostType, transportType))
+                {
+                    host.Initialize(messageBusType: messageBusType);
+                    var badConnection = CreateConnection(host, "/ErrorsAreFun");
+
+                    var startTime = DateTime.UtcNow;
+
+                    try
+                    {
+                        await badConnection.Start(HostedTestFactory.CreateTransport(transportType));
+                    }
+                    catch
+                    {
+                        badConnection.Stop();
+                        Assert.True(DateTime.UtcNow - startTime < TimeSpan.FromSeconds(10));
+                        return;
+                    }
+
+                    Assert.True(false, "An exception should have been thrown.");
+                }
+            }
+            
+
+            [Theory]
+            [InlineData(HostType.Memory, TransportType.ServerSentEvents, MessageBusType.Default)]
+            [InlineData(HostType.Memory, TransportType.ServerSentEvents, MessageBusType.Fake)]
+            [InlineData(HostType.Memory, TransportType.ServerSentEvents, MessageBusType.FakeMultiStream)]
+            [InlineData(HostType.Memory, TransportType.LongPolling, MessageBusType.Default)]
+            [InlineData(HostType.Memory, TransportType.LongPolling, MessageBusType.Fake)]
+            [InlineData(HostType.Memory, TransportType.LongPolling, MessageBusType.FakeMultiStream)]
+            [InlineData(HostType.IISExpress, TransportType.Websockets, MessageBusType.Default)]
+            [InlineData(HostType.IISExpress, TransportType.ServerSentEvents, MessageBusType.Default)]
+            [InlineData(HostType.IISExpress, TransportType.LongPolling, MessageBusType.Default)]
+            [InlineData(HostType.HttpListener, TransportType.Websockets, MessageBusType.Default)]
+            [InlineData(HostType.HttpListener, TransportType.ServerSentEvents, MessageBusType.Default)]
+            [InlineData(HostType.HttpListener, TransportType.LongPolling, MessageBusType.Default)]
+            public void ClientStopsReconnectingAfterDisconnectTimeout(HostType hostType, TransportType transportType, MessageBusType messageBusType)
+            {
+                using (var host = CreateHost(hostType, transportType))
+                {
+                    host.Initialize(disconnectTimeout: 6, messageBusType: messageBusType);
+                    var connection = CreateHubConnection(host);
+
+                    using (connection)
+                    {
+                        var reconnectWh = new ManualResetEventSlim();
+                        var disconnectWh = new ManualResetEventSlim();
+
+                        connection.Reconnecting += () =>
+                        {
+                            reconnectWh.Set();
+                            Assert.Equal(ConnectionState.Reconnecting, connection.State);
+                        };
+
+                        connection.Closed += () =>
+                        {
+                            disconnectWh.Set();
+                            Assert.Equal(ConnectionState.Disconnected, connection.State);
+                        };
+
+                        connection.Start(host.Transport).Wait();
+                        host.Shutdown();
+
+                        Assert.True(reconnectWh.Wait(TimeSpan.FromSeconds(15)), "Reconnect never fired");
+                        Assert.True(disconnectWh.Wait(TimeSpan.FromSeconds(15)), "Closed never fired");
+                    }
+                }
+            }
+
+            [Theory]
+            [InlineData(HostType.Memory, TransportType.ServerSentEvents, MessageBusType.Default)]
+            [InlineData(HostType.Memory, TransportType.ServerSentEvents, MessageBusType.Fake)]
+            [InlineData(HostType.Memory, TransportType.ServerSentEvents, MessageBusType.FakeMultiStream)]
+            [InlineData(HostType.Memory, TransportType.LongPolling, MessageBusType.Default)]
+            [InlineData(HostType.Memory, TransportType.LongPolling, MessageBusType.Fake)]
+            [InlineData(HostType.Memory, TransportType.LongPolling, MessageBusType.FakeMultiStream)]
+            [InlineData(HostType.IISExpress, TransportType.ServerSentEvents, MessageBusType.Default)]
+            [InlineData(HostType.IISExpress, TransportType.Websockets, MessageBusType.Default)]
+            [InlineData(HostType.IISExpress, TransportType.LongPolling, MessageBusType.Default)]
+            [InlineData(HostType.HttpListener, TransportType.ServerSentEvents, MessageBusType.Default)]
+            [InlineData(HostType.HttpListener, TransportType.Websockets, MessageBusType.Default)]
+            [InlineData(HostType.HttpListener, TransportType.LongPolling, MessageBusType.Default)]
+            public void ClientStaysReconnectedAfterDisconnectTimeout(HostType hostType, TransportType transportType, MessageBusType messageBusType)
             {
                 using (var host = CreateHost(hostType, transportType))
                 {
                     host.Initialize(keepAlive: null,
                                     connectionTimeout: 2,
-                                    disconnectTimeout: 6);
+                                    disconnectTimeout: 8, // 8s because the default heartbeat time span is 5s
+                                    messageBusType: messageBusType);
 
-                    var connection = CreateHubConnection(host);
-                    var reconnectingWh = new ManualResetEventSlim();
-                    var reconnectedWh = new ManualResetEventSlim();
+                    var connection = CreateHubConnection(host, "/force-lp-reconnect");
 
-                    connection.Reconnecting += () =>
+                    using (connection)
                     {
-                        reconnectingWh.Set();
-                        Assert.Equal(ConnectionState.Reconnecting, connection.State);
-                    };
+                        var reconnectingWh = new ManualResetEventSlim();
+                        var reconnectedWh = new ManualResetEventSlim();
 
-                    connection.Reconnected += () =>
-                    {
-                        reconnectedWh.Set();
-                        Assert.Equal(ConnectionState.Connected, connection.State);
-                    };
+                        connection.Reconnecting += () =>
+                        {
+                            reconnectingWh.Set();
+                            Assert.Equal(ConnectionState.Reconnecting, connection.State);
+                        };
 
-                    connection.Start(host.Transport).Wait();
+                        connection.Reconnected += () =>
+                        {
+                            reconnectedWh.Set();
+                            Assert.Equal(ConnectionState.Connected, connection.State);
+                        };
 
-                    // Force reconnect
-                    Thread.Sleep(TimeSpan.FromSeconds(5));
+                        connection.Start(host.Transport).Wait();
 
-                    Assert.True(reconnectingWh.Wait(TimeSpan.FromSeconds(30)));
-                    Assert.True(reconnectedWh.Wait(TimeSpan.FromSeconds(30)));
-                    Thread.Sleep(TimeSpan.FromSeconds(15));
-                    Assert.NotEqual(ConnectionState.Disconnected, connection.State);
-
-                    connection.Stop();
+                        Assert.True(reconnectingWh.Wait(TimeSpan.FromSeconds(30)));
+                        Assert.True(reconnectedWh.Wait(TimeSpan.FromSeconds(30)));
+                        Thread.Sleep(TimeSpan.FromSeconds(15));
+                        Assert.NotEqual(ConnectionState.Disconnected, connection.State);
+                    }
                 }
             }
 
             [Theory]
-            [InlineData(HostType.Memory, TransportType.ServerSentEvents)]
-            [InlineData(HostType.Memory, TransportType.LongPolling)]
-            [InlineData(HostType.IISExpress, TransportType.Websockets)]
-            public void ConnectionErrorCapturesExceptionsThrownInReceived(HostType hostType, TransportType transportType)
+            [InlineData(HostType.Memory, TransportType.ServerSentEvents, MessageBusType.Default)]
+            [InlineData(HostType.Memory, TransportType.ServerSentEvents, MessageBusType.Fake)]
+            [InlineData(HostType.Memory, TransportType.ServerSentEvents, MessageBusType.FakeMultiStream)]
+            [InlineData(HostType.Memory, TransportType.LongPolling, MessageBusType.Default)]
+            [InlineData(HostType.Memory, TransportType.LongPolling, MessageBusType.Fake)]
+            [InlineData(HostType.Memory, TransportType.LongPolling, MessageBusType.FakeMultiStream)]
+            [InlineData(HostType.IISExpress, TransportType.Websockets, MessageBusType.Default)]
+            [InlineData(HostType.HttpListener, TransportType.Websockets, MessageBusType.Default)]
+            public void ConnectionErrorCapturesExceptionsThrownInReceived(HostType hostType, TransportType transportType, MessageBusType messageBusType)
             {
                 using (var host = CreateHost(hostType, transportType))
                 {
@@ -365,28 +585,31 @@ namespace Microsoft.AspNet.SignalR.Client.Tests
                     Exception thrown = new Exception(),
                               caught = null;
 
-                    host.Initialize();
+                    host.Initialize(messageBusType: messageBusType);
 
                     var connection = CreateConnection(host, "/multisend");
 
-                    connection.Received += _ =>
+                    using (connection)
                     {
-                        throw thrown;
-                    };
-
-                    connection.Error += e =>
-                    {
-                        caught = e;
-                        if (Interlocked.Increment(ref errorsCaught) == 2)
+                        connection.Received += _ =>
                         {
-                            wh.Set();
-                        }
-                    };
+                            throw thrown;
+                        };
 
-                    connection.Start(host.Transport).Wait();
+                        connection.Error += e =>
+                        {
+                            caught = e;
+                            if (Interlocked.Increment(ref errorsCaught) == 2)
+                            {
+                                wh.Set();
+                            }
+                        };
 
-                    Assert.True(wh.Wait(TimeSpan.FromSeconds(5)));
-                    Assert.Equal(thrown, caught);
+                        connection.Start(host.Transport).Wait();
+
+                        Assert.True(wh.Wait(TimeSpan.FromSeconds(5)));
+                        Assert.Equal(thrown, caught);
+                    }
                 }
             }
 
@@ -397,7 +620,12 @@ namespace Microsoft.AspNet.SignalR.Client.Tests
                 {
                     host.Configure(app =>
                     {
-                        app.MapConnection<TransportResponse>("/transport-response");
+                        var config = new ConnectionConfiguration
+                        {
+                            Resolver = new DefaultDependencyResolver()
+                        };
+
+                        app.MapSignalR<TransportResponse>("/transport-response", config);
                     });
 
                     var transports = new List<IClientTransport>()
@@ -411,28 +639,30 @@ namespace Microsoft.AspNet.SignalR.Client.Tests
                         Debug.WriteLine("Transport: {0}", (object)transport.Name);
 
                         var wh = new ManualResetEventSlim();
-                        Exception thrown = new Exception(),
+                        Exception thrown = new InvalidOperationException(),
                                   caught = null;
 
                         var connection = new Connection("http://foo/transport-response");
 
-                        connection.Received += data =>
+                        using (connection)
                         {
-                            throw thrown;
-                        };
+                            connection.Received += data =>
+                            {
+                                throw thrown;
+                            };
 
-                        connection.Error += e =>
-                        {
-                            caught = e;
-                            wh.Set();
-                        };
+                            connection.Error += e =>
+                            {
+                                caught = e;
+                                wh.Set();
+                            };
 
-                        connection.Start(transport).Wait();
-                        connection.Send("");
+                            connection.Start(transport).Wait();
+                            connection.Send("");
 
-                        Assert.True(wh.Wait(TimeSpan.FromSeconds(5)));
-                        Assert.IsType(typeof(AggregateException), caught);
-                        Assert.Equal(thrown, caught.InnerException);
+                            Assert.True(wh.Wait(TimeSpan.FromSeconds(5)));
+                            Assert.Equal(thrown, caught);
+                        }
                     }
                 }
             }

@@ -16,6 +16,14 @@
         });
     },
     network = {
+        enable: function () {
+            /// <summary>Enables the network mock functionality.</summary>
+            invoke("enable");
+        },
+        disable: function () {
+            /// <summary>Disables the network mock functionality.</summary>
+            invoke("disable");
+        },
         disconnect: function (soft) {
             /// <summary>Disconnects the network so javascript transport methods are unable to communicate with a server.</summary>
             /// <param name="soft" type="Boolean">Whether the disconnect should be soft.  A soft disconnect indicates that transport methods are not notified of disconnect.</param>
@@ -33,6 +41,7 @@
 // Ajax network mock
 (function ($, window) {
     var savedAjax = $.ajax,
+        modifiedAjax,
         network = $.network,
         ajaxData = {},
         ajaxIds = 0,
@@ -112,7 +121,17 @@
         return request;
     };
 
+    modifiedAjax = $.ajax;
+
     network.ajax = {
+        enable: function () {
+            /// <summary>Enables the Ajax network mock functionality.</summary>
+            $.ajax = modifiedAjax;
+        },
+        disable: function () {
+            /// <summary>Disables the Ajax network mock functionality.</summary>
+            $.ajax = savedAjax;
+        },
         disconnect: function (soft) {
             /// <summary>Disconnects the network so javascript transport methods are unable to communicate with a server.</summary>
             /// <param name="soft" type="Boolean">Whether the disconnect should be soft.  A soft disconnect indicates that transport methods are not notified of disconnect.</param>
@@ -138,6 +157,7 @@
 (function ($, window, undefined) {
     var enabled = !!window.WebSocket,
         savedWebSocket = window.WebSocket,
+        modifiedWebSocket,
         network = $.network,
         webSocketData = {},
         webSocketIds = 0,
@@ -233,9 +253,22 @@
         $.extend(CustomWebSocket, window.WebSocket);
 
         window.WebSocket = CustomWebSocket;
+        modifiedWebSocket = CustomWebSocket;
     }
 
     network.websocket = {
+        enable: function () {
+            /// <summary>Enables the WebSocket network mock functionality.</summary>
+            if (enabled) {
+                window.WebSocket = modifiedWebSocket;
+            }
+        },
+        disable: function () {
+            /// <summary>Disables the WebSocket network mock functionality.</summary>
+            if (enabled) {
+                window.WebSocket = savedWebSocket;
+            }
+        },
         disconnect: function (soft) {
             /// <summary>Disconnects the network so javascript transport methods are unable to communicate with a server.</summary>
             /// <param name="soft" type="Boolean">Whether the disconnect should be soft.  A soft disconnect indicates that transport methods are not notified of disconnect.</param>
@@ -261,6 +294,7 @@
 (function ($, window) {
     var network = $.network,
         maskData = {},
+        controlData = [],
         maskIds = 0,
         ignoringMessages = false;
 
@@ -273,12 +307,18 @@
             /// <param name="destroyOnError" type="Boolean">Represents if we destroy our created mask object onError.</param>
             var savedOnErrors = {},
                 savedSubscriptions = {},
+                modifiedOnErrors = {},
+                modifiedSubscriptions = {},
                 id = maskIds++;
 
-            function resetMaskBase() {
+            function disable() {
                 $.extend(maskBase, savedOnErrors);
                 $.extend(maskBase, savedSubscriptions);
-                delete maskData[id];
+            }
+
+            function enable() {
+                $.extend(maskBase, modifiedOnErrors);
+                $.extend(maskBase, modifiedSubscriptions);
             }
 
             maskData[id] = {
@@ -295,7 +335,8 @@
 
                 maskBase[onErrorProperty] = function () {
                     if (destroyOnError) {
-                        resetMaskBase();
+                        disable();
+                        delete maskData[id];
                     }
 
                     return saved.apply(this, arguments);
@@ -303,6 +344,7 @@
 
                 maskData[id].onError.push(maskBase[onErrorProperty]);
                 savedOnErrors[onErrorProperty] = saved;
+                modifiedOnErrors[onErrorProperty] = maskBase[onErrorProperty];
             });
 
             
@@ -321,7 +363,19 @@
 
                 maskData[id].onMessage.push(maskBase[subscriptionProperty]);
                 savedSubscriptions[subscriptionProperty] = saved;
+                modifiedSubscriptions[subscriptionProperty] = maskBase[subscriptionProperty];
             });
+
+            controlData.push({
+                enable: function () {
+                    enable();
+                },
+                disable: function () {
+                    disable();
+                }
+            });
+
+            return controlData[controlData.length-1];
         },
         subscribe: function (maskBase, functionName, onBadAttempt) {
             /// <summary>Subscribes a function to only be called when the network is up</summary>
@@ -329,7 +383,8 @@
             /// <param name="functionName" type="String">Function name that should be replaced on the maskBase</param>
             /// <param name="onBadAttempt" type="Function">Function to only be called when an attempt to call the functionName function is called when network is down</param>
             /// <returns type="Object">Object with an unsubscribe method used to remove the network connection monitoring.</returns>
-            var savedFunction = maskBase[functionName];
+            var savedFunction = maskBase[functionName],
+                modifiedFunction;
 
             maskBase[functionName] = function () {
                 if (!ignoringMessages) {
@@ -340,11 +395,30 @@
                 }
             };
 
-            return {
-                unsubscribe: function () {
+            modifiedFunction = maskBase[functionName];
+
+            controlData.push({
+                enable: function () {
+                    maskBase[functionName] = modifiedFunction;
+                },
+                disable: function () {
                     maskBase[functionName] = savedFunction;
                 }
-            };
+            });
+
+            return controlData[controlData.length - 1]
+        },
+        enable: function () {
+            /// <summary>Enables the Mask network mock functionality.</summary>
+            for (var i = 0; i < controlData.length; i++) {
+                controlData[i].enable();
+            }
+        },
+        disable: function () {
+            /// <summary>Disables the Mask network mock functionality.</summary>
+            for (var i = 0; i < controlData.length; i++) {
+                controlData[i].disable();
+            }
         },
         disconnect: function (soft) {
             /// <summary>Disconnects the network so javascript transport methods are unable to communicate with a server.</summary>
@@ -372,6 +446,7 @@
 (function ($, window, undefined) {
     var enabled = !!window.EventSource,
         savedEventSource = window.EventSource,
+        modifiedEventSource,
         network = $.network,
         eventSourceData = {},
         eventSourceIds = 0,
@@ -428,9 +503,22 @@
         $.extend(CustomEventSource, window.EventSource);
 
         window.EventSource = CustomEventSource;
+        modifiedEventSource = CustomEventSource;
     }
 
     network.eventsource = {
+        enable: function () {
+            /// <summary>Enables the EventSource network mock functionality.</summary>
+            if (enabled) {
+                window.EventSource = modifiedEventSource;
+            }
+        },
+        disable: function () {
+            /// <summary>Disables the EventSource network mock functionality.</summary>
+            if (enabled) {
+                window.EventSource = savedEventSource;
+            }
+        },
         disconnect: function (soft) {
             /// <summary>Disconnects the network so javascript transport methods are unable to communicate with a server.</summary>
             /// <param name="soft" type="Boolean">Whether the disconnect should be soft.  A soft disconnect indicates that transport methods are not notified of disconnect.</param>

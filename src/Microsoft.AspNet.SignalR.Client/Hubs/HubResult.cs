@@ -23,12 +23,24 @@ namespace Microsoft.AspNet.SignalR.Client.Hubs
         /// </summary>
         [JsonProperty("R")]
         public JToken Result { get; set; }
-        
+
+        /// <summary>
+        /// Indicates whether the Error is a <see cref="HubException"/>.
+        /// </summary>
+        [JsonProperty("H")]
+        public bool? IsHubException { get; set; }
+
         /// <summary>
         /// The error message returned from the hub invocation.
         /// </summary>
         [JsonProperty("E")]
         public string Error { get; set; }
+
+        /// <summary>
+        /// Extra error data
+        /// </summary>
+        [JsonProperty("D")]
+        public object ErrorData { get; set; }
 
         /// <summary>
         /// The caller state from this hub.

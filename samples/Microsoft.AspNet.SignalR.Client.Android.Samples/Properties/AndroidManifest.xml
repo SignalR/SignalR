@@ -1,0 +1,6 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android" android:versionCode="1" android:versionName="1.0" package="Microsoft.AspNet.SignalR.Client.Android.Samples">
+	<uses-sdk />
+	<application android:label="Microsoft.AspNet.SignalR.Client.Android.Samples"></application>
+	<uses-permission android:name="android.permission.INTERNET" />
+</manifest>

@@ -1,17 +1,20 @@
 ﻿QUnit.module("Transports Common - Process Messages Facts");
 
-QUnit.test("Noop's on missing transport", function () {
+QUnit.test("onInitialize is triggered on an initialize message.", function () {
     var connection = testUtilities.createConnection(),
-        lastKeepAlive = false;
+        initializeTriggered = false;
 
-    // Ensure the connection can utilize the keep alive features
-    connection.keepAliveData = {
-        lastKeepAlive: lastKeepAlive,
-        activated: true
-    };
+    $.signalR.transports._logic.processMessages(connection, {
+        C: 1234,
+        M: [],
+        L: 1337,
+        G: "foo",
+        S: 1
+    }, function () {
+        initializeTriggered = true;
+    });
 
-    $.signalR.transports._logic.processMessages(connection);
-    QUnit.ok(connection.keepAliveData.lastKeepAlive === lastKeepAlive, "Should have not altered the keep alive because we should have done a full noop when no transport specified.");
+    QUnit.isTrue(initializeTriggered, "Initialize was triggered from initialize message");
 });
 
 QUnit.test("Updates keep alive data on any message retrieval.", function () {
@@ -22,13 +25,14 @@ QUnit.test("Updates keep alive data on any message retrieval.", function () {
             L: 1337,
             G: "foo"
         },
-        lastKeepAlive = false;
+        lastMessageTimeStamp = 0;
 
     // Ensure the connection can utilize the keep alive features
-    connection.keepAliveData = {
-        lastKeepAlive: lastKeepAlive,
+    connection._.keepAliveData = {
         activated: true
     };
+
+    connection._.lastMessageAt = 0;
 
     connection.transport = {
         supportsKeepAlive: true
@@ -36,11 +40,12 @@ QUnit.test("Updates keep alive data on any message retrieval.", function () {
 
     // No message, should noop but still update time stamp
     $.signalR.transports._logic.processMessages(connection);
-    QUnit.ok(connection.keepAliveData.lastKeepAlive !== lastKeepAlive, "Sent null data, the last keep alive time (" + connection.keepAliveData.lastKeepAlive + ") should be different than " + lastKeepAlive);
+    QUnit.ok(connection._.lastMessageAt !== lastMessageTimeStamp, "Sent null data, the last message time (" + connection._.lastMessageAt + ") should be different than " + lastMessageTimeStamp);
 
-    lastKeepAlive = connection.keepAliveData.lastKeepAlive;
+    // Subtract 1 so there's at least a 1 millisecond time difference
+    lastMessageTimeStamp = connection._.lastMessageAt - 1;
     $.signalR.transports._logic.processMessages(connection, response);
-    QUnit.ok(connection.keepAliveData.lastKeepAlive !== lastKeepAlive, "Sent valid data, the last keep alive time (" + connection.keepAliveData.lastKeepAlive + ") should be different than " + lastKeepAlive);
+    QUnit.ok(connection._.lastMessageAt !== lastMessageTimeStamp, "Sent valid data, the last message time (" + connection._.lastMessageAt + ") should be different than " + lastMessageTimeStamp);
 });
 
 QUnit.test("Noop's on keep alive", function () {
