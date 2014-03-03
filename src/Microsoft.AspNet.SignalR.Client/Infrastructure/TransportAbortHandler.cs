@@ -46,6 +46,15 @@ namespace Microsoft.AspNet.SignalR.Client.Infrastructure
                 throw new ArgumentNullException("connection");
             }
 
+            // Save the connection.ConnectionToken since race issue that connection.ConnectionToken can be set to null in different thread
+            var connectionToken = connection.ConnectionToken;
+
+            if (connectionToken == null)
+            {
+                connection.Trace(TraceLevels.Messages, "Connection already disconnected, skipping abort.");
+                return;
+            }
+
             // Abort should never complete before any of its previous calls
             lock (_abortLock)
             {
@@ -63,7 +72,7 @@ namespace Microsoft.AspNet.SignalR.Client.Infrastructure
                                                                           _abortQueryString,
                                                                           _transportName,
                                                                           connectionData,
-                                                                          Uri.EscapeDataString(connection.ConnectionToken),
+                                                                          Uri.EscapeDataString(connectionToken),
                                                                           null);
 
                     url += TransportHelper.AppendCustomQueryString(connection, url);

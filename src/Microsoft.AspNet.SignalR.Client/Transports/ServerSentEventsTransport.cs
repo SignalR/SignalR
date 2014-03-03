@@ -175,6 +175,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
                             if (disconnected)
                             {
                                 stop = true;
+                                connection.Trace(TraceLevels.Messages, "Disconnect command received from server.");
                                 connection.Disconnect();
                             }
                         }
