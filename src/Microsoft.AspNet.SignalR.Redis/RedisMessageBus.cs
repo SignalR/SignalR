@@ -28,7 +28,7 @@ namespace Microsoft.AspNet.SignalR.Redis
         private RedisSubscriberConnection _channel;
         private int _state;
         private readonly object _callbackLock = new object();
-        
+
         [SuppressMessage("Microsoft.Usage", "CA2214:DoNotCallOverridableMethodsInConstructors", Justification = "Reviewed")]
         public RedisMessageBus(IDependencyResolver resolver, RedisScaleoutConfiguration configuration)
             : base(resolver, configuration)
@@ -142,13 +142,13 @@ namespace Microsoft.AspNet.SignalR.Redis
 
         private void OnMessage(string key, byte[] data)
         {
+            // The key is the stream id (channel)
+            var message = RedisMessage.FromBytes(data);
+
             // locked to avoid overlapping calls (even though we have set the mode 
             // to preserve order on the subscription)
             lock (_callbackLock)
             {
-                // The key is the stream id (channel)
-                var message = RedisMessage.FromBytes(data);
-
                 OnReceived(0, message.Id, message.ScaleoutMessage);
             }
         }
