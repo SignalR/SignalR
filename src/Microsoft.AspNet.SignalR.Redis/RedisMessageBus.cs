@@ -28,7 +28,7 @@ namespace Microsoft.AspNet.SignalR.Redis
         private RedisSubscriberConnection _channel;
         private int _state;
         private readonly object _callbackLock = new object();
-        
+
         [SuppressMessage("Microsoft.Usage", "CA2214:DoNotCallOverridableMethodsInConstructors", Justification = "Reviewed")]
         public RedisMessageBus(IDependencyResolver resolver, RedisScaleoutConfiguration configuration)
             : base(resolver, configuration)
