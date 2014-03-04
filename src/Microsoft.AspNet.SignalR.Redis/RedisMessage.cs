@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using Microsoft.AspNet.SignalR.Messaging;
+using System.Text;
 
 namespace Microsoft.AspNet.SignalR.Redis
 {
@@ -12,7 +13,7 @@ namespace Microsoft.AspNet.SignalR.Redis
         public ulong Id { get; private set; }
         public ScaleoutMessage ScaleoutMessage { get; private set; }
 
-        public static byte[] ToBytes(long id, IList<Message> messages)
+        public static byte[] ToBytes(IList<Message> messages)
         {
             if (messages == null)
             {
@@ -26,7 +27,6 @@ namespace Microsoft.AspNet.SignalR.Redis
                 var scaleoutMessage = new ScaleoutMessage(messages);
                 var buffer = scaleoutMessage.ToBytes();
 
-                binaryWriter.Write(id);
                 binaryWriter.Write(buffer.Length);
                 binaryWriter.Write(buffer);
 
@@ -38,10 +38,32 @@ namespace Microsoft.AspNet.SignalR.Redis
         {
             using (var stream = new MemoryStream(data))
             {
-                var binaryReader = new BinaryReader(stream);
                 var message = new RedisMessage();
 
-                message.Id = (ulong)binaryReader.ReadInt64();
+                // read message id from memory stream until SPACE character
+                var messageIdBuilder = new StringBuilder(20);
+                do
+                {
+                    // it is safe to read digits as bytes because they encoded by single byte in UTF-8
+                    int charCode = stream.ReadByte();
+                    if (charCode == -1)
+                    {
+                        throw new EndOfStreamException();
+                    }
+                    char c = (char)charCode;
+                    if (c == ' ')
+                    {
+                        message.Id = ulong.Parse(messageIdBuilder.ToString());
+                        messageIdBuilder = null;
+                    }
+                    else
+                    {
+                        messageIdBuilder.Append(c);
+                    }
+                }
+                while (messageIdBuilder != null);
+
+                var binaryReader = new BinaryReader(stream);
                 int count = binaryReader.ReadInt32();
                 byte[] buffer = binaryReader.ReadBytes(count);
 

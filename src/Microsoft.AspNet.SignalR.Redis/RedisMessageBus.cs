@@ -28,7 +28,7 @@ namespace Microsoft.AspNet.SignalR.Redis
         private RedisSubscriberConnection _channel;
         private int _state;
         private readonly object _callbackLock = new object();
-
+        
         [SuppressMessage("Microsoft.Usage", "CA2214:DoNotCallOverridableMethodsInConstructors", Justification = "Reviewed")]
         public RedisMessageBus(IDependencyResolver resolver, RedisScaleoutConfiguration configuration)
             : base(resolver, configuration)
@@ -53,11 +53,15 @@ namespace Microsoft.AspNet.SignalR.Redis
 
         protected override Task Send(int streamIndex, IList<Message> messages)
         {
-            var tcs = new TaskCompletionSource<object>();
-
-            SendImpl(messages, tcs);
-
-            return tcs.Task;
+            var keys = new string[] { _key };
+            var arguments = new object[] { RedisMessage.ToBytes(messages) };
+            return _connection.Scripting.Eval(
+                _db,
+                @"local newId = redis.call('INCR', KEYS[1])
+                  local payload = newId .. ' ' .. ARGV[1]
+                  return redis.call('PUBLISH', KEYS[1], payload)",
+                keys,
+                arguments);
         }
 
         protected override void Dispose(bool disposing)
@@ -102,154 +106,6 @@ namespace Microsoft.AspNet.SignalR.Redis
             }
 
             Interlocked.Exchange(ref _state, State.Disposed);
-        }
-
-        [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "The exception is set in the tcs")]
-        private void SendImpl(IList<Message> messages, TaskCompletionSource<object> tcs)
-        {
-        go:
-            Task<long?> task = _connection.Strings.GetInt64(_db, _key);
-
-            RedisTransaction transaction = null;
-
-            // Dispose the transaction after everything runs
-            tcs.Task.Finally(state =>
-            {
-                if (transaction != null)
-                {
-                    _trace.TraceVerbose("Transaction disposed");
-
-                    transaction.Dispose();
-                }
-            },
-            null);
-
-            if (task.IsCompleted)
-            {
-                try
-                {
-                    task.Wait();
-
-                    _trace.TraceVerbose("CreateTransaction({0})", task.Result);
-
-                    transaction = _connection.CreateTransaction();
-
-                    Task<bool> transactionTask = ExecuteTransaction(transaction, task.Result, messages);
-
-                    if (transactionTask.IsCompleted)
-                    {
-                        transactionTask.Wait();
-
-                        bool success = transactionTask.Result;
-
-                        if (success)
-                        {
-                            OnTransactionComplete(transaction, success, messages, tcs);
-                        }
-                        else
-                        {
-                            _trace.TraceVerbose("Transaction failed. Retrying...");
-
-                            _trace.TraceVerbose("Transaction disposed");
-
-                            transaction.Dispose();
-
-                            goto go;
-                        }
-                    }
-                    else
-                    {
-                        OnTransactionCompleting(transaction, transactionTask, messages, tcs);
-                    }
-                }
-                catch (OperationCanceledException)
-                {
-                    tcs.TrySetCanceled();
-                }
-                catch (Exception ex)
-                {
-                    tcs.TrySetException(ex);
-                }
-            }
-            else
-            {
-                task.Then(oldId =>
-                {
-                    _trace.TraceVerbose("CreateTransaction({0})", oldId);
-
-                    transaction = _connection.CreateTransaction();
-
-                    Task<bool> transactionTask = ExecuteTransaction(transaction, oldId, messages);
-
-                    OnTransactionCompleting(transaction, transactionTask, messages, tcs);
-                })
-                .ContinueWithNotComplete(tcs);
-            }
-        }
-
-        [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "The exception is set in the tcs")]
-        private void OnTransactionCompleting(RedisTransaction transaction, Task<bool> transactionTask, IList<Message> messages, TaskCompletionSource<object> tcs)
-        {
-            if (transactionTask.IsCompleted)
-            {
-                try
-                {
-                    OnTransactionComplete(transaction, transactionTask.Result, messages, tcs);
-                }
-                catch (OperationCanceledException)
-                {
-                    tcs.TrySetCanceled();
-                }
-                catch (Exception ex)
-                {
-                    tcs.TrySetException(ex);
-                }
-            }
-            else
-            {
-                transactionTask.Then(result => OnTransactionComplete(transaction, result, messages, tcs))
-                               .ContinueWithNotComplete(tcs);
-            }
-        }
-
-        private void OnTransactionComplete(RedisTransaction transaction, bool success, IList<Message> messages, TaskCompletionSource<object> tcs)
-        {
-            if (success)
-            {
-                _trace.TraceVerbose("Transaction completed successfully");
-
-                tcs.TrySetResult(null);
-            }
-            else
-            {
-                _trace.TraceVerbose("Transaction failed. Retrying...");
-
-                _trace.TraceVerbose("Transaction disposed");
-
-                // Dispose the transaction
-                transaction.Dispose();
-
-                SendImpl(messages, tcs);
-            }
-        }
-
-        private Task<bool> ExecuteTransaction(RedisTransaction transaction, long? oldId, IList<Message> messages)
-        {
-            _trace.TraceVerbose("ExecuteTransaction({0})", oldId);
-
-            // New target id
-            long newId = (oldId ?? 0) + 1;
-
-            // TODO: Don't do this everytime
-            byte[] data = RedisMessage.ToBytes(newId, messages);
-
-            // These don't need to be observed
-            transaction.AddCondition(Condition.KeyEquals(_db, _key, oldId));
-            transaction.Strings.Increment(_db, _key);
-            transaction.Publish(_key, data);
-
-            // Execute the transaction
-            return transaction.Execute();
         }
 
         private void OnConnectionClosed(object sender, EventArgs e)
