@@ -19,13 +19,13 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
     {
         private const string SignalRTopicPrefix = "SIGNALR_TOPIC";
 
-        private ServiceBusConnectionContext _connectionContext;
+        private Task<ServiceBusConnectionContext> _connectionContext;
 
         private TraceSource _trace;
 
         private readonly ServiceBusConnection _connection;
         private readonly string[] _topics;
-        
+
         public ServiceBusMessageBus(IDependencyResolver resolver, ServiceBusScaleoutConfiguration configuration)
             : base(resolver, configuration)
         {
@@ -44,7 +44,7 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
                                 .Select(topicIndex => SignalRTopicPrefix + "_" + configuration.TopicPrefix + "_" + topicIndex)
                                 .ToArray();
 
-            ThreadPool.QueueUserWorkItem(Subscribe);
+            _connectionContext = Task.Factory.StartNew(() => _connection.Subscribe(_topics, OnMessage, OnError, Open));
         }
 
         protected override int StreamCount
@@ -61,7 +61,17 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
 
             TraceMessages(messages, "Sending");
 
-            return _connectionContext.Publish(streamIndex, stream);
+            return _connectionContext.Result.Publish(streamIndex, stream);
+        }
+
+        public override Task Publish(Message message)
+        {
+            if (!_connectionContext.IsCompleted)
+            {
+               return _connectionContext.Then(() => base.Publish(message));
+            }
+
+            return base.Publish(message);
         }
 
         private void OnMessage(int topicIndex, IEnumerable<BrokeredMessage> messages)
@@ -83,11 +93,6 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
                     OnReceived(topicIndex, (ulong)message.EnqueuedSequenceNumber, scaleoutMessage);
                 }
             }
-        }
-
-        private void Subscribe(object state)
-        {
-            _connectionContext = _connection.Subscribe(_topics, OnMessage, OnError, Open);
         }
 
         private void TraceMessages(IList<Message> messages, string messageType)
