@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Text;
 using Microsoft.AspNet.SignalR.Messaging;
@@ -53,7 +54,7 @@ namespace Microsoft.AspNet.SignalR.Redis
                     char c = (char)charCode;
                     if (c == ' ')
                     {
-                        message.Id = ulong.Parse(messageIdBuilder.ToString());
+                        message.Id = ulong.Parse(messageIdBuilder.ToString(), CultureInfo.InvariantCulture);
                         messageIdBuilder = null;
                     }
                     else
