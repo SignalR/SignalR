@@ -49,7 +49,7 @@ namespace Microsoft.AspNet.SignalR
         /// <summary>
         /// The number of topics to send messages over. Using more topics reduces contention and may increase throughput.
         /// This must be consistent between all nodes in the web farm.
-        /// Defaults to 1.
+        /// Defaults to 5.
         /// </summary>
         public int TopicCount
         {
