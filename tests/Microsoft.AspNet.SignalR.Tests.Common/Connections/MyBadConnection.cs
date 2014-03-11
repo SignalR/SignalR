@@ -8,7 +8,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Common
         protected override Task OnConnected(IRequest request, string connectionId)
         {
             // Should throw 404
-            using (HttpWebRequest.Create("http://www.microsoft.com/mairyhadalittlelambbut_shelikedhertwinkling_littlestar_better").GetResponse()) { }
+            using (HttpWebRequest.Create("http://httpstat.us/404").GetResponse()) { }
 
             return base.OnConnected(request, connectionId);
         }
