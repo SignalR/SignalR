@@ -12,7 +12,7 @@ using Microsoft.AspNet.SignalR.StressServer.Hubs;
 namespace Microsoft.AspNet.SignalR.Stress
 {
     class Program
-    {   
+    {
         static void Main(string[] args)
         {
             IRun run = CreateRun();
@@ -32,7 +32,7 @@ namespace Microsoft.AspNet.SignalR.Stress
 
                 Console.WriteLine("After GC and before dispose {0}", Utility.FormatBytes(memory));
             }
-            
+
             memory = GC.GetTotalMemory(forceFullCollection: true);
 
             Console.WriteLine("After GC and dispose {0}", Utility.FormatBytes(memory));
@@ -81,6 +81,7 @@ namespace Microsoft.AspNet.SignalR.Stress
                 RedisPassword = args.RedisPassword,
                 ServiceBusConnectionString = args.ServiceBusConnectionString,
                 SqlConnectionString = args.SqlConnectionString,
+                SqlTableCount = args.SqlTableCount,
             });
 
             return compositionContainer.GetExportedValue<IRun>(args.RunName);
@@ -144,6 +145,9 @@ namespace Microsoft.AspNet.SignalR.Stress
 
             [CommandLineParameter(Command = "SqlConnectionString", Required = false, Default = "Data Source=(local);Initial Catalog=SignalRSamples;Integrated Security=SSPI;MultipleActiveResultSets=true;Asynchronous Processing=True;", Description = "Warmup duration in seconds. Default: Local sql server")]
             public string SqlConnectionString { get; set; }
+
+            [CommandLineParameter(Command = "SqlTableCount", Required = false, Default = 1, Description = "The number of tables to store messages in the SqlServer DB")]
+            public int SqlTableCount { get; set; }
         }
     }
 }
