@@ -11,11 +11,13 @@ namespace Microsoft.AspNet.SignalR.Messaging
     internal class ScaleoutStream
     {
         private TaskCompletionSource<object> _taskCompletionSource;
+        private static Task _drainTask;
         private TaskQueue _queue;
         private StreamState _state;
         private Exception _error;
 
         private readonly int _size;
+        private readonly int _initializeQueueSize;
         private readonly TraceSource _trace;
         private readonly string _tracePrefix;
         private readonly IPerformanceCounterManager _perfCounters;
@@ -34,13 +36,20 @@ namespace Microsoft.AspNet.SignalR.Messaging
             _size = size;
             _perfCounters = performanceCounters;
 
-            InitializeCore();
+            _initializeQueueSize = 1000;
+
+            InitializeCore(_initializeQueueSize);
         }
 
         private bool UsingTaskQueue
         {
             get
             {
+                if (_state == StreamState.Initial)
+                {
+                    return true;
+                }
+
                 return _size > 0;
             }
         }
@@ -79,12 +88,12 @@ namespace Microsoft.AspNet.SignalR.Messaging
                     throw new InvalidOperationException(Resources.Error_StreamClosed);
                 }
 
-                if (_state == StreamState.Initial)
-                {
-                    throw new InvalidOperationException(Resources.Error_StreamNotOpen);
-                }
-
                 var context = new SendContext(this, send, state);
+
+                if (_drainTask != null)
+                {
+                    _drainTask.Wait();
+                }
 
                 if (UsingTaskQueue)
                 {
@@ -104,7 +113,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
                 return Send(context).Finally(counter =>
                 {
                     ((IPerformanceCounter)counter).Decrement();
-                }, 
+                },
                 _perfCounters.ScaleoutSendQueueLength);
             }
         }
@@ -192,17 +201,17 @@ namespace Microsoft.AspNet.SignalR.Messaging
                     _perfCounters.ScaleoutStreamCountOpen.Decrement();
                     _perfCounters.ScaleoutStreamCountBuffering.Increment();
 
-                    InitializeCore();
+                    InitializeCore(_size);
                 }
             }
         }
 
-        private void InitializeCore()
+        private void InitializeCore(int queueSize)
         {
             if (UsingTaskQueue)
             {
                 Task task = DrainQueue();
-                _queue = new TaskQueue(task, _size);
+                _queue = new TaskQueue(task, queueSize);
                 _queue.QueueSizeCounter = _perfCounters.ScaleoutSendQueueLength;
             }
         }
@@ -246,7 +255,22 @@ namespace Microsoft.AspNet.SignalR.Messaging
             {
                 Trace(TraceEventType.Information, "Changed state from {0} to {1}", _state, newState);
 
+                var oldState = _state;
+
                 _state = newState;
+
+                // Draining the initialize queue before switching to open state
+                if (oldState == StreamState.Initial && newState == StreamState.Open)
+                {
+                    // Ensure the queue is started
+                    EnsureQueueStarted();
+
+                    _drainTask = Drain(_queue);
+
+                    // The drain here is not blocking so we can't just use this
+                    InitializeCore(_size);
+                }
+
                 return true;
             }
 
