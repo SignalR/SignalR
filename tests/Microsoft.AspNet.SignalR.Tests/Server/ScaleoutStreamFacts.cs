@@ -12,23 +12,6 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
     public class ScaleoutStreamFacts
     {
         [Fact]
-        public void EnqueueWithoutOpenThrows()
-        {
-            var perfCounters = new Microsoft.AspNet.SignalR.Infrastructure.PerformanceCounterManager();
-            var stream = new ScaleoutStream(new TraceSource("Queue"), "0", 1000, perfCounters);
-            Assert.Throws<InvalidOperationException>(() => stream.Send(_ => { throw new InvalidOperationException(); }, null));
-        }
-
-        [Fact]
-        public void EnqueueWithoutOpenRaisesOnError()
-        {
-            var perfCounters = new Microsoft.AspNet.SignalR.Infrastructure.PerformanceCounterManager();
-            var stream = new ScaleoutStream(new TraceSource("Queue"), "0", 1000, perfCounters);
-
-            Assert.Throws<InvalidOperationException>(() => stream.Send(_ => { throw new InvalidOperationException(); }, null));
-        }
-
-        [Fact]
         public void ErrorOnSendThrowsNextTime()
         {
             var perfCounters = new Microsoft.AspNet.SignalR.Infrastructure.PerformanceCounterManager();
