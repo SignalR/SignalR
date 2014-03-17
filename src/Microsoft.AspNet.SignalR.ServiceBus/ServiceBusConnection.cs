@@ -36,19 +36,19 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
             {
                 _namespaceManager = NamespaceManager.CreateFromConnectionString(_connectionString);
                 _factory = MessagingFactory.CreateFromConnectionString(_connectionString);
+
+                if (configuration.RetryPolicy != null)
+                {
+                    _factory.RetryPolicy = configuration.RetryPolicy;
+                }
+                else
+                {
+                    _factory.RetryPolicy = RetryExponential.Default;
+                }
             }
             catch (ConfigurationErrorsException)
             {
                 _trace.TraceError("The configured Service Bus connection string contains an invalid property. Check the exception details for more information.");
-            }
-
-            if (configuration.RetryPolicy != null)
-            {
-                _factory.RetryPolicy = configuration.RetryPolicy;
-            }
-            else
-            {
-                _factory.RetryPolicy = RetryExponential.Default;
             }
 
             _idleSubscriptionTimeout = configuration.IdleSubscriptionTimeout;
@@ -213,7 +213,10 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
             if (disposing)
             {
                 // Close the factory
-                _factory.Close();
+                if (_factory != null)
+                {
+                    _factory.Close();
+                }
             }
         }
 

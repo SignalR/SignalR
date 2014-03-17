@@ -115,10 +115,21 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
                         {
                             for (int i = 0; i < TopicNames.Count; i++)
                             {
-                                _topicClients[i].Close();
-                                SubscriptionContext subscription = _subscriptions[i];
-                                subscription.Receiver.Close();
-                                NamespaceManager.DeleteSubscription(subscription.TopicPath, subscription.Name);
+                                // BUG #2937: We need to null check here because the given topic/subscription
+                                // may never have actually been created due to the lock being released
+                                // between each retry attempt
+                                var topicClient = _topicClients[i];
+                                if (topicClient != null)
+                                {
+                                    topicClient.Close();
+                                }
+
+                                var subscription = _subscriptions[i];
+                                if (subscription != null)
+                                {
+                                    subscription.Receiver.Close();
+                                    NamespaceManager.DeleteSubscription(subscription.TopicPath, subscription.Name);
+                                }
                             }
 
                             IsDisposed = true;
