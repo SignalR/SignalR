@@ -56,33 +56,23 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
         }
 
         [SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope", Justification = "The disposable is returned to the caller")]
-        public ServiceBusConnectionContext Subscribe(IList<string> topicNames,
-                                                     Action<int, IEnumerable<BrokeredMessage>> handler,
-                                                     Action<int, Exception> errorHandler,
-                                                     Action<int> openStream)
+        public void Subscribe(ServiceBusConnectionContext connectionContext)
         {
-            if (topicNames == null)
+            if (connectionContext == null)
             {
-                throw new ArgumentNullException("topicNames");
+                throw new ArgumentNullException("connectionContext");
             }
 
-            if (handler == null)
-            {
-                throw new ArgumentNullException("handler");
-            }
+            _trace.TraceInformation("Subscribing to {0} topic(s) in the service bus...", connectionContext.TopicNames.Count);
 
-            _trace.TraceInformation("Subscribing to {0} topic(s) in the service bus...", topicNames.Count);
+            connectionContext.NamespaceManager = _namespaceManager;
 
-            var connectionContext = new ServiceBusConnectionContext(_configuration, _namespaceManager, topicNames, _trace, handler, errorHandler, openStream);
-
-            for (var topicIndex = 0; topicIndex < topicNames.Count; ++topicIndex)
+            for (var topicIndex = 0; topicIndex < connectionContext.TopicNames.Count; ++topicIndex)
             {
                 Retry(() => CreateTopic(connectionContext, topicIndex));
             }
 
-            _trace.TraceInformation("Subscription to {0} topics in the service bus Topic service completed successfully.", topicNames.Count);
-
-            return connectionContext;
+            _trace.TraceInformation("Subscription to {0} topics in the service bus Topic service completed successfully.", connectionContext.TopicNames.Count);
         }
 
         private void CreateTopic(ServiceBusConnectionContext connectionContext, int topicIndex)

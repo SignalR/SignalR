@@ -14,7 +14,6 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
 {
     public class ServiceBusConnectionContext : IDisposable
     {
-        private readonly NamespaceManager _namespaceManager;
         private readonly ServiceBusScaleoutConfiguration _configuration;
 
         private readonly SubscriptionContext[] _subscriptions;
@@ -32,8 +31,9 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
 
         public bool IsDisposed { get; private set; }
 
+        public NamespaceManager NamespaceManager { get; set; }
+
         public ServiceBusConnectionContext(ServiceBusScaleoutConfiguration configuration,
-                                           NamespaceManager namespaceManager,
                                            IList<string> topicNames,
                                            TraceSource traceSource,
                                            Action<int, IEnumerable<BrokeredMessage>> handler,
@@ -45,7 +45,6 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
                 throw new ArgumentNullException("topicNames");
             }
 
-            _namespaceManager = namespaceManager;
             _configuration = configuration;
 
             _subscriptions = new SubscriptionContext[topicNames.Count];
@@ -119,7 +118,7 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
                                 _topicClients[i].Close();
                                 SubscriptionContext subscription = _subscriptions[i];
                                 subscription.Receiver.Close();
-                                _namespaceManager.DeleteSubscription(subscription.TopicPath, subscription.Name);
+                                NamespaceManager.DeleteSubscription(subscription.TopicPath, subscription.Name);
                             }
 
                             IsDisposed = true;
