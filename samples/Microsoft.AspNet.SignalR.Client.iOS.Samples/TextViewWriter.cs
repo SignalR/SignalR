@@ -39,6 +39,8 @@ namespace Microsoft.AspNet.SignalR.Client.iOS.Samples
             _context.Post(delegate
             {
                 _textView.Text = _textView.Text + string.Format(format, args) + Environment.NewLine;
+				_textView.ScrollRangeToVisible(new MonoTouch.Foundation.NSRange(_textView.Text.Length, 0));
+
             }, state: null);
         }
 
