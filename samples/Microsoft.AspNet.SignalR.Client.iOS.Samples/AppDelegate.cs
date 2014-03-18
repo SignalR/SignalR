@@ -15,6 +15,7 @@ namespace Microsoft.AspNet.SignalR.Client.iOS.Samples
 	{
 		// class-level declarations
 		UIWindow window;
+		UINavigationController navController;
 
 		//
 		// This method is invoked when the application has loaded and is ready to run. In this 
@@ -28,16 +29,19 @@ namespace Microsoft.AspNet.SignalR.Client.iOS.Samples
 			window = new UIWindow(UIScreen.MainScreen.Bounds);
 
 			var controller = new UIViewController();
+			var view = new UIView (UIScreen.MainScreen.Bounds);
+			view.BackgroundColor = UIColor.White;
+			controller.View = view;
 
-			var label = new UILabel(new RectangleF(0, 0, 320, 30));
-			label.Text = "SignalR Client";
+			controller.NavigationItem.Title = "SignalR Client";
 
-			var textView = new UITextView(new RectangleF(0, 35, 320, 500));
+			var textView = new UITextView(new RectangleF(0, 0, 320, view.Frame.Height - 0));
+			view.AddSubview (textView);
 
-			controller.Add(label);
-			controller.Add(textView);
 
-			window.RootViewController = controller;
+			navController = new UINavigationController (controller);
+
+			window.RootViewController = navController;
 			window.MakeKeyAndVisible();
 
 			var traceWriter = new TextViewWriter(SynchronizationContext.Current, textView);
