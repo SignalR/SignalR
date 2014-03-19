@@ -23,9 +23,9 @@ namespace Microsoft.AspNet.SignalR.Messaging
                                      IPerformanceCounterManager performanceCounters,
                                      ScaleoutConfiguration configuration)
         {
-            if (configuration.QueueSetting != ScaleoutQueueSetting.Disabled && configuration.MaxQueueLength == 0)
+            if (configuration.QueueSetting != QueuingBehavior.Disabled && configuration.MaxQueueLength == 0)
             {
-                throw new InvalidOperationException("Scaleout queuing is enabled but maximum queue size is 0");
+                throw new InvalidOperationException(Resources.Error_ScaleoutQueuingConfig);
             }
 
             _streams = new ScaleoutStream[streamCount];

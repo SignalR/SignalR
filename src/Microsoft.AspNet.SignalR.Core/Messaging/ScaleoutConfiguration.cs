@@ -14,14 +14,14 @@ namespace Microsoft.AspNet.SignalR.Messaging
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2214:DoNotCallOverridableMethodsInConstructors")]
         public ScaleoutConfiguration()
         {
-            QueueSetting = ScaleoutQueueSetting.InitialStateOnly;
+            QueueSetting = QueuingBehavior.Initial;
             _maxQueueLength = 1000;
         }
 
         /// <summary>
         /// The setting to specify the queueing behaviour for scaleout messages.
         /// </summary>
-        public virtual ScaleoutQueueSetting QueueSetting { get; set; }
+        public virtual QueuingBehavior QueueSetting { get; set; }
 
         /// <summary>
         /// The maximum length of the outgoing send queue. Messages being sent to the backplane are queued

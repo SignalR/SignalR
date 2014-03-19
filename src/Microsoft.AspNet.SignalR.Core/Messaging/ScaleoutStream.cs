@@ -17,14 +17,14 @@ namespace Microsoft.AspNet.SignalR.Messaging
         private Exception _error;
 
         private readonly int _size;
-        private readonly ScaleoutQueueSetting _queueSetting;
+        private readonly QueuingBehavior _queueBehavior;
         private readonly TraceSource _trace;
         private readonly string _tracePrefix;
         private readonly IPerformanceCounterManager _perfCounters;
 
         private readonly object _lockObj = new object();
 
-        public ScaleoutStream(TraceSource trace, string tracePrefix, ScaleoutQueueSetting queueSetting, int size, IPerformanceCounterManager performanceCounters)
+        public ScaleoutStream(TraceSource trace, string tracePrefix, QueuingBehavior queueSetting, int size, IPerformanceCounterManager performanceCounters)
         {
             if (trace == null)
             {
@@ -36,7 +36,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
             _size = size;
             _perfCounters = performanceCounters;
 
-            _queueSetting = queueSetting;
+            _queueBehavior = queueSetting;
 
             InitializeCore();
         }
@@ -45,11 +45,11 @@ namespace Microsoft.AspNet.SignalR.Messaging
         {
             get
             {
-                if(_queueSetting == ScaleoutQueueSetting.Always)
+                if(_queueBehavior == QueuingBehavior.Always)
                 {
                     return true;
                 }
-                else if (_queueSetting == ScaleoutQueueSetting.InitialStateOnly && _state == StreamState.Initial)
+                else if (_queueBehavior == QueuingBehavior.Initial && _state == StreamState.Initial)
                 {
                     return true;
                 }
@@ -264,12 +264,14 @@ namespace Microsoft.AspNet.SignalR.Messaging
                 _state = newState;
 
                 // Draining the initialize queue before switching to open state
-                if (oldState == StreamState.Initial && newState == StreamState.Open)
+                if ( _queueBehavior != QueuingBehavior.Disabled && oldState == StreamState.Initial && newState == StreamState.Open)
                 {
                     // Ensure the queue is started
                     EnsureQueueStarted();
 
                     _initializeDrainTask = Drain(_queue);
+
+                    InitializeCore();
                 }
 
                 return true;

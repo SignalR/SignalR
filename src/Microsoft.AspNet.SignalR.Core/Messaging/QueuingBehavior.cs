@@ -1,9 +1,9 @@
 ﻿namespace Microsoft.AspNet.SignalR.Messaging
 {
-    public enum ScaleoutQueueSetting
+    public enum QueuingBehavior
     {
+        Initial,
         Always,
-        InitialStateOnly,
         Disabled
     }
 }

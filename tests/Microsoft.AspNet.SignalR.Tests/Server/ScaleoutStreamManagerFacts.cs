@@ -14,10 +14,11 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
             var perfCounters = new Microsoft.AspNet.SignalR.Infrastructure.PerformanceCounterManager();
             var config = new ScaleoutConfiguration();
 
-            config.QueueSetting = ScaleoutQueueSetting.Always;
+            config.QueueSetting = QueuingBehavior.Always;
             config.MaxQueueLength = 0;
-            
-            Assert.Throws<InvalidOperationException>(() => new ScaleoutStreamManager((int x, IList<Message> list) => { return TaskAsyncHelper.Empty; }, (int x, ulong y, ScaleoutMessage msg) => { }, 0, new TraceSource("Stream Manager"), perfCounters, config));
+
+            Assert.Throws<InvalidOperationException>(() => new ScaleoutStreamManager((int x, IList<Message> list) => { return TaskAsyncHelper.Empty; },
+                (int x, ulong y, ScaleoutMessage msg) => { }, 0, new TraceSource("Stream Manager"), perfCounters, config));
         }
     }
 }

@@ -12,7 +12,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
         public void SendBeforeOpenDoesNotThrow()
         {
             var perfCounters = new Microsoft.AspNet.SignalR.Infrastructure.PerformanceCounterManager();
-            var stream = new ScaleoutStream(new TraceSource("Queue"), "0", ScaleoutQueueSetting.Always, 1000, perfCounters);
+            var stream = new ScaleoutStream(new TraceSource("Queue"), "0", QueuingBehavior.Always, 1000, perfCounters);
 
             Assert.DoesNotThrow(() => stream.Send(_ => { return TaskAsyncHelper.Empty; }, null));
         }
@@ -21,7 +21,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
         public void SendBeforeOpenQueues()
         {
             var perfCounters = new Microsoft.AspNet.SignalR.Infrastructure.PerformanceCounterManager();
-            var stream = new ScaleoutStream(new TraceSource("Queue"), "0", ScaleoutQueueSetting.Always, 1000, perfCounters);
+            var stream = new ScaleoutStream(new TraceSource("Queue"), "0", QueuingBehavior.Always, 1000, perfCounters);
 
             int x = 0;
 
@@ -50,7 +50,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
         public void ErrorOnSendThrowsNextTime()
         {
             var perfCounters = new Microsoft.AspNet.SignalR.Infrastructure.PerformanceCounterManager();
-            var stream = new ScaleoutStream(new TraceSource("Queue"), "0", ScaleoutQueueSetting.Always, 1000, perfCounters);
+            var stream = new ScaleoutStream(new TraceSource("Queue"), "0", QueuingBehavior.Always, 1000, perfCounters);
             stream.Open();
 
             Task task = stream.Send(_ =>
@@ -69,7 +69,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
         {
             int x = 0;
             var perfCounters = new Microsoft.AspNet.SignalR.Infrastructure.PerformanceCounterManager();
-            var stream = new ScaleoutStream(new TraceSource("Queue"), "0", ScaleoutQueueSetting.Always, 1000, perfCounters);
+            var stream = new ScaleoutStream(new TraceSource("Queue"), "0", QueuingBehavior.Always, 1000, perfCounters);
             stream.Open();
             stream.Send(_ => { throw new InvalidOperationException(); }, null);
 
@@ -99,7 +99,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
         {
             int x = 0;
             var perfCounters = new Microsoft.AspNet.SignalR.Infrastructure.PerformanceCounterManager();
-            var stream = new ScaleoutStream(new TraceSource("Queue"), "0", ScaleoutQueueSetting.Always, 1000, perfCounters);
+            var stream = new ScaleoutStream(new TraceSource("Queue"), "0", QueuingBehavior.Always, 1000, perfCounters);
             stream.Open();
             stream.Send(async _ =>
             {
@@ -128,7 +128,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
         {
             int x = 0;
             var perfCounters = new Microsoft.AspNet.SignalR.Infrastructure.PerformanceCounterManager();
-            var stream = new ScaleoutStream(new TraceSource("Queue"), "0", ScaleoutQueueSetting.Always, 1000, perfCounters);
+            var stream = new ScaleoutStream(new TraceSource("Queue"), "0", QueuingBehavior.Always, 1000, perfCounters);
             stream.Open();
             stream.Send(async _ =>
             {
@@ -157,7 +157,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
         {
             int x = 0;
             var perfCounters = new Microsoft.AspNet.SignalR.Infrastructure.PerformanceCounterManager();
-            var stream = new ScaleoutStream(new TraceSource("Queue"), "0", ScaleoutQueueSetting.Always, 1000, perfCounters);
+            var stream = new ScaleoutStream(new TraceSource("Queue"), "0", QueuingBehavior.Always, 1000, perfCounters);
             stream.Open();
             stream.Send(async _ =>
             {
@@ -192,7 +192,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
         public void SendAfterCloseThenOpenRemainsClosed()
         {
             var perfCounters = new Microsoft.AspNet.SignalR.Infrastructure.PerformanceCounterManager();
-            var stream = new ScaleoutStream(new TraceSource("Queue"), "0", ScaleoutQueueSetting.Always, 1000, perfCounters);
+            var stream = new ScaleoutStream(new TraceSource("Queue"), "0", QueuingBehavior.Always, 1000, perfCounters);
             stream.Open();
             stream.Send(_ => Task.Delay(50), null);
             stream.Close();
@@ -205,7 +205,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
         {
             int x = 0;
             var perfCounters = new Microsoft.AspNet.SignalR.Infrastructure.PerformanceCounterManager();
-            var stream = new ScaleoutStream(new TraceSource("Queue"), "0", ScaleoutQueueSetting.Always, 1000, perfCounters);
+            var stream = new ScaleoutStream(new TraceSource("Queue"), "0", QueuingBehavior.Always, 1000, perfCounters);
             stream.SetError(new Exception());
             stream.Open();
             stream.Send(async _ =>
@@ -222,7 +222,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
         public void InitialToClosed()
         {
             var perfCounters = new Microsoft.AspNet.SignalR.Infrastructure.PerformanceCounterManager();
-            var stream = new ScaleoutStream(new TraceSource("Queue"), "0", ScaleoutQueueSetting.Always, 1000, perfCounters);
+            var stream = new ScaleoutStream(new TraceSource("Queue"), "0", QueuingBehavior.Always, 1000, perfCounters);
             stream.Close();
         }
 
@@ -230,7 +230,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
         public void OpenAfterClosedEnqueueThrows()
         {
             var perfCounters = new Microsoft.AspNet.SignalR.Infrastructure.PerformanceCounterManager();
-            var stream = new ScaleoutStream(new TraceSource("Queue"), "0", ScaleoutQueueSetting.Always, 1000, perfCounters);
+            var stream = new ScaleoutStream(new TraceSource("Queue"), "0", QueuingBehavior.Always, 1000, perfCounters);
             stream.Close();
             stream.Open();
             Assert.Throws<InvalidOperationException>(() => stream.Send(_ => TaskAsyncHelper.Empty, null));
@@ -240,7 +240,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
         public void BufferAfterClosedEnqueueThrows()
         {
             var perfCounters = new Microsoft.AspNet.SignalR.Infrastructure.PerformanceCounterManager();
-            var stream = new ScaleoutStream(new TraceSource("Queue"), "0", ScaleoutQueueSetting.Always, 1000, perfCounters);
+            var stream = new ScaleoutStream(new TraceSource("Queue"), "0", QueuingBehavior.Always, 1000, perfCounters);
             stream.Close();
             stream.SetError(new Exception());
             Assert.Throws<Exception>(() => stream.Send(_ => TaskAsyncHelper.Empty, null));
