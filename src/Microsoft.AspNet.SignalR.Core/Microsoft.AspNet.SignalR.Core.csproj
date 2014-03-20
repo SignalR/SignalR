@@ -203,6 +203,7 @@
     <Compile Include="Messaging\MessageStore.cs" />
     <Compile Include="Messaging\MessageStoreResult.cs" />
     <Compile Include="Messaging\ScaleoutConfiguration.cs" />
+    <Compile Include="Messaging\QueuingBehavior.cs" />
     <Compile Include="Messaging\ScaleoutStore.cs" />
     <Compile Include="Messaging\ScaleoutStreamManager.cs" />
     <Compile Include="Messaging\ScaleoutSubscription.cs" />
