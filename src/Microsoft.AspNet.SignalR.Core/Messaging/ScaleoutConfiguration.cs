@@ -20,6 +20,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
 
         /// <summary>
         /// Gets or sets a value that represents the queuing behavior for scale-out messages.
+        /// Defaults to <see cref="Microsoft.AspNet.SignalR.QueuingBehavior.InitialOnly">QueuingBehavior.InitialOnly</see>
         /// </summary>
         public virtual QueuingBehavior QueueBehavior { get; set; }
 

@@ -1,4 +1,4 @@
-﻿namespace Microsoft.AspNet.SignalR.Messaging
+﻿namespace Microsoft.AspNet.SignalR
 {
     public enum QueuingBehavior
     {

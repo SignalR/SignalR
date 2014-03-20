@@ -96,13 +96,12 @@ namespace Microsoft.AspNet.SignalR.Messaging
 
                 var context = new SendContext(this, send, state);
 
-                if (_initializeDrainTask != null)
+                if (_initializeDrainTask != null && !_initializeDrainTask.IsCompleted)
                 {
-                    // Force a thread hop so that we get off the current sync context (Makes ASP.NET happy)
-                    Task.Run(() => _initializeDrainTask).Wait();
-
-                    // Never wait again
-                    _initializeDrainTask = null;
+                    // Wait on the draining of the queue before proceeding with the send
+                    // NOTE: Calling .Wait() here is safe because the task wasn't created on an ASP.NET request thread
+                    //       and thus has no captured sync context
+                    _initializeDrainTask.Wait();
                 }
 
                 if (UsingTaskQueue)
