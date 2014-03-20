@@ -3,6 +3,7 @@
 using System;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR.Infrastructure;
 
@@ -24,7 +25,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
 
         private readonly object _lockObj = new object();
 
-        public ScaleoutStream(TraceSource trace, string tracePrefix, QueuingBehavior queueSetting, int size, IPerformanceCounterManager performanceCounters)
+        public ScaleoutStream(TraceSource trace, string tracePrefix, QueuingBehavior queueBehavior, int size, IPerformanceCounterManager performanceCounters)
         {
             if (trace == null)
             {
@@ -36,7 +37,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
             _size = size;
             _perfCounters = performanceCounters;
 
-            _queueBehavior = queueSetting;
+            _queueBehavior = queueBehavior;
 
             InitializeCore();
         }
@@ -45,16 +46,9 @@ namespace Microsoft.AspNet.SignalR.Messaging
         {
             get
             {
-                if(_queueBehavior == QueuingBehavior.Always)
-                {
-                    return true;
-                }
-                else if (_queueBehavior == QueuingBehavior.Initial && _state == StreamState.Initial)
-                {
-                    return true;
-                }
-
-                return false;
+                // Either you're always queuing or you're only queuing initially and you're in the initial state
+                return _queueBehavior == QueuingBehavior.Always ||
+                       (_queueBehavior == QueuingBehavior.InitialOnly && _state == StreamState.Initial);
             }
         }
 
@@ -62,16 +56,24 @@ namespace Microsoft.AspNet.SignalR.Messaging
         {
             lock (_lockObj)
             {
-                if (ChangeState(StreamState.Open))
+                bool usingTaskQueue = UsingTaskQueue;
+
+                StreamState previousState;
+                if (ChangeState(StreamState.Open, out previousState))
                 {
                     _perfCounters.ScaleoutStreamCountOpen.Increment();
                     _perfCounters.ScaleoutStreamCountBuffering.Decrement();
 
                     _error = null;
 
-                    if (UsingTaskQueue)
+                    if (usingTaskQueue)
                     {
-                        _taskCompletionSource.TrySetResult(null);
+                        EnsureQueueStarted();
+
+                        if (previousState == StreamState.Initial && _queueBehavior == QueuingBehavior.InitialOnly)
+                        {
+                            _initializeDrainTask = Drain(_queue);
+                        }
                     }
                 }
             }
@@ -96,7 +98,11 @@ namespace Microsoft.AspNet.SignalR.Messaging
 
                 if (_initializeDrainTask != null)
                 {
-                    _initializeDrainTask.Wait();
+                    // Force a thread hop so that we get off the current sync context (Makes ASP.NET happy)
+                    Task.Run(() => _initializeDrainTask).Wait();
+
+                    // Never wait again
+                    _initializeDrainTask = null;
                 }
 
                 if (UsingTaskQueue)
@@ -113,12 +119,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
                     return task.Catch();
                 }
 
-                _perfCounters.ScaleoutSendQueueLength.Increment();
-                return Send(context).Finally(counter =>
-                {
-                    ((IPerformanceCounter)counter).Decrement();
-                },
-                _perfCounters.ScaleoutSendQueueLength);
+                return Send(context);
             }
         }
 
@@ -214,13 +215,13 @@ namespace Microsoft.AspNet.SignalR.Messaging
         {
             if (UsingTaskQueue)
             {
-                Task task = DrainQueue();
+                Task task = DrainPreviousQueue();
                 _queue = new TaskQueue(task, _size);
                 _queue.QueueSizeCounter = _perfCounters.ScaleoutSendQueueLength;
             }
         }
 
-        private Task DrainQueue()
+        private Task DrainPreviousQueue()
         {
             // If the tcs is null or complete then create a new one
             if (_taskCompletionSource == null ||
@@ -249,6 +250,14 @@ namespace Microsoft.AspNet.SignalR.Messaging
 
         private bool ChangeState(StreamState newState)
         {
+            StreamState oldState;
+            return ChangeState(newState, out oldState);
+        }
+
+        private bool ChangeState(StreamState newState, out StreamState previousState)
+        {
+            previousState = _state;
+
             // Do nothing if the state is closed
             if (_state == StreamState.Closed)
             {
@@ -259,21 +268,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
             {
                 Trace(TraceEventType.Information, "Changed state from {0} to {1}", _state, newState);
 
-                var oldState = _state;
-
                 _state = newState;
-
-                // Draining the initialize queue before switching to open state
-                if ( _queueBehavior != QueuingBehavior.Disabled && oldState == StreamState.Initial && newState == StreamState.Open)
-                {
-                    // Ensure the queue is started
-                    EnsureQueueStarted();
-
-                    _initializeDrainTask = Drain(_queue);
-
-                    InitializeCore();
-                }
-
                 return true;
             }
 

@@ -14,7 +14,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
             var perfCounters = new Microsoft.AspNet.SignalR.Infrastructure.PerformanceCounterManager();
             var config = new ScaleoutConfiguration();
 
-            config.QueueSetting = QueuingBehavior.Always;
+            config.QueueBehavior = QueuingBehavior.Always;
             config.MaxQueueLength = 0;
 
             Assert.Throws<InvalidOperationException>(() => new ScaleoutStreamManager((int x, IList<Message> list) => { return TaskAsyncHelper.Empty; },

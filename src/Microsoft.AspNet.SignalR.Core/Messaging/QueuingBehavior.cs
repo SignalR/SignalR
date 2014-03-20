@@ -2,7 +2,7 @@
 {
     public enum QueuingBehavior
     {
-        Initial,
+        InitialOnly,
         Always,
         Disabled
     }
