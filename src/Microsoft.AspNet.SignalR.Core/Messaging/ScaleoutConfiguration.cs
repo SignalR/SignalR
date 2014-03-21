@@ -9,15 +9,24 @@ namespace Microsoft.AspNet.SignalR.Messaging
     /// </summary>
     public class ScaleoutConfiguration
     {
-        public static readonly int DisableQueuing = 0;
-
         private int _maxQueueLength;
+
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2214:DoNotCallOverridableMethodsInConstructors")]
+        public ScaleoutConfiguration()
+        {
+            QueueBehavior = QueuingBehavior.InitialOnly;
+            _maxQueueLength = 1000;
+        }
+
+        /// <summary>
+        /// Gets or sets a value that represents the queuing behavior for scale-out messages.
+        /// Defaults to <see cref="Microsoft.AspNet.SignalR.QueuingBehavior.InitialOnly">QueuingBehavior.InitialOnly</see>
+        /// </summary>
+        public virtual QueuingBehavior QueueBehavior { get; set; }
 
         /// <summary>
         /// The maximum length of the outgoing send queue. Messages being sent to the backplane are queued
         /// up to this length. After the max length is reached, further sends will throw an <see cref="System.InvalidOperationException">InvalidOperationException</see>.
-        /// Set to <see cref="Microsoft.AspNet.SignalR.Messaging.ScaleoutConfiguration.DisableQueuing">ScaleoutConfiguration.DisableQueuing</see> to disable queing.
-        /// Defaults to disabled.
         /// </summary>
         public virtual int MaxQueueLength
         {
