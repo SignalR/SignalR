@@ -49,6 +49,7 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
             catch (ConfigurationErrorsException)
             {
                 _trace.TraceError("The configured Service Bus connection string contains an invalid property. Check the exception details for more information.");
+                throw;
             }
 
             _idleSubscriptionTimeout = configuration.IdleSubscriptionTimeout;
