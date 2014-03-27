@@ -8,8 +8,13 @@
         <!-- Change this to set the build quality of the project. Use values like "alpha", "beta", "rc1", "rtm", etc. -->
         <!-- These values are used in SemVer, so make sure to always increase these alphabetically. -->
         <!-- For non-nightly RTM builds, we don't set the build quality. -->
-        <BuildQuality Condition="'$(Nightly)' == 'true'">pre</BuildQuality>
-        <ScaleoutBuildQuality Condition="'$(Nightly)' == 'true'">pre</ScaleoutBuildQuality>
+        <!--
+        <BuildQuality Condition="'$(Nightly)' == 'true'">beta</BuildQuality>
+        <ScaleoutBuildQuality Condition="'$(Nightly)' == 'true'">beta</ScaleoutBuildQuality>
+        <KatanaBuildQuality Condition="'$(Nightly)' == 'true'">rtw</KatanaBuildQuality>
+        -->
+        <BuildQuality>beta1</BuildQuality>
+        <ScaleoutBuildQuality>beta1</ScaleoutBuildQuality>
         <KatanaBuildQuality Condition="'$(Nightly)' == 'true'">rtw</KatanaBuildQuality>
         
         <!-- Katana version -->
