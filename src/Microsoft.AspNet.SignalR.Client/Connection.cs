@@ -209,7 +209,7 @@ namespace Microsoft.AspNet.SignalR.Client
         /// The maximum amount of time a connection will allow to try and reconnect.
         /// This value is equivalent to the summation of the servers disconnect and keep alive timeout values.
         /// </summary>
-        TimeSpan IConnection.ReconnectWindow 
+        TimeSpan IConnection.ReconnectWindow
         {
             get
             {
@@ -498,9 +498,11 @@ namespace Microsoft.AspNet.SignalR.Client
                                  // Now that we're connected complete the start task that the
                                  // receive queue is waiting on
                                  _startTcs.SetResult(null);
-                                 
+
                                  // Start the monitor to check for server activity
-                                _monitor.Start();
+                                 _lastMessageAt = DateTime.UtcNow;
+                                 _lastActiveAt = DateTime.UtcNow;
+                                 _monitor.Start();
                              })
                              // Don't return until the last receive has been processed to ensure messages/state sent in OnConnected
                              // are processed prior to the Start() method task finishing
@@ -866,7 +868,7 @@ namespace Microsoft.AspNet.SignalR.Client
             if (_assemblyVersion == null)
             {
 #if NETFX_CORE
-                _assemblyVersion = new Version("2.0.2");
+                _assemblyVersion = new Version("2.0.3");
 #else
                 _assemblyVersion = new AssemblyName(typeof(Connection).Assembly.FullName).Version;
 #endif

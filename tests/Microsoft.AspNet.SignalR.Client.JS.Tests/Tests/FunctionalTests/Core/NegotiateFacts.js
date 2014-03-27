@@ -124,7 +124,8 @@
 
             connection.start().done(function () {
                 // Subtract the default timeout from server to get the client side timeout
-                assert.equal(connection.transportConnectTimeout - 5000, newTimeout, "Transport utilized existing transportConnectTimeout instead of using server value.");
+                assert.equal(connection._.totalTransportConnectTimeout - 5000, newTimeout, "Transport utilized existing transportConnectTimeout instead of using server value.");
+                assert.equal(connection.transportConnectTimeout, newTimeout, "connection.transportConnectTimeout was modified.");
                 end();
             });
 

@@ -1,6 +1,6 @@
 /*global window:false */
 /*!
- * ASP.NET SignalR JavaScript Library v2.0.2-pre
+ * ASP.NET SignalR JavaScript Library v2.0.3-pre
  * http://signalr.net/
  *
  * Copyright Microsoft Open Technologies, Inc. All rights reserved.
@@ -204,7 +204,7 @@
                     $(connection).triggerHandler(events.onError, [error]);
                 };
 
-            if (!connection._.pingIntervalId && config.pingInterval) {
+            if (config && !connection._.pingIntervalId && config.pingInterval) {
                 connection._.pingIntervalId = window.setInterval(function () {
                     signalR.transports._logic.pingServer(connection).fail(onFail);
                 }, config.pingInterval);
@@ -332,7 +332,8 @@
                 lastMessageAt: new Date().getTime(),
                 lastActiveAt: new Date().getTime(),
                 beatInterval: 5000, // Default value, will only be overridden if keep alive is enabled,
-                beatHandle: null
+                beatHandle: null,
+                totalTransportConnectTimeout: 0 // This will be the sum of the TransportConnectTimeout sent in response to negotiate and connection.transportConnectTimeout
             };
             if (typeof (logging) === "boolean") {
                 this.logging = logging;
@@ -390,7 +391,7 @@
 
         reconnectDelay: 2000,
 
-        transportConnectTimeout: 0, // This will be modified by the server in respone to the negotiate request.  It will add any value sent down from the server to the client value.
+        transportConnectTimeout: 0,
 
         disconnectTimeout: 30000, // This should be set by the server in response to the negotiate request (30s default)
 
@@ -499,9 +500,8 @@
                 connection.log("Auto detected cross domain url.");
 
                 if (config.transport === "auto") {
-                    // Try webSockets and longPolling since SSE doesn't support CORS
                     // TODO: Support XDM with foreverFrame
-                    config.transport = ["webSockets", "longPolling"];
+                    config.transport = ["webSockets", "serverSentEvents", "longPolling"];
                 }
 
                 if (typeof (config.withCredentials) === "undefined") {
@@ -570,7 +570,7 @@
                     connection._.onFailedTimeoutHandle = window.setTimeout(function () {
                         connection.log(transport.name + " timed out when trying to connect.");
                         onFailed();
-                    }, connection.transportConnectTimeout);
+                    }, connection._.totalTransportConnectTimeout);
 
                     transport.start(connection, function () { // success
                         // Firefox 11+ doesn't allow sync XHR withCredentials: https://developer.mozilla.org/en-US/docs/Web/API/XMLHttpRequest#withCredentials
@@ -697,8 +697,8 @@
                         // after res.DisconnectTimeout seconds.
                         connection.disconnectTimeout = res.DisconnectTimeout * 1000; // in ms
 
-                        // If the connection already has a transportConnectTimeout set then keep it, otherwise use the servers value.
-                        connection.transportConnectTimeout = connection.transportConnectTimeout + res.TransportConnectTimeout * 1000;
+                        // Add the TransportConnectTimeout from the response to the transportConnectTimeout from the client to calculate the total timeout
+                        connection._.totalTransportConnectTimeout = connection.transportConnectTimeout + res.TransportConnectTimeout * 1000;
 
                         // If we have a keep alive
                         if (res.KeepAliveTimeout) {

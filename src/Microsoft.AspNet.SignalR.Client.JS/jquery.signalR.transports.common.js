@@ -53,11 +53,6 @@
         }
     }
 
-    function isConnectedOrReconnecting(connection) {
-        return connection.state === signalR.connectionState.connected ||
-               connection.state === signalR.connectionState.reconnecting;
-    }
-
     function addConnectionData(url, connectionData) {
         var appender = url.indexOf("?") !== -1 ? "&" : "?";
 
@@ -412,6 +407,7 @@
         },
 
         startHeartbeat: function (connection) {
+            connection._.lastActiveAt = new Date().getTime();
             beat(connection);
         },
 
@@ -426,6 +422,11 @@
             }
 
             return false;
+        },
+
+        isConnectedOrReconnecting: function (connection) {
+            return connection.state === signalR.connectionState.connected ||
+                   connection.state === signalR.connectionState.reconnecting;
         },
 
         ensureReconnectingState: function (connection) {
@@ -459,7 +460,7 @@
 
             // We should only set a reconnectTimeout if we are currently connected
             // and a reconnectTimeout isn't already set.
-            if (isConnectedOrReconnecting(connection) && !connection._.reconnectTimeout) {
+            if (transportLogic.isConnectedOrReconnecting(connection) && !connection._.reconnectTimeout) {
                 // Need to verify before the setTimeout occurs because an application sleep could occur during the setTimeout duration.
                 if (!transportLogic.verifyLastActive(connection)) {
                     return;

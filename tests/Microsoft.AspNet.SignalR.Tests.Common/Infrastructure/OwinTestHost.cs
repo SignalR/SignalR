@@ -27,10 +27,17 @@ namespace Microsoft.AspNet.SignalR.Tests.Common.Infrastructure
                                         int? connectionTimeout = 110,
                                         int? disconnectTimeout = 30,
                                         int? transportConnectTimeout = 5,
+                                        int? maxIncomingWebSocketMessageSize = 64 * 1024,
                                         bool enableAutoRejoiningGroups = false,
                                         MessageBusType messageBusType = MessageBusType.Default)
         {
-            base.Initialize(keepAlive, connectionTimeout, disconnectTimeout, transportConnectTimeout, enableAutoRejoiningGroups, messageBusType);
+            base.Initialize(keepAlive,
+                            connectionTimeout,
+                            disconnectTimeout,
+                            transportConnectTimeout,
+                            maxIncomingWebSocketMessageSize,
+                            enableAutoRejoiningGroups,
+                            messageBusType);
 
             _server = WebApp.Start(Url, app =>
             {

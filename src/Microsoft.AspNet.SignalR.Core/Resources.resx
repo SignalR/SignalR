@@ -216,6 +216,9 @@
   <data name="Error_ProtocolErrorUnknownTransport" xml:space="preserve">
     <value>Protocol error: Unknown transport.</value>
   </data>
+  <data name="Error_ScaleoutQueuingConfig" xml:space="preserve">
+    <value>Scaleout queuing is enabled but maximum queue size is 0</value>
+  </data>
   <data name="Error_StateExceededMaximumLength" xml:space="preserve">
     <value>State has exceeded the maximum length of 4096 bytes.</value>
   </data>

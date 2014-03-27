@@ -14,7 +14,6 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
 {
     public class ServiceBusConnectionContext : IDisposable
     {
-        private readonly NamespaceManager _namespaceManager;
         private readonly ServiceBusScaleoutConfiguration _configuration;
 
         private readonly SubscriptionContext[] _subscriptions;
@@ -32,8 +31,9 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
 
         public bool IsDisposed { get; private set; }
 
+        public NamespaceManager NamespaceManager { get; set; }
+
         public ServiceBusConnectionContext(ServiceBusScaleoutConfiguration configuration,
-                                           NamespaceManager namespaceManager,
                                            IList<string> topicNames,
                                            TraceSource traceSource,
                                            Action<int, IEnumerable<BrokeredMessage>> handler,
@@ -45,7 +45,6 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
                 throw new ArgumentNullException("topicNames");
             }
 
-            _namespaceManager = namespaceManager;
             _configuration = configuration;
 
             _subscriptions = new SubscriptionContext[topicNames.Count];
@@ -116,10 +115,21 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
                         {
                             for (int i = 0; i < TopicNames.Count; i++)
                             {
-                                _topicClients[i].Close();
-                                SubscriptionContext subscription = _subscriptions[i];
-                                subscription.Receiver.Close();
-                                _namespaceManager.DeleteSubscription(subscription.TopicPath, subscription.Name);
+                                // BUG #2937: We need to null check here because the given topic/subscription
+                                // may never have actually been created due to the lock being released
+                                // between each retry attempt
+                                var topicClient = _topicClients[i];
+                                if (topicClient != null)
+                                {
+                                    topicClient.Close();
+                                }
+
+                                var subscription = _subscriptions[i];
+                                if (subscription != null)
+                                {
+                                    subscription.Receiver.Close();
+                                    NamespaceManager.DeleteSubscription(subscription.TopicPath, subscription.Name);
+                                }
                             }
 
                             IsDisposed = true;

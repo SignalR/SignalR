@@ -44,6 +44,8 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
                                 .Select(topicIndex => SignalRTopicPrefix + "_" + configuration.TopicPrefix + "_" + topicIndex)
                                 .ToArray();
 
+            _connectionContext = new ServiceBusConnectionContext(configuration, _topics, _trace, OnMessage, OnError, Open);
+
             ThreadPool.QueueUserWorkItem(Subscribe);
         }
 
@@ -87,7 +89,7 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
 
         private void Subscribe(object state)
         {
-            _connectionContext = _connection.Subscribe(_topics, OnMessage, OnError, Open);
+            _connection.Subscribe(_connectionContext);
         }
 
         private void TraceMessages(IList<Message> messages, string messageType)

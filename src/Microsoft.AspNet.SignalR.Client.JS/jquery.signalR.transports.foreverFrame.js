@@ -43,7 +43,7 @@
                         attachedTo++;
                     }
                 },
-                cancel: function () {                   
+                cancel: function () {
                     // Only clear the interval if there's only one more object that the loadPreventer is attachedTo
                     if (attachedTo === 1) {
                         window.clearInterval(loadingFixIntervalId);
@@ -70,7 +70,7 @@
                 url,
                 frame = createFrame(),
                 frameLoadHandler = function () {
-                    connection.log("Forever frame iframe finished loading and is no longer receiving messages, reconnecting.");
+                    connection.log("Forever frame iframe finished loading and is no longer receiving messages.");
                     that.reconnect(connection);
                 };
 
@@ -121,24 +121,22 @@
         reconnect: function (connection) {
             var that = this;
 
-            // Need to verify before the setTimeout occurs because an application sleep could occur during the setTimeout duration.
-            if (!transportLogic.verifyLastActive(connection)) {
-                return;
+            // Need to verify connection state and verify before the setTimeout occurs because an application sleep could occur during the setTimeout duration.
+            if (transportLogic.isConnectedOrReconnecting(connection) && transportLogic.verifyLastActive(connection)) {
+                window.setTimeout(function () {
+                    // Verify that we're ok to reconnect.
+                    if (!transportLogic.verifyLastActive(connection)) {
+                        return;
+                    }
+
+                    if (connection.frame && transportLogic.ensureReconnectingState(connection)) {
+                        var frame = connection.frame,
+                            src = transportLogic.getUrl(connection, that.name, true) + "&frameId=" + connection.frameId;
+                        connection.log("Updating iframe src to '" + src + "'.");
+                        frame.src = src;
+                    }
+                }, connection.reconnectDelay);
             }
-
-            window.setTimeout(function () {
-                // Verify that we're ok to reconnect.
-                if (!transportLogic.verifyLastActive(connection)) {
-                    return;
-                }
-
-                if (connection.frame && transportLogic.ensureReconnectingState(connection)) {
-                    var frame = connection.frame,
-                        src = transportLogic.getUrl(connection, that.name, true) + "&frameId=" + connection.frameId;
-                    connection.log("Updating iframe src to '" + src + "'.");
-                    frame.src = src;
-                }
-            }, connection.reconnectDelay);
         },
 
         lostConnection: function (connection) {

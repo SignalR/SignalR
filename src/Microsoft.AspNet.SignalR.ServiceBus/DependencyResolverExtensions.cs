@@ -32,8 +32,8 @@ namespace Microsoft.AspNet.SignalR
         /// <remarks>Note: Only Windows Azure Service Bus is supported. Service Bus for Windows Server (on-premise) is not supported.</remarks>
         public static IDependencyResolver UseServiceBus(this IDependencyResolver resolver, ServiceBusScaleoutConfiguration configuration)
         {
-            var bus = new Lazy<ServiceBusMessageBus>(() => new ServiceBusMessageBus(resolver, configuration));
-            resolver.Register(typeof(IMessageBus), () => bus.Value);
+            var bus = new ServiceBusMessageBus(resolver, configuration);
+            resolver.Register(typeof(IMessageBus), () => bus);
 
             return resolver;
         }

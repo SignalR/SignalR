@@ -145,7 +145,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Owin
         [Fact]
         public async Task DefaultWebSocketHandlerOperationsNoopAfterClose()
         {
-            var handler = new DefaultWebSocketHandler();
+            var handler = new DefaultWebSocketHandler(maxIncomingMessageSize: null);
 
             var initialWebSocket = new Mock<WebSocket>();
 
