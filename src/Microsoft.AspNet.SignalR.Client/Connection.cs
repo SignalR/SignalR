@@ -868,7 +868,7 @@ namespace Microsoft.AspNet.SignalR.Client
             if (_assemblyVersion == null)
             {
 #if NETFX_CORE
-                _assemblyVersion = new Version("2.1.0");
+                _assemblyVersion = new Version("2.2.0");
 #else
                 _assemblyVersion = new AssemblyName(typeof(Connection).Assembly.FullName).Version;
 #endif
