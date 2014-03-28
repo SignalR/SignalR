@@ -352,6 +352,8 @@
             }
         },
 
+        _originalJson: window.JSON,
+
         json: window.JSON,
 
         isCrossDomain: function (url, against) {
