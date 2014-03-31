@@ -66,7 +66,14 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
 
             for (var topicIndex = 0; topicIndex < connectionContext.TopicNames.Count; ++topicIndex)
             {
-                Retry(() => CreateTopic(connectionContext, topicIndex));
+                Exception exception;
+                Action callback = () => CreateTopic(connectionContext, topicIndex);
+
+                if (!Retry(callback, out exception))
+                {
+                    // We failed to initialize this stream to report the error
+                    connectionContext.ErrorHandler(topicIndex, exception);
+                }
             }
 
             _trace.TraceInformation("Subscription to {0} topics in the service bus Topic service completed successfully.", connectionContext.TopicNames.Count);
@@ -171,9 +178,11 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
         }
 
         [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "We retry to create the topics on exceptions")]
-        private void Retry(Action action)
+        private bool Retry(Action action, out Exception exception)
         {
             string errorMessage = "Failed to create service bus subscription or topic : {0}";
+            exception = null;
+
             while (true)
             {
                 try
@@ -184,26 +193,32 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
                 catch (UnauthorizedAccessException ex)
                 {
                     _trace.TraceError(errorMessage, ex.Message);
-                    break;
+                    exception = ex;
+                    return false;
                 }
                 catch (MessagingException ex)
                 {
                     _trace.TraceError(errorMessage, ex.Message);
+
                     if (ex.IsTransient)
                     {
                         Thread.Sleep(RetryDelay);
                     }
                     else
                     {
-                        break;
+                        exception = ex;
+                        return false;
                     }
                 }
                 catch (Exception ex)
                 {
                     _trace.TraceError(errorMessage, ex.Message);
-                    break;
+                    exception = ex;
+                    return false;
                 }
             }
+
+            return true;
         }
 
         protected virtual void Dispose(bool disposing)
