@@ -25,7 +25,7 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
 
         private readonly ServiceBusConnection _connection;
         private readonly string[] _topics;
-        
+
         public ServiceBusMessageBus(IDependencyResolver resolver, ServiceBusScaleoutConfiguration configuration)
             : base(resolver, configuration)
         {
@@ -66,24 +66,15 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
             return _connectionContext.Publish(streamIndex, stream);
         }
 
-        private void OnMessage(int topicIndex, IEnumerable<BrokeredMessage> messages)
+        private void OnMessage(int topicIndex, BrokeredMessage message)
         {
-            if (!messages.Any())
+            using (message)
             {
-                // Force the topic to re-open if it was ever closed even if we didn't get any messages
-                Open(topicIndex);
-            }
+                ScaleoutMessage scaleoutMessage = ServiceBusMessage.FromBrokeredMessage(message);
 
-            foreach (var message in messages)
-            {
-                using (message)
-                {
-                    ScaleoutMessage scaleoutMessage = ServiceBusMessage.FromBrokeredMessage(message);
+                TraceMessages(scaleoutMessage.Messages, "Receiving");
 
-                    TraceMessages(scaleoutMessage.Messages, "Receiving");
-
-                    OnReceived(topicIndex, (ulong)message.EnqueuedSequenceNumber, scaleoutMessage);
-                }
+                OnReceived(topicIndex, (ulong)message.EnqueuedSequenceNumber, scaleoutMessage);
             }
         }
 

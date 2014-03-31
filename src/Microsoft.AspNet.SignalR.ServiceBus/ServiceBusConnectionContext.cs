@@ -25,7 +25,7 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
         public object TopicClientsLock { get; private set; }
 
         public IList<string> TopicNames { get; private set; }
-        public Action<int, IEnumerable<BrokeredMessage>> Handler { get; private set; }
+        public Action<int, BrokeredMessage> Handler { get; private set; }
         public Action<int, Exception> ErrorHandler { get; private set; }
         public Action<int> OpenStream { get; private set; }
 
@@ -36,7 +36,7 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
         public ServiceBusConnectionContext(ServiceBusScaleoutConfiguration configuration,
                                            IList<string> topicNames,
                                            TraceSource traceSource,
-                                           Action<int, IEnumerable<BrokeredMessage>> handler,
+                                           Action<int, BrokeredMessage> handler,
                                            Action<int, Exception> errorHandler,
                                            Action<int> openStream)
         {

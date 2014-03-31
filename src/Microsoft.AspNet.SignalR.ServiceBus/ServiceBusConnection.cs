@@ -14,10 +14,6 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
     internal class ServiceBusConnection : IDisposable
     {
         private const int DefaultReceiveBatchSize = 1000;
-        private static readonly TimeSpan BackoffAmount = TimeSpan.FromSeconds(20);
-        private static readonly TimeSpan ErrorBackOffAmount = TimeSpan.FromSeconds(5);
-        private static readonly TimeSpan DefaultReadTimeout = TimeSpan.FromSeconds(60);
-        private static readonly TimeSpan ErrorReadTimeout = TimeSpan.FromSeconds(0.5);
         private static readonly TimeSpan RetryDelay = TimeSpan.FromSeconds(10);
 
         private readonly TimeSpan _idleSubscriptionTimeout;
@@ -43,7 +39,7 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
                 }
                 else
                 {
-                    _factory.RetryPolicy = RetryExponential.Default;
+                    _factory.RetryPolicy = RetryPolicy.Default;
                 }
             }
             catch (ConfigurationErrorsException)
@@ -159,6 +155,7 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
                 // Create a receiver to get messages
                 string subscriptionEntityPath = SubscriptionClient.FormatSubscriptionPath(topicName, subscriptionName);
                 MessageReceiver receiver = _factory.CreateMessageReceiver(subscriptionEntityPath, ReceiveMode.ReceiveAndDelete);
+                receiver.RetryPolicy = _configuration.RetryPolicy ?? RetryPolicy.Default;
 
                 _trace.TraceInformation("Creation of a message receive for subscription entity path {0} in the service bus completed successfully.", subscriptionEntityPath);
 
@@ -204,7 +201,7 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
                 catch (Exception ex)
                 {
                     _trace.TraceError(errorMessage, ex.Message);
-                    Thread.Sleep(RetryDelay);
+                    break;
                 }
             }
         }
@@ -229,142 +226,43 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
         [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "Exceptions are handled through the error handler callback")]
         private void ProcessMessages(ReceiverContext receiverContext)
         {
-        receive:
-
-            try
+            var options = new OnMessageOptions();
+            options.ExceptionReceived += (sender, e) =>
             {
-                IAsyncResult result = receiverContext.Receiver.BeginReceiveBatch(ReceiverContext.ReceiveBatchSize, receiverContext.ReceiveTimeout, ar =>
-                {
-                    if (ar.CompletedSynchronously)
-                    {
-                        return;
-                    }
+                receiverContext.OnError(e.Exception);
+            };
 
-                    var ctx = (ReceiverContext)ar.AsyncState;
-
-                    if (ContinueReceiving(ar, ctx))
-                    {
-                        ProcessMessages(ctx);
-                    }
-                },
-                receiverContext);
-
-                if (result.CompletedSynchronously)
-                {
-                    if (ContinueReceiving(result, receiverContext))
-                    {
-                        goto receive;
-                    }
-                }
-            }
-            catch (OperationCanceledException)
+            receiverContext.Receiver.OnMessage(message =>
             {
-                // This means the channel is closed
-                _trace.TraceError("OperationCanceledException was thrown in trying to receive the message from the service bus.");
-
-                return;
-            }
-            catch (Exception ex)
-            {
-                _trace.TraceError(ex.Message);
-                receiverContext.OnError(ex);
-
-                Thread.Sleep(RetryDelay);
-                goto receive;
-            }
-        }
-
-        [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "Exceptions are handled through the error handler callback")]
-        private bool ContinueReceiving(IAsyncResult asyncResult, ReceiverContext receiverContext)
-        {
-            bool shouldContinue = true;
-            TimeSpan backoffAmount = BackoffAmount;
-
-            try
-            {
-                IEnumerable<BrokeredMessage> messages = receiverContext.Receiver.EndReceiveBatch(asyncResult);
-
-                receiverContext.OnMessage(messages);
-
-                // Reset the receive timeout if it changed
-                receiverContext.ReceiveTimeout = DefaultReadTimeout;
-            }
-            catch (ServerBusyException ex)
-            {
-                receiverContext.OnError(ex);
-
-                // Too busy so back off
-                shouldContinue = false;
-            }
-            catch (OperationCanceledException)
-            {
-                // This means the channel is closed
-                _trace.TraceError("Receiving messages from the service bus threw an OperationCanceledException, most likely due to a closed channel.");
-
-                return false;
-            }
-            catch (MessagingEntityNotFoundException ex)
-            {
-                receiverContext.Receiver.CloseAsync().Catch();
-                receiverContext.OnError(ex);
-
-                TaskAsyncHelper.Delay(RetryDelay)
-                               .Then(() => Retry(() => CreateSubscription(receiverContext.ConnectionContext, receiverContext.TopicIndex)));
-                return false;
-            }
-            catch (Exception ex)
-            {
-                receiverContext.OnError(ex);
-
-                shouldContinue = false;
-
-                // TODO: Exponential backoff
-                backoffAmount = ErrorBackOffAmount;
-
-                // After an error, we want to adjust the timeout so that we
-                // can recover as quickly as possible even if there's no message
-                receiverContext.ReceiveTimeout = ErrorReadTimeout;
-            }
-
-            if (!shouldContinue)
-            {
-                TaskAsyncHelper.Delay(backoffAmount)
-                               .Then(ctx => ProcessMessages(ctx), receiverContext);
-
-                return false;
-            }
-
-            return true;
+                receiverContext.OnMessage(message);
+            },
+            options);
         }
 
         private class ReceiverContext
         {
-            public const int ReceiveBatchSize = DefaultReceiveBatchSize;
-
             public readonly MessageReceiver Receiver;
             public readonly ServiceBusConnectionContext ConnectionContext;
 
-            public int TopicIndex { get; private set; }
-            public TimeSpan ReceiveTimeout { get; set; }
+            private readonly int _topicIndex;
 
             public ReceiverContext(int topicIndex,
                                    MessageReceiver receiver,
                                    ServiceBusConnectionContext connectionContext)
             {
-                TopicIndex = topicIndex;
+                _topicIndex = topicIndex;
                 Receiver = receiver;
-                ReceiveTimeout = DefaultReadTimeout;
                 ConnectionContext = connectionContext;
             }
 
             public void OnError(Exception ex)
             {
-                ConnectionContext.ErrorHandler(TopicIndex, ex);
+                ConnectionContext.ErrorHandler(_topicIndex, ex);
             }
 
-            public void OnMessage(IEnumerable<BrokeredMessage> messages)
+            public void OnMessage(BrokeredMessage message)
             {
-                ConnectionContext.Handler(TopicIndex, messages);
+                ConnectionContext.Handler(_topicIndex, message);
             }
         }
     }
