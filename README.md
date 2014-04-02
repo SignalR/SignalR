@@ -45,4 +45,3 @@ We have a CI Server (http://ci.signalr.net/)
 
 ## Questions?
 The SignalR team hangs out in the [signalr](http://jabbr.net/#/rooms/signalr) room at on [JabbR](http://jabbr.net/).
-
