@@ -9,7 +9,6 @@
 -- *never* be committed.
 
 SET TRANSACTION ISOLATION LEVEL REPEATABLE READ;
-BEGIN TRANSACTION;
 
 -- START: TEST DATA --
 --DECLARE @Payload varbinary(max);
@@ -17,19 +16,13 @@ BEGIN TRANSACTION;
 -- END: TEST DATA --
 
 DECLARE @NewPayloadId bigint;
-DECLARE @NewPayloadIdTable table( [PayloadId] bigint );
 
--- Update last payload id, this will return when an exclusive lock was taken
-UPDATE [SignalR].[Messages_0_Id] SET [PayloadId] = [PayloadId] + 1
-OUTPUT INSERTED.[PayloadId] INTO @NewPayloadIdTable;
-
-SELECT @NewPayloadId = [PayloadId] FROM @NewPayloadIdTable;
-
+-- Update last payload id, find new PayloadId and insert new message at once.
+-- Now we don't need explicit transaction here.
+UPDATE TOP(1) [SignalR].[Messages_0_Id] SET @NewPayloadId = [PayloadId] = [PayloadId] + 1
+OUTPUT INSERTED.[PayloadId], @Payload, GETDATE()
 -- Insert payload
-INSERT INTO [SignalR].[Messages_0] ([PayloadId], [Payload], [InsertedOn])
-VALUES (@NewPayloadId, @Payload, GETDATE());
-
-COMMIT TRANSACTION;
+INTO [SignalR].[Messages_0] ([PayloadId], [Payload], [InsertedOn]);
 
 -- Garbage collection
 SET TRANSACTION ISOLATION LEVEL READ COMMITTED;
