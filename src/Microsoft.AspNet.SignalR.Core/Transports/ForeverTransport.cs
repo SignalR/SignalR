@@ -270,16 +270,16 @@ namespace Microsoft.AspNet.SignalR.Transports
                                                                this);
 
 
-                disposer.Set(subscription);
-
                 if (AfterReceive != null)
                 {
                     AfterReceive();
                 }
 
                 // Ensure delegate continues to use the C# Compiler static delegate caching optimization.
-                initialize().Then(tcs => tcs.TrySetResult(null), InitializeTcs)
-                            .Catch((ex, state) => ((ForeverTransport)state).OnError(ex), this);
+                initialize().ContinueWith(InitializeTcs)
+                            .Catch((ex, state) => ((ForeverTransport)state).OnError(ex), this)
+                            .Finally(state => ((SubscriptionDisposerContext)state).Set(),
+                                new SubscriptionDisposerContext(disposer, subscription));
             }
             catch (OperationCanceledException ex)
             {
@@ -381,6 +381,23 @@ namespace Microsoft.AspNet.SignalR.Transports
             {
                 State = state;
                 Transport = foreverTransport;
+            }
+        }
+
+        private class SubscriptionDisposerContext
+        {
+            private readonly Disposer _disposer;
+            private readonly IDisposable _supscription;
+
+            public SubscriptionDisposerContext(Disposer disposer, IDisposable subscription)
+            {
+                _disposer = disposer;
+                _supscription = subscription;
+            }
+
+            public void Set()
+            {
+                _disposer.Set(_supscription);
             }
         }
 
