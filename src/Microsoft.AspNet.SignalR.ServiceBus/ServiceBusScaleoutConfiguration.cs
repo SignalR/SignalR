@@ -30,6 +30,7 @@ namespace Microsoft.AspNet.SignalR
             ConnectionString = connectionString;
             TopicPrefix = topicPrefix;
             TopicCount = 5;
+            BackoffTime = TimeSpan.FromSeconds(20);
             TimeToLive = TimeSpan.FromMinutes(1);
             MaximumMessageSize = 256 * 1024;
             OperationTimeout = null;
@@ -81,6 +82,11 @@ namespace Microsoft.AspNet.SignalR
         /// Specifies the time duration after which an idle subscription is deleted
         /// </summary>
         public TimeSpan IdleSubscriptionTimeout { get; set; }
+
+        /// <summary>
+        /// Specifies the delay before we try again after an error
+        /// </summary>
+        public TimeSpan BackoffTime { get; set; }
 
         /// <summary>
         /// Gets or Sets the operation timeout for all Service Bus operations 
