@@ -44,10 +44,10 @@ namespace Microsoft.AspNet.SignalR.Transports
         public WebSocketTransport(HostContext context,
                                   JsonSerializer serializer,
                                   ITransportHeartbeat heartbeat,
-                                  IPerformanceCounterManager performanceCounterWriter,
+                                  IPerformanceCounterManager performanceCounterManager,
                                   ITraceManager traceManager,
                                   int? maxIncomingMessageSize)
-            : base(context, serializer, heartbeat, performanceCounterWriter, traceManager)
+            : base(context, serializer, heartbeat, performanceCounterManager, traceManager)
         {
             _context = context;
             _maxIncomingMessageSize = maxIncomingMessageSize;
@@ -122,6 +122,16 @@ namespace Microsoft.AspNet.SignalR.Transports
             OnSendingResponse(response);
 
             return Send((object)response);
+        }
+
+        protected override void OnIncrementConnectionsCount()
+        {
+            PerformanceCounters.ConnectionsCurrentWebSockets.Increment();
+        }
+
+        protected override void OnDecrementConnectionsCount()
+        {
+            PerformanceCounters.ConnectionsCurrentWebSockets.Decrement();
         }
 
         private Task AcceptWebSocketRequest(Func<IWebSocket, Task> callback)

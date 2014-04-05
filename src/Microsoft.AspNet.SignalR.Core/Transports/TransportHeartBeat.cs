@@ -24,7 +24,6 @@ namespace Microsoft.AspNet.SignalR.Transports
         private readonly IServerCommandHandler _serverCommandHandler;
         private readonly TraceSource _trace;
         private readonly string _serverId;
-        private readonly IPerformanceCounterManager _counters;
         private readonly object _counterLock = new object();
 
         private int _running;
@@ -39,7 +38,6 @@ namespace Microsoft.AspNet.SignalR.Transports
             _configurationManager = resolver.Resolve<IConfigurationManager>();
             _serverCommandHandler = resolver.Resolve<IServerCommandHandler>();
             _serverId = resolver.Resolve<IServerIdManager>().ServerId;
-            _counters = resolver.Resolve<IPerformanceCounterManager>();
 
             var traceManager = resolver.Resolve<ITraceManager>();
             _trace = traceManager["SignalR.Transports.TransportHeartBeat"];
@@ -123,11 +121,8 @@ namespace Microsoft.AspNet.SignalR.Transports
             if (isNewConnection)
             {
                 Trace.TraceInformation("Connection {0} is New.", connection.ConnectionId);
-            }
 
-            lock (_counterLock)
-            {
-                _counters.ConnectionsCurrent.RawValue = _connections.Count;
+                connection.IncrementConnectionsCount();
             }
 
             // Set the initial connection time
@@ -153,10 +148,7 @@ namespace Microsoft.AspNet.SignalR.Transports
             ConnectionMetadata metadata;
             if (_connections.TryRemove(connection.ConnectionId, out metadata))
             {
-                lock (_counterLock)
-                {
-                    _counters.ConnectionsCurrent.RawValue = _connections.Count;
-                }
+                connection.DecrementConnectionsCount();
 
                 connection.ApplyState(TransportConnectionStates.Removed);
 
@@ -200,11 +192,6 @@ namespace Microsoft.AspNet.SignalR.Transports
             {
                 Trace.TraceEvent(TraceEventType.Verbose, 0, "Timer handler took longer than current interval");
                 return;
-            }
-
-            lock (_counterLock)
-            {
-                _counters.ConnectionsCurrent.RawValue = _connections.Count;
             }
 
             try

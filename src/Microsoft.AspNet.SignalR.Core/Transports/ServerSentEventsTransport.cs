@@ -34,6 +34,16 @@ namespace Microsoft.AspNet.SignalR.Transports
             return EnqueueOperation(state => PerformSend(state), context);
         }
 
+        protected override void OnIncrementConnectionsCount()
+        {
+            PerformanceCounters.ConnectionsCurrentServerSentEvents.Increment();
+        }
+
+        protected override void OnDecrementConnectionsCount()
+        {
+            PerformanceCounters.ConnectionsCurrentServerSentEvents.Decrement();
+        }
+
         protected internal override Task InitializeResponse(ITransportConnection connection)
         {
             // Ensure delegate continues to use the C# Compiler static delegate caching optimization.

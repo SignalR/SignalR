@@ -84,6 +84,14 @@ namespace Microsoft.AspNet.SignalR.Transports
             }
         }
 
+        protected IPerformanceCounterManager PerformanceCounters
+        {
+            get
+            {
+                return _counters;
+            }
+        }
+
         public string ConnectionId
         {
             get;
@@ -247,6 +255,26 @@ namespace Microsoft.AspNet.SignalR.Transports
             _counters.ErrorsTransportPerSec.Increment();
             _counters.ErrorsAllTotal.Increment();
             _counters.ErrorsAllPerSec.Increment();
+        }
+
+        protected virtual void OnIncrementConnectionsCount()
+        {
+        }
+
+        protected virtual void OnDecrementConnectionsCount()
+        {
+        }
+
+        public void IncrementConnectionsCount()
+        {
+            _counters.ConnectionsCurrent.Increment();
+            OnIncrementConnectionsCount();
+        }
+
+        public void DecrementConnectionsCount()
+        {
+            _counters.ConnectionsCurrent.Decrement();
+            OnDecrementConnectionsCount();
         }
 
         public Task Disconnect()

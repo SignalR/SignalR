@@ -7,7 +7,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
 using System.Threading;
-using System.Threading.Tasks;
+
 
 #if !UTILS
 using Microsoft.AspNet.SignalR.Tracing;
@@ -76,6 +76,30 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
         /// </summary>
         [PerformanceCounter(Name = "Connections Disconnected", Description = "The total number of connection Disconnect events since the application was started.", CounterType = PerformanceCounterType.NumberOfItems32)]
         public IPerformanceCounter ConnectionsDisconnected { get; private set; }
+
+        /// <summary>
+        /// Gets the performance counter representing the number of connections currently connected.
+        /// </summary>
+        [PerformanceCounter(Name = "Connections Current ForeverFrame", Description = "The number of connections currently connected using ForeverFrame transport.", CounterType = PerformanceCounterType.NumberOfItems32)]
+        public IPerformanceCounter ConnectionsCurrentForeverFrame { get; private set; }
+        
+        /// <summary>
+        /// Gets the performance counter representing the number of connections currently connected.
+        /// </summary>
+        [PerformanceCounter(Name = "Connections Current LongPolling", Description = "The number of connections currently connected using LongPolling transport.", CounterType = PerformanceCounterType.NumberOfItems32)]
+        public IPerformanceCounter ConnectionsCurrentLongPolling { get; private set; }
+        
+        /// <summary>
+        /// Gets the performance counter representing the number of connections currently connected.
+        /// </summary>
+        [PerformanceCounter(Name = "Connections Current ServerSentEvents", Description = "The number of connections currently connected using ServerSentEvents transport.", CounterType = PerformanceCounterType.NumberOfItems32)]
+        public IPerformanceCounter ConnectionsCurrentServerSentEvents { get; private set; }
+        
+        /// <summary>
+        /// Gets the performance counter representing the number of connections currently connected.
+        /// </summary>
+        [PerformanceCounter(Name = "Connections Current WebSockets", Description = "The number of connections currently connected using WebSocket transport.", CounterType = PerformanceCounterType.NumberOfItems32)]
+        public IPerformanceCounter ConnectionsCurrentWebSockets { get; private set; }
 
         /// <summary>
         /// Gets the performance counter representing the number of connections currently connected.

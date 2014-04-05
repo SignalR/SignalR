@@ -1,6 +1,5 @@
 ﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.md in the project root for license information.
 
-using System.Diagnostics;
 using System.Threading;
 
 namespace Microsoft.AspNet.SignalR.Infrastructure
@@ -40,6 +39,26 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
         /// Gets the performance counter representing the total number of connection Disconnect events since the application was started.
         /// </summary>
         IPerformanceCounter ConnectionsDisconnected { get; }
+
+        /// <summary>
+        /// Gets the performance counter representing the number of connections currently connected using ForeverFrame transport.
+        /// </summary>
+        IPerformanceCounter ConnectionsCurrentForeverFrame { get; }
+
+        /// <summary>
+        /// Gets the performance counter representing the number of connections currently connected using LongPolling transport.
+        /// </summary>
+        IPerformanceCounter ConnectionsCurrentLongPolling { get; }
+
+        /// <summary>
+        /// Gets the performance counter representing the number of connections currently connected using ServerSentEvents transport.
+        /// </summary>
+        IPerformanceCounter ConnectionsCurrentServerSentEvents { get; }
+
+        /// <summary>
+        /// Gets the performance counter representing the number of connections currently connected using WebSockets transport.
+        /// </summary>
+        IPerformanceCounter ConnectionsCurrentWebSockets { get; }
 
         /// <summary>
         /// Gets the performance counter representing the number of connections currently connected.

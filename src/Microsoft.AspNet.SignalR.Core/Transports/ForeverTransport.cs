@@ -15,7 +15,6 @@ namespace Microsoft.AspNet.SignalR.Transports
     [SuppressMessage("Microsoft.Design", "CA1001:TypesThatOwnDisposableFieldsShouldBeDisposable", Justification = "The disposer is an optimization")]
     public abstract class ForeverTransport : TransportDisconnectBase, ITransport
     {
-        private readonly IPerformanceCounterManager _counters;
         private readonly JsonSerializer _jsonSerializer;
         private string _lastMessageId;
         private IDisposable _busRegistration;
@@ -34,12 +33,11 @@ namespace Microsoft.AspNet.SignalR.Transports
         protected ForeverTransport(HostContext context,
                                    JsonSerializer jsonSerializer,
                                    ITransportHeartbeat heartbeat,
-                                   IPerformanceCounterManager performanceCounterWriter,
+                                   IPerformanceCounterManager performanceCounterManager,
                                    ITraceManager traceManager)
-            : base(context, heartbeat, performanceCounterWriter, traceManager)
+            : base(context, heartbeat, performanceCounterManager, traceManager)
         {
             _jsonSerializer = jsonSerializer;
-            _counters = performanceCounterWriter;
         }
 
         protected virtual int MaxMessages
@@ -203,7 +201,7 @@ namespace Microsoft.AspNet.SignalR.Transports
                 if (newConnection)
                 {
                     connected = Connected ?? _emptyTaskFunc;
-                    _counters.ConnectionsConnected.Increment();
+                    PerformanceCounters.ConnectionsConnected.Increment();
                 }
                 else
                 {

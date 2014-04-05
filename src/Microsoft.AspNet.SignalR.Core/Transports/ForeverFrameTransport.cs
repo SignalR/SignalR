@@ -4,7 +4,6 @@ using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.IO;
-using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR.Hosting;
 using Microsoft.AspNet.SignalR.Infrastructure;
@@ -60,6 +59,16 @@ namespace Microsoft.AspNet.SignalR.Transports
 
                 return _htmlOutputWriter;
             }
+        }
+
+        protected override void OnIncrementConnectionsCount()
+        {
+            PerformanceCounters.ConnectionsCurrentForeverFrame.Increment();
+        }
+
+        protected override void OnDecrementConnectionsCount()
+        {
+            PerformanceCounters.ConnectionsCurrentForeverFrame.Decrement();
         }
 
         public override Task KeepAlive()

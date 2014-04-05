@@ -126,6 +126,16 @@ namespace Microsoft.AspNet.SignalR.Transports
             return EnqueueOperation(state => PerformCompleteSend(state), context);
         }
 
+        protected override void OnIncrementConnectionsCount()
+        {
+            PerformanceCounters.ConnectionsCurrentLongPolling.Increment();
+        }
+
+        protected override void OnDecrementConnectionsCount()
+        {
+            PerformanceCounters.ConnectionsCurrentLongPolling.Decrement();
+        }
+
         protected override Task<bool> OnMessageReceived(PersistentResponse response)
         {
             if (response == null)
