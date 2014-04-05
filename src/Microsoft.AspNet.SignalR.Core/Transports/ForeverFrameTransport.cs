@@ -61,12 +61,12 @@ namespace Microsoft.AspNet.SignalR.Transports
             }
         }
 
-        protected override void OnIncrementConnectionsCount()
+        public override void IncrementConnectionsCount()
         {
             PerformanceCounters.ConnectionsCurrentForeverFrame.Increment();
         }
 
-        protected override void OnDecrementConnectionsCount()
+        public override void DecrementConnectionsCount()
         {
             PerformanceCounters.ConnectionsCurrentForeverFrame.Decrement();
         }
