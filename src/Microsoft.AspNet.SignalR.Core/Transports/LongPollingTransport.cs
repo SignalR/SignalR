@@ -152,6 +152,16 @@ namespace Microsoft.AspNet.SignalR.Transports
             return EnqueueOperation(state => PerformSend(state), context);
         }
 
+        protected override void OnIncrementConnectionsCount()
+        {
+            _counters.ConnectionsCurrentLongPolling.Increment();
+        }
+
+        protected override void OnDecrementConnectionsCount()
+        {
+            _counters.ConnectionsCurrentLongPolling.Decrement();
+        }
+
         private async Task ProcessSendRequest()
         {
             INameValueCollection form = await Context.Request.ReadForm();

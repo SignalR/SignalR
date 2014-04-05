@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.md in the project root for license information.
 
 using System;
-using System.Collections.Specialized;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
@@ -36,12 +35,12 @@ namespace Microsoft.AspNet.SignalR.Transports
         protected ForeverTransport(HostContext context,
                                    JsonSerializer jsonSerializer,
                                    ITransportHeartbeat heartbeat,
-                                   IPerformanceCounterManager performanceCounterWriter,
+                                   IPerformanceCounterManager performanceCounterManager,
                                    ITraceManager traceManager)
-            : base(context, heartbeat, performanceCounterWriter, traceManager)
+            : base(context, heartbeat, performanceCounterManager, traceManager)
         {
             _jsonSerializer = jsonSerializer;
-            _counters = performanceCounterWriter;
+            _counters = performanceCounterManager;
         }
 
         protected string LastMessageId
