@@ -152,12 +152,12 @@ namespace Microsoft.AspNet.SignalR.Transports
             return EnqueueOperation(state => PerformSend(state), context);
         }
 
-        protected override void OnIncrementConnectionsCount()
+        public override void IncrementConnectionsCount()
         {
             _counters.ConnectionsCurrentLongPolling.Increment();
         }
 
-        protected override void OnDecrementConnectionsCount()
+        public override void DecrementConnectionsCount()
         {
             _counters.ConnectionsCurrentLongPolling.Decrement();
         }

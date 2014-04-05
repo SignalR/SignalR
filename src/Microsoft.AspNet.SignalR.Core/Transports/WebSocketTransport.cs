@@ -127,12 +127,12 @@ namespace Microsoft.AspNet.SignalR.Transports
             return Send((object)response);
         }
 
-        protected override void OnIncrementConnectionsCount()
+        public override void IncrementConnectionsCount()
         {
             _counters.ConnectionsCurrentWebSockets.Increment();
         }
 
-        protected override void OnDecrementConnectionsCount()
+        public override void DecrementConnectionsCount()
         {
             _counters.ConnectionsCurrentWebSockets.Decrement();
         }

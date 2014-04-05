@@ -225,26 +225,10 @@ namespace Microsoft.AspNet.SignalR.Transports
             _counters.ErrorsAllPerSec.Increment();
         }
 
-        protected virtual void OnIncrementConnectionsCount()
-        {
-        }
+        public abstract void IncrementConnectionsCount();
 
-        protected virtual void OnDecrementConnectionsCount()
-        {
-        }
-
-        public void IncrementConnectionsCount()
-        {
-            _counters.ConnectionsCurrent.Increment();
-            OnIncrementConnectionsCount();
-        }
-
-        public void DecrementConnectionsCount()
-        {
-            _counters.ConnectionsCurrent.Decrement();
-            OnDecrementConnectionsCount();
-        }
-
+        public abstract void DecrementConnectionsCount();
+        
         public Task Disconnect()
         {
             // Ensure delegate continues to use the C# Compiler static delegate caching optimization.
