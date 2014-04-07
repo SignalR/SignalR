@@ -150,7 +150,7 @@
         receive: function (connection, data) {
             var cw,
                 body,
-                res;
+                response;
 
             if (connection.json !== connection._originalJson) {
                 // If there's a custom JSON parser configured then serialize the object
@@ -158,12 +158,12 @@
                 // the custom parser (connection._parseResponse does that). This is so we
                 // can easily send the response from the server as "raw" JSON but still 
                 // support custom JSON deserialization in the browser.
-                data = connection._parseResponse(connection._originalJson.stringify(data));
+                data = connection._originalJson.stringify(data);
             }
 
-            res = connection._parseResponse(data);
+            response = connection._parseResponse(data);
 
-            transportLogic.processMessages(connection, res, connection.onSuccess);
+            transportLogic.processMessages(connection, response, connection.onSuccess);
 
             // Protect against connection stopping from a callback trigger within the processMessages above.
             if (connection.state === $.signalR.connectionState.connected) {
