@@ -94,6 +94,11 @@
         isDisconnecting = function (connection) {
             return connection.state === signalR.connectionState.disconnected;
         },
+        
+        supportsKeepAlive = function (connection) {
+            return connection._.keepAliveData.activated &&
+                   connection.transport.supportsKeepAlive(connection);
+        },
 
         configureStopReconnectingTimeout = function (connection) {
             var stopReconnectingTimeout,
@@ -589,7 +594,7 @@
 
                             window.clearTimeout(connection._.onFailedTimeoutHandle);
 
-                            if (transport.supportsKeepAlive && connection._.keepAliveData.activated) {
+                            if (supportsKeepAlive(connection)) {
                                 signalR.transports._logic.monitorKeepAlive(connection);
                             }
 
@@ -694,6 +699,7 @@
                         connection.id = res.ConnectionId;
                         connection.token = res.ConnectionToken;
                         connection.webSocketServerUrl = res.WebSocketServerUrl;
+                        connection._.longPollDelay = res.LongPollDelay * 1000; // in ms
 
                         // Once the server has labeled the PersistentConnection as Disconnected, we should stop attempting to reconnect
                         // after res.DisconnectTimeout seconds.
@@ -923,7 +929,7 @@
                     connection.transport.abort(connection, async);
                 }
 
-                if (connection.transport.supportsKeepAlive && connection._.keepAliveData.activated) {
+                if (supportsKeepAlive(connection)) {
                     signalR.transports._logic.stopMonitoringKeepAlive(connection);
                 }
 
@@ -945,6 +951,7 @@
             delete connection._.pingIntervalId;
             delete connection._.lastMessageAt;
             delete connection._.lastActiveAt;
+            delete connection._.longPollDelay;
 
             // Clear out our message buffer
             connection._.connectingMessageBuffer.clear();

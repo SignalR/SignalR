@@ -24,6 +24,8 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
         private readonly IHttpClient _httpClient;
         private readonly TransportAbortHandler _abortHandler;
 
+        private NegotiationResponse _negotiationResponse;
+
         protected HttpBasedTransport(IHttpClient httpClient, string transport)
         {
             _httpClient = httpClient;
@@ -54,9 +56,18 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
             get { return _abortHandler; }
         }
 
+        protected NegotiationResponse NegotiationResponse
+        {
+            get { return _negotiationResponse; }
+        }
+
         public Task<NegotiationResponse> Negotiate(IConnection connection, string connectionData)
         {
-            return _httpClient.GetNegotiationResponse(connection, connectionData);
+            Task<NegotiationResponse> response = _httpClient.GetNegotiationResponse(connection, connectionData);
+
+            response.Then(negotiationResponse => _negotiationResponse = negotiationResponse);
+
+            return response;
         }
 
         public Task Start(IConnection connection, string connectionData, CancellationToken disconnectToken)
