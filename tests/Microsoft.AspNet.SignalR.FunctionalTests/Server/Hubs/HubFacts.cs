@@ -954,7 +954,11 @@ namespace Microsoft.AspNet.SignalR.Tests
 
                     await connection.Start(host.Transport);
 
-                    TestUtilities.AssertAggregateException<InvalidOperationException>(() => hub.InvokeWithTimeout("UnsupportedOverload", 13177), "'UnsupportedOverload' method could not be resolved.");
+                    var expectedErrorMessage = "'UnsupportedOverload' method could not be resolved. Potential candidates are: \n" +
+                                               "UnsupportedOverload(x:String):Void\n" + 
+                                               "UnsupportedOverload(x:Int32):Void";
+
+                    TestUtilities.AssertAggregateException<InvalidOperationException>(() => hub.InvokeWithTimeout("UnsupportedOverload", 13177), expectedErrorMessage);
                 }
             }
         }

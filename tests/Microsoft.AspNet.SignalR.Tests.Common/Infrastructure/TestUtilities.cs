@@ -42,7 +42,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Utilities
                 Exception unwrappedException = ex.Unwrap();
 
                 Assert.IsType(expectedExceptionType, unwrappedException);
-                Assert.Equal(unwrappedException.Message, message);
+                Assert.Equal(message, unwrappedException.Message);
             }
         }
 

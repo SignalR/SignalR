@@ -196,7 +196,7 @@
     <value>'{0}' method could not be resolved. No method found with that name.</value>
   </data>
   <data name="Error_MethodCouldNotBeResolvedCandidates" xml:space="preserve">
-    <value>'{0}' method could not be resolved. Potential candidates are: {1}\n</value>
+    <value>'{0}' method could not be resolved. Potential candidates are: {1}</value>
   </data>
   <data name="Error_MethodLevelOutgoingAuthorization" xml:space="preserve">
     <value>Outgoing authorization can only be required for an entire Hub, not a specific method.</value>
