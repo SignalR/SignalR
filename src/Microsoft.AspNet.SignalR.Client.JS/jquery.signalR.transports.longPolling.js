@@ -13,13 +13,7 @@
         transportLogic = signalR.transports._logic,
         browserSupportsXHRProgress = (function () {
                 try {
-                    var xhr = new window.XMLHttpRequest();
-
-                    if ('onprogress' in xhr) {
-                        return true;
-                    } else {
-                        return false;
-                    }
+                    return "onprogress" in new window.XMLHttpRequest();
                 } catch (e) {
                     // No XHR means no XHR progress event
                     return false;

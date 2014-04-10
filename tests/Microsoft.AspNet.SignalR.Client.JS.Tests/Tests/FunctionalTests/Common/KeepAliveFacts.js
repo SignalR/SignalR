@@ -6,7 +6,14 @@ testUtilities.runWithAllTransports(function (transport) {
 
         connection.start({ transport: transport }).done(function () {
             assert.ok(true, "Connected.");
-            assert.ok(connection._.keepAliveData.monitoring === true, "We should be monitoring the keep alive for the " + transport + " transport.");
+
+            // All transports other than long polling should *always* check keep alives.
+            if (transport !== "longPolling" || "onprogress" in new window.XMLHttpRequest()) {
+                assert.ok(connection._.keepAliveData.monitoring === true, "We should be monitoring the keep alive for the " + transport + " transport.");
+            } else {
+                assert.comment("Long polling test skipped because the browser does not support XHR progress events.")
+            }
+
             end();
         });
 
