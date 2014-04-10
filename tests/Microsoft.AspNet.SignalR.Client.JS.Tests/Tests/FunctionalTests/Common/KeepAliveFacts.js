@@ -59,5 +59,6 @@ QUnit.asyncTimeoutTest("Check if alive can recover from faulty connections.", te
     return function () {
         $.signalR.transports._logic.markLastMessage = savedMarkLastMessage;
         $.signalR.transports._logic.stopMonitoringKeepAlive(connection);
+        window.clearTimeout(connection._.beatHandle);
     };
 });
