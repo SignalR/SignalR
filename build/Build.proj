@@ -81,7 +81,7 @@
     <!-- Only build the following clients if the SDK is installed -->
     <Projects Include="$(ProjectRoot)\src\Microsoft.AspNet.SignalR.Client.Portable\Microsoft.AspNet.SignalR.Client.Portable.csproj">
       <Build Condition="!$(WP8SDKInstalled)">false</Build>
-      <Platform>portable-net45+sl5+netcore45+wp8</Platform>
+      <Platform>portable-net45+sl5+netcore45+wp8+wp81+wpa81</Platform>
       <!-- HttpClient causes issues with running FxCop on the SL5 and WP8 clients -->
       <RunFxCop>false</RunFxCop>
     </Projects>
@@ -426,6 +426,10 @@
       <NuspecTransform Include="@(Nuspecs)">
         <Find>__SIGNALR_COPYRIGHT_NOTICE__</Find>
         <ReplaceWith>Copyright (c) Microsoft Open Technologies, Inc.  All rights reserved.</ReplaceWith>
+      </NuspecTransform>
+      <NuspecTransform Include="@(Nuspecs)">
+        <Find>__SIGNALR_CLIENT_LICENSE_URL__</Find>
+        <ReplaceWith>http://www.microsoft.com/web/webpi/eula/signalr_client_enu.htm</ReplaceWith>
       </NuspecTransform>
     </ItemGroup>
 
