@@ -14,12 +14,12 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
     internal class ServiceBusConnection : IDisposable
     {
         private const int DefaultReceiveBatchSize = 1000;
-        private static readonly TimeSpan BackoffAmount = TimeSpan.FromSeconds(20);
         private static readonly TimeSpan ErrorBackOffAmount = TimeSpan.FromSeconds(5);
         private static readonly TimeSpan DefaultReadTimeout = TimeSpan.FromSeconds(60);
         private static readonly TimeSpan ErrorReadTimeout = TimeSpan.FromSeconds(0.5);
         private static readonly TimeSpan RetryDelay = TimeSpan.FromSeconds(10);
 
+        private readonly TimeSpan _backoffTime;
         private readonly TimeSpan _idleSubscriptionTimeout;
         private readonly NamespaceManager _namespaceManager;
         private readonly MessagingFactory _factory;
@@ -52,7 +52,8 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
                 throw;
             }
 
-            _idleSubscriptionTimeout = configuration.IdleSubscriptionTimeout;
+            _backoffTime = configuration.BackoffTime;
+            _idleSubscriptionTimeout = configuration.IdleSubscriptionTimeout;    
             _configuration = configuration;
         }
 
@@ -278,7 +279,7 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
         private bool ContinueReceiving(IAsyncResult asyncResult, ReceiverContext receiverContext)
         {
             bool shouldContinue = true;
-            TimeSpan backoffAmount = BackoffAmount;
+            TimeSpan backoffAmount = _backoffTime;
 
             try
             {
