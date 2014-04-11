@@ -8,6 +8,7 @@ using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR.Client.Hubs;
+using Microsoft.AspNet.SignalR.Hubs;
 using Newtonsoft.Json.Linq;
 
 namespace Microsoft.AspNet.SignalR.Client
@@ -18,7 +19,7 @@ namespace Microsoft.AspNet.SignalR.Client
     public class HubConnection : Connection, IHubConnection
     {
         private readonly Dictionary<string, HubProxy> _hubs = new Dictionary<string, HubProxy>(StringComparer.OrdinalIgnoreCase);
-        internal readonly Dictionary<string, Action<HubResult>> _callbacks = new Dictionary<string, Action<HubResult>>();
+        internal readonly Dictionary<string, Action<HubResponse>> _callbacks = new Dictionary<string, Action<HubResponse>>();
         private int _callbackId;
 
         /// <summary>
@@ -96,14 +97,14 @@ namespace Microsoft.AspNet.SignalR.Client
             // the callback in the map (because the message["I"[ value will not be a valid callback ID)
             if (message["P"] != null)
             {
-                var result = message.ToObject<HubResult>(JsonSerializer);
-                Action<HubResult> callback;
+                var result = message.ToObject<HubResponse>(JsonSerializer);
+                Action<HubResponse> callback;
 
                 lock (_callbacks)
                 {
-                    if (!_callbacks.TryGetValue(result.ProgressUpdate.Id, out callback))
+                    if (!_callbacks.TryGetValue(result.Progress.Id, out callback))
                     {
-                        Trace(TraceLevels.Messages, "Callback with id " + result.ProgressUpdate.Id + " not found!");
+                        Trace(TraceLevels.Messages, "Callback with id " + result.Progress.Id + " not found!");
                     }
                 }
 
@@ -114,8 +115,8 @@ namespace Microsoft.AspNet.SignalR.Client
             }
             else if (message["I"] != null)
             {
-                var result = message.ToObject<HubResult>(JsonSerializer);
-                Action<HubResult> callback;
+                var result = message.ToObject<HubResponse>(JsonSerializer);
+                Action<HubResponse> callback;
 
                 lock (_callbacks)
                 {
@@ -136,19 +137,19 @@ namespace Microsoft.AspNet.SignalR.Client
             }
             else
             {
-                var invocation = message.ToObject<HubInvocation>(JsonSerializer);
+                var hubRequest = message.ToObject<HubRequest>(JsonSerializer);
                 HubProxy hubProxy;
-                if (_hubs.TryGetValue(invocation.Hub, out hubProxy))
+                if (_hubs.TryGetValue(hubRequest.Hub, out hubProxy))
                 {
-                    if (invocation.State != null)
+                    if (hubRequest.State != null)
                     {
-                        foreach (var state in invocation.State)
+                        foreach (var state in hubRequest.State)
                         {
                             hubProxy[state.Key] = state.Value;
                         }
                     }
 
-                    hubProxy.InvokeEvent(invocation.Method, invocation.Args);
+                    hubProxy.InvokeEvent(hubRequest.Method, hubRequest.Args);
                 }
 
                 base.OnMessageReceived(message);
@@ -192,7 +193,7 @@ namespace Microsoft.AspNet.SignalR.Client
             return hubProxy;
         }
 
-        string IHubConnection.RegisterCallback(Action<HubResult> callback)
+        string IHubConnection.RegisterCallback(Action<HubResponse> callback)
         {
             lock (_callbacks)
             {
@@ -228,7 +229,7 @@ namespace Microsoft.AspNet.SignalR.Client
 
         private void ClearInvocationCallbacks(string error)
         {
-            var result = new HubResult();
+            var result = new HubResponse();
             result.Error = error;
 
             lock (_callbacks)

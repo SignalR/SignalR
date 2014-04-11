@@ -28,6 +28,6 @@ namespace Microsoft.AspNet.SignalR.Hubs
         /// <param name="parameters">Method parameters to match.</param>
         /// <returns>True, if a method has been found.</returns>
         [SuppressMessage("Microsoft.Design", "CA1021:AvoidOutParameters", MessageId = "2#", Justification = "This is a well known pattern for efficient lookup")]
-        bool TryGetMethod(HubDescriptor hub, string method, out MethodDescriptor descriptor, IList<IJsonValue> parameters);
+        bool TryGetMethod(HubDescriptor hub, string method, out MethodDescriptor descriptor, IList<object> parameters);
     }
 }

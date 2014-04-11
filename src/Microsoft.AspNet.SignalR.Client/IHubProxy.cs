@@ -18,7 +18,7 @@ namespace Microsoft.AspNet.SignalR.Client
         /// </summary>
         /// <param name="name">The name of the field.</param>
         /// <returns>The value of the field</returns>
-        JToken this[string name] { get; set; }
+        object this[string name] { get; set; }
 
         /// <summary>
         /// Executes a method on the server side hub asynchronously.

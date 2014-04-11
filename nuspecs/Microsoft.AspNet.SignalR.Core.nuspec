@@ -24,5 +24,7 @@
   <files>
     <file src="Net45\Microsoft.AspNet.SignalR.Core.dll" target="lib\net45" />
     <file src="Net45\Microsoft.AspNet.SignalR.Core.xml" target="lib\net45" />
+    <file src="Net45\Microsoft.AspNet.SignalR.TypeLibrary.dll" target="lib\net45" />
+    <file src="Net45\Microsoft.AspNet.SignalR.TypeLibrary.xml" target="lib\net45" />
   </files>
 </package>

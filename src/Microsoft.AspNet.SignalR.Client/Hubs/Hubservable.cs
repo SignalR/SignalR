@@ -12,7 +12,7 @@ namespace Microsoft.AspNet.SignalR.Client.Hubs
     /// <see cref="T:System.IObservable{object[]}"/> implementation of a hub event.
     /// </summary>
 
-    public class Hubservable : IObservable<IList<JToken>>
+    public class Hubservable : IObservable<IList<object>>
     {
         private readonly string _eventName;
         private readonly IHubProxy _proxy;
@@ -23,7 +23,7 @@ namespace Microsoft.AspNet.SignalR.Client.Hubs
             _eventName = eventName;
         }
 
-        public IDisposable Subscribe(IObserver<IList<JToken>> observer)
+        public IDisposable Subscribe(IObserver<IList<object>> observer)
         {
             var subscription = _proxy.Subscribe(_eventName);
             subscription.Received += observer.OnNext;

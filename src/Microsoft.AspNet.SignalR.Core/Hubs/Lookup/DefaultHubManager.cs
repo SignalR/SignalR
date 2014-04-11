@@ -44,7 +44,7 @@ namespace Microsoft.AspNet.SignalR.Hubs
             return hubs;
         }
 
-        public MethodDescriptor GetHubMethod(string hubName, string method, IList<IJsonValue> parameters)
+        public MethodDescriptor GetHubMethod(string hubName, string method, IList<object> parameters)
         {
             HubDescriptor hub = GetHub(hubName);
 

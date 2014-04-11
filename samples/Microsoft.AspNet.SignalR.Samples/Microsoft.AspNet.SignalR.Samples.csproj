@@ -248,7 +248,6 @@
     <Compile Include="App_Start\Startup.cs" />
     <Compile Include="Default.aspx.cs">
       <DependentUpon>Default.aspx</DependentUpon>
-      <SubType>ASPXCodeBehind</SubType>
     </Compile>
     <Compile Include="Default.aspx.designer.cs">
       <DependentUpon>Default.aspx</DependentUpon>
@@ -266,7 +265,6 @@
     <Compile Include="Hubs\Auth\NoAuthHub.cs" />
     <Compile Include="Hubs\Auth\Default.aspx.cs">
       <DependentUpon>Default.aspx</DependentUpon>
-      <SubType>ASPXCodeBehind</SubType>
     </Compile>
     <Compile Include="Hubs\Auth\Default.aspx.designer.cs">
       <DependentUpon>Default.aspx</DependentUpon>
@@ -274,7 +272,6 @@
     <Compile Include="Hubs\Benchmark\HubBench.cs" />
     <Compile Include="Hubs\ConnectDisconnect\Default.aspx.cs">
       <DependentUpon>Default.aspx</DependentUpon>
-      <SubType>ASPXCodeBehind</SubType>
     </Compile>
     <Compile Include="Hubs\ConnectDisconnect\Default.aspx.designer.cs">
       <DependentUpon>Default.aspx</DependentUpon>
@@ -284,14 +281,12 @@
     <Compile Include="Hubs\Counting\CountingHub.cs" />
     <Compile Include="Hubs\Counting\Default.aspx.cs">
       <DependentUpon>Default.aspx</DependentUpon>
-      <SubType>ASPXCodeBehind</SubType>
     </Compile>
     <Compile Include="Hubs\Counting\Default.aspx.designer.cs">
       <DependentUpon>Default.aspx</DependentUpon>
     </Compile>
     <Compile Include="Hubs\DemoHub\Default.aspx.cs">
       <DependentUpon>Default.aspx</DependentUpon>
-      <SubType>ASPXCodeBehind</SubType>
     </Compile>
     <Compile Include="Hubs\DemoHub\Default.aspx.designer.cs">
       <DependentUpon>Default.aspx</DependentUpon>
@@ -306,7 +301,6 @@
     <Compile Include="Hubs\DemoHub\TypedDemoHub.cs" />
     <Compile Include="Hubs\DrawingPad\Default.aspx.cs">
       <DependentUpon>Default.aspx</DependentUpon>
-      <SubType>ASPXCodeBehind</SubType>
     </Compile>
     <Compile Include="Hubs\DrawingPad\Default.aspx.designer.cs">
       <DependentUpon>Default.aspx</DependentUpon>
@@ -314,7 +308,6 @@
     <Compile Include="Hubs\DrawingPad\DrawingPad.cs" />
     <Compile Include="Hubs\HubConnectionAPI\Default.aspx.cs">
       <DependentUpon>Default.aspx</DependentUpon>
-      <SubType>ASPXCodeBehind</SubType>
     </Compile>
     <Compile Include="Hubs\HubConnectionAPI\Default.aspx.designer.cs">
       <DependentUpon>Default.aspx</DependentUpon>
@@ -322,7 +315,6 @@
     <Compile Include="Hubs\HubConnectionAPI\HubConnectionAPI.cs" />
     <Compile Include="Hubs\MessageLoops\Default.aspx.cs">
       <DependentUpon>Default.aspx</DependentUpon>
-      <SubType>ASPXCodeBehind</SubType>
     </Compile>
     <Compile Include="Hubs\MessageLoops\Default.aspx.designer.cs">
       <DependentUpon>Default.aspx</DependentUpon>
@@ -330,7 +322,6 @@
     <Compile Include="Hubs\MessageLoops\MessageLoops.cs" />
     <Compile Include="Hubs\MouseTracking\Default.aspx.cs">
       <DependentUpon>Default.aspx</DependentUpon>
-      <SubType>ASPXCodeBehind</SubType>
     </Compile>
     <Compile Include="Hubs\MouseTracking\Default.aspx.designer.cs">
       <DependentUpon>Default.aspx</DependentUpon>
@@ -338,7 +329,6 @@
     <Compile Include="Hubs\MouseTracking\MouseTracking.cs" />
     <Compile Include="Hubs\SimultaneousConnections\Default.aspx.cs">
       <DependentUpon>Default.aspx</DependentUpon>
-      <SubType>ASPXCodeBehind</SubType>
     </Compile>
     <Compile Include="Hubs\SimultaneousConnections\Default.aspx.designer.cs">
       <DependentUpon>Default.aspx</DependentUpon>
@@ -349,7 +339,6 @@
     <Compile Include="Hubs\Test\LongRunningHub.cs" />
     <Compile Include="Hubs\Test\Default.aspx.cs">
       <DependentUpon>Default.aspx</DependentUpon>
-      <SubType>ASPXCodeBehind</SubType>
     </Compile>
     <Compile Include="Hubs\Test\Default.aspx.designer.cs">
       <DependentUpon>Default.aspx</DependentUpon>
@@ -360,7 +349,6 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Raw\Default.aspx.cs">
       <DependentUpon>Default.aspx</DependentUpon>
-      <SubType>ASPXCodeBehind</SubType>
     </Compile>
     <Compile Include="Raw\Default.aspx.designer.cs">
       <DependentUpon>Default.aspx</DependentUpon>
@@ -370,14 +358,12 @@
     <Compile Include="Raw\TestConnection.cs" />
     <Compile Include="SignalR.Master.cs">
       <DependentUpon>SignalR.Master</DependentUpon>
-      <SubType>ASPXCodeBehind</SubType>
     </Compile>
     <Compile Include="SignalR.Master.designer.cs">
       <DependentUpon>SignalR.Master</DependentUpon>
     </Compile>
     <Compile Include="Streaming\Default.aspx.cs">
       <DependentUpon>Default.aspx</DependentUpon>
-      <SubType>ASPXCodeBehind</SubType>
     </Compile>
     <Compile Include="Streaming\Default.aspx.designer.cs">
       <DependentUpon>Default.aspx</DependentUpon>
@@ -406,6 +392,10 @@
     <ProjectReference Include="..\..\src\Microsoft.AspNet.SignalR.SqlServer\Microsoft.AspNet.SignalR.SqlServer.csproj">
       <Project>{efcf27ec-cb9b-4f3a-91be-154b8ab5b5e0}</Project>
       <Name>Microsoft.AspNet.SignalR.SqlServer</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\src\Microsoft.AspNet.SignalR.TypeLibrary\Microsoft.AspNet.SignalR.TypeLibrary.csproj">
+      <Project>{3d36c80c-27a0-4c56-8751-5905badd2607}</Project>
+      <Name>Microsoft.AspNet.SignalR.TypeLibrary</Name>
     </ProjectReference>
     <ProjectReference Include="..\Microsoft.AspNet.SignalR.Samples.VB\Microsoft.AspNet.SignalR.Samples.VB.vbproj">
       <Project>{44ffd296-2fc1-4159-80ac-4f6c8ae9887c}</Project>

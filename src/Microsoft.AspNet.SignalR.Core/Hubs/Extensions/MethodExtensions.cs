@@ -11,7 +11,7 @@ namespace Microsoft.AspNet.SignalR.Hubs
     public static class MethodExtensions
     {
         [SuppressMessage("Microsoft.Design", "CA1062:Validate arguments of public methods", MessageId = "1", Justification = "The condition checks for null parameters")]
-        public static bool Matches(this MethodDescriptor methodDescriptor, IList<IJsonValue> parameters)
+        public static bool Matches(this MethodDescriptor methodDescriptor, IList<object> parameters)
         {
             if (methodDescriptor == null)
             {

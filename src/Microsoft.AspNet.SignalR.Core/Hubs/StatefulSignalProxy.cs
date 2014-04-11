@@ -6,6 +6,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Dynamic;
 using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR.Infrastructure;
+using Newtonsoft.Json.Linq;
 
 namespace Microsoft.AspNet.SignalR.Hubs
 {
@@ -33,9 +34,9 @@ namespace Microsoft.AspNet.SignalR.Hubs
             return true;
         }
 
-        protected override ClientHubInvocation GetInvocationData(string method, object[] args)
+        protected override HubRequest GetInvocationData(string method, object[] args)
         {
-            return new ClientHubInvocation
+            return new HubRequest
             {
                 Hub = HubName,
                 Method = method,

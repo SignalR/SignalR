@@ -3,36 +3,55 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using Microsoft.AspNet.SignalR.Json;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace Microsoft.AspNet.SignalR.Hubs
 {
     public class DefaultParameterResolver : IParameterResolver
     {
+        private static MethodInfo methodInfo = typeof(DefaultParameterResolver).GetMethod("Convert", BindingFlags.Static | BindingFlags.NonPublic);
+
         /// <summary>
         /// Resolves a parameter value based on the provided object.
         /// </summary>
         /// <param name="descriptor">Parameter descriptor.</param>
         /// <param name="value">Value to resolve the parameter value from.</param>
         /// <returns>The parameter value.</returns>
-        public virtual object ResolveParameter(ParameterDescriptor descriptor, IJsonValue value)
+        public virtual object ResolveParameter(ParameterDescriptor descriptor, object value)
         {
             if (descriptor == null)
             {
                 throw new ArgumentNullException("descriptor");
             }
 
-            if (value == null)
+            var method = methodInfo.MakeGenericMethod(descriptor.ParameterType);
+            var serializer = GlobalHost.DependencyResolver.Resolve<JsonSerializer>();            
+            return method.Invoke(null, new object[] { value, serializer });
+        }
+
+        // identical or very similar to HubProxyExtensions.Convert<T>
+        private static T Convert<T>(object obj, JsonSerializer serializer)
+        {
+            if (obj == null)
             {
-                throw new ArgumentNullException("value");
+                return default(T);
             }
 
-            if (value.GetType() == descriptor.ParameterType)
+            if (typeof(T).IsInstanceOfType(obj))
             {
-                return value;
+                return (T)obj;
             }
 
-            return value.ConvertTo(descriptor.ParameterType);
+            var jToken = obj as JToken;
+            if (jToken != null)
+            {
+                return jToken.ToObject<T>(serializer);
+            }
+
+            return JToken.FromObject(obj).ToObject<T>(serializer);
         }
 
         /// <summary>
@@ -41,7 +60,7 @@ namespace Microsoft.AspNet.SignalR.Hubs
         /// <param name="method">Method descriptor.</param>
         /// <param name="values">List of values to resolve parameter values from.</param>
         /// <returns>Array of parameter values.</returns>
-        public virtual IList<object> ResolveMethodParameters(MethodDescriptor method, IList<IJsonValue> values)
+        public virtual IList<object> ResolveMethodParameters(MethodDescriptor method, IList<object> values)
         {
             if (method == null)
             {

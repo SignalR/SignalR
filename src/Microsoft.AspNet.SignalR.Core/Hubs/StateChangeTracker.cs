@@ -23,7 +23,7 @@ namespace Microsoft.AspNet.SignalR.Hubs
 
         public StateChangeTracker(IDictionary<string, object> values)
         {
-            _values = values;
+            _values = values ?? new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);            
         }
 
         public object this[string key]

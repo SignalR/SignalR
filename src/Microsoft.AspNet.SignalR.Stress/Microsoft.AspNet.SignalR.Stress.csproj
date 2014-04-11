@@ -133,6 +133,10 @@
       <Project>{9ac65ed5-48c2-4c5c-8498-dc340b313fdf}</Project>
       <Name>Microsoft.AspNet.SignalR.StressServer</Name>
     </ProjectReference>
+    <ProjectReference Include="..\Microsoft.AspNet.SignalR.TypeLibrary\Microsoft.AspNet.SignalR.TypeLibrary.csproj">
+      <Project>{3d36c80c-27a0-4c56-8751-5905badd2607}</Project>
+      <Name>Microsoft.AspNet.SignalR.TypeLibrary</Name>
+    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />

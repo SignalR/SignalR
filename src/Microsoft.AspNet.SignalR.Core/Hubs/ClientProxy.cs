@@ -34,7 +34,7 @@ namespace Microsoft.AspNet.SignalR.Hubs
 
         public Task Invoke(string method, params object[] args)
         {
-            var invocation = new ClientHubInvocation
+            var invocation = new HubRequest
             {
                 Hub = _hubName,
                 Method = method,

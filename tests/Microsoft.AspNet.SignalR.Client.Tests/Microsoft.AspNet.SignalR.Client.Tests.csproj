@@ -69,6 +69,10 @@
       <Project>{50f8a174-695e-498c-b105-bdbe6b398646}</Project>
       <Name>Microsoft.AspNet.SignalR.Client45</Name>
     </ProjectReference>
+    <ProjectReference Include="..\..\src\Microsoft.AspNet.SignalR.TypeLibrary\Microsoft.AspNet.SignalR.TypeLibrary.csproj">
+      <Project>{3d36c80c-27a0-4c56-8751-5905badd2607}</Project>
+      <Name>Microsoft.AspNet.SignalR.TypeLibrary</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Microsoft.AspNet.SignalR.Tests.Common\Microsoft.AspNet.SignalR.Tests.Common.csproj">
       <Project>{f18a8896-10bd-469e-9aa1-aebacef4d7b7}</Project>
       <Name>Microsoft.AspNet.SignalR.Tests.Common</Name>

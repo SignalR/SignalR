@@ -86,12 +86,8 @@
     <Compile Include="HubConnection.cs" />
     <Compile Include="HubException.cs" />
     <Compile Include="HubProxyExtensions.cs" />
-    <Compile Include="Hubs\HubInvocation.cs" />
     <Compile Include="ConnectionState.cs" />
-    <Compile Include="Hubs\HubProgressUpdate.cs" />
     <Compile Include="Hubs\HubProxy.cs" />
-    <Compile Include="Hubs\HubRegistrationData.cs" />
-    <Compile Include="Hubs\HubResult.cs" />
     <Compile Include="Hubs\Hubservable.cs" />
     <Compile Include="Hubs\IHubConnection.cs" />
     <Compile Include="Hubs\Subscription.cs" />
@@ -139,6 +135,12 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Microsoft.AspNet.SignalR.TypeLibrary\Microsoft.AspNet.SignalR.TypeLibrary.csproj">
+      <Project>{3d36c80c-27a0-4c56-8751-5905badd2607}</Project>
+      <Name>Microsoft.AspNet.SignalR.TypeLibrary</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="..\Common\Microsoft.AspNet.SignalR.targets" />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
