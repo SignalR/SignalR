@@ -2,11 +2,11 @@
 
 QUnit.asyncTimeoutTest("Attempts to reconnect at the correct interval.", testUtilities.defaultTestTimeout* 2, function (end, assert, testName) {
     var connection = testUtilities.createConnection("signalr", end, assert, testName),
-        savedEventSource = window.EventSource;
+        savedEventSource = window.EventSource,
+        savedReconnect = $.signalR.transports.serverSentEvents.reconnect;
 
     connection.start({ transport: "serverSentEvents" }).done(function () {
-        var savedReconnect = connection.transport.reconnect,
-            reconnectCount = 0;
+        var reconnectCount = 0;
 
         assert.ok(true, "Connected");
 
@@ -39,6 +39,40 @@ QUnit.asyncTimeoutTest("Attempts to reconnect at the correct interval.", testUti
     return function () {
         connection.stop();
         window.EventSource = savedEventSource;
+        $.signalR.transports.serverSentEvents.reconnect = savedReconnect;
+        $.network.connect();
+    };
+});
+
+
+QUnit.asyncTimeoutTest("Clears reconnectAttemptTimeout on stop", testUtilities.defaultTestTimeout * 2, function (end, assert, testName) {
+    var connection = testUtilities.createConnection("signalr", end, assert, testName),
+        savedStart = $.signalR.transports.serverSentEvents.start;
+
+    connection.reconnectDelay = 0;
+    connection.start({ transport: "serverSentEvents" }).done(function () {
+        connection.transport.start = function () {
+            assert.comment("Successfully started reconnecting");
+            savedStart.apply(this, arguments);
+
+            assert.comment("Stopping connection")
+            connection.stop();
+
+            // Give time for the reconnectAttemptTimeout to fire
+            window.setTimeout(end, 5000);
+        };
+
+        connection.reconnected(function () {
+            assert.fail("Unexpected successful reconnection");
+        })
+
+        $.network.disconnect();
+    });
+
+    // Cleanup
+    return function () {
+        connection.stop();
+        $.signalR.transports.serverSentEvents.start = savedStart;
         $.network.connect();
     };
 });
