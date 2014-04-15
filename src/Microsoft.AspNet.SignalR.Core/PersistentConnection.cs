@@ -241,16 +241,16 @@ namespace Microsoft.AspNet.SignalR
             string groupName = PrefixHelper.GetPersistentConnectionGroupName(DefaultSignalRaw);
             Groups = new GroupManager(connection, groupName);
 
-            Transport.TransportConnected = () =>
-            {
-                var command = new ServerCommand
-                {
-                    ServerCommandType = ServerCommandType.RemoveConnection,
-                    Value = connectionId
-                };
+            //Transport.TransportConnected = () =>
+            //{
+            //    var command = new ServerCommand
+            //    {
+            //        ServerCommandType = ServerCommandType.RemoveConnection,
+            //        Value = connectionId
+            //    };
 
-                return _serverMessageHandler.SendCommand(command);
-            };
+            //    return _serverMessageHandler.SendCommand(command);
+            //};
 
             Transport.Connected = () =>
             {
