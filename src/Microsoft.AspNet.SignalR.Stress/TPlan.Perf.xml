@@ -89,7 +89,7 @@
       sqlcmd -i CreateStressDatabase.sql
     </command>
     <command name="SqlMessageBus" wait="Exit">
-      Microsoft.AspNet.SignalR.Stress.exe /Run:SqlMessageBus /Senders:5 /SqlConnectionString:"Data Source={dbserver-01};Initial Catalog=Stress;User ID=sqluser;Password={remotePassword}"
+      Microsoft.AspNet.SignalR.Stress.exe /Run:SqlMessageBus /Transport:LongPolling /Senders:5 /SqlConnectionString:"Data Source={dbserver-01};Initial Catalog=Stress;User ID=sqluser;Password={remotePassword}"
     </command>
     <command name="RedisMessageBus" wait="Exit">
       Microsoft.AspNet.SignalR.Stress.exe /Run:RedisMessageBus /Senders:5 /RedisServer:{dbserver-01} /RedisPort:6379
@@ -109,18 +109,22 @@
   </commands>
   
   <plan>
-    <run command="ConnectionRun" role="server-01" output="true" measure="StartAndStop" />
+
+    <run command="SetupSqlServer" role="dbserver-01" output="true" />
+    <run command="SqlMessageBus" role="server-01" output="true" measure="StartAndStop" />
+    
+    <!--<run command="ConnectionRun" role="server-01" output="true" measure="StartAndStop" />
 
     <run command="SendReceive-LongPolling" role="server-01" output="true" measure="StartAndStop" />
     <run command="SendReceive-ServerSentEvents" role="server-01" output="true" measure="StartAndStop" />
     
     <run command="HubInvocation" role="server-01" output="true" measure="StartAndStop" />
 
-    <!-- End to end hub invocation tests -->
+    --><!-- End to end hub invocation tests --><!--
     <run command="SimpleEchoHub-LongPolling" role="server-01" output="true" measure="StartAndStop" />
     <run command="SimpleEchoHub-ServerSentEvents" role="server-01" output="true" measure="StartAndStop" />
 
-    <!--Message bus tests -->
+    --><!--Message bus tests --><!--
     <run command="MessageBus" role="server-01" output="true" measure="StartAndStop" />
     
     <run command="SetupSqlServer" role="dbserver-01" output="true" />
@@ -128,9 +132,9 @@
     
     <run command="RedisMessageBus" role="server-01" output="true" measure="StartAndStop" />
   
-    <!--External host hub tests-->
+    --><!--External host hub tests--><!--
     <run command="CopyWWW" role="controller" output="true" />
     <run command="SetupIIS" role="server-01" output="true" />
-    <run command="SimpleEchoHub-External-LongPolling" role="client-01" output="true" measure="StartAndStop" />
+    <run command="SimpleEchoHub-External-LongPolling" role="client-01" output="true" measure="StartAndStop" />-->
   </plan>
 </config>
