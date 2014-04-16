@@ -1,17 +1,16 @@
 ﻿using System;
-using System.Globalization;
 using System.IO;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.AspNet.SignalR.Client;
 using Microsoft.AspNet.SignalR.Client.Http;
 using Microsoft.AspNet.SignalR.Client.Transports;
 using Microsoft.AspNet.SignalR.Infrastructure;
 using Moq;
 using Xunit;
 using Xunit.Extensions;
+using System.Globalization;
 
 namespace Microsoft.AspNet.SignalR.Client.Tests
 {
@@ -22,7 +21,7 @@ namespace Microsoft.AspNet.SignalR.Client.Tests
         [InlineData("&clientProtocol=", "foo=bar")]
         public void NegotiatePassesClientProtocolCorrectly(string clientProtocolParameter, string connectionQueryString)
         {
-            var connection = new Client.Connection("http://test", connectionQueryString);
+            var connection = new Connection("http://test", connectionQueryString);
 
             try
             {
@@ -325,6 +324,38 @@ namespace Microsoft.AspNet.SignalR.Client.Tests
             {
                 throw new NotImplementedException();
             }
+        }
+
+        [Fact]
+        public void StopSetsLastError()
+        {
+            var error = new Exception();
+            var connection = new Connection("http://fakeurl");
+            connection.Stop(error, new TimeSpan(0));
+            Assert.Same(error, ((IConnection)connection).LastError);
+        }
+
+        [Fact]
+        public void OnErrorSetsLastError()
+        {
+            var error = new Exception();
+            IConnection connection = new Connection("http://fakeurl");
+            connection.OnError(error);
+            Assert.Same(error, connection.LastError);            
+        }
+
+        [Fact]
+        public void OnReconnectingSetsLastErrorIfReconnectingTimeouts()
+        {
+            var connection = new Connection("http://fakeurl");
+            connection.Reconnecting += () => Thread.Sleep(100);
+            connection.OnReconnecting();
+
+            var lastError = ((IConnection) connection).LastError;
+            Assert.IsType<TimeoutException>(lastError);
+            Assert.Equal(
+                string.Format(CultureInfo.CurrentCulture, Resources.Error_ReconnectTimeout, new TimeSpan(0)), 
+                lastError.Message);
         }
     }
 }

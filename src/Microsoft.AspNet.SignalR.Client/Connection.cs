@@ -87,6 +87,9 @@ namespace Microsoft.AspNet.SignalR.Client
         //The json serializer for the connections
         private JsonSerializer _jsonSerializer = new JsonSerializer();
 
+        // Used to store the last error
+        private Exception _lastError;
+
 #if (NET4 || NET45)
         private readonly X509CertificateCollection _certCollection = new X509CertificateCollection();
 #endif
@@ -105,11 +108,6 @@ namespace Microsoft.AspNet.SignalR.Client
         /// Occurs when the <see cref="Connection"/> is stopped.
         /// </summary>
         public event Action Closed;
-
-        /// <summary>
-        /// Occurs when the <see cref="Connection"/> is stopped.
-        /// </summary>
-        public event Action<Exception> ClosedWithReason;
 
         /// <summary>
         /// Occurs when the <see cref="Connection"/> starts reconnecting after an error.
@@ -257,6 +255,14 @@ namespace Microsoft.AspNet.SignalR.Client
             get
             {
                 return _lastActiveAt;
+            }
+        }
+
+        Exception IConnection.LastError
+        {
+            get
+            {
+                return _lastError;
             }
         }
 
@@ -557,7 +563,7 @@ namespace Microsoft.AspNet.SignalR.Client
         /// </summary>
         public void Stop()
         {
-            Stop(null, DefaultAbortTimeout);
+            Stop(DefaultAbortTimeout);
         }
 
         /// <summary>
@@ -576,6 +582,17 @@ namespace Microsoft.AspNet.SignalR.Client
         /// </summary>
         [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "We don't want to raise the Start exception on Stop.")]
         public void Stop(Exception error, TimeSpan timeout)
+        {
+            _lastError = error;
+            Stop(timeout);            
+        }
+
+        /// <summary>
+        /// Stops the <see cref="Connection"/> and sends an abort message to the server.
+        /// <param name="timeout">The timeout</param>
+        /// </summary>
+        [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "We don't want to raise the Start exception on Stop.")]
+        public void Stop(TimeSpan timeout)
         {
             lock (_startLock)
             {
@@ -612,7 +629,7 @@ namespace Microsoft.AspNet.SignalR.Client
 
                 _transport.Abort(this, timeout, _connectionData);
 
-                Disconnect(error);
+                Disconnect();
             }
         }
 
@@ -622,24 +639,10 @@ namespace Microsoft.AspNet.SignalR.Client
         /// </summary>
         void IConnection.Disconnect()
         {
-            Disconnect(error: null);
-        }
-
-        /// <summary>
-        /// Stops the <see cref="Connection"/> without sending an abort message to the server.
-        /// This function is called after we receive a disconnect message from the server.
-        /// </summary>
-        void IConnection.Disconnect(Exception error)
-        {
-            Disconnect(error);
+            Disconnect();
         }
 
         private void Disconnect()
-        {
-            Disconnect(error: null);
-        }
-
-        private void Disconnect(Exception error)
         {
             lock (_stateLock)
             {
@@ -682,20 +685,16 @@ namespace Microsoft.AspNet.SignalR.Client
                     _traceWriter.Flush();
 #endif
                     // TODO: Do we want to trigger Closed if we are connecting?
-                    OnClosed(error);
+                    OnClosed();
                 }
             }
         }
 
-        protected virtual void OnClosed(Exception error)
+        protected virtual void OnClosed()
         {
             if (Closed != null)
             {
                 Closed();
-            }
-            if (ClosedWithReason != null)
-            {
-                ClosedWithReason(error);
             }
         }
 
@@ -806,6 +805,8 @@ namespace Microsoft.AspNet.SignalR.Client
         {
             Trace(TraceLevels.Events, "OnError({0})", error);
 
+            _lastError = error;
+
             if (Error != null)
             {
                 Error(error);
@@ -823,8 +824,16 @@ namespace Microsoft.AspNet.SignalR.Client
             // the server during negotiation.
             // If the client tries to reconnect for longer the server will likely have deleted its ConnectionId
             // topic along with the contained disconnect message.
-            var error = new TimeoutException(String.Format(CultureInfo.CurrentCulture, Resources.Error_ReconnectTimeout, _disconnectTimeout));
-            _disconnectTimeoutOperation = SetTimeout(_disconnectTimeout, Disconnect, error);
+            _disconnectTimeoutOperation = 
+                SetTimeout(
+                    _disconnectTimeout,
+                    () =>
+                    {
+                        _lastError = new TimeoutException(
+                            String.Format(CultureInfo.CurrentCulture, 
+                                Resources.Error_ReconnectTimeout, _disconnectTimeout));
+                        Disconnect();
+                    });
 
 #if NETFX_CORE || PORTABLE
             // Clear the buffer
@@ -940,11 +949,11 @@ namespace Microsoft.AspNet.SignalR.Client
         }
 
         // TODO: Refactor into a helper class
-        private static IDisposable SetTimeout(TimeSpan delay, Action<Exception> operation, Exception error)
+        private static IDisposable SetTimeout(TimeSpan delay, Action operation)
         {
             var cancellableInvoker = new ThreadSafeInvoker();
 
-            TaskAsyncHelper.Delay(delay).Then(() => cancellableInvoker.Invoke<Exception>(operation, error));
+            TaskAsyncHelper.Delay(delay).Then(() => cancellableInvoker.Invoke(operation));
 
             // Disposing this return value will cancel the operation if it has not already been invoked.
             return new DisposableAction(() => cancellableInvoker.Invoke());

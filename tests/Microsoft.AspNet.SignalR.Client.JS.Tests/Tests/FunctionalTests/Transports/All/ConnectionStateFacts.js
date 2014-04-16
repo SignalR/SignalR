@@ -77,7 +77,6 @@ testUtilities.runWithAllTransports(function (transport) {
         };
     });
 
-
     QUnit.asyncTimeoutTest(transport + " transport connection StateChanged event is called for every state", testUtilities.defaultTestTimeout, function (end, assert, testName) {
         var connection = testUtilities.createHubConnection(end, assert, testName),
             demo = connection.createHubProxies().demo,
@@ -317,7 +316,7 @@ testUtilities.runWithAllTransports(function (transport) {
         connection.start({ transport: transport }).done(function () {
             assert.equal(connection.state, $.signalR.connectionState.connected, "Connection started.");
 
-            $.connection.transports._logic.getUrl = function () {
+            $.connection.transports._logic.getUrl = function() {
                 var url = savedGetUrl.apply(this, arguments);
 
                 if (url.indexOf("/reconnect") >= 0) {
@@ -325,7 +324,7 @@ testUtilities.runWithAllTransports(function (transport) {
                 }
 
                 return url;
-            }
+            };
 
             $.network.disconnect();
         });

@@ -221,9 +221,10 @@ testUtilities.runWithAllTransports(function (transport) {
         var connection = testUtilities.createHubConnection(end, assert, testName, undefined, false),
             handle;
 
-        connection.disconnected(function (reason) {
+        connection.disconnected(function () {
             assert.comment("Disconnected fired.");
-            assert.equal(reason.source, "TimeoutException", "Disconnected event has expected close reason");
+
+            assert.equal(connection._.lastError.source, "TimeoutException", "Disconnected event has expected close reason");
 
             // Let callstack finish
             setTimeout(function () {
@@ -259,9 +260,9 @@ testUtilities.runWithAllTransports(function (transport) {
             connection.reconnectWindow = 500;
         });
 
-        connection.disconnected(function (reason) {
+        connection.disconnected(function () {
             assert.comment("Disconnected fired.");
-            assert.equal(reason.source, "TimeoutException", "Disconnected event has expected close reason");
+            assert.equal(connection._.lastError.source, "TimeoutException", "Disconnected event has expected close reason");
             end();
         });
 

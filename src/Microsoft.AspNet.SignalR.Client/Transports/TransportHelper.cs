@@ -222,6 +222,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
             {
                 connection.Stop(new TimeoutException(String.Format(CultureInfo.CurrentCulture, Resources.Error_ReconnectWindowTimeout,
                     connection.LastActiveAt, connection.ReconnectWindow)));
+
                 return false;
             }
 

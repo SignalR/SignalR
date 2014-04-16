@@ -110,10 +110,10 @@
             // Without this check if a connection is stopped then started events will be bound multiple times.
             if (!connection._.configuredStopReconnectingTimeout) {
                 onReconnectTimeout = function (connection) {
-                    var message = signalR._.format(signalR.resources.reconnectTimeout, connection.disconnectTimeout),
-                        error = signalR._.error(message, /* source */ "TimeoutException");
+                    var message = signalR._.format(signalR.resources.reconnectTimeout, connection.disconnectTimeout);
                     connection.log(message);
-                    connection.stop(/* async */ false, /* notifyServer */ false, error);
+                    connection._.lastError = signalR._.error(message, /* source */ "TimeoutException");
+                    connection.stop(/* async */ false, /* notifyServer */ false);
                 };
 
                 connection.reconnecting(function () {
@@ -342,7 +342,8 @@
                 lastActiveAt: new Date().getTime(),
                 beatInterval: 5000, // Default value, will only be overridden if keep alive is enabled,
                 beatHandle: null,
-                totalTransportConnectTimeout: 0 // This will be the sum of the TransportConnectTimeout sent in response to negotiate and connection.transportConnectTimeout
+                totalTransportConnectTimeout: 0, // This will be the sum of the TransportConnectTimeout sent in response to negotiate and connection.transportConnectTimeout
+                lastError: null
             };
             if (typeof (logging) === "boolean") {
                 this.logging = logging;
@@ -826,6 +827,7 @@
             /// <returns type="signalR" />
             var connection = this;
             $(connection).bind(events.onError, function (e, errorData, sendData) {
+                connection._.lastError = errorData;
                 // In practice 'errorData' is the SignalR built error object.
                 // In practice 'sendData' is undefined for all error events except those triggered by
                 // 'ajaxSend' and 'webSockets.send'.'sendData' is the original send payload.
@@ -840,7 +842,7 @@
             /// <returns type="signalR" />
             var connection = this;
             $(connection).bind(events.onDisconnect, function (e, data) {
-                callback.call(connection, data);
+                callback.call(connection);
             });
             return connection;
         },
@@ -879,11 +881,10 @@
             return connection;
         },
 
-        stop: function (async, notifyServer, error) {
+        stop: function (async, notifyServer) {
             /// <summary>Stops listening</summary>
             /// <param name="async" type="Boolean">Whether or not to asynchronously abort the connection</param>
             /// <param name="notifyServer" type="Boolean">Whether we want to notify the server that we are aborting the connection</param>
-            /// <param name="error" type="Object">This object is passed to the onDisconnect event</param>
             /// <returns type="signalR" />
             var connection = this,
                 // Save deferral because this is always cleaned up
@@ -948,7 +949,7 @@
             }
 
             // Trigger the disconnect event
-            $(connection).triggerHandler(events.onDisconnect, [error]);
+            $(connection).triggerHandler(events.onDisconnect);
 
             delete connection.messageId;
             delete connection.groupsToken;
@@ -957,6 +958,7 @@
             delete connection._.lastMessageAt;
             delete connection._.lastActiveAt;
             delete connection._.longPollDelay;
+            delete connection._.lastError;
 
             // Clear out our message buffer
             connection._.connectingMessageBuffer.clear();

@@ -39,3 +39,16 @@ QUnit.test("Changing State", function () {
 
     signalR.changeState(con, signalR.connectionState.connecting, signalR.connectionState.connected);
 });
+
+QUnit.test("lastError set when error occurrs", function () {
+    var connection = testUtilities.createHubConnection();
+    $(connection).triggerHandler($.signalR.events.onError, $.signalR._.error("foo", "TestError"));
+    QUnit.equal(connection._.lastError.source, "TestError", "lastError not set");
+});
+
+QUnit.test("verifyLastActive sets lastError if timeout occurs", function () {
+    var connection = testUtilities.createHubConnection();
+    connection._.lastActiveAt = new Date(0);
+    $.signalR.transports._logic.verifyLastActive(connection);
+    QUnit.equal(connection._.lastError.source, "TimeoutException", "Disconnected event has expected close reason");
+});

@@ -165,10 +165,10 @@ namespace Microsoft.AspNet.SignalR.Client
             return this.JsonSerializeObject(data);
         }
 
-        protected override void OnClosed(Exception error)
+        protected override void OnClosed()
         {
             ClearInvocationCallbacks(Resources.Message_ConnectionClosed);
-            base.OnClosed(error);
+            base.OnClosed();
         }
 
         /// <summary>
