@@ -89,7 +89,7 @@
       sqlcmd -i CreateStressDatabase.sql
     </command>
     <command name="SqlMessageBus" wait="Exit">
-      Microsoft.AspNet.SignalR.Stress.exe /Run:SqlMessageBus /Transport:LongPolling /Senders:5 /SqlConnectionString:"Data Source={dbserver-01};Initial Catalog=Stress;User ID=sqluser;Password={remotePassword}"
+      Microsoft.AspNet.SignalR.Stress.exe /Run:SimpleEchoHub /Senders:1 /Connections:10 /Transport:LongPolling /Host:IISExpress /SendDelay:100 /SqlConnectionString:"Data Source={dbserver-01};Initial Catalog=Stress;User ID=sqluser;Password={remotePassword}"
     </command>
     <command name="RedisMessageBus" wait="Exit">
       Microsoft.AspNet.SignalR.Stress.exe /Run:RedisMessageBus /Senders:5 /RedisServer:{dbserver-01} /RedisPort:6379
