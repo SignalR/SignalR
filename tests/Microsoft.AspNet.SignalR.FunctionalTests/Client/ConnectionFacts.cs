@@ -22,18 +22,18 @@ namespace Microsoft.AspNet.SignalR.Tests
     public class ConnectionFacts : HostedTest
     {
         [Theory]
-        [InlineData(HostType.Memory, TransportType.ServerSentEvents, MessageBusType.Default)]
-        [InlineData(HostType.Memory, TransportType.ServerSentEvents, MessageBusType.Fake)]
-        [InlineData(HostType.Memory, TransportType.ServerSentEvents, MessageBusType.FakeMultiStream)]
-        [InlineData(HostType.Memory, TransportType.LongPolling, MessageBusType.Default)]
-        [InlineData(HostType.Memory, TransportType.LongPolling, MessageBusType.Fake)]
-        [InlineData(HostType.Memory, TransportType.LongPolling, MessageBusType.FakeMultiStream)]
+        //[InlineData(HostType.Memory, TransportType.ServerSentEvents, MessageBusType.Default)]
+        //[InlineData(HostType.Memory, TransportType.ServerSentEvents, MessageBusType.Fake)]
+        //[InlineData(HostType.Memory, TransportType.ServerSentEvents, MessageBusType.FakeMultiStream)]
+        //[InlineData(HostType.Memory, TransportType.LongPolling, MessageBusType.Default)]
+        //[InlineData(HostType.Memory, TransportType.LongPolling, MessageBusType.Fake)]
+        //[InlineData(HostType.Memory, TransportType.LongPolling, MessageBusType.FakeMultiStream)]
         [InlineData(HostType.IISExpress, TransportType.LongPolling, MessageBusType.Default)]
-        [InlineData(HostType.IISExpress, TransportType.ServerSentEvents, MessageBusType.Default)]
-        [InlineData(HostType.IISExpress, TransportType.Websockets, MessageBusType.Default)]
-        [InlineData(HostType.HttpListener, TransportType.LongPolling, MessageBusType.Default)]
-        [InlineData(HostType.HttpListener, TransportType.ServerSentEvents, MessageBusType.Default)]
-        [InlineData(HostType.HttpListener, TransportType.Websockets, MessageBusType.Default)]
+        //[InlineData(HostType.IISExpress, TransportType.ServerSentEvents, MessageBusType.Default)]
+        //[InlineData(HostType.IISExpress, TransportType.Websockets, MessageBusType.Default)]
+        //[InlineData(HostType.HttpListener, TransportType.LongPolling, MessageBusType.Default)]
+        //[InlineData(HostType.HttpListener, TransportType.ServerSentEvents, MessageBusType.Default)]
+        //[InlineData(HostType.HttpListener, TransportType.Websockets, MessageBusType.Default)]
         public void MarkActiveStopsConnectionIfCalledAfterExtendedPeriod(HostType hostType, TransportType transportType, MessageBusType messageBusType)
         {
             using (var host = CreateHost(hostType, transportType))

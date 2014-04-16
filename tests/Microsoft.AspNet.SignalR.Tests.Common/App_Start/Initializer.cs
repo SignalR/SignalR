@@ -54,6 +54,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Common
             string transportConnectTimeoutRaw = ConfigurationManager.AppSettings["transportConnectTimeout"];
             string maxIncomingWebSocketMessageSizeRaw = ConfigurationManager.AppSettings["maxIncomingWebSocketMessageSize"];
             string disconnectTimeoutRaw = ConfigurationManager.AppSettings["disconnectTimeout"];
+            string connectionString = ConfigurationManager.AppSettings["sqlConnectionString"];
 
             int connectionTimeout;
             if (Int32.TryParse(connectionTimeoutRaw, out connectionTimeout))
@@ -93,6 +94,8 @@ namespace Microsoft.AspNet.SignalR.Tests.Common
             {
                 GlobalHost.Configuration.KeepAlive = TimeSpan.FromSeconds(keepAlive);
             }
+
+            GlobalHost.DependencyResolver.UseSqlServer(new SqlScaleoutConfiguration(connectionString) { TableCount = 1 });
 
             ConfigureRoutes(app, GlobalHost.DependencyResolver);
         }

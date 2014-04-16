@@ -9,7 +9,7 @@ namespace Microsoft.AspNet.SignalR.StressServer.Hubs
     {   
         public Task Echo(string message)
         {
-            return Clients.Caller.echo(message);
+            return Clients.All.echo(message);
         }
 
         public Task Send(int number)

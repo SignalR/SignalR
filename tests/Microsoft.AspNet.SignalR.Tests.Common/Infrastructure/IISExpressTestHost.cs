@@ -17,6 +17,8 @@ namespace Microsoft.AspNet.SignalR.Tests.Common.Infrastructure
 
         private static readonly Lazy<string> _webConfigTemplate = new Lazy<string>(() => GetConfig());
 
+        public static string SqlConnectionString;
+
         public IISExpressTestHost()
             : this("all")
         {
@@ -88,7 +90,8 @@ namespace Microsoft.AspNet.SignalR.Tests.Common.Infrastructure
                                            transportConnectTimeout,
                                            maxIncomingWebSocketMessageSize,
                                            enableAutoRejoiningGroups,
-                                           _logFileName);
+                                           _logFileName,
+                                           SqlConnectionString);
 
             File.WriteAllText(_webConfigPath, content);
 

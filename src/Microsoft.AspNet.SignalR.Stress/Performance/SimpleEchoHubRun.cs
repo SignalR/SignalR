@@ -32,10 +32,10 @@ namespace Microsoft.AspNet.SignalR.Stress.Performance
 
         public override void Initialize()
         {
-            for (int i = 0; i < Connections; i++)
-            {
-                _connections[i] = new HubConnection(RunData.Url);
-            }
+            //for (int i = 0; i < Connections; i++)
+            //{
+            //    _connections[i] = new HubConnection(RunData.Url);
+            //}
 
             base.Initialize();
         }
@@ -43,6 +43,7 @@ namespace Microsoft.AspNet.SignalR.Stress.Performance
         protected override IDisposable CreateReceiver(int connectionIndex)
         {
             // set up the client and start it
+            _connections[connectionIndex] = new HubConnection(Host.Url);
             HubConnection connection = _connections[connectionIndex];
             IHubProxy proxy = connection.CreateHubProxy("SimpleEchoHub");
 

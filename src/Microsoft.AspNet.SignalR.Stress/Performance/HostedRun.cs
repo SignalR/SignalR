@@ -37,6 +37,7 @@ namespace Microsoft.AspNet.SignalR.Stress.Performance
             // Create the host
             Host = HostedTestFactory.CreateHost(RunData.Host, RunData.Transport, ScenarioName, RunData.Url);
             Host.Resolver = Resolver;
+            IISExpressTestHost.SqlConnectionString = RunData.SqlConnectionString;
             Host.Initialize();
 
             base.Initialize();
