@@ -10,6 +10,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR.Stress.Infrastructure;
 using Microsoft.AspNet.SignalR.Infrastructure;
+using System.IO;
 
 namespace Microsoft.AspNet.SignalR.Stress
 {
@@ -54,6 +55,7 @@ namespace Microsoft.AspNet.SignalR.Stress
         {
             // Step 1: Initialize the Run
             Console.WriteLine("{0}: Starting the test.", DateTime.Now);
+            Console.WriteLine("CWD: {0}", Directory.GetCurrentDirectory());
             Initialize();
             Console.WriteLine("{0}: Initialized completed", DateTime.Now);
 
