@@ -23,7 +23,7 @@ testUtilities.runWithAllTransports(function (transport) {
                 if (!minData.S) {
                     savedProcessMessages.apply(this, arguments);
                 }
-            }
+            };
 
             connection.start({ transport: transport }).done(function () {
                 assert.ok(false, "Connection started");
@@ -219,16 +219,25 @@ testUtilities.runWithAllTransports(function (transport) {
 
     QUnit.asyncTimeoutTest(transport + ": Reconnect exceeding the reconnect window results in the connection disconnecting even with a fast beat interval.", testUtilities.defaultTestTimeout, function (end, assert, testName) {
         var connection = testUtilities.createHubConnection(end, assert, testName, undefined, false),
-            handle;
+            handle,
+            onErrorFiredForTimeout = false;
 
-        connection.disconnected(function (reason) {
+        connection.error(function (err) {
+            assert.comment("Error fired.");
+            if (err.source === "TimeoutException") {
+                onErrorFiredForTimeout = true;
+            }
+        });
+
+        connection.disconnected(function () {
             assert.comment("Disconnected fired.");
-            assert.equal(reason.source, "TimeoutException", "Disconnected event has expected close reason");
 
             // Let callstack finish
             setTimeout(function () {
                 end();
-            },0);
+            }, 0);
+
+            assert.ok(onErrorFiredForTimeout);
         });
 
         connection.start({ transport: transport }).done(function () {
@@ -259,9 +268,9 @@ testUtilities.runWithAllTransports(function (transport) {
             connection.reconnectWindow = 500;
         });
 
-        connection.disconnected(function (reason) {
+        connection.disconnected(function () {
             assert.comment("Disconnected fired.");
-            assert.equal(reason.source, "TimeoutException", "Disconnected event has expected close reason");
+            assert.equal(connection.lastError.source, "TimeoutException", "Disconnected event has expected close reason");
             end();
         });
 

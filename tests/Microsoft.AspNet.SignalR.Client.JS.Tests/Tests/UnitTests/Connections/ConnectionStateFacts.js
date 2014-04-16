@@ -39,3 +39,36 @@ QUnit.test("Changing State", function () {
 
     signalR.changeState(con, signalR.connectionState.connecting, signalR.connectionState.connected);
 });
+
+QUnit.test("lastError set when error occurrs", function () {
+    var connection = testUtilities.createHubConnection();
+    $(connection).triggerHandler($.signalR.events.onError, $.signalR._.error("foo", "TestError"));
+    QUnit.equal(connection.lastError.source, "TestError", "lastError not set");
+});
+
+QUnit.test("verifyLastActive fires onError if timeout occurs", function () {
+    var connection = testUtilities.createHubConnection();
+    connection._.lastActiveAt = new Date(0);
+    connection.error(function(err) {
+        QUnit.equal(err.source, "TimeoutException", "Disconnected event has expected close reason");
+    });
+
+    $.signalR.transports._logic.verifyLastActive(connection);
+});
+
+QUnit.test("lastError cleared when connection starts.", function () {
+    var connection = testUtilities.createHubConnection(function () { }, QUnit, "", undefined, false);
+    connection.lastError = new Error();
+    connection.start();
+    QUnit.equal(connection.lastError, null, "lastError should be cleared on start");
+    connection.stop();
+});
+
+QUnit.test("lastError not cleared when connection stops.", function () {
+    var connection = testUtilities.createHubConnection(function () { }, QUnit, "", undefined, false),
+        error = new Error();
+    connection.start();
+    connection.lastError = error;
+    connection.stop();
+    QUnit.equal(connection.lastError, error, "lastError should not be cleared on stop");
+});

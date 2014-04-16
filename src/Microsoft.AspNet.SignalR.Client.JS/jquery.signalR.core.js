@@ -35,7 +35,7 @@
         noConnectionTransport: "Connection is in an invalid state, there is no transport active.",
         webSocketsInvalidState: "The Web Socket transport is in an invalid state, transitioning into reconnecting.",
         reconnectTimeout: "Couldn't reconnect within the configured timeout of {0} ms, disconnecting.",
-        reconnectWindowTimeout: "Connection has been inactive since {0} and it has exceeded the reconnect window of {1} ms. Stopping the connection."
+        reconnectWindowTimeout: "The client has been inactive since {0} and it has exceeded the inactivity timeout of {1} ms. Stopping the connection."
     };
 
     if (typeof ($) !== "function") {
@@ -110,10 +110,10 @@
             // Without this check if a connection is stopped then started events will be bound multiple times.
             if (!connection._.configuredStopReconnectingTimeout) {
                 onReconnectTimeout = function (connection) {
-                    var message = signalR._.format(signalR.resources.reconnectTimeout, connection.disconnectTimeout),
-                        error = signalR._.error(message, /* source */ "TimeoutException");
+                    var message = signalR._.format(signalR.resources.reconnectTimeout, connection.disconnectTimeout);
                     connection.log(message);
-                    connection.stop(/* async */ false, /* notifyServer */ false, error);
+                    $(connection).triggerHandler(events.onError, [signalR._.error(message, /* source */ "TimeoutException")]);
+                    connection.stop(/* async */ false, /* notifyServer */ false);
                 };
 
                 connection.reconnecting(function () {
@@ -332,6 +332,7 @@
 
             this.url = url;
             this.qs = qs;
+            this.lastError = null;
             this._ = {
                 keepAliveData: {},
                 connectingMessageBuffer: new ConnectingMessageBuffer(this, function (message) {
@@ -424,6 +425,8 @@
                 initialize,
                 deferred = connection._deferral || $.Deferred(), // Check to see if there is a pre-existing deferral that's being built on, if so we want to keep using it
                 parser = window.document.createElement("a");
+
+            connection.lastError = null;
 
             // Persist the deferral so that if start is called multiple times the same deferral is used.
             connection._deferral = deferred;
@@ -826,6 +829,7 @@
             /// <returns type="signalR" />
             var connection = this;
             $(connection).bind(events.onError, function (e, errorData, sendData) {
+                connection.lastError = errorData;
                 // In practice 'errorData' is the SignalR built error object.
                 // In practice 'sendData' is undefined for all error events except those triggered by
                 // 'ajaxSend' and 'webSockets.send'.'sendData' is the original send payload.
@@ -840,7 +844,7 @@
             /// <returns type="signalR" />
             var connection = this;
             $(connection).bind(events.onDisconnect, function (e, data) {
-                callback.call(connection, data);
+                callback.call(connection);
             });
             return connection;
         },
@@ -879,11 +883,10 @@
             return connection;
         },
 
-        stop: function (async, notifyServer, error) {
+        stop: function (async, notifyServer) {
             /// <summary>Stops listening</summary>
             /// <param name="async" type="Boolean">Whether or not to asynchronously abort the connection</param>
             /// <param name="notifyServer" type="Boolean">Whether we want to notify the server that we are aborting the connection</param>
-            /// <param name="error" type="Object">This object is passed to the onDisconnect event</param>
             /// <returns type="signalR" />
             var connection = this,
                 // Save deferral because this is always cleaned up
@@ -948,7 +951,7 @@
             }
 
             // Trigger the disconnect event
-            $(connection).triggerHandler(events.onDisconnect, [error]);
+            $(connection).triggerHandler(events.onDisconnect);
 
             delete connection.messageId;
             delete connection.groupsToken;

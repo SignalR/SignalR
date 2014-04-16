@@ -2,9 +2,7 @@
 
 using System;
 using System.Collections.Generic;
-using System.Collections.Specialized;
 using System.Diagnostics.CodeAnalysis;
-using System.IO;
 using System.Net;
 using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR.Client.Http;
@@ -35,7 +33,7 @@ namespace Microsoft.AspNet.SignalR.Client
         IClientTransport Transport { get; }
         DateTime LastMessageAt { get; }
         DateTime LastActiveAt { get; }
-
+        
 #if !PORTABLE
         /// <summary>
         /// Gets of sets proxy information for the connection.
@@ -57,9 +55,9 @@ namespace Microsoft.AspNet.SignalR.Client
         [SuppressMessage("Microsoft.Naming", "CA1716:IdentifiersShouldNotMatchKeywords", MessageId = "Stop", Justification = "Works in VB.NET.")]
         void Stop();
         [SuppressMessage("Microsoft.Naming", "CA1716:IdentifiersShouldNotMatchKeywords", MessageId = "Stop", Justification = "Works in VB.NET.")]
+        [SuppressMessage("Microsoft.Naming", "CA1716:IdentifiersShouldNotMatchKeywords", MessageId = "Error", Justification = "We don't expect people to derive from this class. Can be escaped in VB.NET.")]
         void Stop(Exception error);
         void Disconnect();
-        void Disconnect(Exception error);
         Task Send(string data);
 
         void OnReceived(JToken data);

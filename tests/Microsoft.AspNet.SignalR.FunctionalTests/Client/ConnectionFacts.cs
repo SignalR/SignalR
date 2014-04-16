@@ -45,12 +45,9 @@ namespace Microsoft.AspNet.SignalR.Tests
                 {
                     var disconnectWh = new ManualResetEventSlim();
 
-                    connection.ClosedWithReason += (reason) =>
+                    connection.Closed += () =>
                     {
-                        if (reason != null)
-                        {
-                            disconnectWh.Set();
-                        }
+                        disconnectWh.Set();
                     };
 
                     connection.Start(host.Transport).Wait();
@@ -89,12 +86,9 @@ namespace Microsoft.AspNet.SignalR.Tests
                 {
                     var disconnectWh = new ManualResetEventSlim();
 
-                    connection.ClosedWithReason += (reason) =>
+                    connection.Closed += () =>
                     {
-                        if (reason != null)
-                        {
-                            disconnectWh.Set();
-                        }
+                        disconnectWh.Set();
                     };
 
                     SetReconnectDelay(host.Transport, TimeSpan.FromSeconds(15));
