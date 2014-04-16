@@ -49,9 +49,11 @@ namespace Microsoft.AspNet.SignalR.Redis
                     int charCode = stream.ReadByte();
                     if (charCode == -1)
                     {
-                        throw new EndOfStreamException();
+                        throw new EndOfStreamException("Redis From Bytes Exception");
                     }
+
                     char c = (char)charCode;
+
                     if (c == ' ')
                     {
                         message.Id = ulong.Parse(messageIdBuilder.ToString(), CultureInfo.InvariantCulture);
