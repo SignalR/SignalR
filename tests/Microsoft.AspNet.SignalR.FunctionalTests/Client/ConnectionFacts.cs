@@ -45,6 +45,11 @@ namespace Microsoft.AspNet.SignalR.Tests
                 {
                     var disconnectWh = new ManualResetEventSlim();
 
+                    connection.Closed += () =>
+                    {
+                        disconnectWh.Set();
+                    };
+
                     connection.Start(host.Transport).Wait();
 
                     // The MarkActive interval should check the reconnect window. Since this is short it should force the connection to disconnect.
@@ -80,6 +85,11 @@ namespace Microsoft.AspNet.SignalR.Tests
                 using (connection)
                 {
                     var disconnectWh = new ManualResetEventSlim();
+
+                    connection.Closed += () =>
+                    {
+                        disconnectWh.Set();
+                    };
 
                     SetReconnectDelay(host.Transport, TimeSpan.FromSeconds(15));
 
