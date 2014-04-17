@@ -2,10 +2,12 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Text;
 using Microsoft.AspNet.SignalR.Messaging;
+using Microsoft.AspNet.SignalR.Tracing;
 
 namespace Microsoft.AspNet.SignalR.Redis
 {
@@ -35,7 +37,7 @@ namespace Microsoft.AspNet.SignalR.Redis
             }
         }
 
-        public static RedisMessage FromBytes(byte[] data)
+        public static RedisMessage FromBytes(byte[] data, TraceSource trace)
         {
             using (var stream = new MemoryStream(data))
             {
@@ -49,7 +51,9 @@ namespace Microsoft.AspNet.SignalR.Redis
                     int charCode = stream.ReadByte();
                     if (charCode == -1)
                     {
-                        throw new EndOfStreamException("Redis From Bytes Exception");
+                        trace.TraceVerbose("Message received on Redis could not be parsed: " + Convert.ToBase64String(data));
+                        trace.TraceVerbose("Partial Message Id of Redis message that could not be parsed: " + messageIdBuilder.ToString());
+                        throw new EndOfStreamException(Resources.Error_EndOfStreamRedis);
                     }
 
                     char c = (char)charCode;

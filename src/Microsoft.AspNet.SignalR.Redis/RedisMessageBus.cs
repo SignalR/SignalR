@@ -53,8 +53,6 @@ namespace Microsoft.AspNet.SignalR.Redis
 
         protected override Task Send(int streamIndex, IList<Message> messages)
         {
-            TraceMessages(messages);
-
             var keys = new string[] { _key };
             var arguments = new object[] { RedisMessage.ToBytes(messages) };
             return _connection.Scripting.Eval(
@@ -90,21 +88,6 @@ namespace Microsoft.AspNet.SignalR.Redis
             }
 
             base.Dispose(disposing);
-        }
-
-        private void TraceMessages(IList<Message> messages)
-        {
-            if (!_trace.Switch.ShouldTrace(TraceEventType.Verbose))
-            {
-                return;
-            }
-
-            foreach (Message message in messages)
-            {
-                var arraySegment = new byte[message.Value.Count];
-                Array.Copy(message.Value.Array, message.Value.Offset,arraySegment,0,message.Value.Count);
-                _trace.TraceVerbose("Sending message over Redis: " + System.Text.UTF8Encoding.UTF8.GetString(arraySegment));
-            }
         }
 
         private void Shutdown()
@@ -160,21 +143,13 @@ namespace Microsoft.AspNet.SignalR.Redis
         private void OnMessage(string key, byte[] data)
         {
             // The key is the stream id (channel)
-            try
-            {
-                var message = RedisMessage.FromBytes(data);
+            var message = RedisMessage.FromBytes(data, _trace);
 
-                // locked to avoid overlapping calls (even though we have set the mode 
-                // to preserve order on the subscription)
-                lock (_callbackLock)
-                {
-                    OnReceived(0, message.Id, message.ScaleoutMessage);
-                }
-            }
-            catch
+            // locked to avoid overlapping calls (even though we have set the mode 
+            // to preserve order on the subscription)
+            lock (_callbackLock)
             {
-                _trace.TraceVerbose("Redis OnMessage Exception: " + Convert.ToBase64String(data));
-                throw;
+                OnReceived(0, message.Id, message.ScaleoutMessage);
             }
         }
 
