@@ -143,7 +143,7 @@ namespace Microsoft.AspNet.SignalR.Redis
         private void OnMessage(string key, byte[] data)
         {
             // The key is the stream id (channel)
-            var message = RedisMessage.FromBytes(data);
+            var message = RedisMessage.FromBytes(data, _trace);
 
             // locked to avoid overlapping calls (even though we have set the mode 
             // to preserve order on the subscription)
