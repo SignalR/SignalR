@@ -37,42 +37,42 @@ QUnit.asyncTimeoutTest("Attempts to reconnect at the correct interval.", testUti
 
     // Cleanup
     return function () {
-        connection.stop();
         window.EventSource = savedEventSource;
         $.signalR.transports.serverSentEvents.reconnect = savedReconnect;
         $.network.connect();
+        connection.stop();
     };
 });
 
 
-QUnit.asyncTimeoutTest("Clears reconnectAttemptTimeout on stop", testUtilities.defaultTestTimeout * 2, function (end, assert, testName) {
-    var connection = testUtilities.createConnection("signalr", end, assert, testName),
-        savedStart = $.signalR.transports.serverSentEvents.start;
+QUnit.asyncTimeoutTest("Clears reconnectAttemptTimeout on stop", testUtilities.defaultTestTimeout, function (end, assert, testName) {
+    var connection = testUtilities.createConnection("signalr", end, assert, testName);
 
     connection.reconnectDelay = 0;
-    connection.start({ transport: "serverSentEvents" }).done(function () {
-        connection.transport.start = function () {
-            assert.comment("Successfully started reconnecting");
-            savedStart.apply(this, arguments);
 
-            assert.comment("Stopping connection")
+    connection.reconnecting(function () {
+        assert.comment("Started reconnecting");
+
+        // Wait for $.signalR.transports.serverSentEvents.start to finish
+        window.setTimeout(function () {
+            assert.isSet(connection._.reconnectAttemptTimeoutHandle, "The reconnectAttemptTimeoutHandle is set.");
             connection.stop();
+            assert.isNotSet(connection._.reconnectAttemptTimeoutHandle, "The reconnectAttemptTimeoutHandle has been cleared on connection stop.");
+            end();
+        }, 0);
+    });
 
-            // Give time for the reconnectAttemptTimeout to fire
-            window.setTimeout(end, 5000);
-        };
+    connection.reconnected(function () {
+        assert.fail("Unexpected successful reconnection");
+    });
 
-        connection.reconnected(function () {
-            assert.fail("Unexpected successful reconnection");
-        })
-
+    connection.start({ transport: "serverSentEvents" }).done(function () {
         $.network.disconnect();
     });
 
     // Cleanup
     return function () {
-        connection.stop();
-        $.signalR.transports.serverSentEvents.start = savedStart;
         $.network.connect();
+        connection.stop();
     };
 });

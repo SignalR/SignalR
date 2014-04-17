@@ -9,7 +9,11 @@
     var signalR = $.signalR,
         events = $.signalR.events,
         changeState = $.signalR.changeState,
-        transportLogic = signalR.transports._logic;
+        transportLogic = signalR.transports._logic,
+        clearReconnectAttemptTimeout = function (connection) {
+            window.clearTimeout(connection._.reconnectAttemptTimeoutHandle);
+            delete connection._.reconnectAttemptTimeoutHandle;
+        };
 
     signalR.transports.serverSentEvents = {
         name: "serverSentEvents",
@@ -62,7 +66,7 @@
             }
 
             if (reconnecting) {
-                connection._.reconnectAttemptTimeout = window.setTimeout(function () {
+                connection._.reconnectAttemptTimeoutHandle = window.setTimeout(function () {
                     if (opened === false) {
                         // If we're reconnecting and the event source is attempting to connect,
                         // don't keep retrying. This causes duplicate connections to spawn.
@@ -78,7 +82,7 @@
             connection.eventSource.addEventListener("open", function (e) {
                 connection.log("EventSource connected.");
 
-                window.clearTimeout(connection._.reconnectAttemptTimeout);
+                clearReconnectAttemptTimeout(connection);
                 transportLogic.clearReconnectTimeout(connection);
 
                 if (opened === false) {
@@ -158,8 +162,8 @@
 
         stop: function (connection) {
             // Don't trigger a reconnect after stopping
+            clearReconnectAttemptTimeout(connection);
             transportLogic.clearReconnectTimeout(connection);
-            window.clearTimeout(connection._.reconnectAttemptTimeout);
 
             if (connection && connection.eventSource) {
                 connection.log("EventSource calling close().");
