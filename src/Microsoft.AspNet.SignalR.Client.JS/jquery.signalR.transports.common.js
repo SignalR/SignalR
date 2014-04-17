@@ -451,7 +451,7 @@
             if (new Date().getTime() - connection._.lastActiveAt >= connection.reconnectWindow) {
                 var message = signalR._.format(signalR.resources.reconnectWindowTimeout, new Date(connection._.lastActiveAt), connection.reconnectWindow);
                 connection.log(message);
-                connection._.lastError = connection._.error = signalR._.error(message, /* source */ "TimeoutException");
+                connection._.lastError = signalR._.error(message, /* source */ "TimeoutException");
                 connection.stop(/* async */ false, /* notifyServer */ false);
                 return false;
             }
