@@ -46,9 +46,12 @@ QUnit.test("lastError set when error occurrs", function () {
     QUnit.equal(connection._.lastError.source, "TestError", "lastError not set");
 });
 
-QUnit.test("verifyLastActive sets lastError if timeout occurs", function () {
+QUnit.test("verifyLastActive fires onError if timeout occurs", function () {
     var connection = testUtilities.createHubConnection();
     connection._.lastActiveAt = new Date(0);
+    connection.error(function(err) {
+        QUnit.equal(err.source, "TimeoutException", "Disconnected event has expected close reason");
+    });
+
     $.signalR.transports._logic.verifyLastActive(connection);
-    QUnit.equal(connection._.lastError.source, "TimeoutException", "Disconnected event has expected close reason");
 });

@@ -583,7 +583,7 @@ namespace Microsoft.AspNet.SignalR.Client
         [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "We don't want to raise the Start exception on Stop.")]
         public void Stop(Exception error, TimeSpan timeout)
         {
-            _lastError = error;
+            OnError(error);
             Stop(timeout);            
         }
 
@@ -829,9 +829,8 @@ namespace Microsoft.AspNet.SignalR.Client
                     _disconnectTimeout,
                     () =>
                     {
-                        _lastError = new TimeoutException(
-                            String.Format(CultureInfo.CurrentCulture, 
-                                Resources.Error_ReconnectTimeout, _disconnectTimeout));
+                        OnError(new TimeoutException(String.Format(CultureInfo.CurrentCulture,
+                                Resources.Error_ReconnectTimeout, _disconnectTimeout)));
                         Disconnect();
                     });
 

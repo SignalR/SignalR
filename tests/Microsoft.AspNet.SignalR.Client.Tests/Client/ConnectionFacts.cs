@@ -327,35 +327,55 @@ namespace Microsoft.AspNet.SignalR.Client.Tests
         }
 
         [Fact]
-        public void StopSetsLastError()
-        {
-            var error = new Exception();
-            var connection = new Connection("http://fakeurl");
-            connection.Stop(error, new TimeSpan(0));
-            Assert.Same(error, ((IConnection)connection).LastError);
-        }
-
-        [Fact]
         public void OnErrorSetsLastError()
         {
             var error = new Exception();
             IConnection connection = new Connection("http://fakeurl");
             connection.OnError(error);
-            Assert.Same(error, connection.LastError);            
+            Assert.Same(error, connection.LastError);
         }
 
         [Fact]
-        public void OnReconnectingSetsLastErrorIfReconnectingTimeouts()
+        public void StopWithExceptionRaisesOnError()
+        {
+            var exception = new Exception();
+            var connection = new Connection("http://fakeurl");
+            var onErrorCalled = false;
+
+            connection.Error += error =>
+            {
+                onErrorCalled = true;
+                Assert.Same(exception, error);
+            };
+
+            connection.Stop(exception, new TimeSpan(0));
+            Assert.True(onErrorCalled);
+
+            onErrorCalled = false;
+            connection.Stop(exception);
+            Assert.True(onErrorCalled);
+        }
+
+        [Fact]
+        public void OnReconnectingRaisesOnErrorIfReconnectingTimeouts()
         {
             var connection = new Connection("http://fakeurl");
             connection.Reconnecting += () => Thread.Sleep(100);
+
+            var onErrorCalled = false;
+
+            connection.Error += error =>
+            {
+                onErrorCalled = true;
+                Assert.IsType<TimeoutException>(error);
+                Assert.Equal(
+                    string.Format(CultureInfo.CurrentCulture, Resources.Error_ReconnectTimeout, new TimeSpan(0)),
+                    error.Message);
+            };
+
             connection.OnReconnecting();
 
-            var lastError = ((IConnection) connection).LastError;
-            Assert.IsType<TimeoutException>(lastError);
-            Assert.Equal(
-                string.Format(CultureInfo.CurrentCulture, Resources.Error_ReconnectTimeout, new TimeSpan(0)), 
-                lastError.Message);
+            Assert.True(onErrorCalled);
         }
     }
 }
