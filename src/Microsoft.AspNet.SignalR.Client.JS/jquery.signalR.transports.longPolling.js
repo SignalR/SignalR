@@ -97,18 +97,13 @@
                     }
 
                     connection.log("Opening long polling request to '" + url + "'.");
-                    instance.pollXhr = $.ajax(
-                        $.extend({}, $.signalR.ajaxDefaults, {
+                    instance.pollXhr = transportLogic.ajax(connection, {
                             xhrFields: {
-                                withCredentials: connection.withCredentials,
                                 onprogress: function () {
                                     transportLogic.markLastMessage(connection);
                                 }
                             },
                             url: url,
-                            type: "GET",
-                            dataType: connection.ajaxDataType,
-                            contentType: connection.contentType,
                             success: function (result) {
                                 var minData,
                                     delay = 0,
@@ -217,9 +212,7 @@
                                     }, that.reconnectDelay);
                                 }
                             }
-                        }
-                    ));
-
+                    });
 
                     // This will only ever pass after an error has occured via the poll ajax procedure.
                     if (reconnecting && raiseReconnect === true) {

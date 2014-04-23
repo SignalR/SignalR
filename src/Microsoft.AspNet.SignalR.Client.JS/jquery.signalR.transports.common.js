@@ -64,6 +64,17 @@
     }
 
     transportLogic = signalR.transports._logic = {
+        ajax: function (connection, options) {
+            return $.ajax(
+                $.extend(/*deep copy*/ true, {}, $.signalR.ajaxDefaults, {
+                    type: "GET",
+                    data: {},
+                    xhrFields: { withCredentials: connection.withCredentials },
+                    contentType: connection.contentType,
+                    dataType: connection.ajaxDataType,
+                }, options));
+        },
+
         pingServer: function (connection) {
             /// <summary>Pings the server</summary>
             /// <param name="connection" type="signalr">Connection associated with the server ping</param>
@@ -77,14 +88,8 @@
 
                 url = transportLogic.addQs(url, connection.qs);
 
-                xhr = $.ajax(
-                    $.extend({}, $.signalR.ajaxDefaults, {
-                        xhrFields: { withCredentials: connection.withCredentials },
+                xhr = transportLogic.ajax(connection, {
                         url: url,
-                        type: "GET",
-                        contentType: connection.contentType,
-                        data: {},
-                        dataType: connection.ajaxDataType,
                         success: function (result) {
                             var data;
 
@@ -141,9 +146,7 @@
                                 );
                             }
                         }
-                    }
-                ));
-
+                });
             }
             else {
                 deferral.reject(
@@ -253,13 +256,10 @@
 
             url = transportLogic.prepareQueryString(connection, url);
 
-            xhr = $.ajax(
-                $.extend({}, $.signalR.ajaxDefaults, {
-                    xhrFields: { withCredentials: connection.withCredentials },
+            xhr = transportLogic.ajax(connection, {
                     url: url,
                     type: connection.ajaxDataType === "jsonp" ? "GET" : "POST",
                     contentType: signalR._.defaultContentType,
-                    dataType: connection.ajaxDataType,
                     data: {
                         data: payload
                     },
@@ -289,8 +289,7 @@
 
                         onFail(error, connection);
                     }
-                }
-            ));
+            });
 
             return xhr;
         },
@@ -306,18 +305,12 @@
             var url = connection.url + "/abort" + "?transport=" + connection.transport.name + "&connectionToken=" + window.encodeURIComponent(connection.token);
             url = transportLogic.prepareQueryString(connection, url);
 
-            $.ajax(
-                $.extend({}, $.signalR.ajaxDefaults, {
-                    xhrFields: { withCredentials: connection.withCredentials },
+            transportLogic.ajax(connection, {
                     url: url,
                     async: async,
                     timeout: 1000,
                     type: "POST",
-                    contentType: connection.contentType,
-                    dataType: connection.ajaxDataType,
-                    data: {}
-                }
-            ));
+            });
 
             connection.log("Fired ajax abort async = " + async + ".");
         },

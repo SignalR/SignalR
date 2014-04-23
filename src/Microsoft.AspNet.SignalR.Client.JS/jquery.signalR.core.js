@@ -670,14 +670,8 @@
             connection.log("Negotiating with '" + url + "'.");
 
             // Save the ajax negotiate request object so we can abort it if stop is called while the request is in flight.
-            connection._.negotiateRequest = $.ajax(
-                $.extend({}, $.signalR.ajaxDefaults, {
-                    xhrFields: { withCredentials: connection.withCredentials },
+            connection._.negotiateRequest = signalR.transports._logic.ajax(connection, {
                     url: url,
-                    type: "GET",
-                    contentType: connection.contentType,
-                    data: {},
-                    dataType: connection.ajaxDataType,
                     error: function (error, statusText) {
                         // We don't want to cause any errors if we're aborting our own negotiate request.
                         if (statusText !== _negotiateAbortText) {
@@ -763,8 +757,7 @@
 
                         initialize(transports);
                     }
-                }
-            ));
+            });
 
             return deferred.promise();
         },
