@@ -220,6 +220,7 @@ namespace Microsoft.AspNet.SignalR.Transports
             else if (!IsPollRequest)
             {
                 initialize = Reconnected;
+                _counters.ConnectionsReconnected.Increment();
             }
 
             var series = new Func<object, Task>[]

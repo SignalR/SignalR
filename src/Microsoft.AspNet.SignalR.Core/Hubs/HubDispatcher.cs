@@ -165,9 +165,6 @@ namespace Microsoft.AspNet.SignalR.Hubs
 
             if (methodDescriptor == null)
             {
-                _counters.ErrorsHubInvocationTotal.Increment();
-                _counters.ErrorsHubInvocationPerSec.Increment();
-
                 // Empty (noop) method descriptor
                 // Use: Forces the hub pipeline module to throw an error.  This error is encapsulated in the HubDispatcher.
                 //      Encapsulating it in the HubDispatcher prevents the error from bubbling up to the transport level.
