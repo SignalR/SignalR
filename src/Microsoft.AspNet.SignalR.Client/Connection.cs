@@ -87,9 +87,6 @@ namespace Microsoft.AspNet.SignalR.Client
         //The json serializer for the connections
         private JsonSerializer _jsonSerializer = new JsonSerializer();
 
-        // Used to store the last error
-        private Exception _lastError;
-
 #if (NET4 || NET45)
         private readonly X509CertificateCollection _certCollection = new X509CertificateCollection();
 #endif
@@ -209,6 +206,11 @@ namespace Microsoft.AspNet.SignalR.Client
         public Version Protocol { get; set; }
 
         /// <summary>
+        /// Gets the last error encountered by the <see cref="Connection"/>.
+        /// </summary>
+        public Exception LastError { get; private set; }
+
+        /// <summary>
         /// The maximum amount of time a connection will allow to try and reconnect.
         /// This value is equivalent to the summation of the servers disconnect and keep alive timeout values.
         /// </summary>
@@ -255,14 +257,6 @@ namespace Microsoft.AspNet.SignalR.Client
             get
             {
                 return _lastActiveAt;
-            }
-        }
-
-        Exception IConnection.LastError
-        {
-            get
-            {
-                return _lastError;
             }
         }
 
@@ -568,7 +562,7 @@ namespace Microsoft.AspNet.SignalR.Client
 
         /// <summary>
         /// Stops the <see cref="Connection"/> and sends an abort message to the server.
-        /// <param name="error">Close reason</param>
+        /// <param name="error">The error due to which the connection is being stopped.</param>
         /// </summary>
         public void Stop(Exception error)
         {
@@ -577,7 +571,7 @@ namespace Microsoft.AspNet.SignalR.Client
 
         /// <summary>
         /// Stops the <see cref="Connection"/> and sends an abort message to the server.
-        /// <param name="error">Close reason</param>
+        /// <param name="error">The error due to which the connection is being stopped.</param>
         /// <param name="timeout">The timeout</param>
         /// </summary>
         [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "We don't want to raise the Start exception on Stop.")]
@@ -805,7 +799,7 @@ namespace Microsoft.AspNet.SignalR.Client
         {
             Trace(TraceLevels.Events, "OnError({0})", error);
 
-            _lastError = error;
+            LastError = error;
 
             if (Error != null)
             {

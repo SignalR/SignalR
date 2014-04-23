@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Globalization;
 using System.IO;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -10,7 +11,6 @@ using Microsoft.AspNet.SignalR.Infrastructure;
 using Moq;
 using Xunit;
 using Xunit.Extensions;
-using System.Globalization;
 
 namespace Microsoft.AspNet.SignalR.Client.Tests
 {
@@ -21,7 +21,7 @@ namespace Microsoft.AspNet.SignalR.Client.Tests
         [InlineData("&clientProtocol=", "foo=bar")]
         public void NegotiatePassesClientProtocolCorrectly(string clientProtocolParameter, string connectionQueryString)
         {
-            var connection = new Connection("http://test", connectionQueryString);
+            var connection = new Client.Connection("http://test", connectionQueryString);
 
             try
             {
@@ -329,53 +329,58 @@ namespace Microsoft.AspNet.SignalR.Client.Tests
         [Fact]
         public void OnErrorSetsLastError()
         {
-            var error = new Exception();
-            IConnection connection = new Connection("http://fakeurl");
-            connection.OnError(error);
-            Assert.Same(error, connection.LastError);
+            using (var connection = new Connection("http://fakeurl"))
+            {
+                var error = new Exception();
+                ((IConnection) connection).OnError(error);
+                Assert.Same(error, connection.LastError);
+            }
         }
 
         [Fact]
         public void StopWithExceptionRaisesOnError()
         {
-            var exception = new Exception();
-            var connection = new Connection("http://fakeurl");
-            var onErrorCalled = false;
-
-            connection.Error += error =>
+            using (var connection = new Connection("http://fakeurl"))
             {
-                onErrorCalled = true;
-                Assert.Same(exception, error);
-            };
+                var exception = new Exception();
+                var onErrorCalled = false;
 
-            connection.Stop(exception, new TimeSpan(0));
-            Assert.True(onErrorCalled);
+                connection.Error += error =>
+                {
+                    onErrorCalled = true;
+                    Assert.Same(exception, error);
+                };
 
-            onErrorCalled = false;
-            connection.Stop(exception);
-            Assert.True(onErrorCalled);
+                connection.Stop(exception, new TimeSpan(0));
+                Assert.True(onErrorCalled);
+
+                onErrorCalled = false;
+                connection.Stop(exception);
+                Assert.True(onErrorCalled);
+            }
         }
 
         [Fact]
-        public void OnReconnectingRaisesOnErrorIfReconnectingTimeouts()
+        public void OnReconnectingRaisesOnErrorIfReconnectingTimesOut()
         {
-            var connection = new Connection("http://fakeurl");
-            connection.Reconnecting += () => Thread.Sleep(100);
-
-            var onErrorCalled = false;
-
-            connection.Error += error =>
+            using (var connection = new Connection("http://fakeurl"))
             {
-                onErrorCalled = true;
-                Assert.IsType<TimeoutException>(error);
-                Assert.Equal(
-                    string.Format(CultureInfo.CurrentCulture, Resources.Error_ReconnectTimeout, new TimeSpan(0)),
-                    error.Message);
-            };
+                var errorCalledResetEvent = new ManualResetEventSlim();
 
-            connection.OnReconnecting();
+                connection.Error += error =>
+                {
+                    Assert.IsType<TimeoutException>(error);
+                    Assert.Equal(
+                        string.Format(CultureInfo.CurrentCulture, Resources.Error_ReconnectTimeout, new TimeSpan(0)),
+                        error.Message);
 
-            Assert.True(onErrorCalled);
+                    errorCalledResetEvent.Set();
+                };
+
+                connection.OnReconnecting();
+
+                Assert.True(errorCalledResetEvent.Wait(1000), "OnError not called");
+            }
         }
     }
 }

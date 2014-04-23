@@ -33,7 +33,6 @@ namespace Microsoft.AspNet.SignalR.Client
         IClientTransport Transport { get; }
         DateTime LastMessageAt { get; }
         DateTime LastActiveAt { get; }
-        Exception LastError { get; }
         
 #if !PORTABLE
         /// <summary>

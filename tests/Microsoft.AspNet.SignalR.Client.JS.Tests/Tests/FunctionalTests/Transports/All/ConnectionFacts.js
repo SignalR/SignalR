@@ -23,7 +23,7 @@ testUtilities.runWithAllTransports(function (transport) {
                 if (!minData.S) {
                     savedProcessMessages.apply(this, arguments);
                 }
-            }
+            };
 
             connection.start({ transport: transport }).done(function () {
                 assert.ok(false, "Connection started");
@@ -270,7 +270,7 @@ testUtilities.runWithAllTransports(function (transport) {
 
         connection.disconnected(function () {
             assert.comment("Disconnected fired.");
-            assert.equal(connection._.lastError.source, "TimeoutException", "Disconnected event has expected close reason");
+            assert.equal(connection.lastError.source, "TimeoutException", "Disconnected event has expected close reason");
             end();
         });
 
