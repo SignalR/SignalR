@@ -89,63 +89,63 @@
                 url = transportLogic.addQs(url, connection.qs);
 
                 xhr = transportLogic.ajax(connection, {
-                        url: url,
-                        success: function (result) {
-                            var data;
+                    url: url,
+                    success: function (result) {
+                        var data;
 
-                            try {
-                                data = connection._parseResponse(result);
-                            }
-                            catch (error) {
-                                deferral.reject(
-                                    signalR._.transportError(
-                                        signalR.resources.pingServerFailedParse,
-                                        connection.transport,
-                                        error,
-                                        xhr
-                                    )
-                                );
-                                connection.stop();
-                                return;
-                            }
-
-                            if (data.Response === "pong") {
-                                deferral.resolve();
-                            }
-                            else {
-                                deferral.reject(
-                                    signalR._.transportError(
-                                        signalR._.format(signalR.resources.pingServerFailedInvalidResponse, result.responseText),
-                                        connection.transport,
-                                        null /* error */,
-                                        xhr
-                                    )
-                                );
-                            }
-                        },
-                        error: function (error) {
-                            if (error.status === 401 || error.status === 403) {
-                                deferral.reject(
-                                    signalR._.transportError(
-                                        signalR._.format(signalR.resources.pingServerFailedStatusCode, error.status),
-                                        connection.transport,
-                                        error,
-                                        xhr
-                                    )
-                                );
-                                connection.stop();
-                            }
-                            else {
-                                deferral.reject(
-                                    signalR._.transportError(
-                                        signalR.resources.pingServerFailed,
-                                        connection.transport,
-                                        error,
-                                        xhr
-                                    )
-                                );
-                            }
+                        try {
+                            data = connection._parseResponse(result);
                         }
+                        catch (error) {
+                            deferral.reject(
+                                signalR._.transportError(
+                                    signalR.resources.pingServerFailedParse,
+                                    connection.transport,
+                                    error,
+                                    xhr
+                                )
+                            );
+                            connection.stop();
+                            return;
+                        }
+
+                        if (data.Response === "pong") {
+                            deferral.resolve();
+                        }
+                        else {
+                            deferral.reject(
+                                signalR._.transportError(
+                                    signalR._.format(signalR.resources.pingServerFailedInvalidResponse, result.responseText),
+                                    connection.transport,
+                                    null /* error */,
+                                    xhr
+                                )
+                            );
+                        }
+                    },
+                    error: function (error) {
+                        if (error.status === 401 || error.status === 403) {
+                            deferral.reject(
+                                signalR._.transportError(
+                                    signalR._.format(signalR.resources.pingServerFailedStatusCode, error.status),
+                                    connection.transport,
+                                    error,
+                                    xhr
+                                )
+                            );
+                            connection.stop();
+                        }
+                        else {
+                            deferral.reject(
+                                signalR._.transportError(
+                                    signalR.resources.pingServerFailed,
+                                    connection.transport,
+                                    error,
+                                    xhr
+                                )
+                            );
+                        }
+                    }
                 });
             }
             else {
@@ -257,38 +257,38 @@
             url = transportLogic.prepareQueryString(connection, url);
 
             xhr = transportLogic.ajax(connection, {
-                    url: url,
-                    type: connection.ajaxDataType === "jsonp" ? "GET" : "POST",
-                    contentType: signalR._.defaultContentType,
-                    data: {
-                        data: payload
-                    },
-                    success: function (result) {
-                        var res;
+                url: url,
+                type: connection.ajaxDataType === "jsonp" ? "GET" : "POST",
+                contentType: signalR._.defaultContentType,
+                data: {
+                    data: payload
+                },
+                success: function (result) {
+                    var res;
 
-                        if (result) {
-                            try {
-                                res = connection._parseResponse(result);
-                            }
-                            catch (error) {
-                                onFail(error, connection);
-                                connection.stop();
-                                return;
-                            }
-
-                            transportLogic.triggerReceived(connection, res);
+                    if (result) {
+                        try {
+                            res = connection._parseResponse(result);
                         }
-                    },
-                    error: function (error, textStatus) {
-                        if (textStatus === "abort" || textStatus === "parsererror") {
-                            // The parsererror happens for sends that don't return any data, and hence
-                            // don't write the jsonp callback to the response. This is harder to fix on the server
-                            // so just hack around it on the client for now.
+                        catch (error) {
+                            onFail(error, connection);
+                            connection.stop();
                             return;
                         }
 
-                        onFail(error, connection);
+                        transportLogic.triggerReceived(connection, res);
                     }
+                },
+                error: function (error, textStatus) {
+                    if (textStatus === "abort" || textStatus === "parsererror") {
+                        // The parsererror happens for sends that don't return any data, and hence
+                        // don't write the jsonp callback to the response. This is harder to fix on the server
+                        // so just hack around it on the client for now.
+                        return;
+                    }
+
+                    onFail(error, connection);
+                }
             });
 
             return xhr;
@@ -306,10 +306,10 @@
             url = transportLogic.prepareQueryString(connection, url);
 
             transportLogic.ajax(connection, {
-                    url: url,
-                    async: async,
-                    timeout: 1000,
-                    type: "POST",
+                url: url,
+                async: async,
+                timeout: 1000,
+                type: "POST",
             });
 
             connection.log("Fired ajax abort async = " + async + ".");
