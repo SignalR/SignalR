@@ -21,6 +21,10 @@
         stoppedWhileLoading: "The connection was stopped during page load.",
         stoppedWhileNegotiating: "The connection was stopped during the negotiate request.",
         errorParsingNegotiateResponse: "Error parsing negotiate response.",
+        errorDuringStartRequest: "Error during start request. Stopping the connection.",
+        stoppedDuringStartRequest: "The connection was stopped during the start request.",
+        errorParsingStartResponse: "Error parsing start response: '{0}'. Stopping the connection.",
+        invalidStartResponse: "Invalid start response: '{0}'. Stopping the connection.",
         protocolIncompatible: "You are using a version of the client that isn't compatible with the server. Client version {0}, server version {1}.",
         sendFailed: "Send failed.",
         parseFailed: "Failed at parsing response: {0}",
@@ -399,7 +403,7 @@
 
         state: signalR.connectionState.disconnected,
 
-        clientProtocol: "1.3",
+        clientProtocol: "1.4",
 
         reconnectDelay: 2000,
 
@@ -661,12 +665,6 @@
 
             url = signalR.transports._logic.prepareQueryString(connection, url);
 
-            // Add the client version to the negotiate request.  We utilize the same addQs method here
-            // so that it can append the clientVersion appropriately to the URL
-            url = signalR.transports._logic.addQs(url, {
-                clientProtocol: connection.clientProtocol
-            });
-
             connection.log("Negotiating with '" + url + "'.");
 
             // Save the ajax negotiate request object so we can abort it if stop is called while the request is in flight.
@@ -892,7 +890,6 @@
             }
 
             // Always clean up private non-timeout based state.
-            delete connection._deferral;
             delete connection._.config;
             delete connection._.deferredStartHandler;
 
@@ -943,9 +940,13 @@
                 delete connection._.negotiateRequest;
             }
 
+            // Ensure that tryAbortStartRequest is called before connection._deferral is deleted
+            signalR.transports._logic.tryAbortStartRequest(connection);
+
             // Trigger the disconnect event
             $(connection).triggerHandler(events.onDisconnect);
 
+            delete connection._deferral;
             delete connection.messageId;
             delete connection.groupsToken;
             delete connection.id;

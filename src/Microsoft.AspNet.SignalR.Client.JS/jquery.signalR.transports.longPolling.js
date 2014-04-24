@@ -42,10 +42,11 @@
                 fireConnect = function () {
                     fireConnect = $.noop;
 
-                    connection.log("LongPolling connected.");
-                    onSuccess();
                     // Reset onFailed to null because it shouldn't be called again
                     onFailed = null;
+
+                    connection.log("LongPolling connected.");
+                    onSuccess();
                 },
                 tryFailConnect = function () {
                     if (onFailed) {
