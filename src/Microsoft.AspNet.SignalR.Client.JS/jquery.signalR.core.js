@@ -485,13 +485,13 @@
             parser.href = connection.url;
             if (!parser.protocol || parser.protocol === ":") {
                 connection.protocol = window.document.location.protocol;
-                connection.host = window.document.location.host;
-                connection.baseUrl = connection.protocol + "//" + connection.host;
+                connection.host = !parser.host || parser.host === "" ? window.document.location.host : parser.host;
             } else {
                 connection.protocol = parser.protocol;
                 connection.host = parser.host;
-                connection.baseUrl = parser.protocol + "//" + parser.host;
             }
+
+            connection.baseUrl = connection.protocol + "//" + connection.host;
 
             // Set the websocket protocol
             connection.wsProtocol = connection.protocol === "https:" ? "wss://" : "ws://";
