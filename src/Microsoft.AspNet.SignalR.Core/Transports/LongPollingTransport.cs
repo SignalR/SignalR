@@ -96,11 +96,6 @@ namespace Microsoft.AspNet.SignalR.Transports
 
         public override Task KeepAlive()
         {
-            if (InitializeTcs == null || !InitializeTcs.Task.IsCompleted)
-            {
-                return TaskAsyncHelper.Empty;
-            }
-
             // Ensure delegate continues to use the C# Compiler static delegate caching optimization.
             return EnqueueOperation(state => PerformKeepAlive(state), this);
         }
@@ -174,13 +169,6 @@ namespace Microsoft.AspNet.SignalR.Transports
             // Ensure delegate continues to use the C# Compiler static delegate caching optimization.
             return task.Then((transport, resp) => transport.Send(resp), this, response)
                        .Then(() => TaskAsyncHelper.False);
-        }
-
-        // Don't use ForeverTransport's implementation of EnqueueOperation b/c it noops if OnConnectd isn't finished.
-        // This can cause the LongPollingTransport to get disposed too soon and send corrupt cursors.
-        protected internal override Task EnqueueOperation(Func<object, Task> writeAsync, object state)
-        {
-            return EnqueueOperationCore(writeAsync, state);
         }
 
         protected internal override Task InitializeResponse(ITransportConnection connection)

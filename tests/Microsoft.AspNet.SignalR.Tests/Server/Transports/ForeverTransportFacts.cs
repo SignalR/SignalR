@@ -319,7 +319,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Server.Transports
             // Assert
             try
             {
-                Assert.True(transport.Object.InitializeTcs.Task.Wait(TimeSpan.FromSeconds(2)), "Initialize task not tripped");
+                Assert.True(transport.Object.ConnectTask.Wait(TimeSpan.FromSeconds(2)), "ConnectTask task not tripped");
             }
             catch
             {

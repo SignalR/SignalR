@@ -70,8 +70,6 @@ namespace Microsoft.AspNet.SignalR.Transports
             get { return _jsonSerializer; }
         }
 
-        internal TaskCompletionSource<object> InitializeTcs { get; set; }
-
         protected virtual void OnSending(string payload)
         {
             Heartbeat.MarkConnection(this);
@@ -96,14 +94,6 @@ namespace Microsoft.AspNet.SignalR.Transports
 
         protected override void InitializePersistentState()
         {
-            // PersistentConnection.OnConnected must complete before we can write to the output stream,
-            // so clients don't indicate the connection has started too early.
-            InitializeTcs = new TaskCompletionSource<object>();
-
-            // WriteQueue must be reinitialized before calling base.InitializePersistentState to ensure
-            // _requestLifeTime will be properly initialized.
-            WriteQueue = new TaskQueue(InitializeTcs.Task);
-
             base.InitializePersistentState();
 
             // The _transportLifetime must be initialized after calling base.InitializePersistentState since
@@ -150,28 +140,9 @@ namespace Microsoft.AspNet.SignalR.Transports
             return TaskAsyncHelper.Empty;
         }
 
-        protected internal override Task EnqueueOperation(Func<object, Task> writeAsync, object state)
-        {
-            Task task = base.EnqueueOperation(writeAsync, state);
-
-            // If PersistentConnection.OnConnected has not completed (as indicated by InitializeTcs),
-            // the queue will be blocked to prevent clients from prematurely indicating the connection has
-            // started, but we must keep receive loop running to continue processing commands and to
-            // prevent deadlocks caused by waiting on ACKs.
-            if (InitializeTcs == null || InitializeTcs.Task.IsCompleted)
-            {
-                return task;
-            }
-
-            return TaskAsyncHelper.Empty;
-        }
-
         protected void OnError(Exception ex)
         {
             IncrementErrors();
-
-            // Cancel any pending writes in the queue
-            InitializeTcs.TrySetCanceled();
 
             // Complete the http request
             _transportLifetime.Complete(ex);
@@ -271,28 +242,18 @@ namespace Microsoft.AspNet.SignalR.Transports
                                                                MaxMessages,
                                                                this);
 
-
                 if (AfterReceive != null)
                 {
                     AfterReceive();
                 }
 
                 // Ensure delegate continues to use the C# Compiler static delegate caching optimization.
-                initialize().Then(tcs => tcs.TrySetResult(null), InitializeTcs)
-                            .Catch((ex, state) => ((ForeverTransport)state).OnError(ex), this)
+                initialize().Catch((ex, state) => ((ForeverTransport)state).OnError(ex), this)
                             .Finally(state => ((SubscriptionDisposerContext)state).Set(),
                                 new SubscriptionDisposerContext(disposer, subscription));
             }
-            catch (OperationCanceledException ex)
-            {
-                InitializeTcs.TrySetCanceled();
-
-                _transportLifetime.Complete(ex);
-            }
             catch (Exception ex)
             {
-                InitializeTcs.TrySetCanceled();
-
                 _transportLifetime.Complete(ex);
             }
 
