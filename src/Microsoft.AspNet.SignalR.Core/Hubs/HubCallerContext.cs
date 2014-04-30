@@ -63,7 +63,11 @@ namespace Microsoft.AspNet.SignalR.Hubs
         /// </summary>
         public virtual IRequest Request { get; private set; }
 
-        public HubCallerContext() { }
+        /// <summary>
+        /// This constructor is only intended to enable mocking of the class. Use of this constructor 
+        /// for other purposes may result in unexpected behavior.   
+        /// </summary>
+        protected HubCallerContext() { }
 
         public HubCallerContext(IRequest request, string connectionId)
         {

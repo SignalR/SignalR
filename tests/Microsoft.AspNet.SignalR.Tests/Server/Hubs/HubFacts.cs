@@ -1,6 +1,8 @@
 ﻿using System;
+using System.Collections.Specialized;
 using System.Dynamic;
 using Microsoft.AspNet.SignalR.Hubs;
+using Microsoft.AspNet.SignalR.Tests.Common.Infrastructure;
 using Moq;
 using Xunit;
 
@@ -74,6 +76,30 @@ namespace Microsoft.AspNet.SignalR.Tests.Server.Hubs
             clients.VerifyAll();
         }
 
+        [Fact]
+        public void HubCallerContextIsMockable()
+        {
+            var hub = new MyTestableHub();
+            var context = new Mock<HubCallerContext>();
+
+            var mockClients = new Mock<IHubCallerConnectionContext<dynamic>>();
+            var clients = new Mock<IClientContract>();
+
+            hub.Clients = mockClients.Object;
+            clients.Setup(m => m.send(It.IsAny<string>())).Verifiable();
+            mockClients.Setup(m => m.Client("1")).Returns(clients.Object);
+
+            hub.Context = context.Object;
+
+            var qs = new NameValueCollection();
+            qs["connectionId"] = "1";
+            context.Setup(c => c.QueryString).Returns(new NameValueCollectionWrapper(qs));
+
+            hub.SendToOneClient();
+
+            clients.VerifyAll();
+        }
+
         private class MyTestableHub : Hub
         {
             public void Send(string messages)
@@ -90,6 +116,13 @@ namespace Microsoft.AspNet.SignalR.Tests.Server.Hubs
             {
                 Clients.Client(connectionId).send(message);
             }
+
+            public void SendToOneClient()
+            {
+                string connectionId = Context.QueryString["connectionId"];
+                Clients.Client(connectionId).send("foo");
+            }
+
         }
 
         public interface IClientContract
