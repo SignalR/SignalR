@@ -485,7 +485,7 @@
             parser.href = connection.url;
             if (!parser.protocol || parser.protocol === ":") {
                 connection.protocol = window.document.location.protocol;
-                connection.host = !parser.host || parser.host === "" ? window.document.location.host : parser.host;
+                connection.host = parser.host || window.document.location.host;
             } else {
                 connection.protocol = parser.protocol;
                 connection.host = parser.host;
