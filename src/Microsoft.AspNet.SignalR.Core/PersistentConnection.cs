@@ -27,6 +27,8 @@ namespace Microsoft.AspNet.SignalR
     public abstract class PersistentConnection
     {
         private const string WebSocketsTransportName = "webSockets";
+        private const string PingJsonPayload = "{ \"Response\": \"pong\" }";
+        private const string StartJsonPayload = "{ \"Response\": \"started\" }";
         private static readonly char[] SplitChars = new[] { ':' };
         private static readonly ProtocolResolver _protocolResolver = new ProtocolResolver();
 
@@ -238,6 +240,13 @@ namespace Microsoft.AspNet.SignalR
             Connection = connection;
             string groupName = PrefixHelper.GetPersistentConnectionGroupName(DefaultSignalRaw);
             Groups = new GroupManager(connection, groupName);
+
+            // We handle /start requests after the PersistentConnection has been initialized,
+            // because ProcessStartRequest calls OnConnected.
+            if (IsStartRequest(context.Request))
+            {
+                return ProcessStartRequest(context, connectionId);
+            }
 
             Transport.Connected = () =>
             {
@@ -487,20 +496,9 @@ namespace Microsoft.AspNet.SignalR
             return TaskAsyncHelper.Empty;
         }
 
-        private Task ProcessPingRequest(HostContext context)
+        private static Task ProcessPingRequest(HostContext context)
         {
-            var payload = new
-            {
-                Response = "pong"
-            };
-
-            if (!String.IsNullOrEmpty(context.Request.QueryString["callback"]))
-            {
-                return ProcessJsonpRequest(context, payload);
-            }
-
-            context.Response.ContentType = JsonUtility.JsonMimeType;
-            return context.Response.End(JsonSerializer.Stringify(payload));
+            return SendJsonResponse(context, PingJsonPayload);
         }
 
         private Task ProcessNegotiationRequest(HostContext context)
@@ -523,13 +521,30 @@ namespace Microsoft.AspNet.SignalR
                 LongPollDelay = _configurationManager.LongPollDelay.TotalSeconds
             };
 
-            if (!String.IsNullOrEmpty(context.Request.QueryString["callback"]))
+            return SendJsonResponse(context, JsonSerializer.Stringify(payload));
+        }
+
+        private async Task ProcessStartRequest(HostContext context, string connectionId)
+        {
+            await OnConnected(context.Request, connectionId).OrEmpty();
+            await SendJsonResponse(context, StartJsonPayload);
+            Counters.ConnectionsConnected.Increment();
+        }
+
+        private static Task SendJsonResponse(HostContext context, string jsonPayload)
+        {
+            var callback = context.Request.QueryString["callback"];
+            if (String.IsNullOrEmpty(callback))
             {
-                return ProcessJsonpRequest(context, payload);
+                // Send normal JSON response
+                context.Response.ContentType = JsonUtility.JsonMimeType;
+                return context.Response.End(jsonPayload);
             }
 
-            context.Response.ContentType = JsonUtility.JsonMimeType;
-            return context.Response.End(JsonSerializer.Stringify(payload));
+            // Send JSONP response since a callback is specified by the query string
+            var callbackInvocation = JsonUtility.CreateJsonpCallback(callback, jsonPayload);
+            context.Response.ContentType = JsonUtility.JavaScriptMimeType;
+            return context.Response.End(callbackInvocation);
         }
 
         private static string GetUserIdentity(HostContext context)
@@ -541,14 +556,6 @@ namespace Microsoft.AspNet.SignalR
             return String.Empty;
         }
 
-        private Task ProcessJsonpRequest(HostContext context, object payload)
-        {
-            context.Response.ContentType = JsonUtility.JavaScriptMimeType;
-            var data = JsonUtility.CreateJsonpCallback(context.Request.QueryString["callback"], JsonSerializer.Stringify(payload));
-
-            return context.Response.End(data);
-        }
-
         private static Task FailResponse(IResponse response, string message, int statusCode = 400)
         {
             response.StatusCode = statusCode;
@@ -558,6 +565,11 @@ namespace Microsoft.AspNet.SignalR
         private static bool IsNegotiationRequest(IRequest request)
         {
             return request.LocalPath.EndsWith("/negotiate", StringComparison.OrdinalIgnoreCase);
+        }
+
+        private static bool IsStartRequest(IRequest request)
+        {
+            return request.LocalPath.EndsWith("/start", StringComparison.OrdinalIgnoreCase);
         }
 
         private static bool IsPingRequest(IRequest request)

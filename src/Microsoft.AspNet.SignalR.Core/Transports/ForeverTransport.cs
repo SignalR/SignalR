@@ -15,6 +15,8 @@ namespace Microsoft.AspNet.SignalR.Transports
     [SuppressMessage("Microsoft.Design", "CA1001:TypesThatOwnDisposableFieldsShouldBeDisposable", Justification = "The disposer is an optimization")]
     public abstract class ForeverTransport : TransportDisconnectBase, ITransport
     {
+        private static readonly ProtocolResolver _protocolResolver = new ProtocolResolver();
+
         private readonly IPerformanceCounterManager _counters;
         private readonly JsonSerializer _jsonSerializer;
         private string _lastMessageId;
@@ -197,23 +199,31 @@ namespace Microsoft.AspNet.SignalR.Transports
 
             if (IsConnectRequest)
             {
-                Func<Task> connected;
-                if (newConnection)
+                if (_protocolResolver.SupportsDelayedStart(Context.Request))
                 {
-                    connected = Connected ?? _emptyTaskFunc;
-                    _counters.ConnectionsConnected.Increment();
+                    // TODO: Ensure delegate continues to use the C# Compiler static delegate caching optimization. 
+                    initialize = () => connection.Initialize(ConnectionId);
                 }
                 else
                 {
-                    // Wait until the previous call to Connected completes.
-                    // We don't want to call Connected twice
-                    connected = () => oldConnection.ConnectTask;
-                }
+                    Func<Task> connected;
+                    if (newConnection)
+                    {
+                        connected = Connected ?? _emptyTaskFunc;
+                        _counters.ConnectionsConnected.Increment();
+                    }
+                    else
+                    {
+                        // Wait until the previous call to Connected completes.
+                        // We don't want to call Connected twice
+                        connected = () => oldConnection.ConnectTask;
+                    }
 
-                initialize = () =>
-                {
-                    return connected().Then((conn, id) => conn.Initialize(id), connection, ConnectionId);
-                };
+                    initialize = () =>
+                    {
+                        return connected().Then((conn, id) => conn.Initialize(id), connection, ConnectionId);
+                    };
+                }
             }
             else if (!IsPollRequest)
             {
