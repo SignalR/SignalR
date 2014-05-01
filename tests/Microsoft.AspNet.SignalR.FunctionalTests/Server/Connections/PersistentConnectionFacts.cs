@@ -480,7 +480,8 @@ namespace Microsoft.AspNet.SignalR.Tests
             {
                 using (var host = new MemoryHost())
                 {
-                    var conn = new MyReconnect();
+                    var reconnects = 0;
+
                     host.Configure(app =>
                     {
                         var config = new ConnectionConfiguration
@@ -496,7 +497,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                         configuration.ConnectionTimeout = TimeSpan.FromSeconds(2);
                         configuration.KeepAlive = null;
 
-                        config.Resolver.Register(typeof(MyReconnect), () => conn);
+                        config.Resolver.Register(typeof(MyReconnect), () => new MyReconnect(() => reconnects++));
                     });
 
                     var connection = new Client.Connection("http://foo/endpoint");
@@ -507,7 +508,7 @@ namespace Microsoft.AspNet.SignalR.Tests
 
                     connection.Stop();
 
-                    Assert.Equal(0, conn.Reconnects);
+                    Assert.Equal(0, reconnects);
                 }
             }
         }
