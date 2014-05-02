@@ -99,6 +99,7 @@
     <Compile Include="IHubProxy.cs" />
     <Compile Include="Infrastructure\ErrorExtensions.cs" />
     <Compile Include="Infrastructure\SignalRError.cs" />
+    <Compile Include="Infrastructure\StartException.cs" />
     <Compile Include="Infrastructure\TransportAbortHandler.cs" />
     <Compile Include="Infrastructure\TransportInitializationHandler.cs" />
     <Compile Include="Infrastructure\UrlEncoder.cs" />

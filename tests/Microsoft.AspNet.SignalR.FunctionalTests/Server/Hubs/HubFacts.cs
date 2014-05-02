@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Security.Principal;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR.Client;
 using Microsoft.AspNet.SignalR.Configuration;
@@ -69,6 +70,8 @@ namespace Microsoft.AspNet.SignalR.Tests
 
             using (var host = CreateHost(hostType, transportType))
             {
+                var mre = new ManualResetEventSlim();
+
                 host.Initialize(messageBusType: messageBusType);
 
                 HubConnection connection = CreateHubConnection(host);
@@ -77,7 +80,11 @@ namespace Microsoft.AspNet.SignalR.Tests
                 {
                     var hub = connection.CreateHubProxy("VBDemo");
 
+                    hub.On("anyMethodNameWillDo", mre.Set);
+
                     await connection.Start(host.Transport);
+
+                    Assert.True(mre.Wait(TimeSpan.FromSeconds(2)));
 
                     var originalMessage = hub.InvokeWithTimeout<string>("ReadStateValue");
 

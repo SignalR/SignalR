@@ -174,6 +174,15 @@ namespace Microsoft.AspNet.SignalR.Client {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Error during start request. Stopping the connection..
+        /// </summary>
+        internal static string Error_StartFailed {
+            get {
+                return ResourceManager.GetString("Error_StartFailed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Request failed - task cancelled..
         /// </summary>
         internal static string Error_TaskCancelledException {

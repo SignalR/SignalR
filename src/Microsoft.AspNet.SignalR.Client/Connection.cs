@@ -182,7 +182,7 @@ namespace Microsoft.AspNet.SignalR.Client
             _totalTransportConnectTimeout = TimeSpan.Zero;
 
             // Current client protocol
-            Protocol = new Version(1, 3);
+            Protocol = new Version(1, 4);
         }
 
         /// <summary>

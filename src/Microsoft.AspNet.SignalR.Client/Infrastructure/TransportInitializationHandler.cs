@@ -3,18 +3,39 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNet.SignalR.Client.Http;
+using Microsoft.AspNet.SignalR.Client.Transports;
 using Microsoft.AspNet.SignalR.Infrastructure;
+using Newtonsoft.Json.Linq;
 
 namespace Microsoft.AspNet.SignalR.Client.Infrastructure
 {
     public class TransportInitializationHandler
     {
-        private ThreadSafeInvoker _initializationInvoker;
-        private TaskCompletionSource<object> _initializationTask;
-        private IDisposable _tokenCleanup;
+        private readonly ThreadSafeInvoker _initializationInvoker;
+        private readonly TaskCompletionSource<object> _initializationTask;
+        private readonly IConnection _connection;
+        private readonly IHttpClient _httpClient;
+        private readonly string _connectionData;
+        private readonly string _transport;
+        private readonly IDisposable _tokenCleanup;
 
-        public TransportInitializationHandler(TimeSpan failureTimeout, CancellationToken disconnectToken)
+        public TransportInitializationHandler(IHttpClient httpClient,
+                                              IConnection connection,
+                                              string connectionData,
+                                              string transport,
+                                              CancellationToken disconnectToken)
         {
+            if (connection == null)
+            {
+                throw new ArgumentNullException("connection");
+            }
+
+            _connection = connection;
+            _httpClient = httpClient;
+            _connectionData = connectionData;
+            _transport = transport;
+
             _initializationTask = new TaskCompletionSource<object>();
             _initializationInvoker = new ThreadSafeInvoker();
 
@@ -28,7 +49,7 @@ namespace Microsoft.AspNet.SignalR.Client.Infrastructure
             },
             state: null);
 
-            TaskAsyncHelper.Delay(failureTimeout).Then(() =>
+            TaskAsyncHelper.Delay(connection.TotalTransportConnectTimeout).Then(() =>
             {
                 Fail(new TimeoutException(Resources.Error_TransportTimedOutTryingToConnect));
             });
@@ -44,21 +65,9 @@ namespace Microsoft.AspNet.SignalR.Client.Infrastructure
             }
         }
 
-        public void Success()
+        public void InitReceived()
         {
-            _initializationInvoker.Invoke(() =>
-            {
-#if NETFX_CORE
-                Task.Run(() =>
-#else
-                ThreadPool.QueueUserWorkItem(_ =>
-#endif
-                {
-                    _initializationTask.SetResult(null);
-                });
-
-                _tokenCleanup.Dispose();
-            });
+            _initializationInvoker.Invoke(Start);
         }
 
         public void Fail()
@@ -68,12 +77,53 @@ namespace Microsoft.AspNet.SignalR.Client.Infrastructure
 
         public void Fail(Exception ex)
         {
-            _initializationInvoker.Invoke(() =>
+            _initializationInvoker.Invoke(CompleteFail, ex);
+        }
+
+        private void Start()
+        {
+            _httpClient.GetStartResponse(_connection, _connectionData, _transport).Then(response =>
+            {
+                var started = _connection.JsonDeserializeObject<JObject>(response)["Response"];
+                if (started.ToString() == "started")
+                {
+                    CompleteStart();
+                }
+                else
+                {
+                    CompleteFail(new StartException(Resources.Error_StartFailed));
+                }
+            }).Catch(ex =>
+            {
+                CompleteFail(new StartException(Resources.Error_StartFailed, ex));
+            });
+        }
+
+        private void CompleteStart()
+        {
+            Dispatch(() => _initializationTask.SetResult(null));
+            _tokenCleanup.Dispose();
+        }
+
+        private void CompleteFail(Exception ex)
+        {
+            Dispatch(() =>
             {
                 OnFailure();
                 _initializationTask.SetException(ex);
-                _tokenCleanup.Dispose();
             });
+
+            _tokenCleanup.Dispose();
+        }
+
+        private static void Dispatch(Action callback)
+        {
+#if NETFX_CORE
+            Task.Run(() =>
+#else
+            ThreadPool.QueueUserWorkItem(_ =>
+#endif
+            callback());
         }
     }
 }

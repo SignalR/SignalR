@@ -16,7 +16,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
     public abstract class HttpBasedTransport : IClientTransport
     {
         // The send query string
-        private const string _sendQueryString = "?transport={0}&connectionData={1}&connectionToken={2}{3}";
+        private const string _sendQueryString = "?transport={0}&clientProtocol={1}&connectionData={2}&connectionToken={3}{4}";
 
         // The transport name
         private readonly string _transport;
@@ -77,7 +77,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
                 throw new ArgumentNullException("connection");
             }
 
-            var initializeHandler = new TransportInitializationHandler(connection.TotalTransportConnectTimeout, disconnectToken);
+            var initializeHandler = new TransportInitializationHandler(_httpClient, connection, connectionData, Name, disconnectToken);
 
             OnStart(connection, connectionData, disconnectToken, initializeHandler);
 
@@ -102,6 +102,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
             url += String.Format(CultureInfo.InvariantCulture,
                                 _sendQueryString,
                                 _transport,
+                                connection.Protocol,
                                 connectionData,
                                 Uri.EscapeDataString(connection.ConnectionToken),
                                 customQueryString);
