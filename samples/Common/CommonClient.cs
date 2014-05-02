@@ -210,6 +210,7 @@ namespace Microsoft.AspNet.SignalR.Client.Samples
 
             for (int messageNumber = 1; messageNumber <= callbacks; messageNumber++)
             {
+#pragma warning disable 4014
                 hubProxy.Invoke("LongRunningMethod", messageNumber).ContinueWith(task =>
                 {
                     int i = Interlocked.Increment(ref counter);
@@ -223,6 +224,7 @@ namespace Microsoft.AspNet.SignalR.Client.Samples
                         event2.Set();
                     }
                 });
+#pragma warning restore 4014
             }
 
             await Task.Factory.StartNew(() => event1.WaitOne());
