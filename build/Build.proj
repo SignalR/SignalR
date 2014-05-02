@@ -244,6 +244,9 @@
     <!-- Allow a single JS test script to be run by specifying the script via the JSTestScript property.
          Ex: MSBuild.exe .\build\Build.proj /t:RunUnitTests /p:"JSTestScript=Tests/FunctionalTests/Common/AjaxSendFacts.js" -->
     <FileUpdate Files="$(JSTestsPath)\default.html" Regex="&lt;!-- ##JS## --&gt;((.|\r|\n)*?)&lt;!-- ##JS## --&gt;" ReplacementText="&lt;!-- ##JS## --&gt;&lt;script type='text/javascript' src='$(JSTestScript)'&gt;&lt;/script&gt;&lt;!-- ##JS## --&gt;" Condition=" '$(OS)' == 'Windows_NT' And '$(JSTestScript)' != ''" />
+
+    <!-- Disable running blanket code coverage when running tests from command line -->
+    <FileUpdate Files="$(JSTestsPath)\default.html" Regex="&lt;!-- ##COVERAGE## --&gt;((.|\r|\n)*?)&lt;!-- ##COVERAGE## --&gt;" ReplacementText=" " Condition=" '$(OS)' == 'Windows_NT'" />
     
     <FileUpdate Files="$(JSTestsPath)\Build\test.config.js" Regex="/\*CMDLineTest\*/(.*?)/\*CMDLineTest\*/" ReplacementText="/*CMDLineTest*/true/*CMDLineTest*/" Condition=" '$(OS)' == 'Windows_NT'" />
 
