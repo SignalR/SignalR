@@ -42,12 +42,18 @@
   <PropertyGroup Condition="'$(PerfRun)'=='True'">
     <DefineConstants>$(DefineConstants);PERFRUN</DefineConstants>
   </PropertyGroup>
+  <Choose>   
+    <When Condition="'$(PerfRun)'=='True'">
+      <ItemGroup>
+        <Reference Include="Microsoft.VisualStudio.Diagnostics.Measurement">
+          <SpecificVersion>false</SpecificVersion>
+          <HintPath>$(PerfToolsBin)\Microsoft.VisualStudio.Diagnostics.Measurement.dll</HintPath>
+          <Private>true</Private>
+        </Reference>
+      </ItemGroup>
+    </When>
+  </Choose>
   <ItemGroup>
-    <Reference Include="Microsoft.VisualStudio.Diagnostics.Measurement" Condition="'$(PerfRun)'=='True'">
-      <SpecificVersion>false</SpecificVersion>
-      <HintPath>$(PerfToolsBin)\Microsoft.VisualStudio.Diagnostics.Measurement.dll</HintPath>
-      <Private>true</Private>
-    </Reference>
     <Reference Include="CmdLine">
       <HintPath>..\..\packages\CmdLine.1.0.7.509\lib\net40-Client\CmdLine.dll</HintPath>
     </Reference>
