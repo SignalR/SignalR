@@ -38,11 +38,13 @@ namespace Microsoft.AspNet.SignalR.Samples
             return Connection.Broadcast(DateTime.Now + ": " + user + " reconnected");
         }
 
-        protected override Task OnDisconnected(IRequest request, string connectionId)
+        protected override Task OnDisconnected(IRequest request, string connectionId, bool stopCalled)
         {
             string ignored;
             _users.TryRemove(connectionId, out ignored);
-            return Connection.Broadcast(DateTime.Now + ": " + GetUser(connectionId) + " disconnected");
+
+            string suffix = stopCalled ? "cleanly" : "uncleanly";
+            return Connection.Broadcast(DateTime.Now + ": " + GetUser(connectionId) + " disconnected " + suffix);
         }
 
         protected override Task OnReceived(IRequest request, string connectionId, string data)

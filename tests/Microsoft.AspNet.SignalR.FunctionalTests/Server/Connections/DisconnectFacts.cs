@@ -150,7 +150,7 @@ namespace Microsoft.AspNet.SignalR.Tests
         }
 
         [Fact]
-        public async Task FarmDisconnectOnlyRaisesEventOnce()
+        public async Task FarmDisconnectOnlyRaisesUncleanDisconnects()
         {
             EnableTracing();
 
@@ -202,14 +202,15 @@ namespace Microsoft.AspNet.SignalR.Tests
 
                 await Task.Delay(TimeSpan.FromTicks(timeout.Ticks * nodes.Count));
 
-                Assert.Equal(1, nodes.Sum(n => n.Connection.DisconnectCount));
+                Assert.Equal(0, FarmConnection.OldOnDisconnectedCalls);
+                Assert.Equal(0, FarmConnection.CleanDisconnectCount);
+                Assert.Equal(3, FarmConnection.UncleanDisconnectCount);
             }
         }
 
         private class ServerNode
         {
             public MemoryHost Server { get; private set; }
-            public FarmConnection Connection { get; private set; }
             public IDependencyResolver Resolver { get; private set; }
 
             private IConnection _connection;
@@ -218,10 +219,9 @@ namespace Microsoft.AspNet.SignalR.Tests
             {
                 // Give each server it's own dependency resolver
                 Server = new MemoryHost();
-                Connection = new FarmConnection();
                 Resolver = new DefaultDependencyResolver();
 
-                Resolver.Register(typeof(FarmConnection), () => Connection);
+                Resolver.Register(typeof(FarmConnection), () => new FarmConnection());
                 Resolver.Register(typeof(IMessageBus), () => bus);
 
                 var context = Resolver.Resolve<IConnectionManager>().GetConnectionContext<FarmConnection>();
@@ -271,12 +271,28 @@ namespace Microsoft.AspNet.SignalR.Tests
 
         private class FarmConnection : PersistentConnection
         {
-            public int DisconnectCount { get; set; }
+            public static int CleanDisconnectCount { get; set; }
+            public static int UncleanDisconnectCount { get; set; }
+            public static int OldOnDisconnectedCalls { get; set; }
 
             protected override Task OnDisconnected(IRequest request, string connectionId)
             {
-                DisconnectCount++;
+                OldOnDisconnectedCalls++;
                 return base.OnDisconnected(request, connectionId);
+            }
+
+            protected override Task OnDisconnected(IRequest request, string connectionId, bool stopCalled)
+            {
+                if (stopCalled)
+                {
+                    CleanDisconnectCount++;
+                }
+                else
+                {
+                    UncleanDisconnectCount++;
+                }
+
+                return base.OnDisconnected(request, connectionId, stopCalled);
             }
 
             protected override Task OnReceived(IRequest request, string connectionId, string data)
