@@ -214,7 +214,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Server.Transports
         }
 
         [Fact]
-        public void ReceiveDisconnectBeforeCancellationSetup()
+        public void ReceiveAbortBeforeCancellationSetup()
         {
             var response = new Mock<IResponse>();
             response.Setup(m => m.CancellationToken).Returns(CancellationToken.None);
@@ -230,6 +230,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Server.Transports
             var transportConnection = new Mock<ITransportConnection>();
             var traceManager = new Mock<ITraceManager>();
             counters.SetupGet(m => m.ConnectionsConnected).Returns(new NoOpPerformanceCounter());
+            counters.SetupGet(m => m.ConnectionsDisconnected).Returns(new NoOpPerformanceCounter());
             traceManager.Setup(m => m[It.IsAny<string>()]).Returns(new System.Diagnostics.TraceSource("foo"));
 
             Func<PersistentResponse, object, Task<bool>> callback = null;
@@ -248,7 +249,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Server.Transports
                                                          callback = cb;
                                                          state = st;
 
-                                                         bool result = await cb(new PersistentResponse() { Disconnect = true }, st);
+                                                         bool result = await cb(new PersistentResponse() { Aborted = true } , st);
 
                                                          if (!result)
                                                          {

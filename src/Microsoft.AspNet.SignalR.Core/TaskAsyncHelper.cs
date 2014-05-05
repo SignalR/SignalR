@@ -93,21 +93,6 @@ namespace Microsoft.AspNet.SignalR
         }
 
         [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode", Justification = "This is a shared file")]
-        public static Task Series(Func<object, Task>[] tasks, object[] state)
-        {
-            Task prev = TaskAsyncHelper.Empty;
-            Task finalTask = TaskAsyncHelper.Empty;
-
-            for (int i = 0; i < tasks.Length; i++)
-            {
-                prev = finalTask;
-                finalTask = prev.Then(tasks[i], state[i]);
-            }
-
-            return finalTask;
-        }
-
-        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode", Justification = "This is a shared file")]
         public static TTask Catch<TTask>(this TTask task) where TTask : Task
         {
             return Catch(task, ex => { });

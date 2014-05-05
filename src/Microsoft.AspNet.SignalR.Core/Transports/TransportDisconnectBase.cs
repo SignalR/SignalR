@@ -251,16 +251,15 @@ namespace Microsoft.AspNet.SignalR.Transports
 
         public Task Disconnect()
         {
-            // Ensure delegate continues to use the C# Compiler static delegate caching optimization.
-            return Abort(clean: false).Then(transport => transport.Connection.Close(transport.ConnectionId), this);
+            return Abort(clean: false);
         }
 
-        public Task Abort()
+        protected Task Abort()
         {
             return Abort(clean: true);
         }
 
-        public Task Abort(bool clean)
+        private Task Abort(bool clean)
         {
             if (clean)
             {

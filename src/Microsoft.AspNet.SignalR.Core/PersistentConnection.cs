@@ -33,7 +33,6 @@ namespace Microsoft.AspNet.SignalR
         private IConfigurationManager _configurationManager;
         private ITransportManager _transportManager;
         private bool _initialized;
-        private IServerCommandHandler _serverMessageHandler;
 
         public virtual void Initialize(IDependencyResolver resolver)
         {
@@ -57,7 +56,6 @@ namespace Microsoft.AspNet.SignalR
 
             _configurationManager = resolver.Resolve<IConfigurationManager>();
             _transportManager = resolver.Resolve<ITransportManager>();
-            _serverMessageHandler = resolver.Resolve<IServerCommandHandler>();
 
             _initialized = true;
         }
@@ -240,17 +238,6 @@ namespace Microsoft.AspNet.SignalR
             Connection = connection;
             string groupName = PrefixHelper.GetPersistentConnectionGroupName(DefaultSignalRaw);
             Groups = new GroupManager(connection, groupName);
-
-            Transport.TransportConnected = () =>
-            {
-                var command = new ServerCommand
-                {
-                    ServerCommandType = ServerCommandType.RemoveConnection,
-                    Value = connectionId
-                };
-
-                return _serverMessageHandler.SendCommand(command);
-            };
 
             Transport.Connected = () =>
             {

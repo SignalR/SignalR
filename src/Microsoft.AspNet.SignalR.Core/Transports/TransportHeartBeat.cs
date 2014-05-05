@@ -21,9 +21,7 @@ namespace Microsoft.AspNet.SignalR.Transports
         private readonly ConcurrentDictionary<string, ConnectionMetadata> _connections = new ConcurrentDictionary<string, ConnectionMetadata>();
         private readonly Timer _timer;
         private readonly IConfigurationManager _configurationManager;
-        private readonly IServerCommandHandler _serverCommandHandler;
         private readonly TraceSource _trace;
-        private readonly string _serverId;
         private readonly IPerformanceCounterManager _counters;
         private readonly object _counterLock = new object();
 
@@ -37,14 +35,10 @@ namespace Microsoft.AspNet.SignalR.Transports
         public TransportHeartbeat(IDependencyResolver resolver)
         {
             _configurationManager = resolver.Resolve<IConfigurationManager>();
-            _serverCommandHandler = resolver.Resolve<IServerCommandHandler>();
-            _serverId = resolver.Resolve<IServerIdManager>().ServerId;
             _counters = resolver.Resolve<IPerformanceCounterManager>();
 
             var traceManager = resolver.Resolve<ITraceManager>();
             _trace = traceManager["SignalR.Transports.TransportHeartBeat"];
-
-            _serverCommandHandler.Command = ProcessServerCommand;
 
             // REVIEW: When to dispose the timer?
             _timer = new Timer(Beat,
@@ -58,31 +52,6 @@ namespace Microsoft.AspNet.SignalR.Transports
             get
             {
                 return _trace;
-            }
-        }
-
-        private void ProcessServerCommand(ServerCommand command)
-        {
-            switch (command.ServerCommandType)
-            {
-                case ServerCommandType.RemoveConnection:
-                    // Only remove connections if this command didn't originate from the owner
-                    if (!command.IsFromSelf(_serverId))
-                    {
-                        var connectionId = (string)command.Value;
-
-                        // Remove the connection
-                        ConnectionMetadata metadata;
-                        if (_connections.TryGetValue(connectionId, out metadata))
-                        {
-                            metadata.Connection.End();
-
-                            RemoveConnection(metadata.Connection);
-                        }
-                    }
-                    break;
-                default:
-                    break;
             }
         }
 

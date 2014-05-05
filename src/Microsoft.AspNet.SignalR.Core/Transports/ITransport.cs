@@ -23,11 +23,6 @@ namespace Microsoft.AspNet.SignalR.Transports
         Func<Task> Connected { get; set; }
 
         /// <summary>
-        /// Gets or sets a callback that is invoked when the transport connects.
-        /// </summary>
-        Func<Task> TransportConnected { get; set; }
-
-        /// <summary>
         /// Gets or sets a callback that is invoked when the transport reconnects.
         /// </summary>
         Func<Task> Reconnected { get; set; }

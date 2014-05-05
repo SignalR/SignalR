@@ -82,8 +82,6 @@ namespace Microsoft.AspNet.SignalR.Transports
 
         public Func<string, Task> Received { get; set; }
 
-        public Func<Task> TransportConnected { get; set; }
-
         public Func<Task> Connected { get; set; }
 
         public Func<Task> Reconnected { get; set; }
@@ -223,16 +221,9 @@ namespace Microsoft.AspNet.SignalR.Transports
                 _counters.ConnectionsReconnected.Increment();
             }
 
-            var series = new Func<object, Task>[]
-            { 
-                state => ((Func<Task>)state).Invoke(),
-                state => ((Func<Task>)state).Invoke()
-            };
+            initialize = initialize ?? _emptyTaskFunc;
 
-            var states = new object[] { TransportConnected ?? _emptyTaskFunc,
-                                        initialize ?? _emptyTaskFunc };
-
-            Func<Task> fullInit = () => TaskAsyncHelper.Series(series, states).ContinueWith(_connectTcs);
+            Func<Task> fullInit = () => initialize().ContinueWith(_connectTcs);
 
             return ProcessMessages(connection, fullInit);
         }
@@ -316,14 +307,7 @@ namespace Microsoft.AspNet.SignalR.Transports
 
             response.Reconnect = HostShutdownToken.IsCancellationRequested;
 
-            // If we're telling the client to disconnect then clean up the instantiated connection.
-            if (response.Disconnect)
-            {
-                // Send the response before removing any connection data
-                return Send(response).Then(state => ((ForeverTransport)state).OnDisconnectMessage(), this)
-                                        .Then(() => TaskAsyncHelper.False);
-            }
-            else if (IsTimedOut || response.Aborted)
+            if (IsTimedOut || response.Aborted)
             {
                 _busRegistration.Dispose();
 
@@ -344,16 +328,6 @@ namespace Microsoft.AspNet.SignalR.Transports
 
             // Ensure delegate continues to use the C# Compiler static delegate caching optimization.
             return Send(response).Then(() => TaskAsyncHelper.True);
-        }
-
-        private void OnDisconnectMessage()
-        {
-            ApplyState(TransportConnectionStates.DisconnectMessageReceived);
-
-            _busRegistration.Dispose();
-
-            // Remove connection without triggering disconnect
-            Heartbeat.RemoveConnection(this);
         }
 
         private static Task PerformSend(object state)
