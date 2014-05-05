@@ -49,9 +49,9 @@ namespace Microsoft.AspNet.SignalR.Hubs
             return Pipeline.Reconnect(hub);
         }
 
-        public Task Disconnect(IHub hub)
+        public Task Disconnect(IHub hub, bool stopCalled)
         {
-            return Pipeline.Disconnect(hub);
+            return Pipeline.Disconnect(hub, stopCalled);
         }
 
         public bool AuthorizeConnect(HubDescriptor hubDescriptor, IRequest request)
@@ -75,7 +75,7 @@ namespace Microsoft.AspNet.SignalR.Hubs
             public Func<IHubIncomingInvokerContext, Task<object>> Invoke;
             public Func<IHub, Task> Connect;
             public Func<IHub, Task> Reconnect;
-            public Func<IHub, Task> Disconnect;
+            public Func<IHub, bool, Task> Disconnect;
             public Func<HubDescriptor, IRequest, bool> AuthorizeConnect;
             public Func<HubDescriptor, IRequest, IList<string>, IList<string>> RejoiningGroups;
             public Func<IHubOutgoingInvokerContext, Task> Send;
@@ -86,7 +86,7 @@ namespace Microsoft.AspNet.SignalR.Hubs
                 Invoke = Compose<Func<IHubIncomingInvokerContext, Task<object>>>(modules, (m, f) => m.BuildIncoming(f))(HubDispatcher.Incoming);
                 Connect = Compose<Func<IHub, Task>>(modules, (m, f) => m.BuildConnect(f))(HubDispatcher.Connect);
                 Reconnect = Compose<Func<IHub, Task>>(modules, (m, f) => m.BuildReconnect(f))(HubDispatcher.Reconnect);
-                Disconnect = Compose<Func<IHub, Task>>(modules, (m, f) => m.BuildDisconnect(f))(HubDispatcher.Disconnect);
+                Disconnect = Compose<Func<IHub, bool, Task>>(modules, (m, f) => m.BuildDisconnect(f))(HubDispatcher.Disconnect);
                 AuthorizeConnect = Compose<Func<HubDescriptor, IRequest, bool>>(modules, (m, f) => m.BuildAuthorizeConnect(f))((h, r) => true);
                 RejoiningGroups = Compose<Func<HubDescriptor, IRequest, IList<string>, IList<string>>>(modules, (m, f) => m.BuildRejoiningGroups(f))((h, r, g) => g);
                 Send = Compose<Func<IHubOutgoingInvokerContext, Task>>(modules, (m, f) => m.BuildOutgoing(f))(HubDispatcher.Outgoing);

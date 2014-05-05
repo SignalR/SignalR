@@ -30,10 +30,24 @@ namespace Microsoft.AspNet.SignalR.Hubs
         public IGroupManager Groups { get; set; }
 
         /// <summary>
-        /// Called when a connection disconnects from this hub instance.
+        /// Called when a connection has disconnected gracefully from this hub instance,
+        /// i.e. stop was called on the client.
         /// </summary>
         /// <returns>A <see cref="Task"/></returns>
         public virtual Task OnDisconnected()
+        {
+            return TaskAsyncHelper.Empty;
+        }
+
+        /// <summary>
+        /// Called when a connection disconnects from this hub instance.
+        /// </summary>
+        /// <param name="stopCalled">
+        /// true, if stop was called on the client closing the connection gracefully;
+        /// false, if the client timed out. Timeouts can be caused by clients reconnecting to another SignalR server in scaleout.
+        /// </param>
+        /// <returns>A <see cref="Task"/></returns>
+        public virtual Task OnDisconnected(bool stopCalled)
         {
             return TaskAsyncHelper.Empty;
         }

@@ -55,9 +55,15 @@ namespace Microsoft.AspNet.SignalR.Hubs
         /// <see cref="IHub"/> the client was connected to. By default, this results in the <see cref="IHub"/>'s
         /// OnDisconnected method being invoked.
         /// </summary>
-        /// <param name="disconnect">A function to be called when a client disconnects from a hub.</param>
+        /// <param name="disconnect">
+        /// <para>A task-returning function to be called when a client disconnects from a hub.</para>
+        /// <para>This function takes two parameters:</para>
+        /// <para>1. The <see cref="IHub"/> is being disconnected from.</para>
+        /// <para>2. A boolean, stopCalled, that is true if stop was called on the client and false if the client timed out.
+        ///          Timeouts can be caused by clients reconnecting to another SignalR server in scaleout.</para>
+        /// </param>
         /// <returns>A wrapped function to be called when a client disconnects from a hub.</returns>
-        Func<IHub, Task> BuildDisconnect(Func<IHub, Task> disconnect);
+        Func<IHub, bool, Task> BuildDisconnect(Func<IHub, bool, Task> disconnect);
         
         /// <summary>
         /// Wraps a function to be called before a client subscribes to signals belonging to the hub described by the
