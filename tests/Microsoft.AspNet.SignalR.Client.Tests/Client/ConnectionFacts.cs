@@ -382,5 +382,28 @@ namespace Microsoft.AspNet.SignalR.Client.Tests
                 Assert.True(errorCalledResetEvent.Wait(1000), "OnError not called");
             }
         }
+        
+        [Fact]
+        public void OnReconnectingExplicitImplementationCallsIntoProtectedOnReconnecting()
+        {
+            var connectionFake = new HubConnectionFake();
+            ((IConnection)connectionFake).OnReconnecting();
+            Assert.True(connectionFake.OnReconnectingInvoked);
+        }
+
+        private class HubConnectionFake : HubConnection
+        {
+            public HubConnectionFake()
+                : base("http://fakeurl")
+            {
+            }
+
+            public bool OnReconnectingInvoked { get; private set; }
+
+            internal override void OnReconnecting()
+            {
+                OnReconnectingInvoked = true;
+            }
+        }
     }
 }

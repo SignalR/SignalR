@@ -812,7 +812,12 @@ namespace Microsoft.AspNet.SignalR.Client
             OnError(error);
         }
 
-        public virtual void OnReconnecting()
+        void IConnection.OnReconnecting()
+        {
+            OnReconnecting();
+        }
+
+        internal virtual void OnReconnecting()
         {
             // Only allow the client to attempt to reconnect for a _disconnectTimout TimeSpan which is set by
             // the server during negotiation.
