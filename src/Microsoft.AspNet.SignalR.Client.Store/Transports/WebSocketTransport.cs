@@ -8,6 +8,11 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
 {
     public class WebSocketTransport : IClientTransport
     {
+        ~WebSocketTransport()
+        {
+            Dispose(false);
+        }
+
         public string Name
         {
             get { return "webSockets"; }
@@ -15,7 +20,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
 
         public bool SupportsKeepAlive
         {
-            get { throw new NotImplementedException(); }
+            get { return true; }
         }
 
         public Task<NegotiationResponse> Negotiate(IConnection connection, string connectionData)
@@ -45,7 +50,13 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
 
         public void Dispose()
         {
-            throw new NotImplementedException();
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            
         }
     }
 }

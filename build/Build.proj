@@ -24,7 +24,7 @@
     <NuGetToolsPath>$(ProjectRoot)\.nuget</NuGetToolsPath>
     <NuGetExePath>$(NuGetToolsPath)\nuget.exe</NuGetExePath>
     <ToolsPath>$(ProjectRoot)\tools\</ToolsPath>
-    <XunitPath>$(ToolsPath)xunit\</XunitPath>
+    <XunitPath>$(ProjectRoot)\packages\xunit.runners.2.0.0-beta-build2650\tools\</XunitPath>
     <ChutzpahExe>chutzpah.console.exe</ChutzpahExe>
     <ChutzpahPath>$(ProjectRoot)\tools\chutzpah</ChutzpahPath>
     <ChutzpahExePath>$(ChutzpahPath)\$(ChutzpahExe)</ChutzpahExePath>
@@ -82,8 +82,6 @@
     <Projects Include="$(ProjectRoot)\src\Microsoft.AspNet.SignalR.Client.Portable\Microsoft.AspNet.SignalR.Client.Portable.csproj">
       <Build Condition="!$(WP8SDKInstalled)">false</Build>
       <Platform>portable-net45+sl5+netcore45+wp8+wp81+wpa81</Platform>
-      <!-- HttpClient causes issues with running FxCop on the SL5 and WP8 clients -->
-      <RunFxCop>false</RunFxCop>
     </Projects>
     <!-- The SignalR .NET client is the only remaining project that targets .NET 4.0 starting in SignalR 2.0 -->
     <Projects Include="$(ProjectRoot)\src\Microsoft.AspNet.SignalR.Client\Microsoft.AspNet.SignalR.Client.csproj">
@@ -151,6 +149,7 @@
     <UnitTestProjects Include="$(ProjectRoot)\tests\Microsoft.AspNet.SignalR.Tests\Microsoft.AspNet.SignalR.Tests.csproj"></UnitTestProjects>
     <UnitTestProjects Include="$(ProjectRoot)\tests\Microsoft.AspNet.SignalR.Client.Tests\Microsoft.AspNet.SignalR.Client.Tests.csproj"></UnitTestProjects>
     <UnitTestProjects Include="$(ProjectRoot)\tests\Microsoft.AspNet.SignalR.SqlServer.Tests\Microsoft.AspNet.SignalR.SqlServer.Tests.csproj"></UnitTestProjects>
+    <UnitTestProjects Include="$(ProjectRoot)\tests\Microsoft.AspNet.SignalR.Client.Store.Tests\Microsoft.AspNet.SignalR.Client.Store.Tests.csproj"></UnitTestProjects>
   </ItemGroup>
 
   <ItemGroup>
@@ -254,24 +253,27 @@
 
     <Exec Command="&quot;$(ChutzpahExePath)&quot; &quot;$(JSTester)&quot; /showFailureReport /silent /timeoutMilliseconds 30000" Condition=" '$(OS)' == 'Windows_NT'" />
 
-    <xunit Assembly="$(ProjectArtifactsDir)\Microsoft.AspNet.SignalR.Tests\Microsoft.AspNet.SignalR.Tests.dll"
+    <xunit Assemblies="$(ProjectArtifactsDir)\Microsoft.AspNet.SignalR.Tests\Microsoft.AspNet.SignalR.Tests.dll"
            Xml="$(TestResultsPath)\Microsoft.AspNet.SignalR.Tests.XunitResults.xml"
            Verbose="true" />
-
-    <xunit Assembly="$(ProjectArtifactsDir)\Microsoft.AspNet.SignalR.Client.Tests\Microsoft.AspNet.SignalR.Client.Tests.dll"
+    <xunit Assemblies="$(ProjectArtifactsDir)\Microsoft.AspNet.SignalR.Client.Tests\Microsoft.AspNet.SignalR.Client.Tests.dll"
        Xml="$(TestResultsPath)\Microsoft.AspNet.SignalR.Client.Tests.XunitResults.xml"
        Verbose="true" />
 
-    <xunit Assembly="$(ProjectArtifactsDir)\Microsoft.AspNet.SignalR.SqlServer.Tests\Microsoft.AspNet.SignalR.SqlServer.Tests.dll"
+    <xunit Assemblies="$(ProjectArtifactsDir)\Microsoft.AspNet.SignalR.SqlServer.Tests\Microsoft.AspNet.SignalR.SqlServer.Tests.dll"
            Xml="$(TestResultsPath)\Microsoft.AspNet.SignalR.SqlServer.Tests.XunitResults.xml"
            Verbose="true" />
+
+    <xunit Assemblies="$(ProjectArtifactsDir)\Microsoft.AspNet.SignalR.Client.Store.Tests\Microsoft.AspNet.SignalR.Client.Store.Tests.dll"
+           Xml="$(TestResultsPath)\Microsoft.AspNet.SignalR.Client.Store.Tests.XunitResults.xml"
+           Verbose="true" />           
 
     <CallTarget Targets="KillIISExpress" Condition=" '$(OS)' == 'Windows_NT'" />
     <OnError ExecuteTargets="KillIISExpress" Condition=" '$(OS)' == 'Windows_NT'" />
   </Target>
 
   <Target Name="RunFunctionalTests" DependsOnTargets="BuildNetFunctionalTests">
-    <xunit Assembly="$(ProjectArtifactsDir)\Microsoft.AspNet.SignalR.FunctionalTests\bin\Microsoft.AspNet.SignalR.FunctionalTests.dll"
+    <xunit Assemblies="$(ProjectArtifactsDir)\Microsoft.AspNet.SignalR.FunctionalTests\bin\Microsoft.AspNet.SignalR.FunctionalTests.dll"
            Xml="$(TestResultsPath)\Microsoft.AspNet.SignalR.FunctionalTests.XunitResults.xml"
            Verbose="true" />
 

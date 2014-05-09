@@ -30,6 +30,8 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
         }
 
 #if !(NETFX_CORE || NET45)
+
+        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode", Justification = "This is a shared class.")]
         private static Func<IAsyncResult, object> WrapEndWrite(Stream stream)
         {
             return ar =>

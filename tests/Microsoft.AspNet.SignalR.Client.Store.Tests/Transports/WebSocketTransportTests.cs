@@ -12,5 +12,11 @@ namespace Microsoft.AspNet.SignalR.Client.Store.Transports
         {
             Assert.Equal("webSockets", new WebSocketTransport().Name);
         }
+
+        [Fact]
+        public void SupportsKeepAliveReturnsTrue()
+        {
+            Assert.True(new WebSocketTransport().SupportsKeepAlive);
+        }
     }
 }
