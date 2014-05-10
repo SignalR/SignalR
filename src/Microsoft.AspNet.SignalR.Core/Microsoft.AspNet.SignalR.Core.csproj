@@ -189,10 +189,7 @@
     <Compile Include="Hubs\Lookup\IHubManager.cs" />
     <Compile Include="Infrastructure\IConnectionManager.cs" />
     <Compile Include="DefaultDependencyResolver.cs" />
-    <Compile Include="Infrastructure\IServerIdManager.cs" />
-    <Compile Include="Infrastructure\ServerIdManager.cs" />
     <Compile Include="IPersistentConnectionContext.cs" />
-    <Compile Include="Infrastructure\IServerCommandHandler.cs" />
     <Compile Include="Json\JsonSerializerExtensions.cs" />
     <Compile Include="Messaging\Cursor.cs" />
     <Compile Include="Infrastructure\IStringMinifier.cs" />
@@ -271,9 +268,6 @@
     <Compile Include="Transports\ITransportConnection.cs" />
     <Compile Include="Json\JsonUtility.cs" />
     <Compile Include="GroupManager.cs" />
-    <Compile Include="Infrastructure\ServerCommand.cs" />
-    <Compile Include="Infrastructure\ServerCommandType.cs" />
-    <Compile Include="Infrastructure\ServerCommandHandler.cs" />
     <Compile Include="Messaging\Command.cs" />
     <Compile Include="Resources.Designer.cs">
       <AutoGen>True</AutoGen>

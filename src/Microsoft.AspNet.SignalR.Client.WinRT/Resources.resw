@@ -153,6 +153,9 @@
   <data name="Error_ServerNegotiationFailed" xml:space="preserve">
     <value>Server negotiation failed.</value>
   </data>
+  <data name="Error_StartFailed" xml:space="preserve">
+    <value>Error during start request. Stopping the connection.</value>
+  </data>
   <data name="Error_TaskCancelledException" xml:space="preserve">
     <value>Request failed - task cancelled.</value>
   </data>

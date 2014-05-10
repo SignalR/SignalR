@@ -9,9 +9,10 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
         private const string ProtocolQueryParameter = "clientProtocol";
         private readonly Version _minSupportedProtocol;
         private readonly Version _maxSupportedProtocol;
+        private readonly Version _minimumDelayedStartVersion = new Version(1, 4);
 
         public ProtocolResolver() :
-            this(new Version(1, 2), new Version(1, 3))
+            this(new Version(1, 2), new Version(1, 4))
         {
         }
 
@@ -43,6 +44,11 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
             }
 
             return clientProtocol ?? _minSupportedProtocol;
+        }
+
+        public bool SupportsDelayedStart(IRequest request)
+        {
+            return Resolve(request) >= _minimumDelayedStartVersion;
         }
     }
 }

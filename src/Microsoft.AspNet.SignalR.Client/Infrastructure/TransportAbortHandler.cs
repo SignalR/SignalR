@@ -14,7 +14,7 @@ namespace Microsoft.AspNet.SignalR.Client.Infrastructure
     public sealed class TransportAbortHandler : IDisposable
     {
         // The abort query string
-        private const string _abortQueryString = "?transport={0}&connectionData={1}&connectionToken={2}{3}";
+        private const string _abortQueryString = "?transport={0}&clientProtocol={1}&connectionData={2}&connectionToken={3}{4}";
 
         // The transport name
         private readonly string _transportName;
@@ -73,6 +73,7 @@ namespace Microsoft.AspNet.SignalR.Client.Infrastructure
                     string url = connection.Url + "abort" + String.Format(CultureInfo.InvariantCulture,
                                                                           _abortQueryString,
                                                                           _transportName,
+                                                                          connection.Protocol,
                                                                           connectionData,
                                                                           Uri.EscapeDataString(connectionToken),
                                                                           null);

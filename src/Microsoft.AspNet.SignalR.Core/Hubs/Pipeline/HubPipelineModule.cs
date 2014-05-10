@@ -103,15 +103,21 @@ namespace Microsoft.AspNet.SignalR.Hubs
         /// <see cref="IHub"/> the client was connected to. By default, this results in the <see cref="IHub"/>'s
         /// OnDisconnected method being invoked.
         /// </summary>
-        /// <param name="disconnect">A function to be called when a client disconnects from a hub.</param>
+        /// <param name="disconnect">
+        /// <para>A task-returning function to be called when a client disconnects from a hub.</para>
+        /// <para>This function takes two parameters:</para>
+        /// <para>1. The <see cref="IHub"/> is being disconnected from.</para>
+        /// <para>2. A boolean, stopCalled, that is true if stop was called on the client and false if the client timed out.
+        ///          Timeouts can be caused by clients reconnecting to another SignalR server in scaleout.</para>
+        /// </param>
         /// <returns>A wrapped function to be called when a client disconnects from a hub.</returns>
-        public virtual Func<IHub, Task> BuildDisconnect(Func<IHub, Task> disconnect)
+        public virtual Func<IHub, bool, Task> BuildDisconnect(Func<IHub, bool, Task> disconnect)
         {
-            return hub =>
+            return (hub, stopCalled) =>
             {
-                if (OnBeforeDisconnect(hub))
+                if (OnBeforeDisconnect(hub, stopCalled))
                 {
-                    return disconnect(hub).OrEmpty().Then(h => OnAfterDisconnect(h), hub);
+                    return disconnect(hub, stopCalled).OrEmpty().Then((h, s) => OnAfterDisconnect(h, s), hub, stopCalled);
                 }
 
                 return TaskAsyncHelper.Empty;
@@ -265,25 +271,33 @@ namespace Microsoft.AspNet.SignalR.Hubs
 
         /// <summary>
         /// This method is called before the disconnect components of any modules added later to the <see cref="IHubPipeline"/> are
-        /// executed. If this returns false, then those later-added modules and the <see cref="IHub.OnDisconnected"/> method will
+        /// executed. If this returns false, then those later-added modules and the <see cref="IHub.OnDisconnected(bool)"/> method will
         /// not be run.
         /// </summary>
         /// <param name="hub">The hub the client has disconnected from.</param>
+        /// <param name="stopCalled">
+        /// true, if stop was called on the client closing the connection gracefully;
+        /// false, if the client timed out. Timeouts can be caused by clients reconnecting to another SignalR server in scaleout.
+        /// </param>
         /// <returns>
-        /// true, if the disconnect components of later added modules and the <see cref="IHub.OnDisconnected"/> method should be executed;
+        /// true, if the disconnect components of later added modules and the <see cref="IHub.OnDisconnected(bool)"/> method should be executed;
         /// false, otherwise.
         /// </returns>
-        protected virtual bool OnBeforeDisconnect(IHub hub)
+        protected virtual bool OnBeforeDisconnect(IHub hub, bool stopCalled)
         {
             return true;
         }
 
         /// <summary>
         /// This method is called after the disconnect components of any modules added later to the <see cref="IHubPipeline"/> are
-        /// executed and after <see cref="IHub.OnDisconnected"/> is executed, if at all.
+        /// executed and after <see cref="IHub.OnDisconnected(bool)"/> is executed, if at all.
         /// </summary>
         /// <param name="hub">The hub the client has disconnected from.</param>
-        protected virtual void OnAfterDisconnect(IHub hub)
+        /// <param name="stopCalled">
+        /// true, if stop was called on the client closing the connection gracefully;
+        /// false, if the client timed out. Timeouts can be caused by clients reconnecting to another SignalR server in scaleout.
+        /// </param>
+        protected virtual void OnAfterDisconnect(IHub hub, bool stopCalled)
         {
 
         }

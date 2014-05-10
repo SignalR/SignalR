@@ -32,7 +32,8 @@ namespace Microsoft.AspNet.SignalR.Tests
             {
                 host.Initialize(transportConnectTimeout: 1, messageBusType: messageBusType);
 
-                HubConnection hubConnection = CreateHubConnection(host);
+                HubConnection hubConnection = CreateHubConnection(host, "/no-init");
+
                 IHubProxy proxy = hubConnection.CreateHubProxy("DelayedOnConnectedHub");
 
                 using (hubConnection)
@@ -98,7 +99,7 @@ namespace Microsoft.AspNet.SignalR.Tests
             {
                 host.Initialize(transportConnectTimeout: 1, messageBusType: messageBusType);
 
-                HubConnection hubConnection = CreateHubConnection(host);
+                HubConnection hubConnection = CreateHubConnection(host, "/no-init");
                 IHubProxy proxy = hubConnection.CreateHubProxy("DelayedOnConnectedHub");
 
                 using (hubConnection)
@@ -694,7 +695,7 @@ namespace Microsoft.AspNet.SignalR.Tests
 
                     try
                     {
-                        await proxy.Invoke("EchoCallback", "message");
+                        await proxy.Invoke("EchoAndDelayCallback", "message");
                         Assert.True(false, "The hub method invocation should fail.");
                     }
                     catch (InvalidOperationException)

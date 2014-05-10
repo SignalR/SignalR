@@ -5,6 +5,7 @@ using System.Net.WebSockets;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR.Client.Http;
+using Microsoft.AspNet.SignalR.Client.Infrastructure;
 using Microsoft.AspNet.SignalR.Client.Transports;
 using Moq;
 using Newtonsoft.Json;
@@ -20,7 +21,7 @@ namespace Microsoft.AspNet.SignalR.Client.Tests
         [InlineData("bob=12345", "&bob=12345")]
         [InlineData("bob=12345&foo=leet&baz=laskjdflsdk", "&bob=12345&foo=leet&baz=laskjdflsdk")]
         [InlineData("", "")]
-        [InlineData(null, "?transport=&connectionToken=")]
+        [InlineData(null, "&connectionToken=")]
         [InlineData("?foo=bar", "?foo=bar")]
         [InlineData("?foo=bar&baz=bear", "?foo=bar&baz=bear")]
         [InlineData("&foo=bar", "&foo=bar")]
@@ -135,6 +136,32 @@ namespace Microsoft.AspNet.SignalR.Client.Tests
         }
 
         [Fact]
+        public void StartExceptionStopsAutoTransportFallback()
+        {
+            var errorTcs = new TaskCompletionSource<IResponse>();
+            errorTcs.SetException(new StartException());
+
+            var failingTransport = new Mock<IClientTransport>();
+            failingTransport.Setup(t => t.Start(It.IsAny<IConnection>(), It.IsAny<string>(), CancellationToken.None))
+                .Returns(errorTcs.Task)
+                .Verifiable();
+
+            var unusedTransport = new Mock<IClientTransport>();
+
+            var transports = new List<IClientTransport>();
+            transports.Add(failingTransport.Object);
+            transports.Add(unusedTransport.Object);
+
+            var autoTransport = new AutoTransport(new DefaultHttpClient(), transports);
+            var startTask = autoTransport.Start(new Connection("http://foo"), string.Empty, CancellationToken.None);
+
+            failingTransport.Verify();
+            unusedTransport.Verify(t => t.Start(It.IsAny<IConnection>(), It.IsAny<string>(), CancellationToken.None), Times.Never());
+
+            Assert.IsType(typeof(StartException), startTask.Exception.InnerException);
+        }
+
+        [Fact]
         public void CancelledTaskHandledinLongPolling()
         {
             var tcs = new TaskCompletionSource<IResponse>();
@@ -212,6 +239,7 @@ namespace Microsoft.AspNet.SignalR.Client.Tests
 
                     connection.Setup(c => c.Trace(TraceLevels.Messages, It.IsAny<string>(), It.IsAny<object[]>()));
                     connection.SetupGet(c => c.Url).Returns("");
+                    connection.SetupGet(c => c.Protocol).Returns(new Version());
                     connection.SetupGet(c => c.QueryString).Returns("");
                     connection.SetupGet(c => c.ConnectionToken).Returns("");
                     connection.SetupGet(c => c.JsonSerializer).Returns(JsonSerializer.CreateDefault());

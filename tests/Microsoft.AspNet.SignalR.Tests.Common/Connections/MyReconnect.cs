@@ -8,7 +8,17 @@ namespace Microsoft.AspNet.SignalR.Tests.Common
 {
     public class MyReconnect : PersistentConnection
     {
-        public int Reconnects { get; set; }
+        private readonly Action _onReconnected;
+
+        public MyReconnect()
+            : this(onReconnected: () => { })
+        {
+        }
+
+        public MyReconnect(Action onReconnected)
+        {
+            _onReconnected = onReconnected;
+        }
 
         protected override Task OnConnected(IRequest request, string connectionId)
         {
@@ -17,7 +27,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Common
 
         protected override Task OnReconnected(IRequest request, string connectionId)
         {
-            Reconnects++;
+            _onReconnected();
             return base.OnReconnected(request, connectionId);
         }
     }

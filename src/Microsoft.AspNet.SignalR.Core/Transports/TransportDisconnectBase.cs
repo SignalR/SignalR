@@ -110,7 +110,7 @@ namespace Microsoft.AspNet.SignalR.Transports
             set;
         }
 
-        public Func<Task> Disconnected { get; set; }
+        public Func<bool, Task> Disconnected { get; set; }
 
         public virtual CancellationToken CancellationToken
         {
@@ -251,16 +251,15 @@ namespace Microsoft.AspNet.SignalR.Transports
 
         public Task Disconnect()
         {
-            // Ensure delegate continues to use the C# Compiler static delegate caching optimization.
-            return Abort(clean: false).Then(transport => transport.Connection.Close(transport.ConnectionId), this);
+            return Abort(clean: false);
         }
 
-        public Task Abort()
+        protected Task Abort()
         {
             return Abort(clean: true);
         }
 
-        public Task Abort(bool clean)
+        private Task Abort(bool clean)
         {
             if (clean)
             {
@@ -281,10 +280,10 @@ namespace Microsoft.AspNet.SignalR.Transports
             // End the connection
             End();
 
-            var disconnected = Disconnected ?? _emptyTaskFunc;
+            var disconnectTask = Disconnected != null ? Disconnected(clean) : TaskAsyncHelper.Empty;
 
             // Ensure delegate continues to use the C# Compiler static delegate caching optimization.
-            return disconnected().Catch((ex, state) => OnDisconnectError(ex, state), Trace)
+            return disconnectTask.Catch((ex, state) => OnDisconnectError(ex, state), Trace)
                                  .Then(counters => counters.ConnectionsDisconnected.Increment(), _counters);
         }
 
@@ -339,17 +338,12 @@ namespace Microsoft.AspNet.SignalR.Transports
             }
         }
 
-        protected virtual internal Task EnqueueOperation(Func<Task> writeAsync)
+        protected internal Task EnqueueOperation(Func<Task> writeAsync)
         {
             return EnqueueOperation(state => ((Func<Task>)state).Invoke(), writeAsync);
         }
 
         protected virtual internal Task EnqueueOperation(Func<object, Task> writeAsync, object state)
-        {
-            return EnqueueOperationCore(writeAsync, state);
-        }
-
-        protected internal Task EnqueueOperationCore(Func<object, Task> writeAsync, object state)
         {
             if (!IsAlive)
             {
@@ -359,6 +353,7 @@ namespace Microsoft.AspNet.SignalR.Transports
             // Only enqueue new writes if the connection is alive
             Task writeTask = WriteQueue.Enqueue(writeAsync, state);
             _lastWriteTask = writeTask;
+
             return writeTask;
         }
 

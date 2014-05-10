@@ -28,7 +28,6 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
         private readonly DiffSet<string> _groups;
         private readonly IPerformanceCounterManager _counters;
 
-        private bool _disconnected;
         private bool _aborted;
         private bool _initializing;
         private readonly TraceSource _traceSource;
@@ -270,7 +269,6 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
             {
                 // Only set these properties if the message isn't terminal
                 response.Messages = result.Messages;
-                response.Disconnect = _disconnected;
                 response.Aborted = _aborted;
                 response.TotalCount = result.TotalCount;
                 response.Initializing = _initializing;
@@ -357,9 +355,6 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
                     break;
                 case CommandType.Initializing:
                     _initializing = true;
-                    break;
-                case CommandType.Disconnect:
-                    _disconnected = true;
                     break;
                 case CommandType.Abort:
                     _aborted = true;

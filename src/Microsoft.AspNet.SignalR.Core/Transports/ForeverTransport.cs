@@ -15,6 +15,8 @@ namespace Microsoft.AspNet.SignalR.Transports
     [SuppressMessage("Microsoft.Design", "CA1001:TypesThatOwnDisposableFieldsShouldBeDisposable", Justification = "The disposer is an optimization")]
     public abstract class ForeverTransport : TransportDisconnectBase, ITransport
     {
+        private static readonly ProtocolResolver _protocolResolver = new ProtocolResolver();
+
         private readonly IPerformanceCounterManager _counters;
         private readonly JsonSerializer _jsonSerializer;
         private string _lastMessageId;
@@ -68,8 +70,6 @@ namespace Microsoft.AspNet.SignalR.Transports
             get { return _jsonSerializer; }
         }
 
-        internal TaskCompletionSource<object> InitializeTcs { get; set; }
-
         protected virtual void OnSending(string payload)
         {
             Heartbeat.MarkConnection(this);
@@ -81,8 +81,6 @@ namespace Microsoft.AspNet.SignalR.Transports
         }
 
         public Func<string, Task> Received { get; set; }
-
-        public Func<Task> TransportConnected { get; set; }
 
         public Func<Task> Connected { get; set; }
 
@@ -96,14 +94,6 @@ namespace Microsoft.AspNet.SignalR.Transports
 
         protected override void InitializePersistentState()
         {
-            // PersistentConnection.OnConnected must complete before we can write to the output stream,
-            // so clients don't indicate the connection has started too early.
-            InitializeTcs = new TaskCompletionSource<object>();
-
-            // WriteQueue must be reinitialized before calling base.InitializePersistentState to ensure
-            // _requestLifeTime will be properly initialized.
-            WriteQueue = new TaskQueue(InitializeTcs.Task);
-
             base.InitializePersistentState();
 
             // The _transportLifetime must be initialized after calling base.InitializePersistentState since
@@ -150,28 +140,9 @@ namespace Microsoft.AspNet.SignalR.Transports
             return TaskAsyncHelper.Empty;
         }
 
-        protected internal override Task EnqueueOperation(Func<object, Task> writeAsync, object state)
-        {
-            Task task = base.EnqueueOperation(writeAsync, state);
-
-            // If PersistentConnection.OnConnected has not completed (as indicated by InitializeTcs),
-            // the queue will be blocked to prevent clients from prematurely indicating the connection has
-            // started, but we must keep receive loop running to continue processing commands and to
-            // prevent deadlocks caused by waiting on ACKs.
-            if (InitializeTcs == null || InitializeTcs.Task.IsCompleted)
-            {
-                return task;
-            }
-
-            return TaskAsyncHelper.Empty;
-        }
-
         protected void OnError(Exception ex)
         {
             IncrementErrors();
-
-            // Cancel any pending writes in the queue
-            InitializeTcs.TrySetCanceled();
 
             // Complete the http request
             _transportLifetime.Complete(ex);
@@ -199,23 +170,31 @@ namespace Microsoft.AspNet.SignalR.Transports
 
             if (IsConnectRequest)
             {
-                Func<Task> connected;
-                if (newConnection)
+                if (_protocolResolver.SupportsDelayedStart(Context.Request))
                 {
-                    connected = Connected ?? _emptyTaskFunc;
-                    _counters.ConnectionsConnected.Increment();
+                    // TODO: Ensure delegate continues to use the C# Compiler static delegate caching optimization. 
+                    initialize = () => connection.Initialize(ConnectionId);
                 }
                 else
                 {
-                    // Wait until the previous call to Connected completes.
-                    // We don't want to call Connected twice
-                    connected = () => oldConnection.ConnectTask;
-                }
+                    Func<Task> connected;
+                    if (newConnection)
+                    {
+                        connected = Connected ?? _emptyTaskFunc;
+                        _counters.ConnectionsConnected.Increment();
+                    }
+                    else
+                    {
+                        // Wait until the previous call to Connected completes.
+                        // We don't want to call Connected twice
+                        connected = () => oldConnection.ConnectTask;
+                    }
 
-                initialize = () =>
-                {
-                    return connected().Then((conn, id) => conn.Initialize(id), connection, ConnectionId);
-                };
+                    initialize = () =>
+                    {
+                        return connected().Then((conn, id) => conn.Initialize(id), connection, ConnectionId);
+                    };
+                }
             }
             else if (!IsPollRequest)
             {
@@ -223,16 +202,9 @@ namespace Microsoft.AspNet.SignalR.Transports
                 _counters.ConnectionsReconnected.Increment();
             }
 
-            var series = new Func<object, Task>[]
-            { 
-                state => ((Func<Task>)state).Invoke(),
-                state => ((Func<Task>)state).Invoke()
-            };
+            initialize = initialize ?? _emptyTaskFunc;
 
-            var states = new object[] { TransportConnected ?? _emptyTaskFunc,
-                                        initialize ?? _emptyTaskFunc };
-
-            Func<Task> fullInit = () => TaskAsyncHelper.Series(series, states).ContinueWith(_connectTcs);
+            Func<Task> fullInit = () => initialize().ContinueWith(_connectTcs);
 
             return ProcessMessages(connection, fullInit);
         }
@@ -270,28 +242,18 @@ namespace Microsoft.AspNet.SignalR.Transports
                                                                MaxMessages,
                                                                this);
 
-
                 if (AfterReceive != null)
                 {
                     AfterReceive();
                 }
 
                 // Ensure delegate continues to use the C# Compiler static delegate caching optimization.
-                initialize().Then(tcs => tcs.TrySetResult(null), InitializeTcs)
-                            .Catch((ex, state) => ((ForeverTransport)state).OnError(ex), this)
+                initialize().Catch((ex, state) => ((ForeverTransport)state).OnError(ex), this)
                             .Finally(state => ((SubscriptionDisposerContext)state).Set(),
                                 new SubscriptionDisposerContext(disposer, subscription));
             }
-            catch (OperationCanceledException ex)
-            {
-                InitializeTcs.TrySetCanceled();
-
-                _transportLifetime.Complete(ex);
-            }
             catch (Exception ex)
             {
-                InitializeTcs.TrySetCanceled();
-
                 _transportLifetime.Complete(ex);
             }
 
@@ -316,14 +278,7 @@ namespace Microsoft.AspNet.SignalR.Transports
 
             response.Reconnect = HostShutdownToken.IsCancellationRequested;
 
-            // If we're telling the client to disconnect then clean up the instantiated connection.
-            if (response.Disconnect)
-            {
-                // Send the response before removing any connection data
-                return Send(response).Then(state => ((ForeverTransport)state).OnDisconnectMessage(), this)
-                                        .Then(() => TaskAsyncHelper.False);
-            }
-            else if (IsTimedOut || response.Aborted)
+            if (IsTimedOut || response.Aborted)
             {
                 _busRegistration.Dispose();
 
@@ -344,16 +299,6 @@ namespace Microsoft.AspNet.SignalR.Transports
 
             // Ensure delegate continues to use the C# Compiler static delegate caching optimization.
             return Send(response).Then(() => TaskAsyncHelper.True);
-        }
-
-        private void OnDisconnectMessage()
-        {
-            ApplyState(TransportConnectionStates.DisconnectMessageReceived);
-
-            _busRegistration.Dispose();
-
-            // Remove connection without triggering disconnect
-            Heartbeat.RemoveConnection(this);
         }
 
         private static Task PerformSend(object state)

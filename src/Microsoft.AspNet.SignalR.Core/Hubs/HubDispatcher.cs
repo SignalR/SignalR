@@ -294,9 +294,14 @@ namespace Microsoft.AspNet.SignalR.Hubs
             return hub.OnReconnected();
         }
 
-        internal static Task Disconnect(IHub hub)
+        internal static async Task Disconnect(IHub hub, bool stopCalled)
         {
-            return hub.OnDisconnected();
+            await hub.OnDisconnected(stopCalled).OrEmpty();
+
+            if (stopCalled)
+            {
+                await hub.OnDisconnected().OrEmpty();
+            }
         }
 
         [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "A faulted task is returned.")]
@@ -384,9 +389,9 @@ namespace Microsoft.AspNet.SignalR.Hubs
             }).SelectMany(groupsToRejoin => groupsToRejoin).ToList();
         }
 
-        protected override Task OnDisconnected(IRequest request, string connectionId)
+        protected override Task OnDisconnected(IRequest request, string connectionId, bool stopCalled)
         {
-            return ExecuteHubEvent(request, connectionId, hub => _pipelineInvoker.Disconnect(hub));
+            return ExecuteHubEvent(request, connectionId, hub => _pipelineInvoker.Disconnect(hub, stopCalled));
         }
 
         protected override IList<string> GetSignals(string userId, string connectionId)
