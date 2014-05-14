@@ -228,6 +228,9 @@
     <Compile Include="..\Microsoft.AspNet.SignalR.Core\Owin\WebSockets\WebSocketMessageReader.cs">
       <Link>Transports\WebSockets\WebSocketMessageReader.cs</Link>
     </Compile>
+    <Compile Include="..\Microsoft.AspNet.SignalR.Core\TaskAwaiterHelper.cs">
+      <Link>Infrastructure\TaskAwaiterHelper.cs</Link>
+    </Compile>
     <Compile Include="Http\HttpRequestMessageWrapper.cs" />
     <Compile Include="Http\DefaultHttpClient.cs" />
     <Compile Include="Http\DefaultHttpHandler.cs" />

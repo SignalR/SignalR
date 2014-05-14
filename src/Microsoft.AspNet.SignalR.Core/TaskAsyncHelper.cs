@@ -877,30 +877,69 @@ namespace Microsoft.AspNet.SignalR
             return tcs.Task;
         }
 
+
+#if !NETFX_CORE
+        internal struct CulturePair
+        {
+            public CultureInfo Culture;
+            public CultureInfo UICulture;
+        }
+
+        internal static CulturePair SaveCulture()
+        {
+            return new CulturePair
+            {
+                Culture = Thread.CurrentThread.CurrentCulture,
+                UICulture = Thread.CurrentThread.CurrentUICulture
+            };
+        }
+
+        internal static TResult RunWithPreservedCulture<T1, T2, TResult>(CulturePair preservedCulture, Func<T1, T2, TResult> func, T1 arg1, T2 arg2)
+        {
+            var replacedCulture = SaveCulture();
+            try
+            {
+                Thread.CurrentThread.CurrentCulture = preservedCulture.Culture;
+                Thread.CurrentThread.CurrentUICulture = preservedCulture.UICulture;
+                return func(arg1, arg2);
+            }
+            finally
+            {
+                Thread.CurrentThread.CurrentCulture = replacedCulture.Culture;
+                Thread.CurrentThread.CurrentUICulture = replacedCulture.UICulture;
+            }
+        }
+
+        internal static TResult RunWithPreservedCulture<T, TResult>(CulturePair preservedCulture, Func<T, TResult> func, T arg)
+        {
+            return RunWithPreservedCulture(preservedCulture, (f, state) => f(state), func, arg);
+        }
+
+        internal static void RunWithPreservedCulture<T>(CulturePair preservedCulture, Action<T> action, T arg)
+        {
+            RunWithPreservedCulture(preservedCulture, (f, state)  =>
+            {
+                f(state);
+                return (object)null;
+            },
+            action, arg);
+        }
+
+        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode", Justification = "This is a shared file")]
+        internal static void RunWithPreservedCulture(CulturePair preservedCulture, Action action)
+        {
+            RunWithPreservedCulture(preservedCulture, f => f(), action);
+        }
+#endif
+
         internal static Task ContinueWithPreservedCulture(this Task task, Action<Task> continuationAction, TaskContinuationOptions continuationOptions)
         {
 #if NETFX_CORE
             // The Thread class is not available on WinRT
             return task.ContinueWith(continuationAction, continuationOptions);
 #else
-            var preservedCulture = Thread.CurrentThread.CurrentCulture;
-            var preservedUICulture = Thread.CurrentThread.CurrentUICulture;
-            return task.ContinueWith(t =>
-            {
-                var replacedCulture = Thread.CurrentThread.CurrentCulture;
-                var replacedUICulture = Thread.CurrentThread.CurrentUICulture;
-                try
-                {
-                    Thread.CurrentThread.CurrentCulture = preservedCulture;
-                    Thread.CurrentThread.CurrentUICulture = preservedUICulture;
-                    continuationAction(t);
-                }
-                finally
-                {
-                    Thread.CurrentThread.CurrentCulture = replacedCulture;
-                    Thread.CurrentThread.CurrentUICulture = replacedUICulture;
-                }
-            }, continuationOptions);
+            var preservedCulture = SaveCulture();
+            return task.ContinueWith(t => RunWithPreservedCulture(preservedCulture, continuationAction, t), continuationOptions);
 #endif
         }
 
@@ -910,24 +949,8 @@ namespace Microsoft.AspNet.SignalR
             // The Thread class is not available on WinRT
             return task.ContinueWith(continuationAction, continuationOptions);
 #else
-            var preservedCulture = Thread.CurrentThread.CurrentCulture;
-            var preservedUICulture = Thread.CurrentThread.CurrentUICulture;
-            return task.ContinueWith(t =>
-            {
-                var replacedCulture = Thread.CurrentThread.CurrentCulture;
-                var replacedUICulture = Thread.CurrentThread.CurrentUICulture;
-                try
-                {
-                    Thread.CurrentThread.CurrentCulture = preservedCulture;
-                    Thread.CurrentThread.CurrentUICulture = preservedUICulture;
-                    continuationAction(t);
-                }
-                finally
-                {
-                    Thread.CurrentThread.CurrentCulture = replacedCulture;
-                    Thread.CurrentThread.CurrentUICulture = replacedUICulture;
-                }
-            }, continuationOptions);
+            var preservedCulture = SaveCulture();
+            return task.ContinueWith(t => RunWithPreservedCulture(preservedCulture, continuationAction, t), continuationOptions);
 #endif
         }
 
@@ -938,24 +961,8 @@ namespace Microsoft.AspNet.SignalR
             // The Thread class is not available on WinRT
             return task.ContinueWith(continuationAction, continuationOptions);
 #else
-            var preservedCulture = Thread.CurrentThread.CurrentCulture;
-            var preservedUICulture = Thread.CurrentThread.CurrentUICulture;
-            return task.ContinueWith(t =>
-            {
-                var replacedCulture = Thread.CurrentThread.CurrentCulture;
-                var replacedUICulture = Thread.CurrentThread.CurrentUICulture;
-                try
-                {
-                    Thread.CurrentThread.CurrentCulture = preservedCulture;
-                    Thread.CurrentThread.CurrentUICulture = preservedUICulture;
-                    return continuationAction(t);
-                }
-                finally
-                {
-                    Thread.CurrentThread.CurrentCulture = replacedCulture;
-                    Thread.CurrentThread.CurrentUICulture = replacedUICulture;
-                }
-            }, continuationOptions);
+            var preservedCulture = SaveCulture();
+            return task.ContinueWith(t => RunWithPreservedCulture(preservedCulture, continuationAction, t), continuationOptions);
 #endif
         }
 
