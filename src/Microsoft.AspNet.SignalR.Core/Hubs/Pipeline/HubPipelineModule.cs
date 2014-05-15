@@ -31,7 +31,7 @@ namespace Microsoft.AspNet.SignalR.Hubs
                 {
                     try
                     {
-                        var result = await invoke(context).OrEmpty();
+                        var result = await invoke(context).OrEmpty().PreserveCulture();
                         return OnAfterIncoming(result, context);
                     }
                     catch (Exception ex)

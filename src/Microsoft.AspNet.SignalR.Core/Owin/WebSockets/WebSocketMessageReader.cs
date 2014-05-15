@@ -30,7 +30,7 @@ namespace Microsoft.AspNet.SignalR.WebSockets
             WebSocketMessage message;
 
             // Read the first time with an empty array
-            WebSocketReceiveResult receiveResult = await webSocket.ReceiveAsync(_emptyArraySegment, disconnectToken).ConfigureAwait(continueOnCapturedContext: false);
+            WebSocketReceiveResult receiveResult = await webSocket.ReceiveAsync(_emptyArraySegment, disconnectToken).PreserveCultureNotContext();
 
             if (TryGetMessage(receiveResult, null, out message))
             {
@@ -42,7 +42,7 @@ namespace Microsoft.AspNet.SignalR.WebSockets
             // Now read with the real buffer
             var arraySegment = new ArraySegment<byte>(buffer);
 
-            receiveResult = await webSocket.ReceiveAsync(arraySegment, disconnectToken).ConfigureAwait(continueOnCapturedContext: false);
+            receiveResult = await webSocket.ReceiveAsync(arraySegment, disconnectToken).PreserveCultureNotContext();
 
             if (TryGetMessage(receiveResult, buffer, out message))
             {
@@ -58,7 +58,7 @@ namespace Microsoft.AspNet.SignalR.WebSockets
                 while (true)
                 {
                     // loop until an error occurs or we see EOF
-                    receiveResult = await webSocket.ReceiveAsync(arraySegment, disconnectToken).ConfigureAwait(continueOnCapturedContext: false);
+                    receiveResult = await webSocket.ReceiveAsync(arraySegment, disconnectToken).PreserveCultureNotContext();
 
                     if (receiveResult.MessageType == WebSocketMessageType.Close)
                     {

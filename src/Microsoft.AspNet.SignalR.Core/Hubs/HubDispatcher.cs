@@ -296,11 +296,11 @@ namespace Microsoft.AspNet.SignalR.Hubs
 
         internal static async Task Disconnect(IHub hub, bool stopCalled)
         {
-            await hub.OnDisconnected(stopCalled).OrEmpty();
+            await hub.OnDisconnected(stopCalled).OrEmpty().PreserveCulture();
 
             if (stopCalled)
             {
-                await hub.OnDisconnected().OrEmpty();
+                await hub.OnDisconnected().OrEmpty().PreserveCulture();
             }
         }
 

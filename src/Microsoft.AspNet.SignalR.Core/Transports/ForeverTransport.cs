@@ -150,12 +150,12 @@ namespace Microsoft.AspNet.SignalR.Transports
 
         protected virtual async Task ProcessSendRequest()
         {
-            INameValueCollection form = await Context.Request.ReadForm();
+            INameValueCollection form = await Context.Request.ReadForm().PreserveCulture();
             string data = form["data"];
 
             if (Received != null)
             {
-                await Received(data);
+                await Received(data).PreserveCulture();
             }
         }
 

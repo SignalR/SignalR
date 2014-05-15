@@ -180,12 +180,12 @@ namespace Microsoft.AspNet.SignalR.Transports
 
         protected override async Task ProcessSendRequest()
         {
-            INameValueCollection form = await Context.Request.ReadForm();
+            INameValueCollection form = await Context.Request.ReadForm().PreserveCulture();
             string data = form["data"] ?? Context.Request.QueryString["data"];
 
             if (Received != null)
             {
-                await Received(data);
+                await Received(data).PreserveCulture();
             }
         }
 
