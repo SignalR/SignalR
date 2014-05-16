@@ -25,7 +25,11 @@
         <dependency id="Newtonsoft.Json" version="5.0.0" />
         <dependency id="Microsoft.Net.Http" version="2.1.10" />
       </group>
-      <group targetFramework="portable-wp81+wpa81">
+      <group targetFramework="portable-wp81">
+        <dependency id="Newtonsoft.Json" version="6.0.2" />
+        <dependency id="Microsoft.Net.Http" version="2.2.19" />
+      </group>
+      <group targetFramework="wpa81">
         <dependency id="Newtonsoft.Json" version="6.0.2" />
         <dependency id="Microsoft.Net.Http" version="2.2.19" />
       </group>
@@ -36,7 +40,11 @@
     <file src="Net40\Microsoft.AspNet.SignalR.Client.xml" target="lib\net40" />
     <file src="Net45\Microsoft.AspNet.SignalR.Client.dll" target="lib\net45" />
     <file src="Net45\Microsoft.AspNet.SignalR.Client.xml" target="lib\net45" />
-    <file src="portable-net45+sl5+netcore45+wp8+wp81+wpa81\Microsoft.AspNet.SignalR.Client.dll" target="lib\portable-net45+sl5+netcore45+wp8+wp81+wpa81" />
-    <file src="portable-net45+sl5+netcore45+wp8+wp81+wpa81\Microsoft.AspNet.SignalR.Client.xml" target="lib\portable-net45+sl5+netcore45+wp8+wp81+wpa81" />
+    <file src="portable-net45+sl5+netcore45+wp8+wp81\Microsoft.AspNet.SignalR.Client.dll" target="lib\portable-net45+sl5+netcore45+wp8+wp81" />
+    <file src="portable-net45+sl5+netcore45+wp8+wp81\Microsoft.AspNet.SignalR.Client.xml" target="lib\portable-net45+sl5+netcore45+wp8+wp81" />
+    <file src="wpa81\Microsoft.AspNet.SignalR.Client.dll" target="lib\wpa81" />
+    <file src="wpa81\Microsoft.AspNet.SignalR.Client.xml" target="lib\wpa81" />
+    <file src="wpa81\Microsoft.AspNet.SignalR.Client.Store.dll" target="lib\wpa81" />
+    <file src="wpa81\Microsoft.AspNet.SignalR.Client.Store.Xml" target="lib\wpa81" />
   </files>
 </package>

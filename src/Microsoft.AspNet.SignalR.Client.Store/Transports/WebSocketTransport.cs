@@ -13,6 +13,9 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
             Dispose(false);
         }
 
+        /// <summary>
+        /// Gets transport name.
+        /// </summary>
         public string Name
         {
             get { return "webSockets"; }

@@ -81,7 +81,19 @@
     <!-- Only build the following clients if the SDK is installed -->
     <Projects Include="$(ProjectRoot)\src\Microsoft.AspNet.SignalR.Client.Portable\Microsoft.AspNet.SignalR.Client.Portable.csproj">
       <Build Condition="!$(WP8SDKInstalled)">false</Build>
-      <Platform>portable-net45+sl5+netcore45+wp8+wp81+wpa81</Platform>
+      <Platform>portable-net45+sl5+netcore45+wp8+wp81</Platform>
+    </Projects>
+    <Projects Include="$(ProjectRoot)\src\Microsoft.AspNet.SignalR.Client.Portable\Microsoft.AspNet.SignalR.Client.Portable.csproj">
+      <!--
+        Don't build this project. It is just for copying artifacts to wpa81 folder.
+        Relies on  Microsoft.AspNet.SignalR.Client.Portable\Microsoft.AspNet.SignalR.Client.Portable.csproj being
+        built first (or can result in a stale dll or a failure)
+      -->
+      <Build>false</Build>
+      <Platform>wpa81</Platform>
+    </Projects>
+    <Projects Include="$(ProjectRoot)\src\Microsoft.AspNet.SignalR.Client.Store\Microsoft.AspNet.SignalR.Client.Store.csproj">
+      <Platform>wpa81</Platform>
     </Projects>
     <!-- The SignalR .NET client is the only remaining project that targets .NET 4.0 starting in SignalR 2.0 -->
     <Projects Include="$(ProjectRoot)\src\Microsoft.AspNet.SignalR.Client\Microsoft.AspNet.SignalR.Client.csproj">
