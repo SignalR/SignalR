@@ -100,8 +100,8 @@ namespace Microsoft.AspNet.SignalR.Tests.Owin
                     return TaskAsyncHelper.Empty;
                 });
 
-            var webSocketHandler = new WebSocketHandler(64 * 1024);
-            await webSocketHandler.ProcessWebSocketRequestAsync(webSocket.Object, CancellationToken.None);
+            var webSocketHandler = new Mock<WebSocketHandler>(64 * 1024) {CallBase = true};
+            await webSocketHandler.Object.ProcessWebSocketRequestAsync(webSocket.Object, CancellationToken.None);
 
             webSocket.VerifyAll();
         }
@@ -113,12 +113,12 @@ namespace Microsoft.AspNet.SignalR.Tests.Owin
         public async Task CloseNoopsIfInTerminalState(WebSocketState state)
         {
             var webSocket = new Mock<WebSocket>();
-            var webSocketHandler = new WebSocketHandler(64 * 1024);
+            var webSocketHandler = new Mock<WebSocketHandler>(64 * 1024) {CallBase = true};
 
             webSocket.Setup(m => m.State).Returns(state);
-            webSocketHandler.WebSocket = webSocket.Object;
+            webSocketHandler.Object.WebSocket = webSocket.Object;
 
-            await webSocketHandler.CloseAsync();
+            await webSocketHandler.Object.CloseAsync();
 
             webSocket.Verify(m => m.CloseOutputAsync(WebSocketCloseStatus.NormalClosure, "", CancellationToken.None), Times.Never());
         }
@@ -132,12 +132,12 @@ namespace Microsoft.AspNet.SignalR.Tests.Owin
         public async Task SendNoopsIfNotOpen(WebSocketState state)
         {
             var webSocket = new Mock<WebSocket>();
-            var webSocketHandler = new WebSocketHandler(64 * 1024);
+            var webSocketHandler = new Mock<WebSocketHandler>(64 * 1024) { CallBase = true};
 
             webSocket.Setup(m => m.State).Returns(state);
-            webSocketHandler.WebSocket = webSocket.Object;
+            webSocketHandler.Object.WebSocket = webSocket.Object;
 
-            await webSocketHandler.SendAsync("Hello");
+            await webSocketHandler.Object.SendAsync("Hello");
 
             webSocket.Verify(m => m.SendAsync(It.IsAny<ArraySegment<byte>>(), WebSocketMessageType.Text, true, CancellationToken.None), Times.Never());
         }

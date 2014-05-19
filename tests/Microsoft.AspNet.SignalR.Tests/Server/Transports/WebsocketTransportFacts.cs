@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Net.WebSockets;
-using System.Threading;
 using Microsoft.AspNet.SignalR.WebSockets;
 using Moq;
 using Xunit;
@@ -10,36 +9,37 @@ namespace Microsoft.AspNet.SignalR.Tests.Server.Transports
     public class WebSocketTransportFacts
     {
         [Fact]
-        public void MessageChunksAreSentCorrectly()
+        public void SendChunkDoesNotSendChunksEagerly()
         {
             // Disable DefaultWebSocketHandler's maxIncomingMessageSize
-            var webSocketHandler = new Mock<DefaultWebSocketHandler>(null);
-            webSocketHandler.CallBase = true;
+            var mockWebSocketHandler = new Mock<DefaultWebSocketHandler>(null)
+            {
+                CallBase = true
+            };
 
-            bool sendAsyncMethodExecuted = false;
-            var arraySegment = new ArraySegment<byte>();
-            bool endOfMessage = false;
+            var webSocketHandler = mockWebSocketHandler.Object;
+            webSocketHandler.SendChunk(new ArraySegment<byte>(new[] { (byte)'a' })).Wait();
 
-            webSocketHandler.Setup(w => w.SendAsync(It.IsAny<ArraySegment<byte>>(), It.IsAny<WebSocketMessageType>(), It.IsAny<bool>()))
-                .Callback<ArraySegment<byte>, WebSocketMessageType, bool>((arraySegmentValue, messageTypeValue, endOfMessageValue) =>
-                {
-                    sendAsyncMethodExecuted = true;
-                    arraySegment = arraySegmentValue;
-                    endOfMessage = endOfMessageValue;
-                });
+            Assert.Equal(1, webSocketHandler.NextMessageToSend.Count);
+            mockWebSocketHandler.Verify(
+                p => p.SendAsync(It.IsAny<ArraySegment<byte>>(), It.IsAny<WebSocketMessageType>(), It.IsAny<bool>()), 
+                Times.Never());
+        }
 
-            webSocketHandler.Object.SendChunk(new ArraySegment<byte>(new byte[1] { (byte)'a' })).Wait();
+        [Fact]
+        public void FlushSendsPendingChunks()
+        {
+            var message = new[] { (byte)'a' };
 
-            Assert.False(sendAsyncMethodExecuted);
-            Assert.False(endOfMessage);
+            // Disable DefaultWebSocketHandler's maxIncomingMessageSize
+            var mockWebSocketHandler = new Mock<DefaultWebSocketHandler>(null);
 
-            webSocketHandler.Object.Flush();
+            var webSocketHandler = mockWebSocketHandler.Object;
+            webSocketHandler.SendChunk(new ArraySegment<byte>(message)).Wait();
+            webSocketHandler.Flush();
 
-            Assert.True(sendAsyncMethodExecuted);
-            Assert.Equal(arraySegment.Array[0], (byte)'a');
-            Assert.True(endOfMessage);
-
-            Assert.Equal(0, webSocketHandler.Object.NextMessageToSend.Count);
+            mockWebSocketHandler.Verify(p => p.SendAsync(new ArraySegment<byte>(message), WebSocketMessageType.Text, true), Times.Once());
+            Assert.Equal(0, webSocketHandler.NextMessageToSend.Count);
         }
     }
 }
