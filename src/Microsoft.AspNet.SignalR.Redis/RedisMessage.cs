@@ -2,10 +2,12 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Text;
 using Microsoft.AspNet.SignalR.Messaging;
+using Microsoft.AspNet.SignalR.Tracing;
 
 namespace Microsoft.AspNet.SignalR.Redis
 {
@@ -35,10 +37,13 @@ namespace Microsoft.AspNet.SignalR.Redis
             }
         }
 
-        public static RedisMessage FromBytes(byte[] data)
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1062:Validate arguments of public methods", MessageId = "0")]
+        public static RedisMessage FromBytes(byte[] data, TraceSource trace)
         {
             using (var stream = new MemoryStream(data))
             {
+                trace.TraceVerbose("Received {0} bytes over Redis Bus: {1}", data.Length, Convert.ToBase64String(data));
+
                 var message = new RedisMessage();
 
                 // read message id from memory stream until SPACE character
@@ -49,9 +54,13 @@ namespace Microsoft.AspNet.SignalR.Redis
                     int charCode = stream.ReadByte();
                     if (charCode == -1)
                     {
-                        throw new EndOfStreamException();
+                        trace.TraceVerbose("Message received on Redis could not be parsed");
+                        trace.TraceVerbose("Partial Message Id of Redis message that could not be parsed: " + messageIdBuilder.ToString());
+                        throw new EndOfStreamException(Resources.Error_EndOfStreamRedis);
                     }
+
                     char c = (char)charCode;
+
                     if (c == ' ')
                     {
                         message.Id = ulong.Parse(messageIdBuilder.ToString(), CultureInfo.InvariantCulture);

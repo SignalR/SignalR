@@ -54,6 +54,7 @@ namespace Microsoft.AspNet.SignalR.Redis
         protected override Task Send(int streamIndex, IList<Message> messages)
         {
             var keys = new string[] { _key };
+            TraceMessages(messages);
             var arguments = new object[] { RedisMessage.ToBytes(messages) };
             return _connection.Scripting.Eval(
                 _db,
@@ -88,6 +89,19 @@ namespace Microsoft.AspNet.SignalR.Redis
             }
 
             base.Dispose(disposing);
+        }
+
+        private void TraceMessages(IList<Message> messages)
+        {
+            if (!_trace.Switch.ShouldTrace(TraceEventType.Verbose))
+            {
+                return;
+            }
+
+            foreach (Message message in messages)
+            {
+                _trace.TraceVerbose("Sending {0} bytes over Redis Bus: {1}", message.Value.Array.Length, message.GetString());
+            }
         }
 
         private void Shutdown()
@@ -143,7 +157,7 @@ namespace Microsoft.AspNet.SignalR.Redis
         private void OnMessage(string key, byte[] data)
         {
             // The key is the stream id (channel)
-            var message = RedisMessage.FromBytes(data);
+            var message = RedisMessage.FromBytes(data, _trace);
 
             // locked to avoid overlapping calls (even though we have set the mode 
             // to preserve order on the subscription)
