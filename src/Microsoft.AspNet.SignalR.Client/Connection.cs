@@ -81,15 +81,16 @@ namespace Microsoft.AspNet.SignalR.Client
         // Indicates the last time we marked the C# code as running.
         private DateTime _lastActiveAt;
 
-        // Keeps track of when the last keep alive from the server was received
-        private HeartbeatMonitor _monitor;
-
         //The json serializer for the connections
         private JsonSerializer _jsonSerializer = new JsonSerializer();
 
 #if (NET4 || NET45)
         private readonly X509CertificateCollection _certCollection = new X509CertificateCollection();
 #endif
+
+        // Keeps track of when the last keep alive from the server was received
+        // internal virtual to allow mocking
+        internal virtual HeartbeatMonitor Monitor { get; private set; }
 
         /// <summary>
         /// Occurs when the <see cref="Connection"/> has received data from the server.
@@ -485,7 +486,7 @@ namespace Microsoft.AspNet.SignalR.Client
                                     _reconnectWindow = _disconnectTimeout;
                                 }
 
-                                _monitor = new HeartbeatMonitor(this, _stateLock, beatInterval);
+                                Monitor = new HeartbeatMonitor(this, _stateLock, beatInterval);
 
                                 return StartTransport();
                             })
@@ -507,7 +508,7 @@ namespace Microsoft.AspNet.SignalR.Client
                                  // Start the monitor to check for server activity
                                  _lastMessageAt = DateTime.UtcNow;
                                  _lastActiveAt = DateTime.UtcNow;
-                                 _monitor.Start();
+                                 Monitor.Start();
                              })
                              // Don't return until the last receive has been processed to ensure messages/state sent in OnConnected
                              // are processed prior to the Start() method task finishing
@@ -619,7 +620,7 @@ namespace Microsoft.AspNet.SignalR.Client
                 Trace(TraceLevels.Events, "Stop");
 
                 // Dispose the heart beat monitor so we don't fire notifications when waiting to abort
-                _monitor.Dispose();
+                Monitor.Dispose();
 
                 _transport.Abort(this, timeout, _connectionData);
 
@@ -652,9 +653,9 @@ namespace Microsoft.AspNet.SignalR.Client
                     _disconnectCts.Cancel();
                     _disconnectCts.Dispose();
 
-                    if (_monitor != null)
+                    if (Monitor != null)
                     {
-                        _monitor.Dispose();
+                        Monitor.Dispose();
                     }
 
                     if (_transport != null)
@@ -855,6 +856,7 @@ namespace Microsoft.AspNet.SignalR.Client
                 Reconnected();
             }
 
+            Monitor.Reconnected();
             ((IConnection)this).MarkLastMessage();
         }
 

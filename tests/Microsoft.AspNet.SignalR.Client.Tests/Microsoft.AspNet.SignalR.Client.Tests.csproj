@@ -58,6 +58,7 @@
   <ItemGroup>
     <Compile Include="ChunkBufferFacts.cs" />
     <Compile Include="Client\ConnectionFacts.cs" />
+    <Compile Include="Client\HeartbeatMonitorFacts.cs" />
     <Compile Include="Client\HubProxyFacts.cs" />
     <Compile Include="Client\KeepAliveFacts.cs" />
     <Compile Include="Client\Transports\TransportFacts.cs" />

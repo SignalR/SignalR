@@ -386,24 +386,21 @@ namespace Microsoft.AspNet.SignalR.Client.Tests
         [Fact]
         public void OnReconnectingExplicitImplementationCallsIntoProtectedOnReconnecting()
         {
-            var connectionFake = new HubConnectionFake();
-            ((IConnection)connectionFake).OnReconnecting();
-            Assert.True(connectionFake.OnReconnectingInvoked);
+            var mockConnection = new Mock<HubConnection>("http://fakeurl");
+            ((IConnection)mockConnection.Object).OnReconnecting();
+            mockConnection.Verify(c => c.OnReconnecting(), Times.Once());
         }
 
-        private class HubConnectionFake : HubConnection
+        [Fact]
+        public void OnReconnectedInvokesReconnectedOnHeartBeatMonitor()
         {
-            public HubConnectionFake()
-                : base("http://fakeurl")
-            {
-            }
+            var mockConnection = new Mock<Connection>("http://fakeurl") { CallBase = true };
+            var mockMonitor = new Mock<HeartbeatMonitor>(mockConnection.Object, new object(), new TimeSpan());
+            mockConnection.Setup(c => c.Monitor).Returns(mockMonitor.Object);
 
-            public bool OnReconnectingInvoked { get; private set; }
+            ((IConnection)mockConnection.Object).OnReconnected();
 
-            internal override void OnReconnecting()
-            {
-                OnReconnectingInvoked = true;
-            }
+            mockMonitor.Verify(m => m.Reconnected(), Times.Once());
         }
     }
 }
