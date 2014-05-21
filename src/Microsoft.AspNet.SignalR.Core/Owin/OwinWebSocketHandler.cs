@@ -88,7 +88,7 @@ namespace Microsoft.AspNet.SignalR.Owin
             {
                 try
                 {
-                    await _callback(handler);
+                    await _callback(handler).PreserveCulture();
                 }
                 catch
                 {
@@ -98,7 +98,7 @@ namespace Microsoft.AspNet.SignalR.Owin
 
                 // Always try to close async, if the websocket already closed
                 // then this will no-op
-                await handler.CloseAsync();
+                await handler.CloseAsync().PreserveCulture();
 
                 // Cancel the token
                 cts.Cancel();
@@ -149,7 +149,7 @@ namespace Microsoft.AspNet.SignalR.Owin
 
             public override async Task<WebSocketReceiveResult> ReceiveAsync(ArraySegment<byte> buffer, CancellationToken cancellationToken)
             {
-                var tuple = await _receiveAsync(buffer, cancellationToken);
+                var tuple = await _receiveAsync(buffer, cancellationToken).PreserveCulture();
 
                 int messageType = tuple.Item1;
                 bool endOfMessage = tuple.Item2;

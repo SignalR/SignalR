@@ -102,7 +102,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
 
             try
             {
-                return await _callback(result, _callbackState);
+                return await _callback(result, _callbackState).PreserveCulture();
             }
             finally
             {
@@ -133,7 +133,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
                 {
                     var messageResult = new MessageResult(items, totalCount);
 
-                    bool result = await Invoke(messageResult, (s, o) => s.BeforeInvoke(o), state);
+                    bool result = await Invoke(messageResult, (s, o) => s.BeforeInvoke(o), state).PreserveCulture();
 
                     if (!result)
                     {

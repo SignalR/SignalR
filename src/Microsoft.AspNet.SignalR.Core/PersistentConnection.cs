@@ -267,13 +267,13 @@ namespace Microsoft.AspNet.SignalR
 
             Transport.Disconnected = async clean =>
             {
-                await OnDisconnected(context.Request, connectionId, stopCalled: clean).OrEmpty();
+                await OnDisconnected(context.Request, connectionId, stopCalled: clean).OrEmpty().PreserveCulture();
 
                 if (clean)
                 {
                     // Only call the old OnDisconnected method for disconnects we know
                     // have *not* been caused by clients switching servers.
-                    await OnDisconnected(context.Request, connectionId).OrEmpty();
+                    await OnDisconnected(context.Request, connectionId).OrEmpty().PreserveCulture();
                 }
             };
 
@@ -526,8 +526,8 @@ namespace Microsoft.AspNet.SignalR
 
         private async Task ProcessStartRequest(HostContext context, string connectionId)
         {
-            await OnConnected(context.Request, connectionId).OrEmpty();
-            await SendJsonResponse(context, StartJsonPayload);
+            await OnConnected(context.Request, connectionId).OrEmpty().PreserveCulture();
+            await SendJsonResponse(context, StartJsonPayload).PreserveCulture();
             Counters.ConnectionsConnected.Increment();
         }
 

@@ -149,7 +149,7 @@ namespace Microsoft.AspNet.SignalR.Transports
                 context.Transport.JsonSerializer.Serialize(context.State, context.Transport.OutputWriter);
                 context.Transport.OutputWriter.Flush();
 
-                await context.Transport._socket.Flush();
+                await context.Transport._socket.Flush().PreserveCulture();
             }
             catch (Exception ex)
             {

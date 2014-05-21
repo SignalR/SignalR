@@ -74,7 +74,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
                 {
                     context.Broker._counters.MessageBusBusyWorkers.Increment();
 
-                    await context.Subscription.Work();
+                    await context.Subscription.Work().PreserveCulture();
                 }
                 catch (Exception ex)
                 {

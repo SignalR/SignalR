@@ -245,6 +245,7 @@
     <Compile Include="Owin\WebSockets\WebSocketHandler.cs" />
     <Compile Include="Owin\WebSockets\WebSocketMessage.cs" />
     <Compile Include="Owin\WebSockets\WebSocketMessageReader.cs" />
+    <Compile Include="TaskAwaiterHelper.cs" />
     <Compile Include="Tracing\ITraceManager.cs" />
     <Compile Include="DependencyResolverExtensions.cs" />
     <Compile Include="Hubs\ReflectionHelper.cs" />

@@ -105,7 +105,7 @@ namespace Microsoft.AspNet.SignalR.Owin
 
         public async Task<INameValueCollection> ReadForm()
         {
-            IFormCollection form = await _request.ReadFormAsync();
+            IFormCollection form = await _request.ReadFormAsync().PreserveCulture();
             return new ReadableStringCollectionWrapper(form);
         }
     }
