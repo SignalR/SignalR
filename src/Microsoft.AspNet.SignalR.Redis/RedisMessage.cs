@@ -42,8 +42,6 @@ namespace Microsoft.AspNet.SignalR.Redis
         {
             using (var stream = new MemoryStream(data))
             {
-                trace.TraceVerbose("Received {0} bytes over Redis Bus: {1}", data.Length, Convert.ToBase64String(data));
-
                 var message = new RedisMessage();
 
                 // read message id from memory stream until SPACE character
@@ -54,8 +52,8 @@ namespace Microsoft.AspNet.SignalR.Redis
                     int charCode = stream.ReadByte();
                     if (charCode == -1)
                     {
-                        trace.TraceVerbose("Message received on Redis could not be parsed");
-                        trace.TraceVerbose("Partial Message Id of Redis message that could not be parsed: " + messageIdBuilder.ToString());
+                        trace.TraceVerbose("Received Message could not be parsed.");
+                        TraceMessage(data, messageIdBuilder.ToString(), trace);
                         throw new EndOfStreamException(Resources.Error_EndOfStreamRedis);
                     }
 
@@ -73,6 +71,8 @@ namespace Microsoft.AspNet.SignalR.Redis
                 }
                 while (messageIdBuilder != null);
 
+                TraceMessage(data, message.Id.ToString(CultureInfo.CurrentCulture), trace);
+
                 var binaryReader = new BinaryReader(stream);
                 int count = binaryReader.ReadInt32();
                 byte[] buffer = binaryReader.ReadBytes(count);
@@ -80,6 +80,18 @@ namespace Microsoft.AspNet.SignalR.Redis
                 message.ScaleoutMessage = ScaleoutMessage.FromBytes(buffer);
                 return message;
             }
+        }
+
+        private static void TraceMessage(byte[] data, string messageId, TraceSource trace)
+        {
+            if (!trace.Switch.ShouldTrace(TraceEventType.Verbose))
+            {
+                return;
+            }
+
+            trace.TraceVerbose("Received {0} bytes over Redis Bus.", data.Length);
+            trace.TraceVerbose("Received Message: {0}", Convert.ToBase64String(data));
+            trace.TraceVerbose("Received Message Id: {0} ", messageId);
         }
     }
 }
