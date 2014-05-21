@@ -86,11 +86,11 @@ namespace Microsoft.AspNet.SignalR.Transports
             }
         }
 
-        protected override bool IsPollRequest
+        protected override bool SuppressReconnect
         {
             get
             {
-                return Context.Request.LocalPath.EndsWith("/poll", StringComparison.OrdinalIgnoreCase);
+                return !Context.Request.LocalPath.EndsWith("/reconnect", StringComparison.OrdinalIgnoreCase);
             }
         }
 

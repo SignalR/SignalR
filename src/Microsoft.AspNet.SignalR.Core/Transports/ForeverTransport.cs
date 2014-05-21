@@ -196,7 +196,7 @@ namespace Microsoft.AspNet.SignalR.Transports
                     };
                 }
             }
-            else if (!IsPollRequest)
+            else if (!SuppressReconnect)
             {
                 initialize = Reconnected;
                 _counters.ConnectionsReconnected.Increment();
