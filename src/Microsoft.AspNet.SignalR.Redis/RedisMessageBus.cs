@@ -56,13 +56,19 @@ namespace Microsoft.AspNet.SignalR.Redis
             var keys = new string[] { _key };
             TraceMessages(messages);
             var arguments = new object[] { RedisMessage.ToBytes(messages) };
-            return _connection.Scripting.Eval(
+            var task = _connection.Scripting.Eval(
                 _db,
                 @"local newId = redis.call('INCR', KEYS[1])
                   local payload = newId .. ' ' .. ARGV[1]
-                  return redis.call('PUBLISH', KEYS[1], payload)",
+                  redis.call('PUBLISH', KEYS[1], payload)
+                  return {newId, ARGV[1], payload}
+                ",
                 keys,
                 arguments);
+
+            PrintResult(task.Result as object[], _trace);
+
+            return task;
         }
 
         protected override void Dispose(bool disposing)
@@ -250,6 +256,26 @@ namespace Microsoft.AspNet.SignalR.Redis
 
                 return TaskAsyncHelper.FromError(ex);
             }
+        }
+
+        private static void PrintResult(object[] result, TraceSource trace)
+        {
+            var argumentNames = new string[] { "newId", "message", "payload" };
+            for (var i = 0; i < result.Length; i++)
+            {
+                var r = result[i];
+                trace.TraceVerbose("{0}: ({1}) {2}", argumentNames[i], r.GetType().Name, FormatBytes(r));
+            }
+        }
+
+        private static string FormatBytes(object payload)
+        {
+            byte[] bytes = payload as byte[];
+            if (bytes != null)
+            {
+                return bytes.Length + " bytes: " + BitConverter.ToString(bytes).Replace("-", string.Empty);
+            }
+            return payload.ToString();
         }
 
         private static class State
