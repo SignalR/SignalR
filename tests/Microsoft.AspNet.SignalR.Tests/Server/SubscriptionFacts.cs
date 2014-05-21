@@ -160,6 +160,28 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
             }
         }
 
+        [Fact]
+        public void SubscriptionShouldHaveOwnEventKeysList()
+        {
+            Func<MessageResult, object, Task<bool>> callback = async (result, state) =>
+            {
+                await TaskAsyncHelper.FromResult(true);
+                return false;
+            };
+
+            var subscription = new Mock<TestSubscription>("TestSub", new[] { "a" }, callback)
+            {
+                CallBase = true
+            };
+
+            using (subscription.Object)
+            {
+                subscription.Object.RemoveEvent("a");
+                Assert.Empty(subscription.Object.EventKeys);
+            }
+
+        }
+
         public class TestSubscription : Subscription
         {
             private readonly int _itemCount;
