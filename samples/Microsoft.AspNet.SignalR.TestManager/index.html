@@ -1,0 +1,77 @@
+﻿<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" ng-app="azureTestManager">
+<head>
+    <title></title>
+
+    <script src="bower_components/angular/angular.js"></script>
+    <script src="js/model.js"></script>
+    <script src="js/controller.js"></script>
+    <script src="Scripts/jquery-1.6.4.js"></script>
+    <script src="Scripts/jquery.signalR-2.0.3.js"></script>
+    <script src="signalr/js"></script>
+    <script src="signalr/hubs"></script>
+
+</head>
+<body ng-controller="TestManagerController">
+    <fieldset>
+        <table>
+            <tr ng-repeat="argument in arguments">
+                <td>{{argument.displayName}}:</td>
+                <td><input type="text" ng-model="argument.value" /></td>
+                <td>{{argument.argumentString()}}</td>
+            </tr>
+        </table>
+    </fieldset>
+
+    <fieldset>
+        <table>
+            <tr>
+                <td><input type="checkbox" ng-model="connectionManager.allSelected" /></td>
+                <td>ID</td>
+                <td>Host</td>
+                <td>Status</td>
+                <td>Last Update</td>
+                <td>Instances</td>
+            </tr>
+            <tr ng-repeat="connection in connectionManager.connections">
+                <td><input type="checkbox" name="selectHost" ng-model="connection.selected" /></td>
+                <td>{{connection.connectionId}}</td>
+                <td>{{connection.worker.address}}</td>
+                <td>{{connection.worker.status}}</td>
+                <td>{{connection.worker.lastUpdate}}</td>
+                <td>
+                    <table>
+                        <tr ng-repeat="process in connection.processes">
+                            <td>{{process.processId}}</td>
+                            <td>{{process.state}}</td>
+                            <td>{{process.lastUpdate}}</td>
+                            <td><input type="button" value="Stop" ng-click="stopProcess(connection.connectionId, process.processId)" /></td>
+                        </tr>
+                    </table>
+                </td>
+            </tr>
+            <tr>
+                <td><input type="button" value="Start" ng-click="startProcesses()" /></td>
+                <td><input ng-model="instances" /></td>
+                <td>instances</td>
+                <td colspan="3"></td>
+            </tr>
+        </table>
+    </fieldset>
+
+    <fieldset>
+        <table>
+            <tr>
+                <td>Trace log</td>
+                <td>
+                    <input type="button" value="Clear" ng-click="clearTrace()" />
+                </td>
+            </tr>
+            <tr ng-repeat="entry in traceLog">
+                <td>{{entry.address}}</td>
+                <td>{{entry.message}}</td>
+            </tr>
+        </table>
+    </fieldset>
+</body>
+</html>

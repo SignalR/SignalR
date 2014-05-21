@@ -1,0 +1,74 @@
+﻿<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" ng-app="azureTestManagerTest">
+<head>
+    <title></title>
+
+    <script src="bower_components/angular/angular.js"></script>
+    <script src="js/testController.js"></script>
+    <script src="Scripts/jquery-1.6.4.js"></script>
+    <script src="Scripts/jquery.signalR-2.0.3.js"></script>
+    <script src="signalr/js"></script>
+    <script src="signalr/hubs"></script>
+</head>
+<body ng-controller="AzureTestManagerTestController">
+
+    <!--<fieldset>
+        <table>
+            <tr>
+                <td>Group:</td>
+                <td><input id="group" value="workers" /></td>
+                <td><input type="button" id="join" value="Join" /></td>
+            </tr>
+        </table>
+    </fieldset>-->
+
+    <fieldset>
+        <table>
+            <tr>
+                <td>Address:</td>
+                <td><input id="address" value="localhost" /></td>
+            </tr>
+            <tr>
+                <td>Status:</td>
+                <td><input id="status" value="available" /></td>
+            </tr>
+            <tr>
+                <td><input type="button" id="updateHost" value="Update" ng-click="updateWorker()"/></td>
+                <td></td>
+            </tr>
+        </table>
+    </fieldset>
+
+    <fieldset>
+        <table>
+            <tr>
+                <td>ID</td>
+                <td>State</td>
+                <td>Update</td>
+                <td>Remove</td>
+            </tr>
+            <tr ng-repeat="instance in instances">
+                <td><input ng-model="instance.id" /></td>
+                <td><input ng-model="instance.state" /></td>
+                <td><input type="button" value="Update" ng-click="updateProcess(instance.id,instance.state)" /></td>
+                <td><input type="button" value="Remove" ng-click="removeProcess(instance.id)" /></td>
+            </tr>
+            <tr>
+                <td><strong id="stoppedProcess"></strong></td>
+                <td></td>
+                <td></td>
+                <td><input type="button" id="addProcess" value="Add" ng-click="addInstance()" /></td>
+            </tr>
+        </table>
+    </fieldset>
+
+    <fieldset>
+        <p>Message:<input id="traceMessage" value="trace message" /></p>
+        <input type="button" id="trace" value="Update" />
+    </fieldset>
+
+    <p>Count: <strong id="count"></strong></p>
+    <p>Arguments: <strong id="argumentString"></strong></p>
+
+</body>
+</html>
