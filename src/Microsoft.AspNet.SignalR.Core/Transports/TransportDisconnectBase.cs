@@ -211,7 +211,7 @@ namespace Microsoft.AspNet.SignalR.Transports
             }
         }
 
-        protected virtual bool IsPollRequest
+        protected virtual bool SuppressReconnect
         {
             get
             {
