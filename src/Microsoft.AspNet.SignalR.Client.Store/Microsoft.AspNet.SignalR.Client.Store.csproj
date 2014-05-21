@@ -36,7 +36,7 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <PropertyGroup>
-     <DocumentationFile>$(OutputPath)\$(AssemblyName).Xml</DocumentationFile>
+    <DocumentationFile>$(OutputPath)\$(AssemblyName).Xml</DocumentationFile>
   </PropertyGroup>
   <ItemGroup>
     <!-- A reference to the entire .NET Framework is automatically included -->
@@ -58,6 +58,7 @@
     </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Transports\WebSocketTransport.cs" />
+    <Compile Include="WebSockets\WebSocketHandler.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />

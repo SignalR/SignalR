@@ -1,12 +1,17 @@
 ﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.md in the project root for license information.
 
-using Microsoft.AspNet.SignalR.Client.Transports;
 using Xunit;
 
-namespace Microsoft.AspNet.SignalR.Client.Store.Transports
+namespace Microsoft.AspNet.SignalR.Client.Transports
 {
     public class WebSocketTransportTests
     {
+        [Fact]
+        public void MaxIncomingMessageSizeNullForWebSocketTransport()
+        {
+            Assert.Null(new WebSocketTransport().MaxIncomingMessageSize);
+        }
+
         [Fact]
         public void NameReturnsCorrectTransportName()
         {

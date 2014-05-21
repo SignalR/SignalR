@@ -118,6 +118,7 @@
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Transports\WebSocketTransportTests.cs" />
+    <Compile Include="WebSockets\WebSocketHandlerFacts.cs" />
   </ItemGroup>
   <ItemGroup>
     <AppxManifest Include="Package.appxmanifest">

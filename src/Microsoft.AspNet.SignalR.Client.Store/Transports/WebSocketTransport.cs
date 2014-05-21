@@ -3,11 +3,17 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNet.SignalR.WebSockets;
 
 namespace Microsoft.AspNet.SignalR.Client.Transports
 {
-    public class WebSocketTransport : IClientTransport
+    public class WebSocketTransport : WebSocketHandler, IClientTransport
     {
+        public WebSocketTransport()
+            : base(null)
+        {
+        }
+
         ~WebSocketTransport()
         {
             Dispose(false);
@@ -60,6 +66,31 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
         protected virtual void Dispose(bool disposing)
         {
             
+        }
+
+        public override void OnOpen()
+        {
+            throw new NotImplementedException();
+        }
+
+        public override void OnMessage(string message)
+        {
+            throw new NotImplementedException();
+        }
+
+        public override void OnMessage(byte[] message)
+        {
+            throw new NotImplementedException();
+        }
+
+        public override void OnError()
+        {
+            throw new NotImplementedException();
+        }
+
+        public override void OnClose()
+        {
+            throw new NotImplementedException();
         }
     }
 }
