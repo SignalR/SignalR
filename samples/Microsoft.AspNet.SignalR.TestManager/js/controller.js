@@ -24,7 +24,7 @@ azureTestManager.controller('TestManagerController', function ($scope) {
     $scope.updating = false;
 
     $scope.arguments = [
-        new Argument("Host", "/Url:http://", "localhost", "/TestConnection"),
+        new Argument("Host", "/Url:http://", "localhost:29573", "/TestConnection"),
         new Argument("Transport", "/Transport:"),
         new Argument("Batch Size", "/BatchSize:"),
         new Argument("Connect interval", "/ConnectInterval:"),
