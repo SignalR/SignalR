@@ -15,8 +15,8 @@ namespace Microsoft.AspNet.SignalR.CrankWorker.WorkerRole
 {
     public class WorkerRole : RoleEntryPoint
     {
-        private const string TEST_MANAGER_HOST = "http://localhost:38683/";
-        //private const string TEST_MANAGER_HOST = "http://perf-demo-mgr.perf-demo.net";
+        //private const string TEST_MANAGER_HOST = "http://localhost:38683/";
+        private const string TEST_MANAGER_HOST = "http://perf-demo-mgr.perf-demo.net";
 
         private const string TCPIP_PARAMETERS = @"HKEY_LOCAL_MACHINE\System\CurrentControlSet\Services\Tcpip\Parameters";
         private const string MAX_USER_PORT_VALUE_NAME = "MaxUserPort";

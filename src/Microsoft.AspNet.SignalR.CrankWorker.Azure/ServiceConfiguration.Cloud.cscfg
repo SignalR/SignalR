@@ -2,8 +2,15 @@
 <ServiceConfiguration serviceName="Microsoft.AspNet.SignalR.CrankWorker.Azure" xmlns="http://schemas.microsoft.com/ServiceHosting/2008/10/ServiceConfiguration" osFamily="4" osVersion="*" schemaVersion="2014-01.2.3">
   <Role name="Microsoft.AspNet.SignalR.CrankWorker.WorkerRole">
     <Instances count="1" />
-    <ConfigurationSettings>
-      <Setting name="Microsoft.WindowsAzure.Plugins.Diagnostics.ConnectionString" value="UseDevelopmentStorage=true" />
-    </ConfigurationSettings>
   </Role>
+  <NetworkConfiguration>
+    <VirtualNetworkSite name="perf-demo" />
+    <AddressAssignments>
+      <InstanceAddress roleName="Microsoft.AspNet.SignalR.CrankWorker.WorkerRole">
+        <Subnets>
+          <Subnet name="Subnet-1" />
+        </Subnets>
+      </InstanceAddress>
+    </AddressAssignments>
+  </NetworkConfiguration>
 </ServiceConfiguration>
