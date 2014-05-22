@@ -111,7 +111,10 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
             {
                 callbackInvoker.Invoke(initializeCallback);
             };
-            var url = connection.Url + (reconnecting ? "reconnect" : "connect") + GetReceiveQueryString(connection, data);
+
+            var url = reconnecting
+                ? _urlBuilder.BuildReconnect(connection, Name, data)
+                : _urlBuilder.BuildConnect(connection, Name, data);
 
             connection.Trace(TraceLevels.Events, "SSE: GET {0}", url);
 

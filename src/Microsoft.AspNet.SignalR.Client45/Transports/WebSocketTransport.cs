@@ -111,8 +111,12 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
 
         private async Task PerformConnect(bool reconnecting)
         {
-            var url = _connectionInfo.Connection.Url + (reconnecting ? "reconnect" : "connect");
-            url += TransportHelper.GetReceiveQueryString(_connectionInfo.Connection, _connectionInfo.Data, "webSockets");
+            var urlBuilder = new UrlBuilder();
+
+            var url = reconnecting
+                ? urlBuilder.BuildReconnect(_connectionInfo.Connection, Name, _connectionInfo.Data)
+                : urlBuilder.BuildConnect(_connectionInfo.Connection, Name, _connectionInfo.Data);
+
             var builder = new UriBuilder(url);
             builder.Scheme = builder.Scheme == "https" ? "wss" : "ws";
 

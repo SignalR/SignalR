@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR.Client.Http;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using Microsoft.AspNet.SignalR.Client.Infrastructure;
 
 namespace Microsoft.AspNet.SignalR.Client.Transports
 {
@@ -26,25 +27,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
                 throw new ArgumentNullException("connection");
             }
 
-#if PORTABLE
-            string negotiateUrl = connection.Url + "negotiate?" + GetNoCacheUrlParam();
-#else
-            string negotiateUrl = connection.Url + "negotiate";
-#endif
-            negotiateUrl += AppendCustomQueryString(connection, negotiateUrl);
-
-            char appender = '?';
-            if (negotiateUrl.Contains("?"))
-            {
-                appender = '&';
-            }
-
-            negotiateUrl += appender + "clientProtocol=" + connection.Protocol;
-
-            if (!String.IsNullOrEmpty(connectionData))
-            {
-                negotiateUrl += "&connectionData=" + connectionData;
-            }
+            var negotiateUrl = new UrlBuilder().BuildNegotiate(connection, connectionData);
 
             httpClient.Initialize(connection);
 
@@ -73,101 +56,12 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
                 throw new ArgumentNullException("connection");
             }
 
-            var startUrl = String.Format(CultureInfo.InvariantCulture,
-                "{0}start?transport={1}&clientProtocol={2}&connectionToken={3}",
-                connection.Url, transport, connection.Protocol, Uri.EscapeDataString(connection.ConnectionToken));
-
-            if (!String.IsNullOrEmpty(connectionData))
-            {
-                startUrl += "&connectionData=" + connectionData;
-            }
-
-            startUrl += AppendCustomQueryString(connection, startUrl);
+            var startUrl = new UrlBuilder().BuildStart(connection, transport, connectionData);
 
             httpClient.Initialize(connection);
 
             return httpClient.Get(startUrl, connection.PrepareRequest, isLongRunning: false)
                             .Then(response => response.ReadAsString());
-        }
-
-        [SuppressMessage("Microsoft.Design", "CA1062:Validate arguments of public methods", MessageId = "0", Justification = "This is called by internally")]
-        public static string GetReceiveQueryString(IConnection connection, string connectionData, string transport)
-        {
-            if (connection == null)
-            {
-                throw new ArgumentNullException("connection");
-            }
-
-            // ?transport={0}&connectionToken={1}&messageId={2}&groups={3}&connectionData={4}{5}
-            var qsBuilder = new StringBuilder();
-            qsBuilder.Append("?transport=" + transport)
-                     .Append("&clientProtocol=" + connection.Protocol)
-                     .Append("&connectionToken=" + Uri.EscapeDataString(connection.ConnectionToken));
-
-            if (connection.MessageId != null)
-            {
-                qsBuilder.Append("&messageId=" + Uri.EscapeDataString(connection.MessageId));
-            }
-
-            if (connection.GroupsToken != null)
-            {
-                qsBuilder.Append("&groupsToken=" + Uri.EscapeDataString(connection.GroupsToken));
-            }
-
-            if (connectionData != null)
-            {
-                qsBuilder.Append("&connectionData=" + connectionData);
-            }
-
-            string customQuery = connection.QueryString;
-
-            if (!String.IsNullOrEmpty(customQuery))
-            {
-                qsBuilder.Append("&").Append(customQuery);
-            }
-
-#if PORTABLE
-            qsBuilder.Append("&").Append(GetNoCacheUrlParam());
-#endif
-            return qsBuilder.ToString();
-        }
-
-        public static string AppendCustomQueryString(IConnection connection, string baseUrl)
-        {
-            if (connection == null)
-            {
-                throw new ArgumentNullException("connection");
-            }
-
-            if (baseUrl == null)
-            {
-                baseUrl = "";
-            }
-
-            string appender = "",
-                   customQuery = connection.QueryString,
-                   qs = "";
-
-            if (!String.IsNullOrEmpty(customQuery))
-            {
-                char firstChar = customQuery[0];
-
-                // If the custom query string already starts with an ampersand or question mark
-                // then we dont have to use any appender, it can be empty.
-                if (firstChar != '?' && firstChar != '&')
-                {
-                    appender = "?";
-
-                    if (baseUrl.Contains(appender))
-                    {
-                        appender = "&";
-                    }
-                }
-
-                qs += appender + customQuery;
-            }
-
-            return qs;
         }
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1021:AvoidOutParameters", Justification = "This is called internally.")]
@@ -280,7 +174,6 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
             {
                 onInitialized();
             }
-
         }
     }
 }

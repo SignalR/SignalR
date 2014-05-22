@@ -13,9 +13,6 @@ namespace Microsoft.AspNet.SignalR.Client.Infrastructure
 {
     public sealed class TransportAbortHandler : IDisposable
     {
-        // The abort query string
-        private const string _abortQueryString = "?transport={0}&clientProtocol={1}&connectionData={2}&connectionToken={3}{4}";
-
         // The transport name
         private readonly string _transportName;
 
@@ -35,6 +32,8 @@ namespace Microsoft.AspNet.SignalR.Client.Infrastructure
         // Used to make checking _disposed and calling _abortResetEvent.Set() thread safe
         private readonly object _disposeLock = new object();
 
+        private readonly UrlBuilder _urlBuilder = new UrlBuilder();
+        
         public TransportAbortHandler(IHttpClient httpClient, string transportName)
         {
             _httpClient = httpClient;
@@ -70,15 +69,7 @@ namespace Microsoft.AspNet.SignalR.Client.Infrastructure
                 {
                     _startedAbort = true;
 
-                    string url = connection.Url + "abort" + String.Format(CultureInfo.InvariantCulture,
-                                                                          _abortQueryString,
-                                                                          _transportName,
-                                                                          connection.Protocol,
-                                                                          connectionData,
-                                                                          Uri.EscapeDataString(connectionToken),
-                                                                          null);
-
-                    url += TransportHelper.AppendCustomQueryString(connection, url);
+                    var url = _urlBuilder.BuildAbort(connection, _transportName, connectionData);
 
                     _httpClient.Post(url, connection.PrepareRequest, isLongRunning: false).Catch((ex, state) =>
                     {

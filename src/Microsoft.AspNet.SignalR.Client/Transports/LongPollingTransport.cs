@@ -101,25 +101,23 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
 
             _requestHandler.ResolveUrl = () =>
             {
-                var url = connection.Url;
+                string url;
 
                 if (connection.MessageId == null)
                 {
-                    url += "connect";
+                    url = _urlBuilder.BuildConnect(connection, Name, data);
                     connection.Trace(TraceLevels.Events, "LP Connect: {0}", url);
                 }
                 else if (IsReconnecting(connection))
                 {
-                    url += "reconnect";
+                    url = _urlBuilder.BuildReconnect(connection, Name, data);
                     connection.Trace(TraceLevels.Events, "LP Reconnect: {0}", url);
                 }
                 else
                 {
-                    url += "poll";
+                    url = _urlBuilder.BuildPoll(connection, Name, data);
                     connection.Trace(TraceLevels.Events, "LP Poll: {0}", url);
                 }
-
-                url += GetReceiveQueryString(connection, data);
 
                 return url;
             };

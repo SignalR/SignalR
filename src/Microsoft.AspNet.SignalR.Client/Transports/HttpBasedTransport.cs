@@ -2,7 +2,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Threading;
 using System.Threading.Tasks;
@@ -15,9 +14,6 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
 {
     public abstract class HttpBasedTransport : IClientTransport
     {
-        // The send query string
-        private const string _sendQueryString = "?transport={0}&clientProtocol={1}&connectionData={2}&connectionToken={3}{4}";
-
         // The transport name
         private readonly string _transport;
 
@@ -25,6 +21,10 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
         private readonly TransportAbortHandler _abortHandler;
 
         private NegotiationResponse _negotiationResponse;
+
+        // Not meant to be used outside of this class hierarchy. This should be 
+        // "private protected" but this is supported only in C# 6.0.
+        internal readonly UrlBuilder _urlBuilder  = new UrlBuilder();
 
         protected HttpBasedTransport(IHttpClient httpClient, string transport)
         {
@@ -96,16 +96,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
                 throw new ArgumentNullException("connection");
             }
 
-            string url = connection.Url + "send";
-            string customQueryString = String.IsNullOrEmpty(connection.QueryString) ? String.Empty : "&" + connection.QueryString;
-
-            url += String.Format(CultureInfo.InvariantCulture,
-                                _sendQueryString,
-                                _transport,
-                                connection.Protocol,
-                                connectionData,
-                                Uri.EscapeDataString(connection.ConnectionToken),
-                                customQueryString);
+            string url = _urlBuilder.BuildSend(connection, Name, connectionData);
 
             var postData = new Dictionary<string, string> {
                 { "data", data }
@@ -128,11 +119,6 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
         public void Abort(IConnection connection, TimeSpan timeout, string connectionData)
         {
             _abortHandler.Abort(connection, timeout, connectionData);
-        }
-
-        protected string GetReceiveQueryString(IConnection connection, string data)
-        {
-            return TransportHelper.GetReceiveQueryString(connection, data, _transport);
         }
 
         public abstract void LostConnection(IConnection connection);
