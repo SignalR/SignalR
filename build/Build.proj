@@ -162,6 +162,7 @@
     <UnitTestProjects Include="$(ProjectRoot)\tests\Microsoft.AspNet.SignalR.Client.Tests\Microsoft.AspNet.SignalR.Client.Tests.csproj"></UnitTestProjects>
     <UnitTestProjects Include="$(ProjectRoot)\tests\Microsoft.AspNet.SignalR.SqlServer.Tests\Microsoft.AspNet.SignalR.SqlServer.Tests.csproj"></UnitTestProjects>
     <UnitTestProjects Include="$(ProjectRoot)\tests\Microsoft.AspNet.SignalR.Client.Store.Tests\Microsoft.AspNet.SignalR.Client.Store.Tests.csproj"></UnitTestProjects>
+    <UnitTestProjects Include="$(ProjectRoot)\tests\Microsoft.AspNet.SignalR.Client.Portable.Tests\Microsoft.AspNet.SignalR.Client.Portable.Tests.csproj"></UnitTestProjects>
   </ItemGroup>
 
   <ItemGroup>
@@ -268,6 +269,7 @@
     <xunit Assemblies="$(ProjectArtifactsDir)\Microsoft.AspNet.SignalR.Tests\Microsoft.AspNet.SignalR.Tests.dll"
            Xml="$(TestResultsPath)\Microsoft.AspNet.SignalR.Tests.XunitResults.xml"
            Verbose="true" />
+
     <xunit Assemblies="$(ProjectArtifactsDir)\Microsoft.AspNet.SignalR.Client.Tests\Microsoft.AspNet.SignalR.Client.Tests.dll"
        Xml="$(TestResultsPath)\Microsoft.AspNet.SignalR.Client.Tests.XunitResults.xml"
        Verbose="true" />
@@ -278,7 +280,11 @@
 
     <xunit Assemblies="$(ProjectArtifactsDir)\Microsoft.AspNet.SignalR.Client.Store.Tests\Microsoft.AspNet.SignalR.Client.Store.Tests.dll"
            Xml="$(TestResultsPath)\Microsoft.AspNet.SignalR.Client.Store.Tests.XunitResults.xml"
-           Verbose="true" />           
+           Verbose="true" />
+
+    <xunit Assemblies="$(ProjectArtifactsDir)\Microsoft.AspNet.SignalR.Client.Portable.Tests\Microsoft.AspNet.SignalR.Client.Portable.Tests.dll"
+           Xml="$(TestResultsPath)\Microsoft.AspNet.SignalR.Client.Portable.Tests.XunitResults.xml"
+           Verbose="true" />
 
     <CallTarget Targets="KillIISExpress" Condition=" '$(OS)' == 'Windows_NT'" />
     <OnError ExecuteTargets="KillIISExpress" Condition=" '$(OS)' == 'Windows_NT'" />
