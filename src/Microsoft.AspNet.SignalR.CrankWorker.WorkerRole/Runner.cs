@@ -43,17 +43,16 @@ namespace Microsoft.AspNet.SignalR.CrankWorker.WorkerRole
                     for (int index = 0; index < instances; index++)
                     {
                         _status = ClientStatus.SPAWNING;
-                        var startInfo = new ProcessStartInfo();
-                        startInfo.CreateNoWindow = true;
-                        startInfo.UseShellExecute = false;
-                        startInfo.FileName = path;
-                        startInfo.Arguments = String.Format(argumentString, host, index);
+                        string arguments = String.Format(argumentString, host, index);
+                        arguments += " /TestManagerUrl:" + managerUrl;
+                        arguments += " /TestManagerGuid:" + connection.ConnectionId;
 
-                        var processRunner = new ProcessRunner(startInfo);
+                        var processRunner = new ProcessRunner(path, arguments);
                         lock (_processRunners)
                         {
                             _processRunners.Add(processRunner);
                         }
+
                         processRunner.Start();
                         _status = ClientStatus.READY;
                     }
@@ -68,34 +67,6 @@ namespace Microsoft.AspNet.SignalR.CrankWorker.WorkerRole
                 {
                     await hub.Invoke("addTrace", host, errorMessage);
                 }
-
-            });
-
-            hub.On<int>("stopProcess", async (processId) =>
-            {
-                string errorMessage = "";
-                try
-                {
-                    ProcessRunner processRunner;
-                    lock (_processRunners)
-                    {
-                        processRunner = _processRunners[processId];
-                    }
-                    _status = ClientStatus.KILLING;
-                    await processRunner.Stop();
-                    _status = ClientStatus.READY;
-                }
-                catch (Exception exception)
-                {
-                    errorMessage = exception.ToString();
-                    _status = ClientStatus.ERROR;
-                }
-
-                if (_status == ClientStatus.ERROR)
-                {
-                    await hub.Invoke("addTrace", host, errorMessage);
-                }
-                await hub.Invoke("removeProcess", processId);
             });
 
             while (connection.State == ConnectionState.Disconnected)
@@ -109,19 +80,22 @@ namespace Microsoft.AspNet.SignalR.CrankWorker.WorkerRole
             }
 
             while (connection.State != ConnectionState.Connected) ;
-            hub.Invoke("joinConnectionGroup").Wait();
+            hub.Invoke("join", connection.ConnectionId).Wait();
 
             while (true)
             {
-                hub.Invoke("addUpdateWorker", host, _status.ToString()).Wait();
+                hub.Invoke("addUpdateWorker", connection.ConnectionId, host, _status.ToString()).Wait();
                 lock (_processRunners)
                 {
-                    for (int index = 0; index < _processRunners.Count; index++)
+                    foreach (var processRunner in _processRunners)
                     {
-                        var status = _processRunners[index].Status;
-                        if (status != ProcessRunner.ProcessStatus.STOPPED)
+                        string errorText;
+                        while (processRunner.TryGetErrorText(out errorText))
                         {
-                            hub.Invoke("addUpdateProcess", index, status.ToString());
+                            if ((errorText != null) && (errorText.Length > 0))
+                            {
+                                hub.Invoke("addTrace", host, errorText);
+                            }
                         }
                     }
                 }

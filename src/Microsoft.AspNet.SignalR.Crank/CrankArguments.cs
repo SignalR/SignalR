@@ -64,6 +64,13 @@ namespace Microsoft.AspNet.SignalR.Crank
         [CommandLineParameter(Command = "SignalRInstance", Required = false, Description = "Instance name for SignalR counters on the server. Defaults to using client connection states.")]
         public string SignalRInstance { get; set; }
 
+        [CommandLineParameter(Command = "TestManagerUrl", Required = false, Description = "Url of TestManager instance coordinating test runs.")]
+        public string TestManagerUrl { get; set; }
+
+        [CommandLineParameter(Command = "TestManagerGuid", Required = false, Description = "ID for assocating crank instances with a WorkerRole.")]
+        public string TestManagerGuid { get; set; }
+
+
         public string Controller
         {
             get

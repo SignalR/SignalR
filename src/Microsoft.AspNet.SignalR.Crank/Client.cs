@@ -16,22 +16,90 @@ namespace Microsoft.AspNet.SignalR.Crank
         private static ConcurrentBag<Connection> Connections = new ConcurrentBag<Connection>();
         private static ConcurrentBag<IHubProxy> HubProxies = new ConcurrentBag<IHubProxy>();
         private static HubConnection ControllerConnection;
-        private static IHubProxy ControllerProxy;
+        private static volatile IHubProxy ControllerProxy;
         private static ControllerEvents TestPhase = ControllerEvents.None;
 
         public static void Main()
         {
-            Arguments = CrankArguments.Parse();
-
-            ThreadPool.SetMinThreads(Arguments.Connections, 2);
-            TaskScheduler.UnobservedTaskException += OnUnobservedTaskException;
-
-            if (Arguments.IsController)
+            try
             {
-                ControllerHub.Start(Arguments);
-            }
+                Arguments = CrankArguments.Parse();
 
-            Run().Wait();
+                ThreadPool.SetMinThreads(Arguments.Connections, 2);
+                TaskScheduler.UnobservedTaskException += OnUnobservedTaskException;
+
+                if (Arguments.IsController)
+                {
+                    ControllerHub.Start(Arguments);
+                }
+
+                HubConnection testManagerConnection = null; ;
+                IHubProxy testManagerProxy = null;
+                if (Arguments.TestManagerUrl != null)
+                {
+                    if (Arguments.TestManagerGuid == null)
+                    {
+                        throw new InvalidOperationException("A TestManagerGuid must be provided with TestManagerUrl.");
+                    }
+                    testManagerConnection = new HubConnection(Arguments.TestManagerUrl);
+                    testManagerProxy = testManagerConnection.CreateHubProxy("TestManagerHub");
+
+                    testManagerProxy.On<string>("stopProcess", (processId) =>
+                    {
+                        if (processId.CompareTo(Process.GetCurrentProcess().Id.ToString()) == 0)
+                        {
+                            //await ControllerProxy.Invoke("signalPhaseChange", ControllerEvents.Disconnect);
+                            TestPhase = ControllerEvents.Disconnect;
+                        }
+                    });
+
+                    while (testManagerConnection.State == ConnectionState.Disconnected)
+                    {
+                        try
+                        {
+                            testManagerConnection.Start().Wait();
+                        }
+                        catch (Exception) { }
+                    }
+
+                    while (testManagerConnection.State != ConnectionState.Connected) ;
+                    testManagerProxy.Invoke("join", Arguments.TestManagerGuid).Wait();
+
+                    Task.Factory.StartNew(async () =>
+                    {
+                        string guid = Arguments.TestManagerGuid;
+                        string id = Process.GetCurrentProcess().Id.ToString();
+                        while (true)
+                        {
+                            await testManagerProxy.Invoke("addUpdateProcess", guid, id, TestPhase.ToString());
+                            await Task.Delay(1000);
+                        }
+                    });
+                }
+
+                Run().Wait();
+
+                if (testManagerProxy != null)
+                {
+                    testManagerProxy.Invoke("removeProcess", Arguments.TestManagerGuid, Process.GetCurrentProcess().Id.ToString());
+                    if(testManagerConnection != null)
+                    {
+                        testManagerConnection.Stop();
+                    }
+                }
+
+            }
+            catch (AggregateException aggregateException)
+            {
+                var e = aggregateException.InnerException;
+                Console.Error.WriteLine(e.ToString());
+                Console.Error.WriteLine(e.Message);
+            }
+            catch (Exception e)
+            {
+                Console.Error.WriteLine(e.ToString());
+                Console.Error.WriteLine(e.Message);
+            }
         }
 
         private static async Task Run()
@@ -158,7 +226,7 @@ namespace Microsoft.AspNet.SignalR.Crank
 
         private static void OnUnobservedTaskException(object sender, UnobservedTaskExceptionEventArgs e)
         {
-            Console.WriteLine(e.Exception.GetBaseException());
+            Console.Error.WriteLine(e.Exception.GetBaseException());
             e.SetObserved();
         }
 

@@ -14,6 +14,7 @@ namespace AzureTestManager
             Groups.Add(Context.ConnectionId, group);
         }
 
+        // TODO: Remove this
         public void JoinConnectionGroup()
         {
             Groups.Add(Context.ConnectionId, Context.ConnectionId);
@@ -29,26 +30,26 @@ namespace AzureTestManager
             Clients.Group(connectionId).stopProcess(processId);
         }
 
-        public void AddUpdateWorker(string address, string status)
+        public void AddUpdateWorker(string guid, string address, string status)
         {
             Clients.Group("manager").addUpdateWorker(
-                Context.ConnectionId,
+                guid,
                 address,
                 status);
         }
 
-        public void AddUpdateProcess(string id, string status)
+        public void AddUpdateProcess(string guid, string id, string status)
         {
             Clients.Group("manager").addUpdateProcess(
-                Context.ConnectionId,
+                guid,
                 id,
                 status);
         }
 
-        public void RemoveProcess(string id)
+        public void RemoveProcess(string guid, string id)
         {
             Clients.Group("manager").removeProcess(
-                Context.ConnectionId,
+                guid,
                 id);
         }
 
