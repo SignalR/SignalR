@@ -35,7 +35,7 @@ namespace Microsoft.AspNet.SignalR.CrankWorker.WorkerRole
             var connection = new HubConnection(managerUrl);
             var hub = connection.CreateHubProxy("TestManagerHub");
 
-            hub.On<int, string>("startProcesses", async (instances, argumentString) =>
+            hub.On<int, string>("startProcesses", (instances, argumentString) =>
             {
                 string errorMessage = "";
                 try
@@ -63,10 +63,10 @@ namespace Microsoft.AspNet.SignalR.CrankWorker.WorkerRole
                     _status = ClientStatus.ERROR;
                 }
 
-                if (_status == ClientStatus.ERROR)
-                {
-                    await hub.Invoke("addTrace", host, errorMessage);
-                }
+                //                if (_status == ClientStatus.ERROR)
+                //                {
+                //                    await hub.Invoke("addTrace", host, errorMessage);
+                //                }
             });
 
             while (connection.State == ConnectionState.Disconnected)
@@ -89,12 +89,22 @@ namespace Microsoft.AspNet.SignalR.CrankWorker.WorkerRole
                 {
                     foreach (var processRunner in _processRunners)
                     {
-                        string errorText;
-                        while (processRunner.TryGetErrorText(out errorText))
+                        if (processRunner.Status != ProcessRunner.ProcessStatus.STOPPED)
                         {
-                            if ((errorText != null) && (errorText.Length > 0))
+                            string text;
+                            while (processRunner.TryGetErrorText(out text))
                             {
-                                hub.Invoke("addTrace", host, errorText);
+                                if ((text != null) && (text.Length > 0))
+                                {
+                                    hub.Invoke("addErrorTrace", connection.ConnectionId, processRunner.ProcessId, text);
+                                }
+                            }
+                            while (processRunner.TryGetOutputText(out text))
+                            {
+                                if ((text != null) && (text.Length > 0))
+                                {
+                                    hub.Invoke("addOutputTrace", connection.ConnectionId, processRunner.ProcessId, text);
+                                }
                             }
                         }
                     }

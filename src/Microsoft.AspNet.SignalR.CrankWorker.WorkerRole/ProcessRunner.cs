@@ -22,6 +22,7 @@ namespace Microsoft.AspNet.SignalR.CrankWorker.WorkerRole
 
         private readonly ProcessStartInfo _startInfo;
         private readonly Queue<string> _errorTextQueue;
+        private readonly Queue<string> _outputTextQueue;
         private readonly CancellationTokenSource _cancellationTokenSource;
 
         private Task runner;
@@ -34,7 +35,9 @@ namespace Microsoft.AspNet.SignalR.CrankWorker.WorkerRole
             _startInfo.CreateNoWindow = true;
             _startInfo.UseShellExecute = false;
             _startInfo.RedirectStandardError = true;
+            _startInfo.RedirectStandardOutput = true;
             _errorTextQueue = new Queue<string>();
+            _outputTextQueue = new Queue<string>();
             _cancellationTokenSource = new CancellationTokenSource();
             Status = ProcessStatus.CREATED;
         }
@@ -50,6 +53,23 @@ namespace Microsoft.AspNet.SignalR.CrankWorker.WorkerRole
                 if (_errorTextQueue.Count > 0)
                 {
                     text = _errorTextQueue.Dequeue();
+                    return true;
+                }
+                else
+                {
+                    text = "";
+                    return false;
+                }
+            }
+        }
+
+        public bool TryGetOutputText(out string text)
+        {
+            lock (_outputTextQueue)
+            {
+                if (_outputTextQueue.Count > 0)
+                {
+                    text = _outputTextQueue.Dequeue();
                     return true;
                 }
                 else
@@ -80,6 +100,9 @@ namespace Microsoft.AspNet.SignalR.CrankWorker.WorkerRole
                 var errorReader = process.StandardError;
                 var errorRead = errorReader.ReadLineAsync();
 
+                var outputReader = process.StandardOutput;
+                var outputRead = outputReader.ReadLineAsync();
+
                 while (!process.HasExited)
                 {
                     if (errorRead.IsCompleted)
@@ -90,12 +113,25 @@ namespace Microsoft.AspNet.SignalR.CrankWorker.WorkerRole
                         }
                         errorRead = errorReader.ReadLineAsync();
                     }
+                    if (outputRead.IsCompleted)
+                    {
+                        lock (_outputTextQueue)
+                        {
+                            _outputTextQueue.Enqueue(outputRead.Result);
+                        }
+                        outputRead = outputReader.ReadLineAsync();
+                    }
                     await Task.Delay(1000);
                 }
                 await errorRead;
                 lock (_errorTextQueue)
                 {
                     _errorTextQueue.Enqueue(errorRead.Result);
+                }
+                await outputRead;
+                lock (_outputTextQueue)
+                {
+                    _outputTextQueue.Enqueue(outputRead.Result);
                 }
                 process.WaitForExit();
             }

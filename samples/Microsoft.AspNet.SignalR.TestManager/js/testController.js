@@ -29,19 +29,36 @@ azureTestManager.controller('AzureTestManagerTestController', function ($scope) 
 
     $scope.updateWorker = function () {
         hub.server.addUpdateWorker(
+            hub.connection.id,
             $('#address').val(),
             $('#status').val());
     }
 
     $scope.updateProcess = function (id, status) {
         hub.server.addUpdateProcess(
+            hub.connection.id,
             id,
             status);
     }
 
     $scope.removeProcess = function (id) {
         hub.server.removeProcess(
+            hub.connection.id,
             id);
+    }
+
+    $scope.addErrorTrace = function (id) {
+        hub.server.addErrorTrace(
+            hub.connection.id,
+            id,
+            $('#errorTrace').val());
+    }
+
+    $scope.addOutputTrace = function (id) {
+        hub.server.addOutputTrace(
+            hub.connection.id,
+            id,
+            $('#outputTrace').val());
     }
 
     hub.client.startProcesses = function (instances, argumentString) {
@@ -56,13 +73,6 @@ azureTestManager.controller('AzureTestManagerTestController', function ($scope) 
     hub.client.disconnected = function (id) { }
 
     $.connection.hub.start().done(function () {
-        $('#trace').click(function () {
-            hub.server.addTrace(
-                $('#address').val(),
-                $('#traceMessage').val());
-        });
-
         hub.server.joinConnectionGroup();
     });
-
 });

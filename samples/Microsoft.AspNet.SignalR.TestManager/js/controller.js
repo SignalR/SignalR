@@ -13,12 +13,6 @@ function Argument(displayName, prefix, defaultValue, postfix) {
     };
 }
 
-function TraceEntry(address, message) {
-    var self = this;
-    self.address = address;
-    self.message = message;
-}
-
 azureTestManager.controller('TestManagerController', function ($scope) {
     var hub = $.connection.testManagerHub;
     $scope.updating = false;
@@ -108,6 +102,16 @@ azureTestManager.controller('TestManagerController', function ($scope) {
         $scope.connectionManager.getConnection(connectionId).removeProcess(processId);
     }
 
+    $scope.addErrorTrace = function (connectionId, processId, message) {
+        var process = $scope.connectionManager.getConnection(connectionId).getProcess(processId);
+        process.lastError = message;
+    };
+
+    $scope.addOutputTrace = function (connectionId, processId, message) {
+        var process = $scope.connectionManager.getConnection(connectionId).getProcess(processId);
+        process.lastOutput = message;
+    }
+
     $scope.startProcesses = function () {
         var argumentString = $scope.getArgumentString();
         var connections = $scope.connectionManager.connections;
@@ -121,16 +125,6 @@ azureTestManager.controller('TestManagerController', function ($scope) {
 
     $scope.stopProcess = function (connectionId, processId) {
         hub.server.stopProcess(connectionId, processId);
-    };
-
-    $scope.traceLog = [];
-
-    $scope.addTrace = function (address, message) {
-        $scope.traceLog.push(new TraceEntry(address, message));
-    };
-
-    $scope.clearTrace = function () {
-        $scope.traceLog = [];
     };
 
     hub.client.addUpdateWorker = function (id, address, status, instancePids, instanceStates) {
@@ -151,11 +145,17 @@ azureTestManager.controller('TestManagerController', function ($scope) {
         });
     }
 
-    hub.client.addTrace = function (address, message) {
+    hub.client.addErrorTrace = function (connectionId, processId, message) {
         $scope.$apply(function () {
-            $scope.addTrace(address, message);
+            $scope.addErrorTrace(connectionId, processId, message);
         });
-    };
+    }
+
+    hub.client.addOutputTrace = function (connectionId, processId, message) {
+        $scope.$apply(function () {
+            $scope.addOutputTrace(connectionId, processId, message);
+        });
+    }
 
     hub.client.disconnected = function (id) {
         $scope.$apply(function () {

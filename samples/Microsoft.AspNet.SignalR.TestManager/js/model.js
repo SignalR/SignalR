@@ -13,6 +13,8 @@ function Process(processId) {
     self.processId = processId;
     self.state = '';
     self.lastUpdate = '';
+    self.lastError = '';
+    self.lastOutput = '';
 }
 
 function Worker() {

@@ -11,16 +11,6 @@
 </head>
 <body ng-controller="AzureTestManagerTestController">
 
-    <!--<fieldset>
-        <table>
-            <tr>
-                <td>Group:</td>
-                <td><input id="group" value="workers" /></td>
-                <td><input type="button" id="join" value="Join" /></td>
-            </tr>
-        </table>
-    </fieldset>-->
-
     <fieldset>
         <table>
             <tr>
@@ -51,6 +41,8 @@
                 <td><input ng-model="instance.state" /></td>
                 <td><input type="button" value="Update" ng-click="updateProcess(instance.id,instance.state)" /></td>
                 <td><input type="button" value="Remove" ng-click="removeProcess(instance.id)" /></td>
+                <td><input type="button" value="Standard Error" ng-click="addErrorTrace(instance.id)" /></td>
+                <td><input type="button" value="Standard Out" ng-click="addOutputTrace(instance.id)" /></td>
             </tr>
             <tr>
                 <td><strong id="stoppedProcess"></strong></td>
@@ -62,8 +54,8 @@
     </fieldset>
 
     <fieldset>
-        <p>Message:<input id="traceMessage" value="trace message" /></p>
-        <input type="button" id="trace" value="Update" />
+        <p>Error Message:<input id="errorTrace" value="Error Trace Message" /></p>
+        <p>Output Message:<input id="outputTrace" value="Output Trace Message" /></p>
     </fieldset>
 
     <p>Count: <strong id="count"></strong></p>

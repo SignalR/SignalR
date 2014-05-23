@@ -14,7 +14,6 @@ namespace AzureTestManager
             Groups.Add(Context.ConnectionId, group);
         }
 
-        // TODO: Remove this
         public void JoinConnectionGroup()
         {
             Groups.Add(Context.ConnectionId, Context.ConnectionId);
@@ -53,6 +52,17 @@ namespace AzureTestManager
                 id);
         }
 
+        public void AddErrorTrace(string guid, string id, string message)
+        {
+            Clients.Group("manager").addErrorTrace(guid, id, message);
+        }
+
+        public void AddOutputTrace(string guid, string id, string message)
+        {
+            Clients.Group("manager").addOutputTrace(guid, id, message);
+        }
+
+        // TODO: REMOVE
         public void AddTrace(string address, string message)
         {
             Clients.Group("manager").addTrace(address, message);

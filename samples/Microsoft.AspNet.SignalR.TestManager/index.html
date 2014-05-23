@@ -43,6 +43,8 @@
                             <td>{{process.processId}}</td>
                             <td>{{process.state}}</td>
                             <td>{{process.lastUpdate}}</td>
+                            <td>{{process.lastError}}</td>
+                            <td>{{process.lastOutput}}</td>
                             <td><input type="button" value="Stop" ng-click="stopProcess(connection.connectionId, process.processId)" /></td>
                         </tr>
                     </table>
@@ -53,21 +55,6 @@
                 <td><input ng-model="instances" /></td>
                 <td>instances</td>
                 <td colspan="3"></td>
-            </tr>
-        </table>
-    </fieldset>
-
-    <fieldset>
-        <table>
-            <tr>
-                <td>Trace log</td>
-                <td>
-                    <input type="button" value="Clear" ng-click="clearTrace()" />
-                </td>
-            </tr>
-            <tr ng-repeat="entry in traceLog">
-                <td>{{entry.address}}</td>
-                <td>{{entry.message}}</td>
             </tr>
         </table>
     </fieldset>
