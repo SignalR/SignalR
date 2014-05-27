@@ -2,15 +2,30 @@
 <html xmlns="http://www.w3.org/1999/xhtml" ng-app="azureTestManager">
 <head>
     <title></title>
-    <script src="Scripts/jquery-1.8.2.js"></script>
+    <link rel="stylesheet" type="text/css" href="Content/Site.css" />
+    <link rel="stylesheet" type="text/css" href="Content/bootstrap.css" />
+    <script src="Scripts/jquery-1.9.0.js"></script>
     <script src="Scripts/jquery.signalR.js"></script>
+    <script src="Scripts/angular.js"></script>
+    <script src="Scripts/angular-ui/ui-bootstrap-tpls.js"></script>
     <script src="signalr/js"></script>
     <script src="~signalr/hubs"></script>
-    <script src="bower_components/angular/angular.js"></script>
+
     <script src="js/model.js"></script>
     <script src="js/controller.js"></script>
 </head>
 <body ng-controller="TestManagerController">
+    <div>
+        <accordion close-others="false">
+            <accordion-group heading="LoadTestHarness">
+                <fieldset>
+                    <label>Target:</label><input id="targetHost" ng-model="arguments[0].value" /><button class="btn btn-default btn-sm" ng-click="loadTarget()">Connect</button>
+                    <br />
+                    <iframe width="100%" id="targetPage"></iframe>
+                </fieldset>
+            </accordion-group>
+        </accordion>
+    </div>
     <fieldset>
         <table>
             <tr ng-repeat="argument in arguments">
@@ -20,7 +35,6 @@
             </tr>
         </table>
     </fieldset>
-
     <fieldset>
         <table>
             <tr>

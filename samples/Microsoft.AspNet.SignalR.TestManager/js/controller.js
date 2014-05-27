@@ -1,4 +1,4 @@
-﻿var azureTestManager = angular.module('azureTestManager', []);
+﻿var azureTestManager = angular.module('azureTestManager', ['ui.bootstrap']);
 
 function Argument(displayName, prefix, defaultValue, postfix) {
     var self = this;
@@ -17,8 +17,17 @@ azureTestManager.controller('TestManagerController', function ($scope) {
     var hub = $.connection.testManagerHub;
     $scope.updating = false;
 
+    $('#targetPage').load(function () {
+        var frame = $('#targetPage');
+        frame.style.height = frame.contentWindow.document.body.offsetHeight + 'px';
+    });
+
+    $scope.loadTarget = function () {
+        $('#targetPage').attr('src', $('#targetHost').val());
+    }
+
     $scope.arguments = [
-        new Argument("Host", "/Url:http://", "localhost:29573", "/TestConnection"),
+        new Argument("Host", "/Url:", "http://localhost:29573", "/TestConnection"),
         new Argument("Transport", "/Transport:"),
         new Argument("Batch Size", "/BatchSize:"),
         new Argument("Connect interval", "/ConnectInterval:"),
