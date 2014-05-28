@@ -15,11 +15,17 @@ namespace Microsoft.AspNet.SignalR.LoadTestHarness
         private static bool _batchingEnabled;
         private static int _actualFps = 0;
 
-        private static readonly Lazy<HighFrequencyTimer> _timerInstance = new Lazy<HighFrequencyTimer>(() =>
+        private static IHubConnectionContext<dynamic> clients;
+        private static AutoResetEvent autoResetEvent;
+        private static bool _isRunning = false;
+        private static long _rate = 1000;
+
+        private static readonly Lazy<Timer> _timerInstance = new Lazy<Timer>(() =>
         {
-            var clients = GlobalHost.ConnectionManager.GetHubContext<Dashboard>().Clients;
+            autoResetEvent = new AutoResetEvent(false);
+            clients = GlobalHost.ConnectionManager.GetHubContext<Dashboard>().Clients;
             var connection = GlobalHost.ConnectionManager.GetConnectionContext<TestConnection>().Connection;
-            return new HighFrequencyTimer(1,
+            return new Timer(
                 _ =>
                 {
                     if (_batchingEnabled)
@@ -36,13 +42,11 @@ namespace Microsoft.AspNet.SignalR.LoadTestHarness
                         connection.Broadcast(_broadcastPayload);
                     }
                 },
-                () => clients.All.started(),
-                () => { clients.All.stopped(); clients.All.serverFps(0); },
-                fps => { _actualFps = fps; clients.All.serverFps(fps); }
+                null,
+                Timeout.Infinite,
+                _rate
             );
         });
-
-        private HighFrequencyTimer _timer { get { return _timerInstance.Value; } }
 
         internal static void Init()
         {
@@ -58,7 +62,7 @@ namespace Microsoft.AspNet.SignalR.LoadTestHarness
                 BroadcastCount = _broadcastCount,
                 BroadcastSeconds = _broadcastSeconds,
                 BroadcastSize = _broadcastSize,
-                Broadcasting = _timer.IsRunning(),
+                Broadcasting = _isRunning,
                 ServerFps = _actualFps
             };
         }
@@ -80,7 +84,12 @@ namespace Microsoft.AspNet.SignalR.LoadTestHarness
             // Need to turn the count/seconds into FPS
             _broadcastCount = count;
             _broadcastSeconds = seconds;
-            _timer.FPS = _batchingEnabled ? 1 / (double)seconds : count;
+            _rate = _batchingEnabled ? 1000 * seconds : 1000 / count;
+            //_actualFps = (int)(1000 / _rate);
+            if (_isRunning)
+            {
+                _timerInstance.Value.Change(0, _rate);
+            }
             Clients.Others.broadcastRateChanged(count, seconds);
         }
 
@@ -99,12 +108,19 @@ namespace Microsoft.AspNet.SignalR.LoadTestHarness
 
         public void StartBroadcast()
         {
-            _timer.Start();
+            _timerInstance.Value.Change(0, _rate);
+            _isRunning = true;
+            clients.All.started();
+            //_actualFps = (int)(1 / _rate);
         }
 
         public void StopBroadcast()
         {
-            _timer.Stop();
+            _timerInstance.Value.Change(0, Timeout.Infinite);
+            _isRunning = false;
+            clients.All.stopped();
+            _actualFps = (int)(1 / _rate);
+            clients.All.serverFps(0);
         }
 
         private static void SetBroadcastPayload()

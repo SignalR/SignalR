@@ -17,13 +17,10 @@ azureTestManager.controller('TestManagerController', function ($scope) {
     var hub = $.connection.testManagerHub;
     $scope.updating = false;
 
-    $('#targetPage').load(function () {
-        var frame = $('#targetPage');
-        frame.style.height = frame.contentWindow.document.body.offsetHeight + 'px';
-    });
+
 
     $scope.loadTarget = function () {
-        $('#targetPage').attr('src', $('#targetHost').val());
+        $('#targetPage').attr('src', $('#Host').val());
     }
 
     $scope.arguments = [

@@ -2,12 +2,12 @@
 <html xmlns="http://www.w3.org/1999/xhtml" ng-app="azureTestManager">
 <head>
     <title></title>
+    <link rel="stylesheet" type="text/css" href="bower_components/bootstrap/dist/css/bootstrap.css" />
     <link rel="stylesheet" type="text/css" href="Content/Site.css" />
-    <link rel="stylesheet" type="text/css" href="Content/bootstrap.css" />
-    <script src="Scripts/jquery-1.9.0.js"></script>
+    <script src="bower_components/jquery/dist/jquery.js"></script>
+    <script src="bower_components/angular/angular.js"></script>
+    <script src="bower_components/angular-bootstrap/ui-bootstrap-tpls.js"></script>
     <script src="Scripts/jquery.signalR.js"></script>
-    <script src="Scripts/angular.js"></script>
-    <script src="Scripts/angular-ui/ui-bootstrap-tpls.js"></script>
     <script src="signalr/js"></script>
     <script src="~signalr/hubs"></script>
 
@@ -15,62 +15,75 @@
     <script src="js/controller.js"></script>
 </head>
 <body ng-controller="TestManagerController">
-    <div>
-        <accordion close-others="false">
-            <accordion-group heading="LoadTestHarness">
-                <fieldset>
-                    <label>Target:</label><input id="targetHost" ng-model="arguments[0].value" /><button class="btn btn-default btn-sm" ng-click="loadTarget()">Connect</button>
-                    <br />
-                    <iframe width="100%" id="targetPage"></iframe>
-                </fieldset>
-            </accordion-group>
-        </accordion>
-    </div>
-    <fieldset>
-        <table>
-            <tr ng-repeat="argument in arguments">
-                <td>{{argument.displayName}}:</td>
-                <td><input type="text" ng-model="argument.value" /></td>
-                <td>{{argument.argumentString()}}</td>
-            </tr>
-        </table>
-    </fieldset>
-    <fieldset>
-        <table>
-            <tr>
-                <td><input type="checkbox" ng-model="connectionManager.allSelected" /></td>
-                <td>ID</td>
-                <td>Host</td>
-                <td>Status</td>
-                <td>Last Update</td>
-                <td>Instances</td>
-            </tr>
-            <tr ng-repeat="connection in connectionManager.connections">
-                <td><input type="checkbox" name="selectHost" ng-model="connection.selected" /></td>
-                <td>{{connection.connectionId}}</td>
-                <td>{{connection.worker.address}}</td>
-                <td>{{connection.worker.status}}</td>
-                <td>{{connection.worker.lastUpdate}}</td>
-                <td>
-                    <table>
-                        <tr ng-repeat="process in connection.processes">
-                            <td>{{process.processId}}</td>
-                            <td>{{process.state}}</td>
-                            <td>{{process.lastUpdate}}</td>
-                            <td>{{process.lastError}}</td>
-                            <td>{{process.lastOutput}}</td>
-                            <td><input type="button" value="Stop" ng-click="stopProcess(connection.connectionId, process.processId)" /></td>
-                        </tr>
-                    </table>
-                </td>
-            </tr>
-            <tr>
-                <td><input type="button" value="Start" ng-click="startProcesses()" /></td>
-                <td><input ng-model="instances" /></td>
-                <td>instances</td>
-                <td colspan="3"></td>
-            </tr>
-        </table>
-    </fieldset>
+
+    <tabset>
+        <tab heading="A title">Content1</tab>
+        <tab heading="Another">Content2</tab>
+    </tabset>
+
+    <accordion close-others="false">
+        <accordion-group heading="Configuration">
+            <table>
+                <tr ng-repeat="argument in arguments">
+                    <td>{{argument.displayName}}:</td>
+                    <td><input type="text" id="{{argument.displayName}}" ng-model="argument.value" /></td>
+                    <!--<td>{{argument.argumentString()}}</td>-->
+                </tr>
+            </table>
+        </accordion-group>
+        <accordion-group heading="LoadTestHarness" ng-click="loadTarget()">
+            <iframe width="550" height="340" id="targetPage"></iframe>
+            <br />
+            <button class="btn btn-default btn-sm" ng-click="loadTarget()">Reload</button>
+        </accordion-group>
+        <accordion-group heading="Worker Hosts ({{connectionManager.connections.length}})">
+            <fieldset>
+                <div ng-repeat="connection in connectionManager.connections">
+                    <tabset>
+                        <tab heading="{{connection.worker.address}}">{{connection.connectionId}}</tab>
+                    </tabset>
+                </div>
+
+                <table>
+                    <tr>
+                        <td><input type="checkbox" ng-model="connectionManager.allSelected" /></td>
+                        <td>ID</td>
+                        <td>Host</td>
+                        <td>Status</td>
+                        <td>Last Update</td>
+                        <td>Instances</td>
+                    </tr>
+                    <tr ng-repeat="connection in connectionManager.connections">
+                        <td><input type="checkbox" name="selectHost" ng-model="connection.selected" /></td>
+                        <td>{{connection.connectionId}}</td>
+                        <td>{{connection.worker.address}}</td>
+                        <td>{{connection.worker.status}}</td>
+                        <td>{{connection.worker.lastUpdate}}</td>
+                        <td>
+                            <table>
+                                <tr ng-repeat="process in connection.processes">
+                                    <td>{{process.processId}}</td>
+                                    <td>{{process.state}}</td>
+                                    <td>{{process.lastUpdate}}</td>
+                                    <td>{{process.lastError}}</td>
+                                    <td>{{process.lastOutput}}</td>
+                                    <td><input type="button" value="Stop" ng-click="stopProcess(connection.connectionId, process.processId)" /></td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><input type="button" value="Start" ng-click="startProcesses()" /></td>
+                        <td><input ng-model="instances" /></td>
+                        <td>instances</td>
+                        <td colspan="3"></td>
+                    </tr>
+                </table>
+            </fieldset>
+        </accordion-group>
+    </accordion>
+
+
+
 </body>
 </html>
