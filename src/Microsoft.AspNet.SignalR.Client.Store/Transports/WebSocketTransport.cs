@@ -1,17 +1,39 @@
 ﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.md in the project root for license information.
 
 using System;
+using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.AspNet.SignalR.WebSockets;
+using Microsoft.AspNet.SignalR.Client.Http;
 
 namespace Microsoft.AspNet.SignalR.Client.Transports
 {
-    public class WebSocketTransport : WebSocketHandler, IClientTransport
+    public class WebSocketTransport : IClientTransport
     {
+        private readonly IHttpClient _httpClient;
+        private readonly TransportHelper _transportHelper;
+
         public WebSocketTransport()
-            : base(null)
+            : this(new DefaultHttpClient())
+        {            
+        }
+
+        public WebSocketTransport(IHttpClient httpClient)
+            : this(httpClient, new TransportHelper())
         {
+        }
+
+        internal WebSocketTransport(IHttpClient httpClient, TransportHelper transportHelper)
+        {
+            Debug.Assert(transportHelper != null, "transportHelper is null");
+
+            if (httpClient == null)
+            {
+                throw new ArgumentNullException("httpClient");
+            }
+
+            _httpClient = httpClient;
+            _transportHelper = transportHelper;
         }
 
         ~WebSocketTransport()
@@ -34,7 +56,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
 
         public Task<NegotiationResponse> Negotiate(IConnection connection, string connectionData)
         {
-            throw new NotImplementedException();
+            return _transportHelper.GetNegotiationResponse(_httpClient, connection, connectionData);
         }
 
         public Task Start(IConnection connection, string connectionData, CancellationToken disconnectToken)
@@ -64,33 +86,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
         }
 
         protected virtual void Dispose(bool disposing)
-        {
-            
-        }
-
-        public override void OnOpen()
-        {
-            throw new NotImplementedException();
-        }
-
-        public override void OnMessage(string message)
-        {
-            throw new NotImplementedException();
-        }
-
-        public override void OnMessage(byte[] message)
-        {
-            throw new NotImplementedException();
-        }
-
-        public override void OnError()
-        {
-            throw new NotImplementedException();
-        }
-
-        public override void OnClose()
-        {
-            throw new NotImplementedException();
+        {   
         }
     }
 }

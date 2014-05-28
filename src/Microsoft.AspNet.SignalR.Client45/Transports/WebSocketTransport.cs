@@ -21,6 +21,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
         private CancellationTokenSource _webSocketTokenSource;
         private ClientWebSocket _webSocket;
         private int _disposed;
+        private readonly TransportHelper _transportHelper = new TransportHelper();
 
         public WebSocketTransport()
             : this(new DefaultHttpClient())
@@ -65,7 +66,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
 
         public Task<NegotiationResponse> Negotiate(IConnection connection, string connectionData)
         {
-            return _client.GetNegotiationResponse(connection, connectionData);
+            return _transportHelper.GetNegotiationResponse(_client, connection, connectionData);
         }
 
         public virtual Task Start(IConnection connection, string connectionData, CancellationToken disconnectToken)
@@ -75,7 +76,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
                 throw new ArgumentNullException("connection");
             }
 
-            _initializeHandler = new TransportInitializationHandler(_client, connection, connectionData, Name, disconnectToken);
+            _initializeHandler = new TransportInitializationHandler(_client, connection, connectionData, Name, disconnectToken, _transportHelper);
 
             // Tie into the OnFailure event so that we can stop the transport silently.
             _initializeHandler.OnFailure += () =>
@@ -165,7 +166,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
 
             bool timedOut;
             bool disconnected;
-            TransportHelper.ProcessResponse(_connectionInfo.Connection,
+            _transportHelper.ProcessResponse(_connectionInfo.Connection,
                                             message,
                                             out timedOut,
                                             out disconnected,

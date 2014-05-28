@@ -19,12 +19,14 @@ namespace Microsoft.AspNet.SignalR.Client.Infrastructure
         private readonly string _connectionData;
         private readonly string _transport;
         private readonly IDisposable _tokenCleanup;
+        private readonly TransportHelper _transportHelper;
 
-        public TransportInitializationHandler(IHttpClient httpClient,
+        internal TransportInitializationHandler(IHttpClient httpClient,
                                               IConnection connection,
                                               string connectionData,
                                               string transport,
-                                              CancellationToken disconnectToken)
+                                              CancellationToken disconnectToken, 
+                                              TransportHelper transportHelper)
         {
             if (connection == null)
             {
@@ -35,6 +37,7 @@ namespace Microsoft.AspNet.SignalR.Client.Infrastructure
             _httpClient = httpClient;
             _connectionData = connectionData;
             _transport = transport;
+            _transportHelper = transportHelper;
 
             _initializationTask = new TaskCompletionSource<object>();
             _initializationInvoker = new ThreadSafeInvoker();
@@ -82,7 +85,7 @@ namespace Microsoft.AspNet.SignalR.Client.Infrastructure
 
         private void Start()
         {
-            _httpClient.GetStartResponse(_connection, _connectionData, _transport).Then(response =>
+            _transportHelper.GetStartResponse(_httpClient, _connection, _connectionData, _transport).Then(response =>
             {
                 var started = _connection.JsonDeserializeObject<JObject>(response)["Response"];
                 if (started.ToString() == "started")

@@ -4,7 +4,6 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
-using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR.Client.Http;
 using Newtonsoft.Json;
@@ -13,9 +12,10 @@ using Microsoft.AspNet.SignalR.Client.Infrastructure;
 
 namespace Microsoft.AspNet.SignalR.Client.Transports
 {
-    public static class TransportHelper
+    public class TransportHelper
     {
-        public static Task<NegotiationResponse> GetNegotiationResponse(this IHttpClient httpClient, IConnection connection, string connectionData)
+        // virtual to allow mocking
+        public virtual Task<NegotiationResponse> GetNegotiationResponse(IHttpClient httpClient, IConnection connection, string connectionData)
         {
             if (httpClient == null)
             {
@@ -44,7 +44,8 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
                             });
         }
 
-        public static Task<string> GetStartResponse(this IHttpClient httpClient, IConnection connection, string connectionData, string transport)
+        // virtual to allow mocking
+        public virtual Task<string> GetStartResponse(IHttpClient httpClient, IConnection connection, string connectionData, string transport)
         {
             if (httpClient == null)
             {
@@ -64,16 +65,10 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
                             .Then(response => response.ReadAsString());
         }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1021:AvoidOutParameters", Justification = "This is called internally.")]
-        public static void ProcessResponse(IConnection connection, string response, out bool shouldReconnect, out bool disconnected)
-        {
-            ProcessResponse(connection, response, out shouldReconnect, out disconnected, () => { });
-        }
-
-        [SuppressMessage("Microsoft.Design", "CA1062:Validate arguments of public methods", MessageId = "0", Justification = "This is called internally.")]
         [SuppressMessage("Microsoft.Design", "CA1021:AvoidOutParameters", Justification = "This is called internally.")]
         [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "The client receives the exception in the OnError callback.")]
-        public static void ProcessResponse(IConnection connection, string response, out bool shouldReconnect, out bool disconnected, Action onInitialized)
+        // virtual to allow mocking
+        public virtual void ProcessResponse(IConnection connection, string response, out bool shouldReconnect, out bool disconnected, Action onInitialized)
         {
             if (connection == null)
             {
@@ -160,12 +155,6 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
             {
                 connection.GroupsToken = (string)groupsToken;
             }
-        }
-
-        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode", Justification = "This is used on Silverlight and Windows Phone")]
-        private static string GetNoCacheUrlParam()
-        {
-            return "noCache=" + Guid.NewGuid().ToString();
         }
 
         private static void TryInitialize(JToken response, Action onInitialized)

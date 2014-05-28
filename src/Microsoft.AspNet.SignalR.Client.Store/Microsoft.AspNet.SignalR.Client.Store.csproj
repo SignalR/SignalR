@@ -58,7 +58,6 @@
     </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Transports\WebSocketTransport.cs" />
-    <Compile Include="WebSockets\WebSocketHandler.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />

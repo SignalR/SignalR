@@ -85,7 +85,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
 
         public virtual Task<NegotiationResponse> GetNegotiateResponse(IConnection connection, string connectionData)
         {
-            return _httpClient.GetNegotiationResponse(connection, connectionData);
+            return new TransportHelper().GetNegotiationResponse(_httpClient, connection, connectionData);
         }
 
         public Task Start(IConnection connection, string connectionData, CancellationToken disconnectToken)

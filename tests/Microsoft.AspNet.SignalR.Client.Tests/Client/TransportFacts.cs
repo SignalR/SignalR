@@ -23,7 +23,7 @@ namespace Microsoft.AspNet.SignalR.Client.Tests
             bool timedOut, disconnected, triggered = false;
             var connection = new Connection("http://foo.com");
 
-            TransportHelper.ProcessResponse(connection, "{\"S\":1, \"M\":[]}", out timedOut, out disconnected, () =>
+            new TransportHelper().ProcessResponse(connection, "{\"S\":1, \"M\":[]}", out timedOut, out disconnected, () =>
             {
                 triggered = true;
             });
@@ -43,10 +43,10 @@ namespace Microsoft.AspNet.SignalR.Client.Tests
             connection.Setup(c => c.MarkLastMessage());
 
             // PersistentResponse
-            TransportHelper.ProcessResponse(connection.Object, "{\"M\":{}}", out timedOut, out disconnected);
+            new TransportHelper().ProcessResponse(connection.Object, "{\"M\":{}}", out timedOut, out disconnected, () => { });
 
             // HubResponse (WebSockets)
-            TransportHelper.ProcessResponse(connection.Object, "{\"I\":{}}", out timedOut, out disconnected);
+            new TransportHelper().ProcessResponse(connection.Object, "{\"I\":{}}", out timedOut, out disconnected, () => { });
 
             connection.VerifyAll();
         }

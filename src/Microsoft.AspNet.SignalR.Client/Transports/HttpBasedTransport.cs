@@ -2,7 +2,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR.Client.Http;
@@ -25,6 +24,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
         // Not meant to be used outside of this class hierarchy. This should be 
         // "private protected" but this is supported only in C# 6.0.
         internal readonly UrlBuilder _urlBuilder  = new UrlBuilder();
+        internal readonly TransportHelper _transportHelper = new TransportHelper();
 
         protected HttpBasedTransport(IHttpClient httpClient, string transport)
         {
@@ -63,7 +63,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
 
         public Task<NegotiationResponse> Negotiate(IConnection connection, string connectionData)
         {
-            Task<NegotiationResponse> response = _httpClient.GetNegotiationResponse(connection, connectionData);
+            Task<NegotiationResponse> response = _transportHelper.GetNegotiationResponse(_httpClient, connection, connectionData);
 
             response.Then(negotiationResponse => _negotiationResponse = negotiationResponse);
 
@@ -77,7 +77,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
                 throw new ArgumentNullException("connection");
             }
 
-            var initializeHandler = new TransportInitializationHandler(_httpClient, connection, connectionData, Name, disconnectToken);
+            var initializeHandler = new TransportInitializationHandler(_httpClient, connection, connectionData, Name, disconnectToken, _transportHelper);
 
             OnStart(connection, connectionData, disconnectToken, initializeHandler);
 
