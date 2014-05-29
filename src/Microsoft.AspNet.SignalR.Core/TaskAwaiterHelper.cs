@@ -46,7 +46,7 @@ namespace Microsoft.AspNet.SignalR
             }
         }
 
-        internal class PreserveCultureAwaiter : ICriticalNotifyCompletion
+        internal struct PreserveCultureAwaiter : ICriticalNotifyCompletion
         {
             private readonly ConfiguredTaskAwaitable.ConfiguredTaskAwaiter _awaiter;
             private readonly bool _useSyncContext;
@@ -83,7 +83,7 @@ namespace Microsoft.AspNet.SignalR
             }
         }
 
-        internal class PreserveCultureAwaiter<T> : ICriticalNotifyCompletion
+        internal struct PreserveCultureAwaiter<T> : ICriticalNotifyCompletion
         {
             private readonly ConfiguredTaskAwaitable<T>.ConfiguredTaskAwaiter _awaiter;
             private readonly bool _useSyncContext;
