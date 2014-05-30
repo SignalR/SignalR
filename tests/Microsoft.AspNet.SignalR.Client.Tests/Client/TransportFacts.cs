@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR.Client.Http;
 using Microsoft.AspNet.SignalR.Client.Infrastructure;
 using Microsoft.AspNet.SignalR.Client.Transports;
+using Microsoft.AspNet.SignalR.Client.Transports.WebSockets;
 using Moq;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -244,13 +245,13 @@ namespace Microsoft.AspNet.SignalR.Client.Tests
         {
             var mockConnection = new Mock<Client.IConnection>(MockBehavior.Strict);
             var mockWebSocket = new Mock<WebSocket>(MockBehavior.Strict);
+            var mockWebSocketHandler = new Mock<ClientWebSocketHandler>();
 
             mockWebSocket.SetupGet(ws => ws.State).Returns(state);
             mockConnection.Setup(c => c.OnError(It.IsAny<InvalidOperationException>()));
-
-            var wsTransport = new WebSocketTransport();
-
-            wsTransport.WebSocket = mockWebSocket.Object;
+            mockWebSocketHandler.Object.WebSocket = mockWebSocket.Object;
+            
+            var wsTransport = new WebSocketTransport(mockWebSocketHandler.Object);
 
             var task = wsTransport.Send(mockConnection.Object, "", "");
 

@@ -7,14 +7,15 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR.Client.Http;
 using Microsoft.AspNet.SignalR.Client.Infrastructure;
-using Microsoft.AspNet.SignalR.WebSockets;
+using Microsoft.AspNet.SignalR.Client.Transports.WebSockets;
 
 namespace Microsoft.AspNet.SignalR.Client.Transports
 {
-    public class WebSocketTransport : WebSocketHandler, IClientTransport
+    public class WebSocketTransport : IClientTransport
     {
         private readonly IHttpClient _client;
         private readonly TransportAbortHandler _abortHandler;
+        private readonly ClientWebSocketHandler _webSocketHandler;
         private CancellationToken _disconnectToken;
         private TransportInitializationHandler _initializeHandler;
         private WebSocketConnectionInfo _connectionInfo;
@@ -29,12 +30,19 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
         }
 
         public WebSocketTransport(IHttpClient client)
-            : base(maxIncomingMessageSize: null) // Disable max incoming message size on the client
         {
             _client = client;
             _disconnectToken = CancellationToken.None;
             _abortHandler = new TransportAbortHandler(client, Name);
             ReconnectDelay = TimeSpan.FromSeconds(2);
+            _webSocketHandler = new ClientWebSocketHandler(this);
+        }
+
+        // intended for testing
+        internal WebSocketTransport(ClientWebSocketHandler webSocketHandler)
+            : this()
+        {
+            _webSocketHandler = webSocketHandler;
         }
 
         /// <summary>
@@ -133,7 +141,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
             CancellationToken token = linkedCts.Token;
 
             await _webSocket.ConnectAsync(builder.Uri, token);
-            await ProcessWebSocketRequestAsync(_webSocket, token);
+            await _webSocketHandler.ProcessWebSocketRequestAsync(_webSocket, token);
         }
 
         public void Abort(IConnection connection, TimeSpan timeout, string connectionData)
@@ -149,7 +157,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
             }
 
             // If we don't throw here when the WebSocket isn't open, WebSocketHander.SendAsync will noop.
-            if (WebSocket.State != WebSocketState.Open)
+            if (_webSocketHandler.WebSocket.State != WebSocketState.Open)
             {
                 // Make this a faulted task and trigger the OnError even to maintain consistency with the HttpBasedTransports
                 var ex = new InvalidOperationException(Resources.Error_DataCannotBeSentDuringWebSocketReconnect);
@@ -157,10 +165,11 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
                 return TaskAsyncHelper.FromError(ex);
             }
 
-            return SendAsync(data);
+            return _webSocketHandler.SendAsync(data);
         }
 
-        public override void OnMessage(string message)
+        // virtual for testing
+        internal virtual void OnMessage(string message)
         {
             _connectionInfo.Connection.Trace(TraceLevels.Messages, "WS: OnMessage({0})", message);
 
@@ -179,7 +188,8 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
             }
         }
 
-        public override void OnOpen()
+        // virtual for testing
+        internal virtual void OnOpen()
         {
             // This will noop if we're not in the reconnecting state
             if (_connectionInfo.Connection.ChangeState(ConnectionState.Reconnecting, ConnectionState.Connected))
@@ -188,7 +198,8 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
             }
         }
 
-        public override void OnClose()
+        // virtual for testing
+        internal virtual void OnClose()
         {
             _connectionInfo.Connection.Trace(TraceLevels.Events, "WS: OnClose()");
 
@@ -232,9 +243,10 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
             }
         }
 
-        public override void OnError()
+        // virtual for testing
+        internal virtual void OnError(Exception error)
         {
-            _connectionInfo.Connection.OnError(Error);
+            _connectionInfo.Connection.OnError(error);
         }
 
         public void LostConnection(IConnection connection)
