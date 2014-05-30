@@ -37,9 +37,8 @@
     <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="BookSleeve, Version=1.3.31.0, Culture=neutral, PublicKeyToken=9056fda458ff61cf, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\packages\BookSleeve.1.3.31\lib\BookSleeve.dll</HintPath>
+    <Reference Include="StackExchange.Redis">
+      <HintPath>..\..\packages\StackExchange.Redis.1.0.289\lib\net45\StackExchange.Redis.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -58,6 +57,7 @@
     <Compile Include="DependencyResolverExtensions.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="RedisConnectionClosedException.cs" />
+    <Compile Include="RedisConnectionException.cs" />
     <Compile Include="RedisMessage.cs" />
     <Compile Include="RedisMessageBus.cs" />
     <Compile Include="RedisScaleoutConfiguration.cs" />
