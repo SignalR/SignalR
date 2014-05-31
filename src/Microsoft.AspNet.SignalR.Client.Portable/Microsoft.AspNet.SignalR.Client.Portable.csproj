@@ -181,6 +181,9 @@
     <Compile Include="..\Microsoft.AspNet.SignalR.Client\Transports\AutoTransport.cs">
       <Link>Transports\AutoTransport.cs</Link>
     </Compile>
+    <Compile Include="..\Microsoft.AspNet.SignalR.Client\Transports\ClientTransportBase.cs">
+      <Link>Transports\ClientTransportBase.cs</Link>
+    </Compile>
     <Compile Include="..\Microsoft.AspNet.SignalR.Client\Transports\HttpBasedTransport.cs">
       <Link>Transports\HttpBasedTransport.cs</Link>
     </Compile>

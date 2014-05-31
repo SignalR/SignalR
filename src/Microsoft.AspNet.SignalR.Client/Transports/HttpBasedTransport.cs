@@ -11,73 +11,22 @@ using Newtonsoft.Json.Linq;
 
 namespace Microsoft.AspNet.SignalR.Client.Transports
 {
-    public abstract class HttpBasedTransport : IClientTransport
+    public abstract class HttpBasedTransport : ClientTransportBase
     {
-        // The transport name
-        private readonly string _transport;
+        internal readonly UrlBuilder _urlBuilder = new UrlBuilder();
 
-        private readonly IHttpClient _httpClient;
-        private readonly TransportAbortHandler _abortHandler;
+        protected HttpBasedTransport(IHttpClient httpClient, string transportName)
+            : base(httpClient, transportName)
+        { }
 
-        private NegotiationResponse _negotiationResponse;
-
-        // Not meant to be used outside of this class hierarchy. This should be 
-        // "private protected" but this is supported only in C# 6.0.
-        internal readonly UrlBuilder _urlBuilder  = new UrlBuilder();
-        internal readonly TransportHelper _transportHelper = new TransportHelper();
-
-        protected HttpBasedTransport(IHttpClient httpClient, string transport)
-        {
-            _httpClient = httpClient;
-            _transport = transport;
-            _abortHandler = new TransportAbortHandler(httpClient, transport);
-        }
-
-        public string Name
-        {
-            get
-            {
-                return _transport;
-            }
-        }
-
-        /// <summary>
-        /// Indicates whether or not the transport supports keep alive
-        /// </summary>
-        public abstract bool SupportsKeepAlive { get; }
-
-        protected IHttpClient HttpClient
-        {
-            get { return _httpClient; }
-        }
-
-        protected TransportAbortHandler AbortHandler
-        {
-            get { return _abortHandler; }
-        }
-
-        protected NegotiationResponse NegotiationResponse
-        {
-            get { return _negotiationResponse; }
-        }
-
-        public Task<NegotiationResponse> Negotiate(IConnection connection, string connectionData)
-        {
-            Task<NegotiationResponse> response = _transportHelper.GetNegotiationResponse(_httpClient, connection, connectionData);
-
-            response.Then(negotiationResponse => _negotiationResponse = negotiationResponse);
-
-            return response;
-        }
-
-        public Task Start(IConnection connection, string connectionData, CancellationToken disconnectToken)
+        public override Task Start(IConnection connection, string connectionData, CancellationToken disconnectToken)
         {
             if (connection == null)
             {
                 throw new ArgumentNullException("connection");
             }
 
-            var initializeHandler = new TransportInitializationHandler(_httpClient, connection, connectionData, Name, disconnectToken, _transportHelper);
+            var initializeHandler = new TransportInitializationHandler(HttpClient, connection, connectionData, Name, disconnectToken, TransportHelper);
 
             OnStart(connection, connectionData, disconnectToken, initializeHandler);
 
@@ -89,7 +38,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
                                         CancellationToken disconnectToken,
                                         TransportInitializationHandler initializeHandler);
 
-        public Task Send(IConnection connection, string data, string connectionData)
+        public override Task Send(IConnection connection, string data, string connectionData)
         {
             if (connection == null)
             {
@@ -102,39 +51,18 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
                 { "data", data }
             };
 
-            return _httpClient.Post(url, connection.PrepareRequest, postData, isLongRunning: false)
-                              .Then(response => response.ReadAsString())
-                              .Then(raw =>
-                              {
-                                  if (!String.IsNullOrEmpty(raw))
-                                  {
-                                      connection.Trace(TraceLevels.Messages, "OnMessage({0})", raw);
+            return HttpClient.Post(url, connection.PrepareRequest, postData, isLongRunning: false)
+                .Then(response => response.ReadAsString())
+                .Then(raw =>
+                {
+                    if (!String.IsNullOrEmpty(raw))
+                    {
+                        connection.Trace(TraceLevels.Messages, "OnMessage({0})", raw);
 
-                                      connection.OnReceived(connection.JsonDeserializeObject<JObject>(raw));
-                                  }
-                              })
-                              .Catch(connection.OnError);
-        }
-
-        public void Abort(IConnection connection, TimeSpan timeout, string connectionData)
-        {
-            _abortHandler.Abort(connection, timeout, connectionData);
-        }
-
-        public abstract void LostConnection(IConnection connection);
-
-        public void Dispose()
-        {
-            Dispose(true);
-            GC.SuppressFinalize(this);
-        }
-
-        protected virtual void Dispose(bool disposing)
-        {
-            if (disposing)
-            {
-                _abortHandler.Dispose();
-            }
+                        connection.OnReceived(connection.JsonDeserializeObject<JObject>(raw));
+                    }
+                })
+                .Catch(connection.OnError);
         }
     }
 }

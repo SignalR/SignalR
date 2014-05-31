@@ -11,10 +11,8 @@ using Microsoft.AspNet.SignalR.Client.Transports.WebSockets;
 
 namespace Microsoft.AspNet.SignalR.Client.Transports
 {
-    public class WebSocketTransport : IClientTransport
+    public class WebSocketTransport : ClientTransportBase
     {
-        private readonly IHttpClient _client;
-        private readonly TransportAbortHandler _abortHandler;
         private readonly ClientWebSocketHandler _webSocketHandler;
         private CancellationToken _disconnectToken;
         private TransportInitializationHandler _initializeHandler;
@@ -22,7 +20,6 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
         private CancellationTokenSource _webSocketTokenSource;
         private ClientWebSocket _webSocket;
         private int _disposed;
-        private readonly TransportHelper _transportHelper = new TransportHelper();
 
         public WebSocketTransport()
             : this(new DefaultHttpClient())
@@ -30,10 +27,9 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
         }
 
         public WebSocketTransport(IHttpClient client)
+            : base(client, "webSockets")
         {
-            _client = client;
             _disconnectToken = CancellationToken.None;
-            _abortHandler = new TransportAbortHandler(client, Name);
             ReconnectDelay = TimeSpan.FromSeconds(2);
             _webSocketHandler = new ClientWebSocketHandler(this);
         }
@@ -53,38 +49,19 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
         /// <summary>
         /// Indicates whether or not the transport supports keep alive
         /// </summary>
-        public bool SupportsKeepAlive
+        public override bool SupportsKeepAlive
         {
-            get
-            {
-                return true;
-            }
+            get { return true; }
         }
 
-        /// <summary>
-        /// The name of the transport.
-        /// </summary>
-        public string Name
-        {
-            get
-            {
-                return "webSockets";
-            }
-        }
-
-        public Task<NegotiationResponse> Negotiate(IConnection connection, string connectionData)
-        {
-            return _transportHelper.GetNegotiationResponse(_client, connection, connectionData);
-        }
-
-        public virtual Task Start(IConnection connection, string connectionData, CancellationToken disconnectToken)
+        public override Task Start(IConnection connection, string connectionData, CancellationToken disconnectToken)
         {
             if (connection == null)
             {
                 throw new ArgumentNullException("connection");
             }
 
-            _initializeHandler = new TransportInitializationHandler(_client, connection, connectionData, Name, disconnectToken, _transportHelper);
+            _initializeHandler = new TransportInitializationHandler(HttpClient, connection, connectionData, Name, disconnectToken, TransportHelper);
 
             // Tie into the OnFailure event so that we can stop the transport silently.
             _initializeHandler.OnFailure += () =>
@@ -144,12 +121,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
             await _webSocketHandler.ProcessWebSocketRequestAsync(_webSocket, token);
         }
 
-        public void Abort(IConnection connection, TimeSpan timeout, string connectionData)
-        {
-            _abortHandler.Abort(connection, timeout, connectionData);
-        }
-
-        public Task Send(IConnection connection, string data, string connectionData)
+        public override Task Send(IConnection connection, string data, string connectionData)
         {
             if (connection == null)
             {
@@ -175,7 +147,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
 
             bool timedOut;
             bool disconnected;
-            _transportHelper.ProcessResponse(_connectionInfo.Connection,
+            TransportHelper.ProcessResponse(_connectionInfo.Connection,
                                             message,
                                             out timedOut,
                                             out disconnected,
@@ -208,7 +180,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
                 return;
             }
 
-            if (_abortHandler.TryCompleteAbort())
+            if (AbortHandler.TryCompleteAbort())
             {
                 return;
             }
@@ -249,7 +221,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
             _connectionInfo.Connection.OnError(error);
         }
 
-        public void LostConnection(IConnection connection)
+        public override void LostConnection(IConnection connection)
         {
             _connectionInfo.Connection.Trace(TraceLevels.Events, "WS: LostConnection");
 
@@ -259,18 +231,13 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
             }
         }
 
-        public void Dispose()
-        {
-            Dispose(true);
-            GC.SuppressFinalize(this);
-        }
-
-        protected virtual void Dispose(bool disposing)
+        protected override void Dispose(bool disposing)
         {
             if (disposing)
             {
                 if (Interlocked.Exchange(ref _disposed, 1) == 1)
                 {
+                    base.Dispose(disposing);
                     return;
                 }
 
@@ -279,8 +246,6 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
                     // Gracefully close the websocket message loop
                     _webSocketTokenSource.Cancel();
                 }
-
-                _abortHandler.Dispose();
 
                 if (_webSocket != null)
                 {
@@ -292,6 +257,8 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
                     _webSocketTokenSource.Dispose();
                 }
             }
+
+            base.Dispose(disposing);
         }
 
         [SuppressMessage("Microsoft.Design", "CA1001:TypesThatOwnDisposableFieldsShouldBeDisposable", Justification = "This class is just a data holder")]

@@ -4,6 +4,7 @@ using System;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR.Client.Http;
 using Microsoft.AspNet.SignalR.Client.Infrastructure;
 using Microsoft.AspNet.SignalR.Infrastructure;
@@ -13,6 +14,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
     public class LongPollingTransport : HttpBasedTransport
     {
         private PollingRequestHandler _requestHandler;
+        private NegotiationResponse _negotiationResponse;
 
         /// <summary>
         /// The time to wait after a connection drops to try reconnecting.
@@ -46,9 +48,16 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
                 // Don't check for keep alives if the server didn't send back the "LongPollDelay" as
                 // part of the response to /negotiate. That indicates the server is running an older
                 // version of SignalR that doesn't send long polling keep alives.
-                return NegotiationResponse != null &&
-                       NegotiationResponse.LongPollDelay.HasValue;
+                return _negotiationResponse != null &&
+                       _negotiationResponse.LongPollDelay.HasValue;
             }
+        }
+
+        public override Task<NegotiationResponse> Negotiate(IConnection connection, string connectionData)
+        {
+            return
+                base.Negotiate(connection, connectionData)
+                    .Then(negotiationResponse => _negotiationResponse = negotiationResponse);
         }
 
         protected override void OnStart(IConnection connection,
@@ -134,11 +143,11 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
 
                 connection.Trace(TraceLevels.Messages, "LP: OnMessage({0})", message);
 
-                _transportHelper.ProcessResponse(connection,
-                                                 message,
-                                                 out shouldReconnect,
-                                                 out disconnectedReceived,
-                                                 onInitialized);
+                TransportHelper.ProcessResponse(connection,
+                                                message,
+                                                out shouldReconnect,
+                                                out disconnectedReceived,
+                                                onInitialized);
 
                 if (IsReconnecting(connection))
                 {

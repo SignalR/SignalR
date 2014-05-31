@@ -116,7 +116,6 @@
     <SDKReference Include="TestPlatform, Version=11.0" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Fakes\FakeTransportHelper.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Transports\WebSocketTransportFacts.cs" />
   </ItemGroup>
