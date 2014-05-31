@@ -51,7 +51,7 @@ azureTestManager.controller('TestManagerController', function ($scope) {
         return argumentList.join(" ");
     };
 
-    $scope.instances = 1;
+    $scope.configuration = new Configuration();
 
     $scope.connectionManager = new ConnectionManager();
 
@@ -104,10 +104,6 @@ azureTestManager.controller('TestManagerController', function ($scope) {
         process.lastUpdate = new Date().toTimeString();
     };
 
-    $scope.removeProcess = function (connectionId, processId) {
-        $scope.connectionManager.getConnection(connectionId).removeProcess(processId);
-    }
-
     $scope.addErrorTrace = function (connectionId, processId, message) {
         var process = $scope.connectionManager.getConnection(connectionId).getProcess(processId);
         process.lastError = message;
@@ -124,10 +120,19 @@ azureTestManager.controller('TestManagerController', function ($scope) {
 
         for (var index = 0, length = connections.length; index < length; index++) {
             if (connections[index].selected) {
-                hub.server.startProcesses(connections[index].connectionId, $scope.instances, argumentString);
+                hub.server.startProcesses(connections[index].connectionId, $scope.configuration.instances, argumentString);
             }
         }
     };
+
+    $scope.stopAllProcesses = function () {
+        for (var connectionIndex = 0, connectionLength = $scope.connectionManager.connections.length; connectionIndex < connectionLength; connectionIndex++) {
+            var connection = $scope.connectionManager.connections[connectionIndex];
+            for (var processIndex = 0, processLength = connection.processes.length; processIndex < processLength; processIndex++) {
+                hub.server.stopProcess(connection.connectionId, connection.processes[processIndex].processId);
+            }
+        }
+    }
 
     $scope.stopProcess = function (connectionId, processId) {
         hub.server.stopProcess(connectionId, processId);
@@ -142,12 +147,6 @@ azureTestManager.controller('TestManagerController', function ($scope) {
     hub.client.addUpdateProcess = function (connectionId, processId, processStatus) {
         $scope.$apply(function () {
             $scope.addUpdateProcess(connectionId, processId, processStatus);
-        });
-    }
-
-    hub.client.removeProcess = function (connectionId, processId) {
-        $scope.$apply(function () {
-            $scope.removeProcess(connectionId, processId);
         });
     }
 

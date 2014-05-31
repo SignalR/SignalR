@@ -77,3 +77,9 @@ function ConnectionManager($scope) {
         }
     }
 }
+
+function Configuration() {
+    var self = this;
+    self.instances = 1;
+}
+

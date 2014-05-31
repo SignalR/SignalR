@@ -33,6 +33,11 @@ namespace Microsoft.AspNet.SignalR.Crank
                     ControllerHub.Start(Arguments);
                 }
 
+                string guid = "";
+                string id = "";
+                bool running = true;
+                Task updateTask = null;
+
                 HubConnection testManagerConnection = null; ;
                 IHubProxy testManagerProxy = null;
                 if (Arguments.TestManagerUrl != null)
@@ -41,6 +46,9 @@ namespace Microsoft.AspNet.SignalR.Crank
                     {
                         throw new InvalidOperationException("A TestManagerGuid must be provided with TestManagerUrl.");
                     }
+                    guid = Arguments.TestManagerGuid;
+                    id = Process.GetCurrentProcess().Id.ToString();
+
                     testManagerConnection = new HubConnection(Arguments.TestManagerUrl);
                     testManagerProxy = testManagerConnection.CreateHubProxy("TestManagerHub");
 
@@ -65,11 +73,9 @@ namespace Microsoft.AspNet.SignalR.Crank
                     while (testManagerConnection.State != ConnectionState.Connected) ;
                     testManagerProxy.Invoke("join", Arguments.TestManagerGuid).Wait();
 
-                    Task.Factory.StartNew(async () =>
+                    updateTask = Task.Factory.StartNew(async () =>
                     {
-                        string guid = Arguments.TestManagerGuid;
-                        string id = Process.GetCurrentProcess().Id.ToString();
-                        while (true)
+                        while (running)
                         {
                             await testManagerProxy.Invoke("addUpdateProcess", guid, id, TestPhase.ToString());
                             await Task.Delay(1000);
@@ -81,7 +87,9 @@ namespace Microsoft.AspNet.SignalR.Crank
 
                 if (testManagerProxy != null)
                 {
-                    testManagerProxy.Invoke("removeProcess", Arguments.TestManagerGuid, Process.GetCurrentProcess().Id.ToString());
+                    running = false;
+                    updateTask.Wait();
+                    testManagerProxy.Invoke("addUpdateProcess", guid, id, "Terminated");
                     if(testManagerConnection != null)
                     {
                         testManagerConnection.Stop();

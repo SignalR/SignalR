@@ -41,12 +41,6 @@ azureTestManager.controller('AzureTestManagerTestController', function ($scope) 
             status);
     }
 
-    $scope.removeProcess = function (id) {
-        hub.server.removeProcess(
-            hub.connection.id,
-            id);
-    }
-
     $scope.addErrorTrace = function (id) {
         hub.server.addErrorTrace(
             hub.connection.id,

@@ -45,13 +45,6 @@ namespace AzureTestManager
                 status);
         }
 
-        public void RemoveProcess(string guid, string id)
-        {
-            Clients.Group("manager").removeProcess(
-                guid,
-                id);
-        }
-
         public void AddErrorTrace(string guid, string id, string message)
         {
             Clients.Group("manager").addErrorTrace(guid, id, message);
@@ -60,12 +53,6 @@ namespace AzureTestManager
         public void AddOutputTrace(string guid, string id, string message)
         {
             Clients.Group("manager").addOutputTrace(guid, id, message);
-        }
-
-        // TODO: REMOVE
-        public void AddTrace(string address, string message)
-        {
-            Clients.Group("manager").addTrace(address, message);
         }
 
         public override Task OnDisconnected()
