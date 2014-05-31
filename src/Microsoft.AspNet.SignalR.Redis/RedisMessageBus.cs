@@ -55,7 +55,7 @@ namespace Microsoft.AspNet.SignalR.Redis
         {
             var keys = new RedisKey[] { _key };
 
-            //TraceMessages(messages);
+            TraceMessages(messages);
 
             var arguments = new RedisValue[] { RedisMessage.ToBytes(messages) };
 
@@ -120,36 +120,25 @@ namespace Microsoft.AspNet.SignalR.Redis
         {
             Exception ex = (e.Exception != null) ? e.Exception : new RedisConnectionClosedException();
 
-            _trace.TraceInformation("OnConnectionClosed()");
+            _trace.TraceInformation("OnConnectionClosed - " + ex.Message);
 
-            AttemptReconnect(ex);
+            Interlocked.Exchange(ref _state, State.Closed);
         }
 
         private void OnConnectionError(object sender, RedisErrorEventArgs e)
         {
             _trace.TraceError("OnConnectionError - " + e.Message);
-
-            AttemptReconnect(new RedisConnectionException(e.Message));
         }
 
-
-        private void AttemptReconnect(Exception exception)
+        private void OnConnectionRestored(object sender, ConnectionFailedEventArgs e)
         {
-            // Change the state to closed and retry connecting
-            var oldState = Interlocked.CompareExchange(ref _state,
-                                                       State.Closed,
-                                                       State.Connected);
-            if (oldState == State.Connected)
-            {
-                _trace.TraceInformation("Attempting reconnect...");
+            _trace.TraceInformation("OnConnectionRestored()");
 
-                // Let the base class know that an error occurred
-                OnError(0, exception);
+            Interlocked.Exchange(ref _state, State.Connected);
 
-                // Retry until the connection reconnects
-                ConnectWithRetry();
-            }
+            Open(0);
         }
+
 
         private void OnMessage(RedisChannel key, RedisValue data)
         {
@@ -164,45 +153,55 @@ namespace Microsoft.AspNet.SignalR.Redis
             }
         }
 
-        private void ConnectWithRetry()
+        private async void ConnectWithRetry()
         {
-            Task connectTask = ConnectToRedis();
+            bool connectTaskFaulted;
 
-            connectTask.ContinueWith(task =>
+            try
             {
-                if (task.IsFaulted)
-                {
-                    _trace.TraceError("Error connecting to Redis - " + task.Exception.GetBaseException());
+                await ConnectToRedisAsync();
 
-                    if (_state == State.Disposing)
-                    {
-                        Shutdown();
-                        return;
-                    }
+                connectTaskFaulted = true;
 
-                    TaskAsyncHelper.Delay(ReconnectDelay)
-                                   .Then(bus => bus.ConnectWithRetry(), this);
-                }
-                else
+                var oldState = Interlocked.CompareExchange(ref _state,
+                                           State.Connected,
+                                           State.Closed);
+                if (oldState == State.Closed)
                 {
-                    var oldState = Interlocked.CompareExchange(ref _state,
-                                                               State.Connected,
-                                                               State.Closed);
-                    if (oldState == State.Closed)
-                    {
-                        Open(0);
-                    }
-                    else if (oldState == State.Disposing)
-                    {
-                        Shutdown();
-                    }
+                    Open(0);
                 }
-            },
-            TaskContinuationOptions.ExecuteSynchronously);
+                else if (oldState == State.Disposing)
+                {
+                    Shutdown();
+                }
+            }
+
+            catch (Exception ex)
+            {
+                _trace.TraceError("Error connecting to Redis - " + ex.GetBaseException());
+
+                if (_state == State.Disposing)
+                {
+                    Shutdown();
+                    return;
+                }
+
+                connectTaskFaulted = true;
+            }
+
+            if (connectTaskFaulted == false)
+            {
+                return;
+            }
+            else
+            {
+                await Task.Delay(ReconnectDelay);
+                ConnectWithRetry();
+            }
         }
 
         [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "Exceptions are caught")]
-        private Task ConnectToRedis()
+        private async Task<object> ConnectToRedisAsync()
         {
             if (_connection != null)
             {
@@ -217,28 +216,28 @@ namespace Microsoft.AspNet.SignalR.Redis
             {
                 _trace.TraceInformation("Connecting...");
 
-                return ConnectionMultiplexer.ConnectAsync(_connectionString).Then((conn) =>
-                {
-                    _connection = conn;
-                    _trace.TraceInformation("Connection opened");
+                var conn = await ConnectionMultiplexer.ConnectAsync(_connectionString);
 
-                    _connection.ConnectionFailed += OnConnectionClosed;
-                    _connection.ErrorMessage += OnConnectionError;
+                _connection = conn;
+                _trace.TraceInformation("Connection opened");
 
-                    _subscriber = _connection.GetSubscriber();
+                _connection.ConnectionFailed += OnConnectionClosed;
+                _connection.ErrorMessage += OnConnectionError;
+                _connection.ConnectionRestored += OnConnectionRestored;
 
-                    _subscriber.SubscribeAsync(_key, OnMessage).Then(() =>
-                    {
-                        _trace.TraceVerbose("Subscribed to event " + _key);
-                    });
+                _subscriber = _connection.GetSubscriber();
 
-                });
+                await _subscriber.SubscribeAsync(_key, OnMessage);
+
+                _trace.TraceVerbose("Subscribed to event " + _key);
+
+                return null;
             }
             catch (Exception ex)
             {
                 _trace.TraceError("Error connecting to Redis - " + ex.GetBaseException());
 
-                return TaskAsyncHelper.FromError(ex);
+                return ex;
             }
         }
 
