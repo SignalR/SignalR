@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.md in the project root for license information.
 
 using System;
+using System.Globalization;
 using Microsoft.AspNet.SignalR.Messaging;
 using StackExchange.Redis;
 
@@ -53,7 +54,7 @@ namespace Microsoft.AspNet.SignalR
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA1801:ReviewUnusedParameters", MessageId = "password")]
         private static string CreateConnectionString(string server, int port, string password)
         {
-            return string.Format("{0}:{1},password={2}", server, port, password);
+            return string.Format(CultureInfo.CurrentCulture, "{0}:{1},password={2}", server, port, password);
         }
     }
 }
