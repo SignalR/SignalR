@@ -13,8 +13,6 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
 {
     public abstract class HttpBasedTransport : ClientTransportBase
     {
-        internal readonly UrlBuilder _urlBuilder = new UrlBuilder();
-
         protected HttpBasedTransport(IHttpClient httpClient, string transportName)
             : base(httpClient, transportName)
         { }
@@ -45,7 +43,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
                 throw new ArgumentNullException("connection");
             }
 
-            string url = _urlBuilder.BuildSend(connection, Name, connectionData);
+            string url = UrlBuilder.BuildSend(connection, Name, connectionData);
 
             var postData = new Dictionary<string, string> {
                 { "data", data }

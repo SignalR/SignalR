@@ -27,7 +27,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
                 throw new ArgumentNullException("connection");
             }
 
-            var negotiateUrl = new UrlBuilder().BuildNegotiate(connection, connectionData);
+            var negotiateUrl = UrlBuilder.BuildNegotiate(connection, connectionData);
 
             httpClient.Initialize(connection);
 
@@ -57,7 +57,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
                 throw new ArgumentNullException("connection");
             }
 
-            var startUrl = new UrlBuilder().BuildStart(connection, transport, connectionData);
+            var startUrl = UrlBuilder.BuildStart(connection, transport, connectionData);
 
             httpClient.Initialize(connection);
 

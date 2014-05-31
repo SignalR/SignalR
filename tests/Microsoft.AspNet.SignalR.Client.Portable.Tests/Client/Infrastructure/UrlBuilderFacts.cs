@@ -15,7 +15,7 @@ namespace Microsoft.AspNet.SignalR.Client.Infrastructure
         public void BuildNegotiateAppendsNoCacheToUrl(string connectionData, string expected)
         {
             Assert.True(
-                Regex.Match(new UrlBuilder().BuildNegotiate(CreateConnection(), connectionData), 
+                Regex.Match(UrlBuilder.BuildNegotiate(CreateConnection(), connectionData), 
                 "^http://fakeurl/negotiate\\?clientProtocol=1.42" + expected + "&connectionToken=My%20Conn%20Token&noCache=[a-zA-Z0-9-]{36}$")
                     .Success);        
         }
@@ -31,7 +31,7 @@ namespace Microsoft.AspNet.SignalR.Client.Infrastructure
             Mock.Get(connection).Setup(c => c.MessageId).Returns(messageId);
 
             Assert.True(
-                Regex.Match(new UrlBuilder().BuildConnect(connection, "webPolling", null),
+                Regex.Match(UrlBuilder.BuildConnect(connection, "webPolling", null),
                     "^http://fakeurl/connect\\?clientProtocol=1.42&transport=webPolling&connectionToken=My%20Conn%20Token" +
                     expected + "&noCache=[a-zA-Z0-9-]{36}$")
                     .Success);
@@ -48,7 +48,7 @@ namespace Microsoft.AspNet.SignalR.Client.Infrastructure
             Mock.Get(connection).Setup(c => c.MessageId).Returns(messageId);
 
             Assert.True(
-                Regex.Match(new UrlBuilder().BuildReconnect(connection, "webPolling", null),
+                Regex.Match(UrlBuilder.BuildReconnect(connection, "webPolling", null),
                     "^http://fakeurl/reconnect\\?clientProtocol=1.42&transport=webPolling&connectionToken=My%20Conn%20Token" +
                     expected + "&noCache=[a-zA-Z0-9-]{36}$")
                     .Success);
@@ -65,7 +65,7 @@ namespace Microsoft.AspNet.SignalR.Client.Infrastructure
             Mock.Get(connection).Setup(c => c.GroupsToken).Returns(groupsToken);
 
             Assert.True(
-                Regex.Match(new UrlBuilder().BuildPoll(connection, "webPolling", null),
+                Regex.Match(UrlBuilder.BuildPoll(connection, "webPolling", null),
                     "^http://fakeurl/poll\\?clientProtocol=1.42&transport=webPolling&connectionToken=My%20Conn%20Token" +
                     expected + "&noCache=[a-zA-Z0-9-]{36}$")
                     .Success);

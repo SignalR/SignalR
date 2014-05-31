@@ -114,17 +114,17 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
 
                 if (connection.MessageId == null)
                 {
-                    url = _urlBuilder.BuildConnect(connection, Name, data);
+                    url = UrlBuilder.BuildConnect(connection, Name, data);
                     connection.Trace(TraceLevels.Events, "LP Connect: {0}", url);
                 }
                 else if (IsReconnecting(connection))
                 {
-                    url = _urlBuilder.BuildReconnect(connection, Name, data);
+                    url = UrlBuilder.BuildReconnect(connection, Name, data);
                     connection.Trace(TraceLevels.Events, "LP Reconnect: {0}", url);
                 }
                 else
                 {
-                    url = _urlBuilder.BuildPoll(connection, Name, data);
+                    url = UrlBuilder.BuildPoll(connection, Name, data);
                     connection.Trace(TraceLevels.Events, "LP Poll: {0}", url);
                 }
 

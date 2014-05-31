@@ -26,8 +26,6 @@ namespace Microsoft.AspNet.SignalR.Client.Infrastructure
         private bool _disposed;
         // Used to make checking _disposed and calling _abortResetEvent.Set() thread safe
         private readonly object _disposeLock = new object();
-
-        private readonly UrlBuilder _urlBuilder = new UrlBuilder();
         
         public TransportAbortHandler(IHttpClient httpClient, string transportName)
         {
@@ -64,7 +62,7 @@ namespace Microsoft.AspNet.SignalR.Client.Infrastructure
                 {
                     _startedAbort = true;
 
-                    var url = _urlBuilder.BuildAbort(connection, _transportName, connectionData);
+                    var url = UrlBuilder.BuildAbort(connection, _transportName, connectionData);
 
                     _httpClient.Post(url, connection.PrepareRequest, isLongRunning: false).Catch((ex, state) =>
                     {

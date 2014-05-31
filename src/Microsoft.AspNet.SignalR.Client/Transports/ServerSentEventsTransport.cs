@@ -113,8 +113,8 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
             };
 
             var url = reconnecting
-                ? _urlBuilder.BuildReconnect(connection, Name, data)
-                : _urlBuilder.BuildConnect(connection, Name, data);
+                ? UrlBuilder.BuildReconnect(connection, Name, data)
+                : UrlBuilder.BuildConnect(connection, Name, data);
 
             connection.Trace(TraceLevels.Events, "SSE: GET {0}", url);
 

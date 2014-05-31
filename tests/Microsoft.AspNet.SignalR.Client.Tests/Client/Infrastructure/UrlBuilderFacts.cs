@@ -18,7 +18,7 @@ namespace Microsoft.AspNet.SignalR.Client.Infrastructure
             {
                 Assert.Equal(
                     "http://fakeurl/negotiate?clientProtocol=1.42" + expected + "&connectionToken=My%20Conn%20Token",
-                    new UrlBuilder().BuildNegotiate(CreateConnection(), connectionData));
+                    UrlBuilder.BuildNegotiate(CreateConnection(), connectionData));
             }
 
             [Theory]
@@ -33,7 +33,7 @@ namespace Microsoft.AspNet.SignalR.Client.Infrastructure
             public void BuildNegotiateReturnsValidUrlWithCustomQueryString(string qs, string expected)
             {
                 Assert.Equal("http://fakeurl/negotiate?clientProtocol=1.42&connectionToken=My%20Conn%20Token" + expected,
-                    new UrlBuilder().BuildNegotiate(CreateConnection(qs), null));
+                    UrlBuilder.BuildNegotiate(CreateConnection(qs), null));
             }
         }
 
@@ -47,7 +47,7 @@ namespace Microsoft.AspNet.SignalR.Client.Infrastructure
             {
                 Assert.Equal(
                     "http://fakeurl/start?clientProtocol=1.42&transport=webPolling" + expected + "&connectionToken=My%20Conn%20Token",
-                    new UrlBuilder().BuildStart(CreateConnection(), "webPolling", connectionData));
+                    UrlBuilder.BuildStart(CreateConnection(), "webPolling", connectionData));
             }
 
             [Theory]
@@ -63,7 +63,7 @@ namespace Microsoft.AspNet.SignalR.Client.Infrastructure
             {
                 Assert.Equal(
                     "http://fakeurl/start?clientProtocol=1.42&transport=webPolling&connectionData=CustomConnectionData&connectionToken=My%20Conn%20Token" + expected,
-                    new UrlBuilder().BuildStart(CreateConnection(qs), "webPolling", "CustomConnectionData"));
+                    UrlBuilder.BuildStart(CreateConnection(qs), "webPolling", "CustomConnectionData"));
             }
         }
 
@@ -77,7 +77,7 @@ namespace Microsoft.AspNet.SignalR.Client.Infrastructure
             {
                 Assert.Equal(
                     "http://fakeurl/abort?clientProtocol=1.42&transport=webPolling" + expected + "&connectionToken=My%20Conn%20Token",
-                    new UrlBuilder().BuildAbort(CreateConnection(), "webPolling", connectionData));
+                    UrlBuilder.BuildAbort(CreateConnection(), "webPolling", connectionData));
             }
 
             [Theory]
@@ -94,7 +94,7 @@ namespace Microsoft.AspNet.SignalR.Client.Infrastructure
                 Assert.Equal(
                     "http://fakeurl/abort?clientProtocol=1.42&transport=webPolling&connectionData=CustomConnectionData&connectionToken=My%20Conn%20Token" +
                     expected,
-                    new UrlBuilder().BuildAbort(CreateConnection(qs), "webPolling", "CustomConnectionData"));
+                    UrlBuilder.BuildAbort(CreateConnection(qs), "webPolling", "CustomConnectionData"));
             }
         }
 
@@ -113,7 +113,7 @@ namespace Microsoft.AspNet.SignalR.Client.Infrastructure
                 Assert.Equal(
                     "http://fakeurl/connect?clientProtocol=1.42&transport=webPolling&connectionToken=My%20Conn%20Token" +
                     expected,
-                    new UrlBuilder().BuildConnect(connection, "webPolling", null));
+                    UrlBuilder.BuildConnect(connection, "webPolling", null));
             }
 
             [Theory]
@@ -129,7 +129,7 @@ namespace Microsoft.AspNet.SignalR.Client.Infrastructure
                 Assert.Equal(
                     "http://fakeurl/connect?clientProtocol=1.42&transport=webPolling&connectionToken=My%20Conn%20Token" +
                     expected,
-                    new UrlBuilder().BuildConnect(connection, "webPolling", null));
+                    UrlBuilder.BuildConnect(connection, "webPolling", null));
             }
 
             [Theory]
@@ -140,7 +140,7 @@ namespace Microsoft.AspNet.SignalR.Client.Infrastructure
             {
                 Assert.Equal(
                     "http://fakeurl/connect?clientProtocol=1.42&transport=webPolling" + expected + "&connectionToken=My%20Conn%20Token",
-                    new UrlBuilder().BuildConnect(CreateConnection(), "webPolling", connectionData));
+                    UrlBuilder.BuildConnect(CreateConnection(), "webPolling", connectionData));
             }
 
             [Theory]
@@ -157,7 +157,7 @@ namespace Microsoft.AspNet.SignalR.Client.Infrastructure
                 Assert.Equal(
                     "http://fakeurl/connect?clientProtocol=1.42&transport=webPolling&connectionData=CustomConnectionData&connectionToken=My%20Conn%20Token" +
                     expected,
-                    new UrlBuilder().BuildConnect(CreateConnection(qs), "webPolling", "CustomConnectionData"));
+                    UrlBuilder.BuildConnect(CreateConnection(qs), "webPolling", "CustomConnectionData"));
             }
         }
 
@@ -176,7 +176,7 @@ namespace Microsoft.AspNet.SignalR.Client.Infrastructure
                 Assert.Equal(
                     "http://fakeurl/reconnect?clientProtocol=1.42&transport=webPolling&connectionToken=My%20Conn%20Token" +
                     expected,
-                    new UrlBuilder().BuildReconnect(connection, "webPolling", null));
+                    UrlBuilder.BuildReconnect(connection, "webPolling", null));
             }
 
             [Theory]
@@ -192,7 +192,7 @@ namespace Microsoft.AspNet.SignalR.Client.Infrastructure
                 Assert.Equal(
                     "http://fakeurl/reconnect?clientProtocol=1.42&transport=webPolling&connectionToken=My%20Conn%20Token" +
                     expected,
-                    new UrlBuilder().BuildReconnect(connection, "webPolling", null));
+                    UrlBuilder.BuildReconnect(connection, "webPolling", null));
             }
 
             [Theory]
@@ -203,7 +203,7 @@ namespace Microsoft.AspNet.SignalR.Client.Infrastructure
             {
                 Assert.Equal(
                     "http://fakeurl/reconnect?clientProtocol=1.42&transport=webPolling"+ expected + "&connectionToken=My%20Conn%20Token",
-                    new UrlBuilder().BuildReconnect(CreateConnection(), "webPolling", connectionData));
+                    UrlBuilder.BuildReconnect(CreateConnection(), "webPolling", connectionData));
             }
 
             [Theory]
@@ -220,7 +220,7 @@ namespace Microsoft.AspNet.SignalR.Client.Infrastructure
                 Assert.Equal(
                     "http://fakeurl/reconnect?clientProtocol=1.42&transport=webPolling&connectionData=CustomConnectionData&connectionToken=My%20Conn%20Token" +
                     expected,
-                    new UrlBuilder().BuildReconnect(CreateConnection(qs), "webPolling", "CustomConnectionData"));
+                    UrlBuilder.BuildReconnect(CreateConnection(qs), "webPolling", "CustomConnectionData"));
             }
         }
 
@@ -239,7 +239,7 @@ namespace Microsoft.AspNet.SignalR.Client.Infrastructure
                 Assert.Equal(
                     "http://fakeurl/poll?clientProtocol=1.42&transport=webPolling&connectionToken=My%20Conn%20Token" +
                     expected,
-                    new UrlBuilder().BuildPoll(connection, "webPolling", null));
+                    UrlBuilder.BuildPoll(connection, "webPolling", null));
             }
 
             [Theory]
@@ -255,7 +255,7 @@ namespace Microsoft.AspNet.SignalR.Client.Infrastructure
                 Assert.Equal(
                     "http://fakeurl/poll?clientProtocol=1.42&transport=webPolling&connectionToken=My%20Conn%20Token" +
                     expected,
-                    new UrlBuilder().BuildPoll(connection, "webPolling", null));
+                    UrlBuilder.BuildPoll(connection, "webPolling", null));
             }
 
             [Theory]
@@ -266,7 +266,7 @@ namespace Microsoft.AspNet.SignalR.Client.Infrastructure
             {
                 Assert.Equal(
                     "http://fakeurl/poll?clientProtocol=1.42&transport=webPolling" + expected + "&connectionToken=My%20Conn%20Token",
-                    new UrlBuilder().BuildPoll(CreateConnection(), "webPolling", connectionData));
+                    UrlBuilder.BuildPoll(CreateConnection(), "webPolling", connectionData));
             }
 
             [Theory]
@@ -283,7 +283,7 @@ namespace Microsoft.AspNet.SignalR.Client.Infrastructure
                 Assert.Equal(
                     "http://fakeurl/poll?clientProtocol=1.42&transport=webPolling&connectionData=CustomConnectionData&connectionToken=My%20Conn%20Token" +
                     expected,
-                    new UrlBuilder().BuildPoll(CreateConnection(qs), "webPolling", "CustomConnectionData"));
+                    UrlBuilder.BuildPoll(CreateConnection(qs), "webPolling", "CustomConnectionData"));
             }
         }
 
@@ -297,7 +297,7 @@ namespace Microsoft.AspNet.SignalR.Client.Infrastructure
             {
                 Assert.Equal(
                     "http://fakeurl/send?clientProtocol=1.42&transport=webPolling" + expected + "&connectionToken=My%20Conn%20Token",
-                    new UrlBuilder().BuildSend(CreateConnection(), "webPolling", connectionData));
+                    UrlBuilder.BuildSend(CreateConnection(), "webPolling", connectionData));
             }
 
             [Theory]
@@ -314,7 +314,7 @@ namespace Microsoft.AspNet.SignalR.Client.Infrastructure
                 Assert.Equal(
                     "http://fakeurl/send?clientProtocol=1.42&transport=webPolling&connectionData=CustomConnectionData&connectionToken=My%20Conn%20Token" +
                     expected,
-                    new UrlBuilder().BuildSend(CreateConnection(qs), "webPolling", "CustomConnectionData"));
+                    UrlBuilder.BuildSend(CreateConnection(qs), "webPolling", "CustomConnectionData"));
             }
         }
 

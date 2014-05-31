@@ -6,191 +6,185 @@ using System.Text;
 
 namespace Microsoft.AspNet.SignalR.Client.Infrastructure
 {
-    internal class UrlBuilder
+    internal static class UrlBuilder
     {
-        private readonly StringBuilder _urlStringBuilder = new StringBuilder();
-
-        internal string BuildNegotiate(IConnection connection, string connectionData)
+        public static string BuildNegotiate(IConnection connection, string connectionData)
         {
             Debug.Assert(connection != null, "connection is null");
 
-            CreateBaseUrl("negotiate", connection, null, connectionData);
+            var urlStringBuilder = CreateBaseUrl("negotiate", connection, null, connectionData);
 #if PORTABLE
-            AppendNoCacheUrlParam();
+            AppendNoCacheUrlParam(urlStringBuilder);
 #endif
-            return Trim();
+            return Trim(urlStringBuilder);
         }
 
-        public string BuildStart(IConnection connection, string transport, string connectionData)
+        public static string BuildStart(IConnection connection, string transport, string connectionData)
         {
             Debug.Assert(connection != null, "connection is null");
             Debug.Assert(!string.IsNullOrWhiteSpace(transport), "invalid transport");
 
-            CreateBaseUrl("start", connection, transport, connectionData);
-
-            return Trim();
+            return Trim(CreateBaseUrl("start", connection, transport, connectionData));
         }
 
-        public string BuildConnect(IConnection connection, string transport, string connectionData)
+        public static string BuildConnect(IConnection connection, string transport, string connectionData)
         {
             Debug.Assert(connection != null, "connection is null");
             Debug.Assert(!string.IsNullOrWhiteSpace(transport), "invalid transport");
 
-            CreateBaseUrl("connect", connection, transport, connectionData);
-            AppendReceiveParameters(connection);
+            var urlStringBuilder = CreateBaseUrl("connect", connection, transport, connectionData);
+            AppendReceiveParameters(urlStringBuilder, connection);
 
-            return Trim();
+            return Trim(urlStringBuilder);
         }
 
-        public string BuildReconnect(IConnection connection, string transport, string connectionData)
+        public static string BuildReconnect(IConnection connection, string transport, string connectionData)
         {
             Debug.Assert(connection != null, "connection is null");
             Debug.Assert(!string.IsNullOrWhiteSpace(transport), "invalid transport");
 
-            CreateBaseUrl("reconnect", connection, transport, connectionData);
-            AppendReceiveParameters(connection);
+            var urlStringBuilder = CreateBaseUrl("reconnect", connection, transport, connectionData);
+            AppendReceiveParameters(urlStringBuilder, connection);
 
-            return Trim();
+            return Trim(urlStringBuilder);
         }
 
-        public string BuildPoll(IConnection connection, string transport, string connectionData)
+        public static string BuildPoll(IConnection connection, string transport, string connectionData)
         {
             Debug.Assert(connection != null, "connection is null");
             Debug.Assert(!string.IsNullOrWhiteSpace(transport), "invalid transport");
 
-            CreateBaseUrl("poll", connection, transport, connectionData);
-            AppendReceiveParameters(connection);
+            var urlStringBuilder = CreateBaseUrl("poll", connection, transport, connectionData);
+            AppendReceiveParameters(urlStringBuilder, connection);
 
-            return Trim();
+            return Trim(urlStringBuilder);
         }
 
-        public string BuildSend(IConnection connection, string transport, string connectionData)
+        public static string BuildSend(IConnection connection, string transport, string connectionData)
         {
             Debug.Assert(connection != null, "connection is null");
             Debug.Assert(!string.IsNullOrWhiteSpace(transport), "invalid transport");
 
-            CreateBaseUrl("send", connection, transport, connectionData);
-
-            return Trim();
+            return Trim(CreateBaseUrl("send", connection, transport, connectionData));
         }
 
-        public string BuildAbort(IConnection connection, string transport, string connectionData)
+        public static string BuildAbort(IConnection connection, string transport, string connectionData)
         {
             Debug.Assert(connection != null, "connection is null");
             Debug.Assert(!string.IsNullOrWhiteSpace(transport), "invalid transport");
 
-            CreateBaseUrl("abort", connection, transport, connectionData);
-            return Trim();
+            return Trim(CreateBaseUrl("abort", connection, transport, connectionData));
         }
 
-        private void CreateBaseUrl(string command, IConnection connection, string transport, string connectionData)
+        private static StringBuilder CreateBaseUrl(string command, IConnection connection, string transport, string connectionData)
         {
-            _urlStringBuilder.Length = 0;
-
-            _urlStringBuilder
+            var urlStringBuilder = new StringBuilder();
+            urlStringBuilder
                 .Append(connection.Url)
                 .Append(command)
                 .Append("?");
 
-            AppendCommonParameters(connection, transport, connectionData);
+            AppendCommonParameters(urlStringBuilder, connection, transport, connectionData);
+
+            return urlStringBuilder;
         }
 
-        private void AppendCommonParameters(IConnection connection, string transport, string connectionData)
+        private static void AppendCommonParameters(StringBuilder urlStringBuilder, IConnection connection, string transport, string connectionData)
         {
-            AppendClientProtocol(connection);
-            AppendTransport(transport);
-            AppendConnectionData(connectionData);
-            AppendConnectionToken(connection);
-            AppendCustomQueryString(connection);
+            AppendClientProtocol(urlStringBuilder, connection);
+            AppendTransport(urlStringBuilder, transport);
+            AppendConnectionData(urlStringBuilder, connectionData);
+            AppendConnectionToken(urlStringBuilder, connection);
+            AppendCustomQueryString(urlStringBuilder, connection);
         }
 
-        private void AppendReceiveParameters(IConnection connection)
+        private static void AppendReceiveParameters(StringBuilder urlStringBuilder, IConnection connection)
         {
-            AppendMessageId(connection);
-            AppendGroupsToken(connection);
+            AppendMessageId(urlStringBuilder, connection);
+            AppendGroupsToken(urlStringBuilder, connection);
 #if PORTABLE
-            AppendNoCacheUrlParam();
+            AppendNoCacheUrlParam(urlStringBuilder);
 #endif
         }
 
-        private string Trim()
+        private static string Trim(StringBuilder urlStringBuilder)
         {
-            Debug.Assert(_urlStringBuilder[_urlStringBuilder.Length - 1] == '&', 
+            Debug.Assert(urlStringBuilder[urlStringBuilder.Length - 1] == '&', 
                 "expected & at the end of the url");
 
-            _urlStringBuilder.Length--;
-            return _urlStringBuilder.ToString();
+            urlStringBuilder.Length--;
+            return urlStringBuilder.ToString();
         }
 
-        private void AppendClientProtocol(IConnection connection)
+        private static void AppendClientProtocol(StringBuilder urlStringBuilder, IConnection connection)
         {
-            _urlStringBuilder
+            urlStringBuilder
                 .Append("clientProtocol=")
                 .Append(connection.Protocol)
                 .Append("&");
         }
 
-        private void AppendTransport(string transportName)
+        private static void AppendTransport(StringBuilder urlStringBuilder, string transportName)
         {
             if (transportName != null)
             {
-                _urlStringBuilder
+                urlStringBuilder
                     .Append("transport=")
                     .Append(transportName)
                     .Append("&");
             }
         }
 
-        private void AppendConnectionToken(IConnection connection)
+        private static void AppendConnectionToken(StringBuilder urlStringBuilder, IConnection connection)
         {
             if (connection.ConnectionToken != null)
             {
-                _urlStringBuilder
+                urlStringBuilder
                     .Append("connectionToken=")
                     .Append(Uri.EscapeDataString(connection.ConnectionToken))
                     .Append("&");
             }
         }
 
-        private void AppendMessageId(IConnection connection)
+        private static void AppendMessageId(StringBuilder urlStringBuilder, IConnection connection)
         {
             if (connection.MessageId != null)
             {
-                _urlStringBuilder
+                urlStringBuilder
                     .Append("messageId=")
                     .Append(Uri.EscapeDataString(connection.MessageId))
                     .Append("&");                
             }
         }
 
-        private void AppendGroupsToken(IConnection connection)
+        private static void AppendGroupsToken(StringBuilder urlStringBuilder, IConnection connection)
         {
             if (connection.GroupsToken != null)
             {
-                _urlStringBuilder
+                urlStringBuilder
                     .Append("groupsToken=")
                     .Append(Uri.EscapeDataString(connection.GroupsToken))
                     .Append("&");
             }
         }
 
-        private void AppendConnectionData(string connectionData)
+        private static void AppendConnectionData(StringBuilder urlStringBuilder, string connectionData)
         {
             if (!string.IsNullOrEmpty(connectionData))
             {
-                _urlStringBuilder
+                urlStringBuilder
                     .Append("connectionData=")
                     .Append(connectionData)
                     .Append("&");
             }
         }
 
-        private void AppendCustomQueryString(IConnection connection)
+        private static void AppendCustomQueryString(StringBuilder urlStringBuilder, IConnection connection)
         {
             Debug.Assert(
-                _urlStringBuilder[_urlStringBuilder.Length - 1] == '?' ||
-                _urlStringBuilder[_urlStringBuilder.Length - 1] == '&',
-                "url should ends with a correct separator");
+                urlStringBuilder[urlStringBuilder.Length - 1] == '?' ||
+                urlStringBuilder[urlStringBuilder.Length - 1] == '&',
+                "url should end with a correct separator");
 
             if (string.IsNullOrEmpty(connection.QueryString))
             {
@@ -201,20 +195,20 @@ namespace Microsoft.AspNet.SignalR.Client.Infrastructure
             // correct separator is already appended
             if (firstChar == '?' || firstChar == '&')
             {
-                _urlStringBuilder.Append(connection.QueryString.Substring(1));
+                urlStringBuilder.Append(connection.QueryString.Substring(1));
             }
             else
             {
-                _urlStringBuilder.Append(connection.QueryString);
+                urlStringBuilder.Append(connection.QueryString);
             }
 
-            _urlStringBuilder.Append("&");
+            urlStringBuilder.Append("&");
         }
 
 #if PORTABLE
-        private void AppendNoCacheUrlParam()
+        private static void AppendNoCacheUrlParam(StringBuilder urlStringBuilder)
         {
-            _urlStringBuilder
+            urlStringBuilder
                 .Append("noCache=")
                 .Append(Guid.NewGuid())
                 .Append("&");
