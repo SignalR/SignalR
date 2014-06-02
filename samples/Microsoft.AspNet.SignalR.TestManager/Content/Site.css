@@ -1,3 +1,14 @@
 ﻿.nav, .pagination, .carousel, .panel-title a {
     cursor: pointer;
 }
+
+[class*="host"] {
+  background-color: #eee;
+  border-style: solid;
+  border-width: thin;
+  border-color: #eee
+}
+
+[class*="process"] {
+  background-color: #ddd;
+}

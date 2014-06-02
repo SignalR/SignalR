@@ -55,6 +55,45 @@ azureTestManager.controller('TestManagerController', function ($scope) {
 
     $scope.connectionManager = new ConnectionManager();
 
+    $scope.getConnected = function () {
+        var sum = 0;
+        for (var connectionIndex = 0, connectionLength = $scope.connectionManager.connections.length; connectionIndex < connectionLength; connectionIndex++) {
+            var connection = $scope.connectionManager.connections[connectionIndex];
+            for (var processIndex = 0, processLength = connection.processes.length; processIndex < processLength; processIndex++) {
+                if (connection.processes[processIndex].state != 'Terminated') {
+                    sum += connection.processes[processIndex].connected;
+                }
+            }
+        }
+        return sum;
+    }
+
+    $scope.getReconnected = function () {
+        var sum = 0;
+        for (var connectionIndex = 0, connectionLength = $scope.connectionManager.connections.length; connectionIndex < connectionLength; connectionIndex++) {
+            var connection = $scope.connectionManager.connections[connectionIndex];
+            for (var processIndex = 0, processLength = connection.processes.length; processIndex < processLength; processIndex++) {
+                if (connection.processes[processIndex].state != 'Terminated') {
+                    sum += connection.processes[processIndex].reconnected;
+                }
+            }
+        }
+        return sum;
+    }
+
+    $scope.getDisconnected = function () {
+        var sum = 0;
+        for (var connectionIndex = 0, connectionLength = $scope.connectionManager.connections.length; connectionIndex < connectionLength; connectionIndex++) {
+            var connection = $scope.connectionManager.connections[connectionIndex];
+            for (var processIndex = 0, processLength = connection.processes.length; processIndex < processLength; processIndex++) {
+                if (connection.processes[processIndex].state != 'Terminated') {
+                    sum += connection.processes[processIndex].disconnected;
+                }
+            }
+        }
+        return sum;
+    }
+
     $scope.$watch('connectionManager.allSelected', function () {
         if ($scope.connectionManager.allSelected) {
             var connections = $scope.connectionManager.connections;
@@ -91,7 +130,10 @@ azureTestManager.controller('TestManagerController', function ($scope) {
         var worker = $scope.connectionManager.getConnection(connectionId).worker;
         worker.address = address;
         worker.status = status;
-        worker.lastUpdate = new Date().toTimeString();
+        var options = {
+            hour: "2-digit", minute: "2-digit", second: "2-digit"
+        };
+        worker.lastUpdate = new Date().toLocaleTimeString("en-us", options);
     };
 
     $scope.removeWorker = function (connectionId) {
