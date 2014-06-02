@@ -16,6 +16,7 @@ namespace Microsoft.AspNet.SignalR.LoadTestHarness
         private static int _actualFps = 0;
 
         private static IHubConnectionContext<dynamic> clients;
+        private static IConnection connection;
         private static AutoResetEvent autoResetEvent;
         private static bool _isRunning = false;
         private static long _rate = 1000;
@@ -24,7 +25,7 @@ namespace Microsoft.AspNet.SignalR.LoadTestHarness
         {
             autoResetEvent = new AutoResetEvent(false);
             clients = GlobalHost.ConnectionManager.GetHubContext<Dashboard>().Clients;
-            var connection = GlobalHost.ConnectionManager.GetConnectionContext<TestConnection>().Connection;
+            connection = GlobalHost.ConnectionManager.GetConnectionContext<TestConnection>().Connection;
             return new Timer(
                 _ =>
                 {
@@ -104,6 +105,12 @@ namespace Microsoft.AspNet.SignalR.LoadTestHarness
         {
             GC.Collect();
             GC.WaitForPendingFinalizers();
+        }
+
+        public void BroadcastOnce()
+        {
+            var touchLazy = _timerInstance.Value;
+            connection.Broadcast(_broadcastPayload).Wait();
         }
 
         public void StartBroadcast()

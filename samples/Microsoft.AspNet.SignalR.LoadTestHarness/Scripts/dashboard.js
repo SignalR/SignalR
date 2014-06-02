@@ -77,6 +77,10 @@ jQuery.fn.flash = function (color, duration) {
             self.hub.server.stopBroadcast();
         };
 
+        this.broadcastOnce = function () {
+            self.hub.server.broadcastOnce();
+        }
+
         this.init = function() {
 
             // Hook up subscriptions to notify server when view model changes

@@ -62,6 +62,7 @@
         <div id="control">
             <button id="start" data-bind="disable: broadcasting, click: start">Start Broadcast</button>
             <button id="stop" data-bind="enable: broadcasting, click: stop">Stop Broadcast</button>
+            <button id="broadcastOnce" data-bind="click: broadcastOnce">Broadcast Once</button>
         </div>
     </fieldset>
 
