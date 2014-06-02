@@ -48,8 +48,10 @@
                                             <button class="btn btn-default btn-sm" ng-click="stopProcess(connection.connectionId, process.processId)">
                                                 <span class=" glyphicon glyphicon-stop">
                                             </button>
-                                            {{process.state}}
-
+                                            State: {{process.state}}<br />
+                                            Connected: {{process.connected}}<br />
+                                            Reconnected: {{process.reconnected}}<br />
+                                            Disconnected: {{process.disconnected}}<br />
                                             {{process.lastOutput}}
                                         </div>
                                     </div>

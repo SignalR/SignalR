@@ -35,18 +35,27 @@
             <tr>
                 <td>ID</td>
                 <td>State</td>
+                <td>Connected</td>
+                <td>Reconnected</td>
+                <td>Disconnected</td>
                 <td>Update</td>
                 <td>Remove</td>
             </tr>
             <tr ng-repeat="instance in instances">
                 <td><input ng-model="instance.id" /></td>
                 <td><input ng-model="instance.state" /></td>
-                <td><input type="button" value="Update" ng-click="updateProcess(instance.id,instance.state)" /></td>
+                <td><input ng-model="instance.connected"></td>
+                <td><input ng-model="instance.reconnected"></td>
+                <td><input ng-model="instance.disconnected"></td>
+                <td><input type="button" value="Update" ng-click="updateProcess(instance)" /></td>
                 <td><input type="button" value="Standard Error" ng-click="addErrorTrace(instance.id)" /></td>
                 <td><input type="button" value="Standard Out" ng-click="addOutputTrace(instance.id)" /></td>
             </tr>
             <tr>
                 <td><strong id="stoppedProcess"></strong></td>
+                <td></td>
+                <td></td>
+                <td></td>
                 <td></td>
                 <td></td>
                 <td><input type="button" id="addProcess" value="Add" ng-click="addInstance()" /></td>

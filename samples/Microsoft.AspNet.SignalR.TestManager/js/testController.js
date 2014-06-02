@@ -1,15 +1,18 @@
 ﻿var azureTestManager = angular.module('azureTestManagerTest', []);
 
-function Instance(id, state) {
+function Instance(id, state, connected, reconnected, disconnected) {
     var self = this;
     self.id = id;
     self.state = state;
+    self.connected = connected;
+    self.reconnected = reconnected;
+    self.disconnected = disconnected;
 }
 
 azureTestManager.controller('AzureTestManagerTestController', function ($scope) {
     $scope.instances = [
-        new Instance('123', 'Running'),
-        new Instance('456', 'Stopped')
+        new Instance('123', 'Running', 0, 10, 20),
+        new Instance('456', 'Stopped', 30, 40, 50)
     ];
 
     $scope.addInstance = function () {
@@ -34,11 +37,14 @@ azureTestManager.controller('AzureTestManagerTestController', function ($scope) 
             $('#status').val());
     }
 
-    $scope.updateProcess = function (id, status) {
+    $scope.updateProcess = function (instance) {
         hub.server.addUpdateProcess(
             hub.connection.id,
-            id,
-            status);
+            instance.id,
+            instance.state,
+            instance.connected,
+            instance.reconnected,
+            instance.disconnected);
     }
 
     $scope.addErrorTrace = function (id) {

@@ -12,6 +12,9 @@ function Process(processId) {
     var self = this;
     self.processId = processId;
     self.state = '';
+    self.connected = 0;
+    self.reconnected = 0;
+    self.disconnected = 0;
     self.lastUpdate = '';
     self.lastError = '';
     self.lastOutput = '';

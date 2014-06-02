@@ -98,9 +98,12 @@ azureTestManager.controller('TestManagerController', function ($scope) {
         $scope.connectionManager.removeConnection(connectionId);
     };
 
-    $scope.addUpdateProcess = function (connectionId, processId, processStatus) {
+    $scope.addUpdateProcess = function (connectionId, processId, processStatus, connectedClients, reconnectedClients, disconnectedClients) {
         var process = $scope.connectionManager.getConnection(connectionId).getProcess(processId);
         process.state = processStatus;
+        process.connected = connectedClients;
+        process.reconnected = reconnectedClients;
+        process.disconnected = disconnectedClients;
         process.lastUpdate = new Date().toTimeString();
     };
 
@@ -144,9 +147,9 @@ azureTestManager.controller('TestManagerController', function ($scope) {
         });
     };
 
-    hub.client.addUpdateProcess = function (connectionId, processId, processStatus) {
+    hub.client.addUpdateProcess = function (connectionId, processId, processStatus, connectedClients, reconnectedClients, disconnectedClients) {
         $scope.$apply(function () {
-            $scope.addUpdateProcess(connectionId, processId, processStatus);
+            $scope.addUpdateProcess(connectionId, processId, processStatus, connectedClients, reconnectedClients, disconnectedClients);
         });
     }
 

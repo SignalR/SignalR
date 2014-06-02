@@ -77,7 +77,15 @@ namespace Microsoft.AspNet.SignalR.Crank
                     {
                         while (running)
                         {
-                            await testManagerProxy.Invoke("addUpdateProcess", guid, id, TestPhase.ToString());
+                            var states = Connections.Select(c => c.State);
+
+                            await testManagerProxy.Invoke("addUpdateProcess",
+                                guid,
+                                id,
+                                TestPhase.ToString(),
+                                states.Where(s => s == ConnectionState.Connected).Count(),
+                                states.Where(s => s == ConnectionState.Reconnecting).Count(),
+                                states.Where(s => s == ConnectionState.Disconnected).Count());
                             await Task.Delay(1000);
                         }
                     });
@@ -89,13 +97,22 @@ namespace Microsoft.AspNet.SignalR.Crank
                 {
                     running = false;
                     updateTask.Wait();
-                    testManagerProxy.Invoke("addUpdateProcess", guid, id, "Terminated");
-                    if(testManagerConnection != null)
+
+                    var states = Connections.Select(c => c.State);
+
+                    testManagerProxy.Invoke("addUpdateProcess",
+                        guid,
+                        id,
+                        "Terminated",
+                        states.Where(s => s == ConnectionState.Connected).Count(),
+                        states.Where(s => s == ConnectionState.Reconnecting).Count(),
+                        states.Where(s => s == ConnectionState.Disconnected).Count()
+                        ).Wait();
+                    if (testManagerConnection != null)
                     {
                         testManagerConnection.Stop();
                     }
                 }
-
             }
             catch (AggregateException aggregateException)
             {

@@ -37,12 +37,15 @@ namespace AzureTestManager
                 status);
         }
 
-        public void AddUpdateProcess(string guid, string id, string status)
+        public void AddUpdateProcess(string guid, string id, string state, int connectedClients, int reconnectedClients, int disconnectedClients)
         {
             Clients.Group("manager").addUpdateProcess(
                 guid,
                 id,
-                status);
+                state,
+                connectedClients,
+                reconnectedClients,
+                disconnectedClients);
         }
 
         public void AddErrorTrace(string guid, string id, string message)
