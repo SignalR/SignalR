@@ -88,7 +88,7 @@ namespace Microsoft.AspNet.SignalR.Crank
                 AppHost.Dispose();
             }
 
-            FlushLog(force:true);
+            FlushLog(force: true);
         }
 
         private static void RunConnect()
@@ -125,7 +125,7 @@ namespace Microsoft.AspNet.SignalR.Crank
         private static void RunSend()
         {
             var timeout = TestTimer.Elapsed.Add(TimeSpan.FromSeconds(Arguments.SendTimeout));
-            
+
             BlockWhilePhase(ControllerEvents.Send, breakCondition: () =>
             {
                 return TestTimer.Elapsed >= timeout;
@@ -159,7 +159,14 @@ namespace Microsoft.AspNet.SignalR.Crank
 
                 while ((TestPhase != ControllerEvents.Abort) && (TestPhase != ControllerEvents.Complete))
                 {
-                    SignalSample(TestTimer.Elapsed);
+                    try
+                    {
+                        SignalSample(TestTimer.Elapsed);
+                    }
+                    catch (Exception)
+                    {
+
+                    }
                     Thread.Sleep(Arguments.SampleInterval);
                 }
             });
@@ -201,7 +208,7 @@ namespace Microsoft.AspNet.SignalR.Crank
         private static bool WaitForClientsToConnect()
         {
             Console.WriteLine("Waiting on Clients...");
-            
+
             int attempts = 0;
 
             while (ClientsConnected < Arguments.NumClients)
