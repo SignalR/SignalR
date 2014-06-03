@@ -71,10 +71,7 @@ namespace Microsoft.AspNet.SignalR.Client.Tests
             connection.SetupGet(c => c.ConnectionToken).Returns("foo");
 
             var sse = new ServerSentEventsTransport(httpClient.Object);
-            sse.OpenConnection(connection.Object, (ex) =>
-            {
-                wh.TrySetResult(ex);
-            });
+            sse.OpenConnection(connection.Object, null, CancellationToken.None, () => { }, ex => wh.TrySetResult(ex));
 
             Assert.True(wh.Task.Wait(TimeSpan.FromSeconds(5)));
             Assert.IsType(typeof(OperationCanceledException), wh.Task.Result);
