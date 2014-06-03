@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.md in the project root for license information.
 
 using System;
-using System.Diagnostics.CodeAnalysis;
 using System.Net.WebSockets;
 using System.Threading;
 using System.Threading.Tasks;
@@ -16,7 +15,8 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
         private readonly ClientWebSocketHandler _webSocketHandler;
         private CancellationToken _disconnectToken;
         private TransportInitializationHandler _initializeHandler;
-        private WebSocketConnectionInfo _connectionInfo;
+        private IConnection _connection;
+        private string _connectionData;
         private CancellationTokenSource _webSocketTokenSource;
         private ClientWebSocket _webSocket;
         private int _disposed;
@@ -70,7 +70,8 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
             };
 
             _disconnectToken = disconnectToken;
-            _connectionInfo = new WebSocketConnectionInfo(connection, connectionData);
+            _connection = connection;
+            _connectionData = connectionData;
 
             // We don't need to await this task
             PerformConnect().ContinueWith(task =>
@@ -98,19 +99,19 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
         private async Task PerformConnect(bool reconnecting)
         {
             var url = reconnecting
-                ? UrlBuilder.BuildReconnect(_connectionInfo.Connection, Name, _connectionInfo.Data)
-                : UrlBuilder.BuildConnect(_connectionInfo.Connection, Name, _connectionInfo.Data);
+                ? UrlBuilder.BuildReconnect(_connection, Name, _connectionData)
+                : UrlBuilder.BuildConnect(_connection, Name, _connectionData);
 
             var builder = new UriBuilder(url);
             builder.Scheme = builder.Scheme == "https" ? "wss" : "ws";
 
-            _connectionInfo.Connection.Trace(TraceLevels.Events, "WS Connecting to: {0}", builder.Uri);
+            _connection.Trace(TraceLevels.Events, "WS Connecting to: {0}", builder.Uri);
  
             // TODO: Revisit thread safety of this assignment
             _webSocketTokenSource = new CancellationTokenSource();
             _webSocket = new ClientWebSocket();
 
-            _connectionInfo.Connection.PrepareRequest(new WebSocketWrapperRequest(_webSocket, _connectionInfo.Connection));
+            _connection.PrepareRequest(new WebSocketWrapperRequest(_webSocket, _connection));
 
             CancellationTokenSource linkedCts = CancellationTokenSource.CreateLinkedTokenSource(_webSocketTokenSource.Token, _disconnectToken);
             CancellationToken token = linkedCts.Token;
@@ -141,11 +142,11 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
         // virtual for testing
         internal virtual void OnMessage(string message)
         {
-            _connectionInfo.Connection.Trace(TraceLevels.Messages, "WS: OnMessage({0})", message);
+            _connection.Trace(TraceLevels.Messages, "WS: OnMessage({0})", message);
 
             bool timedOut;
             bool disconnected;
-            TransportHelper.ProcessResponse(_connectionInfo.Connection,
+            TransportHelper.ProcessResponse(_connection,
                                             message,
                                             out timedOut,
                                             out disconnected,
@@ -153,8 +154,8 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
 
             if (disconnected && !_disconnectToken.IsCancellationRequested)
             {
-                _connectionInfo.Connection.Trace(TraceLevels.Messages, "Disconnect command received from server.");
-                _connectionInfo.Connection.Disconnect();
+                _connection.Trace(TraceLevels.Messages, "Disconnect command received from server.");
+                _connection.Disconnect();
             }
         }
 
@@ -162,16 +163,16 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
         internal virtual void OnOpen()
         {
             // This will noop if we're not in the reconnecting state
-            if (_connectionInfo.Connection.ChangeState(ConnectionState.Reconnecting, ConnectionState.Connected))
+            if (_connection.ChangeState(ConnectionState.Reconnecting, ConnectionState.Connected))
             {
-                _connectionInfo.Connection.OnReconnected();
+                _connection.OnReconnected();
             }
         }
 
         // virtual for testing
         internal virtual void OnClose()
         {
-            _connectionInfo.Connection.Trace(TraceLevels.Events, "WS: OnClose()");
+            _connection.Trace(TraceLevels.Events, "WS: OnClose()");
 
             if (_disconnectToken.IsCancellationRequested)
             {
@@ -188,7 +189,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
 
         private async void DoReconnect()
         {
-            while (TransportHelper.VerifyLastActive(_connectionInfo.Connection) && _connectionInfo.Connection.EnsureReconnecting())
+            while (TransportHelper.VerifyLastActive(_connection) && _connection.EnsureReconnecting())
             {
                 try
                 {
@@ -206,7 +207,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
                         break;
                     }
 
-                    _connectionInfo.Connection.OnError(ex);
+                    _connection.OnError(ex);
                 }
 
                 await Task.Delay(ReconnectDelay);
@@ -216,12 +217,12 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
         // virtual for testing
         internal virtual void OnError(Exception error)
         {
-            _connectionInfo.Connection.OnError(error);
+            _connection.OnError(error);
         }
 
         public override void LostConnection(IConnection connection)
         {
-            _connectionInfo.Connection.Trace(TraceLevels.Events, "WS: LostConnection");
+            _connection.Trace(TraceLevels.Events, "WS: LostConnection");
 
             if (_webSocketTokenSource != null)
             {
@@ -257,19 +258,6 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
             }
 
             base.Dispose(disposing);
-        }
-
-        [SuppressMessage("Microsoft.Design", "CA1001:TypesThatOwnDisposableFieldsShouldBeDisposable", Justification = "This class is just a data holder")]
-        private class WebSocketConnectionInfo
-        {
-            public IConnection Connection;
-            public string Data;
-
-            public WebSocketConnectionInfo(IConnection connection, string data)
-            {
-                Connection = connection;
-                Data = data;
-            }
         }
     }
 }
