@@ -48,13 +48,13 @@ namespace Microsoft.AspNet.SignalR.Stress
 
         protected override void Dispose(bool disposing)
         {
+            base.Dispose(disposing);
+
             if (_bus != null && disposing)
             {
                 _bus.Dispose();
                 _bus = null;
             }
-
-            base.Dispose(disposing);
         }
     }
 }

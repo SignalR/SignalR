@@ -7,7 +7,6 @@ using System.Diagnostics;
 using System.Threading;
 using CmdLine;
 using Microsoft.AspNet.SignalR.Stress.Infrastructure;
-using Microsoft.AspNet.SignalR.StressServer.Hubs;
 
 namespace Microsoft.AspNet.SignalR.Stress
 {
@@ -122,7 +121,7 @@ namespace Microsoft.AspNet.SignalR.Stress
             [CommandLineParameter(Command = "Transport", Required = false, Default = "serverSentEvents", Description = "Transport name. Default: serverSentEvents")]
             public string Transport { get; set; }
 
-            [CommandLineParameter(Command = "Host", Required = false, Default = "Memory", Description = "Host type name ( Memory, IISExpress, Owin, External ). Default: Memory")]
+            [CommandLineParameter(Command = "Host", Required = false, Default = "Memory", Description = "Host type name ( Memory, IISExpress, HttpListener, External ). Default: Memory")]
             public string Host { get; set; }
 
             [CommandLineParameter(Command = "Duration", Required = false, Default = 30, Description = "Duration in seconds. Default: 30")]

@@ -25,7 +25,7 @@ namespace Microsoft.AspNet.SignalR.Stress
         public RunBase(RunData runData)
         {
             RunData = runData;
-            Resolver = new DefaultDependencyResolver();
+            Resolver = GlobalHost.DependencyResolver;
             CancellationTokenSource = new CancellationTokenSource();
             _countDown = new CountdownEvent(runData.Senders);
         }

@@ -57,16 +57,34 @@
     <Reference Include="CmdLine">
       <HintPath>..\..\packages\CmdLine.1.0.7.509\lib\net40-Client\CmdLine.dll</HintPath>
     </Reference>
+    <Reference Include="Microsoft.Owin, Version=2.1.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\packages\Microsoft.Owin.2.1.0\lib\net45\Microsoft.Owin.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.Owin.Host.HttpListener, Version=2.1.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\packages\Microsoft.Owin.Host.HttpListener.2.1.0\lib\net45\Microsoft.Owin.Host.HttpListener.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.Owin.Hosting, Version=2.1.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\packages\Microsoft.Owin.Hosting.2.1.0\lib\net45\Microsoft.Owin.Hosting.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.Owin.Testing, Version=2.1.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\packages\Microsoft.Owin.Testing.2.1.0\lib\net45\Microsoft.Owin.Testing.dll</HintPath>
+    </Reference>
     <Reference Include="Newtonsoft.Json, Version=4.5.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\packages\Newtonsoft.Json.5.0.6\lib\net45\Newtonsoft.Json.dll</HintPath>
     </Reference>
-    <Reference Include="Owin">
+    <Reference Include="Owin, Version=1.0.0.0, Culture=neutral, PublicKeyToken=f0ebd12fd5e55cc5, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\packages\Owin.1.0\lib\net40\Owin.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.ComponentModel.Composition" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Net.Http" />
     <Reference Include="System.Numerics" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
@@ -87,34 +105,36 @@
     <Compile Include="..\Microsoft.AspNet.SignalR.Core\TaskAsyncHelper.cs">
       <Link>TaskAsyncHelper.cs</Link>
     </Compile>
-    <Compile Include="Performance\ClientServerMemoryRun.cs" />
-    <Compile Include="Performance\ConnectionRun.cs" />
+    <Compile Include="Infrastructure\DefaultHttpClient_client.cs" />
+    <Compile Include="Infrastructure\EmptyProtectedData.cs" />
+    <Compile Include="Infrastructure\ExternalHost.cs" />
+    <Compile Include="Infrastructure\StressHostFactory.cs" />
+    <Compile Include="Infrastructure\HostType.cs" />
+    <Compile Include="Infrastructure\ITestHost.cs" />
+    <Compile Include="Infrastructure\MemoryClient.cs" />
+    <Compile Include="Infrastructure\MemoryHost.cs" />
+    <Compile Include="Infrastructure\HttpListenerHost.cs" />
+    <Compile Include="Infrastructure\ProcessExtensions.cs" />
+    <Compile Include="Infrastructure\SimpleEchoHub.cs" />
+    <Compile Include="Infrastructure\Startup.cs" />
+    <Compile Include="Infrastructure\StressConnection.cs" />
+    <Compile Include="Infrastructure\TransportType.cs" />
     <Compile Include="Performance\HostedRun.cs" />
-    <Compile Include="Performance\SimpleEchoHubRun.cs" />
-    <Compile Include="Performance\ServiceBusMessageBusRun.cs" />
     <Compile Include="Performance\HubInvocationRun.cs" />
-    <Compile Include="Performance\EmptyProtectedData.cs" />
-    <Compile Include="Infrastructure\Utility.cs" />
-    <Compile Include="IRun.cs" />
-    <Compile Include="Performance\SendReceiveRun.cs" />
     <Compile Include="Performance\MessageBusRun.cs" />
     <Compile Include="Performance\RedisMessageBusRun.cs" />
+    <Compile Include="Performance\SendReceiveRun.cs" />
+    <Compile Include="Performance\SimpleEchoHubRun.cs" />
+    <Compile Include="Infrastructure\Utility.cs" />
+    <Compile Include="IRun.cs" />
     <Compile Include="Performance\SqlMessageBusRun.cs" />
+    <Compile Include="Performance\Subscriber.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="RunBase.cs" />
     <Compile Include="RunData.cs" />
-    <Compile Include="Stress\ConcurrentCallsRun.cs" />
-    <Compile Include="Stress\HostedStressRun.cs" />
-    <Compile Include="Stress\StressRunBase.cs" />
-    <Compile Include="Stress\StressRuns.cs" />
-    <Compile Include="Performance\Subscriber.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\tests\Microsoft.AspNet.SignalR.Tests.Common\Microsoft.AspNet.SignalR.Tests.Common.csproj">
-      <Project>{f18a8896-10bd-469e-9aa1-aebacef4d7b7}</Project>
-      <Name>Microsoft.AspNet.SignalR.Tests.Common</Name>
-    </ProjectReference>
     <ProjectReference Include="..\Microsoft.AspNet.SignalR.Client45\Microsoft.AspNet.SignalR.Client45.csproj">
       <Project>{50f8a174-695e-498c-b105-bdbe6b398646}</Project>
       <Name>Microsoft.AspNet.SignalR.Client45</Name>
@@ -135,13 +155,11 @@
       <Project>{efcf27ec-cb9b-4f3a-91be-154b8ab5b5e0}</Project>
       <Name>Microsoft.AspNet.SignalR.SqlServer</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Microsoft.AspNet.SignalR.StressServer\Microsoft.AspNet.SignalR.StressServer.csproj">
-      <Project>{9ac65ed5-48c2-4c5c-8498-dc340b313fdf}</Project>
-      <Name>Microsoft.AspNet.SignalR.StressServer</Name>
-    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <None Include="app.config" />
+    <None Include="app.config">
+      <SubType>Designer</SubType>
+    </None>
     <None Include="packages.config" />
     <None Include="CreateStressDatabase.sql">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
@@ -150,6 +168,9 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       <SubType>Designer</SubType>
     </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Stress\" />
   </ItemGroup>
   <Import Project="..\Common\Microsoft.AspNet.SignalR.targets" />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

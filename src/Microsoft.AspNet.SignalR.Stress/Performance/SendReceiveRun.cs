@@ -5,28 +5,31 @@ using System.Collections.Generic;
 using System.ComponentModel.Composition;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.AspNet.SignalR.Hosting.Memory;
+using Microsoft.AspNet.SignalR.Client.Http;
 using Microsoft.AspNet.SignalR.Infrastructure;
 using Microsoft.AspNet.SignalR.Stress.Performance;
-using Microsoft.AspNet.SignalR.StressServer.Connections;
 using Owin;
+using System.IO;
 
 namespace Microsoft.AspNet.SignalR.Stress
 {
     [Export("SendReceive", typeof(IRun))]
     public class SendReceiveRun : HostedRun
     {
+        private readonly CancellationTokenSource _stopPollingCts;
+
         [ImportingConstructor]
         public SendReceiveRun(RunData runData)
             : base(runData)
         {
+            _stopPollingCts = new CancellationTokenSource();
         }
 
         public virtual string Endpoint
         {
             get { return "echo"; }
         }
-        
+
         protected override void InitializePerformanceCounters()
         {
         }
@@ -34,54 +37,66 @@ namespace Microsoft.AspNet.SignalR.Stress
         protected override IDisposable CreateReceiver(int connectionIndex)
         {
             string connectionId = connectionIndex.ToString();
+            Task receiverTask;
+
             if (RunData.Transport.Equals("longPolling", StringComparison.OrdinalIgnoreCase))
             {
-                ThreadPool.QueueUserWorkItem(state =>
+                receiverTask = Task.Factory.StartNew(state =>
                 {
                     LongPollingLoop((string)state);
-                },
-                connectionId);
+                }, connectionId);
             }
             else
             {
-                ProcessRequest(connectionId);
+                receiverTask = ProcessRequest(connectionId);
             }
 
             // Abort the request on dispose
-            return new DisposableAction(state => Abort((string)state), connectionId);
+            return new DisposableAction(state =>
+            {
+                var data = (ReceiverData)state;
+                data.CancellationTokenSource.Cancel();
+                receiverTask.Wait();
+                Abort(data.ConnectionId).Wait();
+            }, new ReceiverData()
+            {
+                ConnectionId = connectionId,
+                Task = receiverTask,
+                CancellationTokenSource = _stopPollingCts
+            });
         }
 
         protected override Task Send(int senderIndex, string source)
         {
             var postData = new Dictionary<string, string> { { "data", Payload } };
-            
-            return Host.Post("http://foo/" + Endpoint + "/send?transport=" + RunData.Transport + "&connectionToken=" + senderIndex.ToString(), postData);
+
+            return Host.Post(Host.Url + "/" + Endpoint + "/send?transport=" + RunData.Transport + "&connectionToken=" + senderIndex.ToString(), postData);
         }
 
-        private Task ProcessRequest(string connectionToken)
+        private Task<IResponse> ProcessRequest(string connectionToken)
         {
-            return Host.Get("http://foo/" + Endpoint + "/connect?transport=" + RunData.Transport + "&connectionToken=" + connectionToken + "&disableResponseBody=true");
+            return Host.Get(Host.Url + "/" + Endpoint + "/connect?transport=" + RunData.Transport + "&connectionToken=" + connectionToken + "&disableResponseBody=true");
         }
 
         private Task Abort(string connectionToken)
         {
-            return Host.Post("http://foo/" + Endpoint + "/abort?transport=" + RunData.Transport + "&connectionToken=" + connectionToken, data: null);
+            return Host.Post(Host.Url + "/" + Endpoint + "/abort?transport=" + RunData.Transport + "&connectionToken=" + connectionToken, data: null);
         }
 
-        private void LongPollingLoop(string connectionId)
+        private async void LongPollingLoop(string connectionId)
         {
-        LongPoll:
-
-            Task task = ProcessRequest(connectionId);
-
-            if (task.IsCompleted)
+            while (!_stopPollingCts.Token.IsCancellationRequested)
             {
-                task.Wait();
-
-                goto LongPoll;
+                var response = await ProcessRequest(connectionId);
+                var responseString = await response.ReadAsString();
             }
+        }
 
-            task.ContinueWith(t => LongPollingLoop(connectionId));
+        private class ReceiverData
+        {
+            public string ConnectionId { get; set; }
+            public Task Task { get; set; }
+            public CancellationTokenSource CancellationTokenSource { get; set; }
         }
     }
 }
