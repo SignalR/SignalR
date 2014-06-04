@@ -109,7 +109,7 @@ namespace Microsoft.AspNet.SignalR.Hubs
                                     "Original exception type: {2}" + Environment.NewLine +
                                     "Original exception message: {3}" + Environment.NewLine,
                                     a.FullName,
-                                    a.Location,
+                                    a.IsDynamic ? "na" : a.Location,
                                     ex.GetType().Name,
                                     ex.Message);
 
@@ -119,7 +119,7 @@ namespace Microsoft.AspNet.SignalR.Hubs
             {
                 _trace.TraceWarning(Resources.Warning_AssemblyGetTypesException,
                                     a.FullName,
-                                    a.Location,
+                                    a.IsDynamic ? "na" : a.Location,
                                     ex.GetType().Name,
                                     ex.Message);
 
