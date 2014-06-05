@@ -76,6 +76,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
             if (_webSocket == null)
             {
                 var webSocket = new MessageWebSocket();
+                webSocket.Control.MessageType = SocketMessageType.Utf8;
                 webSocket.Closed += WebsocketClosed;
                 webSocket.MessageReceived += MessageReceived;
                 connection.PrepareRequest(new WebSocketRequest(webSocket));
@@ -92,14 +93,17 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
 
         private void MessageReceived(MessageWebSocket source, MessageWebSocketMessageReceivedEventArgs eventArgs)
         {
-            MessageReceived(new MessageReceivedEventArgsWrapper(eventArgs), TransportHelper, _initializationHandler);
+            MessageReceived(new MessageReceivedEventArgsWrapper(eventArgs), _connection, TransportHelper, _initializationHandler);
         }
 
         // internal for testing, passing dependencies to allow mocking
-        internal void MessageReceived(IWebSocketResponse webSocketResponse, TransportHelper transportHelper, 
-            TransportInitializationHandler initializationHandler)
+        internal void MessageReceived(IWebSocketResponse webSocketResponse, IConnection connection, 
+            TransportHelper transportHelper, TransportInitializationHandler initializationHandler)
         {
             var response = ReadMessage(webSocketResponse);
+
+            connection.Trace(TraceLevels.Messages, "WS: OnMessage({0})", response);
+
             bool shouldReconnect;
             bool disconnected;
             transportHelper.ProcessResponse(_connection, response, out shouldReconnect, out disconnected, 
@@ -119,9 +123,32 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
 
         public override Task Send(IConnection connection, string data, string connectionData)
         {
-            throw new NotImplementedException();
+            if (connection == null)
+            {
+                throw new ArgumentNullException("connection");
+            }
+
+            var webSocket = _webSocket;
+
+            if (webSocket == null)
+            {
+                throw new InvalidOperationException(Resources.GetResourceString("Error_WebSocketUninitialized"));
+            }
+
+            return Send(webSocket, data);
         }
 
+        // internal for testing
+        internal static async Task Send(IWebSocket webSocket, string data)
+        {
+            using (var messageWriter = new DataWriter(webSocket.OutputStream))
+            {
+                messageWriter.WriteString(data);
+                await messageWriter.StoreAsync();
+                messageWriter.DetachStream();
+            }
+        }
+        
         private static void WebsocketClosed(IWebSocket webSocket, WebSocketClosedEventArgs eventArgs)
         {
             throw new NotImplementedException();

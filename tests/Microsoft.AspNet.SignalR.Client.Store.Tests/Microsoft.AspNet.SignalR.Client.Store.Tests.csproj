@@ -120,6 +120,7 @@
     <Compile Include="Fakes\FakeConnection.cs" />
     <Compile Include="Fakes\FakeDataReader.cs" />
     <Compile Include="Fakes\FakeInvocationManager.cs" />
+    <Compile Include="Fakes\FakeOutputStream.cs" />
     <Compile Include="Fakes\FakeTransportHelper.cs" />
     <Compile Include="Fakes\FakeWebSocket.cs" />
     <Compile Include="Fakes\FakeWebSocketResponse.cs" />

@@ -26,10 +26,7 @@ namespace Microsoft.AspNet.SignalR.Client.Store.Tests.Fakes
             throw new NotImplementedException();
         }
 
-        public IOutputStream OutputStream
-        {
-            get { throw new NotImplementedException(); }
-        }
+        public IOutputStream OutputStream { get; set; }
 
         public void SetRequestHeader(string headerName, string headerValue)
         {

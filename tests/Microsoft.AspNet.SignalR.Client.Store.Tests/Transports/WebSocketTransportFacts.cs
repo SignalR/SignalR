@@ -154,15 +154,51 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
             var transportInitialization = new TransportInitializationHandler(null, new FakeConnection(), 
                 null, null, CancellationToken.None, fakeTransportHelper);
 
+            var fakeConnection = new FakeConnection();
+
             new WebSocketTransport()
-                .MessageReceived(fakeWebSocketResponse, fakeTransportHelper, transportInitialization);
+                .MessageReceived(fakeWebSocketResponse, fakeConnection, fakeTransportHelper, transportInitialization);
 
             Assert.Equal(UnicodeEncoding.Utf8, fakeDataReader.UnicodeEncoding);
-            fakeDataReader.Verify("ReadString", new List<object[]> {new object[] { (uint)42}});
+            fakeDataReader.Verify("ReadString", new List<object[]> {new object[] { 42u}});
 
             var processResponseInvocations = fakeTransportHelper.GetInvocations("ProcessResponse").ToArray();
             Assert.Equal(1, processResponseInvocations.Length);
             Assert.Equal("MessageBody", /* response */processResponseInvocations[0][1]);
+            Assert.Equal(1, fakeConnection.GetInvocations("Trace").Count());
+        }
+
+        [Fact]
+        public async Task SendChecksInputArguments()
+        {
+            Assert.Equal("connection",
+               (await Assert.ThrowsAsync<ArgumentNullException>(async () => await
+                   new WebSocketTransport().Send(null, null, null))).ParamName);
+        }
+
+        [Fact]
+        public async Task SendWritesToWebSocketOutputStream()
+        {
+            var fakeOutputStream = new FakeOutputStream();
+            var fakeWebSocket = new FakeWebSocket { OutputStream = fakeOutputStream };
+
+            await WebSocketTransport.Send(fakeWebSocket, "42.42");
+
+            var writeAsyncInvocations = fakeOutputStream.GetInvocations("WriteAsync").ToArray();
+
+            Assert.Equal(1, writeAsyncInvocations.Length);
+            Assert.Equal(5u, ((IBuffer)writeAsyncInvocations[0][0]).Length);
+        }
+
+        // [Fact] 
+        // TODO: This test causes AccessViolationException when accessing resources. 
+        // The resources can be accessed without a problem from a WPA81 app or an MSTest based Unit Test project for Store Apps.
+        public async Task CannotInvokeSendIfWebSocketUnitialized()
+        {
+            Assert.Equal(
+                Resources.GetResourceString("Error_WebSocketUninitialized"),
+                (await Assert.ThrowsAsync<InvalidOperationException>(
+                    async () => await new WebSocketTransport().Send(new FakeConnection(), null, null))).Message);
         }
     }
 }
