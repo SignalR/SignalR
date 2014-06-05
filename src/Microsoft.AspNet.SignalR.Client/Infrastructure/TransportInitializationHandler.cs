@@ -21,7 +21,7 @@ namespace Microsoft.AspNet.SignalR.Client.Infrastructure
         private readonly IDisposable _tokenCleanup;
         private readonly TransportHelper _transportHelper;
 
-        internal TransportInitializationHandler(IHttpClient httpClient,
+        public TransportInitializationHandler(IHttpClient httpClient,
                                               IConnection connection,
                                               string connectionData,
                                               string transport,
@@ -113,10 +113,14 @@ namespace Microsoft.AspNet.SignalR.Client.Infrastructure
             Dispatch(() =>
             {
                 OnFailure();
-                _initializationTask.SetException(ex);
+
+                _initializationTask.TrySetUnwrappedException(ex);
             });
 
-            _tokenCleanup.Dispose();
+            if (_tokenCleanup != null)
+            {
+                _tokenCleanup.Dispose();
+            }
         }
 
         private static void Dispatch(Action callback)

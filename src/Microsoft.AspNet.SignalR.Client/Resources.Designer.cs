@@ -138,6 +138,15 @@ namespace Microsoft.AspNet.SignalR.Client {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Uri scheme &apos;{0}&apos; is not valid. The only valid uri schemes are &apos;http&apos; and &apos;https&apos;..
+        /// </summary>
+        internal static string Error_InvalidUriScheme {
+            get {
+                return ResourceManager.GetString("Error_InvalidUriScheme", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to A HubProxy cannot be added after the connection has been started..
         /// </summary>
         internal static string Error_ProxiesCannotBeAddedConnectionStarted {

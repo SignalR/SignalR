@@ -93,14 +93,12 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
         // For testing
         public virtual Task PerformConnect()
         {
-            return PerformConnect(reconnecting: false);
+            return PerformConnect(UrlBuilder.BuildConnect(_connection, Name, _connectionData));
         }
 
-        private async Task PerformConnect(bool reconnecting)
+        private async Task PerformConnect(string url)
         {
-            var url = reconnecting
-                ? UrlBuilder.BuildReconnect(_connection, Name, _connectionData)
-                : UrlBuilder.BuildConnect(_connection, Name, _connectionData);
+            var uri = UrlBuilder.ConvertToWebSocketUri(url);
 
             var builder = new UriBuilder(url);
             builder.Scheme = builder.Scheme == "https" ? "wss" : "ws";
@@ -116,7 +114,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
             CancellationTokenSource linkedCts = CancellationTokenSource.CreateLinkedTokenSource(_webSocketTokenSource.Token, _disconnectToken);
             CancellationToken token = linkedCts.Token;
 
-            await _webSocket.ConnectAsync(builder.Uri, token);
+            await _webSocket.ConnectAsync(uri, token);
             await _webSocketHandler.ProcessWebSocketRequestAsync(_webSocket, token);
         }
 
@@ -187,13 +185,16 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
             DoReconnect();
         }
 
+        // fire and forget
         private async void DoReconnect()
         {
+            var reconnectUrl = UrlBuilder.BuildReconnect(_connection, Name, _connectionData);
+
             while (TransportHelper.VerifyLastActive(_connection) && _connection.EnsureReconnecting())
             {
                 try
                 {
-                    await PerformConnect(reconnecting: true);
+                    await PerformConnect(reconnectUrl);
                     break;
                 }
                 catch (OperationCanceledException)

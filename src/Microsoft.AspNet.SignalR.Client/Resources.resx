@@ -174,4 +174,7 @@
   <data name="Message_Reconnecting" xml:space="preserve">
     <value>Connection started reconnecting before invocation result was received.</value>
   </data>
+  <data name="Error_InvalidUriScheme" xml:space="preserve">
+    <value>Uri scheme '{0}' is not valid. The only valid uri schemes are 'http' and 'https'.</value>
+  </data>
 </root>

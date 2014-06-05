@@ -116,7 +116,17 @@
     <SDKReference Include="TestPlatform, Version=11.0" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ClientResources.cs" />
+    <Compile Include="Fakes\FakeConnection.cs" />
+    <Compile Include="Fakes\FakeDataReader.cs" />
+    <Compile Include="Fakes\FakeInvocationManager.cs" />
+    <Compile Include="Fakes\FakeTransportHelper.cs" />
+    <Compile Include="Fakes\FakeWebSocket.cs" />
+    <Compile Include="Fakes\FakeWebSocketResponse.cs" />
+    <Compile Include="Fakes\IFake.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Fakes\FakeWebSocketTransport.cs" />
+    <Compile Include="Transports\WebSocketRequestFacts.cs" />
     <Compile Include="Transports\WebSocketTransportFacts.cs" />
   </ItemGroup>
   <ItemGroup>

@@ -1,5 +1,6 @@
 ﻿
 using System;
+using System.Globalization;
 using Moq;
 using Xunit;
 using Xunit.Extensions;
@@ -10,6 +11,14 @@ namespace Microsoft.AspNet.SignalR.Client.Infrastructure
     {
         public class BuildNegotiate
         {
+            [Fact]
+            public void BuildNegotiateChecksInputParameters()
+            {
+                Assert.Equal("connection", 
+                    Assert.Throws<ArgumentNullException>(
+                        () => UrlBuilder.BuildNegotiate(null, string.Empty)).ParamName);
+            }
+
             [Theory]
             [InlineData(null, "")]
             [InlineData("", "")]
@@ -39,6 +48,26 @@ namespace Microsoft.AspNet.SignalR.Client.Infrastructure
 
         public class BuildStart
         {
+            [Fact]
+            public void BuildStartChecksInputParameters()
+            {
+                Assert.Equal("connection",
+                    Assert.Throws<ArgumentNullException>(
+                        () => UrlBuilder.BuildStart(null, "transport", string.Empty)).ParamName);
+
+                Assert.Equal("transport",
+                    Assert.Throws<ArgumentNullException>(
+                        () => UrlBuilder.BuildStart(Mock.Of<IConnection>(), null, string.Empty)).ParamName);
+
+                Assert.Equal("transport",
+                    Assert.Throws<ArgumentNullException>(
+                        () => UrlBuilder.BuildStart(Mock.Of<IConnection>(), string.Empty, string.Empty)).ParamName);
+
+                Assert.Equal("transport",
+                    Assert.Throws<ArgumentNullException>(
+                        () => UrlBuilder.BuildStart(Mock.Of<IConnection>(), " ", string.Empty)).ParamName);
+            }
+
             [Theory]
             [InlineData(null, "")]
             [InlineData("", "")]
@@ -69,6 +98,26 @@ namespace Microsoft.AspNet.SignalR.Client.Infrastructure
 
         public class BuildAbort
         {
+            [Fact]
+            public void BuildAbortChecksInputParameters()
+            {
+                Assert.Equal("connection",
+                    Assert.Throws<ArgumentNullException>(
+                        () => UrlBuilder.BuildAbort(null, "transport", string.Empty)).ParamName);
+
+                Assert.Equal("transport",
+                    Assert.Throws<ArgumentNullException>(
+                        () => UrlBuilder.BuildAbort(Mock.Of<IConnection>(), null, string.Empty)).ParamName);
+
+                Assert.Equal("transport",
+                    Assert.Throws<ArgumentNullException>(
+                        () => UrlBuilder.BuildAbort(Mock.Of<IConnection>(), string.Empty, string.Empty)).ParamName);
+
+                Assert.Equal("transport",
+                    Assert.Throws<ArgumentNullException>(
+                        () => UrlBuilder.BuildAbort(Mock.Of<IConnection>(), " ", string.Empty)).ParamName);
+            }
+
             [Theory]
             [InlineData(null, "")]
             [InlineData("", "")]
@@ -100,6 +149,26 @@ namespace Microsoft.AspNet.SignalR.Client.Infrastructure
 
         public class BuildConnect
         {
+            [Fact]
+            public void BuildConnectChecksInputParameters()
+            {
+                Assert.Equal("connection",
+                    Assert.Throws<ArgumentNullException>(
+                        () => UrlBuilder.BuildConnect(null, "transport", string.Empty)).ParamName);
+
+                Assert.Equal("transport",
+                    Assert.Throws<ArgumentNullException>(
+                        () => UrlBuilder.BuildConnect(Mock.Of<IConnection>(), null, string.Empty)).ParamName);
+
+                Assert.Equal("transport",
+                    Assert.Throws<ArgumentNullException>(
+                        () => UrlBuilder.BuildConnect(Mock.Of<IConnection>(), string.Empty, string.Empty)).ParamName);
+
+                Assert.Equal("transport",
+                    Assert.Throws<ArgumentNullException>(
+                        () => UrlBuilder.BuildConnect(Mock.Of<IConnection>(), " ", string.Empty)).ParamName);
+            }
+
             [Theory]
             [InlineData("42", "&messageId=42")]
             [InlineData("", "&messageId=")]
@@ -163,6 +232,26 @@ namespace Microsoft.AspNet.SignalR.Client.Infrastructure
 
         public class BuildReconnect
         {
+            [Fact]
+            public void BuildReconnectChecksInputParameters()
+            {
+                Assert.Equal("connection",
+                    Assert.Throws<ArgumentNullException>(
+                        () => UrlBuilder.BuildReconnect(null, "transport", string.Empty)).ParamName);
+
+                Assert.Equal("transport",
+                    Assert.Throws<ArgumentNullException>(
+                        () => UrlBuilder.BuildReconnect(Mock.Of<IConnection>(), null, string.Empty)).ParamName);
+
+                Assert.Equal("transport",
+                    Assert.Throws<ArgumentNullException>(
+                        () => UrlBuilder.BuildReconnect(Mock.Of<IConnection>(), string.Empty, string.Empty)).ParamName);
+
+                Assert.Equal("transport",
+                    Assert.Throws<ArgumentNullException>(
+                        () => UrlBuilder.BuildReconnect(Mock.Of<IConnection>(), " ", string.Empty)).ParamName);
+            }
+
             [Theory]
             [InlineData("42", "&messageId=42")]
             [InlineData("", "&messageId=")]
@@ -226,6 +315,26 @@ namespace Microsoft.AspNet.SignalR.Client.Infrastructure
 
         public class BuildPoll
         {
+            [Fact]
+            public void BuildPollChecksInputParameters()
+            {
+                Assert.Equal("connection",
+                    Assert.Throws<ArgumentNullException>(
+                        () => UrlBuilder.BuildPoll(null, "transport", string.Empty)).ParamName);
+
+                Assert.Equal("transport",
+                    Assert.Throws<ArgumentNullException>(
+                        () => UrlBuilder.BuildPoll(Mock.Of<IConnection>(), null, string.Empty)).ParamName);
+
+                Assert.Equal("transport",
+                    Assert.Throws<ArgumentNullException>(
+                        () => UrlBuilder.BuildPoll(Mock.Of<IConnection>(), string.Empty, string.Empty)).ParamName);
+
+                Assert.Equal("transport",
+                    Assert.Throws<ArgumentNullException>(
+                        () => UrlBuilder.BuildPoll(Mock.Of<IConnection>(), " ", string.Empty)).ParamName);
+            }
+
             [Theory]
             [InlineData("42", "&messageId=42")]
             [InlineData("", "&messageId=")]
@@ -289,6 +398,26 @@ namespace Microsoft.AspNet.SignalR.Client.Infrastructure
 
         public class BuildSend
         {
+            [Fact]
+            public void BuildSendChecksInputParameters()
+            {
+                Assert.Equal("connection",
+                    Assert.Throws<ArgumentNullException>(
+                        () => UrlBuilder.BuildSend(null, "transport", string.Empty)).ParamName);
+
+                Assert.Equal("transport",
+                    Assert.Throws<ArgumentNullException>(
+                        () => UrlBuilder.BuildSend(Mock.Of<IConnection>(), null, string.Empty)).ParamName);
+
+                Assert.Equal("transport",
+                    Assert.Throws<ArgumentNullException>(
+                        () => UrlBuilder.BuildSend(Mock.Of<IConnection>(), string.Empty, string.Empty)).ParamName);
+
+                Assert.Equal("transport",
+                    Assert.Throws<ArgumentNullException>(
+                        () => UrlBuilder.BuildSend(Mock.Of<IConnection>(), " ", string.Empty)).ParamName);
+            }
+
             [Theory]
             [InlineData(null, "")]
             [InlineData("", "")]
@@ -315,6 +444,35 @@ namespace Microsoft.AspNet.SignalR.Client.Infrastructure
                     "http://fakeurl/send?clientProtocol=1.42&transport=webPolling&connectionData=CustomConnectionData&connectionToken=My%20Conn%20Token" +
                     expected,
                     UrlBuilder.BuildSend(CreateConnection(qs), "webPolling", "CustomConnectionData"));
+            }
+        }
+
+        public class ConvertToWebSocketUri
+        {
+            [Fact]
+            public void ConvertToWebSocketUriUsesUriBuilderToCheckInputParameters()
+            {
+                Assert.Equal("uriString",
+                    Assert.Throws<ArgumentNullException>(
+                        () => UrlBuilder.ConvertToWebSocketUri(null)).ParamName);
+
+                Assert.Throws<UriFormatException>(() => UrlBuilder.ConvertToWebSocketUri(string.Empty));
+            }
+
+            [Fact]
+            public void ConvertToWebSocketUriAllowsOnlyHttpAndHttpsSchemes()
+            {
+                Assert.Equal(
+                    string.Format(CultureInfo.CurrentCulture, Resources.Error_InvalidUriScheme, "file"),
+                    Assert.Throws<InvalidOperationException>(
+                        () => UrlBuilder.ConvertToWebSocketUri("file:///C:/temp/out.txt")).Message);
+            }
+
+            [Fact]
+            public void ConvertToWebSocketUriConvertsToWebSocketUris()
+            {
+                Assert.Equal("ws://tempuri.org/", UrlBuilder.ConvertToWebSocketUri("http://tempuri.org").ToString());
+                Assert.Equal("wss://tempuri.org/", UrlBuilder.ConvertToWebSocketUri("https://tempuri.org").ToString());
             }
         }
 

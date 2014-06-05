@@ -2,15 +2,20 @@
 
 using System;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 using System.Text;
 
 namespace Microsoft.AspNet.SignalR.Client.Infrastructure
 {
-    internal static class UrlBuilder
+    public static class UrlBuilder
     {
         public static string BuildNegotiate(IConnection connection, string connectionData)
         {
-            Debug.Assert(connection != null, "connection is null");
+            if (connection == null)
+            {
+                throw new ArgumentNullException("connection");
+            }
 
             var urlStringBuilder = CreateBaseUrl("negotiate", connection, null, connectionData);
 #if PORTABLE
@@ -21,16 +26,30 @@ namespace Microsoft.AspNet.SignalR.Client.Infrastructure
 
         public static string BuildStart(IConnection connection, string transport, string connectionData)
         {
-            Debug.Assert(connection != null, "connection is null");
-            Debug.Assert(!string.IsNullOrWhiteSpace(transport), "invalid transport");
+            if (connection == null)
+            {
+                throw new ArgumentNullException("connection");
+            }
+
+            if (string.IsNullOrWhiteSpace(transport))
+            {
+                throw new ArgumentNullException("transport");
+            }
 
             return Trim(CreateBaseUrl("start", connection, transport, connectionData));
         }
 
         public static string BuildConnect(IConnection connection, string transport, string connectionData)
         {
-            Debug.Assert(connection != null, "connection is null");
-            Debug.Assert(!string.IsNullOrWhiteSpace(transport), "invalid transport");
+            if (connection == null)
+            {
+                throw new ArgumentNullException("connection");
+            }
+
+            if (string.IsNullOrWhiteSpace(transport))
+            {
+                throw new ArgumentNullException("transport");
+            }
 
             var urlStringBuilder = CreateBaseUrl("connect", connection, transport, connectionData);
             AppendReceiveParameters(urlStringBuilder, connection);
@@ -40,8 +59,15 @@ namespace Microsoft.AspNet.SignalR.Client.Infrastructure
 
         public static string BuildReconnect(IConnection connection, string transport, string connectionData)
         {
-            Debug.Assert(connection != null, "connection is null");
-            Debug.Assert(!string.IsNullOrWhiteSpace(transport), "invalid transport");
+            if (connection == null)
+            {
+                throw new ArgumentNullException("connection");
+            }
+
+            if (string.IsNullOrWhiteSpace(transport))
+            {
+                throw new ArgumentNullException("transport");
+            }
 
             var urlStringBuilder = CreateBaseUrl("reconnect", connection, transport, connectionData);
             AppendReceiveParameters(urlStringBuilder, connection);
@@ -51,6 +77,16 @@ namespace Microsoft.AspNet.SignalR.Client.Infrastructure
 
         public static string BuildPoll(IConnection connection, string transport, string connectionData)
         {
+            if (connection == null)
+            {
+                throw new ArgumentNullException("connection");
+            }
+
+            if (string.IsNullOrWhiteSpace(transport))
+            {
+                throw new ArgumentNullException("transport");
+            }
+
             Debug.Assert(connection != null, "connection is null");
             Debug.Assert(!string.IsNullOrWhiteSpace(transport), "invalid transport");
 
@@ -62,16 +98,30 @@ namespace Microsoft.AspNet.SignalR.Client.Infrastructure
 
         public static string BuildSend(IConnection connection, string transport, string connectionData)
         {
-            Debug.Assert(connection != null, "connection is null");
-            Debug.Assert(!string.IsNullOrWhiteSpace(transport), "invalid transport");
+            if (connection == null)
+            {
+                throw new ArgumentNullException("connection");
+            }
+
+            if (string.IsNullOrWhiteSpace(transport))
+            {
+                throw new ArgumentNullException("transport");
+            }
 
             return Trim(CreateBaseUrl("send", connection, transport, connectionData));
         }
 
         public static string BuildAbort(IConnection connection, string transport, string connectionData)
         {
-            Debug.Assert(connection != null, "connection is null");
-            Debug.Assert(!string.IsNullOrWhiteSpace(transport), "invalid transport");
+            if (connection == null)
+            {
+                throw new ArgumentNullException("connection");
+            }
+
+            if (string.IsNullOrWhiteSpace(transport))
+            {
+                throw new ArgumentNullException("transport");
+            }
 
             return Trim(CreateBaseUrl("abort", connection, transport, connectionData));
         }
@@ -214,5 +264,22 @@ namespace Microsoft.AspNet.SignalR.Client.Infrastructure
                 .Append("&");
         }
 #endif
+
+        [SuppressMessage("Microsoft.Naming", "CA1720:IdentifiersShouldNotContainTypeNames", MessageId = "string", Justification = "The string should be a Uri")]
+        [SuppressMessage("Microsoft.Usage", "CA2234:PassSystemUriObjectsInsteadOfStrings", Justification = "The input string is being converted to Uri")]
+        public static Uri ConvertToWebSocketUri(string uriString)
+        {
+            var uriBuilder = new UriBuilder(uriString);
+
+            if (uriBuilder.Scheme != "http" && uriBuilder.Scheme != "https")
+            {
+                throw new InvalidOperationException(
+                    string.Format(CultureInfo.CurrentCulture, Resources.Error_InvalidUriScheme, uriBuilder.Scheme));    
+            }
+
+            uriBuilder.Scheme = uriBuilder.Scheme == "https" ? "wss" : "ws";
+
+            return uriBuilder.Uri;
+        }
     }
 }
