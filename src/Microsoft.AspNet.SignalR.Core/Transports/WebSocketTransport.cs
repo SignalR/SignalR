@@ -107,11 +107,6 @@ namespace Microsoft.AspNet.SignalR.Transports
             }
         }
 
-        protected override TextWriter CreateResponseWriter()
-        {
-            return new BinaryTextWriter(_socket);
-        }
-
         public override Task Send(object value)
         {
             var context = new WebSocketTransportContext(this, value);
@@ -156,20 +151,23 @@ namespace Microsoft.AspNet.SignalR.Transports
         private static async Task PerformSend(object state)
         {
             var context = (WebSocketTransportContext)state;
-
-            try
+            var socket = context.Transport._socket;
+            using (var writer = new BinaryTextWriter(socket))
             {
-                context.Transport.JsonSerializer.Serialize(context.State, context.Transport.OutputWriter);
-                context.Transport.OutputWriter.Flush();
+                try
+                {
+                    context.Transport.JsonSerializer.Serialize(context.State, writer);
+                    writer.Flush();
 
-                await context.Transport._socket.Flush().PreserveCulture();
-            }
-            catch (Exception ex)
-            {
-                // OnError will close the socket in the event of a JSON serialization or flush error.
-                // The client should then immediately reconnect instead of simply missing keep-alives.
-                context.Transport.OnError(ex);
-                throw;
+                    await socket.Flush().PreserveCulture();
+                }
+                catch (Exception ex)
+                {
+                    // OnError will close the socket in the event of a JSON serialization or flush error.
+                    // The client should then immediately reconnect instead of simply missing keep-alives.
+                    context.Transport.OnError(ex);
+                    throw;
+                }
             }
         }
 
@@ -194,10 +192,10 @@ namespace Microsoft.AspNet.SignalR.Transports
             Trace.TraceError("OnError({0}, {1})", ConnectionId, error);
         }
 
-        private class WebSocketTransportContext
+        private struct WebSocketTransportContext
         {
-            public WebSocketTransport Transport;
-            public object State;
+            public readonly WebSocketTransport Transport;
+            public readonly object State;
 
             public WebSocketTransportContext(WebSocketTransport transport, object state)
             {

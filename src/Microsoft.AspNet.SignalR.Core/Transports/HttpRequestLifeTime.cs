@@ -7,9 +7,9 @@ using Microsoft.AspNet.SignalR.Infrastructure;
 
 namespace Microsoft.AspNet.SignalR.Transports
 {
-    internal class HttpRequestLifeTime
+    internal struct HttpRequestLifeTime
     {
-        private readonly TaskCompletionSource<object> _lifetimeTcs = new TaskCompletionSource<object>();
+        private readonly TaskCompletionSource<object> _lifetimeTcs;
         private readonly TransportDisconnectBase _transport;
         private readonly TaskQueue _writeQueue;
         private readonly TraceSource _trace;
@@ -17,6 +17,7 @@ namespace Microsoft.AspNet.SignalR.Transports
 
         public HttpRequestLifeTime(TransportDisconnectBase transport, TaskQueue writeQueue, TraceSource trace, string connectionId)
         {
+            _lifetimeTcs = new TaskCompletionSource<object>();
             _transport = transport;
             _trace = trace;
             _connectionId = connectionId;

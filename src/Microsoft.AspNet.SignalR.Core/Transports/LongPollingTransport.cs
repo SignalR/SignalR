@@ -19,6 +19,8 @@ namespace Microsoft.AspNet.SignalR.Transports
         private readonly IPerformanceCounterManager _counters;
         private bool _responseSent;
 
+        private static readonly ArraySegment<byte> _keepAlive = new ArraySegment<byte>(new byte[] { 32 });
+
         public LongPollingTransport(HostContext context, IDependencyResolver resolver)
             : this(context,
                    resolver.Resolve<JsonSerializer>(),
@@ -248,8 +250,7 @@ namespace Microsoft.AspNet.SignalR.Transports
                 return TaskAsyncHelper.Empty;
             }
 
-            transport.OutputWriter.Write(' ');
-            transport.OutputWriter.Flush();
+            transport.Context.Response.Write(_keepAlive);
 
             return transport.Context.Response.Flush();
         }
@@ -263,20 +264,23 @@ namespace Microsoft.AspNet.SignalR.Transports
                 return TaskAsyncHelper.Empty;
             }
 
-            if (context.Transport.IsJsonp)
+            using (var writer = new BinaryTextWriter(context.Transport.Context.Response))
             {
-                context.Transport.OutputWriter.Write(context.Transport.JsonpCallback);
-                context.Transport.OutputWriter.Write("(");
+                if (context.Transport.IsJsonp)
+                {
+                    writer.Write(context.Transport.JsonpCallback);
+                    writer.Write("(");
+                }
+
+                context.Transport.JsonSerializer.Serialize(context.State, writer);
+
+                if (context.Transport.IsJsonp)
+                {
+                    writer.Write(");");
+                }
+
+                writer.Flush();
             }
-
-            context.Transport.JsonSerializer.Serialize(context.State, context.Transport.OutputWriter);
-
-            if (context.Transport.IsJsonp)
-            {
-                context.Transport.OutputWriter.Write(");");
-            }
-
-            context.Transport.OutputWriter.Flush();
 
             return context.Transport.Context.Response.Flush();
         }

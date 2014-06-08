@@ -17,7 +17,6 @@ namespace Microsoft.AspNet.SignalR.Transports
     {
         private readonly HostContext _context;
         private readonly ITransportHeartbeat _heartbeat;
-        private TextWriter _outputWriter;
 
         private TraceSource _trace;
 
@@ -106,27 +105,6 @@ namespace Microsoft.AspNet.SignalR.Transports
             _lastMessageId = Context.Request.QueryString["messageId"];
             return TaskAsyncHelper.Empty;
         }
-
-        [SuppressMessage("Microsoft.Design", "CA1024:UsePropertiesWhereAppropriate", Justification = "This is for async.")]
-        public virtual Task<string> GetGroupsToken()
-        {
-            return TaskAsyncHelper.FromResult(Context.Request.QueryString["groupsToken"]);
-        }
-
-        public virtual TextWriter OutputWriter
-        {
-            get
-            {
-                if (_outputWriter == null)
-                {
-                    _outputWriter = CreateResponseWriter();
-                    _outputWriter.NewLine = "\n";
-                }
-
-                return _outputWriter;
-            }
-        }
-
         internal TaskQueue WriteQueue
         {
             get;
@@ -150,7 +128,7 @@ namespace Microsoft.AspNet.SignalR.Transports
                 // If the CTS is tripped or the request has ended then the connection isn't alive
                 return !(
                     CancellationToken.IsCancellationRequested ||
-                    (_requestLifeTime != null && _requestLifeTime.Task.IsCompleted) ||
+                    _requestLifeTime.Task.IsCompleted ||
                     _lastWriteTask.IsCanceled ||
                     _lastWriteTask.IsFaulted
                 );
@@ -257,11 +235,6 @@ namespace Microsoft.AspNet.SignalR.Transports
         public Uri Url
         {
             get { return _context.Request.Url; }
-        }
-
-        protected virtual TextWriter CreateResponseWriter()
-        {
-            return new BinaryTextWriter(Context.Response);
         }
 
         protected void IncrementErrors()
