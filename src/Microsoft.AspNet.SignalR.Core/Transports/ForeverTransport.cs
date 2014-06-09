@@ -19,7 +19,6 @@ namespace Microsoft.AspNet.SignalR.Transports
 
         private readonly IPerformanceCounterManager _counters;
         private readonly JsonSerializer _jsonSerializer;
-        private string _lastMessageId;
         private IDisposable _busRegistration;
 
         internal RequestLifetime _transportLifetime;
@@ -52,19 +51,6 @@ namespace Microsoft.AspNet.SignalR.Transports
             }
         }
 
-        protected string LastMessageId
-        {
-            get
-            {
-                if (_lastMessageId == null)
-                {
-                    _lastMessageId = Context.Request.QueryString["messageId"];
-                }
-
-                return _lastMessageId;
-            }
-        }
-
         protected JsonSerializer JsonSerializer
         {
             get { return _jsonSerializer; }
@@ -92,32 +78,31 @@ namespace Microsoft.AspNet.SignalR.Transports
         internal Action BeforeReceive;
         internal Action<Exception> AfterRequestEnd;
 
-        protected override void InitializePersistentState()
+        protected override async Task InitializePersistentState()
         {
-            base.InitializePersistentState();
+            await base.InitializePersistentState().PreserveCulture();
 
             // The _transportLifetime must be initialized after calling base.InitializePersistentState since
             // _transportLifetime depends on _requestLifetime.
             _transportLifetime = new RequestLifetime(this, _requestLifeTime);
         }
 
-        protected Task ProcessRequestCore(ITransportConnection connection)
+        protected async Task ProcessRequestCore(ITransportConnection connection)
         {
             Connection = connection;
 
             if (IsSendRequest)
             {
-                return ProcessSendRequest();
+                await ProcessSendRequest().PreserveCulture();
             }
             else if (IsAbortRequest)
             {
-                return Connection.Abort(ConnectionId);
+                await Connection.Abort(ConnectionId).PreserveCulture();
             }
             else
             {
-                InitializePersistentState();
-
-                return ProcessReceiveRequest(connection);
+                await InitializePersistentState().PreserveCulture();
+                await ProcessReceiveRequest(connection).PreserveCulture();
             }
         }
 

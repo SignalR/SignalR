@@ -100,7 +100,7 @@
         isDisconnecting = function (connection) {
             return connection.state === signalR.connectionState.disconnected;
         },
-        
+
         supportsKeepAlive = function (connection) {
             return connection._.keepAliveData.activated &&
                    connection.transport.supportsKeepAlive(connection);
@@ -403,7 +403,7 @@
 
         state: signalR.connectionState.disconnected,
 
-        clientProtocol: "1.4",
+        clientProtocol: "1.5",
 
         reconnectDelay: 2000,
 

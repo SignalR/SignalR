@@ -7,6 +7,7 @@ using Microsoft.AspNet.SignalR.Infrastructure;
 using Microsoft.AspNet.SignalR.Tests.Common.Infrastructure;
 using Moq;
 using Xunit;
+using Microsoft.AspNet.SignalR.Tests.Utilities;
 
 namespace Microsoft.AspNet.SignalR.Tests
 {
@@ -18,14 +19,22 @@ namespace Microsoft.AspNet.SignalR.Tests
             public void NullContextThrows()
             {
                 var connection = new Mock<PersistentConnection>() { CallBase = true };
-                Assert.Throws<ArgumentNullException>(() => connection.Object.ProcessRequest((HostContext)null));
+
+                TestUtilities.AssertUnwrappedException<ArgumentNullException>(() =>
+                {
+                    connection.Object.ProcessRequest((HostContext)null).Wait();
+                });
             }
 
             [Fact]
             public void UninitializedThrows()
             {
                 var connection = new Mock<PersistentConnection>() { CallBase = true };
-                Assert.Throws<InvalidOperationException>(() => connection.Object.ProcessRequest(new HostContext(null, null)));
+
+                TestUtilities.AssertUnwrappedException<InvalidOperationException>(() =>
+                {
+                    connection.Object.ProcessRequest(new HostContext(null, null)).Wait();
+                });
             }
 
             [Fact]
@@ -137,7 +146,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                 var context = new HostContext(req.Object, null);
                 connection.Object.Initialize(dr);
 
-                return connection.Object.VerifyGroups(context, connectionId);
+                return connection.Object.VerifyGroups(connectionId, groupsToken);
             }
         }
 
