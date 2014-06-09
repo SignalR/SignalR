@@ -8,7 +8,7 @@ QUnit.test("getUrl handles groupsToken correctly.", function () {
     // Every unsafe character group name.
     connection.groupsToken = '$&+,/:;=?@ "<>#%{}|\^[]`';
 
-    $.each(testUtilities.transportNames, function () {
+    $.each(["webSocket", "serverSentEvents", "foreverFrame"], function () {
         var transport = this.toString();
 
         url = $.signalR.transports._logic.getUrl(connection, transport, true);
@@ -115,7 +115,7 @@ QUnit.test("getUrl handles messageId correctly", function () {
     // Every unsafe character name.
     connection.messageId = '$&+,/:;=?@ "<>#%{}|\^[]`';
 
-    $.each(testUtilities.transportNames, function () {
+    $.each(["webSocket", "serverSentEvents", "foreverFrame"], function () {
         var transport = this.toString();
 
         url = $.signalR.transports._logic.getUrl(connection, transport, true);

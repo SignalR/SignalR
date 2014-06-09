@@ -9,6 +9,7 @@ using Microsoft.AspNet.SignalR.Infrastructure;
 using Microsoft.AspNet.SignalR.Json;
 using Microsoft.AspNet.SignalR.Tracing;
 using Newtonsoft.Json;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Microsoft.AspNet.SignalR.Transports
 {
@@ -92,6 +93,30 @@ namespace Microsoft.AspNet.SignalR.Transports
             {
                 return !Context.Request.LocalPath.EndsWith("/reconnect", StringComparison.OrdinalIgnoreCase);
             }
+        }
+
+        protected override async Task InitializeMessageId()
+        {
+            _lastMessageId = Context.Request.QueryString["messageId"];
+
+            if (_lastMessageId == null)
+            {
+                var form = await Context.Request.ReadForm().PreserveCulture();
+                _lastMessageId = form["messageId"];
+            }
+        }
+
+        [SuppressMessage("Microsoft.Design", "CA1024:UsePropertiesWhereAppropriate", Justification = "This is for async.")]
+        public override async Task<string> GetGroupsToken()
+        {
+            var groupsToken = Context.Request.QueryString["groupsToken"];
+
+            if (groupsToken == null)
+            {
+                var form = await Context.Request.ReadForm().PreserveCulture();
+                groupsToken = form["groupsToken"];
+            }
+            return groupsToken;
         }
 
         public override Task KeepAlive()
@@ -250,7 +275,7 @@ namespace Microsoft.AspNet.SignalR.Transports
 
             return PerformPartialSend(state);
         }
-        
+
         private void AddTransportData(PersistentResponse response)
         {
             if (_configurationManager.LongPollDelay != TimeSpan.Zero)
