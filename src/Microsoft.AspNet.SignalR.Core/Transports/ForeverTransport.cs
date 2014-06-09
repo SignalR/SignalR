@@ -28,7 +28,8 @@ namespace Microsoft.AspNet.SignalR.Transports
                    resolver.Resolve<JsonSerializer>(),
                    resolver.Resolve<ITransportHeartbeat>(),
                    resolver.Resolve<IPerformanceCounterManager>(),
-                   resolver.Resolve<ITraceManager>())
+                   resolver.Resolve<ITraceManager>(),
+                   resolver.Resolve<IMemoryPool>())
         {
         }
 
@@ -36,12 +37,16 @@ namespace Microsoft.AspNet.SignalR.Transports
                                    JsonSerializer jsonSerializer,
                                    ITransportHeartbeat heartbeat,
                                    IPerformanceCounterManager performanceCounterManager,
-                                   ITraceManager traceManager)
-            : base(context, heartbeat, performanceCounterManager, traceManager)
+                                   ITraceManager traceManager,
+                                   IMemoryPool pool)
+            : base(context, heartbeat, performanceCounterWriter, traceManager)
         {
+            Pool = pool;
             _jsonSerializer = jsonSerializer;
             _counters = performanceCounterManager;
         }
+
+        protected IMemoryPool Pool { get; private set; }
 
         protected virtual int MaxMessages
         {
@@ -298,10 +303,12 @@ namespace Microsoft.AspNet.SignalR.Transports
 
             context.Transport.Context.Response.ContentType = JsonUtility.JsonMimeType;
 
-            using (var writer = new BinaryTextWriter(context.Transport.Context.Response))
+            using (var writer = new BinaryMemoryPoolTextWriter(context.Transport.Pool))
             {
                 context.Transport.JsonSerializer.Serialize(context.State, writer);
                 writer.Flush();
+
+                context.Transport.Context.Response.Write(writer.Buffer);
             }
 
             return TaskAsyncHelper.Empty;

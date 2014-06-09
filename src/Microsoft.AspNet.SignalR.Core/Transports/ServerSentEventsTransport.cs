@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.md in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR.Hosting;
@@ -12,8 +13,8 @@ namespace Microsoft.AspNet.SignalR.Transports
     public class ServerSentEventsTransport : ForeverTransport
     {
         private readonly IPerformanceCounterManager _counters;
-        private static ArraySegment<byte> _keepAlive = new ArraySegment<byte>(Encoding.UTF8.GetBytes("data: {}\n\n"));
-        private static ArraySegment<byte> _dataInitialized = new ArraySegment<byte>(Encoding.UTF8.GetBytes("data: initialized\n\n"));
+        private static byte[] _keepAlive = Encoding.UTF8.GetBytes("data: {}\n\n");
+        private static byte[] _dataInitialized = Encoding.UTF8.GetBytes("data: initialized\n\n");
 
         public ServerSentEventsTransport(HostContext context, IDependencyResolver resolver)
             : this(context, resolver, resolver.Resolve<IPerformanceCounterManager>())
@@ -63,7 +64,7 @@ namespace Microsoft.AspNet.SignalR.Transports
         {
             var transport = (ServerSentEventsTransport)state;
 
-            transport.Context.Response.Write(_keepAlive);
+            transport.Context.Response.Write(new ArraySegment<byte>(_keepAlive));
 
             return transport.Context.Response.Flush();
         }
@@ -72,13 +73,15 @@ namespace Microsoft.AspNet.SignalR.Transports
         {
             var context = (SendContext)state;
 
-            using (var writer = new BinaryTextWriter(context.Transport.Context.Response))
+            using (var writer = new BinaryMemoryPoolTextWriter(context.Transport.Pool))
             {
                 writer.Write("data: ");
                 context.Transport.JsonSerializer.Serialize(context.State, writer);
                 writer.WriteLine();
                 writer.WriteLine();
                 writer.Flush();
+
+                context.Transport.Context.Response.Write(writer.Buffer);
             }
 
             return context.Transport.Context.Response.Flush();
@@ -88,8 +91,8 @@ namespace Microsoft.AspNet.SignalR.Transports
         {
             transport.Context.Response.ContentType = "text/event-stream";
 
-            transport.Context.Response.Write(_dataInitialized);
-            
+            transport.Context.Response.Write(new ArraySegment<byte>(_dataInitialized));
+
             return transport.Context.Response.Flush();
         }
 

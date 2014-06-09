@@ -48,6 +48,7 @@ namespace Microsoft.AspNet.SignalR
                 return;
             }
 
+            Pool = resolver.Resolve<IMemoryPool>();
             MessageBus = resolver.Resolve<IMessageBus>();
             JsonSerializer = resolver.Resolve<JsonSerializer>();
             TraceManager = resolver.Resolve<ITraceManager>();
@@ -79,6 +80,8 @@ namespace Microsoft.AspNet.SignalR
         }
 
         protected IProtectedData ProtectedData { get; private set; }
+
+        public IMemoryPool Pool { get; set; }
 
         protected IMessageBus MessageBus { get; private set; }
 
@@ -387,7 +390,8 @@ namespace Microsoft.AspNet.SignalR
                                   TraceManager,
                                   AckHandler,
                                   Counters,
-                                  ProtectedData);
+                                  ProtectedData,
+                                  Pool);
         }
 
         [SuppressMessage("Microsoft.Usage", "CA1801:ReviewUnusedParameters", MessageId = "userId", Justification = "This method is virtual and is used in the derived class")]

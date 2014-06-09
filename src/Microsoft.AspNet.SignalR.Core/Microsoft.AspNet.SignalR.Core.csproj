@@ -100,11 +100,12 @@
     <Compile Include="Infrastructure\AckHandler.cs" />
     <Compile Include="Configuration\DefaultConfigurationManager.cs" />
     <Compile Include="Infrastructure\ArraySegmentTextReader.cs" />
-    <Compile Include="Infrastructure\BinaryTextWriter.cs" />
     <Compile Include="Infrastructure\ConnectionManager.cs" />
     <Compile Include="ConnectionMessage.cs" />
     <Compile Include="Infrastructure\DataProtectionProviderProtectedData.cs" />
     <Compile Include="Infrastructure\DefaultProtectedData.cs" />
+    <Compile Include="Infrastructure\MemoryPool.cs" />
+    <Compile Include="Infrastructure\MemoryPoolTextWriter.cs" />
     <Compile Include="Infrastructure\MonoUtility.cs" />
     <Compile Include="Infrastructure\PrincipalUserIdProvider.cs" />
     <Compile Include="Infrastructure\ProtocolResolver.cs" />
@@ -119,7 +120,6 @@
     <Compile Include="Infrastructure\ListHelper.cs" />
     <Compile Include="Infrastructure\PrefixHelper.cs" />
     <Compile Include="Infrastructure\Purposes.cs" />
-    <Compile Include="Infrastructure\BufferTextWriter.cs" />
     <Compile Include="Infrastructure\SipHashBasedStringEqualityComparer.cs" />
     <Compile Include="IRequest.cs" />
     <Compile Include="Hosting\HostDependencyResolverExtensions.cs" />

@@ -128,12 +128,14 @@ namespace Microsoft.AspNet.SignalR.Transports
         {
             context.Transport.Context.Response.ContentType = "text/html; charset=UTF-8";
 
-            using (var htmlOutputWriter = new HTMLTextWriter(context.Transport.Context.Response))
+            using (var htmlOutputWriter = new HTMLTextWriter(context.Transport.Pool))
             {
                 htmlOutputWriter.NewLine = "\n";
 
                 htmlOutputWriter.WriteRaw((string)context.State);
                 htmlOutputWriter.Flush();
+
+                context.Transport.Context.Response.Write(htmlOutputWriter.Buffer);
             }
 
             return context.Transport.Context.Response.Flush();
@@ -143,13 +145,15 @@ namespace Microsoft.AspNet.SignalR.Transports
         {
             var context = (ForeverFrameTransportContext)state;
 
-            using (var htmlOutputWriter = new HTMLTextWriter(context.Transport.Context.Response))
+            using (var htmlOutputWriter = new HTMLTextWriter(context.Transport.Pool))
             {
                 htmlOutputWriter.NewLine = "\n";
                 htmlOutputWriter.WriteRaw("<script>r(c, ");
                 context.Transport.JsonSerializer.Serialize(context.State, htmlOutputWriter);
                 htmlOutputWriter.WriteRaw(");</script>\r\n");
                 htmlOutputWriter.Flush();
+
+                context.Transport.Context.Response.Write(htmlOutputWriter.Buffer);
             }
 
             return context.Transport.Context.Response.Flush();
@@ -159,13 +163,15 @@ namespace Microsoft.AspNet.SignalR.Transports
         {
             var transport = (ForeverFrameTransport)state;
 
-            using (var htmlOutputWriter = new HTMLTextWriter(transport.Context.Response))
+            using (var htmlOutputWriter = new HTMLTextWriter(transport.Pool))
             {
                 htmlOutputWriter.NewLine = "\n";
                 htmlOutputWriter.WriteRaw("<script>r(c, {});</script>");
                 htmlOutputWriter.WriteLine();
                 htmlOutputWriter.WriteLine();
                 htmlOutputWriter.Flush();
+
+                transport.Context.Response.Write(htmlOutputWriter.Buffer);
             }
 
             return transport.Context.Response.Flush();
@@ -183,11 +189,12 @@ namespace Microsoft.AspNet.SignalR.Transports
             }
         }
 
-        private class HTMLTextWriter : BufferTextWriter
+        private class HTMLTextWriter : MemoryPoolTextWriter
         {
-            public HTMLTextWriter(IResponse response)
-                : base(response)
+            public HTMLTextWriter(IMemoryPool pool) : 
+                base(pool)
             {
+
             }
 
             public void WriteRaw(string value)

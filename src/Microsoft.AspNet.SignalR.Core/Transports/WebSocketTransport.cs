@@ -38,6 +38,7 @@ namespace Microsoft.AspNet.SignalR.Transports
                    resolver.Resolve<ITransportHeartbeat>(),
                    resolver.Resolve<IPerformanceCounterManager>(),
                    resolver.Resolve<ITraceManager>(),
+                   resolver.Resolve<IMemoryPool>(),
                    resolver.Resolve<IConfigurationManager>().MaxIncomingWebSocketMessageSize)
         {
         }
@@ -47,8 +48,9 @@ namespace Microsoft.AspNet.SignalR.Transports
                                   ITransportHeartbeat heartbeat,
                                   IPerformanceCounterManager performanceCounterManager,
                                   ITraceManager traceManager,
+                                  IMemoryPool pool,
                                   int? maxIncomingMessageSize)
-            : base(context, serializer, heartbeat, performanceCounterManager, traceManager)
+            : base(context, serializer, heartbeat, performanceCounterWriter, traceManager, pool)
         {
             _context = context;
             _maxIncomingMessageSize = maxIncomingMessageSize;
@@ -152,13 +154,15 @@ namespace Microsoft.AspNet.SignalR.Transports
         {
             var context = (WebSocketTransportContext)state;
             var socket = context.Transport._socket;
-            using (var writer = new BinaryTextWriter(socket))
+
+            using (var writer = new BinaryMemoryPoolTextWriter(context.Transport.Pool))
             {
                 try
                 {
                     context.Transport.JsonSerializer.Serialize(context.State, writer);
                     writer.Flush();
 
+                    await socket.SendChunk(writer.Buffer).PreserveCulture();
                     await socket.Flush().PreserveCulture();
                 }
                 catch (Exception ex)
