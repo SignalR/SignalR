@@ -13,13 +13,6 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
             : base(memory)
         {
         }
-
-        public void Write(ArraySegment<byte> data)
-        {
-            Grow(data.Count);
-
-            System.Buffer.BlockCopy(data.Array, data.Offset, _dataArray, _dataEnd, data.Count);
-        }
     }
 
     public class MemoryPoolTextWriter : TextWriter
@@ -33,8 +26,8 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
         private const int _textLength = 128;
         // ReSharper restore InconsistentNaming
 
-        protected byte[] _dataArray;
-        protected int _dataEnd;
+        private byte[] _dataArray;
+        private int _dataEnd;
 
         private readonly Encoder _encoder;
 
@@ -165,6 +158,16 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
             {
                 Encode(true);
             }
+        }
+
+        public void Write(ArraySegment<byte> data)
+        {
+            Flush();
+
+            Grow(data.Count);
+
+            System.Buffer.BlockCopy(data.Array, data.Offset, _dataArray, _dataEnd, data.Count);
+            _dataEnd += data.Count;
         }
     }
 }
