@@ -105,9 +105,9 @@ namespace Microsoft.AspNet.SignalR.Hubs
             }
             catch (ReflectionTypeLoadException ex)
             {
-                _trace.TraceWarning("Some of the classes from assembly \"{0}\" could Not be loaded when searching for Hubs. [{1}]" + Environment.NewLine +
-                                    "Original exception type: {2}" + Environment.NewLine +
-                                    "Original exception message: {3}" + Environment.NewLine,
+                _trace.TraceWarning("Some of the classes from assembly \"{0}\" could Not be loaded when searching for Hubs. [{1}]\r\n" +
+                                    "Original exception type: {2}\r\n" +
+                                    "Original exception message: {3}\r\n",
                                     a.FullName,
                                     a.Location,
                                     ex.GetType().Name,
@@ -117,7 +117,9 @@ namespace Microsoft.AspNet.SignalR.Hubs
             }
             catch (Exception ex)
             {
-                _trace.TraceWarning(Resources.Warning_AssemblyGetTypesException,
+                _trace.TraceWarning("None of the classes from assembly \"{0}\" could be loaded when searching for Hubs. [{1}]\r\n" +
+                                    "Original exception type: {2}\r\n" +
+                                    "Original exception message: {3}\r\n",
                                     a.FullName,
                                     a.Location,
                                     ex.GetType().Name,
