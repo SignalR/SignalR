@@ -191,7 +191,7 @@ namespace Microsoft.AspNet.SignalR.Hubs
         {
             // TODO: Make adding parameters here pluggable? IValueProvider? ;)
             HubInvocationProgress progress = GetProgressInstance(methodDescriptor, value => SendProgressUpdate(hub.Context.ConnectionId, tracker, value, hubRequest));
-            
+
             Task<object> piplineInvocation;
             try
             {
@@ -472,7 +472,7 @@ namespace Microsoft.AspNet.SignalR.Hubs
             }
             catch (Exception ex)
             {
-                Trace.TraceInformation(String.Format(CultureInfo.CurrentCulture, Resources.Error_ErrorCreatingHub + ex.Message, descriptor.Name));
+                Trace.TraceInformation("Error creating Hub {0}. " + ex.Message, descriptor.Name);
 
                 if (throwIfFailedToCreate)
                 {
