@@ -119,7 +119,7 @@ namespace Microsoft.AspNet.SignalR.Client.Store.Tests.Fakes
 
         public void Disconnect()
         {
-            throw new NotImplementedException();
+            _invocationManager.AddInvocation("Disconnect");
         }
 
         public Task Send(string data)
@@ -172,9 +172,9 @@ namespace Microsoft.AspNet.SignalR.Client.Store.Tests.Fakes
             _invocationManager.AddInvocation("Trace", level, format, args);
         }
 
-        void IFake.Verify(string methodName, List<object[]> expectedParameters)
+        public void Verify(string methodName, List<object[]> expectedParameters)
         {
-            throw new NotImplementedException();
+            _invocationManager.Verify(methodName, expectedParameters);
         }
 
         public IEnumerable<object[]> GetInvocations(string methodName)

@@ -7,11 +7,15 @@ namespace Microsoft.AspNet.SignalR.Client.Store.Tests.Fakes
     internal class FakeTransportHelper : TransportHelper, IFake
     {
         private readonly FakeInvocationManager _invocationManager = new FakeInvocationManager();
-        
+
+        public bool ProcessResponseDisconnected { set; private get; }
+        public bool ProcessResponseShouldReconnect { set; private get; }
+
         public override void ProcessResponse(IConnection connection, string response, out bool shouldReconnect, out bool disconnected,
             Action onInitialized)
         {
-            shouldReconnect = disconnected = false;
+            shouldReconnect = ProcessResponseShouldReconnect;
+            disconnected = ProcessResponseDisconnected;
             _invocationManager.AddInvocation("ProcessResponse", connection, response, onInitialized);
         }
 
