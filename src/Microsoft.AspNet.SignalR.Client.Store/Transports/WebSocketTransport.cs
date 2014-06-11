@@ -13,6 +13,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
     public class WebSocketTransport : ClientTransportBase
     {
         private IConnection _connection;
+        private string _connectionData;
         private MessageWebSocket _webSocket;
         private TransportInitializationHandler _initializationHandler;
 
@@ -25,6 +26,11 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
             : base(httpClient, "webSockets")
         {
         }
+
+        /// <summary>
+        /// The time to wait after a connection drops to try reconnecting.
+        /// </summary>
+        public TimeSpan ReconnectDelay { get; set; }
 
         public override bool SupportsKeepAlive
         {
@@ -39,6 +45,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
             }
 
             _connection = connection;
+            _connectionData = connectionData;
 
             _initializationHandler = new TransportInitializationHandler(HttpClient, connection, connectionData, Name, disconnectToken, TransportHelper);
             _initializationHandler.OnFailure += DisposeSocket;
@@ -110,7 +117,6 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
                 initializationHandler.InitReceived);
         }
 
-
         private static string ReadMessage(IWebSocketResponse webSocketResponse)
         {
             var reader = webSocketResponse.GetDataReader();
@@ -149,9 +155,43 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
             }
         }
         
-        private static void WebsocketClosed(IWebSocket webSocket, WebSocketClosedEventArgs eventArgs)
+        private void WebsocketClosed(IWebSocket webSocket, WebSocketClosedEventArgs eventArgs)
         {
-            throw new NotImplementedException();
+            _connection.Trace(TraceLevels.Events, "WS: OnClose()");
+
+            DisposeSocket();
+
+            if (AbortHandler.TryCompleteAbort())
+            {
+                return;
+            }
+
+            Task.Run(() => Reconnect(_connection, _connectionData));
+        }
+
+        // internal for testing
+        internal async Task Reconnect(IConnection connection, string connectionData)
+        {
+            var reconnectUrl = UrlBuilder.BuildReconnect(connection, Name, connectionData);
+
+            while (TransportHelper.VerifyLastActive(connection) && connection.EnsureReconnecting())
+            {
+                try
+                {
+                    await StartWebSocket(connection, reconnectUrl);
+                    break;
+                }
+                catch (OperationCanceledException)
+                {
+                    break;
+                }
+                catch (Exception ex)
+                {
+                    connection.OnError(ex);
+                }
+
+                await Task.Delay(ReconnectDelay);
+            }
         }
 
         public override void LostConnection(IConnection connection)

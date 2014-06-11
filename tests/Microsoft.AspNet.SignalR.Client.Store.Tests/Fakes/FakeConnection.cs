@@ -18,17 +18,7 @@ namespace Microsoft.AspNet.SignalR.Client.Store.Tests.Fakes
 
         public TimeSpan TotalTransportConnectTimeout { get; set; }
 
-        public TimeSpan ReconnectWindow
-        {
-            get
-            {
-                throw new NotImplementedException();
-            }
-            set
-            {
-                throw new NotImplementedException();
-            }
-        }
+        public TimeSpan ReconnectWindow { get; set; }
 
         public KeepAliveData KeepAliveData
         {
@@ -62,10 +52,7 @@ namespace Microsoft.AspNet.SignalR.Client.Store.Tests.Fakes
 
         public string QueryString { get; set; }
 
-        public ConnectionState State
-        {
-            get { throw new NotImplementedException(); }
-        }
+        public ConnectionState State { get; set; }
 
         public IClientTransport Transport
         {
@@ -77,14 +64,13 @@ namespace Microsoft.AspNet.SignalR.Client.Store.Tests.Fakes
             get { throw new NotImplementedException(); }
         }
 
-        public DateTime LastActiveAt
-        {
-            get { throw new NotImplementedException(); }
-        }
+        public DateTime LastActiveAt { get; set; }
 
         public bool ChangeState(ConnectionState oldState, ConnectionState newState)
         {
-            throw new NotImplementedException();
+            _invocationManager.AddInvocation("ChangeState", oldState, newState);
+
+            return _invocationManager.GetReturnValue<bool>("ChangeState");            
         }
 
         public IDictionary<string, string> Headers
@@ -128,7 +114,7 @@ namespace Microsoft.AspNet.SignalR.Client.Store.Tests.Fakes
 
         public void Stop(Exception error)
         {
-            throw new NotImplementedException();
+            _invocationManager.AddInvocation("Stop", error);
         }
 
         public void Disconnect()
@@ -148,12 +134,12 @@ namespace Microsoft.AspNet.SignalR.Client.Store.Tests.Fakes
 
         public void OnError(Exception ex)
         {
-            throw new NotImplementedException();
+            _invocationManager.AddInvocation("OnError", ex);
         }
 
         public void OnReconnecting()
         {
-            throw new NotImplementedException();
+            _invocationManager.AddInvocation("OnReconnecting");
         }
 
         public void OnReconnected()
@@ -196,9 +182,9 @@ namespace Microsoft.AspNet.SignalR.Client.Store.Tests.Fakes
             return _invocationManager.GetInvocations(methodName);
         }
 
-        void IFake.Setup<T>(string methodName, Func<T> behavior)
+        public void Setup<T>(string methodName, Func<T> behavior)
         {
-            throw new NotImplementedException();
+            _invocationManager.AddSetup(methodName, behavior);
         }
     }
 }

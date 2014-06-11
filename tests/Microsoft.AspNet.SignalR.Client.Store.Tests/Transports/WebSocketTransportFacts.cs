@@ -200,5 +200,171 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
                 (await Assert.ThrowsAsync<InvalidOperationException>(
                     async () => await new WebSocketTransport().Send(new FakeConnection(), null, null))).Message);
         }
+
+        [Fact]
+        public async Task ReconnectStartsNewWebSocket()
+        {
+            var fakeConnection = new FakeConnection
+            {
+                LastActiveAt = DateTime.Now.AddDays(1),
+                ReconnectWindow = new TimeSpan(0, 0, 0),
+                Url = "http://fakeserver/"
+            };
+
+            fakeConnection.Setup("ChangeState",
+                () =>
+                {
+                    fakeConnection.State = ConnectionState.Reconnecting;
+                    return true;
+                });
+
+            var fakeWebSocketTransport = new FakeWebSocketTransport();
+            fakeWebSocketTransport.Setup<Task>("OpenWebSocket", () =>
+            {
+                var tcs = new TaskCompletionSource<object>();
+                tcs.TrySetResult(null);
+                return tcs.Task;
+            });
+
+            await fakeWebSocketTransport.Reconnect(fakeConnection, "abc");
+
+            var openWebSocketInvocations = fakeWebSocketTransport.GetInvocations("OpenWebSocket").ToArray();
+            Assert.Equal(1, openWebSocketInvocations.Length);
+            Assert.StartsWith("ws://fakeserver/reconnect?", ((Uri)openWebSocketInvocations[0][1]).AbsoluteUri);
+            Assert.Contains("&connectionData=abc&", ((Uri)openWebSocketInvocations[0][1]).AbsoluteUri);
+        }
+
+        [Fact]
+        public async Task ReconnectStopsConnectionAndDoesNotStartNewWebSocketIfReconnectWindowExceeded()
+        {
+            var fakeConnection = new FakeConnection
+            {
+                LastActiveAt = DateTime.UtcNow.AddSeconds(-10),
+                ReconnectWindow = new TimeSpan(0, 0, 5),
+                Url = "http://fakeserver/"
+            };
+
+            fakeConnection.Setup("ChangeState",
+                () =>
+                {
+                    fakeConnection.State = ConnectionState.Reconnecting;
+                    return true;
+                });
+
+            var fakeWebSocketTransport = new FakeWebSocketTransport();
+
+            await fakeWebSocketTransport.Reconnect(fakeConnection, null);
+
+            Assert.Equal(0, fakeWebSocketTransport.GetInvocations("OpenWebSocket").Count());
+            var stopInvocations = fakeConnection.GetInvocations("Stop").ToArray();
+            Assert.Equal(1, stopInvocations.Length);
+            Assert.IsType(typeof(TimeoutException), stopInvocations[0][0]);
+        }
+
+        [Fact]
+        public async Task ReconnectDoesNotStartNewWebSocketIfClientWasNotInConnectState()
+        {
+            var fakeConnection = new FakeConnection
+            {
+                LastActiveAt = DateTime.UtcNow,
+                ReconnectWindow = new TimeSpan(0, 0, 15),
+                Url = "http://fakeserver/"
+            };
+
+            fakeConnection.Setup("ChangeState",
+                () =>
+                {
+                    fakeConnection.State = ConnectionState.Disconnected;
+                    return false;
+                });
+
+            var fakeWebSocketTransport = new FakeWebSocketTransport();
+
+            await fakeWebSocketTransport.Reconnect(fakeConnection, null);
+
+            Assert.Equal(0, fakeWebSocketTransport.GetInvocations("OpenWebSocket").Count());
+            Assert.Equal(0, fakeConnection.GetInvocations("Stop").Count());
+        }
+
+        [Fact]
+        public async Task ReconnectRetriesReconnectingIfStartingWebSocketThrows()
+        {
+            var fakeConnection = new FakeConnection
+            {
+                LastActiveAt = DateTime.UtcNow,
+                ReconnectWindow = new TimeSpan(0, 0, 15),
+                Url = "http://fakeserver/"
+            };
+
+            fakeConnection.Setup("ChangeState",
+                () =>
+                {
+                    fakeConnection.State = ConnectionState.Reconnecting;
+                    return true;
+                });
+
+            var fakeWebSocketTransport = new FakeWebSocketTransport
+            {
+                ReconnectDelay = new TimeSpan(0, 0, 0, 1)
+            };
+
+            var openWebSocketInvoked = false;
+            var exception = new Exception();
+            fakeWebSocketTransport.Setup<Task>("OpenWebSocket", () =>
+            {
+                if (!openWebSocketInvoked)
+                {
+                    openWebSocketInvoked = true;
+                    throw exception;
+                }
+
+                var tcs = new TaskCompletionSource<object>();
+                tcs.TrySetResult(null);
+                return tcs.Task;
+            });
+
+            await fakeWebSocketTransport.Reconnect(fakeConnection, null);
+
+            Assert.Equal(2, fakeWebSocketTransport.GetInvocations("OpenWebSocket").Count());
+            var onErrorInvocations = fakeConnection.GetInvocations("OnError").ToArray();
+            Assert.Equal(1, onErrorInvocations.Length);
+            Assert.Same(exception, onErrorInvocations[0][0]);
+        }
+
+        [Fact]
+        public async Task ReconnectStopsReconnectingIfStartingWebSocketCancelled()
+        {
+            var fakeConnection = new FakeConnection
+            {
+                LastActiveAt = DateTime.UtcNow,
+                ReconnectWindow = new TimeSpan(0, 0, 15),
+                Url = "http://fakeserver/"
+            };
+
+            fakeConnection.Setup("ChangeState",
+                () =>
+                {
+                    fakeConnection.State = ConnectionState.Reconnecting;
+                    return true;
+                });
+
+            var fakeWebSocketTransport = new FakeWebSocketTransport
+            {
+                ReconnectDelay = new TimeSpan(0, 0, 0, 1)
+            };
+
+            fakeWebSocketTransport.Setup<Task>("OpenWebSocket", () =>
+            {
+                var tcs = new TaskCompletionSource<object>();
+                tcs.SetCanceled();
+                return tcs.Task;
+            });
+
+            await fakeWebSocketTransport.Reconnect(fakeConnection, null);
+
+            Assert.Equal(1, fakeWebSocketTransport.GetInvocations("OpenWebSocket").Count());
+            Assert.Equal(0, fakeConnection.GetInvocations("Stop").Count());
+            Assert.Equal(0, fakeConnection.GetInvocations("OnError").Count());
+        }
     }
 }
