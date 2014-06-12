@@ -117,6 +117,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ClientResources.cs" />
+    <Compile Include="FunctionalTests\EndToEndTests.cs" />
     <Compile Include="Fakes\FakeConnection.cs" />
     <Compile Include="Fakes\FakeDataReader.cs" />
     <Compile Include="Fakes\FakeInvocationManager.cs" />
