@@ -161,6 +161,7 @@
     <UnitTestProjects Include="$(ProjectRoot)\tests\Microsoft.AspNet.SignalR.Tests\Microsoft.AspNet.SignalR.Tests.csproj"></UnitTestProjects>
     <UnitTestProjects Include="$(ProjectRoot)\tests\Microsoft.AspNet.SignalR.Client.Tests\Microsoft.AspNet.SignalR.Client.Tests.csproj"></UnitTestProjects>
     <UnitTestProjects Include="$(ProjectRoot)\tests\Microsoft.AspNet.SignalR.SqlServer.Tests\Microsoft.AspNet.SignalR.SqlServer.Tests.csproj"></UnitTestProjects>
+    <UnitTestProjects Include="$(ProjectRoot)\tests\Microsoft.AspNet.SignalR.Client.Store.TestHost\Microsoft.AspNet.SignalR.Client.Store.TestHost.csproj"></UnitTestProjects>
     <UnitTestProjects Include="$(ProjectRoot)\tests\Microsoft.AspNet.SignalR.Client.Store.Tests\Microsoft.AspNet.SignalR.Client.Store.Tests.csproj"></UnitTestProjects>
     <UnitTestProjects Include="$(ProjectRoot)\tests\Microsoft.AspNet.SignalR.Client.Portable.Tests\Microsoft.AspNet.SignalR.Client.Portable.Tests.csproj"></UnitTestProjects>
   </ItemGroup>
@@ -247,6 +248,7 @@
   </Target>
 
   <Target Name="RunUnitTests" DependsOnTargets="BuildNetUnitTests">
+
     <MSBuild Projects="%(JsTestProjects.Identity)"
          Targets="pipelinePreDeployCopyAllFilesToOneFolder"
          Properties="Configuration=$(Configuration);ArtifactsDir=$(ProjectArtifactsDir);SolutionDir=$(ProjectRoot)\;$(ExtraProperties);_PackageTempDir=$(JSTestsPath);AutoParameterizationWebConfigConnectionStrings=false;MSBuildCommunityTasksPath=$(MSBuildCommunityTasksPath)"
@@ -266,6 +268,7 @@
 
     <Exec Command="&quot;$(ChutzpahExePath)&quot; &quot;$(JSTester)&quot; /showFailureReport /silent /timeoutMilliseconds 30000" Condition=" '$(OS)' == 'Windows_NT'" />
 
+
     <xunit Assemblies="$(ProjectArtifactsDir)\Microsoft.AspNet.SignalR.Tests\Microsoft.AspNet.SignalR.Tests.dll"
            Xml="$(TestResultsPath)\Microsoft.AspNet.SignalR.Tests.XunitResults.xml"
            Verbose="true" />
@@ -278,9 +281,14 @@
            Xml="$(TestResultsPath)\Microsoft.AspNet.SignalR.SqlServer.Tests.XunitResults.xml"
            Verbose="true" />
 
+    <!-- Microsoft.AspNet.SignalR.Client.Store.TestHost.exe is a host required to run some functional Store tests -->   
+    <ExecAsync Executable="$(ProjectArtifactsDir)\Microsoft.AspNet.SignalR.Client.Store.TestHost\Microsoft.AspNet.SignalR.Client.Store.TestHost.exe" Arguments="600000" />
+    
     <xunit Assemblies="$(ProjectArtifactsDir)\Microsoft.AspNet.SignalR.Client.Store.Tests\Microsoft.AspNet.SignalR.Client.Store.Tests.dll"
            Xml="$(TestResultsPath)\Microsoft.AspNet.SignalR.Client.Store.Tests.XunitResults.xml"
            Verbose="true" />
+           
+    <Exec Command="taskkill /IM Microsoft.AspNet.SignalR.Client.Store.TestHost.exe /F" ContinueOnError="true" />
 
     <xunit Assemblies="$(ProjectArtifactsDir)\Microsoft.AspNet.SignalR.Client.Portable.Tests\Microsoft.AspNet.SignalR.Client.Portable.Tests.dll"
            Xml="$(TestResultsPath)\Microsoft.AspNet.SignalR.Client.Portable.Tests.XunitResults.xml"
@@ -308,7 +316,7 @@
     <Exec Command="taskkill /IM iisexpress.exe /F" ContinueOnError="true" />
     <CallTarget Targets="ClearAspNetTempFolder" />
   </Target>
-
+  
   <Target Name="ClearAspNetTempFolder">
     <RemoveDir Directories="C:\Windows\Microsoft.NET\Framework\v4.0.30319\Temporary ASP.NET Files\root" ContinueOnError="true" />
     <RemoveDir Directories="C:\Windows\Microsoft.NET\Framework64\v4.0.30319\Temporary ASP.NET Files\root" ContinueOnError="true" />
@@ -484,4 +492,26 @@
 
     <Exec Command='mono $(XamarinDir)\xamarin-component\xamarin-component.exe package "$(XamarinDir)\SignalRPackage\component"' ContinueOnError="true" />
   </Target>
+  
+  <UsingTask TaskName="ExecAsync" TaskFactory="CodeTaskFactory" AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.v4.0.dll">
+    <ParameterGroup>
+      <Executable ParameterType="System.String" Required="true" />
+      <Arguments ParameterType="System.String" Required="false" />
+    </ParameterGroup>
+    <Task>
+      <Using Namespace="System.IO" />
+      <Using Namespace="System.Diagnostics" />
+      <Code Type="Fragment" Language="cs">
+      <![CDATA[
+        Log.LogMessage("Executable {0}...", Executable);
+        var name = System.IO.Path.GetFileNameWithoutExtension(Executable);
+        Log.LogMessage("Starting {0}...", name);
+        var processStartInfo = new ProcessStartInfo(Executable, Arguments) { UseShellExecute = true  };
+        Process.Start(processStartInfo);
+        Log.LogMessage("Finished starting process {0}.", name);
+      ]]>
+      </Code>
+    </Task>
+  </UsingTask>
+    
 </Project>

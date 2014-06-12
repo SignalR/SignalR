@@ -106,6 +106,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNet.SignalR.Cl
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNet.SignalR.Client.Portable.Tests", "tests\Microsoft.AspNet.SignalR.Client.Portable.Tests\Microsoft.AspNet.SignalR.Client.Portable.Tests.csproj", "{27015CCF-9FCA-4490-A8D5-9D2B82B1369E}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNet.SignalR.Client.Store.TestHost", "tests\Microsoft.AspNet.SignalR.Client.Store.TestHost\Microsoft.AspNet.SignalR.Client.Store.TestHost.csproj", "{F0697521-4A41-4A2A-BA64-D9A97CAA62A1}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -662,6 +664,20 @@ Global
 		{27015CCF-9FCA-4490-A8D5-9D2B82B1369E}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{27015CCF-9FCA-4490-A8D5-9D2B82B1369E}.Release|x64.ActiveCfg = Release|Any CPU
 		{27015CCF-9FCA-4490-A8D5-9D2B82B1369E}.Release|x86.ActiveCfg = Release|Any CPU
+		{F0697521-4A41-4A2A-BA64-D9A97CAA62A1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F0697521-4A41-4A2A-BA64-D9A97CAA62A1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F0697521-4A41-4A2A-BA64-D9A97CAA62A1}.Debug|ARM.ActiveCfg = Debug|Any CPU
+		{F0697521-4A41-4A2A-BA64-D9A97CAA62A1}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{F0697521-4A41-4A2A-BA64-D9A97CAA62A1}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{F0697521-4A41-4A2A-BA64-D9A97CAA62A1}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{F0697521-4A41-4A2A-BA64-D9A97CAA62A1}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{F0697521-4A41-4A2A-BA64-D9A97CAA62A1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F0697521-4A41-4A2A-BA64-D9A97CAA62A1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F0697521-4A41-4A2A-BA64-D9A97CAA62A1}.Release|ARM.ActiveCfg = Release|Any CPU
+		{F0697521-4A41-4A2A-BA64-D9A97CAA62A1}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{F0697521-4A41-4A2A-BA64-D9A97CAA62A1}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{F0697521-4A41-4A2A-BA64-D9A97CAA62A1}.Release|x64.ActiveCfg = Release|Any CPU
+		{F0697521-4A41-4A2A-BA64-D9A97CAA62A1}.Release|x86.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -686,5 +702,6 @@ Global
 		{44FFD296-2FC1-4159-80AC-4F6C8AE9887C} = {7E3D992A-8F37-4C5D-AD42-E052522816C5}
 		{D728E0A1-A7F8-4FA3-9B17-2C3B9031311C} = {505538C3-B34D-4B43-BDE6-C6E974AB03A6}
 		{27015CCF-9FCA-4490-A8D5-9D2B82B1369E} = {505538C3-B34D-4B43-BDE6-C6E974AB03A6}
+		{F0697521-4A41-4A2A-BA64-D9A97CAA62A1} = {505538C3-B34D-4B43-BDE6-C6E974AB03A6}
 	EndGlobalSection
 EndGlobal

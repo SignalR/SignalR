@@ -188,6 +188,12 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
                 try
                 {
                     await StartWebSocket(connection, reconnectUrl);
+
+                    if (connection.ChangeState(ConnectionState.Reconnecting, ConnectionState.Connected))
+                    {
+                        connection.OnReconnected();
+                    }
+
                     break;
                 }
                 catch (OperationCanceledException)
