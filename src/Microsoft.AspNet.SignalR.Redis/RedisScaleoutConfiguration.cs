@@ -15,7 +15,6 @@ namespace Microsoft.AspNet.SignalR
         public RedisScaleoutConfiguration(string server, int port, string password, string eventKey)
             : this(CreateConnectionString(server, port, password), eventKey)
         {
-
         }
 
         public RedisScaleoutConfiguration(string connectionString, string eventKey)
@@ -38,7 +37,7 @@ namespace Microsoft.AspNet.SignalR
         /// The connection string that needs to be passed to ConnectionMultiplexer
         /// Should be of the form server:port
         /// </summary>
-        internal string ConnectionString;
+        internal string ConnectionString { get; private set; }
 
         /// <summary>
         /// The Redis database instance to use.
@@ -54,7 +53,7 @@ namespace Microsoft.AspNet.SignalR
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA1801:ReviewUnusedParameters", MessageId = "password")]
         private static string CreateConnectionString(string server, int port, string password)
         {
-            return string.Format(CultureInfo.CurrentCulture, "{0}:{1},password={2}", server, port, password);
+            return string.Format(CultureInfo.CurrentCulture, "{0}:{1}, password={2}, abortConnect={3}", server, port, password, "false");
         }
     }
 }
