@@ -98,13 +98,13 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
             await webSocket.ConnectAsync(uri);
         }      
 
-        private void MessageReceived(MessageWebSocket source, MessageWebSocketMessageReceivedEventArgs eventArgs)
+        private void MessageReceived(MessageWebSocket webSocket, MessageWebSocketMessageReceivedEventArgs eventArgs)
         {
-            MessageReceived(new MessageReceivedEventArgsWrapper(eventArgs), _connection, TransportHelper, _initializationHandler);
+            MessageReceived(webSocket, new MessageReceivedEventArgsWrapper(eventArgs), _connection, TransportHelper, _initializationHandler);
         }
 
         // internal for testing, passing dependencies to allow mocking
-        internal void MessageReceived(IWebSocketResponse webSocketResponse, IConnection connection, 
+        internal static void MessageReceived(IWebSocket webSocket, IWebSocketResponse webSocketResponse, IConnection connection, 
             TransportHelper transportHelper, TransportInitializationHandler initializationHandler)
         {
             var response = ReadMessage(webSocketResponse);
@@ -113,8 +113,15 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
 
             bool shouldReconnect;
             bool disconnected;
-            transportHelper.ProcessResponse(_connection, response, out shouldReconnect, out disconnected, 
+            transportHelper.ProcessResponse(connection, response, out shouldReconnect, out disconnected, 
                 initializationHandler.InitReceived);
+
+            if (disconnected)
+            {
+                connection.Trace(TraceLevels.Messages, "Disconnect command received from server.");
+                webSocket.Close(1000, string.Empty);
+                connection.Disconnect();
+            }
         }
 
         private static string ReadMessage(IWebSocketResponse webSocketResponse)

@@ -12,7 +12,7 @@ namespace Microsoft.AspNet.SignalR.Client.Store.Tests.Fakes
 
         public void Close(ushort code, string reason)
         {
-            throw new NotImplementedException();
+            _invocationManager.AddInvocation("Close", code, reason);
         }
 
         public event TypedEventHandler<IWebSocket, WebSocketClosedEventArgs> Closed
