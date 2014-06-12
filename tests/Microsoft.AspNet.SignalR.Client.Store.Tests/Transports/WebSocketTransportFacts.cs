@@ -232,6 +232,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
             Assert.Equal(1, openWebSocketInvocations.Length);
             Assert.StartsWith("ws://fakeserver/reconnect?", ((Uri)openWebSocketInvocations[0][1]).AbsoluteUri);
             Assert.Contains("&connectionData=abc&", ((Uri)openWebSocketInvocations[0][1]).AbsoluteUri);
+            Assert.Equal(1, fakeConnection.GetInvocations("OnReconnected").Count());
         }
 
         [Fact]
@@ -329,6 +330,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
             var onErrorInvocations = fakeConnection.GetInvocations("OnError").ToArray();
             Assert.Equal(1, onErrorInvocations.Length);
             Assert.Same(exception, onErrorInvocations[0][0]);
+            Assert.Equal(1, fakeConnection.GetInvocations("OnReconnected").Count());
         }
 
         [Fact]

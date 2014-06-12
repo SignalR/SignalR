@@ -144,7 +144,7 @@ namespace Microsoft.AspNet.SignalR.Client.Store.Tests.Fakes
 
         public void OnReconnected()
         {
-            throw new NotImplementedException();
+            _invocationManager.AddInvocation("OnReconnected");
         }
 
         public void OnConnectionSlow()
