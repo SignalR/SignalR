@@ -391,5 +391,28 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
             fakeWebSocket.Verify("Close", new List<object[]>{ new object[] { (ushort)1000, string.Empty }});
             fakeConnection.Verify("Disconnect", new List<object[]>{ new object[0] });
         }
+
+        [Fact]
+        public void LostConnectionValidateArguments()
+        {
+            Assert.Equal("connection",
+                Assert.Throws<ArgumentNullException>(
+                    () => new WebSocketTransport().LostConnection(null)).ParamName);
+        }
+
+        [Fact]
+        public void LostConnectionLogsTraceMessageClosesWebSocket()
+        {
+            var fakeWebSocket = new FakeWebSocket();
+            var fakeConnection = new FakeConnection();
+
+            FakeWebSocketTransport.LostConnection(fakeConnection, fakeWebSocket);
+
+            var traceInvocations = fakeConnection.GetInvocations("Trace").ToArray();
+            Assert.Equal(1, traceInvocations.Length);
+            Assert.Equal(TraceLevels.Events, (TraceLevels)traceInvocations[0][0]);
+
+            fakeWebSocket.Verify("Close", new List<object[]> { new object[] { (ushort)1000, string.Empty } });
+        }
     }
 }

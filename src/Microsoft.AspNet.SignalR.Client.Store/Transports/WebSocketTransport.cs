@@ -211,7 +211,21 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
 
         public override void LostConnection(IConnection connection)
         {
-            throw new NotImplementedException();
+            if (connection == null)
+            {
+                throw new ArgumentNullException("connection");
+            }
+
+            LostConnection(connection, _webSocket);
+
+        }
+
+        // internal for testing
+        internal static void LostConnection(IConnection connection, IWebSocket webSocket)
+        {
+            connection.Trace(TraceLevels.Events, "WS: LostConnection");
+
+            webSocket.Close(SuccessCloseStatus, string.Empty);            
         }
 
         private void DisposeSocket()

@@ -1,10 +1,9 @@
 ﻿
+using Microsoft.AspNet.SignalR.Client.Transports;
 using System;
 using System.Collections.Generic;
-using System.ServiceModel.Channels;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.AspNet.SignalR.Client.Transports;
 using Xunit;
 
 namespace Microsoft.AspNet.SignalR.Client.Store.Tests
@@ -13,7 +12,6 @@ namespace Microsoft.AspNet.SignalR.Client.Store.Tests
     public class EndToEndTests
     {
         private const string HubUrl = "http://localhost:42424";
-
         [Fact]
         public async Task WebSocketSendReceiveTest()
         {
@@ -53,13 +51,13 @@ namespace Microsoft.AspNet.SignalR.Client.Store.Tests
         [Fact]
         public async Task WebSocketReconnects()
         {
-            var receivedMessage = (string)null;
-            var reconnectingInvoked = false;
             var stateChanges = new List<KeyValuePair<ConnectionState, ConnectionState>>();
 
             using (var hubConnection = new HubConnection(HubUrl))
             {
+                var receivedMessage = (string)null;
                 var messageReceivedWh = new ManualResetEventSlim();
+
                 var proxy = hubConnection.CreateHubProxy("StoreWebSocketTestHub");
                 proxy.On<string>("echo", m =>
                 {
@@ -70,9 +68,11 @@ namespace Microsoft.AspNet.SignalR.Client.Store.Tests
                 hubConnection.StateChanged += stateChanged => stateChanges.Add(
                     new KeyValuePair<ConnectionState, ConnectionState>(stateChanged.OldState, stateChanged.NewState));
 
+                var reconnectingInvoked = false;
                 hubConnection.Reconnecting += () => reconnectingInvoked = true;
-                var wh = new ManualResetEventSlim();
-                hubConnection.Reconnected += wh.Set;
+
+                var reconnectedWh = new ManualResetEventSlim();
+                hubConnection.Reconnected += reconnectedWh.Set;
 
                 await hubConnection.Start(new WebSocketTransport { ReconnectDelay = new TimeSpan(0, 0, 0, 500)});
 
@@ -84,12 +84,12 @@ namespace Microsoft.AspNet.SignalR.Client.Store.Tests
                 {
                 }
 
-                Assert.True(await Task.Run(() => wh.Wait(5000)));
+                Assert.True(await Task.Run(() => reconnectedWh.Wait(5000)));
                 Assert.True(reconnectingInvoked);
                 Assert.Equal(ConnectionState.Connected, hubConnection.State);
 
                 await proxy.Invoke("Echo", "MyMessage");
-                await Task.Run(() => wh.Wait(5000));
+                await Task.Run(() => messageReceivedWh.Wait(5000));
                 Assert.Equal("MyMessage", receivedMessage);
             }
 
@@ -103,6 +103,54 @@ namespace Microsoft.AspNet.SignalR.Client.Store.Tests
                     new KeyValuePair<ConnectionState, ConnectionState>(ConnectionState.Connected, ConnectionState.Disconnected),
                 },
                 stateChanges);
+        }
+
+        [Fact]
+        public async Task WebSocketReconnectsIfConnectionLost()
+        {
+            var receivedMessage = (string)null;
+
+            using (var hubConnection = new HubConnection(HubUrl))
+            {
+                hubConnection.StateChanged += stateChange =>
+                {
+                    if (stateChange.OldState == ConnectionState.Connected &&
+                        stateChange.NewState == ConnectionState.Reconnecting)
+                    {
+                        // Reverting quick timeout 
+                        ((IConnection) hubConnection).KeepAliveData = new KeepAliveData(
+                            timeoutWarning: TimeSpan.FromSeconds(30),
+                            timeout: TimeSpan.FromSeconds(20),
+                            checkInterval: TimeSpan.FromSeconds(2));
+                    }
+                };
+
+                var reconnectedWh = new ManualResetEventSlim();
+                hubConnection.Reconnected += reconnectedWh.Set;
+
+                var messageReceivedWh = new ManualResetEventSlim();
+                var proxy = hubConnection.CreateHubProxy("StoreWebSocketTestHub");
+                proxy.On<string>("echo", m =>
+                {
+                    receivedMessage = m;
+                    messageReceivedWh.Set();
+                });
+
+                await hubConnection.Start(new WebSocketTransport { ReconnectDelay = new TimeSpan(0, 0, 0, 500) });
+
+                // Setting the values such that a timeout happens almost instantly
+                ((IConnection)hubConnection).KeepAliveData = new KeepAliveData(
+                    timeoutWarning: TimeSpan.FromSeconds(10),
+                    timeout: TimeSpan.FromSeconds(0.5),
+                    checkInterval: TimeSpan.FromSeconds(1)
+                );
+
+                Assert.True(reconnectedWh.Wait(5000));
+
+                await proxy.Invoke("Echo", "MyMessage");
+                Assert.True(messageReceivedWh.Wait(5000));
+                Assert.Equal("MyMessage", receivedMessage);
+            }
         }
     }
 }
