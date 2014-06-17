@@ -15,6 +15,7 @@ _ReSharper.*
 *[Rr]e[Ss]harper.user
 _ReSharper.*/
 packages/*
+WebSocketsBenchmark/packages/*
 artifacts/*
 msbuild.log
 PublishProfiles/
