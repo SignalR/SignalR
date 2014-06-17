@@ -1,0 +1,43 @@
+﻿<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <title></title>
+</head>
+<body>
+    <p>
+        <input type="text" id="txtUrl" value="ws://localhost/WebSocketHandler.ashx" />
+        <input type="button" id="btnOpen" value="Open" />
+    </p>
+    <p>
+        <input type="button" id="btnClose" value="Close" />
+    </p>
+
+    <div id="output">
+
+    </div>
+
+    <script type="text/javascript">
+        var outputDiv = document.getElementById("output");
+        function appendOutput(text) {
+            var newElement = document.createElement("p");
+            newElement.appendChild(document.createTextNode("[" + new Date().toLocaleTimeString() + "] " + text));
+            outputDiv.insertBefore(newElement, outputDiv.firstChild);
+        }
+
+        var webSocket;
+
+        document.getElementById("btnOpen").addEventListener("click", function () {
+            webSocket = new WebSocket(document.getElementById("txtUrl").value);
+            webSocket.onopen = function () { appendOutput("Socket opened."); };
+            webSocket.onerror = function () { appendOutput("Socket error."); };
+            webSocket.onclose = function (event) { appendOutput("Socket closed with message '" + event.reason + "'."); };
+        });
+
+        document.getElementById("btnClose").addEventListener("click", function () {
+            webSocket.close();
+        });
+
+    </script>
+
+</body>
+</html>
