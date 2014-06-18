@@ -15,6 +15,7 @@ _ReSharper.*
 *[Rr]e[Ss]harper.user
 _ReSharper.*/
 packages/*
+Components/*
 artifacts/*
 msbuild.log
 PublishProfiles/

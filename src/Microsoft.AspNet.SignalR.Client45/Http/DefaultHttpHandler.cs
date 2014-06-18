@@ -8,7 +8,7 @@ using System.Net.Http;
 
 namespace Microsoft.AspNet.SignalR.Client.Http
 {
-#if !NETFX_CORE && !PORTABLE && !__ANDROID__ && !IOS
+#if !NETFX_CORE && !PORTABLE && !__ANDROID__ && !__IOS__
     public class DefaultHttpHandler : WebRequestHandler
 #else
     public class DefaultHttpHandler : HttpClientHandler
