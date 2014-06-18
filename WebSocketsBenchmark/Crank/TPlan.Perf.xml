@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="us-ascii"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns="http://www.microsoft.com/2011/12/aaptperffun#1">
+
+  <PerfRunConfiguration LoadProcessesPerClientMultiplier="1" LoadThreadsPerProcessMultiplier="1" SuicideTimeout="2000" />
+  
+  <commands>
+    <command name="CopyWWW" wait="Exit">
+      {bin}\xcopy /ecyi Microsoft.AspNet.SignalR.LoadTestHarness \\{server-01}\perftestbits\www
+    </command>
+    <command name="SetupIIS" wait="Exit">
+      powershell -executionpolicy remotesigned -command "{bin}\RegisterIIS.ps1 {currentdir}\www
+    </command>
+    <command name="WebSockets-250000" wait="Exit">
+      crank.exe /Url:http://{server-01}:81/TestConnection/connect /Connections:250000 /ConnectTimeout:3600 /ControllerUrl:http://{client-01}:8080 /NumClients:4 /SendTimeout:120 /SignalRInstance:testdefault /Transport:WebSockets
+    </command>
+    <command name="ServerSentEvents-250000" wait="Exit">
+      crank.exe /Url:http://{server-01}:81/TestConnection/connect /Connections:250000 /ConnectTimeout:3600 /ControllerUrl:http://{client-01}:8080 /NumClients:4 /SendTimeout:120 /SignalRInstance:testdefault /Transport:ServerSentEvents
+    </command>
+    <command name="LongPolling-250000" wait="Exit">
+      crank.exe /Url:http://{server-01}:81/TestConnection/connect /Connections:250000 /ConnectTimeout:3600 /ControllerUrl:http://{client-01}:8080 /NumClients:4 /SendTimeout:120 /SignalRInstance:testdefault /Transport:LongPolling
+    </command>
+  </commands>
+
+  <plan>
+    <run command="CopyWWW" role="controller" output="true" profile="None" />
+    <run command="SetupIIS" role="server-01" output="true" profile="None" />
+    <run command="WebSockets-250000" role="client-01" output="true" />
+
+    <run command="SetupIIS" role="server-01" output="true" profile="None" />
+    <run command="ServerSentEvents-250000" role="client-01" output="true" />
+
+    <run command="SetupIIS" role="server-01" output="true" profile="None" />
+    <run command="LongPolling-250000" role="client-01" output="true" />
+  </plan>
+</config>
