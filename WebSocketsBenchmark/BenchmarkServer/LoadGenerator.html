@@ -29,7 +29,8 @@
         document.getElementById("btnOpen").addEventListener("click", function () {
             webSocket = new WebSocket(document.getElementById("txtUrl").value);
             webSocket.onopen = function () { appendOutput("Socket opened."); };
-            webSocket.onerror = function () { appendOutput("Socket error."); };
+            webSocket.onerror = function (event ) { appendOutput("Socket error '" + event.error + "'."); };
+            webSocket.onmessage = function (event) { appendOutput(event.data) };
             webSocket.onclose = function (event) { appendOutput("Socket closed with message '" + event.reason + "'."); };
         });
 

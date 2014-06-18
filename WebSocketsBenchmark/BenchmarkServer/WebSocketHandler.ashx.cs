@@ -1,9 +1,11 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Net.WebSockets;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Web;
 using System.Web.WebSockets;
+using System.Linq;
 
 namespace BenchmarkServer
 {
@@ -12,6 +14,24 @@ namespace BenchmarkServer
     /// </summary>
     public class WebSocketHandler : IHttpHandler
     {
+        private class Connection
+        {
+            public WebSocket Socket { get; set; }
+
+            public async Task Send(ArraySegment<byte> buffer)
+            {
+                try
+                {
+                    await Socket.SendAsync(buffer, WebSocketMessageType.Text, true, CancellationToken.None);
+                }
+                catch (Exception) { }
+            }
+        }
+
+        private static ConcurrentBag<Connection> _connections = new ConcurrentBag<Connection>();
+
+        internal static ConnectionBehavior Behavior { get; set; }
+
 
         public void ProcessRequest(HttpContext context)
         {
@@ -27,17 +47,28 @@ namespace BenchmarkServer
             }
         }
 
+        public static async Task Broadcast(string message)
+        {
+            var buffer = new ArraySegment<byte>(System.Text.Encoding.UTF8.GetBytes(message));
+
+            await Task.WhenAll(_connections.Select(connection => connection.Send(buffer)));
+        }
+
         private static async Task WebSocketLoop(AspNetWebSocketContext webSocketContext)
         {
-            var socket = webSocketContext.WebSocket;
+            var connection = new Connection()
+            {
+                Socket = webSocketContext.WebSocket
+            };
+            _connections.Add(connection);
 
             var buffer = new ArraySegment<byte>(new byte[1024]);
-            while(true)
+            while (true)
             {
-                var message = await socket.ReceiveAsync(buffer, CancellationToken.None);
-                if(message.CloseStatus != null)
+                var message = await connection.Socket.ReceiveAsync(buffer, CancellationToken.None);
+                if (message.CloseStatus != null)
                 {
-                    await socket.CloseAsync(WebSocketCloseStatus.NormalClosure, "Client requested connection close", CancellationToken.None);
+                    await connection.Socket.CloseAsync(WebSocketCloseStatus.NormalClosure, "Client requested connection close", CancellationToken.None);
                 }
             }
         }
