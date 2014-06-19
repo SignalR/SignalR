@@ -39,12 +39,6 @@ namespace Microsoft.AspNet.SignalR
             var traceManager = new Lazy<TraceManager>(() => new TraceManager());
             Register(typeof(ITraceManager), () => traceManager.Value);
 
-            var serverIdManager = new ServerIdManager();
-            Register(typeof(IServerIdManager), () => serverIdManager);
-
-            var serverMessageHandler = new Lazy<IServerCommandHandler>(() => new ServerCommandHandler(this));
-            Register(typeof(IServerCommandHandler), () => serverMessageHandler.Value);
-
             var newMessageBus = new Lazy<IMessageBus>(() => new MessageBus(this));
             Register(typeof(IMessageBus), () => newMessageBus.Value);
 

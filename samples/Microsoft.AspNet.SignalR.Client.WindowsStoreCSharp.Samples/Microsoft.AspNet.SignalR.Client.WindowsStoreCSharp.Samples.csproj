@@ -119,6 +119,7 @@
     <AppxManifest Include="Package.appxmanifest">
       <SubType>Designer</SubType>
     </AppxManifest>
+    <None Include="app.config" />
     <None Include="Microsoft.AspNet.SignalR.Client.WindowsStoreCSharp.Samples_TemporaryKey.pfx" />
     <None Include="packages.config" />
   </ItemGroup>

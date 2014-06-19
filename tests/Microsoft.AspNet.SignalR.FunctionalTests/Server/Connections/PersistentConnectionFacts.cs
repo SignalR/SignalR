@@ -96,7 +96,7 @@ namespace Microsoft.AspNet.SignalR.Tests
             }
 
             [Fact]
-            public void SendToClientFromOutsideOfConnection()
+            public async Task SendToClientFromOutsideOfConnection()
             {
                 using (var host = new MemoryHost())
                 {
@@ -116,9 +116,9 @@ namespace Microsoft.AspNet.SignalR.Tests
 
                     using (connection1)
                     {
-                        var wh1 = new ManualResetEventSlim(initialState: false);
+                        var wh1 = new AsyncManualResetEvent(initialState: false);
 
-                        connection1.Start(host).Wait();
+                        await connection1.Start(host);
 
                         connection1.Received += data =>
                         {
@@ -126,15 +126,15 @@ namespace Microsoft.AspNet.SignalR.Tests
                             wh1.Set();
                         };
 
-                        connectionContext.Connection.Send(connection1.ConnectionId, "yay");
+                        var ignore = connectionContext.Connection.Send(connection1.ConnectionId, "yay");
 
-                        Assert.True(wh1.Wait(TimeSpan.FromSeconds(10)));
+                        Assert.True(await wh1.WaitAsync(TimeSpan.FromSeconds(10)));
                     }
                 }
             }
 
             [Fact]
-            public void SendToClientsFromOutsideOfConnection()
+            public async Task SendToClientsFromOutsideOfConnection()
             {
                 using (var host = new MemoryHost())
                 {
@@ -154,9 +154,9 @@ namespace Microsoft.AspNet.SignalR.Tests
 
                     using (connection1)
                     {
-                        var wh1 = new ManualResetEventSlim(initialState: false);
+                        var wh1 = new AsyncManualResetEvent(initialState: false);
 
-                        connection1.Start(host).Wait();
+                        await connection1.Start(host);
 
                         connection1.Received += data =>
                         {
@@ -164,15 +164,15 @@ namespace Microsoft.AspNet.SignalR.Tests
                             wh1.Set();
                         };
 
-                        connectionContext.Connection.Send(new[] { connection1.ConnectionId }, "yay");
+                        var ignore = connectionContext.Connection.Send(new[] { connection1.ConnectionId }, "yay");
 
-                        Assert.True(wh1.Wait(TimeSpan.FromSeconds(10)));
+                        Assert.True(await wh1.WaitAsync(TimeSpan.FromSeconds(10)));
                     }
                 }
             }
-
+            
             [Fact]
-            public void SendToGroupFromOutsideOfConnection()
+            public async Task SendToGroupFromOutsideOfConnection()
             {
                 using (var host = new MemoryHost())
                 {
@@ -192,9 +192,47 @@ namespace Microsoft.AspNet.SignalR.Tests
 
                     using (connection1)
                     {
-                        var wh1 = new ManualResetEventSlim(initialState: false);
+                        var wh1 = new AsyncManualResetEvent(initialState: false);
 
-                        connection1.Start(host).Wait();
+                        await connection1.Start(host);
+
+                        connection1.Received += data =>
+                        {
+                            Assert.Equal("yay", data);
+                            wh1.Set();
+                        };
+
+                        await connectionContext.Groups.Add(connection1.ConnectionId, "Foo");                        
+                        await connectionContext.Groups.Send("Foo", "yay");
+                        Assert.True(await wh1.WaitAsync(TimeSpan.FromSeconds(10)));
+                    }
+                }
+            }
+
+            [Fact]
+            public async Task SendToGroupsFromOutsideOfConnection()
+            {
+                using (var host = new MemoryHost())
+                {
+                    IPersistentConnectionContext connectionContext = null;
+                    host.Configure(app =>
+                    {
+                        var configuration = new ConnectionConfiguration
+                        {
+                            Resolver = new DefaultDependencyResolver()
+                        };
+
+                        app.MapSignalR<BroadcastConnection>("/echo", configuration);
+                        connectionContext = configuration.Resolver.Resolve<IConnectionManager>().GetConnectionContext<BroadcastConnection>();
+                    });
+
+                    var connection1 = new Client.Connection("http://foo/echo");
+
+                    using (connection1)
+                    {
+                        var wh1 = new AsyncManualResetEvent(initialState: false);
+
+                        await connection1.Start(host);
 
                         connection1.Received += data =>
                         {
@@ -203,48 +241,9 @@ namespace Microsoft.AspNet.SignalR.Tests
                         };
 
                         connectionContext.Groups.Add(connection1.ConnectionId, "Foo").Wait();
-                        connectionContext.Groups.Send("Foo", "yay");
+                        var ignore = connectionContext.Groups.Send(new[] { "Foo", "Bar" }, "yay");
 
-                        Assert.True(wh1.Wait(TimeSpan.FromSeconds(10)));
-                    }
-                }
-            }
-
-            [Fact]
-            public void SendToGroupsFromOutsideOfConnection()
-            {
-                using (var host = new MemoryHost())
-                {
-                    IPersistentConnectionContext connectionContext = null;
-                    host.Configure(app =>
-                    {
-                        var configuration = new ConnectionConfiguration
-                        {
-                            Resolver = new DefaultDependencyResolver()
-                        };
-
-                        app.MapSignalR<BroadcastConnection>("/echo", configuration);
-                        connectionContext = configuration.Resolver.Resolve<IConnectionManager>().GetConnectionContext<BroadcastConnection>();
-                    });
-
-                    var connection1 = new Client.Connection("http://foo/echo");
-
-                    using (connection1)
-                    {
-                        var wh1 = new ManualResetEventSlim(initialState: false);
-
-                        connection1.Start(host).Wait();
-
-                        connection1.Received += data =>
-                        {
-                            Assert.Equal("yay", data);
-                            wh1.Set();
-                        };
-
-                        connectionContext.Groups.Add(connection1.ConnectionId, "Foo").Wait();
-                        connectionContext.Groups.Send(new[] { "Foo", "Bar" }, "yay");
-
-                        Assert.True(wh1.Wait(TimeSpan.FromSeconds(10)));
+                        Assert.True(await wh1.WaitAsync(TimeSpan.FromSeconds(10)));
                     }
                 }
             }
@@ -256,7 +255,7 @@ namespace Microsoft.AspNet.SignalR.Tests
             [InlineData(HostType.HttpListener, TransportType.Websockets)]
             [InlineData(HostType.HttpListener, TransportType.ServerSentEvents)]
             [InlineData(HostType.HttpListener, TransportType.LongPolling)]
-            public void BasicAuthCredentialsFlow(HostType hostType, TransportType transportType)
+            public async Task BasicAuthCredentialsFlow(HostType hostType, TransportType transportType)
             {
                 using (var host = CreateHost(hostType, transportType))
                 {
@@ -264,6 +263,7 @@ namespace Microsoft.AspNet.SignalR.Tests
 
                     var connection = CreateConnection(host, "/basicauth/echo");
                     var tcs = new TaskCompletionSource<string>();
+                    var mre = new AsyncManualResetEvent();
 
                     using (connection)
                     {
@@ -272,13 +272,14 @@ namespace Microsoft.AspNet.SignalR.Tests
                         connection.Received += data =>
                         {
                             tcs.TrySetResult(data);
+                            mre.Set();
                         };
 
-                        connection.Start(host.Transport).Wait();
+                        await connection.Start(host.Transport);
 
                         connection.SendWithTimeout("Hello World");
 
-                        Assert.True(tcs.Task.Wait(TimeSpan.FromSeconds(10)));
+                        Assert.True(await mre.WaitAsync(TimeSpan.FromSeconds(10)));
                         Assert.Equal("Hello World", tcs.Task.Result);
                     }
                 }
@@ -300,7 +301,7 @@ namespace Microsoft.AspNet.SignalR.Tests
             {
                 using (var host = CreateHost(hostType, transportType))
                 {
-                    var wh = new ManualResetEventSlim();
+                    var wh = new AsyncManualResetEvent();
                     host.Initialize(messageBusType: messageBusType);
 
                     var connection = CreateConnection(host, "/protected");
@@ -321,11 +322,11 @@ namespace Microsoft.AspNet.SignalR.Tests
             [InlineData(HostType.Memory, TransportType.ServerSentEvents, MessageBusType.FakeMultiStream)]
             // [InlineData(HostType.Memory, TransportType.LongPolling)]
             // [InlineData(HostType.IISExpress, TransportType.Auto)]
-            public void GroupCanBeAddedAndMessagedOnConnected(HostType hostType, TransportType transportType, MessageBusType messageBusType)
+            public async Task GroupCanBeAddedAndMessagedOnConnected(HostType hostType, TransportType transportType, MessageBusType messageBusType)
             {
                 using (var host = CreateHost(hostType, transportType))
                 {
-                    var wh = new ManualResetEventSlim();
+                    var wh = new AsyncManualResetEvent();
                     host.Initialize(messageBusType: messageBusType);
 
                     var connection = CreateConnection(host, "/add-group");
@@ -338,10 +339,10 @@ namespace Microsoft.AspNet.SignalR.Tests
                             wh.Set();
                         };
 
-                        connection.Start(host.Transport).Wait();
+                        await connection.Start(host.Transport);
                         connection.SendWithTimeout("");
 
-                        Assert.True(wh.Wait(TimeSpan.FromSeconds(5)));
+                        Assert.True(await wh.WaitAsync(TimeSpan.FromSeconds(5)));
                     }
                 }
             }
@@ -359,7 +360,7 @@ namespace Microsoft.AspNet.SignalR.Tests
             [InlineData(HostType.HttpListener, TransportType.Websockets, MessageBusType.Default)]
             [InlineData(HostType.HttpListener, TransportType.ServerSentEvents, MessageBusType.Default)]
             [InlineData(HostType.HttpListener, TransportType.LongPolling, MessageBusType.Default)]
-            public void SendRaisesOnReceivedFromAllEvents(HostType hostType, TransportType transportType, MessageBusType messageBusType)
+            public async Task SendRaisesOnReceivedFromAllEvents(HostType hostType, TransportType transportType, MessageBusType messageBusType)
             {
                 using (var host = CreateHost(hostType, transportType))
                 {
@@ -372,10 +373,10 @@ namespace Microsoft.AspNet.SignalR.Tests
                         results.Add(data);
                     };
 
-                    connection.Start(host.Transport).Wait();
+                    await connection.Start(host.Transport);
                     connection.SendWithTimeout("");
 
-                    Thread.Sleep(TimeSpan.FromSeconds(5));
+                    await Task.Delay(TimeSpan.FromSeconds(5));
 
                     connection.Stop();
 
@@ -402,7 +403,7 @@ namespace Microsoft.AspNet.SignalR.Tests
             [InlineData(HostType.HttpListener, TransportType.Websockets, MessageBusType.Default)]
             [InlineData(HostType.HttpListener, TransportType.ServerSentEvents, MessageBusType.Default)]
             [InlineData(HostType.HttpListener, TransportType.LongPolling, MessageBusType.Default)]
-            public void SendCanBeCalledAfterStateChangedEvent(HostType hostType, TransportType transportType, MessageBusType messageBusType)
+            public async Task SendCanBeCalledAfterStateChangedEvent(HostType hostType, TransportType transportType, MessageBusType messageBusType)
             {
                 using (var host = CreateHost(hostType, transportType))
                 {
@@ -423,9 +424,9 @@ namespace Microsoft.AspNet.SignalR.Tests
                         }
                     };
 
-                    connection.Start(host.Transport).Wait();
+                    await connection.Start(host.Transport);
 
-                    Thread.Sleep(TimeSpan.FromSeconds(5));
+                    await Task.Delay(TimeSpan.FromSeconds(5));
 
                     connection.Stop();
 
@@ -450,7 +451,7 @@ namespace Microsoft.AspNet.SignalR.Tests
             [InlineData(HostType.HttpListener, TransportType.Websockets, MessageBusType.Default)]
             [InlineData(HostType.HttpListener, TransportType.ServerSentEvents, MessageBusType.Default)]
             // [InlineData(HostType.IISExpress, TransportType.LongPolling)]
-            public void ReconnectFiresAfterHostShutDown(HostType hostType, TransportType transportType, MessageBusType messageBusType)
+            public async Task ReconnectFiresAfterHostShutDown(HostType hostType, TransportType transportType, MessageBusType messageBusType)
             {
                 using (var host = CreateHost(hostType, transportType))
                 {
@@ -460,11 +461,11 @@ namespace Microsoft.AspNet.SignalR.Tests
 
                     using (connection)
                     {
-                        connection.Start(host.Transport).Wait();
+                        await connection.Start(host.Transport);
 
                         host.Shutdown();
 
-                        Thread.Sleep(TimeSpan.FromSeconds(5));
+                        await Task.Delay(TimeSpan.FromSeconds(5));
 
                         Assert.Equal(Client.ConnectionState.Reconnecting, connection.State);
                     }
@@ -475,11 +476,12 @@ namespace Microsoft.AspNet.SignalR.Tests
             [InlineData(TransportType.LongPolling, MessageBusType.Default)]
             [InlineData(TransportType.LongPolling, MessageBusType.Fake)]
             [InlineData(TransportType.LongPolling, MessageBusType.FakeMultiStream)]
-            public void ReconnectDoesntFireAfterTimeOut(TransportType transportType, MessageBusType messageBusType)
+            public async Task ReconnectDoesntFireAfterTimeOut(TransportType transportType, MessageBusType messageBusType)
             {
                 using (var host = new MemoryHost())
                 {
-                    var conn = new MyReconnect();
+                    var reconnects = 0;
+
                     host.Configure(app =>
                     {
                         var config = new ConnectionConfiguration
@@ -495,18 +497,18 @@ namespace Microsoft.AspNet.SignalR.Tests
                         configuration.ConnectionTimeout = TimeSpan.FromSeconds(2);
                         configuration.KeepAlive = null;
 
-                        config.Resolver.Register(typeof(MyReconnect), () => conn);
+                        config.Resolver.Register(typeof(MyReconnect), () => new MyReconnect(() => reconnects++));
                     });
 
                     var connection = new Client.Connection("http://foo/endpoint");
                     var transport = CreateTransport(transportType, host);
-                    connection.Start(transport).Wait();
+                    await connection.Start(transport);
 
-                    Thread.Sleep(TimeSpan.FromSeconds(5));
+                    await Task.Delay(TimeSpan.FromSeconds(5));
 
                     connection.Stop();
 
-                    Assert.Equal(0, conn.Reconnects);
+                    Assert.Equal(0, reconnects);
                 }
             }
         }
@@ -520,7 +522,7 @@ namespace Microsoft.AspNet.SignalR.Tests
             [InlineData(HostType.IISExpress, TransportType.ServerSentEvents, MessageBusType.Default)]
             [InlineData(HostType.HttpListener, TransportType.ServerSentEvents, MessageBusType.Default)]
             // [InlineData(HostType.IISExpress, TransportType.Websockets)]
-            public void GroupsReceiveMessages(HostType hostType, TransportType transportType, MessageBusType messageBusType)
+            public async Task GroupsReceiveMessages(HostType hostType, TransportType transportType, MessageBusType messageBusType)
             {
                 using (var host = CreateHost(hostType, transportType))
                 {
@@ -533,7 +535,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                         list.Add(data);
                     };
 
-                    connection.Start(host.Transport).Wait();
+                    await connection.Start(host.Transport);
 
                     // Join the group
                     connection.SendWithTimeout(new { type = 1, group = "test" });
@@ -550,7 +552,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                         connection.SendWithTimeout(new { type = 3, group = "test", message = "goodbye to group test" });
                     }
 
-                    Thread.Sleep(TimeSpan.FromSeconds(5));
+                    await Task.Delay(TimeSpan.FromSeconds(5));
 
                     connection.Stop();
 
@@ -571,7 +573,7 @@ namespace Microsoft.AspNet.SignalR.Tests
             [InlineData(HostType.IISExpress, TransportType.LongPolling, MessageBusType.Default)]
             [InlineData(HostType.HttpListener, TransportType.ServerSentEvents, MessageBusType.Default)]
             [InlineData(HostType.HttpListener, TransportType.LongPolling, MessageBusType.Default)]
-            public void GroupsRejoinedWhenOnRejoiningGroupsOverridden(HostType hostType, TransportType transportType, MessageBusType messageBusType)
+            public async Task GroupsRejoinedWhenOnRejoiningGroupsOverridden(HostType hostType, TransportType transportType, MessageBusType messageBusType)
             {
                 using (var host = CreateHost(hostType, transportType))
                 {
@@ -588,7 +590,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                         list.Add(data);
                     };
 
-                    connection.Start(host.Transport).Wait();
+                    await connection.Start(host.Transport);
 
                     // Join the group
                     connection.SendWithTimeout(new { type = 1, group = "test" });
@@ -597,12 +599,12 @@ namespace Microsoft.AspNet.SignalR.Tests
                     connection.SendWithTimeout(new { type = 3, group = "test", message = "hello to group test" });
 
                     // Force Reconnect
-                    Thread.Sleep(TimeSpan.FromSeconds(5));
+                    await Task.Delay(TimeSpan.FromSeconds(5));
 
                     // Send a message
                     connection.SendWithTimeout(new { type = 3, group = "test", message = "goodbye to group test" });
 
-                    Thread.Sleep(TimeSpan.FromSeconds(5));
+                    await Task.Delay(TimeSpan.FromSeconds(5));
 
                     connection.Stop();
 
@@ -628,7 +630,7 @@ namespace Microsoft.AspNet.SignalR.Tests
             [InlineData(HostType.HttpListener, TransportType.Websockets, MessageBusType.Default)]
             [InlineData(HostType.HttpListener, TransportType.ServerSentEvents, MessageBusType.Default)]
             [InlineData(HostType.HttpListener, TransportType.LongPolling, MessageBusType.Default)]
-            public void SendToAllButCaller(HostType hostType, TransportType transportType, MessageBusType messageBusType)
+            public async Task SendToAllButCaller(HostType hostType, TransportType transportType, MessageBusType messageBusType)
             {
                 using (var host = CreateHost(hostType, transportType))
                 {
@@ -640,19 +642,19 @@ namespace Microsoft.AspNet.SignalR.Tests
                     using (connection1)
                     using (connection2)
                     {
-                        var wh1 = new ManualResetEventSlim(initialState: false);
-                        var wh2 = new ManualResetEventSlim(initialState: false);
+                        var wh1 = new AsyncManualResetEvent(initialState: false);
+                        var wh2 = new AsyncManualResetEvent(initialState: false);
 
                         connection1.Received += data => wh1.Set();
                         connection2.Received += data => wh2.Set();
 
-                        connection1.Start(host.TransportFactory()).Wait();
-                        connection2.Start(host.TransportFactory()).Wait();
+                        await connection1.Start(host.TransportFactory());
+                        await connection2.Start(host.TransportFactory());
 
                         connection1.SendWithTimeout("test");
 
-                        Assert.False(wh1.WaitHandle.WaitOne(TimeSpan.FromSeconds(5)));
-                        Assert.True(wh2.WaitHandle.WaitOne(TimeSpan.FromSeconds(5)));
+                        Assert.False(await wh1.WaitAsync(TimeSpan.FromSeconds(5)));
+                        Assert.True(await wh2.WaitAsync(TimeSpan.FromSeconds(5)));
                     }
                 }
             }
@@ -668,7 +670,7 @@ namespace Microsoft.AspNet.SignalR.Tests
             [InlineData(HostType.IISExpress, TransportType.LongPolling, MessageBusType.Default)]
             [InlineData(HostType.HttpListener, TransportType.ServerSentEvents, MessageBusType.Default)]
             [InlineData(HostType.HttpListener, TransportType.LongPolling, MessageBusType.Default)]
-            public void SendWithSyncErrorThrows(HostType hostType, TransportType transportType, MessageBusType messageBusType)
+            public async Task SendWithSyncErrorThrows(HostType hostType, TransportType transportType, MessageBusType messageBusType)
             {
                 using (var host = CreateHost(hostType, transportType))
                 {
@@ -678,7 +680,7 @@ namespace Microsoft.AspNet.SignalR.Tests
 
                     using (connection)
                     {
-                        connection.Start(host.Transport).Wait();
+                        await connection.Start(host.Transport);
 
                         Assert.Throws<AggregateException>(() => connection.SendWithTimeout("test"));
                     }
@@ -701,7 +703,7 @@ namespace Microsoft.AspNet.SignalR.Tests
             [InlineData(HostType.HttpListener, TransportType.ServerSentEvents, MessageBusType.Default)]
             [InlineData(HostType.HttpListener, TransportType.LongPolling, MessageBusType.Default)]
             [InlineData(HostType.HttpListener, TransportType.Websockets, MessageBusType.Default)]
-            public void ReceivePreserializedJson(HostType hostType, TransportType transportType, MessageBusType messageBusType)
+            public async Task ReceivePreserializedJson(HostType hostType, TransportType transportType, MessageBusType messageBusType)
             {
                 using (var host = CreateHost(hostType, transportType))
                 {
@@ -709,19 +711,21 @@ namespace Microsoft.AspNet.SignalR.Tests
 
                     var connection = CreateConnection(host, "/preserialize");
                     var tcs = new TaskCompletionSource<string>();
+                    var mre = new AsyncManualResetEvent();
 
                     connection.Received += json =>
                     {
                         tcs.TrySetResult(json);
+                        mre.Set();
                     };
 
                     using (connection)
                     {
-                        connection.Start(host.Transport).Wait();
+                        await connection.Start(host.Transport);
 
                         connection.SendWithTimeout(new { preserialized = true });
 
-                        Assert.True(tcs.Task.Wait(TimeSpan.FromSeconds(5)));
+                        Assert.True(await mre.WaitAsync(TimeSpan.FromSeconds(5)));
                         var json = JObject.Parse(tcs.Task.Result);
                         Assert.True((bool)json["preserialized"]);
                     }
@@ -736,7 +740,7 @@ namespace Microsoft.AspNet.SignalR.Tests
             [InlineData(HostType.IISExpress, TransportType.LongPolling)]
             [InlineData(HostType.HttpListener, TransportType.ServerSentEvents)]
             [InlineData(HostType.HttpListener, TransportType.LongPolling)]
-            public void EnvironmentIsAvailable(HostType hostType, TransportType transportType)
+            public async Task EnvironmentIsAvailable(HostType hostType, TransportType transportType)
             {
                 using (var host = CreateHost(hostType, transportType))
                 {
@@ -755,18 +759,18 @@ namespace Microsoft.AspNet.SignalR.Tests
                         }
                     };
 
-                    connection.Start(host.TransportFactory()).Wait();
-                    connection2.Start(host.TransportFactory()).Wait();
+                    await connection.Start(host.TransportFactory());
+                    await connection2.Start(host.TransportFactory());
 
-                    Thread.Sleep(TimeSpan.FromSeconds(2));
+                    await Task.Delay(TimeSpan.FromSeconds(2));
 
                     connection.SendWithTimeout(null);
 
-                    Thread.Sleep(TimeSpan.FromSeconds(2));
+                    await Task.Delay(TimeSpan.FromSeconds(2));
 
                     connection.Stop();
 
-                    Thread.Sleep(TimeSpan.FromSeconds(2));
+                    await Task.Delay(TimeSpan.FromSeconds(2));
 
                     Debug.WriteLine(String.Join(", ", results));
 

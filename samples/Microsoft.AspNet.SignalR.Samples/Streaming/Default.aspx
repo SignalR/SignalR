@@ -21,6 +21,17 @@
         $(function () {
             var connection = $.connection('/streaming-connection');
 
+            // Uncomment this block to enable custom JSON parser
+            //connection.json = {
+            //    parse: function (text, reviver) {
+            //        console.log("Parsing JSON");
+            //        return window.JSON.parse(text, reviver);
+            //    },
+            //    stringify: function (value, replacer, space) {
+            //        return window.JSON.stringify(value, replacer, space);
+            //    }
+            //};
+
             connection.received(function (data) {
                 $('#messages').append('<li>' + data + '</li>');
             });

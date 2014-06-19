@@ -15,7 +15,6 @@ namespace Microsoft.AspNet.SignalR.Transports
         HttpRequestEnded = 16,
         Disconnected = 32,
         Aborted = 64,
-        DisconnectMessageReceived = 128,
         Disposed = 65536,
     }
 }

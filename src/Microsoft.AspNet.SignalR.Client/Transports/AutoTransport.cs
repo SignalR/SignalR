@@ -2,11 +2,10 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.Globalization;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR.Client.Http;
+using Microsoft.AspNet.SignalR.Client.Infrastructure;
 
 namespace Microsoft.AspNet.SignalR.Client.Transports
 {
@@ -120,9 +119,10 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
 
                     connection.Trace(TraceLevels.Events, "Auto: Failed to connect to using transport {0}. {1}", transport.Name, ex);
 
-                    // If that transport fails to initialize then fallback
+                    // If that transport fails to initialize, then fallback.
+                    // If it is that /start request that failed, do not fallback.
                     var next = index + 1;
-                    if (next < _transports.Count)
+                    if (next < _transports.Count && !(ex is StartException))
                     {
                         // Try the next transport
                         ResolveTransport(connection, data, disconnectToken, tcs, next);

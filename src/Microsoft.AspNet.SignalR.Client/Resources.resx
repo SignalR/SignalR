@@ -144,8 +144,17 @@
   <data name="Error_ProxiesCannotBeAddedConnectionStarted" xml:space="preserve">
     <value>A HubProxy cannot be added after the connection has been started.</value>
   </data>
+  <data name="Error_ReconnectTimeout" xml:space="preserve">
+    <value>Couldn't reconnect within the configured timeout of {0}, disconnecting.</value>
+  </data>
+  <data name="Error_ReconnectWindowTimeout" xml:space="preserve">
+    <value>The client has been inactive since {0} and it has exceeded the inactivity timeout of {1}. Stopping the connection.</value>
+  </data>
   <data name="Error_ServerNegotiationFailed" xml:space="preserve">
     <value>Server negotiation failed.</value>
+  </data>
+  <data name="Error_StartFailed" xml:space="preserve">
+    <value>Error during start request. Stopping the connection.</value>
   </data>
   <data name="Error_TaskCancelledException" xml:space="preserve">
     <value>Request failed - task cancelled.</value>

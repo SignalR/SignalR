@@ -60,6 +60,7 @@
     <Compile Include="Client\ConnectionFacts.cs" />
     <Compile Include="Client\HubProxyFacts.cs" />
     <Compile Include="Client\KeepAliveFacts.cs" />
+    <Compile Include="Client\Transports\TransportFacts.cs" />
     <Compile Include="EventSourceStreamReaderFacts.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Client\TransportFacts.cs" />
@@ -76,6 +77,9 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <Service Include="{82A7F48D-3B50-4B1E-B82E-3ADA8210C358}" />
   </ItemGroup>
   <Import Project="..\..\src\Common\Microsoft.AspNet.SignalR.targets" />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

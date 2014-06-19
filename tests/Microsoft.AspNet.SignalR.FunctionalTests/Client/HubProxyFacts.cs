@@ -24,25 +24,30 @@ namespace Microsoft.AspNet.SignalR.Tests
         [InlineData(HostType.HttpListener, TransportType.Websockets, MessageBusType.Default)]
         [InlineData(HostType.HttpListener, TransportType.ServerSentEvents, MessageBusType.Default)]
         [InlineData(HostType.HttpListener, TransportType.LongPolling, MessageBusType.Default)]
-        public void TransportTimesOutIfNoInitMessage(HostType hostType, TransportType transportType, MessageBusType messageBusType)
+        public async Task TransportTimesOutIfNoInitMessage(HostType hostType, TransportType transportType, MessageBusType messageBusType)
         {
-            var mre = new ManualResetEventSlim();
+            var mre = new AsyncManualResetEvent();
 
             using (var host = CreateHost(hostType, transportType))
             {
                 host.Initialize(transportConnectTimeout: 1, messageBusType: messageBusType);
 
-                HubConnection hubConnection = CreateHubConnection(host);
+                HubConnection hubConnection = CreateHubConnection(host, "/no-init");
+
                 IHubProxy proxy = hubConnection.CreateHubProxy("DelayedOnConnectedHub");
 
                 using (hubConnection)
                 {
-                    hubConnection.Start(host.Transport).Catch(ex =>
+                    try
+                    {
+                        await hubConnection.Start(host.Transport);
+                    }
+                    catch
                     {
                         mre.Set();
-                    });
+                    }
 
-                    Assert.True(mre.Wait(TimeSpan.FromSeconds(10)));
+                    Assert.True(await mre.WaitAsync(TimeSpan.FromSeconds(10)));
                 }
             }
         }
@@ -94,7 +99,7 @@ namespace Microsoft.AspNet.SignalR.Tests
             {
                 host.Initialize(transportConnectTimeout: 1, messageBusType: messageBusType);
 
-                HubConnection hubConnection = CreateHubConnection(host);
+                HubConnection hubConnection = CreateHubConnection(host, "/no-init");
                 IHubProxy proxy = hubConnection.CreateHubProxy("DelayedOnConnectedHub");
 
                 using (hubConnection)
@@ -126,7 +131,7 @@ namespace Microsoft.AspNet.SignalR.Tests
         [InlineData(HostType.HttpListener, TransportType.Websockets, MessageBusType.Default)]
         [InlineData(HostType.HttpListener, TransportType.ServerSentEvents, MessageBusType.Default)]
         [InlineData(HostType.HttpListener, TransportType.LongPolling, MessageBusType.Default)]
-        public void InitMessageReceivedPriorToStartCompletion(HostType hostType, TransportType transportType, MessageBusType messageBusType)
+        public async Task InitMessageReceivedPriorToStartCompletion(HostType hostType, TransportType transportType, MessageBusType messageBusType)
         {
             using (var host = CreateHost(hostType, transportType))
             {
@@ -140,7 +145,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                 {
                     Assert.True(String.IsNullOrEmpty(hubConnection.MessageId));
 
-                    hubConnection.Start(host.Transport).Wait();
+                    await hubConnection.Start(host.Transport);
 
                     // If we have an init message that means we got a message prior to start
                     Assert.False(String.IsNullOrEmpty(hubConnection.MessageId));
@@ -216,7 +221,7 @@ namespace Microsoft.AspNet.SignalR.Tests
         [InlineData(HostType.HttpListener, TransportType.Websockets, MessageBusType.Default)]
         [InlineData(HostType.HttpListener, TransportType.ServerSentEvents, MessageBusType.Default)]
         [InlineData(HostType.HttpListener, TransportType.LongPolling, MessageBusType.Default)]
-        public void TransportCanJoinGroupInOnConnected(HostType hostType, TransportType transportType, MessageBusType messageBusType)
+        public async Task TransportCanJoinGroupInOnConnected(HostType hostType, TransportType transportType, MessageBusType messageBusType)
         {
             using (var host = CreateHost(hostType, transportType))
             {
@@ -240,9 +245,9 @@ namespace Microsoft.AspNet.SignalR.Tests
                         Assert.True(pingCount <= 2);
                     });
 
-                    hubConnection.Start(host.Transport).Wait();
+                    await hubConnection.Start(host.Transport);
 
-                    proxy.Invoke("PingGroup").Catch();
+                    var ignore = proxy.Invoke("PingGroup").Catch();
 
                     Assert.True(wh.WaitOne(TimeSpan.FromSeconds(10)));
                 }
@@ -262,7 +267,7 @@ namespace Microsoft.AspNet.SignalR.Tests
         [InlineData(HostType.HttpListener, TransportType.Websockets, MessageBusType.Default)]
         [InlineData(HostType.HttpListener, TransportType.ServerSentEvents, MessageBusType.Default)]
         [InlineData(HostType.HttpListener, TransportType.LongPolling, MessageBusType.Default)]
-        public void EndToEndTest(HostType hostType, TransportType transportType, MessageBusType messageBusType)
+        public async Task EndToEndTest(HostType hostType, TransportType transportType, MessageBusType messageBusType)
         {
             using (var host = CreateHost(hostType, transportType))
             {
@@ -281,7 +286,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                         wh.Set();
                     });
 
-                    hubConnection.Start(host.Transport).Wait();
+                    await hubConnection.Start(host.Transport);
 
                     proxy.InvokeWithTimeout("Send", "hello");
 
@@ -297,7 +302,7 @@ namespace Microsoft.AspNet.SignalR.Tests
         [InlineData(HostType.Memory, TransportType.LongPolling, MessageBusType.Default)]
         [InlineData(HostType.Memory, TransportType.LongPolling, MessageBusType.Fake)]
         [InlineData(HostType.Memory, TransportType.LongPolling, MessageBusType.FakeMultiStream)]
-        public void HubNamesAreNotCaseSensitive(HostType hostType, TransportType transportType, MessageBusType messageBusType)
+        public async Task HubNamesAreNotCaseSensitive(HostType hostType, TransportType transportType, MessageBusType messageBusType)
         {
             using (var host = CreateHost(hostType, transportType))
             {
@@ -316,7 +321,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                         wh.Set();
                     });
 
-                    hubConnection.Start(host.Transport).Wait();
+                    await hubConnection.Start(host.Transport);
 
                     proxy.InvokeWithTimeout("Send", "hello");
 
@@ -332,7 +337,7 @@ namespace Microsoft.AspNet.SignalR.Tests
         [InlineData(HostType.Memory, TransportType.LongPolling, MessageBusType.Default)]
         [InlineData(HostType.Memory, TransportType.LongPolling, MessageBusType.Fake)]
         [InlineData(HostType.Memory, TransportType.LongPolling, MessageBusType.FakeMultiStream)]
-        public void UnableToCreateHubThrowsError(HostType hostType, TransportType transportType, MessageBusType messageBusType)
+        public async Task UnableToCreateHubThrowsError(HostType hostType, TransportType transportType, MessageBusType messageBusType)
         {
             using (var host = CreateHost(hostType, transportType))
             {
@@ -344,7 +349,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                 {
                     IHubProxy proxy = hubConnection.CreateHubProxy("MyHub2");
 
-                    hubConnection.Start(host.Transport).Wait();
+                    await hubConnection.Start(host.Transport);
                     var ex = Assert.Throws<AggregateException>(() => proxy.InvokeWithTimeout("Send", "hello"));
                 }
             }
@@ -359,11 +364,11 @@ namespace Microsoft.AspNet.SignalR.Tests
         [InlineData(HostType.Memory, TransportType.LongPolling, MessageBusType.FakeMultiStream)]
         [InlineData(HostType.IISExpress, TransportType.Websockets, MessageBusType.Default)]
         [InlineData(HostType.HttpListener, TransportType.Websockets, MessageBusType.Default)]
-        public void ConnectionErrorCapturesExceptionsThrownInClientHubMethod(HostType hostType, TransportType transportType, MessageBusType messageBusType)
+        public async Task ConnectionErrorCapturesExceptionsThrownInClientHubMethod(HostType hostType, TransportType transportType, MessageBusType messageBusType)
         {
             using (var host = CreateHost(hostType, transportType))
             {
-                var wh = new ManualResetEventSlim();
+                var wh = new AsyncManualResetEvent();
                 Exception thrown = new Exception(),
                           caught = null;
 
@@ -386,10 +391,10 @@ namespace Microsoft.AspNet.SignalR.Tests
                         wh.Set();
                     };
 
-                    connection.Start(host.Transport).Wait();
-                    proxy.Invoke("Send", "").Catch();
+                    await connection.Start(host.Transport);
+                    var ignore = proxy.Invoke("Send", "").Catch();
 
-                    Assert.True(wh.Wait(TimeSpan.FromSeconds(5)));
+                    Assert.True(await wh.WaitAsync(TimeSpan.FromSeconds(5)));
                     Assert.Equal(thrown, caught);
                 }
             }
@@ -408,7 +413,7 @@ namespace Microsoft.AspNet.SignalR.Tests
         [InlineData(HostType.HttpListener, TransportType.LongPolling, MessageBusType.Default)]
         [InlineData(HostType.HttpListener, TransportType.ServerSentEvents, MessageBusType.Default)]
         [InlineData(HostType.HttpListener, TransportType.Websockets, MessageBusType.Default)]
-        public void RequestHeadersSetCorrectly(HostType hostType, TransportType transportType, MessageBusType messageBusType)
+        public async Task RequestHeadersSetCorrectly(HostType hostType, TransportType transportType, MessageBusType messageBusType)
         {
             using (var host = CreateHost(hostType, transportType))
             {
@@ -439,8 +444,8 @@ namespace Microsoft.AspNet.SignalR.Tests
                         hubConnection.Headers.Add(System.Net.HttpRequestHeader.Referer.ToString(), "referer");
                     }
 
-                    hubConnection.Start(host.Transport).Wait();
-                    proxy.Invoke("Send").Catch();
+                    await hubConnection.Start(host.Transport);
+                    var ignore = proxy.Invoke("Send").Catch();
 
                     Assert.True(tcs.Task.Wait(TimeSpan.FromSeconds(10)));
                 }
@@ -458,14 +463,14 @@ namespace Microsoft.AspNet.SignalR.Tests
         [InlineData(HostType.IISExpress, TransportType.ServerSentEvents, MessageBusType.Default)]
         [InlineData(HostType.HttpListener, TransportType.LongPolling, MessageBusType.Default)]
         [InlineData(HostType.HttpListener, TransportType.ServerSentEvents, MessageBusType.Default)]
-        public void RequestHeadersCanBeSetOnceConnected(HostType hostType, TransportType transportType, MessageBusType messageBusType)
+        public async Task RequestHeadersCanBeSetOnceConnected(HostType hostType, TransportType transportType, MessageBusType messageBusType)
         {
             using (var host = CreateHost(hostType, transportType))
             {
                 // Arrange
                 host.Initialize(messageBusType: messageBusType);
                 HubConnection hubConnection = CreateHubConnection(host);
-                var mre = new ManualResetEventSlim();
+                var mre = new AsyncManualResetEvent();
 
                 using (hubConnection)
                 {
@@ -477,11 +482,11 @@ namespace Microsoft.AspNet.SignalR.Tests
                         mre.Set();
                     });
 
-                    hubConnection.Start(host.Transport).Wait();
+                    await hubConnection.Start(host.Transport);
 
                     hubConnection.Headers.Add("test-header", "test-header");
-                    proxy.Invoke("Send").Catch();
-                    Assert.True(mre.Wait(TimeSpan.FromSeconds(5)));
+                    var ignore = proxy.Invoke("Send").Catch();
+                    Assert.True(await mre.WaitAsync(TimeSpan.FromSeconds(5)));
                 }
             }
         }
@@ -495,17 +500,19 @@ namespace Microsoft.AspNet.SignalR.Tests
         [InlineData(HostType.HttpListener, TransportType.LongPolling)]
         [InlineData(HostType.HttpListener, TransportType.ServerSentEvents)]
         [InlineData(HostType.HttpListener, TransportType.Websockets)]
-        public void ClientCallbackInvalidNumberOfArgumentsExceptionThrown(HostType hostType, TransportType transportType)
+        public async Task ClientCallbackInvalidNumberOfArgumentsExceptionThrown(HostType hostType, TransportType transportType)
         {
             using (var host = CreateHost(hostType, transportType))
             {
                 host.Initialize();
                 HubConnection hubConnection = CreateHubConnection(host);
                 var tcs = new TaskCompletionSource<Exception>();
+                var mre = new AsyncManualResetEvent();
 
                 hubConnection.Error += (ex) =>
                 {
                     tcs.TrySetResult(ex);
+                    mre.Set();
                 };
 
                 using (hubConnection)
@@ -514,10 +521,10 @@ namespace Microsoft.AspNet.SignalR.Tests
 
                     proxy.On<string, string>("twoArgsMethod", (arg1, arg2) => { });
 
-                    hubConnection.Start(host.Transport).Wait();
-                    proxy.Invoke("SendOneArgument").Wait();
+                    await hubConnection.Start(host.Transport);
+                    await proxy.Invoke("SendOneArgument");
 
-                    Assert.True(tcs.Task.Wait(TimeSpan.FromSeconds(5)));
+                    Assert.True(await mre.WaitAsync(TimeSpan.FromSeconds(5)));
                     Assert.IsType(typeof(InvalidOperationException), tcs.Task.Result);
                     Assert.Equal(((InvalidOperationException)tcs.Task.Result).Message, "A client callback for event twoArgsMethod with 1 argument(s) could not be found");
                 }
@@ -533,14 +540,14 @@ namespace Microsoft.AspNet.SignalR.Tests
         [InlineData(HostType.HttpListener, TransportType.LongPolling)]
         [InlineData(HostType.HttpListener, TransportType.ServerSentEvents)]
         [InlineData(HostType.HttpListener, TransportType.Websockets)]
-        public void ClientCallbackWithFewerArgumentsDoesNotThrow(HostType hostType, TransportType transportType)
+        public async Task ClientCallbackWithFewerArgumentsDoesNotThrow(HostType hostType, TransportType transportType)
         {
             using (var host = CreateHost(hostType, transportType))
             {
                 host.Initialize();
                 HubConnection hubConnection = CreateHubConnection(host);
-                var mre = new ManualResetEventSlim();
-                var wh = new ManualResetEventSlim();
+                var mre = new AsyncManualResetEvent();
+                var wh = new AsyncManualResetEvent();
 
                 hubConnection.Error += (ex) =>
                 {
@@ -553,11 +560,11 @@ namespace Microsoft.AspNet.SignalR.Tests
 
                     proxy.On("twoArgsMethod", () => { mre.Set(); });
 
-                    hubConnection.Start(host.Transport).Wait();
-                    proxy.Invoke("SendOneArgument").Wait();
+                    await hubConnection.Start(host.Transport);
+                    await proxy.Invoke("SendOneArgument");
 
-                    Assert.True(mre.Wait(TimeSpan.FromSeconds(5)));
-                    Assert.False(wh.Wait(TimeSpan.FromSeconds(5)));
+                    Assert.True(await mre.WaitAsync(TimeSpan.FromSeconds(5)));
+                    Assert.False(await wh.WaitAsync(TimeSpan.FromSeconds(5)));
                 }
             }
         }
@@ -571,17 +578,19 @@ namespace Microsoft.AspNet.SignalR.Tests
         [InlineData(HostType.HttpListener, TransportType.LongPolling)]
         [InlineData(HostType.HttpListener, TransportType.ServerSentEvents)]
         [InlineData(HostType.HttpListener, TransportType.Websockets)]
-        public void ClientCallbackArgumentTypeMismatchExceptionThrown(HostType hostType, TransportType transportType)
+        public async Task ClientCallbackArgumentTypeMismatchExceptionThrown(HostType hostType, TransportType transportType)
         {
             using (var host = CreateHost(hostType, transportType))
             {
                 host.Initialize();
                 HubConnection hubConnection = CreateHubConnection(host);
                 var tcs = new TaskCompletionSource<Exception>();
+                var mre = new AsyncManualResetEvent();
 
                 hubConnection.Error += (ex) =>
                 {
                     tcs.TrySetResult(ex);
+                    mre.Set();
                 };
 
                 using (hubConnection)
@@ -590,10 +599,10 @@ namespace Microsoft.AspNet.SignalR.Tests
 
                     proxy.On<int>("foo", args => { });
 
-                    hubConnection.Start(host.Transport).Wait();
-                    proxy.Invoke("SendArgumentsTypeMismatch").Wait();
+                    await hubConnection.Start(host.Transport);
+                    await proxy.Invoke("SendArgumentsTypeMismatch");
 
-                    Assert.True(tcs.Task.Wait(TimeSpan.FromSeconds(5)));
+                    Assert.True(await mre.WaitAsync(TimeSpan.FromSeconds(5)));
                     Assert.IsType(typeof(InvalidOperationException), tcs.Task.Result);
                     Assert.Equal(((InvalidOperationException)tcs.Task.Result).Message, "A client callback for event foo with 1 argument(s) was found, however an error occurred because Could not convert string to integer: arg1. Path ''.");
                 }
@@ -607,13 +616,13 @@ namespace Microsoft.AspNet.SignalR.Tests
         [InlineData(HostType.IISExpress, TransportType.ServerSentEvents)]
         [InlineData(HostType.HttpListener, TransportType.LongPolling)]
         [InlineData(HostType.HttpListener, TransportType.ServerSentEvents)]
-        public void WaitingOnHubInvocationDoesNotDeadlock(HostType hostType, TransportType transportType)
+        public async Task WaitingOnHubInvocationDoesNotDeadlock(HostType hostType, TransportType transportType)
         {
             using (var host = CreateHost(hostType, transportType))
             {
                 host.Initialize();
                 HubConnection hubConnection = CreateHubConnection(host);
-                var mre = new ManualResetEventSlim();
+                var mre = new AsyncManualResetEvent();
 
                 using (hubConnection)
                 {
@@ -633,9 +642,9 @@ namespace Microsoft.AspNet.SignalR.Tests
                         }
                     });
 
-                    hubConnection.Start(host.Transport).Wait();
-                    proxy.Invoke("EchoCallback", "message").Catch();
-                    Assert.True(mre.Wait(TimeSpan.FromSeconds(10)));
+                    await hubConnection.Start(host.Transport);
+                    var ignore = proxy.Invoke("EchoCallback", "message").Catch();
+                    Assert.True(await mre.WaitAsync(TimeSpan.FromSeconds(10)));
                 }
             }
         }
@@ -686,7 +695,7 @@ namespace Microsoft.AspNet.SignalR.Tests
 
                     try
                     {
-                        await proxy.Invoke("EchoCallback", "message");
+                        await proxy.Invoke("EchoAndDelayCallback", "message");
                         Assert.True(false, "The hub method invocation should fail.");
                     }
                     catch (InvalidOperationException)

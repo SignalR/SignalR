@@ -53,11 +53,12 @@
         <script src="Scripts/qunit.extensions.js"></script>        
         <script src="http://testswarm.cloudapp.net/js/inject.js"></script>        
         <script src="Scripts/jquery.signalR.js"></script>                
-        <!-- ##SIGNALRHUBS## --><script type='text/javascript' src='signalr/js'></script><!-- ##SIGNALRHUBS## -->
+        <!-- ##SIGNALRHUBS## --><script type='text/javascript' src='signalr/js' data-cover></script><!-- ##SIGNALRHUBS## -->
         <script src="Scripts/jquery.network.mock.js"></script>
         <script src="Build/test.config.js"></script>
         <script src="Scripts/test.utilities.js"></script>
         <script src="Build/disableCrossDomain.js"></script>
+        <!-- ##COVERAGE## --><script src="Scripts/blanket-1.1.5.min.js"></script><!-- ##COVERAGE## -->
 
         <!-- Javascript is dynamically added to this panel.  First all javascript from SignalR.Client.JS is added,
              then all javascript from the Tests directory is added.  This is so that all the unit tests within the 

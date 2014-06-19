@@ -89,6 +89,8 @@
     <Compile Include="BufferTextWriterFacts.cs" />
     <Compile Include="Server\AckHandlerFacts.cs" />
     <Compile Include="Server\Hubs\HubFacts.cs" />
+    <Compile Include="Server\Hubs\HubProgressFacts.cs" />
+    <Compile Include="Server\Hubs\TypedClientBuilderFacts.cs" />
     <Compile Include="Server\ProtocolResolverFacts.cs" />
     <Compile Include="Server\ScaleoutStreamManagerFacts.cs" />
     <Compile Include="Server\ServiceBusConfigurationFacts.cs" />
@@ -112,6 +114,7 @@
     <Compile Include="Server\TopicFacts.cs" />
     <Compile Include="Server\Transports\ForeverTransportFacts.cs" />
     <Compile Include="Owin\WebSocketFacts.cs" />
+    <Compile Include="Server\Transports\LongPollingTransportFacts.cs" />
     <Compile Include="Server\Transports\WebsocketTransportFacts.cs" />
     <Compile Include="SipHashBasedStringEqualityComparerFacts.cs" />
     <Compile Include="StringMinifierFacts.cs" />

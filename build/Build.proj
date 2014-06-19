@@ -81,7 +81,7 @@
     <!-- Only build the following clients if the SDK is installed -->
     <Projects Include="$(ProjectRoot)\src\Microsoft.AspNet.SignalR.Client.Portable\Microsoft.AspNet.SignalR.Client.Portable.csproj">
       <Build Condition="!$(WP8SDKInstalled)">false</Build>
-      <Platform>portable-net45+sl5+netcore45+wp8</Platform>
+      <Platform>portable-net45+sl5+netcore45+wp8+wp81+wpa81</Platform>
       <!-- HttpClient causes issues with running FxCop on the SL5 and WP8 clients -->
       <RunFxCop>false</RunFxCop>
     </Projects>
@@ -244,6 +244,9 @@
     <!-- Allow a single JS test script to be run by specifying the script via the JSTestScript property.
          Ex: MSBuild.exe .\build\Build.proj /t:RunUnitTests /p:"JSTestScript=Tests/FunctionalTests/Common/AjaxSendFacts.js" -->
     <FileUpdate Files="$(JSTestsPath)\default.html" Regex="&lt;!-- ##JS## --&gt;((.|\r|\n)*?)&lt;!-- ##JS## --&gt;" ReplacementText="&lt;!-- ##JS## --&gt;&lt;script type='text/javascript' src='$(JSTestScript)'&gt;&lt;/script&gt;&lt;!-- ##JS## --&gt;" Condition=" '$(OS)' == 'Windows_NT' And '$(JSTestScript)' != ''" />
+
+    <!-- Disable running blanket code coverage when running tests from command line -->
+    <FileUpdate Files="$(JSTestsPath)\default.html" Regex="&lt;!-- ##COVERAGE## --&gt;((.|\r|\n)*?)&lt;!-- ##COVERAGE## --&gt;" ReplacementText=" " Condition=" '$(OS)' == 'Windows_NT'" />
     
     <FileUpdate Files="$(JSTestsPath)\Build\test.config.js" Regex="/\*CMDLineTest\*/(.*?)/\*CMDLineTest\*/" ReplacementText="/*CMDLineTest*/true/*CMDLineTest*/" Condition=" '$(OS)' == 'Windows_NT'" />
 
@@ -355,7 +358,7 @@
     <Copy SourceFiles="@(JavaScript)" DestinationFiles="$(PackageSrcDir)\Content\%(VersionedFileName)" />
   </Target>
 
-  <Target Name="RunCodeAnalysis" DependsOnTargets="CreateOutputDirs" Condition="Exists('$(MSBuildExtensionsPath)\Microsoft\VisualStudio\v11.0\CodeAnalysis\fxcoptask.dll')">
+  <Target Name="RunCodeAnalysis" DependsOnTargets="CreateOutputDirs" Condition="Exists('$(MSBuildExtensionsPath)\Microsoft\VisualStudio\v$(VisualStudioVersion)\CodeAnalysis\fxcoptask.dll')">
     <ItemGroup>
       <ProjectsToAnalyze Include="@(Projects)" Condition="%(Build) And %(RunFxCop) And !%(Sample)">
         <BuildProperties>%(BuildProperties);RunCodeAnalysis=true</BuildProperties>
@@ -426,6 +429,10 @@
       <NuspecTransform Include="@(Nuspecs)">
         <Find>__SIGNALR_COPYRIGHT_NOTICE__</Find>
         <ReplaceWith>Copyright (c) Microsoft Open Technologies, Inc.  All rights reserved.</ReplaceWith>
+      </NuspecTransform>
+      <NuspecTransform Include="@(Nuspecs)">
+        <Find>__SIGNALR_CLIENT_LICENSE_URL__</Find>
+        <ReplaceWith>http://www.microsoft.com/web/webpi/eula/signalr_client_enu.htm</ReplaceWith>
       </NuspecTransform>
     </ItemGroup>
 

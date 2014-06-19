@@ -16,7 +16,7 @@ namespace Microsoft.AspNet.SignalR.Hubs
         /// <summary>
         /// Gets a dynamic object that represents all clients connected to this hub (not hub instance).
         /// </summary>
-        IHubCallerConnectionContext Clients { get; set; }
+        IHubCallerConnectionContext<dynamic> Clients { get; set; }
 
         /// <summary>
         /// Gets the <see cref="IGroupManager"/> the hub instance.
@@ -34,9 +34,19 @@ namespace Microsoft.AspNet.SignalR.Hubs
         Task OnReconnected();
 
         /// <summary>
-        /// Called when a connection is disconnected from the <see cref="IHub"/>.
+        /// Called when a connection has disconnected gracefully from the <see cref="IHub"/>,
+        /// i.e. stop was called on the client.
         /// </summary>
         Task OnDisconnected();
+
+        /// <summary>
+        /// Called when a connection is disconnected from the <see cref="IHub"/>.
+        /// </summary>
+        /// <param name="stopCalled">
+        /// true, if stop was called on the client closing the connection gracefully;
+        /// false, if the client timed out. Timeouts can be caused by clients reconnecting to another SignalR server in scaleout.
+        /// </param>
+        Task OnDisconnected(bool stopCalled);
     }
 }
 

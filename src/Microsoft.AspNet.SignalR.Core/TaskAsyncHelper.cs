@@ -93,21 +93,6 @@ namespace Microsoft.AspNet.SignalR
         }
 
         [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode", Justification = "This is a shared file")]
-        public static Task Series(Func<object, Task>[] tasks, object[] state)
-        {
-            Task prev = TaskAsyncHelper.Empty;
-            Task finalTask = TaskAsyncHelper.Empty;
-
-            for (int i = 0; i < tasks.Length; i++)
-            {
-                prev = finalTask;
-                finalTask = prev.Then(tasks[i], state[i]);
-            }
-
-            return finalTask;
-        }
-
-        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode", Justification = "This is a shared file")]
         public static TTask Catch<TTask>(this TTask task) where TTask : Task
         {
             return Catch(task, ex => { });
@@ -340,7 +325,7 @@ namespace Microsoft.AspNet.SignalR
                     return FromMethod(successor, arg1);
 
                 default:
-                    return GenericDelegates<object, object, T1, object>.ThenWithArgs(task, successor, arg1);
+                    return GenericDelegates<object, object, T1, object, object>.ThenWithArgs(task, successor, arg1);
             }
         }
 
@@ -357,7 +342,7 @@ namespace Microsoft.AspNet.SignalR
                     return FromMethod(successor, arg1, arg2);
 
                 default:
-                    return GenericDelegates<object, object, T1, T2>.ThenWithArgs(task, successor, arg1, arg2);
+                    return GenericDelegates<object, object, T1, T2, object>.ThenWithArgs(task, successor, arg1, arg2);
             }
         }
 
@@ -374,7 +359,7 @@ namespace Microsoft.AspNet.SignalR
                     return FromMethod(successor, arg1);
 
                 default:
-                    return GenericDelegates<object, Task, T1, object>.ThenWithArgs(task, successor, arg1)
+                    return GenericDelegates<object, Task, T1, object, object>.ThenWithArgs(task, successor, arg1)
                                                                      .FastUnwrap();
             }
         }
@@ -392,7 +377,25 @@ namespace Microsoft.AspNet.SignalR
                     return FromMethod(successor, arg1, arg2);
 
                 default:
-                    return GenericDelegates<object, Task, T1, T2>.ThenWithArgs(task, successor, arg1, arg2)
+                    return GenericDelegates<object, Task, T1, T2, object>.ThenWithArgs(task, successor, arg1, arg2)
+                                                                 .FastUnwrap();
+            }
+        }
+
+        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode", Justification = "This is a shared file")]
+        public static Task Then<T1, T2, T3>(this Task task, Func<T1, T2, T3, Task> successor, T1 arg1, T2 arg2, T3 arg3)
+        {
+            switch (task.Status)
+            {
+                case TaskStatus.Faulted:
+                case TaskStatus.Canceled:
+                    return task;
+
+                case TaskStatus.RanToCompletion:
+                    return FromMethod(successor, arg1, arg2, arg3);
+
+                default:
+                    return GenericDelegates<object, Task, T1, T2, T3>.ThenWithArgs(task, successor, arg1, arg2, arg3)
                                                                  .FastUnwrap();
             }
         }
@@ -451,7 +454,7 @@ namespace Microsoft.AspNet.SignalR
                     return FromMethod(successor, task.Result, arg1);
 
                 default:
-                    return GenericDelegates<T, TResult, T1, object>.ThenWithArgs(task, successor, arg1);
+                    return GenericDelegates<T, TResult, T1, object, object>.ThenWithArgs(task, successor, arg1);
             }
         }
 
@@ -541,7 +544,7 @@ namespace Microsoft.AspNet.SignalR
                     return FromMethod(successor, task, arg1);
 
                 default:
-                    return GenericDelegates<TResult, Task<TResult>, T1, object>.ThenWithArgs(task, successor, arg1)
+                    return GenericDelegates<TResult, Task<TResult>, T1, object, object>.ThenWithArgs(task, successor, arg1)
                                                                                .FastUnwrap();
             }
         }
@@ -731,6 +734,20 @@ namespace Microsoft.AspNet.SignalR
             try
             {
                 return func(arg1, arg2);
+            }
+            catch (Exception ex)
+            {
+                return FromError(ex);
+            }
+        }
+
+        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode", Justification = "This is a shared file")]
+        [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "Exceptions are set in a tcs")]
+        public static Task FromMethod<T1, T2, T3>(Func<T1, T2, T3, Task> func, T1 arg1, T2 arg2, T3 arg3)
+        {
+            try
+            {
+                return func(arg1, arg2, arg3);
             }
             catch (Exception ex)
             {
@@ -1126,7 +1143,7 @@ namespace Microsoft.AspNet.SignalR
             }
         }
 
-        private static class GenericDelegates<T, TResult, T1, T2>
+        private static class GenericDelegates<T, TResult, T1, T2, T3>
         {
             internal static Task ThenWithArgs(Task task, Action<T1> successor, T1 arg1)
             {
@@ -1161,6 +1178,11 @@ namespace Microsoft.AspNet.SignalR
             internal static Task<Task> ThenWithArgs(Task task, Func<T1, T2, Task> successor, T1 arg1, T2 arg2)
             {
                 return TaskRunners<object, Task>.RunTask(task, () => successor(arg1, arg2));
+            }
+
+            internal static Task<Task> ThenWithArgs(Task task, Func<T1, T2, T3, Task> successor, T1 arg1, T2 arg2, T3 arg3)
+            {
+                return TaskRunners<object, Task>.RunTask(task, () => successor(arg1, arg2, arg3));
             }
 
             internal static Task<Task<TResult>> ThenWithArgs(Task<T> task, Func<T, T1, Task<TResult>> successor, T1 arg1)

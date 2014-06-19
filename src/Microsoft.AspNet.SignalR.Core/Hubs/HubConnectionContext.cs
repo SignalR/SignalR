@@ -10,7 +10,7 @@ namespace Microsoft.AspNet.SignalR.Hubs
     /// <summary>
     /// Encapsulates all information about an individual SignalR connection for an <see cref="IHub"/>.
     /// </summary>
-    public class HubConnectionContext : HubConnectionContextBase, IHubCallerConnectionContext
+    public class HubConnectionContext : HubConnectionContextBase, IHubCallerConnectionContext<object>
     {
         private readonly string _connectionId;
         
@@ -38,6 +38,7 @@ namespace Microsoft.AspNet.SignalR.Hubs
             _connectionId = connectionId;
 
             Caller = new StatefulSignalProxy(connection, pipelineInvoker, connectionId, PrefixHelper.HubConnectionIdPrefix, hubName, tracker);
+            CallerState = new CallerStateProxy(tracker);
             All = AllExcept();
             Others = AllExcept(connectionId);
         }
@@ -51,6 +52,12 @@ namespace Microsoft.AspNet.SignalR.Hubs
         /// Represents the calling client.
         /// </summary>
         public dynamic Caller { get; set; }
+
+        /// <summary>
+        /// Represents the calling client's state. This should be used when the state is innaccessible
+        /// via the <see cref="HubConnectionContext.Caller"/> property (such as in VB.NET or in typed Hubs).
+        /// </summary>
+        public dynamic CallerState { get; set; }
 
         /// <summary>
         /// Returns a dynamic representation of all clients in a group except the calling client.

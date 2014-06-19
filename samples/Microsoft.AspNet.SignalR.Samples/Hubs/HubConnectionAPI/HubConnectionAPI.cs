@@ -66,9 +66,10 @@ namespace Microsoft.AspNet.SignalR.Hosting.AspNet.Samples.Hubs.HubConnectionAPI
             return Clients.Caller.displayMessage(Context.ConnectionId + " OnReconnected");
         }
 
-        public override Task OnDisconnected()
+        public override Task OnDisconnected(bool stopCalled)
         {
-            return Clients.All.displayMessage(Context.ConnectionId + " OnDisconnected");
+            var message = string.Format("{0} OnDisconnected(stopCalled: {1})", Context.ConnectionId, stopCalled);
+            return Clients.All.displayMessage(message);
         }
     }
 }

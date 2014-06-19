@@ -5,7 +5,6 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.AspNet.SignalR.Client;
 using Microsoft.AspNet.SignalR.Client.Http;
 using Microsoft.AspNet.SignalR.Client.Transports;
 using Microsoft.AspNet.SignalR.Infrastructure;
@@ -324,6 +323,86 @@ namespace Microsoft.AspNet.SignalR.Client.Tests
             public Task<IResponse> Post(string url, Action<Client.Http.IRequest> prepareRequest, System.Collections.Generic.IDictionary<string, string> postData, bool isLongRunning)
             {
                 throw new NotImplementedException();
+            }
+        }
+
+        [Fact]
+        public void OnErrorSetsLastError()
+        {
+            using (var connection = new Connection("http://fakeurl"))
+            {
+                var error = new Exception();
+                ((IConnection) connection).OnError(error);
+                Assert.Same(error, connection.LastError);
+            }
+        }
+
+        [Fact]
+        public void StopWithExceptionRaisesOnError()
+        {
+            using (var connection = new Connection("http://fakeurl"))
+            {
+                var exception = new Exception();
+                var onErrorCalled = false;
+
+                connection.Error += error =>
+                {
+                    onErrorCalled = true;
+                    Assert.Same(exception, error);
+                };
+
+                connection.Stop(exception, new TimeSpan(0));
+                Assert.True(onErrorCalled);
+
+                onErrorCalled = false;
+                connection.Stop(exception);
+                Assert.True(onErrorCalled);
+            }
+        }
+
+        [Fact]
+        public void OnReconnectingRaisesOnErrorIfReconnectingTimesOut()
+        {
+            using (var connection = new Connection("http://fakeurl"))
+            {
+                var errorCalledResetEvent = new ManualResetEventSlim();
+
+                connection.Error += error =>
+                {
+                    Assert.IsType<TimeoutException>(error);
+                    Assert.Equal(
+                        string.Format(CultureInfo.CurrentCulture, Resources.Error_ReconnectTimeout, new TimeSpan(0)),
+                        error.Message);
+
+                    errorCalledResetEvent.Set();
+                };
+
+                connection.OnReconnecting();
+
+                Assert.True(errorCalledResetEvent.Wait(1000), "OnError not called");
+            }
+        }
+        
+        [Fact]
+        public void OnReconnectingExplicitImplementationCallsIntoProtectedOnReconnecting()
+        {
+            var connectionFake = new HubConnectionFake();
+            ((IConnection)connectionFake).OnReconnecting();
+            Assert.True(connectionFake.OnReconnectingInvoked);
+        }
+
+        private class HubConnectionFake : HubConnection
+        {
+            public HubConnectionFake()
+                : base("http://fakeurl")
+            {
+            }
+
+            public bool OnReconnectingInvoked { get; private set; }
+
+            internal override void OnReconnecting()
+            {
+                OnReconnectingInvoked = true;
             }
         }
     }

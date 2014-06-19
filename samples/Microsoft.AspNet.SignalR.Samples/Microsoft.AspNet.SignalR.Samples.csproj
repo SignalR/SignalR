@@ -48,9 +48,6 @@
     <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="HtmlSanitizationLibrary">
-      <HintPath>..\..\packages\AntiXSS.4.0.1\lib\net35\HtmlSanitizationLibrary.dll</HintPath>
-    </Reference>
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="Microsoft.Owin, Version=2.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
@@ -306,6 +303,7 @@
     <Compile Include="Hubs\Chat\ContentProviders\IContentProvider.cs" />
     <Compile Include="Hubs\Chat\ContentProviders\ImageContentProvider.cs" />
     <Compile Include="Hubs\Chat\ContentProviders\YouTubeContentProvider.cs" />
+    <Compile Include="Hubs\DemoHub\TypedDemoHub.cs" />
     <Compile Include="Hubs\DrawingPad\Default.aspx.cs">
       <DependentUpon>Default.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
@@ -408,6 +406,10 @@
     <ProjectReference Include="..\..\src\Microsoft.AspNet.SignalR.SqlServer\Microsoft.AspNet.SignalR.SqlServer.csproj">
       <Project>{efcf27ec-cb9b-4f3a-91be-154b8ab5b5e0}</Project>
       <Name>Microsoft.AspNet.SignalR.SqlServer</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Microsoft.AspNet.SignalR.Samples.VB\Microsoft.AspNet.SignalR.Samples.VB.vbproj">
+      <Project>{44ffd296-2fc1-4159-80ac-4f6c8ae9887c}</Project>
+      <Name>Microsoft.AspNet.SignalR.Samples.VB</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

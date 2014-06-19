@@ -301,7 +301,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                 }
             }
 
-            public IHubCallerConnectionContext Clients
+            public IHubCallerConnectionContext<dynamic> Clients
             {
                 get
                 {
@@ -336,6 +336,11 @@ namespace Microsoft.AspNet.SignalR.Tests
             }
 
             public System.Threading.Tasks.Task OnDisconnected()
+            {
+                throw new NotImplementedException();
+            }
+
+            public System.Threading.Tasks.Task OnDisconnected(bool stopCalled)
             {
                 throw new NotImplementedException();
             }

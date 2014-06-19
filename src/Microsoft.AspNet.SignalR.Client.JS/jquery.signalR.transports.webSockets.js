@@ -14,7 +14,9 @@
     signalR.transports.webSockets = {
         name: "webSockets",
 
-        supportsKeepAlive: true,
+        supportsKeepAlive: function () {
+            return true;
+        },
 
         send: function (connection, data) {
             var payload = transportLogic.stringifySend(connection, data);

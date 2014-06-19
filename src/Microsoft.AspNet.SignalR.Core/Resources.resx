@@ -171,6 +171,9 @@
   <data name="Error_HubInvocationFailed" xml:space="preserve">
     <value>There was an error invoking Hub method '{0}.{1}'.</value>
   </data>
+  <data name="Error_HubProgressOnlyReportableBeforeMethodReturns" xml:space="preserve">
+    <value>You cannot report progress on a hub method invocation that has already completed.</value>
+  </data>
   <data name="Error_InvalidCursorFormat" xml:space="preserve">
     <value>Invalid cursor.</value>
   </data>
@@ -190,10 +193,22 @@
     <value>KeepAlive value must be no more than a third of the DisconnectTimeout.</value>
   </data>
   <data name="Error_MethodCouldNotBeResolved" xml:space="preserve">
-    <value>'{0}' method could not be resolved.</value>
+    <value>'{0}' method could not be resolved. No method found with that name.</value>
+  </data>
+  <data name="Error_MethodCouldNotBeResolvedCandidates" xml:space="preserve">
+    <value>'{0}' method could not be resolved. Potential candidates are: {1}</value>
   </data>
   <data name="Error_MethodLevelOutgoingAuthorization" xml:space="preserve">
     <value>Outgoing authorization can only be required for an entire Hub, not a specific method.</value>
+  </data>
+  <data name="Error_MethodMustNotTakeOutParameter" xml:space="preserve">
+    <value>The '{0}' parameter of '{1}.{2}' must not be an out parameter.</value>
+  </data>
+  <data name="Error_MethodMustNotTakeRefParameter" xml:space="preserve">
+    <value>The '{0}' parameter of '{1}.{2}' must not be a ref parameter.</value>
+  </data>
+  <data name="Error_MethodMustReturnVoidOrTask" xml:space="preserve">
+    <value>The return type of '{0}.{1}' must be void or Task.</value>
   </data>
   <data name="Error_MultipleActivatorsAreaRegisteredCallGetServices" xml:space="preserve">
     <value>Multiple activators for type {0} are registered. Please call GetServices instead.</value>
@@ -201,7 +216,7 @@
   <data name="Error_NoConfiguration" xml:space="preserve">
     <value>A configuration object must be specified.</value>
   </data>
-  <data name="Error_NoDepenendeyResolver" xml:space="preserve">
+  <data name="Error_NoDependencyResolver" xml:space="preserve">
     <value>A dependency resolver must be specified.</value>
   </data>
   <data name="Error_NotWebSocketRequest" xml:space="preserve">
@@ -230,6 +245,15 @@
   </data>
   <data name="Error_TaskQueueFull" xml:space="preserve">
     <value>The queue is full.</value>
+  </data>
+  <data name="Error_TypeMustBeInterface" xml:space="preserve">
+    <value>The type T, '{0}', passed to Hub&lt;T&gt; must be an interface.</value>
+  </data>
+  <data name="Error_TypeMustNotContainEvents" xml:space="preserve">
+    <value>The interface '{0}' must not contain any events.</value>
+  </data>
+  <data name="Error_TypeMustNotContainProperties" xml:space="preserve">
+    <value>The interface '{0}' must not contain any properties.</value>
   </data>
   <data name="Error_UnableToAddModulePiplineAlreadyInvoked" xml:space="preserve">
     <value>Unable to add module. The HubPipeline has already been invoked.</value>

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR.Client;
 using Microsoft.AspNet.SignalR.Tests.Common.Infrastructure;
 using Xunit;
@@ -13,18 +14,28 @@ namespace Microsoft.AspNet.SignalR.Tests
         [InlineData(HostType.Memory, TransportType.ServerSentEvents, MessageBusType.Default)]
         [InlineData(HostType.Memory, TransportType.ServerSentEvents, MessageBusType.Fake)]
         [InlineData(HostType.Memory, TransportType.ServerSentEvents, MessageBusType.FakeMultiStream)]
+        [InlineData(HostType.Memory, TransportType.LongPolling, MessageBusType.Default)]
+        [InlineData(HostType.Memory, TransportType.LongPolling, MessageBusType.Fake)]
+        [InlineData(HostType.Memory, TransportType.LongPolling, MessageBusType.FakeMultiStream)]
         [InlineData(HostType.IISExpress, TransportType.Websockets, MessageBusType.Default)]
         [InlineData(HostType.IISExpress, TransportType.ServerSentEvents, MessageBusType.Default)]
+        [InlineData(HostType.IISExpress, TransportType.LongPolling, MessageBusType.Default)]
         [InlineData(HostType.HttpListener, TransportType.Websockets, MessageBusType.Default)]
         [InlineData(HostType.HttpListener, TransportType.ServerSentEvents, MessageBusType.Default)]
-        public void ReconnectionSuccesfulTest(HostType hostType, TransportType transportType, MessageBusType messageBusType)
+        [InlineData(HostType.HttpListener, TransportType.LongPolling, MessageBusType.Default)]
+        public async Task ReconnectionSuccesfulTest(HostType hostType, TransportType transportType, MessageBusType messageBusType)
         {
             using (var host = CreateHost(hostType, transportType))
             {
                 // Arrange
-                var mre = new ManualResetEventSlim(false);
+                var mre = new AsyncManualResetEvent(false);
                 host.Initialize(keepAlive: null, messageBusType: messageBusType);
                 var connection = CreateConnection(host, "/my-reconnect");
+
+                if (transportType == TransportType.LongPolling)
+                {
+                    ((Client.Transports.LongPollingTransport)host.Transport).ReconnectDelay = TimeSpan.Zero;
+                }
 
                 using (connection)
                 {
@@ -35,10 +46,9 @@ namespace Microsoft.AspNet.SignalR.Tests
                         mre.Set();
                     };
 
-                    connection.Start(host.Transport).Wait();
+                    await connection.Start(host.Transport);
 
-                    // Assert
-                    Assert.True(mre.Wait(TimeSpan.FromSeconds(10)));
+                    Assert.True(await mre.WaitAsync(TimeSpan.FromSeconds(10)));
 
                     // Clean-up
                     mre.Dispose();
@@ -51,16 +61,21 @@ namespace Microsoft.AspNet.SignalR.Tests
         [InlineData(HostType.Memory, TransportType.ServerSentEvents, MessageBusType.Default)]
         [InlineData(HostType.Memory, TransportType.ServerSentEvents, MessageBusType.Fake)]
         [InlineData(HostType.Memory, TransportType.ServerSentEvents, MessageBusType.FakeMultiStream)]
+        [InlineData(HostType.Memory, TransportType.LongPolling, MessageBusType.Default)]
+        [InlineData(HostType.Memory, TransportType.LongPolling, MessageBusType.Fake)]
+        [InlineData(HostType.Memory, TransportType.LongPolling, MessageBusType.FakeMultiStream)]
         [InlineData(HostType.IISExpress, TransportType.Websockets, MessageBusType.Default)]
         [InlineData(HostType.IISExpress, TransportType.ServerSentEvents, MessageBusType.Default)]
+        [InlineData(HostType.IISExpress, TransportType.LongPolling, MessageBusType.Default)]
         [InlineData(HostType.HttpListener, TransportType.Websockets, MessageBusType.Default)]
         [InlineData(HostType.HttpListener, TransportType.ServerSentEvents, MessageBusType.Default)]
-        public void SuccessiveTimeoutTest(HostType hostType, TransportType transportType, MessageBusType messageBusType)
+        [InlineData(HostType.HttpListener, TransportType.LongPolling, MessageBusType.Default)]
+        public async Task SuccessiveTimeoutTest(HostType hostType, TransportType transportType, MessageBusType messageBusType)
         {
             using (var host = CreateHost(hostType, transportType))
             {
                 // Arrange
-                var mre = new ManualResetEventSlim(false);
+                var mre = new AsyncManualResetEvent(false);
                 host.Initialize(keepAlive: 5, messageBusType: messageBusType);
                 var connection = CreateConnection(host, "/my-reconnect");
 
@@ -71,16 +86,16 @@ namespace Microsoft.AspNet.SignalR.Tests
                         mre.Set();
                     };
 
-                    connection.Start(host.Transport).Wait();
+                    await connection.Start(host.Transport);
 
                     ((Client.IConnection)connection).KeepAliveData = new KeepAliveData(TimeSpan.FromMilliseconds(500));
 
                     // Assert that Reconnected is called
-                    Assert.True(mre.Wait(TimeSpan.FromSeconds(15)));
+                    Assert.True(await mre.WaitAsync(TimeSpan.FromSeconds(15)));
 
                     // Assert that Reconnected is called again
                     mre.Reset();
-                    Assert.True(mre.Wait(TimeSpan.FromSeconds(15)));
+                    Assert.True(await mre.WaitAsync(TimeSpan.FromSeconds(15)));
 
                     // Clean-up
                     mre.Dispose();
@@ -92,16 +107,21 @@ namespace Microsoft.AspNet.SignalR.Tests
         [InlineData(HostType.Memory, TransportType.ServerSentEvents, MessageBusType.Default)]
         [InlineData(HostType.Memory, TransportType.ServerSentEvents, MessageBusType.Fake)]
         [InlineData(HostType.Memory, TransportType.ServerSentEvents, MessageBusType.FakeMultiStream)]
+        [InlineData(HostType.Memory, TransportType.LongPolling, MessageBusType.Default)]
+        [InlineData(HostType.Memory, TransportType.LongPolling, MessageBusType.Fake)]
+        [InlineData(HostType.Memory, TransportType.LongPolling, MessageBusType.FakeMultiStream)]
         [InlineData(HostType.IISExpress, TransportType.Websockets, MessageBusType.Default)]
         [InlineData(HostType.IISExpress, TransportType.ServerSentEvents, MessageBusType.Default)]
+        [InlineData(HostType.IISExpress, TransportType.LongPolling, MessageBusType.Default)]
         [InlineData(HostType.HttpListener, TransportType.Websockets, MessageBusType.Default)]
         [InlineData(HostType.HttpListener, TransportType.ServerSentEvents, MessageBusType.Default)]
-        public void OnConnectionSlowTest(HostType hostType, TransportType transportType, MessageBusType messageBusType)
+        [InlineData(HostType.HttpListener, TransportType.LongPolling, MessageBusType.Default)]
+        public async Task OnConnectionSlowTest(HostType hostType, TransportType transportType, MessageBusType messageBusType)
         {
             using (var host = CreateHost(hostType, transportType))
             {
                 // Arrange
-                var mre = new ManualResetEventSlim(false);
+                var mre = new AsyncManualResetEvent(false);
                 host.Initialize(keepAlive: null, messageBusType: messageBusType);
                 var connection = CreateConnection(host, "/my-reconnect");
 
@@ -114,43 +134,10 @@ namespace Microsoft.AspNet.SignalR.Tests
                         mre.Set();
                     };
 
-                    connection.Start(host.Transport).Wait();
+                    await connection.Start(host.Transport);
 
                     // Assert
-                    Assert.True(mre.Wait(TimeSpan.FromSeconds(15)));
-
-                    // Clean-up
-                    mre.Dispose();
-                }
-            }
-        }
-
-        [Theory]
-        [InlineData(HostType.IISExpress, TransportType.LongPolling)]
-        [InlineData(HostType.HttpListener, TransportType.LongPolling)]
-        [InlineData(HostType.Memory, TransportType.LongPolling)]
-        public void OnConnectionSlowDoesntFireForLongPolling(HostType hostType, TransportType transportType)
-        {
-            using (var host = CreateHost(hostType, transportType))
-            {
-                // Arrange
-                var mre = new ManualResetEventSlim();
-                host.Initialize(keepAlive: 2);
-                var connection = CreateConnection(host, "/my-reconnect");
-
-                using (connection)
-                {
-                    ((Client.IConnection)connection).KeepAliveData = new KeepAliveData(TimeSpan.FromSeconds(2));
-
-                    connection.ConnectionSlow += () =>
-                    {
-                        mre.Set();
-                    };
-
-                    connection.Start(host.Transport).Wait();
-
-                    // Assert
-                    Assert.False(mre.Wait(TimeSpan.FromSeconds(10)));
+                    Assert.True(await mre.WaitAsync(TimeSpan.FromSeconds(15)));
 
                     // Clean-up
                     mre.Dispose();

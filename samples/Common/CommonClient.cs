@@ -22,7 +22,7 @@ namespace Microsoft.AspNet.SignalR.Client.Samples
         {
             try
             {
-                await RunHubConnectionAPI(url);
+                await RunDemo(url);
             }
             catch (HttpClientException httpClientException)
             {
@@ -76,6 +76,12 @@ namespace Microsoft.AspNet.SignalR.Client.Samples
 
             await hubConnection.Start();
             hubConnection.TraceWriter.WriteLine("transport.Name={0}", hubConnection.Transport.Name);
+
+            hubConnection.TraceWriter.WriteLine("Invoking long running hub method with progress...");
+            var result = await hubProxy.Invoke<string, int>("ReportProgress",
+                percent => hubConnection.TraceWriter.WriteLine("{0}% complete", percent),
+                /* jobName */ "Long running job");
+            hubConnection.TraceWriter.WriteLine("{0}", result);
 
             await hubProxy.Invoke("multipleCalls");
         }
@@ -204,6 +210,7 @@ namespace Microsoft.AspNet.SignalR.Client.Samples
 
             for (int messageNumber = 1; messageNumber <= callbacks; messageNumber++)
             {
+#pragma warning disable 4014
                 hubProxy.Invoke("LongRunningMethod", messageNumber).ContinueWith(task =>
                 {
                     int i = Interlocked.Increment(ref counter);
@@ -217,6 +224,7 @@ namespace Microsoft.AspNet.SignalR.Client.Samples
                         event2.Set();
                     }
                 });
+#pragma warning restore 4014
             }
 
             await Task.Factory.StartNew(() => event1.WaitOne());

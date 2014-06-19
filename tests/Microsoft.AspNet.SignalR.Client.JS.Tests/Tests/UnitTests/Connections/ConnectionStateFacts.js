@@ -26,17 +26,49 @@ QUnit.test("Connection State Values", function () {
 });
 
 QUnit.test("Changing State", function () {
-    var con = $.connection;
-    QUnit.equal(con.changeState(con.fn, con.connectionState.disconnected, con.connectionState.connecting), true, "Changes state from disconnected to connecting.");
-    QUnit.equal(con.changeState(con.fn, con.connectionState.connected, con.connectionState.reconnecting), false, "Changing state from connected to connecting when state is connecting.");
+    var con = testUtilities.createHubConnection(),
+        signalR = $.signalR;
 
-    con.fn.stateChanged(function (change) {
-        QUnit.equal(change.oldState, con.connectionState.connecting, "Verifies that the proper old state is passed to the stateChanged event handler.");
-        QUnit.equal(change.newState, con.connectionState.connected, "Verifies that the proper new state is passed to the stateChanged event handler.");
-        $(this).unbind(con.events.onStateChanged);
+    QUnit.equal(signalR.changeState(con, signalR.connectionState.disconnected, signalR.connectionState.connecting), true, "Changes state from disconnected to connecting.");
+    QUnit.equal(signalR.changeState(con, signalR.connectionState.connected, signalR.connectionState.reconnecting), false, "Changing state from connected to reconnecting when state is connecting.");
+
+    con.stateChanged(function (change) {
+        QUnit.equal(change.oldState, signalR.connectionState.connecting, "Verifies that the proper old state is passed to the stateChanged event handler.");
+        QUnit.equal(change.newState, signalR.connectionState.connected, "Verifies that the proper new state is passed to the stateChanged event handler.");
     });
-    con.changeState(con.fn, con.connectionState.connecting, con.connectionState.connected);
 
-    // Reset the connection state back to disconnected
-    con.changeState(con.fn, con.connectionState.connected, con.connectionState.disconnected);
+    signalR.changeState(con, signalR.connectionState.connecting, signalR.connectionState.connected);
+});
+
+QUnit.test("lastError set when error occurrs", function () {
+    var connection = testUtilities.createHubConnection();
+    $(connection).triggerHandler($.signalR.events.onError, $.signalR._.error("foo", "TestError"));
+    QUnit.equal(connection.lastError.source, "TestError", "lastError not set");
+});
+
+QUnit.test("verifyLastActive fires onError if timeout occurs", function () {
+    var connection = testUtilities.createHubConnection();
+    connection._.lastActiveAt = new Date(0);
+    connection.error(function(err) {
+        QUnit.equal(err.source, "TimeoutException", "Disconnected event has expected close reason");
+    });
+
+    $.signalR.transports._logic.verifyLastActive(connection);
+});
+
+QUnit.test("lastError cleared when connection starts.", function () {
+    var connection = testUtilities.createHubConnection(function () { }, QUnit, "", undefined, false);
+    connection.lastError = new Error();
+    connection.start();
+    QUnit.equal(connection.lastError, null, "lastError should be cleared on start");
+    connection.stop();
+});
+
+QUnit.test("lastError not cleared when connection stops.", function () {
+    var connection = testUtilities.createHubConnection(function () { }, QUnit, "", undefined, false),
+        error = new Error();
+    connection.start();
+    connection.lastError = error;
+    connection.stop();
+    QUnit.equal(connection.lastError, error, "lastError should not be cleared on stop");
 });

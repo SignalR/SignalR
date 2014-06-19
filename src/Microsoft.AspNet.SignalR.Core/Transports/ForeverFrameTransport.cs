@@ -64,11 +64,6 @@ namespace Microsoft.AspNet.SignalR.Transports
 
         public override Task KeepAlive()
         {
-            if (InitializeTcs == null || !InitializeTcs.Task.IsCompleted)
-            {
-                return TaskAsyncHelper.Empty;
-            }
-
             // Ensure delegate continues to use the C# Compiler static delegate caching optimization.
             return EnqueueOperation(state => PerformKeepAlive(state), this);
         }

@@ -182,7 +182,7 @@ namespace Microsoft.AspNet.SignalR.Client
             _totalTransportConnectTimeout = TimeSpan.Zero;
 
             // Current client protocol
-            Protocol = new Version(1, 3);
+            Protocol = new Version(1, 4);
         }
 
         /// <summary>
@@ -204,6 +204,11 @@ namespace Microsoft.AspNet.SignalR.Client
         }
 
         public Version Protocol { get; set; }
+
+        /// <summary>
+        /// Gets the last error encountered by the <see cref="Connection"/>.
+        /// </summary>
+        public Exception LastError { get; private set; }
 
         /// <summary>
         /// The maximum amount of time a connection will allow to try and reconnect.
@@ -557,6 +562,27 @@ namespace Microsoft.AspNet.SignalR.Client
 
         /// <summary>
         /// Stops the <see cref="Connection"/> and sends an abort message to the server.
+        /// <param name="error">The error due to which the connection is being stopped.</param>
+        /// </summary>
+        public void Stop(Exception error)
+        {
+            Stop(error, DefaultAbortTimeout);
+        }
+
+        /// <summary>
+        /// Stops the <see cref="Connection"/> and sends an abort message to the server.
+        /// <param name="error">The error due to which the connection is being stopped.</param>
+        /// <param name="timeout">The timeout</param>
+        /// </summary>
+        [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "We don't want to raise the Start exception on Stop.")]
+        public void Stop(Exception error, TimeSpan timeout)
+        {
+            OnError(error);
+            Stop(timeout);            
+        }
+
+        /// <summary>
+        /// Stops the <see cref="Connection"/> and sends an abort message to the server.
         /// <param name="timeout">The timeout</param>
         /// </summary>
         [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "We don't want to raise the Start exception on Stop.")]
@@ -773,6 +799,8 @@ namespace Microsoft.AspNet.SignalR.Client
         {
             Trace(TraceLevels.Events, "OnError({0})", error);
 
+            LastError = error;
+
             if (Error != null)
             {
                 Error(error);
@@ -784,13 +812,26 @@ namespace Microsoft.AspNet.SignalR.Client
             OnError(error);
         }
 
-        public virtual void OnReconnecting()
+        void IConnection.OnReconnecting()
+        {
+            OnReconnecting();
+        }
+
+        internal virtual void OnReconnecting()
         {
             // Only allow the client to attempt to reconnect for a _disconnectTimout TimeSpan which is set by
             // the server during negotiation.
             // If the client tries to reconnect for longer the server will likely have deleted its ConnectionId
             // topic along with the contained disconnect message.
-            _disconnectTimeoutOperation = SetTimeout(_disconnectTimeout, Disconnect);
+            _disconnectTimeoutOperation = 
+                SetTimeout(
+                    _disconnectTimeout,
+                    () =>
+                    {
+                        OnError(new TimeoutException(String.Format(CultureInfo.CurrentCulture,
+                                Resources.Error_ReconnectTimeout, _disconnectTimeout)));
+                        Disconnect();
+                    });
 
 #if NETFX_CORE || PORTABLE
             // Clear the buffer
@@ -868,7 +909,7 @@ namespace Microsoft.AspNet.SignalR.Client
             if (_assemblyVersion == null)
             {
 #if NETFX_CORE
-                _assemblyVersion = new Version("2.0.3");
+                _assemblyVersion = new Version("2.2.0");
 #else
                 _assemblyVersion = new AssemblyName(typeof(Connection).Assembly.FullName).Version;
 #endif

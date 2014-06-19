@@ -13,11 +13,6 @@ namespace Microsoft.AspNet.SignalR.Transports
             return SendCommand(connection, connectionId, CommandType.Initializing);
         }
 
-        internal static Task Close(this ITransportConnection connection, string connectionId)
-        {
-            return SendCommand(connection, connectionId, CommandType.Disconnect);
-        }
-
         internal static Task Abort(this ITransportConnection connection, string connectionId)
         {
             return SendCommand(connection, connectionId, CommandType.Abort);

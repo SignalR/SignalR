@@ -325,7 +325,7 @@ testUtilities.runWithAllTransports(function (transport) {
                 }
 
                 return url;
-            }
+            };
 
             $.network.disconnect();
         });

@@ -1,6 +1,8 @@
 ﻿using System;
+using System.Collections.Specialized;
 using System.Dynamic;
 using Microsoft.AspNet.SignalR.Hubs;
+using Microsoft.AspNet.SignalR.Tests.Common.Infrastructure;
 using Moq;
 using Xunit;
 
@@ -13,7 +15,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Server.Hubs
         {
             bool sendCalled = false;
             var hub = new MyTestableHub();
-            var mockClients = new Mock<IHubCallerConnectionContext>();
+            var mockClients = new Mock<IHubCallerConnectionContext<dynamic>>();
 
             hub.Clients = mockClients.Object;
 
@@ -33,7 +35,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Server.Hubs
         public void HubsAreMockableViaType()
         {
             var hub = new MyTestableHub();
-            var mockClients = new Mock<IHubCallerConnectionContext>();
+            var mockClients = new Mock<IHubCallerConnectionContext<dynamic>>();
             var all = new Mock<IClientContract>();
 
             hub.Clients = mockClients.Object;
@@ -48,7 +50,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Server.Hubs
         public void HubsGroupAreMockable()
         {
             var hub = new MyTestableHub();
-            var mockClients = new Mock<IHubCallerConnectionContext>();
+            var mockClients = new Mock<IHubCallerConnectionContext<dynamic>>();
             var groups = new Mock<IClientContract>();
 
             hub.Clients = mockClients.Object;
@@ -63,13 +65,37 @@ namespace Microsoft.AspNet.SignalR.Tests.Server.Hubs
         public void HubsClientIsMockable()
         {
             var hub = new MyTestableHub();
-            var mockClients = new Mock<IHubCallerConnectionContext>();
+            var mockClients = new Mock<IHubCallerConnectionContext<dynamic>>();
             var clients = new Mock<IClientContract>();
 
             hub.Clients = mockClients.Object;
             clients.Setup(m => m.send(It.IsAny<string>())).Verifiable();
             mockClients.Setup(m => m.Client("random")).Returns(clients.Object);
             hub.SendIndividual("random", "foo");
+
+            clients.VerifyAll();
+        }
+
+        [Fact]
+        public void HubCallerContextIsMockable()
+        {
+            var hub = new MyTestableHub();
+            var context = new Mock<HubCallerContext>();
+
+            var mockClients = new Mock<IHubCallerConnectionContext<dynamic>>();
+            var clients = new Mock<IClientContract>();
+
+            hub.Clients = mockClients.Object;
+            clients.Setup(m => m.send(It.IsAny<string>())).Verifiable();
+            mockClients.Setup(m => m.Client("1")).Returns(clients.Object);
+
+            hub.Context = context.Object;
+
+            var qs = new NameValueCollection();
+            qs["connectionId"] = "1";
+            context.Setup(c => c.QueryString).Returns(new NameValueCollectionWrapper(qs));
+
+            hub.SendToOneClient();
 
             clients.VerifyAll();
         }
@@ -90,6 +116,13 @@ namespace Microsoft.AspNet.SignalR.Tests.Server.Hubs
             {
                 Clients.Client(connectionId).send(message);
             }
+
+            public void SendToOneClient()
+            {
+                string connectionId = Context.QueryString["connectionId"];
+                Clients.Client(connectionId).send("foo");
+            }
+
         }
 
         public interface IClientContract

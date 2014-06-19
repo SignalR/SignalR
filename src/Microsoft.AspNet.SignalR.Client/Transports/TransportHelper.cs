@@ -61,6 +61,35 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
                             });
         }
 
+        public static Task<string> GetStartResponse(this IHttpClient httpClient, IConnection connection, string connectionData, string transport)
+        {
+            if (httpClient == null)
+            {
+                throw new ArgumentNullException("httpClient");
+            }
+
+            if (connection == null)
+            {
+                throw new ArgumentNullException("connection");
+            }
+
+            var startUrl = String.Format(CultureInfo.InvariantCulture,
+                "{0}start?transport={1}&clientProtocol={2}&connectionToken={3}",
+                connection.Url, transport, connection.Protocol, Uri.EscapeDataString(connection.ConnectionToken));
+
+            if (!String.IsNullOrEmpty(connectionData))
+            {
+                startUrl += "&connectionData=" + connectionData;
+            }
+
+            startUrl += AppendCustomQueryString(connection, startUrl);
+
+            httpClient.Initialize(connection);
+
+            return httpClient.Get(startUrl, connection.PrepareRequest, isLongRunning: false)
+                            .Then(response => response.ReadAsString());
+        }
+
         [SuppressMessage("Microsoft.Design", "CA1062:Validate arguments of public methods", MessageId = "0", Justification = "This is called by internally")]
         public static string GetReceiveQueryString(IConnection connection, string connectionData, string transport)
         {
@@ -72,6 +101,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
             // ?transport={0}&connectionToken={1}&messageId={2}&groups={3}&connectionData={4}{5}
             var qsBuilder = new StringBuilder();
             qsBuilder.Append("?transport=" + transport)
+                     .Append("&clientProtocol=" + connection.Protocol)
                      .Append("&connectionToken=" + Uri.EscapeDataString(connection.ConnectionToken));
 
             if (connection.MessageId != null)
@@ -221,7 +251,9 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
             if (DateTime.UtcNow - connection.LastActiveAt >= connection.ReconnectWindow)
             {
                 connection.Trace(TraceLevels.Events, "There has not been an active server connection for an extended period of time. Stopping connection.");
-                connection.Stop();
+                connection.Stop(new TimeoutException(String.Format(CultureInfo.CurrentCulture, Resources.Error_ReconnectWindowTimeout,
+                    connection.LastActiveAt, connection.ReconnectWindow)));
+
                 return false;
             }
 

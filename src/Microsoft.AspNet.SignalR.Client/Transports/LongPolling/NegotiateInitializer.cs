@@ -14,7 +14,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
 
         public NegotiateInitializer(TransportInitializationHandler initializeHandler)
         {
-            _initializeCallback = initializeHandler.Success;
+            _initializeCallback = initializeHandler.InitReceived;
             _errorCallback = initializeHandler.Fail;
             _callbackInvoker = new ThreadSafeInvoker();
 

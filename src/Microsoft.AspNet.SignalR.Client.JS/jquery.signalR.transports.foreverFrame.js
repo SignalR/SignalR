@@ -59,7 +59,9 @@
     signalR.transports.foreverFrame = {
         name: "foreverFrame",
 
-        supportsKeepAlive: true,
+        supportsKeepAlive: function () {
+            return true;
+        },
 
         // Added as a value here so we can create tests to verify functionality
         iframeClearThreshold: 50,
@@ -149,9 +151,21 @@
 
         receive: function (connection, data) {
             var cw,
-                body;
+                body,
+                response;
 
-            transportLogic.processMessages(connection, data, connection.onSuccess);
+            if (connection.json !== connection._originalJson) {
+                // If there's a custom JSON parser configured then serialize the object
+                // using the original (browser) JSON parser and then deserialize it using
+                // the custom parser (connection._parseResponse does that). This is so we
+                // can easily send the response from the server as "raw" JSON but still 
+                // support custom JSON deserialization in the browser.
+                data = connection._originalJson.stringify(data);
+            }
+
+            response = connection._parseResponse(data);
+
+            transportLogic.processMessages(connection, response, connection.onSuccess);
 
             // Protect against connection stopping from a callback trigger within the processMessages above.
             if (connection.state === $.signalR.connectionState.connected) {

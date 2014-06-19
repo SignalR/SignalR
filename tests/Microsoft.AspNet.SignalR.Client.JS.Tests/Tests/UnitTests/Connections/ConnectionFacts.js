@@ -51,7 +51,7 @@ QUnit.test("connection.json is unique on different objects when custom", functio
 });
 
 QUnit.test("connection.withCredentials defaults to false for same-domain", function () {
-    var connection = testUtilities.createConnection("/signalr", function () { }, QUnit, "", false);
+    var connection = testUtilities.createConnection("signalr", function () { }, QUnit, "", false);
 
     connection.start();
     
@@ -70,15 +70,18 @@ QUnit.test("connection.withCredentials defaults to true for cross-domain", funct
     
     QUnit.ok(con.withCredentials, "connection.withCredentials should default to true for cross-domain connection.");
 
+    con.stop();
     window.document.crossDomainDisabled = true;
 });
 
 QUnit.test("connection.withCredentials manual override to true for same-domain", function () {
-    var connection = testUtilities.createConnection("/signalr", function () { }, QUnit, "", false);
+    var connection = testUtilities.createConnection("signalr", function () { }, QUnit, "", false);
 
     connection.start({ withCredentials: true });
 
     QUnit.isTrue(connection.withCredentials, "connection.withCredentials overridden to true for same-domain connection.");
+
+    connection.stop();
 });
 
 QUnit.test("connection.withCredentials manual override to false for cross-domain", function () {
@@ -87,10 +90,12 @@ QUnit.test("connection.withCredentials manual override to false for cross-domain
     con.start({ withCredentials: false });
 
     QUnit.ok(!con.withCredentials, "connection.withCredentials overridden to false for cross-domain connection.");
+
+    con.stop();
 });
 
 QUnit.test("pingIntervalId does not change on multiple calls to configurePingInterval", function () {
-    var con = testUtilities.createConnection("/signalr", function () { }, QUnit, "", false);
+    var con = testUtilities.createConnection("signalr", function () { }, QUnit, "", false);
 
     con._.pingIntervalId = 1;
 
@@ -100,7 +105,7 @@ QUnit.test("pingIntervalId does not change on multiple calls to configurePingInt
 });
 
 QUnit.test("lastActiveAt is deleted when a connection stops", function () {
-    var con = testUtilities.createConnection("/signalr", function () { }, QUnit, "", false);
+    var con = testUtilities.createConnection("signalr", function () { }, QUnit, "", false);
 
     con.start();
 

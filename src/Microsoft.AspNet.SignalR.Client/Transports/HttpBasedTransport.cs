@@ -16,13 +16,15 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
     public abstract class HttpBasedTransport : IClientTransport
     {
         // The send query string
-        private const string _sendQueryString = "?transport={0}&connectionData={1}&connectionToken={2}{3}";
+        private const string _sendQueryString = "?transport={0}&clientProtocol={1}&connectionData={2}&connectionToken={3}{4}";
 
         // The transport name
         private readonly string _transport;
 
         private readonly IHttpClient _httpClient;
         private readonly TransportAbortHandler _abortHandler;
+
+        private NegotiationResponse _negotiationResponse;
 
         protected HttpBasedTransport(IHttpClient httpClient, string transport)
         {
@@ -54,9 +56,18 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
             get { return _abortHandler; }
         }
 
+        protected NegotiationResponse NegotiationResponse
+        {
+            get { return _negotiationResponse; }
+        }
+
         public Task<NegotiationResponse> Negotiate(IConnection connection, string connectionData)
         {
-            return _httpClient.GetNegotiationResponse(connection, connectionData);
+            Task<NegotiationResponse> response = _httpClient.GetNegotiationResponse(connection, connectionData);
+
+            response.Then(negotiationResponse => _negotiationResponse = negotiationResponse);
+
+            return response;
         }
 
         public Task Start(IConnection connection, string connectionData, CancellationToken disconnectToken)
@@ -66,7 +77,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
                 throw new ArgumentNullException("connection");
             }
 
-            var initializeHandler = new TransportInitializationHandler(connection.TotalTransportConnectTimeout, disconnectToken);
+            var initializeHandler = new TransportInitializationHandler(_httpClient, connection, connectionData, Name, disconnectToken);
 
             OnStart(connection, connectionData, disconnectToken, initializeHandler);
 
@@ -91,6 +102,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
             url += String.Format(CultureInfo.InvariantCulture,
                                 _sendQueryString,
                                 _transport,
+                                connection.Protocol,
                                 connectionData,
                                 Uri.EscapeDataString(connection.ConnectionToken),
                                 customQueryString);

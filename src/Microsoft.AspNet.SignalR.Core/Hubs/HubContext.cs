@@ -6,7 +6,7 @@ using Microsoft.AspNet.SignalR.Infrastructure;
 
 namespace Microsoft.AspNet.SignalR.Hubs
 {
-    internal class HubContext : IHubContext
+    internal class HubContext : IHubContext<object>, IHubContext
     {
         public HubContext(IConnection connection, IHubPipelineInvoker invoker, string hubName)
         {
@@ -14,7 +14,7 @@ namespace Microsoft.AspNet.SignalR.Hubs
             Groups = new GroupManager(connection, PrefixHelper.GetHubGroupName(hubName));
         }
 
-        public IHubConnectionContext Clients { get; private set; }
+        public IHubConnectionContext<dynamic> Clients { get; private set; }
 
         public IGroupManager Groups { get; private set; }
     }

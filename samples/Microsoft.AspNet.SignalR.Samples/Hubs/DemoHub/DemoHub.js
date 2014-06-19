@@ -1,5 +1,7 @@
 ﻿$(function () {
     var demo = $.connection.demo,
+        typedDemo = $.connection.typedDemoHub,
+        vbDemo = $.connection.VBDemo,
         groupAddedCalled = false;
 
     demo.client.invoke = function (index) {
@@ -26,13 +28,43 @@
         throw new "This should never called because it's mispelled on the server side";
     };
 
+    typedDemo.client.echo = function (message, invokeCount) {
+        $('#typed').append('<p>' + message + ' #' + invokeCount + ' triggered!</p>')
+    };
+
+    vbDemo.client.uncalledMethod = function () {
+        throw new "This should never called. It's only around so we subscribe to VbDemoHub and OnConnected fires.";
+    }
+
     $.connection.hub.logging = true;
 
     $.connection.hub.start({ transport: activeTransport }, function () {
 
+        typedDemo.server.echo("Typed echo callback").done(function () {
+            $('#typed').append('<p>TypedDemoHub.Echo(string message) invoked!</p>')
+        });
+
         demo.server.getValue().done(function (value) {
             $('#value').html('The value is ' + value + ' after 5 seconds');
         });
+
+        var $progress = $("#progress"),
+            $progressBar = $progress.find(".bar"),
+            $progressStatus = $progress.find("span"),
+            reportProgress = demo.server.reportProgress("Long running job")
+                .progress(function (value) {
+                    $progressBar.width(value + "%");
+                    // Give the CSS animation some time to finish
+                    setTimeout(function () {
+                        $progressStatus.html(value + "%");
+                    }, 250);
+                })
+                .done(function (result) {
+                    setTimeout(function () {
+                        $progressBar.width("100%");
+                        $progressStatus.html(result);
+                    }, 250);
+                });
 
         var p = {
             Name: "Foo",
@@ -43,8 +75,6 @@
         demo.server.complexType(p).done(function () {
             $('#complexType').html('Complex Type ->' + window.JSON.stringify(this.state.person));
         });
-
-        demo.server.multipleCalls();
 
         demo.server.simpleArray([5, 5, 6]).done(function () {
             $('#simpleArray').html('Simple array works!');
@@ -71,16 +101,15 @@
         });
 
         demo.server.taskWithException().fail(function (e) {
-            $('#taskWithException').html(e);
+            $('#taskWithException').html(e.toString());
         });
 
         demo.server.genericTaskWithException().fail(function (e) {
-            $('#genericTaskWithException').html(e);
+            $('#genericTaskWithException').html(e.toString());
         });
 
-
         demo.server.synchronousException().fail(function (e) {
-            $('#synchronousException').html(e);
+            $('#synchronousException').html(e.toString());
         });
 
         demo.server.overload().done(function () {
@@ -104,6 +133,15 @@
             $('#readStateValue').html('Read some state! => ' + name);
         });
 
+        vbDemo.server.readStateValue().done(function (message) {
+            $('#readVBStateValue').html('Read some state from VB.NET! => ' + message);
+        });
+
         demo.server.mispelledClientMethod();
+
+        reportProgress.done(function () {
+            // Don't start this until now because it blocks on the server which holds up the websocket
+            demo.server.multipleCalls()
+        });
     });
 });
