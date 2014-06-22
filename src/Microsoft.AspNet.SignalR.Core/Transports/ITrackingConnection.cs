@@ -43,6 +43,11 @@ namespace Microsoft.AspNet.SignalR.Transports
         bool SupportsKeepAlive { get; }
 
         /// <summary>
+        /// Gets a value that represents if the connection should timeout after inactivity.
+        /// </summary>
+        bool RequiresTimeout { get; }
+
+        /// <summary>
         /// Gets a value indicating the amount of time to wait after the connection dies before firing the disconnecting the connection.
         /// </summary>
         TimeSpan DisconnectThreshold { get; }

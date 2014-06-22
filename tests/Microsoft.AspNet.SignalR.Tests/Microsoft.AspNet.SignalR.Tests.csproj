@@ -114,6 +114,7 @@
     <Compile Include="Server\TopicFacts.cs" />
     <Compile Include="Server\Transports\ForeverTransportFacts.cs" />
     <Compile Include="Owin\WebSocketFacts.cs" />
+    <Compile Include="Server\Transports\LongPollingTransportFacts.cs" />
     <Compile Include="Server\Transports\WebsocketTransportFacts.cs" />
     <Compile Include="SipHashBasedStringEqualityComparerFacts.cs" />
     <Compile Include="StringMinifierFacts.cs" />

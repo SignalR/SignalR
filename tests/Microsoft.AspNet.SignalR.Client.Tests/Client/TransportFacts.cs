@@ -1,11 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Net.WebSockets;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR.Client.Http;
+using Microsoft.AspNet.SignalR.Client.Infrastructure;
 using Microsoft.AspNet.SignalR.Client.Transports;
+using Microsoft.AspNet.SignalR.Client.Transports.WebSockets;
 using Moq;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -16,50 +19,13 @@ namespace Microsoft.AspNet.SignalR.Client.Tests
 {
     public class TransportFacts
     {
-        [Theory]
-        [InlineData("bob=12345", "&bob=12345")]
-        [InlineData("bob=12345&foo=leet&baz=laskjdflsdk", "&bob=12345&foo=leet&baz=laskjdflsdk")]
-        [InlineData("", "")]
-        [InlineData(null, "?transport=&connectionToken=")]
-        [InlineData("?foo=bar", "?foo=bar")]
-        [InlineData("?foo=bar&baz=bear", "?foo=bar&baz=bear")]
-        [InlineData("&foo=bar", "&foo=bar")]
-        [InlineData("&foo=bar&baz=bear", "&foo=bar&baz=bear")]
-        public void GetReceiveQueryStringAppendsConnectionQueryString(string connectionQs, string expected)
-        {
-            var connection = new Connection("http://foo.com", connectionQs);
-            connection.ConnectionToken = "";
-
-            var urlQs = TransportHelper.GetReceiveQueryString(connection, null, "");
-
-            Assert.True(urlQs.EndsWith(expected));
-        }
-
-        [Theory]
-        [InlineData("bob=12345", "?bob=12345")]
-        [InlineData("bob=12345&foo=leet&baz=laskjdflsdk", "?bob=12345&foo=leet&baz=laskjdflsdk")]
-        [InlineData("", "")]
-        [InlineData(null, "")]
-        [InlineData("?foo=bar", "?foo=bar")]
-        [InlineData("?foo=bar&baz=bear", "?foo=bar&baz=bear")]
-        [InlineData("&foo=bar", "&foo=bar")]
-        [InlineData("&foo=bar&baz=bear", "&foo=bar&baz=bear")]
-        public void AppendCustomQueryStringAppendsConnectionQueryString(string connectionQs, string expected)
-        {
-            var connection = new Connection("http://foo.com", connectionQs);
-
-            var urlQs = TransportHelper.AppendCustomQueryString(connection, "http://foo.com");
-
-            Assert.Equal(urlQs, expected);
-        }
-
         [Fact]
         public void OnInitializedFiresFromInitializeMessage()
         {
             bool timedOut, disconnected, triggered = false;
             var connection = new Connection("http://foo.com");
 
-            TransportHelper.ProcessResponse(connection, "{\"S\":1, \"M\":[]}", out timedOut, out disconnected, () =>
+            new TransportHelper().ProcessResponse(connection, "{\"S\":1, \"M\":[]}", out timedOut, out disconnected, () =>
             {
                 triggered = true;
             });
@@ -79,10 +45,10 @@ namespace Microsoft.AspNet.SignalR.Client.Tests
             connection.Setup(c => c.MarkLastMessage());
 
             // PersistentResponse
-            TransportHelper.ProcessResponse(connection.Object, "{\"M\":{}}", out timedOut, out disconnected);
+            new TransportHelper().ProcessResponse(connection.Object, "{\"M\":{}}", out timedOut, out disconnected, () => { });
 
             // HubResponse (WebSockets)
-            TransportHelper.ProcessResponse(connection.Object, "{\"I\":{}}", out timedOut, out disconnected);
+            new TransportHelper().ProcessResponse(connection.Object, "{\"I\":{}}", out timedOut, out disconnected, () => { });
 
             connection.VerifyAll();
         }
@@ -105,10 +71,7 @@ namespace Microsoft.AspNet.SignalR.Client.Tests
             connection.SetupGet(c => c.ConnectionToken).Returns("foo");
 
             var sse = new ServerSentEventsTransport(httpClient.Object);
-            sse.OpenConnection(connection.Object, (ex) =>
-            {
-                wh.TrySetResult(ex);
-            });
+            sse.OpenConnection(connection.Object, null, CancellationToken.None, () => { }, ex => wh.TrySetResult(ex));
 
             Assert.True(wh.Task.Wait(TimeSpan.FromSeconds(5)));
             Assert.IsType(typeof(OperationCanceledException), wh.Task.Result);
@@ -132,6 +95,32 @@ namespace Microsoft.AspNet.SignalR.Client.Tests
             var task = autoTransport.Start(new Connection("http://foo"), string.Empty, CancellationToken.None);
 
             Assert.IsType(typeof(OperationCanceledException), task.Exception.InnerException);
+        }
+
+        [Fact]
+        public void StartExceptionStopsAutoTransportFallback()
+        {
+            var errorTcs = new TaskCompletionSource<IResponse>();
+            errorTcs.SetException(new StartException());
+
+            var failingTransport = new Mock<IClientTransport>();
+            failingTransport.Setup(t => t.Start(It.IsAny<IConnection>(), It.IsAny<string>(), CancellationToken.None))
+                .Returns(errorTcs.Task)
+                .Verifiable();
+
+            var unusedTransport = new Mock<IClientTransport>();
+
+            var transports = new List<IClientTransport>();
+            transports.Add(failingTransport.Object);
+            transports.Add(unusedTransport.Object);
+
+            var autoTransport = new AutoTransport(new DefaultHttpClient(), transports);
+            var startTask = autoTransport.Start(new Connection("http://foo"), string.Empty, CancellationToken.None);
+
+            failingTransport.Verify();
+            unusedTransport.Verify(t => t.Start(It.IsAny<IConnection>(), It.IsAny<string>(), CancellationToken.None), Times.Never());
+
+            Assert.IsType(typeof(StartException), startTask.Exception.InnerException);
         }
 
         [Fact]
@@ -212,6 +201,7 @@ namespace Microsoft.AspNet.SignalR.Client.Tests
 
                     connection.Setup(c => c.Trace(TraceLevels.Messages, It.IsAny<string>(), It.IsAny<object[]>()));
                     connection.SetupGet(c => c.Url).Returns("");
+                    connection.SetupGet(c => c.Protocol).Returns(new Version());
                     connection.SetupGet(c => c.QueryString).Returns("");
                     connection.SetupGet(c => c.ConnectionToken).Returns("");
                     connection.SetupGet(c => c.JsonSerializer).Returns(JsonSerializer.CreateDefault());
@@ -222,7 +212,7 @@ namespace Microsoft.AspNet.SignalR.Client.Tests
                         wh.Set();
                     });
 
-                    var httpBasedTransport = new Mock<HttpBasedTransport>(httpClient.Object, "")
+                    var httpBasedTransport = new Mock<HttpBasedTransport>(httpClient.Object, "fakeTransport")
                     {
                         CallBase = true
                     };
@@ -253,13 +243,13 @@ namespace Microsoft.AspNet.SignalR.Client.Tests
         {
             var mockConnection = new Mock<Client.IConnection>(MockBehavior.Strict);
             var mockWebSocket = new Mock<WebSocket>(MockBehavior.Strict);
+            var mockWebSocketHandler = new Mock<ClientWebSocketHandler>();
 
             mockWebSocket.SetupGet(ws => ws.State).Returns(state);
             mockConnection.Setup(c => c.OnError(It.IsAny<InvalidOperationException>()));
-
-            var wsTransport = new WebSocketTransport();
-
-            wsTransport.WebSocket = mockWebSocket.Object;
+            mockWebSocketHandler.Object.WebSocket = mockWebSocket.Object;
+            
+            var wsTransport = new WebSocketTransport(mockWebSocketHandler.Object);
 
             var task = wsTransport.Send(mockConnection.Object, "", "");
 

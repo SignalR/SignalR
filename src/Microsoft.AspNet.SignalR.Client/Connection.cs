@@ -81,15 +81,16 @@ namespace Microsoft.AspNet.SignalR.Client
         // Indicates the last time we marked the C# code as running.
         private DateTime _lastActiveAt;
 
-        // Keeps track of when the last keep alive from the server was received
-        private HeartbeatMonitor _monitor;
-
         //The json serializer for the connections
         private JsonSerializer _jsonSerializer = new JsonSerializer();
 
 #if (NET4 || NET45)
         private readonly X509CertificateCollection _certCollection = new X509CertificateCollection();
 #endif
+
+        // Keeps track of when the last keep alive from the server was received
+        // internal virtual to allow mocking
+        internal virtual HeartbeatMonitor Monitor { get; private set; }
 
         /// <summary>
         /// Occurs when the <see cref="Connection"/> has received data from the server.
@@ -182,7 +183,7 @@ namespace Microsoft.AspNet.SignalR.Client
             _totalTransportConnectTimeout = TimeSpan.Zero;
 
             // Current client protocol
-            Protocol = new Version(1, 3);
+            Protocol = new Version(1, 4);
         }
 
         /// <summary>
@@ -204,6 +205,11 @@ namespace Microsoft.AspNet.SignalR.Client
         }
 
         public Version Protocol { get; set; }
+
+        /// <summary>
+        /// Gets the last error encountered by the <see cref="Connection"/>.
+        /// </summary>
+        public Exception LastError { get; private set; }
 
         /// <summary>
         /// The maximum amount of time a connection will allow to try and reconnect.
@@ -480,7 +486,7 @@ namespace Microsoft.AspNet.SignalR.Client
                                     _reconnectWindow = _disconnectTimeout;
                                 }
 
-                                _monitor = new HeartbeatMonitor(this, _stateLock, beatInterval);
+                                Monitor = new HeartbeatMonitor(this, _stateLock, beatInterval);
 
                                 return StartTransport();
                             })
@@ -502,7 +508,7 @@ namespace Microsoft.AspNet.SignalR.Client
                                  // Start the monitor to check for server activity
                                  _lastMessageAt = DateTime.UtcNow;
                                  _lastActiveAt = DateTime.UtcNow;
-                                 _monitor.Start();
+                                 Monitor.Start();
                              })
                              // Don't return until the last receive has been processed to ensure messages/state sent in OnConnected
                              // are processed prior to the Start() method task finishing
@@ -557,6 +563,27 @@ namespace Microsoft.AspNet.SignalR.Client
 
         /// <summary>
         /// Stops the <see cref="Connection"/> and sends an abort message to the server.
+        /// <param name="error">The error due to which the connection is being stopped.</param>
+        /// </summary>
+        public void Stop(Exception error)
+        {
+            Stop(error, DefaultAbortTimeout);
+        }
+
+        /// <summary>
+        /// Stops the <see cref="Connection"/> and sends an abort message to the server.
+        /// <param name="error">The error due to which the connection is being stopped.</param>
+        /// <param name="timeout">The timeout</param>
+        /// </summary>
+        [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "We don't want to raise the Start exception on Stop.")]
+        public void Stop(Exception error, TimeSpan timeout)
+        {
+            OnError(error);
+            Stop(timeout);            
+        }
+
+        /// <summary>
+        /// Stops the <see cref="Connection"/> and sends an abort message to the server.
         /// <param name="timeout">The timeout</param>
         /// </summary>
         [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "We don't want to raise the Start exception on Stop.")]
@@ -593,7 +620,7 @@ namespace Microsoft.AspNet.SignalR.Client
                 Trace(TraceLevels.Events, "Stop");
 
                 // Dispose the heart beat monitor so we don't fire notifications when waiting to abort
-                _monitor.Dispose();
+                Monitor.Dispose();
 
                 _transport.Abort(this, timeout, _connectionData);
 
@@ -626,9 +653,9 @@ namespace Microsoft.AspNet.SignalR.Client
                     _disconnectCts.Cancel();
                     _disconnectCts.Dispose();
 
-                    if (_monitor != null)
+                    if (Monitor != null)
                     {
-                        _monitor.Dispose();
+                        Monitor.Dispose();
                     }
 
                     if (_transport != null)
@@ -773,6 +800,8 @@ namespace Microsoft.AspNet.SignalR.Client
         {
             Trace(TraceLevels.Events, "OnError({0})", error);
 
+            LastError = error;
+
             if (Error != null)
             {
                 Error(error);
@@ -784,13 +813,26 @@ namespace Microsoft.AspNet.SignalR.Client
             OnError(error);
         }
 
-        public virtual void OnReconnecting()
+        void IConnection.OnReconnecting()
+        {
+            OnReconnecting();
+        }
+
+        internal virtual void OnReconnecting()
         {
             // Only allow the client to attempt to reconnect for a _disconnectTimout TimeSpan which is set by
             // the server during negotiation.
             // If the client tries to reconnect for longer the server will likely have deleted its ConnectionId
             // topic along with the contained disconnect message.
-            _disconnectTimeoutOperation = SetTimeout(_disconnectTimeout, Disconnect);
+            _disconnectTimeoutOperation = 
+                SetTimeout(
+                    _disconnectTimeout,
+                    () =>
+                    {
+                        OnError(new TimeoutException(String.Format(CultureInfo.CurrentCulture,
+                                Resources.Error_ReconnectTimeout, _disconnectTimeout)));
+                        Disconnect();
+                    });
 
 #if NETFX_CORE || PORTABLE
             // Clear the buffer
@@ -814,6 +856,7 @@ namespace Microsoft.AspNet.SignalR.Client
                 Reconnected();
             }
 
+            Monitor.Reconnected();
             ((IConnection)this).MarkLastMessage();
         }
 

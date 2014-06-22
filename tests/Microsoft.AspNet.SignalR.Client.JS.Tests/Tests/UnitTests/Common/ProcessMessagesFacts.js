@@ -1,20 +1,27 @@
 ﻿QUnit.module("Transports Common - Process Messages Facts");
 
-QUnit.test("onInitialize is triggered on an initialize message.", function () {
+QUnit.test("tryInitialize is triggered on an initialize message.", function () {
     var connection = testUtilities.createConnection(),
-        initializeTriggered = false;
+        tryInitializeTriggered = false,
+        tryInitialize = $.signalR.transports._logic.tryInitialize;
 
-    $.signalR.transports._logic.processMessages(connection, {
-        C: 1234,
-        M: [],
-        L: 1337,
-        G: "foo",
-        S: 1
-    }, function () {
-        initializeTriggered = true;
-    });
+    $.signalR.transports._logic.tryInitialize = function () {
+        tryInitializeTriggered = true;
+    };
 
-    QUnit.isTrue(initializeTriggered, "Initialize was triggered from initialize message");
+    try {
+        $.signalR.transports._logic.processMessages(connection, {
+            C: 1234,
+            M: [],
+            L: 1337,
+            G: "foo",
+            S: 1
+        });
+
+        QUnit.isTrue(tryInitializeTriggered, "tryInitialize was triggered from initialize message");
+    } finally {
+        $.signalR.transports._logic.tryInitialize = tryInitialize;
+    }
 });
 
 QUnit.test("Updates keep alive data on any message retrieval.", function () {
@@ -69,26 +76,6 @@ QUnit.test("Noop's on keep alive", function () {
     $.signalR.transports._logic.maximizePersistentResponse = savedMaximizePersistentResponse;
 });
 
-QUnit.test("Handles disconnect command correctly", function () {
-    var connection = testUtilities.createConnection(),
-        response = {
-            C: 1234,
-            M: [{ uno: 1, dos: 2 }, { tres: 3, quatro: 4 }],
-            D: true,
-            L: 1337,
-            G: "foo"
-        };
-
-    connection.transport = {};
-    connection.stop = function (async, notifyServer) {
-        QUnit.ok(!async, "Disconnect commands should not be asynchronous.");
-        QUnit.ok(!notifyServer, "Disconnect commands should not notify the server.");
-        QUnit.ok(true, "Disconnect command should result in the connection trying to be stopped.");
-    };
-
-    $.signalR.transports._logic.processMessages(connection, response);
-});
-
 QUnit.test("Updates group on message retrieval.", function () {
     var connection = testUtilities.createConnection(),
         response = {
@@ -108,11 +95,6 @@ QUnit.test("Updates group on message retrieval.", function () {
 
     $.signalR.transports._logic.processMessages(connection, response);
     QUnit.ok(updateGroupsCount === 1, "Update groups is called with generic message.");
-
-    // Turn the disconnect flag on.  We should not update groups in this scenario
-    response.D = true;
-    $.signalR.transports._logic.processMessages(connection, response);
-    QUnit.ok(updateGroupsCount === 1, "Update groups is not called when we have a disconnect command.");
 
     $.signalR.transports._logic.processMessages(connection);
     QUnit.ok(updateGroupsCount === 1, "Update groups is not called when we have a keep alive.");

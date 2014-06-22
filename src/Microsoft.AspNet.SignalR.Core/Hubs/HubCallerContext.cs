@@ -12,12 +12,12 @@ namespace Microsoft.AspNet.SignalR.Hubs
         /// <summary>
         /// Gets the connection id of the calling client.
         /// </summary>
-        public string ConnectionId { get; private set; }
+        public virtual string ConnectionId { get; private set; }
 
         /// <summary>
         /// Gets the cookies for the request.
         /// </summary>
-        public IDictionary<string, Cookie> RequestCookies
+        public virtual IDictionary<string, Cookie> RequestCookies
         {
             get
             {
@@ -28,7 +28,7 @@ namespace Microsoft.AspNet.SignalR.Hubs
         /// <summary>
         /// Gets the headers for the request.
         /// </summary>
-        public INameValueCollection Headers
+        public virtual INameValueCollection Headers
         {
             get
             {
@@ -39,7 +39,7 @@ namespace Microsoft.AspNet.SignalR.Hubs
         /// <summary>
         /// Gets the querystring for the request.
         /// </summary>
-        public INameValueCollection QueryString
+        public virtual INameValueCollection QueryString
         {
             get
             {
@@ -50,7 +50,7 @@ namespace Microsoft.AspNet.SignalR.Hubs
         /// <summary>
         /// Gets the <see cref="IPrincipal"/> for the request.
         /// </summary>
-        public IPrincipal User
+        public virtual IPrincipal User
         {
             get
             {
@@ -61,7 +61,13 @@ namespace Microsoft.AspNet.SignalR.Hubs
         /// <summary>
         /// Gets the <see cref="IRequest"/> for the current HTTP request.
         /// </summary>
-        public IRequest Request { get; private set; }
+        public virtual IRequest Request { get; private set; }
+
+        /// <summary>
+        /// This constructor is only intended to enable mocking of the class. Use of this constructor 
+        /// for other purposes may result in unexpected behavior.   
+        /// </summary>
+        protected HubCallerContext() { }
 
         public HubCallerContext(IRequest request, string connectionId)
         {

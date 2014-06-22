@@ -34,9 +34,19 @@ namespace Microsoft.AspNet.SignalR.Hubs
         Task OnReconnected();
 
         /// <summary>
-        /// Called when a connection is disconnected from the <see cref="IHub"/>.
+        /// Called when a connection has disconnected gracefully from the <see cref="IHub"/>,
+        /// i.e. stop was called on the client.
         /// </summary>
         Task OnDisconnected();
+
+        /// <summary>
+        /// Called when a connection is disconnected from the <see cref="IHub"/>.
+        /// </summary>
+        /// <param name="stopCalled">
+        /// true, if stop was called on the client closing the connection gracefully;
+        /// false, if the client timed out. Timeouts can be caused by clients reconnecting to another SignalR server in scaleout.
+        /// </param>
+        Task OnDisconnected(bool stopCalled);
     }
 }
 

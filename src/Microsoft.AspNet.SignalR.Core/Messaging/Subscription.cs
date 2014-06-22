@@ -119,12 +119,14 @@ namespace Microsoft.AspNet.SignalR.Messaging
             // Set the state to working
             Interlocked.Exchange(ref _state, State.Working);
 
+            var items = new List<ArraySegment<Message>>();
+
             while (Alive)
             {
-                var items = new List<ArraySegment<Message>>();
                 int totalCount;
                 object state;
 
+                items.Clear();
                 PerformWork(items, out totalCount, out state);
 
                 if (items.Count > 0)

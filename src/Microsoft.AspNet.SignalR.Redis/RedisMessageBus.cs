@@ -54,14 +54,21 @@ namespace Microsoft.AspNet.SignalR.Redis
         protected override Task Send(int streamIndex, IList<Message> messages)
         {
             var keys = new string[] { _key };
+            TraceMessages(messages);
             var arguments = new object[] { RedisMessage.ToBytes(messages) };
-            return _connection.Scripting.Eval(
+            var redisTask = _connection.Scripting.Eval(
                 _db,
                 @"local newId = redis.call('INCR', KEYS[1])
                   local payload = newId .. ' ' .. ARGV[1]
-                  return redis.call('PUBLISH', KEYS[1], payload)",
+                  redis.call('PUBLISH', KEYS[1], payload)
+                  return {newId, ARGV[1], payload}
+                ",
                 keys,
                 arguments);
+
+            Task.Run(() => TraceRedisScriptResult(redisTask));
+
+            return redisTask;
         }
 
         protected override void Dispose(bool disposing)
@@ -143,7 +150,7 @@ namespace Microsoft.AspNet.SignalR.Redis
         private void OnMessage(string key, byte[] data)
         {
             // The key is the stream id (channel)
-            var message = RedisMessage.FromBytes(data);
+            var message = RedisMessage.FromBytes(data, _trace);
 
             // locked to avoid overlapping calls (even though we have set the mode 
             // to preserve order on the subscription)
@@ -236,6 +243,46 @@ namespace Microsoft.AspNet.SignalR.Redis
 
                 return TaskAsyncHelper.FromError(ex);
             }
+        }
+
+        private void TraceMessages(IList<Message> messages)
+        {
+            if (!_trace.Switch.ShouldTrace(TraceEventType.Verbose))
+            {
+                return;
+            }
+
+            foreach (Message message in messages)
+            {
+                _trace.TraceVerbose("Sending {0} bytes over Redis Bus: {1}", message.Value.Array.Length, message.GetString());
+            }
+        }
+
+        private void TraceRedisScriptResult(Task<object> redisTask)
+        {
+            if (!_trace.Switch.ShouldTrace(TraceEventType.Verbose))
+            {
+                return;
+            }
+
+            var result = redisTask.Result as object[];
+            var argumentNames = new string[] { "newId", "message", "payload" };
+
+            for (var i = 0; i < result.Length; i++)
+            {
+                var r = result[i];
+                _trace.TraceVerbose("Sending {0}: ({1}) {2}", argumentNames[i], r.GetType().Name, FormatBytes(r));
+            }
+        }
+
+        private static string FormatBytes(object payload)
+        {
+            byte[] bytes = payload as byte[];
+            if (bytes != null)
+            {
+                return bytes.Length + " bytes: " + BitConverter.ToString(bytes).Replace("-", string.Empty);
+            }
+            return payload.ToString();
         }
 
         private static class State

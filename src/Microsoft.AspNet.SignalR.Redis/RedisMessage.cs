@@ -2,10 +2,12 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Text;
 using Microsoft.AspNet.SignalR.Messaging;
+using Microsoft.AspNet.SignalR.Tracing;
 
 namespace Microsoft.AspNet.SignalR.Redis
 {
@@ -35,7 +37,8 @@ namespace Microsoft.AspNet.SignalR.Redis
             }
         }
 
-        public static RedisMessage FromBytes(byte[] data)
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1062:Validate arguments of public methods", MessageId = "0")]
+        public static RedisMessage FromBytes(byte[] data, TraceSource trace)
         {
             using (var stream = new MemoryStream(data))
             {
@@ -49,9 +52,13 @@ namespace Microsoft.AspNet.SignalR.Redis
                     int charCode = stream.ReadByte();
                     if (charCode == -1)
                     {
-                        throw new EndOfStreamException();
+                        trace.TraceVerbose("Received Message could not be parsed.");
+                        TraceMessage(data, messageIdBuilder.ToString(), trace);
+                        throw new EndOfStreamException(Resources.Error_EndOfStreamRedis);
                     }
+
                     char c = (char)charCode;
+
                     if (c == ' ')
                     {
                         message.Id = ulong.Parse(messageIdBuilder.ToString(), CultureInfo.InvariantCulture);
@@ -64,6 +71,8 @@ namespace Microsoft.AspNet.SignalR.Redis
                 }
                 while (messageIdBuilder != null);
 
+                TraceMessage(data, message.Id.ToString(CultureInfo.CurrentCulture), trace);
+
                 var binaryReader = new BinaryReader(stream);
                 int count = binaryReader.ReadInt32();
                 byte[] buffer = binaryReader.ReadBytes(count);
@@ -71,6 +80,18 @@ namespace Microsoft.AspNet.SignalR.Redis
                 message.ScaleoutMessage = ScaleoutMessage.FromBytes(buffer);
                 return message;
             }
+        }
+
+        private static void TraceMessage(byte[] data, string messageId, TraceSource trace)
+        {
+            if (!trace.Switch.ShouldTrace(TraceEventType.Verbose))
+            {
+                return;
+            }
+
+            trace.TraceVerbose("Received {0} bytes over Redis Bus.", data.Length);
+            trace.TraceVerbose("Received Message: {0}", Convert.ToBase64String(data));
+            trace.TraceVerbose("Received Message Id: {0} ", messageId);
         }
     }
 }

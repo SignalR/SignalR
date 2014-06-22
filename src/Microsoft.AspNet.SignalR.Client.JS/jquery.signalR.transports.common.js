@@ -9,6 +9,7 @@
     var signalR = $.signalR,
         events = $.signalR.events,
         changeState = $.signalR.changeState,
+        startAbortText = "__Start Aborted__",
         transportLogic;
 
     signalR.transports = {};
@@ -53,17 +54,28 @@
         }
     }
 
-    function addConnectionData(url, connectionData) {
-        var appender = url.indexOf("?") !== -1 ? "&" : "?";
+    function getAjaxUrl(connection, path) {
+        var url = connection.url + path;
 
-        if (connectionData) {
-            url += appender + "connectionData=" + window.encodeURIComponent(connectionData);
+        if (connection.transport) {
+            url += "?transport=" + connection.transport.name;
         }
 
-        return url;
+        return transportLogic.prepareQueryString(connection, url);
     }
 
     transportLogic = signalR.transports._logic = {
+        ajax: function (connection, options) {
+            return $.ajax(
+                $.extend(/*deep copy*/ true, {}, $.signalR.ajaxDefaults, {
+                    type: "GET",
+                    data: {},
+                    xhrFields: { withCredentials: connection.withCredentials },
+                    contentType: connection.contentType,
+                    dataType: connection.ajaxDataType
+                }, options));
+        },
+
         pingServer: function (connection) {
             /// <summary>Pings the server</summary>
             /// <param name="connection" type="signalr">Connection associated with the server ping</param>
@@ -77,73 +89,65 @@
 
                 url = transportLogic.addQs(url, connection.qs);
 
-                xhr = $.ajax(
-                    $.extend({}, $.signalR.ajaxDefaults, {
-                        xhrFields: { withCredentials: connection.withCredentials },
-                        url: url,
-                        type: "GET",
-                        contentType: connection.contentType,
-                        data: {},
-                        dataType: connection.ajaxDataType,
-                        success: function (result) {
-                            var data;
+                xhr = transportLogic.ajax(connection, {
+                    url: url,
+                    success: function (result) {
+                        var data;
 
-                            try {
-                                data = connection._parseResponse(result);
-                            }
-                            catch (error) {
-                                deferral.reject(
-                                    signalR._.transportError(
-                                        signalR.resources.pingServerFailedParse,
-                                        connection.transport,
-                                        error,
-                                        xhr
-                                    )
-                                );
-                                connection.stop();
-                                return;
-                            }
+                        try {
+                            data = connection._parseResponse(result);
+                        }
+                        catch (error) {
+                            deferral.reject(
+                                signalR._.transportError(
+                                    signalR.resources.pingServerFailedParse,
+                                    connection.transport,
+                                    error,
+                                    xhr
+                                )
+                            );
+                            connection.stop();
+                            return;
+                        }
 
-                            if (data.Response === "pong") {
-                                deferral.resolve();
-                            }
-                            else {
-                                deferral.reject(
-                                    signalR._.transportError(
-                                        signalR._.format(signalR.resources.pingServerFailedInvalidResponse, result.responseText),
-                                        connection.transport,
-                                        null /* error */,
-                                        xhr
-                                    )
-                                );
-                            }
-                        },
-                        error: function (error) {
-                            if (error.status === 401 || error.status === 403) {
-                                deferral.reject(
-                                    signalR._.transportError(
-                                        signalR._.format(signalR.resources.pingServerFailedStatusCode, error.status),
-                                        connection.transport,
-                                        error,
-                                        xhr
-                                    )
-                                );
-                                connection.stop();
-                            }
-                            else {
-                                deferral.reject(
-                                    signalR._.transportError(
-                                        signalR.resources.pingServerFailed,
-                                        connection.transport,
-                                        error,
-                                        xhr
-                                    )
-                                );
-                            }
+                        if (data.Response === "pong") {
+                            deferral.resolve();
+                        }
+                        else {
+                            deferral.reject(
+                                signalR._.transportError(
+                                    signalR._.format(signalR.resources.pingServerFailedInvalidResponse, result),
+                                    connection.transport,
+                                    null /* error */,
+                                    xhr
+                                )
+                            );
+                        }
+                    },
+                    error: function (error) {
+                        if (error.status === 401 || error.status === 403) {
+                            deferral.reject(
+                                signalR._.transportError(
+                                    signalR._.format(signalR.resources.pingServerFailedStatusCode, error.status),
+                                    connection.transport,
+                                    error,
+                                    xhr
+                                )
+                            );
+                            connection.stop();
+                        }
+                        else {
+                            deferral.reject(
+                                signalR._.transportError(
+                                    signalR.resources.pingServerFailed,
+                                    connection.transport,
+                                    error,
+                                    xhr
+                                )
+                            );
                         }
                     }
-                ));
-
+                });
             }
             else {
                 deferral.reject(
@@ -158,9 +162,23 @@
         },
 
         prepareQueryString: function (connection, url) {
-            url = transportLogic.addQs(url, connection.qs);
+            var preparedUrl;
 
-            return addConnectionData(url, connection.data);
+            // Use addQs to start since it handles the ?/& prefix for us
+            preparedUrl = transportLogic.addQs(url, "clientProtocol=" + connection.clientProtocol);
+
+            // Add the user-specified query string params if any
+            preparedUrl = transportLogic.addQs(preparedUrl, connection.qs);
+
+            if (connection.token) {
+                preparedUrl += "&connectionToken=" + window.encodeURIComponent(connection.token);
+            }
+
+            if (connection.data) {
+                preparedUrl += "&connectionData=" + window.encodeURIComponent(connection.data);
+            }
+
+            return preparedUrl;
         },
 
         addQs: function (url, qs) {
@@ -188,13 +206,14 @@
             throw new Error("Query string property must be either a string or object.");
         },
 
-        getUrl: function (connection, transport, reconnecting, poll) {
+        // BUG #2953: The url needs to be same otherwise it will cause a memory leak
+        getUrl: function (connection, transport, reconnecting, poll, ajaxPost) {
             /// <summary>Gets the url for making a GET based connect request</summary>
             var baseUrl = transport === "webSockets" ? "" : connection.baseUrl,
                 url = baseUrl + connection.appRelativeUrl,
-                qs = "transport=" + transport + "&connectionToken=" + window.encodeURIComponent(connection.token);
+                qs = "transport=" + transport;
 
-            if (connection.groupsToken) {
+            if (!ajaxPost && connection.groupsToken) {
                 qs += "&groupsToken=" + window.encodeURIComponent(connection.groupsToken);
             }
 
@@ -208,13 +227,17 @@
                     url += "/reconnect";
                 }
 
-                if (connection.messageId) {
+                if (!ajaxPost && connection.messageId) {
                     qs += "&messageId=" + window.encodeURIComponent(connection.messageId);
                 }
             }
             url += "?" + qs;
             url = transportLogic.prepareQueryString(connection, url);
-            url += "&tid=" + Math.floor(Math.random() * 11);
+
+            if (!ajaxPost) {
+                url += "&tid=" + Math.floor(Math.random() * 11);
+            }
+
             return url;
         },
 
@@ -245,52 +268,47 @@
 
         ajaxSend: function (connection, data) {
             var payload = transportLogic.stringifySend(connection, data),
-                url = connection.url + "/send" + "?transport=" + connection.transport.name + "&connectionToken=" + window.encodeURIComponent(connection.token),
+                url = getAjaxUrl(connection, "/send"),
                 xhr,
                 onFail = function (error, connection) {
                     $(connection).triggerHandler(events.onError, [signalR._.transportError(signalR.resources.sendFailed, connection.transport, error, xhr), data]);
                 };
 
-            url = transportLogic.prepareQueryString(connection, url);
 
-            xhr = $.ajax(
-                $.extend({}, $.signalR.ajaxDefaults, {
-                    xhrFields: { withCredentials: connection.withCredentials },
-                    url: url,
-                    type: connection.ajaxDataType === "jsonp" ? "GET" : "POST",
-                    contentType: signalR._.defaultContentType,
-                    dataType: connection.ajaxDataType,
-                    data: {
-                        data: payload
-                    },
-                    success: function (result) {
-                        var res;
+            xhr = transportLogic.ajax(connection, {
+                url: url,
+                type: connection.ajaxDataType === "jsonp" ? "GET" : "POST",
+                contentType: signalR._.defaultContentType,
+                data: {
+                    data: payload
+                },
+                success: function (result) {
+                    var res;
 
-                        if (result) {
-                            try {
-                                res = connection._parseResponse(result);
-                            }
-                            catch (error) {
-                                onFail(error, connection);
-                                connection.stop();
-                                return;
-                            }
-
-                            transportLogic.triggerReceived(connection, res);
+                    if (result) {
+                        try {
+                            res = connection._parseResponse(result);
                         }
-                    },
-                    error: function (error, textStatus) {
-                        if (textStatus === "abort" || textStatus === "parsererror") {
-                            // The parsererror happens for sends that don't return any data, and hence
-                            // don't write the jsonp callback to the response. This is harder to fix on the server
-                            // so just hack around it on the client for now.
+                        catch (error) {
+                            onFail(error, connection);
+                            connection.stop();
                             return;
                         }
 
-                        onFail(error, connection);
+                        transportLogic.triggerReceived(connection, res);
                     }
+                },
+                error: function (error, textStatus) {
+                    if (textStatus === "abort" || textStatus === "parsererror") {
+                        // The parsererror happens for sends that don't return any data, and hence
+                        // don't write the jsonp callback to the response. This is harder to fix on the server
+                        // so just hack around it on the client for now.
+                        return;
+                    }
+
+                    onFail(error, connection);
                 }
-            ));
+            });
 
             return xhr;
         },
@@ -303,28 +321,81 @@
             // Async by default unless explicitly overidden
             async = typeof async === "undefined" ? true : async;
 
-            var url = connection.url + "/abort" + "?transport=" + connection.transport.name + "&connectionToken=" + window.encodeURIComponent(connection.token);
-            url = transportLogic.prepareQueryString(connection, url);
+            var url = getAjaxUrl(connection, "/abort");
 
-            $.ajax(
-                $.extend({}, $.signalR.ajaxDefaults, {
-                    xhrFields: { withCredentials: connection.withCredentials },
-                    url: url,
-                    async: async,
-                    timeout: 1000,
-                    type: "POST",
-                    contentType: connection.contentType,
-                    dataType: connection.ajaxDataType,
-                    data: {}
-                }
-            ));
+            transportLogic.ajax(connection, {
+                url: url,
+                async: async,
+                timeout: 1000,
+                type: "POST"
+            });
 
             connection.log("Fired ajax abort async = " + async + ".");
         },
 
-        tryInitialize: function (persistentResponse, onInitialized) {
+        tryInitialize: function (connection, persistentResponse, onInitialized) {
+            var startUrl,
+                xhr,
+                rejectDeferred = function (error) {
+                    var deferred = connection._deferral;
+                    if (deferred) {
+                        deferred.reject(error);
+                    }
+                },
+                triggerStartError = function (error) {
+                    $(connection).triggerHandler(events.onError, [error]);
+                    rejectDeferred(error);
+                    connection.stop();
+                };
+
             if (persistentResponse.Initialized) {
-                onInitialized();
+                startUrl = getAjaxUrl(connection, "/start");
+
+                xhr = transportLogic.ajax(connection, {
+                    url: startUrl,
+                    success: function (result) {
+                        var data;
+
+                        try {
+                            data = connection._parseResponse(result);
+                        } catch (error) {
+                            triggerStartError(signalR._.error(
+                                signalR._.format(signalR.resources.errorParsingStartResponse, result),
+                                error, xhr));
+                            return;
+                        }
+
+                        if (data.Response === "started") {
+                            onInitialized();
+                        } else {
+                            triggerStartError(signalR._.error(
+                                signalR._.format(signalR.resources.invalidStartResponse, result),
+                                null /* error */, xhr));
+                        }
+                    },
+                    error: function (error, statusText) {
+                        if (statusText !== startAbortText) {
+                            triggerStartError(signalR._.error(
+                                signalR.resources.errorDuringStartRequest,
+                                error, xhr));
+                        } else {
+                            // Stop has been called
+                            rejectDeferred(signalR._.error(
+                                signalR.resources.stoppedDuringStartRequest,
+                                null /* error */, xhr));
+                        }
+                    }
+                });
+
+                connection._.startRequest = xhr;
+            }
+        },
+
+        tryAbortStartRequest: function (connection) {
+            if (connection._.startRequest) {
+                // If the start request has already completed this will noop.
+                connection._.startRequest.abort(startAbortText);
+                delete connection._.startRequest;
             }
         },
 
@@ -343,14 +414,6 @@
             if (minData) {
                 data = transportLogic.maximizePersistentResponse(minData);
 
-                if (data.Disconnect) {
-                    connection.log("Disconnect command received from server.");
-
-                    // Disconnected by the server
-                    connection.stop(false, false);
-                    return;
-                }
-
                 transportLogic.updateGroups(connection, data.GroupsToken);
 
                 if (data.MessageId) {
@@ -362,7 +425,7 @@
                         transportLogic.triggerReceived(connection, message);
                     });
 
-                    transportLogic.tryInitialize(data, onInitialized);
+                    transportLogic.tryInitialize(connection, data, onInitialized);
                 }
             }
         },
@@ -449,8 +512,10 @@
 
         verifyLastActive: function (connection) {
             if (new Date().getTime() - connection._.lastActiveAt >= connection.reconnectWindow) {
-                connection.log("There has not been an active server connection for an extended period of time. Stopping connection.");
-                connection.stop();
+                var message = signalR._.format(signalR.resources.reconnectWindowTimeout, new Date(connection._.lastActiveAt), connection.reconnectWindow);
+                connection.log(message);
+                $(connection).triggerHandler(events.onError, [signalR._.error(message, /* source */ "TimeoutException")]);
+                connection.stop(/* async */ false, /* notifyServer */ false);
                 return false;
             }
 

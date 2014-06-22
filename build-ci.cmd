@@ -16,4 +16,4 @@ set perfRun=%4
 if /i not "%perfRun%" == "true" (
    set perfRun=false
 )
-%WINDIR%\Microsoft.NET\Framework\v4.0.30319\msbuild Build\Build.proj /t:%target% /p:Configuration="%config%";BUILD_NUMBER=%version%;PRERELEASE=true /v:M /fl /flp:LogFile=msbuild.log;Verbosity=Normal /nr:false /p:PerfRun=%perfRun%
+"%ProgramFiles(x86)%"\MSBuild\12.0\Bin\msbuild Build\Build.proj /t:%target% /p:Configuration="%config%";BUILD_NUMBER=%version%;PRERELEASE=true /v:M /fl /flp:LogFile=msbuild.log;Verbosity=Normal /nr:false /p:PerfRun=%perfRun%

@@ -126,6 +126,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Server.Hubs
             response.SetupGet(m => m.CancellationToken).Returns(CancellationToken.None);
             response.SetupSet(m => m.ContentType = It.IsAny<string>()).Callback<string>(type => contentType = type);
             response.Setup(m => m.Write(It.IsAny<ArraySegment<byte>>())).Callback<ArraySegment<byte>>(data => buffer.Add(Encoding.UTF8.GetString(data.Array, data.Offset, data.Count)));
+            response.Setup(m => m.Flush()).Returns(TaskAsyncHelper.Empty);
 
             // Act
             var context = new HostContext(request.Object, response.Object);
@@ -173,6 +174,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Server.Hubs
             response.SetupGet(m => m.CancellationToken).Returns(CancellationToken.None);
             response.SetupSet(m => m.ContentType = It.IsAny<string>()).Callback<string>(type => contentType = type);
             response.Setup(m => m.Write(It.IsAny<ArraySegment<byte>>())).Callback<ArraySegment<byte>>(data => buffer.Add(Encoding.UTF8.GetString(data.Array, data.Offset, data.Count)));
+            response.Setup(m => m.Flush()).Returns(TaskAsyncHelper.Empty);
 
             // Act
             var context = new HostContext(request.Object, response.Object);
@@ -220,6 +222,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Server.Hubs
             response.SetupGet(m => m.CancellationToken).Returns(CancellationToken.None);
             response.SetupSet(m => m.ContentType = It.IsAny<string>()).Callback<string>(type => contentType = type);
             response.Setup(m => m.Write(It.IsAny<ArraySegment<byte>>())).Callback<ArraySegment<byte>>(data => buffer.Add(Encoding.UTF8.GetString(data.Array, data.Offset, data.Count)));
+            response.Setup(m => m.Flush()).Returns(TaskAsyncHelper.Empty);
 
             // Act
             var context = new HostContext(request.Object, response.Object);
@@ -267,6 +270,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Server.Hubs
             response.SetupGet(m => m.CancellationToken).Returns(CancellationToken.None);
             response.SetupSet(m => m.ContentType = It.IsAny<string>()).Callback<string>(type => contentType = type);
             response.Setup(m => m.Write(It.IsAny<ArraySegment<byte>>())).Callback<ArraySegment<byte>>(data => buffer.Add(Encoding.UTF8.GetString(data.Array, data.Offset, data.Count)));
+            response.Setup(m => m.Flush()).Returns(TaskAsyncHelper.Empty);
 
             // Act
             var context = new HostContext(request.Object, response.Object);

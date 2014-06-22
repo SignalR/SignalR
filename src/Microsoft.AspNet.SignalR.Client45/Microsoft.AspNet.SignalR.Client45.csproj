@@ -126,11 +126,17 @@
     <Compile Include="..\Microsoft.AspNet.SignalR.Client\Infrastructure\SignalRError.cs">
       <Link>Infrastructure\SignalRError.cs</Link>
     </Compile>
+    <Compile Include="..\Microsoft.AspNet.SignalR.Client\Infrastructure\StartException.cs">
+      <Link>Infrastructure\StartException.cs</Link>
+    </Compile>
     <Compile Include="..\Microsoft.AspNet.SignalR.Client\Infrastructure\TransportAbortHandler.cs">
       <Link>Infrastructure\TransportAbortHandler.cs</Link>
     </Compile>
     <Compile Include="..\Microsoft.AspNet.SignalR.Client\Infrastructure\TransportInitializationHandler.cs">
       <Link>Infrastructure\TransportInitializationHandler.cs</Link>
+    </Compile>
+    <Compile Include="..\Microsoft.AspNet.SignalR.Client\Infrastructure\UrlBuilder.cs">
+      <Link>Infrastructure\UrlBuilder.cs</Link>
     </Compile>
     <Compile Include="..\Microsoft.AspNet.SignalR.Client\KeepAliveData.cs">
       <Link>KeepAliveData.cs</Link>
@@ -140,6 +146,9 @@
     </Compile>
     <Compile Include="..\Microsoft.AspNet.SignalR.Client\Transports\AsyncStreamReader.cs">
       <Link>Transports\AsyncStreamReader.cs</Link>
+    </Compile>
+    <Compile Include="..\Microsoft.AspNet.SignalR.Client\Transports\ClientTransportBase.cs">
+      <Link>Transports\ClientTransportBase.cs</Link>
     </Compile>
     <Compile Include="..\Microsoft.AspNet.SignalR.Client\Transports\LongPolling\NegotiateInitializer.cs">
       <Link>Transports\LongPolling\NegotiateInitializer.cs</Link>
@@ -225,6 +234,9 @@
     <Compile Include="..\Microsoft.AspNet.SignalR.Core\Owin\WebSockets\WebSocketMessageReader.cs">
       <Link>Transports\WebSockets\WebSocketMessageReader.cs</Link>
     </Compile>
+    <Compile Include="..\Microsoft.AspNet.SignalR.Core\TaskAwaiterHelper.cs">
+      <Link>Infrastructure\TaskAwaiterHelper.cs</Link>
+    </Compile>
     <Compile Include="Http\HttpRequestMessageWrapper.cs" />
     <Compile Include="Http\DefaultHttpClient.cs" />
     <Compile Include="Http\DefaultHttpHandler.cs" />
@@ -234,6 +246,7 @@
     </Compile>
     <Compile Include="Infrastructure\HttpClientException.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Transports\WebSockets\ClientWebSocketHandler.cs" />
     <Compile Include="Transports\WebSockets\WebSocketWrapperRequest.cs" />
     <Compile Include="Transports\WebSocketTransport.cs" />
   </ItemGroup>

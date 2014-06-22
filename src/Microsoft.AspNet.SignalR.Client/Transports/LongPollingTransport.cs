@@ -4,6 +4,7 @@ using System;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR.Client.Http;
 using Microsoft.AspNet.SignalR.Client.Infrastructure;
 using Microsoft.AspNet.SignalR.Infrastructure;
@@ -12,6 +13,9 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
 {
     public class LongPollingTransport : HttpBasedTransport
     {
+        private PollingRequestHandler _requestHandler;
+        private NegotiationResponse _negotiationResponse;
+
         /// <summary>
         /// The time to wait after a connection drops to try reconnecting.
         /// </summary>
@@ -41,8 +45,19 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
         {
             get
             {
-                return false;
+                // Don't check for keep alives if the server didn't send back the "LongPollDelay" as
+                // part of the response to /negotiate. That indicates the server is running an older
+                // version of SignalR that doesn't send long polling keep alives.
+                return _negotiationResponse != null &&
+                       _negotiationResponse.LongPollDelay.HasValue;
             }
+        }
+
+        public override Task<NegotiationResponse> Negotiate(IConnection connection, string connectionData)
+        {
+            return
+                base.Negotiate(connection, connectionData)
+                    .Then(negotiationResponse => _negotiationResponse = negotiationResponse);
         }
 
         protected override void OnStart(IConnection connection,
@@ -50,38 +65,38 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
                                         CancellationToken disconnectToken,
                                         TransportInitializationHandler initializeHandler)
         {
-            var requestHandler = new PollingRequestHandler(HttpClient);
+            _requestHandler = new PollingRequestHandler(HttpClient);
             var negotiateInitializer = new NegotiateInitializer(initializeHandler);
 
             Action<IRequest> initializeAbort = request => { negotiateInitializer.Abort(disconnectToken); };
 
-            requestHandler.OnError += negotiateInitializer.Complete;
-            requestHandler.OnAbort += initializeAbort;
+            _requestHandler.OnError += negotiateInitializer.Complete;
+            _requestHandler.OnAbort += initializeAbort;
+            _requestHandler.OnKeepAlive += connection.MarkLastMessage;
 
             // If the transport fails to initialize we want to silently stop
             initializeHandler.OnFailure += () =>
             {
-                requestHandler.Stop();
+                _requestHandler.Stop();
             };
 
             // Once we've initialized the connection we need to tear down the initializer functions and assign the appropriate onMessage function
             negotiateInitializer.Initialized += () =>
             {
-                requestHandler.OnError -= negotiateInitializer.Complete;
-                requestHandler.OnAbort -= initializeAbort;
+                _requestHandler.OnError -= negotiateInitializer.Complete;
+                _requestHandler.OnAbort -= initializeAbort;
             };
 
             // Add additional actions to each of the PollingRequestHandler events
-            PollingSetup(connection, connectionData, disconnectToken, requestHandler, negotiateInitializer.Complete);
+            PollingSetup(connection, connectionData, disconnectToken, negotiateInitializer.Complete);
 
-            requestHandler.Start();
+            _requestHandler.Start();
         }
 
         [SuppressMessage("Microsoft.Maintainability", "CA1502:AvoidExcessiveComplexity", Justification = "We will refactor later.")]
         private void PollingSetup(IConnection connection,
                                   string data,
                                   CancellationToken disconnectToken,
-                                  PollingRequestHandler requestHandler,
                                   Action onInitialized)
         {
             // reconnectInvoker is created new on each poll
@@ -90,40 +105,38 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
             var disconnectRegistration = disconnectToken.SafeRegister(state =>
             {
                 reconnectInvoker.Invoke();
-                requestHandler.Stop();
+                _requestHandler.Stop();
             }, null);
 
-            requestHandler.ResolveUrl = () =>
+            _requestHandler.ResolveUrl = () =>
             {
-                var url = connection.Url;
+                string url;
 
                 if (connection.MessageId == null)
                 {
-                    url += "connect";
+                    url = UrlBuilder.BuildConnect(connection, Name, data);
                     connection.Trace(TraceLevels.Events, "LP Connect: {0}", url);
                 }
                 else if (IsReconnecting(connection))
                 {
-                    url += "reconnect";
+                    url = UrlBuilder.BuildReconnect(connection, Name, data);
                     connection.Trace(TraceLevels.Events, "LP Reconnect: {0}", url);
                 }
                 else
                 {
-                    url += "poll";
+                    url = UrlBuilder.BuildPoll(connection, Name, data);
                     connection.Trace(TraceLevels.Events, "LP Poll: {0}", url);
                 }
-
-                url += GetReceiveQueryString(connection, data);
 
                 return url;
             };
 
-            requestHandler.PrepareRequest += req =>
+            _requestHandler.PrepareRequest += req =>
             {
                 connection.PrepareRequest(req);
             };
 
-            requestHandler.OnMessage += message =>
+            _requestHandler.OnMessage += message =>
             {
                 var shouldReconnect = false;
                 var disconnectedReceived = false;
@@ -156,13 +169,13 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
                 }
             };
 
-            requestHandler.OnError += exception =>
+            _requestHandler.OnError += exception =>
             {
                 reconnectInvoker.Invoke();
 
                 if (!TransportHelper.VerifyLastActive(connection))
                 {
-                    return;
+                    _requestHandler.Stop();
                 }
 
                 // Transition into reconnecting state
@@ -174,24 +187,20 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
                 {
                     connection.OnError(exception);
                 }
-                else
-                {
-                    requestHandler.Stop();
-                }
             };
 
-            requestHandler.OnPolling += () =>
+            _requestHandler.OnPolling += () =>
             {
                 // Capture the cleanup within a closure so it can persist through multiple requests
                 TryDelayedReconnect(connection, reconnectInvoker);
             };
 
-            requestHandler.OnAfterPoll = exception =>
+            _requestHandler.OnAfterPoll = exception =>
             {
                 if (AbortHandler.TryCompleteAbort())
                 {
                     // Abort() was called, so don't reconnect
-                    requestHandler.Stop();
+                    _requestHandler.Stop();
                 }
                 else
                 {
@@ -207,7 +216,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
                 return TaskAsyncHelper.Empty;
             };
 
-            requestHandler.OnAbort += _ =>
+            _requestHandler.OnAbort += _ =>
             {
                 disconnectRegistration.Dispose();
 
@@ -250,7 +259,10 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
 
         public override void LostConnection(IConnection connection)
         {
-
+            if (connection.EnsureReconnecting())
+            {
+                _requestHandler.LostConnection();
+            }
         }
     }
 }

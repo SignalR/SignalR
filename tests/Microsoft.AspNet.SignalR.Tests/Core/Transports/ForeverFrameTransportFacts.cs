@@ -23,7 +23,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Core
         [InlineData("<p>ELLO</p>", "\\u003cp\\u003eELLO\\u003c/p\\u003e")]
         public void ForeverFrameTransportEscapesTags(string data, string expected)
         {
-            var request = new Mock<IRequest>();
+            var request = MockRequest();
             var response = new CustomResponse();
             var context = new HostContext(request.Object, response);
             var fft = new ForeverFrameTransport(context, new DefaultDependencyResolver());
@@ -36,7 +36,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Core
         [InlineData("<script type=''></script>", "\\u003cscript type=''\\u003e\\u003c/script\\u003e")]
         public void ForeverFrameTransportEscapesTagsWithPersistentResponse(string data, string expected)
         {
-            var request = new Mock<IRequest>();
+            var request = MockRequest();
             var response = new CustomResponse();
             var context = new HostContext(request.Object, response);
             var fft = new ForeverFrameTransport(context, new DefaultDependencyResolver());
@@ -105,6 +105,16 @@ namespace Microsoft.AspNet.SignalR.Tests.Core
             };
 
             return response;
+        }
+
+        private static Mock<IRequest> MockRequest()
+        {
+            var request = new Mock<IRequest>();
+
+            request.SetupGet<INameValueCollection>(r => r.QueryString)
+                   .Returns(new NameValueCollectionWrapper());
+
+            return request;
         }
 
         private class CustomResponse : IResponse

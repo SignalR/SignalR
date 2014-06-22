@@ -167,7 +167,7 @@ namespace Microsoft.AspNet.SignalR.Tests
             // #2180
             using (var host = new MemoryHost())
             {
-                var myReconnect = new MyReconnect();
+                var reconnects = 0;
 
                 host.Configure(app =>
                 {
@@ -194,7 +194,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                         Resolver = new DefaultDependencyResolver()
                     };
 
-                    config.Resolver.Register(typeof(MyReconnect), () => myReconnect);
+                    config.Resolver.Register(typeof(MyReconnect), () => new MyReconnect(() => reconnects++));
 
                     app.MapSignalR<MyReconnect>("/echo", config);
                 });
@@ -210,7 +210,7 @@ namespace Microsoft.AspNet.SignalR.Tests
 
                     Assert.Equal(connection.State, ConnectionState.Connected);
                     Assert.Equal(connection.Transport.Name, "longPolling");
-                    Assert.Equal(0, myReconnect.Reconnects);
+                    Assert.Equal(0, reconnects);
                 }
             }
         }

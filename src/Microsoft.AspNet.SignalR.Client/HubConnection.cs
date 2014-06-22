@@ -82,7 +82,7 @@ namespace Microsoft.AspNet.SignalR.Client
         {
         }
 
-        public override void OnReconnecting()
+        internal override void OnReconnecting()
         {
             ClearInvocationCallbacks(Resources.Message_Reconnecting);
             base.OnReconnecting();

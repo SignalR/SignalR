@@ -7,7 +7,6 @@ namespace Microsoft.AspNet.SignalR.Messaging
         Initializing,
         AddToGroup,
         RemoveFromGroup,
-        Disconnect,
         Abort
     }
 }

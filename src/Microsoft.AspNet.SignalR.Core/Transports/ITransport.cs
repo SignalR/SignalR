@@ -4,6 +4,8 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR.Infrastructure;
+using Microsoft.AspNet.SignalR.Hosting;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Microsoft.AspNet.SignalR.Transports
 {
@@ -23,11 +25,6 @@ namespace Microsoft.AspNet.SignalR.Transports
         Func<Task> Connected { get; set; }
 
         /// <summary>
-        /// Gets or sets a callback that is invoked when the transport connects.
-        /// </summary>
-        Func<Task> TransportConnected { get; set; }
-
-        /// <summary>
         /// Gets or sets a callback that is invoked when the transport reconnects.
         /// </summary>
         Func<Task> Reconnected { get; set; }
@@ -35,12 +32,19 @@ namespace Microsoft.AspNet.SignalR.Transports
         /// <summary>
         /// Gets or sets a callback that is invoked when the transport disconnects.
         /// </summary>
-        Func<Task> Disconnected { get; set; }
+        Func<bool, Task> Disconnected { get; set; }
 
         /// <summary>
         /// Gets or sets the connection id for the transport.
         /// </summary>
         string ConnectionId { get; set; }
+
+        /// <summary>
+        /// Get groupsToken in request over the transport.
+        /// </summary>
+        /// <returns>groupsToken in request</returns>
+        [SuppressMessage("Microsoft.Design", "CA1024:UsePropertiesWhereAppropriate", Justification = "This is for async.")]
+        Task<string> GetGroupsToken();
 
         /// <summary>
         /// Processes the specified <see cref="ITransportConnection"/> for this transport.

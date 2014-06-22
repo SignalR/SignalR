@@ -5,7 +5,6 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.AspNet.SignalR.Client;
 using Microsoft.AspNet.SignalR.Client.Http;
 using Microsoft.AspNet.SignalR.Client.Transports;
 using Microsoft.AspNet.SignalR.Infrastructure;
@@ -325,6 +324,83 @@ namespace Microsoft.AspNet.SignalR.Client.Tests
             {
                 throw new NotImplementedException();
             }
+        }
+
+        [Fact]
+        public void OnErrorSetsLastError()
+        {
+            using (var connection = new Connection("http://fakeurl"))
+            {
+                var error = new Exception();
+                ((IConnection) connection).OnError(error);
+                Assert.Same(error, connection.LastError);
+            }
+        }
+
+        [Fact]
+        public void StopWithExceptionRaisesOnError()
+        {
+            using (var connection = new Connection("http://fakeurl"))
+            {
+                var exception = new Exception();
+                var onErrorCalled = false;
+
+                connection.Error += error =>
+                {
+                    onErrorCalled = true;
+                    Assert.Same(exception, error);
+                };
+
+                connection.Stop(exception, new TimeSpan(0));
+                Assert.True(onErrorCalled);
+
+                onErrorCalled = false;
+                connection.Stop(exception);
+                Assert.True(onErrorCalled);
+            }
+        }
+
+        [Fact]
+        public void OnReconnectingRaisesOnErrorIfReconnectingTimesOut()
+        {
+            using (var connection = new Connection("http://fakeurl"))
+            {
+                var errorCalledResetEvent = new ManualResetEventSlim();
+
+                connection.Error += error =>
+                {
+                    Assert.IsType<TimeoutException>(error);
+                    Assert.Equal(
+                        string.Format(CultureInfo.CurrentCulture, Resources.Error_ReconnectTimeout, new TimeSpan(0)),
+                        error.Message);
+
+                    errorCalledResetEvent.Set();
+                };
+
+                connection.OnReconnecting();
+
+                Assert.True(errorCalledResetEvent.Wait(1000), "OnError not called");
+            }
+        }
+        
+        [Fact]
+        public void OnReconnectingExplicitImplementationCallsIntoProtectedOnReconnecting()
+        {
+            var mockConnection = new Mock<HubConnection>("http://fakeurl");
+            ((IConnection)mockConnection.Object).OnReconnecting();
+            mockConnection.Verify(c => c.OnReconnecting(), Times.Once());
+        }
+
+        [Fact]
+        public void OnReconnectedInvokesReconnectedOnHeartBeatMonitor()
+        {
+            var mockConnection = new Mock<Connection>("http://fakeurl") { CallBase = true };
+            var mockMonitor = new Mock<HeartbeatMonitor>(mockConnection.Object, new object(), new TimeSpan());
+            mockConnection.Setup(c => c.Monitor).Returns(mockMonitor.Object);
+
+            ((IConnection)mockConnection.Object).OnReconnected();
+
+            mockMonitor.Verify(m => m.Reconnected(), Times.Once());
         }
     }
 }

@@ -20,7 +20,9 @@ namespace Microsoft.AspNet.SignalR.Tests
         [InlineData(TransportType.LongPolling, MessageBusType.FakeMultiStream)]
         public async Task ReconnectFiresAfterHostShutdown(TransportType transportType, MessageBusType messageBusType)
         {
-            var persistentConnections = new List<MyReconnect>();
+            var serverRestarts = 0;
+            var serverReconnects = 0;
+
             var host = new ServerRestarter(app =>
             {
                 var config = new ConnectionConfiguration
@@ -32,9 +34,9 @@ namespace Microsoft.AspNet.SignalR.Tests
 
                 app.MapSignalR<MyReconnect>("/endpoint", config);
 
-                var conn = new MyReconnect();
-                config.Resolver.Register(typeof(MyReconnect), () => conn);
-                persistentConnections.Add(conn);
+                serverRestarts++;
+                serverReconnects = 0;
+                config.Resolver.Register(typeof(MyReconnect), () => new MyReconnect(() => serverReconnects++));
             });
 
             using (host)
@@ -64,8 +66,8 @@ namespace Microsoft.AspNet.SignalR.Tests
 
                     Assert.True(await reconnectedEvent.WaitAsync(TimeSpan.FromSeconds(15)), "Timed out waiting for client side reconnect");
 
-                    Assert.Equal(2, persistentConnections.Count);
-                    Assert.Equal(1, persistentConnections[1].Reconnects);
+                    Assert.Equal(2, serverRestarts);
+                    Assert.Equal(1, serverReconnects);
                 }
             }
         }

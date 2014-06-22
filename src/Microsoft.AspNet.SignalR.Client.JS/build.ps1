@@ -21,7 +21,7 @@ foreach ($file in $files) {
     & "cscript.exe" ..\..\tools\jshint\env\wsh.js "$file" > $output
     if (Select-String $output -SimpleMatch -Pattern "[$file]" -Quiet) {
         Write-Host
-        (Get-Content $output) | Select -Skip 4 | Write-Host -ForegroundColor Red
+        (Get-Content $output) | Select -Skip 4 | Where { !$_.Contains("""use strict"";") } | Write-Host -ForegroundColor Red
         Remove-Item $output
         exit 1
     }
@@ -38,7 +38,7 @@ $filePath = "$outputPath\jquery.signalR.js"
 Remove-Item $filePath -Force -ErrorAction SilentlyContinue
 foreach ($file in $files) {
     Add-Content -Path $filePath -Value "/* $file */"
-    Get-Content -Path $file | Add-Content -Path $filePath
+    Get-Content -Path $file | Where { !$_.Contains("""use strict"";") } | Add-Content -Path $filePath
 }
 Write-Host "done" -ForegroundColor Green
 

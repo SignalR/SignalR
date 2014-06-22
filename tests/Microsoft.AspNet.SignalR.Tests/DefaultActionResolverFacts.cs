@@ -340,6 +340,11 @@ namespace Microsoft.AspNet.SignalR.Tests
                 throw new NotImplementedException();
             }
 
+            public System.Threading.Tasks.Task OnDisconnected(bool stopCalled)
+            {
+                throw new NotImplementedException();
+            }
+
             public void Dispose()
             {
                 throw new NotImplementedException();

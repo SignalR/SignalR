@@ -61,7 +61,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
                 _request.Abort();
             };
 
-            OpenConnection(connection, connectionData, disconnectToken, initializeHandler.Success, initializeHandler.Fail);
+            OpenConnection(connection, connectionData, disconnectToken, initializeHandler.InitReceived, initializeHandler.Fail);
         }
 
         private void Reconnect(IConnection connection, string data, CancellationToken disconnectToken)
@@ -90,14 +90,9 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
             });
         }
 
-        public void OpenConnection(IConnection connection, Action<Exception> errorCallback)
-        {
-            OpenConnection(connection, null, CancellationToken.None, () => { }, errorCallback);
-        }
-
         [SuppressMessage("Microsoft.Maintainability", "CA1502:AvoidExcessiveComplexity", Justification = "We will refactor later.")]
         [SuppressMessage("Microsoft.Maintainability", "CA1506:AvoidExcessiveClassCoupling", Justification = "We will refactor later.")]
-        private void OpenConnection(IConnection connection,
+        internal void OpenConnection(IConnection connection,
                                     string data,
                                     CancellationToken disconnectToken,
                                     Action initializeCallback,
@@ -111,7 +106,10 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
             {
                 callbackInvoker.Invoke(initializeCallback);
             };
-            var url = connection.Url + (reconnecting ? "reconnect" : "connect") + GetReceiveQueryString(connection, data);
+
+            var url = reconnecting
+                ? UrlBuilder.BuildReconnect(connection, Name, data)
+                : UrlBuilder.BuildConnect(connection, Name, data);
 
             connection.Trace(TraceLevels.Events, "SSE: GET {0}", url);
 
