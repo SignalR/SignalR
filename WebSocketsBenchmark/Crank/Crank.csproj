@@ -78,6 +78,7 @@
     <Compile Include="CrankArguments.cs" />
     <Compile Include="PerformanceCounters.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="WebSocketConnection.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />

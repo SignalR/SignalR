@@ -13,8 +13,7 @@ namespace Microsoft.AspNet.SignalR.Crank
     public class Client
     {
         private static CrankArguments Arguments;
-        private static ConcurrentBag<Connection> Connections = new ConcurrentBag<Connection>();
-        private static ConcurrentBag<IHubProxy> HubProxies = new ConcurrentBag<IHubProxy>();
+        private static ConcurrentBag<WebSocketConnection> Connections = new ConcurrentBag<WebSocketConnection>();
         private static HubConnection ControllerConnection;
         private static volatile IHubProxy ControllerProxy;
         private static ControllerEvents TestPhase = ControllerEvents.None;
@@ -341,9 +340,9 @@ namespace Microsoft.AspNet.SignalR.Crank
             }
         }
 
-        private static Connection CreateConnection()
+        private static WebSocketConnection CreateConnection()
         {
-            return new Connection(Arguments.Url);
+            return new WebSocketConnection(Arguments.Url);
         }
     }
 }
