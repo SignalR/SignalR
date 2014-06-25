@@ -37,7 +37,8 @@
     <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="StackExchange.Redis">
+    <Reference Include="StackExchange.Redis, Version=1.0.297.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\packages\StackExchange.Redis.1.0.297\lib\net45\StackExchange.Redis.dll</HintPath>
     </Reference>
     <Reference Include="System" />
@@ -55,7 +56,9 @@
       <Link>Infrastructure\TaskAsyncHelper.cs</Link>
     </Compile>
     <Compile Include="DependencyResolverExtensions.cs" />
+    <Compile Include="IRedisConnection.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="RedisConnection.cs" />
     <Compile Include="RedisMessage.cs" />
     <Compile Include="RedisMessageBus.cs" />
     <Compile Include="RedisScaleoutConfiguration.cs" />
@@ -76,6 +79,9 @@
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <WCFMetadata Include="Service References\" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

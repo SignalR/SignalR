@@ -21,7 +21,7 @@ namespace Microsoft.AspNet.SignalR.Stress.Performance
             var configuration = new RedisScaleoutConfiguration(RunData.RedisServer, RunData.RedisPort, RunData.RedisPassword, "Stress");
             // configuration.MaxQueueLength = 1000;
 
-            return new RedisMessageBus(Resolver, configuration);
+            return new RedisMessageBus(Resolver, configuration, new RedisConnection());
         }
     }
 }
