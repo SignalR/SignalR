@@ -135,8 +135,10 @@ namespace Microsoft.AspNet.SignalR.Redis
             _trace.TraceError("OnConnectionError - " + ex.Message);
         }
 
-        private void OnConnectionRestored(Exception ex)
+        private async void OnConnectionRestored(Exception ex)
         {
+            await _connection.RestoreLatestValueForKey(_trace);
+
             _trace.TraceInformation("OnConnectionRestored");
 
             Interlocked.Exchange(ref _state, State.Connected);
@@ -261,6 +263,7 @@ namespace Microsoft.AspNet.SignalR.Redis
             return payload.ToString();
         }
 
+        [SuppressMessage("Microsoft.Design", "CA1034:DoNotNestType", Justification = "Be public for unit tests")]
         public static class State
         {
             public const int Closed = 0;

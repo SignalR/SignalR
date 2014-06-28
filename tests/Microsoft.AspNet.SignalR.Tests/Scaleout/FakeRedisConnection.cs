@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR.Redis;
 
@@ -25,6 +26,11 @@ namespace Microsoft.AspNet.SignalR.Tests.Scaleout
             return TaskAsyncHelper.Empty;
         }
 
+        public virtual Task RestoreLatestValueForKey(TraceSource trace)
+        {
+            return TaskAsyncHelper.Empty;
+        }
+
         public virtual void Dispose()
         {
             // ConnectionRestored += (ex) => { };
@@ -36,7 +42,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Scaleout
             Console.ReadLine();
         };
 
-        public virtual event Action<Exception> ConnectionRestored;
+        public virtual event Action<Exception> ConnectionRestored = ex => { };
 
         public virtual event Action<Exception> ErrorMessage = ex => { };
     }

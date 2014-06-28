@@ -51,6 +51,8 @@ namespace Microsoft.AspNet.SignalR.Tests.Scaleout
 
             var redisConnection = GetMockRedisConnection();
 
+            redisConnection.Setup(m => m.RestoreLatestValueForKey(It.IsAny<TraceSource>())).Returns(TaskAsyncHelper.Empty);
+
             var redisMessageBus = new Mock<RedisMessageBus>(GetDependencyResolver(), new RedisScaleoutConfiguration(String.Empty, String.Empty),
                 redisConnection.Object) { CallBase = true };
 
@@ -71,6 +73,32 @@ namespace Microsoft.AspNet.SignalR.Tests.Scaleout
             redisConnection.Raise(mock => mock.ConnectionRestored += null, new Exception());
 
             Assert.Equal(openInvoked, 2);
+        }
+
+        [Fact]
+        public void RestoreLatestValueForKeyCalledOnConnectionRestored()
+        {
+            bool restoreLatestValueForKey = false;
+
+            var redisConnection = GetMockRedisConnection();
+
+            redisConnection.Setup(m => m.RestoreLatestValueForKey(It.IsAny<TraceSource>())).Returns(() =>
+            {
+                restoreLatestValueForKey = true;
+                return TaskAsyncHelper.Empty;
+            });
+
+            var redisMessageBus = new Mock<RedisMessageBus>(GetDependencyResolver(), new RedisScaleoutConfiguration(String.Empty, String.Empty),
+                redisConnection.Object) { CallBase = true };
+
+            // Creating an instance to invoke the constructor which starts the connection
+            var instance = redisMessageBus.Object;
+
+            redisMessageBus.Object.InitialConnectTask.Wait();
+
+            redisConnection.Raise(mock => mock.ConnectionRestored += null, new Exception());
+
+            Assert.True(restoreLatestValueForKey, "RestoreLatestValueForKey not invoked");
         }
 
         [Fact]
