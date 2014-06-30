@@ -41,6 +41,16 @@ namespace BenchmarkServer
                 );
         });
 
+        private static readonly Timer _updateTimer = new Timer(
+            _ =>
+            {
+                var context = GlobalHost.ConnectionManager.GetHubContext<Dashboard>();
+                context.Clients.All.update(WebSocketHandler.MessagesPublished);
+            },
+            null,
+            1000,
+            1000);
+
         internal static void Init()
         {
             SetBroadcastPayload();
@@ -105,13 +115,15 @@ namespace BenchmarkServer
             WebSocketHandler.Broadcast(_broadcastPayload).Wait();
         }
 
-        public void StartBroadcast() {
+        public void StartBroadcast()
+        {
             _timerInstance.Value.Change(0, _rate);
             _isRunning = true;
             Clients.All.started();
         }
 
-        public void StopBroadcast() {
+        public void StopBroadcast()
+        {
             _timerInstance.Value.Change(0, Timeout.Infinite);
             _isRunning = false;
             Clients.All.stopped();

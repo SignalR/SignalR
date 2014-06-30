@@ -9,6 +9,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BenchmarkClient", "Benchmar
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Crank", "Crank\Crank.csproj", "{F6A62042-59B5-4F24-89C3-F9BF7A497DA8}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestManager", "TestManager\TestManager.csproj", "{7C0FC9A5-1A2E-46ED-B226-AD00890C5090}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -27,6 +29,10 @@ Global
 		{F6A62042-59B5-4F24-89C3-F9BF7A497DA8}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F6A62042-59B5-4F24-89C3-F9BF7A497DA8}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F6A62042-59B5-4F24-89C3-F9BF7A497DA8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7C0FC9A5-1A2E-46ED-B226-AD00890C5090}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7C0FC9A5-1A2E-46ED-B226-AD00890C5090}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7C0FC9A5-1A2E-46ED-B226-AD00890C5090}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7C0FC9A5-1A2E-46ED-B226-AD00890C5090}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

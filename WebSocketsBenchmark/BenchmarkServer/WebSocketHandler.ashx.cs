@@ -23,6 +23,7 @@ namespace BenchmarkServer
                 try
                 {
                     await Socket.SendAsync(buffer, WebSocketMessageType.Text, true, CancellationToken.None);
+                    Interlocked.Increment(ref _messagesPublished);
                 }
                 catch (Exception) { }
             }
@@ -32,6 +33,8 @@ namespace BenchmarkServer
 
         internal static ConnectionBehavior Behavior { get; set; }
 
+        private static long _messagesPublished = 0;
+        public static long MessagesPublished { get { return Interlocked.Read(ref _messagesPublished); } }
 
         public void ProcessRequest(HttpContext context)
         {

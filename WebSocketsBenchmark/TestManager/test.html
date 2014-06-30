@@ -1,0 +1,75 @@
+﻿<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" ng-app="azureTestManagerTest">
+<head>
+    <title></title>
+    <script src="bower_components/jquery/dist/jquery.js"></script>
+    <script src="bower_components/angular/angular.js"></script>
+    <script src="Scripts/jquery.signalR-2.1.0.js"></script>
+
+    <script src="signalr/js"></script>
+    <script src="~signalr/hubs"></script>
+    
+    <script src="js/testController.js"></script>
+</head>
+<body ng-controller="AzureTestManagerTestController">
+
+    <fieldset>
+        <table>
+            <tr>
+                <td>Address:</td>
+                <td><input id="address" value="localhost" /></td>
+            </tr>
+            <tr>
+                <td>Status:</td>
+                <td><input id="status" value="available" /></td>
+            </tr>
+            <tr>
+                <td><input type="button" id="updateHost" value="Update" ng-click="updateWorker()"/></td>
+                <td></td>
+            </tr>
+        </table>
+    </fieldset>
+
+    <fieldset>
+        <table>
+            <tr>
+                <td>ID</td>
+                <td>State</td>
+                <td>Connected</td>
+                <td>Reconnected</td>
+                <td>Disconnected</td>
+                <td>Update</td>
+                <td>Remove</td>
+            </tr>
+            <tr ng-repeat="instance in instances">
+                <td><input ng-model="instance.id" /></td>
+                <td><input ng-model="instance.state" /></td>
+                <td><input ng-model="instance.connected"></td>
+                <td><input ng-model="instance.reconnected"></td>
+                <td><input ng-model="instance.disconnected"></td>
+                <td><input type="button" value="Update" ng-click="updateProcess(instance)" /></td>
+                <td><input type="button" value="Standard Error" ng-click="addErrorTrace(instance.id)" /></td>
+                <td><input type="button" value="Standard Out" ng-click="addOutputTrace(instance.id)" /></td>
+            </tr>
+            <tr>
+                <td><strong id="stoppedProcess"></strong></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td><input type="button" id="addProcess" value="Add" ng-click="addInstance()" /></td>
+            </tr>
+        </table>
+    </fieldset>
+
+    <fieldset>
+        <p>Error Message:<input id="errorTrace" value="Error Trace Message" /></p>
+        <p>Output Message:<input id="outputTrace" value="Output Trace Message" /></p>
+    </fieldset>
+
+    <p>Count: <strong id="count"></strong></p>
+    <p>Arguments: <strong id="argumentString"></strong></p>
+
+</body>
+</html>

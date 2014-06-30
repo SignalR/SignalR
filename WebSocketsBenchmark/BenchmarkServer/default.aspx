@@ -9,7 +9,7 @@
     <link href="Content/dashboard.css" rel="stylesheet" />
 </head>
 <body>
-    <h1>ASP.NET SignalR Load Test Harness</h1>
+    <h1>ASP.NET WebSocket Load Test Harness</h1>
 
     <fieldset id="options">
         <legend>Dashboard</legend>
@@ -65,6 +65,7 @@
             <ul>
                 <li>Status: <span id="status" data-bind="text: status"></span></li>
                 <li>Server FPS: <span id="serverFps" data-bind="text: serverFps"></span></li>
+                <li>Messages sent: <span id="messagesSent" data-bind="text: messagesSent"></span></li>
             </ul>
         </div>
 

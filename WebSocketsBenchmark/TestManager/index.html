@@ -1,0 +1,131 @@
+﻿<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" ng-app="azureTestManager">
+<head>
+    <title></title>
+    <link rel="stylesheet" type="text/css" href="bower_components/bootstrap/dist/css/bootstrap.css" />
+    <link rel="stylesheet" type="text/css" href="Content/Site.css" />
+    <script src="bower_components/jquery/dist/jquery.js"></script>
+    <script src="bower_components/angular/angular.js"></script>
+    <script src="bower_components/angular-bootstrap/ui-bootstrap-tpls.js"></script>
+    <script src="Scripts/jquery.signalR-2.1.0.js"></script>
+    <script src="signalr/js"></script>
+    <script src="~signalr/hubs"></script>
+    <script src="js/model.js"></script>
+    <script src="js/controller.js"></script>
+</head>
+<body ng-controller="TestManagerController">
+    <div class="container-fluid">
+        <accordion close-others="false">
+            <accordion-group heading="LoadTestHarness" ng- ng-click="loadTarget()">
+                <iframe width="600" height="340" id="targetPage"></iframe>
+                <br />
+                <button class="btn btn-default btn-sm" ng-click="loadTarget()">Reload</button>
+            </accordion-group>
+            <accordion-group heading="Configuration">
+                <table>
+                    <tr ng-repeat="argument in arguments">
+                        <td><label>{{argument.displayName}}:</label></td>
+                        <td><input type="text" class="form-control" id="{{argument.displayName}}" ng-model="argument.value" /></td>
+                        <!--<td>{{argument.argumentString()}}</td>-->
+                    </tr>
+                    <tr>
+                        <td><label>Instances:</label></td>
+                        <td>
+                            <input class="form-control" ng-model="configuration.instances" />
+                        </td>
+                    </tr>
+                </table>
+                <input type="button" value="Start" class="btn btn-default btn-sm" ng-click="startProcesses()" />
+            </accordion-group>
+            <accordion-group heading="Worker Hosts ({{connectionManager.connections.length}})">
+                <div class="row host">
+                    <div class="col-xs-1">
+                        <input type="checkbox" ng-model="connectionManager.allSelected" />
+                    </div>
+                    <div class="col-xs-3">
+                        <label>Host</label>
+                    </div>
+                    <div class="col-xs-8">
+                        <div class="row process">
+                            <div class="col-xs-2">
+                                <label>Status</label>
+                            </div>
+                            <div class="col-xs-3">
+                                <label>Connected</label>
+                            </div>
+                            <div class="col-xs-3">
+                                <label>Reconnected</label>
+                            </div>
+                            <div class="col-xs-3">
+                                <label>Disconnected</label>
+                            </div>
+                            <div class="col-xs-1">
+
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row host" ng-repeat="connection in connectionManager.connections">
+                    <div class="col-xs-1">
+                        <input type="checkbox" name="selectHost" ng-model="connection.selected" />
+                    </div>
+                    <div class="col-xs-3">
+                        {{connection.worker.address}}<br />
+                        {{connection.worker.status}}<br />
+                        {{connection.worker.lastUpdate}}
+                    </div>
+                    <div class="col-xs-8">
+                        <div class="row process" ng-repeat="process in connection.processes | filter:{state:'!Terminated'}">
+                            <div class="col-xs-2">
+                                {{process.state}}
+                            </div>
+                            <div class="col-xs-3">
+                                {{process.connected}}
+                            </div>
+                            <div class="col-xs-3">
+                                {{process.reconnected}}
+                            </div>
+                            <div class="col-xs-3">
+                                {{process.disconnected}}
+                            </div>
+                            <div class="col-xs-1">
+                                <button class="btn btn-default btn-sm" ng-click="stopProcess(connection.connectionId, process.processId)">
+                                    <span class="glyphicon glyphicon-stop" />
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row host">
+                    <div class="col-xs-4">
+                        <label>Total</label>
+                    </div>
+                    <div class="col-xs-8">
+                        <div class="row process">
+                            <div class="col-xs-2">
+
+                            </div>
+                            <div class="col-xs-3">
+                                {{getConnected()}}
+                            </div>
+                            <div class="col-xs-3">
+                                {{getReconnected()}}
+                            </div>
+                            <div class="col-xs-3">
+                                {{getDisconnected()}}
+                            </div>
+                            <div class="col-xs-1">
+                                <button class="btn btn-default btn-sm" ng-click="stopAllProcesses()">
+                                    <span class="glyphicon glyphicon-stop" />
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </accordion-group>
+        </accordion>
+    </div>
+    <input ng-model="configuration.instances" />
+    <label>{{configuration.instances}}</label>
+</body>
+</html>
