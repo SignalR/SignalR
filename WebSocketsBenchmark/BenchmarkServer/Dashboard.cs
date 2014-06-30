@@ -45,7 +45,7 @@ namespace BenchmarkServer
             _ =>
             {
                 var context = GlobalHost.ConnectionManager.GetHubContext<Dashboard>();
-                context.Clients.All.update(WebSocketHandler.MessagesPublished);
+                context.Clients.All.update(WebSocketHandler.PerformanceInformation);
             },
             null,
             1000,

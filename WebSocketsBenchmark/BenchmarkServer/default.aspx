@@ -66,6 +66,8 @@
                 <li>Status: <span id="status" data-bind="text: status"></span></li>
                 <li>Server FPS: <span id="serverFps" data-bind="text: serverFps"></span></li>
                 <li>Messages sent: <span id="messagesSent" data-bind="text: messagesSent"></span></li>
+                <li>Messages per second: <span id="messagesPerSecond" data-bind="text: messagesPerSecond"></span></li>
+                <li>Broadcast time: <span id="broadcastTime" data-bind="text: broadcastTime"></span></li>
             </ul>
         </div>
 

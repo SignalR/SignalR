@@ -69,6 +69,9 @@ jQuery.fn.flash = function (color, duration) {
 
         this.messagesSent = ko.observable(0);
 
+        this.messagesPerSecond = ko.observable(0);
+
+        this.broadcastTime = ko.observable(0);
 
         this.GCStatus = ko.observable("Force GC");
 
@@ -221,7 +224,10 @@ jQuery.fn.flash = function (color, duration) {
         },
 
         update: function (status) {
-            model.messagesSent(status);
+            model.serverFps(status.BroadcastRate);
+            model.messagesSent(status.MessagesTotal);
+            model.messagesPerSecond(status.MessagesPerSecond);
+            model.broadcastTime(status.BroadcastTime);
         }
     });
 
