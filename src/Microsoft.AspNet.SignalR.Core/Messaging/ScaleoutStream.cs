@@ -114,6 +114,12 @@ namespace Microsoft.AspNet.SignalR.Messaging
                         throw new InvalidOperationException(Resources.Error_TaskQueueFull);
                     }
 
+                    if (_state == StreamState.Open && task.IsFaulted)
+                    {
+                        // Throw error, so client caller can receive the error
+                        throw task.Exception.InnerException;
+                    }
+
                     // Always observe the task in case the user doesn't handle it
                     return task.Catch();
                 }
@@ -166,7 +172,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
             }
         }
 
-        private static Task Send(object state)
+        private Task Send(object state)
         {
             var context = (SendContext)state;
 
@@ -182,18 +188,32 @@ namespace Microsoft.AspNet.SignalR.Messaging
 
                 ctx.Stream.Trace(TraceEventType.Error, "Send failed: {0}", ex);
 
-                lock (ctx.Stream._lockObj)
-                {
-                    // Set the queue into buffering state
-                    ctx.Stream.SetError(ex.InnerException);
+                ctx.TaskCompletionSource.TrySetUnwrappedException(ex);
 
-                    // Otherwise just set this task as failed
-                    ctx.TaskCompletionSource.TrySetUnwrappedException(ex);
-                }
+                ThrowError(ex);
             },
             context);
 
             return context.TaskCompletionSource.Task;
+        }
+        private void ThrowError(Exception error)
+        {
+            lock (_lockObj)
+            {
+                _perfCounters.ScaleoutErrorsTotal.Increment();
+                _perfCounters.ScaleoutErrorsPerSec.Increment();
+
+                if (UsingTaskQueue)
+                {
+                    InitializeCore();
+
+                    EnsureQueueStarted();
+                }
+                else
+                {
+                    throw error;
+                }
+            }
         }
 
         private void Buffer()
