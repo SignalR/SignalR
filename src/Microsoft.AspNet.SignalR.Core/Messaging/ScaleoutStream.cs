@@ -209,10 +209,8 @@ namespace Microsoft.AspNet.SignalR.Messaging
 
                     EnsureQueueStarted();
                 }
-                else
-                {
-                    throw error;
-                }
+
+                throw error;
             }
         }
 
