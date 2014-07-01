@@ -1,13 +1,11 @@
 ﻿using System;
-using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.AspNet.SignalR.Redis;
 using Microsoft.AspNet.SignalR.Tracing;
 using Moq;
 using Xunit;
 
-namespace Microsoft.AspNet.SignalR.Tests.Scaleout
+namespace Microsoft.AspNet.SignalR.Redis.Tests
 {
     public class RedisMessageBusFacts
     {
@@ -21,7 +19,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Scaleout
             var tcs = new TaskCompletionSource<object>();
             tcs.TrySetCanceled();
 
-            redisConnection.Setup(m => m.ConnectAsync(It.IsAny<string>(), It.IsAny<TraceSource>())).Returns<string>(connectionString =>
+            redisConnection.Setup(m => m.ConnectAsync(It.IsAny<string>())).Returns<string>(connectionString =>
             {
                 if (++invokationCount == 2)
                 {
@@ -95,7 +93,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Scaleout
         {
             var redisConnection = new Mock<IRedisConnection>();
 
-            redisConnection.Setup(m => m.ConnectAsync(It.IsAny<string>(), It.IsAny<TraceSource>()))
+            redisConnection.Setup(m => m.ConnectAsync(It.IsAny<string>()))
                 .Returns(Task.FromResult(0));
 
             redisConnection.Setup(m => m.SubscribeAsync(It.IsAny<string>(), It.IsAny<Action<int, RedisMessage>>()))
