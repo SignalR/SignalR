@@ -68,5 +68,14 @@ namespace Microsoft.AspNet.SignalR.Redis {
                 return ResourceManager.GetString("Error_EndOfStreamRedis", resourceCulture);
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Redis connection closed unexpectedly..
+        /// </summary>
+        internal static string Error_RedisConnectionClosed {
+            get {
+                return ResourceManager.GetString("Error_RedisConnectionClosed", resourceCulture);
+            }
+        }
     }
 }
