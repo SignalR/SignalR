@@ -57,10 +57,10 @@ namespace Microsoft.AspNet.SignalR.Redis
         public TimeSpan ReconnectDelay { get; set; }
 
         // For testing purposes only
-        public int ConnectionState { get { return _state; } }
+        internal int ConnectionState { get { return _state; } }
 
         // For testing purposes only
-        public Task<object> InitialConnectTask { get { return _tcs.Task; } }
+        internal Task<object> InitialConnectTask { get { return _tcs.Task; } }
 
         public virtual void OpenStream(int streamIndex)
         {
@@ -197,7 +197,7 @@ namespace Microsoft.AspNet.SignalR.Redis
 
             _trace.TraceInformation("Connecting...");
 
-            await _connection.ConnectAsync(_connectionString, _trace);
+            await _connection.ConnectAsync(_connectionString);
 
             _trace.TraceInformation("Connection opened");
 
@@ -248,7 +248,8 @@ namespace Microsoft.AspNet.SignalR.Redis
             return payload.ToString();
         }
 
-        public static class State
+        // Internal for testing purposes
+        internal static class State
         {
             public const int Closed = 0;
             public const int Connected = 1;

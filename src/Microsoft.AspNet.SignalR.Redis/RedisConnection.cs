@@ -7,12 +7,11 @@ namespace Microsoft.AspNet.SignalR.Redis
 {
     public class RedisConnection : IRedisConnection
     {
-        private TraceSource _trace;
         private StackExchange.Redis.ISubscriber _redisSubscriber;
         private ConnectionMultiplexer _connection;
         private Action<int, RedisMessage> _onMessage;
 
-        public async Task ConnectAsync(string connectionString, TraceSource trace)
+        public async Task ConnectAsync(string connectionString)
         {
             _connection = await ConnectionMultiplexer.ConnectAsync(connectionString);
 
@@ -20,10 +19,10 @@ namespace Microsoft.AspNet.SignalR.Redis
             _connection.ConnectionRestored += OnConnectionRestored;
             _connection.ErrorMessage += OnError;
 
-            _trace = trace;
             _redisSubscriber = _connection.GetSubscriber();
         }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1026:DefaultParametersShouldNotBeUsed")]
         public void Close(string key, bool allowCommandsToComplete = true)
         {
             if (_redisSubscriber != null)
@@ -101,6 +100,7 @@ namespace Microsoft.AspNet.SignalR.Redis
             handler(args.Exception);
         }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2201:DoNotRaiseReservedExceptionTypes")]
         private void OnError(object sender, RedisErrorEventArgs args)
         {
             var handler = ErrorMessage;

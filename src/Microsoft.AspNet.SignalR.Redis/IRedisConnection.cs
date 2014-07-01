@@ -6,8 +6,9 @@ namespace Microsoft.AspNet.SignalR.Redis
 {
     public interface IRedisConnection
     {
-        Task ConnectAsync(string connectionString, TraceSource trace);
+        Task ConnectAsync(string connectionString);
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1026:DefaultParametersShouldNotBeUsed")]
         void Close(string key, bool allowCommandsToComplete = true);
 
         Task SubscribeAsync(string key, Action<int, RedisMessage> onMessage);
