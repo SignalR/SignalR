@@ -3,6 +3,7 @@
 using System;
 using Microsoft.AspNet.SignalR.Messaging;
 using Microsoft.AspNet.SignalR.Redis;
+using StackExchange.Redis;
 
 namespace Microsoft.AspNet.SignalR
 {
@@ -32,7 +33,7 @@ namespace Microsoft.AspNet.SignalR
         /// <returns>The dependency resolver.</returns>
         public static IDependencyResolver UseRedis(this IDependencyResolver resolver, RedisScaleoutConfiguration configuration)
         {
-            var bus = new Lazy<RedisMessageBus>(() => new RedisMessageBus(resolver, configuration));
+            var bus = new Lazy<RedisMessageBus>(() => new RedisMessageBus(resolver, configuration, new RedisConnection()));
             resolver.Register(typeof(IMessageBus), () => bus.Value);
 
             return resolver;
