@@ -193,7 +193,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
 
                 ctx.TaskCompletionSource.TrySetUnwrappedException(ex);
 
-                HandleError(ex);
+                HandleError();
             },
             context);
 
@@ -205,7 +205,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
             return context.TaskCompletionSource.Task;
         }
 
-        private void HandleError(Exception error)
+        private void HandleError()
         {
             lock (_lockObj)
             {
