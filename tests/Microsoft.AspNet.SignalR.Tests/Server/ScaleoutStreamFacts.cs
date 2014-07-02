@@ -116,7 +116,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
         [Theory]
         [InlineData(QueuingBehavior.InitialOnly)]
         [InlineData(QueuingBehavior.Always)]
-        public void ErrorOnSendThrowsSend(QueuingBehavior queuingBehavior)
+        public void SendAfterErrorOnSendThrows(QueuingBehavior queuingBehavior)
         {
             var perfCounters = new Microsoft.AspNet.SignalR.Infrastructure.PerformanceCounterManager();
             var stream = new ScaleoutStream(new TraceSource("Queue"), "0", queuingBehavior, 1000, perfCounters);
@@ -144,12 +144,50 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
             Assert.Equal(1, x);
         }
 
-        [Fact(Timeout = 10000)]
-        public void OpenAfterErrorRunsQueue()
+        [Theory]
+        [InlineData(QueuingBehavior.InitialOnly)]
+        [InlineData(QueuingBehavior.Always)]
+        public void SendErrorSend(QueuingBehavior queuingBehavior)
         {
             int x = 0;
             var perfCounters = new Microsoft.AspNet.SignalR.Infrastructure.PerformanceCounterManager();
-            var stream = new ScaleoutStream(new TraceSource("Queue"), "0", QueuingBehavior.Always, 1000, perfCounters);
+            var stream = new ScaleoutStream(new TraceSource("Queue"), "0", queuingBehavior, 1000, perfCounters);
+            stream.Open();
+            stream.Send(_ =>
+            {
+                x++;
+                return TaskAsyncHelper.Empty;
+            },
+            null);
+
+            TestUtilities.AssertUnwrappedException<Exception>(() =>
+            {
+                stream.Send(async _ =>
+                {
+                    await TaskAsyncHelper.FromError(new Exception());
+                },
+                   null);
+            });
+
+            Task t2 = stream.Send(async _ =>
+            {
+                await Task.Delay(50);
+                x++;
+            },
+            null);
+
+            t2.Wait();
+            Assert.Equal(2, x);
+        }
+
+        [Theory]
+        [InlineData(QueuingBehavior.InitialOnly)]
+        [InlineData(QueuingBehavior.Always)]
+        public void OpenAfterErrorRunsQueue(QueuingBehavior queuingBehavior)
+        {
+            int x = 0;
+            var perfCounters = new Microsoft.AspNet.SignalR.Infrastructure.PerformanceCounterManager();
+            var stream = new ScaleoutStream(new TraceSource("Queue"), "0", queuingBehavior, 1000, perfCounters);
             stream.Open();
 
             TestUtilities.AssertUnwrappedException<InvalidOperationException>(() =>
@@ -273,6 +311,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
             t2.Wait();
             Assert.Equal(2, x);
         }
+
         [Fact]
         public void SendAfterCloseThenOpenRemainsClosed()
         {
