@@ -28,7 +28,6 @@ namespace Microsoft.AspNet.SignalR.Redis
         private readonly object _callbackLock = new object();
         private readonly TaskCompletionSource<object> _tcs;
 
-        [SuppressMessage("Microsoft.Usage", "CA2214:DoNotCallOverridableMethodsInConstructors", Justification = "Reviewed")]
         public RedisMessageBus(IDependencyResolver resolver, RedisScaleoutConfiguration configuration, IRedisConnection connection)
             : base(resolver, configuration)
         {
@@ -185,7 +184,6 @@ namespace Microsoft.AspNet.SignalR.Redis
             _tcs.TrySetResult(null);
         }
 
-        [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "Exceptions are caught")]
         private async Task ConnectToRedisAsync()
         {
             if (_connection != null)
