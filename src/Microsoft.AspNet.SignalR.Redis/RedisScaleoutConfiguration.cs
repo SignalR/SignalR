@@ -50,7 +50,6 @@ namespace Microsoft.AspNet.SignalR
         /// </summary>
         public string EventKey { get; private set; }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA1801:ReviewUnusedParameters", MessageId = "password")]
         private static string CreateConnectionString(string server, int port, string password)
         {
             return string.Format(CultureInfo.CurrentCulture, "{0}:{1}, password={2}, abortConnect={3}", server, port, password, "false");
