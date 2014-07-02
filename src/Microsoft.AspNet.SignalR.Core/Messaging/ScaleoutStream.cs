@@ -175,6 +175,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
         private Task Send(object state)
         {
             var context = (SendContext)state;
+            Exception syncEx = null;
 
             context.InvokeSend().Then(tcs =>
             {
@@ -186,17 +187,25 @@ namespace Microsoft.AspNet.SignalR.Messaging
             {
                 var ctx = (SendContext)obj;
 
+                syncEx = ex.InnerException;
+
                 ctx.Stream.Trace(TraceEventType.Error, "Send failed: {0}", ex);
 
                 ctx.TaskCompletionSource.TrySetUnwrappedException(ex);
 
-                ThrowError(ex);
+                HandleError(ex);
             },
             context);
 
+            if (syncEx != null)
+            {
+                throw syncEx;
+            }
+
             return context.TaskCompletionSource.Task;
         }
-        private void ThrowError(Exception error)
+
+        private void HandleError(Exception error)
         {
             lock (_lockObj)
             {
@@ -209,8 +218,6 @@ namespace Microsoft.AspNet.SignalR.Messaging
 
                     EnsureQueueStarted();
                 }
-
-                throw error;
             }
         }
 

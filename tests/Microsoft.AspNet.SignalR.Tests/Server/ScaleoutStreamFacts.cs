@@ -219,14 +219,12 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
             },
             null);
 
-            TestUtilities.AssertUnwrappedException<Exception>(() =>
+            stream.Send(async _ =>
             {
-                stream.Send(async _ =>
-                {
-                    await TaskAsyncHelper.FromError(new Exception());
-                },
-                   null);
-            });
+                await Task.Delay(50);
+                await TaskAsyncHelper.FromError(new Exception());
+            },
+               null);
 
             stream.Send(async _ =>
             {
