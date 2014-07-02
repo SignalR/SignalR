@@ -113,11 +113,13 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
             Assert.Equal(1, x);
         }
 
-        [Fact]
-        public void ErrorOnSendThrows()
+        [Theory]
+        [InlineData(QueuingBehavior.InitialOnly)]
+        [InlineData(QueuingBehavior.Always)]
+        public void ErrorOnSendThrowsSend(QueuingBehavior queuingBehavior)
         {
             var perfCounters = new Microsoft.AspNet.SignalR.Infrastructure.PerformanceCounterManager();
-            var stream = new ScaleoutStream(new TraceSource("Queue"), "0", QueuingBehavior.Always, 1000, perfCounters);
+            var stream = new ScaleoutStream(new TraceSource("Queue"), "0", queuingBehavior, 1000, perfCounters);
             stream.Open();
 
             TestUtilities.AssertUnwrappedException<InvalidOperationException>(() =>
