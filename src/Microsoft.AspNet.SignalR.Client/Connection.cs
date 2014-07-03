@@ -608,7 +608,7 @@ namespace Microsoft.AspNet.SignalR.Client
                 {
                     // Close the receive queue so currently running receive callback finishes and no more are run.
                     // We can't wait on the result of the drain because this method may be on the stack of the task returned (aka deadlock).
-                    _receiveQueue.Drain().Catch();
+                    _receiveQueue.Drain().Catch((f, a) => Trace(TraceLevels.Messages, f, a));
                 }
 
                 // This is racy since it's outside the _stateLock, but we are trying to avoid 30s deadlocks when calling _transport.Abort()

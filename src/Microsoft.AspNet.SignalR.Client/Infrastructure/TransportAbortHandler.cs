@@ -26,7 +26,7 @@ namespace Microsoft.AspNet.SignalR.Client.Infrastructure
         private bool _disposed;
         // Used to make checking _disposed and calling _abortResetEvent.Set() thread safe
         private readonly object _disposeLock = new object();
-        
+
         public TransportAbortHandler(IHttpClient httpClient, string transportName)
         {
             _httpClient = httpClient;
@@ -66,15 +66,13 @@ namespace Microsoft.AspNet.SignalR.Client.Infrastructure
 
                     _httpClient.Post(url, connection.PrepareRequest, isLongRunning: false)
                                .Catch((ex, state) =>
-                               {
-                                   // If there's an error making an http request set the reset event
-                                   ((TransportAbortHandler)state).CompleteAbort();
-                               },
-                               this
-#if !PORTABLE && !NETFX_CORE && !__ANDROID__ && !IOS
-                               ,traceSource: null
-#endif
-                               );
+                                   {
+                                       // If there's an error making an http request set the reset event
+                                       ((TransportAbortHandler)state).CompleteAbort();
+                                   },
+                                   this,
+                                   (f, a) => connection.Trace(TraceLevels.Messages, f, a)
+                                );
 
                     if (!_abortResetEvent.WaitOne(timeout))
                     {

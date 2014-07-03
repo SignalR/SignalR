@@ -98,10 +98,8 @@ namespace Microsoft.AspNet.SignalR.Client.Infrastructure
                                     CompleteFail(new StartException(Resources.Error_StartFailed));
                                 }
                             })
-                            .Catch(ex => CompleteFail(new StartException(Resources.Error_StartFailed, ex))
-#if !PORTABLE && !NETFX_CORE && !__ANDROID__ && !IOS
-                                ,traceSource: null
-#endif
+                            .Catch(ex => CompleteFail(new StartException(Resources.Error_StartFailed, ex)),
+                                   (f, a) => _connection.Trace(TraceLevels.Messages, f, a)
                             );
         }
 
