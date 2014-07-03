@@ -99,7 +99,7 @@ namespace Microsoft.AspNet.SignalR.Client.Infrastructure
                                 }
                             })
                             .Catch(ex => CompleteFail(new StartException(Resources.Error_StartFailed, ex)),
-                                   (f, a) => _connection.Trace(TraceLevels.Messages, f, a)
+                                   (format, args) => _connection.Trace(TraceLevels.Messages, format, args)
                             );
         }
 

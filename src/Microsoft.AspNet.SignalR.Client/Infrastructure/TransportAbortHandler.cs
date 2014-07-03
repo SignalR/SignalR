@@ -71,7 +71,7 @@ namespace Microsoft.AspNet.SignalR.Client.Infrastructure
                                        ((TransportAbortHandler)state).CompleteAbort();
                                    },
                                    this,
-                                   (f, a) => connection.Trace(TraceLevels.Messages, f, a)
+                                   (format, args) => connection.Trace(TraceLevels.Messages, format, args)
                                 );
 
                     if (!_abortResetEvent.WaitOne(timeout))
