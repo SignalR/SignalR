@@ -300,10 +300,10 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
         private void ProcessResults(MessageResult result)
         {
             result.Messages.Enumerate<Connection>(message => message.IsAck || message.IsCommand,
-                (connection, message) => ProcessResultsCore(connection, message, _traceSource), this);
+                (connection, message) => ProcessResultsCore(connection, message), this);
         }
 
-        private static void ProcessResultsCore(Connection connection, Message message, TraceSource traceSource)
+        private static void ProcessResultsCore(Connection connection, Message message)
         {
             if (message.IsAck)
             {
@@ -321,7 +321,7 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
                     // just trip it
                     if (!connection._ackHandler.TriggerAck(message.CommandId))
                     {
-                        connection._bus.Ack(connection._connectionId, message.CommandId).Catch(traceSource);
+                        connection._bus.Ack(connection._connectionId, message.CommandId).Catch(connection._traceSource);
                     }
                 }
             }
