@@ -98,9 +98,7 @@ namespace Microsoft.AspNet.SignalR.Client.Infrastructure
                                     CompleteFail(new StartException(Resources.Error_StartFailed));
                                 }
                             })
-                            .Catch(ex => CompleteFail(new StartException(Resources.Error_StartFailed, ex)),
-                                   (format, args) => _connection.Trace(TraceLevels.Messages, format, args)
-                            );
+                            .Catch(ex => CompleteFail(new StartException(Resources.Error_StartFailed, ex)), _connection);
         }
 
         private void CompleteStart()

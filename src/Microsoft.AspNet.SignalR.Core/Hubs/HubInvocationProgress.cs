@@ -22,7 +22,7 @@ namespace Microsoft.AspNet.SignalR.Hubs
             _sendProgressFunc = sendProgressFunc;
         }
 
-        protected TraceSource Trace { get; private set; }
+        private TraceSource Trace { get; set; }
 
         public static HubInvocationProgress Create(Type progressGenericType, Func<object, Task> sendProgressFunc, TraceSource traceSource)
         {

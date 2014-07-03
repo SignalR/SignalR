@@ -11,6 +11,9 @@ using System.Linq;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
+#if !SERVER
+using Microsoft.AspNet.SignalR.Client;
+#endif
 using Microsoft.AspNet.SignalR.Infrastructure;
 
 namespace Microsoft.AspNet.SignalR
@@ -94,15 +97,15 @@ namespace Microsoft.AspNet.SignalR
         }
 
         [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode", Justification = "This is a shared file")]
-#if !PORTABLE && !NETFX_CORE && !__ANDROID__ && !IOS && !CLIENT_NET4 && !CLIENT_NET45
+#if SERVER
         public static TTask Catch<TTask>(this TTask task, TraceSource traceSource = null) where TTask : Task
         {
             return Catch(task, ex => { }, traceSource);
         }
 #else
-        public static TTask Catch<TTask>(this TTask task, Action<string, object[]> traceMethod = null) where TTask : Task
+        public static TTask Catch<TTask>(this TTask task, IConnection connection = null) where TTask : Task
         {
-            return Catch(task, ex => { }, traceMethod);
+            return Catch(task, ex => { }, connection);
         }
 #endif
 
@@ -125,28 +128,28 @@ namespace Microsoft.AspNet.SignalR
 #endif
 
         [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode", Justification = "This is a shared file")]
-#if !PORTABLE && !NETFX_CORE && !__ANDROID__ && !IOS && !CLIENT_NET4 && !CLIENT_NET45
+#if SERVER
         public static TTask Catch<TTask>(this TTask task, Action<AggregateException, object> handler, object state, TraceSource traceSource = null) where TTask : Task
 #else
-        public static TTask Catch<TTask>(this TTask task, Action<AggregateException, object> handler, object state, Action<string, object[]> traceMethod = null) where TTask : Task
+        public static TTask Catch<TTask>(this TTask task, Action<AggregateException, object> handler, object state, IConnection connection = null) where TTask : Task
 #endif
         {
             if (task != null && task.Status != TaskStatus.RanToCompletion)
             {
                 if (task.Status == TaskStatus.Faulted)
                 {
-#if !PORTABLE && !NETFX_CORE && !__ANDROID__ && !IOS && !CLIENT_NET4 && !CLIENT_NET45
+#if SERVER
                     ExecuteOnFaulted(handler, state, task.Exception, traceSource);
 #else
-                    ExecuteOnFaulted(handler, state, task.Exception, traceMethod);
+                    ExecuteOnFaulted(handler, state, task.Exception, connection);
 #endif
                 }
                 else
                 {
-#if !PORTABLE && !NETFX_CORE && !__ANDROID__ && !IOS && !CLIENT_NET4 && !CLIENT_NET45
+#if SERVER
                     AttachFaultedContinuation<TTask>(task, handler, state, traceSource);
 #else
-                    AttachFaultedContinuation<TTask>(task, handler, state, traceMethod);
+                    AttachFaultedContinuation<TTask>(task, handler, state, connection);
 #endif
                 }
             }
@@ -155,58 +158,58 @@ namespace Microsoft.AspNet.SignalR
         }
 
         [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode", Justification = "This is a shared file")]
-#if !PORTABLE && !NETFX_CORE && !__ANDROID__ && !IOS && !CLIENT_NET4 && !CLIENT_NET45
+#if SERVER
         private static void AttachFaultedContinuation<TTask>(TTask task, Action<AggregateException, object> handler, object state, TraceSource traceSource) where TTask : Task
 #else      
-        private static void AttachFaultedContinuation<TTask>(TTask task, Action<AggregateException, object> handler, object state, Action<string, object[]> traceMethod) where TTask : Task
+        private static void AttachFaultedContinuation<TTask>(TTask task, Action<AggregateException, object> handler, object state, IConnection connection) where TTask : Task
 #endif
         {
             task.ContinueWithPreservedCulture(innerTask =>
             {
-#if !PORTABLE && !NETFX_CORE && !__ANDROID__ && !IOS && !CLIENT_NET4 && !CLIENT_NET45
+#if SERVER
                 ExecuteOnFaulted(handler, state, innerTask.Exception, traceSource);
 #else
-                ExecuteOnFaulted(handler, state, innerTask.Exception, traceMethod);
+                ExecuteOnFaulted(handler, state, innerTask.Exception, connection);
 #endif
             },
             TaskContinuationOptions.OnlyOnFaulted | TaskContinuationOptions.ExecuteSynchronously);
         }
 
         [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode", Justification = "This is a shared file")]
-#if !PORTABLE && !NETFX_CORE && !__ANDROID__ && !IOS && !CLIENT_NET4 && !CLIENT_NET45
+#if SERVER
         private static void ExecuteOnFaulted(Action<AggregateException, object> handler, object state, AggregateException exception, TraceSource traceSource)
 #else
-        private static void ExecuteOnFaulted(Action<AggregateException, object> handler, object state, AggregateException exception, Action<string, object[]> traceMethod)
+        private static void ExecuteOnFaulted(Action<AggregateException, object> handler, object state, AggregateException exception, IConnection connection)
 #endif
         {
             // Observe Exception
-#if !PORTABLE && !NETFX_CORE && !__ANDROID__ && !IOS && !CLIENT_NET4 && !CLIENT_NET45
+#if SERVER
             if (traceSource != null)
             {
                 traceSource.TraceEvent(TraceEventType.Warning, 0, "Exception thrown by Task: {0}", exception);
             }
 #else
-            if (traceMethod != null)
+            if (connection != null)
             {
-                traceMethod("Exception thrown by Task: {0}", new [] { exception });
+                connection.Trace(TraceLevels.Messages, "Exception thrown by Task: {0}", new [] { exception });
             }
 #endif
             handler(exception, state);
         }
 
         [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode", Justification = "This is a shared file")]
-#if !PORTABLE && !NETFX_CORE && !__ANDROID__ && !IOS && !CLIENT_NET4 && !CLIENT_NET45
+#if SERVER
         public static TTask Catch<TTask>(this TTask task, Action<AggregateException> handler, TraceSource traceSource = null) where TTask : Task
 #else
-        public static TTask Catch<TTask>(this TTask task, Action<AggregateException> handler, Action<string, object[]> traceMethod = null) where TTask : Task
+        public static TTask Catch<TTask>(this TTask task, Action<AggregateException> handler, IConnection connection = null) where TTask : Task
 #endif
         {
             return task.Catch((ex, state) => ((Action<AggregateException>)state).Invoke(ex),
                               handler,
-#if !PORTABLE && !NETFX_CORE && !__ANDROID__ && !IOS && !CLIENT_NET4 && !CLIENT_NET45
+#if SERVER
                               traceSource
 #else
- traceMethod
+                              connection
 #endif
                               );
         }

@@ -60,7 +60,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
                         connection.OnReceived(connection.JsonDeserializeObject<JObject>(raw));
                     }
                 })
-                .Catch(connection.OnError, (format, args) => connection.Trace(TraceLevels.Messages, format, args));
+                .Catch(connection.OnError, connection);
         }
     }
 }
