@@ -56,6 +56,11 @@
 
 
         <div>
+            <input type="checkbox" id="bufferReuse" data-bind="checked: bufferReuse" />
+            <label for="bufferReuse">Reuse buffer</label>
+        </div>
+
+        <div>
             <a id="forceGC" href="#" data-bind="text: GCStatus, disable: GCRunning,  click: forceGC">Force GC</a>
             <a href="LoadGenerator.html" target="_blank">Load Generator</a>
         </div>
@@ -65,6 +70,8 @@
             <ul>
                 <li>Status: <span id="status" data-bind="text: status"></span></li>
                 <li>Server FPS: <span id="serverFps" data-bind="text: serverFps"></span></li>
+                <li>Connections connected: <span id="connectionsConnected" data-bind="text: connectionsConnected"></span></li>
+                <li>Connections per second: <span id="connectionsPerSecond" data-bind="text: connectionsPerSecond"></span></li>
                 <li>Messages sent: <span id="messagesSent" data-bind="text: messagesSent"></span></li>
                 <li>Messages per second: <span id="messagesPerSecond" data-bind="text: messagesPerSecond"></span></li>
                 <li>Broadcast time: <span id="broadcastTime" data-bind="text: broadcastTime"></span></li>

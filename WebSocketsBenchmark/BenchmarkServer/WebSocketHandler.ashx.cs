@@ -37,10 +37,17 @@ namespace BenchmarkServer
         private static Stopwatch _stopwatch = Stopwatch.StartNew();
         private static TimeSpan _lastUpdate = new TimeSpan(0);
         private static TimeSpan _lastBroadcast = new TimeSpan(0);
+
+        private static long _connectionsConnected = 0;
         private static long _messagesTotal = 0;
-        private static long _lastMessagesTotal = 0;
         private static long _broadcastRate = 0;
         private static long _broadcastTime = 0;
+
+        private static long _lastConnectionsConnected = 0;
+        private static long _lastMessagesTotal = 0;
+
+
+        private static ArraySegment<byte> _buffer = new ArraySegment<byte>(new byte[0]);
 
         public static dynamic PerformanceInformation
         {
@@ -51,15 +58,22 @@ namespace BenchmarkServer
                 _lastUpdate = time;
 
                 var broadcastRate = Interlocked.Read(ref _broadcastRate);
+
+                var connectionsConnected = Interlocked.Read(ref _connectionsConnected);
+                var changeInConnections = connectionsConnected - _lastConnectionsConnected;
+                _lastConnectionsConnected = connectionsConnected;
+
                 var messagesTotal = Interlocked.Read(ref _messagesTotal);
                 var changeInMessages = messagesTotal - _lastMessagesTotal;
                 _lastMessagesTotal = messagesTotal;
+
                 var broadcastTime = Interlocked.Read(ref _broadcastTime);
-                
 
                 return new
                 {
                     BroadcastRate = broadcastRate,
+                    ConnectionsConnected = connectionsConnected,
+                    ConnectionsPerSecond = (long)(1000 * changeInConnections / changeInTime.TotalMilliseconds),
                     MessagesTotal = messagesTotal,
                     MessagesPerSecond = (long)(1000 * changeInMessages / changeInTime.TotalMilliseconds),
                     BroadcastTime = _broadcastTime
@@ -81,12 +95,19 @@ namespace BenchmarkServer
             }
         }
 
-        public static async Task Broadcast(string message)
+        public static async Task Broadcast(string message, bool reuseBuffer)
         {
             var start = _stopwatch.Elapsed;
-            var buffer = new ArraySegment<byte>(System.Text.Encoding.UTF8.GetBytes(message));
 
-            await Task.WhenAll(_connections.Select(connection => connection.Send(buffer)));
+            if (reuseBuffer)
+            {
+                var buffer = new ArraySegment<byte>(System.Text.Encoding.UTF8.GetBytes(message));
+                await Task.WhenAll(_connections.Select(connection => connection.Send(buffer)));
+            }
+            else
+            {
+                await Task.WhenAll(_connections.Select(connection => connection.Send(new ArraySegment<byte>(System.Text.Encoding.UTF8.GetBytes(message)))));
+            }
 
             var time = _stopwatch.Elapsed;
             var broadcastTime = (long)(time - start).TotalMilliseconds;
@@ -104,13 +125,15 @@ namespace BenchmarkServer
                 Socket = webSocketContext.WebSocket
             };
             _connections.Add(connection);
+            Interlocked.Increment(ref _connectionsConnected);
 
-            var buffer = new ArraySegment<byte>(new byte[1024]);
+            //var buffer = new ArraySegment<byte>(new byte[1024]);
             while (true)
             {
-                var message = await connection.Socket.ReceiveAsync(buffer, CancellationToken.None);
+                var message = await connection.Socket.ReceiveAsync(_buffer, CancellationToken.None);
                 if (message.CloseStatus != null)
                 {
+                    Interlocked.Decrement(ref _connectionsConnected);
                     await connection.Socket.CloseAsync(WebSocketCloseStatus.NormalClosure, "Client requested connection close", CancellationToken.None);
                 }
             }

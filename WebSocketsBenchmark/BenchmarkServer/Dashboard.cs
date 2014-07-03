@@ -15,6 +15,7 @@ namespace BenchmarkServer
         private static int _actualFps = 0;
         private static bool _isRunning = false;
         private static long _rate = 1000;
+        private static bool _reuseBuffer = true;
 
         private static readonly Lazy<Timer> _timerInstance = new Lazy<Timer>(() =>
         {
@@ -27,12 +28,12 @@ namespace BenchmarkServer
                         var payload = _broadcastPayload;
                         for (var i = 0; i < count; i++)
                         {
-                            await WebSocketHandler.Broadcast(payload);
+                            await WebSocketHandler.Broadcast(payload, _reuseBuffer);
                         }
                     }
                     else
                     {
-                        await WebSocketHandler.Broadcast(_broadcastPayload);
+                        await WebSocketHandler.Broadcast(_broadcastPayload, _reuseBuffer);
                     }
                 },
                 null,
@@ -66,7 +67,8 @@ namespace BenchmarkServer
                 BroadcastSeconds = _broadcastSeconds,
                 BroadcastSize = _broadcastSize,
                 Broadcasting = _isRunning,
-                ServerFps = _actualFps
+                ServerFps = _actualFps,
+                BufferReuse = _reuseBuffer
             };
         }
 
@@ -104,6 +106,12 @@ namespace BenchmarkServer
             Clients.Others.broadcastSizeChanged(size.ToString());
         }
 
+        public void SetBufferReuse(bool reuseBuffer)
+        {
+            _reuseBuffer = reuseBuffer;
+            Clients.Others.bufferReuseChanged(reuseBuffer);
+        }
+
         public void ForceGC()
         {
             GC.Collect();
@@ -112,7 +120,7 @@ namespace BenchmarkServer
 
         public void BroadcastOnce()
         {
-            WebSocketHandler.Broadcast(_broadcastPayload).Wait();
+            WebSocketHandler.Broadcast(_broadcastPayload, _reuseBuffer).Wait();
         }
 
         public void StartBroadcast()

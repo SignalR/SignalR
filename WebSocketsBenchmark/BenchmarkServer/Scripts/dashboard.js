@@ -57,6 +57,9 @@ jQuery.fn.flash = function (color, duration) {
         this.broadcastSize = ko.observable(32);
 
 
+        this.bufferReuse = ko.observable(true);
+
+
         this.broadcasting = ko.observable(false);
 
 
@@ -66,6 +69,10 @@ jQuery.fn.flash = function (color, duration) {
 
 
         this.serverFps = ko.observable(0);
+
+        this.connectionsConnected = ko.observable(0);
+
+        this.connectionsPerSecond = ko.observable(0);
 
         this.messagesSent = ko.observable(0);
 
@@ -134,6 +141,10 @@ jQuery.fn.flash = function (color, duration) {
                 self.incomingNotification() || self.hub.server.setBroadcastSize(newValue);
             })
 
+            self.bufferReuse.subscribe(function (newValue) {
+                self.incomingNotification() || self.hub.server.setBufferReuse(newValue);
+            })
+
 
             $("#rateCount").spinner({
                 spin: function (e, ui) {
@@ -170,6 +181,9 @@ jQuery.fn.flash = function (color, duration) {
                 self.incomingNotification(true);
                 self.broadcastSize(status.BroadcastSize);
 
+
+                self.incomingNotification(true);
+                self.bufferReuse(status.BufferReuse);
 
                 self.broadcasting(status.Broadcasting);
             });
@@ -223,8 +237,15 @@ jQuery.fn.flash = function (color, duration) {
             model.broadcastSize(size);
         },
 
+        bufferReuseChanged: function (reuseBuffer) {
+            model.incomingNotification(true);
+            model.bufferReuse(reuseBuffer);
+        },
+
         update: function (status) {
             model.serverFps(status.BroadcastRate);
+            model.connectionsConnected(status.ConnectionsConnected);
+            model.connectionsPerSecond(status.ConnectionsPerSecond);
             model.messagesSent(status.MessagesTotal);
             model.messagesPerSecond(status.MessagesPerSecond);
             model.broadcastTime(status.BroadcastTime);
