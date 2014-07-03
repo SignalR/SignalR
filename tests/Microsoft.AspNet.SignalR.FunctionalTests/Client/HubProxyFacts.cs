@@ -107,7 +107,8 @@ namespace Microsoft.AspNet.SignalR.Tests
                     hubConnection.Start(host.Transport).Catch(ex =>
                     {
                         mre.Set();
-                    });
+                    },
+                    traceSource: null);
 
                     var transport = hubConnection.Transport;
 

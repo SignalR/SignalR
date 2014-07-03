@@ -190,8 +190,8 @@ namespace Microsoft.AspNet.SignalR.Hubs
                                        StateChangeTracker tracker)
         {
             // TODO: Make adding parameters here pluggable? IValueProvider? ;)
-            HubInvocationProgress progress = GetProgressInstance(methodDescriptor, value => SendProgressUpdate(hub.Context.ConnectionId, tracker, value, hubRequest));
-
+            HubInvocationProgress progress = GetProgressInstance(methodDescriptor, value => SendProgressUpdate(hub.Context.ConnectionId, tracker, value, hubRequest), Trace);
+            
             Task<object> piplineInvocation;
             try
             {
@@ -239,12 +239,12 @@ namespace Microsoft.AspNet.SignalR.Hubs
             .FastUnwrap();
         }
 
-        private static HubInvocationProgress GetProgressInstance(MethodDescriptor methodDescriptor, Func<object, Task> sendProgressFunc)
+        private static HubInvocationProgress GetProgressInstance(MethodDescriptor methodDescriptor, Func<object, Task> sendProgressFunc, TraceSource traceSource)
         {
             HubInvocationProgress progress = null;
             if (methodDescriptor.ProgressReportingType != null)
             {
-                progress = HubInvocationProgress.Create(methodDescriptor.ProgressReportingType, sendProgressFunc);
+                progress = HubInvocationProgress.Create(methodDescriptor.ProgressReportingType, sendProgressFunc, traceSource);
             }
             return progress;
         }
@@ -423,7 +423,7 @@ namespace Microsoft.AspNet.SignalR.Hubs
         private Task ExecuteHubEvent(IRequest request, string connectionId, Func<IHub, Task> action)
         {
             var hubs = GetHubs(request, connectionId).ToList();
-            var operations = hubs.Select(instance => action(instance).OrEmpty().Catch()).ToArray();
+            var operations = hubs.Select(instance => action(instance).OrEmpty().Catch(Trace)).ToArray();
 
             if (operations.Length == 0)
             {

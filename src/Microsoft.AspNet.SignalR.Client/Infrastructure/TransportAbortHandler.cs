@@ -64,12 +64,17 @@ namespace Microsoft.AspNet.SignalR.Client.Infrastructure
 
                     var url = UrlBuilder.BuildAbort(connection, _transportName, connectionData);
 
-                    _httpClient.Post(url, connection.PrepareRequest, isLongRunning: false).Catch((ex, state) =>
-                    {
-                        // If there's an error making an http request set the reset event
-                        ((TransportAbortHandler)state).CompleteAbort();
-                    },
-                    this);
+                    _httpClient.Post(url, connection.PrepareRequest, isLongRunning: false)
+                               .Catch((ex, state) =>
+                               {
+                                   // If there's an error making an http request set the reset event
+                                   ((TransportAbortHandler)state).CompleteAbort();
+                               },
+                               this
+#if !PORTABLE && !NETFX_CORE && !__ANDROID__ && !IOS
+                               ,traceSource: null
+#endif
+                               );
 
                     if (!_abortResetEvent.WaitOne(timeout))
                     {

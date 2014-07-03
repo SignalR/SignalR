@@ -222,7 +222,7 @@ namespace Microsoft.AspNet.SignalR.Transports
                     Trace.TraceEvent(TraceEventType.Verbose, 0, "KeepAlive(" + metadata.Connection.ConnectionId + ")");
 
                     // Ensure delegate continues to use the C# Compiler static delegate caching optimization.
-                    metadata.Connection.KeepAlive().Catch((ex, state) => OnKeepAliveError(ex, state), Trace);
+                    metadata.Connection.KeepAlive().Catch((ex, state) => OnKeepAliveError(ex, state), Trace, Trace);
                 }
 
                 MarkConnection(metadata.Connection);

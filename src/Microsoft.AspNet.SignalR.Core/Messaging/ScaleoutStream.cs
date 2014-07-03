@@ -115,7 +115,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
                     }
 
                     // Always observe the task in case the user doesn't handle it
-                    return task.Catch();
+                    return task.Catch(_trace);
                 }
 
                 return Send(context);
@@ -191,7 +191,8 @@ namespace Microsoft.AspNet.SignalR.Messaging
                     ctx.TaskCompletionSource.TrySetUnwrappedException(ex);
                 }
             },
-            context);
+            context,
+            traceSource: null);
 
             return context.TaskCompletionSource.Task;
         }
@@ -282,8 +283,8 @@ namespace Microsoft.AspNet.SignalR.Messaging
             }
 
             var tcs = new TaskCompletionSource<object>();
-
-            queue.Drain().Catch().ContinueWith(task =>
+            
+            queue.Drain().Catch(traceSource: null).ContinueWith(task =>
             {
                 tcs.SetResult(null);
             });

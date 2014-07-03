@@ -93,13 +93,20 @@ namespace Microsoft.AspNet.SignalR
         }
 
         [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode", Justification = "This is a shared file")]
+#if !PORTABLE && !NETFX_CORE && !__ANDROID__ && !IOS
+        public static TTask Catch<TTask>(this TTask task, TraceSource traceSource = null) where TTask : Task
+        {
+            return Catch(task, ex => { }, traceSource);
+        }
+#else
         public static TTask Catch<TTask>(this TTask task) where TTask : Task
         {
             return Catch(task, ex => { });
         }
+#endif
 
 #if PERFCOUNTERS
-        public static TTask Catch<TTask>(this TTask task, params IPerformanceCounter[] counters) where TTask : Task
+        public static TTask Catch<TTask>(this TTask task, TraceSource traceSource, params IPerformanceCounter[] counters) where TTask : Task
         {
             return Catch(task, _ =>
                 {
@@ -111,22 +118,35 @@ namespace Microsoft.AspNet.SignalR
                     {
                         counters[i].Increment();
                     }
-                });
+                },
+                traceSource);
         }
 #endif
 
         [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode", Justification = "This is a shared file")]
+#if !PORTABLE && !NETFX_CORE && !__ANDROID__ && !IOS
+        public static TTask Catch<TTask>(this TTask task, Action<AggregateException, object> handler, object state, TraceSource traceSource) where TTask : Task
+#else
         public static TTask Catch<TTask>(this TTask task, Action<AggregateException, object> handler, object state) where TTask : Task
+#endif
         {
             if (task != null && task.Status != TaskStatus.RanToCompletion)
             {
                 if (task.Status == TaskStatus.Faulted)
                 {
+#if !PORTABLE && !NETFX_CORE && !__ANDROID__ && !IOS
+                    ExecuteOnFaulted(handler, state, task.Exception, traceSource);
+#else
                     ExecuteOnFaulted(handler, state, task.Exception);
+#endif
                 }
                 else
                 {
+#if !PORTABLE && !NETFX_CORE && !__ANDROID__ && !IOS
+                    AttachFaultedContinuation<TTask>(task, handler, state, traceSource);
+#else
                     AttachFaultedContinuation<TTask>(task, handler, state);
+#endif
                 }
             }
 
@@ -134,30 +154,53 @@ namespace Microsoft.AspNet.SignalR
         }
 
         [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode", Justification = "This is a shared file")]
+#if !PORTABLE && !NETFX_CORE && !__ANDROID__ && !IOS
+        private static void AttachFaultedContinuation<TTask>(TTask task, Action<AggregateException, object> handler, object state, TraceSource traceSource) where TTask : Task
+#else      
         private static void AttachFaultedContinuation<TTask>(TTask task, Action<AggregateException, object> handler, object state) where TTask : Task
+#endif
         {
             task.ContinueWithPreservedCulture(innerTask =>
             {
+#if !PORTABLE && !NETFX_CORE && !__ANDROID__ && !IOS
+                ExecuteOnFaulted(handler, state, innerTask.Exception, traceSource);
+#else
                 ExecuteOnFaulted(handler, state, innerTask.Exception);
+#endif
             },
             TaskContinuationOptions.OnlyOnFaulted | TaskContinuationOptions.ExecuteSynchronously);
         }
 
         [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode", Justification = "This is a shared file")]
-        private static void ExecuteOnFaulted(Action<AggregateException, object> handler, object state, AggregateException exception)
-        {
-            // observe Exception
 #if !PORTABLE && !NETFX_CORE && !__ANDROID__ && !IOS
-            Trace.TraceWarning("SignalR exception thrown by Task: {0}", exception);
+        private static void ExecuteOnFaulted(Action<AggregateException, object> handler, object state, AggregateException exception, TraceSource traceSource)
+#else
+        private static void ExecuteOnFaulted(Action<AggregateException, object> handler, object state, AggregateException exception)
+#endif
+        {
+            // Observe Exception
+#if !PORTABLE && !NETFX_CORE && !__ANDROID__ && !IOS
+            if (traceSource != null)
+            {
+                traceSource.TraceEvent(TraceEventType.Warning, 0, "Exception thrown by Task: {0}", exception);
+            }
 #endif
             handler(exception, state);
         }
 
         [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode", Justification = "This is a shared file")]
+#if !PORTABLE && !NETFX_CORE && !__ANDROID__ && !IOS
+        public static TTask Catch<TTask>(this TTask task, Action<AggregateException> handler, TraceSource traceSource) where TTask : Task
+#else
         public static TTask Catch<TTask>(this TTask task, Action<AggregateException> handler) where TTask : Task
+#endif
         {
             return task.Catch((ex, state) => ((Action<AggregateException>)state).Invoke(ex),
-                              handler);
+                              handler
+#if !PORTABLE && !NETFX_CORE && !__ANDROID__ && !IOS
+                              , traceSource
+#endif
+                              );
         }
 
         [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode", Justification = "This is a shared file")]

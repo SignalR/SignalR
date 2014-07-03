@@ -85,21 +85,24 @@ namespace Microsoft.AspNet.SignalR.Client.Infrastructure
 
         private void Start()
         {
-            _transportHelper.GetStartResponse(_httpClient, _connection, _connectionData, _transport).Then(response =>
-            {
-                var started = _connection.JsonDeserializeObject<JObject>(response)["Response"];
-                if (started.ToString() == "started")
-                {
-                    CompleteStart();
-                }
-                else
-                {
-                    CompleteFail(new StartException(Resources.Error_StartFailed));
-                }
-            }).Catch(ex =>
-            {
-                CompleteFail(new StartException(Resources.Error_StartFailed, ex));
-            });
+            _transportHelper.GetStartResponse(_httpClient, _connection, _connectionData, _transport)
+                            .Then(response =>
+                            {
+                                var started = _connection.JsonDeserializeObject<JObject>(response)["Response"];
+                                if (started.ToString() == "started")
+                                {
+                                    CompleteStart();
+                                }
+                                else
+                                {
+                                    CompleteFail(new StartException(Resources.Error_StartFailed));
+                                }
+                            })
+                            .Catch(ex => CompleteFail(new StartException(Resources.Error_StartFailed, ex))
+#if !PORTABLE && !NETFX_CORE && !__ANDROID__ && !IOS
+                                ,traceSource: null
+#endif
+                            );
         }
 
         private void CompleteStart()

@@ -138,7 +138,8 @@ namespace Microsoft.AspNet.SignalR.SqlServer
                     // Try again in a little bit
                     Thread.Sleep(2000);
                     StartReceiving(streamIndex);
-                });
+                },
+                Trace);
         }
     }
 }

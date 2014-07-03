@@ -155,7 +155,7 @@ namespace Microsoft.AspNet.SignalR.SqlServer
 
                 commandFunc(command)
                     .Then(result => tcs.SetResult(result))
-                    .Catch(ex => tcs.SetUnwrappedException(ex))
+                    .Catch(ex => tcs.SetUnwrappedException(ex), Trace)
                     .Finally(state =>
                     {
                         var conn = (DbConnection)state;
