@@ -77,7 +77,7 @@ namespace Microsoft.AspNet.SignalR.Samples
                 map.MapSignalR();
             });
 
-            BackgroundThread.Start();
+            //BackgroundThread.Start();
         }
 
         private class ClaimsMiddleware : OwinMiddleware

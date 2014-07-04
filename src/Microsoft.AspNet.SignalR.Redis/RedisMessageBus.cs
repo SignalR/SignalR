@@ -26,9 +26,8 @@ namespace Microsoft.AspNet.SignalR.Redis
         private string _connectionString;
         private int _state;
         private readonly object _callbackLock = new object();
-        private readonly TaskCompletionSource<object> _tcs;
 
-        public RedisMessageBus(IDependencyResolver resolver, RedisScaleoutConfiguration configuration, IRedisConnection connection)
+        public RedisMessageBus(IDependencyResolver resolver, RedisScaleoutConfiguration configuration, IRedisConnection connection, bool connectAutomatically)
             : base(resolver, configuration)
         {
             if (configuration == null)
@@ -48,9 +47,10 @@ namespace Microsoft.AspNet.SignalR.Redis
 
             ReconnectDelay = TimeSpan.FromSeconds(2);
 
-            _tcs = new TaskCompletionSource<object>();
-
-            Task.Run(() => ConnectWithRetry());
+            if (connectAutomatically)
+            {
+                var ignore = ConnectWithRetry();
+            }
         }
 
         public TimeSpan ReconnectDelay { get; set; }
@@ -59,7 +59,7 @@ namespace Microsoft.AspNet.SignalR.Redis
         internal int ConnectionState { get { return _state; } }
 
         // For testing purposes only
-        internal Task<object> InitialConnectTask { get { return _tcs.Task; } }
+        internal Action OnConnectCompleted;
 
         public virtual void OpenStream(int streamIndex)
         {
@@ -129,6 +129,7 @@ namespace Microsoft.AspNet.SignalR.Redis
 
         private void OnConnectionError(Exception ex)
         {
+            OnError(0, ex);
             _trace.TraceError("OnConnectionError - " + ex.Message);
         }
 
@@ -141,7 +142,7 @@ namespace Microsoft.AspNet.SignalR.Redis
             OpenStream(0);
         }
 
-        private async void ConnectWithRetry()
+        internal async Task ConnectWithRetry()
         {
             while (true)
             {
@@ -181,7 +182,7 @@ namespace Microsoft.AspNet.SignalR.Redis
                 await Task.Delay(ReconnectDelay);
             }
 
-            _tcs.TrySetResult(null);
+            OnConnectCompleted();
         }
 
         private async Task ConnectToRedisAsync()
@@ -195,7 +196,7 @@ namespace Microsoft.AspNet.SignalR.Redis
 
             _trace.TraceInformation("Connecting...");
 
-            await _connection.ConnectAsync(_connectionString);
+            await _connection.ConnectAsync(_connectionString, _trace);
 
             _trace.TraceInformation("Connection opened");
 
@@ -217,7 +218,6 @@ namespace Microsoft.AspNet.SignalR.Redis
                 OnReceived(streamIndex, message.Id, message.ScaleoutMessage);
             }
         }
-
 
         private void TraceRedisScriptResult(Task<object> redisTask)
         {

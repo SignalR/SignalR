@@ -9,15 +9,17 @@ namespace Microsoft.AspNet.SignalR.Redis
     {
         private StackExchange.Redis.ISubscriber _redisSubscriber;
         private ConnectionMultiplexer _connection;
-        private Action<int, RedisMessage> _onMessage;
+        private TraceSource _trace;
 
-        public async Task ConnectAsync(string connectionString)
+        public async Task ConnectAsync(string connectionString, TraceSource trace)
         {
             _connection = await ConnectionMultiplexer.ConnectAsync(connectionString);
 
             _connection.ConnectionFailed += OnConnectionFailed;
             _connection.ConnectionRestored += OnConnectionRestored;
             _connection.ErrorMessage += OnError;
+
+            _trace = trace;
 
             _redisSubscriber = _connection.GetSubscriber();
         }
@@ -40,8 +42,11 @@ namespace Microsoft.AspNet.SignalR.Redis
 
         public async Task SubscribeAsync(string key, Action<int, RedisMessage> onMessage)
         {
-            _onMessage = onMessage;
-            await _redisSubscriber.SubscribeAsync(key, OnMessage);
+            await _redisSubscriber.SubscribeAsync(key, (channel, data) =>
+            {
+                var message = RedisMessage.FromBytes(data, _trace);
+                onMessage(0, message);
+            });
         }
 
         public void Dispose()
@@ -79,15 +84,6 @@ namespace Microsoft.AspNet.SignalR.Redis
 
         public event Action<Exception> ErrorMessage;
 
-        private void OnMessage(RedisChannel key, RedisValue data)
-        {
-            var trace = new TraceSource("Redis Connection");
-
-            // The key is the stream id (channel)
-            var message = RedisMessage.FromBytes(data, trace);
-            _onMessage(0, message);
-        }
-
         private void OnConnectionFailed(object sender, ConnectionFailedEventArgs args)
         {
             var handler = ConnectionFailed;
@@ -100,11 +96,10 @@ namespace Microsoft.AspNet.SignalR.Redis
             handler(args.Exception);
         }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2201:DoNotRaiseReservedExceptionTypes")]
         private void OnError(object sender, RedisErrorEventArgs args)
         {
             var handler = ErrorMessage;
-            handler(new Exception(args.Message));
+            handler(new InvalidOperationException(args.Message));
         }
     }
 }

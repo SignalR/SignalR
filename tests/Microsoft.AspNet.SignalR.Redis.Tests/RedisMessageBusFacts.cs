@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR.Tracing;
@@ -10,16 +11,19 @@ namespace Microsoft.AspNet.SignalR.Redis.Tests
     public class RedisMessageBusFacts
     {
         [Fact]
-        public void ConnectRetriesOnError()
+        public async void ConnectRetriesOnError()
         {
             int invokationCount = 0;
+
             var wh = new ManualResetEventSlim();
+            var connectEvent = new ManualResetEventSlim();
+
             var redisConnection = GetMockRedisConnection();
 
             var tcs = new TaskCompletionSource<object>();
             tcs.TrySetCanceled();
 
-            redisConnection.Setup(m => m.ConnectAsync(It.IsAny<string>())).Returns<string>(connectionString =>
+            redisConnection.Setup(m => m.ConnectAsync(It.IsAny<string>(), It.IsAny<TraceSource>())).Returns<string>(connectionString =>
             {
                 if (++invokationCount == 2)
                 {
@@ -33,11 +37,17 @@ namespace Microsoft.AspNet.SignalR.Redis.Tests
             });
 
             var redisMessageBus = new RedisMessageBus(GetDependencyResolver(), new RedisScaleoutConfiguration(String.Empty, String.Empty),
-            redisConnection.Object);
+            redisConnection.Object, false);
 
-            Assert.True(wh.Wait(TimeSpan.FromSeconds(5)));
+            redisMessageBus.OnConnectCompleted += () =>
+            {
+                connectEvent.Set();
+            };
 
-            redisMessageBus.InitialConnectTask.Wait();
+            await redisMessageBus.ConnectWithRetry();
+
+            Assert.True(wh.Wait(TimeSpan.FromSeconds(10)));
+            Assert.True(connectEvent.Wait(TimeSpan.FromSeconds(10)));
             Assert.Equal(RedisMessageBus.State.Connected, redisMessageBus.ConnectionState);
         }
 
@@ -46,6 +56,7 @@ namespace Microsoft.AspNet.SignalR.Redis.Tests
         {
             int openInvoked = 0;
             var wh = new ManualResetEventSlim();
+            var connectEvent = new ManualResetEventSlim();
 
             var redisConnection = GetMockRedisConnection();
 
@@ -64,7 +75,7 @@ namespace Microsoft.AspNet.SignalR.Redis.Tests
             // Creating an instance to invoke the constructor which starts the connection
             var instance = redisMessageBus.Object;
 
-            redisMessageBus.Object.InitialConnectTask.Wait();
+            Assert.True(connectEvent.Wait(TimeSpan.FromSeconds(5)));
 
             redisConnection.Raise(mock => mock.ConnectionRestored += null, new Exception());
 
@@ -78,9 +89,16 @@ namespace Microsoft.AspNet.SignalR.Redis.Tests
 
             var redisMessageBus = new RedisMessageBus(GetDependencyResolver(),
                 new RedisScaleoutConfiguration(String.Empty, String.Empty),
-                redisConnection.Object);
+                redisConnection.Object, false);
 
-            redisMessageBus.InitialConnectTask.Wait();
+            var connectEvent = new ManualResetEventSlim();
+
+            redisMessageBus.OnConnectCompleted += () =>
+            {
+                connectEvent.Set();
+            };
+
+            Assert.True(connectEvent.Wait(TimeSpan.FromSeconds(5)));
 
             Assert.Equal(RedisMessageBus.State.Connected, redisMessageBus.ConnectionState);
 
@@ -93,7 +111,7 @@ namespace Microsoft.AspNet.SignalR.Redis.Tests
         {
             var redisConnection = new Mock<IRedisConnection>();
 
-            redisConnection.Setup(m => m.ConnectAsync(It.IsAny<string>()))
+            redisConnection.Setup(m => m.ConnectAsync(It.IsAny<string>(), It.IsAny<TraceSource>()))
                 .Returns(Task.FromResult(0));
 
             redisConnection.Setup(m => m.SubscribeAsync(It.IsAny<string>(), It.IsAny<Action<int, RedisMessage>>()))
@@ -105,7 +123,8 @@ namespace Microsoft.AspNet.SignalR.Redis.Tests
         private DefaultDependencyResolver GetDependencyResolver()
         {
             var dr = new DefaultDependencyResolver();
-            dr.Register(typeof(ITraceManager), () => { return new TraceManager(); });
+            var traceManager = new TraceManager();
+            dr.Register(typeof(ITraceManager), () => traceManager);
             return dr;
         }
     }
