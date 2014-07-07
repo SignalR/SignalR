@@ -80,6 +80,8 @@
 
 
         <div id="control">
+            <button id="startRecord" data-bind="disable: recording, click: startRecord">Start Broadcast</button>
+            <button id="stopRecord" data-bind="enable: recording, click: stopRecord">Stop Broadcast</button>
             <button id="start" data-bind="disable: broadcasting, click: start">Start Broadcast</button>
             <button id="stop" data-bind="enable: broadcasting, click: stop">Stop Broadcast</button>
             <button id="broadcastOnce" data-bind="click: broadcastOnce">Broadcast Once</button>

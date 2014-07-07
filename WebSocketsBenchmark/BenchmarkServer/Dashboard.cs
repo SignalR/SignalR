@@ -14,6 +14,7 @@ namespace BenchmarkServer
         private static bool _batchingEnabled;
         private static int _actualFps = 0;
         private static bool _isRunning = false;
+        private static bool _isRecording = false;
         private static long _rate = 1000;
         private static bool _reuseBuffer = true;
 
@@ -42,19 +43,12 @@ namespace BenchmarkServer
                 );
         });
 
-        private static readonly Timer _updateTimer = new Timer(
-            _ =>
-            {
-                var context = GlobalHost.ConnectionManager.GetHubContext<Dashboard>();
-                context.Clients.All.update(WebSocketHandler.PerformanceInformation);
-            },
-            null,
-            1000,
-            1000);
+        private static readonly PerformanceRecorder<PerformanceSample> _performanceRecorder = new PerformanceRecorder<PerformanceSample>();
 
         internal static void Init()
         {
             SetBroadcastPayload();
+            WebSocketHandler.PerformanceTracker.Sampling += RecordSample;
         }
 
         public dynamic GetStatus()
@@ -67,6 +61,7 @@ namespace BenchmarkServer
                 BroadcastSeconds = _broadcastSeconds,
                 BroadcastSize = _broadcastSize,
                 Broadcasting = _isRunning,
+                Recording = _isRecording,
                 ServerFps = _actualFps,
                 BufferReuse = _reuseBuffer
             };
@@ -141,6 +136,34 @@ namespace BenchmarkServer
         private static void SetBroadcastPayload()
         {
             _broadcastPayload = String.Join("", Enumerable.Range(0, _broadcastSize - 1).Select(i => "a"));
+        }
+
+        public void StartRecording()
+        {
+            if (!_isRecording)
+            {
+                _isRecording = true;
+                _performanceRecorder.Reset();
+                WebSocketHandler.PerformanceTracker.StartSampling();
+                Clients.All.startedRecording();
+            }
+        }
+
+        public void StopRecording()
+        {
+            if (_isRecording)
+            {
+                WebSocketHandler.PerformanceTracker.StopSampling();
+                _performanceRecorder.Record();
+                Clients.All.stoppedRecording();
+            }
+        }
+
+        private static void RecordSample(object sender, PerformanceSample performanceSample)
+        {
+            var context = GlobalHost.ConnectionManager.GetHubContext<Dashboard>();
+            context.Clients.All.update(performanceSample);
+            _performanceRecorder.AddSample(performanceSample);
         }
     }
 }

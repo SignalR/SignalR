@@ -183,8 +183,12 @@
     <Compile Include="default.aspx.designer.cs">
       <DependentUpon>default.aspx</DependentUpon>
     </Compile>
+    <Compile Include="PerformanceTracker.cs" />
+    <Compile Include="PerformanceSample.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="PerformanceRecorder.cs" />
     <Compile Include="Startup.cs" />
+    <Compile Include="WebSocketConnection.cs" />
     <Compile Include="WebSocketHandler.ashx.cs">
       <DependentUpon>WebSocketHandler.ashx</DependentUpon>
     </Compile>

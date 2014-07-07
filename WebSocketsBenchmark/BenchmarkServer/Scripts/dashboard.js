@@ -62,6 +62,8 @@ jQuery.fn.flash = function (color, duration) {
 
         this.broadcasting = ko.observable(false);
 
+        this.recording = ko.observable(false);
+
 
         this.status = ko.computed(function () {
             return self.broadcasting() ? "Running" : "Stopped";
@@ -107,6 +109,13 @@ jQuery.fn.flash = function (color, duration) {
             self.hub.server.stopBroadcast();
         };
 
+        this.startRecord = function () {
+            self.hub.server.startRecording();
+        }
+
+        this.stopRecord = function () {
+            self.hub.server.stopRecording();
+        }
 
         this.broadcastOnce = function () {
             self.hub.server.broadcastOnce();
@@ -186,6 +195,7 @@ jQuery.fn.flash = function (color, duration) {
                 self.bufferReuse(status.BufferReuse);
 
                 self.broadcasting(status.Broadcasting);
+                self.recording(status.Recording);
             });
         }
     }
@@ -206,6 +216,13 @@ jQuery.fn.flash = function (color, duration) {
             model.broadcasting(false);
         },
 
+        startedRecording: function () {
+            model.Recording(true);
+        },
+
+        stoppedRecording: function () {
+            model.Recording(false);
+        },
 
         serverFps: function (fps) {
             model.serverFps(fps);
@@ -243,12 +260,12 @@ jQuery.fn.flash = function (color, duration) {
         },
 
         update: function (status) {
-            model.serverFps(status.BroadcastRate);
-            model.connectionsConnected(status.ConnectionsConnected);
-            model.connectionsPerSecond(status.ConnectionsPerSecond);
-            model.messagesSent(status.MessagesTotal);
+            model.connectionsConnected(status.ClientsConnected);
+            model.connectionsPerSecond(status.ClientConnectionsPerSecond);
+            model.messagesSent(status.MessagesSent);
             model.messagesPerSecond(status.MessagesPerSecond);
-            model.broadcastTime(status.BroadcastTime);
+            model.broadcastTime(status.LastBroadcastDuration);
+            model.serverFps(status.BroadcastRate);
         }
     });
 
