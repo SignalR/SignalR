@@ -3,7 +3,6 @@
 using System;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
-using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR.Hosting;
@@ -105,6 +104,13 @@ namespace Microsoft.AspNet.SignalR.Transports
             _lastMessageId = Context.Request.QueryString["messageId"];
             return TaskAsyncHelper.Empty;
         }
+
+        [SuppressMessage("Microsoft.Design", "CA1024:UsePropertiesWhereAppropriate", Justification = "This is for async.")]
+        public virtual Task<string> GetGroupsToken()
+        {
+            return TaskAsyncHelper.FromResult(Context.Request.QueryString["groupsToken"]);
+        }
+
         internal TaskQueue WriteQueue
         {
             get;
@@ -128,7 +134,7 @@ namespace Microsoft.AspNet.SignalR.Transports
                 // If the CTS is tripped or the request has ended then the connection isn't alive
                 return !(
                     CancellationToken.IsCancellationRequested ||
-                    _requestLifeTime.Task.IsCompleted ||
+                    (_requestLifeTime != null && _requestLifeTime.Task.IsCompleted) ||
                     _lastWriteTask.IsCanceled ||
                     _lastWriteTask.IsFaulted
                 );

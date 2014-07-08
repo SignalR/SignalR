@@ -7,7 +7,7 @@ using Microsoft.AspNet.SignalR.Infrastructure;
 
 namespace Microsoft.AspNet.SignalR.Transports
 {
-    internal struct HttpRequestLifeTime
+    internal class HttpRequestLifeTime
     {
         private readonly TaskCompletionSource<object> _lifetimeTcs;
         private readonly TransportDisconnectBase _transport;
