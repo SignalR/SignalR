@@ -524,11 +524,12 @@ namespace Microsoft.AspNet.SignalR
             return SendJsonResponse(context, JsonSerializer.Stringify(payload));
         }
 
-        private async Task ProcessStartRequest(HostContext context, string connectionId)
+        // Avoid async/await in SignalR 2.X due to https://github.com/SignalR/SignalR/issues/3116
+        private Task ProcessStartRequest(HostContext context, string connectionId)
         {
-            await OnConnected(context.Request, connectionId).OrEmpty();
-            await SendJsonResponse(context, StartJsonPayload);
-            Counters.ConnectionsConnected.Increment();
+            return OnConnected(context.Request, connectionId).OrEmpty()
+                .Then(c => SendJsonResponse(c, StartJsonPayload), context)
+                .Then(c => c.ConnectionsConnected.Increment(), Counters);
         }
 
         private static Task SendJsonResponse(HostContext context, string jsonPayload)
