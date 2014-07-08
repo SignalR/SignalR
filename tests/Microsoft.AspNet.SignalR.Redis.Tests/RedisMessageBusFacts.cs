@@ -11,7 +11,7 @@ namespace Microsoft.AspNet.SignalR.Redis.Tests
     public class RedisMessageBusFacts
     {
         [Fact]
-        public void ConnectRetriesOnError()
+        public async void ConnectRetriesOnError()
         {
             int invokationCount = 0;
             var wh = new ManualResetEventSlim();
@@ -36,7 +36,7 @@ namespace Microsoft.AspNet.SignalR.Redis.Tests
             var redisMessageBus = new RedisMessageBus(GetDependencyResolver(), new RedisScaleoutConfiguration(String.Empty, String.Empty),
             redisConnection.Object, false);
 
-            redisMessageBus.ConnectWithRetry().Wait();
+            await redisMessageBus.ConnectWithRetry();
 
             Assert.True(wh.Wait(TimeSpan.FromSeconds(5)));
             Assert.Equal(RedisMessageBus.State.Connected, redisMessageBus.ConnectionState);
@@ -71,7 +71,7 @@ namespace Microsoft.AspNet.SignalR.Redis.Tests
         }
 
         [Fact]
-        public void ConnectionFailedChangesStateToClosed()
+        public async void ConnectionFailedChangesStateToClosed()
         {
             var redisConnection = GetMockRedisConnection();
 
@@ -79,7 +79,7 @@ namespace Microsoft.AspNet.SignalR.Redis.Tests
                 new RedisScaleoutConfiguration(String.Empty, String.Empty),
                 redisConnection.Object, false);
 
-            redisMessageBus.ConnectWithRetry().Wait();
+            await redisMessageBus.ConnectWithRetry();
 
             Assert.Equal(RedisMessageBus.State.Connected, redisMessageBus.ConnectionState);
 
