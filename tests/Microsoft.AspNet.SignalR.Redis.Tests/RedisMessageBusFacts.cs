@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR.Tracing;
@@ -19,7 +20,7 @@ namespace Microsoft.AspNet.SignalR.Redis.Tests
             var tcs = new TaskCompletionSource<object>();
             tcs.TrySetCanceled();
 
-            redisConnection.Setup(m => m.ConnectAsync(It.IsAny<string>())).Returns<string>(connectionString =>
+            redisConnection.Setup(m => m.ConnectAsync(It.IsAny<string>(), It.IsAny<TraceSource>())).Returns<string, TraceSource>((connectionString, trace) =>
             {
                 if (++invokationCount == 2)
                 {
@@ -33,11 +34,11 @@ namespace Microsoft.AspNet.SignalR.Redis.Tests
             });
 
             var redisMessageBus = new RedisMessageBus(GetDependencyResolver(), new RedisScaleoutConfiguration(String.Empty, String.Empty),
-            redisConnection.Object);
+            redisConnection.Object, false);
+
+            redisMessageBus.ConnectWithRetry().Wait();
 
             Assert.True(wh.Wait(TimeSpan.FromSeconds(5)));
-
-            redisMessageBus.InitialConnectTask.Wait();
             Assert.Equal(RedisMessageBus.State.Connected, redisMessageBus.ConnectionState);
         }
 
@@ -64,11 +65,9 @@ namespace Microsoft.AspNet.SignalR.Redis.Tests
             // Creating an instance to invoke the constructor which starts the connection
             var instance = redisMessageBus.Object;
 
-            redisMessageBus.Object.InitialConnectTask.Wait();
-
             redisConnection.Raise(mock => mock.ConnectionRestored += null, new Exception());
 
-            Assert.Equal(openInvoked, 2);
+            Assert.True(wh.Wait(TimeSpan.FromSeconds(5)));
         }
 
         [Fact]
@@ -78,9 +77,9 @@ namespace Microsoft.AspNet.SignalR.Redis.Tests
 
             var redisMessageBus = new RedisMessageBus(GetDependencyResolver(),
                 new RedisScaleoutConfiguration(String.Empty, String.Empty),
-                redisConnection.Object);
+                redisConnection.Object, false);
 
-            redisMessageBus.InitialConnectTask.Wait();
+            redisMessageBus.ConnectWithRetry().Wait();
 
             Assert.Equal(RedisMessageBus.State.Connected, redisMessageBus.ConnectionState);
 
@@ -93,7 +92,7 @@ namespace Microsoft.AspNet.SignalR.Redis.Tests
         {
             var redisConnection = new Mock<IRedisConnection>();
 
-            redisConnection.Setup(m => m.ConnectAsync(It.IsAny<string>()))
+            redisConnection.Setup(m => m.ConnectAsync(It.IsAny<string>(), It.IsAny<TraceSource>()))
                 .Returns(Task.FromResult(0));
 
             redisConnection.Setup(m => m.SubscribeAsync(It.IsAny<string>(), It.IsAny<Action<int, RedisMessage>>()))
@@ -105,7 +104,8 @@ namespace Microsoft.AspNet.SignalR.Redis.Tests
         private DefaultDependencyResolver GetDependencyResolver()
         {
             var dr = new DefaultDependencyResolver();
-            dr.Register(typeof(ITraceManager), () => { return new TraceManager(); });
+            var traceManager = new TraceManager();
+            dr.Register(typeof(ITraceManager), () => traceManager);
             return dr;
         }
     }

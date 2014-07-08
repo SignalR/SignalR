@@ -52,7 +52,7 @@ namespace Microsoft.AspNet.SignalR
 
         private static string CreateConnectionString(string server, int port, string password)
         {
-            return string.Format(CultureInfo.CurrentCulture, "{0}:{1}, password={2}, abortConnect={3}", server, port, password, "false");
+            return string.Format(CultureInfo.CurrentCulture, "{0}:{1}, password={2}, abortConnect=false", server, port, password);
         }
     }
 }
