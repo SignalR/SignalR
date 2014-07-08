@@ -123,4 +123,7 @@
   <data name="Error_RedisConnectionClosed" xml:space="preserve">
     <value>Redis connection closed unexpectedly.</value>
   </data>
+  <data name="Error_RedisConnectionNotStarted" xml:space="preserve">
+    <value>Redis connection not started.</value>
+  </data>
 </root>

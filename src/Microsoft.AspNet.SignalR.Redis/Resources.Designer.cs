@@ -77,5 +77,14 @@ namespace Microsoft.AspNet.SignalR.Redis {
                 return ResourceManager.GetString("Error_RedisConnectionClosed", resourceCulture);
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Redis connection not started..
+        /// </summary>
+        internal static string Error_RedisConnectionNotStarted {
+            get {
+                return ResourceManager.GetString("Error_RedisConnectionNotStarted", resourceCulture);
+            }
+        }
     }
 }
