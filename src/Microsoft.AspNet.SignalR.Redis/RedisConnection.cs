@@ -68,12 +68,7 @@ namespace Microsoft.AspNet.SignalR.Redis
 
             var arguments = new RedisValue[] { messageArguments };
 
-            await _connection.GetDatabase(database).ScriptEvaluateAsync(
-                @"local newId = redis.call('INCR', KEYS[1])
-                              local payload = newId .. ' ' .. ARGV[1]
-                              redis.call('PUBLISH', KEYS[1], payload)
-                              return {newId, ARGV[1], payload}  
-                            ",
+            await _connection.GetDatabase(database).ScriptEvaluateAsync(script,
                 keys,
                 arguments);
         }
