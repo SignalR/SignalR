@@ -26,6 +26,9 @@ namespace Microsoft.AspNet.SignalR.Tests.Common
     {
         public static void Start()
         {
+            // Ensure that attaching to the PreSendRequestHeaders event doesn't cause deadlocks in our tests
+            HttpApplication.RegisterModule(typeof(PreSendRequestHeadersModule));
+
             RouteTable.Routes.Add("ping", new Route("ping", new PingHandler()));
             RouteTable.Routes.Add("gc", new Route("gc", new GCHandler()));
 

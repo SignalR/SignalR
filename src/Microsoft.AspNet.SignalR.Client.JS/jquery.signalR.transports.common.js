@@ -328,62 +328,57 @@
             connection.log("Fired ajax abort async = " + async + ".");
         },
 
-        tryInitialize: function (connection, persistentResponse, onInitialized) {
-            var startUrl,
-                xhr,
-                rejectDeferred = function (error) {
+        ajaxStart: function (connection, onSuccess) {
+            var rejectDeferred = function (error) {
                     var deferred = connection._deferral;
                     if (deferred) {
                         deferred.reject(error);
                     }
                 },
                 triggerStartError = function (error) {
+                    connection.log("The start request failed. Stopping the connection.");
                     $(connection).triggerHandler(events.onError, [error]);
                     rejectDeferred(error);
                     connection.stop();
                 };
 
-            if (persistentResponse.Initialized) {
-                startUrl = getAjaxUrl(connection, "/start");
+            connection._.startRequest = transportLogic.ajax(connection, {
+                url: getAjaxUrl(connection, "/start"),
+                success: function (result, statusText, xhr) {
+                    var data;
 
-                xhr = transportLogic.ajax(connection, {
-                    url: startUrl,
-                    success: function (result) {
-                        var data;
-
-                        try {
-                            data = connection._parseResponse(result);
-                        } catch (error) {
-                            triggerStartError(signalR._.error(
-                                signalR._.format(signalR.resources.errorParsingStartResponse, result),
-                                error, xhr));
-                            return;
-                        }
-
-                        if (data.Response === "started") {
-                            onInitialized();
-                        } else {
-                            triggerStartError(signalR._.error(
-                                signalR._.format(signalR.resources.invalidStartResponse, result),
-                                null /* error */, xhr));
-                        }
-                    },
-                    error: function (error, statusText) {
-                        if (statusText !== startAbortText) {
-                            triggerStartError(signalR._.error(
-                                signalR.resources.errorDuringStartRequest,
-                                error, xhr));
-                        } else {
-                            // Stop has been called
-                            rejectDeferred(signalR._.error(
-                                signalR.resources.stoppedDuringStartRequest,
-                                null /* error */, xhr));
-                        }
+                    try {
+                        data = connection._parseResponse(result);
+                    } catch (error) {
+                        triggerStartError(signalR._.error(
+                            signalR._.format(signalR.resources.errorParsingStartResponse, result),
+                            error, xhr));
+                        return;
                     }
-                });
 
-                connection._.startRequest = xhr;
-            }
+                    if (data.Response === "started") {
+                        onSuccess();
+                    } else {
+                        triggerStartError(signalR._.error(
+                            signalR._.format(signalR.resources.invalidStartResponse, result),
+                            null /* error */, xhr));
+                    }
+                },
+                error: function (xhr, statusText, error) {
+                    if (statusText !== startAbortText) {
+                        triggerStartError(signalR._.error(
+                            signalR.resources.errorDuringStartRequest,
+                            error, xhr));
+                    } else {
+                        // Stop has been called, no need to trigger the error handler
+                        // or stop the connection again with onStartError
+                        connection.log("The start request aborted because connection.stop() was called.");
+                        rejectDeferred(signalR._.error(
+                            signalR.resources.stoppedDuringStartRequest,
+                            null /* error */, xhr));
+                    }
+                }
+            });
         },
 
         tryAbortStartRequest: function (connection) {
@@ -391,6 +386,12 @@
                 // If the start request has already completed this will noop.
                 connection._.startRequest.abort(startAbortText);
                 delete connection._.startRequest;
+            }
+        },
+
+        tryInitialize: function (persistentResponse, onInitialized) {
+            if (persistentResponse.Initialized) {
+                onInitialized();
             }
         },
 
@@ -420,7 +421,7 @@
                         transportLogic.triggerReceived(connection, message);
                     });
 
-                    transportLogic.tryInitialize(connection, data, onInitialized);
+                    transportLogic.tryInitialize(data, onInitialized);
                 }
             }
         },
