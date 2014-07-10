@@ -3,6 +3,9 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Web.Hosting;
 using Newtonsoft.Json;
 
 namespace BenchmarkServer
@@ -32,34 +35,37 @@ namespace BenchmarkServer
 
         public void Record()
         {
+            var startTime = _startTime;
             var endTime = DateTime.Now;
-
             var samples = _samples.ToList();
-            var metrics = new List<MetricData>();
 
-            var properties = typeof(T).GetProperties();
-            foreach (var property in properties)
-            {
-                metrics.Add(new MetricData()
+            Task.Run(
+                () =>
                 {
-                    Metric = property.Name,
-                    Unit = "Numeric",
-                    Values = samples.Select(s => property.GetValue(s)).ToArray()
+                    var metrics = new List<MetricData>();
+
+                    var properties = typeof(T).GetProperties();
+                    foreach (var property in properties)
+                    {
+                        metrics.Add(new MetricData()
+                        {
+                            Metric = property.Name,
+                            Unit = "Numeric",
+                            Values = samples.Select(s => property.GetValue(s)).ToArray()
+                        });
+                    }
+
+                    var path = HostingEnvironment.MapPath("~/app_data/") + string.Format("Result_{0}.json", _startTime.ToString("yyyy-MM-dd-HH-mm-ss"));
+
+                    var report = new
+                        {
+                            StartTime = startTime,
+                            EndTime = endTime,
+                            Metrics = metrics.ToArray()
+                        };
+
+                    File.WriteAllText(path, JsonConvert.SerializeObject(report, Formatting.Indented));
                 });
-            }
-
-            var report = new
-            {
-                StartTime = _startTime,
-                EndTime = endTime,
-                Failures = new object[0],
-                Metrics = metrics.ToArray()
-            };
-
-            var jsonWriter = new JsonTextWriter(new StreamWriter(File.Open("Result_" + _startTime.ToString("yyyy-MM-dd-HH-mm-ss"), FileMode.CreateNew)));
-
-            var serializer = new JsonSerializer();
-            serializer.Serialize(jsonWriter, report);
         }
     }
 }

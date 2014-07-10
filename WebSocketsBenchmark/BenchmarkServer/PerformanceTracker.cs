@@ -39,20 +39,7 @@ namespace BenchmarkServer
         {
             _samplingTcs = new CancellationTokenSource();
 
-            new Thread(new ThreadStart(() =>
-            {
-                _stopwatch = Stopwatch.StartNew();
-                _lastSampleTime = new TimeSpan(0);
-                _lastClientsConnected = Interlocked.Read(ref _clientsConnected);
-                _lastMessagesSent = Interlocked.Read(ref _messagesSent);
-                _lastBroadcastsCompleted = Interlocked.Read(ref _broadcastsCompleted);
-
-                while (!_samplingTcs.IsCancellationRequested)
-                {
-                    Sample();
-                    Thread.Sleep(1000);
-                }
-            }));
+            new Thread(new ThreadStart(Sample)).Start();
         }
 
         public void StopSampling()
@@ -72,33 +59,45 @@ namespace BenchmarkServer
 
         private void Sample()
         {
-            var time = _stopwatch.Elapsed;
-            var changeInTime = time - _lastSampleTime;
-            _lastSampleTime = time;
+            _stopwatch = Stopwatch.StartNew();
+            _lastSampleTime = new TimeSpan(0);
+            _lastClientsConnected = Interlocked.Read(ref _clientsConnected);
+            _lastMessagesSent = Interlocked.Read(ref _messagesSent);
+            _lastBroadcastsCompleted = Interlocked.Read(ref _broadcastsCompleted);
 
-            var clientsConnected = Interlocked.Read(ref _clientsConnected);
-            var changeInConnections = clientsConnected - _lastClientsConnected;
-            _lastClientsConnected = clientsConnected;
-
-            var messagesSent = Interlocked.Read(ref _messagesSent);
-            var changeInMessages = messagesSent - _lastMessagesSent;
-            _lastMessagesSent = messagesSent;
-
-            var broadcastsCompleted = Interlocked.Read(ref _broadcastsCompleted);
-            var changeInBroadcastCompleted = broadcastsCompleted - _lastBroadcastsCompleted;
-            _lastBroadcastsCompleted = broadcastsCompleted;
-
-            var broadcastTime = Interlocked.Read(ref _broadcastTime);
-
-            OnTakingSample(new PerformanceSample
+            while (!_samplingTcs.IsCancellationRequested)
             {
-                ClientsConnected = clientsConnected,
-                ClientConnectionsPerSecond = (long)(1000 * changeInConnections / changeInTime.TotalMilliseconds),
-                MessagesSent = messagesSent,
-                MessagesPerSecond = (long)(1000 * changeInMessages / changeInTime.TotalMilliseconds),
-                BroadcastRate = (long)(1000 * changeInBroadcastCompleted / changeInTime.TotalMilliseconds),
-                LastBroadcastDuration = _broadcastTime
-            });
+
+                var time = _stopwatch.Elapsed;
+                var changeInTime = time - _lastSampleTime;
+                _lastSampleTime = time;
+
+                var clientsConnected = Interlocked.Read(ref _clientsConnected);
+                var changeInConnections = clientsConnected - _lastClientsConnected;
+                _lastClientsConnected = clientsConnected;
+
+                var messagesSent = Interlocked.Read(ref _messagesSent);
+                var changeInMessages = messagesSent - _lastMessagesSent;
+                _lastMessagesSent = messagesSent;
+
+                var broadcastsCompleted = Interlocked.Read(ref _broadcastsCompleted);
+                var changeInBroadcastCompleted = broadcastsCompleted - _lastBroadcastsCompleted;
+                _lastBroadcastsCompleted = broadcastsCompleted;
+
+                var broadcastTime = Interlocked.Read(ref _broadcastTime);
+
+                OnTakingSample(new PerformanceSample
+                {
+                    ClientsConnected = clientsConnected,
+                    ClientConnectionsPerSecond = (long)(1000 * changeInConnections / changeInTime.TotalMilliseconds),
+                    MessagesSent = messagesSent,
+                    MessagesPerSecond = (long)(1000 * changeInMessages / changeInTime.TotalMilliseconds),
+                    BroadcastRate = (long)(1000 * changeInBroadcastCompleted / changeInTime.TotalMilliseconds),
+                    LastBroadcastDuration = _broadcastTime
+                });
+
+                Thread.Sleep(1000);
+            }
         }
     }
 }

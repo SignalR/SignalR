@@ -217,11 +217,11 @@ jQuery.fn.flash = function (color, duration) {
         },
 
         startedRecording: function () {
-            model.Recording(true);
+            model.recording(true);
         },
 
         stoppedRecording: function () {
-            model.Recording(false);
+            model.recording(false);
         },
 
         serverFps: function (fps) {
