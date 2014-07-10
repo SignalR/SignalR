@@ -246,7 +246,9 @@ namespace Microsoft.AspNet.SignalR.Transports
                 return TaskAsyncHelper.Empty;
             }
 
-            context.Transport.Context.Response.ContentType = JsonUtility.JsonMimeType;
+            context.Transport.Context.Response.ContentType = context.Transport.IsJsonp ?
+                JsonUtility.JavaScriptMimeType :
+                JsonUtility.JsonMimeType;
 
             return PerformPartialSend(state);
         }
