@@ -10,6 +10,7 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Xunit;
 using System.Threading;
+using Microsoft.AspNet.SignalR.Client.Transports;
 
 namespace Microsoft.AspNet.SignalR.Client.Tests
 {
@@ -179,8 +180,60 @@ namespace Microsoft.AspNet.SignalR.Client.Tests
             var ex = aggEx.Unwrap();
 
             Assert.IsType(typeof(TaskCanceledException), ex);
-                       
+
             Assert.Equal(connection.Object._callbacks.Count, 0);
+        }
+
+        [Fact(Timeout = 5000)]
+        public void FailedHubCallbackDueToReconnectFollowedByInvoke()
+        {
+            // Arrange
+            var testTcs = new TaskCompletionSource<object>();
+            var crashTcs = new TaskCompletionSource<object>();
+            var connection = new HubConnection("http://test");
+            var transport = new Mock<IClientTransport>();
+
+            transport.Setup(t => t.Negotiate(connection, /* connectionData: */ It.IsAny<string>()))
+                     .Returns(TaskAsyncHelper.FromResult(new NegotiationResponse
+                     {
+                         ProtocolVersion = connection.Protocol.ToString(),
+                         ConnectionId = "Something",
+                         DisconnectTimeout = 120
+                     }));
+
+            transport.Setup(t => t.Start(connection, /* connectionData: */ It.IsAny<string>(), /* disconnectToken: */ It.IsAny<CancellationToken>()))
+                     .Returns(TaskAsyncHelper.Empty);
+
+            transport.Setup(t => t.Send(connection, /* data: */ It.Is<string>(s => s.IndexOf("crash") >= 0), /* connectionData: */ It.IsAny<string>()))
+                     .Returns(crashTcs.Task) // We want this task to never complete as the call to EnsureReconnecting will do it for us
+                     .Callback(() =>
+                     {
+                         Task.Run(() =>
+                         {
+                             try
+                             {
+                                 // EnsureReconnecting will change the state and ultimately clear the pending invocation callbacks
+                                 connection.EnsureReconnecting();
+                                 testTcs.SetResult(null);
+                             }
+                             catch (Exception ex)
+                             {
+                                 testTcs.SetException(ex);
+                             }
+                         });
+                     });
+
+            var proxy = new HubProxy(connection, "test");
+
+            // Act
+            connection.Start(transport.Object).Wait();
+            var crashTask = proxy.Invoke("crash")
+                .ContinueWith(t => proxy.Invoke("test"),
+                    TaskContinuationOptions.ExecuteSynchronously); // We need to ensure this executes sync so we're on the same stack
+
+            // Assert
+            Assert.Throws(typeof(AggregateException), () => crashTask.Wait());
+            Assert.DoesNotThrow(() => testTcs.Task.Wait());
         }
     }
 }
