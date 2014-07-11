@@ -335,11 +335,6 @@ namespace Microsoft.AspNet.SignalR.Tests
                 throw new NotImplementedException();
             }
 
-            public System.Threading.Tasks.Task OnDisconnected()
-            {
-                throw new NotImplementedException();
-            }
-
             public System.Threading.Tasks.Task OnDisconnected(bool stopCalled)
             {
                 throw new NotImplementedException();
@@ -358,9 +353,9 @@ namespace Microsoft.AspNet.SignalR.Tests
                 return base.OnConnected();
             }
 
-            public override System.Threading.Tasks.Task OnDisconnected()
+            public override System.Threading.Tasks.Task OnDisconnected(bool stopCalled)
             {
-                return base.OnDisconnected();
+                return base.OnDisconnected(stopCalled);
             }
 
             public override System.Threading.Tasks.Task OnReconnected()

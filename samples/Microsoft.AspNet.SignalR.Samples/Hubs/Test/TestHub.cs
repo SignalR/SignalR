@@ -21,7 +21,7 @@ namespace Microsoft.AspNet.SignalR.Hosting.AspNet.Samples.Hubs.Test
             return Clients.Others.clientConnected(new NodeEvent(Context.ConnectionId));
         }
 
-        public override Task OnDisconnected()
+        public override Task OnDisconnected(bool stopCalled)
         {
             _trace.TraceVerbose(typeof(TestHub).Name + ".OnDisconnected");
             string value;

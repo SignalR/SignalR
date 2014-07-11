@@ -14,10 +14,10 @@ namespace Microsoft.AspNet.SignalR.Tests.Common.Hubs
             return Clients.All.SendUserOnConnected(Context.User.Identity.Name);            
         }
 
-        public override Task OnDisconnected()
+        public override Task OnDisconnected(bool stopCalled)
         {
             Clients.All.SendUserOnDisconnected(Context.User.Identity.Name);
-            return base.OnDisconnected();
+            return base.OnDisconnected(stopCalled);
         }
     }
 }
