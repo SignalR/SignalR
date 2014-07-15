@@ -11,6 +11,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Crank", "Crank\Crank.csproj
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestManager", "TestManager\TestManager.csproj", "{7C0FC9A5-1A2E-46ED-B226-AD00890C5090}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Reporting", "Reporting\Reporting.csproj", "{693D98B8-A1AC-465E-8072-23D0BAE5F0DB}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -33,6 +35,10 @@ Global
 		{7C0FC9A5-1A2E-46ED-B226-AD00890C5090}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{7C0FC9A5-1A2E-46ED-B226-AD00890C5090}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{7C0FC9A5-1A2E-46ED-B226-AD00890C5090}.Release|Any CPU.Build.0 = Release|Any CPU
+		{693D98B8-A1AC-465E-8072-23D0BAE5F0DB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{693D98B8-A1AC-465E-8072-23D0BAE5F0DB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{693D98B8-A1AC-465E-8072-23D0BAE5F0DB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{693D98B8-A1AC-465E-8072-23D0BAE5F0DB}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
