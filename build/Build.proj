@@ -235,40 +235,9 @@
              Properties="Configuration=$(Configuration);ArtifactsDir=$(ProjectArtifactsDir);SolutionDir=$(ProjectRoot)\;$(ExtraProperties);"
              Condition=" '$(OS)' == 'Windows_NT'"/>
   </Target>
-
-  <Target Name="BuildNetFunctionalTests" DependsOnTargets="CreateOutputDirs">
-    <MSBuild Projects="%(FunctionalTestProjects.Identity)"
-             Targets="Build"
-             Properties="Configuration=$(Configuration);ArtifactsDir=$(ProjectArtifactsDir);SolutionDir=$(ProjectRoot)\;$(ExtraProperties)"
-             Condition=" '$(OS)' == 'Windows_NT'"/>
-  </Target>
-
-  <Target Name="AnalyzeLogs">
-    <Exec Command='powershell -NoProfile -ExecutionPolicy Bypass $(ProjectRoot)\build\AnalyzeLogs.ps1 "$(ProjectArtifactsDir)"' ContinueOnError="true" />
-  </Target>
-
-  <Target Name="RunUnitTests" DependsOnTargets="BuildNetUnitTests">
-
-    <MSBuild Projects="%(JsTestProjects.Identity)"
-         Targets="pipelinePreDeployCopyAllFilesToOneFolder"
-         Properties="Configuration=$(Configuration);ArtifactsDir=$(ProjectArtifactsDir);SolutionDir=$(ProjectRoot)\;$(ExtraProperties);_PackageTempDir=$(JSTestsPath);AutoParameterizationWebConfigConnectionStrings=false;MSBuildCommunityTasksPath=$(MSBuildCommunityTasksPath)"
-         Condition=" '$(OS)' == 'Windows_NT'"/>
-
-    <!-- Replaces files for -->
-    <!-- Allow a single JS test script to be run by specifying the script via the JSTestScript property.
-         Ex: MSBuild.exe .\build\Build.proj /t:RunUnitTests /p:"JSTestScript=Tests/FunctionalTests/Common/AjaxSendFacts.js" -->
-    <FileUpdate Files="$(JSTestsPath)\default.html" Regex="&lt;!-- ##JS## --&gt;((.|\r|\n)*?)&lt;!-- ##JS## --&gt;" ReplacementText="&lt;!-- ##JS## --&gt;&lt;script type='text/javascript' src='$(JSTestScript)'&gt;&lt;/script&gt;&lt;!-- ##JS## --&gt;" Condition=" '$(OS)' == 'Windows_NT' And '$(JSTestScript)' != ''" />
-
-    <!-- Disable running blanket code coverage when running tests from command line -->
-    <FileUpdate Files="$(JSTestsPath)\default.html" Regex="&lt;!-- ##COVERAGE## --&gt;((.|\r|\n)*?)&lt;!-- ##COVERAGE## --&gt;" ReplacementText=" " Condition=" '$(OS)' == 'Windows_NT'" />
-    
-    <FileUpdate Files="$(JSTestsPath)\Build\test.config.js" Regex="/\*CMDLineTest\*/(.*?)/\*CMDLineTest\*/" ReplacementText="/*CMDLineTest*/true/*CMDLineTest*/" Condition=" '$(OS)' == 'Windows_NT'" />
-
-    <StartIISTask HostLocation="$(JSTestsPath)" Condition=" '$(OS)' == 'Windows_NT'" />
-
-    <Exec Command="&quot;$(ChutzpahExePath)&quot; &quot;$(JSTester)&quot; /showFailureReport /silent /timeoutMilliseconds 30000" Condition=" '$(OS)' == 'Windows_NT'" />
-
-
+  
+  <Target Name="RunNetUnitTests" DependsOnTargets="BuildNetUnitTests">
+  
     <xunit Assemblies="$(ProjectArtifactsDir)\Microsoft.AspNet.SignalR.Tests\Microsoft.AspNet.SignalR.Tests.dll"
            Xml="$(TestResultsPath)\Microsoft.AspNet.SignalR.Tests.XunitResults.xml"
            Verbose="true" />
@@ -293,9 +262,42 @@
     <xunit Assemblies="$(ProjectArtifactsDir)\Microsoft.AspNet.SignalR.Client.Portable.Tests\Microsoft.AspNet.SignalR.Client.Portable.Tests.dll"
            Xml="$(TestResultsPath)\Microsoft.AspNet.SignalR.Client.Portable.Tests.XunitResults.xml"
            Verbose="true" />
+           
+  </Target>
+
+  <Target Name="RunJSUnitTests" DependsOnTargets="BuildNetUnitTests">
+  
+    <MSBuild Projects="%(JsTestProjects.Identity)"
+         Targets="pipelinePreDeployCopyAllFilesToOneFolder"
+         Properties="Configuration=$(Configuration);ArtifactsDir=$(ProjectArtifactsDir);SolutionDir=$(ProjectRoot)\;$(ExtraProperties);_PackageTempDir=$(JSTestsPath);AutoParameterizationWebConfigConnectionStrings=false;MSBuildCommunityTasksPath=$(MSBuildCommunityTasksPath)"
+         Condition=" '$(OS)' == 'Windows_NT'"/>
+
+    <!-- Replaces files for -->
+    <!-- Allow a single JS test script to be run by specifying the script via the JSTestScript property.
+         Ex: MSBuild.exe .\build\Build.proj /t:RunUnitTests /p:"JSTestScript=Tests/FunctionalTests/Common/AjaxSendFacts.js" -->
+    <FileUpdate Files="$(JSTestsPath)\default.html" Regex="&lt;!-- ##JS## --&gt;((.|\r|\n)*?)&lt;!-- ##JS## --&gt;" ReplacementText="&lt;!-- ##JS## --&gt;&lt;script type='text/javascript' src='$(JSTestScript)'&gt;&lt;/script&gt;&lt;!-- ##JS## --&gt;" Condition=" '$(OS)' == 'Windows_NT' And '$(JSTestScript)' != ''" />
+
+    <!-- Disable running blanket code coverage when running tests from command line -->
+    <FileUpdate Files="$(JSTestsPath)\default.html" Regex="&lt;!-- ##COVERAGE## --&gt;((.|\r|\n)*?)&lt;!-- ##COVERAGE## --&gt;" ReplacementText=" " Condition=" '$(OS)' == 'Windows_NT'" />
+    
+    <FileUpdate Files="$(JSTestsPath)\Build\test.config.js" Regex="/\*CMDLineTest\*/(.*?)/\*CMDLineTest\*/" ReplacementText="/*CMDLineTest*/true/*CMDLineTest*/" Condition=" '$(OS)' == 'Windows_NT'" />
+
+    <StartIISTask HostLocation="$(JSTestsPath)" Condition=" '$(OS)' == 'Windows_NT'" />
+
+    <Exec Command="&quot;$(ChutzpahExePath)&quot; &quot;$(JSTester)&quot; /showFailureReport /silent /timeoutMilliseconds 30000" Condition=" '$(OS)' == 'Windows_NT'" />
 
     <CallTarget Targets="KillIISExpress" Condition=" '$(OS)' == 'Windows_NT'" />
     <OnError ExecuteTargets="KillIISExpress" Condition=" '$(OS)' == 'Windows_NT'" />
+  
+  </Target>
+
+  <Target Name="RunUnitTests" DependsOnTargets="RunJSUnitTests; RunNetUnitTests" />
+
+  <Target Name="BuildNetFunctionalTests" DependsOnTargets="CreateOutputDirs">
+    <MSBuild Projects="%(FunctionalTestProjects.Identity)"
+             Targets="Build"
+             Properties="Configuration=$(Configuration);ArtifactsDir=$(ProjectArtifactsDir);SolutionDir=$(ProjectRoot)\;$(ExtraProperties)"
+             Condition=" '$(OS)' == 'Windows_NT'"/>
   </Target>
 
   <Target Name="RunFunctionalTests" DependsOnTargets="BuildNetFunctionalTests">
@@ -305,6 +307,10 @@
 
     <CallTarget Targets="KillIISExpress; AnalyzeLogs" />
     <OnError ExecuteTargets="KillIISExpress; AnalyzeLogs" />
+  </Target>
+
+  <Target Name="AnalyzeLogs">
+    <Exec Command='powershell -NoProfile -ExecutionPolicy Bypass $(ProjectRoot)\build\AnalyzeLogs.ps1 "$(ProjectArtifactsDir)"' ContinueOnError="true" />
   </Target>
 
   <Target Name="TestSwarm" Condition="$(TestSwarmPostData) != ''">
