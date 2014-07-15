@@ -24,7 +24,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
             if (MaxMapping != null && id <= MaxMapping.Id)
             {
                 _store = new ScaleoutStore(MaxMessages);
-                trace.TraceError("Duplicate message id {0} from backplane happened, it may because of backplane reset, create new ScaleoutStore", id);
+                trace.TraceError("Duplicate message id {0} from backplane happened, it may because of backplane reset, create a new ScaleoutStore", id);
             }
 
             _store.Add(new ScaleoutMapping(id, message, localKeyInfo));
