@@ -7,6 +7,8 @@ namespace BenchmarkServer
 {
     public class PerformanceSample : EventArgs
     {
+        public long SampleTime { get; set; }
+
         public long ClientsConnected { get; set; }
 
         public long ClientConnectionsPerSecond { get; set; }

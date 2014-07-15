@@ -88,6 +88,7 @@ namespace BenchmarkServer
 
                 OnTakingSample(new PerformanceSample
                 {
+                    SampleTime = (long)time.TotalMilliseconds,
                     ClientsConnected = clientsConnected,
                     ClientConnectionsPerSecond = (long)(1000 * changeInConnections / changeInTime.TotalMilliseconds),
                     MessagesSent = messagesSent,
