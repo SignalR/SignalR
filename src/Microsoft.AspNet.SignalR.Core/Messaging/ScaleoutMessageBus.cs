@@ -195,7 +195,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
             ScaleoutMappingStore store = StreamManager.Streams[streamIndex];
 
             // Publish only after we've setup the mapping fully
-            store.Add(id, scaleoutMessage, localMapping);
+            store.Add(id, scaleoutMessage, localMapping, _trace);
 
             // Schedule after we're done
             foreach (var eventKey in keys)
