@@ -88,6 +88,27 @@ namespace Microsoft.AspNet.SignalR.Redis.Tests
             Assert.Equal(RedisMessageBus.State.Closed, redisMessageBus.ConnectionState);
         }
 
+        [Fact]
+        public void RestoreLatestValueForKeyCalledOnConnectionRestored()
+        {
+            bool restoreLatestValueForKey = false;
+
+            var redisConnection = GetMockRedisConnection();
+
+            redisConnection.Setup(m => m.RestoreLatestValueForKey(It.IsAny<int>(), It.IsAny<string>())).Returns(() =>
+            {
+                restoreLatestValueForKey = true;
+                return TaskAsyncHelper.Empty;
+            });
+
+            var redisMessageBus = new RedisMessageBus(GetDependencyResolver(), new RedisScaleoutConfiguration(String.Empty, String.Empty),
+            redisConnection.Object, true);
+
+            redisConnection.Raise(mock => mock.ConnectionRestored += null, new Exception());
+
+            Assert.True(restoreLatestValueForKey, "RestoreLatestValueForKey not invoked");
+        }
+
         private Mock<IRedisConnection> GetMockRedisConnection()
         {
             var redisConnection = new Mock<IRedisConnection>();

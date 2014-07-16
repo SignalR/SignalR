@@ -15,6 +15,8 @@ namespace Microsoft.AspNet.SignalR.Redis
 
         Task ScriptEvaluateAsync(int database, string script, string key, byte[] messageArguments);
 
+        Task RestoreLatestValueForKey(int database, string key);
+
         void Dispose();
 
         event Action<Exception> ConnectionFailed;
