@@ -10,9 +10,9 @@ using Microsoft.AspNet.Identity.EntityFramework;
 using Microsoft.AspNet.Identity.Owin;
 using Microsoft.Owin.Security;
 using Owin;
-using Reporting2.Models;
+using Reporting.Models;
 
-namespace Reporting2.Controllers
+namespace Reporting.Controllers
 {
     [Authorize]
     public class AccountController : Controller

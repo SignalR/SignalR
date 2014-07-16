@@ -1,0 +1,17 @@
+﻿@model IEnumerable<string>
+
+@{
+    ViewBag.Title = "Index";
+}
+
+<h2>Results</h2>
+
+
+<ul>
+    @foreach (var fulPath in Model)
+    {
+        var fileName = Path.GetFileName(fulPath);
+        <li><a href="@Url.Action("View", new { name = @fileName})">@fileName</a></li>
+    }
+</ul>
+

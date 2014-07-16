@@ -1,0 +1,37 @@
+{
+  "StartTime": "2014-07-02T17:24:45.8983658-07:00",
+  "EndTime": "2014-07-02T17:25:02.2344167-07:00",
+  "Failures": [],
+  "Metrics": [
+    {
+      "Scenario": "TODO EF7 CoreCLR",
+      "Metric": "Cold Start",
+      "Unit": "Numeric",
+      "Value": 9303.0
+    },
+    {
+      "Scenario": "TODO EF7 CoreCLR",
+      "Metric": "Running time",
+      "Unit": "Numeric",
+      "Value": 558.0
+    },
+    {
+      "Scenario": "TODO EF7 CoreCLR",
+      "Metric": "Cleanup time",
+      "Unit": "Numeric",
+      "Value": 8.0
+    },
+    {
+      "Scenario": "TODO EF7 CoreCLR",
+      "Metric": "Main memory",
+      "Unit": "Numeric",
+      "Value": 639616.0
+    },
+    {
+      "Scenario": "TODO EF7 CoreCLR",
+      "Metric": "Cleanup memory",
+      "Unit": "Numeric",
+      "Value": 40960.0
+    }
+  ]
+}

@@ -7,9 +7,9 @@ using Microsoft.Owin.Security.DataProtection;
 using Microsoft.Owin.Security.Google;
 using Owin;
 using System;
-using Reporting2.Models;
+using Reporting.Models;
 
-namespace Reporting2
+namespace Reporting
 {
     public partial class Startup
     {
