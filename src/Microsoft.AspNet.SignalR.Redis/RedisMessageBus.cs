@@ -136,8 +136,10 @@ namespace Microsoft.AspNet.SignalR.Redis
             _trace.TraceError("OnConnectionError - " + ex.Message);
         }
 
-        private void OnConnectionRestored(Exception ex)
+        private async void OnConnectionRestored(Exception ex)
         {
+            await _connection.RestoreLatestValueForKey(_db, _key);
+
             _trace.TraceInformation("Connection restored");
 
             Interlocked.Exchange(ref _state, State.Connected);

@@ -10,6 +10,7 @@ namespace Microsoft.AspNet.SignalR.Redis
         private StackExchange.Redis.ISubscriber _redisSubscriber;
         private ConnectionMultiplexer _connection;
         private TraceSource _trace;
+        private ulong _latestMessageId;
 
         public async Task ConnectAsync(string connectionString, TraceSource trace)
         {
@@ -46,6 +47,9 @@ namespace Microsoft.AspNet.SignalR.Redis
             {
                 var message = RedisMessage.FromBytes(data, _trace);
                 onMessage(0, message);
+
+                // Save the last message id in just in case redis shuts down
+                _latestMessageId = message.Id;
             });
         }
 
@@ -71,6 +75,31 @@ namespace Microsoft.AspNet.SignalR.Redis
             await _connection.GetDatabase(database).ScriptEvaluateAsync(script,
                 keys,
                 arguments);
+        }
+
+        public async Task RestoreLatestValueForKey(int database, string key)
+        {
+            try
+            {
+                var redisResult = await _connection.GetDatabase(database).ScriptEvaluateAsync(
+                   @"local newvalue = redis.call('GET', KEYS[1])
+                    if newvalue < ARGV[1] then
+                        return redis.call('SET', KEYS[1], ARGV[1])
+                    else
+                        return nil
+                    end",
+                   new RedisKey[] { key },
+                   new RedisValue[] { _latestMessageId });
+
+                if (!redisResult.IsNull)
+                {
+                    _trace.TraceInformation("Restored Redis Key {0} to the latest Value {1} ", key, _latestMessageId);
+                }
+            }
+            catch (Exception ex)
+            {
+                _trace.TraceError("Error while restoring Redis Key to the latest Value: " + ex);
+            }
         }
 
         public event Action<Exception> ConnectionFailed;
