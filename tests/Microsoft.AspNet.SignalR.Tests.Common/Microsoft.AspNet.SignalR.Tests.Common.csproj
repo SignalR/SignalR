@@ -132,6 +132,7 @@
     </Compile>
     <Compile Include="App_Start\Initializer.cs" />
     <Compile Include="App_Start\PreSendRequestHeadersModule.cs" />
+    <Compile Include="Connections\AsyncOnConnectedConnection.cs" />
     <Compile Include="Connections\AuthenticatedEchoConnection.cs" />
     <Compile Include="Connections\EchoConnection.cs" />
     <Compile Include="Connections\FallbackToLongPollingConnectionThrows.cs" />

@@ -67,15 +67,17 @@ namespace Microsoft.AspNet.SignalR.Tests.Common.Infrastructure
             private set;
         }
 
+        public bool AttachToPreSendRequestHeaders { get; set; }
+
         public void Initialize(int? keepAlive,
                                int? connectionTimeout,
                                int? disconnectTimeout,
                                int? transportConnectTimeout,
                                int? maxIncomingWebSocketMessageSize,
                                bool enableAutoRejoiningGroups,
-                               MessageBusType type = MessageBusType.Default)
+                               MessageBusType messageBusType)
         {
-            if (type != MessageBusType.Default)
+            if (messageBusType != MessageBusType.Default)
             {
                 throw new NotImplementedException();
             }
@@ -88,7 +90,8 @@ namespace Microsoft.AspNet.SignalR.Tests.Common.Infrastructure
                                            transportConnectTimeout,
                                            maxIncomingWebSocketMessageSize,
                                            enableAutoRejoiningGroups,
-                                           _logFileName);
+                                           _logFileName,
+                                           AttachToPreSendRequestHeaders);
 
             File.WriteAllText(_webConfigPath, content);
 

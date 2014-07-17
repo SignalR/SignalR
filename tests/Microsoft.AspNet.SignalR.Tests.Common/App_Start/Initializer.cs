@@ -26,9 +26,6 @@ namespace Microsoft.AspNet.SignalR.Tests.Common
     {
         public static void Start()
         {
-            // Ensure that attaching to the PreSendRequestHeaders event doesn't cause deadlocks in our tests
-            HttpApplication.RegisterModule(typeof(PreSendRequestHeadersModule));
-
             RouteTable.Routes.Add("ping", new Route("ping", new PingHandler()));
             RouteTable.Routes.Add("gc", new Route("gc", new GCHandler()));
 
@@ -45,6 +42,15 @@ namespace Microsoft.AspNet.SignalR.Tests.Common
 
                 e.SetObserved();
             };
+
+            var attachToPreSendRequestHeadersRaw = ConfigurationManager.AppSettings["attachToPreSendRequestHeaders"];
+
+            // It is too late to add a module in the Configuration method, so we are adding it here if necessary.
+            bool attachToPreSendRequestHeaders;
+            if (Boolean.TryParse(attachToPreSendRequestHeadersRaw, out attachToPreSendRequestHeaders) && attachToPreSendRequestHeaders)
+            {
+                HttpApplication.RegisterModule(typeof(PreSendRequestHeadersModule));
+            }
         }
 
         public static void Configuration(IAppBuilder app)
@@ -174,6 +180,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Common
             app.MapSignalR<UnusableProtectedConnection>("/protected", config);
             app.MapSignalR<FallbackToLongPollingConnectionThrows>("/fall-back-throws", config);
             app.MapSignalR<PreserializedJsonConnection>("/preserialize", config);
+            app.MapSignalR<AsyncOnConnectedConnection>("/async-on-connected", config);
 
             // This subpipeline is protected by basic auth
             app.Map("/basicauth", map =>

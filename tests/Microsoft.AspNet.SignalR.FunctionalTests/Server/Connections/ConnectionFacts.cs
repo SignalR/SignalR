@@ -238,6 +238,23 @@ namespace Microsoft.AspNet.SignalR.Client.Tests
             }
 
             [Fact]
+            public void ConnectionCanBeEstablishedWithPreSendRequestHeadersEventAttached()
+            {
+                using (ITestHost host = CreateHost(HostType.IISExpress))
+                {
+                    ((IISExpressTestHost)host).AttachToPreSendRequestHeaders = true;
+                    host.Initialize();
+
+                    var connection = CreateConnection(host, "/async-on-connected");
+
+                    using (connection)
+                    {
+                        Assert.True(connection.Start().Wait(TimeSpan.FromSeconds(10)), "The connection failed to start.");
+                    }
+                }
+            }
+
+            [Fact]
             public async Task PrefixMatchingIsNotGreedy()
             {
                 using (var host = new MemoryHost())
