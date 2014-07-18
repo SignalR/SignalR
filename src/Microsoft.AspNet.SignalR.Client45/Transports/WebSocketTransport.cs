@@ -100,10 +100,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
         {
             var uri = UrlBuilder.ConvertToWebSocketUri(url);
 
-            var builder = new UriBuilder(url);
-            builder.Scheme = builder.Scheme == "https" ? "wss" : "ws";
-
-            _connection.Trace(TraceLevels.Events, "WS Connecting to: {0}", builder.Uri);
+            _connection.Trace(TraceLevels.Events, "WS Connecting to: {0}", uri);
  
             // TODO: Revisit thread safety of this assignment
             _webSocketTokenSource = new CancellationTokenSource();
