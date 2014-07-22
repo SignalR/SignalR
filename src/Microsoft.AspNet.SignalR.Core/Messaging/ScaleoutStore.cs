@@ -49,6 +49,16 @@ namespace Microsoft.AspNet.SignalR.Messaging
             }
         }
 
+        internal ScaleoutStore(uint capacity, uint fragmentSize)
+        {
+            checked
+            {
+                uint fragmentCount = capacity / fragmentSize;
+                _fragmentSize = fragmentSize;
+                _fragments = new Fragment[fragmentCount + 1]; // +1 for the overflow buffer
+            }
+        }
+
         internal ulong MinMappingId
         {
             get
