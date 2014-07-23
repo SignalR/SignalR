@@ -89,6 +89,7 @@ namespace Microsoft.AspNet.SignalR.Client.Store.Tests
                 Assert.Equal(ConnectionState.Connected, hubConnection.State);
 
                 await proxy.Invoke("Echo", "MyMessage");
+
                 await Task.Run(() => messageReceivedWh.Wait(5000));
                 Assert.Equal("MyMessage", receivedMessage);
             }
@@ -145,10 +146,11 @@ namespace Microsoft.AspNet.SignalR.Client.Store.Tests
                     checkInterval: TimeSpan.FromSeconds(1)
                 );
 
-                Assert.True(reconnectedWh.Wait(5000));
+                Assert.True(await Task.Run(() => reconnectedWh.Wait(5000)));
 
                 await proxy.Invoke("Echo", "MyMessage");
-                Assert.True(messageReceivedWh.Wait(5000));
+
+                Assert.True(await Task.Run(() => messageReceivedWh.Wait(5000)));
                 Assert.Equal("MyMessage", receivedMessage);
             }
         }
