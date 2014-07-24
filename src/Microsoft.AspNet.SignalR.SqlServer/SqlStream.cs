@@ -54,6 +54,8 @@ namespace Microsoft.AspNet.SignalR.SqlServer
 
         public void Dispose()
         {
+            _trace.TraceInformation("{0}Disposing stream {1}", _tracePrefix, _streamIndex);
+
             _receiver.Dispose();
         }
     }

@@ -66,6 +66,7 @@ namespace Microsoft.AspNet.SignalR.SqlServer
                     _dbOperation.Dispose();
                 }
                 _disposed = true;
+                _trace.TraceInformation("{0}SqlReceiver disposed", _tracePrefix);
             }
         }
 
@@ -87,11 +88,15 @@ namespace Microsoft.AspNet.SignalR.SqlServer
                     _lastPayloadId = (long?)lastPayloadIdOperation.ExecuteScalar();
                     Queried();
 
+                    _trace.TraceVerbose("{0}SqlReceiver started, initial payload id={1}", _tracePrefix, _lastPayloadId);
+
                     // Complete the StartReceiving task as we've successfully initialized the payload ID
                     tcs.TrySetResult(null);
                 }
                 catch (Exception ex)
                 {
+                    _trace.TraceError("{0}SqlReceiver error starting: {1}", _tracePrefix, ex);
+
                     tcs.TrySetException(ex);
                     return;
                 }
@@ -119,14 +124,16 @@ namespace Microsoft.AspNet.SignalR.SqlServer
             _dbOperation.Faulted += ex => Faulted(ex);
             _dbOperation.Changed += () =>
             {
-                Trace.TraceInformation("{0}Starting receive loop again to process updates", _tracePrefix);
+                _trace.TraceInformation("{0}Starting receive loop again to process updates", _tracePrefix);
 
                 _dbOperation.ExecuteReaderWithUpdates(ProcessRecord);
             };
 
+            _trace.TraceVerbose("{0}Executing receive reader, initial payload ID parameter={1}", _tracePrefix, _dbOperation.Parameters[0].Value);
+
             _dbOperation.ExecuteReaderWithUpdates(ProcessRecord);
 
-            _trace.TraceWarning("{0}SqlReceiver.Receive returned", _tracePrefix);
+            _trace.TraceInformation("{0}SqlReceiver.Receive returned", _tracePrefix);
         }
 
         private void ProcessRecord(IDataRecord record, DbOperation dbOperation)
@@ -134,12 +141,13 @@ namespace Microsoft.AspNet.SignalR.SqlServer
             var id = record.GetInt64(0);
             ScaleoutMessage message = SqlPayload.FromBytes(record);
 
-            if (id != _lastPayloadId + 1)
+            _trace.TraceVerbose("{0}SqlReceiver last payload ID={1}, new payload ID={2}", _tracePrefix, _lastPayloadId, id);
+
+            if (id > _lastPayloadId + 1)
             {
                 _trace.TraceError("{0}Missed message(s) from SQL Server. Expected payload ID {1} but got {2}.", _tracePrefix, _lastPayloadId + 1, id);
             }
-
-            if (id <= _lastPayloadId)
+            else if (id <= _lastPayloadId)
             {
                 _trace.TraceInformation("{0}Duplicate message(s) or payload ID reset from SQL Server. Last payload ID {1}, this payload ID {2}", _tracePrefix, _lastPayloadId, id);
             }
@@ -149,9 +157,11 @@ namespace Microsoft.AspNet.SignalR.SqlServer
             // Update the Parameter with the new payload ID
             dbOperation.Parameters[0].Value = _lastPayloadId;
 
-            Received((ulong)id, message);
+            _trace.TraceVerbose("{0}Updated receive reader initial payload ID parameter={1}", _tracePrefix, _dbOperation.Parameters[0].Value);
 
             _trace.TraceVerbose("{0}Payload {1} containing {2} message(s) received", _tracePrefix, id, message.Messages.Count);
+
+            Received((ulong)id, message);
         }
     }
 }
