@@ -24,6 +24,8 @@ namespace Microsoft.AspNet.SignalR.SqlServer
 
         private readonly string _connectionString;
         private readonly SqlScaleoutConfiguration _configuration;
+        // This is the specific TraceSource for the SqlMessageBus. The Trace property from the base type traces from ScaleoutMessageBus
+        // so we generally don't want to use that from here.
         private readonly TraceSource _trace;
         private readonly IDbProviderFactory _dbProviderFactory;
         private readonly List<SqlStream> _streams = new List<SqlStream>();
@@ -72,6 +74,8 @@ namespace Microsoft.AspNet.SignalR.SqlServer
 
         protected override void Dispose(bool disposing)
         {
+            _trace.TraceInformation("SQL message bus disposing, disposing streams");
+
             for (var i = 0; i < _streams.Count; i++)
             {
                 _streams[i].Dispose();
@@ -85,6 +89,8 @@ namespace Microsoft.AspNet.SignalR.SqlServer
         private void Initialize(object state)
         {
             // NOTE: Called from a ThreadPool thread
+            _trace.TraceInformation("SQL message bus initializing, TableCount={0}", _configuration.TableCount);
+
             while (true)
             {
                 try
@@ -101,7 +107,7 @@ namespace Microsoft.AspNet.SignalR.SqlServer
                         OnError(i, ex);
                     }
 
-                    Trace.TraceError("Error trying to install SQL server objects, trying again in 2 seconds: {0}", ex);
+                    _trace.TraceError("Error trying to install SQL server objects, trying again in 2 seconds: {0}", ex);
 
                     // Try again in a little bit
                     Thread.Sleep(2000);
@@ -138,7 +144,8 @@ namespace Microsoft.AspNet.SignalR.SqlServer
                     // Try again in a little bit
                     Thread.Sleep(2000);
                     StartReceiving(streamIndex);
-                });
+                },
+                _trace);
         }
     }
 }
