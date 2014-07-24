@@ -81,6 +81,12 @@ namespace Microsoft.AspNet.SignalR.Redis
         {
             try
             {
+                // Workaround for StackExchange.Redis/issues/61 that sometimes Redis connection is not connected in ConnectionRestored event 
+                while (!_connection.GetDatabase(database).IsConnected(key))
+                {
+                    await Task.Delay(200);
+                }
+
                 var redisResult = await _connection.GetDatabase(database).ScriptEvaluateAsync(
                    @"local newvalue = redis.call('GET', KEYS[1])
                     if newvalue < ARGV[1] then
