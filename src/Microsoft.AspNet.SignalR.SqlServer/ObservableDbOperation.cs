@@ -301,7 +301,7 @@ namespace Microsoft.AspNet.SignalR.SqlServer
             // Check notification args for issues
             if (e.Type == SqlNotificationType.Change)
             {
-                if (e.Info == SqlNotificationInfo.Insert)
+                if (e.Info == SqlNotificationInfo.Update)
                 {
                     Trace.TraceVerbose("{0}SQL notification details: Type={1}, Source={2}, Info={3}", TracePrefix, e.Type, e.Source, e.Info);
                 }
