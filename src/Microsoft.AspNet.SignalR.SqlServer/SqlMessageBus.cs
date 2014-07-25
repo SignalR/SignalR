@@ -24,6 +24,8 @@ namespace Microsoft.AspNet.SignalR.SqlServer
 
         private readonly string _connectionString;
         private readonly SqlScaleoutConfiguration _configuration;
+        // This is the specific TraceSource for the SqlMessageBus. The Trace property from the base type traces from ScaleoutMessageBus
+        // so we generally don't want to use that from here.
         private readonly TraceSource _trace;
         private readonly IDbProviderFactory _dbProviderFactory;
         private readonly List<SqlStream> _streams = new List<SqlStream>();
