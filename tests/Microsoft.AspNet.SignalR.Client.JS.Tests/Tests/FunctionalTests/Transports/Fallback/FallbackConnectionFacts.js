@@ -77,6 +77,43 @@ QUnit.asyncTimeoutTest("Client defines array of transports, server does not supp
     };
 });
 
+QUnit.asyncTimeoutTest("Client does not fall back if the start request hangs.", testUtilities.defaultTestTimeout * 2, function (end, assert, testName) {
+    var connection = testUtilities.createHubConnection(end, assert, testName)
+        savedAjaxStart = $.signalR.transports._logic.ajaxStart,
+        ajaxStartCalled = false,
+        startTransport = null;
+
+    $.signalR.transports._logic.ajaxStart = function () {
+        var ajaxStartArgs = arguments;
+
+        if (ajaxStartCalled) {
+            assert.fail("ajaxStart was unexpectedly called twice.");
+            end();
+            return;
+        }
+
+        ajaxStartCalled = true;
+        startTransport = connection.transport.name;
+
+        assert.comment("ajaxStart was called after receiving an init message over the " + startTransport + " transport.");
+        assert.comment("Delaying completion of ajaxStart for 5 seconds to allow for an invalid fallback/timeout.")
+
+        window.setTimeout(function () {
+            savedAjaxStart.apply(undefined, ajaxStartArgs);
+        }, 5000);
+    }
+
+    connection.start().done(function () {
+        assert.equal(connection.transport.name, startTransport, "Connection established over the " +  startTransport + " transport!");
+        end();
+    });
+
+    // Cleanup
+    return function () {
+        $.signalR.transports._logic.ajaxStart = savedAjaxStart;
+        connection.stop();
+    };
+});
 
 QUnit.module("Fallback Facts", testUtilities.transports.webSockets.enabled);
 

@@ -8,7 +8,7 @@ namespace Microsoft.AspNet.SignalR.Samples.Hubs.Auth
 {
     public class NoAuthHub : Hub
     {
-        public override Task OnDisconnected()
+        public override Task OnDisconnected(bool stopCalled)
         {
             return Clients.All.left(Context.ConnectionId, DateTime.Now.ToString());
         }

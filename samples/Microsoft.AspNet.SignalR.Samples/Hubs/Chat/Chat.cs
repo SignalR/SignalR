@@ -121,7 +121,7 @@ namespace Microsoft.AspNet.SignalR.Samples.Hubs.Chat
             }
         }
 
-        public override Task OnDisconnected()
+        public override Task OnDisconnected(bool stopCalled)
         {
             ChatUser user = _users.Values.FirstOrDefault(u => u.ConnectionId == Context.ConnectionId);
             if (user != null)

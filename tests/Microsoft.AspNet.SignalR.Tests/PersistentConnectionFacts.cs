@@ -5,7 +5,9 @@ using System.Security.Principal;
 using Microsoft.AspNet.SignalR.Hosting;
 using Microsoft.AspNet.SignalR.Infrastructure;
 using Microsoft.AspNet.SignalR.Tests.Common.Infrastructure;
+using Microsoft.AspNet.SignalR.Transports;
 using Moq;
+using Moq.Protected;
 using Xunit;
 
 namespace Microsoft.AspNet.SignalR.Tests
@@ -73,6 +75,56 @@ namespace Microsoft.AspNet.SignalR.Tests
 
                 Assert.True(task.IsCompleted);
                 Assert.Equal(400, context.Response.StatusCode);
+            }
+
+            [Fact]
+            public void UncleanDisconnectFiresOnDisconnected()
+            {
+                // Arrange
+                var req = new Mock<IRequest>();
+                req.Setup(m => m.Url).Returns(new Uri("http://foo"));
+                req.Setup(m => m.LocalPath).Returns("");
+
+                var qs = new NameValueCollection();
+                qs["connectionToken"] = "1";
+                req.Setup(m => m.QueryString).Returns(new NameValueCollectionWrapper(qs));
+
+                var res = new Mock<IResponse>();
+                res.SetupProperty(m => m.StatusCode);
+
+                var dr = new DefaultDependencyResolver();
+                var context = new HostContext(req.Object, res.Object);
+
+                var transport = new Mock<ITransport>();
+                transport.SetupProperty(m => m.Disconnected);
+                transport.Setup(m => m.ProcessRequest(It.IsAny<Connection>())).Returns(TaskAsyncHelper.Empty);
+
+                var transportManager = new Mock<ITransportManager>();
+                transportManager.Setup(m => m.GetTransport(context)).Returns(transport.Object);
+
+                var protectedData = new Mock<IProtectedData>();
+                protectedData.Setup(m => m.Unprotect(It.IsAny<string>(), It.IsAny<string>()))
+                             .Returns<string, string>((value, purpose) =>  value);
+
+                dr.Register(typeof(ITransportManager), () => transportManager.Object);
+                dr.Register(typeof(IProtectedData), () => protectedData.Object);
+
+                var connection = new Mock<PersistentConnection>() { CallBase = true };
+                var onDisconnectedCalled = false;
+                connection.Protected().Setup("OnDisconnected", req.Object, "1", false).Callback(() =>
+                {
+                    onDisconnectedCalled = true;
+                });
+
+                connection.Object.Initialize(dr);
+
+                // Act
+                var processRequestTask = connection.Object.ProcessRequest(context);
+                transport.Object.Disconnected(/* clean: */ false);
+
+                // Assert
+                Assert.Equal(TaskAsyncHelper.Empty, processRequestTask);
+                Assert.True(onDisconnectedCalled);
             }
         }
 

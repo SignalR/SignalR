@@ -32,10 +32,10 @@ namespace Microsoft.AspNet.SignalR.Crank
             return base.OnConnected();
         }
 
-        public override Task OnDisconnected()
+        public override Task OnDisconnected(bool stopCalled)
         {
             ClientsConnected--;
-            return base.OnDisconnected();
+            return base.OnDisconnected(stopCalled);
         }
 
         public void Mark(int sampleId, int[] states)

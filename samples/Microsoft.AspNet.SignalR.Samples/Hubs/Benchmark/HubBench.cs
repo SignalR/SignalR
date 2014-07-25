@@ -38,7 +38,7 @@ namespace Microsoft.AspNet.SignalR.Samples.Hubs.Benchmark
             return null;
         }
 
-        public override Task OnDisconnected()
+        public override Task OnDisconnected(bool stopCalled)
         {
             Interlocked.Decrement(ref HubBench.Connections);
             return null;
