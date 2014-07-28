@@ -72,7 +72,7 @@ namespace Microsoft.AspNet.SignalR.Tests
         }
 
         [Fact]
-        public async Task DisconnectFiresForPersistentConnectionWhenClientGoesAway()
+        public async Task DisconnectFiresForPersistentConnectionWhenClientCallsStop()
         {
             using (var host = new MemoryHost())
             {
@@ -110,7 +110,42 @@ namespace Microsoft.AspNet.SignalR.Tests
         }
 
         [Fact]
-        public async Task DisconnectFiresForHubsWhenConnectionGoesAway()
+        public async Task DisconnectFiresForPersistentConnectionWhenClientDisconnects()
+        {
+            using (var host = new MemoryHost())
+            {
+                var connectWh = new AsyncManualResetEvent();
+                var disconnectWh = new AsyncManualResetEvent();
+                var dr = new DefaultDependencyResolver();
+                var configuration = dr.Resolve<IConfigurationManager>();
+
+                host.Configure(app =>
+                {
+                    var config = new ConnectionConfiguration
+                    {
+                        Resolver = dr
+                    };
+
+                    app.MapSignalR<MyConnection>("/echo", config);
+
+                    configuration.DisconnectTimeout = TimeSpan.FromSeconds(6);
+
+                    dr.Register(typeof(MyConnection), () => new MyConnection(connectWh, disconnectWh));
+                });
+                var connection = new Client.Connection("http://foo/echo");
+
+                await connection.Start(host);
+
+                Assert.True(await connectWh.WaitAsync(TimeSpan.FromSeconds(10)), "Connect never fired");
+
+                ((Client.IConnection)connection).Disconnect();
+
+                Assert.True(await disconnectWh.WaitAsync(TimeSpan.FromSeconds(20)), "Disconnect never fired");
+            }
+        }
+
+        [Fact]
+        public async Task DisconnectFiresForHubsWhenClientCallsStop()
         {
             using (var host = new MemoryHost())
             {
@@ -150,7 +185,44 @@ namespace Microsoft.AspNet.SignalR.Tests
         }
 
         [Fact]
-        public async Task FarmDisconnectOnlyRaisesUncleanDisconnects()
+        public async Task DisconnectFiresForHubsWhenClientDisconnects()
+        {
+            using (var host = new MemoryHost())
+            {
+                var dr = new DefaultDependencyResolver();
+                var configuration = dr.Resolve<IConfigurationManager>();
+
+                var connectWh = new AsyncManualResetEvent();
+                var disconnectWh = new AsyncManualResetEvent();
+                host.Configure(app =>
+                {
+                    var config = new HubConfiguration
+                    {
+                        Resolver = dr
+                    };
+
+                    app.MapSignalR("/signalr", config);
+
+                    configuration.DisconnectTimeout = TimeSpan.FromSeconds(6);
+                    dr.Register(typeof(MyHub), () => new MyHub(connectWh, disconnectWh));
+                });
+
+                var connection = new HubConnection("http://foo/");
+
+                connection.CreateHubProxy("MyHub");
+
+                await connection.Start(host);
+
+                Assert.True(await connectWh.WaitAsync(TimeSpan.FromSeconds(10)), "Connect never fired");
+
+                ((Client.IConnection)connection).Disconnect();
+
+                Assert.True(await disconnectWh.WaitAsync(TimeSpan.FromSeconds(20)), "Disconnect never fired");
+            }
+        }
+
+        [Fact]
+        public async Task FarmDisconnectRaisesUncleanDisconnects()
         {
             EnableTracing();
 
@@ -202,7 +274,6 @@ namespace Microsoft.AspNet.SignalR.Tests
 
                 await Task.Delay(TimeSpan.FromTicks(timeout.Ticks * nodes.Count));
 
-                Assert.Equal(0, FarmConnection.OldOnDisconnectedCalls);
                 Assert.Equal(0, FarmConnection.CleanDisconnectCount);
                 Assert.Equal(3, FarmConnection.UncleanDisconnectCount);
             }
@@ -273,13 +344,6 @@ namespace Microsoft.AspNet.SignalR.Tests
         {
             public static int CleanDisconnectCount { get; set; }
             public static int UncleanDisconnectCount { get; set; }
-            public static int OldOnDisconnectedCalls { get; set; }
-
-            protected override Task OnDisconnected(IRequest request, string connectionId)
-            {
-                OldOnDisconnectedCalls++;
-                return base.OnDisconnected(request, connectionId);
-            }
 
             protected override Task OnDisconnected(IRequest request, string connectionId, bool stopCalled)
             {
@@ -312,7 +376,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                 _disconnectWh = disconnectWh;
             }
 
-            public override Task OnDisconnected()
+            public override Task OnDisconnected(bool stopCalled)
             {
                 _disconnectWh.Set();
 
@@ -349,10 +413,10 @@ namespace Microsoft.AspNet.SignalR.Tests
                 return base.OnConnected(request, connectionId);
             }
 
-            protected override Task OnDisconnected(IRequest request, string connectionId)
+            protected override Task OnDisconnected(IRequest request, string connectionId, bool stopCalled)
             {
                 _disconnectWh.Set();
-                return base.OnDisconnected(request, connectionId);
+                return base.OnDisconnected(request, connectionId, stopCalled);
             }
         }
     }

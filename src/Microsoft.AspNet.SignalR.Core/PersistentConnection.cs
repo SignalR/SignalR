@@ -274,16 +274,9 @@ namespace Microsoft.AspNet.SignalR
                 return TaskAsyncHelper.FromMethod(() => OnReceived(context.Request, connectionId, data).OrEmpty());
             };
 
-            Transport.Disconnected = async clean =>
+            Transport.Disconnected = clean =>
             {
-                await OnDisconnected(context.Request, connectionId, stopCalled: clean).OrEmpty().PreserveCulture();
-
-                if (clean)
-                {
-                    // Only call the old OnDisconnected method for disconnects we know
-                    // have *not* been caused by clients switching servers.
-                    await OnDisconnected(context.Request, connectionId).OrEmpty().PreserveCulture();
-                }
+                return TaskAsyncHelper.FromMethod(() => OnDisconnected(context.Request, connectionId, stopCalled: clean).OrEmpty());
             };
 
             await Transport.ProcessRequest(connection).OrEmpty().Catch(Trace, Counters.ErrorsAllTotal, Counters.ErrorsAllPerSec).PreserveCulture();
@@ -476,26 +469,15 @@ namespace Microsoft.AspNet.SignalR
         }
 
         /// <summary>
-        /// Called when a connection disconnects gracefully.
-        /// </summary>
-        /// <param name="request">The <see cref="IRequest"/> for the current connection.</param>
-        /// <param name="connectionId">The id of the disconnected connection.</param>
-        /// <returns>A <see cref="Task"/> that completes when the disconnect operation is complete.</returns>
-        protected virtual Task OnDisconnected(IRequest request, string connectionId)
-        {
-            return TaskAsyncHelper.Empty;
-        }
-
-        /// <summary>
         /// Called when a connection disconnects gracefully or due to a timeout.
-        /// Timeouts can occur in scaleout when clients reconnect with another server.
         /// </summary>
         /// <param name="request">The <see cref="IRequest"/> for the current connection.</param>
         /// <param name="connectionId">The id of the disconnected connection.</param>
         /// <param name="stopCalled">
-        /// True if the connection has been lost for longer than the
-        /// <see cref="Configuration.IConfigurationManager.DisconnectTimeout"/>;
-        /// False if the connection has been closed gracefully.
+        /// true, if stop was called on the client closing the connection gracefully;
+        /// false, if the connection has been lost for longer than the
+        /// <see cref="Configuration.IConfigurationManager.DisconnectTimeout"/>.
+        /// Timeouts can occur in scaleout when clients reconnect with another server.
         /// </param>
         /// <returns>A <see cref="Task"/> that completes when the disconnect operation is complete.</returns>
         protected virtual Task OnDisconnected(IRequest request, string connectionId, bool stopCalled)
@@ -531,11 +513,12 @@ namespace Microsoft.AspNet.SignalR
             return SendJsonResponse(context, JsonSerializer.Stringify(payload));
         }
 
-        private async Task ProcessStartRequest(HostContext context, string connectionId)
+        // Avoid async/await in SignalR 2.X due to https://github.com/SignalR/SignalR/issues/3116
+        private Task ProcessStartRequest(HostContext context, string connectionId)
         {
-            await OnConnected(context.Request, connectionId).OrEmpty().PreserveCulture();
-            await SendJsonResponse(context, StartJsonPayload).PreserveCulture();
-            Counters.ConnectionsConnected.Increment();
+            return OnConnected(context.Request, connectionId).OrEmpty()
+                .Then(c => SendJsonResponse(c, StartJsonPayload), context)
+                .Then(c => c.ConnectionsConnected.Increment(), Counters);
         }
 
         private static Task SendJsonResponse(HostContext context, string jsonPayload)

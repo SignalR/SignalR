@@ -8,7 +8,7 @@ namespace Microsoft.AspNet.SignalR.Samples.Hubs.ConnectDisconnect
     [HubName("StatusHub")]
     public class Status : Hub
     {
-        public override Task OnDisconnected()
+        public override Task OnDisconnected(bool stopCalled)
         {
             return Clients.All.leave(Context.ConnectionId, DateTime.Now.ToString());
         }

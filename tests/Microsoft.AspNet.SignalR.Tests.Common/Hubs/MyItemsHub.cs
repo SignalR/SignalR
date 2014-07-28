@@ -19,7 +19,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Common.Hubs
             return PrintEnvironment("OnConnected", Context.Request);
         }
 
-        public override Task OnDisconnected()
+        public override Task OnDisconnected(bool stopCalled)
         {
             return PrintEnvironment("OnDisconnected", Context.Request);
         }

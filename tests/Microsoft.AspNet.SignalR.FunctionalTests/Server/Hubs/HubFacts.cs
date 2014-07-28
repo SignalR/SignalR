@@ -1132,10 +1132,8 @@ namespace Microsoft.AspNet.SignalR.Tests
         public void HubHasConnectionEvents()
         {
             var type = typeof(Hub);
-            // Hub has the disconnect method with no arguments
-            Assert.True(type.GetMethod("OnDisconnected", new Type[0]) != null);
 
-            // Hub has the disconnect method with a "stopCalled" argument
+            // Hub has the disconnect method
             Assert.True(type.GetMethod("OnDisconnected", new Type[] { typeof(bool) }) != null);
 
             // Hub has the connect method
@@ -1492,7 +1490,7 @@ namespace Microsoft.AspNet.SignalR.Tests
         {
             var mockHub = new Mock<SomeHub>() { CallBase = true };
             mockHub.Setup(h => h.OnConnected()).Returns<Task>(null).Verifiable();
-            mockHub.Setup(h => h.OnDisconnected()).Returns<Task>(null).Verifiable();
+            mockHub.Setup(h => h.OnDisconnected(true)).Returns<Task>(null).Verifiable();
 
             using (var host = new MemoryHost())
             {

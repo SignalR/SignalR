@@ -18,11 +18,11 @@ namespace Microsoft.AspNet.SignalR.Tests.Common.Hubs
             return base.OnReconnected();
         }
 
-        public override Task OnDisconnected()
+        public override Task OnDisconnected(bool stopCalled)
         {
             ValidConnectionData();
 
-            return base.OnDisconnected();
+            return base.OnDisconnected(stopCalled);
         }
 
         private bool ValidConnectionData()

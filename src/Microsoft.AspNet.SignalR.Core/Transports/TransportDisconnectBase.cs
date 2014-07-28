@@ -306,8 +306,13 @@ namespace Microsoft.AspNet.SignalR.Transports
             var disconnectTask = Disconnected != null ? Disconnected(clean) : TaskAsyncHelper.Empty;
 
             // Ensure delegate continues to use the C# Compiler static delegate caching optimization.
-            return disconnectTask.Catch((ex, state) => OnDisconnectError(ex, state), state: Trace, traceSource: Trace)
-                                 .Then(counters => counters.ConnectionsDisconnected.Increment(), _counters);
+            return disconnectTask
+                .Catch((ex, state) => OnDisconnectError(ex, state), state: Trace, traceSource: Trace)
+                .Finally(state =>
+                {
+                    var counters = (IPerformanceCounterManager)state;
+                    counters.ConnectionsDisconnected.Increment();
+                }, _counters);
         }
 
         public void ApplyState(TransportConnectionStates states)
