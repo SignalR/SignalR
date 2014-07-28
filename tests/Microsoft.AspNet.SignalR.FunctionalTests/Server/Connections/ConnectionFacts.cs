@@ -237,19 +237,21 @@ namespace Microsoft.AspNet.SignalR.Client.Tests
                 }
             }
 
-            [Fact]
-            public void ConnectionCanBeEstablishedWithPreSendRequestHeadersEventAttached()
+            [Theory]
+            [InlineData(TransportType.Auto)]
+            [InlineData(TransportType.Websockets)]
+            [InlineData(TransportType.ServerSentEvents)]
+            [InlineData(TransportType.LongPolling)]
+            public void ConnectionCanBeEstablishedWithPreSendRequestHeadersEventAttached(TransportType transportType)
             {
-                using (ITestHost host = CreateHost(HostType.IISExpress))
+                using (ITestHost host = CreateHost(HostType.IISExpress, transportType))
                 {
                     ((IISExpressTestHost)host).AttachToPreSendRequestHeaders = true;
                     host.Initialize();
 
-                    var connection = CreateConnection(host, "/async-on-connected");
-
-                    using (connection)
+                    using (var hubConnection = CreateConnection(host, "/async-on-connected"))
                     {
-                        Assert.True(connection.Start().Wait(TimeSpan.FromSeconds(10)), "The connection failed to start.");
+                        Assert.True(hubConnection.Start(host.Transport).Wait(TimeSpan.FromSeconds(10)), "The connection failed to start.");
                     }
                 }
             }

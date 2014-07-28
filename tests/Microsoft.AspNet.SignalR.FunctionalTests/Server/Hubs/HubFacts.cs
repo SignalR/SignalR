@@ -2123,6 +2123,32 @@ namespace Microsoft.AspNet.SignalR.Tests
                 }
             }
         }
+
+        [Theory]
+        [InlineData(TransportType.Auto)]
+        [InlineData(TransportType.Websockets)]
+        [InlineData(TransportType.ServerSentEvents)]
+        [InlineData(TransportType.LongPolling)]
+        public async Task CanInvokeAsyncHubMethodWithPreSendRequestHeadersEventAttached(TransportType transportType)
+        {
+            using (ITestHost host = CreateHost(HostType.IISExpress, transportType))
+            {
+                ((IISExpressTestHost)host).AttachToPreSendRequestHeaders = true;
+                host.Initialize();
+
+                using (var hubConnection = CreateHubConnection(host))
+                {
+                    var proxy = hubConnection.CreateHubProxy("asyncHub");
+
+                    await hubConnection.Start(host.Transport);
+
+                    var invokeResult =  await proxy.Invoke<string>("Echo", "echo");
+
+                    Assert.Equal("echo", invokeResult);
+                }
+            }
+        }
+
         internal static HubConnection GetUserConnection(string userName)
         {
             var qs = new Dictionary<string, string>
