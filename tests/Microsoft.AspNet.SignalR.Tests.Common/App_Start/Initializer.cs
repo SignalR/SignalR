@@ -46,11 +46,11 @@ namespace Microsoft.AspNet.SignalR.Tests.Common
             var attachToPreSendRequestHeadersRaw = ConfigurationManager.AppSettings["attachToPreSendRequestHeaders"];
 
             // It is too late to add a module in the Configuration method, so we are adding it here if necessary.
-            bool attachToPreSendRequestHeaders;
-            if (Boolean.TryParse(attachToPreSendRequestHeadersRaw, out attachToPreSendRequestHeaders) && attachToPreSendRequestHeaders)
-            {
+            //bool attachToPreSendRequestHeaders;
+            //if (Boolean.TryParse(attachToPreSendRequestHeadersRaw, out attachToPreSendRequestHeaders) && attachToPreSendRequestHeaders)
+            //{
                 HttpApplication.RegisterModule(typeof(PreSendRequestHeadersModule));
-            }
+            //}
         }
 
         public static void Configuration(IAppBuilder app)
