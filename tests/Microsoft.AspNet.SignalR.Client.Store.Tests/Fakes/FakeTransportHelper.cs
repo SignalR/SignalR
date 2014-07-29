@@ -11,12 +11,11 @@ namespace Microsoft.AspNet.SignalR.Client.Store.Tests.Fakes
         public bool ProcessResponseDisconnected { set; private get; }
         public bool ProcessResponseShouldReconnect { set; private get; }
 
-        public override void ProcessResponse(IConnection connection, string response, out bool shouldReconnect, out bool disconnected,
-            Action onInitialized)
+        public override bool ProcessResponse(IConnection connection, string response, Action onInitialized)
         {
-            shouldReconnect = ProcessResponseShouldReconnect;
-            disconnected = ProcessResponseDisconnected;
             _invocationManager.AddInvocation("ProcessResponse", connection, response, onInitialized);
+
+            return _invocationManager.GetReturnValue<bool>("ProcessResponse");
         }
 
         void IFake.Setup<T>(string methodName, Func<T> behavior)

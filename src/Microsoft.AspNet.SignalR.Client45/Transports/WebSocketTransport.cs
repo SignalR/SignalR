@@ -139,19 +139,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
         {
             _connection.Trace(TraceLevels.Messages, "WS: OnMessage({0})", message);
 
-            bool timedOut;
-            bool disconnected;
-            TransportHelper.ProcessResponse(_connection,
-                                            message,
-                                            out timedOut,
-                                            out disconnected,
-                                            _initializeHandler.InitReceived);
-
-            if (disconnected && !_disconnectToken.IsCancellationRequested)
-            {
-                _connection.Trace(TraceLevels.Messages, "Disconnect command received from server.");
-                _connection.Disconnect();
-            }
+            TransportHelper.ProcessResponse(_connection, message, _initializeHandler.InitReceived);
         }
 
         // virtual for testing

@@ -156,8 +156,8 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
 
             var fakeConnection = new FakeConnection();
 
-            WebSocketTransport.MessageReceived(new FakeWebSocket(), fakeWebSocketResponse, 
-                    fakeConnection, fakeTransportHelper, transportInitialization);
+            WebSocketTransport.MessageReceived(fakeWebSocketResponse, fakeConnection, 
+                fakeTransportHelper, transportInitialization);
 
             Assert.Equal(UnicodeEncoding.Utf8, fakeDataReader.UnicodeEncoding);
             fakeDataReader.Verify("ReadString", new List<object[]> {new object[] { 42u}});
@@ -367,29 +367,6 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
             Assert.Equal(1, fakeWebSocketTransport.GetInvocations("OpenWebSocket").Count());
             Assert.Equal(0, fakeConnection.GetInvocations("Stop").Count());
             Assert.Equal(0, fakeConnection.GetInvocations("OnError").Count());
-        }
-
-        [Fact]
-        public void WebSocketCloseIfServerSendsDisconnect()
-        {
-            var fakeWebSocket = new FakeWebSocket();
-
-            var fakeDataReader = new FakeDataReader();
-            fakeDataReader.Setup("ReadString", () => "MessageBody");
-
-            var fakeWebSocketResponse = new FakeWebSocketResponse();
-            fakeWebSocketResponse.Setup("GetDataReader", () => fakeDataReader);
-
-            var fakeConnection = new FakeConnection();
-            var fakeTransportHelper = new FakeTransportHelper { ProcessResponseDisconnected = true};
-            var transportInitialization = new TransportInitializationHandler(null, new FakeConnection(), 
-                null, null, CancellationToken.None, fakeTransportHelper);
-
-            WebSocketTransport.MessageReceived(fakeWebSocket, fakeWebSocketResponse, 
-                fakeConnection, fakeTransportHelper, transportInitialization);
-
-            fakeWebSocket.Verify("Close", new List<object[]>{ new object[] { (ushort)1000, string.Empty }});
-            fakeConnection.Verify("Disconnect", new List<object[]>{ new object[0] });
         }
 
         [Fact]

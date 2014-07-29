@@ -138,16 +138,9 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
 
             _requestHandler.OnMessage += message =>
             {
-                var shouldReconnect = false;
-                var disconnectedReceived = false;
-
                 connection.Trace(TraceLevels.Messages, "LP: OnMessage({0})", message);
 
-                TransportHelper.ProcessResponse(connection,
-                                                message,
-                                                out shouldReconnect,
-                                                out disconnectedReceived,
-                                                onInitialized);
+                var shouldReconnect = TransportHelper.ProcessResponse(connection, message, onInitialized);
 
                 if (IsReconnecting(connection))
                 {
@@ -160,12 +153,6 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
                 {
                     // Transition into reconnecting state
                     connection.EnsureReconnecting();
-                }
-
-                if (disconnectedReceived)
-                {
-                    connection.Trace(TraceLevels.Messages, "Disconnect command received from server.");
-                    connection.Disconnect();
                 }
             };
 
