@@ -33,7 +33,7 @@ $(function () {
 
         if (firstReceive === true) {
             // if client receives message first time from the connectionId, then don't check missing /dup message
-            previousValues.push({ "connectionId": connectionId, "previousValue": value });
+            previousValues.push({ "connectionId": connectionId, "previousValue": value, "isDup": false });
             $("#messageLoops").append("<label id=" + connectionId + ">" + " </label>");
         } else {
             // check missing /dup message, and display if happens
@@ -41,12 +41,13 @@ $(function () {
                 if (value === previousValueItem.previousValue) {
                     $("<li/>").css("background-color", "yellow")
                     .css("color", "black")
-                    .html("Duplicated message in message loops: pre value: " + previousValueItem.previousValue + " current value: " + value + " from connectionId: " + connectionId)
+                    .html("[" + new Date().toTimeString() + "]: Duplicated message in message loops: pre value: " + previousValueItem.previousValue + " current value: " + value + " from connectionId: " + connectionId)
                     .appendTo(messages);
 
                     dupMessageCount++;
-                }
-                else {
+
+                    previousValueItem.isDup = true;
+                } else {
                     $("<li/>").css("background-color", "red")
                             .css("color", "white")
                             .html("Missing message in message loops: pre value: " + previousValueItem.previousValue + " current value: " + value + " from connectionId: " + connectionId)
@@ -55,6 +56,9 @@ $(function () {
                     missingMessageCount += value - (previousValueItem.previousValue + 1);
                 }
                 $("#missingMessagesCount").text("Duplicated messages count: " + dupMessageCount + ", missing messages count: " + missingMessageCount);
+            } else if (previousValueItem.isDup === true) {
+                // Detected all duplicate message(s), now stop connection when new message is not duplicate, so we can easily invetigate it 
+                $.connection.hub.stop();
             }
 
             previousValueItem.previousValue = value;
@@ -69,18 +73,21 @@ $(function () {
                 sendMessageCountHandler(value);
             }).fail(function (e) {
                 $("<li/>").html("Failed at sendMessageCountToAll: " + e).appendTo(messages);
+                sendMessageCountHandler(value + 1);
             });
         } else if (sendMessgeTo === "group") {
             messageLoopsHub.server.sendMessageCountToGroup(value, groupName, parseInt(sleepInput.val())).done(function (value) {
                 sendMessageCountHandler(value);
             }).fail(function (e) {
                 $("<li/>").html("Failed at sendMessageCountToGroup: " + e).appendTo(messages);
+                sendMessageCountHandler(value + 1);
             });
         } else if (sendMessgeTo === "caller") {
             messageLoopsHub.server.sendMessageCountToCaller(value, parseInt(sleepInput.val())).done(function (value) {
                 sendMessageCountHandler(value);
             }).fail(function (e) {
                 $("<li/>").html("Failed at sendMessageCountToCaller: " + e).appendTo(messages);
+                sendMessageCountHandler(value + 1);
             });
         }
     };
