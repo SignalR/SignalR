@@ -188,16 +188,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
                                 return;
                             }
 
-                            bool shouldReconnect;
-                            bool disconnected;
-                            TransportHelper.ProcessResponse(connection, sseEvent.Data, out shouldReconnect, out disconnected, initializeInvoke);
-
-                            if (disconnected)
-                            {
-                                connection.Trace(TraceLevels.Messages, "Disconnect command received from server.");
-                                _stop = true;
-                                connection.Disconnect();
-                            }
+                            TransportHelper.ProcessResponse(connection, sseEvent.Data, initializeInvoke);
                         }
                     };
 

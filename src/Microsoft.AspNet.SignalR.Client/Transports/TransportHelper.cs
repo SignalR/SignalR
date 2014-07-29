@@ -65,10 +65,9 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
                             .Then(response => response.ReadAsString());
         }
 
-        [SuppressMessage("Microsoft.Design", "CA1021:AvoidOutParameters", Justification = "This is called internally.")]
         [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "The client receives the exception in the OnError callback.")]
         // virtual to allow mocking
-        public virtual void ProcessResponse(IConnection connection, string response, out bool shouldReconnect, out bool disconnected, Action onInitialized)
+        public virtual bool ProcessResponse(IConnection connection, string response, Action onInitialized)
         {
             if (connection == null)
             {
@@ -77,13 +76,12 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
 
             connection.MarkLastMessage();
 
-            shouldReconnect = false;
-            disconnected = false;
-
             if (String.IsNullOrEmpty(response))
             {
-                return;
+                return false;
             }
+
+            var shouldReconnect = false;
 
             try
             {
@@ -91,22 +89,16 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
 
                 if (!result.HasValues)
                 {
-                    return;
+                    return false;
                 }
 
                 if (result["I"] != null)
                 {
                     connection.OnReceived(result);
-                    return;
+                    return false;
                 }
 
                 shouldReconnect = (int?)result["T"] == 1;
-                disconnected = (int?)result["D"] == 1;
-
-                if (disconnected)
-                {
-                    return;
-                }
 
                 UpdateGroups(connection, groupsToken: result["G"]);
 
@@ -127,6 +119,8 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
             {
                 connection.OnError(ex);
             }
+
+            return shouldReconnect;
         }
 
         public static bool VerifyLastActive(IConnection connection)

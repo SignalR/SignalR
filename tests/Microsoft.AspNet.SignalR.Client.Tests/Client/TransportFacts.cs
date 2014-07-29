@@ -22,13 +22,10 @@ namespace Microsoft.AspNet.SignalR.Client.Tests
         [Fact]
         public void OnInitializedFiresFromInitializeMessage()
         {
-            bool timedOut, disconnected, triggered = false;
-            var connection = new Connection("http://foo.com");
+            var triggered = false;
 
-            new TransportHelper().ProcessResponse(connection, "{\"S\":1, \"M\":[]}", out timedOut, out disconnected, () =>
-            {
-                triggered = true;
-            });
+            new TransportHelper()
+                .ProcessResponse(new Connection("http://foo.com"), "{\"S\":1, \"M\":[]}", () => triggered = true);
 
             Assert.True(triggered);
         }
@@ -36,7 +33,6 @@ namespace Microsoft.AspNet.SignalR.Client.Tests
         [Fact]
         public void ProcessResponseCapturesOnReceivedExceptions()
         {
-            bool timedOut, disconnected;
             var ex = new Exception();
             var connection = new Mock<Client.IConnection>(MockBehavior.Strict);
             connection.SetupGet(c => c.JsonSerializer).Returns(JsonSerializer.CreateDefault());
@@ -45,10 +41,10 @@ namespace Microsoft.AspNet.SignalR.Client.Tests
             connection.Setup(c => c.MarkLastMessage());
 
             // PersistentResponse
-            new TransportHelper().ProcessResponse(connection.Object, "{\"M\":{}}", out timedOut, out disconnected, () => { });
+            new TransportHelper().ProcessResponse(connection.Object, "{\"M\":{}}", () => { });
 
             // HubResponse (WebSockets)
-            new TransportHelper().ProcessResponse(connection.Object, "{\"I\":{}}", out timedOut, out disconnected, () => { });
+            new TransportHelper().ProcessResponse(connection.Object, "{\"I\":{}}", () => { });
 
             connection.VerifyAll();
         }
