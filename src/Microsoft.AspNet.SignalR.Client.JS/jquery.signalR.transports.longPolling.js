@@ -154,10 +154,6 @@
                                 delay = data.LongPollDelay;
                             }
 
-                            if (data && data.Disconnect) {
-                                return;
-                            }
-
                             if (isDisconnecting(instance) === true) {
                                 return;
                             }
