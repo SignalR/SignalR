@@ -107,6 +107,7 @@ namespace Microsoft.AspNet.SignalR.Tests
 
                 var transport = new Mock<ITransport>();
                 transport.SetupProperty(m => m.Disconnected);
+                transport.SetupProperty(m => m.ConnectionId);
                 transport.Setup(m => m.GetGroupsToken()).Returns(TaskAsyncHelper.FromResult(string.Empty));
                 transport.Setup(m => m.ProcessRequest(It.IsAny<Connection>())).Returns(TaskAsyncHelper.Empty);
 

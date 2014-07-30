@@ -78,31 +78,34 @@ namespace Microsoft.AspNet.SignalR.Transports
         internal Action BeforeReceive;
         internal Action<Exception> AfterRequestEnd;
 
-        protected override async Task InitializePersistentState()
+        protected override Task InitializePersistentState()
         {
-            await base.InitializePersistentState().PreserveCulture();
-
-            // The _transportLifetime must be initialized after calling base.InitializePersistentState since
-            // _transportLifetime depends on _requestLifetime.
-            _transportLifetime = new RequestLifetime(this, _requestLifeTime);
+            return base.InitializePersistentState().Then(() =>
+            {
+                // The _transportLifetime must be initialized after calling base.InitializePersistentState since
+                // _transportLifetime depends on _requestLifetime.
+                _transportLifetime = new RequestLifetime(this, _requestLifeTime);
+            });
         }
 
-        protected async Task ProcessRequestCore(ITransportConnection connection)
+        protected Task ProcessRequestCore(ITransportConnection connection)
         {
             Connection = connection;
 
             if (IsSendRequest)
             {
-                await ProcessSendRequest().PreserveCulture();
+                return ProcessSendRequest();
             }
             else if (IsAbortRequest)
             {
-                await Connection.Abort(ConnectionId).PreserveCulture();
+                return Connection.Abort(ConnectionId);
             }
             else
             {
-                await InitializePersistentState().PreserveCulture();
-                await ProcessReceiveRequest(connection).PreserveCulture();
+                return InitializePersistentState().Then(c =>
+                {
+                    return ProcessReceiveRequest(c);
+                }, connection);
             }
         }
 

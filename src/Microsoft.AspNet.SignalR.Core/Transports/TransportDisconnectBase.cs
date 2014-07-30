@@ -385,7 +385,7 @@ namespace Microsoft.AspNet.SignalR.Transports
             return writeTask;
         }
 
-        protected virtual async Task InitializePersistentState()
+        protected virtual Task InitializePersistentState()
         {
             _hostShutdownToken = _context.Environment.GetShutdownToken();
 
@@ -412,7 +412,7 @@ namespace Microsoft.AspNet.SignalR.Transports
             },
             _requestLifeTime);
 
-            await InitializeMessageId().PreserveCulture();
+            return InitializeMessageId();
         }
 
         private static void OnDisconnectError(AggregateException ex, object state)

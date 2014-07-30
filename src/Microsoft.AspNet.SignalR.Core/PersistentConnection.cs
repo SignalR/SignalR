@@ -181,7 +181,7 @@ namespace Microsoft.AspNet.SignalR
         /// Thrown if the transport wasn't specified.
         /// Thrown if the connection id wasn't specified.
         /// </exception>
-        public virtual async Task ProcessRequest(HostContext context)
+        public virtual Task ProcessRequest(HostContext context)
         {
             if (context == null)
             {
@@ -195,21 +195,18 @@ namespace Microsoft.AspNet.SignalR
 
             if (IsNegotiationRequest(context.Request))
             {
-                await ProcessNegotiationRequest(context).PreserveCulture();
-                return;
+                return ProcessNegotiationRequest(context);
             }
             else if (IsPingRequest(context.Request))
             {
-                await ProcessPingRequest(context).PreserveCulture();
-                return;
+                return ProcessPingRequest(context);
             }
 
             Transport = GetTransport(context);
 
             if (Transport == null)
             {
-                await FailResponse(context.Response, String.Format(CultureInfo.CurrentCulture, Resources.Error_ProtocolErrorUnknownTransport)).PreserveCulture();
-                return;
+                return FailResponse(context.Response, String.Format(CultureInfo.CurrentCulture, Resources.Error_ProtocolErrorUnknownTransport));
             }
 
             string connectionToken = context.Request.QueryString["connectionToken"];
@@ -217,8 +214,7 @@ namespace Microsoft.AspNet.SignalR
             // If there's no connection id then this is a bad request
             if (String.IsNullOrEmpty(connectionToken))
             {
-                await FailResponse(context.Response, String.Format(CultureInfo.CurrentCulture, Resources.Error_ProtocolErrorMissingConnectionToken)).PreserveCulture();
-                return;
+                return FailResponse(context.Response, String.Format(CultureInfo.CurrentCulture, Resources.Error_ProtocolErrorMissingConnectionToken));
             }
 
             string connectionId;
@@ -227,18 +223,22 @@ namespace Microsoft.AspNet.SignalR
 
             if (!TryGetConnectionId(context, connectionToken, out connectionId, out message, out statusCode))
             {
-                await FailResponse(context.Response, message, statusCode).PreserveCulture();
-                return;
+                return FailResponse(context.Response, message, statusCode);
             }
 
             // Set the transport's connection id to the unprotected one
             Transport.ConnectionId = connectionId;
 
+            // Get the groups token from the request
+            return Transport.GetGroupsToken().Then(ProcessRequestPostGroupRead, context).FastUnwrap();
+        }
+
+        private Task ProcessRequestPostGroupRead(string groupsToken, HostContext context)
+        {
+            string connectionId = Transport.ConnectionId;
+
             // Get the user id from the request
             string userId = UserIdProvider.GetUserId(context.Request);
-
-            // Get the groups oken from the request
-            string groupsToken = await Transport.GetGroupsToken().PreserveCulture();
 
             IList<string> signals = GetSignals(userId, connectionId);
             IList<string> groups = AppendGroupPrefixes(context, connectionId, groupsToken);
@@ -253,8 +253,7 @@ namespace Microsoft.AspNet.SignalR
             // because ProcessStartRequest calls OnConnected.
             if (IsStartRequest(context.Request))
             {
-                await ProcessStartRequest(context, connectionId).PreserveCulture();
-                return;
+                return ProcessStartRequest(context, connectionId);
             }
 
             Transport.Connected = () =>
@@ -279,7 +278,7 @@ namespace Microsoft.AspNet.SignalR
                 return TaskAsyncHelper.FromMethod(() => OnDisconnected(context.Request, connectionId, stopCalled: clean).OrEmpty());
             };
 
-            await Transport.ProcessRequest(connection).OrEmpty().Catch(Trace, Counters.ErrorsAllTotal, Counters.ErrorsAllPerSec).PreserveCulture();
+            return Transport.ProcessRequest(connection).OrEmpty().Catch(Trace, Counters.ErrorsAllTotal, Counters.ErrorsAllPerSec);
         }
 
         [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "We want to catch any exception when unprotecting data.")]
