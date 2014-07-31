@@ -430,6 +430,11 @@ namespace Microsoft.AspNet.SignalR.Client
         /// <returns>A task that represents when the connection has started.</returns>
         public Task Start(IClientTransport transport)
         {
+            if (transport == null)
+            {
+                throw new ArgumentNullException("transport");
+            }
+
             lock (_startLock)
             {
                 if (!ChangeState(ConnectionState.Disconnected, ConnectionState.Connecting))
@@ -622,7 +627,7 @@ namespace Microsoft.AspNet.SignalR.Client
                 // Dispose the heart beat monitor so we don't fire notifications when waiting to abort
                 Monitor.Dispose();
 
-                _transport.Abort(this, timeout, _connectionData);
+                _transport.Abort(this, _connectionData);
 
                 Disconnect();
             }

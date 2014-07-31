@@ -151,11 +151,11 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
             return _transport.Send(connection, data, connectionData);
         }
 
-        public void Abort(IConnection connection, TimeSpan timeout, string connectionData)
+        public void Abort(IConnection connection, string connectionData)
         {
             if (_transport != null)
             {
-                _transport.Abort(connection, timeout, connectionData);
+                _transport.Abort(connection, connectionData);
             }
         }
 

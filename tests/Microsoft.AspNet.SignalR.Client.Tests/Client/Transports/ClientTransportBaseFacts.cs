@@ -1,10 +1,11 @@
 ﻿
 using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR.Client.Http;
-using Microsoft.AspNet.SignalR.Client.Infrastructure;
 using Moq;
-using Moq.Protected;
 using Xunit;
 
 namespace Microsoft.AspNet.SignalR.Client.Transports
@@ -26,8 +27,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
                 .Returns(Task.FromResult(negotiationResponse));
 
             var transport =
-                new Mock<ClientTransportBase>(client, transportName, mockTransportHelper.Object,
-                    new TransportAbortHandler(client, transportName))
+                new Mock<ClientTransportBase>(client, transportName, mockTransportHelper.Object)
                 {
                     CallBase = true
                 }.Object;
@@ -38,42 +38,137 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
         }
 
         [Fact]
-        public void AbortInvokesAbortOnAbortHandler()
+        public void AbortSentInitializedToFalse()
         {
-            const string transportName = "fakeTransport";
-            var httpClient = Mock.Of<IHttpClient>();
-            var mockAbortHandler =
-                new Mock<TransportAbortHandler>(Mock.Of<IHttpClient>(), transportName);
-            var mockTransportBase = new Mock<ClientTransportBase>(httpClient, transportName, new TransportHelper(), mockAbortHandler.Object)
-            {
-                CallBase = true 
-            };
+            var transport =
+                new Mock<ClientTransportBase>(Mock.Of<IHttpClient>(), "fakeTransport", Mock.Of<TransportHelper>())
+                    .Object;
 
-            var connection = Mock.Of<IConnection>();
-            var timeSpan = new TimeSpan(42);
-            const string connectionData = "connData";
-
-            mockTransportBase.Object.Abort(connection, timeSpan, connectionData);
-
-            mockAbortHandler.Verify(h => h.Abort(connection, timeSpan, connectionData), Times.Once());
+            Assert.False(transport.AbortSent);
         }
 
         [Fact]
-        public void DisposeDisposesAbortHandler()
+        public void AbortValidatesArguments()
         {
-            const string transportName = "fakeTransport";
-            var httpClient = Mock.Of<IHttpClient>();
-            var mockAbortHandler = 
-                new Mock<TransportAbortHandler>(Mock.Of<IHttpClient>(), transportName);
-            var mockTransportBase =
-                new Mock<ClientTransportBase>(httpClient, transportName, new TransportHelper(), mockAbortHandler.Object)
+            var transport =
+                new Mock<ClientTransportBase>(Mock.Of<IHttpClient>(), "fakeTransport", Mock.Of<TransportHelper>())
                 {
                     CallBase = true
-                };
+                }.Object;
 
-            mockTransportBase.Object.Dispose();
+            Assert.Equal("connection",
+                Assert.Throws<ArgumentNullException>(() => transport.Abort(null, "connectionData")).ParamName);
+        }
 
-            mockAbortHandler.Protected().Verify("Dispose", Times.Once(), true);
+        [Fact]
+        public void AbortRequestNotSentIfConnectionTokenNull()
+        {
+            var mockClient = new Mock<IHttpClient>();
+            var transport =
+                new Mock<ClientTransportBase>(mockClient.Object, "fakeTransport", Mock.Of<TransportHelper>())
+                {
+                    CallBase = true
+                }.Object;
+
+            transport.Abort(Mock.Of<IConnection>(), "connectionData");
+
+            mockClient.Verify(
+                m => m.Post(It.IsAny<string>(), It.IsAny<Action<IRequest>>(), It.IsAny<IDictionary<string, string>>(), It.IsAny<bool>()),
+                Times.Never());
+
+            Assert.False(transport.AbortSent);            
+        }
+
+        [Fact]
+        public void AbortSendsAbortRequest()
+        {
+            var connection = new Connection("http://fake.url/") { ConnectionToken = "connectionToken"};
+            
+            var mockClient = new Mock<IHttpClient>();
+            mockClient
+                .Setup(m => m.Post(It.IsAny<string>(), It.IsAny<Action<IRequest>>(), It.IsAny<IDictionary<string, string>>(), It.IsAny<bool>()))
+                .Returns(Task.FromResult((IResponse) null));
+
+            var transport =
+                new Mock<ClientTransportBase>(mockClient.Object, "fakeTransport", Mock.Of<TransportHelper>())
+                {
+                    CallBase = true
+                }.Object;
+
+            transport.Abort(connection, "connectionData");
+
+            mockClient.Verify(
+                m => m.Post(It.Is<string>(url => url.StartsWith("http://fake.url/abort?")), It.IsAny<Action<IRequest>>(),
+                        It.IsAny<IDictionary<string, string>>(), false),
+                Times.Once());
+
+            Assert.True(transport.AbortSent);
+        }
+
+        [Fact]
+        public void AbortSendsAbortRequestOnlyOnce()
+        {
+            var connection = new Connection("http://fake.url/") { ConnectionToken = "connectionToken" };
+
+            var mockClient = new Mock<IHttpClient>();
+            mockClient
+                .Setup(m => m.Post(It.IsAny<string>(), It.IsAny<Action<IRequest>>(), It.IsAny<IDictionary<string, string>>(), It.IsAny<bool>()))
+                .Returns(Task.FromResult((IResponse)null));
+
+            var transport =
+                new Mock<ClientTransportBase>(mockClient.Object, "fakeTransport", Mock.Of<TransportHelper>())
+                {
+                    CallBase = true
+                }.Object;
+
+            transport.Abort(connection, "connectionData");
+            Assert.True(transport.AbortSent);
+
+            transport.Abort(connection, "connectionData");
+
+            mockClient.Verify(
+                m => m.Post(It.Is<string>(url => url.StartsWith("http://fake.url/abort?")), It.IsAny<Action<IRequest>>(),
+                        It.IsAny<IDictionary<string, string>>(), false),
+                Times.Once());
+
+            Assert.True(transport.AbortSent);
+        }
+
+        [Fact]
+        public void FailuresWhileSendingAbortRequestsAreLoggedAndSwallowed()
+        {
+            const string exceptionMessage = "Abort request failed";
+
+            var tcs = new TaskCompletionSource<IResponse>();
+            tcs.SetException(new InvalidOperationException(exceptionMessage));
+
+            var traceStringBuilder = new StringBuilder();
+            var connection = new Connection("http://fake.url/")
+            {
+                ConnectionToken = "connectionToken",
+                TraceWriter = new StringWriter(traceStringBuilder)
+            };
+
+            var mockClient = new Mock<IHttpClient>();
+            mockClient
+                .Setup(m => m.Post(It.IsAny<string>(), It.IsAny<Action<IRequest>>(), It.IsAny<IDictionary<string, string>>(), It.IsAny<bool>()))
+                .Returns(tcs.Task);
+
+            var transport =
+                new Mock<ClientTransportBase>(mockClient.Object, "fakeTransport", Mock.Of<TransportHelper>())
+                {
+                    CallBase = true
+                }.Object;
+
+            transport.Abort(connection, "connectionData");
+
+            mockClient.Verify(
+                m => m.Post(It.Is<string>(url => url.StartsWith("http://fake.url/abort?")), It.IsAny<Action<IRequest>>(),
+                        It.IsAny<IDictionary<string, string>>(), false),
+                Times.Once());
+
+            Assert.True(transport.AbortSent);
+            Assert.Contains(exceptionMessage, traceStringBuilder.ToString());
         }
     }
 }

@@ -156,11 +156,12 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
         
         private void WebsocketClosed(IWebSocket webSocket, WebSocketClosedEventArgs eventArgs)
         {
-            _connection.Trace(TraceLevels.Events, "WS: OnClose()");
+            _connection.Trace(TraceLevels.Events, "WS: WebsocketClosed - Code: {0}, Reason {1}", eventArgs.Code, eventArgs.Reason);
 
             DisposeSocket();
 
-            if (AbortHandler.TryCompleteAbort())
+            // abort has been sent - do not reconnect
+            if (AbortSent)
             {
                 return;
             }

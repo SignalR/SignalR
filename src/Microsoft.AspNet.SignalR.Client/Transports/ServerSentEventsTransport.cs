@@ -210,15 +210,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
                         esCancellationRegistration.Dispose();
                         response.Dispose();
 
-                        if (_stop)
-                        {
-                            AbortHandler.CompleteAbort();
-                        }
-                        else if (AbortHandler.TryCompleteAbort())
-                        {
-                            // Abort() was called, so don't reconnect
-                        }
-                        else
+                        if (!_stop && !AbortSent)
                         {
                             Reconnect(connection, data, disconnectToken);
                         }
