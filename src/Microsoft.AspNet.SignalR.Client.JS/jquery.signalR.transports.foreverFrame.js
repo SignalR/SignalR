@@ -79,7 +79,7 @@
             if (window.EventSource) {
                 // If the browser supports SSE, don't use Forever Frame
                 if (onFailed) {
-                    connection.log("This browser supports SSE, skipping Forever Frame.");
+                    connection.log("Forever Frame is not supported by SignalR on browsers with SSE support.");
                     onFailed();
                 }
                 return;
