@@ -321,7 +321,10 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
                     // just trip it
                     if (!connection._ackHandler.TriggerAck(message.CommandId))
                     {
-                        connection._bus.Ack(connection._connectionId, message.CommandId).Catch(connection._traceSource);
+                        connection._bus.Ack(
+                            acker: connection._connectionId,
+                            waiter: message.Source,
+                            commandId: message.CommandId).Catch(connection._traceSource);
                     }
                 }
             }
