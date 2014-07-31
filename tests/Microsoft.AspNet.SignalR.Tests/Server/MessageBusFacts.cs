@@ -589,6 +589,15 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
             }
         }
 
+        [Fact]
+        public void MessageBusCanBeDisposedTwiceWithoutHanging()
+        {
+            var bus = new MessageBus(new DefaultDependencyResolver());
+
+            bus.Dispose();
+            Assert.True(Task.Run(() => bus.Dispose()).Wait(TimeSpan.FromSeconds(10)));
+        }
+
         private class TestMessageBus : MessageBus
         {
             public TestMessageBus(IDependencyResolver resolver)
