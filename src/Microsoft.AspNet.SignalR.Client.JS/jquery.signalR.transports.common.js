@@ -448,7 +448,7 @@
                 // Update Keep alive on reconnect
                 $(connection).bind(events.onReconnect, connection._.keepAliveData.reconnectKeepAliveUpdate);
 
-                connection.log("Now monitoring keep alive with a warning timeout of " + keepAliveData.timeoutWarning + " and a connection lost timeout of " + keepAliveData.timeout + ".");
+                connection.log("Now monitoring keep alive with a warning timeout of " + keepAliveData.timeoutWarning + ", keep alive timeout of " + keepAliveData.timeout + " and disconnecting timeout of " + connection.disconnectTimeout);
             } else {
                 connection.log("Tried to monitor keep alive but it's already being monitored.");
             }
