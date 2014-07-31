@@ -15,15 +15,15 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
         private readonly IHttpClient _httpClient;
         private readonly string _transportName;
         private readonly TransportHelper _transportHelper;
-        private readonly TransportAbortHandler _abortHandler;
+        private int _abortSent = 0;
 
         [SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope", Justification = "Disposed in the Dispose method.")]
         protected ClientTransportBase(IHttpClient httpClient, string transportName)
-            : this(httpClient, transportName, new TransportHelper(), new TransportAbortHandler(httpClient, transportName))
+            : this(httpClient, transportName, new TransportHelper())
         {
         }
 
-        internal ClientTransportBase(IHttpClient httpClient, string transportName, TransportHelper transportHelper, TransportAbortHandler abortHandler)
+        internal ClientTransportBase(IHttpClient httpClient, string transportName, TransportHelper transportHelper)
         {
             if (httpClient == null)
             {
@@ -36,12 +36,10 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
             }
 
             Debug.Assert(transportHelper != null, "transportHelper is null");
-            Debug.Assert(abortHandler != null, "abortHandler is null");
 
             _httpClient = httpClient;
             _transportName = transportName;
             _transportHelper = transportHelper;
-            _abortHandler = abortHandler;
         }
 
         protected IHttpClient HttpClient
@@ -52,11 +50,6 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
         protected TransportHelper TransportHelper
         {
             get { return _transportHelper; } 
-        }
-
-        protected TransportAbortHandler AbortHandler
-        {
-            get { return _abortHandler; }
         }
 
         /// <summary>
@@ -78,9 +71,38 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
 
         public abstract Task Send(IConnection connection, string data, string connectionData);
 
-        public virtual void Abort(IConnection connection, TimeSpan timeout, string connectionData)
+        public virtual void Abort(IConnection connection, string connectionData)
         {
-            AbortHandler.Abort(connection, timeout, connectionData);
+            if (connection == null)
+            {
+                throw new ArgumentNullException("connection");
+            }
+
+            // Save the connection.ConnectionToken since race issue that connection.ConnectionToken can be set to null in different thread
+            var connectionToken = connection.ConnectionToken;
+
+            if (connectionToken == null)
+            {
+                connection.Trace(TraceLevels.Messages, "Connection already disconnected, skipping abort.");
+                return;
+            }
+
+            if (Interlocked.CompareExchange(ref _abortSent, 1, 0) == 0)
+            {
+                var url = UrlBuilder.BuildAbort(connection, _transportName, connectionData);
+
+                _httpClient.Post(url, connection.PrepareRequest, isLongRunning: false)
+                    .Catch(
+                        (ex, state) => connection.Trace(TraceLevels.Messages, "Sending abort failed due to {0}", ex),
+                        this,
+                        connection);
+            }
+        }
+
+        // internal for testing
+        protected internal bool AbortSent
+        {
+            get { return _abortSent != 0; }
         }
 
         public abstract void LostConnection(IConnection connection);
@@ -93,10 +115,6 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
 
         protected virtual void Dispose(bool disposing)
         {
-            if(disposing)
-            {
-                _abortHandler.Dispose();
-            }
         }
     }
 }

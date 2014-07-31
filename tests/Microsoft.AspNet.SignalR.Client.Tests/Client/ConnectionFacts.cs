@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Text;
@@ -119,6 +120,14 @@ namespace Microsoft.AspNet.SignalR.Client.Tests
 
         public class Start
         {
+            [Fact]
+            public void StartValidatesTransportNotNull()
+            {
+                Assert.Equal("transport", 
+                    Assert.Throws<ArgumentNullException>(
+                        () => new Connection("http://fake.url/").Start((IClientTransport)null).Wait()).ParamName);
+            }
+
             [Fact]
             public void FailsIfProtocolVersionIsNull()
             {
