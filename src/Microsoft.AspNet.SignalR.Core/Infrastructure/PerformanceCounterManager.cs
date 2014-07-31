@@ -78,27 +78,27 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
         public IPerformanceCounter ConnectionsDisconnected { get; private set; }
 
         /// <summary>
-        /// Gets the performance counter representing the number of connections currently connected.
+        /// Gets the performance counter representing the number of connections currently connected using the ForeverFrame transport.
         /// </summary>
-        [PerformanceCounter(Name = "Connections Current ForeverFrame", Description = "The number of connections currently connected using ForeverFrame transport.", CounterType = PerformanceCounterType.NumberOfItems32)]
+        [PerformanceCounter(Name = "Connections Current ForeverFrame", Description = "The number of connections currently connected using the ForeverFrame transport.", CounterType = PerformanceCounterType.NumberOfItems32)]
         public IPerformanceCounter ConnectionsCurrentForeverFrame { get; private set; }
         
         /// <summary>
-        /// Gets the performance counter representing the number of connections currently connected.
+        /// Gets the performance counter representing the number of connections currently connected using the LongPolling transport.
         /// </summary>
-        [PerformanceCounter(Name = "Connections Current LongPolling", Description = "The number of connections currently connected using LongPolling transport.", CounterType = PerformanceCounterType.NumberOfItems32)]
+        [PerformanceCounter(Name = "Connections Current LongPolling", Description = "The number of connections currently connected using the LongPolling transport.", CounterType = PerformanceCounterType.NumberOfItems32)]
         public IPerformanceCounter ConnectionsCurrentLongPolling { get; private set; }
         
         /// <summary>
-        /// Gets the performance counter representing the number of connections currently connected.
+        /// Gets the performance counter representing the number of connections currently connected using the ServerSentEvents transport.
         /// </summary>
-        [PerformanceCounter(Name = "Connections Current ServerSentEvents", Description = "The number of connections currently connected using ServerSentEvents transport.", CounterType = PerformanceCounterType.NumberOfItems32)]
+        [PerformanceCounter(Name = "Connections Current ServerSentEvents", Description = "The number of connections currently connected using the ServerSentEvents transport.", CounterType = PerformanceCounterType.NumberOfItems32)]
         public IPerformanceCounter ConnectionsCurrentServerSentEvents { get; private set; }
         
         /// <summary>
-        /// Gets the performance counter representing the number of connections currently connected.
+        /// Gets the performance counter representing the number of connections currently connected using the WebSockets transport.
         /// </summary>
-        [PerformanceCounter(Name = "Connections Current WebSockets", Description = "The number of connections currently connected using WebSocket transport.", CounterType = PerformanceCounterType.NumberOfItems32)]
+        [PerformanceCounter(Name = "Connections Current WebSockets", Description = "The number of connections currently connected using the WebSockets transport.", CounterType = PerformanceCounterType.NumberOfItems32)]
         public IPerformanceCounter ConnectionsCurrentWebSockets { get; private set; }
 
         /// <summary>
