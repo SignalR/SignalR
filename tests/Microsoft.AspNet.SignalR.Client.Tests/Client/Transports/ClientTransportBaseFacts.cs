@@ -38,13 +38,13 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
         }
 
         [Fact]
-        public void AbortSentInitializedToFalse()
+        public void FinishedInitializedToFalse()
         {
             var transport =
                 new Mock<ClientTransportBase>(Mock.Of<IHttpClient>(), "fakeTransport", Mock.Of<TransportHelper>())
                     .Object;
 
-            Assert.False(transport.AbortSent);
+            Assert.False(transport.Finished);
         }
 
         [Fact]
@@ -76,7 +76,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
                 m => m.Post(It.IsAny<string>(), It.IsAny<Action<IRequest>>(), It.IsAny<IDictionary<string, string>>(), It.IsAny<bool>()),
                 Times.Never());
 
-            Assert.False(transport.AbortSent);            
+            Assert.True(transport.Finished);            
         }
 
         [Fact]
@@ -102,7 +102,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
                         It.IsAny<IDictionary<string, string>>(), false),
                 Times.Once());
 
-            Assert.True(transport.AbortSent);
+            Assert.True(transport.Finished);
         }
 
         [Fact]
@@ -122,7 +122,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
                 }.Object;
 
             transport.Abort(connection, "connectionData");
-            Assert.True(transport.AbortSent);
+            Assert.True(transport.Finished);
 
             transport.Abort(connection, "connectionData");
 
@@ -131,7 +131,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
                         It.IsAny<IDictionary<string, string>>(), false),
                 Times.Once());
 
-            Assert.True(transport.AbortSent);
+            Assert.True(transport.Finished);
         }
 
         [Fact]
@@ -167,8 +167,33 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
                         It.IsAny<IDictionary<string, string>>(), false),
                 Times.Once());
 
-            Assert.True(transport.AbortSent);
+            Assert.True(transport.Finished);
             Assert.Contains(exceptionMessage, traceStringBuilder.ToString());
+        }
+
+        [Fact]
+        public void DisposeMarksTransportAsFinished()
+        {
+            var transport = 
+                new Mock<ClientTransportBase>(Mock.Of<IHttpClient>(), "fakeTransport") { CallBase = true}.Object;
+
+            transport.Dispose();
+
+            Assert.True(transport.Finished);
+        }
+
+        [Fact]
+        public void CannotNegotiateUsingFinishedTransport()
+        {
+            var transport =
+                new Mock<ClientTransportBase>(Mock.Of<IHttpClient>(), "fakeTransport") {CallBase = true}.Object;
+
+            transport.Dispose();
+
+            Assert.Equal(
+                Resources.Error_TransportCannotBeReused,
+                Assert.Throws<InvalidOperationException>(
+                    () => transport.Negotiate(Mock.Of<IConnection>(), "connectionData")).Message);
         }
     }
 }

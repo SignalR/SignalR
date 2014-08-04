@@ -157,7 +157,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
         {
             _connection.Trace(TraceLevels.Events, "WS: OnClose()");
 
-            if (_disconnectToken.IsCancellationRequested || AbortSent)
+            if (_disconnectToken.IsCancellationRequested || Finished)
             {
                 return;
             }

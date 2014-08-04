@@ -184,7 +184,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
 
             _requestHandler.OnAfterPoll = exception =>
             {
-                if (AbortSent)
+                if (Finished)
                 {
                     // Abort() was called, so don't reconnect
                     _requestHandler.Stop();

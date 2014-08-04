@@ -12,6 +12,7 @@ namespace Microsoft.AspNet.SignalR.Client {
     using System;
     using System.Reflection;
     
+    
     /// <summary>
     ///   A strongly-typed resource class, for looking up localized strings, etc.
     /// </summary>
@@ -197,6 +198,15 @@ namespace Microsoft.AspNet.SignalR.Client {
         internal static string Error_TaskCancelledException {
             get {
                 return ResourceManager.GetString("Error_TaskCancelledException", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The transport instance passed to the Negotiate method has already been used. Use a new transport instance each time you start a new connection..
+        /// </summary>
+        internal static string Error_TransportCannotBeReused {
+            get {
+                return ResourceManager.GetString("Error_TransportCannotBeReused", resourceCulture);
             }
         }
         

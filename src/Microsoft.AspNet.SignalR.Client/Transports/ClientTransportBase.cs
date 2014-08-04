@@ -15,7 +15,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
         private readonly IHttpClient _httpClient;
         private readonly string _transportName;
         private readonly TransportHelper _transportHelper;
-        private int _abortSent = 0;
+        private int _finished = 0;
 
         [SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope", Justification = "Disposed in the Dispose method.")]
         protected ClientTransportBase(IHttpClient httpClient, string transportName)
@@ -64,6 +64,11 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
 
         public virtual Task<NegotiationResponse> Negotiate(IConnection connection, string connectionData)
         {
+            if (Finished)
+            {
+                throw new InvalidOperationException(Resources.Error_TransportCannotBeReused);
+            }
+
             return TransportHelper.GetNegotiationResponse(HttpClient, connection, connectionData);
         }
 
@@ -84,10 +89,11 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
             if (connectionToken == null)
             {
                 connection.Trace(TraceLevels.Messages, "Connection already disconnected, skipping abort.");
+                _finished = 1;
                 return;
             }
 
-            if (Interlocked.CompareExchange(ref _abortSent, 1, 0) == 0)
+            if (Interlocked.Exchange(ref _finished, 1) == 0)
             {
                 var url = UrlBuilder.BuildAbort(connection, _transportName, connectionData);
 
@@ -100,9 +106,9 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
         }
 
         // internal for testing
-        protected internal bool AbortSent
+        protected internal bool Finished
         {
-            get { return _abortSent != 0; }
+            get { return _finished != 0; }
         }
 
         public abstract void LostConnection(IConnection connection);
@@ -115,6 +121,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
 
         protected virtual void Dispose(bool disposing)
         {
+            _finished = 1;
         }
     }
 }

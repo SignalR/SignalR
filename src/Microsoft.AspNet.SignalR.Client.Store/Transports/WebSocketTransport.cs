@@ -160,8 +160,8 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
 
             DisposeSocket();
 
-            // abort has been sent - do not reconnect
-            if (AbortSent)
+            // either abort has been sent or transport has been disposed - do not reconnect
+            if (Finished)
             {
                 return;
             }
