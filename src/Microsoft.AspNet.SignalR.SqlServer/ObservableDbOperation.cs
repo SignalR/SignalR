@@ -17,15 +17,15 @@ namespace Microsoft.AspNet.SignalR.SqlServer
     /// </summary>
     internal class ObservableDbOperation : DbOperation, IDisposable, IDbBehavior
     {
-        private readonly List<Tuple<int, int>> _updateLoopRetryDelays = new List<Tuple<int, int>> {
-            new Tuple<int, int>(0, 3),      // 0ms x 3
-            new Tuple<int, int>(10, 3),     // 10ms x 3
-            new Tuple<int, int>(50, 2),     // 50ms x 2
-            new Tuple<int, int>(100, 2),    // 100ms x 2
-            new Tuple<int, int>(200, 2),    // 200ms x 2
-            new Tuple<int, int>(1000, 2),  // 1000ms x 2
-            new Tuple<int, int>(1500, 2),  // 1500ms x 2
-            new Tuple<int, int>(3000, 1)   // 3000ms x 1
+        private readonly Tuple<int, int>[] _updateLoopRetryDelays = new [] {
+            Tuple.Create(0, 3),    // 0ms x 3
+            Tuple.Create(10, 3),   // 10ms x 3
+            Tuple.Create(50, 2),   // 50ms x 2
+            Tuple.Create(100, 2),  // 100ms x 2
+            Tuple.Create(200, 2),  // 200ms x 2
+            Tuple.Create(1000, 2), // 1000ms x 2
+            Tuple.Create(1500, 2), // 1500ms x 2
+            Tuple.Create(3000, 1)  // 3000ms x 1
         };
         private readonly object _stopLocker = new object();
         private readonly ManualResetEventSlim _stopHandle = new ManualResetEventSlim(true);
@@ -48,6 +48,15 @@ namespace Microsoft.AspNet.SignalR.SqlServer
             _dbBehavior = this;
 
             InitEvents();
+        }
+
+        /// <summary>
+        /// For use from tests only.
+        /// </summary>
+        internal long CurrentNotificationState
+        {
+            get { return _notificationState; }
+            set { _notificationState = value; }
         }
 
         private void InitEvents()
@@ -403,7 +412,7 @@ namespace Microsoft.AspNet.SignalR.SqlServer
             }
         }
 
-        private static class NotificationState
+        internal static class NotificationState
         {
             public const long Enabled = 0;
             public const long ProcessingUpdates = 1;
