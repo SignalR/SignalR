@@ -14,7 +14,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
         Task<NegotiationResponse> Negotiate(IConnection connection, string connectionData);
         Task Start(IConnection connection, string connectionData, CancellationToken disconnectToken);
         Task Send(IConnection connection, string data, string connectionData);
-        void Abort(IConnection connection, string connectionData);
+        void Abort(IConnection connection, TimeSpan timeout, string connectionData);
 
         void LostConnection(IConnection connection);
     }

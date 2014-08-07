@@ -627,7 +627,7 @@ namespace Microsoft.AspNet.SignalR.Client
                 // Dispose the heart beat monitor so we don't fire notifications when waiting to abort
                 Monitor.Dispose();
 
-                _transport.Abort(this, _connectionData);
+                _transport.Abort(this, timeout, _connectionData);
 
                 Disconnect();
             }
