@@ -117,7 +117,7 @@ namespace Microsoft.AspNet.SignalR.Client.Http
             }
             else
             {
-                requestMessage.Content = new FormUrlEncodedContent(postData);
+                requestMessage.Content = new ByteArrayContent(HttpHelper.ProcessPostData(postData));
             }
 
             var request = new HttpRequestMessageWrapper(requestMessage, () =>

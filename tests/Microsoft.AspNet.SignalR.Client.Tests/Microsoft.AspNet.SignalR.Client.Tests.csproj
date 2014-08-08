@@ -43,6 +43,7 @@
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Net.Http" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -59,6 +60,7 @@
     <Compile Include="ChunkBufferFacts.cs" />
     <Compile Include="Client\ConnectionFacts.cs" />
     <Compile Include="Client\HeartbeatMonitorFacts.cs" />
+    <Compile Include="Client\Http\DefaultHttpClientFacts.cs" />
     <Compile Include="Client\HubProxyFacts.cs" />
     <Compile Include="Client\Infrastructure\UrlBuilderFacts.cs" />
     <Compile Include="Client\KeepAliveFacts.cs" />
@@ -85,6 +87,7 @@
   <ItemGroup>
     <Service Include="{82A7F48D-3B50-4B1E-B82E-3ADA8210C358}" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="..\..\src\Common\Microsoft.AspNet.SignalR.targets" />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="$(SolutionDir)\.nuget\nuget.targets" />
