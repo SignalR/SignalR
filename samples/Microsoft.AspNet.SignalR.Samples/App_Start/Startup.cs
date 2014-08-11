@@ -27,13 +27,6 @@ namespace Microsoft.AspNet.SignalR.Samples
 
             ConfigureSignalR(GlobalHost.DependencyResolver, GlobalHost.HubPipeline);
 
-            var config = new HubConfiguration()
-            {
-                EnableDetailedErrors = true
-            };
-
-            app.MapSignalR(config);
-
             app.Map("/cors", map =>
             {
                 map.UseCors(CorsOptions.AllowAll);
@@ -76,6 +69,13 @@ namespace Microsoft.AspNet.SignalR.Samples
                 map.MapSignalR<AuthenticatedEchoConnection>("/echo");
                 map.MapSignalR();
             });
+
+            var config = new HubConfiguration()
+            {
+                EnableDetailedErrors = true
+            };
+
+            app.MapSignalR(config);
 
             BackgroundThread.Start();
         }
