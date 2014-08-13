@@ -133,14 +133,6 @@ namespace Microsoft.AspNet.SignalR.Messaging
             Topics = new TopicLookup();
         }
 
-        protected virtual TraceSource Trace
-        {
-            get
-            {
-                return _trace;
-            }
-        }
-
         protected internal TopicLookup Topics { get; private set; }
         protected IPerformanceCounterManager Counters { get; private set; }
 
@@ -415,7 +407,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
 
             Counters.MessageBusTopicsCurrent.Decrement();
 
-            Trace.TraceInformation("RemoveTopic(" + key + ")");
+            _trace.TraceInformation("RemoveTopic(" + key + ")");
 
             if (AfterTopicGarbageCollected != null)
             {
