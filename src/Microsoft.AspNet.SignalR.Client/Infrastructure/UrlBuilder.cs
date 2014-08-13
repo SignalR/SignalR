@@ -187,33 +187,39 @@ namespace Microsoft.AspNet.SignalR.Client.Infrastructure
 
         private static void AppendConnectionToken(StringBuilder urlStringBuilder, IConnection connection)
         {
-            if (connection.ConnectionToken != null)
+            // connection.ConnectionToken can be set to null in a different thread
+            var connectionToken = connection.ConnectionToken;
+            if (connectionToken != null)
             {
                 urlStringBuilder
                     .Append("connectionToken=")
-                    .Append(Uri.EscapeDataString(connection.ConnectionToken))
+                    .Append(Uri.EscapeDataString(connectionToken))
                     .Append("&");
             }
         }
 
         private static void AppendMessageId(StringBuilder urlStringBuilder, IConnection connection)
         {
-            if (connection.MessageId != null)
+            // connection.MessageId can be set to null in a different thread
+            var messageId = connection.MessageId;
+            if (messageId != null)
             {
                 urlStringBuilder
                     .Append("messageId=")
-                    .Append(Uri.EscapeDataString(connection.MessageId))
+                    .Append(Uri.EscapeDataString(messageId))
                     .Append("&");                
             }
         }
 
         private static void AppendGroupsToken(StringBuilder urlStringBuilder, IConnection connection)
         {
-            if (connection.GroupsToken != null)
+            // connection.GroupsToken can be set to null in a different thread
+            var groupsToken = connection.GroupsToken;
+            if (groupsToken != null)
             {
                 urlStringBuilder
                     .Append("groupsToken=")
-                    .Append(Uri.EscapeDataString(connection.GroupsToken))
+                    .Append(Uri.EscapeDataString(groupsToken))
                     .Append("&");
             }
         }
