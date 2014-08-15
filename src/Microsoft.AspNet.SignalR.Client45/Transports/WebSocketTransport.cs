@@ -167,6 +167,11 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
                 return;
             }
 
+            if (_connection.State == ConnectionState.Connecting)
+            {
+                _initializeHandler.Fail();
+            }
+
             DoReconnect();
         }
 
