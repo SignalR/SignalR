@@ -95,8 +95,8 @@
             url = transportLogic.getUrl(connection, this.name);
             url += "&frameId=" + frameId;
 
-            // Set body prior to setting URL to avoid caching issues.
-            window.document.body.appendChild(frame);
+            // add frame to the document prior to setting URL to avoid caching issues.
+            window.document.documentElement.appendChild(frame);
 
             connection.log("Binding to iframe's load event.");
 
