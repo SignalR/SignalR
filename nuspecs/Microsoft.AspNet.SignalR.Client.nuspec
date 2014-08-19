@@ -30,7 +30,7 @@
         <dependency id="Microsoft.Net.Http" version="2.2.19" />
       </group>
       <group targetFramework="wpa81">
-        <dependency id="Newtonsoft.Json" version="6.0.2" />
+        <dependency id="Newtonsoft.Json" version="6.0.4" />
         <dependency id="Microsoft.Net.Http" version="2.2.19" />
       </group>
     </dependencies>
