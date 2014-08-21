@@ -139,7 +139,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
         {
             _connection.Trace(TraceLevels.Messages, "WS: OnMessage({0})", message);
 
-            TransportHelper.ProcessResponse(_connection, message, _initializeHandler.InitReceived);
+            ProcessResponse(_connection, message, _initializeHandler.InitReceived);
         }
 
         // virtual for testing

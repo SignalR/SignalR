@@ -20,36 +20,6 @@ namespace Microsoft.AspNet.SignalR.Client.Tests
     public class TransportFacts
     {
         [Fact]
-        public void OnInitializedFiresFromInitializeMessage()
-        {
-            var triggered = false;
-
-            new TransportHelper()
-                .ProcessResponse(new Connection("http://foo.com"), "{\"S\":1, \"M\":[]}", () => triggered = true);
-
-            Assert.True(triggered);
-        }
-
-        [Fact]
-        public void ProcessResponseCapturesOnReceivedExceptions()
-        {
-            var ex = new Exception();
-            var connection = new Mock<Client.IConnection>(MockBehavior.Strict);
-            connection.SetupGet(c => c.JsonSerializer).Returns(JsonSerializer.CreateDefault());
-            connection.Setup(c => c.OnReceived(It.IsAny<JToken>())).Throws(ex);
-            connection.Setup(c => c.OnError(ex));
-            connection.Setup(c => c.MarkLastMessage());
-
-            // PersistentResponse
-            new TransportHelper().ProcessResponse(connection.Object, "{\"M\":{}}", () => { });
-
-            // HubResponse (WebSockets)
-            new TransportHelper().ProcessResponse(connection.Object, "{\"I\":{}}", () => { });
-
-            connection.VerifyAll();
-        }
-
-        [Fact]
         public void CancelledTaskHandledinServerSentEvents()
         {
             var tcs = new TaskCompletionSource<IResponse>();

@@ -150,21 +150,19 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
             var fakeWebSocketResponse = new FakeWebSocketResponse();
             fakeWebSocketResponse.Setup("GetDataReader", () => fakeDataReader);
 
-            var fakeTransportHelper = new FakeTransportHelper();
             var transportInitialization = new TransportInitializationHandler(null, new FakeConnection(), 
-                null, null, CancellationToken.None, fakeTransportHelper);
+                null, null, CancellationToken.None, new FakeTransportHelper());
 
             var fakeConnection = new FakeConnection();
 
-            WebSocketTransport.MessageReceived(fakeWebSocketResponse, fakeConnection, 
-                fakeTransportHelper, transportInitialization);
+            new WebSocketTransport()
+                .MessageReceived(fakeWebSocketResponse, fakeConnection, transportInitialization);
 
             Assert.Equal(UnicodeEncoding.Utf8, fakeDataReader.UnicodeEncoding);
             fakeDataReader.Verify("ReadString", new List<object[]> {new object[] { 42u}});
 
-            var processResponseInvocations = fakeTransportHelper.GetInvocations("ProcessResponse").ToArray();
-            Assert.Equal(1, processResponseInvocations.Length);
-            Assert.Equal("MessageBody", /* response */processResponseInvocations[0][1]);
+            // invoked by ProcessResponse
+            Assert.Equal(1, fakeConnection.GetInvocations("MarkLastMessage").Count());
             Assert.Equal(1, fakeConnection.GetInvocations("Trace").Count());
         }
 
