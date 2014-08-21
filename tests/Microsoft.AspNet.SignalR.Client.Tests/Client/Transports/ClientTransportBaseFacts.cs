@@ -6,6 +6,8 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR.Client.Http;
 using Moq;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using Xunit;
 using Microsoft.AspNet.SignalR.Client.Infrastructure;
 
@@ -13,6 +15,40 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
 {
     public class ClientTransportBaseFacts
     {
+        [Fact]
+        public void OnInitializedFiresFromInitializeMessage()
+        {
+            var triggered = false;
+
+            new Mock<ClientTransportBase>(Mock.Of<IHttpClient>(), "fakeTransport") {CallBase = true}.Object
+                .ProcessResponse(new Connection("http://foo.com"), "{\"S\":1, \"M\":[]}", () => triggered = true);
+
+            Assert.True(triggered);
+        }
+
+        [Fact]
+        public void ProcessResponseCapturesOnReceivedExceptions()
+        {
+            var ex = new Exception();
+            var connection = new Mock<IConnection>(MockBehavior.Strict);
+            connection.SetupGet(c => c.JsonSerializer).Returns(JsonSerializer.CreateDefault());
+            connection.Setup(c => c.OnReceived(It.IsAny<JToken>())).Throws(ex);
+            connection.Setup(c => c.OnError(ex));
+            connection.Setup(c => c.MarkLastMessage());
+
+            
+
+            // PersistentResponse
+            new Mock<ClientTransportBase>(Mock.Of<IHttpClient>(), "fakeTransport") {CallBase = true}.Object
+                .ProcessResponse(connection.Object, "{\"M\":{}}", () => { });
+
+            // HubResponse (WebSockets)
+            new Mock<ClientTransportBase>(Mock.Of<IHttpClient>(), "fakeTransport") {CallBase = true}.Object
+                .ProcessResponse(connection.Object, "{\"I\":{}}", () => { });
+
+            connection.VerifyAll();
+        }
+
         [Fact]
         public async Task NegotiateInvokesGetNegotiationResponseOnTransportHelperAsync()
         {

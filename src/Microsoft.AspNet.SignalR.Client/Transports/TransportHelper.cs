@@ -1,13 +1,10 @@
 ﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.md in the project root for license information.
 
 using System;
-using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR.Client.Http;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using Microsoft.AspNet.SignalR.Client.Infrastructure;
 
 namespace Microsoft.AspNet.SignalR.Client.Transports
@@ -65,63 +62,6 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
                             .Then(response => response.ReadAsString());
         }
 
-        [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "The client receives the exception in the OnError callback.")]
-        // virtual to allow mocking
-        public virtual bool ProcessResponse(IConnection connection, string response, Action onInitialized)
-        {
-            if (connection == null)
-            {
-                throw new ArgumentNullException("connection");
-            }
-
-            connection.MarkLastMessage();
-
-            if (String.IsNullOrEmpty(response))
-            {
-                return false;
-            }
-
-            var shouldReconnect = false;
-
-            try
-            {
-                var result = connection.JsonDeserializeObject<JObject>(response);
-
-                if (!result.HasValues)
-                {
-                    return false;
-                }
-
-                if (result["I"] != null)
-                {
-                    connection.OnReceived(result);
-                    return false;
-                }
-
-                shouldReconnect = (int?)result["T"] == 1;
-
-                UpdateGroups(connection, groupsToken: result["G"]);
-
-                var messages = result["M"] as JArray;
-                if (messages != null)
-                {
-                    connection.MessageId = (string)result["C"];
-
-                    foreach (JToken message in (IEnumerable<JToken>)messages)
-                    {
-                        connection.OnReceived(message);
-                    }
-
-                    TryInitialize(result, onInitialized);
-                }
-            }
-            catch (Exception ex)
-            {
-                connection.OnError(ex);
-            }
-
-            return shouldReconnect;
-        }
 
         public static bool VerifyLastActive(IConnection connection)
         {
@@ -141,22 +81,6 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
             }
 
             return true;
-        }
-
-        private static void UpdateGroups(IConnection connection, JToken groupsToken)
-        {
-            if (groupsToken != null)
-            {
-                connection.GroupsToken = (string)groupsToken;
-            }
-        }
-
-        private static void TryInitialize(JToken response, Action onInitialized)
-        {
-            if ((int?)response["S"] == 1)
-            {
-                onInitialized();
-            }
         }
     }
 }

@@ -159,7 +159,7 @@ namespace Microsoft.AspNet.SignalR.Client.Store.Tests.Fakes
 
         public void MarkLastMessage()
         {
-            throw new NotImplementedException();
+            _invocationManager.AddInvocation("MarkLastMessage");
         }
 
         public void MarkActive()

@@ -188,7 +188,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
                                 return;
                             }
 
-                            TransportHelper.ProcessResponse(connection, sseEvent.Data, initializeInvoke);
+                            ProcessResponse(connection, sseEvent.Data, initializeInvoke);
                         }
                     };
 
