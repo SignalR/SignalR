@@ -7,6 +7,8 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR.Client.Http;
 using Microsoft.AspNet.SignalR.Client.Infrastructure;
+using Newtonsoft.Json.Linq;
+using System.Collections.Generic;
 
 namespace Microsoft.AspNet.SignalR.Client.Transports
 {
@@ -91,6 +93,76 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
         }
 
         public abstract void LostConnection(IConnection connection);
+
+        [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "The client receives the exception in the OnError callback.")]
+        // virtual to allow mocking
+        protected internal virtual bool ProcessResponse(IConnection connection, string response, Action onInitialized)
+        {
+            if (connection == null)
+            {
+                throw new ArgumentNullException("connection");
+            }
+
+            if(onInitialized == null)
+            {
+                throw new ArgumentNullException("onInitialized");
+            }
+
+            connection.MarkLastMessage();
+
+            if (String.IsNullOrEmpty(response))
+            {
+                return false;
+            }
+
+            var shouldReconnect = false;
+
+            try
+            {
+                var result = connection.JsonDeserializeObject<JObject>(response);
+
+                if (!result.HasValues)
+                {
+                    return false;
+                }
+
+                if (result["I"] != null)
+                {
+                    connection.OnReceived(result);
+                    return false;
+                }
+
+                shouldReconnect = (int?)result["T"] == 1;
+
+                var groupsToken = result["G"];
+                if (groupsToken != null)
+                {
+                    connection.GroupsToken = (string)groupsToken;
+                }
+
+                var messages = result["M"] as JArray;
+                if (messages != null)
+                {
+                    connection.MessageId = (string)result["C"];
+
+                    foreach (JToken message in (IEnumerable<JToken>)messages)
+                    {
+                        connection.OnReceived(message);
+                    }
+
+                    if ((int?)result["S"] == 1)
+                    {
+                        onInitialized();
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                connection.OnError(ex);
+            }
+
+            return shouldReconnect;
+        }
 
         public void Dispose()
         {

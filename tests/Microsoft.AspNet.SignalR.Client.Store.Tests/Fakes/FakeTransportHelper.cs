@@ -8,13 +8,6 @@ namespace Microsoft.AspNet.SignalR.Client.Store.Tests.Fakes
     {
         private readonly FakeInvocationManager _invocationManager = new FakeInvocationManager();
 
-        public override bool ProcessResponse(IConnection connection, string response, Action onInitialized)
-        {
-            _invocationManager.AddInvocation("ProcessResponse", connection, response, onInitialized);
-
-            return _invocationManager.GetReturnValue<bool>("ProcessResponse");
-        }
-
         void IFake.Setup<T>(string methodName, Func<T> behavior)
         {
             throw new NotImplementedException();

@@ -140,7 +140,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
             {
                 connection.Trace(TraceLevels.Messages, "LP: OnMessage({0})", message);
 
-                var shouldReconnect = TransportHelper.ProcessResponse(connection, message, onInitialized);
+                var shouldReconnect = ProcessResponse(connection, message, onInitialized);
 
                 if (IsReconnecting(connection))
                 {
