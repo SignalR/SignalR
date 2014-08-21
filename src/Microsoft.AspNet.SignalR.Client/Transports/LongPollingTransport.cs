@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.md in the project root for license information.
 
 using System;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Threading;
@@ -65,13 +66,12 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
                                         CancellationToken disconnectToken,
                                         TransportInitializationHandler initializeHandler)
         {
+            if (initializeHandler == null)
+            {
+                throw new ArgumentNullException("initializeHandler");
+            }
+
             _requestHandler = new PollingRequestHandler(HttpClient);
-            var negotiateInitializer = new NegotiateInitializer(initializeHandler);
-
-            Action<IRequest> initializeAbort = request => { negotiateInitializer.Abort(disconnectToken); };
-
-            _requestHandler.OnError += negotiateInitializer.Complete;
-            _requestHandler.OnAbort += initializeAbort;
             _requestHandler.OnKeepAlive += connection.MarkLastMessage;
 
             // If the transport fails to initialize we want to silently stop
@@ -80,24 +80,20 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
                 _requestHandler.Stop();
             };
 
-            // Once we've initialized the connection we need to tear down the initializer functions and assign the appropriate onMessage function
-            negotiateInitializer.Initialized += () =>
-            {
-                _requestHandler.OnError -= negotiateInitializer.Complete;
-                _requestHandler.OnAbort -= initializeAbort;
-            };
+            PerformConnect(connection, connectionData, initializeHandler)
+                .Then(() => 
+                {
+                    // Add additional actions to each of the PollingRequestHandler events
+                    PollingSetup(connection, connectionData, disconnectToken);
 
-            // Add additional actions to each of the PollingRequestHandler events
-            PollingSetup(connection, connectionData, disconnectToken, negotiateInitializer.Complete);
-
-            _requestHandler.Start();
+                    _requestHandler.Start();
+                });
         }
 
         [SuppressMessage("Microsoft.Maintainability", "CA1502:AvoidExcessiveComplexity", Justification = "We will refactor later.")]
         private void PollingSetup(IConnection connection,
                                   string data,
-                                  CancellationToken disconnectToken,
-                                  Action onInitialized)
+                                  CancellationToken disconnectToken)
         {
             // reconnectInvoker is created new on each poll
             var reconnectInvoker = new ThreadSafeInvoker();
@@ -112,12 +108,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
             {
                 string url;
 
-                if (connection.MessageId == null)
-                {
-                    url = UrlBuilder.BuildConnect(connection, Name, data);
-                    connection.Trace(TraceLevels.Events, "LP Connect: {0}", url);
-                }
-                else if (IsReconnecting(connection))
+                if (IsReconnecting(connection))
                 {
                     url = UrlBuilder.BuildReconnect(connection, Name, data);
                     connection.Trace(TraceLevels.Events, "LP Reconnect: {0}", url);
@@ -140,7 +131,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
             {
                 connection.Trace(TraceLevels.Messages, "LP: OnMessage({0})", message);
 
-                var shouldReconnect = ProcessResponse(connection, message, onInitialized);
+                var shouldReconnect = ProcessResponse(connection, message, () => { });
 
                 if (IsReconnecting(connection))
                 {
@@ -211,6 +202,30 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
                 // If someone calls Abort() later, have it no-op
                 AbortHandler.CompleteAbort();
             };
+        }
+
+        private Task PerformConnect(IConnection connection, string connectionData, TransportInitializationHandler initializationHandler)
+        {
+            var startUrl = UrlBuilder.BuildConnect(connection, Name, connectionData);
+
+            HttpClient.Initialize(connection);
+
+            return HttpClient
+                .Post(startUrl,
+                    request =>
+                    {
+                        connection.PrepareRequest(request);
+                        initializationHandler.OnFailure += request.Abort;
+                    }, isLongRunning: false)
+                .Then(response => response.ReadAsString())
+                .Then(responseMessage => ProcessResponse(connection, responseMessage, initializationHandler.InitReceived))
+                .ContinueWith(t =>
+                {
+                    if (t.IsFaulted || t.IsCanceled)
+                    {
+                        initializationHandler.Fail();
+                    }
+                }, TaskContinuationOptions.NotOnRanToCompletion);
         }
 
         private void TryDelayedReconnect(IConnection connection, ThreadSafeInvoker reconnectInvoker)

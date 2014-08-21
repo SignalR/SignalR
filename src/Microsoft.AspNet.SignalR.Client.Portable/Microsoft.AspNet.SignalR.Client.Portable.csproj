@@ -199,9 +199,6 @@
     <Compile Include="..\Microsoft.AspNet.SignalR.Client\Transports\LongPollingTransport.cs">
       <Link>Transports\LongPollingTransport.cs</Link>
     </Compile>
-    <Compile Include="..\Microsoft.AspNet.SignalR.Client\Transports\LongPolling\NegotiateInitializer.cs">
-      <Link>Transports\LongPolling\NegotiateInitializer.cs</Link>
-    </Compile>
     <Compile Include="..\Microsoft.AspNet.SignalR.Client\Transports\LongPolling\PollingRequestHandler.cs">
       <Link>Transports\LongPolling\PollingRequestHandler.cs</Link>
     </Compile>
