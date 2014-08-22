@@ -55,7 +55,7 @@ namespace Microsoft.AspNet.SignalR.Redis
 
             if (connectAutomatically)
             {
-                var ignore = ConnectWithRetry();
+                Task.Run(() => ConnectWithRetry()).ConfigureAwait(false);
             }
         }
 
