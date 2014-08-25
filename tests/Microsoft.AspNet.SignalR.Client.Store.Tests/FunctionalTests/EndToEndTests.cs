@@ -88,6 +88,10 @@ namespace Microsoft.AspNet.SignalR.Client.Store.Tests
                 Assert.True(reconnectingInvoked);
                 Assert.Equal(ConnectionState.Connected, hubConnection.State);
 
+                // TODO: this is a workaround to a race condition in WebSocket. 
+                // Should be removed once the race in WebSockets is fixed
+                await Task.Delay(200);
+
                 await proxy.Invoke("Echo", "MyMessage");
 
                 await Task.Run(() => messageReceivedWh.Wait(5000));
@@ -147,6 +151,10 @@ namespace Microsoft.AspNet.SignalR.Client.Store.Tests
                 );
 
                 Assert.True(await Task.Run(() => reconnectedWh.Wait(5000)));
+
+                // TODO: this is a workaround to a race condition in WebSocket. 
+                // Should be removed once the race in WebSockets is fixed
+                await Task.Delay(200);
 
                 await proxy.Invoke("Echo", "MyMessage");
 
