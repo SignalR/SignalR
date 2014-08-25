@@ -230,10 +230,12 @@ namespace Microsoft.AspNet.SignalR
             Transport.ConnectionId = connectionId;
 
             // Get the groups token from the request
-            return Transport.GetGroupsToken().Then(ProcessRequestPostGroupRead, context).FastUnwrap();
+            return Transport.GetGroupsToken()
+                            .Then((g, pc, c) => pc.ProcessRequestPostGroupRead(c, g), this, context)
+                            .FastUnwrap();
         }
 
-        private Task ProcessRequestPostGroupRead(string groupsToken, HostContext context)
+        private Task ProcessRequestPostGroupRead(HostContext context, string groupsToken)
         {
             string connectionId = Transport.ConnectionId;
 

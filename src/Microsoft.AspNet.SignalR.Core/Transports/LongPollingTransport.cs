@@ -101,10 +101,10 @@ namespace Microsoft.AspNet.SignalR.Transports
 
             if (_lastMessageId == null)
             {
-                return Context.Request.ReadForm().Then(form =>
+                return Context.Request.ReadForm().Then((form, t) =>
                 {
-                    _lastMessageId = form["messageId"];
-                });
+                    t._lastMessageId = form["messageId"];
+                }, this);
             }
 
             return TaskAsyncHelper.Empty;

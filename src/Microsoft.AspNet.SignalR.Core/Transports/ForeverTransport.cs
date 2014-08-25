@@ -80,12 +80,12 @@ namespace Microsoft.AspNet.SignalR.Transports
 
         protected override Task InitializePersistentState()
         {
-            return base.InitializePersistentState().Then(() =>
+            return base.InitializePersistentState().Then(t =>
             {
                 // The _transportLifetime must be initialized after calling base.InitializePersistentState since
                 // _transportLifetime depends on _requestLifetime.
-                _transportLifetime = new RequestLifetime(this, _requestLifeTime);
-            });
+                t._transportLifetime = new RequestLifetime(t, t._requestLifeTime);
+            }, this);
         }
 
         protected Task ProcessRequestCore(ITransportConnection connection)
@@ -102,10 +102,8 @@ namespace Microsoft.AspNet.SignalR.Transports
             }
             else
             {
-                return InitializePersistentState().Then(c =>
-                {
-                    return ProcessReceiveRequest(c);
-                }, connection);
+                return InitializePersistentState()
+                    .Then((t, c) => t.ProcessReceiveRequest(c), this, connection);
             }
         }
 
