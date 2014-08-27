@@ -88,6 +88,16 @@ namespace Microsoft.AspNet.SignalR.Client
             return connection.State == ConnectionState.Reconnecting;
         }
 
+        public static bool IsReconnecting(this IConnection connection)
+        {
+            if (connection == null)
+            {
+                throw new ArgumentNullException("connection");
+            }
+
+            return connection.State == ConnectionState.Reconnecting;
+        }
+
 #if !PORTABLE && !__ANDROID__ && !IOS
         public static IObservable<string> AsObservable(this Connection connection)
         {

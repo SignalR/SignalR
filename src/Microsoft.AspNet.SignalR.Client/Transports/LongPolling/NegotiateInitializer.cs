@@ -9,12 +9,10 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
     internal class NegotiateInitializer
     {
         private readonly ThreadSafeInvoker _callbackInvoker;
-        private readonly Action _initializeCallback;
         private readonly Action<Exception> _errorCallback;
 
         public NegotiateInitializer(TransportInitializationHandler initializeHandler)
         {
-            _initializeCallback = initializeHandler.InitReceived;
             _errorCallback = initializeHandler.Fail;
             _callbackInvoker = new ThreadSafeInvoker();
 
@@ -23,15 +21,6 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
         }
 
         public event Action Initialized;
-
-        public void Complete()
-        {
-            _callbackInvoker.Invoke(() =>
-            {
-                Initialized();
-                _initializeCallback();
-            });
-        }
 
         public void Complete(Exception exception)
         {

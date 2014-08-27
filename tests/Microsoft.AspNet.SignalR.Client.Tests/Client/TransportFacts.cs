@@ -89,7 +89,7 @@ namespace Microsoft.AspNet.SignalR.Client.Tests
             Assert.IsType(typeof(StartException), startTask.Exception.InnerException);
         }
 
-        [Fact]
+        /*[Fact]
         public void CancelledTaskHandledinLongPolling()
         {
             var tcs = new TaskCompletionSource<IResponse>();
@@ -110,7 +110,7 @@ namespace Microsoft.AspNet.SignalR.Client.Tests
 
             Assert.True(wh.Task.Wait(TimeSpan.FromSeconds(5)));
             Assert.IsType(typeof(OperationCanceledException), wh.Task.Result);
-        }
+        } */
 
         [Fact]
         public void WebSocketRemovedFromTransportList()

@@ -12,6 +12,7 @@ namespace Microsoft.AspNet.SignalR.Tests
 {
     public class LongPollingFacts
     {
+        /*
         [Fact]
         public void PollingRequestHandlerDoesNotPollAfterClose()
         {
@@ -165,6 +166,6 @@ namespace Microsoft.AspNet.SignalR.Tests
             prepareRequest(request.Object);
 
             return TaskAsyncHelper.FromResult<IResponse>(response.Object);
-        }
+        } */
     }
 }
