@@ -15,6 +15,7 @@ using Newtonsoft.Json.Linq;
 using Owin;
 using Xunit;
 using Xunit.Extensions;
+using Microsoft.AspNet.SignalR.Client;
 
 namespace Microsoft.AspNet.SignalR.Tests
 {
@@ -457,17 +458,17 @@ namespace Microsoft.AspNet.SignalR.Tests
                 {
                     host.Initialize(messageBusType: messageBusType);
 
-                    var connection = CreateConnection(host, "/my-reconnect");
-
-                    using (connection)
+                    using (var connection = CreateConnection(host, "/my-reconnect"))
                     {
+                        var reconnectingWh = new ManualResetEvent(false);
+
+                        connection.Reconnecting += () => reconnectingWh.Set();
+
                         await connection.Start(host.Transport);
 
                         host.Shutdown();
 
-                        await Task.Delay(TimeSpan.FromSeconds(5));
-
-                        Assert.Equal(Client.ConnectionState.Reconnecting, connection.State);
+                        Assert.True(await Task.Run(() => reconnectingWh.WaitOne(TimeSpan.FromSeconds(5))));
                     }
                 }
             }

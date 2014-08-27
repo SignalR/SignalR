@@ -179,7 +179,9 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
                             !sseEvent.Data.Equals("initialized", StringComparison.OrdinalIgnoreCase))
                         {
                             ProcessResponse(connection, sseEvent.Data,
-                                reconnecting ? (Action) null : initializationHandler.InitReceived);
+                                reconnecting
+                                    ? (Action) (() => { })
+                                    : () => initializationHandler.InitReceived());
                         }
                     };
 

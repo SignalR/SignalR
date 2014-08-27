@@ -34,17 +34,6 @@ namespace Microsoft.AspNet.SignalR.Client.Infrastructure
             return false;
         }
 
-        public bool Invoke<T1, T2>(Action<T1, T2> action, T1 arg1, T2 arg2)
-        {
-            if (Interlocked.Exchange(ref _invoked, 1) == 0)
-            {
-                action(arg1, arg2);
-                return true;
-            }
-
-            return false;
-        }
-
         public bool Invoke()
         {
             return Invoke(() => { });

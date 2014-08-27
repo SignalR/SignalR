@@ -443,7 +443,7 @@ namespace Microsoft.AspNet.SignalR.Tests
 
                 using (connection)
                 {
-                    connection.Received += (reconnectEndsPath) =>
+                    connection.Received += reconnectEndsPath =>
                     {
                         if (!receivedMessage)
                         {

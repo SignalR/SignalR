@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Net.WebSockets;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR.Client.Http;
@@ -95,26 +96,65 @@ namespace Microsoft.AspNet.SignalR.Client.Tests
         }
 
         [Fact]
-        public void CancelledTaskHandledinLongPolling()
+        public void CancelledTaskHandledWhenStartingLongPolling()
         {
             var tcs = new TaskCompletionSource<IResponse>();
-            var wh = new TaskCompletionSource<Exception>();
+            tcs.SetCanceled();
 
-            tcs.TrySetCanceled();
-
-            var httpClient = new Mock<Microsoft.AspNet.SignalR.Client.Http.IHttpClient>();
+            var httpClient = new Mock<IHttpClient>();
 
             httpClient.Setup(c => c.Post(It.IsAny<string>(),
-                It.IsAny<Action<Client.Http.IRequest>>(), It.IsAny<IDictionary<string, string>>(), It.IsAny<bool>()))
+                It.IsAny<Action<IRequest>>(), It.IsAny<IDictionary<string, string>>(), It.IsAny<bool>()))
                 .Returns(tcs.Task);
 
-            var pollingHandler = new PollingRequestHandler(httpClient.Object);
-            pollingHandler.Start();
+            var mockConnection = new Mock<IConnection>();
+            mockConnection.Setup(c => c.TotalTransportConnectTimeout).Returns(TimeSpan.FromSeconds(15));
 
-            pollingHandler.OnError += (ex) => { wh.TrySetResult(ex); };
+            var longPollingTransport = new LongPollingTransport(httpClient.Object);
 
-            Assert.True(wh.Task.Wait(TimeSpan.FromSeconds(5)));
-            Assert.IsType(typeof(OperationCanceledException), wh.Task.Result);
+            var unwrappedException = Assert.Throws<AggregateException>(() =>
+                longPollingTransport.Start(mockConnection.Object, null, CancellationToken.None)
+                    .Wait(TimeSpan.FromSeconds(5))).InnerException;
+
+            Assert.IsType<OperationCanceledException>(unwrappedException);
+        }
+
+        [Fact]
+        public void CancelledTaskHandledinLongPollingLoop()
+        {
+            var mockConnection = new Mock<IConnection>();
+            mockConnection.Setup(c => c.TotalTransportConnectTimeout).Returns(TimeSpan.FromSeconds(1500));
+
+            var tcs = new TaskCompletionSource<IResponse>();
+            tcs.SetCanceled();
+
+            var pollingWh = new ManualResetEvent(false);
+
+            var mockHttpClient = new Mock<IHttpClient>();
+            mockHttpClient.Setup(c => c.Post(It.IsAny<string>(),
+                It.IsAny<Action<IRequest>>(), It.IsAny<IDictionary<string, string>>(), It.IsAny<bool>()))
+                .Returns(() =>
+                {
+                    pollingWh.Set();
+                    return tcs.Task;
+                });
+
+            var longPollingTransport = new Mock<LongPollingTransport>(mockHttpClient.Object) { CallBase = true }.Object;
+
+            var initializationHandler =
+               new TransportInitializationHandler(new DefaultHttpClient(), mockConnection.Object, null,
+                   "longPolling", CancellationToken.None, new TransportHelper());
+
+            longPollingTransport.StartPolling(mockConnection.Object, string.Empty, initializationHandler);
+
+            Assert.True(pollingWh.WaitOne(TimeSpan.FromSeconds(2)));
+
+            Mock.Get(longPollingTransport)
+                .Verify(
+                    t => t.OnError(It.IsAny<IConnection>(),
+                            It.Is<OperationCanceledException>(e => string.Equals(e.Message, Resources.Error_TaskCancelledException)),
+                            It.IsAny<TransportInitializationHandler>()),
+                    Times.Once());
         }
 
         [Fact]

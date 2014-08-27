@@ -103,7 +103,7 @@ namespace Microsoft.AspNet.SignalR.Client.Infrastructure
 
         private void CompleteStart()
         {
-            Dispatch(() => _initializationTask.SetResult(null));
+            Dispatch(() => _initializationTask.TrySetResult(null));
             _tokenCleanup.Dispose();
         }
 
