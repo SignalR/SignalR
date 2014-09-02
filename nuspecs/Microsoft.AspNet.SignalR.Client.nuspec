@@ -21,17 +21,13 @@
       <group targetFramework="net45">
         <dependency id="Newtonsoft.Json" version="6.0.4" />
       </group>
-      <group targetFramework="portable-net45+sl5+netcore45+wp8">
+      <group targetFramework="portable-net45+sl5+netcore45+wp8+wp81">
         <dependency id="Newtonsoft.Json" version="6.0.4" />
-        <dependency id="Microsoft.Net.Http" version="2.1.10" />
-      </group>
-      <group targetFramework="portable-wp81">
-        <dependency id="Newtonsoft.Json" version="6.0.4" />
-        <dependency id="Microsoft.Net.Http" version="2.2.19" />
+        <dependency id="Microsoft.Net.Http" version="2.2.28" />
       </group>
       <group targetFramework="wpa81">
         <dependency id="Newtonsoft.Json" version="6.0.4" />
-        <dependency id="Microsoft.Net.Http" version="2.2.19" />
+        <dependency id="Microsoft.Net.Http" version="2.2.28" />
       </group>
     </dependencies>
   </metadata>

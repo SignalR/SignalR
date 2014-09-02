@@ -72,14 +72,12 @@
   </ItemGroup>
   <ItemGroup>
     <Reference Include="System.Net.Http.Extensions">
-      <HintPath>..\..\packages\Microsoft.Net.Http.2.2.22\lib\portable-net45+win8+wpa81\System.Net.Http.Extensions.dll</HintPath>
-      <Private>True</Private>
+      <HintPath>..\..\packages\Microsoft.Net.Http.2.2.28\lib\portable-net45+win8+wpa81\System.Net.Http.Extensions.dll</HintPath>
     </Reference>
     <Reference Include="System.Net.Http.Primitives">
-      <HintPath>..\..\packages\Microsoft.Net.Http.2.2.22\lib\portable-net45+win8+wpa81\System.Net.Http.Primitives.dll</HintPath>
+      <HintPath>..\..\packages\Microsoft.Net.Http.2.2.28\lib\portable-net45+win8+wpa81\System.Net.Http.Primitives.dll</HintPath>
     </Reference>
   </ItemGroup>
-  <ItemGroup />
   <Import Project="..\..\src\Common\Microsoft.AspNet.SignalR.targets" />
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\Portable\$(TargetFrameworkVersion)\Microsoft.Portable.CSharp.targets" />
   <Import Project="$(SolutionDir)\.nuget\NuGet.targets" Condition="Exists('$(SolutionDir)\.nuget\NuGet.targets')" />

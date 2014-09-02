@@ -490,7 +490,7 @@
 
     <ItemGroup>
       <XamarinArtifacts Include ="$(ProjectRoot)\packages\Newtonsoft.Json.5.0.6\lib\portable-net40+sl4+wp7+win8\Newtonsoft.Json.dll;
-                                  $(ProjectRoot)\packages\Microsoft.Net.Http.2.1.10\lib\portable-net40+sl4+win8+wp71\System.Net.Http.Extensions.dll">
+                                  $(ProjectRoot)\packages\Microsoft.Net.Http.2.2.28\lib\portable-net40+sl4+win8+wp71+wpa81\System.Net.Http.Extensions.dll">
       </XamarinArtifacts>
     </ItemGroup>
 
