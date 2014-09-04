@@ -53,8 +53,6 @@ namespace Microsoft.AspNet.SignalR.Client.Tests
         public void CancelledTaskHandledinServerSentEvents()
         {
             var tcs = new TaskCompletionSource<IResponse>();
-            var wh = new TaskCompletionSource<Exception>();
-
             tcs.TrySetCanceled();
 
             var httpClient = new Mock<Microsoft.AspNet.SignalR.Client.Http.IHttpClient>();
@@ -65,12 +63,19 @@ namespace Microsoft.AspNet.SignalR.Client.Tests
                 .Returns(tcs.Task);
 
             connection.SetupGet(c => c.ConnectionToken).Returns("foo");
+            connection.SetupGet(c => c.TotalTransportConnectTimeout).Returns(TimeSpan.FromSeconds(15));
 
             var sse = new ServerSentEventsTransport(httpClient.Object);
-            sse.OpenConnection(connection.Object, null, CancellationToken.None, () => { }, ex => wh.TrySetResult(ex));
 
-            Assert.True(wh.Task.Wait(TimeSpan.FromSeconds(5)));
-            Assert.IsType(typeof(OperationCanceledException), wh.Task.Result);
+            var initializationHandler = new TransportInitializationHandler(httpClient.Object, connection.Object, null,
+                "serverSentEvents", CancellationToken.None, new TransportHelper());
+
+            sse.OpenConnection(connection.Object, null, CancellationToken.None, initializationHandler);
+
+            var exception = Assert.Throws<AggregateException>(
+                () => initializationHandler.Task.Wait(TimeSpan.FromSeconds(5)));
+
+            Assert.IsType(typeof(OperationCanceledException), exception.InnerException);
         }
 
         [Fact]
