@@ -656,6 +656,9 @@ namespace Microsoft.AspNet.SignalR.Tests
         [InlineData(HostType.IISExpress, TransportType.LongPolling)]
         public async Task CallingStopAfterAwaitingInvocationReturnsFast(HostType hostType, TransportType transportType)
         {
+            try
+            {
+
             using (var host = CreateHost(hostType, transportType))
             {
                 host.Initialize();
@@ -669,6 +672,13 @@ namespace Microsoft.AspNet.SignalR.Tests
 
                     await proxy.Invoke("EchoCallback", "message");
                 }
+            }
+
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex);
+                throw new Exception("Tracing exception", ex);
             }
         }
 
