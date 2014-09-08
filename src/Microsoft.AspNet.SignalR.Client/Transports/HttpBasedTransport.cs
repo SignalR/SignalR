@@ -16,25 +16,6 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
             : base(httpClient, transportName)
         { }
 
-        public override Task Start(IConnection connection, string connectionData, CancellationToken disconnectToken)
-        {
-            if (connection == null)
-            {
-                throw new ArgumentNullException("connection");
-            }
-
-            var initializeHandler = new TransportInitializationHandler(HttpClient, connection, connectionData, Name, disconnectToken, TransportHelper);
-
-            OnStart(connection, connectionData, disconnectToken, initializeHandler);
-
-            return initializeHandler.Task;
-        }
-
-        protected abstract void OnStart(IConnection connection,
-                                        string connectionData,
-                                        CancellationToken disconnectToken,
-                                        TransportInitializationHandler initializeHandler);
-
         public override Task Send(IConnection connection, string data, string connectionData)
         {
             if (connection == null)
@@ -44,9 +25,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
 
             string url = UrlBuilder.BuildSend(connection, Name, connectionData);
 
-            var postData = new Dictionary<string, string> {
-                { "data", data }
-            };
+            var postData = new Dictionary<string, string> { { "data", data } };
 
             return HttpClient.Post(url, connection.PrepareRequest, postData, isLongRunning: false)
                 .Then(response => response.ReadAsString())

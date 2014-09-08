@@ -39,42 +39,38 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
             get { return true; }
         }
 
-        public override Task Start(IConnection connection, string connectionData, CancellationToken disconnectToken)
+        protected override void OnStart(IConnection connection, string connectionData, CancellationToken disconnectToken,
+            TransportInitializationHandler initializeHandler)
         {
-            if (connection == null)
+            if (initializeHandler == null)
             {
-                throw new ArgumentNullException("connection");    
+                throw new ArgumentNullException("initializeHandler");    
             }
 
             _connection = connection;
             _connectionData = connectionData;
 
-            _initializationHandler = new TransportInitializationHandler(HttpClient, connection, connectionData, Name, disconnectToken, TransportHelper);
+            _initializationHandler = initializeHandler;
             _initializationHandler.OnFailure += DisposeSocket;
 
-            return Start(connection, connectionData, _initializationHandler);
+            Task.Run(() => Start(connection, connectionData, _initializationHandler));
         }
 
         // testing - allows injecting custom initializationHandler
-        internal Task Start(IConnection connection, string connectionData, TransportInitializationHandler initializationHandler)
+        internal async Task Start(IConnection connection, string connectionData, TransportInitializationHandler initializationHandler)
         {
-            Task.Run(async () =>
+            try
             {
-                try
-                {
-                    await StartWebSocket(connection, UrlBuilder.BuildConnect(connection, Name, connectionData));
-                }
-                catch (TaskCanceledException)
-                {
-                    initializationHandler.Fail();
-                }
-                catch (Exception ex)
-                {
-                    initializationHandler.Fail(ex);
-                }
-            });
-
-            return initializationHandler.Task;
+                await StartWebSocket(connection, UrlBuilder.BuildConnect(connection, Name, connectionData));
+            }
+            catch (TaskCanceledException)
+            {
+                initializationHandler.Fail();
+            }
+            catch (Exception ex)
+            {
+                initializationHandler.Fail(ex);
+            };
         }
 
         private async Task StartWebSocket(IConnection connection, string url)

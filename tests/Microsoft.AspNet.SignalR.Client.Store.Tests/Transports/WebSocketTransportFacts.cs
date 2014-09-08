@@ -99,9 +99,10 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
                 throw expectedException;
             });
 
+            await fakeWebSocketTransport.Start(fakeConnection, null, initializationHandler);
+
             Assert.Same(expectedException,
-                await Assert.ThrowsAsync<Exception>(
-                    async () => await fakeWebSocketTransport.Start(fakeConnection, null, initializationHandler)));
+                await Assert.ThrowsAsync<Exception>(async () => await initializationHandler.Task));
 
             Assert.True(onFailureInvoked);
         }
@@ -129,10 +130,12 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
                 return tcs.Task;
             });
 
+            await fakeWebSocketTransport.Start(fakeConnection, null, initializationHandler);
+
             Assert.Equal(
                 ResourceUtil.GetResource("Error_TransportFailedToConnect"),
                 (await Assert.ThrowsAsync<InvalidOperationException>(
-                    async () => await fakeWebSocketTransport.Start(fakeConnection, null, initializationHandler))).Message);
+                    async () => await initializationHandler.Task)).Message);
 
             Assert.True(onFailureInvoked);
         }

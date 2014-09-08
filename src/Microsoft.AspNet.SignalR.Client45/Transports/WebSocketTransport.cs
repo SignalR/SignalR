@@ -54,20 +54,18 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
             get { return true; }
         }
 
-        public override Task Start(IConnection connection, string connectionData, CancellationToken disconnectToken)
+        protected override void OnStart(IConnection connection, string connectionData, CancellationToken disconnectToken,
+            TransportInitializationHandler initializeHandler)
         {
-            if (connection == null)
+            if (initializeHandler == null)
             {
-                throw new ArgumentNullException("connection");
+                throw new ArgumentNullException("initializeHandler");
             }
 
-            _initializeHandler = new TransportInitializationHandler(HttpClient, connection, connectionData, Name, disconnectToken, TransportHelper);
+            _initializeHandler = initializeHandler;
 
             // Tie into the OnFailure event so that we can stop the transport silently.
-            _initializeHandler.OnFailure += () =>
-            {
-                Dispose();
-            };
+            _initializeHandler.OnFailure += Dispose;
 
             _disconnectToken = disconnectToken;
             _connection = connection;
@@ -86,8 +84,6 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
                 }
             },
             TaskContinuationOptions.NotOnRanToCompletion);
-
-            return _initializeHandler.Task;
         }
 
         // For testing

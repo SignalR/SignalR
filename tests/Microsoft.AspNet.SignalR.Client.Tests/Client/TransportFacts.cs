@@ -11,6 +11,7 @@ using Microsoft.AspNet.SignalR.Client.Infrastructure;
 using Microsoft.AspNet.SignalR.Client.Transports;
 using Microsoft.AspNet.SignalR.Client.Transports.WebSockets;
 using Moq;
+using Moq.Protected;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Xunit;
@@ -166,7 +167,9 @@ namespace Microsoft.AspNet.SignalR.Client.Tests
             var transports = new List<IClientTransport>();
 
             var webSocketTransport = new Mock<WebSocketTransport>();
-            webSocketTransport.Setup(w => w.Start(It.IsAny<IConnection>(), It.IsAny<string>(), CancellationToken.None))
+            webSocketTransport.Protected()
+                .Setup("OnStart", ItExpr.IsAny<IConnection>(), ItExpr.IsAny<string>(), CancellationToken.None, 
+                    ItExpr.IsAny<TransportInitializationHandler>())
                 .Callback(mre.Set);
             
             transports.Add(webSocketTransport.Object);

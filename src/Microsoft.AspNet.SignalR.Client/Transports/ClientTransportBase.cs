@@ -82,7 +82,24 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
             return TransportHelper.GetNegotiationResponse(HttpClient, connection, connectionData);
         }
 
-        public abstract Task Start(IConnection connection, string connectionData, CancellationToken disconnectToken);
+        public Task Start(IConnection connection, string connectionData, CancellationToken disconnectToken)
+        {
+            if (connection == null)
+            {
+                throw new ArgumentNullException("connection");
+            }
+
+            var initializeHandler = new TransportInitializationHandler(HttpClient, connection, connectionData, Name, disconnectToken, TransportHelper);
+
+            OnStart(connection, connectionData, disconnectToken, initializeHandler);
+
+            return initializeHandler.Task;
+        }
+
+        protected abstract void OnStart(IConnection connection,
+                                        string connectionData,
+                                        CancellationToken disconnectToken,
+                                        TransportInitializationHandler initializeHandler);
 
         public abstract Task Send(IConnection connection, string data, string connectionData);
 
