@@ -439,9 +439,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                                 connectionTimeout: 2,
                                 disconnectTimeout: 6);
 
-                var connection = CreateConnection(host, "/force-lp-reconnect/examine-reconnect");
-
-                using (connection)
+                using (var connection = CreateConnection(host, "/force-lp-reconnect/examine-reconnect"))
                 {
                     connection.Received += reconnectEndsPath =>
                     {

@@ -21,6 +21,15 @@ namespace Microsoft.AspNet.SignalR.Client.Infrastructure
         private readonly IDisposable _tokenCleanup;
         private readonly TransportHelper _transportHelper;
 
+        private int _state = InitializationState.Initial;
+
+        private static class InitializationState
+        {
+            public const int Initial = 0;
+            public const int AfterConnect = 1;
+            public const int Failed = 2;
+        }
+
         public TransportInitializationHandler(IHttpClient httpClient,
                                               IConnection connection,
                                               string connectionData,
@@ -46,16 +55,18 @@ namespace Microsoft.AspNet.SignalR.Client.Infrastructure
             OnFailure = () => { };
 
             // We want to fail if the disconnect token is tripped while we're waiting on initialization
-            _tokenCleanup = disconnectToken.SafeRegister(_ =>
-            {
-                Fail();
-            },
-            state: null);
+            _tokenCleanup = disconnectToken.SafeRegister(_ => Fail(), state: null);
 
-            TaskAsyncHelper.Delay(connection.TotalTransportConnectTimeout).Then(() =>
-            {
-                Fail(new TimeoutException(Resources.Error_TransportTimedOutTryingToConnect));
-            });
+            TaskAsyncHelper.Delay(connection.TotalTransportConnectTimeout)
+                .Then(() =>
+                {
+                    // don't timeout once connect request has finished
+                    if (Interlocked.CompareExchange(ref _state, InitializationState.Failed, InitializationState.Initial) ==
+                        InitializationState.Initial)
+                    {
+                        Fail(new TimeoutException(Resources.Error_TransportTimedOutTryingToConnect));
+                    }
+                });
         }
 
         public event Action OnFailure;
@@ -68,11 +79,6 @@ namespace Microsoft.AspNet.SignalR.Client.Infrastructure
             }
         }
 
-        public void InitReceived()
-        {
-            _initializationInvoker.Invoke(Start);
-        }
-
         public void Fail()
         {
             Fail(new InvalidOperationException(Resources.Error_TransportFailedToConnect));
@@ -83,22 +89,26 @@ namespace Microsoft.AspNet.SignalR.Client.Infrastructure
             _initializationInvoker.Invoke(CompleteFail, ex);
         }
 
-        private void Start()
+        public void InitReceived()
         {
-            _transportHelper.GetStartResponse(_httpClient, _connection, _connectionData, _transport)
-                            .Then(response =>
-                            {
-                                var started = _connection.JsonDeserializeObject<JObject>(response)["Response"];
-                                if (started.ToString() == "started")
+            if (Interlocked.CompareExchange(ref _state, InitializationState.AfterConnect, InitializationState.Initial) ==
+                InitializationState.Initial)
+            {
+                _transportHelper.GetStartResponse(_httpClient, _connection, _connectionData, _transport)
+                                .Then(response =>
                                 {
-                                    CompleteStart();
-                                }
-                                else
-                                {
-                                    CompleteFail(new StartException(Resources.Error_StartFailed));
-                                }
-                            })
-                            .Catch(ex => CompleteFail(new StartException(Resources.Error_StartFailed, ex)), _connection);
+                                    var started = _connection.JsonDeserializeObject<JObject>(response)["Response"];
+                                    if (started.ToString() == "started")
+                                    {
+                                        _initializationInvoker.Invoke(CompleteStart);
+                                    }
+                                    else
+                                    {
+                                        Fail(new StartException(Resources.Error_StartFailed));
+                                    }
+                                })
+                                .Catch(ex => Fail(new StartException(Resources.Error_StartFailed, ex)), _connection);
+            }
         }
 
         private void CompleteStart()
@@ -109,10 +119,19 @@ namespace Microsoft.AspNet.SignalR.Client.Infrastructure
 
         private void CompleteFail(Exception ex)
         {
+            var previousState = Interlocked.Exchange(ref _state, InitializationState.Failed);
+
             Dispatch(() =>
             {
                 OnFailure();
 
+                // if the transport failed during start request we want to fail with StartException
+                // so that AutoTransport does not try other transports
+                if (previousState == InitializationState.AfterConnect && !(ex is StartException))
+                {
+                    ex = new StartException(Resources.Error_StartFailed, ex);
+                }
+ 
                 _initializationTask.TrySetUnwrappedException(ex);
             });
 

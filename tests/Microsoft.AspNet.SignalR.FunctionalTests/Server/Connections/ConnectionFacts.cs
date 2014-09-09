@@ -641,9 +641,7 @@ namespace Microsoft.AspNet.SignalR.Client.Tests
                                     disconnectTimeout: 8, // 8s because the default heartbeat time span is 5s
                                     messageBusType: messageBusType);
 
-                    var connection = CreateHubConnection(host, "/force-lp-reconnect");
-
-                    using (connection)
+                    using (var connection = CreateHubConnection(host, "/force-lp-reconnect"))
                     {
                         var reconnectingWh = new AsyncManualResetEvent();
                         var reconnectedWh = new AsyncManualResetEvent();
