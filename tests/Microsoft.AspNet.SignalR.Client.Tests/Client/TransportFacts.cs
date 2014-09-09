@@ -297,5 +297,13 @@ namespace Microsoft.AspNet.SignalR.Client.Tests
             mockConnection.VerifyAll();
             mockWebSocket.VerifyAll();
         }
+
+        [Fact]
+        public void AllTransportsButLongPollingSupportKeepAlives()
+        {
+            Assert.True(new WebSocketTransport().SupportsKeepAlive);
+            Assert.True(new ServerSentEventsTransport().SupportsKeepAlive);
+            Assert.False(new LongPollingTransport().SupportsKeepAlive);
+        }
     }
 }
