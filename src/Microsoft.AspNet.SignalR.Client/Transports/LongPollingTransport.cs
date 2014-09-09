@@ -53,25 +53,12 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
             }
         }
 
-        protected override void OnStart(IConnection connection,
-                                        string connectionData,
-                                        CancellationToken disconnectToken,
-                                        TransportInitializationHandler initializeHandler)
+        protected override void OnStart(IConnection connection, string connectionData, CancellationToken disconnectToken)
         {
-            if (initializeHandler == null)
-            {
-                throw new ArgumentNullException("initializeHandler");
-            }
-
             _disconnectToken = disconnectToken;
-
-            // If the transport fails to initialize we want to silently stop
-            initializeHandler.OnFailure += StopPolling;
-
             _disconnectRegistration = disconnectToken.SafeRegister(state =>
             {
-                // will be no-op if handler already finished (either succeeded or failed)
-                initializeHandler.Fail(new OperationCanceledException(Resources.Error_ConnectionCancelled, _disconnectToken));
+                TransportFailed(new OperationCanceledException(Resources.Error_ConnectionCancelled, _disconnectToken));
 
                 // _reconnectInvoker can be null if disconnectToken is tripped before the polling loop is started
                 if (_reconnectInvoker != null)
@@ -82,11 +69,17 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
                 StopPolling();
             }, null);
 
-            StartPolling(connection, connectionData, initializeHandler);
+            StartPolling(connection, connectionData);
+        }
+
+        protected override void OnStartFailed()
+        {
+            // If the transport fails to initialize we want to silently stop
+            StopPolling();
         }
 
         [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "Exceptions are flowed back to user.")]
-        private void Poll(IConnection connection, string connectionData, TransportInitializationHandler initializationHandler)
+        private void Poll(IConnection connection, string connectionData)
         {
             // This is to ensure that we do not accidently fire off another poll after being told to stop
             lock (_stopLock)
@@ -105,8 +98,6 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
                     connection.PrepareRequest(request);
                     _currentRequest = request;
 
-                    initializationHandler.OnFailure += request.Abort;
-
                     // This is called just prior to posting the request to ensure that any in-flight polling request
                     // is always executed before an OnAfterPoll
                     TryDelayedReconnect(connection, _reconnectInvoker);
@@ -122,25 +113,25 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
                             ? new OperationCanceledException(Resources.Error_TaskCancelledException)
                             : task.Exception.Unwrap();
 
-                        OnError(connection, exception, initializationHandler);
+                        OnError(connection, exception);
                     }
                     else
                     {
                         try
                         {
                             next = task.Result.ReadAsString(readBuffer => OnChunk(connection, readBuffer))
-                                .Then(raw => OnMessage(connection, raw, initializationHandler.InitReceived));
+                                .Then(raw => OnMessage(connection, raw));
                         }
                         catch (Exception ex)
                         {
                             exception = ex;
 
-                            OnError(connection, exception, initializationHandler);
+                            OnError(connection, exception);
                         }
                     }
 
                     next.Finally(
-                        state => OnAfterPoll((Exception) state).Then(() => Poll(connection, connectionData, initializationHandler)),
+                        state => OnAfterPoll((Exception) state).Then(() => Poll(connection, connectionData)),
                         exception);
                 });
             }
@@ -149,14 +140,14 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
         /// <summary>
         /// Starts the polling loop.
         /// </summary>
-        internal void StartPolling(IConnection connection, string connectionData, TransportInitializationHandler initializationHandler)
+        internal void StartPolling(IConnection connection, string connectionData)
         {
             if (Interlocked.Exchange(ref _running, 1) == 0)
             {
                 // reconnectInvoker is created new on each poll
                 _reconnectInvoker = new ThreadSafeInvoker();
 
-                Poll(connection, connectionData, initializationHandler);
+                Poll(connection, connectionData);
             }
         }
 
@@ -207,11 +198,11 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
             return url;
         }
 
-        private void OnMessage(IConnection connection, string message, Action onInitialized)
+        private void OnMessage(IConnection connection, string message)
         {
             connection.Trace(TraceLevels.Messages, "LP: OnMessage({0})", message);
 
-            var shouldReconnect = ProcessResponse(connection, message,  onInitialized);
+            var shouldReconnect = ProcessResponse(connection, message);
 
             if (IsReconnecting(connection))
             {
@@ -249,9 +240,9 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
         }
 
         // internal virtual for testing
-        internal virtual void OnError(IConnection connection, Exception exception, TransportInitializationHandler initializationHandler)
+        internal virtual void OnError(IConnection connection, Exception exception)
         {
-            initializationHandler.Fail(exception);
+            TransportFailed(exception);
             _reconnectInvoker.Invoke();
 
             if (!TransportHelper.VerifyLastActive(connection))

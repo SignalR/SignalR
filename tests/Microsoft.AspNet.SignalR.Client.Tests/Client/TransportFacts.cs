@@ -1,9 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Net.WebSockets;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR.Client.Http;
@@ -27,25 +25,23 @@ namespace Microsoft.AspNet.SignalR.Client.Tests
             var tcs = new TaskCompletionSource<IResponse>();
             tcs.TrySetCanceled();
 
-            var httpClient = new Mock<Microsoft.AspNet.SignalR.Client.Http.IHttpClient>();
-            var connection = new Mock<Microsoft.AspNet.SignalR.Client.IConnection>();
+            var httpClient = new Mock<IHttpClient>();
+            var connection = new Mock<IConnection>();
 
-            httpClient.Setup(c => c.Get(It.IsAny<string>(),
-                It.IsAny<Action<Client.Http.IRequest>>(), It.IsAny<bool>()))
-                .Returns(tcs.Task);
+            httpClient.Setup(c => c.Get(It.IsAny<string>(), It.IsAny<Action<IRequest>>(), It.IsAny<bool>()))
+                .Returns<string, Action<IRequest>, bool>((url, prepareRequest, isLongRunning) =>
+                {
+                    prepareRequest(Mock.Of<IRequest>());
+                    return tcs.Task;
+                });
 
             connection.SetupGet(c => c.ConnectionToken).Returns("foo");
             connection.SetupGet(c => c.TotalTransportConnectTimeout).Returns(TimeSpan.FromSeconds(15));
 
             var sse = new ServerSentEventsTransport(httpClient.Object);
 
-            var initializationHandler = new TransportInitializationHandler(httpClient.Object, connection.Object, null,
-                "serverSentEvents", CancellationToken.None, new TransportHelper());
-
-            sse.OpenConnection(connection.Object, null, CancellationToken.None, initializationHandler);
-
             var exception = Assert.Throws<AggregateException>(
-                () => initializationHandler.Task.Wait(TimeSpan.FromSeconds(5)));
+                () => sse.Start(connection.Object, string.Empty, CancellationToken.None).Wait(TimeSpan.FromSeconds(5)));
 
             Assert.IsType(typeof(OperationCanceledException), exception.InnerException);
         }
@@ -142,19 +138,14 @@ namespace Microsoft.AspNet.SignalR.Client.Tests
 
             var longPollingTransport = new Mock<LongPollingTransport>(mockHttpClient.Object) { CallBase = true }.Object;
 
-            var initializationHandler =
-               new TransportInitializationHandler(new DefaultHttpClient(), mockConnection.Object, null,
-                   "longPolling", CancellationToken.None, new TransportHelper());
-
-            longPollingTransport.StartPolling(mockConnection.Object, string.Empty, initializationHandler);
+            longPollingTransport.StartPolling(mockConnection.Object, string.Empty);
 
             Assert.True(pollingWh.WaitOne(TimeSpan.FromSeconds(2)));
 
             Mock.Get(longPollingTransport)
                 .Verify(
                     t => t.OnError(It.IsAny<IConnection>(),
-                            It.Is<OperationCanceledException>(e => string.Equals(e.Message, Resources.Error_TaskCancelledException)),
-                            It.IsAny<TransportInitializationHandler>()),
+                            It.Is<OperationCanceledException>(e => string.Equals(e.Message, Resources.Error_TaskCancelledException))),
                     Times.Once());
         }
 
@@ -168,8 +159,7 @@ namespace Microsoft.AspNet.SignalR.Client.Tests
 
             var webSocketTransport = new Mock<WebSocketTransport>();
             webSocketTransport.Protected()
-                .Setup("OnStart", ItExpr.IsAny<IConnection>(), ItExpr.IsAny<string>(), CancellationToken.None, 
-                    ItExpr.IsAny<TransportInitializationHandler>())
+                .Setup("OnStart", ItExpr.IsAny<IConnection>(), ItExpr.IsAny<string>(), CancellationToken.None)
                 .Callback(mre.Set);
             
             transports.Add(webSocketTransport.Object);

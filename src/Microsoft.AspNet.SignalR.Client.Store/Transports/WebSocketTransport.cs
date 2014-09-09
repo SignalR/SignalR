@@ -17,7 +17,6 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
         private IConnection _connection;
         private string _connectionData;
         private MessageWebSocket _webSocket;
-        private TransportInitializationHandler _initializationHandler;
 
         public WebSocketTransport()
             : this(new DefaultHttpClient())
@@ -39,25 +38,15 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
             get { return true; }
         }
 
-        protected override void OnStart(IConnection connection, string connectionData, CancellationToken disconnectToken,
-            TransportInitializationHandler initializeHandler)
+        protected override void OnStart(IConnection connection, string connectionData, CancellationToken disconnectToken)
         {
-            if (initializeHandler == null)
-            {
-                throw new ArgumentNullException("initializeHandler");    
-            }
-
             _connection = connection;
             _connectionData = connectionData;
 
-            _initializationHandler = initializeHandler;
-            _initializationHandler.OnFailure += DisposeSocket;
-
-            Task.Run(() => Start(connection, connectionData, _initializationHandler));
+            Task.Run(() => Start(connection, connectionData));
         }
 
-        // testing - allows injecting custom initializationHandler
-        internal async Task Start(IConnection connection, string connectionData, TransportInitializationHandler initializationHandler)
+        private async Task Start(IConnection connection, string connectionData)
         {
             try
             {
@@ -65,12 +54,18 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
             }
             catch (TaskCanceledException)
             {
-                initializationHandler.Fail();
+                TransportFailed(null);
             }
             catch (Exception ex)
             {
-                initializationHandler.Fail(ex);
-            };
+                TransportFailed(ex);
+            }
+        }
+
+        protected override void OnStartFailed()
+        {
+            // if the transport failed to start we want to stop it silently.
+            Dispose();
         }
 
         private async Task StartWebSocket(IConnection connection, string url)
@@ -98,18 +93,17 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
 
         private void MessageReceived(MessageWebSocket webSocket, MessageWebSocketMessageReceivedEventArgs eventArgs)
         {
-            MessageReceived(new MessageReceivedEventArgsWrapper(eventArgs), _connection, _initializationHandler);
+            MessageReceived(new MessageReceivedEventArgsWrapper(eventArgs), _connection);
         }
 
         // internal for testing, passing dependencies to allow mocking
-        internal void MessageReceived(IWebSocketResponse webSocketResponse, IConnection connection, 
-            TransportInitializationHandler initializationHandler)
+        internal void MessageReceived(IWebSocketResponse webSocketResponse, IConnection connection)
         {
             var response = ReadMessage(webSocketResponse);
 
             connection.Trace(TraceLevels.Messages, "WS: OnMessage({0})", response);
 
-            ProcessResponse(connection, response, initializationHandler.InitReceived);
+            ProcessResponse(connection, response);
         }
 
         private static string ReadMessage(IWebSocketResponse webSocketResponse)

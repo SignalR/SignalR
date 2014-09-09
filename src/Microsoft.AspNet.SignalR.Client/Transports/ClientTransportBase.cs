@@ -20,6 +20,8 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
         private readonly TransportAbortHandler _abortHandler;
         private bool _finished = false;
 
+        private TransportInitializationHandler _initializationHandler;
+
         [SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope", Justification = "Disposed in the Dispose method.")]
         protected ClientTransportBase(IHttpClient httpClient, string transportName)
             : this(httpClient, transportName, new TransportHelper(), new TransportAbortHandler(httpClient, transportName))
@@ -89,17 +91,30 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
                 throw new ArgumentNullException("connection");
             }
 
-            var initializeHandler = new TransportInitializationHandler(HttpClient, connection, connectionData, Name, disconnectToken, TransportHelper);
+            _initializationHandler = new TransportInitializationHandler(HttpClient, connection, connectionData, Name, disconnectToken, TransportHelper);
+            _initializationHandler.OnFailure += OnStartFailed;
 
-            OnStart(connection, connectionData, disconnectToken, initializeHandler);
+            OnStart(connection, connectionData, disconnectToken);
 
-            return initializeHandler.Task;
+            return _initializationHandler.Task;
         }
 
-        protected abstract void OnStart(IConnection connection,
-                                        string connectionData,
-                                        CancellationToken disconnectToken,
-                                        TransportInitializationHandler initializeHandler);
+        protected abstract void OnStart(IConnection connection, string connectionData, CancellationToken disconnectToken);
+        
+        protected abstract void OnStartFailed();
+
+        protected void TransportFailed(Exception ex)
+        {
+            // will be no-op if handler already finished (either succeeded or failed)
+            if (ex == null)
+            {
+                _initializationHandler.Fail();
+            }
+            else
+            {
+                _initializationHandler.Fail(ex);
+            }
+        }
 
         public abstract Task Send(IConnection connection, string data, string connectionData);
 
@@ -113,16 +128,16 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
 
         [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "The client receives the exception in the OnError callback.")]
         // virtual to allow mocking
-        protected internal virtual bool ProcessResponse(IConnection connection, string response, Action onInitialized)
+        protected internal virtual bool ProcessResponse(IConnection connection, string response)
         {
             if (connection == null)
             {
                 throw new ArgumentNullException("connection");
             }
 
-            if(onInitialized == null)
+            if (_initializationHandler == null)
             {
-                throw new ArgumentNullException("onInitialized");
+                throw new InvalidOperationException(Resources.Error_ProcessResponseBeforeStart);
             }
 
             connection.MarkLastMessage();
@@ -169,7 +184,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
 
                     if ((int?)result["S"] == 1)
                     {
-                        onInitialized();
+                        _initializationHandler.InitReceived();
                     }
                 }
             }

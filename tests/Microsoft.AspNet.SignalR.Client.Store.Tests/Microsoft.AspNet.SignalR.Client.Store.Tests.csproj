@@ -186,6 +186,7 @@
     <ProjectReference Include="..\..\src\Microsoft.AspNet.SignalR.Client.Store\Microsoft.AspNet.SignalR.Client.Store.csproj">
       <Project>{29e437b6-c451-4353-bb29-3b85ef16a3cf}</Project>
       <Name>Microsoft.AspNet.SignalR.Client.Store</Name>
+      <Aliases>global,StoreClient</Aliases>
     </ProjectReference>
   </ItemGroup>
   <PropertyGroup Condition=" '$(VisualStudioVersion)' == '' or '$(VisualStudioVersion)' &lt; '12.0' ">

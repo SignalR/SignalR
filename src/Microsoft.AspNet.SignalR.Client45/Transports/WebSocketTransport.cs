@@ -14,7 +14,6 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
     {
         private readonly ClientWebSocketHandler _webSocketHandler;
         private CancellationToken _disconnectToken;
-        private TransportInitializationHandler _initializeHandler;
         private IConnection _connection;
         private string _connectionData;
         private CancellationTokenSource _webSocketTokenSource;
@@ -54,19 +53,8 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
             get { return true; }
         }
 
-        protected override void OnStart(IConnection connection, string connectionData, CancellationToken disconnectToken,
-            TransportInitializationHandler initializeHandler)
+        protected override void OnStart(IConnection connection, string connectionData, CancellationToken disconnectToken)
         {
-            if (initializeHandler == null)
-            {
-                throw new ArgumentNullException("initializeHandler");
-            }
-
-            _initializeHandler = initializeHandler;
-
-            // Tie into the OnFailure event so that we can stop the transport silently.
-            _initializeHandler.OnFailure += Dispose;
-
             _disconnectToken = disconnectToken;
             _connection = connection;
             _connectionData = connectionData;
@@ -76,11 +64,11 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
             {
                 if (task.IsFaulted)
                 {
-                    _initializeHandler.Fail(task.Exception);
+                    TransportFailed(task.Exception);
                 }
                 else if (task.IsCanceled)
                 {
-                    _initializeHandler.Fail();
+                    TransportFailed(null);
                 }
             },
             TaskContinuationOptions.NotOnRanToCompletion);
@@ -111,6 +99,12 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
             await _webSocketHandler.ProcessWebSocketRequestAsync(_webSocket, token);
         }
 
+        protected override void OnStartFailed()
+        {
+            // if the transport failed to start we want to stop it silently.
+            Dispose();
+        }
+
         public override Task Send(IConnection connection, string data, string connectionData)
         {
             if (connection == null)
@@ -135,7 +129,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
         {
             _connection.Trace(TraceLevels.Messages, "WS: OnMessage({0})", message);
 
-            ProcessResponse(_connection, message, _initializeHandler.InitReceived);
+            ProcessResponse(_connection, message);
         }
 
         // virtual for testing

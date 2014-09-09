@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR.Client.Http;
 using Moq;
@@ -16,17 +17,6 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
     public class ClientTransportBaseFacts
     {
         [Fact]
-        public void OnInitializedFiresFromInitializeMessage()
-        {
-            var triggered = false;
-
-            new Mock<ClientTransportBase>(Mock.Of<IHttpClient>(), "fakeTransport") {CallBase = true}.Object
-                .ProcessResponse(new Connection("http://foo.com"), "{\"S\":1, \"M\":[]}", () => triggered = true);
-
-            Assert.True(triggered);
-        }
-
-        [Fact]
         public void ProcessResponseCapturesOnReceivedExceptions()
         {
             var ex = new Exception();
@@ -36,15 +26,16 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
             connection.Setup(c => c.OnError(ex));
             connection.Setup(c => c.MarkLastMessage());
 
-            
+            var transport =
+                new Mock<ClientTransportBase>(Mock.Of<IHttpClient>(), "fakeTransport") {CallBase = true}.Object;
+
+            transport.Start(Mock.Of<IConnection>(), string.Empty, CancellationToken.None);
 
             // PersistentResponse
-            new Mock<ClientTransportBase>(Mock.Of<IHttpClient>(), "fakeTransport") {CallBase = true}.Object
-                .ProcessResponse(connection.Object, "{\"M\":{}}", () => { });
+            transport.ProcessResponse(connection.Object, "{\"M\":{}}");
 
             // HubResponse (WebSockets)
-            new Mock<ClientTransportBase>(Mock.Of<IHttpClient>(), "fakeTransport") {CallBase = true}.Object
-                .ProcessResponse(connection.Object, "{\"I\":{}}", () => { });
+            transport.ProcessResponse(connection.Object, "{\"I\":{}}");
 
             connection.VerifyAll();
         }
@@ -223,6 +214,16 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
                 Resources.Error_TransportCannotBeReused,
                 Assert.Throws<InvalidOperationException>(
                     () => transport.Negotiate(Mock.Of<IConnection>(), "connectionData")).Message);
+        }
+
+        [Fact]
+        public void CannotInvokeProcessResponseBeforeStartingTransport()
+        {
+            Assert.Equal(
+                Resources.Error_ProcessResponseBeforeStart,
+                Assert.Throws<InvalidOperationException>(
+                    () => new Mock<ClientTransportBase>(Mock.Of<IHttpClient>(), "fakeTransport") {CallBase = true}.Object
+                            .ProcessResponse(Mock.Of<IConnection>(), "{}")).Message);
         }
     }
 }

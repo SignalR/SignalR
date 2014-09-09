@@ -180,4 +180,7 @@
   <data name="Error_TransportCannotBeReused">
     <value>The transport instance passed to the Negotiate method has already been used. Use a new transport instance each time you start a new connection.</value>
   </data>
+  <data name="Error_ProcessResponseBeforeStart">
+    <value>The ProcessResponse method cannot be called before the transport is started.</value>
+  </data>
 </root>

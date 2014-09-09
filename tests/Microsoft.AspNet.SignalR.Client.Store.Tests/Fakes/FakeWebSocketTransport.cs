@@ -17,6 +17,11 @@ namespace Microsoft.AspNet.SignalR.Client.Store.Tests.Fakes
             return _invocationManager.GetReturnValue<Task>("OpenWebSocket");
         }
 
+        protected override void OnStartFailed()
+        {
+            _invocationManager.AddInvocation("OnStartFailed");
+        }
+
         public void Setup<T>(string methodName, Func<T> behavior)
         {
             _invocationManager.AddSetup(methodName, behavior);

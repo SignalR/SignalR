@@ -10,7 +10,7 @@ using Newtonsoft.Json.Linq;
 
 namespace Microsoft.AspNet.SignalR.Client.Infrastructure
 {
-    public class TransportInitializationHandler
+    internal class TransportInitializationHandler
     {
         private readonly ThreadSafeInvoker _initializationInvoker;
         private readonly TaskCompletionSource<object> _initializationTask;

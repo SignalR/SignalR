@@ -43,25 +43,17 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
         /// </summary>
         public TimeSpan ReconnectDelay { get; set; }
 
-        protected override void OnStart(IConnection connection,
-                                        string connectionData,
-                                        CancellationToken disconnectToken,
-                                        TransportInitializationHandler initializeHandler)
+        protected override void OnStart(IConnection connection, string connectionData, CancellationToken disconnectToken)
         {
-            if (initializeHandler == null)
-            {
-                throw new ArgumentNullException("initializeHandler");
-            }
+            OpenConnection(connection, connectionData, disconnectToken, reconnecting: false);
+        }
 
-            // Tie into the OnFailure event so that we can stop the transport silently.
-            initializeHandler.OnFailure += () =>
-            {
-                _stop = true;
+        protected override void OnStartFailed()
+        {
+            // if the transport failed to start we want to stop it silently.
+            _stop = true;
 
-                _request.Abort();
-            };
-
-            OpenConnection(connection, connectionData, disconnectToken, initializeHandler);
+            _request.Abort();
         }
 
         private void Reconnect(IConnection connection, string data, CancellationToken disconnectToken)
@@ -85,21 +77,16 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
                 if (!disconnectToken.IsCancellationRequested && connection.EnsureReconnecting())
                 {
                     // Now attempt a reconnect
-                    OpenConnection(connection, data, disconnectToken, initializationHandler: null);
+                    OpenConnection(connection, data, disconnectToken, reconnecting: true);
                 }
             });
         }
 
         [SuppressMessage("Microsoft.Maintainability", "CA1502:AvoidExcessiveComplexity", Justification = "We will refactor later.")]
         [SuppressMessage("Microsoft.Maintainability", "CA1506:AvoidExcessiveClassCoupling", Justification = "We will refactor later.")]
-        internal void OpenConnection(IConnection connection,
-                                    string data,
-                                    CancellationToken disconnectToken,
-                                    TransportInitializationHandler initializationHandler)
+        internal void OpenConnection(IConnection connection, string data, CancellationToken disconnectToken, bool reconnecting)
         {
             // If we're reconnecting add /connect to the url
-            var reconnecting = initializationHandler == null;
-
             var url = reconnecting
                 ? UrlBuilder.BuildReconnect(connection, Name, data)
                 : UrlBuilder.BuildConnect(connection, Name, data);
@@ -124,7 +111,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
 
                 if (!reconnecting)
                 {
-                    initializationHandler.Fail(new OperationCanceledException(Resources.Error_ConnectionCancelled, disconnectToken));
+                    TransportFailed(new OperationCanceledException(Resources.Error_ConnectionCancelled, disconnectToken));
                 }
             }, _request);
             
@@ -138,7 +125,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
 
                     if (!reconnecting)
                     {
-                        initializationHandler.Fail(exception);
+                        TransportFailed(exception);
                     }
                     else if (!_stop)
                     {
@@ -178,10 +165,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
                         if (sseEvent.EventType == EventType.Data &&
                             !sseEvent.Data.Equals("initialized", StringComparison.OrdinalIgnoreCase))
                         {
-                            ProcessResponse(connection, sseEvent.Data,
-                                reconnecting
-                                    ? (Action) (() => { })
-                                    : () => initializationHandler.InitReceived());
+                            ProcessResponse(connection, sseEvent.Data);
                         }
                     };
 

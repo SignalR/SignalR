@@ -12,6 +12,7 @@ namespace Microsoft.AspNet.SignalR.Client.Store.Tests
     public class EndToEndTests
     {
         private const string HubUrl = "http://localhost:42424";
+
         [Fact]
         public async Task WebSocketSendReceiveTest()
         {

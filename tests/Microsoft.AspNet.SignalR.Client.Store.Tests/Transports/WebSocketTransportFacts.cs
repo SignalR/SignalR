@@ -1,16 +1,16 @@
 ﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.md in the project root for license information.
+extern alias StoreClient;
 
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Windows.Storage.Streams;
-using Microsoft.AspNet.SignalR.Client.Http;
-using Microsoft.AspNet.SignalR.Client.Infrastructure;
 using Microsoft.AspNet.SignalR.Client.Store.Tests;
 using Microsoft.AspNet.SignalR.Client.Store.Tests.Fakes;
 using System;
 using System.Threading;
 using Xunit;
+using UnicodeEncoding = Windows.Storage.Streams.UnicodeEncoding;
 
 namespace Microsoft.AspNet.SignalR.Client.Transports
 {
@@ -83,44 +83,29 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
         [Fact]
         public async Task InCaseOfExceptionStartInvokesOnFailureAndThrowsOriginalException()
         {
-            var fakeConnection = new FakeConnection { TotalTransportConnectTimeout = new TimeSpan(1, 0, 0)};
+            var fakeConnection = new FakeConnection { TotalTransportConnectTimeout = new TimeSpan(0, 0, 10)};
+            var fakeWebSocketTransport = new FakeWebSocketTransport();  
 
-            var initializationHandler = 
-                new TransportInitializationHandler(new DefaultHttpClient(), fakeConnection, null,
-                    "webSocks", CancellationToken.None, new TransportHelper());
-
-            var onFailureInvoked = false;
-            initializationHandler.OnFailure += () => onFailureInvoked = true;
-
-            var fakeWebSocketTransport = new FakeWebSocketTransport();
             var expectedException = new Exception("OpenWebSocket failed.");
             fakeWebSocketTransport.Setup<Task>("OpenWebSocket", () =>
             {
                 throw expectedException;
             });
 
-            await fakeWebSocketTransport.Start(fakeConnection, null, initializationHandler);
-
             Assert.Same(expectedException,
-                await Assert.ThrowsAsync<Exception>(async () => await initializationHandler.Task));
+                await Assert.ThrowsAsync<Exception>(
+                    async () => await fakeWebSocketTransport.Start(fakeConnection, null, CancellationToken.None)));
 
-            Assert.True(onFailureInvoked);
+            Assert.Equal(1, fakeWebSocketTransport.GetInvocations("OnStartFailed").Count());
         }
 
         [Fact]
         public async Task StartInvokesOnFailureAndThrowsIfTaskCancelled()
         {
-            var fakeConnection = new FakeConnection { TotalTransportConnectTimeout = new TimeSpan(1, 0, 0) };
-            var cancellationTokenSource = new CancellationTokenSource();
-
-            var initializationHandler =
-                new TransportInitializationHandler(new DefaultHttpClient(), fakeConnection, null,
-                    "webSocks", cancellationTokenSource.Token, new TransportHelper());
-
-            var onFailureInvoked = false;
-            initializationHandler.OnFailure += () => onFailureInvoked = true;
-
+            var fakeConnection = new FakeConnection { TotalTransportConnectTimeout = new TimeSpan(0, 0, 10) };
             var fakeWebSocketTransport = new FakeWebSocketTransport();
+            var cancellationTokenSource = new CancellationTokenSource();
+            
             fakeWebSocketTransport.Setup<Task>("OpenWebSocket", () =>
             {
                 cancellationTokenSource.Cancel();
@@ -130,14 +115,33 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
                 return tcs.Task;
             });
 
-            await fakeWebSocketTransport.Start(fakeConnection, null, initializationHandler);
+            Assert.Equal(
+                ResourceUtil.GetResource("Error_TransportFailedToConnect"),
+                (await Assert.ThrowsAsync<InvalidOperationException>(
+                    async () => await fakeWebSocketTransport.Start(fakeConnection, null, cancellationTokenSource.Token))).Message);
+
+            Assert.Equal(1, fakeWebSocketTransport.GetInvocations("OnStartFailed").Count());
+        }
+
+        [Fact]
+        public async Task StartInvokesOnFailureAndThrowsIfOpenWebSocketCancelled()
+        {
+            var fakeConnection = new FakeConnection { TotalTransportConnectTimeout = new TimeSpan(0, 0, 10) };
+            var fakeWebSocketTransport = new FakeWebSocketTransport();
+
+            fakeWebSocketTransport.Setup<Task>("OpenWebSocket", () =>
+            {
+                var tcs = new TaskCompletionSource<object>();
+                tcs.SetCanceled();
+                return tcs.Task;
+            });
 
             Assert.Equal(
                 ResourceUtil.GetResource("Error_TransportFailedToConnect"),
                 (await Assert.ThrowsAsync<InvalidOperationException>(
-                    async () => await initializationHandler.Task)).Message);
+                    async () => await fakeWebSocketTransport.Start(fakeConnection, null, CancellationToken.None))).Message);
 
-            Assert.True(onFailureInvoked);
+            Assert.Equal(1, fakeWebSocketTransport.GetInvocations("OnStartFailed").Count());
         }
 
         [Fact]
@@ -153,13 +157,11 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
             var fakeWebSocketResponse = new FakeWebSocketResponse();
             fakeWebSocketResponse.Setup("GetDataReader", () => fakeDataReader);
 
-            var transportInitialization = new TransportInitializationHandler(null, new FakeConnection(), 
-                null, null, CancellationToken.None, new FakeTransportHelper());
+            var transport = new WebSocketTransport();
+            transport.Start(new FakeConnection(), string.Empty, CancellationToken.None);
 
             var fakeConnection = new FakeConnection();
-
-            new WebSocketTransport()
-                .MessageReceived(fakeWebSocketResponse, fakeConnection, transportInitialization);
+            transport.MessageReceived(fakeWebSocketResponse, fakeConnection);
 
             Assert.Equal(UnicodeEncoding.Utf8, fakeDataReader.UnicodeEncoding);
             fakeDataReader.Verify("ReadString", new List<object[]> {new object[] { 42u}});
@@ -197,7 +199,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
         public async Task CannotInvokeSendIfWebSocketUnitialized()
         {
             Assert.Equal(
-                Resources.GetResourceString("Error_WebSocketUninitialized"),
+                StoreClient::Microsoft.AspNet.SignalR.Client.Resources.GetResourceString("Error_WebSocketUninitialized"),
                 (await Assert.ThrowsAsync<InvalidOperationException>(
                     async () => await new WebSocketTransport().Send(new FakeConnection(), null, null))).Message);
         }
