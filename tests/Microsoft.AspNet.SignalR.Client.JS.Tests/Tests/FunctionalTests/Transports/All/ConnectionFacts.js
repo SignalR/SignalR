@@ -535,7 +535,7 @@ testUtilities.runWithAllTransports(function (transport) {
     });
 
     QUnit.asyncTimeoutTest(transport + " transport auto JSON encodes messages correctly when sending.", testUtilities.defaultTestTimeout, function (end, assert, testName) {
-        var connection = testUtilities.createConnection("autoencodedjson", end, assert, testName),
+        var connection = testUtilities.createConnection("echo", end, assert, testName),
             values = [];
 
         connection.received(function (data) {

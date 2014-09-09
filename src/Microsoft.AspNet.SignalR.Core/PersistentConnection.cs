@@ -505,6 +505,7 @@ namespace Microsoft.AspNet.SignalR
                 ConnectionId = connectionId,
                 KeepAliveTimeout = keepAliveTimeout != null ? keepAliveTimeout.Value.TotalSeconds : (double?)null,
                 DisconnectTimeout = _configurationManager.DisconnectTimeout.TotalSeconds,
+                ConnectionTimeout = _configurationManager.ConnectionTimeout.TotalSeconds,
                 TryWebSockets = _transportManager.SupportsTransport(WebSocketsTransportName) && context.Environment.SupportsWebSockets(),
                 ProtocolVersion = _protocolResolver.Resolve(context.Request).ToString(),
                 TransportConnectTimeout = _configurationManager.TransportConnectTimeout.TotalSeconds,

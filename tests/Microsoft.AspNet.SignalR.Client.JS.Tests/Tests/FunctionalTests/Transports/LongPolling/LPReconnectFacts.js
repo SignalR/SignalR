@@ -337,3 +337,35 @@ QUnit.asyncTimeoutTest("Does not reconnect infinitely if network is down", testU
         $.network.connect();
     };
 });
+
+QUnit.asyncTimeoutTest("Polls exceeding the ConnectionTimeout will trigger a reconnect.", testUtilities.defaultTestTimeout * 2, function (end, assert, testName) {
+    var connection = testUtilities.createConnection("echo", end, assert, testName, undefined, false),
+        transport = { transport: "longPolling" };
+
+    connection.reconnecting(function () {
+        assert.comment("The connection successfully started reconnecting.");
+        connection._.pollTimeout = 120000;
+    });
+
+    connection.reconnected(function () {
+        assert.comment("The connection successfully reconnected.");
+        end();
+    });
+
+    connection.start(transport).done(function () {
+        assert.comment("Connected.");
+
+        // Verify the default pollTimeout is 120 seconds
+        // 110 second ConnectionTimeout + 10 second buffer
+        assert.equal(connection._.pollTimeout, 120000)
+
+        // Force a new poll that should timeout
+        connection._.pollTimeout = 1000;
+        connection.send("");
+    });
+
+    // Cleanup
+    return function () {
+        connection.stop();
+    };
+});

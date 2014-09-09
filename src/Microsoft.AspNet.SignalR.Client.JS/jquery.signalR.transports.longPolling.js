@@ -103,6 +103,7 @@
                         type: "POST",
                         contentType: signalR._.defaultContentType,
                         data: postData,
+                        timeout: connection._.pollTimeout,
                         success: function (result) {
                             var minData,
                                 delay = 0,

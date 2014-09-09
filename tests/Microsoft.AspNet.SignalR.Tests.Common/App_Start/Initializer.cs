@@ -129,7 +129,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Common
                 map.RunSignalR<MySendingConnection>(config);
             });
 
-            app.Map("/autoencodedjson", map =>
+            app.Map("/echo", map =>
             {
                 map.UseCors(CorsOptions.AllowAll);
                 map.RunSignalR<EchoConnection>(config);
