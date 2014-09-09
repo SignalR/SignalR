@@ -91,6 +91,7 @@
                             }
                         },
                         url: url,
+                        timeout: connection._.pollTimeout,
                         success: function (result) {
                             var minData,
                                 delay = 0,

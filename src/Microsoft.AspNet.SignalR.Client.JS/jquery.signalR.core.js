@@ -708,6 +708,9 @@
                     connection.token = res.ConnectionToken;
                     connection.webSocketServerUrl = res.WebSocketServerUrl;
 
+                    // The long poll timeout is the ConnectionTimeout plus 10 seconds
+                    connection._.pollTimeout = res.ConnectionTimeout * 1000 + 10000; // in ms
+
                     // Once the server has labeled the PersistentConnection as Disconnected, we should stop attempting to reconnect
                     // after res.DisconnectTimeout seconds.
                     connection.disconnectTimeout = res.DisconnectTimeout * 1000; // in ms
