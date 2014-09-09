@@ -72,7 +72,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
 
         public abstract bool SupportsKeepAlive { get; }
 
-        public virtual Task<NegotiationResponse> Negotiate(IConnection connection, string connectionData)
+        public Task<NegotiationResponse> Negotiate(IConnection connection, string connectionData)
         {
             if(_finished)
             {

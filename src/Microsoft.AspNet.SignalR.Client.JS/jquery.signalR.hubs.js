@@ -84,6 +84,8 @@
             };
         },
 
+        constructor: hubProxy,
+
         hasSubscriptions: function () {
             return hasMembers(this._.callbackMap);
         },

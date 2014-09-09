@@ -129,7 +129,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Common
                 map.RunSignalR<MySendingConnection>(config);
             });
 
-            app.Map("/autoencodedjson", map =>
+            app.Map("/echo", map =>
             {
                 map.UseCors(CorsOptions.AllowAll);
                 map.RunSignalR<EchoConnection>(config);
@@ -312,19 +312,6 @@ namespace Microsoft.AspNet.SignalR.Tests.Common
                 });
                 map.MapSignalR<ExamineReconnectPath>("/examine-reconnect", config);
                 map.MapSignalR(hubConfig);
-            });
-
-            var longPollDelayResolver = new DefaultDependencyResolver();
-            var configManager = longPollDelayResolver.Resolve<IConfigurationManager>();
-
-            configManager.LongPollDelay = TimeSpan.FromSeconds(60);
-            // Make the disconnect timeout and the keep alive interval short so we can
-            // complete our tests quicker.
-            configManager.DisconnectTimeout = TimeSpan.FromSeconds(6);
-
-            app.MapSignalR<EchoConnection>("/longPollDelay", new ConnectionConfiguration
-            {
-                Resolver = longPollDelayResolver
             });
 
             // Perf/stress test related
