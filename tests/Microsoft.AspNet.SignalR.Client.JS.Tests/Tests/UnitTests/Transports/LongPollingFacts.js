@@ -12,3 +12,8 @@ QUnit.test("Named Correctly", function () {
     var con = $.connection;
     QUnit.equal(con.transports.longPolling.name, "longPolling", "Verifies Long Polling is named correctly.");
 });
+
+QUnit.test("Does not support keep alives", function () {
+    var con = $.connection;
+    QUnit.isFalse(con.transports.longPolling.supportsKeepAlive(con));
+});

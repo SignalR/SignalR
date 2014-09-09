@@ -707,7 +707,6 @@
                     connection.id = res.ConnectionId;
                     connection.token = res.ConnectionToken;
                     connection.webSocketServerUrl = res.WebSocketServerUrl;
-                    connection._.longPollDelay = res.LongPollDelay * 1000; // in ms
 
                     // Once the server has labeled the PersistentConnection as Disconnected, we should stop attempting to reconnect
                     // after res.DisconnectTimeout seconds.
@@ -962,7 +961,6 @@
             delete connection._.pingIntervalId;
             delete connection._.lastMessageAt;
             delete connection._.lastActiveAt;
-            delete connection._.longPollDelay;
 
             // Clear out our message buffer
             connection._.connectingMessageBuffer.clear();
