@@ -13,8 +13,6 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
 {
     public class LongPollingTransport : HttpBasedTransport
     {
-        private NegotiationResponse _negotiationResponse;
-
         private IRequest _currentRequest;
         private int _running;
         private readonly object _stopLock = new object();
@@ -51,19 +49,8 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
         {
             get
             {
-                // Don't check for keep alives if the server didn't send back the "LongPollDelay" as
-                // part of the response to /negotiate. That indicates the server is running an older
-                // version of SignalR that doesn't send long polling keep alives.
-                return _negotiationResponse != null &&
-                       _negotiationResponse.LongPollDelay.HasValue;
+                return false;
             }
-        }
-
-        public override Task<NegotiationResponse> Negotiate(IConnection connection, string connectionData)
-        {
-            return
-                base.Negotiate(connection, connectionData)
-                    .Then(negotiationResponse => _negotiationResponse = negotiationResponse);
         }
 
         protected override void OnStart(IConnection connection,
