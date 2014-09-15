@@ -102,10 +102,10 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
         [Fact]
         public async Task StartInvokesOnFailureAndThrowsIfTaskCancelled()
         {
-            var fakeConnection = new FakeConnection { TotalTransportConnectTimeout = new TimeSpan(0, 0, 10) };
+            var fakeConnection = new FakeConnection {TotalTransportConnectTimeout = new TimeSpan(0, 0, 10)};
             var fakeWebSocketTransport = new FakeWebSocketTransport();
             var cancellationTokenSource = new CancellationTokenSource();
-            
+
             fakeWebSocketTransport.Setup<Task>("OpenWebSocket", () =>
             {
                 cancellationTokenSource.Cancel();
@@ -291,6 +291,28 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
         }
 
         [Fact]
+        public async Task ReconnectDoesNotStartNewWebSocketIfDisconnectTokenTripped()
+        {
+            var fakeConnection = new FakeConnection
+            {
+                LastActiveAt = DateTime.UtcNow,
+                ReconnectWindow = new TimeSpan(0, 0, 15),
+                Url = "http://fakeserver/",
+                State = ConnectionState.Reconnecting
+            };
+
+            var fakeWebSocketTransport = new FakeWebSocketTransport();
+
+            // this is called just to initialize the disconnect token
+            var _ = fakeWebSocketTransport.Start(new FakeConnection(), string.Empty, new CancellationToken(true));
+
+            await fakeWebSocketTransport.Reconnect(fakeConnection, null);
+
+            Assert.Equal(0, fakeWebSocketTransport.GetInvocations("OpenWebSocket").Count());
+            Assert.Equal(0, fakeConnection.GetInvocations("Stop").Count());
+        }
+
+        [Fact]
         public async Task ReconnectRetriesReconnectingIfStartingWebSocketThrows()
         {
             var fakeConnection = new FakeConnection
@@ -386,7 +408,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
             var fakeWebSocket = new FakeWebSocket();
             var fakeConnection = new FakeConnection();
 
-            FakeWebSocketTransport.LostConnection(fakeConnection, fakeWebSocket);
+            WebSocketTransport.LostConnection(fakeConnection, fakeWebSocket);
 
             var traceInvocations = fakeConnection.GetInvocations("Trace").ToArray();
             Assert.Equal(1, traceInvocations.Length);

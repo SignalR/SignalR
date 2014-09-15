@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Text;
@@ -10,6 +9,7 @@ using Microsoft.AspNet.SignalR.Client.Http;
 using Microsoft.AspNet.SignalR.Client.Transports;
 using Microsoft.AspNet.SignalR.Infrastructure;
 using Moq;
+using Moq.Protected;
 using Xunit;
 using Xunit.Extensions;
 
@@ -410,6 +410,30 @@ namespace Microsoft.AspNet.SignalR.Client.Tests
             ((IConnection)mockConnection.Object).OnReconnected();
 
             mockMonitor.Verify(m => m.Reconnected(), Times.Once());
+        }
+
+        [Fact]
+        public async Task DisconnectDisposesTransport()
+        {
+            var mockTransport = new Mock<IClientTransport>();
+            mockTransport.Setup(t => t.Negotiate(It.IsAny<IConnection>(), It.IsAny<string>()))
+                .Returns(Task.FromResult(new NegotiationResponse
+                {
+                    ProtocolVersion = "1.4",
+                    ConnectionId = "42",
+                    ConnectionToken = "42.42",
+                    DisconnectTimeout = 10,
+                    TransportConnectTimeout = 10
+                }));
+
+            mockTransport.Setup(t => t.Start(It.IsAny<IConnection>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
+                .Returns(Task.FromResult<object>(null));
+
+            var connection = new Mock<Connection>("http://fakeurl") { CallBase = true }.Object;
+            await connection.Start(mockTransport.Object);
+            ((IConnection) connection).Disconnect();
+
+            mockTransport.Verify(t => t.Dispose(), Times.Once());
         }
     }
 }

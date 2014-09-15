@@ -1,4 +1,6 @@
 ﻿
+using System.IO;
+using System.Text;
 using Microsoft.AspNet.SignalR.Client.Transports;
 using System;
 using System.Collections.Generic;
@@ -75,7 +77,7 @@ namespace Microsoft.AspNet.SignalR.Client.Store.Tests
                 var reconnectedWh = new ManualResetEventSlim();
                 hubConnection.Reconnected += reconnectedWh.Set;
 
-                await hubConnection.Start(new WebSocketTransport { ReconnectDelay = new TimeSpan(0, 0, 0, 500)});
+                await hubConnection.Start(new WebSocketTransport {ReconnectDelay = new TimeSpan(0, 0, 0, 500)});
 
                 try
                 {
@@ -114,7 +116,7 @@ namespace Microsoft.AspNet.SignalR.Client.Store.Tests
         [Fact]
         public async Task WebSocketReconnectsIfConnectionLost()
         {
-            var receivedMessage = (string)null;
+            string receivedMessage = null;
 
             using (var hubConnection = new HubConnection(HubUrl))
             {
@@ -142,14 +144,14 @@ namespace Microsoft.AspNet.SignalR.Client.Store.Tests
                     messageReceivedWh.Set();
                 });
 
-                await hubConnection.Start(new WebSocketTransport { ReconnectDelay = new TimeSpan(0, 0, 0, 500) });
+                await hubConnection.Start(new WebSocketTransport {ReconnectDelay = new TimeSpan(0, 0, 0, 500)});
 
                 // Setting the values such that a timeout happens almost instantly
-                ((IConnection)hubConnection).KeepAliveData = new KeepAliveData(
+                ((IConnection) hubConnection).KeepAliveData = new KeepAliveData(
                     timeoutWarning: TimeSpan.FromSeconds(10),
                     timeout: TimeSpan.FromSeconds(0.5),
                     checkInterval: TimeSpan.FromSeconds(1)
-                );
+                    );
 
                 Assert.True(await Task.Run(() => reconnectedWh.Wait(5000)));
 

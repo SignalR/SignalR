@@ -17,10 +17,11 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
         private IConnection _connection;
         private string _connectionData;
         private MessageWebSocket _webSocket;
+        private CancellationToken _disconnectToken;
 
         public WebSocketTransport()
             : this(new DefaultHttpClient())
-        {            
+        {
         }
 
         public WebSocketTransport(IHttpClient httpClient)
@@ -42,6 +43,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
         {
             _connection = connection;
             _connectionData = connectionData;
+            _disconnectToken = disconnectToken;
 
             Task.Run(() => Start(connection, connectionData));
         }
@@ -89,7 +91,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
         protected virtual async Task OpenWebSocket(IWebSocket webSocket, Uri uri)
         {
             await webSocket.ConnectAsync(uri);
-        }      
+        }
 
         private void MessageReceived(MessageWebSocket webSocket, MessageWebSocketMessageReceivedEventArgs eventArgs)
         {
@@ -150,7 +152,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
 
             DisposeSocket();
 
-            if (AbortHandler.TryCompleteAbort())
+            if (AbortHandler.TryCompleteAbort() || _disconnectToken.IsCancellationRequested)
             {
                 return;
             }
@@ -163,7 +165,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
         {
             var reconnectUrl = UrlBuilder.BuildReconnect(connection, Name, connectionData);
 
-            while (TransportHelper.VerifyLastActive(connection) && connection.EnsureReconnecting())
+            while (TransportHelper.VerifyLastActive(connection) && connection.EnsureReconnecting() && !_disconnectToken.IsCancellationRequested)
             {
                 try
                 {
@@ -197,7 +199,6 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
             }
 
             LostConnection(connection, _webSocket);
-
         }
 
         // internal for testing
@@ -205,7 +206,10 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
         {
             connection.Trace(TraceLevels.Events, "WS: LostConnection");
 
-            webSocket.Close(SuccessCloseStatus, string.Empty);            
+            if (webSocket != null)
+            {
+                webSocket.Close(SuccessCloseStatus, string.Empty);
+            }
         }
 
         private void DisposeSocket()
@@ -219,12 +223,14 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
 
         protected override void Dispose(bool disposing)
         {
+            // we call base.Dispose() first because it will dispose abort handler which will prevent from 
+            // reconnection attempts when the websoscket is close as a result of disposing of the websocket below
+            base.Dispose(disposing);
+
             if (disposing)
             {
-                DisposeSocket();                
+                DisposeSocket();
             }
-
-            base.Dispose(disposing);
         }
     }
 }
