@@ -478,7 +478,7 @@ namespace Microsoft.AspNet.SignalR.Tests
             {
                 host.Initialize(messageBusType: messageBusType);
 
-                using (var connection = CreateConnection(host, "/autoencodedjson"))
+                using (var connection = CreateConnection(host, "/echo"))
                 {
                     var tcs = new TaskCompletionSource<object>();
                     connection.Received += _ => tcs.TrySetResult(null);

@@ -130,6 +130,121 @@ namespace Microsoft.AspNet.SignalR.Tests.SqlServer
             Assert.True(onErrorCalled);
         }
 
+        [Fact]
+        public void ExecuteReaderSetsNotificationStateCorrectlyUpToAwaitingNotification()
+        {
+            // Arrange
+            var retryLoopDelays = new [] { Tuple.Create(0, 1) };
+            var dbProviderFactory = new MockDbProviderFactory();
+            var dbBehavior = new Mock<IDbBehavior>();
+            dbBehavior.Setup(db => db.UpdateLoopRetryDelays).Returns(retryLoopDelays);
+            dbBehavior.Setup(db => db.StartSqlDependencyListener()).Returns(true);
+            dbBehavior.Setup(db => db.AddSqlDependency(It.IsAny<IDbCommand>(), It.IsAny<Action<SqlNotificationEventArgs>>()));
+            var operation = new ObservableDbOperation("test", "test", new TraceSource("test"), dbProviderFactory, dbBehavior.Object);
+            operation.Queried += () =>
+            {
+                // Currently in the query loop
+                Assert.Equal(ObservableDbOperation.NotificationState.ProcessingUpdates, operation.CurrentNotificationState);
+            };
+
+            // Act
+            operation.ExecuteReaderWithUpdates((_, __) => { });
+
+            // Assert
+            Assert.Equal(ObservableDbOperation.NotificationState.AwaitingNotification, operation.CurrentNotificationState);
+
+            operation.Dispose();
+        }
+
+        [Fact(Timeout=5000)]
+        public void ExecuteReaderSetsNotificationStateCorrectlyWhenRecordsReceivedWhileSettingUpSqlDependency()
+        {
+            // Arrange
+            var mre = new ManualResetEventSlim(false);
+            var retryLoopDelays = new[] { Tuple.Create(0, 1) };
+            var dbProviderFactory = new MockDbProviderFactory();
+            var readCount = 0;
+            var sqlDependencyAddedCount = 0;
+            dbProviderFactory.MockDataReader.Setup(r => r.Read()).Returns(() => ++readCount == 2 && sqlDependencyAddedCount == 1);
+            var dbBehavior = new Mock<IDbBehavior>();
+            dbBehavior.Setup(db => db.UpdateLoopRetryDelays).Returns(retryLoopDelays);
+            dbBehavior.Setup(db => db.StartSqlDependencyListener()).Returns(true);
+            dbBehavior.Setup(db => db.AddSqlDependency(It.IsAny<IDbCommand>(), It.IsAny<Action<SqlNotificationEventArgs>>())).Callback(() => sqlDependencyAddedCount++);
+            var operation = new ObservableDbOperation("test", "test", new TraceSource("test"), dbProviderFactory, dbBehavior.Object);
+            long? stateOnLoopRestart = null;
+            var queriedCount = 0;
+            operation.Queried += () =>
+            {
+                queriedCount++;
+
+                if (queriedCount == 3)
+                {
+                    // First query after the loop starts again, check the state is reset
+                    stateOnLoopRestart = operation.CurrentNotificationState;
+                    mre.Set();
+                }
+            };
+
+            // Act
+            ThreadPool.QueueUserWorkItem(_ => operation.ExecuteReaderWithUpdates((__, ___) => { }));
+
+            mre.Wait();
+
+            Assert.True(stateOnLoopRestart.HasValue);
+            Assert.Equal(ObservableDbOperation.NotificationState.ProcessingUpdates, stateOnLoopRestart.Value);
+
+            operation.Dispose();
+        }
+
+        [Fact(Timeout = 5000)]
+        public void ExecuteReaderSetsNotificationStateCorrectlyWhenNotificationReceivedBeforeChangingStateToAwaitingNotification()
+        {
+            // Arrange
+            var mre = new ManualResetEventSlim(false);
+            var retryLoopDelays = new[] { Tuple.Create(0, 1) };
+            var dbProviderFactory = new MockDbProviderFactory();
+            var sqlDependencyAdded = false;
+            var dbBehavior = new Mock<IDbBehavior>();
+            dbBehavior.Setup(db => db.UpdateLoopRetryDelays).Returns(retryLoopDelays);
+            dbBehavior.Setup(db => db.StartSqlDependencyListener()).Returns(true);
+            dbBehavior.Setup(db => db.AddSqlDependency(It.IsAny<IDbCommand>(), It.IsAny<Action<SqlNotificationEventArgs>>()))
+                      .Callback(() => sqlDependencyAdded = true);
+            var operation = new ObservableDbOperation("test", "test", new TraceSource("test"), dbProviderFactory, dbBehavior.Object);
+            dbProviderFactory.MockDataReader.Setup(r => r.Read()).Returns(() =>
+            {
+                if (sqlDependencyAdded)
+                {
+                    // Fake the SQL dependency firing while we're setting it up
+                    operation.CurrentNotificationState = ObservableDbOperation.NotificationState.NotificationReceived;
+                    sqlDependencyAdded = false;
+                }
+                return false;
+            });
+            long? stateOnLoopRestart = null;
+            var queriedCount = 0;
+            operation.Queried += () =>
+            {
+                queriedCount++;
+
+                if (queriedCount == 3)
+                {
+                    // First query after the loop starts again, capture the state
+                    stateOnLoopRestart = operation.CurrentNotificationState;
+                    mre.Set();
+                }
+            };
+
+            // Act
+            ThreadPool.QueueUserWorkItem(_ => operation.ExecuteReaderWithUpdates((__, ___) => { }));
+
+            mre.Wait();
+
+            Assert.True(stateOnLoopRestart.HasValue);
+            Assert.Equal(ObservableDbOperation.NotificationState.ProcessingUpdates, stateOnLoopRestart.Value);
+
+            operation.Dispose();
+        }
+
         private class MockDbProviderFactory : IDbProviderFactory
         {
             public MockDbProviderFactory()

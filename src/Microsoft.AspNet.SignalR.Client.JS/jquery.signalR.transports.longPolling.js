@@ -10,27 +10,13 @@
         events = $.signalR.events,
         changeState = $.signalR.changeState,
         isDisconnecting = $.signalR.isDisconnecting,
-        transportLogic = signalR.transports._logic,
-        browserSupportsXHRProgress = (function () {
-                try {
-                    return "onprogress" in new window.XMLHttpRequest();
-                } catch (e) {
-                    // No XHR means no XHR progress event
-                    return false;
-                }
-            })();
+        transportLogic = signalR.transports._logic;
 
     signalR.transports.longPolling = {
         name: "longPolling",
 
-        supportsKeepAlive: function (connection) {
-            return browserSupportsXHRProgress &&
-                   connection.ajaxDataType !== "jsonp" &&
-                   // Don't check for keep alives if there is a delay configured between poll requests.
-                   // Don't check for keep alives if the server didn't send back the "LongPollDelay" as
-                   // part of the response to /negotiate. That indicates the server is running an older
-                   // version of SignalR that doesn't send long polling keep alives.
-                   connection._.longPollDelay === 0;
+        supportsKeepAlive: function () {
+            return false;
         },
 
         reconnectDelay: 3000,
@@ -105,6 +91,7 @@
                             }
                         },
                         url: url,
+                        timeout: connection._.pollTimeout,
                         success: function (result) {
                             var minData,
                                 delay = 0,
