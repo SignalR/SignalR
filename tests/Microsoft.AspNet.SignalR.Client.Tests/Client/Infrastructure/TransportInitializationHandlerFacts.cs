@@ -197,5 +197,33 @@ namespace Microsoft.AspNet.SignalR.Client.Infrastructure
             await initHandler.Task;
             Assert.False(onFailureInvoked);
         }
+
+        [Fact]
+        public void FailInvokedIfDisconnectTokenTripped()
+        {
+            var mockTransportHelper = new Mock<TransportHelper>();
+            var mockConnection = new Mock<IConnection>();
+            mockConnection.Setup(p => p.TotalTransportConnectTimeout).Returns(TimeSpan.FromMilliseconds(200));
+
+            var cancellationTokenSource = new CancellationTokenSource();
+
+            var initHandler = new TransportInitializationHandler(Mock.Of<IHttpClient>(), mockConnection.Object,
+                string.Empty, "fakeTransport", cancellationTokenSource.Token, mockTransportHelper.Object);
+
+            var onFailureInvoked = false;
+            initHandler.OnFailure += () => onFailureInvoked = true;
+
+            cancellationTokenSource.Cancel();
+
+            var exception =
+                Assert.Throws<AggregateException>(
+                    () => initHandler.Task.Wait(TimeSpan.FromSeconds(1))).InnerException;
+
+            Assert.IsType<OperationCanceledException>(exception);
+            Assert.Equal(Resources.Error_ConnectionCancelled, exception.Message);
+            Assert.Equal(cancellationTokenSource.Token, ((OperationCanceledException) exception).CancellationToken);
+
+            Assert.True(onFailureInvoked);
+        }
     }
 }

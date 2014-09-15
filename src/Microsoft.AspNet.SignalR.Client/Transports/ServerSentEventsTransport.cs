@@ -108,11 +108,6 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
 
                 // This will no-op if the request is already finished.
                 ((IRequest)state).Abort();
-
-                if (!reconnecting)
-                {
-                    TransportFailed(new OperationCanceledException(Resources.Error_ConnectionCancelled, disconnectToken));
-                }
             }, _request);
             
             getTask.ContinueWith(task =>

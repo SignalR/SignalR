@@ -55,7 +55,9 @@ namespace Microsoft.AspNet.SignalR.Client.Infrastructure
             OnFailure = () => { };
 
             // We want to fail if the disconnect token is tripped while we're waiting on initialization
-            _tokenCleanup = disconnectToken.SafeRegister(_ => Fail(), state: null);
+            _tokenCleanup = disconnectToken.SafeRegister(
+                _ => Fail(new OperationCanceledException(Resources.Error_ConnectionCancelled, disconnectToken)),
+                state: null);
 
             TaskAsyncHelper.Delay(connection.TotalTransportConnectTimeout)
                 .Then(() =>

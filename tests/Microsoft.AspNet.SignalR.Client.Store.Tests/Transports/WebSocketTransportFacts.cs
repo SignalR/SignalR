@@ -116,8 +116,8 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
             });
 
             Assert.Equal(
-                ResourceUtil.GetResource("Error_TransportFailedToConnect"),
-                (await Assert.ThrowsAsync<InvalidOperationException>(
+                ResourceUtil.GetResource("Error_ConnectionCancelled"),
+                (await Assert.ThrowsAsync<OperationCanceledException>(
                     async () => await fakeWebSocketTransport.Start(fakeConnection, null, cancellationTokenSource.Token))).Message);
 
             Assert.Equal(1, fakeWebSocketTransport.GetInvocations("OnStartFailed").Count());

@@ -17,7 +17,6 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
         private int _running;
         private readonly object _stopLock = new object();
         private ThreadSafeInvoker _reconnectInvoker;
-        private CancellationToken _disconnectToken;
         private IDisposable _disconnectRegistration;
 
         /// <summary>
@@ -55,11 +54,8 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
 
         protected override void OnStart(IConnection connection, string connectionData, CancellationToken disconnectToken)
         {
-            _disconnectToken = disconnectToken;
             _disconnectRegistration = disconnectToken.SafeRegister(state =>
             {
-                TransportFailed(new OperationCanceledException(Resources.Error_ConnectionCancelled, _disconnectToken));
-
                 // _reconnectInvoker can be null if disconnectToken is tripped before the polling loop is started
                 if (_reconnectInvoker != null)
                 {
