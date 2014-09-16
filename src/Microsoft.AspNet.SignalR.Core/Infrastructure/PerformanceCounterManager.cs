@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.md in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
@@ -259,7 +260,7 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
         [PerformanceCounter(Name = "Scaleout Send Queue Length", Description = "The current scaleout send queue length.", CounterType = PerformanceCounterType.NumberOfItems32)]
         public IPerformanceCounter ScaleoutSendQueueLength { get; private set; }
 
-        internal string InstanceName { get; set; }
+        internal string InstanceName { get; private set; }
 
         /// <summary>
         /// Initializes the performance counters.
@@ -384,14 +385,14 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
             }
             
             // Substitute invalid chars with valid replacements
-            var invalidChars = new[] { '(', ')', '#', '\\', '/' };
-            var substChars =   new[] { '[', ']', '-', '-', '-' };
-            var sanitizedName = String.Join(null, instanceName
-                .Select(c => {
-                    var i = Array.IndexOf(invalidChars, c);
-                    return i >= 0 ? substChars[i] : c;
-                })
-            );
+            var substMap = new Dictionary<char, char> {
+                { '(', '[' },
+                { ')', ']' },
+                { '#', '-' },
+                { '\\', '-' },
+                { '/', '-' }
+            };
+            var sanitizedName = String.Join(separator: null, values: instanceName.Select(c => substMap.ContainsKey(c) ? substMap[c] : c));
 
             // Names must be shorter than 128 chars, see doc link above
             var maxLength = 127;
