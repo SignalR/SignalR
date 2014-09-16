@@ -125,24 +125,22 @@ namespace Microsoft.AspNet.SignalR.Client.Tests
             var tcs = new TaskCompletionSource<IResponse>();
             tcs.SetCanceled();
 
-            var pollingWh = new ManualResetEvent(false);
+            var onErrorWh = new ManualResetEvent(false);
 
             var mockHttpClient = new Mock<IHttpClient>();
             mockHttpClient.Setup(c => c.Post(It.IsAny<string>(),
                 It.IsAny<Action<IRequest>>(), It.IsAny<IDictionary<string, string>>(), It.IsAny<bool>()))
-                .Returns(() =>
-                {
-                    pollingWh.Set();
-                    return tcs.Task;
-                });
+                .Returns(() => tcs.Task);
 
-            var longPollingTransport = new Mock<LongPollingTransport>(mockHttpClient.Object) { CallBase = true }.Object;
+            var mockLongPollingTransport = new Mock<LongPollingTransport>(mockHttpClient.Object) { CallBase = true };
+            mockLongPollingTransport.Setup(t => t.OnError(It.IsAny<IConnection>(), It.IsAny<Exception>()))
+                .Callback(() => onErrorWh.Set());
 
-            longPollingTransport.StartPolling(mockConnection.Object, string.Empty);
+            mockLongPollingTransport.Object.StartPolling(mockConnection.Object, string.Empty);
 
-            Assert.True(pollingWh.WaitOne(TimeSpan.FromSeconds(2)));
+            Assert.True(onErrorWh.WaitOne(TimeSpan.FromSeconds(2)));
 
-            Mock.Get(longPollingTransport)
+            mockLongPollingTransport
                 .Verify(
                     t => t.OnError(It.IsAny<IConnection>(),
                             It.Is<OperationCanceledException>(e => string.Equals(e.Message, Resources.Error_TaskCancelledException))),
