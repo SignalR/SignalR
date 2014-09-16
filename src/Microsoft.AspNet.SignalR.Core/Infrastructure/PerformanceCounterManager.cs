@@ -259,6 +259,8 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
         [PerformanceCounter(Name = "Scaleout Send Queue Length", Description = "The current scaleout send queue length.", CounterType = PerformanceCounterType.NumberOfItems32)]
         public IPerformanceCounter ScaleoutSendQueueLength { get; private set; }
 
+        internal string InstanceName { get; set; }
+
         /// <summary>
         /// Initializes the performance counters.
         /// </summary>
@@ -276,8 +278,8 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
             {
                 if (!_initialized)
                 {
-                    instanceName = instanceName ?? Guid.NewGuid().ToString();
-                    SetCounterProperties(instanceName);
+                    InstanceName = SanitizeInstanceName(instanceName);
+                    SetCounterProperties();
                     // The initializer ran, so let's register the shutdown cleanup
                     if (hostShutdownToken != CancellationToken.None)
                     {
@@ -326,7 +328,7 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
             }
         }
 
-        private void SetCounterProperties(string instanceName)
+        private void SetCounterProperties()
         {
             var loadCounters = true;
 
@@ -343,7 +345,7 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
 
                 if (loadCounters)
                 {
-                    counter = LoadCounter(CategoryName, attribute.Name, instanceName, isReadOnly:false);
+                    counter = LoadCounter(CategoryName, attribute.Name, isReadOnly:false);
 
                     if (counter == null)
                     {
@@ -371,6 +373,36 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
             return property.GetCustomAttributes(typeof(PerformanceCounterAttribute), false)
                     .Cast<PerformanceCounterAttribute>()
                     .SingleOrDefault();
+        }
+
+        private static string SanitizeInstanceName(string instanceName)
+        {
+            // Details on how to sanitize instance names are at http://msdn.microsoft.com/en-us/library/vstudio/system.diagnostics.performancecounter.instancename
+            if (string.IsNullOrWhiteSpace(instanceName))
+            {
+                instanceName = Guid.NewGuid().ToString();
+            }
+            
+            // Substitute invalid chars with valid replacements
+            var invalidChars = new[] { '(', ')', '#', '\\', '/' };
+            var substChars =   new[] { '[', ']', '-', '-', '-' };
+            var sanitizedName = String.Join(null, instanceName
+                .Select(c => {
+                    var i = Array.IndexOf(invalidChars, c);
+                    return i >= 0 ? substChars[i] : c;
+                })
+            );
+
+            // Names must be shorter than 128 chars, see doc link above
+            var maxLength = 127;
+            return sanitizedName.Length <= maxLength
+                ? sanitizedName
+                : sanitizedName.Substring(0, maxLength);
+        }
+
+        private IPerformanceCounter LoadCounter(string categoryName, string counterName, bool isReadOnly)
+        {
+            return LoadCounter(categoryName, counterName, InstanceName, isReadOnly);
         }
 
         [SuppressMessage("Microsoft.Performance", "CA1822:MarkMembersAsStatic", Justification = "This file is shared")]
