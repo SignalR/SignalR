@@ -83,6 +83,7 @@
     <Compile Include="Json\JsonFacts.cs" />
     <Compile Include="Json\JsonSerializerExtensionFacts.cs" />
     <Compile Include="Owin\ServerRequestFacts.cs" />
+    <Compile Include="PerformanceCounterManagerFacts.cs" />
     <Compile Include="PersistentConnectionFactoryFacts.cs" />
     <Compile Include="PersistentConnectionFacts.cs" />
     <Compile Include="PersistentResponseFacts.cs" />
