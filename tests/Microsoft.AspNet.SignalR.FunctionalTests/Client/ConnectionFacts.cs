@@ -4,6 +4,7 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR.Client;
+using Microsoft.AspNet.SignalR.Client.Infrastructure;
 using Microsoft.AspNet.SignalR.Client.Transports;
 using Microsoft.AspNet.SignalR.Hosting.Memory;
 using Microsoft.AspNet.SignalR.Tests.Common;
@@ -247,6 +248,37 @@ namespace Microsoft.AspNet.SignalR.Tests
                     connection.Stop();
                     await connection.Start();
                     Assert.Equal(((Client.IConnection)connection).TotalTransportConnectTimeout, totalTransportConnectTimeout);
+                }
+            }
+        }
+
+        [Fact]
+        public async Task ABlockedReceivedCallbackWillTriggerAnError()
+        {
+            using (ITestHost host = CreateHost(HostType.IISExpress))
+            {
+                host.Initialize();
+
+                using (var connection = CreateConnection(host, "/echo"))
+                {
+                    var wh = new ManualResetEventSlim();
+                    Exception ex = null;
+
+                    connection.DeadlockErrorTimeout = TimeSpan.FromSeconds(1);
+                    connection.Received += _ => wh.Wait(TimeSpan.FromSeconds(5));
+                    connection.Error += error =>
+                    {
+                        ex = error;
+                        wh.Set();
+                    };
+
+                    await connection.Start();
+
+                    // Ensure the received callback is actually called
+                    await connection.Send("");
+
+                    Assert.True(wh.Wait(TimeSpan.FromSeconds(10)));
+                    Assert.IsType<SlowCallbackException>(ex);
                 }
             }
         }

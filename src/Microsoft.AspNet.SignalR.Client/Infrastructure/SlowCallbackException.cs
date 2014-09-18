@@ -7,14 +7,14 @@ namespace Microsoft.AspNet.SignalR.Client.Infrastructure
 #if NET4 || NET45
     [Serializable]
 #endif
-    public class StartException : Exception
+    public class SlowCallbackException : Exception
     {
-        public StartException() { }
-        public StartException(string message) : base(message) { }
-        public StartException(string message, Exception inner) : base(message, inner) { }
+        public SlowCallbackException() { }
+        public SlowCallbackException(string message) : base(message) { }
+        public SlowCallbackException(string message, Exception inner) : base(message, inner) { }
 
 #if NET4 || NET45
-        protected StartException(
+        protected SlowCallbackException(
           System.Runtime.Serialization.SerializationInfo info,
           System.Runtime.Serialization.StreamingContext context)
             : base(info, context) { }

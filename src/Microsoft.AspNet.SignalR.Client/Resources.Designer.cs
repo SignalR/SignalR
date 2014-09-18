@@ -147,6 +147,15 @@ namespace Microsoft.AspNet.SignalR.Client {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Possible deadlock detected. A callback registered with &quot;HubProxy.On&quot; or &quot;Connection.Received&quot; has been executing for at least {0} seconds..
+        /// </summary>
+        internal static string Error_PossibleDeadlockDetected {
+            get {
+                return ResourceManager.GetString("Error_PossibleDeadlockDetected", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to The ProcessResponse method cannot be called before the transport is started..
         /// </summary>
         internal static string Error_ProcessResponseBeforeStart {

@@ -55,6 +55,12 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="..\Microsoft.AspNet.SignalR.Client.Tests\Client\Infrastructure\TaskQueueFacts.cs">
+      <Link>Client\Infrastructure\TaskQueueFacts.cs</Link>
+    </Compile>
+    <Compile Include="..\Microsoft.AspNet.SignalR.Client.Tests\Client\Infrastructure\TaskQueueMonitorFacts.cs">
+      <Link>Client\Infrastructure\TaskQueueMonitorFacts.cs</Link>
+    </Compile>
     <Compile Include="Client\Infrastructure\UrlBuilderFacts.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

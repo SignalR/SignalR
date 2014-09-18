@@ -126,11 +126,20 @@
     <Compile Include="..\Microsoft.AspNet.SignalR.Client\Infrastructure\ErrorExtensions.cs">
       <Link>Infrastructure\ErrorExtensions.cs</Link>
     </Compile>
+    <Compile Include="..\Microsoft.AspNet.SignalR.Client\Infrastructure\ITaskMonitor.cs">
+      <Link>Infrastructure\ITaskMonitor.cs</Link>
+    </Compile>
     <Compile Include="..\Microsoft.AspNet.SignalR.Client\Infrastructure\SignalRError.cs">
       <Link>Infrastructure\SignalRError.cs</Link>
     </Compile>
+    <Compile Include="..\Microsoft.AspNet.SignalR.Client\Infrastructure\SlowCallbackException.cs">
+      <Link>Infrastructure\SlowCallbackException.cs</Link>
+    </Compile>
     <Compile Include="..\Microsoft.AspNet.SignalR.Client\Infrastructure\StartException.cs">
       <Link>Infrastructure\StartException.cs</Link>
+    </Compile>
+    <Compile Include="..\Microsoft.AspNet.SignalR.Client\Infrastructure\TaskQueueMonitor.cs">
+      <Link>Infrastructure\TaskQueueMonitor.cs</Link>
     </Compile>
     <Compile Include="..\Microsoft.AspNet.SignalR.Client\Infrastructure\TransportAbortHandler.cs">
       <Link>Infrastructure\TransportAbortHandler.cs</Link>

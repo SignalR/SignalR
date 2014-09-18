@@ -64,6 +64,8 @@
     <Compile Include="Client\Http\DefaultHttpClientFacts.cs" />
     <Compile Include="Client\HubProxyFacts.cs" />
     <Compile Include="Client\Infrastructure\TransportInitializationHandlerFacts.cs" />
+    <Compile Include="Client\Infrastructure\TaskQueueFacts.cs" />
+    <Compile Include="Client\Infrastructure\TaskQueueMonitorFacts.cs" />
     <Compile Include="Client\Infrastructure\UrlBuilderFacts.cs" />
     <Compile Include="Client\KeepAliveFacts.cs" />
     <Compile Include="Client\Transports\AutoTransportFacts.cs" />

@@ -63,6 +63,10 @@ namespace Microsoft.AspNet.SignalR.Client
 
         private TaskQueue _receiveQueue;
 
+        // Used to monitor for possible deadlocks in the _receiveQueue
+        // and trigger OnError if any are detected.
+        private TaskQueueMonitor _receiveQueueMonitor;
+
         private Task _lastQueuedReceiveTask;
 
         private TaskCompletionSource<object> _startTcs;
@@ -181,6 +185,7 @@ namespace Microsoft.AspNet.SignalR.Client
             Headers = new HeaderDictionary(this);
             TransportConnectTimeout = TimeSpan.Zero;
             _totalTransportConnectTimeout = TimeSpan.Zero;
+            DeadlockErrorTimeout = TimeSpan.FromSeconds(10);
 
             // Current client protocol
             Protocol = new Version(1, 4);
@@ -191,6 +196,13 @@ namespace Microsoft.AspNet.SignalR.Client
         /// This value is modified by adding the server's TransportConnectTimeout configuration value.
         /// </summary>
         public TimeSpan TransportConnectTimeout { get; set; }
+
+        /// <summary>
+        /// Gets or sets the amount of time a callback registered with "HubProxy.On" or
+        /// "Connection.Received" may run before <see cref="Connection.Error"/> will be called
+        /// warning that a possible deadlock has been detected.
+        /// </summary>
+        public TimeSpan DeadlockErrorTimeout { get; set; }
 
         /// <summary>
         /// The amount of time a transport will wait (while connecting) before failing.
@@ -444,7 +456,8 @@ namespace Microsoft.AspNet.SignalR.Client
 
                 _disconnectCts = new CancellationTokenSource();
                 _startTcs = new TaskCompletionSource<object>();
-                _receiveQueue = new TaskQueue(_startTcs.Task);
+                _receiveQueueMonitor = new TaskQueueMonitor(this, DeadlockErrorTimeout);
+                _receiveQueue = new TaskQueue(_startTcs.Task, _receiveQueueMonitor);
                 _lastQueuedReceiveTask = TaskAsyncHelper.Empty;
 
                 _transport = transport;
@@ -657,6 +670,8 @@ namespace Microsoft.AspNet.SignalR.Client
                     _disconnectTimeoutOperation.Dispose();
                     _disconnectCts.Cancel();
                     _disconnectCts.Dispose();
+
+                    _receiveQueueMonitor.Dispose();
 
                     if (Monitor != null)
                     {

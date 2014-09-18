@@ -95,8 +95,11 @@
     <Compile Include="IConnection.cs" />
     <Compile Include="IHubProxy.cs" />
     <Compile Include="Infrastructure\ErrorExtensions.cs" />
+    <Compile Include="Infrastructure\ITaskMonitor.cs" />
     <Compile Include="Infrastructure\SignalRError.cs" />
+    <Compile Include="Infrastructure\SlowCallbackException.cs" />
     <Compile Include="Infrastructure\StartException.cs" />
+    <Compile Include="Infrastructure\TaskQueueMonitor.cs" />
     <Compile Include="Infrastructure\TransportAbortHandler.cs" />
     <Compile Include="Infrastructure\TransportInitializationHandler.cs" />
     <Compile Include="Infrastructure\UrlBuilder.cs" />
