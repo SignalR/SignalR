@@ -392,7 +392,7 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
                 { '\\', '-' },
                 { '/', '-' }
             };
-            var sanitizedName = String.Join(separator: null, values: instanceName.Select(c => substMap.ContainsKey(c) ? substMap[c] : c));
+            var sanitizedName = new String(instanceName.Select(c => substMap.ContainsKey(c) ? substMap[c] : c).ToArray());
 
             // Names must be shorter than 128 chars, see doc link above
             var maxLength = 127;
