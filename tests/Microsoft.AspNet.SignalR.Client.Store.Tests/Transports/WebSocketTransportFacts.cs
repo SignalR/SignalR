@@ -193,15 +193,16 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
             Assert.Equal(5u, ((IBuffer)writeAsyncInvocations[0][0]).Length);
         }
 
-        // [Fact] 
-        // TODO: This test causes AccessViolationException when accessing resources. 
-        // The resources can be accessed without a problem from a WPA81 app or an MSTest based Unit Test project for Store Apps.
+        [Fact(Skip = "xUnit AccessViolationException https://github.com/xunit/xunit/issues/190 when running with MsBuild. " +
+                     "Note: This test still can be run in VS.")]
         public async Task CannotInvokeSendIfWebSocketUnitialized()
         {
+            var fakeConnection = new FakeConnection {State = ConnectionState.Disconnected};
+
             Assert.Equal(
                 StoreClient::Microsoft.AspNet.SignalR.Client.Resources.GetResourceString("Error_WebSocketUninitialized"),
                 (await Assert.ThrowsAsync<InvalidOperationException>(
-                    async () => await new WebSocketTransport().Send(new FakeConnection(), null, null))).Message);
+                    async () => await new WebSocketTransport().Send(fakeConnection, null, null))).Message);
         }
 
         [Fact]
@@ -400,21 +401,6 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
             Assert.Equal("connection",
                 Assert.Throws<ArgumentNullException>(
                     () => new WebSocketTransport().LostConnection(null)).ParamName);
-        }
-
-        [Fact]
-        public void LostConnectionLogsTraceMessageClosesWebSocket()
-        {
-            var fakeWebSocket = new FakeWebSocket();
-            var fakeConnection = new FakeConnection();
-
-            WebSocketTransport.LostConnection(fakeConnection, fakeWebSocket);
-
-            var traceInvocations = fakeConnection.GetInvocations("Trace").ToArray();
-            Assert.Equal(1, traceInvocations.Length);
-            Assert.Equal(TraceLevels.Events, (TraceLevels)traceInvocations[0][0]);
-
-            fakeWebSocket.Verify("Close", new List<object[]> { new object[] { (ushort)1000, string.Empty } });
         }
     }
 }

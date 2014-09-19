@@ -120,4 +120,7 @@
   <data name="Error_WebSocketUninitialized" xml:space="preserve">
     <value>The underlying WebSocket is not initialized. Call the 'Start' method to initialize the WebSocket.</value>
   </data>
+  <data name="Error_DataCannotBeSentDuringWebSocketReconnect" xml:space="preserve">
+    <value>Data cannot be sent because the WebSocket connection is reconnecting.</value>
+  </data>
 </root>

@@ -129,7 +129,21 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
 
             if (webSocket == null)
             {
-                throw new InvalidOperationException(Resources.GetResourceString("Error_WebSocketUninitialized"));
+                Exception ex;
+                if (connection.State != ConnectionState.Disconnected)
+                {
+                    // Make this a faulted task and trigger the OnError even to maintain consistency with the HttpBasedTransports
+                    ex = new InvalidOperationException(Resources.GetResourceString("Error_DataCannotBeSentDuringWebSocketReconnect"));
+                    connection.OnError(ex);
+                }
+                else
+                {
+                    ex = new InvalidOperationException(Resources.GetResourceString("Error_WebSocketUninitialized"));
+                }
+
+                var tcs = new TaskCompletionSource<object>();
+                tcs.SetException(ex);
+                return tcs.Task;
             }
 
             return Send(webSocket, data);
@@ -198,18 +212,9 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
                 throw new ArgumentNullException("connection");
             }
 
-            LostConnection(connection, _webSocket);
-        }
-
-        // internal for testing
-        internal static void LostConnection(IConnection connection, IWebSocket webSocket)
-        {
             connection.Trace(TraceLevels.Events, "WS: LostConnection");
 
-            if (webSocket != null)
-            {
-                webSocket.Close(SuccessCloseStatus, string.Empty);
-            }
+            DisposeSocket();
         }
 
         private void DisposeSocket()
@@ -217,6 +222,8 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
             var webSocket = Interlocked.Exchange(ref _webSocket, null);
             if (webSocket != null)
             {
+                // this is a no-op if the socket is not open
+                webSocket.Close(SuccessCloseStatus, string.Empty);
                 webSocket.Dispose();
             }
         }
