@@ -124,6 +124,7 @@
     <Compile Include="Infrastructure\SipHashBasedStringEqualityComparer.cs" />
     <Compile Include="IRequest.cs" />
     <Compile Include="Hosting\HostDependencyResolverExtensions.cs" />
+    <Compile Include="IUntrackedDisposable.cs" />
     <Compile Include="IUserIdProvider.cs" />
     <Compile Include="Json\SipHashBasedDictionaryConverter.cs" />
     <Compile Include="Messaging\CommandType.cs" />

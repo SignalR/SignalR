@@ -184,7 +184,7 @@ namespace Microsoft.AspNet.SignalR
             if (_disposed == 0)
             {
                 var disposable = obj as IDisposable;
-                if (disposable != null)
+                if (disposable != null && !(disposable is IUntrackedDisposable))
                 {
                     lock (_trackedDisposables)
                     {
