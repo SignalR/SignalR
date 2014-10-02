@@ -551,11 +551,21 @@
                 deferred.resolve(connection);
             });
 
+            connection._.initHandler = signalR.transports._logic.initHandler(connection);
+
             initialize = function (transports, index) {
                 var noTransportError = signalR._.error(resources.noTransportOnInit);
 
                 index = index || 0;
                 if (index >= transports.length) {
+                    if (index === 0) {
+                        connection.log("No transports supported by the server were selected.");
+                    } else if (index === 1) {
+                        connection.log("No fallback transports were selected.");
+                    } else {
+                        connection.log("Fallback transports exhausted.");
+                    }
+
                     // No transport initialized successfully
                     $(connection).triggerHandler(events.onError, [noTransportError]);
                     deferred.reject(noTransportError);
@@ -571,92 +581,64 @@
 
                 var transportName = transports[index],
                     transport = signalR.transports[transportName],
-                    initializationComplete = false,
-                    onFailed = function () {
-                        // Check if we've already triggered onFailed, onStart
-                        if (!initializationComplete) {
-                            initializationComplete = true;
-                            window.clearTimeout(connection._.onFailedTimeoutHandle);
-                            transport.stop(connection);
-                            initialize(transports, index + 1);
-                        }
+                    onFallback = function () {
+                        initialize(transports, index + 1);
                     };
 
                 connection.transport = transport;
 
                 try {
-                    connection._.onFailedTimeoutHandle = window.setTimeout(function () {
-                        connection.log(transport.name + " timed out when trying to connect.");
-                        onFailed();
-                    }, connection._.totalTransportConnectTimeout);
+                    connection._.initHandler.start(transport, function () { // success
+                        // Firefox 11+ doesn't allow sync XHR withCredentials: https://developer.mozilla.org/en-US/docs/Web/API/XMLHttpRequest#withCredentials
+                        var isFirefox11OrGreater = signalR._.firefoxMajorVersion(window.navigator.userAgent) >= 11,
+                            asyncAbort = !!connection.withCredentials && isFirefox11OrGreater;
 
-                    transport.start(connection, function () { // success
-                        var onStartSuccess = function () {
-                                // Firefox 11+ doesn't allow sync XHR withCredentials: https://developer.mozilla.org/en-US/docs/Web/API/XMLHttpRequest#withCredentials
-                                var isFirefox11OrGreater = signalR._.firefoxMajorVersion(window.navigator.userAgent) >= 11,
-                                    asyncAbort = !!connection.withCredentials && isFirefox11OrGreater;
+                        connection.log("The start request succeeded. Transitioning to the connected state.");
 
-                                connection.log("The start request succeeded. Transitioning to the connected state.");
-
-                                if (supportsKeepAlive(connection)) {
-                                    signalR.transports._logic.monitorKeepAlive(connection);
-                                }
-
-                                signalR.transports._logic.startHeartbeat(connection);
-
-                                // Used to ensure low activity clients maintain their authentication.
-                                // Must be configured once a transport has been decided to perform valid ping requests.
-                                signalR._.configurePingInterval(connection);
-
-                                if (!changeState(connection,
-                                                 signalR.connectionState.connecting,
-                                                 signalR.connectionState.connected)) {
-                                    connection.log("WARNING! The connection was not in the connecting state.");
-                                }
-
-                                // Drain any incoming buffered messages (messages that came in prior to connect)
-                                connection._.connectingMessageBuffer.drain();
-
-                                $(connection).triggerHandler(events.onStart);
-
-                                // wire the stop handler for when the user leaves the page
-                                _pageWindow.bind("unload", function () {
-                                    connection.log("Window unloading, stopping the connection.");
-
-                                    connection.stop(asyncAbort);
-                                });
-
-                                if (isFirefox11OrGreater) {
-                                    // Firefox does not fire cross-domain XHRs in the normal unload handler on tab close.
-                                    // #2400
-                                    _pageWindow.bind("beforeunload", function () {
-                                        // If connection.stop() runs runs in beforeunload and fails, it will also fail
-                                        // in unload unless connection.stop() runs after a timeout.
-                                        window.setTimeout(function () {
-                                            connection.stop(asyncAbort);
-                                        }, 0);
-                                    });
-                                }
-                            };
-
-                        if (!initializationComplete) {
-                            initializationComplete = true;
-                            // Prevent transport fallback
-                            window.clearTimeout(connection._.onFailedTimeoutHandle);
-
-                            // The connection was aborted while initializing transports
-                            if (connection.state === signalR.connectionState.disconnected) {
-                                return;
-                            }
-
-                            connection.log(transport.name + " transport selected. Initiating start request.");
-                            signalR.transports._logic.ajaxStart(connection, onStartSuccess);
+                        if (supportsKeepAlive(connection)) {
+                            signalR.transports._logic.monitorKeepAlive(connection);
                         }
-                    }, onFailed);
+
+                        signalR.transports._logic.startHeartbeat(connection);
+
+                        // Used to ensure low activity clients maintain their authentication.
+                        // Must be configured once a transport has been decided to perform valid ping requests.
+                        signalR._.configurePingInterval(connection);
+
+                        if (!changeState(connection,
+                                            signalR.connectionState.connecting,
+                                            signalR.connectionState.connected)) {
+                            connection.log("WARNING! The connection was not in the connecting state.");
+                        }
+
+                        // Drain any incoming buffered messages (messages that came in prior to connect)
+                        connection._.connectingMessageBuffer.drain();
+
+                        $(connection).triggerHandler(events.onStart);
+
+                        // wire the stop handler for when the user leaves the page
+                        _pageWindow.bind("unload", function () {
+                            connection.log("Window unloading, stopping the connection.");
+
+                            connection.stop(asyncAbort);
+                        });
+
+                        if (isFirefox11OrGreater) {
+                            // Firefox does not fire cross-domain XHRs in the normal unload handler on tab close.
+                            // #2400
+                            _pageWindow.bind("beforeunload", function () {
+                                // If connection.stop() runs runs in beforeunload and fails, it will also fail
+                                // in unload unless connection.stop() runs after a timeout.
+                                window.setTimeout(function () {
+                                    connection.stop(asyncAbort);
+                                }, 0);
+                            });
+                        }
+                    }, onFallback);
                 }
                 catch (error) {
                     connection.log(transport.name + " transport threw '" + error.message + "' when attempting to start.");
-                    onFailed();
+                    onFallback();
                 }
             };
 
@@ -951,8 +933,10 @@
                 delete connection._.negotiateRequest;
             }
 
-            // Ensure that tryAbortStartRequest is called before connection._deferral is deleted
-            signalR.transports._logic.tryAbortStartRequest(connection);
+            // Ensure that initHandler.stop() is called before connection._deferral is deleted
+            if (connection._.initHandler) {
+                connection._.initHandler.stop();
+            }
 
             // Trigger the disconnect event
             $(connection).triggerHandler(events.onDisconnect);

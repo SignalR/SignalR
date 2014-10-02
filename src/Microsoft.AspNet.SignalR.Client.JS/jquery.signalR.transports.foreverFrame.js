@@ -73,7 +73,9 @@
                 frame = createFrame(),
                 frameLoadHandler = function () {
                     connection.log("Forever frame iframe finished loading and is no longer receiving messages.");
-                    that.reconnect(connection);
+                    if (!onFailed || !onFailed()) {
+                        that.reconnect(connection);
+                    }
                 };
 
             if (window.EventSource) {
@@ -235,7 +237,7 @@
             if (changeState(connection,
                 signalR.connectionState.reconnecting,
                 signalR.connectionState.connected) === true) {
-                // If there's no onSuccess handler we assume this is a reconnect
+
                 $(connection).triggerHandler(events.onReconnect);
             }
         }

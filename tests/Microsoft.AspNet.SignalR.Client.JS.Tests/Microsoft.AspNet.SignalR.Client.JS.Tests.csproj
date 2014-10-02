@@ -127,6 +127,7 @@
     <Content Include="Tests\FunctionalTests\Transports\ServerSentEvents\SSEReconnectFacts.js" />
     <Content Include="Tests\FunctionalTests\Transports\WebSocketsFacts\WebSocketsFacts.js" />
     <Content Include="Tests\UnitTests\Common\AjaxFacts.js" />
+    <Content Include="Tests\UnitTests\Common\InitHandlerFacts.js" />
     <Content Include="Tests\UnitTests\Common\KeepAliveFacts.js" />
     <Content Include="Tests\UnitTests\Common\ProcessMessagesFacts.js" />
     <Content Include="Tests\UnitTests\Common\ResponseFacts.js" />

@@ -28,16 +28,11 @@
                 fireConnect = function () {
                     fireConnect = $.noop;
 
-                    // Reset onFailed to null because it shouldn't be called again
-                    onFailed = null;
-
                     connection.log("LongPolling connected.");
                     onSuccess();
                 },
-                tryFailConnect = function () {
-                    if (onFailed) {
-                        onFailed();
-                        onFailed = null;
+                tryFailConnect = function (error) {
+                    if (onFailed(error)) {
                         connection.log("LongPolling failed to connect.");
                         return true;
                     }
@@ -165,6 +160,8 @@
                         },
 
                         error: function (data, textStatus) {
+                            var error = signalR._.transportError(signalR.resources.longPollFailed, connection.transport, data, instance.pollXhr);
+
                             // Stop trying to trigger reconnect, connection is in an error state
                             // If we're not in the reconnect state this will noop
                             window.clearTimeout(privateData.reconnectTimeoutId);
@@ -175,7 +172,7 @@
                                 return;
                             }
 
-                            if (!tryFailConnect()) {
+                            if (!tryFailConnect(error)) {
 
                                 // Increment our reconnect errors, we assume all errors to be reconnect errors
                                 // In the case that it's our first error this will cause Reconnect to be fired
@@ -184,7 +181,7 @@
 
                                 if (connection.state !== signalR.connectionState.reconnecting) {
                                     connection.log("An error occurred using longPolling. Status = " + textStatus + ".  Response = " + data.responseText + ".");
-                                    $(instance).triggerHandler(events.onError, [signalR._.transportError(signalR.resources.longPollFailed, connection.transport, data, instance.pollXhr)]);
+                                    $(instance).triggerHandler(events.onError, [error]);
                                 }
 
                                 // We check the state here to verify that we're not in an invalid state prior to verifying Reconnect.

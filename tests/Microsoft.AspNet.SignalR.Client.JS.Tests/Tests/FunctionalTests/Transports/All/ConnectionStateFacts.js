@@ -337,4 +337,69 @@ testUtilities.runWithAllTransports(function (transport) {
             connection.stop();
         };
     });
+
+    QUnit.asyncTimeoutTest(transport + " transport failing during start request stops connection.", testUtilities.defaultTestTimeout, function (end, assert, testName) {
+        var connection = testUtilities.createHubConnection(end, assert, testName, null, /*wrapStart*/ false),
+            savedAjaxStart = $.signalR.transports._logic.ajaxStart,
+            savedJQueryAjax = $.ajax,
+            expectedErrorMessage = $.signalR.resources.errorDuringStartRequest,
+            errorCount = 0,
+            stateChangeCount = 0,
+            invokeAjaxStartAndFailTransport = function (ajaxStartThis, ajaxStartArgs) {
+                // We want the call to connection.stop() by the InitHandler to abort the start request,
+                // not the call to $.network.disconnect() directly.
+                $.network.disable();
+                savedAjaxStart.apply(ajaxStartThis, ajaxStartArgs);
+                $.network.enable();
+
+                $.network.disconnect();
+            };
+
+        $.signalR.transports._logic.ajaxStart = function () {
+            var ajaxStartThis = this,
+                ajaxStartArgs = arguments;
+
+            if (transport === "longPolling") {
+                // Wait until there is a poll request that we can fail immediately to ensure
+                // that the poll fails before the start request completes successfully.
+                $.ajax = function () {
+                    savedJQueryAjax.apply(this, arguments);
+                    $.ajax = savedJQueryAjax;
+                    invokeAjaxStartAndFailTransport(ajaxStartThis, ajaxStartArgs);
+                };
+            } else {
+                invokeAjaxStartAndFailTransport(ajaxStartThis, ajaxStartArgs);
+            }
+        };
+
+        connection.error(function (error) {
+            errorCount++;
+            assert.equal(error.message, expectedErrorMessage, "Error callback called with the appropriate error message.");
+        });
+
+        connection.stateChanged(function () {
+            var expectedStates = [$.signalR.connectionState.connecting, $.signalR.connectionState.disconnected];
+            assert.equal(connection.state, expectedStates[stateChangeCount++], "SignalR changed states as expected");
+        });
+
+        connection.start({ transport: transport }).fail(function (error) {
+            assert.equal(error.message, expectedErrorMessage, "start() failed with the appropriate error message.");
+
+            // Give time for any unexpected errors or state changes
+            window.setTimeout(function () {
+                assert.equal(errorCount, 1, "The error handler was triggered exactly once.");
+                assert.equal(stateChangeCount, 2, "The connection changed states twice.");
+                end();
+            }, 1000);
+        });
+
+        // Cleanup
+        return function () {
+            $.signalR.transports._logic.ajaxStart = savedAjaxStart;
+            $.ajax = savedJQueryAjax;
+            $.network.enable();
+            $.network.connect();
+            connection.stop();
+        };
+    });
 });
