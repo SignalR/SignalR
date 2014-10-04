@@ -17,16 +17,6 @@ namespace Microsoft.AspNet.SignalR.Tests
             Assert.True(disposable.Disposed);
         }
 
-        class MyDisposable : IDisposable
-        {
-            public bool Disposed { get; private set; }
-
-            public void Dispose()
-            {
-                Disposed = true;
-            }
-        }
-
         [Fact]
         public void UntrackedDisposablesAreNotTracked()
         {
@@ -34,26 +24,12 @@ namespace Microsoft.AspNet.SignalR.Tests
             resolver.Register(typeof(MyUntrackedDisposable), () => new MyUntrackedDisposable());
 
             var untrackedDisposable = resolver.Resolve<MyUntrackedDisposable>();
-            resolver.Dispose();
-            Assert.False(untrackedDisposable.Disposed);
-
             var untrackedDisposableWeakRef = new WeakReference<MyUntrackedDisposable>(untrackedDisposable);
-            untrackedDisposable.Dispose();
+            
             untrackedDisposable = null;
-            resolver = null;
             GC.Collect();
             GC.WaitForPendingFinalizers();
             Assert.False(untrackedDisposableWeakRef.TryGetTarget(out untrackedDisposable));
-        }
-
-        class MyUntrackedDisposable : IUntrackedDisposable
-        {
-            public bool Disposed { get; private set; }
-
-            public void Dispose()
-            {
-                Disposed = true;
-            }
         }
 
         /// <summary>
@@ -76,7 +52,21 @@ namespace Microsoft.AspNet.SignalR.Tests
             Assert.False(hubWeakRef.TryGetTarget(out hub));
         }
 
-        public class DontLeakMeHub : Hub
+        private class MyDisposable : IDisposable
+        {
+            public bool Disposed { get; private set; }
+
+            public void Dispose()
+            {
+                Disposed = true;
+            }
+        }
+
+        private class MyUntrackedDisposable : MyDisposable, IUntrackedDisposable
+        {
+        }
+
+        private class DontLeakMeHub : Hub
         {
         }
     }
