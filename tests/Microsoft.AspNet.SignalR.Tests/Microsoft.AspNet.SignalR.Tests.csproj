@@ -77,6 +77,7 @@
     <Compile Include="Core\Hubs\Lookup\HubMethodDispatcherFacts.cs" />
     <Compile Include="Core\Hubs\TestHubs.cs" />
     <Compile Include="Core\Transports\ForeverFrameTransportFacts.cs" />
+    <Compile Include="DefaultDependencyResolverFacts.cs" />
     <Compile Include="GroupManagerFacts.cs" />
     <Compile Include="Hosting\CookieFacts.cs" />
     <Compile Include="Hosting\ResponseExtensionsFacts.cs" />
