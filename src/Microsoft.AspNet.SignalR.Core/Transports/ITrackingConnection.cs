@@ -78,6 +78,16 @@ namespace Microsoft.AspNet.SignalR.Transports
         Task KeepAlive();
 
         /// <summary>
+        /// Increments performance counter for current connections.
+        /// </summary>
+        void IncrementConnectionsCount();
+
+        /// <summary>
+        /// Decrements performance counter for current connections.
+        /// </summary>
+        void DecrementConnectionsCount();
+
+        /// <summary>
         /// Kills the connection.
         /// </summary>
         [SuppressMessage("Microsoft.Naming", "CA1716:IdentifiersShouldNotMatchKeywords", MessageId = "End", Justification = "Ends the connction thus the name is appropriate.")]

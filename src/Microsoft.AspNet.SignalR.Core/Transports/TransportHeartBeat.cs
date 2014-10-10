@@ -92,6 +92,7 @@ namespace Microsoft.AspNet.SignalR.Transports
             if (isNewConnection)
             {
                 Trace.TraceInformation("Connection {0} is New.", connection.ConnectionId);
+                connection.IncrementConnectionsCount();
             }
 
             lock (_counterLock)
@@ -122,6 +123,7 @@ namespace Microsoft.AspNet.SignalR.Transports
             ConnectionMetadata metadata;
             if (_connections.TryRemove(connection.ConnectionId, out metadata))
             {
+                connection.DecrementConnectionsCount();
                 lock (_counterLock)
                 {
                     _counters.ConnectionsCurrent.RawValue = _connections.Count;

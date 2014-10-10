@@ -272,6 +272,10 @@ namespace Microsoft.AspNet.SignalR.Transports
             _counters.ErrorsAllPerSec.Increment();
         }
 
+        public abstract void IncrementConnectionsCount();
+
+        public abstract void DecrementConnectionsCount();
+        
         public Task Disconnect()
         {
             return Abort(clean: false);
