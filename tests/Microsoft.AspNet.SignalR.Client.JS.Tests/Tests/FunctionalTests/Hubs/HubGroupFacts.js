@@ -106,45 +106,5 @@ testUtilities.runWithAllTransports(function (transport) {
             connection.stop();
         };
     });
-
-    QUnit.asyncTimeoutTest(transport + ": group works after app domain restart when groupsToken just from client.", testUtilities.defaultTestTimeout * 3, function (end, assert, testName) {
-        var connection = testUtilities.createHubConnection(end, assert, testName),
-            groupChat = connection.createHubProxies().groupChat,
-            groupName = "group$&+,/:;=?@[]1";
-
-        groupChat.client.send = function (value) {
-            assert.ok(value === "hello", "Successful received message from group after reconnected");
-            end();
-        };
-
-        connection.reconnecting(function () {
-            assert.ok(true, "Connection is now attempting to reconnect");
-        });
-
-        connection.reconnected(function () {
-            assert.ok(true, "Successfuly raised reconnected event ");
-
-            // Workaround for bug#2642 on webSockets that requires to call server method after a short timeout in reconnected event   
-            window.setTimeout(function () {
-                groupChat.server.send(groupName, "hello").done(function () {
-                    assert.ok(true, "Successful send to group");
-                });
-            }, 30);
-        });
-
-        connection.start({ transport: transport }).done(function () {
-            assert.ok(true, "Connected");
-
-            groupChat.server.join(groupName).done(function () {
-                groupChat.server.triggerAppDomainRestart();
-            });
-        });
-
-        // Cleanup
-        return function () {
-            connection.stop();
-        };
-    });
-
 });
 

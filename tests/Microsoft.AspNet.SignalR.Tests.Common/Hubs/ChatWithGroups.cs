@@ -21,10 +21,5 @@ namespace Microsoft.AspNet.SignalR.Tests.Common.Hubs
         {
             Groups.Remove(Context.ConnectionId, group);
         }
-
-        public void TriggerAppDomainRestart()
-        {
-            HttpRuntime.UnloadAppDomain();
-        }
     }
 }
