@@ -10,6 +10,7 @@ namespace Microsoft.AspNet.SignalR
     /// This is useful for transient types that are created by the dependency resolver, but are short-lived and will
     /// be Disposed by some other means outside of the resolver.
     /// </summary>
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1040:AvoidEmptyInterfaces", Justification = "Marker interface is fine here and this will go away in 3.0 anyway.")]
     public interface IUntrackedDisposable : IDisposable
     {
     }
