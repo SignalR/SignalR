@@ -112,6 +112,15 @@ testUtilities.runWithAllTransports(function (transport) {
             groupChat = connection.createHubProxies().groupChat,
             groupName = "group$&+,/:;=?@[]1";
 
+        groupChat.client.joinedGroup = function (g) {
+            assert.equal(g, groupName);
+
+            // Ensure that the app domain restart doesn't occur between poll requests.
+            window.setTimeout(function () {
+                groupChat.server.triggerAppDomainRestart();
+            }, 30);
+        };
+
         groupChat.client.send = function (value) {
             assert.ok(value === "hello", "Successful received message from group after reconnected");
             end();
@@ -124,7 +133,7 @@ testUtilities.runWithAllTransports(function (transport) {
         connection.reconnected(function () {
             assert.ok(true, "Successfuly raised reconnected event ");
 
-            // Workaround for bug#2642 on webSockets that requires to call server method after a short timeout in reconnected event   
+            // Workaround for bug#2642 on webSockets that requires to call server method after a short timeout in reconnected event
             window.setTimeout(function () {
                 groupChat.server.send(groupName, "hello").done(function () {
                     assert.ok(true, "Successful send to group");
@@ -135,9 +144,7 @@ testUtilities.runWithAllTransports(function (transport) {
         connection.start({ transport: transport }).done(function () {
             assert.ok(true, "Connected");
 
-            groupChat.server.join(groupName).done(function () {
-                groupChat.server.triggerAppDomainRestart();
-            });
+            groupChat.server.join(groupName);
         });
 
         // Cleanup
@@ -145,6 +152,5 @@ testUtilities.runWithAllTransports(function (transport) {
             connection.stop();
         };
     });
-
 });
 
