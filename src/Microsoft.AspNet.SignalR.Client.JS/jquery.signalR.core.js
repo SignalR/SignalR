@@ -342,7 +342,6 @@
                 connectingMessageBuffer: new ConnectingMessageBuffer(this, function (message) {
                     $connection.triggerHandler(events.onReceived, [message]);
                 }),
-                onFailedTimeoutHandle: null,
                 lastMessageAt: new Date().getTime(),
                 lastActiveAt: new Date().getTime(),
                 beatInterval: 5000, // Default value, will only be overridden if keep alive is enabled,
@@ -910,7 +909,6 @@
 
             // Clear this no matter what
             window.clearTimeout(connection._.beatHandle);
-            window.clearTimeout(connection._.onFailedTimeoutHandle);
             window.clearInterval(connection._.pingIntervalId);
 
             if (connection.transport) {
