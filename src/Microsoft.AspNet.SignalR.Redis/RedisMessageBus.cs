@@ -71,16 +71,14 @@ namespace Microsoft.AspNet.SignalR.Redis
 
         protected override Task Send(int streamIndex, IList<Message> messages)
         {
-            var redisTask = _connection.ScriptEvaluateAsync(_db,
-                                @"local newId = redis.call('INCR', KEYS[1])
-                              local payload = newId .. ' ' .. ARGV[1]
-                              redis.call('PUBLISH', KEYS[1], payload)
-                              return {newId, ARGV[1], payload}  
-                            ",
+            return _connection.ScriptEvaluateAsync(
+                _db,
+                @"local newId = redis.call('INCR', KEYS[1])
+                  local payload = newId .. ' ' .. ARGV[1]
+                  redis.call('PUBLISH', KEYS[1], payload)
+                  return {newId, ARGV[1], payload}",
                 _key,
                 RedisMessage.ToBytes(messages));
-
-            return redisTask;
         }
 
         protected override void Dispose(bool disposing)

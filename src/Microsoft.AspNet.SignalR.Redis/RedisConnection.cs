@@ -61,7 +61,7 @@ namespace Microsoft.AspNet.SignalR.Redis
             }
         }
 
-        public async Task ScriptEvaluateAsync(int database, string script, string key, byte[] messageArguments)
+        public Task ScriptEvaluateAsync(int database, string script, string key, byte[] messageArguments)
         {
             if (_connection == null)
             {
@@ -72,7 +72,7 @@ namespace Microsoft.AspNet.SignalR.Redis
 
             var arguments = new RedisValue[] { messageArguments };
 
-            await _connection.GetDatabase(database).ScriptEvaluateAsync(script,
+            return _connection.GetDatabase(database).ScriptEvaluateAsync(script,
                 keys,
                 arguments);
         }
