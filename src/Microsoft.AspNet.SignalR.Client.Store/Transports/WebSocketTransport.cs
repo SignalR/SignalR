@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.md in the project root for license information.
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR.Client.Http;
@@ -99,9 +100,28 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
         }
 
         // internal for testing, passing dependencies to allow mocking
+        [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", 
+            Justification = "Exceptions are reported to the user using IConnection.Error")]
         internal void MessageReceived(IWebSocketResponse webSocketResponse, IConnection connection)
         {
-            var response = ReadMessage(webSocketResponse);
+            string response;
+
+            try
+            {
+                response = ReadMessage(webSocketResponse);
+            }
+            catch (Exception ex)
+            {
+                connection.OnError(ex);
+
+                var webSocket = _webSocket;
+                if (webSocket != null)
+                {
+                    webSocket.Close(SuccessCloseStatus, ex.Message);
+                }
+
+                return;
+            }
 
             connection.Trace(TraceLevels.Messages, "WS: OnMessage({0})", response);
 
