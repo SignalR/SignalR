@@ -224,6 +224,7 @@ namespace Microsoft.AspNet.SignalR.WebSockets
             }
             finally
             {
+                WebSocket.Dispose();
                 OnClose();
             }
         }

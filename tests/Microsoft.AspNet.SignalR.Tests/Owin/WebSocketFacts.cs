@@ -60,6 +60,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Owin
 
             webSocket.Setup(w => w.ReceiveAsync(It.IsAny<ArraySegment<byte>>(), CancellationToken.None))
                      .Returns(() => TaskAsyncHelper.FromResult(webSocketMessages[messageIndex++]));
+            webSocket.As<IDisposable>().Setup(w => w.Dispose());
 
             webSocketHandler.Setup(h => h.OnOpen());
             webSocketHandler.Setup(h => h.OnClose());
@@ -99,6 +100,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Owin
                     state = WebSocketState.Closed;
                     return TaskAsyncHelper.Empty;
                 });
+            webSocket.As<IDisposable>().Setup(w => w.Dispose());
 
             var webSocketHandler = new Mock<WebSocketHandler>(64 * 1024) {CallBase = true};
             await webSocketHandler.Object.ProcessWebSocketRequestAsync(webSocket.Object, CancellationToken.None);
