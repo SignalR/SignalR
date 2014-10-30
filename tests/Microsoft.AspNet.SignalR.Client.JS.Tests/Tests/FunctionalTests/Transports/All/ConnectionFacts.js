@@ -375,10 +375,7 @@ testUtilities.runWithAllTransports(function (transport) {
 
         // Triggered right before transports begin to start.
         connection.starting(function () {
-            // Let the current stack unwind and then stop, this will result in us stopping right after the transport has started its networking layer
-            setTimeout(function () {
-                connection.stop();
-            }, 0);
+            connection.stop();
         });
 
         connection.error(function () {
@@ -389,7 +386,7 @@ testUtilities.runWithAllTransports(function (transport) {
             assert.fail("Connection started");
             end();
         }).fail(function () {
-            assert.comment("Fail handler was triggered on aborted negotiate.");
+            assert.comment("Fail handler was triggered.");
         });
 
         window.setTimeout(function () {
