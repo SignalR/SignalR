@@ -55,7 +55,10 @@ namespace Microsoft.AspNet.SignalR.Redis
 
             if (connectAutomatically)
             {
-                var ignore = ConnectWithRetry();
+                ThreadPool.QueueUserWorkItem(_ =>
+                {
+                    var ignore = ConnectWithRetry();
+                });
             }
         }
 
