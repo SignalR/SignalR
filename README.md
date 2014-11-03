@@ -11,7 +11,7 @@ We [have a dedicated documentation site up at asp.net](http://asp.net/signalr). 
 
     Install-Package Microsoft.AspNet.SignalR
 
-## Get a sample on NuGet, straight into your app
+## Install a Sample App Using NuGet
 
     Install-Package Microsoft.AspNet.SignalR.Sample
 	
