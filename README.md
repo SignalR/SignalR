@@ -2,7 +2,7 @@
 ASP.NET SignalR is a library for ASP.NET developers that makes it incredibly simple to add real-time web functionality to your applications. What is "real-time web" functionality? It's the ability to have your server-side code push content to the connected clients right when it happens.
 
 ## What Can SignalR Be Used For?
-SignalR is ideal for situations where events on your server need to be communicated to one or more clients. This can be in the form of a chat application, messaging interface, updates to user-critical information, or just simple notifications that a long-running event has completed.
+SignalR is ideal for situations where events on your server need to be communicated to one or more clients (browsers, mobile apps, etc). This can be in the form of a chat application, messaging interface, updates to user-critical information that require notification, or just simple alerts that a long-running event has completed.
 
 ## Documentation
 We [have a dedicated documentation site up at asp.net](http://asp.net/signalr). If you find any issues with the docs or just want to help - please create an issue here.
