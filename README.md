@@ -27,7 +27,7 @@ We would love to have your help! If you would like to help out, please have a lo
 Building the project from source requires a few simple steps - download the code then run a simple command. To download the code simply open up Powershell (or the git command line) and run:
 
 ```
-git clone git@github.com:SignalR/SignalR.git (or https if you use https)
+git clone https://github.com/SignalR/SignalR.git
 ```
 
 ### Windows
