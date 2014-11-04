@@ -31,7 +31,7 @@ git clone https://github.com/SignalR/SignalR.git
 ```
 
 ### Windows
-After cloning the repository - open up Powershell and navigate to where you downloaded the source. Once you're in the source directory, run the build command that we've created for you:
+After cloning the repository head over to the new sourc directory and run the build command that we've created for you. You can double-click the `build.cmd` file, or execute it directly from the command line:
 
 ```
 cd [PATH TO SOURCE]
