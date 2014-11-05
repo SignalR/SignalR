@@ -16,7 +16,7 @@ We [have a dedicated documentation site up at asp.net](http://asp.net/signalr). 
     Install-Package Microsoft.AspNet.SignalR.Sample
 	
 ## LICENSE
-SignalR is licensed under the [Apache 2.0 License](https://github.com/SignalR/SignalR/blob/master/LICENSE.md). This license is designed to protect copyrighted code, but allows you to change things as you need provided you document those changes. Please [review the license](https://github.com/SignalR/SignalR/blob/master/LICENSE.md) before you download the code. 
+SignalR is licensed under the [Apache 2.0 License](https://github.com/SignalR/SignalR/blob/master/LICENSE.md).
 
 ## Contributing
 
