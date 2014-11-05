@@ -48,6 +48,10 @@ cd [PATH TO SOURCE]
 make
 ```
 
+## Build Server
+
+We use TeamCity from JetBrains to monitor and build our source code. If you want to have a look at the latest commits and build, you can using this link: http://ci.signalr.net/guestLogin.html?guest=1.
+
 ## Questions?
 
 We welcome any feedback or thoughts you might have! If you just want to say "hi" or have a basic question, you can [drop by our chat room on jabbr.net]((http://jabbr.net/#/rooms/signalr)). 
