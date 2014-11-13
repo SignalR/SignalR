@@ -53,7 +53,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
         }
 
         [Fact]
-        public void AcksAreSentToCommandSource()
+        public void AcksAreSentToAckSubscriber()
         {
             // Arrange
             var waitCommand = new Command { WaitForAck = true };
@@ -144,7 +144,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
             // Assert
             Assert.NotNull(ackMessage);
             Assert.Equal(ackerId, ackMessage.Source);
-            Assert.Equal(PrefixHelper.GetAck(waiterId), ackMessage.Key);
+            Assert.Equal(AckSubscriber.Signal, ackMessage.Key);
         }
     }
 }

@@ -120,6 +120,10 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
         {
             IList<string> signals = connectionName == null ? ListHelper<string>.Empty : new[] { connectionName };
 
+            // Ensure that this server is listening for any ACKs sent over the bus.
+            // This is important in case there are any calls to Groups.Add on a context.
+            _resolver.Resolve<AckSubscriber>();
+
             // Give this a unique id
             var connectionId = Guid.NewGuid().ToString();
             return new Connection(_resolver.Resolve<IMessageBus>(),
