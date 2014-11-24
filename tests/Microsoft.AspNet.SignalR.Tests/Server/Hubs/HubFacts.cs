@@ -134,6 +134,23 @@ namespace Microsoft.AspNet.SignalR.Tests.Server.Hubs
             all.VerifyAll();
         }
 
+        [Fact]
+        public void TypedIHubCallerConnectionContextIsSettable()
+        {
+            // https://github.com/SignalR/SignalR/issues/3299
+            var mockClients = new Mock<IHubCallerConnectionContext<IClientContract>>();
+            var all = new Mock<IClientContract>();
+            all.Setup(m => m.send("foo"));
+            mockClients.Setup(m => m.All).Returns(all.Object);
+
+            var hub = new MyTypedIHub();
+            hub.Clients = mockClients.Object;
+            hub.Send("foo");
+
+            mockClients.VerifyAll();
+            all.VerifyAll();
+        }
+
         private class MyTestableHub : Hub
         {
             public void Send(string messages)

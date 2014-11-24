@@ -9,6 +9,9 @@ namespace Microsoft.AspNet.SignalR
     /// </summary>
     public abstract class Hub<T> : Hub where T : class
     {
+        // This allows the typed Client property to be settable for testing
+        private IHubCallerConnectionContext<T> _testClients;
+
         /// <summary>
         /// Gets a dynamic object that represents all clients connected to this hub (not hub instance).
         /// </summary>
@@ -16,7 +19,11 @@ namespace Microsoft.AspNet.SignalR
         {
             get
             {
-                return new TypedHubCallerConnectionContext<T>(base.Clients);
+                return _testClients ?? new TypedHubCallerConnectionContext<T>(base.Clients);
+            }
+            set
+            {
+                _testClients = value;
             }
         }
     }
