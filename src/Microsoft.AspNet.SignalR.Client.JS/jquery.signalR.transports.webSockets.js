@@ -88,7 +88,7 @@
                                 connection.transport,
                                 event);
 
-                            connection.log("Unclean disconnect from websocket: " + event.reason || "[no reason given].");
+                            connection.log("Unclean disconnect from websocket: " + (event.reason || "[no reason given]."));
                         } else {
                             connection.log("Websocket closed.");
                         }
