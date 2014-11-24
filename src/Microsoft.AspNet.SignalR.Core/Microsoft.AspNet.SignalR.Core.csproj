@@ -82,7 +82,6 @@
     <Compile Include="HubConfiguration.cs" />
     <Compile Include="HubException.cs" />
     <Compile Include="Hubs\ConnectionIdProxy.cs" />
-    <Compile Include="Hubs\HubBase.cs" />
     <Compile Include="Hubs\HubConnectionContextBase.cs" />
     <Compile Include="Hubs\IHubConnectionContext.cs" />
     <Compile Include="Hubs\MultipleSignalProxy.cs" />

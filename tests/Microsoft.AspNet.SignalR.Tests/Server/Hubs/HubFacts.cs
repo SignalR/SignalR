@@ -100,6 +100,40 @@ namespace Microsoft.AspNet.SignalR.Tests.Server.Hubs
             clients.VerifyAll();
         }
 
+        [Fact]
+        public void HubsCanExplicitelyImplementIHub()
+        {
+            // https://github.com/SignalR/SignalR/issues/3228
+            var mockClients = new Mock<IHubCallerConnectionContext<dynamic>>();
+            var all = new Mock<IClientContract>();
+            all.Setup(m => m.send("foo"));
+            mockClients.Setup(m => m.All).Returns(all.Object);
+
+            var hub = new MyIHub();
+            hub.Clients = mockClients.Object;
+            hub.Send("foo");
+
+            mockClients.VerifyAll();
+            all.VerifyAll();
+        }
+
+        [Fact]
+        public void TypedHubsCanExplicitelyImplementIHub()
+        {
+            // https://github.com/SignalR/SignalR/issues/3228
+            var mockClients = new Mock<IHubCallerConnectionContext<dynamic>>();
+            var all = new Mock<IClientProxy>();
+            all.Setup(m => m.Invoke("send", "foo"));
+            mockClients.Setup(m => m.All).Returns(all.Object);
+
+            var typedHub = new MyTypedIHub();
+            ((IHub)typedHub).Clients = mockClients.Object;
+            typedHub.Send("foo");
+
+            mockClients.VerifyAll();
+            all.VerifyAll();
+        }
+
         private class MyTestableHub : Hub
         {
             public void Send(string messages)
@@ -123,6 +157,22 @@ namespace Microsoft.AspNet.SignalR.Tests.Server.Hubs
                 Clients.Client(connectionId).send("foo");
             }
 
+        }
+
+        private class MyIHub : Hub, IHub
+        {
+            public void Send(string messages)
+            {
+                Clients.All.send(messages);
+            }
+        }
+
+        private class MyTypedIHub : Hub<IClientContract>, IHub
+        {
+            public void Send(string messages)
+            {
+                Clients.All.send(messages);
+            }
         }
 
         public interface IClientContract

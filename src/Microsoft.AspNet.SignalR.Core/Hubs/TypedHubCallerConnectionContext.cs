@@ -7,7 +7,7 @@ namespace Microsoft.AspNet.SignalR.Hubs
     public class TypedHubCallerConnectionContext<T> : TypedHubConnectionContext<T>, IHubCallerConnectionContext<T>
     {
         private IHubCallerConnectionContext<dynamic> _dynamicContext;
-        
+
         public TypedHubCallerConnectionContext(IHubCallerConnectionContext<dynamic> dynamicContext)
             : base(dynamicContext)
         {
