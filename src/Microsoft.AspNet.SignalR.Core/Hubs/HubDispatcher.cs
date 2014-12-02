@@ -408,8 +408,7 @@ namespace Microsoft.AspNet.SignalR.Hubs
             })
             .Concat(new[] 
             { 
-                PrefixHelper.GetConnectionId(connectionId), 
-                PrefixHelper.GetAck(connectionId) 
+                PrefixHelper.GetConnectionId(connectionId)
             });
 
             return signals.ToList();

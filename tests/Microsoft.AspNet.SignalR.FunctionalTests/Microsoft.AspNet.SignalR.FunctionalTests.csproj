@@ -90,6 +90,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Server\Connections\ConnectionFacts.cs" />
     <Compile Include="Server\Connections\DisconnectFacts.cs" />
+    <Compile Include="Server\Connections\FarmFacts.cs" />
     <Compile Include="Server\Connections\PersistentConnectionFacts.cs" />
     <Compile Include="Server\Connections\ReconnectFacts.cs" />
     <Compile Include="Server\Hubs\GetHubContextFacts.cs" />

@@ -33,7 +33,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Server.Hubs
             client.ToString();
             client.ping().Wait();
 
-            mockClientProxy.Verify();
+            mockClientProxy.VerifyAll();
         }
 
         [Fact]
@@ -48,26 +48,71 @@ namespace Microsoft.AspNet.SignalR.Tests.Server.Hubs
             var client = TypedClientBuilder<IAmGeneric<int>>.Build(mockClientProxy.Object);
 
             client.send(42);
-            client.ping().Wait();
+            client.ping();
 
-            mockClientProxy.Verify();
+            mockClientProxy.VerifyAll();
+        }
+
+        [Fact]
+        public void MethodsAreInvokedThroughDerivedInterface()
+        {
+            var mockClientProxy = new Mock<IClientProxy>();
+
+            var client = TypedClientBuilder<IAmDerived<int>>.Build(mockClientProxy.Object);
+
+            // Invoke additional method defined in IAmDerived
+            client.addedMethod();
+
+            // Invoke "new" ping method defined in IAmDerived
+            client.ping();
+            ((IClientContract)client).ping();
+            ((IAmGeneric<int>)client).ping();
+
+            // Invoke send overload defined in multiple parent interfaces
+            client.send("fun!");
+            client.send(42);
+
+            mockClientProxy.Verify(c => c.Invoke("addedMethod"), Times.Once());
+            mockClientProxy.Verify(c => c.Invoke("ping"), Times.Exactly(3));
+            mockClientProxy.Verify(c => c.Invoke("send", "fun!"), Times.Once());
+            mockClientProxy.Verify(c => c.Invoke("send", 42), Times.Once());
+        }
+
+        [Fact]
+        public void MethodsAreInvokedOnTwoInterfacesWithTheSameName()
+        {
+            var mockClientProxy1 = new Mock<IClientProxy>(MockBehavior.Strict);
+            mockClientProxy1.Setup(c => c.Invoke("ping"))
+                .Returns(Task.FromResult<object>(null));
+
+            var client1 = TypedClientBuilder<IClientContract>.Build(mockClientProxy1.Object);
+            client1.ping().Wait();
+            mockClientProxy1.VerifyAll();
+
+
+            var mockClientProxy2 = new Mock<IClientProxy>(MockBehavior.Strict);
+            mockClientProxy2.Setup(c => c.Invoke("test"))
+                .Returns(Task.FromResult<object>(null));
+
+            var client2 = TypedClientBuilder<Test.IClientContract>.Build(mockClientProxy2.Object);
+            client2.test();
+            mockClientProxy2.VerifyAll();
         }
 
         [Fact]
         public void InvalidTypesAreRejected()
         {
-            var mockClientProxy = new Mock<IClientProxy>(MockBehavior.Strict);
+            var mockClientProxy = Mock.Of<IClientProxy>();
 
-            Assert.Throws<InvalidOperationException>(() => TypedClientBuilder<IDontReturnVoidOrTask>.Build(mockClientProxy.Object));
-            Assert.Throws<InvalidOperationException>(() => TypedClientBuilder<IHaveOutParameter>.Build(mockClientProxy.Object));
-            Assert.Throws<InvalidOperationException>(() => TypedClientBuilder<IHaveRefParameter>.Build(mockClientProxy.Object));
-            Assert.Throws<InvalidOperationException>(() => TypedClientBuilder<IHaveProperties>.Build(mockClientProxy.Object));
-            Assert.Throws<InvalidOperationException>(() => TypedClientBuilder<IHaveIndexer>.Build(mockClientProxy.Object));
-            Assert.Throws<InvalidOperationException>(() => TypedClientBuilder<IHaveEvent>.Build(mockClientProxy.Object));
-            Assert.Throws<InvalidOperationException>(() => TypedClientBuilder<NotAnInterface>.Build(mockClientProxy.Object));
-            Assert.Throws<InvalidOperationException>(() => TypedClientBuilder<AlsoNotAnInterface>.Build(mockClientProxy.Object));
-
-            mockClientProxy.Verify();
+            Assert.Throws<InvalidOperationException>(() => TypedClientBuilder<IDontReturnVoidOrTask>.Build(mockClientProxy));
+            Assert.Throws<InvalidOperationException>(() => TypedClientBuilder<IHaveOutParameter>.Build(mockClientProxy));
+            Assert.Throws<InvalidOperationException>(() => TypedClientBuilder<IHaveRefParameter>.Build(mockClientProxy));
+            Assert.Throws<InvalidOperationException>(() => TypedClientBuilder<IHaveProperties>.Build(mockClientProxy));
+            Assert.Throws<InvalidOperationException>(() => TypedClientBuilder<IHaveIndexer>.Build(mockClientProxy));
+            Assert.Throws<InvalidOperationException>(() => TypedClientBuilder<IHaveEvent>.Build(mockClientProxy));
+            Assert.Throws<InvalidOperationException>(() => TypedClientBuilder<IAmDerivedFromInvalidInterface>.Build(mockClientProxy));
+            Assert.Throws<InvalidOperationException>(() => TypedClientBuilder<NotAnInterface>.Build(mockClientProxy));
+            Assert.Throws<InvalidOperationException>(() => TypedClientBuilder<AlsoNotAnInterface>.Build(mockClientProxy));
         }
 
         [Fact]
@@ -82,6 +127,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Server.Hubs
             Assert.Throws<InvalidOperationException>(() => manager.GetHubContext<DemoHub, IHaveProperties>());
             Assert.Throws<InvalidOperationException>(() => manager.GetHubContext<DemoHub, IHaveIndexer>());
             Assert.Throws<InvalidOperationException>(() => manager.GetHubContext<DemoHub, IHaveEvent>());
+            Assert.Throws<InvalidOperationException>(() => manager.GetHubContext<DemoHub, IAmDerivedFromInvalidInterface>());
             Assert.Throws<InvalidOperationException>(() => manager.GetHubContext<DemoHub, NotAnInterface>());
         }
 
@@ -98,9 +144,18 @@ namespace Microsoft.AspNet.SignalR.Tests.Server.Hubs
         public interface IAmGeneric<T>
         {
             void send(T genericArgument);
-            Task ping();
+            void ping();
         }
 
+        public interface IAmDerived<T> : IClientContract, IAmGeneric<T>
+        {
+            void addedMethod();
+            new void ping();
+        }
+
+        public interface IAmDerivedFromInvalidInterface : IDontReturnVoidOrTask
+        {
+        }
 
         // Invalid type parameters
         public interface IDontReturnVoidOrTask
@@ -146,6 +201,14 @@ namespace Microsoft.AspNet.SignalR.Tests.Server.Hubs
 
         public struct AlsoNotAnInterface
         {
+        }
+    }
+
+    namespace Test
+    {
+        public interface IClientContract
+        {
+            void test();
         }
     }
 }

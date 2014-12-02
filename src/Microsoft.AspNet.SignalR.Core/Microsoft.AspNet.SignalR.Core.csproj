@@ -270,6 +270,7 @@
     <Compile Include="Transports\ITransportConnection.cs" />
     <Compile Include="Json\JsonUtility.cs" />
     <Compile Include="GroupManager.cs" />
+    <Compile Include="Infrastructure\AckSubscriber.cs" />
     <Compile Include="Messaging\Command.cs" />
     <Compile Include="Resources.Designer.cs">
       <AutoGen>True</AutoGen>
