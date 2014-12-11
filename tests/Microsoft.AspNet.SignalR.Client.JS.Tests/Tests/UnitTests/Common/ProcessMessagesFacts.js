@@ -24,6 +24,22 @@ QUnit.test("tryInitialize is triggered on an initialize message.", function () {
     }
 });
 
+QUnit.test("tryInitialize will not try to invoke undefined callback", function () {
+    var connection = testUtilities.createConnection();
+
+    // processMessages accepts an optional third parameter onInitialized.
+    // This test leaves onInitialized undefined to ensure that it is not called.
+    $.signalR.transports._logic.processMessages(connection, {
+        C: 1234,
+        M: [],
+        L: 1337,
+        G: "foo",
+        S: 1
+    });
+
+    QUnit.comment("tryInitialize did not throw.");
+});
+
 QUnit.test("Updates keep alive data on any message retrieval.", function () {
     var connection = testUtilities.createConnection(),
         response = {
