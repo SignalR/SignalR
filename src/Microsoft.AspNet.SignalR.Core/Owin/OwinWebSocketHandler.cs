@@ -74,29 +74,35 @@ namespace Microsoft.AspNet.SignalR.Owin
 
             var cts = new CancellationTokenSource();
             var webSocketHandler = new DefaultWebSocketHandler(_maxIncomingMessageSize);
+            var task = webSocketHandler.ProcessWebSocketRequestAsync(webSocket, cts.Token);
 
-            return Task.WhenAll(webSocketHandler.ProcessWebSocketRequestAsync(webSocket, cts.Token),
-                                RunWebSocketHandler(webSocketHandler, cts));
+            RunWebSocketHandler(webSocketHandler, cts);
+
+            return task;
         }
 
-        private async Task RunWebSocketHandler(DefaultWebSocketHandler handler, CancellationTokenSource cts)
+        private void RunWebSocketHandler(DefaultWebSocketHandler handler, CancellationTokenSource cts)
         {
-            try
+            // async void methods are not supported in ASP.NET and they throw a InvalidOperationException.
+            Task.Run(async () =>
             {
-                await _callback(handler).PreserveCulture();
-            }
-            catch
-            {
-                // This error was already handled by other layers
-                // we can no-op here so we don't cause an unobserved exception
-            }
+                try
+                {
+                    await _callback(handler).PreserveCulture();
+                }
+                catch
+                {
+                    // This error was already handled by other layers
+                    // we can no-op here so we don't cause an unobserved exception
+                }
 
-            // Always try to close async, if the websocket already closed
-            // then this will no-op
-            await handler.CloseAsync().PreserveCulture();
+                // Always try to close async, if the websocket already closed
+                // then this will no-op
+                await handler.CloseAsync().PreserveCulture();
 
-            // Cancel the token
-            cts.Cancel();
+                // Cancel the token
+                cts.Cancel();
+            });
         }
 
         private class OwinWebSocket : WebSocket
