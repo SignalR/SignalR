@@ -503,10 +503,13 @@
             }
         },
 
-        tryInitialize: function (persistentResponse, onInitialized) {
-            if (persistentResponse.Initialized) {
+        tryInitialize: function (connection, persistentResponse, onInitialized) {
+            if (persistentResponse.Initialized && onInitialized) {
                 onInitialized();
+            } else if (persistentResponse.Initialized) {
+                connection.log("WARNING! The client received an init message after reconnecting.");
             }
+
         },
 
         triggerReceived: function (connection, data) {
@@ -535,7 +538,7 @@
                         transportLogic.triggerReceived(connection, message);
                     });
 
-                    transportLogic.tryInitialize(data, onInitialized);
+                    transportLogic.tryInitialize(connection, data, onInitialized);
                 }
             }
         },
