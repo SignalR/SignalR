@@ -85,14 +85,6 @@
 
             connection.log(transport.name + " transport starting.");
 
-            that.transportTimeoutHandle = window.setTimeout(function () {
-                if (!failCalled) {
-                    failCalled = true;
-                    connection.log(transport.name + " transport timed out when trying to connect.");
-                    that.transportFailed(transport, undefined, onFallback);
-                }
-            }, connection._.totalTransportConnectTimeout);
-
             transport.start(connection, function () {
                 if (!failCalled) {
                     that.initReceived(transport, onSuccess);
@@ -108,6 +100,14 @@
                 // false if it should attempt to reconnect
                 return !that.startCompleted || that.connectionStopped;
             });
+
+            that.transportTimeoutHandle = window.setTimeout(function () {
+                if (!failCalled) {
+                    failCalled = true;
+                    connection.log(transport.name + " transport timed out when trying to connect.");
+                    that.transportFailed(transport, undefined, onFallback);
+                }
+            }, connection._.totalTransportConnectTimeout);
         },
 
         stop: function () {
