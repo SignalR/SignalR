@@ -13,7 +13,7 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
     /// we don't need to write to a long lived buffer. This saves massive amounts of memory
     /// as the number of connections grows.
     /// </summary>
-    internal abstract unsafe class BufferTextWriter : TextWriter
+    internal abstract class BufferTextWriter : TextWriter
     {
         private readonly Encoding _encoding;
 
@@ -79,7 +79,12 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
             Writer.Write(value);
         }
 
-        public override void Flush()
+		public override void Write(char[] buffer, int index, int count)
+		{
+			Writer.Write(buffer, index, count);
+		}
+
+	    public override void Flush()
         {
             Writer.Flush();
         }
@@ -142,9 +147,41 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
                     sourceIndex += count;
                     length -= count;
                 }
+
+				if (_charPos == _charLen)
+				{
+					Flush(flushEncoder: false);
+				}
             }
 
-            public void Write(ArraySegment<byte> data)
+			public void Write(char[] buffer, int sourceIndex, int length)
+			{
+				while (length > 0)
+				{
+					if (_charPos == _charLen)
+					{
+						Flush(flushEncoder: false);
+					}
+
+					int count = _charLen - _charPos;
+					if (count > length)
+					{
+						count = length;
+					}
+
+					Array.Copy(buffer, sourceIndex, _charBuffer, _charPos, count);
+					_charPos += count;
+					sourceIndex += count;
+					length -= count;
+				}
+
+				if (_charPos == _charLen)
+				{
+					Flush(flushEncoder: false);
+				}
+			}
+			
+			public void Write(ArraySegment<byte> data)
             {
                 Flush();
                 _write(data, _writeState);
