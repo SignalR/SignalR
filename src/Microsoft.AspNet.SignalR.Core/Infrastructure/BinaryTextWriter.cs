@@ -6,7 +6,7 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
     /// <summary>
     /// A buffering text writer that supports writing binary directly as well
     /// </summary>
-    internal unsafe class BinaryTextWriter : BufferTextWriter, IBinaryWriter
+    internal class BinaryTextWriter : BufferTextWriter, IBinaryWriter
     {
         public BinaryTextWriter(IResponse response) :
             base((data, state) => ((IResponse)state).Write(data), response, reuseBuffers: true, bufferSize: 128)
