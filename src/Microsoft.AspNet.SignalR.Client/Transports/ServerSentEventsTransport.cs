@@ -58,7 +58,9 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
             {
                 _stop = true;
 
-                _request.Abort();
+				var req = _request;
+				if (req != null)
+					req.Abort();
             };
 
             OpenConnection(connection, connectionData, disconnectToken, initializeHandler.InitReceived, initializeHandler.Fail);
@@ -261,9 +263,10 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
 
         public override void LostConnection(IConnection connection)
         {
-            if (_request != null)
+	        var req = _request;
+            if (req != null)
             {
-                _request.Abort();
+                req.Abort();
             }
         }
     }
