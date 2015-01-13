@@ -6,7 +6,13 @@ QUnit.asyncTimeoutTest("WebSocket invalid state sends trigger connection error."
 
     connection.error(function (error) {
         assert.equal(error.message, $.signalR.resources.webSocketsInvalidState, "Web socket transport catches thrown errors from the socket send.");
-        assert.equal(error.source.message, customErrorText, "Web socket transport throws correct error message");
+        assert.isSet(error.source, "Error source is set.")
+
+        // Avoid uncaught TypeError
+        if (error.source) {
+            assert.equal(error.source.message, customErrorText, "Web socket transport throws correct error message");
+        }
+
         end();
     });
 
@@ -31,7 +37,12 @@ QUnit.asyncTimeoutTest("Hub invocations fail when the WebSocket in in an invalid
 
     connection.error(function (error) {
         assert.equal(error.message, $.signalR.resources.webSocketsInvalidState, "Web socket transport catches thrown errors from the socket send.");
-        assert.equal(error.source.message, customErrorText, "Web socket transport throws correct error message");
+        assert.isSet(error.source, "Error source is set.")
+
+        // Avoid uncaught TypeError
+        if (error.source) {
+            assert.equal(error.source.message, customErrorText, "Web socket transport throws correct error message");
+        }
     });
 
     connection.start({ transport: "webSockets" }).done(function () {

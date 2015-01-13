@@ -61,10 +61,12 @@ QUnit.asyncTimeoutTest("foreverFrame transport does not trigger verifyLastActive
         end();
     };
 
-    connection._.onFailedTimeoutHandle = window.setTimeout(function () {
-        assert.comment("FailedTimeoutHandle is called.");
-        end();
-    }, 5000);
+    connection.disconnected(function () {
+        assert.comment("Connection successfully transitioned to the disconnecting state.");
+
+        // Give time for any unexpected calls to verifyLastActive
+        window.setTimeout(end, 1000)
+    });
 
     connection.start({ transport: "foreverFrame" }).done(function () {
         assert.fail("Connection should not be connected.");

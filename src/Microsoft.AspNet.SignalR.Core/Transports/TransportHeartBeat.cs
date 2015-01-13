@@ -92,6 +92,7 @@ namespace Microsoft.AspNet.SignalR.Transports
             if (isNewConnection)
             {
                 Trace.TraceInformation("Connection {0} is New.", connection.ConnectionId);
+                connection.IncrementConnectionsCount();
             }
 
             lock (_counterLock)
@@ -122,6 +123,7 @@ namespace Microsoft.AspNet.SignalR.Transports
             ConnectionMetadata metadata;
             if (_connections.TryRemove(connection.ConnectionId, out metadata))
             {
+                connection.DecrementConnectionsCount();
                 lock (_counterLock)
                 {
                     _counters.ConnectionsCurrent.RawValue = _connections.Count;
@@ -222,7 +224,7 @@ namespace Microsoft.AspNet.SignalR.Transports
                     Trace.TraceEvent(TraceEventType.Verbose, 0, "KeepAlive(" + metadata.Connection.ConnectionId + ")");
 
                     // Ensure delegate continues to use the C# Compiler static delegate caching optimization.
-                    metadata.Connection.KeepAlive().Catch((ex, state) => OnKeepAliveError(ex, state), Trace);
+                    metadata.Connection.KeepAlive().Catch((ex, state) => OnKeepAliveError(ex, state), state: Trace, traceSource: Trace);
                 }
 
                 MarkConnection(metadata.Connection);

@@ -45,3 +45,22 @@ QUnit.test("Messages are not run through connection JSON parser if it's not set.
 
     QUnit.equal(responseType, "object", "Forever Frame does not use JSON parser if it's not configured for the connection.");
 });
+
+QUnit.test("IFrame is created outside body.", function () {
+
+    if (window.EventSource) {
+        QUnit.ok(true, "test skipped - Forever Frame is not supported browsers with SSE support.");
+        return;
+    }
+
+    var connection = $.connection("");
+
+    $.connection.transports.foreverFrame.start(connection);
+
+    var frame = $("body")[0].nextSibling;
+    QUnit.equal(frame && frame.tagName, 'IFRAME');
+
+    if (frame) {
+        frame.parentNode.removeChild(frame);
+    };
+});

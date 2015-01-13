@@ -116,6 +116,11 @@
             }, false);
 
             connection.eventSource.addEventListener("error", function (e) {
+                var error = signalR._.transportError(
+                    signalR.resources.eventSourceError,
+                    connection.transport,
+                    e);
+
                 // Only handle an error if the error is from the current Event Source.
                 // Sometimes on disconnect the server will push down an error event
                 // to an expired Event Source.
@@ -123,11 +128,7 @@
                     return;
                 }
 
-                if (!opened) {
-                    if (onFailed) {
-                        onFailed();
-                    }
-
+                if (onFailed && onFailed(error)) {
                     return;
                 }
 
@@ -143,7 +144,7 @@
                 } else {
                     // connection error
                     connection.log("EventSource error.");
-                    $connection.triggerHandler(events.onError, [signalR._.transportError(signalR.resources.eventSourceError, connection.transport, e)]);
+                    $connection.triggerHandler(events.onError, [error]);
                 }
             }, false);
         },

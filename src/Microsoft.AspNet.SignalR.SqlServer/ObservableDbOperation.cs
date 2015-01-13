@@ -138,6 +138,8 @@ namespace Microsoft.AspNet.SignalR.SqlServer
 
                     if (recordCount > 0)
                     {
+                        Trace.TraceVerbose("{0}{1} records received", TracePrefix, recordCount);
+
                         // We got records so start the retry loop again
                         i = -1;
                         break;
@@ -398,9 +400,14 @@ namespace Microsoft.AspNet.SignalR.SqlServer
             {
                 try
                 {
+                    Trace.TraceVerbose("{0}Stopping SQL notification listener", TracePrefix);
                     SqlDependency.Stop(ConnectionString);
+                    Trace.TraceVerbose("{0}SQL notification listener stopped", TracePrefix);
                 }
-                catch (Exception) { }
+                catch (Exception stopEx)
+                {
+                    Trace.TraceError("{0}Error occured while stopping SQL notification listener: {1}", TracePrefix, stopEx);
+                }
             }
 
             lock (_stopLocker)

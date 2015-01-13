@@ -73,31 +73,33 @@
                 };
 
                 connection.socket.onclose = function (event) {
+                    var error;
+
                     // Only handle a socket close if the close is from the current socket.
                     // Sometimes on disconnect the server will push down an onclose event
                     // to an expired socket.
 
                     if (this === connection.socket) {
-                        if (!opened) {
-                            if (onFailed) {
-                                onFailed();
-                            } else if (reconnecting) {
-                                that.reconnect(connection);
-                            }
-                            return;
-                        } else if (typeof event.wasClean !== "undefined" && event.wasClean === false) {
+                        if (opened && typeof event.wasClean !== "undefined" && event.wasClean === false) {
                             // Ideally this would use the websocket.onerror handler (rather than checking wasClean in onclose) but
                             // I found in some circumstances Chrome won't call onerror. This implementation seems to work on all browsers.
-                            $(connection).triggerHandler(events.onError, [signalR._.transportError(
+                            error = signalR._.transportError(
                                 signalR.resources.webSocketClosed,
                                 connection.transport,
-                                event)]);
-                            connection.log("Unclean disconnect from websocket: " + event.reason || "[no reason given].");
+                                event);
+
+                            connection.log("Unclean disconnect from websocket: " + (event.reason || "[no reason given]."));
                         } else {
                             connection.log("Websocket closed.");
                         }
 
-                        that.reconnect(connection);
+                        if (!onFailed || !onFailed(error)) {
+                            if (error) {
+                                $(connection).triggerHandler(events.onError, [error]);
+                            }
+
+                            that.reconnect(connection);
+                        }
                     }
                 };
 

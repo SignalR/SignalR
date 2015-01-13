@@ -59,6 +59,9 @@ namespace Microsoft.AspNet.SignalR
             _configurationManager = resolver.Resolve<IConfigurationManager>();
             _transportManager = resolver.Resolve<ITransportManager>();
 
+            // Ensure that this server is listening for any ACKs sent over the bus.
+            resolver.Resolve<AckSubscriber>();
+
             _initialized = true;
         }
 
@@ -220,7 +223,7 @@ namespace Microsoft.AspNet.SignalR
             string connectionId;
             string message;
             int statusCode;
-            
+
             if (!TryGetConnectionId(context, connectionToken, out connectionId, out message, out statusCode))
             {
                 return FailResponse(context.Response, message, statusCode);
@@ -229,11 +232,21 @@ namespace Microsoft.AspNet.SignalR
             // Set the transport's connection id to the unprotected one
             Transport.ConnectionId = connectionId;
 
+            // Get the groups token from the request
+            return Transport.GetGroupsToken()
+                            .Then((g, pc, c) => pc.ProcessRequestPostGroupRead(c, g), this, context)
+                            .FastUnwrap();
+        }
+
+        private Task ProcessRequestPostGroupRead(HostContext context, string groupsToken)
+        {
+            string connectionId = Transport.ConnectionId;
+
             // Get the user id from the request
             string userId = UserIdProvider.GetUserId(context.Request);
 
             IList<string> signals = GetSignals(userId, connectionId);
-            IList<string> groups = AppendGroupPrefixes(context, connectionId);
+            IList<string> groups = AppendGroupPrefixes(context, connectionId, groupsToken);
 
             Connection connection = CreateConnection(connectionId, signals, groups);
 
@@ -270,7 +283,7 @@ namespace Microsoft.AspNet.SignalR
                 return TaskAsyncHelper.FromMethod(() => OnDisconnected(context.Request, connectionId, stopCalled: clean).OrEmpty());
             };
 
-            return Transport.ProcessRequest(connection).OrEmpty().Catch(Counters.ErrorsAllTotal, Counters.ErrorsAllPerSec);
+            return Transport.ProcessRequest(connection).OrEmpty().Catch(Trace, Counters.ErrorsAllTotal, Counters.ErrorsAllPerSec);
         }
 
         [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "We want to catch any exception when unprotecting data.")]
@@ -321,10 +334,8 @@ namespace Microsoft.AspNet.SignalR
         }
 
         [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "We want to prevent any failures in unprotecting")]
-        internal IList<string> VerifyGroups(HostContext context, string connectionId)
+        internal IList<string> VerifyGroups(string connectionId, string groupsToken)
         {
-            string groupsToken = context.Request.QueryString["groupsToken"];
-
             if (String.IsNullOrEmpty(groupsToken))
             {
                 return ListHelper<string>.Empty;
@@ -359,9 +370,9 @@ namespace Microsoft.AspNet.SignalR
             return JsonSerializer.Parse<string[]>(groupsValue);
         }
 
-        private IList<string> AppendGroupPrefixes(HostContext context, string connectionId)
+        private IList<string> AppendGroupPrefixes(HostContext context, string connectionId, string groupsToken)
         {
-            return (from g in OnRejoiningGroups(context.Request, VerifyGroups(context, connectionId), connectionId)
+            return (from g in OnRejoiningGroups(context.Request, VerifyGroups(connectionId, groupsToken), connectionId)
                     select GroupPrefix + g).ToList();
         }
 
@@ -385,12 +396,10 @@ namespace Microsoft.AspNet.SignalR
             // The list of default signals this connection cares about:
             // 1. The default signal (the type name)
             // 2. The connection id (so we can message this particular connection)
-            // 3. Ack signal
 
             return new string[] {
                 DefaultSignal,
-                PrefixHelper.GetConnectionId(connectionId),
-                PrefixHelper.GetAck(connectionId)
+                PrefixHelper.GetConnectionId(connectionId)
             };
         }
 

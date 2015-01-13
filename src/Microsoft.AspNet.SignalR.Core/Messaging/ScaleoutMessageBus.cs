@@ -129,7 +129,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
 
                 Debug.Assert(index >= 0, "Hash function resulted in an index < 0.");
 
-                Task sendTask = StreamManager.Send(index, group.ToArray()).Catch();
+                Task sendTask = StreamManager.Send(index, group.ToArray()).Catch(_trace);
 
                 if (sendTask.IsCompleted)
                 {

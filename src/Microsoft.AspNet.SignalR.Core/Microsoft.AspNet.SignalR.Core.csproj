@@ -22,7 +22,7 @@
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
     <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>TRACE;DEBUG;PERFCOUNTERS</DefineConstants>
+    <DefineConstants>TRACE;DEBUG;PERFCOUNTERS,SERVER</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <DocumentationFile>bin\Debug\Microsoft.AspNet.SignalR.Core.XML</DocumentationFile>
@@ -32,20 +32,20 @@
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
     <OutputPath>bin\Release\</OutputPath>
-    <DefineConstants>TRACE;PERFCOUNTERS</DefineConstants>
+    <DefineConstants>TRACE;PERFCOUNTERS,SERVER</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <DocumentationFile>bin\Release\Microsoft.AspNet.SignalR.Core.XML</DocumentationFile>
     <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Microsoft.Owin, Version=2.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+    <Reference Include="Microsoft.Owin, Version=2.1.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\packages\Microsoft.Owin.2.0.1\lib\net45\Microsoft.Owin.dll</HintPath>
+      <HintPath>..\..\packages\Microsoft.Owin.2.1.0\lib\net45\Microsoft.Owin.dll</HintPath>
     </Reference>
-    <Reference Include="Microsoft.Owin.Security, Version=2.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+    <Reference Include="Microsoft.Owin.Security, Version=2.1.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\packages\Microsoft.Owin.Security.2.0.1\lib\net45\Microsoft.Owin.Security.dll</HintPath>
+      <HintPath>..\..\packages\Microsoft.Owin.Security.2.1.0\lib\net45\Microsoft.Owin.Security.dll</HintPath>
     </Reference>
     <Reference Include="Newtonsoft.Json, Version=6.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
@@ -82,7 +82,6 @@
     <Compile Include="HubConfiguration.cs" />
     <Compile Include="HubException.cs" />
     <Compile Include="Hubs\ConnectionIdProxy.cs" />
-    <Compile Include="Hubs\HubBase.cs" />
     <Compile Include="Hubs\HubConnectionContextBase.cs" />
     <Compile Include="Hubs\IHubConnectionContext.cs" />
     <Compile Include="Hubs\MultipleSignalProxy.cs" />
@@ -124,6 +123,7 @@
     <Compile Include="Infrastructure\SipHashBasedStringEqualityComparer.cs" />
     <Compile Include="IRequest.cs" />
     <Compile Include="Hosting\HostDependencyResolverExtensions.cs" />
+    <Compile Include="IUntrackedDisposable.cs" />
     <Compile Include="IUserIdProvider.cs" />
     <Compile Include="Json\SipHashBasedDictionaryConverter.cs" />
     <Compile Include="Messaging\CommandType.cs" />
@@ -245,6 +245,7 @@
     <Compile Include="Owin\WebSockets\WebSocketHandler.cs" />
     <Compile Include="Owin\WebSockets\WebSocketMessage.cs" />
     <Compile Include="Owin\WebSockets\WebSocketMessageReader.cs" />
+    <Compile Include="TaskAwaiterHelper.cs" />
     <Compile Include="Tracing\ITraceManager.cs" />
     <Compile Include="DependencyResolverExtensions.cs" />
     <Compile Include="Hubs\ReflectionHelper.cs" />
@@ -268,6 +269,7 @@
     <Compile Include="Transports\ITransportConnection.cs" />
     <Compile Include="Json\JsonUtility.cs" />
     <Compile Include="GroupManager.cs" />
+    <Compile Include="Infrastructure\AckSubscriber.cs" />
     <Compile Include="Messaging\Command.cs" />
     <Compile Include="Resources.Designer.cs">
       <AutoGen>True</AutoGen>

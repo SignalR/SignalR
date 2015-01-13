@@ -19,7 +19,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Server.Hubs
             var sendProgressFunc = new Func<object, Task>(value => Task.FromResult(true));
 
             // Act
-            var progress = HubInvocationProgress.Create(progressType, sendProgressFunc);
+            var progress = HubInvocationProgress.Create(progressType, sendProgressFunc, traceSource: null);
 
             // Assert
             var expectedType = typeof(HubInvocationProgress<>).MakeGenericType(progressType);

@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Concurrent;
+using System.Diagnostics;
 using System.Threading.Tasks;
 
 namespace Microsoft.AspNet.SignalR.Hubs
@@ -21,7 +22,9 @@ namespace Microsoft.AspNet.SignalR.Hubs
             _sendProgressFunc = sendProgressFunc;
         }
 
-        public static HubInvocationProgress Create(Type progressGenericType, Func<object, Task> sendProgressFunc)
+        private TraceSource Trace { get; set; }
+
+        public static HubInvocationProgress Create(Type progressGenericType, Func<object, Task> sendProgressFunc, TraceSource traceSource)
         {
             Func<Func<object, Task>, HubInvocationProgress> createDelegate;
             if (!_progressCreateCache.TryGetValue(progressGenericType, out createDelegate))
@@ -35,6 +38,7 @@ namespace Microsoft.AspNet.SignalR.Hubs
                 _progressCreateCache[progressGenericType] = createDelegate;
             }
             var progress = createDelegate.Invoke(sendProgressFunc);
+            progress.Trace = traceSource;
             return progress;
         }
 
@@ -61,7 +65,7 @@ namespace Microsoft.AspNet.SignalR.Hubs
                 }
 
                 // Send progress update to client
-                _sendProgressFunc(value).Catch();
+                _sendProgressFunc(value).Catch(Trace);
             }
         }
     }

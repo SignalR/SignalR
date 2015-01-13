@@ -139,18 +139,18 @@ testUtilities.runWithTransports(["longPolling", "foreverFrame", "serverSentEvent
 });
 
 QUnit.asyncTimeoutTest("LongPolling poll fails on response redirection.", testUtilities.defaultTestTimeout, function (end, assert, testName) {
-    var connection = buildRedirectConnection("poll", end, assert, testName, true);
+    var connection = buildRedirectConnection("poll", end, assert, testName, false);
+
+    connection.error(function (error) {
+        assert.comment("Connection triggered error function on bad poll response.");
+        // If the error occurs during the start request, it may be wrapped, so check the source too.
+        assert.isSet(error.context || error.source.context, "Context is passed with parse failure in poll.");
+        end();
+    });
 
     connection.start({ transport: "longPolling" }).done(function () {
+        // The connection will not start successfully if the error occurs during the start request.
         assert.comment("Connection was started successfully.");
-
-        connection.send("");
-
-        connection.error(function (error) {
-            assert.comment("Connection triggered error function on bad poll response.");
-            assert.isSet(error.context, "Context is passed with parse failure in poll.");
-            end();
-        });
     });
 
     // Cleanup

@@ -133,14 +133,6 @@ namespace Microsoft.AspNet.SignalR.Messaging
             Topics = new TopicLookup();
         }
 
-        protected virtual TraceSource Trace
-        {
-            get
-            {
-                return _trace;
-            }
-        }
-
         protected internal TopicLookup Topics { get; private set; }
         protected IPerformanceCounterManager Counters { get; private set; }
 
@@ -302,13 +294,13 @@ namespace Microsoft.AspNet.SignalR.Messaging
 
         protected virtual void Dispose(bool disposing)
         {
-            if (disposing)
+            if (disposing && _gcRunning != GCState.Disposed)
             {
                 // Stop the broker from doing any work
                 _broker.Dispose();
 
                 // Spin while we wait for the timer to finish if it's currently running
-                while (Interlocked.Exchange(ref _gcRunning, 1) == 1)
+                while (Interlocked.CompareExchange(ref _gcRunning, GCState.Disposed, GCState.Idle) == GCState.Running)
                 {
                     Thread.Sleep(250);
                 }
@@ -330,7 +322,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
 
         internal void GarbageCollectTopics()
         {
-            if (Interlocked.Exchange(ref _gcRunning, 1) == 1)
+            if (Interlocked.CompareExchange(ref _gcRunning, GCState.Running, GCState.Idle) != GCState.Idle)
             {
                 return;
             }
@@ -386,7 +378,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
                 }
             }
 
-            Interlocked.Exchange(ref _gcRunning, 0);
+            Interlocked.CompareExchange(ref _gcRunning, GCState.Idle, GCState.Running);
         }
 
         private void DestroyTopic(string key, Topic topic)
@@ -415,7 +407,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
 
             Counters.MessageBusTopicsCurrent.Decrement();
 
-            Trace.TraceInformation("RemoveTopic(" + key + ")");
+            _trace.TraceInformation("RemoveTopic(" + key + ")");
 
             if (AfterTopicGarbageCollected != null)
             {
@@ -567,6 +559,13 @@ namespace Microsoft.AspNet.SignalR.Messaging
                 Initialized = new ManualResetEventSlim();
                 Subscriber = subscriber;
             }
+        }
+
+        private static class GCState
+        {
+            public const int Idle = 0;
+            public const int Running = 1;
+            public const int Disposed = 2;
         }
     }
 }

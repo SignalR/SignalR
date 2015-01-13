@@ -508,7 +508,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
             using (var bus = new MessageBus(dr))
             {
                 Func<ISubscriber> subscriberFactory = () => new TestSubscriber(new[] { "key" });
-                var tcs = new TaskCompletionSource<MessageResult>();
+                var tcs = new TaskCompletionSource<Message[]>();
                 IDisposable subscription = null;
 
                 try
@@ -520,7 +520,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
 
                     subscription = bus.Subscribe(subscriberFactory(), "s-key,00000000", (result, state) =>
                     {
-                        tcs.TrySetResult(result);
+                        tcs.TrySetResult(result.GetMessages().ToArray());
                         return TaskAsyncHelper.True;
                     }, 10, null);
 
@@ -528,7 +528,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
 
                     Assert.True(tcs.Task.Wait(TimeSpan.FromSeconds(5)));
 
-                    foreach (var m in tcs.Task.Result.GetMessages())
+                    foreach (var m in tcs.Task.Result)
                     {
                         Assert.Equal("key", m.Key);
                         Assert.Equal("value", m.GetString());
@@ -587,6 +587,15 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
                     }
                 }
             }
+        }
+
+        [Fact]
+        public void MessageBusCanBeDisposedTwiceWithoutHanging()
+        {
+            var bus = new MessageBus(new DefaultDependencyResolver());
+
+            bus.Dispose();
+            Assert.True(Task.Run(() => bus.Dispose()).Wait(TimeSpan.FromSeconds(10)));
         }
 
         private class TestMessageBus : MessageBus

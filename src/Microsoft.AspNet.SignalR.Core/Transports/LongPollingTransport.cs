@@ -9,12 +9,14 @@ using Microsoft.AspNet.SignalR.Infrastructure;
 using Microsoft.AspNet.SignalR.Json;
 using Microsoft.AspNet.SignalR.Tracing;
 using Newtonsoft.Json;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Microsoft.AspNet.SignalR.Transports
 {
     public class LongPollingTransport : ForeverTransport, ITransport
     {
         private readonly IConfigurationManager _configurationManager;
+        private readonly IPerformanceCounterManager _counters;
         private bool _responseSent;
 
         public LongPollingTransport(HostContext context, IDependencyResolver resolver)
@@ -37,6 +39,7 @@ namespace Microsoft.AspNet.SignalR.Transports
             : base(context, jsonSerializer, heartbeat, performanceCounterManager, traceManager)
         {
             _configurationManager = configurationManager;
+            _counters = performanceCounterManager;
         }
 
         public override TimeSpan DisconnectThreshold
@@ -94,6 +97,37 @@ namespace Microsoft.AspNet.SignalR.Transports
             }
         }
 
+        protected override Task InitializeMessageId()
+        {
+            _lastMessageId = Context.Request.QueryString["messageId"];
+
+            if (_lastMessageId == null)
+            {
+                return Context.Request.ReadForm().Then((form, t) =>
+                {
+                    t._lastMessageId = form["messageId"];
+                }, this);
+            }
+
+            return TaskAsyncHelper.Empty;
+        }
+
+        [SuppressMessage("Microsoft.Design", "CA1024:UsePropertiesWhereAppropriate", Justification = "This is for async.")]
+        public override Task<string> GetGroupsToken()
+        {
+            var groupsToken = Context.Request.QueryString["groupsToken"];
+
+            if (groupsToken == null)
+            {
+                return Context.Request.ReadForm().Then(form =>
+                {
+                    return form["groupsToken"];
+                });
+            }
+
+            return Task.FromResult(groupsToken);
+        }
+
         public override Task KeepAlive()
         {
             // Ensure delegate continues to use the C# Compiler static delegate caching optimization.
@@ -119,6 +153,16 @@ namespace Microsoft.AspNet.SignalR.Transports
             // This overload is only used in response to /send requests,
             // so the response will be uninitialized.
             return EnqueueOperation(state => PerformCompleteSend(state), context);
+        }
+
+        public override void IncrementConnectionsCount()
+        {
+            _counters.ConnectionsCurrentLongPolling.Increment();
+        }
+        
+        public override void DecrementConnectionsCount()
+        {
+            _counters.ConnectionsCurrentLongPolling.Decrement();
         }
 
         protected override Task<bool> OnMessageReceived(PersistentResponse response)
@@ -180,12 +224,12 @@ namespace Microsoft.AspNet.SignalR.Transports
 
         protected override async Task ProcessSendRequest()
         {
-            INameValueCollection form = await Context.Request.ReadForm();
+            INameValueCollection form = await Context.Request.ReadForm().PreserveCulture();
             string data = form["data"] ?? Context.Request.QueryString["data"];
 
             if (Received != null)
             {
-                await Received(data);
+                await Received(data).PreserveCulture();
             }
         }
 
@@ -252,7 +296,7 @@ namespace Microsoft.AspNet.SignalR.Transports
 
             return PerformPartialSend(state);
         }
-        
+
         private void AddTransportData(PersistentResponse response)
         {
             if (_configurationManager.LongPollDelay != TimeSpan.Zero)

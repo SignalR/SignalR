@@ -13,12 +13,14 @@ namespace Microsoft.AspNet.SignalR.Client.Http
 {
     internal static class HttpHelper
     {
+#if CLIENT_NET4
+
         [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "Exceptions are flowed back to the caller.")]
         public static Task<HttpWebResponse> GetHttpResponseAsync(this HttpWebRequest request)
         {
             try
             {
-                return Task.Factory.FromAsync<HttpWebResponse>(request.BeginGetResponse, ar => (HttpWebResponse)request.EndGetResponse(ar), null);
+                return Task.Factory.FromAsync(request.BeginGetResponse, ar => (HttpWebResponse)request.EndGetResponse(ar), null);
             }
             catch (Exception ex)
             {
@@ -41,7 +43,7 @@ namespace Microsoft.AspNet.SignalR.Client.Http
 
         public static Task<HttpWebResponse> GetAsync(string url, Action<HttpWebRequest> requestPreparer)
         {
-            HttpWebRequest request = CreateWebRequest(url);
+            var request = (HttpWebRequest)WebRequest.Create(url);
             if (requestPreparer != null)
             {
                 requestPreparer(request);
@@ -51,7 +53,7 @@ namespace Microsoft.AspNet.SignalR.Client.Http
 
         public static Task<HttpWebResponse> PostAsync(string url, Action<HttpWebRequest> requestPreparer, IDictionary<string, string> postData)
         {
-            HttpWebRequest request = CreateWebRequest(url);
+            var request = (HttpWebRequest)WebRequest.Create(url);
 
             if (requestPreparer != null)
             {
@@ -77,9 +79,10 @@ namespace Microsoft.AspNet.SignalR.Client.Http
                 .Then(stream => stream.WriteAsync(buffer).Then(() => stream.Dispose()))
                 .Then(() => request.GetHttpResponseAsync());
         }
+#endif
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Globalization", "CA1305:SpecifyIFormatProvider", MessageId = "System.Text.StringBuilder.AppendFormat(System.String,System.Object[])", Justification = "This will never be localized.")]
-        private static byte[] ProcessPostData(IDictionary<string, string> postData)
+        public static byte[] ProcessPostData(IDictionary<string, string> postData)
         {
             if (postData == null || postData.Count == 0)
             {
@@ -103,13 +106,6 @@ namespace Microsoft.AspNet.SignalR.Client.Http
             }
 
             return Encoding.UTF8.GetBytes(sb.ToString());
-        }
-
-        private static HttpWebRequest CreateWebRequest(string url)
-        {
-            HttpWebRequest request = null;
-            request = (HttpWebRequest)WebRequest.Create(url);
-            return request;
         }
     }
 }

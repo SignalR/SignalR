@@ -87,7 +87,7 @@ testUtilities.runWithAllTransports(function (transport) {
 
             if (++pingCount === 2) {
                 assert.comment("Pinged twice.");
-                
+
                 // Let sleep for 1 second to let any dups flow in (so we can fail)
                 window.setTimeout(function () {
                     end();
@@ -106,6 +106,5 @@ testUtilities.runWithAllTransports(function (transport) {
             connection.stop();
         };
     });
-
 });
 

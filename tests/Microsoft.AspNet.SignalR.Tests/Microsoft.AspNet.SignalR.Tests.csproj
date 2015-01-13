@@ -77,12 +77,14 @@
     <Compile Include="Core\Hubs\Lookup\HubMethodDispatcherFacts.cs" />
     <Compile Include="Core\Hubs\TestHubs.cs" />
     <Compile Include="Core\Transports\ForeverFrameTransportFacts.cs" />
+    <Compile Include="DefaultDependencyResolverFacts.cs" />
     <Compile Include="GroupManagerFacts.cs" />
     <Compile Include="Hosting\CookieFacts.cs" />
     <Compile Include="Hosting\ResponseExtensionsFacts.cs" />
     <Compile Include="Json\JsonFacts.cs" />
     <Compile Include="Json\JsonSerializerExtensionFacts.cs" />
     <Compile Include="Owin\ServerRequestFacts.cs" />
+    <Compile Include="PerformanceCounterManagerFacts.cs" />
     <Compile Include="PersistentConnectionFactoryFacts.cs" />
     <Compile Include="PersistentConnectionFacts.cs" />
     <Compile Include="PersistentResponseFacts.cs" />

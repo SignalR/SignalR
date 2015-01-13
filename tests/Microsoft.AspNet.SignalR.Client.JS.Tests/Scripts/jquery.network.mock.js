@@ -252,6 +252,9 @@
         // Copy constants like CLOSED, CLOSING, CONNECTING and OPEN
         $.extend(CustomWebSocket, window.WebSocket);
 
+        // Remove the WebSocket prototype otherwise Safari 7.1+ dies
+        CustomWebSocket.prototype = null;
+
         window.WebSocket = CustomWebSocket;
         modifiedWebSocket = CustomWebSocket;
     }

@@ -1,8 +1,10 @@
 using System;
 using System.Configuration;
+using System.Data.Odbc;
 using System.Diagnostics;
 using System.IO;
 using System.Security.Claims;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Web;
 using System.Web.Routing;
@@ -300,12 +302,43 @@ namespace Microsoft.AspNet.SignalR.Tests.Common
 
             app.Map("/force-lp-reconnect", map =>
             {
+                var startReceived = new ManualResetEvent(false);
+
                 map.Use((context, next) =>
                 {
-                    if (context.Request.Path.Value.Contains("poll"))
+                    if (context.Request.QueryString.Value.Contains("transport=longPolling"))
                     {
-                        context.Response.StatusCode = 500;
-                        return TaskAsyncHelper.Empty;
+                        // To test reconnect scenarios we need to make sure that the transport is 
+                        // successfully started before we disconnect the client. For long polling
+                        // this means we need to make sure that we don't break the poll request
+                        // before we send a response to the start request. Note that the first poll 
+                        // request is likely to arrive before the start request. The assumption here
+                        // is that there is only one active long polling connection at a time.
+                        if (context.Request.Path.Value.Contains("/connect"))
+                        {
+                            // a new connection was started
+                            startReceived.Reset();
+                        }
+                        else if (context.Request.Path.Value.Contains("/start"))
+                        {
+                            // unblock breaking the poll after start request
+                            return next().ContinueWith(t => startReceived.Set());
+                        }
+                        else if (context.Request.Path.Value.Contains("/poll"))
+                        {
+                            return Task.Run(async () =>
+                            {
+                                // don't break the poll until start request is handled or a timeout 
+                                // if it is a subsequent poll
+                                startReceived.WaitOne(3000);
+                                // give the start request some additional head start
+                                await Task.Delay(500);
+                                //subsequent long polling request should not break immediately
+                                startReceived.Reset();
+                                context.Response.StatusCode = 500;
+                                return TaskAsyncHelper.Empty;
+                            });
+                        }
                     }
 
                     return next();

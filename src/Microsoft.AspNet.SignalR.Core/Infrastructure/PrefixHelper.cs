@@ -21,7 +21,6 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
 
         // Both
         internal const string ConnectionIdPrefix = "c-";
-        internal const string AckPrefix = "ack-";
 
         public static bool HasGroupPrefix(string value)
         {
@@ -62,11 +61,6 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
         public static string GetPersistentConnectionName(string connectionName)
         {
             return PersistentConnectionPrefix + connectionName;
-        }
-
-        public static string GetAck(string connectionId)
-        {
-            return AckPrefix + connectionId;
         }
 
         public static IList<string> GetPrefixedConnectionIds(IList<string> connectionIds)

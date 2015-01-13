@@ -6,10 +6,14 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
+#if !SERVER
+using Microsoft.AspNet.SignalR.Client;
+#endif
 using Microsoft.AspNet.SignalR.Infrastructure;
 
 namespace Microsoft.AspNet.SignalR
@@ -93,13 +97,20 @@ namespace Microsoft.AspNet.SignalR
         }
 
         [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode", Justification = "This is a shared file")]
-        public static TTask Catch<TTask>(this TTask task) where TTask : Task
+#if SERVER
+        public static TTask Catch<TTask>(this TTask task, TraceSource traceSource = null) where TTask : Task
         {
-            return Catch(task, ex => { });
+            return Catch(task, ex => { }, traceSource);
         }
+#else
+        public static TTask Catch<TTask>(this TTask task, IConnection connection = null) where TTask : Task
+        {
+            return Catch(task, ex => { }, connection);
+        }
+#endif
 
 #if PERFCOUNTERS
-        public static TTask Catch<TTask>(this TTask task, params IPerformanceCounter[] counters) where TTask : Task
+        public static TTask Catch<TTask>(this TTask task, TraceSource traceSource, params IPerformanceCounter[] counters) where TTask : Task
         {
             return Catch(task, _ =>
                 {
@@ -111,22 +122,35 @@ namespace Microsoft.AspNet.SignalR
                     {
                         counters[i].Increment();
                     }
-                });
+                },
+                traceSource);
         }
 #endif
 
         [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode", Justification = "This is a shared file")]
-        public static TTask Catch<TTask>(this TTask task, Action<AggregateException, object> handler, object state) where TTask : Task
+#if SERVER
+        public static TTask Catch<TTask>(this TTask task, Action<AggregateException, object> handler, object state, TraceSource traceSource = null) where TTask : Task
+#else
+        public static TTask Catch<TTask>(this TTask task, Action<AggregateException, object> handler, object state, IConnection connection = null) where TTask : Task
+#endif
         {
             if (task != null && task.Status != TaskStatus.RanToCompletion)
             {
                 if (task.Status == TaskStatus.Faulted)
                 {
-                    ExecuteOnFaulted(handler, state, task.Exception);
+#if SERVER
+                    ExecuteOnFaulted(handler, state, task.Exception, traceSource);
+#else
+                    ExecuteOnFaulted(handler, state, task.Exception, connection);
+#endif
                 }
                 else
                 {
-                    AttachFaultedContinuation<TTask>(task, handler, state);
+#if SERVER
+                    AttachFaultedContinuation<TTask>(task, handler, state, traceSource);
+#else
+                    AttachFaultedContinuation<TTask>(task, handler, state, connection);
+#endif
                 }
             }
 
@@ -134,30 +158,60 @@ namespace Microsoft.AspNet.SignalR
         }
 
         [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode", Justification = "This is a shared file")]
-        private static void AttachFaultedContinuation<TTask>(TTask task, Action<AggregateException, object> handler, object state) where TTask : Task
+#if SERVER
+        private static void AttachFaultedContinuation<TTask>(TTask task, Action<AggregateException, object> handler, object state, TraceSource traceSource) where TTask : Task
+#else      
+        private static void AttachFaultedContinuation<TTask>(TTask task, Action<AggregateException, object> handler, object state, IConnection connection) where TTask : Task
+#endif
         {
             task.ContinueWithPreservedCulture(innerTask =>
             {
-                ExecuteOnFaulted(handler, state, innerTask.Exception);
+#if SERVER
+                ExecuteOnFaulted(handler, state, innerTask.Exception, traceSource);
+#else
+                ExecuteOnFaulted(handler, state, innerTask.Exception, connection);
+#endif
             },
             TaskContinuationOptions.OnlyOnFaulted | TaskContinuationOptions.ExecuteSynchronously);
         }
 
         [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode", Justification = "This is a shared file")]
-        private static void ExecuteOnFaulted(Action<AggregateException, object> handler, object state, AggregateException exception)
+#if SERVER
+        private static void ExecuteOnFaulted(Action<AggregateException, object> handler, object state, AggregateException exception, TraceSource traceSource)
+#else
+        private static void ExecuteOnFaulted(Action<AggregateException, object> handler, object state, AggregateException exception, IConnection connection)
+#endif
         {
-            // observe Exception
-#if !PORTABLE && !NETFX_CORE && !__ANDROID__ && !IOS
-            Trace.TraceWarning("SignalR exception thrown by Task: {0}", exception);
+            // Observe Exception
+#if SERVER
+            if (traceSource != null)
+            {
+                traceSource.TraceEvent(TraceEventType.Warning, 0, "Exception thrown by Task: {0}", exception);
+            }
+#else
+            if (connection != null)
+            {
+                connection.Trace(TraceLevels.Messages, "Exception thrown by Task: {0}", new [] { exception });
+            }
 #endif
             handler(exception, state);
         }
 
         [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode", Justification = "This is a shared file")]
-        public static TTask Catch<TTask>(this TTask task, Action<AggregateException> handler) where TTask : Task
+#if SERVER
+        public static TTask Catch<TTask>(this TTask task, Action<AggregateException> handler, TraceSource traceSource = null) where TTask : Task
+#else
+        public static TTask Catch<TTask>(this TTask task, Action<AggregateException> handler, IConnection connection = null) where TTask : Task
+#endif
         {
             return task.Catch((ex, state) => ((Action<AggregateException>)state).Invoke(ex),
-                              handler);
+                              handler,
+#if SERVER
+                              traceSource
+#else
+                              connection
+#endif
+                              );
         }
 
         [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode", Justification = "This is a shared file")]
@@ -459,6 +513,25 @@ namespace Microsoft.AspNet.SignalR
         }
 
         [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode", Justification = "This is a shared file")]
+        public static Task<TResult> Then<T, T1, T2, TResult>(this Task<T> task, Func<T, T1, T2, TResult> successor, T1 arg1, T2 arg2)
+        {
+            switch (task.Status)
+            {
+                case TaskStatus.Faulted:
+                    return FromError<TResult>(task.Exception);
+
+                case TaskStatus.Canceled:
+                    return Canceled<TResult>();
+
+                case TaskStatus.RanToCompletion:
+                    return FromMethod(successor, task.Result, arg1, arg2);
+
+                default:
+                    return GenericDelegates<T, TResult, T1, T2, object>.ThenWithArgs(task, successor, arg1, arg2);
+            }
+        }
+
+        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode", Justification = "This is a shared file")]
         public static Task Then(this Task task, Func<Task> successor)
         {
             switch (task.Status)
@@ -510,6 +583,23 @@ namespace Microsoft.AspNet.SignalR
 
                 default:
                     return TaskRunners<TResult, object>.RunTask(task, successor);
+            }
+        }
+
+        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode", Justification = "This is a shared file")]
+        public static Task Then<T, T1>(this Task<T> task, Action<T, T1> successor, T1 arg1)
+        {
+            switch (task.Status)
+            {
+                case TaskStatus.Faulted:
+                case TaskStatus.Canceled:
+                    return task;
+
+                case TaskStatus.RanToCompletion:
+                    return FromMethod(successor, task.Result, arg1);
+
+                default:
+                    return GenericDelegates<T, object, T1, object, object>.ThenWithArgs(task, successor, arg1);
             }
         }
 
@@ -812,6 +902,20 @@ namespace Microsoft.AspNet.SignalR
         }
 
         [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode", Justification = "This is a shared file")]
+        [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "Exceptions are set in a tcs")]
+        public static Task<TResult> FromMethod<T1, T2, T3, TResult>(Func<T1, T2, T3, TResult> func, T1 arg1, T2 arg2, T3 arg3)
+        {
+            try
+            {
+                return FromResult<TResult>(func(arg1, arg2, arg3));
+            }
+            catch (Exception ex)
+            {
+                return FromError<TResult>(ex);
+            }
+        }
+
+        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode", Justification = "This is a shared file")]
         public static Task<T> FromResult<T>(T value)
         {
             var tcs = new TaskCompletionSource<T>();
@@ -877,30 +981,69 @@ namespace Microsoft.AspNet.SignalR
             return tcs.Task;
         }
 
+
+#if !NETFX_CORE
+        internal struct CulturePair
+        {
+            public CultureInfo Culture;
+            public CultureInfo UICulture;
+        }
+
+        internal static CulturePair SaveCulture()
+        {
+            return new CulturePair
+            {
+                Culture = Thread.CurrentThread.CurrentCulture,
+                UICulture = Thread.CurrentThread.CurrentUICulture
+            };
+        }
+
+        internal static TResult RunWithPreservedCulture<T1, T2, TResult>(CulturePair preservedCulture, Func<T1, T2, TResult> func, T1 arg1, T2 arg2)
+        {
+            var replacedCulture = SaveCulture();
+            try
+            {
+                Thread.CurrentThread.CurrentCulture = preservedCulture.Culture;
+                Thread.CurrentThread.CurrentUICulture = preservedCulture.UICulture;
+                return func(arg1, arg2);
+            }
+            finally
+            {
+                Thread.CurrentThread.CurrentCulture = replacedCulture.Culture;
+                Thread.CurrentThread.CurrentUICulture = replacedCulture.UICulture;
+            }
+        }
+
+        internal static TResult RunWithPreservedCulture<T, TResult>(CulturePair preservedCulture, Func<T, TResult> func, T arg)
+        {
+            return RunWithPreservedCulture(preservedCulture, (f, state) => f(state), func, arg);
+        }
+
+        internal static void RunWithPreservedCulture<T>(CulturePair preservedCulture, Action<T> action, T arg)
+        {
+            RunWithPreservedCulture(preservedCulture, (f, state)  =>
+            {
+                f(state);
+                return (object)null;
+            },
+            action, arg);
+        }
+
+        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode", Justification = "This is a shared file")]
+        internal static void RunWithPreservedCulture(CulturePair preservedCulture, Action action)
+        {
+            RunWithPreservedCulture(preservedCulture, f => f(), action);
+        }
+#endif
+
         internal static Task ContinueWithPreservedCulture(this Task task, Action<Task> continuationAction, TaskContinuationOptions continuationOptions)
         {
 #if NETFX_CORE
             // The Thread class is not available on WinRT
             return task.ContinueWith(continuationAction, continuationOptions);
 #else
-            var preservedCulture = Thread.CurrentThread.CurrentCulture;
-            var preservedUICulture = Thread.CurrentThread.CurrentUICulture;
-            return task.ContinueWith(t =>
-            {
-                var replacedCulture = Thread.CurrentThread.CurrentCulture;
-                var replacedUICulture = Thread.CurrentThread.CurrentUICulture;
-                try
-                {
-                    Thread.CurrentThread.CurrentCulture = preservedCulture;
-                    Thread.CurrentThread.CurrentUICulture = preservedUICulture;
-                    continuationAction(t);
-                }
-                finally
-                {
-                    Thread.CurrentThread.CurrentCulture = replacedCulture;
-                    Thread.CurrentThread.CurrentUICulture = replacedUICulture;
-                }
-            }, continuationOptions);
+            var preservedCulture = SaveCulture();
+            return task.ContinueWith(t => RunWithPreservedCulture(preservedCulture, continuationAction, t), continuationOptions);
 #endif
         }
 
@@ -910,24 +1053,8 @@ namespace Microsoft.AspNet.SignalR
             // The Thread class is not available on WinRT
             return task.ContinueWith(continuationAction, continuationOptions);
 #else
-            var preservedCulture = Thread.CurrentThread.CurrentCulture;
-            var preservedUICulture = Thread.CurrentThread.CurrentUICulture;
-            return task.ContinueWith(t =>
-            {
-                var replacedCulture = Thread.CurrentThread.CurrentCulture;
-                var replacedUICulture = Thread.CurrentThread.CurrentUICulture;
-                try
-                {
-                    Thread.CurrentThread.CurrentCulture = preservedCulture;
-                    Thread.CurrentThread.CurrentUICulture = preservedUICulture;
-                    continuationAction(t);
-                }
-                finally
-                {
-                    Thread.CurrentThread.CurrentCulture = replacedCulture;
-                    Thread.CurrentThread.CurrentUICulture = replacedUICulture;
-                }
-            }, continuationOptions);
+            var preservedCulture = SaveCulture();
+            return task.ContinueWith(t => RunWithPreservedCulture(preservedCulture, continuationAction, t), continuationOptions);
 #endif
         }
 
@@ -938,24 +1065,8 @@ namespace Microsoft.AspNet.SignalR
             // The Thread class is not available on WinRT
             return task.ContinueWith(continuationAction, continuationOptions);
 #else
-            var preservedCulture = Thread.CurrentThread.CurrentCulture;
-            var preservedUICulture = Thread.CurrentThread.CurrentUICulture;
-            return task.ContinueWith(t =>
-            {
-                var replacedCulture = Thread.CurrentThread.CurrentCulture;
-                var replacedUICulture = Thread.CurrentThread.CurrentUICulture;
-                try
-                {
-                    Thread.CurrentThread.CurrentCulture = preservedCulture;
-                    Thread.CurrentThread.CurrentUICulture = preservedUICulture;
-                    return continuationAction(t);
-                }
-                finally
-                {
-                    Thread.CurrentThread.CurrentCulture = replacedCulture;
-                    Thread.CurrentThread.CurrentUICulture = replacedUICulture;
-                }
-            }, continuationOptions);
+            var preservedCulture = SaveCulture();
+            return task.ContinueWith(t => RunWithPreservedCulture(preservedCulture, continuationAction, t), continuationOptions);
 #endif
         }
 
@@ -1082,6 +1193,38 @@ namespace Microsoft.AspNet.SignalR
                 return tcs.Task;
             }
 
+
+            [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "Exceptions are set in a tcs")]
+            internal static Task RunTask(Task<T> task, Action<Task<T>> successor)
+            {
+                var tcs = new TaskCompletionSource<object>();
+                task.ContinueWithPreservedCulture(t =>
+                {
+                    if (task.IsFaulted)
+                    {
+                        tcs.SetUnwrappedException(t.Exception);
+                    }
+                    else if (task.IsCanceled)
+                    {
+                        tcs.SetCanceled();
+                    }
+                    else
+                    {
+                        try
+                        {
+                            successor(t);
+                            tcs.SetResult(null);
+                        }
+                        catch (Exception ex)
+                        {
+                            tcs.SetUnwrappedException(ex);
+                        }
+                    }
+                });
+
+                return tcs.Task;
+            }
+
             [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "Exceptions are set in a tcs")]
             internal static Task<TResult> RunTask(Task task, Func<TResult> successor)
             {
@@ -1155,6 +1298,11 @@ namespace Microsoft.AspNet.SignalR
                 return RunTask(task, () => successor(arg1, arg2));
             }
 
+            internal static Task ThenWithArgs(Task<T> task, Action<T, T1> successor, T1 arg1)
+            {
+                return TaskRunners<T, object>.RunTask(task, t => successor(t.Result, arg1));
+            }
+
             internal static Task<TResult> ThenWithArgs(Task task, Func<T1, TResult> successor, T1 arg1)
             {
                 return TaskRunners<object, TResult>.RunTask(task, () => successor(arg1));
@@ -1168,6 +1316,11 @@ namespace Microsoft.AspNet.SignalR
             internal static Task<TResult> ThenWithArgs(Task<T> task, Func<T, T1, TResult> successor, T1 arg1)
             {
                 return TaskRunners<T, TResult>.RunTask(task, t => successor(t.Result, arg1));
+            }
+
+            internal static Task<TResult> ThenWithArgs(Task<T> task, Func<T, T1, T2, TResult> successor, T1 arg1, T2 arg2)
+            {
+                return TaskRunners<T, TResult>.RunTask(task, t => successor(t.Result, arg1, arg2));
             }
 
             internal static Task<Task> ThenWithArgs(Task task, Func<T1, Task> successor, T1 arg1)

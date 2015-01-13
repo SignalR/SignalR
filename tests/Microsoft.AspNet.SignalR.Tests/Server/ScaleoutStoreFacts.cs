@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using Microsoft.AspNet.SignalR.Messaging;
 using Xunit;
 
@@ -248,6 +249,26 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
             var result = store.GetMessagesByMappingId(targetId);
             Assert.Equal(firstId, result.FirstMessageId);
             Assert.Equal(count, result.Messages.Count);
+        }
+
+        [Fact(Skip="Bug #3151")]
+        public void GettingMessagesWithCursorInbetweenFragmentsGetsEverythingAfterwards()
+        {
+            var store = new ScaleoutStore(10, 5);
+
+            var frag1Values = new[] { 1, 2, 3, 4, 5 };
+            // Purposely missing '6' between the fragments
+            var frag2Values = new[] { 7, 8, 9, 10, 11 };
+
+            foreach (var v in frag1Values.Concat(frag2Values))
+            {
+                store.Add(new ScaleoutMapping((ulong)v, new ScaleoutMessage()));
+            }
+
+            var result = store.GetMessagesByMappingId(6);
+            
+            Assert.Equal(7ul, result.FirstMessageId);
+            Assert.Equal(5, result.Messages.Count);
         }
 
         [Fact]

@@ -7,7 +7,9 @@ using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR.Client.Http;
 using Microsoft.AspNet.SignalR.Client.Infrastructure;
 using Microsoft.AspNet.SignalR.Client.Transports;
+using Microsoft.AspNet.SignalR.Client.Transports.WebSockets;
 using Moq;
+using Moq.Protected;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Xunit;
@@ -17,102 +19,31 @@ namespace Microsoft.AspNet.SignalR.Client.Tests
 {
     public class TransportFacts
     {
-        [Theory]
-        [InlineData("bob=12345", "&bob=12345")]
-        [InlineData("bob=12345&foo=leet&baz=laskjdflsdk", "&bob=12345&foo=leet&baz=laskjdflsdk")]
-        [InlineData("", "")]
-        [InlineData(null, "&connectionToken=")]
-        [InlineData("?foo=bar", "?foo=bar")]
-        [InlineData("?foo=bar&baz=bear", "?foo=bar&baz=bear")]
-        [InlineData("&foo=bar", "&foo=bar")]
-        [InlineData("&foo=bar&baz=bear", "&foo=bar&baz=bear")]
-        public void GetReceiveQueryStringAppendsConnectionQueryString(string connectionQs, string expected)
-        {
-            var connection = new Connection("http://foo.com", connectionQs);
-            connection.ConnectionToken = "";
-
-            var urlQs = TransportHelper.GetReceiveQueryString(connection, null, "");
-
-            Assert.True(urlQs.EndsWith(expected));
-        }
-
-        [Theory]
-        [InlineData("bob=12345", "?bob=12345")]
-        [InlineData("bob=12345&foo=leet&baz=laskjdflsdk", "?bob=12345&foo=leet&baz=laskjdflsdk")]
-        [InlineData("", "")]
-        [InlineData(null, "")]
-        [InlineData("?foo=bar", "?foo=bar")]
-        [InlineData("?foo=bar&baz=bear", "?foo=bar&baz=bear")]
-        [InlineData("&foo=bar", "&foo=bar")]
-        [InlineData("&foo=bar&baz=bear", "&foo=bar&baz=bear")]
-        public void AppendCustomQueryStringAppendsConnectionQueryString(string connectionQs, string expected)
-        {
-            var connection = new Connection("http://foo.com", connectionQs);
-
-            var urlQs = TransportHelper.AppendCustomQueryString(connection, "http://foo.com");
-
-            Assert.Equal(urlQs, expected);
-        }
-
-        [Fact]
-        public void OnInitializedFiresFromInitializeMessage()
-        {
-            bool timedOut, disconnected, triggered = false;
-            var connection = new Connection("http://foo.com");
-
-            TransportHelper.ProcessResponse(connection, "{\"S\":1, \"M\":[]}", out timedOut, out disconnected, () =>
-            {
-                triggered = true;
-            });
-
-            Assert.True(triggered);
-        }
-
-        [Fact]
-        public void ProcessResponseCapturesOnReceivedExceptions()
-        {
-            bool timedOut, disconnected;
-            var ex = new Exception();
-            var connection = new Mock<Client.IConnection>(MockBehavior.Strict);
-            connection.SetupGet(c => c.JsonSerializer).Returns(JsonSerializer.CreateDefault());
-            connection.Setup(c => c.OnReceived(It.IsAny<JToken>())).Throws(ex);
-            connection.Setup(c => c.OnError(ex));
-            connection.Setup(c => c.MarkLastMessage());
-
-            // PersistentResponse
-            TransportHelper.ProcessResponse(connection.Object, "{\"M\":{}}", out timedOut, out disconnected);
-
-            // HubResponse (WebSockets)
-            TransportHelper.ProcessResponse(connection.Object, "{\"I\":{}}", out timedOut, out disconnected);
-
-            connection.VerifyAll();
-        }
-
         [Fact]
         public void CancelledTaskHandledinServerSentEvents()
         {
             var tcs = new TaskCompletionSource<IResponse>();
-            var wh = new TaskCompletionSource<Exception>();
-
             tcs.TrySetCanceled();
 
-            var httpClient = new Mock<Microsoft.AspNet.SignalR.Client.Http.IHttpClient>();
-            var connection = new Mock<Microsoft.AspNet.SignalR.Client.IConnection>();
+            var httpClient = new Mock<IHttpClient>();
+            var connection = new Mock<IConnection>();
 
-            httpClient.Setup(c => c.Get(It.IsAny<string>(),
-                It.IsAny<Action<Client.Http.IRequest>>(), It.IsAny<bool>()))
-                .Returns(tcs.Task);
+            httpClient.Setup(c => c.Get(It.IsAny<string>(), It.IsAny<Action<IRequest>>(), It.IsAny<bool>()))
+                .Returns<string, Action<IRequest>, bool>((url, prepareRequest, isLongRunning) =>
+                {
+                    prepareRequest(Mock.Of<IRequest>());
+                    return tcs.Task;
+                });
 
             connection.SetupGet(c => c.ConnectionToken).Returns("foo");
+            connection.SetupGet(c => c.TotalTransportConnectTimeout).Returns(TimeSpan.FromSeconds(15));
 
             var sse = new ServerSentEventsTransport(httpClient.Object);
-            sse.OpenConnection(connection.Object, (ex) =>
-            {
-                wh.TrySetResult(ex);
-            });
 
-            Assert.True(wh.Task.Wait(TimeSpan.FromSeconds(5)));
-            Assert.IsType(typeof(OperationCanceledException), wh.Task.Result);
+            var exception = Assert.Throws<AggregateException>(
+                () => sse.Start(connection.Object, string.Empty, CancellationToken.None).Wait(TimeSpan.FromSeconds(5)));
+
+            Assert.IsType(typeof(OperationCanceledException), exception.InnerException);
         }
 
         [Fact]
@@ -162,26 +93,58 @@ namespace Microsoft.AspNet.SignalR.Client.Tests
         }
 
         [Fact]
-        public void CancelledTaskHandledinLongPolling()
+        public void CancelledTaskHandledWhenStartingLongPolling()
         {
             var tcs = new TaskCompletionSource<IResponse>();
-            var wh = new TaskCompletionSource<Exception>();
+            tcs.SetCanceled();
 
-            tcs.TrySetCanceled();
-
-            var httpClient = new Mock<Microsoft.AspNet.SignalR.Client.Http.IHttpClient>();
+            var httpClient = new Mock<IHttpClient>();
 
             httpClient.Setup(c => c.Post(It.IsAny<string>(),
-                It.IsAny<Action<Client.Http.IRequest>>(), It.IsAny<IDictionary<string, string>>(), It.IsAny<bool>()))
+                It.IsAny<Action<IRequest>>(), It.IsAny<IDictionary<string, string>>(), It.IsAny<bool>()))
                 .Returns(tcs.Task);
 
-            var pollingHandler = new PollingRequestHandler(httpClient.Object);
-            pollingHandler.Start();
+            var mockConnection = new Mock<IConnection>();
+            mockConnection.Setup(c => c.TotalTransportConnectTimeout).Returns(TimeSpan.FromSeconds(15));
 
-            pollingHandler.OnError += (ex) => { wh.TrySetResult(ex); };
+            var longPollingTransport = new LongPollingTransport(httpClient.Object);
 
-            Assert.True(wh.Task.Wait(TimeSpan.FromSeconds(5)));
-            Assert.IsType(typeof(OperationCanceledException), wh.Task.Result);
+            var unwrappedException = Assert.Throws<AggregateException>(() =>
+                longPollingTransport.Start(mockConnection.Object, null, CancellationToken.None)
+                    .Wait(TimeSpan.FromSeconds(5))).InnerException;
+
+            Assert.IsType<OperationCanceledException>(unwrappedException);
+        }
+
+        [Fact]
+        public void CancelledTaskHandledinLongPollingLoop()
+        {
+            var mockConnection = new Mock<IConnection>();
+            mockConnection.Setup(c => c.TotalTransportConnectTimeout).Returns(TimeSpan.FromSeconds(1500));
+
+            var tcs = new TaskCompletionSource<IResponse>();
+            tcs.SetCanceled();
+
+            var onErrorWh = new ManualResetEvent(false);
+
+            var mockHttpClient = new Mock<IHttpClient>();
+            mockHttpClient.Setup(c => c.Post(It.IsAny<string>(),
+                It.IsAny<Action<IRequest>>(), It.IsAny<IDictionary<string, string>>(), It.IsAny<bool>()))
+                .Returns(() => tcs.Task);
+
+            var mockLongPollingTransport = new Mock<LongPollingTransport>(mockHttpClient.Object) { CallBase = true };
+            mockLongPollingTransport.Setup(t => t.OnError(It.IsAny<IConnection>(), It.IsAny<Exception>()))
+                .Callback(() => onErrorWh.Set());
+
+            mockLongPollingTransport.Object.StartPolling(mockConnection.Object, string.Empty);
+
+            Assert.True(onErrorWh.WaitOne(TimeSpan.FromSeconds(2)));
+
+            mockLongPollingTransport
+                .Verify(
+                    t => t.OnError(It.IsAny<IConnection>(),
+                            It.Is<OperationCanceledException>(e => string.Equals(e.Message, Resources.Error_TaskCancelledException))),
+                    Times.Once());
         }
 
         [Fact]
@@ -193,7 +156,8 @@ namespace Microsoft.AspNet.SignalR.Client.Tests
             var transports = new List<IClientTransport>();
 
             var webSocketTransport = new Mock<WebSocketTransport>();
-            webSocketTransport.Setup(w => w.Start(It.IsAny<IConnection>(), It.IsAny<string>(), CancellationToken.None))
+            webSocketTransport.Protected()
+                .Setup("OnStart", ItExpr.IsAny<IConnection>(), ItExpr.IsAny<string>(), CancellationToken.None)
                 .Callback(mre.Set);
             
             transports.Add(webSocketTransport.Object);
@@ -250,7 +214,7 @@ namespace Microsoft.AspNet.SignalR.Client.Tests
                         wh.Set();
                     });
 
-                    var httpBasedTransport = new Mock<HttpBasedTransport>(httpClient.Object, "")
+                    var httpBasedTransport = new Mock<HttpBasedTransport>(httpClient.Object, "fakeTransport")
                     {
                         CallBase = true
                     };
@@ -281,13 +245,13 @@ namespace Microsoft.AspNet.SignalR.Client.Tests
         {
             var mockConnection = new Mock<Client.IConnection>(MockBehavior.Strict);
             var mockWebSocket = new Mock<WebSocket>(MockBehavior.Strict);
+            var mockWebSocketHandler = new Mock<ClientWebSocketHandler>();
 
             mockWebSocket.SetupGet(ws => ws.State).Returns(state);
             mockConnection.Setup(c => c.OnError(It.IsAny<InvalidOperationException>()));
-
-            var wsTransport = new WebSocketTransport();
-
-            wsTransport.WebSocket = mockWebSocket.Object;
+            mockWebSocketHandler.Object.WebSocket = mockWebSocket.Object;
+            
+            var wsTransport = new WebSocketTransport(mockWebSocketHandler.Object);
 
             var task = wsTransport.Send(mockConnection.Object, "", "");
 

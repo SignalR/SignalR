@@ -58,7 +58,9 @@
         <script src="Build/test.config.js"></script>
         <script src="Scripts/test.utilities.js"></script>
         <script src="Build/disableCrossDomain.js"></script>
+        <!--[if gt IE 8]><!-->
         <!-- ##COVERAGE## --><script src="Scripts/blanket-1.1.5.min.js"></script><!-- ##COVERAGE## -->
+        <!--<![endif]-->
 
         <!-- Javascript is dynamically added to this panel.  First all javascript from SignalR.Client.JS is added,
              then all javascript from the Tests directory is added.  This is so that all the unit tests within the 
@@ -90,6 +92,7 @@
         <script src="Tests/FunctionalTests/Transports/WebSocketsFacts/WebSocketsFacts.js"></script>
         <script src="Tests/UnitTests/SignalRFacts.js"></script>
         <script src="Tests/UnitTests/Common/AjaxFacts.js"></script>
+        <script src="Tests/UnitTests/Common/InitHandlerFacts.js"></script>
         <script src="Tests/UnitTests/Common/KeepAliveFacts.js"></script>
         <script src="Tests/UnitTests/Common/ProcessMessagesFacts.js"></script>
         <script src="Tests/UnitTests/Common/ResponseFacts.js"></script>

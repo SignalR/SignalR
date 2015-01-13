@@ -55,9 +55,6 @@
     <Compile Include="..\Microsoft.AspNet.SignalR.Core\Infrastructure\DisposableAction.cs">
       <Link>Infrastructure\DisposableAction.cs</Link>
     </Compile>
-    <Compile Include="..\Microsoft.AspNet.SignalR.Core\Infrastructure\Disposer.cs">
-      <Link>Infrastructure\Disposer.cs</Link>
-    </Compile>
     <Compile Include="..\Microsoft.AspNet.SignalR.Core\Infrastructure\ExceptionsExtensions.cs">
       <Link>Infrastructure\ExceptionsExtensions.cs</Link>
     </Compile>
@@ -98,10 +95,14 @@
     <Compile Include="IConnection.cs" />
     <Compile Include="IHubProxy.cs" />
     <Compile Include="Infrastructure\ErrorExtensions.cs" />
+    <Compile Include="Infrastructure\ITaskMonitor.cs" />
     <Compile Include="Infrastructure\SignalRError.cs" />
+    <Compile Include="Infrastructure\SlowCallbackException.cs" />
     <Compile Include="Infrastructure\StartException.cs" />
+    <Compile Include="Infrastructure\TaskQueueMonitor.cs" />
     <Compile Include="Infrastructure\TransportAbortHandler.cs" />
     <Compile Include="Infrastructure\TransportInitializationHandler.cs" />
+    <Compile Include="Infrastructure\UrlBuilder.cs" />
     <Compile Include="Infrastructure\UrlEncoder.cs" />
     <Compile Include="KeepAliveData.cs" />
     <Compile Include="Infrastructure\ExceptionHelper.cs" />
@@ -113,8 +114,7 @@
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
     <Compile Include="Transports\AsyncStreamReader.cs" />
-    <Compile Include="Transports\LongPolling\NegotiateInitializer.cs" />
-    <Compile Include="Transports\LongPolling\PollingRequestHandler.cs" />
+    <Compile Include="Transports\ClientTransportBase.cs" />
     <Compile Include="Transports\ServerSentEvents\ChunkBuffer.cs" />
     <Compile Include="Transports\ServerSentEvents\EventSourceStreamReader.cs" />
     <Compile Include="Infrastructure\StreamExtensions.cs" />

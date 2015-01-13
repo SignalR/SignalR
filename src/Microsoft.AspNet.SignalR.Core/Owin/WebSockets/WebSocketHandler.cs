@@ -11,7 +11,7 @@ using Microsoft.AspNet.SignalR.Infrastructure;
 
 namespace Microsoft.AspNet.SignalR.WebSockets
 {
-    public class WebSocketHandler
+    public abstract class WebSocketHandler
     {
         // Wait 250 ms before giving up on a Close
         private static readonly TimeSpan _closeTimeout = TimeSpan.FromMilliseconds(250);
@@ -23,7 +23,7 @@ namespace Microsoft.AspNet.SignalR.WebSockets
         // Queue for sending messages
         private readonly TaskQueue _sendQueue = new TaskQueue();
 
-        public WebSocketHandler(int? maxIncomingMessageSize)
+        protected WebSocketHandler(int? maxIncomingMessageSize)
         {
             _maxIncomingMessageSize = maxIncomingMessageSize;
         }
@@ -55,8 +55,7 @@ namespace Microsoft.AspNet.SignalR.WebSockets
             return SendAsync(new ArraySegment<byte>(buffer), WebSocketMessageType.Text);
         }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1026:DefaultParametersShouldNotBeUsed")]
-        public virtual Task SendAsync(ArraySegment<byte> message, WebSocketMessageType messageType, bool endOfMessage = true)
+        internal virtual Task SendAsync(ArraySegment<byte> message, WebSocketMessageType messageType, bool endOfMessage = true)
         {
             if (WebSocket.State != WebSocketState.Open)
             {
@@ -76,7 +75,9 @@ namespace Microsoft.AspNet.SignalR.WebSockets
 
                 try
                 {
-                    await context.Handler.WebSocket.SendAsync(context.Message, context.MessageType, context.EndOfMessage, CancellationToken.None);
+                    await context.Handler.WebSocket
+                          .SendAsync(context.Message, context.MessageType, context.EndOfMessage, CancellationToken.None)
+                          .PreserveCulture();
                 }
                 catch (Exception ex)
                 {
@@ -107,7 +108,9 @@ namespace Microsoft.AspNet.SignalR.WebSockets
 
                 try
                 {
-                    await context.Handler.WebSocket.CloseOutputAsync(WebSocketCloseStatus.NormalClosure, "", CancellationToken.None);
+                    await context.Handler.WebSocket
+                        .CloseOutputAsync(WebSocketCloseStatus.NormalClosure, "", CancellationToken.None)
+                        .PreserveCulture();
                 }
                 catch (Exception ex)
                 {
@@ -130,7 +133,7 @@ namespace Microsoft.AspNet.SignalR.WebSockets
 
         public Exception Error { get; set; }
 
-        public Task ProcessWebSocketRequestAsync(WebSocket webSocket, CancellationToken disconnectToken)
+        internal Task ProcessWebSocketRequestAsync(WebSocket webSocket, CancellationToken disconnectToken)
         {
             if (webSocket == null)
             {
@@ -161,7 +164,7 @@ namespace Microsoft.AspNet.SignalR.WebSockets
                 // dispatch incoming messages
                 while (!disconnectToken.IsCancellationRequested && !closedReceived)
                 {
-                    WebSocketMessage incomingMessage = await messageRetriever(state);
+                    WebSocketMessage incomingMessage = await messageRetriever(state).PreserveCulture();
                     switch (incomingMessage.MessageType)
                     {
                         case WebSocketMessageType.Binary:
@@ -178,7 +181,7 @@ namespace Microsoft.AspNet.SignalR.WebSockets
                             // If we received an incoming CLOSE message, we'll queue a CLOSE frame to be sent.
                             // We'll give the queued frame some amount of time to go out on the wire, and if a
                             // timeout occurs we'll give up and abort the connection.
-                            await Task.WhenAny(CloseAsync(), Task.Delay(_closeTimeout));
+                            await Task.WhenAny(CloseAsync(), Task.Delay(_closeTimeout)).PreserveCulture();
                             break;
                     }
                 }
@@ -208,6 +211,7 @@ namespace Microsoft.AspNet.SignalR.WebSockets
 
             try
             {
+#if CLIENT_NET45
                 if (WebSocket.State == WebSocketState.Closed ||
                     WebSocket.State == WebSocketState.Aborted)
                 {
@@ -215,12 +219,16 @@ namespace Microsoft.AspNet.SignalR.WebSockets
                 }
                 else
                 {
-                    // Close the socket
-                    await WebSocket.CloseAsync(WebSocketCloseStatus.NormalClosure, "", CancellationToken.None);
+                    // Initiate the WebSocket closing handshake. Only the client should ever do this.
+                    await WebSocket.CloseAsync(WebSocketCloseStatus.NormalClosure, "", CancellationToken.None).PreserveCulture();
                 }
+#endif
             }
             finally
             {
+#if CLIENT_NET45
+                WebSocket.Dispose();
+#endif
                 OnClose();
             }
         }

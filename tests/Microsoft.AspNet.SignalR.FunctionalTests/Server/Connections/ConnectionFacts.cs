@@ -10,6 +10,8 @@ using Microsoft.AspNet.SignalR.Client.Http;
 using Microsoft.AspNet.SignalR.Client.Transports;
 using Microsoft.AspNet.SignalR.Configuration;
 using Microsoft.AspNet.SignalR.Hosting.Memory;
+using Microsoft.AspNet.SignalR.Messaging;
+using Microsoft.AspNet.SignalR.Tests.Common;
 using Microsoft.AspNet.SignalR.Tests.Common.Infrastructure;
 using Microsoft.Owin;
 using Owin;
@@ -116,6 +118,76 @@ namespace Microsoft.AspNet.SignalR.Client.Tests
                         await connection.Start(host);
 
                         Assert.Equal(connection.State, ConnectionState.Connected);
+                    }
+                }
+            }
+
+            [Fact]
+            public async Task ConnectionCanAddAnotherConnectionOnAnotherHostToAGroup()
+            {
+                using (var host1 = new MemoryHost())
+                using (var host2 = new MemoryHost())
+                {
+                    var sharedBus = new DefaultDependencyResolver().Resolve<IMessageBus>();
+                    host1.Configure(app =>
+                    {
+                        var resolver = new DefaultDependencyResolver();
+                        var ackHandler = new SignalR.Infrastructure.AckHandler(
+                            completeAcksOnTimeout: true,
+                            ackThreshold: TimeSpan.FromSeconds(10),
+                            ackInterval: TimeSpan.FromSeconds(1));
+
+                        resolver.Register(typeof(SignalR.Infrastructure.IAckHandler), () => ackHandler);
+                        resolver.Register(typeof(IMessageBus), () => sharedBus);
+
+                        app.MapSignalR<MyGroupConnection>("/groups", new ConnectionConfiguration
+                        {
+                            Resolver = resolver
+                        });
+                    });
+                    host2.Configure(app =>
+                    {
+                        var resolver = new DefaultDependencyResolver();
+
+                        resolver.Register(typeof(IMessageBus), () => sharedBus);
+
+                        app.MapSignalR<MyGroupConnection>("/groups", new ConnectionConfiguration
+                        {
+                            Resolver = resolver
+                        });
+                    });
+
+                    using (var connection1 = new Connection("http://foo/groups"))
+                    using (var connection2 = new Connection("http://foo/groups"))
+                    {
+                        var messageTcs = new TaskCompletionSource<string>();
+
+                        connection2.Received += message =>
+                        {
+                            messageTcs.SetResult(message);
+                        };
+
+                        await connection1.Start(host1);
+                        await connection2.Start(host2);
+
+                        await connection1.Send(new
+                        {
+                            // Add to group
+                            type = 1,
+                            group = "testGroup",
+                            connectionId = connection2.ConnectionId
+                        });
+
+                        await connection1.Send(new
+                        {
+                            // Send to group
+                            type = 3,
+                            group = "testGroup",
+                            message = "testMessage"
+                        });
+
+                        Assert.True(messageTcs.Task.Wait(TimeSpan.FromSeconds(10)));
+                        Assert.Equal("testMessage", messageTcs.Task.Result);
                     }
                 }
             }
@@ -569,9 +641,7 @@ namespace Microsoft.AspNet.SignalR.Client.Tests
                                     disconnectTimeout: 8, // 8s because the default heartbeat time span is 5s
                                     messageBusType: messageBusType);
 
-                    var connection = CreateHubConnection(host, "/force-lp-reconnect");
-
-                    using (connection)
+                    using (var connection = CreateHubConnection(host, "/force-lp-reconnect"))
                     {
                         var reconnectingWh = new AsyncManualResetEvent();
                         var reconnectedWh = new AsyncManualResetEvent();

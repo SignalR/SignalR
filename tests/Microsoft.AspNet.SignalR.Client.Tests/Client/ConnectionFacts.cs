@@ -9,6 +9,7 @@ using Microsoft.AspNet.SignalR.Client.Http;
 using Microsoft.AspNet.SignalR.Client.Transports;
 using Microsoft.AspNet.SignalR.Infrastructure;
 using Moq;
+using Moq.Protected;
 using Xunit;
 using Xunit.Extensions;
 
@@ -119,6 +120,14 @@ namespace Microsoft.AspNet.SignalR.Client.Tests
 
         public class Start
         {
+            [Fact]
+            public void StartValidatesTransportNotNull()
+            {
+                Assert.Equal("transport", 
+                    Assert.Throws<ArgumentNullException>(
+                        () => new Connection("http://fake.url/").Start((IClientTransport)null).Wait()).ParamName);
+            }
+
             [Fact]
             public void FailsIfProtocolVersionIsNull()
             {
@@ -386,24 +395,45 @@ namespace Microsoft.AspNet.SignalR.Client.Tests
         [Fact]
         public void OnReconnectingExplicitImplementationCallsIntoProtectedOnReconnecting()
         {
-            var connectionFake = new HubConnectionFake();
-            ((IConnection)connectionFake).OnReconnecting();
-            Assert.True(connectionFake.OnReconnectingInvoked);
+            var mockConnection = new Mock<HubConnection>("http://fakeurl");
+            ((IConnection)mockConnection.Object).OnReconnecting();
+            mockConnection.Verify(c => c.OnReconnecting(), Times.Once());
         }
 
-        private class HubConnectionFake : HubConnection
+        [Fact]
+        public void OnReconnectedInvokesReconnectedOnHeartBeatMonitor()
         {
-            public HubConnectionFake()
-                : base("http://fakeurl")
-            {
-            }
+            var mockConnection = new Mock<Connection>("http://fakeurl") { CallBase = true };
+            var mockMonitor = new Mock<HeartbeatMonitor>(mockConnection.Object, new object(), new TimeSpan());
+            mockConnection.Setup(c => c.Monitor).Returns(mockMonitor.Object);
 
-            public bool OnReconnectingInvoked { get; private set; }
+            ((IConnection)mockConnection.Object).OnReconnected();
 
-            internal override void OnReconnecting()
-            {
-                OnReconnectingInvoked = true;
-            }
+            mockMonitor.Verify(m => m.Reconnected(), Times.Once());
+        }
+
+        [Fact]
+        public async Task DisconnectDisposesTransport()
+        {
+            var mockTransport = new Mock<IClientTransport>();
+            mockTransport.Setup(t => t.Negotiate(It.IsAny<IConnection>(), It.IsAny<string>()))
+                .Returns(Task.FromResult(new NegotiationResponse
+                {
+                    ProtocolVersion = "1.4",
+                    ConnectionId = "42",
+                    ConnectionToken = "42.42",
+                    DisconnectTimeout = 10,
+                    TransportConnectTimeout = 10
+                }));
+
+            mockTransport.Setup(t => t.Start(It.IsAny<IConnection>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
+                .Returns(Task.FromResult<object>(null));
+
+            var connection = new Mock<Connection>("http://fakeurl") { CallBase = true }.Object;
+            await connection.Start(mockTransport.Object);
+            ((IConnection) connection).Disconnect();
+
+            mockTransport.Verify(t => t.Dispose(), Times.Once());
         }
     }
 }

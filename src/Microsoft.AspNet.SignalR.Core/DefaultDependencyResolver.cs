@@ -63,6 +63,9 @@ namespace Microsoft.AspNet.SignalR
             var ackHandler = new Lazy<AckHandler>();
             Register(typeof(IAckHandler), () => ackHandler.Value);
 
+            var serverMessageHandler = new Lazy<AckSubscriber>(() => new AckSubscriber(this));
+            Register(typeof(AckSubscriber), () => serverMessageHandler.Value);
+
             var perfCounterWriter = new Lazy<PerformanceCounterManager>(() => new PerformanceCounterManager(this));
             Register(typeof(IPerformanceCounterManager), () => perfCounterWriter.Value);
 
@@ -184,7 +187,7 @@ namespace Microsoft.AspNet.SignalR
             if (_disposed == 0)
             {
                 var disposable = obj as IDisposable;
-                if (disposable != null)
+                if (disposable != null && !(disposable is IUntrackedDisposable))
                 {
                     lock (_trackedDisposables)
                     {

@@ -19,7 +19,6 @@ namespace Microsoft.AspNet.SignalR.Transports
 
         private readonly IPerformanceCounterManager _counters;
         private readonly JsonSerializer _jsonSerializer;
-        private string _lastMessageId;
         private IDisposable _busRegistration;
 
         internal RequestLifetime _transportLifetime;
@@ -36,12 +35,12 @@ namespace Microsoft.AspNet.SignalR.Transports
         protected ForeverTransport(HostContext context,
                                    JsonSerializer jsonSerializer,
                                    ITransportHeartbeat heartbeat,
-                                   IPerformanceCounterManager performanceCounterWriter,
+                                   IPerformanceCounterManager performanceCounterManager,
                                    ITraceManager traceManager)
-            : base(context, heartbeat, performanceCounterWriter, traceManager)
+            : base(context, heartbeat, performanceCounterManager, traceManager)
         {
             _jsonSerializer = jsonSerializer;
-            _counters = performanceCounterWriter;
+            _counters = performanceCounterManager;
         }
 
         protected virtual int MaxMessages
@@ -49,19 +48,6 @@ namespace Microsoft.AspNet.SignalR.Transports
             get
             {
                 return 10;
-            }
-        }
-
-        protected string LastMessageId
-        {
-            get
-            {
-                if (_lastMessageId == null)
-                {
-                    _lastMessageId = Context.Request.QueryString["messageId"];
-                }
-
-                return _lastMessageId;
             }
         }
 
@@ -92,13 +78,14 @@ namespace Microsoft.AspNet.SignalR.Transports
         internal Action BeforeReceive;
         internal Action<Exception> AfterRequestEnd;
 
-        protected override void InitializePersistentState()
+        protected override Task InitializePersistentState()
         {
-            base.InitializePersistentState();
-
-            // The _transportLifetime must be initialized after calling base.InitializePersistentState since
-            // _transportLifetime depends on _requestLifetime.
-            _transportLifetime = new RequestLifetime(this, _requestLifeTime);
+            return base.InitializePersistentState().Then(t =>
+            {
+                // The _transportLifetime must be initialized after calling base.InitializePersistentState since
+                // _transportLifetime depends on _requestLifetime.
+                t._transportLifetime = new RequestLifetime(t, t._requestLifeTime);
+            }, this);
         }
 
         protected Task ProcessRequestCore(ITransportConnection connection)
@@ -115,9 +102,8 @@ namespace Microsoft.AspNet.SignalR.Transports
             }
             else
             {
-                InitializePersistentState();
-
-                return ProcessReceiveRequest(connection);
+                return InitializePersistentState()
+                    .Then((t, c) => t.ProcessReceiveRequest(c), this, connection);
             }
         }
 
@@ -150,12 +136,12 @@ namespace Microsoft.AspNet.SignalR.Transports
 
         protected virtual async Task ProcessSendRequest()
         {
-            INameValueCollection form = await Context.Request.ReadForm();
+            INameValueCollection form = await Context.Request.ReadForm().PreserveCulture();
             string data = form["data"];
 
             if (Received != null)
             {
-                await Received(data);
+                await Received(data).PreserveCulture();
             }
         }
 
@@ -234,7 +220,7 @@ namespace Microsoft.AspNet.SignalR.Transports
             {
                 // Ensure we enqueue the response initialization before any messages are received
                 EnqueueOperation(state => InitializeResponse((ITransportConnection)state), connection)
-                    .Catch((ex, state) => ((ForeverTransport)state).OnError(ex), this);
+                    .Catch((ex, state) => ((ForeverTransport)state).OnError(ex), this, Trace);
 
                 // Ensure delegate continues to use the C# Compiler static delegate caching optimization.
                 IDisposable subscription = connection.Receive(LastMessageId,
@@ -248,7 +234,7 @@ namespace Microsoft.AspNet.SignalR.Transports
                 }
 
                 // Ensure delegate continues to use the C# Compiler static delegate caching optimization.
-                initialize().Catch((ex, state) => ((ForeverTransport)state).OnError(ex), this)
+                initialize().Catch((ex, state) => ((ForeverTransport)state).OnError(ex), this, Trace)
                             .Finally(state => ((SubscriptionDisposerContext)state).Set(),
                                 new SubscriptionDisposerContext(disposer, subscription));
             }

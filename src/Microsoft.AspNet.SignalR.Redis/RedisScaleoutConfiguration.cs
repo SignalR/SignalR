@@ -1,8 +1,9 @@
 ﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.md in the project root for license information.
 
 using System;
-using BookSleeve;
+using System.Globalization;
 using Microsoft.AspNet.SignalR.Messaging;
+using StackExchange.Redis;
 
 namespace Microsoft.AspNet.SignalR
 {
@@ -12,16 +13,15 @@ namespace Microsoft.AspNet.SignalR
     public class RedisScaleoutConfiguration : ScaleoutConfiguration
     {
         public RedisScaleoutConfiguration(string server, int port, string password, string eventKey)
-            : this(MakeConnectionFactory(server, port, password), eventKey)
+            : this(CreateConnectionString(server, port, password), eventKey)
         {
-
         }
 
-        public RedisScaleoutConfiguration(Func<RedisConnection> connectionFactory, string eventKey)
+        public RedisScaleoutConfiguration(string connectionString, string eventKey)
         {
-            if (connectionFactory == null)
+            if (connectionString == null)
             {
-                throw new ArgumentNullException("connectionFactory");
+                throw new ArgumentNullException("connectionString");
             }
 
             if (eventKey == null)
@@ -29,11 +29,15 @@ namespace Microsoft.AspNet.SignalR
                 throw new ArgumentNullException("eventKey");
             }
 
-            ConnectionFactory = connectionFactory;
+            ConnectionString = connectionString;
             EventKey = eventKey;
         }
 
-        internal Func<RedisConnection> ConnectionFactory { get; private set; }
+        /// <summary>
+        /// The connection string that needs to be passed to ConnectionMultiplexer
+        /// Should be of the form server:port
+        /// </summary>
+        internal string ConnectionString { get; private set; }
 
         /// <summary>
         /// The Redis database instance to use.
@@ -46,9 +50,9 @@ namespace Microsoft.AspNet.SignalR
         /// </summary>
         public string EventKey { get; private set; }
 
-        private static Func<RedisConnection> MakeConnectionFactory(string server, int port, string password)
+        private static string CreateConnectionString(string server, int port, string password)
         {
-            return () => new RedisConnection(server, port: port, password: password);
+            return string.Format(CultureInfo.CurrentCulture, "{0}:{1}, password={2}, abortConnect=false", server, port, password);
         }
     }
 }

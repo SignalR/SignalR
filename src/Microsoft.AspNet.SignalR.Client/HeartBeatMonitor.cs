@@ -1,11 +1,10 @@
 ﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.md in the project root for license information.
 
 using System;
-using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 
 #if NETFX_CORE
+using System.Diagnostics.CodeAnalysis;
 using Windows.System.Threading;
 #endif
 
@@ -26,7 +25,7 @@ namespace Microsoft.AspNet.SignalR.Client
         private readonly IConnection _connection;
 
         // How often to beat
-        private TimeSpan _beatInterval;
+        private readonly TimeSpan _beatInterval;
 
         // Whether to monitor the keep alive or not
         private bool _monitorKeepAlive;
@@ -57,13 +56,18 @@ namespace Microsoft.AspNet.SignalR.Client
         {
             _monitorKeepAlive = _connection.KeepAliveData != null && _connection.Transport.SupportsKeepAlive;
 
-            HasBeenWarned = false;
-            TimedOut = false;
+            ClearFlags();
 #if !NETFX_CORE
             _timer = new Timer(_ => Beat(), state: null, dueTime: _beatInterval, period: _beatInterval);
 #else
             _timer = ThreadPoolTimer.CreatePeriodicTimer((timer) => Beat(), period: _beatInterval);
 #endif
+        }
+
+        private void ClearFlags()
+        {
+            HasBeenWarned = false;
+            TimedOut = false;
         }
 
         /// <summary>
@@ -120,11 +124,16 @@ namespace Microsoft.AspNet.SignalR.Client
                     }
                     else
                     {
-                        HasBeenWarned = false;
-                        TimedOut = false;
+                        ClearFlags();
                     }
                 }
             }
+        }
+
+        //virtual for testing
+        internal virtual void Reconnected()
+        {
+            ClearFlags();
         }
 
         /// <summary>

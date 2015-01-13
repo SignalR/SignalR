@@ -245,7 +245,7 @@ namespace Microsoft.AspNet.SignalR.Client
                 // Create a new HubResult each time as it's mutable and we don't want callbacks
                 // changing it during their parallel invocation
                 Task.Factory.StartNew(() => callback(new HubResult { Error = error }))
-                    .Catch();
+                    .Catch(connection: this);
             }
         }
     }

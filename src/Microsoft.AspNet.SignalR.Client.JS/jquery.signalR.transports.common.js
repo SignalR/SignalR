@@ -64,6 +64,116 @@
         return transportLogic.prepareQueryString(connection, url);
     }
 
+    function InitHandler(connection) {
+        this.connection = connection;
+
+        this.startRequested = false;
+        this.startCompleted = false;
+        this.connectionStopped = false;
+    }
+
+    InitHandler.prototype = {
+        start: function (transport, onSuccess, onFallback) {
+            var that = this,
+                connection = that.connection,
+                failCalled = false;
+
+            if (that.startRequested || that.connectionStopped) {
+                connection.log("WARNING! " + transport.name + " transport cannot be started. Initialization ongoing or completed.");
+                return;
+            }
+
+            connection.log(transport.name + " transport starting.");
+
+            that.transportTimeoutHandle = window.setTimeout(function () {
+                if (!failCalled) {
+                    failCalled = true;
+                    connection.log(transport.name + " transport timed out when trying to connect.");
+                    that.transportFailed(transport, undefined, onFallback);
+                }
+            }, connection._.totalTransportConnectTimeout);
+
+            transport.start(connection, function () {
+                if (!failCalled) {
+                    that.initReceived(transport, onSuccess);
+                }
+            }, function (error) {
+                // Don't allow the same transport to cause onFallback to be called twice
+                if (!failCalled) {
+                    failCalled = true;
+                    that.transportFailed(transport, error, onFallback);
+                }
+
+                // Returns true if the transport should stop;
+                // false if it should attempt to reconnect
+                return !that.startCompleted || that.connectionStopped;
+            });
+        },
+
+        stop: function () {
+            this.connectionStopped = true;
+            window.clearTimeout(this.transportTimeoutHandle);
+            signalR.transports._logic.tryAbortStartRequest(this.connection);
+        },
+
+        initReceived: function (transport, onSuccess) {
+            var that = this,
+                connection = that.connection;
+
+            if (that.startRequested) {
+                connection.log("WARNING! The client received multiple init messages.");
+                return;
+            }
+
+            if (that.connectionStopped) {
+                return;
+            }
+
+            that.startRequested = true;
+            window.clearTimeout(that.transportTimeoutHandle);
+
+            connection.log(transport.name + " transport connected. Initiating start request.");
+            signalR.transports._logic.ajaxStart(connection, function () {
+                that.startCompleted = true;
+                onSuccess();
+            });
+        },
+
+        transportFailed: function (transport, error, onFallback) {
+            var connection = this.connection,
+                deferred = connection._deferral,
+                wrappedError;
+
+            if (this.connectionStopped) {
+                return;
+            }
+
+            window.clearTimeout(this.transportTimeoutHandle);
+
+            if (!this.startRequested) {
+                transport.stop(connection);
+
+                connection.log(transport.name + " transport failed to connect. Attempting to fall back.");
+                onFallback();
+            } else if (!this.startCompleted) {
+                // Do not attempt to fall back if a start request is ongoing during a transport failure.
+                // Instead, trigger an error and stop the connection.
+                wrappedError = signalR._.error(signalR.resources.errorDuringStartRequest, error);
+
+                connection.log(transport.name + " transport failed during the start request. Stopping the connection.");
+                $(connection).triggerHandler(events.onError, [wrappedError]);
+                if (deferred) {
+                    deferred.reject(wrappedError);
+                }
+
+                connection.stop();
+            } else {
+                // The start request has completed, but the connection has not stopped.
+                // No need to do anything here. The transport should attempt its normal reconnect logic.
+            }
+        }
+    };
+
     transportLogic = signalR.transports._logic = {
         ajax: function (connection, options) {
             return $.ajax(
@@ -206,13 +316,14 @@
             throw new Error("Query string property must be either a string or object.");
         },
 
-        getUrl: function (connection, transport, reconnecting, poll) {
+        // BUG #2953: The url needs to be same otherwise it will cause a memory leak
+        getUrl: function (connection, transport, reconnecting, poll, ajaxPost) {
             /// <summary>Gets the url for making a GET based connect request</summary>
             var baseUrl = transport === "webSockets" ? "" : connection.baseUrl,
                 url = baseUrl + connection.appRelativeUrl,
                 qs = "transport=" + transport;
 
-            if (connection.groupsToken) {
+            if (!ajaxPost && connection.groupsToken) {
                 qs += "&groupsToken=" + window.encodeURIComponent(connection.groupsToken);
             }
 
@@ -226,13 +337,17 @@
                     url += "/reconnect";
                 }
 
-                if (connection.messageId) {
+                if (!ajaxPost && connection.messageId) {
                     qs += "&messageId=" + window.encodeURIComponent(connection.messageId);
                 }
             }
             url += "?" + qs;
             url = transportLogic.prepareQueryString(connection, url);
-            url += "&tid=" + Math.floor(Math.random() * 11);
+
+            if (!ajaxPost) {
+                url += "&tid=" + Math.floor(Math.random() * 11);
+            }
+
             return url;
         },
 
@@ -241,7 +356,6 @@
                 MessageId: minPersistentResponse.C,
                 Messages: minPersistentResponse.M,
                 Initialized: typeof (minPersistentResponse.S) !== "undefined" ? true : false,
-                Disconnect: typeof (minPersistentResponse.D) !== "undefined" ? true : false,
                 ShouldReconnect: typeof (minPersistentResponse.T) !== "undefined" ? true : false,
                 LongPollDelay: minPersistentResponse.L,
                 GroupsToken: minPersistentResponse.G
@@ -444,7 +558,7 @@
                 // Update Keep alive on reconnect
                 $(connection).bind(events.onReconnect, connection._.keepAliveData.reconnectKeepAliveUpdate);
 
-                connection.log("Now monitoring keep alive with a warning timeout of " + keepAliveData.timeoutWarning + " and a connection lost timeout of " + keepAliveData.timeout + ".");
+                connection.log("Now monitoring keep alive with a warning timeout of " + keepAliveData.timeoutWarning + ", keep alive timeout of " + keepAliveData.timeout + " and disconnecting timeout of " + connection.disconnectTimeout);
             } else {
                 connection.log("Tried to monitor keep alive but it's already being monitored.");
             }
@@ -545,19 +659,23 @@
         },
 
         handleParseFailure: function (connection, result, error, onFailed, context) {
+            var wrappedError = signalR._.transportError(
+                signalR._.format(signalR.resources.parseFailed, result),
+                connection.transport,
+                error,
+                context);
+
             // If we're in the initialization phase trigger onFailed, otherwise stop the connection.
-            if (connection.state === signalR.connectionState.connecting) {
+            if (onFailed && onFailed(wrappedError)) {
                 connection.log("Failed to parse server response while attempting to connect.");
-                onFailed();
             } else {
-                $(connection).triggerHandler(events.onError, [
-                    signalR._.transportError(
-                        signalR._.format(signalR.resources.parseFailed, result),
-                        connection.transport,
-                        error,
-                        context)]);
+                $(connection).triggerHandler(events.onError, [wrappedError]);
                 connection.stop();
             }
+        },
+
+        initHandler: function (connection) {
+            return new InitHandler(connection);
         },
 
         foreverFrame: {

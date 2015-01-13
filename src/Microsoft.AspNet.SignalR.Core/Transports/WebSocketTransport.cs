@@ -29,6 +29,7 @@ namespace Microsoft.AspNet.SignalR.Transports
         private readonly Action<string> _message;
         private readonly Action _closed;
         private readonly Action<Exception> _error;
+        private readonly IPerformanceCounterManager _counters;
 
         public WebSocketTransport(HostContext context,
                                   IDependencyResolver resolver)
@@ -44,10 +45,10 @@ namespace Microsoft.AspNet.SignalR.Transports
         public WebSocketTransport(HostContext context,
                                   JsonSerializer serializer,
                                   ITransportHeartbeat heartbeat,
-                                  IPerformanceCounterManager performanceCounterWriter,
+                                  IPerformanceCounterManager performanceCounterManager,
                                   ITraceManager traceManager,
                                   int? maxIncomingMessageSize)
-            : base(context, serializer, heartbeat, performanceCounterWriter, traceManager)
+            : base(context, serializer, heartbeat, performanceCounterManager, traceManager)
         {
             _context = context;
             _maxIncomingMessageSize = maxIncomingMessageSize;
@@ -55,6 +56,8 @@ namespace Microsoft.AspNet.SignalR.Transports
             _message = OnMessage;
             _closed = OnClosed;
             _error = OnSocketError;
+
+            _counters = performanceCounterManager;
         }
 
         public override bool IsAlive
@@ -124,6 +127,16 @@ namespace Microsoft.AspNet.SignalR.Transports
             return Send((object)response);
         }
 
+        public override void IncrementConnectionsCount()
+        {
+            _counters.ConnectionsCurrentWebSockets.Increment();
+        }
+
+        public override void DecrementConnectionsCount()
+        {
+            _counters.ConnectionsCurrentWebSockets.Decrement();
+        }
+
         private Task AcceptWebSocketRequest(Func<IWebSocket, Task> callback)
         {
             var accept = _context.Environment.Get<Action<IDictionary<string, object>, WebSocketFunc>>(OwinConstants.WebSocketAccept);
@@ -149,7 +162,7 @@ namespace Microsoft.AspNet.SignalR.Transports
                 context.Transport.JsonSerializer.Serialize(context.State, context.Transport.OutputWriter);
                 context.Transport.OutputWriter.Flush();
 
-                await context.Transport._socket.Flush();
+                await context.Transport._socket.Flush().PreserveCulture();
             }
             catch (Exception ex)
             {
@@ -164,7 +177,7 @@ namespace Microsoft.AspNet.SignalR.Transports
         {
             if (Received != null)
             {
-                Received(message).Catch();
+                Received(message).Catch(Trace);
             }
         }
 

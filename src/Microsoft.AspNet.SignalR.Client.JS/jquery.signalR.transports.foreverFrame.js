@@ -73,13 +73,15 @@
                 frame = createFrame(),
                 frameLoadHandler = function () {
                     connection.log("Forever frame iframe finished loading and is no longer receiving messages.");
-                    that.reconnect(connection);
+                    if (!onFailed || !onFailed()) {
+                        that.reconnect(connection);
+                    }
                 };
 
             if (window.EventSource) {
                 // If the browser supports SSE, don't use Forever Frame
                 if (onFailed) {
-                    connection.log("This browser supports SSE, skipping Forever Frame.");
+                    connection.log("Forever Frame is not supported by SignalR on browsers with SSE support.");
                     onFailed();
                 }
                 return;
@@ -95,8 +97,8 @@
             url = transportLogic.getUrl(connection, this.name);
             url += "&frameId=" + frameId;
 
-            // Set body prior to setting URL to avoid caching issues.
-            window.document.body.appendChild(frame);
+            // add frame to the document prior to setting URL to avoid caching issues.
+            window.document.documentElement.appendChild(frame);
 
             connection.log("Binding to iframe's load event.");
 
@@ -235,7 +237,7 @@
             if (changeState(connection,
                 signalR.connectionState.reconnecting,
                 signalR.connectionState.connected) === true) {
-                // If there's no onSuccess handler we assume this is a reconnect
+
                 $(connection).triggerHandler(events.onReconnect);
             }
         }

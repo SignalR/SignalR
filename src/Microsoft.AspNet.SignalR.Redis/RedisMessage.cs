@@ -2,10 +2,12 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Text;
 using Microsoft.AspNet.SignalR.Messaging;
+using Microsoft.AspNet.SignalR.Tracing;
 
 namespace Microsoft.AspNet.SignalR.Redis
 {
@@ -35,7 +37,8 @@ namespace Microsoft.AspNet.SignalR.Redis
             }
         }
 
-        public static RedisMessage FromBytes(byte[] data)
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1062:Validate arguments of public methods", MessageId = "0")]
+        public static RedisMessage FromBytes(byte[] data, TraceSource trace)
         {
             using (var stream = new MemoryStream(data))
             {
@@ -49,9 +52,12 @@ namespace Microsoft.AspNet.SignalR.Redis
                     int charCode = stream.ReadByte();
                     if (charCode == -1)
                     {
-                        throw new EndOfStreamException();
+                        trace.TraceVerbose("Received Message could not be parsed.");
+                        throw new EndOfStreamException(Resources.Error_EndOfStreamRedis);
                     }
+
                     char c = (char)charCode;
+
                     if (c == ' ')
                     {
                         message.Id = ulong.Parse(messageIdBuilder.ToString(), CultureInfo.InvariantCulture);

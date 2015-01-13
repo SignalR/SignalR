@@ -7,17 +7,23 @@ namespace Microsoft.AspNet.SignalR
     /// <summary>
     /// Provides methods that communicate with SignalR connections that connected to a <see cref="Hub"/>.
     /// </summary>
-    public abstract class Hub<T> : HubBase where T : class
+    public abstract class Hub<T> : Hub where T : class
     {
+        // This allows the typed Client property to be settable for testing
+        private IHubCallerConnectionContext<T> _testClients;
+
         /// <summary>
-        /// 
+        /// Gets a dynamic object that represents all clients connected to this hub (not hub instance).
         /// </summary>
-        public IHubCallerConnectionContext<T> Clients
+        public new IHubCallerConnectionContext<T> Clients
         {
             get
             {
-                var clients = ((IHub)this).Clients;
-                return new TypedHubCallerConnectionContext<T>(clients);
+                return _testClients ?? new TypedHubCallerConnectionContext<T>(base.Clients);
+            }
+            set
+            {
+                _testClients = value;
             }
         }
     }

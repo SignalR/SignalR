@@ -154,6 +154,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Server.Transports
 
                 var request = new Mock<IRequest>();
                 queryString = queryString ?? new NameValueCollection();
+                queryString["messageId"] = queryString["messageId"] ?? string.Empty;
                 request.Setup(m => m.QueryString).Returns(new NameValueCollectionWrapper(queryString));
                 request.Setup(m => m.LocalPath).Returns(requestPath);
 

@@ -2,15 +2,24 @@
 
 using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR.Hosting;
+using Microsoft.AspNet.SignalR.Infrastructure;
 using Microsoft.AspNet.SignalR.Json;
 
 namespace Microsoft.AspNet.SignalR.Transports
 {
     public class ServerSentEventsTransport : ForeverTransport
     {
+        private readonly IPerformanceCounterManager _counters;
+
         public ServerSentEventsTransport(HostContext context, IDependencyResolver resolver)
+            : this(context, resolver, resolver.Resolve<IPerformanceCounterManager>())
+        {
+        }
+
+        public ServerSentEventsTransport(HostContext context, IDependencyResolver resolver, IPerformanceCounterManager performanceCounterManager)
             : base(context, resolver)
         {
+            _counters = performanceCounterManager;
         }
 
         public override Task KeepAlive()
@@ -27,6 +36,16 @@ namespace Microsoft.AspNet.SignalR.Transports
 
             // Ensure delegate continues to use the C# Compiler static delegate caching optimization.
             return EnqueueOperation(state => PerformSend(state), context);
+        }
+
+        public override void IncrementConnectionsCount()
+        {
+            _counters.ConnectionsCurrentServerSentEvents.Increment();
+        }
+
+        public override void DecrementConnectionsCount()
+        {
+            _counters.ConnectionsCurrentServerSentEvents.Decrement();
         }
 
         protected internal override Task InitializeResponse(ITransportConnection connection)

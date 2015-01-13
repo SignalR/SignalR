@@ -16,7 +16,7 @@ libraries:
 summary: Incredibly simple real-time web for .NET.
 details: Details.md
 getting-started: GettingStarted.md
-version: 2.1.2
+version: 2.2.0
 samples: 
   iOS and Android Samples: samples/Microsoft.AspNet.SignalR.Xamarin.Sample.sln
 no_build: true

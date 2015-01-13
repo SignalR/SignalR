@@ -38,6 +38,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Common.Infrastructure
             ITestHost host =  null;
 
             string logBasePath = Path.Combine(Directory.GetCurrentDirectory(), "..");
+            TraceListener traceListener = EnableTracing(testName, logBasePath);
 
             switch (hostType)
             {
@@ -62,6 +63,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Common.Infrastructure
                     host = new OwinTestHost(Path.Combine(logBasePath, testName));
                     host.TransportFactory = () => CreateTransport(transportType);
                     host.Transport = host.TransportFactory();
+                    Trace.TraceInformation("HttpListener url: {0}", host.Url);
                     break;
             }
 
@@ -82,8 +84,6 @@ namespace Microsoft.AspNet.SignalR.Tests.Common.Infrastructure
                     host.Disposables.Add(httpSysTracing);
                 }
             }
-
-            TraceListener traceListener = EnableTracing(testName, logBasePath);
 
             host.Disposables.Add(new DisposableAction(() =>
             {

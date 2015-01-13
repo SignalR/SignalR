@@ -1,21 +1,13 @@
 ﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.md in the project root for license information.
 
 using System;
-using System.Collections.Generic;
-using System.Globalization;
-using System.Linq;
-using System.Text;
 using System.Threading;
 using Microsoft.AspNet.SignalR.Client.Http;
-using Microsoft.AspNet.SignalR.Client.Transports;
 
 namespace Microsoft.AspNet.SignalR.Client.Infrastructure
 {
-    public sealed class TransportAbortHandler : IDisposable
+    public class TransportAbortHandler : IDisposable
     {
-        // The abort query string
-        private const string _abortQueryString = "?transport={0}&clientProtocol={1}&connectionData={2}&connectionToken={3}{4}";
-
         // The transport name
         private readonly string _transportName;
 
@@ -41,7 +33,7 @@ namespace Microsoft.AspNet.SignalR.Client.Infrastructure
             _transportName = transportName;
         }
 
-        public void Abort(IConnection connection, TimeSpan timeout, string connectionData)
+        public virtual void Abort(IConnection connection, TimeSpan timeout, string connectionData)
         {
             if (connection == null)
             {
@@ -70,22 +62,16 @@ namespace Microsoft.AspNet.SignalR.Client.Infrastructure
                 {
                     _startedAbort = true;
 
-                    string url = connection.Url + "abort" + String.Format(CultureInfo.InvariantCulture,
-                                                                          _abortQueryString,
-                                                                          _transportName,
-                                                                          connection.Protocol,
-                                                                          connectionData,
-                                                                          Uri.EscapeDataString(connectionToken),
-                                                                          null);
+                    var url = UrlBuilder.BuildAbort(connection, _transportName, connectionData);
 
-                    url += TransportHelper.AppendCustomQueryString(connection, url);
-
-                    _httpClient.Post(url, connection.PrepareRequest, isLongRunning: false).Catch((ex, state) =>
-                    {
-                        // If there's an error making an http request set the reset event
-                        ((TransportAbortHandler)state).CompleteAbort();
-                    },
-                    this);
+                    _httpClient.Post(url, connection.PrepareRequest, isLongRunning: false)
+                               .Catch((ex, state) =>
+                               {
+                                   // If there's an error making an http request set the reset event
+                                   ((TransportAbortHandler)state).CompleteAbort();
+                               },
+                                   this,
+                                   connection);
 
                     if (!_abortResetEvent.WaitOne(timeout))
                     {
@@ -132,21 +118,30 @@ namespace Microsoft.AspNet.SignalR.Client.Infrastructure
             }
         }
 
-        public void Dispose()
+        protected virtual void Dispose(bool disposing)
         {
-            // Wait for any ongoing aborts to complete
-            // In practice, any aborts should have finished by the time Dispose is called
-            lock (_abortLock)
+            if (disposing)
             {
-                lock (_disposeLock)
+                // Wait for any ongoing aborts to complete
+                // In practice, any aborts should have finished by the time Dispose is called
+                lock (_abortLock)
                 {
-                    if (!_disposed)
+                    lock (_disposeLock)
                     {
-                        _abortResetEvent.Dispose();
-                        _disposed = true;
+                        if (!_disposed)
+                        {
+                            _abortResetEvent.Dispose();
+                            _disposed = true;
+                        }
                     }
                 }
             }
+        }
+
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
         }
     }
 }

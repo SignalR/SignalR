@@ -63,6 +63,10 @@ namespace Microsoft.AspNet.SignalR.Client
 
         private TaskQueue _receiveQueue;
 
+        // Used to monitor for possible deadlocks in the _receiveQueue
+        // and trigger OnError if any are detected.
+        private TaskQueueMonitor _receiveQueueMonitor;
+
         private Task _lastQueuedReceiveTask;
 
         private TaskCompletionSource<object> _startTcs;
@@ -81,15 +85,16 @@ namespace Microsoft.AspNet.SignalR.Client
         // Indicates the last time we marked the C# code as running.
         private DateTime _lastActiveAt;
 
-        // Keeps track of when the last keep alive from the server was received
-        private HeartbeatMonitor _monitor;
-
         //The json serializer for the connections
         private JsonSerializer _jsonSerializer = new JsonSerializer();
 
 #if (NET4 || NET45)
         private readonly X509CertificateCollection _certCollection = new X509CertificateCollection();
 #endif
+
+        // Keeps track of when the last keep alive from the server was received
+        // internal virtual to allow mocking
+        internal virtual HeartbeatMonitor Monitor { get; private set; }
 
         /// <summary>
         /// Occurs when the <see cref="Connection"/> has received data from the server.
@@ -180,6 +185,7 @@ namespace Microsoft.AspNet.SignalR.Client
             Headers = new HeaderDictionary(this);
             TransportConnectTimeout = TimeSpan.Zero;
             _totalTransportConnectTimeout = TimeSpan.Zero;
+            DeadlockErrorTimeout = TimeSpan.FromSeconds(10);
 
             // Current client protocol
             Protocol = new Version(1, 4);
@@ -190,6 +196,13 @@ namespace Microsoft.AspNet.SignalR.Client
         /// This value is modified by adding the server's TransportConnectTimeout configuration value.
         /// </summary>
         public TimeSpan TransportConnectTimeout { get; set; }
+
+        /// <summary>
+        /// Gets or sets the amount of time a callback registered with "HubProxy.On" or
+        /// "Connection.Received" may run before <see cref="Connection.Error"/> will be called
+        /// warning that a possible deadlock has been detected.
+        /// </summary>
+        public TimeSpan DeadlockErrorTimeout { get; set; }
 
         /// <summary>
         /// The amount of time a transport will wait (while connecting) before failing.
@@ -429,6 +442,11 @@ namespace Microsoft.AspNet.SignalR.Client
         /// <returns>A task that represents when the connection has started.</returns>
         public Task Start(IClientTransport transport)
         {
+            if (transport == null)
+            {
+                throw new ArgumentNullException("transport");
+            }
+
             lock (_startLock)
             {
                 if (!ChangeState(ConnectionState.Disconnected, ConnectionState.Connecting))
@@ -438,7 +456,8 @@ namespace Microsoft.AspNet.SignalR.Client
 
                 _disconnectCts = new CancellationTokenSource();
                 _startTcs = new TaskCompletionSource<object>();
-                _receiveQueue = new TaskQueue(_startTcs.Task);
+                _receiveQueueMonitor = new TaskQueueMonitor(this, DeadlockErrorTimeout);
+                _receiveQueue = new TaskQueue(_startTcs.Task, _receiveQueueMonitor);
                 _lastQueuedReceiveTask = TaskAsyncHelper.Empty;
 
                 _transport = transport;
@@ -485,7 +504,7 @@ namespace Microsoft.AspNet.SignalR.Client
                                     _reconnectWindow = _disconnectTimeout;
                                 }
 
-                                _monitor = new HeartbeatMonitor(this, _stateLock, beatInterval);
+                                Monitor = new HeartbeatMonitor(this, _stateLock, beatInterval);
 
                                 return StartTransport();
                             })
@@ -507,7 +526,7 @@ namespace Microsoft.AspNet.SignalR.Client
                                  // Start the monitor to check for server activity
                                  _lastMessageAt = DateTime.UtcNow;
                                  _lastActiveAt = DateTime.UtcNow;
-                                 _monitor.Start();
+                                 Monitor.Start();
                              })
                              // Don't return until the last receive has been processed to ensure messages/state sent in OnConnected
                              // are processed prior to the Start() method task finishing
@@ -607,7 +626,7 @@ namespace Microsoft.AspNet.SignalR.Client
                 {
                     // Close the receive queue so currently running receive callback finishes and no more are run.
                     // We can't wait on the result of the drain because this method may be on the stack of the task returned (aka deadlock).
-                    _receiveQueue.Drain().Catch();
+                    _receiveQueue.Drain().Catch(this);
                 }
 
                 // This is racy since it's outside the _stateLock, but we are trying to avoid 30s deadlocks when calling _transport.Abort()
@@ -619,7 +638,7 @@ namespace Microsoft.AspNet.SignalR.Client
                 Trace(TraceLevels.Events, "Stop");
 
                 // Dispose the heart beat monitor so we don't fire notifications when waiting to abort
-                _monitor.Dispose();
+                Monitor.Dispose();
 
                 _transport.Abort(this, timeout, _connectionData);
 
@@ -652,9 +671,11 @@ namespace Microsoft.AspNet.SignalR.Client
                     _disconnectCts.Cancel();
                     _disconnectCts.Dispose();
 
-                    if (_monitor != null)
+                    _receiveQueueMonitor.Dispose();
+
+                    if (Monitor != null)
                     {
-                        _monitor.Dispose();
+                        Monitor.Dispose();
                     }
 
                     if (_transport != null)
@@ -855,6 +876,7 @@ namespace Microsoft.AspNet.SignalR.Client
                 Reconnected();
             }
 
+            Monitor.Reconnected();
             ((IConnection)this).MarkLastMessage();
         }
 
@@ -909,7 +931,7 @@ namespace Microsoft.AspNet.SignalR.Client
             if (_assemblyVersion == null)
             {
 #if NETFX_CORE
-                _assemblyVersion = new Version("2.1.2");
+                _assemblyVersion = new Version("2.2.0");
 #else
                 _assemblyVersion = new AssemblyName(typeof(Connection).Assembly.FullName).Version;
 #endif

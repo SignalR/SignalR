@@ -5,7 +5,6 @@ QUnit.test("maximizePersistentResponse decompresses response correctly", functio
         response = {
             C: 1234,
             M: [{ uno: 1, dos: 2 }, { tres: 3, quatro: 4 }],
-            D: "Can be anything, just not undefined",
             T: "Same as above",
             L: 1337,
             G: "foo"
@@ -15,16 +14,13 @@ QUnit.test("maximizePersistentResponse decompresses response correctly", functio
     decompressed = $.signalR.transports._logic.maximizePersistentResponse(response);
     QUnit.ok(decompressed.MessageId === response.C, "The decompressed messageId was was correctly set to " + response.C);
     QUnit.ok(decompressed.Messages === response.M, "The decompressed Messages was was correctly set to " + response.M);
-    QUnit.ok(decompressed.Disconnect === true, "The decompressed Disconnect was was correctly set to true");
     QUnit.ok(decompressed.ShouldReconnect === true, "The decompressed ShouldReconnect was was correctly set to true");
     QUnit.ok(decompressed.LongPollDelay === response.L, "The decompressed LongPollDelay was was correctly set to " + response.L);
     QUnit.ok(decompressed.GroupsToken === response.G, "The decompressed Disconnect was was correctly set to " + response.G);
 
-    delete response.D;
     delete response.T;
     decompressed = $.signalR.transports._logic.maximizePersistentResponse(response);
 
-    QUnit.ok(decompressed.Disconnect === false, "The decompressed Disconnect was was correctly set to false");
     QUnit.ok(decompressed.ShouldReconnect === false, "The decompressed ShouldReconnect was was correctly set to false");
 });
 

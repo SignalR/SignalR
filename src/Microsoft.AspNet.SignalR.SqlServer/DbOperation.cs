@@ -7,6 +7,8 @@ using System.Data.Common;
 using System.Data.SqlClient;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace Microsoft.AspNet.SignalR.SqlServer
@@ -126,6 +128,7 @@ namespace Microsoft.AspNet.SignalR.SqlServer
                 connection.ConnectionString = ConnectionString;
                 var command = CreateCommand(connection);
                 connection.Open();
+                TraceCommand(command);
                 result = commandFunc(command);
             }
             finally
@@ -137,6 +140,17 @@ namespace Microsoft.AspNet.SignalR.SqlServer
             }
 
             return result;
+        }
+
+        private void TraceCommand(IDbCommand command)
+        {
+            if (Trace.Switch.ShouldTrace(TraceEventType.Verbose))
+            {
+                Trace.TraceVerbose("Created DbCommand: CommandType={0}, CommandText={1}, Parameters={2}", command.CommandType, command.CommandText,
+                    command.Parameters.Cast<IDataParameter>()
+                        .Aggregate(string.Empty, (msg, p) => string.Format(CultureInfo.InvariantCulture, "{0} [Name={1}, Value={2}]", msg, p.ParameterName, p.Value))
+                );
+            }
         }
 
         [SuppressMessage("Microsoft.Usage", "CA2202:Do not dispose objects multiple times", Justification = "Disposed in async Finally block"),
@@ -155,7 +169,7 @@ namespace Microsoft.AspNet.SignalR.SqlServer
 
                 commandFunc(command)
                     .Then(result => tcs.SetResult(result))
-                    .Catch(ex => tcs.SetUnwrappedException(ex))
+                    .Catch(ex => tcs.SetUnwrappedException(ex), Trace)
                     .Finally(state =>
                     {
                         var conn = (DbConnection)state;

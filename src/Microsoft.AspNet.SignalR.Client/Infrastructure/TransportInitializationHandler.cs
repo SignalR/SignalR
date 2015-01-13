@@ -10,7 +10,7 @@ using Newtonsoft.Json.Linq;
 
 namespace Microsoft.AspNet.SignalR.Client.Infrastructure
 {
-    public class TransportInitializationHandler
+    internal class TransportInitializationHandler
     {
         private readonly ThreadSafeInvoker _initializationInvoker;
         private readonly TaskCompletionSource<object> _initializationTask;
@@ -19,12 +19,23 @@ namespace Microsoft.AspNet.SignalR.Client.Infrastructure
         private readonly string _connectionData;
         private readonly string _transport;
         private readonly IDisposable _tokenCleanup;
+        private readonly TransportHelper _transportHelper;
+
+        private int _state = InitializationState.Initial;
+
+        private static class InitializationState
+        {
+            public const int Initial = 0;
+            public const int AfterConnect = 1;
+            public const int Failed = 2;
+        }
 
         public TransportInitializationHandler(IHttpClient httpClient,
                                               IConnection connection,
                                               string connectionData,
                                               string transport,
-                                              CancellationToken disconnectToken)
+                                              CancellationToken disconnectToken, 
+                                              TransportHelper transportHelper)
         {
             if (connection == null)
             {
@@ -35,6 +46,7 @@ namespace Microsoft.AspNet.SignalR.Client.Infrastructure
             _httpClient = httpClient;
             _connectionData = connectionData;
             _transport = transport;
+            _transportHelper = transportHelper;
 
             _initializationTask = new TaskCompletionSource<object>();
             _initializationInvoker = new ThreadSafeInvoker();
@@ -43,16 +55,20 @@ namespace Microsoft.AspNet.SignalR.Client.Infrastructure
             OnFailure = () => { };
 
             // We want to fail if the disconnect token is tripped while we're waiting on initialization
-            _tokenCleanup = disconnectToken.SafeRegister(_ =>
-            {
-                Fail();
-            },
-            state: null);
+            _tokenCleanup = disconnectToken.SafeRegister(
+                _ => Fail(new OperationCanceledException(Resources.Error_ConnectionCancelled, disconnectToken)),
+                state: null);
 
-            TaskAsyncHelper.Delay(connection.TotalTransportConnectTimeout).Then(() =>
-            {
-                Fail(new TimeoutException(Resources.Error_TransportTimedOutTryingToConnect));
-            });
+            TaskAsyncHelper.Delay(connection.TotalTransportConnectTimeout)
+                .Then(() =>
+                {
+                    // don't timeout once connect request has finished
+                    if (Interlocked.CompareExchange(ref _state, InitializationState.Failed, InitializationState.Initial) ==
+                        InitializationState.Initial)
+                    {
+                        Fail(new TimeoutException(Resources.Error_TransportTimedOutTryingToConnect));
+                    }
+                });
         }
 
         public event Action OnFailure;
@@ -65,11 +81,6 @@ namespace Microsoft.AspNet.SignalR.Client.Infrastructure
             }
         }
 
-        public void InitReceived()
-        {
-            _initializationInvoker.Invoke(Start);
-        }
-
         public void Fail()
         {
             Fail(new InvalidOperationException(Resources.Error_TransportFailedToConnect));
@@ -80,40 +91,56 @@ namespace Microsoft.AspNet.SignalR.Client.Infrastructure
             _initializationInvoker.Invoke(CompleteFail, ex);
         }
 
-        private void Start()
+        public void InitReceived()
         {
-            _httpClient.GetStartResponse(_connection, _connectionData, _transport).Then(response =>
+            if (Interlocked.CompareExchange(ref _state, InitializationState.AfterConnect, InitializationState.Initial) ==
+                InitializationState.Initial)
             {
-                var started = _connection.JsonDeserializeObject<JObject>(response)["Response"];
-                if (started.ToString() == "started")
-                {
-                    CompleteStart();
-                }
-                else
-                {
-                    CompleteFail(new StartException(Resources.Error_StartFailed));
-                }
-            }).Catch(ex =>
-            {
-                CompleteFail(new StartException(Resources.Error_StartFailed, ex));
-            });
+                _transportHelper.GetStartResponse(_httpClient, _connection, _connectionData, _transport)
+                                .Then(response =>
+                                {
+                                    var started = _connection.JsonDeserializeObject<JObject>(response)["Response"];
+                                    if (started.ToString() == "started")
+                                    {
+                                        _initializationInvoker.Invoke(CompleteStart);
+                                    }
+                                    else
+                                    {
+                                        Fail(new StartException(Resources.Error_StartFailed));
+                                    }
+                                })
+                                .Catch(ex => Fail(new StartException(Resources.Error_StartFailed, ex)), _connection);
+            }
         }
 
         private void CompleteStart()
         {
-            Dispatch(() => _initializationTask.SetResult(null));
+            Dispatch(() => _initializationTask.TrySetResult(null));
             _tokenCleanup.Dispose();
         }
 
         private void CompleteFail(Exception ex)
         {
+            var previousState = Interlocked.Exchange(ref _state, InitializationState.Failed);
+
             Dispatch(() =>
             {
                 OnFailure();
-                _initializationTask.SetException(ex);
+
+                // if the transport failed during start request we want to fail with StartException
+                // so that AutoTransport does not try other transports
+                if (previousState == InitializationState.AfterConnect && !(ex is StartException))
+                {
+                    ex = new StartException(Resources.Error_StartFailed, ex);
+                }
+ 
+                _initializationTask.TrySetUnwrappedException(ex);
             });
 
-            _tokenCleanup.Dispose();
+            if (_tokenCleanup != null)
+            {
+                _tokenCleanup.Dispose();
+            }
         }
 
         private static void Dispatch(Action callback)

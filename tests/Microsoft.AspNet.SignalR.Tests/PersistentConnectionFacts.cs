@@ -9,6 +9,8 @@ using Microsoft.AspNet.SignalR.Transports;
 using Moq;
 using Moq.Protected;
 using Xunit;
+using Microsoft.AspNet.SignalR.Tests.Utilities;
+using System.Threading;
 
 namespace Microsoft.AspNet.SignalR.Tests
 {
@@ -20,14 +22,22 @@ namespace Microsoft.AspNet.SignalR.Tests
             public void NullContextThrows()
             {
                 var connection = new Mock<PersistentConnection>() { CallBase = true };
-                Assert.Throws<ArgumentNullException>(() => connection.Object.ProcessRequest((HostContext)null));
+
+                TestUtilities.AssertUnwrappedException<ArgumentNullException>(() =>
+                {
+                    connection.Object.ProcessRequest((HostContext)null).Wait();
+                });
             }
 
             [Fact]
             public void UninitializedThrows()
             {
                 var connection = new Mock<PersistentConnection>() { CallBase = true };
-                Assert.Throws<InvalidOperationException>(() => connection.Object.ProcessRequest(new HostContext(null, null)));
+
+                TestUtilities.AssertUnwrappedException<InvalidOperationException>(() =>
+                {
+                    connection.Object.ProcessRequest(new HostContext(null, null)).Wait();
+                });
             }
 
             [Fact]
@@ -97,6 +107,8 @@ namespace Microsoft.AspNet.SignalR.Tests
 
                 var transport = new Mock<ITransport>();
                 transport.SetupProperty(m => m.Disconnected);
+                transport.SetupProperty(m => m.ConnectionId);
+                transport.Setup(m => m.GetGroupsToken()).Returns(TaskAsyncHelper.FromResult(string.Empty));
                 transport.Setup(m => m.ProcessRequest(It.IsAny<Connection>())).Returns(TaskAsyncHelper.Empty);
 
                 var transportManager = new Mock<ITransportManager>();
@@ -119,11 +131,10 @@ namespace Microsoft.AspNet.SignalR.Tests
                 connection.Object.Initialize(dr);
 
                 // Act
-                var processRequestTask = connection.Object.ProcessRequest(context);
+                connection.Object.ProcessRequest(context).Wait();
                 transport.Object.Disconnected(/* clean: */ false);
 
                 // Assert
-                Assert.Equal(TaskAsyncHelper.Empty, processRequestTask);
                 Assert.True(onDisconnectedCalled);
             }
         }
@@ -189,7 +200,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                 var context = new HostContext(req.Object, null);
                 connection.Object.Initialize(dr);
 
-                return connection.Object.VerifyGroups(context, connectionId);
+                return connection.Object.VerifyGroups(connectionId, groupsToken);
             }
         }
 

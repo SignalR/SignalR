@@ -135,6 +135,9 @@
     <Compile Include="..\Microsoft.AspNet.SignalR.Client\HeaderDictionary.cs">
       <Link>HeaderDictionary.cs</Link>
     </Compile>
+    <Compile Include="..\Microsoft.AspNet.SignalR.Client\Http\HttpHelper.cs">
+      <Link>Http\HttpHelper.cs</Link>
+    </Compile>
     <Compile Include="..\Microsoft.AspNet.SignalR.Client\Http\IHttpClient.cs">
       <Link>Http\IHttpClient.cs</Link>
     </Compile>
@@ -168,17 +171,32 @@
     <Compile Include="..\Microsoft.AspNet.SignalR.Client\Infrastructure\ErrorExtensions.cs">
       <Link>Infrastructure\ErrorExtensions.cs</Link>
     </Compile>
+    <Compile Include="..\Microsoft.AspNet.SignalR.Client\Infrastructure\ITaskMonitor.cs">
+      <Link>Infrastructure\ITaskMonitor.cs</Link>
+    </Compile>
     <Compile Include="..\Microsoft.AspNet.SignalR.Client\Infrastructure\SignalRError.cs">
       <Link>Infrastructure\SignalRError.cs</Link>
     </Compile>
+    <Compile Include="..\Microsoft.AspNet.SignalR.Client\Infrastructure\SlowCallbackException.cs">
+      <Link>Infrastructure\SlowCallbackException.cs</Link>
+    </Compile>
     <Compile Include="..\Microsoft.AspNet.SignalR.Client\Infrastructure\StartException.cs">
       <Link>Infrastructure\StartException.cs</Link>
+    </Compile>
+    <Compile Include="..\Microsoft.AspNet.SignalR.Client\Infrastructure\TaskQueueMonitor.cs">
+      <Link>Infrastructure\TaskQueueMonitor.cs</Link>
     </Compile>
     <Compile Include="..\Microsoft.AspNet.SignalR.Client\Infrastructure\TransportAbortHandler.cs">
       <Link>Infrastructure\TransportAbortHandler.cs</Link>
     </Compile>
     <Compile Include="..\Microsoft.AspNet.SignalR.Client\Infrastructure\TransportInitializationHandler.cs">
       <Link>Infrastructure\TransportInitializationHandler.cs</Link>
+    </Compile>
+    <Compile Include="..\Microsoft.AspNet.SignalR.Client\Infrastructure\UrlBuilder.cs">
+      <Link>Infrastructure\UrlBuilder.cs</Link>
+    </Compile>
+    <Compile Include="..\Microsoft.AspNet.SignalR.Client\Infrastructure\UrlEncoder.cs">
+      <Link>Infrastructure\UrlEncoder.cs</Link>
     </Compile>
     <Compile Include="..\Microsoft.AspNet.SignalR.Client\Resources.Designer.cs">
       <Link>Resources.Designer.cs</Link>
@@ -195,11 +213,8 @@
     <Compile Include="..\Microsoft.AspNet.SignalR.Client\Transports\AsyncStreamReader.cs">
       <Link>Transports\AsyncStreamReader.cs</Link>
     </Compile>
-    <Compile Include="..\Microsoft.AspNet.SignalR.Client\Transports\LongPolling\NegotiateInitializer.cs">
-      <Link>Transports\LongPolling\NegotiateInitializer.cs</Link>
-    </Compile>
-    <Compile Include="..\Microsoft.AspNet.SignalR.Client\Transports\LongPolling\PollingRequestHandler.cs">
-      <Link>Transports\LongPolling\PollingRequestHandler.cs</Link>
+    <Compile Include="..\Microsoft.AspNet.SignalR.Client\Transports\ClientTransportBase.cs">
+      <Link>Transports\ClientTransportBase.cs</Link>
     </Compile>
     <Compile Include="..\Microsoft.AspNet.SignalR.Core\Infrastructure\CancellationTokenExtensions.cs">
       <Link>Infrastructure\CancellationTokenExtensions.cs</Link>

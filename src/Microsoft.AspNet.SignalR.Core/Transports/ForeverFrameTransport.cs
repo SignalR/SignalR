@@ -4,7 +4,6 @@ using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.IO;
-using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR.Hosting;
 using Microsoft.AspNet.SignalR.Infrastructure;
@@ -31,10 +30,17 @@ namespace Microsoft.AspNet.SignalR.Transports
                                             "<body>\r\n";
 
         private HTMLTextWriter _htmlOutputWriter;
+        private readonly IPerformanceCounterManager _counters;
 
         public ForeverFrameTransport(HostContext context, IDependencyResolver resolver)
+            : this(context, resolver, resolver.Resolve<IPerformanceCounterManager>())
+        {
+        }
+            
+        public ForeverFrameTransport(HostContext context, IDependencyResolver resolver, IPerformanceCounterManager performanceCounterManager)
             : base(context, resolver)
         {
+            _counters = performanceCounterManager;
         }
 
         /// <summary>
@@ -60,6 +66,16 @@ namespace Microsoft.AspNet.SignalR.Transports
 
                 return _htmlOutputWriter;
             }
+        }
+
+        public override void IncrementConnectionsCount()
+        {
+            _counters.ConnectionsCurrentForeverFrame.Increment();
+        }
+
+        public override void DecrementConnectionsCount()
+        {
+            _counters.ConnectionsCurrentForeverFrame.Decrement();
         }
 
         public override Task KeepAlive()

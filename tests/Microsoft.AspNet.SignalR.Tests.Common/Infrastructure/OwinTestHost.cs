@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Net;
 using Microsoft.Owin.Hosting;
 
 namespace Microsoft.AspNet.SignalR.Tests.Common.Infrastructure
@@ -6,13 +7,44 @@ namespace Microsoft.AspNet.SignalR.Tests.Common.Infrastructure
     public class OwinTestHost : TracingTestHost
     {
         private IDisposable _server;
-        private static Random _random = new Random();
+        private static readonly Random Random = new Random();
         private readonly string _url;
 
         public OwinTestHost(string logPath)
             : base(logPath)
         {
-            _url = "http://localhost:" + _random.Next(8000, 9000);
+            _url = GetUrl();
+        }
+
+        private static string GetUrl()
+        {
+            for (var i = 0; i < 10; i++)
+            {
+                var url = string.Format("http://localhost:{0}/", Random.Next(8000, 9000));
+                if (ProbeUrl(url))
+                {
+                    return url;
+                }
+            }
+
+            throw new InvalidOperationException("Could not find free port.");
+        }
+
+        private static bool ProbeUrl(string url)
+        {
+            try
+            {
+                var listener = new HttpListener();
+                listener.Prefixes.Add(url);
+                listener.Start();
+                listener.Stop();
+            }
+            catch
+            {
+                return false;
+            }
+
+            return true;
         }
 
         public override string Url
