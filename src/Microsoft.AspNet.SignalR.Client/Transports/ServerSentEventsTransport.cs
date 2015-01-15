@@ -53,7 +53,9 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
             // if the transport failed to start we want to stop it silently.
             _stop = true;
 
-            _request.Abort();
+            var request = _request;
+            if (request != null)
+                request.Abort();
         }
 
         private void Reconnect(IConnection connection, string data, CancellationToken disconnectToken)
@@ -95,10 +97,10 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
 
             var getTask = HttpClient.Get(url, req =>
             {
+                req.Accept = "text/event-stream";
                 _request = req;
-                _request.Accept = "text/event-stream";
 
-                connection.PrepareRequest(_request);
+                connection.PrepareRequest(req);
 
             }, isLongRunning: true);
 
@@ -107,7 +109,9 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
                 _stop = true;
 
                 // This will no-op if the request is already finished.
-                ((IRequest)state).Abort();
+                var request = state as IRequest;
+                if (request != null)
+                    request.Abort();
             }, _request);
             
             getTask.ContinueWith(task =>
@@ -200,10 +204,9 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
 
         public override void LostConnection(IConnection connection)
         {
-            if (_request != null)
-            {
-                _request.Abort();
-            }
+            var request = _request;
+            if (request != null)
+                request.Abort();
         }
     }
 }
