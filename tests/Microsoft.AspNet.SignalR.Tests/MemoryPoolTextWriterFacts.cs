@@ -39,5 +39,18 @@ namespace Microsoft.AspNet.SignalR.Tests
                 Assert.Equal("Hello World", encoding.GetString(writer.Buffer.ToArray()));
             }
         }
+
+        [Fact]
+        public void StringOverrideBehavesAsCharArray()
+        {
+            var writer = new MemoryPoolTextWriter(new MemoryPool());
+            var testTxt = new string('m', 260);
+
+            writer.Write(testTxt.ToCharArray(), 0, testTxt.Length);
+            writer.Flush();
+
+            var encoding = new UTF8Encoding();
+            Assert.Equal(testTxt, encoding.GetString(writer.Buffer.ToArray()));
+        }
     }
 }
