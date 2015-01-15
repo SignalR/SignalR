@@ -438,6 +438,14 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
             // and when they are thrown. 
             try
             {
+                if (!PerformanceCounterCategory.Exists(categoryName))
+                {
+#if !UTILS
+                    _trace.TraceEvent(TraceEventType.Warning, 0, "Performance counter failed to load. The counters are not installed.");
+#endif
+                    return null;
+                }
+
                 var counter = new PerformanceCounter(categoryName, counterName, instanceName, isReadOnly);
 
                 // Initialize the counter sample
