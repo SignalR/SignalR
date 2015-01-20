@@ -4,7 +4,7 @@ using System;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Net;
-#if !NET4
+#if !NET4 && !NET35
 using System.Net.Http;
 #endif
 using Microsoft.AspNet.SignalR.Infrastructure;
@@ -30,7 +30,7 @@ namespace Microsoft.AspNet.SignalR.Client
             {
                 error = GetWebExceptionError(ex);
             }
-#if !NET4
+#if !NET4 && !NET35
             else
             {
                 error = GetHttpClientException(ex);
@@ -78,7 +78,7 @@ namespace Microsoft.AspNet.SignalR.Client
             return error;
         }
 
-#if !NET4
+#if !NET4 && !NET35
         [SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope", Justification = "The IDisposable object is the return value.")]
         private static SignalRError GetHttpClientException(Exception ex)
         {

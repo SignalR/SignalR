@@ -13,7 +13,7 @@ namespace Microsoft.AspNet.SignalR.Client.Http
 {
     internal static class HttpHelper
     {
-#if CLIENT_NET4
+#if CLIENT_NET4 || CLIENT_NET35
 
         [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "Exceptions are flowed back to the caller.")]
         public static Task<HttpWebResponse> GetHttpResponseAsync(this HttpWebRequest request)

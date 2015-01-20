@@ -9,6 +9,11 @@ using Microsoft.AspNet.SignalR.Client.Http;
 using Microsoft.AspNet.SignalR.Client.Infrastructure;
 using Newtonsoft.Json.Linq;
 using System.Collections.Generic;
+#if NET35
+using Microsoft.AspNet.SignalR.Client.LibExtensions;
+#else
+using StringHelper = System.String;
+#endif
 
 namespace Microsoft.AspNet.SignalR.Client.Transports
 {
@@ -35,7 +40,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
                 throw new ArgumentNullException("httpClient");
             }
 
-            if (string.IsNullOrWhiteSpace(transportName))
+            if (StringHelper.IsNullOrWhiteSpace(transportName))
             {
                 throw new ArgumentNullException("transportName");
             }

@@ -110,6 +110,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNet.SignalR.Cl
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNet.SignalR.Redis.Tests", "tests\Microsoft.AspNet.SignalR.Redis.Tests\Microsoft.AspNet.SignalR.Redis.Tests.csproj", "{C281927C-2082-4E2A-A1DB-9CD7225F5CED}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNet.SignalR.Client35", "src\Microsoft.AspNet.SignalR.Client35\Microsoft.AspNet.SignalR.Client35.csproj", "{FA1A4952-E4B4-438F-A5F6-0CBFE71C728A}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -694,6 +696,20 @@ Global
 		{C281927C-2082-4E2A-A1DB-9CD7225F5CED}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{C281927C-2082-4E2A-A1DB-9CD7225F5CED}.Release|x64.ActiveCfg = Release|Any CPU
 		{C281927C-2082-4E2A-A1DB-9CD7225F5CED}.Release|x86.ActiveCfg = Release|Any CPU
+		{FA1A4952-E4B4-438F-A5F6-0CBFE71C728A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FA1A4952-E4B4-438F-A5F6-0CBFE71C728A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FA1A4952-E4B4-438F-A5F6-0CBFE71C728A}.Debug|ARM.ActiveCfg = Debug|Any CPU
+		{FA1A4952-E4B4-438F-A5F6-0CBFE71C728A}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{FA1A4952-E4B4-438F-A5F6-0CBFE71C728A}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{FA1A4952-E4B4-438F-A5F6-0CBFE71C728A}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{FA1A4952-E4B4-438F-A5F6-0CBFE71C728A}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{FA1A4952-E4B4-438F-A5F6-0CBFE71C728A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FA1A4952-E4B4-438F-A5F6-0CBFE71C728A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FA1A4952-E4B4-438F-A5F6-0CBFE71C728A}.Release|ARM.ActiveCfg = Release|Any CPU
+		{FA1A4952-E4B4-438F-A5F6-0CBFE71C728A}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{FA1A4952-E4B4-438F-A5F6-0CBFE71C728A}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{FA1A4952-E4B4-438F-A5F6-0CBFE71C728A}.Release|x64.ActiveCfg = Release|Any CPU
+		{FA1A4952-E4B4-438F-A5F6-0CBFE71C728A}.Release|x86.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

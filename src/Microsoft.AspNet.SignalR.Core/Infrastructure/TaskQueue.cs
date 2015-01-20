@@ -1,6 +1,6 @@
 ﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.md in the project root for license information.
 
-#if CLIENT_NET45 || CLIENT_NET4 || PORTABLE || NETFX_CORE
+#if CLIENT_NET45 || CLIENT_NET4 || PORTABLE || NETFX_CORE || CLIENT_NET35
 #define CLIENT
 #endif
 
