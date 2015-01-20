@@ -11,7 +11,9 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyCompany("Microsoft Open Technologies, Inc.")]
 [assembly: AssemblyCopyright("© Microsoft Open Technologies, Inc. All rights reserved.")]
 [assembly: AssemblyProduct("Microsoft ASP.NET SignalR")]
+#if !NET35
 [assembly: AssemblyMetadata("Serviceable", "True")]
+#endif
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 [assembly: AssemblyConfiguration("")]
@@ -23,7 +25,7 @@ using System.Runtime.InteropServices;
 [assembly: NeutralResourcesLanguage("en-US")]
 
 
-#if NET4 || PORTABLE
+#if NET4 || PORTABLE || NET35
 namespace System.Reflection
 {
     [AttributeUsage(AttributeTargets.Assembly, AllowMultiple = true, Inherited = false)]

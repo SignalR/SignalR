@@ -4,6 +4,9 @@ using System;
 using System.Globalization;
 using Microsoft.AspNet.SignalR.Client.Infrastructure;
 using Microsoft.AspNet.SignalR.Infrastructure;
+#if NET35
+using Microsoft.AspNet.SignalR.Client.LibExtensions;
+#endif
 
 namespace Microsoft.AspNet.SignalR.Client
 {

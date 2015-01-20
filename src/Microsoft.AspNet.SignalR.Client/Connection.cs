@@ -21,6 +21,9 @@ using Newtonsoft.Json.Linq;
 #if (NET4 || NET45)
 using System.Security.Cryptography.X509Certificates;
 #endif
+#if NET35
+using Microsoft.AspNet.SignalR.Client.LibExtensions;
+#endif
 
 namespace Microsoft.AspNet.SignalR.Client
 {
@@ -947,7 +950,7 @@ namespace Microsoft.AspNet.SignalR.Client
         [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "The Version constructor can throw exceptions of many different types. Failure is indicated by returning false.")]
         private static bool TryParseVersion(string versionString, out Version version)
         {
-#if PORTABLE
+#if PORTABLE || NET35
             try
             {
                 version = new Version(versionString);

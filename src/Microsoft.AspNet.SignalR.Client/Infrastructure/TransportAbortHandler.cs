@@ -130,7 +130,7 @@ namespace Microsoft.AspNet.SignalR.Client.Infrastructure
                     {
                         if (!_disposed)
                         {
-                            _abortResetEvent.Dispose();
+                            ((IDisposable)_abortResetEvent).Dispose();
                             _disposed = true;
                         }
                     }

@@ -2,6 +2,9 @@
 
 using System;
 using System.Text;
+#if NET35
+using Microsoft.AspNet.SignalR.Client.LibExtensions;
+#endif
 
 namespace Microsoft.AspNet.SignalR.Client.Transports.ServerSentEvents
 {
