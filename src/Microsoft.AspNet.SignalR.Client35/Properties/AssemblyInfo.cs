@@ -3,7 +3,7 @@
 using System.Reflection;
 using System.Runtime.CompilerServices;
 
-[assembly: AssemblyTitle("Microsoft.AspNet.SignalR.Client45")]
+[assembly: AssemblyTitle("Microsoft.AspNet.SignalR.Client35")]
 [assembly: AssemblyDescription(".NET client for SignalR")]
 
 #if SIGNED
