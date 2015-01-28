@@ -78,6 +78,19 @@ namespace Microsoft.AspNet.SignalR.Tests
             Assert.Equal(hub.NameSpecified, false);
         }
 
+        [Fact]
+        public void ShouldDiscoverInternalHub()
+        {
+            var resolver = new DefaultDependencyResolver();
+            var manager = new DefaultHubManager(resolver);
+
+            var hub = manager.GetHub("internalHub");
+
+            Assert.NotNull(hub);
+            Assert.Equal(hub.Name, "InternalHub");
+            Assert.Equal(hub.NameSpecified, false);
+        }
+
         [HubName("NameFromAttribute")]
         public class HubWithAttribute : Hub
         {
@@ -86,5 +99,12 @@ namespace Microsoft.AspNet.SignalR.Tests
         public class HubWithoutAttribute : Hub
         {
         }
+
+
+    }
+
+    internal class InternalHub : Hub
+    {
+
     }
 }
