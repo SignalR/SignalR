@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2013
-VisualStudioVersion = 12.0.30321.0
+VisualStudioVersion = 12.0.31101.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNet.SignalR.Core", "src\Microsoft.AspNet.SignalR.Core\Microsoft.AspNet.SignalR.Core.csproj", "{1B9A82C4-BCA1-4834-A33E-226F17BE070B}"
 EndProject
@@ -109,6 +109,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNet.SignalR.Client.Store.TestHost", "tests\Microsoft.AspNet.SignalR.Client.Store.TestHost\Microsoft.AspNet.SignalR.Client.Store.TestHost.csproj", "{F0697521-4A41-4A2A-BA64-D9A97CAA62A1}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNet.SignalR.Redis.Tests", "tests\Microsoft.AspNet.SignalR.Redis.Tests\Microsoft.AspNet.SignalR.Redis.Tests.csproj", "{C281927C-2082-4E2A-A1DB-9CD7225F5CED}"
+EndProject
+Project("{F184B08F-C81C-45F6-A57F-5ABD9991F28F}") = "Microsoft.AspNet.SignalR.ClientVB.Samples", "samples\Microsoft.AspNet.SignalR.ClientVB.Samples\Microsoft.AspNet.SignalR.ClientVB.Samples.vbproj", "{AE8701EB-255D-4788-B5CD-7A16FA084F0E}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -694,6 +696,20 @@ Global
 		{C281927C-2082-4E2A-A1DB-9CD7225F5CED}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{C281927C-2082-4E2A-A1DB-9CD7225F5CED}.Release|x64.ActiveCfg = Release|Any CPU
 		{C281927C-2082-4E2A-A1DB-9CD7225F5CED}.Release|x86.ActiveCfg = Release|Any CPU
+		{AE8701EB-255D-4788-B5CD-7A16FA084F0E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AE8701EB-255D-4788-B5CD-7A16FA084F0E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AE8701EB-255D-4788-B5CD-7A16FA084F0E}.Debug|ARM.ActiveCfg = Debug|Any CPU
+		{AE8701EB-255D-4788-B5CD-7A16FA084F0E}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{AE8701EB-255D-4788-B5CD-7A16FA084F0E}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{AE8701EB-255D-4788-B5CD-7A16FA084F0E}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{AE8701EB-255D-4788-B5CD-7A16FA084F0E}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{AE8701EB-255D-4788-B5CD-7A16FA084F0E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AE8701EB-255D-4788-B5CD-7A16FA084F0E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{AE8701EB-255D-4788-B5CD-7A16FA084F0E}.Release|ARM.ActiveCfg = Release|Any CPU
+		{AE8701EB-255D-4788-B5CD-7A16FA084F0E}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{AE8701EB-255D-4788-B5CD-7A16FA084F0E}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{AE8701EB-255D-4788-B5CD-7A16FA084F0E}.Release|x64.ActiveCfg = Release|Any CPU
+		{AE8701EB-255D-4788-B5CD-7A16FA084F0E}.Release|x86.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -720,5 +736,6 @@ Global
 		{27015CCF-9FCA-4490-A8D5-9D2B82B1369E} = {505538C3-B34D-4B43-BDE6-C6E974AB03A6}
 		{F0697521-4A41-4A2A-BA64-D9A97CAA62A1} = {505538C3-B34D-4B43-BDE6-C6E974AB03A6}
 		{C281927C-2082-4E2A-A1DB-9CD7225F5CED} = {505538C3-B34D-4B43-BDE6-C6E974AB03A6}
+		{AE8701EB-255D-4788-B5CD-7A16FA084F0E} = {7E3D992A-8F37-4C5D-AD42-E052522816C5}
 	EndGlobalSection
 EndGlobal
