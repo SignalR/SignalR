@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Linq;
 using System.Collections.Generic;
+using System.Reflection;
 using System.Text;
 using Microsoft.AspNet.SignalR.Infrastructure;
+using Newtonsoft.Json;
 using Xunit;
 
 namespace Microsoft.AspNet.SignalR.Tests
@@ -142,6 +144,32 @@ namespace Microsoft.AspNet.SignalR.Tests
                 s += encoding.GetString(buffer.Array, buffer.Offset, buffer.Count);
             }
             Assert.Equal("Hello World", s);
+        }
+
+        [Fact]
+        public void StringOverrideBehavesAsCharArray()
+        {
+            var buffers = new List<ArraySegment<byte>>();
+            var writer = new BinaryTextWriter((buffer, state) =>
+            {
+                buffers.Add(buffer);
+            },
+            null, reuseBuffers: true, bufferSize: 128);
+            const string testTxt = "some random text";
+            
+            // act 1
+            writer.Write(testTxt);
+            writer.Write(testTxt);
+            writer.Flush();
+            var test1 = writer.Encoding.GetString(buffers[0].Array, 0, buffers[0].Count);
+
+            // act 2
+            writer.Write(testTxt.ToCharArray(), 0, testTxt.Length);
+            writer.Write(testTxt.ToCharArray(), 0, testTxt.Length);
+            writer.Flush();
+            var test2 = writer.Encoding.GetString(buffers[0].Array, 0, buffers[0].Count);
+
+            Assert.Equal(test1, test2);
         }
     }
 }

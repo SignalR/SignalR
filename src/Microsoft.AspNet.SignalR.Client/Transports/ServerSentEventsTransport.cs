@@ -55,7 +55,9 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
 
             var request = _request;
             if (request != null)
+            {
                 request.Abort();
+            }
         }
 
         private void Reconnect(IConnection connection, string data, CancellationToken disconnectToken)
@@ -111,7 +113,9 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
                 // This will no-op if the request is already finished.
                 var request = state as IRequest;
                 if (request != null)
+                {
                     request.Abort();
+                }
             }, _request);
             
             getTask.ContinueWith(task =>
@@ -206,7 +210,9 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
         {
             var request = _request;
             if (request != null)
+            {
                 request.Abort();
+            }
         }
     }
 }
