@@ -257,9 +257,16 @@ namespace Microsoft.AspNet.SignalR.WebSockets
 
         private static bool IsClosedOrClosedSent(WebSocket webSocket)
         {
-            return webSocket.State == WebSocketState.Closed ||
-                   webSocket.State == WebSocketState.CloseSent ||
-                   webSocket.State == WebSocketState.Aborted;
+            try
+            {
+                return webSocket.State == WebSocketState.Closed ||
+                       webSocket.State == WebSocketState.CloseSent ||
+                       webSocket.State == WebSocketState.Aborted;
+            }
+            catch (ObjectDisposedException)
+            {
+                return true;
+            }
         }
 
         private class CloseContext
