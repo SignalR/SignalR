@@ -74,6 +74,7 @@
     <Compile Include="ConnectionConfiguration.cs" />
     <Compile Include="Hosting\INameValueCollection.cs" />
     <Compile Include="Hosting\IResponse.cs" />
+    <Compile Include="Hubs\HubBase.cs" />
     <Compile Include="Hubs\HubInvocationProgress.cs" />
     <Compile Include="Hubs\CallerStateProxy.cs" />
     <Compile Include="Hubs\TypedHubCallerConnectionContext.cs" />
