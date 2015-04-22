@@ -200,9 +200,12 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
 
         public override void LostConnection(IConnection connection)
         {
-            if (_request != null)
+            if (connection.EnsureReconnecting()) 
             {
-                _request.Abort();
+                if (_request != null) 
+                {
+                    _request.Abort ();
+                }
             }
         }
     }
