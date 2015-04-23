@@ -74,7 +74,8 @@ namespace Microsoft.AspNet.SignalR.Redis
 
             return _connection.GetDatabase(database).ScriptEvaluateAsync(script,
                 keys,
-                arguments);
+                arguments,
+                CommandFlags.DemandMaster);
         }
 
         public async Task RestoreLatestValueForKey(int database, string key)
@@ -95,7 +96,8 @@ namespace Microsoft.AspNet.SignalR.Redis
                         return nil
                     end",
                    new RedisKey[] { key },
-                   new RedisValue[] { _latestMessageId });
+                   new RedisValue[] { _latestMessageId },
+                   CommandFlags.DemandMaster);
 
                 if (!redisResult.IsNull)
                 {
