@@ -81,7 +81,7 @@
     <!-- Only build the following clients if the SDK is installed -->
     <Projects Include="$(ProjectRoot)\src\Microsoft.AspNet.SignalR.Client.Portable\Microsoft.AspNet.SignalR.Client.Portable.csproj">
       <Build Condition="!$(WP8SDKInstalled)">false</Build>
-      <Platform>portable-net45+sl5+netcore45+wp8+wp81</Platform>
+      <Platform>portable-net45+sl50+win+wpa81+wp80</Platform>
     </Projects>
     <Projects Include="$(ProjectRoot)\src\Microsoft.AspNet.SignalR.Client.Portable\Microsoft.AspNet.SignalR.Client.Portable.csproj">
       <!--
