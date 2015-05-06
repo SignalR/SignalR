@@ -57,7 +57,7 @@ namespace Microsoft.AspNet.SignalR.WebSockets
 
         internal virtual Task SendAsync(ArraySegment<byte> message, WebSocketMessageType messageType, bool endOfMessage = true)
         {
-            if (WebSocket.State != WebSocketState.Open)
+            if (GetWebSocketState(WebSocket) != WebSocketState.Open)
             {
                 return TaskAsyncHelper.Empty;
             }
@@ -68,7 +68,7 @@ namespace Microsoft.AspNet.SignalR.WebSockets
             {
                 var context = (SendContext)state;
 
-                if (context.Handler.WebSocket.State != WebSocketState.Open)
+                if (GetWebSocketState(context.Handler.WebSocket) != WebSocketState.Open)
                 {
                     return;
                 }
@@ -212,8 +212,9 @@ namespace Microsoft.AspNet.SignalR.WebSockets
             try
             {
 #if CLIENT_NET45
-                if (WebSocket.State == WebSocketState.Closed ||
-                    WebSocket.State == WebSocketState.Aborted)
+                var webSocketState = GetWebSocketState(WebSocket);
+                if (webSocketState == WebSocketState.Closed ||
+                    webSocketState == WebSocketState.Aborted)
                 {
                     // No-op if the socket is already closed or aborted
                 }
@@ -257,15 +258,22 @@ namespace Microsoft.AspNet.SignalR.WebSockets
 
         private static bool IsClosedOrClosedSent(WebSocket webSocket)
         {
+            var webSocketState = GetWebSocketState(webSocket);
+
+            return webSocketState == WebSocketState.Closed ||
+                   webSocketState == WebSocketState.CloseSent ||
+                   webSocketState == WebSocketState.Aborted;
+        }
+
+        private static WebSocketState GetWebSocketState(WebSocket webSocket)
+        {
             try
             {
-                return webSocket.State == WebSocketState.Closed ||
-                       webSocket.State == WebSocketState.CloseSent ||
-                       webSocket.State == WebSocketState.Aborted;
+                return webSocket.State;
             }
             catch (ObjectDisposedException)
             {
-                return true;
+                return WebSocketState.Closed;
             }
         }
 
