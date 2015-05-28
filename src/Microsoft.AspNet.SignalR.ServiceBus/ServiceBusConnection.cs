@@ -94,10 +94,9 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
                     {
                         _trace.TraceInformation("Creating a new topic {0} in the service bus...", topicName);
 
-                        _namespaceManager.CreateTopic(topicName);
+                        _namespaceManager.CreateTopic(new TopicDescription(topicName) { EnablePartitioning = _configuration.EnablePartitioning });
 
                         _trace.TraceInformation("Creation of a new topic {0} in the service bus completed successfully.", topicName);
-
                     }
                     catch (MessagingEntityAlreadyExistsException)
                     {
