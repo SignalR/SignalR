@@ -29,43 +29,17 @@ namespace Microsoft.AspNet.SignalR.Transports
                                             "</script></head>" +
                                             "<body>\r\n";
 
-        private HTMLTextWriter _htmlOutputWriter;
         private readonly IPerformanceCounterManager _counters;
 
         public ForeverFrameTransport(HostContext context, IDependencyResolver resolver)
             : this(context, resolver, resolver.Resolve<IPerformanceCounterManager>())
         {
         }
-            
+
         public ForeverFrameTransport(HostContext context, IDependencyResolver resolver, IPerformanceCounterManager performanceCounterManager)
             : base(context, resolver)
         {
             _counters = performanceCounterManager;
-        }
-
-        /// <summary>
-        /// Pointed to the HTMLOutputWriter to wrap output stream with an HTML friendly one
-        /// </summary>
-        public override TextWriter OutputWriter
-        {
-            get
-            {
-                return HTMLOutputWriter;
-            }
-        }
-
-        private HTMLTextWriter HTMLOutputWriter
-        {
-            get
-            {
-                if (_htmlOutputWriter == null)
-                {
-                    _htmlOutputWriter = new HTMLTextWriter(Context.Response);
-                    _htmlOutputWriter.NewLine = "\n";
-                }
-
-                return _htmlOutputWriter;
-            }
         }
 
         public override void IncrementConnectionsCount()
@@ -112,6 +86,11 @@ namespace Microsoft.AspNet.SignalR.Transports
 
             // Ensure delegate continues to use the C# Compiler static delegate caching optimization.
             return base.InitializeResponse(connection).Then(s => Initialize(s), context);
+        }
+
+        protected internal override MemoryPoolTextWriter CreateMemoryPoolWriter(IMemoryPool memoryPool)
+        {
+            return new HTMLTextWriter(memoryPool);
         }
 
         private static Task Initialize(object state)
@@ -191,7 +170,7 @@ namespace Microsoft.AspNet.SignalR.Transports
 
         private class HTMLTextWriter : MemoryPoolTextWriter
         {
-            public HTMLTextWriter(IMemoryPool pool) : 
+            public HTMLTextWriter(IMemoryPool pool) :
                 base(pool)
             {
 

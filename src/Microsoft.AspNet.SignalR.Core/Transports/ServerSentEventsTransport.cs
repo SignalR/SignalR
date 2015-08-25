@@ -96,7 +96,7 @@ namespace Microsoft.AspNet.SignalR.Transports
             return transport.Context.Response.Flush();
         }
 
-        private struct SendContext
+        private class SendContext
         {
             public readonly ServerSentEventsTransport Transport;
             public readonly object State;

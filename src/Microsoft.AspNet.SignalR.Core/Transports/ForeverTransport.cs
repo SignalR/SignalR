@@ -3,6 +3,7 @@
 using System;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using System.IO;
 using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR.Hosting;
 using Microsoft.AspNet.SignalR.Infrastructure;
@@ -39,7 +40,7 @@ namespace Microsoft.AspNet.SignalR.Transports
                                    IPerformanceCounterManager performanceCounterManager,
                                    ITraceManager traceManager,
                                    IMemoryPool pool)
-            : base(context, heartbeat, performanceCounterWriter, traceManager)
+            : base(context, heartbeat, performanceCounterManager, traceManager)
         {
             Pool = pool;
             _jsonSerializer = jsonSerializer;
@@ -292,7 +293,12 @@ namespace Microsoft.AspNet.SignalR.Transports
             return Send(response).Then(() => TaskAsyncHelper.True);
         }
 
-        private static Task PerformSend(object state)
+        protected internal virtual MemoryPoolTextWriter CreateMemoryPoolWriter(IMemoryPool memoryPool)
+        {
+            return new BinaryMemoryPoolTextWriter(memoryPool);
+        }
+
+        private Task PerformSend(object state)
         {
             var context = (ForeverTransportContext)state;
 
@@ -303,7 +309,7 @@ namespace Microsoft.AspNet.SignalR.Transports
 
             context.Transport.Context.Response.ContentType = JsonUtility.JsonMimeType;
 
-            using (var writer = new BinaryMemoryPoolTextWriter(context.Transport.Pool))
+            using (var writer = context.Transport.CreateMemoryPoolWriter(context.Transport.Pool))
             {
                 context.Transport.JsonSerializer.Serialize(context.State, writer);
                 writer.Flush();
@@ -314,10 +320,10 @@ namespace Microsoft.AspNet.SignalR.Transports
             return TaskAsyncHelper.Empty;
         }
 
-        private struct ForeverTransportContext
+        private class ForeverTransportContext
         {
-            public object State;
-            public ForeverTransport Transport;
+            public readonly object State;
+            public readonly ForeverTransport Transport;
 
             public ForeverTransportContext(ForeverTransport foreverTransport, object state)
             {
@@ -326,7 +332,7 @@ namespace Microsoft.AspNet.SignalR.Transports
             }
         }
 
-        private struct SubscriptionDisposerContext
+        private class SubscriptionDisposerContext
         {
             private readonly Disposer _disposer;
             private readonly IDisposable _supscription;
@@ -343,7 +349,7 @@ namespace Microsoft.AspNet.SignalR.Transports
             }
         }
 
-        internal struct RequestLifetime
+        internal class RequestLifetime
         {
             private readonly HttpRequestLifeTime _lifetime;
             private readonly ForeverTransport _transport;

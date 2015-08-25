@@ -119,10 +119,10 @@ namespace Microsoft.AspNet.SignalR.Tests.Owin
                 .Returns(TaskAsyncHelper.Empty);
 
             initialWebSocket.Setup(w => w.ReceiveAsync(It.IsAny<ArraySegment<byte>>(), CancellationToken.None))
-                     .Returns(Task.FromResult(new WebSocketReceiveResult(0, WebSocketMessageType.Close, endOfMessage: true)));
+                .Returns(Task.FromResult(new WebSocketReceiveResult(0, WebSocketMessageType.Close, endOfMessage: true)));
 
             await handler.ProcessWebSocketRequestAsync(initialWebSocket.Object, CancellationToken.None);
-            
+
             // Swap the socket here so we can verify what happens after the task returns
             var afterWebSocket = new Mock<WebSocket>();
 

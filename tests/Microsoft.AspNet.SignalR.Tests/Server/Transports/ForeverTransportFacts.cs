@@ -38,7 +38,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Server.Transports
             var traceManager = new Mock<ITraceManager>();
             counters.SetupGet(m => m.ConnectionsConnected).Returns(new NoOpPerformanceCounter());
             traceManager.Setup(m => m[It.IsAny<string>()]).Returns(new System.Diagnostics.TraceSource("foo"));
-            var transport = new Mock<ForeverTransport>(hostContext, json, heartBeat.Object, counters.Object, traceManager.Object)
+            var transport = new Mock<ForeverTransport>(hostContext, json, heartBeat.Object, counters.Object, traceManager.Object, new MemoryPool())
             {
                 CallBase = true
             };
@@ -80,7 +80,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Server.Transports
                                })
                                .Returns(TaskAsyncHelper.Empty);
 
-            var transport = new Mock<ForeverTransport>(hostContext, json, heartBeat.Object, counters.Object, traceManager.Object)
+            var transport = new Mock<ForeverTransport>(hostContext, json, heartBeat.Object, counters.Object, traceManager.Object, new MemoryPool())
             {
                 CallBase = true
             };
@@ -128,7 +128,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Server.Transports
                                                      })
                                                      .Returns(disposable);
 
-            var transport = new Mock<ForeverTransport>(hostContext, json, heartBeat.Object, counters.Object, traceManager.Object)
+            var transport = new Mock<ForeverTransport>(hostContext, json, heartBeat.Object, counters.Object, traceManager.Object, new MemoryPool())
             {
                 CallBase = true
             };
@@ -175,7 +175,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Server.Transports
                                                      It.IsAny<int>(),
                                                      It.IsAny<object>())).Throws(new InvalidOperationException());
 
-            var transport = new Mock<ForeverTransport>(hostContext, json, heartBeat.Object, counters.Object, traceManager.Object)
+            var transport = new Mock<ForeverTransport>(hostContext, json, heartBeat.Object, counters.Object, traceManager.Object, new MemoryPool())
             {
                 CallBase = true
             };
@@ -259,7 +259,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Server.Transports
                                                     .Returns(disposable);
             transportConnection.Setup(m => m.Send(It.IsAny<ConnectionMessage>())).Returns(TaskAsyncHelper.Empty);
 
-            var transport = new Mock<ForeverTransport>(hostContext, json, heartBeat.Object, counters.Object, traceManager.Object)
+            var transport = new Mock<ForeverTransport>(hostContext, json, heartBeat.Object, counters.Object, traceManager.Object, new MemoryPool())
             {
                 CallBase = true
             };
@@ -306,7 +306,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Server.Transports
                                                      It.IsAny<int>(),
                                                      It.IsAny<object>())).Returns(DisposableAction.Empty);
 
-            var transport = new Mock<ForeverTransport>(hostContext, json, heartBeat.Object, counters.Object, traceManager.Object)
+            var transport = new Mock<ForeverTransport>(hostContext, json, heartBeat.Object, counters.Object, traceManager.Object, new MemoryPool())
             {
                 CallBase = true
             };
@@ -387,7 +387,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Server.Transports
                         return DisposableAction.Empty;
                     });
 
-            var transport = new Mock<ForeverTransport>(hostContext, json, heartBeat.Object, counters.Object, traceManager.Object)
+            var transport = new Mock<ForeverTransport>(hostContext, json, heartBeat.Object, counters.Object, traceManager.Object, new MemoryPool())
             {
                 CallBase = true
             };
@@ -455,7 +455,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Server.Transports
                         new DisposableAction(() => callback(new PersistentResponse(), state))
                     );
 
-            var transport = new Mock<ForeverTransport>(hostContext, json, heartBeat.Object, counters, traceManager.Object)
+            var transport = new Mock<ForeverTransport>(hostContext, json, heartBeat.Object, counters, traceManager.Object, new MemoryPool())
             {
                 CallBase = true
             };
@@ -526,7 +526,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Server.Transports
                                                      .Returns(disposable);
             transportConnection.Setup(m => m.Send(It.IsAny<ConnectionMessage>())).Returns(TaskAsyncHelper.Empty);
 
-            var transport = new Mock<ForeverTransport>(hostContext, json, heartBeat.Object, counters.Object, traceManager.Object)
+            var transport = new Mock<ForeverTransport>(hostContext, json, heartBeat.Object, counters.Object, traceManager.Object, new MemoryPool())
             {
                 CallBase = true
             };

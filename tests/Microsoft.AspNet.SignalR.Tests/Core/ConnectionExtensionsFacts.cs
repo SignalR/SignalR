@@ -29,7 +29,8 @@ namespace Microsoft.AspNet.SignalR.Tests.Core
                                                ackThreshold: TimeSpan.Zero,
                                                ackInterval: TimeSpan.Zero),
                                 counters,
-                                new Mock<IProtectedData>().Object);
+                                new Mock<IProtectedData>().Object,
+                                new MemoryPool());
 
             Assert.Throws<ArgumentException>(() => connection.Send((string)null, new object()));
         }
@@ -51,7 +52,8 @@ namespace Microsoft.AspNet.SignalR.Tests.Core
                                                ackThreshold: TimeSpan.Zero,
                                                ackInterval: TimeSpan.Zero),
                                 counters,
-                                new Mock<IProtectedData>().Object);
+                                new Mock<IProtectedData>().Object,
+                                new MemoryPool());
 
             Assert.Throws<ArgumentNullException>(() => connection.Send((IList<string>)null, new object()));
         }

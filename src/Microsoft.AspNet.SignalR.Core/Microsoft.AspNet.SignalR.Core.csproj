@@ -100,10 +100,12 @@
     <Compile Include="Infrastructure\AckHandler.cs" />
     <Compile Include="Configuration\DefaultConfigurationManager.cs" />
     <Compile Include="Infrastructure\ArraySegmentTextReader.cs" />
+    <Compile Include="Infrastructure\BinaryMemoryPoolTextWriter.cs" />
     <Compile Include="Infrastructure\ConnectionManager.cs" />
     <Compile Include="ConnectionMessage.cs" />
     <Compile Include="Infrastructure\DataProtectionProviderProtectedData.cs" />
     <Compile Include="Infrastructure\DefaultProtectedData.cs" />
+    <Compile Include="Infrastructure\IMemoryPool.cs" />
     <Compile Include="Infrastructure\MemoryPool.cs" />
     <Compile Include="Infrastructure\MemoryPoolTextWriter.cs" />
     <Compile Include="Infrastructure\MonoUtility.cs" />

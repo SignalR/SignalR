@@ -1,20 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.md in the project root for license information.
+
+using System;
 using System.Text;
-using System.Threading.Tasks;
 using System.IO;
 
 namespace Microsoft.AspNet.SignalR.Infrastructure
 {
-    public class BinaryMemoryPoolTextWriter : MemoryPoolTextWriter, IBinaryWriter
-    {
-        public BinaryMemoryPoolTextWriter(IMemoryPool memory) 
-            : base(memory)
-        {
-        }
-    }
-
     public class MemoryPoolTextWriter : TextWriter
     {
         private readonly IMemoryPool _memory;
@@ -44,14 +35,14 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
             _memory = memory;
             _textArray = _memory.AllocChar(_textLength);
             _dataArray = _memory.Empty;
-            _encoder = Encoding.Default.GetEncoder();
+            _encoder = Encoding.UTF8.GetEncoder();
         }
 
         public override Encoding Encoding
         {
             get
             {
-                return Encoding.Default;
+                return Encoding.UTF8;
             }
         }
 

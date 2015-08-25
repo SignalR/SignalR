@@ -12,8 +12,6 @@ namespace Microsoft.AspNet.SignalR.WebSockets
         private readonly IWebSocket _webSocket;
         private volatile bool _closed;
 
-        internal ArraySegment<byte> NextMessageToSend { get; private set; }
-
         public DefaultWebSocketHandler(int? maxIncomingMessageSize)
             : base(maxIncomingMessageSize)
         {
@@ -59,6 +57,15 @@ namespace Microsoft.AspNet.SignalR.WebSockets
             set;
         }
 
+        public override Task Send(string message)
+        {
+            if (_closed)
+            {
+                return TaskAsyncHelper.Empty;
+            }
+
+            return base.Send(message);
+        }
 
         public Task Send(ArraySegment<byte> message)
         {

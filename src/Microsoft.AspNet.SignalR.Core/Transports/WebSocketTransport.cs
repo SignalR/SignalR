@@ -52,7 +52,7 @@ namespace Microsoft.AspNet.SignalR.Transports
                                   ITraceManager traceManager,
                                   IMemoryPool pool,
                                   int? maxIncomingMessageSize)
-            : base(context, serializer, heartbeat, performanceCounterWriter, traceManager, pool)
+            : base(context, serializer, heartbeat, performanceCounterManager, traceManager, pool)
         {
             _context = context;
             _maxIncomingMessageSize = maxIncomingMessageSize;
@@ -197,7 +197,7 @@ namespace Microsoft.AspNet.SignalR.Transports
             Trace.TraceError("OnError({0}, {1})", ConnectionId, error);
         }
 
-        private struct WebSocketTransportContext
+        private class WebSocketTransportContext
         {
             public readonly WebSocketTransport Transport;
             public readonly object State;
