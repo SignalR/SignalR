@@ -135,6 +135,9 @@
   <data name="Error_CallerNotAuthorizedToInvokeMethodOn" xml:space="preserve">
     <value>Caller is not authorized to invoke the {0} method on {1}.</value>
   </data>
+  <data name="Error_CannotGetMethodInfoFromLambdaExpression" xml:space="preserve">
+    <value>Cannot get method info of lambdaexpression.</value>
+  </data>
   <data name="Error_ConnectionIdIncorrectFormat" xml:space="preserve">
     <value>The ConnectionId is in the incorrect format.</value>
   </data>
@@ -176,6 +179,9 @@
   </data>
   <data name="Error_InvalidForeverFrameId" xml:space="preserve">
     <value>The supplied frameId is in the incorrect format.</value>
+  </data>
+  <data name="Error_InvocationMustBeAMethodCall" xml:space="preserve">
+    <value>The invocation must be a methodcall.</value>
   </data>
   <data name="Error_IsNotA" xml:space="preserve">
     <value>'{0}' is not a {1}.</value>

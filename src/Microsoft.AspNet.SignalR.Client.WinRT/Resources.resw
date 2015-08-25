@@ -186,4 +186,13 @@
   <data name="Error_PossibleDeadlockDetected" xml:space="preserve">
     <value>Possible deadlock detected. A callback registered with "HubProxy.On" or "Connection.Received" has been executing for at least {0} seconds.</value>
   </data>
+  <data name="Error_NotAnInterface" xml:space="preserve">
+    <value>{0} Is not an interface.</value>
+  </data>
+  <data name="Error_CannotGetMethodInfoFromLambdaExpression" xml:space="preserve">
+    <value>Cannot get method info of lambdaexpression.</value>
+  </data>
+  <data name="Error_InvocationMustBeAMethodCall" xml:space="preserve">
+    <value>The invocation must be a methodcall.</value>
+  </data>
 </root>

@@ -92,9 +92,11 @@
     <Compile Include="Hubs\Hubservable.cs" />
     <Compile Include="Hubs\IHubConnection.cs" />
     <Compile Include="Hubs\Subscription.cs" />
+    <Compile Include="Hubs\TypedHubProxy.cs" />
     <Compile Include="IConnection.cs" />
     <Compile Include="IHubProxy.cs" />
     <Compile Include="Infrastructure\ErrorExtensions.cs" />
+    <Compile Include="Infrastructure\ExpressionExtensions.cs" />
     <Compile Include="Infrastructure\ITaskMonitor.cs" />
     <Compile Include="Infrastructure\SignalRError.cs" />
     <Compile Include="Infrastructure\SlowCallbackException.cs" />
@@ -104,6 +106,7 @@
     <Compile Include="Infrastructure\TransportInitializationHandler.cs" />
     <Compile Include="Infrastructure\UrlBuilder.cs" />
     <Compile Include="Infrastructure\UrlEncoder.cs" />
+    <Compile Include="ITypedHubProxy.cs" />
     <Compile Include="KeepAliveData.cs" />
     <Compile Include="Infrastructure\ExceptionHelper.cs" />
     <Compile Include="Infrastructure\ThreadSafeInvoker.cs" />

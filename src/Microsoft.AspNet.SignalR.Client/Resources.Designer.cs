@@ -253,7 +253,37 @@ namespace Microsoft.AspNet.SignalR.Client {
                 return ResourceManager.GetString("Error_UrlCantContainQueryStringDirectly", resourceCulture);
             }
         }
-        
+
+        /// <summary>
+        ///   Looks up a localized string similar to Cannot get method info of lambdaexpression..
+        /// </summary>
+        internal static string Error_CannotGetMethodInfoFromLambdaExpression
+        {
+            get {
+                return ResourceManager.GetString("Error_CannotGetMethodInfoFromLambdaExpression", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to The invocation must be a methodcall..
+        /// </summary>
+        internal static string Error_InvocationMustBeAMethodCall
+        {
+            get {
+                return ResourceManager.GetString("Error_InvocationMustBeAMethodCall", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to {0} Is not an interface..
+        /// </summary>
+        internal static string Error_NotAnInterface
+        {
+            get {
+                return ResourceManager.GetString("Error_NotAnInterface", resourceCulture);
+            }
+        }
+
         /// <summary>
         ///   Looks up a localized string similar to Connection was disconnected before invocation result was received..
         /// </summary>
