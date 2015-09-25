@@ -113,6 +113,16 @@ namespace Microsoft.AspNet.SignalR.Hubs
                                     ex.GetType().Name,
                                     ex.Message);
 
+                if (ex.LoaderExceptions != null)
+                {
+                    _trace.TraceWarning("Loader exceptions messages: ");
+
+                    foreach (var exception in ex.LoaderExceptions)
+                    {
+                        _trace.TraceWarning("{0}\r\n", exception);
+                    }
+                }
+
                 return ex.Types.Where(t => t != null);
             }
             catch (Exception ex)
