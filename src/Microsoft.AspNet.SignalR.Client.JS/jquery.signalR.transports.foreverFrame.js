@@ -205,7 +205,7 @@
                         }
                     }
                     catch (e) {
-                        connection.log("Error occured when stopping foreverFrame transport. Message = " + e.message + ".");
+                        connection.log("Error occurred when stopping foreverFrame transport. Message = " + e.message + ".");
                     }
                 }
 

@@ -406,7 +406,7 @@ namespace Microsoft.AspNet.SignalR.SqlServer
                 }
                 catch (Exception stopEx)
                 {
-                    Trace.TraceError("{0}Error occured while stopping SQL notification listener: {1}", TracePrefix, stopEx);
+                    Trace.TraceError("{0}Error occurred while stopping SQL notification listener: {1}", TracePrefix, stopEx);
                 }
             }
 
