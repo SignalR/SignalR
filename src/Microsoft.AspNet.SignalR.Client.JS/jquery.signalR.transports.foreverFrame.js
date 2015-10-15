@@ -152,6 +152,9 @@
         },
 
         receive: function (connection, data) {
+			
+			if (!connection) return;
+			
             var cw,
                 body,
                 response;
