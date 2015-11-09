@@ -2,5 +2,5 @@
 
 using System.Reflection;
 
-[assembly: AssemblyTitle("Microsoft.AspNet.SignalR.Client.WinRT")]
-[assembly: AssemblyDescription("Windows RT client for SignalR")]
+[assembly: AssemblyTitle("Microsoft.AspNet.SignalR.Client.UWP")]
+[assembly: AssemblyDescription("Universal Windows Platform client for SignalR")]
