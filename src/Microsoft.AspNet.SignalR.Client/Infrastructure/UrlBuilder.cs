@@ -14,7 +14,7 @@ namespace Microsoft.AspNet.SignalR.Client.Infrastructure
         {
             if (connection == null)
             {
-                throw new ArgumentNullException("connection");
+                throw new ArgumentNullException(nameof(connection));
             }
 
             var urlStringBuilder = CreateBaseUrl("negotiate", connection, null, connectionData);
@@ -28,12 +28,12 @@ namespace Microsoft.AspNet.SignalR.Client.Infrastructure
         {
             if (connection == null)
             {
-                throw new ArgumentNullException("connection");
+                throw new ArgumentNullException(nameof(connection));
             }
 
             if (string.IsNullOrWhiteSpace(transport))
             {
-                throw new ArgumentNullException("transport");
+                throw new ArgumentNullException(nameof(transport));
             }
 
             return Trim(CreateBaseUrl("start", connection, transport, connectionData));
@@ -43,12 +43,12 @@ namespace Microsoft.AspNet.SignalR.Client.Infrastructure
         {
             if (connection == null)
             {
-                throw new ArgumentNullException("connection");
+                throw new ArgumentNullException(nameof(connection));
             }
 
             if (string.IsNullOrWhiteSpace(transport))
             {
-                throw new ArgumentNullException("transport");
+                throw new ArgumentNullException(nameof(transport));
             }
 
             var urlStringBuilder = CreateBaseUrl("connect", connection, transport, connectionData);
@@ -61,12 +61,12 @@ namespace Microsoft.AspNet.SignalR.Client.Infrastructure
         {
             if (connection == null)
             {
-                throw new ArgumentNullException("connection");
+                throw new ArgumentNullException(nameof(connection));
             }
 
             if (string.IsNullOrWhiteSpace(transport))
             {
-                throw new ArgumentNullException("transport");
+                throw new ArgumentNullException(nameof(transport));
             }
 
             var urlStringBuilder = CreateBaseUrl("reconnect", connection, transport, connectionData);
@@ -79,12 +79,12 @@ namespace Microsoft.AspNet.SignalR.Client.Infrastructure
         {
             if (connection == null)
             {
-                throw new ArgumentNullException("connection");
+                throw new ArgumentNullException(nameof(connection));
             }
 
             if (string.IsNullOrWhiteSpace(transport))
             {
-                throw new ArgumentNullException("transport");
+                throw new ArgumentNullException(nameof(transport));
             }
 
             Debug.Assert(connection != null, "connection is null");
@@ -100,12 +100,12 @@ namespace Microsoft.AspNet.SignalR.Client.Infrastructure
         {
             if (connection == null)
             {
-                throw new ArgumentNullException("connection");
+                throw new ArgumentNullException(nameof(connection));
             }
 
             if (string.IsNullOrWhiteSpace(transport))
             {
-                throw new ArgumentNullException("transport");
+                throw new ArgumentNullException(nameof(transport));
             }
 
             return Trim(CreateBaseUrl("send", connection, transport, connectionData));
@@ -115,12 +115,12 @@ namespace Microsoft.AspNet.SignalR.Client.Infrastructure
         {
             if (connection == null)
             {
-                throw new ArgumentNullException("connection");
+                throw new ArgumentNullException(nameof(connection));
             }
 
             if (string.IsNullOrWhiteSpace(transport))
             {
-                throw new ArgumentNullException("transport");
+                throw new ArgumentNullException(nameof(transport));
             }
 
             return Trim(CreateBaseUrl("abort", connection, transport, connectionData));

@@ -17,12 +17,12 @@ namespace Microsoft.AspNet.SignalR.Client
         {
             if (connection == null)
             {
-                throw new ArgumentNullException("connection");
+                throw new ArgumentNullException(nameof(connection));
             }
 
             if (convert == null)
             {
-                throw new ArgumentNullException("convert");
+                throw new ArgumentNullException(nameof(convert));
             }
 
             _convert = convert;

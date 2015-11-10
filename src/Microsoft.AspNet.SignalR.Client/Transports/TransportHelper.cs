@@ -16,12 +16,12 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
         {
             if (httpClient == null)
             {
-                throw new ArgumentNullException("httpClient");
+                throw new ArgumentNullException(nameof(httpClient));
             }
 
             if (connection == null)
             {
-                throw new ArgumentNullException("connection");
+                throw new ArgumentNullException(nameof(connection));
             }
 
             var negotiateUrl = UrlBuilder.BuildNegotiate(connection, connectionData);
@@ -46,12 +46,12 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
         {
             if (httpClient == null)
             {
-                throw new ArgumentNullException("httpClient");
+                throw new ArgumentNullException(nameof(httpClient));
             }
 
             if (connection == null)
             {
-                throw new ArgumentNullException("connection");
+                throw new ArgumentNullException(nameof(connection));
             }
 
             var startUrl = UrlBuilder.BuildStart(connection, transport, connectionData);
@@ -67,7 +67,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
         {
             if (connection == null)
             {
-                throw new ArgumentNullException("connection");
+                throw new ArgumentNullException(nameof(connection));
             }
 
             // Ensure that we have not exceeded the reconnect window

@@ -159,12 +159,12 @@ namespace Microsoft.AspNet.SignalR.Client
         {
             if (url == null)
             {
-                throw new ArgumentNullException("url");
+                throw new ArgumentNullException(nameof(url));
             }
 
             if (url.Contains("?"))
             {
-                throw new ArgumentException(String.Format(CultureInfo.CurrentCulture, Resources.Error_UrlCantContainQueryStringDirectly), "url");
+                throw new ArgumentException(String.Format(CultureInfo.CurrentCulture, Resources.Error_UrlCantContainQueryStringDirectly), nameof(url));
             }
 
             if (!url.EndsWith("/", StringComparison.Ordinal))
@@ -444,7 +444,7 @@ namespace Microsoft.AspNet.SignalR.Client
         {
             if (transport == null)
             {
-                throw new ArgumentNullException("transport");
+                throw new ArgumentNullException(nameof(transport));
             }
 
             lock (_startLock)

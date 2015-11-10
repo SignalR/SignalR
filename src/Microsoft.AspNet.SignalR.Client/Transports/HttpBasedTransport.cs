@@ -20,7 +20,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
         {
             if (connection == null)
             {
-                throw new ArgumentNullException("connection");
+                throw new ArgumentNullException(nameof(connection));
             }
 
             string url = UrlBuilder.BuildSend(connection, Name, connectionData);

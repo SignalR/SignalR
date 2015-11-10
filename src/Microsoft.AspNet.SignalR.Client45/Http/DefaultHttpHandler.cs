@@ -24,7 +24,7 @@ namespace Microsoft.AspNet.SignalR.Client.Http
             }
             else
             {
-                throw new ArgumentNullException("connection");
+                throw new ArgumentNullException(nameof(connection));
             }
 
             Credentials = _connection.Credentials;

@@ -13,7 +13,7 @@ namespace Microsoft.AspNet.SignalR.Client.Http
         {
             if (response == null)
             {
-                throw new ArgumentNullException("response");
+                throw new ArgumentNullException(nameof(response));
             }
 
             var stream = response.GetStream();
