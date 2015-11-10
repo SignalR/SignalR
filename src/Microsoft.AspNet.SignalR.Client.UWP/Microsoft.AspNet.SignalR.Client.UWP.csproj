@@ -7,7 +7,7 @@
     <ProjectGuid>{AAAE1A6A-3A7E-4EE2-9624-3907FD1CDC1A}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Microsoft.AspNet.SignalR.Client.UWP</RootNamespace>
+    <RootNamespace>Microsoft.AspNet.SignalR.Client</RootNamespace>
     <AssemblyName>Microsoft.AspNet.SignalR.Client.UWP</AssemblyName>
     <DefaultLanguage>en-US</DefaultLanguage>
     <TargetPlatformIdentifier>UAP</TargetPlatformIdentifier>
