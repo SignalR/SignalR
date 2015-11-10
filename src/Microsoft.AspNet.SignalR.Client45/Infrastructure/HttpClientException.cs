@@ -37,7 +37,7 @@ namespace Microsoft.AspNet.SignalR.Client
         {
             if (responseMessage == null)
             {
-                throw new ArgumentNullException("responseMessage");
+                throw new ArgumentNullException(nameof(responseMessage));
             }
 
             return responseMessage.ToString();

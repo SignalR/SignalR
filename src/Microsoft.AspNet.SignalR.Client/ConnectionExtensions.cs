@@ -15,12 +15,12 @@ namespace Microsoft.AspNet.SignalR.Client
         {
             if (connection == null)
             {
-                throw new ArgumentNullException("connection");
+                throw new ArgumentNullException(nameof(connection));
             }
 
             if (String.IsNullOrEmpty(key))
             {
-                throw new ArgumentNullException("key");
+                throw new ArgumentNullException(nameof(key));
             }
 
             lock (connection.Items)
@@ -40,7 +40,7 @@ namespace Microsoft.AspNet.SignalR.Client
         {
             if (connection == null)
             {
-                throw new ArgumentNullException("connection");
+                throw new ArgumentNullException(nameof(connection));
             }
 
             var sb = new StringBuilder(0x100);
@@ -61,7 +61,7 @@ namespace Microsoft.AspNet.SignalR.Client
         {
             if (connection == null)
             {
-                throw new ArgumentNullException("connection");
+                throw new ArgumentNullException(nameof(connection));
             }
 
             using (var stringReader = new StringReader(jsonValue))
@@ -77,7 +77,7 @@ namespace Microsoft.AspNet.SignalR.Client
         {
             if (connection == null)
             {
-                throw new ArgumentNullException("connection");
+                throw new ArgumentNullException(nameof(connection));
             }
 
             if (connection.ChangeState(ConnectionState.Connected, ConnectionState.Reconnecting))

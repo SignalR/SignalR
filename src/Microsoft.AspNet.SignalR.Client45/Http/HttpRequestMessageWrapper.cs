@@ -31,7 +31,7 @@ namespace Microsoft.AspNet.SignalR.Client.Http
         {
             if (headers == null)
             {
-                throw new ArgumentNullException("headers");
+                throw new ArgumentNullException(nameof(headers));
             }
 
             if (UserAgent != null)

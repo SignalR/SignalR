@@ -27,12 +27,12 @@ namespace Microsoft.AspNet.SignalR.Client
         {
             if (proxy == null)
             {
-                throw new ArgumentNullException("proxy");
+                throw new ArgumentNullException(nameof(proxy));
             }
 
             if (String.IsNullOrEmpty(name))
             {
-                throw new ArgumentNullException("name");
+                throw new ArgumentNullException(nameof(name));
             }
 
             return Convert<T>(proxy[name], proxy.JsonSerializer);
@@ -49,17 +49,17 @@ namespace Microsoft.AspNet.SignalR.Client
         {
             if (proxy == null)
             {
-                throw new ArgumentNullException("proxy");
+                throw new ArgumentNullException(nameof(proxy));
             }
 
             if (String.IsNullOrEmpty(eventName))
             {
-                throw new ArgumentNullException("eventName");
+                throw new ArgumentNullException(nameof(eventName));
             }
 
             if (onData == null)
             {
-                throw new ArgumentNullException("onData");
+                throw new ArgumentNullException(nameof(onData));
             }
 
             Subscription subscription = proxy.Subscribe(eventName);
@@ -85,17 +85,17 @@ namespace Microsoft.AspNet.SignalR.Client
         {
             if (proxy == null)
             {
-                throw new ArgumentNullException("proxy");
+                throw new ArgumentNullException(nameof(proxy));
             }
 
             if (String.IsNullOrEmpty(eventName))
             {
-                throw new ArgumentNullException("eventName");
+                throw new ArgumentNullException(nameof(eventName));
             }
 
             if (onData == null)
             {
-                throw new ArgumentNullException("onData");
+                throw new ArgumentNullException(nameof(onData));
             }
 
             Subscription subscription = proxy.Subscribe(eventName);
@@ -122,17 +122,17 @@ namespace Microsoft.AspNet.SignalR.Client
         {
             if (proxy == null)
             {
-                throw new ArgumentNullException("proxy");
+                throw new ArgumentNullException(nameof(proxy));
             }
 
             if (String.IsNullOrEmpty(eventName))
             {
-                throw new ArgumentNullException("eventName");
+                throw new ArgumentNullException(nameof(eventName));
             }
 
             if (onData == null)
             {
-                throw new ArgumentNullException("onData");
+                throw new ArgumentNullException(nameof(onData));
             }
 
             Subscription subscription = proxy.Subscribe(eventName);
@@ -162,17 +162,17 @@ namespace Microsoft.AspNet.SignalR.Client
         {
             if (proxy == null)
             {
-                throw new ArgumentNullException("proxy");
+                throw new ArgumentNullException(nameof(proxy));
             }
 
             if (String.IsNullOrEmpty(eventName))
             {
-                throw new ArgumentNullException("eventName");
+                throw new ArgumentNullException(nameof(eventName));
             }
 
             if (onData == null)
             {
-                throw new ArgumentNullException("onData");
+                throw new ArgumentNullException(nameof(onData));
             }
 
             Subscription subscription = proxy.Subscribe(eventName);
@@ -203,17 +203,17 @@ namespace Microsoft.AspNet.SignalR.Client
         {
             if (proxy == null)
             {
-                throw new ArgumentNullException("proxy");
+                throw new ArgumentNullException(nameof(proxy));
             }
 
             if (String.IsNullOrEmpty(eventName))
             {
-                throw new ArgumentNullException("eventName");
+                throw new ArgumentNullException(nameof(eventName));
             }
 
             if (onData == null)
             {
-                throw new ArgumentNullException("onData");
+                throw new ArgumentNullException(nameof(onData));
             }
 
             Subscription subscription = proxy.Subscribe(eventName);
@@ -258,17 +258,17 @@ namespace Microsoft.AspNet.SignalR.Client
         {
             if (proxy == null)
             {
-                throw new ArgumentNullException("proxy");
+                throw new ArgumentNullException(nameof(proxy));
             }
 
             if (String.IsNullOrEmpty(eventName))
             {
-                throw new ArgumentNullException("eventName");
+                throw new ArgumentNullException(nameof(eventName));
             }
 
             if (onData == null)
             {
-                throw new ArgumentNullException("onData");
+                throw new ArgumentNullException(nameof(onData));
             }
 
             Subscription subscription = proxy.Subscribe(eventName);
@@ -301,17 +301,17 @@ namespace Microsoft.AspNet.SignalR.Client
         {
             if (proxy == null)
             {
-                throw new ArgumentNullException("proxy");
+                throw new ArgumentNullException(nameof(proxy));
             }
 
             if (String.IsNullOrEmpty(eventName))
             {
-                throw new ArgumentNullException("eventName");
+                throw new ArgumentNullException(nameof(eventName));
             }
 
             if (onData == null)
             {
-                throw new ArgumentNullException("onData");
+                throw new ArgumentNullException(nameof(onData));
             }
 
             Subscription subscription = proxy.Subscribe(eventName);
@@ -345,17 +345,17 @@ namespace Microsoft.AspNet.SignalR.Client
         {
             if (proxy == null)
             {
-                throw new ArgumentNullException("proxy");
+                throw new ArgumentNullException(nameof(proxy));
             }
 
             if (String.IsNullOrEmpty(eventName))
             {
-                throw new ArgumentNullException("eventName");
+                throw new ArgumentNullException(nameof(eventName));
             }
 
             if (onData == null)
             {
-                throw new ArgumentNullException("onData");
+                throw new ArgumentNullException(nameof(onData));
             }
 
             Subscription subscription = proxy.Subscribe(eventName);
@@ -389,12 +389,12 @@ namespace Microsoft.AspNet.SignalR.Client
         {
             if (proxy == null)
             {
-                throw new ArgumentNullException("proxy");
+                throw new ArgumentNullException(nameof(proxy));
             }
 
             if (String.IsNullOrEmpty(eventName))
             {
-                throw new ArgumentNullException("eventName");
+                throw new ArgumentNullException(nameof(eventName));
             }
 
             return new Hubservable(proxy, eventName);
