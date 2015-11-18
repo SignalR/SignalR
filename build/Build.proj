@@ -64,6 +64,8 @@
     <WP8SDKInstalled Condition="!Exists('$(MSBuildExtensionsPath)\Microsoft\WindowsPhone\v8.0\Microsoft.WindowsPhone.v8.0.Overrides.targets')">false</WP8SDKInstalled>
     <WinRTSDKInstalled Condition="Exists('$(MSBuildExtensionsPath)\Microsoft\WindowsXaml')">true</WinRTSDKInstalled>
     <WinRTSDKInstalled Condition="!Exists('$(MSBuildExtensionsPath)\Microsoft\WindowsXaml')">false</WinRTSDKInstalled>
+    <NetNativeInstalled>false</NetNativeInstalled>
+    <NetNativeInstalled Condition="Exists('$(MSBuildExtensionsPath)\Microsoft\.NetNative')">true</NetNativeInstalled>
   </PropertyGroup>
 
   <ItemGroup>
@@ -95,6 +97,10 @@
     <Projects Include="$(ProjectRoot)\src\Microsoft.AspNet.SignalR.Client.Store\Microsoft.AspNet.SignalR.Client.Store.csproj">
       <Platform>portable-win81+wpa81</Platform>
       <RunFxCop>false</RunFxCop>
+    </Projects>
+    <Projects Include="$(ProjectRoot)\src\Microsoft.AspNet.SignalR.Client.UWP\Microsoft.AspNet.SignalR.Client.UWP.csproj">
+      <Build Condition="!$(NetNativeInstalled)">false</Build>
+      <Platform>netcore50</Platform>
     </Projects>
     <!-- The SignalR .NET client is the only remaining project that targets .NET 4.0 starting in SignalR 2.0 -->
     <Projects Include="$(ProjectRoot)\src\Microsoft.AspNet.SignalR.Client\Microsoft.AspNet.SignalR.Client.csproj">
