@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 using System.IO;
 using System.Net;
 using System.Text;
@@ -102,7 +103,7 @@ namespace Microsoft.AspNet.SignalR.Client.Http
                     continue;
                 }
 
-                sb.AppendFormat("{0}={1}", pair.Key, UrlEncoder.UrlEncode(pair.Value));
+                sb.AppendFormat(CultureInfo.InvariantCulture, "{0}={1}", pair.Key, UrlEncoder.UrlEncode(pair.Value));
             }
 
             return Encoding.UTF8.GetBytes(sb.ToString());

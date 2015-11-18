@@ -153,12 +153,12 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
                 if (connection.State != ConnectionState.Disconnected)
                 {
                     // Make this a faulted task and trigger the OnError even to maintain consistency with the HttpBasedTransports
-                    ex = new InvalidOperationException(Resources.GetResourceString("Error_DataCannotBeSentDuringWebSocketReconnect"));
+                    ex = new InvalidOperationException(ResourcesStore.GetResourceString("Error_DataCannotBeSentDuringWebSocketReconnect"));
                     connection.OnError(ex);
                 }
                 else
                 {
-                    ex = new InvalidOperationException(Resources.GetResourceString("Error_WebSocketUninitialized"));
+                    ex = new InvalidOperationException(ResourcesStore.GetResourceString("Error_DataCannotBeSentDuringWebSocketReconnect"));
                 }
 
                 var tcs = new TaskCompletionSource<object>();

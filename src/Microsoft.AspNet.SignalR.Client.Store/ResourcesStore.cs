@@ -4,7 +4,7 @@ using Windows.ApplicationModel.Resources;
 
 namespace Microsoft.AspNet.SignalR.Client
 {
-    internal class Resources
+    internal static class ResourcesStore
     {
         private static readonly ResourceLoader ResourceLoader =
             ResourceLoader.GetForViewIndependentUse("Microsoft.AspNet.SignalR.Client.Store/Resources");

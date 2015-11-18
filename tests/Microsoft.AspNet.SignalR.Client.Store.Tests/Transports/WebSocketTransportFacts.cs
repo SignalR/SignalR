@@ -200,7 +200,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
             var fakeConnection = new FakeConnection {State = ConnectionState.Disconnected};
 
             Assert.Equal(
-                StoreClient::Microsoft.AspNet.SignalR.Client.Resources.GetResourceString("Error_WebSocketUninitialized"),
+                StoreClient::Microsoft.AspNet.SignalR.Client.ResourcesStore.GetResourceString("Error_WebSocketUninitialized"),
                 (await Assert.ThrowsAsync<InvalidOperationException>(
                     async () => await new WebSocketTransport().Send(fakeConnection, null, null))).Message);
         }

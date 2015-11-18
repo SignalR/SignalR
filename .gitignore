@@ -34,6 +34,5 @@ jquery.signalR.min.js
 xamarin/SignalRPackage/component/lib/mobile/
 tests/Microsoft.AspNet.SignalR.Client.Store.Tests/AppPackages/
 /Microsoft.AspNet.SignalR.sln.ide
-<<<<<<< HEAD
 /.vs/
-.lock.json
+project.lock.json

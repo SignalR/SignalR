@@ -7,7 +7,7 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
-using StoreClientResources = StoreClient::Microsoft.AspNet.SignalR.Client.Resources;
+using StoreClientResources = StoreClient::Microsoft.AspNet.SignalR.Client.ResourcesStore;
 
 namespace Microsoft.AspNet.SignalR.Client.Store.Tests
 {
@@ -92,7 +92,7 @@ namespace Microsoft.AspNet.SignalR.Client.Store.Tests
                 Assert.True(reconnectingInvoked);
                 Assert.Equal(ConnectionState.Connected, hubConnection.State);
 
-                // TODO: this is a workaround to a race condition in WebSocket. 
+                // TODO: this is a workaround to a race condition in WebSocket.
                 // Should be removed once the race in WebSockets is fixed
                 await Task.Delay(200);
 
@@ -131,7 +131,7 @@ namespace Microsoft.AspNet.SignalR.Client.Store.Tests
                     if (stateChange.OldState == ConnectionState.Connected &&
                         stateChange.NewState == ConnectionState.Reconnecting)
                     {
-                        // Reverting quick timeout 
+                        // Reverting quick timeout
                         ((IConnection) hubConnection).KeepAliveData = new KeepAliveData(
                             timeoutWarning: TimeSpan.FromSeconds(30),
                             timeout: TimeSpan.FromSeconds(20),
@@ -161,7 +161,7 @@ namespace Microsoft.AspNet.SignalR.Client.Store.Tests
 
                 Assert.True(await Task.Run(() => reconnectedWh.Wait(5000)));
 
-                // TODO: this is a workaround to a race condition in WebSocket. 
+                // TODO: this is a workaround to a race condition in WebSocket.
                 // Should be removed once the race in WebSockets is fixed
                 await Task.Delay(200);
 

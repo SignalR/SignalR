@@ -11,7 +11,7 @@
     <AssemblyName>Microsoft.AspNet.SignalR.Client</AssemblyName>
     <DefaultLanguage>en-US</DefaultLanguage>
     <TargetPlatformIdentifier>UAP</TargetPlatformIdentifier>
-    <TargetPlatformVersion>10.0.10240.0</TargetPlatformVersion>
+    <TargetPlatformVersion>10.0.10586.0</TargetPlatformVersion>
     <TargetPlatformMinVersion>10.0.10240.0</TargetPlatformMinVersion>
     <MinimumVisualStudioVersion>14</MinimumVisualStudioVersion>
     <FileAlignment>512</FileAlignment>
@@ -314,12 +314,24 @@
     <Compile Include="..\Microsoft.AspNet.SignalR.Core\TaskAsyncHelper.cs">
       <Link>Infrastructure\TaskAsyncHelper.cs</Link>
     </Compile>
+    <Compile Include="..\Microsoft.AspNet.SignalR.Client.Store\Transports\IWebSocketResponse.cs">
+      <Link>Transports\WebSockets\IWebSocketResponse.cs</Link>
+    </Compile>
+    <Compile Include="..\Microsoft.AspNet.SignalR.Client.Store\Transports\MessageReceivedEventArgsWrapper.cs">
+      <Link>Transports\WebSockets\MessageReceivedEventArgsWrapper.cs</Link>
+    </Compile>
+    <Compile Include="..\Microsoft.AspNet.SignalR.Client.Store\Transports\WebSocketRequest.cs">
+      <Link>Transports\WebSockets\WebSocketRequest.cs</Link>
+    </Compile>
+    <Compile Include="..\Microsoft.AspNet.SignalR.Client.Store\Transports\WebSocketTransport.cs">
+      <Link>Transports\WebSockets\WebSocketTransport.cs</Link>
+    </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="ResourcesStore.cs" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Resources.resx">
-      <Link>Resources.resx</Link>
-    </EmbeddedResource>
+    <EmbeddedResource Include="Resources.resx" />
+    <EmbeddedResource Include="Store.Resources.resx" />
   </ItemGroup>
   <PropertyGroup Condition=" '$(VisualStudioVersion)' == '' or '$(VisualStudioVersion)' &lt; '14.0' ">
     <VisualStudioVersion>14.0</VisualStudioVersion>
@@ -328,6 +340,7 @@
   <Import Project="$(MSBuildExtensionsPath)\Microsoft\WindowsXaml\v$(VisualStudioVersion)\Microsoft.Windows.UI.Xaml.CSharp.targets" />
   <Target Name="BeforeBuild">
     <Copy SourceFiles="..\Microsoft.AspNet.SignalR.Client\Resources.resx" DestinationFiles="$(ProjectDir)Resources.resx" SkipUnchangedFiles="true" />
+    <Copy SourceFiles="..\Microsoft.AspNet.SignalR.Client.Store\Resources.resw" DestinationFiles="$(ProjectDir)Store.Resources.resx" SkipUnchangedFiles="true" />
   </Target>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it.
        Other similar extension points exist, see Microsoft.Common.targets.
