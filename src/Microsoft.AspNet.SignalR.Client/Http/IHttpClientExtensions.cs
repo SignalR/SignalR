@@ -11,17 +11,17 @@ namespace Microsoft.AspNet.SignalR.Client.Http
         {
             if (client == null)
             {
-                throw new ArgumentNullException("client");
+                throw new ArgumentNullException(nameof(client));
             }
 
             if (url == null)
             {
-                throw new ArgumentNullException("url");
+                throw new ArgumentNullException(nameof(url));
             }
 
             if (prepareRequest == null)
             {
-                throw new ArgumentNullException("prepareRequest");
+                throw new ArgumentNullException(nameof(prepareRequest));
             }
 
             return client.Post(url, prepareRequest, postData: null, isLongRunning: isLongRunning);

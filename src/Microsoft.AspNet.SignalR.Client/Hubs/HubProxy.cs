@@ -53,7 +53,7 @@ namespace Microsoft.AspNet.SignalR.Client.Hubs
         {
             if (eventName == null)
             {
-                throw new ArgumentNullException("eventName");
+                throw new ArgumentNullException(nameof(eventName));
             }
 
             Subscription subscription;
@@ -86,12 +86,12 @@ namespace Microsoft.AspNet.SignalR.Client.Hubs
         {
             if (method == null)
             {
-                throw new ArgumentNullException("method");
+                throw new ArgumentNullException(nameof(method));
             }
 
             if (args == null)
             {
-                throw new ArgumentNullException("args");
+                throw new ArgumentNullException(nameof(args));
             }
 
             var tokenifiedArguments = new JToken[args.Length];

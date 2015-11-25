@@ -39,7 +39,7 @@ namespace Microsoft.AspNet.SignalR.Client.Infrastructure
         {
             if (connection == null)
             {
-                throw new ArgumentNullException("connection");
+                throw new ArgumentNullException(nameof(connection));
             }
 
             _connection = connection;
