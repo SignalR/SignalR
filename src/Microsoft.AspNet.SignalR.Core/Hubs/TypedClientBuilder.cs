@@ -123,6 +123,11 @@ namespace Microsoft.AspNet.SignalR.Hubs
 
             methodBuilder.SetReturnType(interfaceMethodInfo.ReturnType);
             methodBuilder.SetParameters(paramTypes);
+            // Sets the number of generic type parameters
+            foreach (var generic in paramTypes.Where(param => param.IsGenericParameter))
+            {
+                methodBuilder.DefineGenericParameters(generic.Name);
+            }
 
             ILGenerator generator = methodBuilder.GetILGenerator();
 
