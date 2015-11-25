@@ -32,12 +32,12 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
         {
             if (httpClient == null)
             {
-                throw new ArgumentNullException("httpClient");
+                throw new ArgumentNullException(nameof(httpClient));
             }
 
             if (string.IsNullOrWhiteSpace(transportName))
             {
-                throw new ArgumentNullException("transportName");
+                throw new ArgumentNullException(nameof(transportName));
             }
 
             Debug.Assert(transportHelper != null, "transportHelper is null");
@@ -88,7 +88,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
         {
             if (connection == null)
             {
-                throw new ArgumentNullException("connection");
+                throw new ArgumentNullException(nameof(connection));
             }
 
             _initializationHandler = new TransportInitializationHandler(HttpClient, connection, connectionData, Name, disconnectToken, TransportHelper);
@@ -133,7 +133,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
         {
             if (connection == null)
             {
-                throw new ArgumentNullException("connection");
+                throw new ArgumentNullException(nameof(connection));
             }
 
             if (_initializationHandler == null)

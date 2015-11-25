@@ -56,7 +56,7 @@ namespace Microsoft.AspNet.SignalR.Client.Http
         {
             if (prepareRequest == null)
             {
-                throw new ArgumentNullException("prepareRequest");
+                throw new ArgumentNullException(nameof(prepareRequest));
             }
 
             var responseDisposer = new Disposer();
@@ -103,7 +103,7 @@ namespace Microsoft.AspNet.SignalR.Client.Http
         {
             if (prepareRequest == null)
             {
-                throw new ArgumentNullException("prepareRequest");
+                throw new ArgumentNullException(nameof(prepareRequest));
             }
 
             var responseDisposer = new Disposer();
