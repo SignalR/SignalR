@@ -12,6 +12,9 @@ namespace Microsoft.AspNet.SignalR.WebSockets
         private readonly IWebSocket _webSocket;
         private volatile bool _closed;
 
+        private Action _onClose;
+        private Action<Exception> _onError;
+
         internal ArraySegment<byte> NextMessageToSend { get; private set; }
 
         public DefaultWebSocketHandler(int? maxIncomingMessageSize)
@@ -49,14 +52,22 @@ namespace Microsoft.AspNet.SignalR.WebSockets
 
         Action IWebSocket.OnClose
         {
-            get;
-            set;
+            get { return _onClose; }
+            set
+            {
+                _onClose = value;
+                if (_onClose != null && _closed) _onClose();
+            }
         }
 
         Action<Exception> IWebSocket.OnError
         {
-            get;
-            set;
+            get { return _onError; }
+            set
+            {
+                _onError = value;
+                if (_onError != null && Error != null) _onError(Error);
+            }
         }
 
         Task IWebSocket.Send(string value)
