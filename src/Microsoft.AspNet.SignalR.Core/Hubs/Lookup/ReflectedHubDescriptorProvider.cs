@@ -109,9 +109,19 @@ namespace Microsoft.AspNet.SignalR.Hubs
                                     "Original exception type: {2}\r\n" +
                                     "Original exception message: {3}\r\n",
                                     a.FullName,
-                                    a.Location,
+                                    a.IsDynamic ? "na" : a.Location,
                                     ex.GetType().Name,
                                     ex.Message);
+
+                if (ex.LoaderExceptions != null)
+                {
+                    _trace.TraceWarning("Loader exceptions messages: ");
+
+                    foreach (var exception in ex.LoaderExceptions)
+                    {
+                        _trace.TraceWarning("{0}\r\n", exception);
+                    }
+                }
 
                 return ex.Types.Where(t => t != null);
             }
@@ -121,7 +131,7 @@ namespace Microsoft.AspNet.SignalR.Hubs
                                     "Original exception type: {2}\r\n" +
                                     "Original exception message: {3}\r\n",
                                     a.FullName,
-                                    a.Location,
+                                    a.IsDynamic ? "na" : a.Location,
                                     ex.GetType().Name,
                                     ex.Message);
 
