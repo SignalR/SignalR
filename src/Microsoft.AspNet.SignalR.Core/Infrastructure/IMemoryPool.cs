@@ -6,11 +6,11 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
 {
     public interface IMemoryPool
     {
-        byte[] Empty { get; }
-
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly", MessageId = "Alloc")]
         byte[] AllocByte(int minimumSize);
         void FreeByte(byte[] memory);
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly", MessageId = "Alloc")]
         char[] AllocChar(int minimumSize);
         void FreeChar(char[] memory);
 
@@ -20,6 +20,7 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
         /// </summary>
         /// <param name = "minimumSize">The smallest length of the ArraySegment.Count that may be returned</param>
         /// <returns>An array segment which is a sub-block of a larger allocation</returns>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly", MessageId = "Alloc")]
         ArraySegment<byte> AllocSegment(int minimumSize);
 
         /// <summary>

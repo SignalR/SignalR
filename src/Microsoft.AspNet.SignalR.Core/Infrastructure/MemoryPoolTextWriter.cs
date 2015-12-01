@@ -3,10 +3,11 @@
 using System;
 using System.Text;
 using System.IO;
+using System.Globalization;
 
 namespace Microsoft.AspNet.SignalR.Infrastructure
 {
-    public class MemoryPoolTextWriter : TextWriter
+    internal class MemoryPoolTextWriter : TextWriter
     {
         private readonly IMemoryPool _memory;
 
@@ -31,10 +32,11 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
         }
 
         public MemoryPoolTextWriter(IMemoryPool memory)
+            : base(CultureInfo.InvariantCulture)
         {
             _memory = memory;
             _textArray = _memory.AllocChar(_textLength);
-            _dataArray = _memory.Empty;
+            _dataArray = MemoryPool.EmptyArray;
             _encoder = Encoding.UTF8.GetEncoder();
         }
 
@@ -144,6 +146,7 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
             }
         }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1062:Validate arguments of public methods", MessageId = "0")]
         public override void Write(string value)
         {
             var sourceIndex = 0;

@@ -88,7 +88,7 @@ namespace Microsoft.AspNet.SignalR.Transports
             return base.InitializeResponse(connection).Then(s => Initialize(s), context);
         }
 
-        protected internal override MemoryPoolTextWriter CreateMemoryPoolWriter(IMemoryPool memoryPool)
+        internal override MemoryPoolTextWriter CreateMemoryPoolWriter(IMemoryPool memoryPool)
         {
             return new HTMLTextWriter(memoryPool);
         }

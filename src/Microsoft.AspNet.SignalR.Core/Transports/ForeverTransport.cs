@@ -293,12 +293,12 @@ namespace Microsoft.AspNet.SignalR.Transports
             return Send(response).Then(() => TaskAsyncHelper.True);
         }
 
-        protected internal virtual MemoryPoolTextWriter CreateMemoryPoolWriter(IMemoryPool memoryPool)
+        internal virtual MemoryPoolTextWriter CreateMemoryPoolWriter(IMemoryPool memoryPool)
         {
             return new BinaryMemoryPoolTextWriter(memoryPool);
         }
 
-        private Task PerformSend(object state)
+        private static Task PerformSend(object state)
         {
             var context = (ForeverTransportContext)state;
 

@@ -7,7 +7,7 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
 {
     public class MemoryPool : IMemoryPool
     {
-        static readonly byte[] EmptyArray = new byte[0];
+        internal static readonly byte[] EmptyArray = new byte[0];
 
         class Pool<T>
         {
@@ -41,14 +41,6 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
         readonly Pool<byte> _pool1 = new Pool<byte>();
         readonly Pool<byte> _pool2 = new Pool<byte>();
         readonly Pool<char> _pool3 = new Pool<char>();
-
-        public byte[] Empty
-        {
-            get
-            {
-                return EmptyArray;
-            }
-        }
 
         public byte[] AllocByte(int minimumSize)
         {
