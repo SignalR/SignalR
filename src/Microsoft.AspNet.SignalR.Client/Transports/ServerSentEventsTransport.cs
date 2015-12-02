@@ -53,7 +53,10 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
             // if the transport failed to start we want to stop it silently.
             _stop = true;
 
-            _request.Abort();
+            if (_request != null)
+            {
+                _request.Abort();
+            }
         }
 
         private void Reconnect(IConnection connection, string data, CancellationToken disconnectToken)
