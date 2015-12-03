@@ -1,6 +1,6 @@
 /*global window:false */
 /*!
- * ASP.NET SignalR JavaScript Library v2.2.0-pre
+ * ASP.NET SignalR JavaScript Library v2.2.1-pre
  * http://signalr.net/
  *
  * Copyright Microsoft Open Technologies, Inc. All rights reserved.
@@ -905,8 +905,6 @@
 
             connection.log("Stopping connection.");
 
-            changeState(connection, connection.state, signalR.connectionState.disconnected);
-
             // Clear this no matter what
             window.clearTimeout(connection._.beatHandle);
             window.clearInterval(connection._.pingIntervalId);
@@ -936,9 +934,6 @@
                 connection._.initHandler.stop();
             }
 
-            // Trigger the disconnect event
-            $(connection).triggerHandler(events.onDisconnect);
-
             delete connection._deferral;
             delete connection.messageId;
             delete connection.groupsToken;
@@ -949,6 +944,10 @@
 
             // Clear out our message buffer
             connection._.connectingMessageBuffer.clear();
+
+            // Trigger the disconnect event
+            changeState(connection, connection.state, signalR.connectionState.disconnected);
+            $(connection).triggerHandler(events.onDisconnect);
 
             return connection;
         },

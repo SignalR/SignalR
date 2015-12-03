@@ -37,7 +37,8 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
                                                            ackThreshold: TimeSpan.Zero,
                                                            ackInterval: TimeSpan.Zero),
                                             counters,
-                                            new Mock<IProtectedData>().Object);
+                                            new Mock<IProtectedData>().Object,
+                                            new MemoryPool());
 
             connection.Send("a", new Command
             {
@@ -95,7 +96,8 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
                                                   traceManager.Object,
                                                   ackHandler.Object,
                                                   counters,
-                                                  new Mock<IProtectedData>().Object);
+                                                  new Mock<IProtectedData>().Object,
+                                                  new MemoryPool());
 
             // Act
             waiterConnection.Send(ackerId, waitCommand);
@@ -121,7 +123,8 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
                                                  traceManager.Object,
                                                  ackHandler.Object,
                                                  counters,
-                                                 new Mock<IProtectedData>().Object);
+                                                 new Mock<IProtectedData>().Object,
+                                                 new MemoryPool());
             ackerConnection.WriteCursor = _ => { };
 
             messageBus.Setup(m => m.Subscribe(ackerConnection,

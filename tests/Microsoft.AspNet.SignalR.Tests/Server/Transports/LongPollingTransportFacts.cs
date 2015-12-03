@@ -142,7 +142,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Server.Transports
                 IPerformanceCounterManager counters,
                 ITraceManager traceManager,
                 IConfigurationManager configurationManager)
-                : base(context, json, heartBeat, counters, traceManager, configurationManager)
+                : base(context, json, heartBeat, counters, traceManager, configurationManager, new MemoryPool())
             {
             }
 

@@ -72,3 +72,26 @@ QUnit.test("lastError not cleared when connection stops.", function () {
     connection.stop();
     QUnit.equal(connection.lastError, error, "lastError should not be cleared on stop");
 });
+
+QUnit.test("_deferral is cleared when disconnected callbacks are invoked.", function () {
+    var connection = testUtilities.createHubConnection(function () { }, QUnit, "", undefined, false),
+        disconnectedCalled = false,
+        stateChangedCalled = false;
+
+    connection.disconnected(function () {
+        QUnit.isNotSet(connection._deferral, "_defferal is not set in disconnected callback");
+        disconnectedCalled = true;
+    });
+
+    connection.stateChanged(function (change) {
+        if (change.newState === $.signalR.connectionState.disconnected) {
+            QUnit.isNotSet(connection._deferral, "_defferal is not set in stateChanged callback");
+            stateChangedCalled = true;
+        }
+    });
+
+    connection.start();
+    connection.stop();
+    QUnit.isTrue(disconnectedCalled, "disconnected callback was called");
+    QUnit.isTrue(stateChangedCalled, "stateChanged callback was called");
+});

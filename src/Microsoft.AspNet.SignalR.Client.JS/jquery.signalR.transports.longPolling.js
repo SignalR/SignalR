@@ -29,7 +29,12 @@
                     fireConnect = $.noop;
 
                     connection.log("LongPolling connected.");
-                    onSuccess();
+
+                    if (onSuccess) {
+                        onSuccess();
+                    } else {
+                        connection.log("WARNING! The client received an init message after reconnecting.");
+                    }
                 },
                 tryFailConnect = function (error) {
                     if (onFailed(error)) {
