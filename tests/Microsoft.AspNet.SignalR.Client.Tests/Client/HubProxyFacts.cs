@@ -235,5 +235,36 @@ namespace Microsoft.AspNet.SignalR.Client.Tests
             Assert.Throws(typeof(AggregateException), () => crashTask.Wait());
             Assert.DoesNotThrow(() => testTcs.Task.Wait());
         }
+
+        private class NullInvokeTest
+        {
+            public string Name { get; set; }
+            public int Number { get; set; }
+            public string[] Strings { get; set; }
+        }
+
+        [Fact]
+        public void InvokeWorksWithNullArgument()
+        {
+            var connection = new Mock<IHubConnection>();
+            connection.Setup(c => c.RegisterCallback(It.IsAny<Action<HubResult>>()))
+                      .Callback<Action<HubResult>>(callback =>
+                      {
+                          callback(new HubResult());
+                      });
+
+            connection.Setup(m => m.Send(It.IsAny<string>())).Returns(TaskAsyncHelper.Empty);
+            connection.SetupGet(x => x.JsonSerializer).Returns(new JsonSerializer());
+
+            var hubProxy = new HubProxy(connection.Object, "foo");
+
+            var o = new NullInvokeTest { Name = null, Number = 42, Strings = new[] { "Kazimierz", null, "Tetmajer" } };
+            hubProxy.Invoke("method", 1, null, new[] { "a", "b" }, o);
+
+            connection.Verify(
+                c => c.Send(@"{""I"":null,""H"":""foo"",""M"":""method""," +
+                @"""A"":[1,null,[""a"",""b""],{""Name"":null,""Number"":42,""Strings"":[""Kazimierz"",null,""Tetmajer""]}]}"),
+                Times.Once());
+        }
     }
 }
