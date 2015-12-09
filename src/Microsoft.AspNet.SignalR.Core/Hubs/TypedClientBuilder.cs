@@ -120,13 +120,16 @@ namespace Microsoft.AspNet.SignalR.Hubs
                 "Invoke", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic, null,
                 new Type[] { typeof(string), typeof(object[]) }, null);
 
-
             methodBuilder.SetReturnType(interfaceMethodInfo.ReturnType);
             methodBuilder.SetParameters(paramTypes);
+
             // Sets the number of generic type parameters
-            foreach (var generic in paramTypes.Where(param => param.IsGenericParameter))
+            var genericTypeNames =
+                paramTypes.Where(p => p.IsGenericParameter).Select(p => p.Name).Distinct().ToArray();
+
+            if (genericTypeNames.Any())
             {
-                methodBuilder.DefineGenericParameters(generic.Name);
+                methodBuilder.DefineGenericParameters(genericTypeNames);
             }
 
             ILGenerator generator = methodBuilder.GetILGenerator();

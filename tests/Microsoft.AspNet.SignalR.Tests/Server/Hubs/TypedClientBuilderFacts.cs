@@ -42,12 +42,24 @@ namespace Microsoft.AspNet.SignalR.Tests.Server.Hubs
             var mockClientProxy = new Mock<IClientProxy>(MockBehavior.Strict);
             mockClientProxy.Setup(c => c.Invoke("send", 42))
                 .Returns(Task.FromResult<object>(null));
+            mockClientProxy.Setup(c => c.Invoke("send", "21"))
+                .Returns(Task.FromResult<object>(null));
+            mockClientProxy.Setup(c => c.Invoke("send", 42, "21"))
+                .Returns(Task.FromResult<object>(null));
+            mockClientProxy.Setup(c => c.Invoke("send", 42, "21", 84))
+                .Returns(Task.FromResult<object>(null));
+            mockClientProxy.Setup(c => c.Invoke("send", 42, "21", true, 84))
+                .Returns(Task.FromResult<object>(null));
             mockClientProxy.Setup(c => c.Invoke("ping"))
                 .Returns(Task.FromResult<object>(null));
 
             var client = TypedClientBuilder<IAmGeneric<int>>.Build(mockClientProxy.Object);
 
             client.send(42);
+            client.send("21");
+            client.send(42, "21");
+            client.send(42, "21", 84);
+            client.send(42, "21", true, 84);
             client.ping();
 
             mockClientProxy.VerifyAll();
@@ -145,6 +157,10 @@ namespace Microsoft.AspNet.SignalR.Tests.Server.Hubs
         {
             void send(T genericArgument);
             void ping();
+            void send<U>(U u);
+            void send<U, V>(U u, V v);
+            void send<U, V>(U u, V v, U u1);
+            void send<U, V>(U u, V v, bool b, U u1);
         }
 
         public interface IAmDerived<T> : IClientContract, IAmGeneric<T>
