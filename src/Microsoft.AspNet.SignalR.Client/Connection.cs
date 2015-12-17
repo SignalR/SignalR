@@ -917,6 +917,8 @@ namespace Microsoft.AspNet.SignalR.Client
             // Cannot set user agent for Portable because SL does not support it.
 #elif NETFX_CORE
             request.UserAgent = CreateUserAgentString("SignalR.Client.WinUAP");
+#elif WINDOWS_APP
+            request.UserAgent = CreateUserAgentString("SignalR.Client.Win8UniversalApp");
 #elif NET45
             request.UserAgent = CreateUserAgentString("SignalR.Client.NET45");
 #else

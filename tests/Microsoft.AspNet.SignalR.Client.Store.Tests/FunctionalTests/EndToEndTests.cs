@@ -37,7 +37,7 @@ namespace Microsoft.AspNet.SignalR.Client.Store.Tests
                     }
                 });
 
-                await hubConnection.Start(new WebSocketTransport());
+                await hubConnection.Start();
 
                 for (var i = 0; i < MessageCount; i++)
                 {

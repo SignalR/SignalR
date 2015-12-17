@@ -70,7 +70,7 @@ namespace Microsoft.AspNet.SignalR.Client.Store.Tests.Fakes
         {
             _invocationManager.AddInvocation("ChangeState", oldState, newState);
 
-            return _invocationManager.GetReturnValue<bool>("ChangeState");            
+            return _invocationManager.GetReturnValue<bool>("ChangeState");
         }
 
         public IDictionary<string, string> Headers
@@ -186,5 +186,7 @@ namespace Microsoft.AspNet.SignalR.Client.Store.Tests.Fakes
         {
             _invocationManager.AddSetup(methodName, behavior);
         }
+
+        public IWebProxy Proxy { get; set; }
     }
 }

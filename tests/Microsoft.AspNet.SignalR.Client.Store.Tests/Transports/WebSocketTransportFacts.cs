@@ -76,7 +76,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
             var openWebSocketInvocations = fakeWebSocketTransport.GetInvocations("OpenWebSocket").ToArray();
             Assert.Equal(1, openWebSocketInvocations.Length);
             Assert.StartsWith(
-                "ws://fake.urlconnect/?clientProtocol=1.42&transport=webSockets&connectionData=test&connectionToken=MyConnToken&messageId=MsgId&noCache=",
+                "ws://fake.urlconnect/?clientProtocol=1.42&transport=webSockets&connectionData=test&connectionToken=MyConnToken&messageId=MsgId",
                 ((Uri)openWebSocketInvocations[0][1]).AbsoluteUri);
         }
 
@@ -235,7 +235,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
             var openWebSocketInvocations = fakeWebSocketTransport.GetInvocations("OpenWebSocket").ToArray();
             Assert.Equal(1, openWebSocketInvocations.Length);
             Assert.StartsWith("ws://fakeserver/reconnect?", ((Uri)openWebSocketInvocations[0][1]).AbsoluteUri);
-            Assert.Contains("&connectionData=abc&", ((Uri)openWebSocketInvocations[0][1]).AbsoluteUri);
+            Assert.Contains("&connectionData=abc", ((Uri)openWebSocketInvocations[0][1]).AbsoluteUri);
             Assert.Equal(1, fakeConnection.GetInvocations("OnReconnected").Count());
         }
 

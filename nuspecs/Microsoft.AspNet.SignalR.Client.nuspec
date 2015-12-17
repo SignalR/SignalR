@@ -40,8 +40,6 @@
     <file src="portable-net45+sl50+win+wpa81+wp80\Microsoft.AspNet.SignalR.Client.xml" target="lib\portable-net45+sl50+win+wpa81+wp80" />
     <file src="portable-win81+wpa81\Microsoft.AspNet.SignalR.Client.dll" target="lib\portable-win81+wpa81" />
     <file src="portable-win81+wpa81\Microsoft.AspNet.SignalR.Client.xml" target="lib\portable-win81+wpa81" />
-    <file src="portable-win81+wpa81\Microsoft.AspNet.SignalR.Client.Store.dll" target="lib\portable-win81+wpa81" />
-    <file src="portable-win81+wpa81\Microsoft.AspNet.SignalR.Client.Store.Xml" target="lib\portable-win81+wpa81" />
     <file src="netcore50\Microsoft.AspNet.SignalR.Client.dll" target="lib\netcore50" />
     <file src="netcore50\Microsoft.AspNet.SignalR.Client.Xml" target="lib\netcore50" />
   </files>

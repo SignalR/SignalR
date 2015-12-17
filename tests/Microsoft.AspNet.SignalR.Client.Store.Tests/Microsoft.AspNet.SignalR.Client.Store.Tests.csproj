@@ -181,10 +181,6 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\src\Microsoft.AspNet.SignalR.Client.Portable\Microsoft.AspNet.SignalR.Client.Portable.csproj">
-      <Project>{47b3f28e-76db-40bd-a8f5-800cf08d84ed}</Project>
-      <Name>Microsoft.AspNet.SignalR.Client.Portable</Name>
-    </ProjectReference>
     <ProjectReference Include="..\..\src\Microsoft.AspNet.SignalR.Client.Store\Microsoft.AspNet.SignalR.Client.Store.csproj">
       <Project>{29e437b6-c451-4353-bb29-3b85ef16a3cf}</Project>
       <Name>Microsoft.AspNet.SignalR.Client.Store</Name>
@@ -214,10 +210,10 @@
   </Target>
   <Import Project="..\..\packages\xunit.runner.visualstudio.0.99.8\build\win8\xunit.runner.visualstudio.targets" Condition="Exists('..\..\packages\xunit.runner.visualstudio.0.99.8\build\win8\xunit.runner.visualstudio.targets')" />
   <Import Project="..\..\packages\xunit.core.2.0.0-beta4-build2738\build\win8\xunit.core.targets" Condition="Exists('..\..\packages\xunit.core.2.0.0-beta4-build2738\build\win8\xunit.core.targets')" />
-  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it.
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">
-  </Target>  
+  </Target>
   <Target Name="AfterBuild">
   </Target>
   -->

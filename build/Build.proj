@@ -96,7 +96,6 @@
     </Projects>
     <Projects Include="$(ProjectRoot)\src\Microsoft.AspNet.SignalR.Client.Store\Microsoft.AspNet.SignalR.Client.Store.csproj">
       <Platform>portable-win81+wpa81</Platform>
-      <RunFxCop>false</RunFxCop>
     </Projects>
     <Projects Include="$(ProjectRoot)\src\Microsoft.AspNet.SignalR.Client.UWP\Microsoft.AspNet.SignalR.Client.UWP.csproj">
       <Build Condition="!$(NetNativeInstalled)">false</Build>

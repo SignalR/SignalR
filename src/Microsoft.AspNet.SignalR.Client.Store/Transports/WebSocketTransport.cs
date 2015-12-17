@@ -179,7 +179,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
                 messageWriter.DetachStream();
             }
         }
-        
+
         private void WebsocketClosed(IWebSocket webSocket, WebSocketClosedEventArgs eventArgs)
         {
             _connection.Trace(TraceLevels.Events, "WS: WebsocketClosed - Code: {0}, Reason {1}", eventArgs.Code, eventArgs.Reason);
