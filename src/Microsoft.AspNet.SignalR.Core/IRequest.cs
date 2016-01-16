@@ -45,7 +45,7 @@ namespace Microsoft.AspNet.SignalR
         IPrincipal User { get; }
 
         /// <summary>
-        /// Gets the owin enviornment
+        /// Gets the owin environment
         /// </summary>
         IDictionary<string, object> Environment { get; }
 

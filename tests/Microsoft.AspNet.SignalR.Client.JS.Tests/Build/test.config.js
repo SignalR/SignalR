@@ -17,7 +17,7 @@
                     }
                 }
                 catch (e) {
-                    console.log("Network Mock Error occured, unable to stop iframe.  Message = " + e.message);
+                    console.log("Network Mock Error occurred, unable to stop iframe.  Message = " + e.message);
                 }
             }
 
