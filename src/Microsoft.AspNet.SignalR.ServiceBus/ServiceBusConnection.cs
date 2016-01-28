@@ -5,7 +5,9 @@ using System.Collections.Generic;
 using System.Configuration;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.ServiceBus;
 using Microsoft.ServiceBus.Messaging;
 
@@ -62,7 +64,7 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
         {
             if (connectionContext == null)
             {
-                throw new ArgumentNullException("connectionContext");
+                throw new ArgumentNullException(nameof(connectionContext));
             }
 
             _trace.TraceInformation("Subscribing to {0} topic(s) in the service bus...", connectionContext.TopicNames.Count);
@@ -167,7 +169,7 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
 
                 var receiverContext = new ReceiverContext(topicIndex, receiver, connectionContext);
 
-                ProcessMessages(receiverContext);
+                ReadBatch(receiverContext);
 
                 // Open the stream
                 connectionContext.OpenStream(topicIndex);
@@ -177,7 +179,7 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
         [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "We retry to create the topics on exceptions")]
         private void Retry(Action action)
         {
-            string errorMessage = "Failed to create service bus subscription or topic : {0}";
+            const string errorMessage = "Failed to create service bus subscription or topic : {0}";
             while (true)
             {
                 try
@@ -210,15 +212,11 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
             }
         }
 
-        protected virtual void Dispose(bool disposing)
+        private void Dispose(bool disposing)
         {
             if (disposing)
             {
-                // Close the factory
-                if (_factory != null)
-                {
-                    _factory.Close();
-                }
+                _factory?.Close();
             }
         }
 
@@ -227,43 +225,19 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
             Dispose(true);
         }
 
-        [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "Exceptions are handled through the error handler callback")]
-        private void ProcessMessages(ReceiverContext receiverContext)
-        {
-        receive:
 
+        private void ReadBatch(ReceiverContext receiverContext)
+        {
+            receive:
             try
             {
-                IAsyncResult result = receiverContext.Receiver.BeginReceiveBatch(ReceiverContext.ReceiveBatchSize, receiverContext.ReceiveTimeout, ar =>
-                {
-                    if (ar.CompletedSynchronously)
-                    {
-                        return;
-                    }
-
-                    var ctx = (ReceiverContext)ar.AsyncState;
-
-                    if (ContinueReceiving(ar, ctx))
-                    {
-                        ProcessMessages(ctx);
-                    }
-                },
-                receiverContext);
-
-                if (result.CompletedSynchronously)
-                {
-                    if (ContinueReceiving(result, receiverContext))
-                    {
-                        goto receive;
-                    }
-                }
+                var task = receiverContext.Receiver.ReceiveBatchAsync(ReceiverContext.ReceiveBatchSize, receiverContext.ReceiveTimeout);
+                task.ContinueWith(t => ProcessBatch(t, receiverContext));
             }
             catch (OperationCanceledException)
             {
                 // This means the channel is closed
                 _trace.TraceError("OperationCanceledException was thrown in trying to receive the message from the service bus.");
-
-                return;
             }
             catch (Exception ex)
             {
@@ -275,67 +249,42 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
             }
         }
 
-        [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "Exceptions are handled through the error handler callback")]
-        private bool ContinueReceiving(IAsyncResult asyncResult, ReceiverContext receiverContext)
+
+        private void ProcessBatch(Task<IEnumerable<BrokeredMessage>> task, ReceiverContext context)
         {
-            bool shouldContinue = true;
-            TimeSpan backoffAmount = _backoffTime;
-
-            try
+            if (task.IsCanceled)
             {
-                IEnumerable<BrokeredMessage> messages = receiverContext.Receiver.EndReceiveBatch(asyncResult);
-
-                receiverContext.OnMessage(messages);
-
-                // Reset the receive timeout if it changed
-                receiverContext.ReceiveTimeout = DefaultReadTimeout;
-            }
-            catch (ServerBusyException ex)
-            {
-                receiverContext.OnError(ex);
-
-                // Too busy so back off
-                shouldContinue = false;
-            }
-            catch (OperationCanceledException)
-            {
-                // This means the channel is closed
-                _trace.TraceError("Receiving messages from the service bus threw an OperationCanceledException, most likely due to a closed channel.");
-
-                return false;
-            }
-            catch (MessagingEntityNotFoundException ex)
-            {
-                receiverContext.Receiver.CloseAsync().Catch();
-                receiverContext.OnError(ex);
-
-                TaskAsyncHelper.Delay(RetryDelay)
-                               .Then(() => Retry(() => CreateSubscription(receiverContext.ConnectionContext, receiverContext.TopicIndex)));
-                return false;
-            }
-            catch (Exception ex)
-            {
-                receiverContext.OnError(ex);
-
-                shouldContinue = false;
-
-                // TODO: Exponential backoff
-                backoffAmount = ErrorBackOffAmount;
-
-                // After an error, we want to adjust the timeout so that we
-                // can recover as quickly as possible even if there's no message
-                receiverContext.ReceiveTimeout = ErrorReadTimeout;
+                return;
             }
 
-            if (!shouldContinue)
+            if (task.Exception != null)
             {
-                TaskAsyncHelper.Delay(backoffAmount)
-                               .Then(ctx => ProcessMessages(ctx), receiverContext);
+                if (task.Exception.InnerExceptions.Any(f => f is MessagingEntityNotFoundException))
+                {
+                    context.Receiver.CloseAsync().Catch();
+                    context.OnError(task.Exception);
 
-                return false;
+                    TaskAsyncHelper.Delay(RetryDelay)
+                                   .Then(() => Retry(() => CreateSubscription(context.ConnectionContext, context.TopicIndex)));
+                    return;
+                }
+
+                context.OnError(task.Exception);
+                _trace.TraceError(string.Join(" === Exception === ", task.Exception.InnerExceptions.Select(f => f.Message)));
+                context.ReceiveTimeout = ErrorReadTimeout;
+
+                TaskAsyncHelper.Delay(_backoffTime)
+                               .Then(ctx => ReadBatch(ctx), context);
+
+                return;
+            }
+            else
+            {
+                context.ReceiveTimeout = DefaultReadTimeout;
+                context.OnMessage(task.Result);
             }
 
-            return true;
+            ReadBatch(context);
         }
 
         private class ReceiverContext
