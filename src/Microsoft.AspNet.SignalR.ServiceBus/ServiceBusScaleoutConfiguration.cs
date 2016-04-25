@@ -16,15 +16,11 @@ namespace Microsoft.AspNet.SignalR
 
         public ServiceBusScaleoutConfiguration(string connectionString, string topicPrefix)
         {
-            if (String.IsNullOrEmpty(connectionString))
-            {
-                throw new ArgumentNullException("connectionString");
-            }
+            if (string.IsNullOrEmpty(connectionString))
+                throw new ArgumentNullException(nameof(connectionString));
 
-            if (String.IsNullOrEmpty(topicPrefix))
-            {
-                throw new ArgumentNullException("topicPrefix");
-            }
+            if (string.IsNullOrEmpty(topicPrefix))
+                throw new ArgumentNullException(nameof(topicPrefix));
 
             IdleSubscriptionTimeout = TimeSpan.FromHours(1);
             ConnectionString = connectionString;
@@ -62,7 +58,7 @@ namespace Microsoft.AspNet.SignalR
             {
                 if (value < 1)
                 {
-                    throw new ArgumentOutOfRangeException("value");
+                    throw new ArgumentOutOfRangeException(nameof(value));
                 }
 
                 _topicCount = value;
@@ -107,8 +103,10 @@ namespace Microsoft.AspNet.SignalR
         {
             if (OperationTimeout != null)
             {
-                var connectionStringBuilder = new ServiceBusConnectionStringBuilder(ConnectionString);
-                connectionStringBuilder.OperationTimeout = OperationTimeout.Value;
+                var connectionStringBuilder = new ServiceBusConnectionStringBuilder(ConnectionString)
+                {
+                    OperationTimeout = OperationTimeout.Value
+                };
                 return connectionStringBuilder.ToString();
             }
 

@@ -15,9 +15,7 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
         public static Stream ToStream(IList<Message> messages)
         {
             if (messages == null)
-            {
-                throw new ArgumentNullException("messages");
-            }
+                throw new ArgumentNullException(nameof(messages));
 
             var scaleoutMessage = new ScaleoutMessage(messages);
             return new MemoryStream(scaleoutMessage.ToBytes());
@@ -26,18 +24,14 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
         public static ScaleoutMessage FromBrokeredMessage(BrokeredMessage brokeredMessage)
         {
             if (brokeredMessage == null)
-            {
-                throw new ArgumentNullException("brokeredMessage");
-            }
+                throw new ArgumentNullException(nameof(brokeredMessage));
 
             var stream = brokeredMessage.GetBody<Stream>();
 
             using (var ms = new MemoryStream())
             {
                 stream.CopyTo(ms);
-
                 var message = ScaleoutMessage.FromBytes(ms.ToArray());
-
                 return message;
             }
         }

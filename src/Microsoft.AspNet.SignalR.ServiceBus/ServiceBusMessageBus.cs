@@ -3,11 +3,10 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
-using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR.Messaging;
 using Microsoft.AspNet.SignalR.Tracing;
+using Microsoft.ServiceBus;
 using Microsoft.ServiceBus.Messaging;
 
 namespace Microsoft.AspNet.SignalR.ServiceBus
@@ -17,79 +16,93 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
     /// </summary>
     public class ServiceBusMessageBus : ScaleoutMessageBus
     {
+        private readonly ServiceBusScaleoutConfiguration _configuration;
         private const string SignalRTopicPrefix = "SIGNALR_TOPIC";
 
-        private ServiceBusConnectionContext _connectionContext;
+        private SubscriptionClient _client;
+        private TopicClient _sender;
+        private readonly string _runId = Guid.NewGuid().ToString();
+        private readonly TraceSource _trace;
+        private readonly ServiceBusFactory _serviceBusFactory;
 
-        private TraceSource _trace;
-
-        private readonly ServiceBusConnection _connection;
-        private readonly string[] _topics;
-        
-        public ServiceBusMessageBus(IDependencyResolver resolver, ServiceBusScaleoutConfiguration configuration)
-            : base(resolver, configuration)
+        public ServiceBusMessageBus(IDependencyResolver resolver, ServiceBusScaleoutConfiguration configuration) : base(resolver, configuration)
         {
+            _configuration = configuration;
             if (configuration == null)
-            {
-                throw new ArgumentNullException("configuration");
-            }
+                throw new ArgumentNullException(nameof(configuration));
 
-            // Retrieve the trace manager
+            _serviceBusFactory = new ServiceBusFactory(configuration.BuildConnectionString());
+
             var traceManager = resolver.Resolve<ITraceManager>();
             _trace = traceManager["SignalR." + typeof(ServiceBusMessageBus).Name];
 
-            _connection = new ServiceBusConnection(configuration, _trace);
-
-            _topics = Enumerable.Range(0, configuration.TopicCount)
-                                .Select(topicIndex => SignalRTopicPrefix + "_" + configuration.TopicPrefix + "_" + topicIndex)
-                                .ToArray();
-
-            _connectionContext = new ServiceBusConnectionContext(configuration, _topics, _trace, OnMessage, OnError, Open);
-
-            ThreadPool.QueueUserWorkItem(Subscribe);
+            SetupBus();
         }
 
-        protected override int StreamCount
+        private void SetupBus()
         {
-            get
+            var options = new OnMessageOptions
             {
-                return _topics.Length;
-            }
+                AutoComplete = true,
+                MaxConcurrentCalls = 1,
+            };
+            options.ExceptionReceived += ServicebusError;
+
+            var topicName = SignalRTopicPrefix + "_" + _configuration.TopicPrefix + "_0";
+            var topic = _serviceBusFactory.CreateIfNotExists(new TopicDescription(topicName)
+            {
+                MaxSizeInMegabytes = 1024,
+                DefaultMessageTimeToLive = _configuration.TimeToLive,
+                EnableExpress = true,
+                RequiresDuplicateDetection = false,
+            });
+
+            var subscription = _serviceBusFactory.CreateIfNotExists(new SubscriptionDescription(topic.Path, _runId)
+            {
+                AutoDeleteOnIdle = _configuration.IdleSubscriptionTimeout,
+                DefaultMessageTimeToLive = _configuration.TimeToLive,
+                EnableDeadLetteringOnMessageExpiration = false,
+            });
+
+            _client = _serviceBusFactory.GetTopicClient(subscription, ReceiveMode.ReceiveAndDelete);
+            _client.PrefetchCount = 32;
+            _client.RetryPolicy = new RetryExponential(TimeSpan.FromSeconds(1), TimeSpan.FromSeconds(60), 100000);
+            _client.OnMessage(HandleBusMessage, options);
+            _sender = _serviceBusFactory.GetTopic(topic);
+
+            Open(0);
         }
 
-        protected override Task Send(int streamIndex, IList<Message> messages)
+        protected override async Task Send(int streamIndex, IList<Message> messages)
         {
-            var stream = ServiceBusMessage.ToStream(messages);
-
             TraceMessages(messages, "Sending");
 
-            return _connectionContext.Publish(streamIndex, stream);
+            var stream = ServiceBusMessage.ToStream(messages);
+            var brokeredMessage = new BrokeredMessage(stream)
+            {
+                TimeToLive = _configuration.TimeToLive,
+            };
+
+            await _sender.SendAsync(brokeredMessage);
         }
 
-        private void OnMessage(int topicIndex, IEnumerable<BrokeredMessage> messages)
+        private void HandleBusMessage(BrokeredMessage message)
         {
-            if (!messages.Any())
+            try
             {
-                // Force the topic to re-open if it was ever closed even if we didn't get any messages
-                Open(topicIndex);
+                var scaleoutMessage = ServiceBusMessage.FromBrokeredMessage(message);
+                TraceMessages(scaleoutMessage.Messages, "Receiving");
+                OnReceived(0, (ulong)message.SequenceNumber, scaleoutMessage);
             }
-
-            foreach (var message in messages)
+            catch (Exception ex)
             {
-                using (message)
-                {
-                    ScaleoutMessage scaleoutMessage = ServiceBusMessage.FromBrokeredMessage(message);
-
-                    TraceMessages(scaleoutMessage.Messages, "Receiving");
-
-                    OnReceived(topicIndex, (ulong)message.EnqueuedSequenceNumber, scaleoutMessage);
-                }
+                _trace.TraceError(ex.Message);
             }
         }
 
-        private void Subscribe(object state)
+        private void ServicebusError(object sender, ExceptionReceivedEventArgs e)
         {
-            _connection.Subscribe(_connectionContext);
+            _trace.TraceError(e.Exception.Message);
         }
 
         private void TraceMessages(IList<Message> messages, string messageType)
@@ -107,20 +120,16 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
 
         protected override void Dispose(bool disposing)
         {
-            base.Dispose(disposing);
-
             if (disposing)
             {
-                if (_connectionContext != null)
-                {
-                    _connectionContext.Dispose();
-                }
+                _sender?.Close();
+                _client?.Close();
 
-                if (_connection != null)
-                {
-                    _connection.Dispose();
-                }
+                _sender = null;
+                _client = null;
             }
+
+            base.Dispose(disposing);
         }
     }
 }
