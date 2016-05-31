@@ -12,7 +12,7 @@ namespace Microsoft.AspNet.SignalR
     {
         private int _tableCount = 1;
 
-        public SqlScaleoutConfiguration(string connectionString)
+        public SqlScaleoutConfiguration(string connectionString, bool useImpersonation = false)
         {
             if (String.IsNullOrEmpty(connectionString))
             {
@@ -20,6 +20,7 @@ namespace Microsoft.AspNet.SignalR
             }
 
             ConnectionString = connectionString;
+            UseImpersonation = useImpersonation;
         }
 
         /// <summary>
