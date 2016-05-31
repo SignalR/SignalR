@@ -28,6 +28,11 @@ namespace Microsoft.AspNet.SignalR
         public string ConnectionString { get; private set; }
 
         /// <summary>
+        /// If set to true, the SQL Server Scaleout will use impersonation in threads.
+        /// </summary>
+        public bool UseImpersonation {get; private set; }
+
+        /// <summary>
         /// The number of tables to store messages in. Using more tables reduces lock contention and may increase throughput.
         /// This must be consistent between all nodes in the web farm.
         /// Defaults to 1.

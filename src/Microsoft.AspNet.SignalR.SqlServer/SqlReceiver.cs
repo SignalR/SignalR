@@ -1,24 +1,25 @@
 ﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.md in the project root for license information.
 
+using Microsoft.AspNet.SignalR.Messaging;
 using System;
-using System.Collections.Generic;
 using System.Data;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
+using System.Security.Principal;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.AspNet.SignalR.Messaging;
 
 namespace Microsoft.AspNet.SignalR.SqlServer
 {
-    internal class SqlReceiver : IDisposable
+  internal class SqlReceiver : IDisposable
     {
         private readonly string _connectionString;
         private readonly string _tableName;
         private readonly TraceSource _trace;
         private readonly string _tracePrefix;
         private readonly IDbProviderFactory _dbProviderFactory;
+        private readonly SqlScaleoutConfiguration _configuration;
 
         private long? _lastPayloadId = null;
         private string _maxIdSql = "SELECT [PayloadId] FROM [{0}].[{1}_Id]";
@@ -26,13 +27,14 @@ namespace Microsoft.AspNet.SignalR.SqlServer
         private ObservableDbOperation _dbOperation;
         private volatile bool _disposed;
 
-        public SqlReceiver(string connectionString, string tableName, TraceSource traceSource, string tracePrefix, IDbProviderFactory dbProviderFactory)
+        public SqlReceiver(string connectionString, string tableName, TraceSource traceSource, string tracePrefix, IDbProviderFactory dbProviderFactory, SqlScaleoutConfiguration configuration)
         {
             _connectionString = connectionString;
             _tableName = tableName;
             _tracePrefix = tracePrefix;
             _trace = traceSource;
             _dbProviderFactory = dbProviderFactory;
+            _configuration = configuration;
 
             Queried += () => { };
             Received += (_, __) => { };
@@ -52,7 +54,16 @@ namespace Microsoft.AspNet.SignalR.SqlServer
         {
             var tcs = new TaskCompletionSource<object>();
 
-            ThreadPool.QueueUserWorkItem(Receive, tcs);
+            if (_configuration.UseImpersonation)
+            {
+                var identity = WindowsIdentity.GetCurrent();
+                var threadSafeContainer = new Tuple<TaskCompletionSource<object>, WindowsIdentity>(tcs, identity);
+                ThreadPool.QueueUserWorkItem(Receive, threadSafeContainer);
+            }
+            else
+            {
+                ThreadPool.QueueUserWorkItem(Receive, tcs);
+            }
 
             return tcs.Task;
         }
@@ -74,7 +85,19 @@ namespace Microsoft.AspNet.SignalR.SqlServer
          SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "On a background thread with explicit error processing")]
         private void Receive(object state)
         {
-            var tcs = (TaskCompletionSource<object>)state;
+            TaskCompletionSource<object> tcs = null;
+            WindowsImpersonationContext context = null;
+
+            if (state != null && state is Tuple<TaskCompletionSource<object>, WindowsIdentity>)
+            {
+                var threadSafeContainer = (Tuple<TaskCompletionSource<object>, WindowsIdentity>)state;
+                tcs = threadSafeContainer.Item1;
+                context = threadSafeContainer.Item2.Impersonate();
+            }
+            else
+            {
+                tcs = (TaskCompletionSource<object>)state;
+            }
 
             if (!_lastPayloadId.HasValue)
             {
@@ -134,6 +157,11 @@ namespace Microsoft.AspNet.SignalR.SqlServer
             _dbOperation.ExecuteReaderWithUpdates(ProcessRecord);
 
             _trace.TraceInformation("{0}SqlReceiver.Receive returned", _tracePrefix);
+
+            if (context != null)
+            {
+                context.Undo();
+            }
         }
 
         private void ProcessRecord(IDataRecord record, DbOperation dbOperation)

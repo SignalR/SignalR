@@ -16,19 +16,21 @@ namespace Microsoft.AspNet.SignalR.SqlServer
         private readonly SqlSender _sender;
         private readonly SqlReceiver _receiver;
         private readonly string _tracePrefix;
+        private readonly SqlScaleoutConfiguration _configuration;
 
-        public SqlStream(int streamIndex, string connectionString, string tableName, TraceSource traceSource, IDbProviderFactory dbProviderFactory)
+        public SqlStream(int streamIndex, string connectionString, string tableName, TraceSource traceSource, IDbProviderFactory dbProviderFactory, SqlScaleoutConfiguration configuration)
         {
             _streamIndex = streamIndex;
             _trace = traceSource;
             _tracePrefix = String.Format(CultureInfo.InvariantCulture, "Stream {0} : ", _streamIndex);
+            _configuration = configuration;
 
             Queried += () => { };
             Received += (_, __) => { };
             Faulted += _ => { };
 
             _sender = new SqlSender(connectionString, tableName, _trace, dbProviderFactory);
-            _receiver = new SqlReceiver(connectionString, tableName, _trace, _tracePrefix, dbProviderFactory);
+            _receiver = new SqlReceiver(connectionString, tableName, _trace, _tracePrefix, dbProviderFactory, _configuration);
             _receiver.Queried += () => Queried();
             _receiver.Faulted += (ex) => Faulted(ex);
             _receiver.Received += (id, messages) => Received(id, messages);
