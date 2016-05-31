@@ -12,7 +12,7 @@ using System.Threading.Tasks;
 
 namespace Microsoft.AspNet.SignalR.SqlServer
 {
-  internal class SqlReceiver : IDisposable
+    internal class SqlReceiver : IDisposable
     {
         private readonly string _connectionString;
         private readonly string _tableName;
