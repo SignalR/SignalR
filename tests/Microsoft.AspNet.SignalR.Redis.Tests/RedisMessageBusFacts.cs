@@ -109,6 +109,13 @@ namespace Microsoft.AspNet.SignalR.Redis.Tests
             Assert.True(restoreLatestValueForKey, "RestoreLatestValueForKey not invoked");
         }
 
+        [Fact]
+        public void DatabaseFromConnectionstringIsUsed()
+        {
+            var configuration = new RedisScaleoutConfiguration("localhost,defaultDatabase=5", String.Empty);
+            Assert.Equal(configuration.Database, 5);
+        }
+
         private Mock<IRedisConnection> GetMockRedisConnection()
         {
             var redisConnection = new Mock<IRedisConnection>();
