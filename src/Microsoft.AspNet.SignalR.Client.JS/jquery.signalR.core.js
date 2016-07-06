@@ -249,7 +249,14 @@
         }
     };
 
-    _pageWindow.on("load", function () { _pageLoaded = true; });
+    // .on() was added in version 1.7.0, .load() was removed in version 3.0.0 so we fallback to .load() if .on() does
+    // not exist to not break existing applications
+    if (typeof _pageWindow.on == "function") {
+        _pageWindow.on("load", function () { _pageLoaded = true; });
+    }
+    else {
+        _pageWindow.load(function () { _pageLoaded = true; });
+    }
 
     function validateTransport(requestedTransport, connection) {
         /// <summary>Validates the requested transport by cross checking it with the pre-defined signalR.transports</summary>
@@ -390,7 +397,7 @@
             link = window.document.createElement("a");
             link.href = url;
 
-            // When checking for cross domain we have to special case port 80 because the window.location will remove the 
+            // When checking for cross domain we have to special case port 80 because the window.location will remove the
             return link.protocol + addDefaultPort(link.protocol, link.host) !== against.protocol + addDefaultPort(against.protocol, against.host);
         },
 
@@ -410,7 +417,7 @@
 
         disconnectTimeout: 30000, // This should be set by the server in response to the negotiate request (30s default)
 
-        reconnectWindow: 30000, // This should be set by the server in response to the negotiate request 
+        reconnectWindow: 30000, // This should be set by the server in response to the negotiate request
 
         keepAliveWarnAt: 2 / 3, // Warn user of slow connection if we breach the X% mark of the keep alive timeout
 
@@ -507,7 +514,7 @@
                 config.transport = "longPolling";
             }
 
-            // If the url is protocol relative, prepend the current windows protocol to the url. 
+            // If the url is protocol relative, prepend the current windows protocol to the url.
             if (connection.url.indexOf("//") === 0) {
                 connection.url = window.location.protocol + connection.url;
                 connection.log("Protocol relative URL detected, normalizing it to '" + connection.url + "'.");

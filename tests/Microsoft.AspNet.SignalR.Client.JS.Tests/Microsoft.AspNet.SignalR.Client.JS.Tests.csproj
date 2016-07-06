@@ -97,6 +97,7 @@
     <Content Include="Scripts\jquery-1.8.3.js" />
     <Content Include="Scripts\jquery-1.9.1.js" />
     <Content Include="Scripts\jquery-2.0.0.js" />
+    <Content Include="Scripts\jquery-3.0.0.js" />
     <Content Include="Scripts\jquery.network.mock.js" />
     <Content Include="Scripts\jquery.signalR.js" />
     <Content Include="Build\test.config.js" />
@@ -237,7 +238,7 @@
             {
                 var scriptTag = "        <script src=\"";
                 scriptTag += Uri.UnescapeDataString(f.FullName.Replace(ProjectDirectory + "\\", "").Replace("\\","/")) + "\"></script>";
-                
+
                 ScriptTagsOutput += scriptTag+"\r\n";
             }
     ]]></Code>
@@ -256,7 +257,7 @@
   </Target>
   <Import Project="$(SolutionDir)\.nuget\nuget.targets" />
   <!--
-   To modify your build process, add your task inside one of the targets below and uncomment it. 
+   To modify your build process, add your task inside one of the targets below and uncomment it.
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="AfterBuild">
   </Target>
