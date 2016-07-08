@@ -81,22 +81,19 @@ namespace Microsoft.AspNet.SignalR.Redis
         {
             try
             {
-                // Workaround for StackExchange.Redis/issues/61 that sometimes Redis connection is not connected in ConnectionRestored event 
+                // Workaround for StackExchange.Redis/issues/61 that sometimes Redis connection is not connected in ConnectionRestored event
                 while (!_connection.GetDatabase(database).IsConnected(key))
                 {
                     await Task.Delay(200);
                 }
 
                 var redisResult = await _connection.GetDatabase(database).ScriptEvaluateAsync(
-                   @"local newvalue=-1
-                    if redis.call('EXISTS', KEYS[1]) == 1 then 
-                        newvalue = tonumber(redis.call('GET', KEYS[1]))
-                    end
-                    if newvalue < tonumber(ARGV[1]) then
-                        return redis.call('SET', KEYS[1], ARGV[1])
-                    else
-                        return nil
-                    end",
+                   @"local newvalue = redis.call('GET', KEYS[1])
+                     if not newvalue or newvalue < ARGV[1] then
+                         return redis.call('SET', KEYS[1], ARGV[1])
+                     else
+                         return nil
+                     end",
                    new RedisKey[] { key },
                    new RedisValue[] { _latestMessageId });
 
