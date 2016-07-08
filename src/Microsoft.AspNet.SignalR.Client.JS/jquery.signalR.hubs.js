@@ -1,4 +1,5 @@
-﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.md in the project root for license information.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 /*global window:false */
 /// <reference path="jquery.signalR.core.js" />
@@ -57,7 +58,7 @@
 
         // Loop over the callbacks and invoke them.
         // We do this using a local var reference and *after* we've cleared the cache
-        // so that if a fail callback itself tries to invoke another method we don't 
+        // so that if a fail callback itself tries to invoke another method we don't
         // end up with its callback in the list we're looping over.
         for (var callbackId in callbacks) {
             callback = callbacks[callbackId];
@@ -361,7 +362,7 @@
 
     hubConnection.fn._registerSubscribedHubs = function () {
         /// <summary>
-        ///     Sets the starting event to loop through the known hubs and register any new hubs 
+        ///     Sets the starting event to loop through the known hubs and register any new hubs
         ///     that have been added to the proxy.
         /// </summary>
         var connection = this;

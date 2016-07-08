@@ -2,9 +2,8 @@
  * ASP.NET SignalR JavaScript Library v2.0.0-beta1
  * http://signalr.net/
  *
- * Copyright Microsoft Open Technologies, Inc. All rights reserved.
- * Licensed under the Apache 2.0
- * https://github.com/SignalR/SignalR/blob/master/LICENSE.md
+ * Copyright (c) .NET Foundation. All rights reserved.
+ * Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
  *
  */
 

@@ -464,11 +464,11 @@
       </NuspecTransform>
       <NuspecTransform Include="@(Nuspecs)">
         <Find>__SIGNALR_LICENSE_URL__</Find>
-        <ReplaceWith>https://raw.github.com/SignalR/SignalR/master/LICENSE.md</ReplaceWith>
+        <ReplaceWith>https://raw.github.com/SignalR/SignalR/master/LICENSE.txt</ReplaceWith>
       </NuspecTransform>
       <NuspecTransform Include="@(Nuspecs)">
         <Find>__SIGNALR_COPYRIGHT_NOTICE__</Find>
-        <ReplaceWith>Copyright (c) Microsoft Open Technologies, Inc.  All rights reserved.</ReplaceWith>
+        <ReplaceWith>Copyright (c) .NET Foundation. All rights reserved.</ReplaceWith>
       </NuspecTransform>
       <NuspecTransform Include="@(Nuspecs)">
         <Find>__SIGNALR_CLIENT_LICENSE_URL__</Find>

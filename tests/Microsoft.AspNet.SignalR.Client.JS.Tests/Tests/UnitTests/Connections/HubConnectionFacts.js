@@ -1,4 +1,7 @@
-﻿/// <reference path="..\..\..\SignalR.Client.JS\jquery.signalR.hubs.js" />
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+/// <reference path="..\..\..\SignalR.Client.JS\jquery.signalR.hubs.js" />
 
 QUnit.module("Hub Connection Facts");
 

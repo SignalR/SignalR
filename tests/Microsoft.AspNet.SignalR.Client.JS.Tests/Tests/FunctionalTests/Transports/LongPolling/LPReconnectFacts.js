@@ -1,4 +1,7 @@
-﻿QUnit.module("Long Polling Facts", testUtilities.transports.longPolling.enabled);
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+QUnit.module("Long Polling Facts", testUtilities.transports.longPolling.enabled);
 
 QUnit.asyncTimeoutTest("Messages received immediately after connectivity re-establishment triggers the reconnected event.", testUtilities.defaultTestTimeout, function (end, assert, testName) {
     var connection = testUtilities.createHubConnection(end, assert, testName),
