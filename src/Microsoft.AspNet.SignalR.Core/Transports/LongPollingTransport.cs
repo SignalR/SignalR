@@ -1,7 +1,8 @@
-﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.md in the project root for license information.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR.Configuration;
 using Microsoft.AspNet.SignalR.Hosting;
@@ -9,7 +10,6 @@ using Microsoft.AspNet.SignalR.Infrastructure;
 using Microsoft.AspNet.SignalR.Json;
 using Microsoft.AspNet.SignalR.Tracing;
 using Newtonsoft.Json;
-using System.Diagnostics.CodeAnalysis;
 
 namespace Microsoft.AspNet.SignalR.Transports
 {
@@ -19,13 +19,16 @@ namespace Microsoft.AspNet.SignalR.Transports
         private readonly IPerformanceCounterManager _counters;
         private bool _responseSent;
 
+        private static readonly ArraySegment<byte> _keepAlive = new ArraySegment<byte>(new byte[] { 32 });
+
         public LongPollingTransport(HostContext context, IDependencyResolver resolver)
             : this(context,
                    resolver.Resolve<JsonSerializer>(),
                    resolver.Resolve<ITransportHeartbeat>(),
                    resolver.Resolve<IPerformanceCounterManager>(),
                    resolver.Resolve<ITraceManager>(),
-                   resolver.Resolve<IConfigurationManager>())
+                   resolver.Resolve<IConfigurationManager>(),
+                   resolver.Resolve<IMemoryPool>())
         {
 
         }
@@ -35,8 +38,9 @@ namespace Microsoft.AspNet.SignalR.Transports
                                     ITransportHeartbeat heartbeat,
                                     IPerformanceCounterManager performanceCounterManager,
                                     ITraceManager traceManager,
-                                    IConfigurationManager configurationManager)
-            : base(context, jsonSerializer, heartbeat, performanceCounterManager, traceManager)
+                                    IConfigurationManager configurationManager,
+                                    IMemoryPool pool)
+            : base(context, jsonSerializer, heartbeat, performanceCounterManager, traceManager, pool)
         {
             _configurationManager = configurationManager;
             _counters = performanceCounterManager;
@@ -248,8 +252,7 @@ namespace Microsoft.AspNet.SignalR.Transports
                 return TaskAsyncHelper.Empty;
             }
 
-            transport.OutputWriter.Write(' ');
-            transport.OutputWriter.Flush();
+            transport.Context.Response.Write(_keepAlive);
 
             return transport.Context.Response.Flush();
         }
@@ -263,20 +266,25 @@ namespace Microsoft.AspNet.SignalR.Transports
                 return TaskAsyncHelper.Empty;
             }
 
-            if (context.Transport.IsJsonp)
+            using (var writer = new BinaryMemoryPoolTextWriter(context.Transport.Pool))
             {
-                context.Transport.OutputWriter.Write(context.Transport.JsonpCallback);
-                context.Transport.OutputWriter.Write("(");
+                if (context.Transport.IsJsonp)
+                {
+                    writer.Write(context.Transport.JsonpCallback);
+                    writer.Write("(");
+                }
+
+                context.Transport.JsonSerializer.Serialize(context.State, writer);
+
+                if (context.Transport.IsJsonp)
+                {
+                    writer.Write(");");
+                }
+
+                writer.Flush();
+
+                context.Transport.Context.Response.Write(writer.Buffer);
             }
-
-            context.Transport.JsonSerializer.Serialize(context.State, context.Transport.OutputWriter);
-
-            if (context.Transport.IsJsonp)
-            {
-                context.Transport.OutputWriter.Write(");");
-            }
-
-            context.Transport.OutputWriter.Flush();
 
             return context.Transport.Context.Response.Flush();
         }

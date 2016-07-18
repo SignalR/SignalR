@@ -1,4 +1,5 @@
-﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.md in the project root for license information.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.Collections.Generic;
@@ -16,6 +17,7 @@ using Microsoft.AspNet.SignalR.Tracing;
 using Microsoft.Owin.Infrastructure;
 using Microsoft.Owin.Security.DataProtection;
 using Microsoft.Owin.Extensions;
+using System.Globalization;
 
 namespace Owin
 {
@@ -161,6 +163,7 @@ namespace Owin
         [SuppressMessage("Microsoft.Maintainability", "CA1506:AvoidExcessiveClassCoupling", Justification = "This class wires up new dependencies from the host")]
         private static IAppBuilder UseSignalRMiddleware<T>(this IAppBuilder builder, params object[] args)
         {
+            EnsureValidCulture();
             ConnectionConfiguration configuration = null;
 
             // Ensure we have the conversions for MS.Owin so that
@@ -243,6 +246,27 @@ namespace Owin
             builder.UseStageMarker(PipelineStage.PostAuthorize);
 
             return builder;
+        }
+
+        private static void EnsureValidCulture()
+        {
+            // The CultureInfo may leak across app domains which may cause hangs. The most prominent
+            // case in SignalR are MapSignalR hangs when creating Performance Counters (#3414).
+            // See https://github.com/SignalR/SignalR/issues/3414#issuecomment-152733194 for more details.
+            var culture = CultureInfo.CurrentCulture;
+            while (!culture.Equals(CultureInfo.InvariantCulture))
+            {
+                culture = culture.Parent;
+            }
+
+            if (ReferenceEquals(culture, CultureInfo.InvariantCulture))
+            {
+                return;
+            }
+
+            var thread = Thread.CurrentThread;
+            thread.CurrentCulture = CultureInfo.GetCultureInfo(thread.CurrentCulture.Name);
+            thread.CurrentUICulture = CultureInfo.GetCultureInfo(thread.CurrentUICulture.Name);
         }
     }
 }

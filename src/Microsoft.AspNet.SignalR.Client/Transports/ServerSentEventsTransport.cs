@@ -1,4 +1,5 @@
-﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.md in the project root for license information.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.Diagnostics.CodeAnalysis;
@@ -53,7 +54,10 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
             // if the transport failed to start we want to stop it silently.
             _stop = true;
 
-            _request.Abort();
+            if (_request != null)
+            {
+                _request.Abort();
+            }
         }
 
         private void Reconnect(IConnection connection, string data, CancellationToken disconnectToken)

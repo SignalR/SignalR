@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.Collections.Generic;
 using Microsoft.AspNet.SignalR.Infrastructure;
 using Microsoft.AspNet.SignalR.Json;
@@ -29,7 +32,8 @@ namespace Microsoft.AspNet.SignalR.Tests.Core
                                                ackThreshold: TimeSpan.Zero,
                                                ackInterval: TimeSpan.Zero),
                                 counters,
-                                new Mock<IProtectedData>().Object);
+                                new Mock<IProtectedData>().Object,
+                                new MemoryPool());
 
             Assert.Throws<ArgumentException>(() => connection.Send((string)null, new object()));
         }
@@ -51,7 +55,8 @@ namespace Microsoft.AspNet.SignalR.Tests.Core
                                                ackThreshold: TimeSpan.Zero,
                                                ackInterval: TimeSpan.Zero),
                                 counters,
-                                new Mock<IProtectedData>().Object);
+                                new Mock<IProtectedData>().Object,
+                                new MemoryPool());
 
             Assert.Throws<ArgumentNullException>(() => connection.Send((IList<string>)null, new object()));
         }

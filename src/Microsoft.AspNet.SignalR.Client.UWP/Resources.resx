@@ -1,0 +1,189 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <!-- 
+    Microsoft ResX Schema 
+    
+    Version 2.0
+    
+    The primary goals of this format is to allow a simple XML format 
+    that is mostly human readable. The generation and parsing of the 
+    various data types are done through the TypeConverter classes 
+    associated with the data types.
+    
+    Example:
+    
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
+    </data>
+                
+    There are any number of "resheader" rows that contain simple 
+    name/value pairs.
+    
+    Each data row contains a name, and value. The row also contains a 
+    type or mimetype. Type corresponds to a .NET class that support 
+    text/value conversion through the TypeConverter architecture. 
+    Classes that don't support this are serialized and stored with the 
+    mimetype set.
+    
+    The mimetype is used for serialized objects, and tells the 
+    ResXResourceReader how to depersist the object. This is currently not 
+    extensible. For a given mimetype the value must be set accordingly:
+    
+    Note - application/x-microsoft.net.object.binary.base64 is the format 
+    that the ResXResourceWriter will generate, however the reader can 
+    read any of the formats listed below.
+    
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+    
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array 
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="Error_CertsCanOnlyBeAddedWhenDisconnected" xml:space="preserve">
+    <value>Client Certificates cannot be added after the connection has started.</value>
+  </data>
+  <data name="Error_ClientCallbackArgumentTypeMismatch" xml:space="preserve">
+    <value>A client callback for event {0} with {1} argument(s) was found, however an error occurred because {2}</value>
+  </data>
+  <data name="Error_ClientCallbackInvalidNumberOfArguments" xml:space="preserve">
+    <value>A client callback for event {0} with {1} argument(s) could not be found</value>
+  </data>
+  <data name="Error_ConnectionCancelled" xml:space="preserve">
+    <value>The connection was stopped before it could be started.</value>
+  </data>
+  <data name="Error_ConnectionHasNotBeenEstablished" xml:space="preserve">
+    <value>The connection has not been established.</value>
+  </data>
+  <data name="Error_DataCannotBeSentConnectionDisconnected" xml:space="preserve">
+    <value>Data cannot be sent because the connection is in the disconnected state. Call start before sending any data.</value>
+  </data>
+  <data name="Error_DataCannotBeSentDuringWebSocketReconnect" xml:space="preserve">
+    <value>Data cannot be sent because the WebSocket connection is reconnecting.</value>
+  </data>
+  <data name="Error_IncompatibleProtocolVersion" xml:space="preserve">
+    <value>You are using a version of the client that isn't compatible with the server. Client version {0}, server version {1}.</value>
+  </data>
+  <data name="Error_ProxiesCannotBeAddedConnectionStarted" xml:space="preserve">
+    <value>A HubProxy cannot be added after the connection has been started.</value>
+  </data>
+  <data name="Error_ReconnectTimeout" xml:space="preserve">
+    <value>Couldn't reconnect within the configured timeout of {0}, disconnecting.</value>
+  </data>
+  <data name="Error_ReconnectWindowTimeout" xml:space="preserve">
+    <value>The client has been inactive since {0} and it has exceeded the inactivity timeout of {1}. Stopping the connection.</value>
+  </data>
+  <data name="Error_ServerNegotiationFailed" xml:space="preserve">
+    <value>Server negotiation failed.</value>
+  </data>
+  <data name="Error_StartFailed" xml:space="preserve">
+    <value>Error during start request. Stopping the connection.</value>
+  </data>
+  <data name="Error_TaskCancelledException" xml:space="preserve">
+    <value>Request failed - task cancelled.</value>
+  </data>
+  <data name="Error_TransportFailedToConnect" xml:space="preserve">
+    <value>Transport failed trying to connect.</value>
+  </data>
+  <data name="Error_TransportTimedOutTryingToConnect" xml:space="preserve">
+    <value>Transport timed out trying to connect</value>
+  </data>
+  <data name="Error_UrlCantContainQueryStringDirectly" xml:space="preserve">
+    <value>Url cannot contain query string directly. Pass query string values in using available overload.</value>
+  </data>
+  <data name="Message_ConnectionClosed" xml:space="preserve">
+    <value>Connection was disconnected before invocation result was received.</value>
+  </data>
+  <data name="Message_Reconnecting" xml:space="preserve">
+    <value>Connection started reconnecting before invocation result was received.</value>
+  </data>
+  <data name="Error_InvalidUriScheme" xml:space="preserve">
+    <value>Uri scheme '{0}' is not valid. The only valid uri schemes are 'http' and 'https'.</value>
+  </data>
+  <data name="Error_TransportCannotBeReused" xml:space="preserve">
+    <value>The transport instance passed to the Negotiate method has already been used. Use a new transport instance each time you start a new connection.</value>
+  </data>
+  <data name="Error_ProcessResponseBeforeStart" xml:space="preserve">
+    <value>The ProcessResponse method cannot be called before the transport is started.</value>
+  </data>
+  <data name="Error_PossibleDeadlockDetected" xml:space="preserve">
+    <value>Possible deadlock detected. A callback registered with "HubProxy.On" or "Connection.Received" has been executing for at least {0} seconds.</value>
+  </data>
+</root>

@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.Net.WebSockets;
 using System.Threading;
 using System.Threading.Tasks;
@@ -119,10 +122,10 @@ namespace Microsoft.AspNet.SignalR.Tests.Owin
                 .Returns(TaskAsyncHelper.Empty);
 
             initialWebSocket.Setup(w => w.ReceiveAsync(It.IsAny<ArraySegment<byte>>(), CancellationToken.None))
-                     .Returns(Task.FromResult(new WebSocketReceiveResult(0, WebSocketMessageType.Close, endOfMessage: true)));
+                .Returns(Task.FromResult(new WebSocketReceiveResult(0, WebSocketMessageType.Close, endOfMessage: true)));
 
             await handler.ProcessWebSocketRequestAsync(initialWebSocket.Object, CancellationToken.None);
-            
+
             // Swap the socket here so we can verify what happens after the task returns
             var afterWebSocket = new Mock<WebSocket>();
 

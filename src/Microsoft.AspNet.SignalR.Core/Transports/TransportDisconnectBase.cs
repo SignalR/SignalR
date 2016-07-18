@@ -1,9 +1,9 @@
-﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.md in the project root for license information.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
-using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR.Hosting;
@@ -17,7 +17,6 @@ namespace Microsoft.AspNet.SignalR.Transports
     {
         private readonly HostContext _context;
         private readonly ITransportHeartbeat _heartbeat;
-        private TextWriter _outputWriter;
 
         private TraceSource _trace;
 
@@ -111,20 +110,6 @@ namespace Microsoft.AspNet.SignalR.Transports
         public virtual Task<string> GetGroupsToken()
         {
             return TaskAsyncHelper.FromResult(Context.Request.QueryString["groupsToken"]);
-        }
-
-        public virtual TextWriter OutputWriter
-        {
-            get
-            {
-                if (_outputWriter == null)
-                {
-                    _outputWriter = CreateResponseWriter();
-                    _outputWriter.NewLine = "\n";
-                }
-
-                return _outputWriter;
-            }
         }
 
         internal TaskQueue WriteQueue
@@ -257,11 +242,6 @@ namespace Microsoft.AspNet.SignalR.Transports
         public Uri Url
         {
             get { return _context.Request.Url; }
-        }
-
-        protected virtual TextWriter CreateResponseWriter()
-        {
-            return new BinaryTextWriter(Context.Response);
         }
 
         protected void IncrementErrors()

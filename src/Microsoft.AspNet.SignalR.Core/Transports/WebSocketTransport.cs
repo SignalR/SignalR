@@ -1,9 +1,10 @@
-﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.md in the project root for license information.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR.Configuration;
@@ -31,6 +32,8 @@ namespace Microsoft.AspNet.SignalR.Transports
         private readonly Action<Exception> _error;
         private readonly IPerformanceCounterManager _counters;
 
+        private static readonly byte[] _keepAlive = Encoding.UTF8.GetBytes("{}");
+
         public WebSocketTransport(HostContext context,
                                   IDependencyResolver resolver)
             : this(context,
@@ -38,6 +41,7 @@ namespace Microsoft.AspNet.SignalR.Transports
                    resolver.Resolve<ITransportHeartbeat>(),
                    resolver.Resolve<IPerformanceCounterManager>(),
                    resolver.Resolve<ITraceManager>(),
+                   resolver.Resolve<IMemoryPool>(),
                    resolver.Resolve<IConfigurationManager>().MaxIncomingWebSocketMessageSize)
         {
         }
@@ -47,8 +51,9 @@ namespace Microsoft.AspNet.SignalR.Transports
                                   ITransportHeartbeat heartbeat,
                                   IPerformanceCounterManager performanceCounterManager,
                                   ITraceManager traceManager,
+                                  IMemoryPool pool,
                                   int? maxIncomingMessageSize)
-            : base(context, serializer, heartbeat, performanceCounterManager, traceManager)
+            : base(context, serializer, heartbeat, performanceCounterManager, traceManager, pool)
         {
             _context = context;
             _maxIncomingMessageSize = maxIncomingMessageSize;
@@ -82,7 +87,7 @@ namespace Microsoft.AspNet.SignalR.Transports
             return EnqueueOperation(state =>
             {
                 var webSocket = (IWebSocket)state;
-                return webSocket.Send("{}");
+                return webSocket.Send(new ArraySegment<byte>(_keepAlive));
             },
             _socket);
         }
@@ -105,11 +110,6 @@ namespace Microsoft.AspNet.SignalR.Transports
                     return ProcessRequestCore(connection);
                 });
             }
-        }
-
-        protected override TextWriter CreateResponseWriter()
-        {
-            return new BinaryTextWriter(_socket);
         }
 
         public override Task Send(object value)
@@ -156,20 +156,24 @@ namespace Microsoft.AspNet.SignalR.Transports
         private static async Task PerformSend(object state)
         {
             var context = (WebSocketTransportContext)state;
+            var socket = context.Transport._socket;
 
-            try
+            using (var writer = new BinaryMemoryPoolTextWriter(context.Transport.Pool))
             {
-                context.Transport.JsonSerializer.Serialize(context.State, context.Transport.OutputWriter);
-                context.Transport.OutputWriter.Flush();
+                try
+                {
+                    context.Transport.JsonSerializer.Serialize(context.State, writer);
+                    writer.Flush();
 
-                await context.Transport._socket.Flush().PreserveCulture();
-            }
-            catch (Exception ex)
-            {
-                // OnError will close the socket in the event of a JSON serialization or flush error.
-                // The client should then immediately reconnect instead of simply missing keep-alives.
-                context.Transport.OnError(ex);
-                throw;
+                    await socket.Send(writer.Buffer).PreserveCulture();
+                }
+                catch (Exception ex)
+                {
+                    // OnError will close the socket in the event of a JSON serialization or flush error.
+                    // The client should then immediately reconnect instead of simply missing keep-alives.
+                    context.Transport.OnError(ex);
+                    throw;
+                }
             }
         }
 
@@ -196,8 +200,8 @@ namespace Microsoft.AspNet.SignalR.Transports
 
         private class WebSocketTransportContext
         {
-            public WebSocketTransport Transport;
-            public object State;
+            public readonly WebSocketTransport Transport;
+            public readonly object State;
 
             public WebSocketTransportContext(WebSocketTransport transport, object state)
             {

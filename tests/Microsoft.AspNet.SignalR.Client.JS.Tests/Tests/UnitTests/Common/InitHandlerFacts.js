@@ -1,4 +1,7 @@
-﻿QUnit.module("Transports Common - InitHandler Facts");
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+QUnit.module("Transports Common - InitHandler Facts");
 
 (function (undefined) {
     function buildFakeConnection() {
@@ -258,7 +261,7 @@
             fakeTransport.onSuccess();
 
             // Assert
-            QUnit.isTrue(initOnFallbackCalled, "Timeout triggered fallback.");
+            assert.isTrue(initOnFallbackCalled, "Timeout triggered fallback.");
             assert.isFalse(initOnSuccessCalled, "Initialization did not complete.");
             assert.isFalse(ajaxStartCalled, "Timeout prevented start request.");
             assert.isTrue(fakeTransport.stopCalled, "Timeout caused the transport to be stopped.");
@@ -299,7 +302,7 @@
 
         window.setTimeout(function () {
             // Assert
-            QUnit.isFalse(initOnFallbackCalled, "Timeout did not trigger fallback.");
+            assert.isFalse(initOnFallbackCalled, "Timeout did not trigger fallback.");
             assert.isFalse(initOnSuccessCalled, "Initialization did not complete.");
             assert.isTrue(ajaxStartCalled, "Timeout did not prevent start request.");
             assert.isFalse(fakeTransport.stopCalled, "Timeout did not cause the transport to be stopped.");
@@ -311,5 +314,40 @@
         return function () {
             $.signalR.transports._logic.ajaxStart = savedAjaxStart;
         };
+    });
+
+    QUnit.asyncTimeoutTest("No callbacks are called after transport start throws.", testUtilities.defaultTestTimeout, function (end, assert) {
+        // Arrange
+        var fakeConnection = buildFakeConnection(),
+            fakeTransport = buildFakeTransport(),
+            initHandler = $.signalR.transports._logic.initHandler(fakeConnection),
+            initOnSuccessCalled = false,
+            initOnFallbackCalled = false;
+
+        fakeTransport.start = function () {
+            throw new Error("Fake");
+        }
+
+        fakeConnection._.totalTransportConnectTimeout = 100;
+
+        // Act
+        try {
+            initHandler.start(fakeTransport, function () {
+                initOnSuccessCalled = true;
+            }, function () {
+                initOnFallbackCalled = true;
+            });
+        } catch (error) {
+            assert.equal(error.message, "Fake", "The error thrown from transport start bubbled up.");
+        }
+
+        window.setTimeout(function () {
+            // Assert
+            assert.isFalse(initOnFallbackCalled, "Timeout did not trigger fallback.");
+            assert.isFalse(initOnSuccessCalled, "Initialization did not complete.");
+            assert.isFalse(fakeTransport.stopCalled, "Throwing did not cause the transport to be stopped.");
+            assert.isFalse(fakeConnection.stopCalled, "Throwing did not cause the connection to be stopped.");
+            end();
+        }, 200);
     });
 })();

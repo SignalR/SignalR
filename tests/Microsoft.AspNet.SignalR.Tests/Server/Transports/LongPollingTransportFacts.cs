@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.Collections.Specialized;
 using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR.Configuration;
@@ -142,7 +145,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Server.Transports
                 IPerformanceCounterManager counters,
                 ITraceManager traceManager,
                 IConfigurationManager configurationManager)
-                : base(context, json, heartBeat, counters, traceManager, configurationManager)
+                : base(context, json, heartBeat, counters, traceManager, configurationManager, new MemoryPool())
             {
             }
 

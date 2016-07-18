@@ -1,4 +1,7 @@
-﻿QUnit.module("ForeverFrame Facts", testUtilities.transports.foreverFrame.enabled);
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+QUnit.module("ForeverFrame Facts", testUtilities.transports.foreverFrame.enabled);
 
 QUnit.asyncTimeoutTest("foreverFrame transport does not throw when it exceeds its iframeClearThreshold while in connecting.", testUtilities.defaultTestTimeout, function (end, assert, testName) {
     var connection = testUtilities.createHubConnection(end, assert, testName),

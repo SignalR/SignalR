@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.Collections.Generic;
 using System.Net;
 using System.Threading.Tasks;
@@ -70,7 +73,7 @@ namespace Microsoft.AspNet.SignalR.Client.Store.Tests.Fakes
         {
             _invocationManager.AddInvocation("ChangeState", oldState, newState);
 
-            return _invocationManager.GetReturnValue<bool>("ChangeState");            
+            return _invocationManager.GetReturnValue<bool>("ChangeState");
         }
 
         public IDictionary<string, string> Headers
@@ -186,5 +189,7 @@ namespace Microsoft.AspNet.SignalR.Client.Store.Tests.Fakes
         {
             _invocationManager.AddSetup(methodName, behavior);
         }
+
+        public IWebProxy Proxy { get; set; }
     }
 }

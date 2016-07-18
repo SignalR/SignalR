@@ -1,4 +1,7 @@
-﻿QUnit.module("Transports Common - Process Messages Facts");
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+QUnit.module("Transports Common - Process Messages Facts");
 
 QUnit.test("tryInitialize is triggered on an initialize message.", function () {
     var connection = testUtilities.createConnection(),
@@ -22,6 +25,22 @@ QUnit.test("tryInitialize is triggered on an initialize message.", function () {
     } finally {
         $.signalR.transports._logic.tryInitialize = tryInitialize;
     }
+});
+
+QUnit.test("tryInitialize will not try to invoke undefined callback", function () {
+    var connection = testUtilities.createConnection();
+
+    // processMessages accepts an optional third parameter onInitialized.
+    // This test leaves onInitialized undefined to ensure that it is not called.
+    $.signalR.transports._logic.processMessages(connection, {
+        C: 1234,
+        M: [],
+        L: 1337,
+        G: "foo",
+        S: 1
+    });
+
+    QUnit.comment("tryInitialize did not throw.");
 });
 
 QUnit.test("Updates keep alive data on any message retrieval.", function () {

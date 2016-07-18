@@ -1,4 +1,5 @@
-﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.md in the project root for license information.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 extern alias StoreClient;
 
 using System.Collections.Generic;
@@ -76,7 +77,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
             var openWebSocketInvocations = fakeWebSocketTransport.GetInvocations("OpenWebSocket").ToArray();
             Assert.Equal(1, openWebSocketInvocations.Length);
             Assert.StartsWith(
-                "ws://fake.urlconnect/?clientProtocol=1.42&transport=webSockets&connectionData=test&connectionToken=MyConnToken&messageId=MsgId&noCache=",
+                "ws://fake.urlconnect/?clientProtocol=1.42&transport=webSockets&connectionData=test&connectionToken=MyConnToken&messageId=MsgId",
                 ((Uri)openWebSocketInvocations[0][1]).AbsoluteUri);
         }
 
@@ -200,7 +201,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
             var fakeConnection = new FakeConnection {State = ConnectionState.Disconnected};
 
             Assert.Equal(
-                StoreClient::Microsoft.AspNet.SignalR.Client.Resources.GetResourceString("Error_WebSocketUninitialized"),
+                StoreClient::Microsoft.AspNet.SignalR.Client.ResourcesStore.GetResourceString("Error_WebSocketUninitialized"),
                 (await Assert.ThrowsAsync<InvalidOperationException>(
                     async () => await new WebSocketTransport().Send(fakeConnection, null, null))).Message);
         }
@@ -235,7 +236,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
             var openWebSocketInvocations = fakeWebSocketTransport.GetInvocations("OpenWebSocket").ToArray();
             Assert.Equal(1, openWebSocketInvocations.Length);
             Assert.StartsWith("ws://fakeserver/reconnect?", ((Uri)openWebSocketInvocations[0][1]).AbsoluteUri);
-            Assert.Contains("&connectionData=abc&", ((Uri)openWebSocketInvocations[0][1]).AbsoluteUri);
+            Assert.Contains("&connectionData=abc", ((Uri)openWebSocketInvocations[0][1]).AbsoluteUri);
             Assert.Equal(1, fakeConnection.GetInvocations("OnReconnected").Count());
         }
 

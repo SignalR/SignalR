@@ -1,4 +1,5 @@
-// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.md in the project root for license information.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.Collections.Generic;
@@ -916,7 +917,9 @@ namespace Microsoft.AspNet.SignalR.Client
 #if PORTABLE
             // Cannot set user agent for Portable because SL does not support it.
 #elif NETFX_CORE
-            request.UserAgent = CreateUserAgentString("SignalR.Client.WinRT");
+            request.UserAgent = CreateUserAgentString("SignalR.Client.WinUAP");
+#elif WINDOWS_APP
+            request.UserAgent = CreateUserAgentString("SignalR.Client.Win8UniversalApp");
 #elif NET45
             request.UserAgent = CreateUserAgentString("SignalR.Client.NET45");
 #else
@@ -931,7 +934,7 @@ namespace Microsoft.AspNet.SignalR.Client
             if (_assemblyVersion == null)
             {
 #if NETFX_CORE
-                _assemblyVersion = new Version("2.2.0");
+                _assemblyVersion = new Version("2.2.1");
 #else
                 _assemblyVersion = new AssemblyName(typeof(Connection).Assembly.FullName).Version;
 #endif

@@ -42,7 +42,7 @@
                 var scriptTagHtml = '<script src="Scripts/jquery-{ver}.js"><\/script>',
                     jQueryVersion = queryString('jquery') || '1.6.4';
 
-                if (!inArray(['1.6.4', '1.7.2', '1.8.3', '1.9.1', '2.0.0'], jQueryVersion)) {
+                if (!inArray(['1.6.4', '1.7.2', '1.8.3', '1.9.1', '2.0.0', '3.0.0'], jQueryVersion)) {
                     throw new Error(jQueryVersion + ' is not a supported jQuery version.');
                 } else {
                     document.write(scriptTagHtml.replace('{ver}', jQueryVersion));
@@ -50,9 +50,9 @@
             })();
         </script>
         <script src="Scripts/qunit-1.12.0.js"></script>
-        <script src="Scripts/qunit.extensions.js"></script>        
-        <script src="http://testswarm.cloudapp.net/js/inject.js"></script>        
-        <script src="Scripts/jquery.signalR.js"></script>                
+        <script src="Scripts/qunit.extensions.js"></script>
+        <script src="http://testswarm.cloudapp.net/js/inject.js"></script>
+        <script src="Scripts/jquery.signalR.js"></script>
         <!-- ##SIGNALRHUBS## --><script type='text/javascript' src='signalr/js' data-cover></script><!-- ##SIGNALRHUBS## -->
         <script src="Scripts/jquery.network.mock.js"></script>
         <script src="Build/test.config.js"></script>
@@ -63,9 +63,9 @@
         <!--<![endif]-->
 
         <!-- Javascript is dynamically added to this panel.  First all javascript from SignalR.Client.JS is added,
-             then all javascript from the Tests directory is added.  This is so that all the unit tests within the 
+             then all javascript from the Tests directory is added.  This is so that all the unit tests within the
              Tests directory can test the SignalR.Client.JS libraries. -->
-       
+
         <!-- ##JS## -->
         <script src="Tests/FunctionalTests/Common/AjaxAbortFacts.js"></script>
         <script src="Tests/FunctionalTests/Common/AjaxSendFacts.js"></script>

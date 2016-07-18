@@ -1,4 +1,5 @@
-﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.md in the project root for license information.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.Collections.Generic;
@@ -112,6 +113,16 @@ namespace Microsoft.AspNet.SignalR.Hubs
                                     a.Location,
                                     ex.GetType().Name,
                                     ex.Message);
+
+                if (ex.LoaderExceptions != null)
+                {
+                    _trace.TraceWarning("Loader exceptions messages: ");
+
+                    foreach (var exception in ex.LoaderExceptions)
+                    {
+                        _trace.TraceWarning("{0}\r\n", exception);
+                    }
+                }
 
                 return ex.Types.Where(t => t != null);
             }

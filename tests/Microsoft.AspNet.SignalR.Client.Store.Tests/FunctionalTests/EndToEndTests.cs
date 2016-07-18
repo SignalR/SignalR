@@ -1,4 +1,5 @@
-﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.md in the project root for license information.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 extern alias StoreClient;
 
 using Microsoft.AspNet.SignalR.Client.Transports;
@@ -7,7 +8,7 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
-using StoreClientResources = StoreClient::Microsoft.AspNet.SignalR.Client.Resources;
+using StoreClientResources = StoreClient::Microsoft.AspNet.SignalR.Client.ResourcesStore;
 
 namespace Microsoft.AspNet.SignalR.Client.Store.Tests
 {
@@ -37,7 +38,7 @@ namespace Microsoft.AspNet.SignalR.Client.Store.Tests
                     }
                 });
 
-                await hubConnection.Start(new WebSocketTransport());
+                await hubConnection.Start();
 
                 for (var i = 0; i < MessageCount; i++)
                 {
@@ -92,7 +93,7 @@ namespace Microsoft.AspNet.SignalR.Client.Store.Tests
                 Assert.True(reconnectingInvoked);
                 Assert.Equal(ConnectionState.Connected, hubConnection.State);
 
-                // TODO: this is a workaround to a race condition in WebSocket. 
+                // TODO: this is a workaround to a race condition in WebSocket.
                 // Should be removed once the race in WebSockets is fixed
                 await Task.Delay(200);
 
@@ -131,7 +132,7 @@ namespace Microsoft.AspNet.SignalR.Client.Store.Tests
                     if (stateChange.OldState == ConnectionState.Connected &&
                         stateChange.NewState == ConnectionState.Reconnecting)
                     {
-                        // Reverting quick timeout 
+                        // Reverting quick timeout
                         ((IConnection) hubConnection).KeepAliveData = new KeepAliveData(
                             timeoutWarning: TimeSpan.FromSeconds(30),
                             timeout: TimeSpan.FromSeconds(20),
@@ -161,7 +162,7 @@ namespace Microsoft.AspNet.SignalR.Client.Store.Tests
 
                 Assert.True(await Task.Run(() => reconnectedWh.Wait(5000)));
 
-                // TODO: this is a workaround to a race condition in WebSocket. 
+                // TODO: this is a workaround to a race condition in WebSocket.
                 // Should be removed once the race in WebSockets is fixed
                 await Task.Delay(200);
 

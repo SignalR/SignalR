@@ -1,4 +1,5 @@
-﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.md in the project root for license information.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.Collections.Generic;
@@ -34,6 +35,7 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
         private readonly IAckHandler _ackHandler;
         private readonly IProtectedData _protectedData;
         private readonly Func<Message, bool> _excludeMessage;
+        private readonly IMemoryPool _pool;
 
         public Connection(IMessageBus newMessageBus,
                           JsonSerializer jsonSerializer,
@@ -44,7 +46,8 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
                           ITraceManager traceManager,
                           IAckHandler ackHandler,
                           IPerformanceCounterManager performanceCounterManager,
-                          IProtectedData protectedData)
+                          IProtectedData protectedData,
+                          IMemoryPool pool)
         {
             if (traceManager == null)
             {
@@ -62,6 +65,7 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
             _counters = performanceCounterManager;
             _protectedData = protectedData;
             _excludeMessage = m => ExcludeMessage(m);
+            _pool = pool;
         }
 
         public string DefaultSignal
@@ -150,7 +154,7 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
 
             // Serialize once
             ArraySegment<byte> messageBuffer = GetMessageBuffer(value);
-            string filter = GetFilter(excludedSignals); 
+            string filter = GetFilter(excludedSignals);
 
             var tasks = new Task[signals.Count];
 
@@ -216,23 +220,18 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
 
         private ArraySegment<byte> SerializeMessageValue(object value)
         {
-            using (var stream = new MemoryStream(128))
+            using (var writer = new MemoryPoolTextWriter(_pool))
             {
-                var bufferWriter = new BinaryTextWriter((buffer, state) =>
-                {
-                    ((MemoryStream)state).Write(buffer.Array, buffer.Offset, buffer.Count);
-                },
-                stream,
-                reuseBuffers: true,
-                bufferSize: 1024);
+                _serializer.Serialize(value, writer);
+                writer.Flush();
 
-                using (bufferWriter)
-                {
-                    _serializer.Serialize(value, bufferWriter);
-                    bufferWriter.Flush();
+                var data = writer.Buffer;
 
-                    return new ArraySegment<byte>(stream.ToArray());
-                }
+                var buffer = new byte[data.Count];
+
+                Buffer.BlockCopy(data.Array, data.Offset, buffer, 0, data.Count);
+
+                return new ArraySegment<byte>(buffer);
             }
         }
 

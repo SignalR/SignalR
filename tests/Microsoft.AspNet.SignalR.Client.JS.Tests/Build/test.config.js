@@ -1,4 +1,7 @@
-﻿(function ($, window) {    
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+(function ($, window) {    
     // These values are updated via the csproj based on configuration values passed into its build
     window.document.testUrl = /*URL*/'auto'/*URL*/;
     window.document.commandLineTest = /*CMDLineTest*/false/*CMDLineTest*/;
@@ -17,7 +20,7 @@
                     }
                 }
                 catch (e) {
-                    console.log("Network Mock Error occured, unable to stop iframe.  Message = " + e.message);
+                    console.log("Network Mock Error occurred, unable to stop iframe.  Message = " + e.message);
                 }
             }
 

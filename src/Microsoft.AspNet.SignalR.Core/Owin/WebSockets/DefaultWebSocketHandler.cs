@@ -1,4 +1,5 @@
-﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.md in the project root for license information.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.Net.WebSockets;
@@ -11,8 +12,6 @@ namespace Microsoft.AspNet.SignalR.WebSockets
     {
         private readonly IWebSocket _webSocket;
         private volatile bool _closed;
-
-        internal ArraySegment<byte> NextMessageToSend { get; private set; }
 
         public DefaultWebSocketHandler(int? maxIncomingMessageSize)
             : base(maxIncomingMessageSize)
@@ -59,11 +58,6 @@ namespace Microsoft.AspNet.SignalR.WebSockets
             set;
         }
 
-        Task IWebSocket.Send(string value)
-        {
-            return Send(value);
-        }
-
         public override Task Send(string message)
         {
             if (_closed)
@@ -74,6 +68,16 @@ namespace Microsoft.AspNet.SignalR.WebSockets
             return base.Send(message);
         }
 
+        public Task Send(ArraySegment<byte> message)
+        {
+            if (_closed)
+            {
+                return TaskAsyncHelper.Empty;
+            }
+
+            return base.SendAsync(message, WebSocketMessageType.Text);
+        }
+
         public override Task CloseAsync()
         {
             if (_closed)
@@ -82,39 +86,6 @@ namespace Microsoft.AspNet.SignalR.WebSockets
             }
 
             return base.CloseAsync();
-        }
-
-        public Task SendChunk(ArraySegment<byte> message)
-        {
-            if (_closed)
-            {
-                return TaskAsyncHelper.Empty;
-            }
-
-            if (NextMessageToSend.Count == 0)
-            {
-                NextMessageToSend = message;
-                return TaskAsyncHelper.Empty;
-            }
-            else
-            {
-                ArraySegment<byte> messageToSend = NextMessageToSend;
-                NextMessageToSend = message;
-                return SendAsync(messageToSend, WebSocketMessageType.Text, endOfMessage: false);
-            }
-        }
-
-        public Task Flush()
-        {
-            if (_closed)
-            {
-                return TaskAsyncHelper.Empty;
-            }
-
-            var messageToSend = NextMessageToSend;
-            NextMessageToSend = new ArraySegment<byte>();
-
-            return SendAsync(messageToSend, WebSocketMessageType.Text, endOfMessage: true);
         }
     }
 }

@@ -1,4 +1,5 @@
-﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.md in the project root for license information.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.Diagnostics.CodeAnalysis;
@@ -29,43 +30,17 @@ namespace Microsoft.AspNet.SignalR.Transports
                                             "</script></head>" +
                                             "<body>\r\n";
 
-        private HTMLTextWriter _htmlOutputWriter;
         private readonly IPerformanceCounterManager _counters;
 
         public ForeverFrameTransport(HostContext context, IDependencyResolver resolver)
             : this(context, resolver, resolver.Resolve<IPerformanceCounterManager>())
         {
         }
-            
+
         public ForeverFrameTransport(HostContext context, IDependencyResolver resolver, IPerformanceCounterManager performanceCounterManager)
             : base(context, resolver)
         {
             _counters = performanceCounterManager;
-        }
-
-        /// <summary>
-        /// Pointed to the HTMLOutputWriter to wrap output stream with an HTML friendly one
-        /// </summary>
-        public override TextWriter OutputWriter
-        {
-            get
-            {
-                return HTMLOutputWriter;
-            }
-        }
-
-        private HTMLTextWriter HTMLOutputWriter
-        {
-            get
-            {
-                if (_htmlOutputWriter == null)
-                {
-                    _htmlOutputWriter = new HTMLTextWriter(Context.Response);
-                    _htmlOutputWriter.NewLine = "\n";
-                }
-
-                return _htmlOutputWriter;
-            }
         }
 
         public override void IncrementConnectionsCount()
@@ -114,6 +89,11 @@ namespace Microsoft.AspNet.SignalR.Transports
             return base.InitializeResponse(connection).Then(s => Initialize(s), context);
         }
 
+        internal override MemoryPoolTextWriter CreateMemoryPoolWriter(IMemoryPool memoryPool)
+        {
+            return new HTMLTextWriter(memoryPool);
+        }
+
         private static Task Initialize(object state)
         {
             var context = (ForeverFrameTransportContext)state;
@@ -128,8 +108,15 @@ namespace Microsoft.AspNet.SignalR.Transports
         {
             context.Transport.Context.Response.ContentType = "text/html; charset=UTF-8";
 
-            context.Transport.HTMLOutputWriter.WriteRaw((string)context.State);
-            context.Transport.HTMLOutputWriter.Flush();
+            using (var htmlOutputWriter = new HTMLTextWriter(context.Transport.Pool))
+            {
+                htmlOutputWriter.NewLine = "\n";
+
+                htmlOutputWriter.WriteRaw((string)context.State);
+                htmlOutputWriter.Flush();
+
+                context.Transport.Context.Response.Write(htmlOutputWriter.Buffer);
+            }
 
             return context.Transport.Context.Response.Flush();
         }
@@ -138,10 +125,16 @@ namespace Microsoft.AspNet.SignalR.Transports
         {
             var context = (ForeverFrameTransportContext)state;
 
-            context.Transport.HTMLOutputWriter.WriteRaw("<script>r(c, ");
-            context.Transport.JsonSerializer.Serialize(context.State, context.Transport.HTMLOutputWriter);
-            context.Transport.HTMLOutputWriter.WriteRaw(");</script>\r\n");
-            context.Transport.HTMLOutputWriter.Flush();
+            using (var htmlOutputWriter = new HTMLTextWriter(context.Transport.Pool))
+            {
+                htmlOutputWriter.NewLine = "\n";
+                htmlOutputWriter.WriteRaw("<script>r(c, ");
+                context.Transport.JsonSerializer.Serialize(context.State, htmlOutputWriter);
+                htmlOutputWriter.WriteRaw(");</script>\r\n");
+                htmlOutputWriter.Flush();
+
+                context.Transport.Context.Response.Write(htmlOutputWriter.Buffer);
+            }
 
             return context.Transport.Context.Response.Flush();
         }
@@ -150,18 +143,24 @@ namespace Microsoft.AspNet.SignalR.Transports
         {
             var transport = (ForeverFrameTransport)state;
 
-            transport.HTMLOutputWriter.WriteRaw("<script>r(c, {});</script>");
-            transport.HTMLOutputWriter.WriteLine();
-            transport.HTMLOutputWriter.WriteLine();
-            transport.HTMLOutputWriter.Flush();
+            using (var htmlOutputWriter = new HTMLTextWriter(transport.Pool))
+            {
+                htmlOutputWriter.NewLine = "\n";
+                htmlOutputWriter.WriteRaw("<script>r(c, {});</script>");
+                htmlOutputWriter.WriteLine();
+                htmlOutputWriter.WriteLine();
+                htmlOutputWriter.Flush();
+
+                transport.Context.Response.Write(htmlOutputWriter.Buffer);
+            }
 
             return transport.Context.Response.Flush();
         }
 
-        private class ForeverFrameTransportContext
+        private struct ForeverFrameTransportContext
         {
-            public ForeverFrameTransport Transport;
-            public object State;
+            public readonly ForeverFrameTransport Transport;
+            public readonly object State;
 
             public ForeverFrameTransportContext(ForeverFrameTransport transport, object state)
             {
@@ -170,11 +169,12 @@ namespace Microsoft.AspNet.SignalR.Transports
             }
         }
 
-        private class HTMLTextWriter : BufferTextWriter
+        private class HTMLTextWriter : MemoryPoolTextWriter
         {
-            public HTMLTextWriter(IResponse response)
-                : base(response)
+            public HTMLTextWriter(IMemoryPool pool) :
+                base(pool)
             {
+
             }
 
             public void WriteRaw(string value)

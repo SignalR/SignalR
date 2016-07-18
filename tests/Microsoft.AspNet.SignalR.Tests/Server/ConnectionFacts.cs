@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR.Infrastructure;
@@ -37,7 +40,8 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
                                                            ackThreshold: TimeSpan.Zero,
                                                            ackInterval: TimeSpan.Zero),
                                             counters,
-                                            new Mock<IProtectedData>().Object);
+                                            new Mock<IProtectedData>().Object,
+                                            new MemoryPool());
 
             connection.Send("a", new Command
             {
@@ -95,7 +99,8 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
                                                   traceManager.Object,
                                                   ackHandler.Object,
                                                   counters,
-                                                  new Mock<IProtectedData>().Object);
+                                                  new Mock<IProtectedData>().Object,
+                                                  new MemoryPool());
 
             // Act
             waiterConnection.Send(ackerId, waitCommand);
@@ -121,7 +126,8 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
                                                  traceManager.Object,
                                                  ackHandler.Object,
                                                  counters,
-                                                 new Mock<IProtectedData>().Object);
+                                                 new Mock<IProtectedData>().Object,
+                                                 new MemoryPool());
             ackerConnection.WriteCursor = _ => { };
 
             messageBus.Setup(m => m.Subscribe(ackerConnection,

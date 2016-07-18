@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 2013
-VisualStudioVersion = 12.0.30321.0
+# Visual Studio 14
+VisualStudioVersion = 14.0.24711.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNet.SignalR.Core", "src\Microsoft.AspNet.SignalR.Core\Microsoft.AspNet.SignalR.Core.csproj", "{1B9A82C4-BCA1-4834-A33E-226F17BE070B}"
 EndProject
@@ -109,6 +109,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNet.SignalR.Client.Store.TestHost", "tests\Microsoft.AspNet.SignalR.Client.Store.TestHost\Microsoft.AspNet.SignalR.Client.Store.TestHost.csproj", "{F0697521-4A41-4A2A-BA64-D9A97CAA62A1}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNet.SignalR.Redis.Tests", "tests\Microsoft.AspNet.SignalR.Redis.Tests\Microsoft.AspNet.SignalR.Redis.Tests.csproj", "{C281927C-2082-4E2A-A1DB-9CD7225F5CED}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNet.SignalR.Client.UWP", "src\Microsoft.AspNet.SignalR.Client.UWP\Microsoft.AspNet.SignalR.Client.UWP.csproj", "{AAAE1A6A-3A7E-4EE2-9624-3907FD1CDC1A}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -694,6 +696,26 @@ Global
 		{C281927C-2082-4E2A-A1DB-9CD7225F5CED}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{C281927C-2082-4E2A-A1DB-9CD7225F5CED}.Release|x64.ActiveCfg = Release|Any CPU
 		{C281927C-2082-4E2A-A1DB-9CD7225F5CED}.Release|x86.ActiveCfg = Release|Any CPU
+		{AAAE1A6A-3A7E-4EE2-9624-3907FD1CDC1A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AAAE1A6A-3A7E-4EE2-9624-3907FD1CDC1A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AAAE1A6A-3A7E-4EE2-9624-3907FD1CDC1A}.Debug|ARM.ActiveCfg = Debug|ARM
+		{AAAE1A6A-3A7E-4EE2-9624-3907FD1CDC1A}.Debug|ARM.Build.0 = Debug|ARM
+		{AAAE1A6A-3A7E-4EE2-9624-3907FD1CDC1A}.Debug|Mixed Platforms.ActiveCfg = Debug|x86
+		{AAAE1A6A-3A7E-4EE2-9624-3907FD1CDC1A}.Debug|Mixed Platforms.Build.0 = Debug|x86
+		{AAAE1A6A-3A7E-4EE2-9624-3907FD1CDC1A}.Debug|x64.ActiveCfg = Debug|x64
+		{AAAE1A6A-3A7E-4EE2-9624-3907FD1CDC1A}.Debug|x64.Build.0 = Debug|x64
+		{AAAE1A6A-3A7E-4EE2-9624-3907FD1CDC1A}.Debug|x86.ActiveCfg = Debug|x86
+		{AAAE1A6A-3A7E-4EE2-9624-3907FD1CDC1A}.Debug|x86.Build.0 = Debug|x86
+		{AAAE1A6A-3A7E-4EE2-9624-3907FD1CDC1A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AAAE1A6A-3A7E-4EE2-9624-3907FD1CDC1A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{AAAE1A6A-3A7E-4EE2-9624-3907FD1CDC1A}.Release|ARM.ActiveCfg = Release|ARM
+		{AAAE1A6A-3A7E-4EE2-9624-3907FD1CDC1A}.Release|ARM.Build.0 = Release|ARM
+		{AAAE1A6A-3A7E-4EE2-9624-3907FD1CDC1A}.Release|Mixed Platforms.ActiveCfg = Release|x86
+		{AAAE1A6A-3A7E-4EE2-9624-3907FD1CDC1A}.Release|Mixed Platforms.Build.0 = Release|x86
+		{AAAE1A6A-3A7E-4EE2-9624-3907FD1CDC1A}.Release|x64.ActiveCfg = Release|x64
+		{AAAE1A6A-3A7E-4EE2-9624-3907FD1CDC1A}.Release|x64.Build.0 = Release|x64
+		{AAAE1A6A-3A7E-4EE2-9624-3907FD1CDC1A}.Release|x86.ActiveCfg = Release|x86
+		{AAAE1A6A-3A7E-4EE2-9624-3907FD1CDC1A}.Release|x86.Build.0 = Release|x86
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

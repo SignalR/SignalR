@@ -2,6 +2,7 @@
 
 rem Enforce package restore to avoid build issues. See http://go.microsoft.com/fwlink/?LinkID=317568 for more details
 msbuild .nuget\NuGet.targets /t:RestorePackages
+.nuget\nuget.exe restore %~dp0\src\Microsoft.AspNet.SignalR.Client.UWP\project.json
 
 set target=%1
 if "%target%" == "" (

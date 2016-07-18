@@ -1,8 +1,10 @@
-﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.md in the project root for license information.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using System.IO;
 using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR.Hosting;
 using Microsoft.AspNet.SignalR.Infrastructure;
@@ -28,7 +30,8 @@ namespace Microsoft.AspNet.SignalR.Transports
                    resolver.Resolve<JsonSerializer>(),
                    resolver.Resolve<ITransportHeartbeat>(),
                    resolver.Resolve<IPerformanceCounterManager>(),
-                   resolver.Resolve<ITraceManager>())
+                   resolver.Resolve<ITraceManager>(),
+                   resolver.Resolve<IMemoryPool>())
         {
         }
 
@@ -36,12 +39,16 @@ namespace Microsoft.AspNet.SignalR.Transports
                                    JsonSerializer jsonSerializer,
                                    ITransportHeartbeat heartbeat,
                                    IPerformanceCounterManager performanceCounterManager,
-                                   ITraceManager traceManager)
+                                   ITraceManager traceManager,
+                                   IMemoryPool pool)
             : base(context, heartbeat, performanceCounterManager, traceManager)
         {
+            Pool = pool;
             _jsonSerializer = jsonSerializer;
             _counters = performanceCounterManager;
         }
+
+        protected IMemoryPool Pool { get; private set; }
 
         protected virtual int MaxMessages
         {
@@ -287,6 +294,11 @@ namespace Microsoft.AspNet.SignalR.Transports
             return Send(response).Then(() => TaskAsyncHelper.True);
         }
 
+        internal virtual MemoryPoolTextWriter CreateMemoryPoolWriter(IMemoryPool memoryPool)
+        {
+            return new BinaryMemoryPoolTextWriter(memoryPool);
+        }
+
         private static Task PerformSend(object state)
         {
             var context = (ForeverTransportContext)state;
@@ -298,16 +310,21 @@ namespace Microsoft.AspNet.SignalR.Transports
 
             context.Transport.Context.Response.ContentType = JsonUtility.JsonMimeType;
 
-            context.Transport.JsonSerializer.Serialize(context.State, context.Transport.OutputWriter);
-            context.Transport.OutputWriter.Flush();
+            using (var writer = context.Transport.CreateMemoryPoolWriter(context.Transport.Pool))
+            {
+                context.Transport.JsonSerializer.Serialize(context.State, writer);
+                writer.Flush();
+
+                context.Transport.Context.Response.Write(writer.Buffer);
+            }
 
             return TaskAsyncHelper.Empty;
         }
 
         private class ForeverTransportContext
         {
-            public object State;
-            public ForeverTransport Transport;
+            public readonly object State;
+            public readonly ForeverTransport Transport;
 
             public ForeverTransportContext(ForeverTransport foreverTransport, object state)
             {

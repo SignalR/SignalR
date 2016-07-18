@@ -1,4 +1,5 @@
-﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.md in the project root for license information.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.Diagnostics;
@@ -57,7 +58,7 @@ namespace Microsoft.AspNet.SignalR.WebSockets
 
         internal virtual Task SendAsync(ArraySegment<byte> message, WebSocketMessageType messageType, bool endOfMessage = true)
         {
-            if (WebSocket.State != WebSocketState.Open)
+            if (GetWebSocketState(WebSocket) != WebSocketState.Open)
             {
                 return TaskAsyncHelper.Empty;
             }
@@ -68,7 +69,7 @@ namespace Microsoft.AspNet.SignalR.WebSockets
             {
                 var context = (SendContext)state;
 
-                if (context.Handler.WebSocket.State != WebSocketState.Open)
+                if (GetWebSocketState(context.Handler.WebSocket) != WebSocketState.Open)
                 {
                     return;
                 }
@@ -212,8 +213,9 @@ namespace Microsoft.AspNet.SignalR.WebSockets
             try
             {
 #if CLIENT_NET45
-                if (WebSocket.State == WebSocketState.Closed ||
-                    WebSocket.State == WebSocketState.Aborted)
+                var webSocketState = GetWebSocketState(WebSocket);
+                if (webSocketState == WebSocketState.Closed ||
+                    webSocketState == WebSocketState.Aborted)
                 {
                     // No-op if the socket is already closed or aborted
                 }
@@ -257,9 +259,23 @@ namespace Microsoft.AspNet.SignalR.WebSockets
 
         private static bool IsClosedOrClosedSent(WebSocket webSocket)
         {
-            return webSocket.State == WebSocketState.Closed ||
-                   webSocket.State == WebSocketState.CloseSent ||
-                   webSocket.State == WebSocketState.Aborted;
+            var webSocketState = GetWebSocketState(webSocket);
+
+            return webSocketState == WebSocketState.Closed ||
+                   webSocketState == WebSocketState.CloseSent ||
+                   webSocketState == WebSocketState.Aborted;
+        }
+
+        private static WebSocketState GetWebSocketState(WebSocket webSocket)
+        {
+            try
+            {
+                return webSocket.State;
+            }
+            catch (ObjectDisposedException)
+            {
+                return WebSocketState.Closed;
+            }
         }
 
         private class CloseContext

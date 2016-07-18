@@ -1,4 +1,5 @@
-﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.md in the project root for license information.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.Collections.Generic;
@@ -48,6 +49,7 @@ namespace Microsoft.AspNet.SignalR
                 return;
             }
 
+            Pool = resolver.Resolve<IMemoryPool>();
             MessageBus = resolver.Resolve<IMessageBus>();
             JsonSerializer = resolver.Resolve<JsonSerializer>();
             TraceManager = resolver.Resolve<ITraceManager>();
@@ -79,6 +81,8 @@ namespace Microsoft.AspNet.SignalR
         }
 
         protected IProtectedData ProtectedData { get; private set; }
+
+        public IMemoryPool Pool { get; set; }
 
         protected IMessageBus MessageBus { get; private set; }
 
@@ -387,7 +391,8 @@ namespace Microsoft.AspNet.SignalR
                                   TraceManager,
                                   AckHandler,
                                   Counters,
-                                  ProtectedData);
+                                  ProtectedData,
+                                  Pool);
         }
 
         [SuppressMessage("Microsoft.Usage", "CA1801:ReviewUnusedParameters", MessageId = "userId", Justification = "This method is virtual and is used in the derived class")]

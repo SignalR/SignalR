@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.Diagnostics;
 using System.Threading.Tasks;
 using StackExchange.Redis;
@@ -81,7 +84,7 @@ namespace Microsoft.AspNet.SignalR.Redis
         {
             try
             {
-                // Workaround for StackExchange.Redis/issues/61 that sometimes Redis connection is not connected in ConnectionRestored event 
+                // Workaround for StackExchange.Redis/issues/61 that sometimes Redis connection is not connected in ConnectionRestored event
                 while (!_connection.GetDatabase(database).IsConnected(key))
                 {
                     await Task.Delay(200);
@@ -89,11 +92,11 @@ namespace Microsoft.AspNet.SignalR.Redis
 
                 var redisResult = await _connection.GetDatabase(database).ScriptEvaluateAsync(
                    @"local newvalue = redis.call('GET', KEYS[1])
-                    if newvalue < ARGV[1] then
-                        return redis.call('SET', KEYS[1], ARGV[1])
-                    else
-                        return nil
-                    end",
+                     if not newvalue or newvalue < ARGV[1] then
+                         return redis.call('SET', KEYS[1], ARGV[1])
+                     else
+                         return nil
+                     end",
                    new RedisKey[] { key },
                    new RedisValue[] { _latestMessageId });
 

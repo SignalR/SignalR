@@ -1,4 +1,5 @@
-﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.md in the project root for license information.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.Diagnostics.CodeAnalysis;
@@ -153,12 +154,12 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
                 if (connection.State != ConnectionState.Disconnected)
                 {
                     // Make this a faulted task and trigger the OnError even to maintain consistency with the HttpBasedTransports
-                    ex = new InvalidOperationException(Resources.GetResourceString("Error_DataCannotBeSentDuringWebSocketReconnect"));
+                    ex = new InvalidOperationException(ResourcesStore.GetResourceString("Error_DataCannotBeSentDuringWebSocketReconnect"));
                     connection.OnError(ex);
                 }
                 else
                 {
-                    ex = new InvalidOperationException(Resources.GetResourceString("Error_WebSocketUninitialized"));
+                    ex = new InvalidOperationException(ResourcesStore.GetResourceString("Error_DataCannotBeSentDuringWebSocketReconnect"));
                 }
 
                 var tcs = new TaskCompletionSource<object>();
@@ -179,7 +180,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
                 messageWriter.DetachStream();
             }
         }
-        
+
         private void WebsocketClosed(IWebSocket webSocket, WebSocketClosedEventArgs eventArgs)
         {
             _connection.Trace(TraceLevels.Events, "WS: WebsocketClosed - Code: {0}, Reason {1}", eventArgs.Code, eventArgs.Reason);
