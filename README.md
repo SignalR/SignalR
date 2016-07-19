@@ -1,47 +1,59 @@
 # ASP.NET SignalR [![Build Status](http://ci.signalr.net/app/rest/builds/buildType:\(id:bt2\)/statusIcon)](http://ci.signalr.net/?guest=1)
-ASP.NET SignalR is a library for ASP.NET developers that makes it incredibly simple to add real-time web functionality to your applications. What is "real-time web" functionality? It's the ability to have your server-side code push content to the connected clients as it happens, in real-time.
+ASP.NET SignalR is a library for ASP.NET developers that makes it incredibly simple to add real-time web functionality to your applications. What is "real-time web" functionality? It's the ability to have your server-side code push content to the connected clients right when it happens.
 
-## What can it be used for?
-Pushing data from the server to the client (not just browser clients) has always been a tough problem. SignalR makes 
-it dead easy and handles all the heavy lifting for you.
+## What Can SignalR Be Used For?
+SignalR is ideal for situations where events on your server need to be communicated to one or more clients (browsers, mobile apps, etc). This can be in the form of a chat application, messaging interface, updates to user-critical information that require notification, or just simple alerts that a long-running event has completed.
 
 ## Documentation
-See the [documentation](http://asp.net/signalr)
+We [have a dedicated documentation site up at asp.net](http://asp.net/signalr). If you find any issues with the docs or just want to help - please create an issue here.
 
-## Get it on NuGet!
+## Install via NuGet
 
     Install-Package Microsoft.AspNet.SignalR
 
-## Get a sample on NuGet, straight into your app!
+## Install a Sample App Using NuGet
 
     Install-Package Microsoft.AspNet.SignalR.Sample
 	
 ## LICENSE
-[Apache 2.0 License](https://github.com/SignalR/SignalR/blob/master/LICENSE.md)
+SignalR is licensed under the [Apache 2.0 License](https://github.com/SignalR/SignalR/blob/master/LICENSE.md).
 
 ## Contributing
 
-See the [contribution  guidelines](https://github.com/SignalR/SignalR/blob/master/CONTRIBUTING.md)
+We would love to have your help! If you would like to help out, please have a look at the [contribution  guidelines](https://github.com/SignalR/SignalR/blob/master/CONTRIBUTING.md). It's a small bit of formality but it would really help us if you could review these guidelines before submitting an issue or pull request. Thank you!
 
 ## Building the source
 
+Building the project from source requires a few simple steps - download the code then run a simple command. To download the code simply open up Powershell (or the git command line) and run:
+
 ```
-git clone git@github.com:SignalR/SignalR.git (or https if you use https)
+git clone https://github.com/SignalR/SignalR.git
 ```
 
 ### Windows
-After cloning the repository, run `build.cmd`.
+After cloning the repository head over to the new sourc directory and run the build command that we've created for you. You can double-click the `build.cmd` file, or execute it directly from the command line:
 
-**NOTE:** Opening the solution requires VS 2012.
+```
+cd [PATH TO SOURCE]
+build.cmd
+```
+
+**NOTE:** If you want to change anything - opening the solution requires VS 2012. Please be sure you have that installed.
 
 ### Mono
-After cloning the repository, run `make`.
+After cloning the repository, navigate to the source directory and run `make`:
 
-Open Microsoft.AspNet.SignalR.Mono.sln to do development.
+```
+cd [PATH TO SOURCE]
+make
+```
 
-## Continuous Integration
+## Build Server
 
-We have a CI Server (http://ci.signalr.net/)
+We use TeamCity from JetBrains to monitor and build our source code. If you want to have a look at the latest commits and build, you can using this link: http://ci.signalr.net/guestLogin.html?guest=1.
 
 ## Questions?
-The SignalR team hangs out in the [signalr](http://jabbr.net/#/rooms/signalr) room at on [JabbR](http://jabbr.net/).
+
+We welcome any feedback or thoughts you might have! If you just want to say "hi" or have a basic question, you can [drop by our chat room on jabbr.net]((http://jabbr.net/#/rooms/signalr)). 
+
+If you have a question about the code, a suggestion, or improvement - feel free to create an Issue here. Before you do - if you could help us out by reading our [contribution guidelines](https://github.com/SignalR/SignalR/blob/master/CONTRIBUTING.md) we would really appreciate it!
