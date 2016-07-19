@@ -14,10 +14,18 @@ namespace Microsoft.AspNet.SignalR.Redis
         private ConnectionMultiplexer _connection;
         private TraceSource _trace;
         private ulong _latestMessageId;
+        private readonly bool _isSharedConnection;
+
+        public RedisConnection(ConnectionMultiplexer sharedConnection = null)
+        {
+            _connection = sharedConnection;
+            _isSharedConnection = sharedConnection != null;
+        }
 
         public async Task ConnectAsync(string connectionString, TraceSource trace)
         {
-            _connection = await ConnectionMultiplexer.ConnectAsync(connectionString);
+            if(!_isSharedConnection)
+                _connection = await ConnectionMultiplexer.ConnectAsync(connectionString);
 
             _connection.ConnectionFailed += OnConnectionFailed;
             _connection.ConnectionRestored += OnConnectionRestored;
@@ -36,12 +44,15 @@ namespace Microsoft.AspNet.SignalR.Redis
                 _redisSubscriber.Unsubscribe(key);
             }
 
-            if (_connection != null)
+            if (!_isSharedConnection)
             {
-                _connection.Close(allowCommandsToComplete);
-            }
+                if (_connection != null)
+                {
+                    _connection.Close(allowCommandsToComplete);
+                }
 
-            _connection.Dispose();
+                _connection.Dispose();    
+            }
         }
 
         public async Task SubscribeAsync(string key, Action<int, RedisMessage> onMessage)
@@ -58,7 +69,7 @@ namespace Microsoft.AspNet.SignalR.Redis
 
         public void Dispose()
         {
-            if (_connection != null)
+            if (_connection != null && !_isSharedConnection)
             {
                 _connection.Dispose();
             }
@@ -77,7 +88,8 @@ namespace Microsoft.AspNet.SignalR.Redis
 
             return _connection.GetDatabase(database).ScriptEvaluateAsync(script,
                 keys,
-                arguments);
+                arguments,
+                CommandFlags.DemandMaster);
         }
 
         public async Task RestoreLatestValueForKey(int database, string key)
@@ -98,7 +110,8 @@ namespace Microsoft.AspNet.SignalR.Redis
                          return nil
                      end",
                    new RedisKey[] { key },
-                   new RedisValue[] { _latestMessageId });
+                   new RedisValue[] { _latestMessageId },
+                   CommandFlags.DemandMaster);
 
                 if (!redisResult.IsNull)
                 {
