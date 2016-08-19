@@ -21,7 +21,7 @@ namespace Microsoft.AspNet.SignalR.Redis
         {
             if (messages == null)
             {
-                throw new ArgumentNullException("messages");
+                throw new ArgumentNullException(nameof(messages));
             }
 
             using (var ms = new MemoryStream())
