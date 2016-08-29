@@ -24,7 +24,7 @@
     <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\..\</SolutionDir>
     <RestorePackages>true</RestorePackages>
     <NuGetPackageImportStamp>b44172aa</NuGetPackageImportStamp>
-    <PackageCertificateThumbprint>38E5E0EDE9521816D1F22973A006919ED1B4A41A</PackageCertificateThumbprint>
+    <PackageCertificateThumbprint>88ACD5B9795DDADB98958D8A2C796ADD5424D220</PackageCertificateThumbprint>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
