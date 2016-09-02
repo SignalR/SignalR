@@ -18,7 +18,7 @@ See the [documentation](http://asp.net/signalr)
     Install-Package Microsoft.AspNet.SignalR.Sample
 	
 ## LICENSE
-[Apache 2.0 License](https://github.com/SignalR/SignalR/blob/master/LICENSE.md)
+[Apache 2.0 License](https://github.com/SignalR/SignalR/blob/master/LICENSE.txt)
 
 ## Contributing
 
