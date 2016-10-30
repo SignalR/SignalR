@@ -4,6 +4,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 
 namespace Microsoft.AspNet.SignalR.Messaging
@@ -19,11 +20,12 @@ namespace Microsoft.AspNet.SignalR.Messaging
             _store = new ScaleoutStore(MaxMessages);
         }
 
-        public void Add(ulong id, ScaleoutMessage message, IList<LocalEventKeyInfo> localKeyInfo)
+        public void Add(ulong id, ScaleoutMessage message, IList<LocalEventKeyInfo> localKeyInfo, TraceSource trace)
         {
-            if (MaxMapping != null && id < MaxMapping.Id)
+            if (MaxMapping != null && id <= MaxMapping.Id)
             {
                 _store = new ScaleoutStore(MaxMessages);
+                trace.TraceError("Duplicate message id {0} from backplane happened, it may because of backplane reset, create a new ScaleoutStore", id);
             }
 
             _store.Add(new ScaleoutMapping(id, message, localKeyInfo));
