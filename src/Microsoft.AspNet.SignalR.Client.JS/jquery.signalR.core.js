@@ -950,6 +950,9 @@
 
             // Clear out our message buffer
             connection._.connectingMessageBuffer.clear();
+            
+            // Clean up this event
+            $(connection).unbind(events.onStart);
 
             // Trigger the disconnect event
             changeState(connection, connection.state, signalR.connectionState.disconnected);
