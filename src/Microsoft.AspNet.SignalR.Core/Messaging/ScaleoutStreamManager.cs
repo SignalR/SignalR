@@ -5,8 +5,8 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
-using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNet.SignalR.Configuration;
 using Microsoft.AspNet.SignalR.Infrastructure;
 
 namespace Microsoft.AspNet.SignalR.Messaging
@@ -18,11 +18,22 @@ namespace Microsoft.AspNet.SignalR.Messaging
         private readonly ScaleoutStream[] _streams;
 
         public ScaleoutStreamManager(Func<int, IList<Message>, Task> send,
+                             Action<int, ulong, ScaleoutMessage> receive,
+                             int streamCount,
+                             TraceSource trace,
+                             IPerformanceCounterManager performanceCounters,
+                             ScaleoutConfiguration configuration)
+            : this(send, receive, streamCount, trace, performanceCounters, configuration,
+                  DefaultConfigurationManager.DefaultMaxScaleoutMappingsPerStream)
+        { }
+
+        public ScaleoutStreamManager(Func<int, IList<Message>, Task> send,
                                      Action<int, ulong, ScaleoutMessage> receive,
                                      int streamCount,
                                      TraceSource trace,
                                      IPerformanceCounterManager performanceCounters,
-                                     ScaleoutConfiguration configuration)
+                                     ScaleoutConfiguration configuration,
+                                     int maxScaleoutMappings)
         {
             if (configuration.QueueBehavior != QueuingBehavior.Disabled && configuration.MaxQueueLength == 0)
             {
@@ -42,7 +53,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
             for (int i = 0; i < streamCount; i++)
             {
                 _streams[i] = new ScaleoutStream(trace, "Stream(" + i + ")", configuration.QueueBehavior, configuration.MaxQueueLength, performanceCounters);
-                receiveMapping[i] = new ScaleoutMappingStore();
+                receiveMapping[i] = new ScaleoutMappingStore(maxScaleoutMappings);
             }
 
             Streams = new ReadOnlyCollection<ScaleoutMappingStore>(receiveMapping);

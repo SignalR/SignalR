@@ -4,26 +4,30 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
+using Microsoft.AspNet.SignalR.Configuration;
 
 namespace Microsoft.AspNet.SignalR.Messaging
 {
     public class ScaleoutMappingStore
     {
-        private const int MaxMessages = 1000000;
-
         private ScaleoutStore _store;
+        private readonly uint _maxMessages;
 
         public ScaleoutMappingStore()
+            : this(DefaultConfigurationManager.DefaultMaxScaleoutMappingsPerStream)
+        { }
+
+        public ScaleoutMappingStore(int maxMessages)
         {
-            _store = new ScaleoutStore(MaxMessages);
+            _maxMessages = (uint)maxMessages;
+            _store = new ScaleoutStore(_maxMessages);
         }
 
         public void Add(ulong id, ScaleoutMessage message, IList<LocalEventKeyInfo> localKeyInfo)
         {
             if (MaxMapping != null && id < MaxMapping.Id)
             {
-                _store = new ScaleoutStore(MaxMessages);
+                _store = new ScaleoutStore(_maxMessages);
             }
 
             _store.Add(new ScaleoutMapping(id, message, localKeyInfo));

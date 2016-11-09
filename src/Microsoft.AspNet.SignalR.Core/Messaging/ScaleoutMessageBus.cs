@@ -2,12 +2,12 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNet.SignalR.Configuration;
 using Microsoft.AspNet.SignalR.Infrastructure;
 using Microsoft.AspNet.SignalR.Tracing;
 
@@ -34,7 +34,9 @@ namespace Microsoft.AspNet.SignalR.Messaging
             var traceManager = resolver.Resolve<ITraceManager>();
             _trace = traceManager["SignalR." + typeof(ScaleoutMessageBus).Name];
             _perfCounters = resolver.Resolve<IPerformanceCounterManager>();
-            _streamManager = new Lazy<ScaleoutStreamManager>(() => new ScaleoutStreamManager(Send, OnReceivedCore, StreamCount, _trace, _perfCounters, configuration));
+            var maxScaloutMappings = resolver.Resolve<IConfigurationManager>().MaxScaleoutMappingsPerStream;
+            _streamManager = new Lazy<ScaleoutStreamManager>(
+                () => new ScaleoutStreamManager(Send, OnReceivedCore, StreamCount, _trace, _perfCounters, configuration, maxScaloutMappings));
         }
 
         /// <summary>
