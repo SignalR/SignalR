@@ -57,8 +57,6 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
 
             var startUrl = UrlBuilder.BuildStart(connection, transport, connectionData);
 
-            httpClient.Initialize(connection);
-
             return httpClient.Get(startUrl, connection.PrepareRequest, isLongRunning: false)
                             .Then(response => response.ReadAsString());
         }
