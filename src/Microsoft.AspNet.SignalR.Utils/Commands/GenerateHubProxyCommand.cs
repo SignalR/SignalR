@@ -38,9 +38,8 @@ namespace Microsoft.AspNet.SignalR.Utils
             string path = null;
             string outputPath = null;
             string url = null;
-            var includeExecutables = false;
 
-            ParseArguments(args, out url, out path, out outputPath, out includeExecutables);
+            ParseArguments(args, out url, out path, out outputPath);
 
             if (String.IsNullOrEmpty(outputPath))
             {
@@ -54,19 +53,16 @@ namespace Microsoft.AspNet.SignalR.Utils
                 outputPath = Path.Combine(outputPath, "server.js");
             }
 
-            OutputHubs(path, url, outputPath, includeExecutables);
+            OutputHubs(path, url, outputPath);
         }
 
-        private void OutputHubs(string path, string url, string outputPath, bool includeExecutables)
+        private void OutputHubs(string path, string url, string outputPath)
         {
             path = path ?? Directory.GetCurrentDirectory();
             url = url ?? "/signalr";
 
-            var assemblies = Directory.GetFiles(path, "*.dll", SearchOption.AllDirectories).ToList();
-            if (includeExecutables)
-            {
-                assemblies.InsertRange(0, Directory.GetFiles(path, "*.exe", SearchOption.AllDirectories));
-            }
+            var assemblies = Directory.GetFiles(path, "*.exe", SearchOption.AllDirectories)
+                      .Union(Directory.GetFiles(path, "*.dll", SearchOption.AllDirectories));
 
             var tempPath = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
 
@@ -91,7 +87,7 @@ namespace Microsoft.AspNet.SignalR.Utils
 
             var generator = (JavaScriptGenerator)domain.CreateInstanceAndUnwrap(typeof(Program).Assembly.FullName,
                                                                                 typeof(JavaScriptGenerator).FullName);
-            var js = generator.GenerateProxy(path, url, Warning, includeExecutables);
+            var js = generator.GenerateProxy(path, url, Warning);
 
             Generate(outputPath, js);
         }
@@ -108,12 +104,11 @@ namespace Microsoft.AspNet.SignalR.Utils
         }
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Globalization", "CA1307:SpecifyStringComparison", MessageId = "System.String.StartsWith(System.String)", Justification = "All starts with methods are SignalR/networking terms.  Will not change via localization.")]
-        private static void ParseArguments(string[] args, out string url, out string path, out string outputPath, out bool includeExecutables)
+        private static void ParseArguments(string[] args, out string url, out string path, out string outputPath)
         {
             path = null;
             url = null;
             outputPath = null;
-            includeExecutables = false;
 
             foreach (var a in args)
             {
@@ -133,9 +128,6 @@ namespace Microsoft.AspNet.SignalR.Utils
                         break;
                     case "o":
                         outputPath = arg.Value;
-                        break;
-                    case "exe":
-                        includeExecutables = true;
                         break;
                 }
             }
@@ -158,13 +150,10 @@ namespace Microsoft.AspNet.SignalR.Utils
         public class JavaScriptGenerator : MarshalByRefObject
         {
             [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1822:MarkMembersAsStatic", Justification = "Called from non-static.")]
-            public string GenerateProxy(string path, string url, Action<string> warning, bool includeExecutables)
+            public string GenerateProxy(string path, string url, Action<string> warning)
             {
-                var assemblies = Directory.GetFiles(path, "*.dll", SearchOption.AllDirectories).ToList();
-                if (includeExecutables)
-                {
-                    assemblies.InsertRange(0, Directory.GetFiles(path, "*.exe", SearchOption.AllDirectories));
-                }
+                var assemblies = Directory.GetFiles(path, "*.exe", SearchOption.AllDirectories)
+                          .Union(Directory.GetFiles(path, "*.dll", SearchOption.AllDirectories));
 
                 foreach (var assemblyPath in assemblies)
                 {
