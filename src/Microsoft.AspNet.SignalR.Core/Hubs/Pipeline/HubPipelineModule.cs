@@ -26,37 +26,45 @@ namespace Microsoft.AspNet.SignalR.Hubs
         /// <returns>A wrapped function that invokes a server-side hub method.</returns>
         public virtual Func<IHubIncomingInvokerContext, Task<object>> BuildIncoming(Func<IHubIncomingInvokerContext, Task<object>> invoke)
         {
-            return async context =>
+            return context =>
             {
+                var tcs = new TaskCompletionSource<object>();
+
                 if (OnBeforeIncoming(context))
                 {
-                    try
+                    invoke(context).OrEmpty().ContinueWithPreservedCulture(t =>
                     {
-                        var result = await invoke(context).OrEmpty().PreserveCulture();
-                        return OnAfterIncoming(result, context);
-                    }
-                    catch (Exception ex)
-                    {
-                        var exContext = new ExceptionContext(ex);
-                        OnIncomingError(exContext, context);
+                        if (t.IsFaulted)
+                        {
+                            var exContext = new ExceptionContext(t.Exception);
+                            OnIncomingError(exContext, context);
 
-                        var error = exContext.Error;
-                        if (error == ex)
-                        {
-                            throw;
+                            var error = exContext.Error;
+                            if (error != null)
+                            {
+                                tcs.SetException(error);
+                            }
+                            else
+                            {
+                                tcs.SetResult(exContext.Result);
+                            }
                         }
-                        else if (error != null)
+                        else if (t.IsCanceled)
                         {
-                            throw error;
+                            tcs.SetCanceled();
                         }
                         else
                         {
-                            return exContext.Result;
+                            tcs.SetResult(OnAfterIncoming(t.Result, context));
                         }
-                    }
+                    });
+                }
+                else
+                {
+                    tcs.SetResult(null);
                 }
 
-                return null;
+                return tcs.Task;
             };
         }
 
