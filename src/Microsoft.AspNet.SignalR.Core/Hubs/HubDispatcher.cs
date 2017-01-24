@@ -141,9 +141,13 @@ namespace Microsoft.AspNet.SignalR.Hubs
                 }
             }
 
-            return base.AuthorizeRequest(request);
+            //bug fixed:otherwise when only use like paramaterless '{HOSTNAME}/signalr/negotiate', it always returns ConnectionToken without Authorization
+            if (request.LocalPath.ToLower().EndsWith("/negotiate"))
+                return false;
+            else
+                return base.AuthorizeRequest(request);
         }
-
+        
         /// <summary>
         /// Processes the hub's incoming method calls.
         /// </summary>
