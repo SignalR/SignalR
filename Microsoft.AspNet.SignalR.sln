@@ -113,6 +113,7 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNet.SignalR.Client.UWP", "src\Microsoft.AspNet.SignalR.Client.UWP\Microsoft.AspNet.SignalR.Client.UWP.csproj", "{AAAE1A6A-3A7E-4EE2-9624-3907FD1CDC1A}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNet.SignalR.Client.NetStandard", "src\Microsoft.AspNet.SignalR.Client.NetStandard\Microsoft.AspNet.SignalR.Client.NetStandard.csproj", "{8ABB4EA3-6FF0-40FC-93E2-BBCD581B5424}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNet.SignalR.ServiceBus3", "src\Microsoft.AspNet.SignalR.ServiceBus3\Microsoft.AspNet.SignalR.ServiceBus3.csproj", "{FCCF5D11-3A6E-42B2-8F69-CBD67C07BDED}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -738,6 +739,26 @@ Global
 		{8ABB4EA3-6FF0-40FC-93E2-BBCD581B5424}.Release|x64.Build.0 = Release|Any CPU
 		{8ABB4EA3-6FF0-40FC-93E2-BBCD581B5424}.Release|x86.ActiveCfg = Release|Any CPU
 		{8ABB4EA3-6FF0-40FC-93E2-BBCD581B5424}.Release|x86.Build.0 = Release|Any CPU
+		{FCCF5D11-3A6E-42B2-8F69-CBD67C07BDED}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FCCF5D11-3A6E-42B2-8F69-CBD67C07BDED}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FCCF5D11-3A6E-42B2-8F69-CBD67C07BDED}.Debug|ARM.ActiveCfg = Debug|Any CPU
+		{FCCF5D11-3A6E-42B2-8F69-CBD67C07BDED}.Debug|ARM.Build.0 = Debug|Any CPU
+		{FCCF5D11-3A6E-42B2-8F69-CBD67C07BDED}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{FCCF5D11-3A6E-42B2-8F69-CBD67C07BDED}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{FCCF5D11-3A6E-42B2-8F69-CBD67C07BDED}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{FCCF5D11-3A6E-42B2-8F69-CBD67C07BDED}.Debug|x64.Build.0 = Debug|Any CPU
+		{FCCF5D11-3A6E-42B2-8F69-CBD67C07BDED}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{FCCF5D11-3A6E-42B2-8F69-CBD67C07BDED}.Debug|x86.Build.0 = Debug|Any CPU
+		{FCCF5D11-3A6E-42B2-8F69-CBD67C07BDED}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FCCF5D11-3A6E-42B2-8F69-CBD67C07BDED}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FCCF5D11-3A6E-42B2-8F69-CBD67C07BDED}.Release|ARM.ActiveCfg = Release|Any CPU
+		{FCCF5D11-3A6E-42B2-8F69-CBD67C07BDED}.Release|ARM.Build.0 = Release|Any CPU
+		{FCCF5D11-3A6E-42B2-8F69-CBD67C07BDED}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{FCCF5D11-3A6E-42B2-8F69-CBD67C07BDED}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{FCCF5D11-3A6E-42B2-8F69-CBD67C07BDED}.Release|x64.ActiveCfg = Release|Any CPU
+		{FCCF5D11-3A6E-42B2-8F69-CBD67C07BDED}.Release|x64.Build.0 = Release|Any CPU
+		{FCCF5D11-3A6E-42B2-8F69-CBD67C07BDED}.Release|x86.ActiveCfg = Release|Any CPU
+		{FCCF5D11-3A6E-42B2-8F69-CBD67C07BDED}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
