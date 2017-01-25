@@ -16,7 +16,7 @@
     <releaseNotes>https://github.com/SignalR/SignalR/releases</releaseNotes>
     <dependencies>
       <dependency id="Microsoft.AspNet.SignalR.Core" version="__SIGNALR_PACKAGE_VERSION__" />
-      <dependency id="StackExchange.Redis.StrongName" version="1.0.322" />
+      <dependency id="StackExchange.Redis.StrongName" version="1.1.608" />
     </dependencies>
   </metadata>
   <files>
