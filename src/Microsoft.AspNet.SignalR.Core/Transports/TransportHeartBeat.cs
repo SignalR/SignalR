@@ -87,6 +87,10 @@ namespace Microsoft.AspNet.SignalR.Transports
                 isNewConnection = false;
                 oldConnection = old.Connection;
 
+                // If the old connection was on a different transport, we need to transfer the count
+                old.Connection.DecrementConnectionsCount();
+                newMetadata.Connection.IncrementConnectionsCount();
+
                 return newMetadata;
             });
 
