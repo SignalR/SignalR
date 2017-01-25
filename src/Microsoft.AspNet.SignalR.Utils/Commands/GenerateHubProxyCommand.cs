@@ -38,8 +38,9 @@ namespace Microsoft.AspNet.SignalR.Utils
             string path = null;
             string outputPath = null;
             string url = null;
+            string assemblyFilter = null;
 
-            ParseArguments(args, out url, out path, out outputPath);
+            ParseArguments(args, out url, out path, out outputPath, out assemblyFilter);
 
             if (String.IsNullOrEmpty(outputPath))
             {
@@ -53,10 +54,20 @@ namespace Microsoft.AspNet.SignalR.Utils
                 outputPath = Path.Combine(outputPath, "server.js");
             }
 
-            OutputHubs(path, url, outputPath);
+            if (String.IsNullOrEmpty(assemblyFilter))
+            {
+                assemblyFilter = "*";
+            }
+
+            if (!String.Equals(Path.GetExtension(assemblyFilter), ".dll", StringComparison.OrdinalIgnoreCase))
+            {
+                assemblyFilter += ".dll";
+            }
+
+            OutputHubs(path, url, outputPath, assemblyFilter);
         }
 
-        private void OutputHubs(string path, string url, string outputPath)
+        private void OutputHubs(string path, string url, string outputPath, string assemblyFilter)
         {
             path = path ?? Directory.GetCurrentDirectory();
             url = url ?? "/signalr";
@@ -85,7 +96,7 @@ namespace Microsoft.AspNet.SignalR.Utils
 
             var generator = (JavaScriptGenerator)domain.CreateInstanceAndUnwrap(typeof(Program).Assembly.FullName,
                                                                                 typeof(JavaScriptGenerator).FullName);
-            var js = generator.GenerateProxy(path, url, Warning);
+            var js = generator.GenerateProxy(path, url, assemblyFilter, Warning);
 
             Generate(outputPath, js);
         }
@@ -102,11 +113,12 @@ namespace Microsoft.AspNet.SignalR.Utils
         }
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Globalization", "CA1307:SpecifyStringComparison", MessageId = "System.String.StartsWith(System.String)", Justification = "All starts with methods are SignalR/networking terms.  Will not change via localization.")]
-        private static void ParseArguments(string[] args, out string url, out string path, out string outputPath)
+        private static void ParseArguments(string[] args, out string url, out string path, out string outputPath, out string assemblyFilter)
         {
             path = null;
             url = null;
             outputPath = null;
+            assemblyFilter = null;
 
             foreach (var a in args)
             {
@@ -126,6 +138,9 @@ namespace Microsoft.AspNet.SignalR.Utils
                         break;
                     case "o":
                         outputPath = arg.Value;
+                        break;
+                    case "f":
+                        assemblyFilter = arg.Value;
                         break;
                 }
             }
@@ -148,23 +163,19 @@ namespace Microsoft.AspNet.SignalR.Utils
         public class JavaScriptGenerator : MarshalByRefObject
         {
             [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1822:MarkMembersAsStatic", Justification = "Called from non-static.")]
-            public string GenerateProxy(string path, string url, Action<string> warning)
+            public string GenerateProxy(string path, string url, string assemblySearchPattern, Action<string> warning)
             {
-                foreach (var assemblyPath in Directory.GetFiles(path, "*.dll", SearchOption.AllDirectories))
-                {
-                    try
-                    {
-                        Assembly.Load(AssemblyName.GetAssemblyName(assemblyPath));
-                    }
-                    catch (BadImageFormatException e)
-                    {
-                         warning(e.Message);
-                    }
-                }
+                IEnumerable<AssemblyName> knownAssemblies = from a in Directory.GetFiles(path, "*.dll", SearchOption.AllDirectories)
+                                                            select AssemblyName.GetAssemblyName(a);
 
-                var signalrAssembly = (from a in AppDomain.CurrentDomain.GetAssemblies()
-                                       where a.GetName().Name.Equals("Microsoft.AspNet.SignalR.Core", StringComparison.OrdinalIgnoreCase)
-                                       select a).FirstOrDefault();
+                IEnumerable<AssemblyName> loadAssemblies = from a in Directory.GetFiles(path, assemblySearchPattern, SearchOption.AllDirectories)
+                                                           select AssemblyName.GetAssemblyName(a);
+
+                LoadAssembliesWithReferences(knownAssemblies, loadAssemblies, warning);
+
+                Assembly signalrAssembly = (from a in AppDomain.CurrentDomain.GetAssemblies()
+                                            where a.GetName().Name.Equals("Microsoft.AspNet.SignalR.Core", StringComparison.OrdinalIgnoreCase)
+                                            select a).FirstOrDefault();
 
                 if (signalrAssembly == null)
                 {
@@ -188,6 +199,84 @@ namespace Microsoft.AspNet.SignalR.Utils
 
                 return proxyGenerator.GenerateProxy(url, true);
             }
+
+            private static void LoadAssembliesWithReferences(IEnumerable<AssemblyName> knownAssemblies, IEnumerable<AssemblyName> assemblyNames, Action<string> warning)
+            {
+                Stack<AssemblyName> stack = new Stack<AssemblyName>();
+                foreach (AssemblyName assemblyName in assemblyNames)
+                {
+                    stack.Push(assemblyName);
+                }
+
+                using (new AssemblyResolveHelper(knownAssemblies))
+                {
+                    while (stack.Count > 0)
+                    {
+                        AssemblyName name = stack.Pop();
+                        if (!AppDomain.CurrentDomain.GetAssemblies().Any(a => a.FullName == name.FullName))
+                        {
+                            try
+                            {
+                                Assembly loadedAssembly = Assembly.Load(name);
+                                foreach (AssemblyName referencedAssemblyName in loadedAssembly.GetReferencedAssemblies())
+                                {
+                                    stack.Push(referencedAssemblyName);
+                                }
+                            }
+                            catch (FileNotFoundException)
+                            {
+                                // ignore assemblies that do not exist on disk
+                            }
+                            catch (FileLoadException flex)
+                            {
+                                warning(flex.Message);
+                            }
+                            catch (BadImageFormatException bigex)
+                            {
+                                warning(bigex.Message);
+                            }
+                        }
+                    }
+                }
+            }
+
+            private class AssemblyResolveHelper : IDisposable
+            {
+                private List<AssemblyName> knownAssemblies;
+
+                public AssemblyResolveHelper(IEnumerable<AssemblyName> knownAssemblies)
+                {
+                    this.knownAssemblies = knownAssemblies.ToList();
+                    AppDomain.CurrentDomain.AssemblyResolve += this.AssemblyResolveEventHandler;
+                }
+
+                public void Dispose()
+                {
+                    AppDomain.CurrentDomain.AssemblyResolve -= this.AssemblyResolveEventHandler;
+                }
+
+                private Assembly AssemblyResolveEventHandler(object sender, ResolveEventArgs args)
+                {
+                    var requestedAssembly = new AssemblyName(args.Name);
+
+                    var knownAssembly = this.knownAssemblies.Find(a =>
+                                                  a.Name.Equals(requestedAssembly.Name) &&
+                                                  a.GetPublicKeyToken().SequenceEqual(requestedAssembly.GetPublicKeyToken()) &&
+                                                  a.CultureInfo.Equals(requestedAssembly.CultureInfo) &&
+                                                  a.Version >= requestedAssembly.Version);
+
+                    if (knownAssembly == null)
+                    {
+                        return null;
+                    }
+
+                    return Assembly.Load(knownAssembly);
+                }
+
+            }
+
         }
+
     }
+
 }
