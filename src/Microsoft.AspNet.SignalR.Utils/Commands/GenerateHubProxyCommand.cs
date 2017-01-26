@@ -62,7 +62,7 @@ namespace Microsoft.AspNet.SignalR.Utils
             url = url ?? "/signalr";
 
             var assemblies = Directory.GetFiles(path, "*.exe", SearchOption.AllDirectories)
-                      .Union(Directory.GetFiles(path, "*.dll", SearchOption.AllDirectories));
+                      .Concat(Directory.GetFiles(path, "*.dll", SearchOption.AllDirectories));
 
             var tempPath = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
 
@@ -153,7 +153,7 @@ namespace Microsoft.AspNet.SignalR.Utils
             public string GenerateProxy(string path, string url, Action<string> warning)
             {
                 var assemblies = Directory.GetFiles(path, "*.exe", SearchOption.AllDirectories)
-                          .Union(Directory.GetFiles(path, "*.dll", SearchOption.AllDirectories));
+                          .Concat(Directory.GetFiles(path, "*.dll", SearchOption.AllDirectories));
 
                 foreach (var assemblyPath in assemblies)
                 {
