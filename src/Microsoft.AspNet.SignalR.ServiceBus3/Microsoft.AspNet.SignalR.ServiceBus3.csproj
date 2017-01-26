@@ -60,12 +60,6 @@
     <Compile Include="..\Microsoft.AspNet.SignalR.ServiceBus\DependencyResolverExtensions.cs">
       <Link>DependencyResolverExtensions.cs</Link>
     </Compile>
-    <Compile Include="Infrastructure\ServiceBusTaskExtensions.cs">
-      <Link>Infrastructure\ServiceBusTaskExtensions.cs</Link>
-    </Compile>
-    <Compile Include="ServiceBusConnection.cs">
-      <Link>ServiceBusConnection.cs</Link>
-    </Compile>
     <Compile Include="..\Microsoft.AspNet.SignalR.ServiceBus\ServiceBusConnectionContext.cs">
       <Link>ServiceBusConnectionContext.cs</Link>
     </Compile>
@@ -82,6 +76,8 @@
       <Link>SubscriptionContext.cs</Link>
     </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="ServiceBusConnection.cs" />
+    <Compile Include="Infrastructure\ServiceBusTaskExtensions.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

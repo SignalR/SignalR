@@ -10,7 +10,7 @@ namespace Microsoft.AspNet.SignalR.ServiceBus.Infrastructure
     {
         public static Task SendAsync(this TopicClient client, BrokeredMessage message)
         {
-            return Task.Factory.FromAsync((cb, state) => client.BeginSend((BrokeredMessage)state, cb, null), client.EndSend, message);
+            return client.SendAsync(message);
         }
     }
 }
