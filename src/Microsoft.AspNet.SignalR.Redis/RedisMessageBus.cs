@@ -27,6 +27,7 @@ namespace Microsoft.AspNet.SignalR.Redis
         private string _connectionString;
         private int _state;
         private readonly object _callbackLock = new object();
+        private readonly SemaphoreSlim _redisConnectionEventLock = new SemaphoreSlim(1, 1);
 
         public RedisMessageBus(IDependencyResolver resolver, RedisScaleoutConfiguration configuration, IRedisConnection connection)
             : this(resolver, configuration, connection, true)
@@ -106,6 +107,8 @@ namespace Microsoft.AspNet.SignalR.Redis
                     default:
                         break;
                 }
+
+                _redisConnectionEventLock.Dispose();
             }
 
             base.Dispose(disposing);
@@ -125,11 +128,35 @@ namespace Microsoft.AspNet.SignalR.Redis
 
         private void OnConnectionFailed(Exception ex)
         {
-            string errorMessage = (ex != null) ? ex.Message : Resources.Error_RedisConnectionClosed;
+            // StackExchange Redis will raise this event twice when a connection fails -
+            // once for ConnectionType.Interactive and once for ConnectionType.Subscription.
+            // We could try being more granular but ignoring the subsequent event should suffice.
+            try
+            {
+                _redisConnectionEventLock.Wait();
+            }
+            catch (ObjectDisposedException)
+            {
+                return;
+            }
 
-            _trace.TraceInformation("OnConnectionFailed - " + errorMessage);
+            try
+            {
+                if (_state == State.Closed)
+                {
+                    return;
+                }
 
-            Interlocked.Exchange(ref _state, State.Closed);
+                string errorMessage = (ex != null) ? ex.Message : Resources.Error_RedisConnectionClosed;
+
+                _trace.TraceInformation("OnConnectionFailed - " + errorMessage);
+
+                Interlocked.Exchange(ref _state, State.Closed);
+            }
+            finally
+            {
+                _redisConnectionEventLock.Release();
+            }
         }
 
         private void OnConnectionError(Exception ex)
@@ -140,13 +167,37 @@ namespace Microsoft.AspNet.SignalR.Redis
 
         private async void OnConnectionRestored(Exception ex)
         {
-            await _connection.RestoreLatestValueForKey(_db, _key);
+            // StackExchange Redis will raise this event twice when a connection is restored -
+            // once for ConnectionType.Interactive and once for ConnectionType.Subscription.
+            // We could try being more granular but ignoring the subsequent event should suffice.
+            try
+            {
+                _redisConnectionEventLock.Wait();
+            }
+            catch (ObjectDisposedException)
+            {
+                return;
+            }
 
-            _trace.TraceInformation("Connection restored");
+            try
+            {
+                if (_state == State.Connected)
+                {
+                    return;
+                }
 
-            Interlocked.Exchange(ref _state, State.Connected);
+                await _connection.RestoreLatestValueForKey(_db, _key);
 
-            OpenStream(0);
+                _trace.TraceInformation("Connection restored");
+
+                Interlocked.Exchange(ref _state, State.Connected);
+
+                OpenStream(0);
+            }
+            finally
+            {
+                _redisConnectionEventLock.Release();
+            }
         }
 
         internal async Task ConnectWithRetry()
@@ -216,7 +267,7 @@ namespace Microsoft.AspNet.SignalR.Redis
 
         private void OnMessage(int streamIndex, RedisMessage message)
         {
-            // locked to avoid overlapping calls (even though we have set the mode 
+            // locked to avoid overlapping calls (even though we have set the mode
             // to preserve order on the subscription)
             lock (_callbackLock)
             {
