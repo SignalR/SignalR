@@ -31,6 +31,8 @@ namespace Microsoft.AspNet.SignalR
             }
 
             ConnectionString = connectionString;
+            var options = ConfigurationOptions.Parse(connectionString);
+            Database = options.DefaultDatabase.GetValueOrDefault(0);
             EventKey = eventKey;
         }
 

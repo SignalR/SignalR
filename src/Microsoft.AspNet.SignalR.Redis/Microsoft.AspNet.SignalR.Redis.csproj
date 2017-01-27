@@ -82,7 +82,9 @@
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
-    <None Include="packages.config" />
+    <None Include="packages.config">
+      <SubType>Designer</SubType>
+    </None>
   </ItemGroup>
   <Import Project="..\Common\Microsoft.AspNet.SignalR.targets" />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
