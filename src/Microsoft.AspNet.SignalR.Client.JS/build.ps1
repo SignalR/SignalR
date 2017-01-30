@@ -44,7 +44,7 @@ Write-Host "done" -ForegroundColor Green
 
 # Minify to jquery.signalR.min.js
 Write-Host "Building bin\jquery.signalR.min.js... " -NoNewline -ForegroundColor Yellow
-& "..\..\tools\ajaxmin\AjaxMinifier.exe" $outputPath\jquery.signalR.js -out $outputPath\jquery.signalR.min.js -clobber > $output
+& "..\..\tools\ajaxmin\AjaxMinifier.exe" $outputPath\jquery.signalR.js -out $outputPath\jquery.signalR.min.js -term -clobber > $output
 (Get-Content $output)[6] | Write-Host -ForegroundColor Green
 
 Remove-Item $output -Force
