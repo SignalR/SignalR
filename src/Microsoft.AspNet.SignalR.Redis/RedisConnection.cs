@@ -91,8 +91,8 @@ namespace Microsoft.AspNet.SignalR.Redis
                 }
 
                 var redisResult = await _connection.GetDatabase(database).ScriptEvaluateAsync(
-                   @"local newvalue = redis.call('GET', KEYS[1])
-                     if not newvalue or newvalue < ARGV[1] then
+                   @"local newvalue = tonumber(redis.call('GET', KEYS[1]))
+                     if not newvalue or tonumber(newvalue) < tonumber(ARGV[1]) then
                          return redis.call('SET', KEYS[1], ARGV[1])
                      else
                          return nil
