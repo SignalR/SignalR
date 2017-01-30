@@ -2,10 +2,12 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Configuration;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.ServiceBus;
@@ -28,6 +30,9 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
         private readonly ServiceBusScaleoutConfiguration _configuration;
         private readonly string _connectionString;
         private readonly TraceSource _trace;
+
+        private readonly CancellationTokenSource _cts = new CancellationTokenSource();
+        private readonly ConcurrentDictionary<Task, bool> _processMessagesTasks = new ConcurrentDictionary<Task, bool>();
 
         public ServiceBusConnection(ServiceBusScaleoutConfiguration configuration, TraceSource traceSource)
         {
@@ -169,7 +174,13 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
 
                 var receiverContext = new ReceiverContext(topicIndex, receiver, connectionContext);
 
-                ProcessMessages(receiverContext);
+                var task = Task.Run(() => ProcessMessages(receiverContext));
+                _processMessagesTasks.GetOrAdd(task, false);
+                task.ContinueWith(t =>
+                    {
+                        bool value;
+                        _processMessagesTasks.TryRemove(task, out value);
+                    });
 
                 // Open the stream
                 connectionContext.OpenStream(topicIndex);
@@ -221,6 +232,13 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
                 {
                     _factory.Close();
                 }
+
+                _cts.Cancel();
+                _cts.Dispose();
+                if (!Task.WaitAll(_processMessagesTasks.Keys.ToArray(), DefaultReadTimeout))
+                {
+                    _trace.TraceInformation("Stopping process message threads timed out.");
+                }
             }
         }
 
@@ -229,69 +247,67 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
             Dispose(true);
         }
 
-        [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "Exceptions are handled through the error handler callback")]
-        private void ProcessMessages(ReceiverContext receiverContext)
+        private async Task ProcessMessages(ReceiverContext receiverContext)
         {
-            receiverContext.Receiver.ReceiveBatchAsync(ReceiverContext.ReceiveBatchSize, receiverContext.ReceiveTimeout)
-                .ContinueWith(t =>
-                {
-                    ContinueReceiving(t, receiverContext);
-                });
-        }
-
-        [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "Exceptions are handled through the error handler callback")]
-        private void ContinueReceiving(Task<IEnumerable<BrokeredMessage>> receiveTask, ReceiverContext receiverContext)
-        {
-            Debug.Assert(receiveTask.GetAwaiter().IsCompleted, "receiveTask is expected to be completed.");
-
             TimeSpan backoffAmount = _backoffTime;
 
-            try
+            while (!_cts.IsCancellationRequested)
             {
-                // not blocking because task is completed
-                var messages = receiveTask.GetAwaiter().GetResult();
-                receiverContext.OnMessage(messages);
+                try
+                {
+                    var messages = await receiverContext.Receiver.ReceiveBatchAsync(
+                        ReceiverContext.ReceiveBatchSize, receiverContext.ReceiveTimeout);
 
-                // Reset the receive timeout if it changed
-                receiverContext.ReceiveTimeout = DefaultReadTimeout;
+                    receiverContext.OnMessage(messages);
 
-                ProcessMessages(receiverContext);
-                return;
+                    // Reset the receive timeout if it changed
+                    receiverContext.ReceiveTimeout = DefaultReadTimeout;
+
+                    continue;
+                }
+                catch (OperationCanceledException)
+                {
+                    // This means the channel is closed
+                    _trace.TraceError("Receiving messages from the service bus threw an OperationCanceledException, most likely due to a closed channel.");
+                    return;
+                }
+                catch (MessagingEntityNotFoundException ex)
+                {
+                    try
+                    {
+                        await receiverContext.Receiver.CloseAsync();
+                    }
+                    catch { }
+
+                    receiverContext.OnError(ex);
+                    var ignored = TryCreateSubscription(receiverContext);
+                    return;
+                }
+                catch (ServerBusyException ex)
+                {
+                    receiverContext.OnError(ex);
+                }
+                catch (Exception ex)
+                {
+                    receiverContext.OnError(ex);
+
+                    // TODO: Exponential backoff
+                    backoffAmount = ErrorBackOffAmount;
+
+                    // After an error, we want to adjust the timeout so that we
+                    // can recover as quickly as possible even if there's no message
+                    receiverContext.ReceiveTimeout = ErrorReadTimeout;
+                }
+
+                // back off for ServerBusyException and other exceptions not handled is a specific way
+                await Task.Delay(backoffAmount);
             }
-            catch (ServerBusyException ex)
-            {
-                receiverContext.OnError(ex);
-            }
-            catch (OperationCanceledException)
-            {
-                // This means the channel is closed
-                _trace.TraceError("Receiving messages from the service bus threw an OperationCanceledException, most likely due to a closed channel.");
-                return;
-            }
-            catch (MessagingEntityNotFoundException ex)
-            {
-                receiverContext.Receiver.CloseAsync().Catch();
-                receiverContext.OnError(ex);
+        }
 
-                TaskAsyncHelper.Delay(RetryDelay)
-                               .Then(() => Retry(() => CreateSubscription(receiverContext.ConnectionContext, receiverContext.TopicIndex)));
-                return;
-            }
-            catch (Exception ex)
-            {
-                receiverContext.OnError(ex);
-
-                // TODO: Exponential backoff
-                backoffAmount = ErrorBackOffAmount;
-
-                // After an error, we want to adjust the timeout so that we
-                // can recover as quickly as possible even if there's no message
-                receiverContext.ReceiveTimeout = ErrorReadTimeout;
-            }
-
-            // back off for ServerBusyException and other exceptions not handled is a specific way
-            TaskAsyncHelper.Delay(backoffAmount)
-                           .Then(ctx => ProcessMessages(ctx), receiverContext);
+        private async Task TryCreateSubscription(ReceiverContext receiverContext)
+        {
+            await Task.Delay(RetryDelay);
+            Retry(() => CreateSubscription(receiverContext.ConnectionContext, receiverContext.TopicIndex));
         }
 
         private class ReceiverContext
