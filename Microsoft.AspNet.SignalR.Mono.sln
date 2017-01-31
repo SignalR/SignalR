@@ -15,6 +15,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNet.SelfHost.S
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNet.SignalR.Client40.Samples", "samples\Microsoft.AspNet.SignalR.Client40.Samples\Microsoft.AspNet.SignalR.Client40.Samples.csproj", "{2B6F3C11-DE35-4948-A49F-A6C65A297C86}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNet.SignalR.Client45", "src\Microsoft.AspNet.SignalR.Client45\Microsoft.AspNet.SignalR.Client45.csproj", "{50F8A174-695E-498C-B105-BDBE6B398646}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNet.SignalR.Client.Mac", "src\Microsoft.AspNet.SignalR.Client.Mac\Microsoft.AspNet.SignalR.Client.Mac.csproj", "{D8F0E7C0-E412-443E-90EA-E5C2524BF825}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -71,6 +75,22 @@ Global
 		{FD48578F-E825-47EA-A846-9764E01F523A}.Release|Any CPU.Build.0 = Release|Any CPU
 		{FD48578F-E825-47EA-A846-9764E01F523A}.Release|x86.ActiveCfg = Release|Any CPU
 		{FD48578F-E825-47EA-A846-9764E01F523A}.Release|x86.Build.0 = Release|Any CPU
+		{50F8A174-695E-498C-B105-BDBE6B398646}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{50F8A174-695E-498C-B105-BDBE6B398646}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{50F8A174-695E-498C-B105-BDBE6B398646}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{50F8A174-695E-498C-B105-BDBE6B398646}.Debug|x86.Build.0 = Debug|Any CPU
+		{50F8A174-695E-498C-B105-BDBE6B398646}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{50F8A174-695E-498C-B105-BDBE6B398646}.Release|Any CPU.Build.0 = Release|Any CPU
+		{50F8A174-695E-498C-B105-BDBE6B398646}.Release|x86.ActiveCfg = Release|Any CPU
+		{50F8A174-695E-498C-B105-BDBE6B398646}.Release|x86.Build.0 = Release|Any CPU
+		{D8F0E7C0-E412-443E-90EA-E5C2524BF825}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D8F0E7C0-E412-443E-90EA-E5C2524BF825}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D8F0E7C0-E412-443E-90EA-E5C2524BF825}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{D8F0E7C0-E412-443E-90EA-E5C2524BF825}.Debug|x86.Build.0 = Debug|Any CPU
+		{D8F0E7C0-E412-443E-90EA-E5C2524BF825}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D8F0E7C0-E412-443E-90EA-E5C2524BF825}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D8F0E7C0-E412-443E-90EA-E5C2524BF825}.Release|x86.ActiveCfg = Release|Any CPU
+		{D8F0E7C0-E412-443E-90EA-E5C2524BF825}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{5D69B6BE-062B-408D-913E-5CD2F21D5D17} = {CF382357-4299-466B-97A0-0A582D6806E9}
@@ -84,9 +104,10 @@ Global
 		$1.ResourceNamePolicy = FileFormatDefault
 		$0.TextStylePolicy = $2
 		$2.FileWidth = 120
-		$2.TabsToSpaces = False
 		$2.inheritsSet = VisualStudio
 		$2.inheritsScope = text/plain
+		$2.scope = text/plain
+		$2.EolMarker = Windows
 		$0.TextStylePolicy = $3
 		$3.FileWidth = 120
 		$3.EolMarker = Windows
