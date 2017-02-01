@@ -110,19 +110,19 @@
       <RunFxCop>false</RunFxCop>
     </Projects>
     <!-- These are for Xamarin until netstandard2.0 or Apple PCL (provides WebSocket support as Portable does not) -->
-    <Projects Include="$(ProjectRoot)\src\Microsoft.AspNet.SignalR.Client\Microsoft.AspNet.SignalR.Client.Android.csproj">
+    <Projects Include="$(ProjectRoot)\src\Microsoft.AspNet.SignalR.Client.Android\Microsoft.AspNet.SignalR.Client.Android.csproj">
       <Platform>MonoAndroid10</Platform>
     </Projects>
-    <Projects Include="$(ProjectRoot)\src\Microsoft.AspNet.SignalR.Client\Microsoft.AspNet.SignalR.Client.iOS.csproj">
+    <Projects Include="$(ProjectRoot)\src\Microsoft.AspNet.SignalR.Client.iOS\Microsoft.AspNet.SignalR.Client.iOS.csproj">
       <Platform>Xamarin.iOS10</Platform>
     </Projects>
-    <Projects Include="$(ProjectRoot)\src\Microsoft.AspNet.SignalR.Client\Microsoft.AspNet.SignalR.Client.Mac.csproj">
+    <Projects Include="$(ProjectRoot)\src\Microsoft.AspNet.SignalR.Client.Mac\Microsoft.AspNet.SignalR.Client.Mac.csproj">
       <Platform>xamarinmac20</Platform>
     </Projects>
-    <Projects Include="$(ProjectRoot)\src\Microsoft.AspNet.SignalR.Client\Microsoft.AspNet.SignalR.Client.tvOS.csproj">
+    <Projects Include="$(ProjectRoot)\src\Microsoft.AspNet.SignalR.Client.tvOS\Microsoft.AspNet.SignalR.Client.tvOS.csproj">
       <Platform>xamarin.tvos</Platform>
     </Projects>
-    <Projects Include="$(ProjectRoot)\src\Microsoft.AspNet.SignalR.Client\Microsoft.AspNet.SignalR.Client.watchOS.csproj">
+    <Projects Include="$(ProjectRoot)\src\Microsoft.AspNet.SignalR.Client.watchOS\Microsoft.AspNet.SignalR.Client.watchOS.csproj">
       <Platform>xamarin.watchos</Platform>
     </Projects>
     
