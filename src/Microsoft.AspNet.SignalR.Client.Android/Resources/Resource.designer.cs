@@ -9,9 +9,9 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-[assembly: global::Android.Runtime.ResourceDesignerAttribute("Microsoft.AspNet.SignalR.Client.Android.Resource", IsApplication=false)]
+[assembly: global::Android.Runtime.ResourceDesignerAttribute("Microsoft.AspNet.SignalR.Client.Resource", IsApplication=false)]
 
-namespace Microsoft.AspNet.SignalR.Client.Android
+namespace Microsoft.AspNet.SignalR.Client
 {
 	
 	

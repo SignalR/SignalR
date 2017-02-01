@@ -29,6 +29,21 @@
         <dependency id="Newtonsoft.Json" version="6.0.4" />
         <dependency id="Microsoft.Net.Http" version="2.2.28" />
       </group>
+      <group targetFramework="MonoAndroid10">
+        <dependency id="Newtonsoft.Json" version="9.0.1" />
+      </group>
+      <group targetFramework="Xamarin.iOS10">
+        <dependency id="Newtonsoft.Json" version="9.0.1" />
+      </group>
+      <group targetFramework="xamarinmac20">
+        <dependency id="Newtonsoft.Json" version="9.0.1" />
+      </group>
+      <group targetFramework="xamarin.tvos">
+        <dependency id="Newtonsoft.Json" version="9.0.1" />
+      </group>
+      <group targetFramework="xamarin.watchos">
+        <dependency id="Newtonsoft.Json" version="9.0.1" />
+      </group>
     </dependencies>
   </metadata>
   <files>
@@ -42,5 +57,15 @@
     <file src="portable-win81+wpa81\Microsoft.AspNet.SignalR.Client.xml" target="lib\portable-win81+wpa81" />
     <file src="netcore50\Microsoft.AspNet.SignalR.Client.dll" target="lib\netcore50" />
     <file src="netcore50\Microsoft.AspNet.SignalR.Client.Xml" target="lib\netcore50" />
+    <file src="MonoAndroid10\Microsoft.AspNet.SignalR.Client.dll" target="lib\MonoAndroid10" />
+    <file src="MonoAndroid10\Microsoft.AspNet.SignalR.Client.Xml" target="lib\MonoAndroid10" />
+    <file src="Xamarin.iOS10\Microsoft.AspNet.SignalR.Client.dll" target="lib\Xamarin.iOS10" />
+    <file src="Xamarin.iOS10\Microsoft.AspNet.SignalR.Client.Xml" target="lib\Xamarin.iOS10" />
+    <file src="xamarinmac20\Microsoft.AspNet.SignalR.Client.dll" target="lib\xamarinmac20" />
+    <file src="xamarinmac20\Microsoft.AspNet.SignalR.Client.Xml" target="lib\xamarinmac20" />
+    <file src="xamarin.tvos\Microsoft.AspNet.SignalR.Client.dll" target="lib\xamarin.tvos" />
+    <file src="xamarin.tvos\Microsoft.AspNet.SignalR.Client.Xml" target="lib\xamarin.tvos" />
+    <file src="xamarin.watchos\Microsoft.AspNet.SignalR.Client.dll" target="lib\xamarin.watchos" />
+    <file src="xamarin.watchos\Microsoft.AspNet.SignalR.Client.Xml" target="lib\xamarin.watchos" />
   </files>
 </package>
