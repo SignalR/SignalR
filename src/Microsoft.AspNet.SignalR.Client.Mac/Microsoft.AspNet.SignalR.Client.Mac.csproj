@@ -51,10 +51,6 @@
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Core" />
-    <Reference Include="System.Runtime" />
-    <Reference Include="System.IO" />
-    <Reference Include="System.Dynamic.Runtime" />
-    <Reference Include="System.ObjectModel" />
     <Reference Include="Xamarin.Mac" />
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="Newtonsoft.Json">
