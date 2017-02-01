@@ -13,7 +13,7 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
         [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "Exceptions are flowed back to the caller.")]
         public static Task<int> ReadAsync(this Stream stream, byte[] buffer)
         {
-#if NETFX_CORE || NET45
+#if NETFX_CORE || NET45 || NETSTANDARD
             return stream.ReadAsync(buffer, 0, buffer.Length);
 #else
             return FromAsync(cb => stream.BeginRead(buffer, 0, buffer.Length, cb, null), ar => stream.EndRead(ar));
@@ -23,14 +23,14 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
         [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode", Justification = "This is a shared class.")]
         public static Task WriteAsync(this Stream stream, byte[] buffer)
         {
-#if NETFX_CORE || NET45
+#if NETFX_CORE || NET45 || NETSTANDARD
             return stream.WriteAsync(buffer, 0, buffer.Length);
 #else
             return FromAsync(cb => stream.BeginWrite(buffer, 0, buffer.Length, cb, null), WrapEndWrite(stream));
 #endif
         }
 
-#if !(NETFX_CORE || NET45)
+#if !(NETFX_CORE || NET45 || NETSTANDARD)
 
         [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode", Justification = "This is a shared class.")]
         private static Func<IAsyncResult, object> WrapEndWrite(Stream stream)

@@ -10,7 +10,7 @@ using Microsoft.AspNet.SignalR.Client.Http;
 using Microsoft.AspNet.SignalR.Client.Transports;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-#if (NET4 || NET45)
+#if (NET4 || NET45 || NETSTANDARD)
 using System.Security.Cryptography.X509Certificates;
 #endif
 
@@ -34,7 +34,7 @@ namespace Microsoft.AspNet.SignalR.Client
         IClientTransport Transport { get; }
         DateTime LastMessageAt { get; }
         DateTime LastActiveAt { get; }
-        
+
 #if !PORTABLE
         /// <summary>
         /// Gets of sets proxy information for the connection.
@@ -42,7 +42,7 @@ namespace Microsoft.AspNet.SignalR.Client
         IWebProxy Proxy { get; set; }
 #endif
 
-#if (NET4 || NET45)
+#if (NET4 || NET45 || NETSTANDARD)
         X509CertificateCollection Certificates { get; }
 #endif
 

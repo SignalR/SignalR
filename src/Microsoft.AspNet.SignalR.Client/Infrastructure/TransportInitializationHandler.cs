@@ -146,7 +146,7 @@ namespace Microsoft.AspNet.SignalR.Client.Infrastructure
 
         private static void Dispatch(Action callback)
         {
-#if NETFX_CORE
+#if NETFX_CORE || NETSTANDARD
             Task.Run(() =>
 #else
             ThreadPool.QueueUserWorkItem(_ =>

@@ -101,7 +101,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
         }
 
         protected abstract void OnStart(IConnection connection, string connectionData, CancellationToken disconnectToken);
-        
+
         protected abstract void OnStartFailed();
 
         // internal for testing

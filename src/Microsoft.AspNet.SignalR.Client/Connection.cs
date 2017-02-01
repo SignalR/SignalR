@@ -19,7 +19,7 @@ using Microsoft.AspNet.SignalR.Client.Transports;
 using Microsoft.AspNet.SignalR.Infrastructure;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-#if (NET4 || NET45)
+#if (NET4 || NET45 || NETSTANDARD)
 using System.Security.Cryptography.X509Certificates;
 #endif
 
@@ -89,7 +89,7 @@ namespace Microsoft.AspNet.SignalR.Client
         //The json serializer for the connections
         private JsonSerializer _jsonSerializer = new JsonSerializer();
 
-#if (NET4 || NET45)
+#if (NET4 || NET45 || NETSTANDARD)
         private readonly X509CertificateCollection _certCollection = new X509CertificateCollection();
 #endif
 
@@ -274,7 +274,7 @@ namespace Microsoft.AspNet.SignalR.Client
             }
         }
 
-#if NET4 || NET45
+#if NET4 || NET45 || NETSTANDARD
         X509CertificateCollection IConnection.Certificates
         {
             get
@@ -744,7 +744,7 @@ namespace Microsoft.AspNet.SignalR.Client
             return Send(this.JsonSerializeObject(value));
         }
 
-#if (NET4 || NET45)
+#if (NET4 || NET45 || NETSTANDARD)
         /// <summary>
         /// Adds a client certificate to the request
         /// </summary>
@@ -920,6 +920,8 @@ namespace Microsoft.AspNet.SignalR.Client
             request.UserAgent = CreateUserAgentString("SignalR.Client.WinUAP");
 #elif WINDOWS_APP
             request.UserAgent = CreateUserAgentString("SignalR.Client.Win8UniversalApp");
+#elif NETSTANDARD
+            request.UserAgent = CreateUserAgentString("SignalR.Client.NetStandard");
 #elif NET45
             request.UserAgent = CreateUserAgentString("SignalR.Client.NET45");
 #else
@@ -935,12 +937,14 @@ namespace Microsoft.AspNet.SignalR.Client
             {
 #if NETFX_CORE
                 _assemblyVersion = new Version("2.2.1");
+#elif NETSTANDARD
+                _assemblyVersion = new AssemblyName(typeof(Resources).GetTypeInfo().Assembly.FullName).Version;
 #else
                 _assemblyVersion = new AssemblyName(typeof(Connection).Assembly.FullName).Version;
 #endif
             }
 
-#if NETFX_CORE || PORTABLE
+#if NETFX_CORE || PORTABLE || NETSTANDARD
             return String.Format(CultureInfo.InvariantCulture, "{0}/{1} ({2})", client, _assemblyVersion, "Unknown OS");
 #else
             return String.Format(CultureInfo.InvariantCulture, "{0}/{1} ({2})", client, _assemblyVersion, Environment.OSVersion);
@@ -987,14 +991,14 @@ namespace Microsoft.AspNet.SignalR.Client
         /// </summary>
         private class DebugTextWriter : TextWriter
         {
-#if NETFX_CORE || PORTABLE
+#if NETFX_CORE || PORTABLE || NETSTANDARD
             private readonly StringBuilder _buffer;
 #endif
 
             public DebugTextWriter()
                 : base(CultureInfo.InvariantCulture)
             {
-#if NETFX_CORE || PORTABLE
+#if NETFX_CORE || PORTABLE || NETSTANDARD
                 _buffer = new StringBuilder();
 #endif
             }
@@ -1004,7 +1008,7 @@ namespace Microsoft.AspNet.SignalR.Client
                 Debug.WriteLine(value);
             }
 
-#if NETFX_CORE || PORTABLE
+#if NETFX_CORE || PORTABLE || NETSTANDARD
             public override void Write(char value)
             {
                 lock (_buffer)
@@ -1026,7 +1030,7 @@ namespace Microsoft.AspNet.SignalR.Client
                 get { return Encoding.UTF8; }
             }
 
-#if NETFX_CORE || PORTABLE
+#if NETFX_CORE || PORTABLE || NETSTANDARD
             public override void Flush()
             {
                 Debug.WriteLine(_buffer.ToString());

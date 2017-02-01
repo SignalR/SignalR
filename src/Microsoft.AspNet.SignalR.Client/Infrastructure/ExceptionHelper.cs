@@ -31,8 +31,12 @@ namespace Microsoft.AspNet.SignalR.Client.Infrastructure
                 return true;
             }
 
+#if !NETSTANDARD
             var webException = exception as WebException;
             return (webException != null && webException.Status == WebExceptionStatus.RequestCanceled);
+#else
+            return false;
+#endif
         }
     }
 }
