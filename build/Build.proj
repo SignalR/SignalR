@@ -100,6 +100,9 @@
     <Projects Include="$(ProjectRoot)\src\Microsoft.AspNet.SignalR.Client\Microsoft.AspNet.SignalR.Client.csproj">
       <Platform>Net40</Platform>
     </Projects>
+    <Projects Include="$(ProjectRoot)\src\Microsoft.AspNet.SignalR.Client.NetStandard\Microsoft.AspNet.SignalR.Client.NetStandard.csproj">
+      <Platform>NetStandard</Platform>
+    </Projects>
     <!-- This is for legacy SignalR -->
     <Projects Include="$(ProjectRoot)\src\Microsoft.AspNet.SignalR.SystemWeb\Microsoft.AspNet.SignalR.SystemWeb.csproj">
       <RunFxCop>false</RunFxCop>
