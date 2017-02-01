@@ -109,7 +109,23 @@
     <Projects Include="$(ProjectRoot)\src\Microsoft.AspNet.SignalR.SystemWeb\Microsoft.AspNet.SignalR.SystemWeb.csproj">
       <RunFxCop>false</RunFxCop>
     </Projects>
-
+    <!-- These are for Xamarin until netstandard2.0 or Apple PCL (provides WebSocket support as Portable does not) -->
+    <Projects Include="$(ProjectRoot)\src\Microsoft.AspNet.SignalR.Client\Microsoft.AspNet.SignalR.Client.Android.csproj">
+      <Platform>MonoAndroid10</Platform>
+    </Projects>
+    <Projects Include="$(ProjectRoot)\src\Microsoft.AspNet.SignalR.Client\Microsoft.AspNet.SignalR.Client.iOS.csproj">
+      <Platform>Xamarin.iOS10</Platform>
+    </Projects>
+    <Projects Include="$(ProjectRoot)\src\Microsoft.AspNet.SignalR.Client\Microsoft.AspNet.SignalR.Client.Mac.csproj">
+      <Platform>xamarinmac20</Platform>
+    </Projects>
+    <Projects Include="$(ProjectRoot)\src\Microsoft.AspNet.SignalR.Client\Microsoft.AspNet.SignalR.Client.tvOS.csproj">
+      <Platform>xamarin.tvos</Platform>
+    </Projects>
+    <Projects Include="$(ProjectRoot)\src\Microsoft.AspNet.SignalR.Client\Microsoft.AspNet.SignalR.Client.watchOS.csproj">
+      <Platform>xamarin.watchos</Platform>
+    </Projects>
+    
     <!-- Projects with RunFxCop analysis disabled -->
     <Projects Include="$(ProjectRoot)\src\Microsoft.AspNet.SignalR.Crank\Microsoft.AspNet.SignalR.Crank.csproj">
       <CopyArtifacts>false</CopyArtifacts>

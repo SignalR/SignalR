@@ -5,4 +5,4 @@ using System.Runtime.CompilerServices;
 // Change them to the values specific to your project.
 
 [assembly: AssemblyTitle("Microsoft.AspNet.SignalR.Client.watchOS")]
-[assembly: AssemblyDescription("")]
+[assembly: AssemblyDescription("Xamarin watchOS client for SignalR")]
