@@ -1,6 +1,8 @@
 ﻿
-Microsoft Visual Studio Solution File, Format Version 11.00
-# Visual Studio 2010
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 14
+VisualStudioVersion = 14.0.25420.1
+MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNet.SignalR.Core", "src\Microsoft.AspNet.SignalR.Core\Microsoft.AspNet.SignalR.Core.csproj", "{1B9A82C4-BCA1-4834-A33E-226F17BE070B}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNet.SignalR.Client", "src\Microsoft.AspNet.SignalR.Client\Microsoft.AspNet.SignalR.Client.csproj", "{EB46B9C6-EE37-48F9-835E-E49580E40E0A}"
@@ -31,30 +33,6 @@ Global
 		{1B9A82C4-BCA1-4834-A33E-226F17BE070B}.Release|Any CPU.Build.0 = Release|Any CPU
 		{1B9A82C4-BCA1-4834-A33E-226F17BE070B}.Release|x86.ActiveCfg = Release|Any CPU
 		{1B9A82C4-BCA1-4834-A33E-226F17BE070B}.Release|x86.Build.0 = Release|Any CPU
-		{2B6F3C11-DE35-4948-A49F-A6C65A297C86}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{2B6F3C11-DE35-4948-A49F-A6C65A297C86}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{2B6F3C11-DE35-4948-A49F-A6C65A297C86}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{2B6F3C11-DE35-4948-A49F-A6C65A297C86}.Debug|x86.Build.0 = Debug|Any CPU
-		{2B6F3C11-DE35-4948-A49F-A6C65A297C86}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{2B6F3C11-DE35-4948-A49F-A6C65A297C86}.Release|Any CPU.Build.0 = Release|Any CPU
-		{2B6F3C11-DE35-4948-A49F-A6C65A297C86}.Release|x86.ActiveCfg = Release|Any CPU
-		{2B6F3C11-DE35-4948-A49F-A6C65A297C86}.Release|x86.Build.0 = Release|Any CPU
-		{5D69B6BE-062B-408D-913E-5CD2F21D5D17}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{5D69B6BE-062B-408D-913E-5CD2F21D5D17}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{5D69B6BE-062B-408D-913E-5CD2F21D5D17}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{5D69B6BE-062B-408D-913E-5CD2F21D5D17}.Debug|x86.Build.0 = Debug|Any CPU
-		{5D69B6BE-062B-408D-913E-5CD2F21D5D17}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{5D69B6BE-062B-408D-913E-5CD2F21D5D17}.Release|Any CPU.Build.0 = Release|Any CPU
-		{5D69B6BE-062B-408D-913E-5CD2F21D5D17}.Release|x86.ActiveCfg = Release|Any CPU
-		{5D69B6BE-062B-408D-913E-5CD2F21D5D17}.Release|x86.Build.0 = Release|Any CPU
-		{69771AF9-1BEE-48E6-98BC-78864231E239}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{69771AF9-1BEE-48E6-98BC-78864231E239}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{69771AF9-1BEE-48E6-98BC-78864231E239}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{69771AF9-1BEE-48E6-98BC-78864231E239}.Debug|x86.Build.0 = Debug|Any CPU
-		{69771AF9-1BEE-48E6-98BC-78864231E239}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{69771AF9-1BEE-48E6-98BC-78864231E239}.Release|Any CPU.Build.0 = Release|Any CPU
-		{69771AF9-1BEE-48E6-98BC-78864231E239}.Release|x86.ActiveCfg = Release|Any CPU
-		{69771AF9-1BEE-48E6-98BC-78864231E239}.Release|x86.Build.0 = Release|Any CPU
 		{EB46B9C6-EE37-48F9-835E-E49580E40E0A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{EB46B9C6-EE37-48F9-835E-E49580E40E0A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{EB46B9C6-EE37-48F9-835E-E49580E40E0A}.Debug|x86.ActiveCfg = Debug|Any CPU
@@ -63,6 +41,14 @@ Global
 		{EB46B9C6-EE37-48F9-835E-E49580E40E0A}.Release|Any CPU.Build.0 = Release|Any CPU
 		{EB46B9C6-EE37-48F9-835E-E49580E40E0A}.Release|x86.ActiveCfg = Release|Any CPU
 		{EB46B9C6-EE37-48F9-835E-E49580E40E0A}.Release|x86.Build.0 = Release|Any CPU
+		{69771AF9-1BEE-48E6-98BC-78864231E239}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{69771AF9-1BEE-48E6-98BC-78864231E239}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{69771AF9-1BEE-48E6-98BC-78864231E239}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{69771AF9-1BEE-48E6-98BC-78864231E239}.Debug|x86.Build.0 = Debug|Any CPU
+		{69771AF9-1BEE-48E6-98BC-78864231E239}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{69771AF9-1BEE-48E6-98BC-78864231E239}.Release|Any CPU.Build.0 = Release|Any CPU
+		{69771AF9-1BEE-48E6-98BC-78864231E239}.Release|x86.ActiveCfg = Release|Any CPU
+		{69771AF9-1BEE-48E6-98BC-78864231E239}.Release|x86.Build.0 = Release|Any CPU
 		{FD48578F-E825-47EA-A846-9764E01F523A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{FD48578F-E825-47EA-A846-9764E01F523A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{FD48578F-E825-47EA-A846-9764E01F523A}.Debug|x86.ActiveCfg = Debug|Any CPU
@@ -71,6 +57,25 @@ Global
 		{FD48578F-E825-47EA-A846-9764E01F523A}.Release|Any CPU.Build.0 = Release|Any CPU
 		{FD48578F-E825-47EA-A846-9764E01F523A}.Release|x86.ActiveCfg = Release|Any CPU
 		{FD48578F-E825-47EA-A846-9764E01F523A}.Release|x86.Build.0 = Release|Any CPU
+		{5D69B6BE-062B-408D-913E-5CD2F21D5D17}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5D69B6BE-062B-408D-913E-5CD2F21D5D17}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5D69B6BE-062B-408D-913E-5CD2F21D5D17}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{5D69B6BE-062B-408D-913E-5CD2F21D5D17}.Debug|x86.Build.0 = Debug|Any CPU
+		{5D69B6BE-062B-408D-913E-5CD2F21D5D17}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5D69B6BE-062B-408D-913E-5CD2F21D5D17}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5D69B6BE-062B-408D-913E-5CD2F21D5D17}.Release|x86.ActiveCfg = Release|Any CPU
+		{5D69B6BE-062B-408D-913E-5CD2F21D5D17}.Release|x86.Build.0 = Release|Any CPU
+		{2B6F3C11-DE35-4948-A49F-A6C65A297C86}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2B6F3C11-DE35-4948-A49F-A6C65A297C86}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2B6F3C11-DE35-4948-A49F-A6C65A297C86}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{2B6F3C11-DE35-4948-A49F-A6C65A297C86}.Debug|x86.Build.0 = Debug|Any CPU
+		{2B6F3C11-DE35-4948-A49F-A6C65A297C86}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2B6F3C11-DE35-4948-A49F-A6C65A297C86}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2B6F3C11-DE35-4948-A49F-A6C65A297C86}.Release|x86.ActiveCfg = Release|Any CPU
+		{2B6F3C11-DE35-4948-A49F-A6C65A297C86}.Release|x86.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{5D69B6BE-062B-408D-913E-5CD2F21D5D17} = {CF382357-4299-466B-97A0-0A582D6806E9}
@@ -82,19 +87,16 @@ Global
 		$0.DotNetNamingPolicy = $1
 		$1.DirectoryNamespaceAssociation = None
 		$1.ResourceNamePolicy = FileFormatDefault
-		$0.TextStylePolicy = $2
+		$0.TextStylePolicy = $3
 		$2.FileWidth = 120
-		$2.TabsToSpaces = False
 		$2.inheritsSet = VisualStudio
 		$2.inheritsScope = text/plain
-		$0.TextStylePolicy = $3
+		$2.scope = text/plain
+		$2.EolMarker = Windows
 		$3.FileWidth = 120
 		$3.EolMarker = Windows
 		$3.inheritsSet = VisualStudio
 		$3.inheritsScope = text/plain
 		$3.scope = text/plain
-	EndGlobalSection
-	GlobalSection(SolutionProperties) = preSolution
-		HideSolutionNode = FALSE
 	EndGlobalSection
 EndGlobal
