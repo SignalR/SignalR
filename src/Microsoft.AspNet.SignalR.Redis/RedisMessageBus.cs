@@ -276,33 +276,6 @@ namespace Microsoft.AspNet.SignalR.Redis
             }
         }
 
-        private void TraceRedisScriptResult(Task<object> redisTask)
-        {
-            if (!_trace.Switch.ShouldTrace(TraceEventType.Verbose))
-            {
-                return;
-            }
-
-            var result = redisTask.Result as object[];
-            var argumentNames = new string[] { "newId", "message", "payload" };
-
-            for (var i = 0; i < result.Length; i++)
-            {
-                var r = result[i];
-                _trace.TraceVerbose("Sending {0}: ({1}) {2}", argumentNames[i], r.GetType().Name, FormatBytes(r));
-            }
-        }
-
-        private static string FormatBytes(object payload)
-        {
-            byte[] bytes = payload as byte[];
-            if (bytes != null)
-            {
-                return bytes.Length + " bytes: " + BitConverter.ToString(bytes).Replace("-", string.Empty);
-            }
-            return payload.ToString();
-        }
-
         // Internal for testing purposes
         internal static class State
         {
