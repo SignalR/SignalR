@@ -22,6 +22,7 @@ namespace Microsoft.AspNet.SignalR.Redis
         private readonly int _db;
         private readonly string _key;
         private readonly TraceSource _trace;
+        private readonly ITraceManager _traceManager;
 
         private IRedisConnection _connection;
         private string _connectionString;
@@ -49,9 +50,9 @@ namespace Microsoft.AspNet.SignalR.Redis
             _db = configuration.Database;
             _key = configuration.EventKey;
 
-            var traceManager = resolver.Resolve<ITraceManager>();
+            _traceManager = resolver.Resolve<ITraceManager>();
 
-            _trace = traceManager["SignalR." + typeof(RedisMessageBus).Name];
+            _trace = _traceManager["SignalR." + nameof(RedisMessageBus)];
 
             ReconnectDelay = TimeSpan.FromSeconds(2);
 
@@ -252,7 +253,7 @@ namespace Microsoft.AspNet.SignalR.Redis
 
             _trace.TraceInformation("Connecting...");
 
-            await _connection.ConnectAsync(_connectionString, _trace);
+            await _connection.ConnectAsync(_connectionString, _traceManager["SignalR." + nameof(RedisConnection)]);
 
             _trace.TraceInformation("Connection opened");
 
