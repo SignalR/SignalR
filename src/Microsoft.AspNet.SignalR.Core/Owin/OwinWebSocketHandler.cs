@@ -48,12 +48,14 @@ namespace Microsoft.AspNet.SignalR.Owin
     internal class OwinWebSocketHandler
     {
         private readonly Func<IWebSocket, Task> _callback;
+        private readonly Action<IWebSocket> _prepareWebSocket;
 
         private readonly int? _maxIncomingMessageSize;
 
-        public OwinWebSocketHandler(Func<IWebSocket, Task> callback, int? maxIncomingMessageSize)
+        public OwinWebSocketHandler(Func<IWebSocket, Task> callback, Action<IWebSocket> prepareWebsocket, int? maxIncomingMessageSize)
         {
             _callback = callback;
+            _prepareWebSocket = prepareWebsocket;
             _maxIncomingMessageSize = maxIncomingMessageSize;
         }
 
@@ -75,6 +77,7 @@ namespace Microsoft.AspNet.SignalR.Owin
 
             var cts = new CancellationTokenSource();
             var webSocketHandler = new DefaultWebSocketHandler(_maxIncomingMessageSize);
+            _prepareWebSocket(webSocketHandler);
             var task = webSocketHandler.ProcessWebSocketRequestAsync(webSocket, cts.Token);
 
             RunWebSocketHandler(webSocketHandler, cts);
