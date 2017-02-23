@@ -168,6 +168,8 @@ namespace Microsoft.AspNet.SignalR.Transports
                     writer.Flush();
 
                     await socket.Send(writer.Buffer).PreserveCulture();
+
+                    context.Transport.TraceOutgoingMessage(writer.Buffer);
                 }
                 catch (Exception ex)
                 {

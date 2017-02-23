@@ -544,6 +544,8 @@ namespace Microsoft.AspNet.SignalR.Hubs
                 }
             }
 
+            Trace.TraceVerbose("Sending hub invocation result to connection {0} using transport {1}", Transport.ConnectionId, Transport.GetType().Name);
+
             return Transport.Send(hubResult);
         }
 

@@ -3,11 +3,13 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.IO;
 using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR.Infrastructure;
+using Microsoft.AspNet.SignalR.Tracing;
 
 namespace Microsoft.AspNet.SignalR.Messaging
 {
@@ -17,6 +19,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
 
         private readonly IList<ScaleoutMappingStore> _streams;
         private readonly List<Cursor> _cursors;
+        private readonly TraceSource _trace;
 
         public ScaleoutSubscription(string identity,
                                     IList<string> eventKeys,
@@ -24,6 +27,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
                                     IList<ScaleoutMappingStore> streams,
                                     Func<MessageResult, object, Task<bool>> callback,
                                     int maxMessages,
+                                    ITraceManager traceManager,
                                     IPerformanceCounterManager counters,
                                     object state)
             : base(identity, eventKeys, callback, maxMessages, counters, state)
@@ -31,6 +35,11 @@ namespace Microsoft.AspNet.SignalR.Messaging
             if (streams == null)
             {
                 throw new ArgumentNullException("streams");
+            }
+
+            if (traceManager == null)
+            {
+                throw new ArgumentNullException(nameof(traceManager));
             }
 
             _streams = streams;
@@ -67,6 +76,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
             }
 
             _cursors = cursors;
+            _trace = traceManager["SignalR." + typeof(ScaleoutSubscription).Name];
         }
 
         public override void WriteCursor(TextWriter textWriter)
@@ -90,6 +100,9 @@ namespace Microsoft.AspNet.SignalR.Messaging
                 ScaleoutMapping mapping = enumerator.Current.Item1;
                 int streamIndex = enumerator.Current.Item2;
 
+                _trace.TraceVerbose("Extracting message for scaleout mapping: {0}, stream index {1}, [{2}]",
+                    mapping.Id, streamIndex, Identity);
+
                 ulong? nextCursor = nextCursors[streamIndex];
 
                 // Only keep going with this stream if the cursor we're looking at is bigger than
@@ -100,6 +113,8 @@ namespace Microsoft.AspNet.SignalR.Messaging
 
                     // Update the cursor id
                     nextCursors[streamIndex] = mappingId;
+                    _trace.TraceVerbose("Updated cursor for mapping id {0} stream idx {1} to {2} [{3}]",
+                        mapping.Id, streamIndex, mappingId, Identity);
                 }
             }
 
@@ -118,6 +133,9 @@ namespace Microsoft.AspNet.SignalR.Messaging
                 if (nextCursor.HasValue)
                 {
                     Cursor cursor = _cursors[i];
+
+                    _trace.TraceVerbose("Setting cursor {0} value {1} to {2} [{3}]",
+                        i, cursor.Id, nextCursor.Value, Identity);
 
                     cursor.Id = nextCursor.Value;
                 }
@@ -203,6 +221,9 @@ namespace Microsoft.AspNet.SignalR.Messaging
                                     items.Add(storeResult.Messages);
                                     totalCount += storeResult.Messages.Count;
 
+                                    _trace.TraceVerbose("Adding {0} message(s) for mapping id: {1}, event key: '{2}', event id: {3}, streamIndex: {4}",
+                                        storeResult.Messages.Count, mapping.Id, info.Key, info.Id, streamIndex);
+
                                     // We got a mapping id bigger than what we expected which
                                     // means we missed messages. Use the new mappingId.
                                     if (message.MappingId > mapping.Id)
@@ -215,6 +236,10 @@ namespace Microsoft.AspNet.SignalR.Messaging
                                     // REVIEW: When the stream indexes don't match should we leave the mapping id as is?
                                     // If we do nothing then we'll end up querying old cursor ids until
                                     // we eventually find a message id that matches this stream index.
+
+                                    _trace.TraceInformation(
+                                        "Stream index mismatch. Mapping id: {0}, event key: '{1}', event id: {2}, message.StreamIndex: {3}, streamIndex: {4}",
+                                            mapping.Id, info.Key, info.Id, message.StreamIndex, streamIndex);
                                 }
                             }
                         }

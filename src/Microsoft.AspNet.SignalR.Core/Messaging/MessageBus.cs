@@ -152,7 +152,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
             if (Topics.TryGetValue(message.Key, out topic))
             {
                 topic.Store.Add(message);
-                ScheduleTopic(topic);
+                ScheduleTopic(message.Key, topic);
             }
 
             Counters.MessageBusMessagesPublishedTotal.Increment();
@@ -258,11 +258,11 @@ namespace Microsoft.AspNet.SignalR.Messaging
             Topic topic;
             if (Topics.TryGetValue(eventKey, out topic))
             {
-                ScheduleTopic(topic);
+                ScheduleTopic(eventKey, topic);
             }
         }
 
-        private void ScheduleTopic(Topic topic)
+        private void ScheduleTopic(string eventKey, Topic topic)
         {
             try
             {

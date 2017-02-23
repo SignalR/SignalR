@@ -284,7 +284,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
             }
 
             var tcs = new TaskCompletionSource<object>();
-            
+
             queue.Drain().Catch(traceSource).ContinueWith(task =>
             {
                 tcs.SetResult(null);
