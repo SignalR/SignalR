@@ -13,12 +13,13 @@ namespace Microsoft.AspNet.SignalR
     /// </summary>
     public class RedisScaleoutConfiguration : ScaleoutConfiguration
     {
-        public RedisScaleoutConfiguration(string server, int port, string password, string eventKey)
+        public RedisScaleoutConfiguration(string server, int port, string password, string eventKey, bool publishOnly = false)
             : this(CreateConnectionString(server, port, password), eventKey)
         {
+            PublishOnly = publishOnly;
         }
 
-        public RedisScaleoutConfiguration(string connectionString, string eventKey)
+        public RedisScaleoutConfiguration(string connectionString, string eventKey, bool publishOnly=false)
         {
             if (connectionString == null)
             {
@@ -32,6 +33,7 @@ namespace Microsoft.AspNet.SignalR
 
             ConnectionString = connectionString;
             EventKey = eventKey;
+            PublishOnly = publishOnly;
         }
 
         /// <summary>
@@ -45,6 +47,11 @@ namespace Microsoft.AspNet.SignalR
         /// Defaults to 0.
         /// </summary>
         public int Database { get; set; }
+
+        /// <summary>
+        /// If true, this instance will only publish to Redis but not subscribe to events
+        /// </summary>
+        public bool PublishOnly { get; set; }
 
         /// <summary>
         /// The Redis event key to use.

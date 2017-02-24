@@ -9,6 +9,8 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR.Messaging;
 using Microsoft.AspNet.SignalR.Tracing;
+using System.Text;
+using System.Collections;
 
 namespace Microsoft.AspNet.SignalR.Redis
 {
@@ -28,9 +30,15 @@ namespace Microsoft.AspNet.SignalR.Redis
         private int _state;
         private readonly object _callbackLock = new object();
 
+        //Marius Additions
+        private readonly bool _publishOnly;
+        private List<byte[]> messagesToIgnore = new List<byte[]>();
+        private ulong lastUsedID = 0;
+
         public RedisMessageBus(IDependencyResolver resolver, RedisScaleoutConfiguration configuration, IRedisConnection connection)
             : this(resolver, configuration, connection, true)
         {
+            messagesToIgnore.Add(Encoding.ASCII.GetBytes("{\"H\":\"ChatHub\",\"M\":\"echo\",\"A\":[]}"));
         }
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1804:RemoveUnusedLocals", MessageId = "ignore")]
@@ -47,6 +55,7 @@ namespace Microsoft.AspNet.SignalR.Redis
             _connectionString = configuration.ConnectionString;
             _db = configuration.Database;
             _key = configuration.EventKey;
+            _publishOnly = configuration.PublishOnly;
 
             var traceManager = resolver.Resolve<ITraceManager>();
 
@@ -75,14 +84,39 @@ namespace Microsoft.AspNet.SignalR.Redis
 
         protected override Task Send(int streamIndex, IList<Message> messages)
         {
-            return _connection.ScriptEvaluateAsync(
-                _db,
-                @"local newId = redis.call('INCR', KEYS[1])
+
+            if (messages != null && messages.Count == 1 && !messages[0].IsCommand)
+            {
+                for (int i = 0; i < messagesToIgnore.Count; i++)
+                {
+                    bool equal = ((IStructuralEquatable)messagesToIgnore[i]).Equals(messages[0].Value.Array, StructuralComparisons.StructuralEqualityComparer);
+
+                    //Don't propogate message to Redis
+                    if (equal)
+                    {
+                        return Task.Factory.StartNew(() =>
+                        {
+                            //Emit message back so we can act on it on this server
+                            lock (_callbackLock)
+                            {
+                                //We need to increment this for each message or signalR won't act on it since it caches message IDs
+                                lastUsedID = lastUsedID + 1;
+                                OnReceived(streamIndex, lastUsedID, new ScaleoutMessage(messages));
+                            }
+                        });
+                    }
+                }
+            }
+
+            //If we already emmited message back, don't act on it
+            return _connection.ScriptEvaluateAsync(_db,
+        @"local newId = redis.call('INCR', KEYS[1])
                   local payload = newId .. ' ' .. ARGV[1]
                   redis.call('PUBLISH', KEYS[1], payload)
                   return {newId, ARGV[1], payload}",
-                _key,
-                RedisMessage.ToBytes(messages));
+        _key,
+        RedisMessage.ToBytes(messages));
+
         }
 
         protected override void Dispose(bool disposing)
@@ -209,7 +243,11 @@ namespace Microsoft.AspNet.SignalR.Redis
             _connection.ErrorMessage += OnConnectionError;
             _connection.ConnectionRestored += OnConnectionRestored;
 
-            await _connection.SubscribeAsync(_key, OnMessage);
+            //Don't subscribe if we are only a publisher
+            if (!_publishOnly)
+            {
+                await _connection.SubscribeAsync(_key, OnMessage);
+            }
 
             _trace.TraceVerbose("Subscribed to event " + _key);
         }
@@ -220,7 +258,8 @@ namespace Microsoft.AspNet.SignalR.Redis
             // to preserve order on the subscription)
             lock (_callbackLock)
             {
-                OnReceived(streamIndex, message.Id, message.ScaleoutMessage);
+                lastUsedID = lastUsedID + 1;
+                OnReceived(streamIndex, lastUsedID, message.ScaleoutMessage);
             }
         }
 

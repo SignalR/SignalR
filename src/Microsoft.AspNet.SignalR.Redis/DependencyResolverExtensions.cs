@@ -18,11 +18,11 @@ namespace Microsoft.AspNet.SignalR
         /// <param name="port">The Redis server port.</param>
         /// <param name="password">The Redis server password.</param>
         /// <param name="eventKey">The Redis event key to use.</param>
+        /// <param name="publishOnly">Set to true if you want this instance to publish to redis, but not read from it</param>
         /// <returns>The dependency resolver.</returns>
-        public static IDependencyResolver UseRedis(this IDependencyResolver resolver, string server, int port, string password, string eventKey)
+        public static IDependencyResolver UseRedis(this IDependencyResolver resolver, string server, int port, string password, string eventKey, bool publishOnly = false)
         {
-            var configuration = new RedisScaleoutConfiguration(server, port, password, eventKey);
-
+            var configuration = new RedisScaleoutConfiguration(server, port, password, eventKey, publishOnly);
             return UseRedis(resolver, configuration);
         }
 
