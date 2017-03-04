@@ -89,6 +89,7 @@ namespace Microsoft.AspNet.SignalR.Redis
 
         protected override void Dispose(bool disposing)
         {
+            _trace.TraceInformation(nameof(RedisMessageBus) + " is being disposed");
             if (disposing)
             {
                 var oldState = Interlocked.Exchange(ref _state, State.Disposing);
@@ -145,6 +146,7 @@ namespace Microsoft.AspNet.SignalR.Redis
             {
                 if (_state == State.Closed)
                 {
+                    _trace.TraceVerbose("Duplicate ConnectionFailed event - ignoring");
                     return;
                 }
 
@@ -184,6 +186,7 @@ namespace Microsoft.AspNet.SignalR.Redis
             {
                 if (_state == State.Connected)
                 {
+                    _trace.TraceVerbose("Duplicate ConnectionRestored event - ignoring");
                     return;
                 }
 
@@ -215,18 +218,19 @@ namespace Microsoft.AspNet.SignalR.Redis
 
                     if (oldState == State.Closed)
                     {
+                        _trace.TraceInformation("Opening stream.");
                         OpenStream(0);
                     }
                     else
                     {
                         Debug.Assert(oldState == State.Disposing, "unexpected state");
+                        _trace.TraceError("Unexpected state.");
 
                         Shutdown();
                     }
 
                     break;
                 }
-
                 catch (Exception ex)
                 {
                     _trace.TraceError("Error connecting to Redis - " + ex.GetBaseException());
@@ -234,6 +238,7 @@ namespace Microsoft.AspNet.SignalR.Redis
 
                 if (_state == State.Disposing)
                 {
+                    _trace.TraceInformation("MessageBus is disposing.");
                     Shutdown();
                     break;
                 }
