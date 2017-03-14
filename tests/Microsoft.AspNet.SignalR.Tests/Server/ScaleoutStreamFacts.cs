@@ -6,10 +6,10 @@ using System.Diagnostics;
 using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR.Infrastructure;
 using Microsoft.AspNet.SignalR.Messaging;
+using Microsoft.AspNet.SignalR.Tests.Utilities;
 using Moq;
 using Xunit;
 using Xunit.Extensions;
-
 namespace Microsoft.AspNet.SignalR.Tests.Server
 {
     public class ScaleoutStreamFacts
@@ -32,7 +32,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
         {
             var perfCounters = new Microsoft.AspNet.SignalR.Infrastructure.PerformanceCounterManager();
             var stream = new ScaleoutStream(new TraceSource("Queue"), "0", QueuingBehavior.InitialOnly, 1000, perfCounters);
-            
+
             int x = 0;
 
             stream.Send(_ =>
@@ -52,7 +52,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
             stream.Open();
 
             task.Wait();
-            
+
             Assert.Equal(2, x);
         }
 
@@ -97,7 +97,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
             null);
 
             stream.Open();
-            
+
             // Wait on the first send to drain
             firstSend.Wait();
 
@@ -116,32 +116,87 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
             Assert.Equal(1, x);
         }
 
-        [Fact]
-        public void ErrorOnSendThrowsNextTime()
+        [Theory]
+        [InlineData(QueuingBehavior.InitialOnly)]
+        [InlineData(QueuingBehavior.Always)]
+        public void SendAfterErrorOnSendThrows(QueuingBehavior queuingBehavior)
         {
             var perfCounters = new Microsoft.AspNet.SignalR.Infrastructure.PerformanceCounterManager();
-            var stream = new ScaleoutStream(new TraceSource("Queue"), "0", QueuingBehavior.Always, 1000, perfCounters);
+            var stream = new ScaleoutStream(new TraceSource("Queue"), "0", queuingBehavior, 1000, perfCounters);
             stream.Open();
 
-            Task task = stream.Send(_ =>
+            TestUtilities.AssertUnwrappedException<InvalidOperationException>(() =>
             {
-                throw new InvalidOperationException();
-            },
-            null);
+                stream.Send(_ => { throw new InvalidOperationException(); }, null);
+            });
 
-            Assert.Throws<AggregateException>(() => task.Wait());
-            Assert.Throws<InvalidOperationException>(() => stream.Send(_ => TaskAsyncHelper.Empty, null));
+            TestUtilities.AssertUnwrappedException<InvalidOperationException>(() =>
+            {
+                stream.Send(_ => TaskAsyncHelper.Empty, null);
+            });
+
+            int x = 0;
+
+            stream.Send(_ =>
+            {
+                x++;
+                return TaskAsyncHelper.Empty;
+            },
+            null).Wait();
+
+            Assert.Equal(1, x);
         }
 
-
-        [Fact(Timeout = 10000)]
-        public void OpenAfterErrorRunsQueue()
+        [Theory]
+        [InlineData(QueuingBehavior.InitialOnly)]
+        [InlineData(QueuingBehavior.Always)]
+        public void SendErrorSend(QueuingBehavior queuingBehavior)
         {
             int x = 0;
             var perfCounters = new Microsoft.AspNet.SignalR.Infrastructure.PerformanceCounterManager();
-            var stream = new ScaleoutStream(new TraceSource("Queue"), "0", QueuingBehavior.Always, 1000, perfCounters);
+            var stream = new ScaleoutStream(new TraceSource("Queue"), "0", queuingBehavior, 1000, perfCounters);
             stream.Open();
-            stream.Send(_ => { throw new InvalidOperationException(); }, null);
+            stream.Send(_ =>
+            {
+                x++;
+                return TaskAsyncHelper.Empty;
+            },
+            null);
+
+            TestUtilities.AssertUnwrappedException<Exception>(() =>
+            {
+                stream.Send(async _ =>
+                {
+                    await TaskAsyncHelper.FromError(new Exception());
+                },
+                   null);
+            });
+
+            Task t2 = stream.Send(async _ =>
+            {
+                await Task.Delay(50);
+                x++;
+            },
+            null);
+
+            t2.Wait();
+            Assert.Equal(2, x);
+        }
+
+        [Theory]
+        [InlineData(QueuingBehavior.InitialOnly)]
+        [InlineData(QueuingBehavior.Always)]
+        public void OpenAfterErrorRunsQueue(QueuingBehavior queuingBehavior)
+        {
+            int x = 0;
+            var perfCounters = new Microsoft.AspNet.SignalR.Infrastructure.PerformanceCounterManager();
+            var stream = new ScaleoutStream(new TraceSource("Queue"), "0", queuingBehavior, 1000, perfCounters);
+            stream.Open();
+
+            TestUtilities.AssertUnwrappedException<InvalidOperationException>(() =>
+            {
+                stream.Send(_ => { throw new InvalidOperationException(); }, null);
+            });
 
             stream.Open();
 
@@ -206,12 +261,14 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
                 x++;
             },
             null);
+
             stream.Send(async _ =>
             {
                 await Task.Delay(50);
                 await TaskAsyncHelper.FromError(new Exception());
             },
-            null);
+               null);
+
             stream.Send(async _ =>
             {
                 await Task.Delay(50);
@@ -229,21 +286,21 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
             var perfCounters = new Microsoft.AspNet.SignalR.Infrastructure.PerformanceCounterManager();
             var stream = new ScaleoutStream(new TraceSource("Queue"), "0", QueuingBehavior.Always, 1000, perfCounters);
             stream.Open();
-            stream.Send(async _ =>
+            stream.Send(_ =>
             {
-                await Task.Delay(50);
                 x++;
+                return TaskAsyncHelper.Empty;
             },
             null);
 
-            Task t1 = stream.Send(async _ =>
+            TestUtilities.AssertUnwrappedException<Exception>(() =>
             {
-                await Task.Delay(50);
-                await TaskAsyncHelper.FromError(new Exception());
-            },
-            null);
-
-            Assert.Throws<AggregateException>(() => t1.Wait());
+                stream.Send(async _ =>
+                {
+                    await TaskAsyncHelper.FromError(new Exception());
+                },
+                   null);
+            });
 
             stream.Open();
 
@@ -255,9 +312,9 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
             null);
 
             t2.Wait();
-
             Assert.Equal(2, x);
         }
+
         [Fact]
         public void SendAfterCloseThenOpenRemainsClosed()
         {
