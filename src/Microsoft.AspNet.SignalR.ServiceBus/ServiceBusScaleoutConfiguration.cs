@@ -35,6 +35,7 @@ namespace Microsoft.AspNet.SignalR
             TimeToLive = TimeSpan.FromMinutes(1);
             MaximumMessageSize = 256 * 1024;
             OperationTimeout = null;
+            EnablePartitioning = false;
         }
 
         /// <summary>
@@ -121,5 +122,12 @@ namespace Microsoft.AspNet.SignalR
         /// Default value is RetryExponential.Default
         /// </summary>
         public RetryPolicy RetryPolicy { get; set; }
+
+        /// <summary>
+        /// Gets or Sets the value to use for enabling ServiceBus Entity Partitioning while creating backplane Topics.  
+        /// Partitioning allows multiple brokers and multiple message stores to be used for an Entity, increasing performance and reliability.
+        /// see https://msdn.microsoft.com/en-us/library/azure/dn520246.aspx
+        /// </summary>
+        public bool EnablePartitioning { get; set; }
     }
 }
