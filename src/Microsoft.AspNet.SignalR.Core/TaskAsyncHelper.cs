@@ -161,7 +161,7 @@ namespace Microsoft.AspNet.SignalR
         [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode", Justification = "This is a shared file")]
 #if SERVER
         private static void AttachFaultedContinuation<TTask>(TTask task, Action<AggregateException, object> handler, object state, TraceSource traceSource) where TTask : Task
-#else      
+#else
         private static void AttachFaultedContinuation<TTask>(TTask task, Action<AggregateException, object> handler, object state, IConnection connection) where TTask : Task
 #endif
         {
@@ -1353,6 +1353,25 @@ namespace Microsoft.AspNet.SignalR
         private static class TaskCache<T>
         {
             public static Task<T> Empty = MakeTask<T>(default(T));
+        }
+
+        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode", Justification = "This is a shared file")]
+        public static void Dispatch(Action action)
+        {
+#if PORTABLE
+            ThreadPool.QueueUserWorkItem(_ =>
+#elif NETFX_CORE || NETSTANDARD
+            Task.Run(() =>
+#else
+            ThreadPool.UnsafeQueueUserWorkItem(_ =>
+#endif
+            {
+                action();
+            }
+#if !(NETFX_CORE || NETSTANDARD)
+, state: null
+#endif
+);
         }
     }
 }

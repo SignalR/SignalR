@@ -714,6 +714,44 @@ namespace Microsoft.AspNet.SignalR.Tests
             }
         }
 
+        [Theory]
+        [InlineData(HostType.HttpListener, TransportType.Websockets)]
+        public async Task NoDeadlockWhenBlockingAfterInvokingProxyMethod(HostType hostType, TransportType transportType)
+        {
+            using (var host = CreateHost(hostType, transportType))
+            {
+                host.Initialize();
+                HubConnection hubConnection = CreateHubConnection(host);
+                ManualResetEventSlim mre = new ManualResetEventSlim();
+
+                using (hubConnection)
+                {
+                    var proxy = hubConnection.CreateHubProxy("EchoHub");
+
+                    var called = false;
+                    proxy.On<string>("echo", message =>
+                    {
+                        if (!called)
+                        {
+                            called = true;
+                            proxy.Invoke("EchoCallback", "message");
+                        }
+                        else
+                        {
+                            mre.Set();
+                        }
+                    });
+
+                    await hubConnection.Start(host.Transport);
+                    await proxy.Invoke("EchoCallback", "message");
+
+                    Assert.True(mre.Wait(5000));
+
+                    hubConnection.Stop();
+                }
+            }
+        }
+
         public class MyHub2 : Hub
         {
             public MyHub2(int n)

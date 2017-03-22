@@ -549,54 +549,6 @@ namespace Microsoft.AspNet.SignalR.Hubs
             return Transport.Send(hubResult);
         }
 
-        private static void ContinueWith<T>(Task<T> task, TaskCompletionSource<object> tcs)
-        {
-            if (task.IsCompleted)
-            {
-                // Fast path for tasks that completed synchronously
-                ContinueSync<T>(task, tcs);
-            }
-            else
-            {
-                ContinueAsync<T>(task, tcs);
-            }
-        }
-
-        private static void ContinueSync<T>(Task<T> task, TaskCompletionSource<object> tcs)
-        {
-            if (task.IsFaulted)
-            {
-                tcs.TrySetUnwrappedException(task.Exception);
-            }
-            else if (task.IsCanceled)
-            {
-                tcs.TrySetCanceled();
-            }
-            else
-            {
-                tcs.TrySetResult(task.Result);
-            }
-        }
-
-        private static void ContinueAsync<T>(Task<T> task, TaskCompletionSource<object> tcs)
-        {
-            task.ContinueWithPreservedCulture(t =>
-            {
-                if (t.IsFaulted)
-                {
-                    tcs.TrySetUnwrappedException(t.Exception);
-                }
-                else if (t.IsCanceled)
-                {
-                    tcs.TrySetCanceled();
-                }
-                else
-                {
-                    tcs.TrySetResult(t.Result);
-                }
-            });
-        }
-
         [SuppressMessage("Microsoft.Performance", "CA1812:AvoidUninstantiatedInternalClasses", Justification = "It is instantiated through JSON deserialization.")]
         private class ClientHubInfo
         {

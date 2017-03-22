@@ -315,6 +315,9 @@
     <Compile Include="..\Microsoft.AspNet.SignalR.Core\TaskAsyncHelper.cs">
       <Link>TaskAsyncHelper.cs</Link>
     </Compile>
+    <Compile Include="..\Microsoft.AspNet.SignalR.Core\Infrastructure\DispatchingTaskCompletionSource.cs">
+      <Link>DispatchingTaskCompletionSource.cs</Link>
+    </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

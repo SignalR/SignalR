@@ -52,6 +52,9 @@
     <Compile Include="..\Microsoft.AspNet.SignalR.Core\Infrastructure\CancellationTokenExtensions.cs">
       <Link>Infrastructure\CancellationTokenExtensions.cs</Link>
     </Compile>
+    <Compile Include="..\Microsoft.AspNet.SignalR.Core\Infrastructure\DispatchingTaskCompletionSource.cs">
+      <Link>Infrastructure\DispatchingTaskCompletionSource.cs</Link>
+    </Compile>
     <Compile Include="..\Microsoft.AspNet.SignalR.Core\Infrastructure\DisposableAction.cs">
       <Link>Infrastructure\DisposableAction.cs</Link>
     </Compile>

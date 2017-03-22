@@ -105,6 +105,7 @@
     <Compile Include="ConnectionMessage.cs" />
     <Compile Include="Infrastructure\DataProtectionProviderProtectedData.cs" />
     <Compile Include="Infrastructure\DefaultProtectedData.cs" />
+    <Compile Include="Infrastructure\DispatchingTaskCompletionSource.cs" />
     <Compile Include="Infrastructure\IMemoryPool.cs" />
     <Compile Include="Infrastructure\MemoryPool.cs" />
     <Compile Include="Infrastructure\MemoryPoolTextWriter.cs" />
