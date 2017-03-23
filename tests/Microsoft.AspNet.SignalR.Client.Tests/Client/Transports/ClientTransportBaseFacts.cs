@@ -206,7 +206,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
         }
 
         [Fact]
-        public void CannotNegotiateUsingFinishedTransport()
+        public async Task CannotNegotiateUsingFinishedTransport()
         {
             var transport =
                 new Mock<ClientTransportBase>(Mock.Of<IHttpClient>(), "fakeTransport") { CallBase = true }.Object;
@@ -215,8 +215,8 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
 
             Assert.Equal(
                 Resources.Error_TransportCannotBeReused,
-                Assert.Throws<InvalidOperationException>(
-                    () => transport.Negotiate(Mock.Of<IConnection>(), "connectionData")).Message);
+                (await Assert.ThrowsAsync<InvalidOperationException>(
+                    async () => await transport.Negotiate(Mock.Of<IConnection>(), "connectionData"))).Message);
         }
 
         [Fact]

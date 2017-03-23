@@ -187,8 +187,9 @@ namespace Microsoft.AspNet.SignalR.Client.Tests
             Assert.Equal(connection.Object._callbacks.Count, 0);
         }
 
-        [Fact(Timeout = 5000)]
-        public void FailedHubCallbackDueToReconnectFollowedByInvoke()
+
+        [Fact]
+        public async Task FailedHubCallbackDueToReconnectFollowedByInvoke()
         {
             // Arrange
             var testTcs = new TaskCompletionSource<object>();
@@ -235,9 +236,9 @@ namespace Microsoft.AspNet.SignalR.Client.Tests
                     TaskContinuationOptions.ExecuteSynchronously); // We need to ensure this executes sync so we're on the same stack
 
             // Assert
-            Assert.Throws(typeof(AggregateException), () => crashTask.Wait());
-            Assert.DoesNotThrow(() => testTcs.Task.Wait());
-        }
+            await Assert.ThrowsAnyAsync<Exception>(async () => await crashTask.OrTimeout());
+            await testTcs.Task.OrTimeout();
+         }
 
         private class NullInvokeTest
         {
