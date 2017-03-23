@@ -8,7 +8,7 @@
     <OutputType>Exe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>Microsoft.AspNet.SignalR.Client.Store.TestHost</RootNamespace>
-    <AssemblyName>Microsoft.AspNet.SignalR.Client.Store.TestHost</AssemblyName>
+    <AssemblyName>Microsoft.AspNet.SignalR.Client.UWP.TestHost</AssemblyName>
     <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\..\</SolutionDir>
