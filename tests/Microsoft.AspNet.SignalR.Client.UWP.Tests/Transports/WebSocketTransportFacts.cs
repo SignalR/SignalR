@@ -85,7 +85,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
         public async Task InCaseOfExceptionStartInvokesOnFailureAndThrowsOriginalException()
         {
             var fakeConnection = new FakeConnection { TotalTransportConnectTimeout = new TimeSpan(0, 0, 10)};
-            var fakeWebSocketTransport = new FakeWebSocketTransport();  
+            var fakeWebSocketTransport = new FakeWebSocketTransport();
 
             var expectedException = new Exception("OpenWebSocket failed.");
             fakeWebSocketTransport.Setup<Task>("OpenWebSocket", () =>
@@ -194,14 +194,13 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
             Assert.Equal(5u, ((IBuffer)writeAsyncInvocations[0][0]).Length);
         }
 
-        [Fact(Skip = "xUnit AccessViolationException https://github.com/xunit/xunit/issues/190 when running with MsBuild. " +
-                     "Note: This test still can be run in VS.")]
+        [Fact]
         public async Task CannotInvokeSendIfWebSocketUnitialized()
         {
             var fakeConnection = new FakeConnection {State = ConnectionState.Disconnected};
 
             Assert.Equal(
-                StoreClient::Microsoft.AspNet.SignalR.Client.ResourcesStore.GetResourceString("Error_WebSocketUninitialized"),
+                StoreClient::Microsoft.AspNet.SignalR.Client.ResourcesStore.GetResourceString("Error_DataCannotBeSentDuringWebSocketReconnect"),
                 (await Assert.ThrowsAsync<InvalidOperationException>(
                     async () => await new WebSocketTransport().Send(fakeConnection, null, null))).Message);
         }
