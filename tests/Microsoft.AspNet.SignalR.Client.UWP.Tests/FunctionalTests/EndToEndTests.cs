@@ -173,8 +173,7 @@ namespace Microsoft.AspNet.SignalR.Client.Store.Tests
             }
         }
 
-        [Fact(Skip = "xUnit AccessViolationException https://github.com/xunit/xunit/issues/190 when running with MsBuild. " +
-                     "Note: This test still can be run in VS.")]
+        [Fact]
         public async Task SendingMessageWhenTransportIsReconnectingThrows()
         {
             using (var hubConnection = new HubConnection(HubUrl))
