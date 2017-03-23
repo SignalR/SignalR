@@ -23,7 +23,7 @@
     <NuGetToolsPath>$(ProjectRoot)\.nuget</NuGetToolsPath>
     <NuGetExePath>$(NuGetToolsPath)\nuget.exe</NuGetExePath>
     <ToolsPath>$(ProjectRoot)\tools\</ToolsPath>
-    <XunitPath>$(ProjectRoot)\packages\xunit.runners.2.0.0-beta4-build2738\tools\</XunitPath>
+    <XunitPath>$(ProjectRoot)\packages\xunit.runner.msbuild.2.2.0\build\net452\</XunitPath>
     <ChutzpahExe>chutzpah.console.exe</ChutzpahExe>
     <ChutzpahPath>$(ProjectRoot)\tools\chutzpah</ChutzpahPath>
     <ChutzpahExePath>$(ChutzpahPath)\$(ChutzpahExe)</ChutzpahExePath>
@@ -165,8 +165,9 @@
     <UnitTestProjects Include="$(ProjectRoot)\tests\Microsoft.AspNet.SignalR.Tests\Microsoft.AspNet.SignalR.Tests.csproj"></UnitTestProjects>
     <UnitTestProjects Include="$(ProjectRoot)\tests\Microsoft.AspNet.SignalR.Client.Tests\Microsoft.AspNet.SignalR.Client.Tests.csproj"></UnitTestProjects>
     <UnitTestProjects Include="$(ProjectRoot)\tests\Microsoft.AspNet.SignalR.SqlServer.Tests\Microsoft.AspNet.SignalR.SqlServer.Tests.csproj"></UnitTestProjects>
-    <UnitTestProjects Include="$(ProjectRoot)\tests\Microsoft.AspNet.SignalR.Client.Store.TestHost\Microsoft.AspNet.SignalR.Client.Store.TestHost.csproj"></UnitTestProjects>
-    <UnitTestProjects Include="$(ProjectRoot)\tests\Microsoft.AspNet.SignalR.Client.Store.Tests\Microsoft.AspNet.SignalR.Client.Store.Tests.csproj"></UnitTestProjects>
+    <UnitTestProjects Include="$(ProjectRoot)\tests\Microsoft.AspNet.SignalR.Redis.Tests\Microsoft.AspNet.SignalR.Redis.Tests.csproj"></UnitTestProjects>
+    <UnitTestProjects Include="$(ProjectRoot)\tests\Microsoft.AspNet.SignalR.Client.Store.TestHost\Microsoft.AspNet.SignalR.Client.UWP.TestHost.csproj"></UnitTestProjects>
+    <UnitTestProjects Include="$(ProjectRoot)\tests\Microsoft.AspNet.SignalR.Client.UWP.Tests\Microsoft.AspNet.SignalR.Client.UWP.Tests.csproj"></UnitTestProjects>
     <UnitTestProjects Include="$(ProjectRoot)\tests\Microsoft.AspNet.SignalR.Client.Portable.Tests\Microsoft.AspNet.SignalR.Client.Portable.Tests.csproj"></UnitTestProjects>
   </ItemGroup>
 
@@ -236,31 +237,28 @@
   </Target>
 
   <Target Name="RunNetUnitTests" DependsOnTargets="BuildNetUnitTests">
-
     <xunit Assemblies="$(ProjectArtifactsDir)\Microsoft.AspNet.SignalR.Tests\Microsoft.AspNet.SignalR.Tests.dll"
-           Xml="$(TestResultsPath)\Microsoft.AspNet.SignalR.Tests.XunitResults.xml"
-           Verbose="true" />
+           Xml="$(TestResultsPath)\Microsoft.AspNet.SignalR.Tests.XunitResults.xml" />
 
     <xunit Assemblies="$(ProjectArtifactsDir)\Microsoft.AspNet.SignalR.Client.Tests\Microsoft.AspNet.SignalR.Client.Tests.dll"
-       Xml="$(TestResultsPath)\Microsoft.AspNet.SignalR.Client.Tests.XunitResults.xml"
-       Verbose="true" />
+       Xml="$(TestResultsPath)\Microsoft.AspNet.SignalR.Client.Tests.XunitResults.xml" />
 
     <xunit Assemblies="$(ProjectArtifactsDir)\Microsoft.AspNet.SignalR.SqlServer.Tests\Microsoft.AspNet.SignalR.SqlServer.Tests.dll"
-           Xml="$(TestResultsPath)\Microsoft.AspNet.SignalR.SqlServer.Tests.XunitResults.xml"
-           Verbose="true" />
+           Xml="$(TestResultsPath)\Microsoft.AspNet.SignalR.SqlServer.Tests.XunitResults.xml" />
 
-    <!-- Microsoft.AspNet.SignalR.Client.Store.TestHost.exe is a host required to run some functional Store tests -->
-    <ExecAsync Executable="$(ProjectArtifactsDir)\Microsoft.AspNet.SignalR.Client.Store.TestHost\Microsoft.AspNet.SignalR.Client.Store.TestHost.exe" Arguments="600000" />
-
-    <xunit Assemblies="$(ProjectArtifactsDir)\Microsoft.AspNet.SignalR.Client.Store.Tests\Microsoft.AspNet.SignalR.Client.Store.Tests.dll"
-           Xml="$(TestResultsPath)\Microsoft.AspNet.SignalR.Client.Store.Tests.XunitResults.xml"
-           Verbose="true" />
-
-    <Exec Command="taskkill /IM Microsoft.AspNet.SignalR.Client.Store.TestHost.exe /F" ContinueOnError="true" />
+    <xunit Assemblies="$(ProjectArtifactsDir)\Microsoft.AspNet.SignalR.Redis.Tests\Microsoft.AspNet.SignalR.Redis.Tests.dll"
+           Xml="$(TestResultsPath)\Microsoft.AspNet.SignalR.Redis.Tests.XunitResults.xml" />
 
     <xunit Assemblies="$(ProjectArtifactsDir)\Microsoft.AspNet.SignalR.Client.Portable.Tests\Microsoft.AspNet.SignalR.Client.Portable.Tests.dll"
-           Xml="$(TestResultsPath)\Microsoft.AspNet.SignalR.Client.Portable.Tests.XunitResults.xml"
-           Verbose="true" />
+           Xml="$(TestResultsPath)\Microsoft.AspNet.SignalR.Client.Portable.Tests.XunitResults.xml" />
+
+    <!-- Microsoft.AspNet.SignalR.Client.UWP.TestHost.exe is a host required to run some functional UWP tests -->
+    <ExecAsync Executable="$(ProjectArtifactsDir)\Microsoft.AspNet.SignalR.Client.UWP.TestHost\Microsoft.AspNet.SignalR.Client.UWP.TestHost.exe" Arguments="600000" />
+
+    <xunit Assemblies="$(ProjectArtifactsDir)\Microsoft.AspNet.SignalR.Client.UWP.Tests\Microsoft.AspNet.SignalR.Client.UWP.Tests.exe"
+           Xml="$(TestResultsPath)\Microsoft.AspNet.SignalR.Client.Store.Tests.XunitResults.xml" />
+
+    <Exec Command="taskkill /IM Microsoft.AspNet.SignalR.Client.UWP.TestHost.exe /F" ContinueOnError="true" />
 
   </Target>
 
@@ -290,7 +288,7 @@
 
   </Target>
 
-  <Target Name="RunUnitTests" DependsOnTargets="RunJSUnitTests; RunNetUnitTests" />
+  <Target Name="RunUnitTests" DependsOnTargets="RunNetUnitTests; RunJSUnitTests;" />
 
   <Target Name="BuildNetFunctionalTests" DependsOnTargets="CreateOutputDirs">
     <MSBuild Projects="%(FunctionalTestProjects.Identity)"
@@ -301,8 +299,7 @@
 
   <Target Name="RunFunctionalTests" DependsOnTargets="BuildNetFunctionalTests">
     <xunit Assemblies="$(ProjectArtifactsDir)\Microsoft.AspNet.SignalR.FunctionalTests\bin\Microsoft.AspNet.SignalR.FunctionalTests.dll"
-           Xml="$(TestResultsPath)\Microsoft.AspNet.SignalR.FunctionalTests.XunitResults.xml"
-           Verbose="true" />
+           Xml="$(TestResultsPath)\Microsoft.AspNet.SignalR.FunctionalTests.XunitResults.xml" />
 
     <CallTarget Targets="KillIISExpress; AnalyzeLogs" />
     <OnError ExecuteTargets="KillIISExpress; AnalyzeLogs" />

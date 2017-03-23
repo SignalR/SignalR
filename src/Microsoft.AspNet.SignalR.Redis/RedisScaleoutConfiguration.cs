@@ -31,7 +31,7 @@ namespace Microsoft.AspNet.SignalR
             }
 
             ConnectionString = connectionString;
-            if (connectionString != string.Empty)
+            if (connectionString.Length > 0)
             {
                 var options = ConfigurationOptions.Parse(connectionString);
                 Database = options.DefaultDatabase.GetValueOrDefault(0);

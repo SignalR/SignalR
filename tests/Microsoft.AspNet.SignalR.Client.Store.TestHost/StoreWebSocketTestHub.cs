@@ -4,7 +4,7 @@
 using System.Collections.Generic;
 using System;
 
-namespace Microsoft.AspNet.SignalR.Client.Store.TestHost
+namespace Microsoft.AspNet.SignalR.Client.UWP.TestHost
 {
     public class StoreWebSocketTestHub : Hub
     {
