@@ -201,6 +201,7 @@
     <Compile Include="Infrastructure\RequestItemsResponse.cs" />
     <Compile Include="Infrastructure\MessageBusType.cs" />
     <Compile Include="Infrastructure\SystemNetLogging.cs" />
+    <Compile Include="Infrastructure\TaskExtensions.cs" />
     <Compile Include="Infrastructure\TestUtilities.cs" />
     <Compile Include="Infrastructure\TracingTestHost.cs" />
     <Compile Include="Infrastructure\TransportType.cs" />
