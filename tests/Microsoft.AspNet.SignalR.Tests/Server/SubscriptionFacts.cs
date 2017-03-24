@@ -43,8 +43,8 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
             }
         }
 
-        [Fact(Timeout = 5000)]
-        public void CancelledTaskShouldThrowTaskCancelledAsync()
+        [Fact]
+        public async Task CancelledTaskShouldThrowTaskCancelledAsync()
         {
             Func<MessageResult, object, Task<bool>> callback = async (result, state) =>
             {
@@ -62,7 +62,8 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
             using (subscription.Object)
             {
                 Task task = subscription.Object.Work();
-                TestUtilities.AssertUnwrappedException<TaskCanceledException>(() => task.Wait());
+
+                await Assert.ThrowsAsync<TaskCanceledException>(() => task.OrTimeout());
                 Assert.True(task.IsCanceled);
             }
         }
@@ -94,8 +95,8 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
             }
         }
 
-        [Fact(Timeout = 5000)]
-        public void FaultedTaskShouldPropagateAsync()
+        [Fact]
+        public async Task FaultedTaskShouldPropagateAsync()
         {
             Func<MessageResult, object, Task<bool>> callback = async (result, state) =>
             {
@@ -112,13 +113,13 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
             using (subscription.Object)
             {
                 Task task = subscription.Object.Work();
-                TestUtilities.AssertUnwrappedException<Exception>(() => task.Wait());
+                await Assert.ThrowsAsync<Exception>(() => task.OrTimeout());
                 Assert.True(task.IsFaulted);
             }
         }
 
-        [Fact(Timeout = 5000)]
-        public void NoItemsCompletesTask()
+        [Fact]
+        public async Task NoItemsCompletesTask()
         {
             Func<MessageResult, object, Task<bool>> callback = (result, state) =>
             {
@@ -132,13 +133,12 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
 
             using (subscription.Object)
             {
-                Task task = subscription.Object.Work();
-                Assert.True(task.IsCompleted);
+                await subscription.Object.Work().OrTimeout();
             }
         }
 
-        [Fact(Timeout = 5000)]
-        public void ReturningFalseFromCallbackCompletesTaskAndDisposesSubscription()
+        [Fact]
+        public async Task ReturningFalseFromCallbackCompletesTaskAndDisposesSubscription()
         {
             Func<MessageResult, object, Task<bool>> callback = (result, state) =>
             {
@@ -158,7 +158,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
             {
                 Task task = subscription.Object.Work();
                 Assert.True(task.IsCompleted);
-                task.Wait();
+                await task.OrTimeout();
                 disposableMock.Verify(m => m.Dispose(), Times.Once());
             }
         }

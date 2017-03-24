@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR.Messaging;
 using Moq;
 using Xunit;
@@ -20,7 +21,7 @@ namespace Microsoft.AspNet.SignalR.Tests
             }
 
             [Fact]
-            public void ThrowsIfConnectionIdIsNull()
+            public async Task ThrowsIfConnectionIdIsNull()
             {
                 // Arrange
                 var connection = new Mock<IConnection>();
@@ -28,11 +29,11 @@ namespace Microsoft.AspNet.SignalR.Tests
                 var groupManager = new GroupManager(connection.Object, "Prefix");
 
                 // Assert
-                Assert.Throws<ArgumentNullException>(() => groupManager.Add(null, "SomeGroup"));
+                await Assert.ThrowsAsync<ArgumentNullException>(() => groupManager.Add(null, "SomeGroup"));
             }
 
             [Fact]
-            public void ThrowsIfGroupIsNull()
+            public async Task ThrowsIfGroupIsNull()
             {
                 // Arrange
                 var connection = new Mock<IConnection>();
@@ -40,7 +41,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                 var groupManager = new GroupManager(connection.Object, "Prefix");
 
                 // Assert
-                Assert.Throws<ArgumentNullException>(() => groupManager.Add("1", null));
+                await Assert.ThrowsAsync<ArgumentNullException>(() => groupManager.Add("1", null));
             }
 
             [Fact]
@@ -71,7 +72,7 @@ namespace Microsoft.AspNet.SignalR.Tests
         public class Remove
         {
             [Fact]
-            public void ThrowsIfConnectionIdIsNull()
+            public async Task ThrowsIfConnectionIdIsNull()
             {
                 // Arrange
                 var connection = new Mock<IConnection>();
@@ -79,11 +80,11 @@ namespace Microsoft.AspNet.SignalR.Tests
                 var groupManager = new GroupManager(connection.Object, "Prefix");
 
                 // Assert
-                Assert.Throws<ArgumentNullException>(() => groupManager.Remove(null, "SomeGroup"));
+                await Assert.ThrowsAsync<ArgumentNullException>(() => groupManager.Remove(null, "SomeGroup"));
             }
 
             [Fact]
-            public void ThrowsIfGroupIsNull()
+            public async Task ThrowsIfGroupIsNull()
             {
                 // Arrange
                 var connection = new Mock<IConnection>();
@@ -91,7 +92,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                 var groupManager = new GroupManager(connection.Object, "Prefix");
 
                 // Assert
-                Assert.Throws<ArgumentNullException>(() => groupManager.Remove("1", null));
+                await Assert.ThrowsAsync<ArgumentNullException>(() => groupManager.Remove("1", null));
             }
 
             [Fact]
@@ -122,7 +123,7 @@ namespace Microsoft.AspNet.SignalR.Tests
         public class Send
         {
             [Fact]
-            public void ThrowsIfGroupIsNull()
+            public async Task ThrowsIfGroupIsNull()
             {
                 // Arrange
                 var connection = new Mock<IConnection>();
@@ -130,11 +131,11 @@ namespace Microsoft.AspNet.SignalR.Tests
                 var groupManager = new GroupManager(connection.Object, "Prefix");
 
                 // Assert
-                Assert.Throws<ArgumentException>(() => groupManager.Send((string)null, "Way"));
+                await Assert.ThrowsAsync<ArgumentException>(() => groupManager.Send((string)null, "Way"));
             }
 
             [Fact]
-            public void ThrowsIfGroupsIsNull()
+            public async Task ThrowsIfGroupsIsNull()
             {
                 // Arrange
                 var connection = new Mock<IConnection>();
@@ -142,7 +143,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                 var groupManager = new GroupManager(connection.Object, "Prefix");
 
                 // Assert
-                Assert.Throws<ArgumentNullException>(() => groupManager.Send((IList<string>)null, "Way"));
+                await Assert.ThrowsAsync<ArgumentNullException>(() => groupManager.Send((IList<string>)null, "Way"));
             }
 
             [Fact]
