@@ -34,7 +34,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Server.Hubs
         }
 
         [Theory]
-        [PropertyData("JSProxyUrls")]
+        [MemberData(nameof(JSProxyUrls))]
         public void RequestingSignalrHubsUrlReturnsProxy(string proxyUrl)
         {
             // Arrange
@@ -59,7 +59,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Server.Hubs
         }
 
         [Theory]
-        [PropertyData("JSProxyUrls")]
+        [MemberData(nameof(JSProxyUrls))]
         public void RequestingSignalrHubsUrlWithTrailingSlashReturnsProxy(string proxyUrl)
         {
             // Arrange
@@ -84,7 +84,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Server.Hubs
         }
 
         [Theory]
-        [PropertyData("JSProxyUrls")]
+        [MemberData(nameof(JSProxyUrls))]
         public void RequestingSignalrHubsUrlWithJavaScriptProxiesDesabledDoesNotReturnProxy(string proxyUrl)
         {
             // Arrange
