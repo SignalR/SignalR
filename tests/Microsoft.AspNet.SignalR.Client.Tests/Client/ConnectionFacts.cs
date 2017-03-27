@@ -394,11 +394,12 @@ namespace Microsoft.AspNet.SignalR.Client.Tests
                 Assert.True(errorCalledResetEvent.Wait(1000), "OnError not called");
             }
         }
-        
+
         [Fact]
         public void OnReconnectingExplicitImplementationCallsIntoProtectedOnReconnecting()
         {
             var mockConnection = new Mock<HubConnection>("http://fakeurl");
+            mockConnection.CallBase = true;
             ((IConnection)mockConnection.Object).OnReconnecting();
             mockConnection.Verify(c => c.OnReconnecting(), Times.Once());
         }

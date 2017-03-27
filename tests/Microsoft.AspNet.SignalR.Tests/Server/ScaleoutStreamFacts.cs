@@ -52,7 +52,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
             stream.Open();
 
             task.Wait();
-            
+
             Assert.Equal(2, x);
         }
 
@@ -67,7 +67,8 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
             queueLengthCounter.Setup(c => c.Increment()).Callback(() => counterIncrementCount++);
             perfCounters.DefaultValue = DefaultValue.Mock;
             perfCounters.SetReturnsDefault(new NoOpPerformanceCounter());
-            perfCounters.SetupAllProperties();
+            perfCounters.SetupGet(p => p.ScaleoutStreamCountOpen).Returns(Mock.Of<IPerformanceCounter>());
+            perfCounters.SetupGet(p => p.ScaleoutStreamCountBuffering).Returns(Mock.Of<IPerformanceCounter>());
             perfCounters.Setup(pc => pc.ScaleoutSendQueueLength).Returns(queueLengthCounter.Object);
 
             var stream = new ScaleoutStream(new TraceSource("Queue"), "0", queuingBehavior, 1000, perfCounters.Object);
