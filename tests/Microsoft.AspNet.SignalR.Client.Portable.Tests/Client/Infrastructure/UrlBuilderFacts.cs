@@ -18,9 +18,9 @@ namespace Microsoft.AspNet.SignalR.Client.Infrastructure
         public void BuildNegotiateAppendsNoCacheToUrl(string connectionData, string expected)
         {
             Assert.True(
-                Regex.Match(UrlBuilder.BuildNegotiate(CreateConnection(), connectionData), 
+                Regex.Match(UrlBuilder.BuildNegotiate(CreateConnection(), connectionData),
                 "^http://fakeurl/negotiate\\?clientProtocol=1.42" + expected + "&connectionToken=My%20Conn%20Token&noCache=[a-zA-Z0-9-]{36}$")
-                    .Success);        
+                    .Success);
         }
 
         [Theory]

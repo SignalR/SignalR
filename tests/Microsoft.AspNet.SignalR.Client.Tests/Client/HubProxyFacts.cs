@@ -171,6 +171,7 @@ namespace Microsoft.AspNet.SignalR.Client.Tests
         public void HubCallbackClearedOnFailedInvocation()
         {
             var connection = new Mock<HubConnection>("http://foo");
+            connection.CallBase = true;
             var tcs = new TaskCompletionSource<object>();
 
             tcs.TrySetCanceled();
@@ -230,9 +231,9 @@ namespace Microsoft.AspNet.SignalR.Client.Tests
             var proxy = new HubProxy(connection, "test");
 
             // Act
-            connection.Start(transport.Object).Wait();
-            var crashTask = proxy.Invoke("crash")
-                .ContinueWith(t => proxy.Invoke("test"),
+            await connection.Start(transport.Object);
+            var crashTask = proxy.Invoke("crash");
+            var ignore = crashTask.ContinueWith(t => proxy.Invoke("test"),
                     TaskContinuationOptions.ExecuteSynchronously); // We need to ensure this executes sync so we're on the same stack
 
             // Assert
