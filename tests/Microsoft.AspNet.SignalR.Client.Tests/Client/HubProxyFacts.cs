@@ -236,7 +236,7 @@ namespace Microsoft.AspNet.SignalR.Client.Tests
                     TaskContinuationOptions.ExecuteSynchronously); // We need to ensure this executes sync so we're on the same stack
 
             // Assert
-            await Assert.ThrowsAnyAsync<Exception>(async () => await crashTask.OrTimeout());
+            await Assert.ThrowsAnyAsync<InvalidOperationException>(async () => await crashTask.OrTimeout());
             await testTcs.Task.OrTimeout();
          }
 
