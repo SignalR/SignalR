@@ -33,7 +33,7 @@ git clone git@github.com:SignalR/SignalR.git (or https if you use https)
 ### Windows
 After cloning the repository, run `build.cmd`.
 
-**NOTE:** Opening the solution requires VS 2015.
+**NOTE:** Opening the solution requires VS 2017.
 
 ### Mono
 After cloning the repository, run `make`.
