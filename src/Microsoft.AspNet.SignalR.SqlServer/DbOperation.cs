@@ -1,6 +1,7 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using Microsoft.AspNet.SignalR.Infrastructure;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -22,7 +23,6 @@ namespace Microsoft.AspNet.SignalR.SqlServer
         public DbOperation(string connectionString, string commandText, TraceSource traceSource)
             : this(connectionString, commandText, traceSource, SqlClientFactory.Instance.AsIDbProviderFactory())
         {
-            
         }
 
         public DbOperation(string connectionString, string commandText, TraceSource traceSource, IDbProviderFactory dbProviderFactory)
@@ -67,7 +67,7 @@ namespace Microsoft.AspNet.SignalR.SqlServer
 
         public virtual Task<int> ExecuteNonQueryAsync()
         {
-            var tcs = new TaskCompletionSource<int>();
+            var tcs = new DispatchingTaskCompletionSource<int>();
             Execute(cmd => cmd.ExecuteNonQueryAsync(), tcs);
             return tcs.Task;
         }
@@ -122,7 +122,7 @@ namespace Microsoft.AspNet.SignalR.SqlServer
         {
             T result = default(T);
             IDbConnection connection = null;
-            
+
             try
             {
                 connection = _dbProviderFactory.CreateConnection();
@@ -156,10 +156,10 @@ namespace Microsoft.AspNet.SignalR.SqlServer
 
         [SuppressMessage("Microsoft.Usage", "CA2202:Do not dispose objects multiple times", Justification = "Disposed in async Finally block"),
          SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope", Justification = "Disposed in async Finally block")]
-        private void Execute<T>(Func<IDbCommand, Task<T>> commandFunc, TaskCompletionSource<T> tcs)
+        private void Execute<T>(Func<IDbCommand, Task<T>> commandFunc, DispatchingTaskCompletionSource<T> tcs)
         {
             IDbConnection connection = null;
-           
+
             try
             {
                 connection = _dbProviderFactory.CreateConnection();

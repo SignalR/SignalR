@@ -26,6 +26,11 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
             TaskAsyncHelper.Dispatch(() => _tcs.SetException(exception));
         }
 
+        public void SetException(IEnumerable<Exception> exceptions)
+        {
+            TaskAsyncHelper.Dispatch(() => _tcs.SetException(exceptions));
+        }
+
         public void SetResult(TResult result)
         {
             TaskAsyncHelper.Dispatch(() => _tcs.SetResult(result));
@@ -41,16 +46,21 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
             TaskAsyncHelper.Dispatch(() => _tcs.TrySetException(exception));
         }
 
+        public void TrySetException(IEnumerable<Exception> exceptions)
+        {
+            TaskAsyncHelper.Dispatch(() => _tcs.TrySetException(exceptions));
+        }
+
         public void SetUnwrappedException(Exception e)
         {
             var aggregateException = e as AggregateException;
             if (aggregateException != null)
             {
-                _tcs.SetException(aggregateException.InnerExceptions);
+                SetException(aggregateException.InnerExceptions);
             }
             else
             {
-                _tcs.SetException(e);
+                SetException(e);
             }
         }
 
@@ -59,11 +69,11 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
             var aggregateException = e as AggregateException;
             if (aggregateException != null)
             {
-                _tcs.TrySetException(aggregateException.InnerExceptions);
+                TrySetException(aggregateException.InnerExceptions);
             }
             else
             {
-                _tcs.TrySetException(e);
+                TrySetException(e);
             }
         }
 
