@@ -55,6 +55,9 @@
     <Compile Include="..\Microsoft.AspNet.SignalR.Core\TaskAsyncHelper.cs">
       <Link>Infrastructure\TaskAsyncHelper.cs</Link>
     </Compile>
+    <Compile Include="..\Microsoft.AspNet.SignalR.Core\Infrastructure\DispatchingTaskCompletionSource.cs">
+      <Link>Infrastructure\DispatchingTaskCompletionSource.cs</Link>
+    </Compile>
     <Compile Include="DependencyResolverExtensions.cs" />
     <Compile Include="IRedisConnection.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

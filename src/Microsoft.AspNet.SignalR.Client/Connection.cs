@@ -70,7 +70,7 @@ namespace Microsoft.AspNet.SignalR.Client
 
         private Task _lastQueuedReceiveTask;
 
-        private TaskCompletionSource<object> _startTcs;
+        private DispatchingTaskCompletionSource<object> _startTcs;
 
         // Used to synchronize state changes
         private readonly object _stateLock = new object();
@@ -78,7 +78,7 @@ namespace Microsoft.AspNet.SignalR.Client
         // Used to synchronize starting and stopping specifically
         private readonly object _startLock = new object();
 
-        // Used to ensure we don't write to the Trace TextWriter from multiple threads simultaneously 
+        // Used to ensure we don't write to the Trace TextWriter from multiple threads simultaneously
         private readonly object _traceLock = new object();
 
         private DateTime _lastMessageAt;
@@ -456,7 +456,7 @@ namespace Microsoft.AspNet.SignalR.Client
                 }
 
                 _disconnectCts = new CancellationTokenSource();
-                _startTcs = new TaskCompletionSource<object>();
+                _startTcs = new DispatchingTaskCompletionSource<object>();
                 _receiveQueueMonitor = new TaskQueueMonitor(this, DeadlockErrorTimeout);
                 _receiveQueue = new TaskQueue(_startTcs.Task, _receiveQueueMonitor);
                 _lastQueuedReceiveTask = TaskAsyncHelper.Empty;

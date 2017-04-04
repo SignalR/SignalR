@@ -45,7 +45,7 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
         [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "Exceptions are flowed back to the caller.")]
         private static Task<T> FromAsync<T>(Func<AsyncCallback, IAsyncResult> begin, Func<IAsyncResult, T> end)
         {
-            var tcs = new TaskCompletionSource<T>();
+            var tcs = new DispatchingTaskCompletionSource<T>();
             try
             {
                 var result = begin(ar =>
@@ -70,7 +70,7 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
         }
 
         [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "Exceptions are flowed back to the caller.")]
-        private static void CompleteAsync<T>(TaskCompletionSource<T> tcs, IAsyncResult ar, Func<IAsyncResult, T> end)
+        private static void CompleteAsync<T>(DispatchingTaskCompletionSource<T> tcs, IAsyncResult ar, Func<IAsyncResult, T> end)
         {
             try
             {

@@ -53,6 +53,9 @@
     <Compile Include="..\Microsoft.AspNet.SignalR.Core\TaskAsyncHelper.cs">
       <Link>TaskAsyncHelper.cs</Link>
     </Compile>
+    <Compile Include="..\Microsoft.AspNet.SignalR.Core\Infrastructure\DispatchingTaskCompletionSource.cs">
+      <Link>Infrastructure\DispatchingTaskCompletionSource.cs</Link>
+    </Compile>
     <Compile Include="AssemblyExtensions.cs" />
     <Compile Include="DbProviderFactoryAdapter.cs" />
     <Compile Include="DbProviderFactoryExtensions.cs" />

@@ -271,7 +271,7 @@ namespace Microsoft.AspNet.SignalR
         }
 
         [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode", Justification = "This is a shared file")]
-        public static void ContinueWithNotComplete(this Task task, TaskCompletionSource<object> tcs)
+        public static void ContinueWithNotComplete(this Task task, DispatchingTaskCompletionSource<object> tcs)
         {
             task.ContinueWithPreservedCulture(t =>
             {
@@ -288,7 +288,7 @@ namespace Microsoft.AspNet.SignalR
         }
 
         [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode", Justification = "This is a shared file")]
-        public static Task ContinueWith(this Task task, TaskCompletionSource<object> tcs)
+        public static Task ContinueWith(this Task task, DispatchingTaskCompletionSource<object> tcs)
         {
             task.ContinueWithPreservedCulture(t =>
             {

@@ -14,7 +14,7 @@ namespace Microsoft.AspNet.SignalR.Client.Infrastructure
     internal class TransportInitializationHandler
     {
         private readonly ThreadSafeInvoker _initializationInvoker;
-        private readonly TaskCompletionSource<object> _initializationTask;
+        private readonly DispatchingTaskCompletionSource<object> _initializationTask;
         private readonly IConnection _connection;
         private readonly IHttpClient _httpClient;
         private readonly string _connectionData;
@@ -49,7 +49,7 @@ namespace Microsoft.AspNet.SignalR.Client.Infrastructure
             _transport = transport;
             _transportHelper = transportHelper;
 
-            _initializationTask = new TaskCompletionSource<object>();
+            _initializationTask = new DispatchingTaskCompletionSource<object>();
             _initializationInvoker = new ThreadSafeInvoker();
 
             // Default event

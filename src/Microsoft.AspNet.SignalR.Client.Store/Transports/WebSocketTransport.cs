@@ -9,6 +9,7 @@ using Microsoft.AspNet.SignalR.Client.Http;
 using Windows.Networking.Sockets;
 using Microsoft.AspNet.SignalR.Client.Infrastructure;
 using Windows.Storage.Streams;
+using Microsoft.AspNet.SignalR.Infrastructure;
 
 namespace Microsoft.AspNet.SignalR.Client.Transports
 {
@@ -162,7 +163,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
                     ex = new InvalidOperationException(ResourcesStore.GetResourceString("Error_DataCannotBeSentDuringWebSocketReconnect"));
                 }
 
-                var tcs = new TaskCompletionSource<object>();
+                var tcs = new DispatchingTaskCompletionSource<object>();
                 tcs.SetException(ex);
                 return tcs.Task;
             }

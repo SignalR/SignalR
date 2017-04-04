@@ -16,14 +16,14 @@ using Moq.Protected;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Xunit;
-using Xunit.Extensions;
+using Microsoft.AspNet.SignalR.Infrastructure;
 
 namespace Microsoft.AspNet.SignalR.Client.Tests
 {
     public class TransportFacts
     {
         [Fact]
-        public void CancelledTaskHandledinServerSentEvents()
+        public async Task CancelledTaskHandledinServerSentEvents()
         {
             var tcs = new TaskCompletionSource<IResponse>();
             tcs.TrySetCanceled();
@@ -43,14 +43,12 @@ namespace Microsoft.AspNet.SignalR.Client.Tests
 
             var sse = new ServerSentEventsTransport(httpClient.Object);
 
-            var exception = Assert.Throws<AggregateException>(
-                () => sse.Start(connection.Object, string.Empty, CancellationToken.None).Wait(TimeSpan.FromSeconds(5)));
-
-            Assert.IsType(typeof(OperationCanceledException), exception.InnerException);
+            await Assert.ThrowsAsync<OperationCanceledException>(
+                () => sse.Start(connection.Object, string.Empty, CancellationToken.None).OrTimeout());
         }
 
         [Fact]
-        public void CancelledTaskHandledinAutoTransport()
+        public async Task CancelledTaskHandledinAutoTransport()
         {
             var tcs = new TaskCompletionSource<IResponse>();
 
@@ -64,13 +62,13 @@ namespace Microsoft.AspNet.SignalR.Client.Tests
             transports.Add(transport.Object);
 
             var autoTransport = new AutoTransport(new DefaultHttpClient(), transports);
-            var task = autoTransport.Start(new Connection("http://foo"), string.Empty, CancellationToken.None);
 
-            Assert.IsType(typeof(OperationCanceledException), task.Exception.InnerException);
+            await Assert.ThrowsAsync<OperationCanceledException>(
+                () => autoTransport.Start(new Connection("http://foo"), string.Empty, CancellationToken.None));
         }
 
         [Fact]
-        public void StartExceptionStopsAutoTransportFallback()
+        public async Task StartExceptionStopsAutoTransportFallback()
         {
             var errorTcs = new TaskCompletionSource<IResponse>();
             errorTcs.SetException(new StartException());
@@ -87,16 +85,15 @@ namespace Microsoft.AspNet.SignalR.Client.Tests
             transports.Add(unusedTransport.Object);
 
             var autoTransport = new AutoTransport(new DefaultHttpClient(), transports);
-            var startTask = autoTransport.Start(new Connection("http://foo"), string.Empty, CancellationToken.None);
+            await Assert.ThrowsAsync<StartException>(
+                () => autoTransport.Start(new Connection("http://foo"), string.Empty, CancellationToken.None));
 
             failingTransport.Verify();
             unusedTransport.Verify(t => t.Start(It.IsAny<IConnection>(), It.IsAny<string>(), CancellationToken.None), Times.Never());
-
-            Assert.IsType(typeof(StartException), startTask.Exception.InnerException);
         }
 
         [Fact]
-        public void CancelledTaskHandledWhenStartingLongPolling()
+        public async Task CancelledTaskHandledWhenStartingLongPolling()
         {
             var tcs = new TaskCompletionSource<IResponse>();
             tcs.SetCanceled();
@@ -112,11 +109,8 @@ namespace Microsoft.AspNet.SignalR.Client.Tests
 
             var longPollingTransport = new LongPollingTransport(httpClient.Object);
 
-            var unwrappedException = Assert.Throws<AggregateException>(() =>
-                longPollingTransport.Start(mockConnection.Object, null, CancellationToken.None)
-                    .Wait(TimeSpan.FromSeconds(5))).InnerException;
-
-            Assert.IsType<OperationCanceledException>(unwrappedException);
+            await Assert.ThrowsAsync<OperationCanceledException>(
+                () => longPollingTransport.Start(mockConnection.Object, null, CancellationToken.None).OrTimeout());
         }
 
         [Fact]
@@ -162,7 +156,7 @@ namespace Microsoft.AspNet.SignalR.Client.Tests
             webSocketTransport.Protected()
                 .Setup("OnStart", ItExpr.IsAny<IConnection>(), ItExpr.IsAny<string>(), CancellationToken.None)
                 .Callback(mre.Set);
-            
+
             transports.Add(webSocketTransport.Object);
             transports.Add(new ServerSentEventsTransport());
             transports.Add(new LongPollingTransport());
@@ -253,7 +247,7 @@ namespace Microsoft.AspNet.SignalR.Client.Tests
             mockWebSocket.SetupGet(ws => ws.State).Returns(state);
             mockConnection.Setup(c => c.OnError(It.IsAny<InvalidOperationException>()));
             mockWebSocketHandler.Object.WebSocket = mockWebSocket.Object;
-            
+
             var wsTransport = new WebSocketTransport(mockWebSocketHandler.Object);
 
             var task = wsTransport.Send(mockConnection.Object, "", "");

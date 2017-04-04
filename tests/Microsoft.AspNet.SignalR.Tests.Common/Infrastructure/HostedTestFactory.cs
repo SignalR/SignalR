@@ -54,7 +54,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Common.Infrastructure
                     host.Transport = host.TransportFactory();
                     break;
                 case HostType.Memory:
-                default: 
+                default:
                     var mh = new MemoryHost();
                     host = new MemoryTestHost(mh, Path.Combine(logBasePath, testName));
                     host.TransportFactory = () => CreateTransport(transportType, mh);

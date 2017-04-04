@@ -26,6 +26,7 @@
     <IISExpressAnonymousAuthentication />
     <IISExpressWindowsAuthentication />
     <IISExpressUseClassicPipelineMode />
+    <UseGlobalApplicationHostFile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -172,9 +173,6 @@
     <None Include="wcat\wcat.bat" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="..\..\src\Microsoft.AspNet.SignalR.Core\TaskAsyncHelper.cs">
-      <Link>TaskAsyncHelper.cs</Link>
-    </Compile>
     <Compile Include="..\Microsoft.AspNet.SignalR.Samples\Hubs\RealtimeBroadcast\HighFrequencyTimer.cs">
       <Link>HighFrequencyTimer.cs</Link>
     </Compile>

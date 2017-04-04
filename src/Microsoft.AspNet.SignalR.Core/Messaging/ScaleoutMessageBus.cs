@@ -100,7 +100,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
                 return StreamManager.Send(0, messages);
             }
 
-            var taskCompletionSource = new TaskCompletionSource<object>();
+            var taskCompletionSource = new DispatchingTaskCompletionSource<object>();
 
             // Group messages by source (connection id)
             var messagesBySource = messages.GroupBy(m => m.Source);
@@ -116,7 +116,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
         }
 
         [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "We return a faulted tcs")]
-        private void SendImpl(IEnumerator<IGrouping<string, Message>> enumerator, TaskCompletionSource<object> taskCompletionSource)
+        private void SendImpl(IEnumerator<IGrouping<string, Message>> enumerator, DispatchingTaskCompletionSource<object> taskCompletionSource)
         {
         send:
 

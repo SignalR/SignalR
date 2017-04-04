@@ -304,12 +304,12 @@ namespace Microsoft.AspNet.SignalR.Messaging
             private readonly object _state;
 
             public readonly ScaleoutStream Stream;
-            public readonly TaskCompletionSource<object> TaskCompletionSource;
+            public readonly DispatchingTaskCompletionSource<object> TaskCompletionSource;
 
             public SendContext(ScaleoutStream stream, Func<object, Task> send, object state)
             {
                 Stream = stream;
-                TaskCompletionSource = new TaskCompletionSource<object>();
+                TaskCompletionSource = new DispatchingTaskCompletionSource<object>();
                 _send = send;
                 _state = state;
             }

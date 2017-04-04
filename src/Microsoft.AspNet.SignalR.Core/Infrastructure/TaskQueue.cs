@@ -43,7 +43,7 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
             _lastQueuedTask = initialTask;
         }
 
-        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode", Justification = "This is shared code")]        
+        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode", Justification = "This is shared code")]
         public TaskQueue(Task initialTask, int maxSize)
         {
             _lastQueuedTask = initialTask;
