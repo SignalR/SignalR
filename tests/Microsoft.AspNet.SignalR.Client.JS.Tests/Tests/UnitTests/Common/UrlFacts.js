@@ -1,4 +1,7 @@
-﻿QUnit.module("Transports Common - Url Facts");
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+QUnit.module("Transports Common - Url Facts");
 
 QUnit.test("getUrl handles groupsToken correctly.", function () {
     var connection = testUtilities.createHubConnection(),
@@ -210,7 +213,16 @@ QUnit.test("addQs handles qs correctly", function () {
         three: [1, 2, 3],
         goodluck: encodeThis
     };
-    QUnit.equal($.signalR.transports._logic.addQs(url, connection.qs), "foo?one=1&three%5B%5D=1&three%5B%5D=2&three%5B%5D=3&goodluck=%24%26%2B%2C%2F%3A%3B%3D%3F%40+%22%3C%3E%23%25%7B%7D%7C%5E%5B%5D%60", "When connection.qs is an object it is appended to the url as a string based parameter list.");
+
+    // https://jquery.com/upgrade-guide/3.0/#breaking-change-jquery-param-no-longer-converts-20-to-a-plus-sign
+    var jqueryMajorVersion = jQuery.fn.jquery.split('.')[0];
+
+    if (jqueryMajorVersion >= 3) {
+        QUnit.equal($.signalR.transports._logic.addQs(url, connection.qs), "foo?one=1&three%5B%5D=1&three%5B%5D=2&three%5B%5D=3&goodluck=%24%26%2B%2C%2F%3A%3B%3D%3F%40%20%22%3C%3E%23%25%7B%7D%7C%5E%5B%5D%60", "When connection.qs is an object it is appended to the url as a string based parameter list.");
+    }
+    else {
+        QUnit.equal($.signalR.transports._logic.addQs(url, connection.qs), "foo?one=1&three%5B%5D=1&three%5B%5D=2&three%5B%5D=3&goodluck=%24%26%2B%2C%2F%3A%3B%3D%3F%40+%22%3C%3E%23%25%7B%7D%7C%5E%5B%5D%60", "When connection.qs is an object it is appended to the url as a string based parameter list.");
+    }
 
     connection.qs = "?bar"
     QUnit.equal($.signalR.transports._logic.addQs(url, connection.qs), "foo?bar", "When connection.qs is a string and has a question mark in front it does not change.");
@@ -221,7 +233,14 @@ QUnit.test("addQs handles qs correctly", function () {
     // This test will pass when #1568 is fixed.
     if (false) {
         connection.qs = "&bar=" + encodeThis;
-        QUnit.equal($.signalR.transports._logic.addQs(url, connection.qs), "foo&bar=&goodluck=%24%26%2B%2C%2F%3A%3B%3D%3F%40+%22%3C%3E%23%25%7B%7D%7C%5E%5B%5D%60", "When connection.qs is a string the connection.qs characters are encoded.");
+
+        if (jqueryMajorVersion >= 3) {
+            QUnit.equal($.signalR.transports._logic.addQs(url, connection.qs), "foo&bar=&goodluck=%24%26%2B%2C%2F%3A%3B%3D%3F%40%20%22%3C%3E%23%25%7B%7D%7C%5E%5B%5D%60", "When connection.qs is a string the connection.qs characters are encoded.");
+
+        }
+        else {
+            QUnit.equal($.signalR.transports._logic.addQs(url, connection.qs), "foo&bar=&goodluck=%24%26%2B%2C%2F%3A%3B%3D%3F%40+%22%3C%3E%23%25%7B%7D%7C%5E%5B%5D%60", "When connection.qs is a string the connection.qs characters are encoded.");
+        }
     }
 
     connection.qs = 1337;

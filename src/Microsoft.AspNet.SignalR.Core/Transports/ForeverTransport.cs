@@ -1,9 +1,11 @@
-﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.md in the project root for license information.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
+using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR.Hosting;
 using Microsoft.AspNet.SignalR.Infrastructure;
@@ -315,9 +317,28 @@ namespace Microsoft.AspNet.SignalR.Transports
                 writer.Flush();
 
                 context.Transport.Context.Response.Write(writer.Buffer);
+
+                context.Transport.TraceOutgoingMessage(writer.Buffer);
             }
 
             return TaskAsyncHelper.Empty;
+        }
+
+        internal void TraceOutgoingMessage(ArraySegment<byte> message)
+        {
+            if (Trace.Switch.ShouldTrace(TraceEventType.Verbose))
+            {
+                var decodedMessage = Encoding.UTF8.GetString(message.Array, message.Offset, message.Count);
+
+                // don't log keep alive messages
+                if (decodedMessage == "{}")
+                {
+                    return;
+                }
+
+                Trace.TraceVerbose("Sending outgoing message. Connection id: {0}, transport: {1}, message: {2}",
+                    ConnectionId, GetType().Name, decodedMessage);
+            }
         }
 
         private class ForeverTransportContext

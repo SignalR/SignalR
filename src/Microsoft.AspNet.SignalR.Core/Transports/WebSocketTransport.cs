@@ -1,4 +1,5 @@
-﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.md in the project root for license information.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.Collections.Generic;
@@ -101,11 +102,6 @@ namespace Microsoft.AspNet.SignalR.Transports
             {
                 return AcceptWebSocketRequest(socket =>
                 {
-                    _socket = socket;
-                    socket.OnClose = _closed;
-                    socket.OnMessage = _message;
-                    socket.OnError = _error;
-
                     return ProcessRequestCore(connection);
                 });
             }
@@ -147,7 +143,14 @@ namespace Microsoft.AspNet.SignalR.Transports
                 return _context.Response.End(Resources.Error_NotWebSocketRequest);
             }
 
-            var handler = new OwinWebSocketHandler(callback, _maxIncomingMessageSize);
+            Action<IWebSocket> prepareWebSocket = socket => {
+                _socket = socket;
+                socket.OnClose = _closed;
+                socket.OnMessage = _message;
+                socket.OnError = _error;
+            };
+
+            var handler = new OwinWebSocketHandler(callback, prepareWebSocket, _maxIncomingMessageSize);
             accept(null, handler.ProcessRequest);
             return TaskAsyncHelper.Empty;
         }
@@ -165,6 +168,8 @@ namespace Microsoft.AspNet.SignalR.Transports
                     writer.Flush();
 
                     await socket.Send(writer.Buffer).PreserveCulture();
+
+                    context.Transport.TraceOutgoingMessage(writer.Buffer);
                 }
                 catch (Exception ex)
                 {

@@ -1,4 +1,7 @@
-﻿QUnit.module("Send Facts");
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+QUnit.module("Send Facts");
 
 testUtilities.runWithAllTransports(function (transport) {
     QUnit.asyncTimeoutTest(transport + " transport can send ", testUtilities.defaultTestTimeout, function (end, assert, testName) {

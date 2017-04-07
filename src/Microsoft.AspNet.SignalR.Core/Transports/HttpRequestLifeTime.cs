@@ -1,4 +1,5 @@
-﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.md in the project root for license information.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.Diagnostics;
@@ -9,7 +10,7 @@ namespace Microsoft.AspNet.SignalR.Transports
 {
     internal class HttpRequestLifeTime
     {
-        private readonly TaskCompletionSource<object> _lifetimeTcs;
+        private readonly DispatchingTaskCompletionSource<object> _lifetimeTcs;
         private readonly TransportDisconnectBase _transport;
         private readonly TaskQueue _writeQueue;
         private readonly TraceSource _trace;
@@ -17,7 +18,7 @@ namespace Microsoft.AspNet.SignalR.Transports
 
         public HttpRequestLifeTime(TransportDisconnectBase transport, TaskQueue writeQueue, TraceSource trace, string connectionId)
         {
-            _lifetimeTcs = new TaskCompletionSource<object>();
+            _lifetimeTcs = new DispatchingTaskCompletionSource<object>();
             _transport = transport;
             _trace = trace;
             _connectionId = connectionId;
@@ -66,11 +67,11 @@ namespace Microsoft.AspNet.SignalR.Transports
 
         private class LifetimeContext
         {
-            private readonly TaskCompletionSource<object> _lifetimeTcs;
+            private readonly DispatchingTaskCompletionSource<object> _lifetimeTcs;
             private readonly Exception _error;
             private readonly TransportDisconnectBase _transport;
 
-            public LifetimeContext(TransportDisconnectBase transport, TaskCompletionSource<object> lifeTimetcs, Exception error)
+            public LifetimeContext(TransportDisconnectBase transport, DispatchingTaskCompletionSource<object> lifeTimetcs, Exception error)
             {
                 _transport = transport;
                 _lifetimeTcs = lifeTimetcs;

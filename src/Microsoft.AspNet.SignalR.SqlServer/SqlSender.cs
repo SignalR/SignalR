@@ -1,4 +1,5 @@
-﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.md in the project root for license information.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.Collections.Generic;
@@ -46,7 +47,7 @@ namespace Microsoft.AspNet.SignalR.SqlServer
             parameter.ParameterName = "Payload";
             parameter.DbType = DbType.Binary;
             parameter.Value = SqlPayload.ToBytes(messages);
-            
+
             var operation = new DbOperation(_connectionString, _insertDml, _trace, parameter);
 
             return operation.ExecuteNonQueryAsync();

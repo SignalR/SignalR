@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -162,11 +165,11 @@ namespace Microsoft.AspNet.SignalR.Tests.Common.Infrastructure
                 var content = string.Format("UserName={0}&Password={1}", user, password);
                 var response = httpClient.PostAsync(host.Url + "/cookieauth/Account/Login", new StringContent(content, Encoding.UTF8, "application/x-www-form-urlencoded")).Result;
             }
-            
+
             var connection = new Client.Connection(host.Url + "/cookieauth" + path, query);
             connection.TraceWriter = host.ClientTraceOutput ?? connection.TraceWriter;
             connection.CookieContainer = handler.CookieContainer;
-            
+
             return connection;
         }
 

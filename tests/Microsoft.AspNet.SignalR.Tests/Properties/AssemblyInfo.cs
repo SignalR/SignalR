@@ -1,5 +1,9 @@
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System.Reflection;
 using System.Runtime.InteropServices;
+using Xunit;
 
 // General Information about an assembly is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
@@ -20,3 +24,6 @@ using System.Runtime.InteropServices;
 
 // The following GUID is for the ID of the typelib if this project is exposed to COM
 [assembly: Guid("8871e257-395a-4d9d-ac4c-f799660d5474")]
+
+// TypedClientBuilderFacts are flaky when running in parallel
+[assembly: CollectionBehavior(DisableTestParallelization = true)]

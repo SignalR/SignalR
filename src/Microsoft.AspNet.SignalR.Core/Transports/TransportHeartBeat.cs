@@ -1,4 +1,5 @@
-﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.md in the project root for license information.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.Collections.Concurrent;
@@ -85,6 +86,10 @@ namespace Microsoft.AspNet.SignalR.Transports
                 // If we have old metadata this isn't a new connection
                 isNewConnection = false;
                 oldConnection = old.Connection;
+
+                // If the old connection was on a different transport, we need to transfer the count
+                old.Connection.DecrementConnectionsCount();
+                newMetadata.Connection.IncrementConnectionsCount();
 
                 return newMetadata;
             });

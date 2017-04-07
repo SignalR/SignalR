@@ -1,4 +1,5 @@
-﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.md in the project root for license information.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.Diagnostics.CodeAnalysis;
@@ -8,6 +9,7 @@ using Microsoft.AspNet.SignalR.Client.Http;
 using Windows.Networking.Sockets;
 using Microsoft.AspNet.SignalR.Client.Infrastructure;
 using Windows.Storage.Streams;
+using Microsoft.AspNet.SignalR.Infrastructure;
 
 namespace Microsoft.AspNet.SignalR.Client.Transports
 {
@@ -161,7 +163,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
                     ex = new InvalidOperationException(ResourcesStore.GetResourceString("Error_DataCannotBeSentDuringWebSocketReconnect"));
                 }
 
-                var tcs = new TaskCompletionSource<object>();
+                var tcs = new DispatchingTaskCompletionSource<object>();
                 tcs.SetException(ex);
                 return tcs.Task;
             }

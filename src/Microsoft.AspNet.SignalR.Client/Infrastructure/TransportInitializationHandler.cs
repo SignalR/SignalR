@@ -1,4 +1,5 @@
-﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.md in the project root for license information.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.Threading;
@@ -13,7 +14,7 @@ namespace Microsoft.AspNet.SignalR.Client.Infrastructure
     internal class TransportInitializationHandler
     {
         private readonly ThreadSafeInvoker _initializationInvoker;
-        private readonly TaskCompletionSource<object> _initializationTask;
+        private readonly DispatchingTaskCompletionSource<object> _initializationTask;
         private readonly IConnection _connection;
         private readonly IHttpClient _httpClient;
         private readonly string _connectionData;
@@ -48,7 +49,7 @@ namespace Microsoft.AspNet.SignalR.Client.Infrastructure
             _transport = transport;
             _transportHelper = transportHelper;
 
-            _initializationTask = new TaskCompletionSource<object>();
+            _initializationTask = new DispatchingTaskCompletionSource<object>();
             _initializationInvoker = new ThreadSafeInvoker();
 
             // Default event
@@ -145,7 +146,7 @@ namespace Microsoft.AspNet.SignalR.Client.Infrastructure
 
         private static void Dispatch(Action callback)
         {
-#if NETFX_CORE
+#if NETFX_CORE || NETSTANDARD
             Task.Run(() =>
 #else
             ThreadPool.QueueUserWorkItem(_ =>

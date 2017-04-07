@@ -1,4 +1,5 @@
-﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.md in the project root for license information.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.Collections.Generic;
@@ -60,7 +61,9 @@ namespace Microsoft.AspNet.SignalR.Utils
             path = path ?? Directory.GetCurrentDirectory();
             url = url ?? "/signalr";
 
-            var assemblies = Directory.GetFiles(path, "*.dll", SearchOption.AllDirectories);
+            var assemblies = Directory.GetFiles(path, "*.exe", SearchOption.AllDirectories)
+                      .Concat(Directory.GetFiles(path, "*.dll", SearchOption.AllDirectories));
+
             var tempPath = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
 
             Info(String.Format(CultureInfo.CurrentCulture, Resources.Notify_CreatingTempDirectory, tempPath));
@@ -149,7 +152,10 @@ namespace Microsoft.AspNet.SignalR.Utils
             [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1822:MarkMembersAsStatic", Justification = "Called from non-static.")]
             public string GenerateProxy(string path, string url, Action<string> warning)
             {
-                foreach (var assemblyPath in Directory.GetFiles(path, "*.dll", SearchOption.AllDirectories))
+                var assemblies = Directory.GetFiles(path, "*.exe", SearchOption.AllDirectories)
+                          .Concat(Directory.GetFiles(path, "*.dll", SearchOption.AllDirectories));
+
+                foreach (var assemblyPath in assemblies)
                 {
                     try
                     {

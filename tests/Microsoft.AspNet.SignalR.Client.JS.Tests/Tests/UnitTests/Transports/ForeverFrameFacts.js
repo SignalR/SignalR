@@ -1,4 +1,7 @@
-﻿/// <reference path="..\..\..\SignalR.Client.JS\jquery.signalR.core.js" />
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+/// <reference path="..\..\..\SignalR.Client.JS\jquery.signalR.core.js" />
 /// <reference path="..\..\..\SignalR.Client.JS\jquery.signalR.transports.foreverFrame.js" />
 
 QUnit.module("Forever Frame Facts");
@@ -60,7 +63,8 @@ QUnit.test("IFrame is created outside body.", function () {
     var frame = $("body")[0].nextSibling;
     QUnit.equal(frame && frame.tagName, 'IFRAME');
 
-    if (frame) {
-        frame.parentNode.removeChild(frame);
-    };
+    $.connection.transports.foreverFrame.stop(connection);
+
+    // verify the frame was removed when the transport was stopped
+    QUnit.isTrue($("body")[0].nextSibling === null);
 });

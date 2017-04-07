@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
@@ -43,7 +46,7 @@ namespace Microsoft.AspNet.SignalR.Redis.Tests
         }
 
         [Fact]
-        public void OpenCalledOnConnectionRestored()
+        public async Task OpenCalledOnConnectionRestored()
         {
             int openInvoked = 0;
             var wh = new ManualResetEventSlim();
@@ -51,7 +54,7 @@ namespace Microsoft.AspNet.SignalR.Redis.Tests
             var redisConnection = GetMockRedisConnection();
 
             var redisMessageBus = new Mock<RedisMessageBus>(GetDependencyResolver(), new RedisScaleoutConfiguration(String.Empty, String.Empty),
-                redisConnection.Object) { CallBase = true };
+                redisConnection.Object, false) { CallBase = true };
 
             redisMessageBus.Setup(m => m.OpenStream(It.IsAny<int>())).Callback(() =>
             {
@@ -62,9 +65,10 @@ namespace Microsoft.AspNet.SignalR.Redis.Tests
                 }
             });
 
-            // Creating an instance to invoke the constructor which starts the connection
             var instance = redisMessageBus.Object;
+            await instance.ConnectWithRetry();
 
+            redisConnection.Raise(mock => mock.ConnectionFailed += null, new Exception());
             redisConnection.Raise(mock => mock.ConnectionRestored += null, new Exception());
 
             Assert.True(wh.Wait(TimeSpan.FromSeconds(5)));
@@ -89,7 +93,7 @@ namespace Microsoft.AspNet.SignalR.Redis.Tests
         }
 
         [Fact]
-        public void RestoreLatestValueForKeyCalledOnConnectionRestored()
+        public async Task RestoreLatestValueForKeyCalledOnConnectionRestored()
         {
             bool restoreLatestValueForKey = false;
 
@@ -102,11 +106,21 @@ namespace Microsoft.AspNet.SignalR.Redis.Tests
             });
 
             var redisMessageBus = new RedisMessageBus(GetDependencyResolver(), new RedisScaleoutConfiguration(String.Empty, String.Empty),
-            redisConnection.Object, true);
+            redisConnection.Object, connectAutomatically: false);
 
+            await redisMessageBus.ConnectWithRetry();
+
+            redisConnection.Raise(mock => mock.ConnectionFailed += null, new Exception());
             redisConnection.Raise(mock => mock.ConnectionRestored += null, new Exception());
 
             Assert.True(restoreLatestValueForKey, "RestoreLatestValueForKey not invoked");
+        }
+
+        [Fact]
+        public void DatabaseFromConnectionstringIsUsed()
+        {
+            var configuration = new RedisScaleoutConfiguration("localhost,defaultDatabase=5", String.Empty);
+            Assert.Equal(configuration.Database, 5);
         }
 
         private Mock<IRedisConnection> GetMockRedisConnection()

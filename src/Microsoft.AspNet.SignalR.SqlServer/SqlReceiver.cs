@@ -1,6 +1,8 @@
-﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.md in the project root for license information.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using Microsoft.AspNet.SignalR.Messaging;
+using Microsoft.AspNet.SignalR.Infrastructure;
 using System;
 using System.Data;
 using System.Diagnostics;
@@ -52,12 +54,12 @@ namespace Microsoft.AspNet.SignalR.SqlServer
 
         public Task StartReceiving()
         {
-            var tcs = new TaskCompletionSource<object>();
+            var tcs = new DispatchingTaskCompletionSource<object>();
 
             if (_configuration.UseImpersonation)
             {
                 var identity = WindowsIdentity.GetCurrent();
-                var threadSafeContainer = new Tuple<TaskCompletionSource<object>, WindowsIdentity>(tcs, identity);
+                var threadSafeContainer = new Tuple<DispatchingTaskCompletionSource<object>, WindowsIdentity>(tcs, identity);
                 ThreadPool.QueueUserWorkItem(Receive, threadSafeContainer);
             }
             else
@@ -85,18 +87,18 @@ namespace Microsoft.AspNet.SignalR.SqlServer
          SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "On a background thread with explicit error processing")]
         private void Receive(object state)
         {
-            TaskCompletionSource<object> tcs = null;
+            DispatchingTaskCompletionSource<object> tcs = null;
             WindowsImpersonationContext context = null;
 
-            if (state != null && state is Tuple<TaskCompletionSource<object>, WindowsIdentity>)
+            if (state != null && state is Tuple<DispatchingTaskCompletionSource<object>, WindowsIdentity>)
             {
-                var threadSafeContainer = (Tuple<TaskCompletionSource<object>, WindowsIdentity>)state;
+                var threadSafeContainer = (Tuple<DispatchingTaskCompletionSource<object>, WindowsIdentity>)state;
                 tcs = threadSafeContainer.Item1;
                 context = threadSafeContainer.Item2.Impersonate();
             }
             else
             {
-                tcs = (TaskCompletionSource<object>)state;
+                tcs = (DispatchingTaskCompletionSource<object>)state;
             }
 
             if (!_lastPayloadId.HasValue)

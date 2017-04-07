@@ -1,6 +1,7 @@
-﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.md in the project root for license information.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-#if CLIENT_NET45 || CLIENT_NET4 || PORTABLE || NETFX_CORE
+#if CLIENT_NET45 || CLIENT_NET4 || PORTABLE || NETFX_CORE || NETSTANDARD
 #define CLIENT
 #endif
 
@@ -42,7 +43,7 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
             _lastQueuedTask = initialTask;
         }
 
-        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode", Justification = "This is shared code")]        
+        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode", Justification = "This is shared code")]
         public TaskQueue(Task initialTask, int maxSize)
         {
             _lastQueuedTask = initialTask;

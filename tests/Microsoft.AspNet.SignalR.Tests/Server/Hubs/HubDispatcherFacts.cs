@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.IO;
@@ -31,7 +34,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Server.Hubs
         }
 
         [Theory]
-        [PropertyData("JSProxyUrls")]
+        [MemberData(nameof(JSProxyUrls))]
         public void RequestingSignalrHubsUrlReturnsProxy(string proxyUrl)
         {
             // Arrange
@@ -56,7 +59,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Server.Hubs
         }
 
         [Theory]
-        [PropertyData("JSProxyUrls")]
+        [MemberData(nameof(JSProxyUrls))]
         public void RequestingSignalrHubsUrlWithTrailingSlashReturnsProxy(string proxyUrl)
         {
             // Arrange
@@ -81,7 +84,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Server.Hubs
         }
 
         [Theory]
-        [PropertyData("JSProxyUrls")]
+        [MemberData(nameof(JSProxyUrls))]
         public void RequestingSignalrHubsUrlWithJavaScriptProxiesDesabledDoesNotReturnProxy(string proxyUrl)
         {
             // Arrange

@@ -1,5 +1,9 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR.Infrastructure;
 using Microsoft.AspNet.SignalR.Json;
 using Microsoft.AspNet.SignalR.Messaging;
@@ -13,7 +17,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Core
     public class ConnectionExtensionsFacts
     {
         [Fact]
-        public void SendThrowsNullExceptionWhenConnectionIdIsNull()
+        public async Task SendThrowsNullExceptionWhenConnectionIdIsNull()
         {
             var serializer = JsonUtility.CreateDefaultSerializer();
             var counters = new PerformanceCounterManager();
@@ -32,11 +36,11 @@ namespace Microsoft.AspNet.SignalR.Tests.Core
                                 new Mock<IProtectedData>().Object,
                                 new MemoryPool());
 
-            Assert.Throws<ArgumentException>(() => connection.Send((string)null, new object()));
+            await Assert.ThrowsAsync<ArgumentException>(() => connection.Send((string)null, new object()));
         }
 
         [Fact]
-        public void SendThrowsNullExceptionWhenConnectionIdsAreNull()
+        public async Task SendThrowsNullExceptionWhenConnectionIdsAreNull()
         {
             var serializer = JsonUtility.CreateDefaultSerializer();
             var counters = new PerformanceCounterManager();
@@ -55,7 +59,8 @@ namespace Microsoft.AspNet.SignalR.Tests.Core
                                 new Mock<IProtectedData>().Object,
                                 new MemoryPool());
 
-            Assert.Throws<ArgumentNullException>(() => connection.Send((IList<string>)null, new object()));
+            await Assert.ThrowsAsync<ArgumentNullException>(
+                () => connection.Send((IList<string>)null, new object()));
         }
     }
 }

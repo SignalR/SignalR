@@ -1,4 +1,5 @@
-﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.md in the project root for license information.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.Collections.Generic;
@@ -6,6 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR.Client.Http;
 using Microsoft.AspNet.SignalR.Client.Infrastructure;
+using Microsoft.AspNet.SignalR.Infrastructure;
 
 namespace Microsoft.AspNet.SignalR.Client.Transports
 {
@@ -90,7 +92,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
 
         public Task Start(IConnection connection, string connectionData, CancellationToken disconnectToken)
         {
-            var tcs = new TaskCompletionSource<object>();
+            var tcs = new DispatchingTaskCompletionSource<object>();
 
             // Resolve the transport
             ResolveTransport(connection, connectionData, disconnectToken, tcs, _startIndex);
@@ -98,7 +100,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
             return tcs.Task;
         }
 
-        private void ResolveTransport(IConnection connection, string data, CancellationToken disconnectToken, TaskCompletionSource<object> tcs, int index)
+        private void ResolveTransport(IConnection connection, string data, CancellationToken disconnectToken, DispatchingTaskCompletionSource<object> tcs, int index)
         {
             // Pick the current transport
             IClientTransport transport = _transports[index];

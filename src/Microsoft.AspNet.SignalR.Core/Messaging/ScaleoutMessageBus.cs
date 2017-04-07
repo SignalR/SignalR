@@ -1,12 +1,13 @@
-﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.md in the project root for license information.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNet.SignalR.Configuration;
 using Microsoft.AspNet.SignalR.Infrastructure;
 using Microsoft.AspNet.SignalR.Tracing;
 
@@ -18,6 +19,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
     public abstract class ScaleoutMessageBus : MessageBus
     {
         private readonly SipHashBasedStringEqualityComparer _sipHashBasedComparer = new SipHashBasedStringEqualityComparer(0, 0);
+        private readonly ITraceManager _traceManager;
         private readonly TraceSource _trace;
         private readonly Lazy<ScaleoutStreamManager> _streamManager;
         private readonly IPerformanceCounterManager _perfCounters;
@@ -30,10 +32,12 @@ namespace Microsoft.AspNet.SignalR.Messaging
                 throw new ArgumentNullException("configuration");
             }
 
-            var traceManager = resolver.Resolve<ITraceManager>();
-            _trace = traceManager["SignalR." + typeof(ScaleoutMessageBus).Name];
+            _traceManager = resolver.Resolve<ITraceManager>();
+            _trace = _traceManager["SignalR." + typeof(ScaleoutMessageBus).Name];
             _perfCounters = resolver.Resolve<IPerformanceCounterManager>();
-            _streamManager = new Lazy<ScaleoutStreamManager>(() => new ScaleoutStreamManager(Send, OnReceivedCore, StreamCount, _trace, _perfCounters, configuration));
+            var maxScaloutMappings = resolver.Resolve<IConfigurationManager>().MaxScaleoutMappingsPerStream;
+            _streamManager = new Lazy<ScaleoutStreamManager>(
+                () => new ScaleoutStreamManager(Send, OnReceivedCore, StreamCount, _trace, _perfCounters, configuration, maxScaloutMappings));
         }
 
         /// <summary>
@@ -96,7 +100,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
                 return StreamManager.Send(0, messages);
             }
 
-            var taskCompletionSource = new TaskCompletionSource<object>();
+            var taskCompletionSource = new DispatchingTaskCompletionSource<object>();
 
             // Group messages by source (connection id)
             var messagesBySource = messages.GroupBy(m => m.Source);
@@ -112,7 +116,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
         }
 
         [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "We return a faulted tcs")]
-        private void SendImpl(IEnumerator<IGrouping<string, Message>> enumerator, TaskCompletionSource<object> taskCompletionSource)
+        private void SendImpl(IEnumerator<IGrouping<string, Message>> enumerator, DispatchingTaskCompletionSource<object> taskCompletionSource)
         {
         send:
 
@@ -165,13 +169,12 @@ namespace Microsoft.AspNet.SignalR.Messaging
             StreamManager.OnReceived(streamIndex, id, message);
         }
 
-        [SuppressMessage("Microsoft.Design", "CA1062:Validate arguments of public methods", MessageId = "2", Justification = "Called from derived class")]
-        [SuppressMessage("Microsoft.Design", "CA1062:Validate arguments of public methods", MessageId = "0", Justification = "Called from derived class")]
         private void OnReceivedCore(int streamIndex, ulong id, ScaleoutMessage scaleoutMessage)
         {
             Counters.ScaleoutMessageBusMessagesReceivedPerSec.IncrementBy(scaleoutMessage.Messages.Count);
 
             _trace.TraceInformation("OnReceived({0}, {1}, {2})", streamIndex, id, scaleoutMessage.Messages.Count);
+            TraceScaleoutMessages(id, scaleoutMessage);
 
             var localMapping = new LocalEventKeyInfo[scaleoutMessage.Messages.Count];
             var keys = new HashSet<string>();
@@ -186,6 +189,10 @@ namespace Microsoft.AspNet.SignalR.Messaging
 
                 keys.Add(message.Key);
                 ulong localId = Save(message);
+
+                _trace.TraceVerbose("Message id: {0}, stream : {1}, eventKey: '{2}' saved with local id: {3}",
+                    id, streamIndex, message.Key, localId);
+
                 MessageStore<Message> messageStore = Topics[message.Key].Store;
 
                 localMapping[i] = new LocalEventKeyInfo(message.Key, localId, messageStore);
@@ -197,10 +204,28 @@ namespace Microsoft.AspNet.SignalR.Messaging
             // Publish only after we've setup the mapping fully
             store.Add(id, scaleoutMessage, localMapping);
 
+            if (_trace.Switch.ShouldTrace(TraceEventType.Verbose))
+            {
+                _trace.TraceVerbose("Scheduling eventkeys: {0}", string.Join(",", keys));
+            }
+
             // Schedule after we're done
             foreach (var eventKey in keys)
             {
                 ScheduleEvent(eventKey);
+            }
+        }
+
+        private void TraceScaleoutMessages(ulong id, ScaleoutMessage scaleoutMessage)
+        {
+            if (!_trace.Switch.ShouldTrace(TraceEventType.Verbose))
+            {
+                return;
+            }
+
+            foreach (var message in scaleoutMessage.Messages)
+            {
+                _trace.TraceVerbose("Received message {0}: '{1}' over ScaleoutMessageBus", id, message.GetString());
             }
         }
 
@@ -227,7 +252,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
         [SuppressMessage("Microsoft.Design", "CA1062:Validate arguments of public methods", MessageId = "0", Justification = "Called from derived class")]
         protected override Subscription CreateSubscription(ISubscriber subscriber, string cursor, Func<MessageResult, object, Task<bool>> callback, int messageBufferSize, object state)
         {
-            return new ScaleoutSubscription(subscriber.Identity, subscriber.EventKeys, cursor, StreamManager.Streams, callback, messageBufferSize, Counters, state);
+            return new ScaleoutSubscription(subscriber.Identity, subscriber.EventKeys, cursor, StreamManager.Streams, callback, messageBufferSize, _traceManager, Counters, state);
         }
     }
 }

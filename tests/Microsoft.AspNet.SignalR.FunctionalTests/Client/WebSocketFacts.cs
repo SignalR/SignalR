@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR.Client;
@@ -7,6 +10,7 @@ using Microsoft.AspNet.SignalR.Tests.Common.Infrastructure;
 using Microsoft.AspNet.SignalR.Tests.Utilities;
 using Xunit;
 using Xunit.Extensions;
+using Microsoft.AspNet.SignalR.Infrastructure;
 
 namespace Microsoft.AspNet.SignalR.Tests
 {
@@ -29,7 +33,7 @@ namespace Microsoft.AspNet.SignalR.Tests
 
                     await connection.Start(host.Transport);
 
-                    var result = hub.InvokeWithTimeout<string>("ReturnLargePayload");
+                    var result = await hub.Invoke<string>("ReturnLargePayload").OrTimeout();
 
                     Assert.Equal(new string('a', 64 * 1024), result);
                 }

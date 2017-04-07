@@ -1,4 +1,5 @@
-﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.md in the project root for license information.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.Collections.Concurrent;
@@ -99,12 +100,12 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
 
         private class AckInfo
         {
-            public TaskCompletionSource<object> Tcs { get; private set; }
+            public DispatchingTaskCompletionSource<object> Tcs { get; private set; }
             public DateTime Created { get; private set; }
 
             public AckInfo()
             {
-                Tcs = new TaskCompletionSource<object>();
+                Tcs = new DispatchingTaskCompletionSource<object>();
                 Created = DateTime.UtcNow;
             }
         }

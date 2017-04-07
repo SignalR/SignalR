@@ -1,4 +1,5 @@
-﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.md in the project root for license information.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 #if !NETFX_CORE && !PORTABLE
@@ -8,7 +9,7 @@ using System.Net.Http;
 
 namespace Microsoft.AspNet.SignalR.Client.Http
 {
-#if !NETFX_CORE && !PORTABLE && !__ANDROID__ && !IOS
+#if !NETFX_CORE && !PORTABLE && !__ANDROID__ && !IOS && !NETSTANDARD
     public class DefaultHttpHandler : WebRequestHandler
 #else
     public class DefaultHttpHandler : HttpClientHandler
@@ -33,7 +34,7 @@ namespace Microsoft.AspNet.SignalR.Client.Http
             {
                 PreAuthenticate = true;
             }
-#elif NET45
+#elif NET45 || NETSTANDARD
             PreAuthenticate = true;
 #endif
 
@@ -49,7 +50,7 @@ namespace Microsoft.AspNet.SignalR.Client.Http
             }
 #endif
 
-#if (NET4 || NET45)
+#if (NET4 || NET45 || NETSTANDARD)
             foreach (X509Certificate cert in _connection.Certificates)
             {
                 ClientCertificates.Add(cert);

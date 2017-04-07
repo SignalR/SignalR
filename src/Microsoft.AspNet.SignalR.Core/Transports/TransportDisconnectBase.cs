@@ -1,4 +1,5 @@
-﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.md in the project root for license information.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.Diagnostics;
@@ -30,7 +31,7 @@ namespace Microsoft.AspNet.SignalR.Transports
         internal static readonly Func<Task> _emptyTaskFunc = () => TaskAsyncHelper.Empty;
 
         // The TCS that completes when the task returned by PersistentConnection.OnConnected does.
-        internal TaskCompletionSource<object> _connectTcs;
+        internal DispatchingTaskCompletionSource<object> _connectTcs;
 
         // Token that represents the end of the connection based on a combination of
         // conditions (timeout, disconnect, connection forcibly ended, host shutdown)
@@ -254,7 +255,7 @@ namespace Microsoft.AspNet.SignalR.Transports
         public abstract void IncrementConnectionsCount();
 
         public abstract void DecrementConnectionsCount();
-        
+
         public Task Disconnect()
         {
             return Abort(clean: false);
@@ -375,7 +376,7 @@ namespace Microsoft.AspNet.SignalR.Transports
             _requestLifeTime = new HttpRequestLifeTime(this, WriteQueue, Trace, ConnectionId);
 
             // Create the TCS that completes when the task returned by PersistentConnection.OnConnected does.
-            _connectTcs = new TaskCompletionSource<object>();
+            _connectTcs = new DispatchingTaskCompletionSource<object>();
 
             // Create a token that represents the end of this connection's life
             _connectionEndTokenSource = new SafeCancellationTokenSource();

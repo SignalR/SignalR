@@ -1,4 +1,5 @@
-﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.md in the project root for license information.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.Collections;
@@ -160,7 +161,7 @@ namespace Microsoft.AspNet.SignalR
         [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode", Justification = "This is a shared file")]
 #if SERVER
         private static void AttachFaultedContinuation<TTask>(TTask task, Action<AggregateException, object> handler, object state, TraceSource traceSource) where TTask : Task
-#else      
+#else
         private static void AttachFaultedContinuation<TTask>(TTask task, Action<AggregateException, object> handler, object state, IConnection connection) where TTask : Task
 #endif
         {
@@ -270,7 +271,7 @@ namespace Microsoft.AspNet.SignalR
         }
 
         [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode", Justification = "This is a shared file")]
-        public static void ContinueWithNotComplete(this Task task, TaskCompletionSource<object> tcs)
+        public static void ContinueWithNotComplete(this Task task, DispatchingTaskCompletionSource<object> tcs)
         {
             task.ContinueWithPreservedCulture(t =>
             {
@@ -287,7 +288,7 @@ namespace Microsoft.AspNet.SignalR
         }
 
         [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode", Justification = "This is a shared file")]
-        public static Task ContinueWith(this Task task, TaskCompletionSource<object> tcs)
+        public static Task ContinueWith(this Task task, DispatchingTaskCompletionSource<object> tcs)
         {
             task.ContinueWithPreservedCulture(t =>
             {
@@ -982,7 +983,7 @@ namespace Microsoft.AspNet.SignalR
         }
 
 
-#if !NETFX_CORE
+#if !NETFX_CORE && !NETSTANDARD
         internal struct CulturePair
         {
             public CultureInfo Culture;
@@ -1038,7 +1039,7 @@ namespace Microsoft.AspNet.SignalR
 
         internal static Task ContinueWithPreservedCulture(this Task task, Action<Task> continuationAction, TaskContinuationOptions continuationOptions)
         {
-#if NETFX_CORE
+#if NETFX_CORE || NETSTANDARD
             // The Thread class is not available on WinRT
             return task.ContinueWith(continuationAction, continuationOptions);
 #else
@@ -1049,7 +1050,7 @@ namespace Microsoft.AspNet.SignalR
 
         internal static Task ContinueWithPreservedCulture<T>(this Task<T> task, Action<Task<T>> continuationAction, TaskContinuationOptions continuationOptions)
         {
-#if NETFX_CORE
+#if NETFX_CORE || NETSTANDARD
             // The Thread class is not available on WinRT
             return task.ContinueWith(continuationAction, continuationOptions);
 #else
@@ -1061,7 +1062,7 @@ namespace Microsoft.AspNet.SignalR
         [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode", Justification = "This is a shared file")]
         internal static Task<TResult> ContinueWithPreservedCulture<T, TResult>(this Task<T> task, Func<Task<T>, TResult> continuationAction, TaskContinuationOptions continuationOptions)
         {
-#if NETFX_CORE
+#if NETFX_CORE || NETSTANDARD
             // The Thread class is not available on WinRT
             return task.ContinueWith(continuationAction, continuationOptions);
 #else
@@ -1352,6 +1353,25 @@ namespace Microsoft.AspNet.SignalR
         private static class TaskCache<T>
         {
             public static Task<T> Empty = MakeTask<T>(default(T));
+        }
+
+        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode", Justification = "This is a shared file")]
+        public static void Dispatch(Action action)
+        {
+#if PORTABLE
+            ThreadPool.QueueUserWorkItem(_ =>
+#elif NETFX_CORE || NETSTANDARD
+            Task.Run(() =>
+#else
+            ThreadPool.UnsafeQueueUserWorkItem(_ =>
+#endif
+            {
+                action();
+            }
+#if !(NETFX_CORE || NETSTANDARD)
+, state: null
+#endif
+);
         }
     }
 }

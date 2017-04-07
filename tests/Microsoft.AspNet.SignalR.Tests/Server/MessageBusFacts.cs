@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -60,7 +63,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
             }
         }
 
-        [Fact(Timeout = 5000)]
+        [Fact]
         public void SubscriptionWithCancelledTaskCanBeDisposed()
         {
             var dr = new DefaultDependencyResolver();
@@ -86,7 +89,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
 
                 bus.Publish("me", "key", "hello");
 
-                wh.Wait();
+                Assert.True(wh.Wait(5000));
 
                 subscription.Dispose();
             }

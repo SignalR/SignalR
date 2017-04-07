@@ -1,4 +1,7 @@
-﻿var buildStatusCodeConnection = function (alterWhen, statusCode, end, assert, testName, wrapStart) {
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+var buildStatusCodeConnection = function (alterWhen, statusCode, end, assert, testName, wrapStart) {
     var connection = testUtilities.createConnection("statusCodeConnection", end, assert, testName, wrapStart);
 
     connection.qs = {

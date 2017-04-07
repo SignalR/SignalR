@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR.Infrastructure;
@@ -11,7 +14,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
         [Fact]
         public void AcksLastingLongerThanThresholdAreCompleted()
         {
-            var ackHandler = new AckHandler(completeAcksOnTimeout: true, 
+            var ackHandler = new AckHandler(completeAcksOnTimeout: true,
                                             ackThreshold: TimeSpan.FromSeconds(1),
                                             ackInterval: TimeSpan.FromSeconds(1));
 
@@ -24,7 +27,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
         }
 
         [Fact]
-        public void TriggeredAcksAreCompleted()
+        public async Task TriggeredAcksAreCompleted()
         {
             var ackHandler = new AckHandler(completeAcksOnTimeout: false,
                                             ackThreshold: TimeSpan.Zero,
@@ -33,7 +36,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
             Task task = ackHandler.CreateAck("foo");
 
             Assert.True(ackHandler.TriggerAck("foo"));
-            Assert.True(task.IsCompleted);
+            await task.OrTimeout();
         }
 
         [Fact]

@@ -1,4 +1,7 @@
-﻿QUnit.module("Transports Common - Keep Alive Facts", testUtilities.transports.longPolling.enabled);
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+QUnit.module("Transports Common - Keep Alive Facts", testUtilities.transports.longPolling.enabled);
 
 QUnit.asyncTimeoutTest("Long polling transport does not check keep alive.", testUtilities.defaultTestTimeout, function (end, assert, testName) {
     var connection = testUtilities.createHubConnection(end, assert, testName);

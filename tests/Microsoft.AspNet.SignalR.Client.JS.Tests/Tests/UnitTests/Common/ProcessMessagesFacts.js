@@ -1,4 +1,7 @@
-﻿QUnit.module("Transports Common - Process Messages Facts");
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+QUnit.module("Transports Common - Process Messages Facts");
 
 QUnit.test("tryInitialize is triggered on an initialize message.", function () {
     var connection = testUtilities.createConnection(),

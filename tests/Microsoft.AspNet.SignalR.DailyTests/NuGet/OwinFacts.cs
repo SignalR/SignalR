@@ -1,4 +1,8 @@
-﻿using System.Collections.Generic;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System.Collections.Generic;
+using Xunit;
 using Xunit.Extensions;
 
 namespace Microsoft.AspNet.SignalR.FunctionalTests.NuGet
@@ -19,10 +23,10 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.NuGet
                     new []{"Production"},
                 };
             }
-        }        
+        }
 
         [Theory]
-        [PropertyData("Feeds")]
+        [MemberData(nameof(Feeds))]
         public void OwinCors(string name)
         {
             CommonNuGet.Run("Microsoft.Owin.Cors", name);

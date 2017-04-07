@@ -1,4 +1,5 @@
-﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.md in the project root for license information.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.Configuration;
@@ -53,7 +54,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Common.Infrastructure
                     host.Transport = host.TransportFactory();
                     break;
                 case HostType.Memory:
-                default: 
+                default:
                     var mh = new MemoryHost();
                     host = new MemoryTestHost(mh, Path.Combine(logBasePath, testName));
                     host.TransportFactory = () => CreateTransport(transportType, mh);

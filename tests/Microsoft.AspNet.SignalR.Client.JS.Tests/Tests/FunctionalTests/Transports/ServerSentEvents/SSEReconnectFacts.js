@@ -1,4 +1,7 @@
-﻿QUnit.module("Server Sent Events Facts", testUtilities.transports.serverSentEvents.enabled);
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+QUnit.module("Server Sent Events Facts", testUtilities.transports.serverSentEvents.enabled);
 
 QUnit.asyncTimeoutTest("Attempts to reconnect at the correct interval.", testUtilities.defaultTestTimeout* 2, function (end, assert, testName) {
     var connection = testUtilities.createConnection("signalr", end, assert, testName),

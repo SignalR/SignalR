@@ -28,11 +28,11 @@ namespace Microsoft.AspNet.SignalR.Client {
         private static global::System.Resources.ResourceManager resourceMan;
         
         private static global::System.Globalization.CultureInfo resourceCulture;
-        
+
         [global::System.Diagnostics.CodeAnalysis.SuppressMessageAttribute("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         internal Resources() {
         }
-        
+
         /// <summary>
         ///   Returns the cached ResourceManager instance used by this class.
         /// </summary>
@@ -40,7 +40,7 @@ namespace Microsoft.AspNet.SignalR.Client {
         internal static global::System.Resources.ResourceManager ResourceManager {
             get {
                 if (object.ReferenceEquals(resourceMan, null)) {
-#if NETFX_CORE
+#if NETFX_CORE || NETSTANDARD
                     var assembly = typeof(Resources).GetTypeInfo().Assembly;
 #else
                     var assembly = typeof(Resources).Assembly;
@@ -50,7 +50,7 @@ namespace Microsoft.AspNet.SignalR.Client {
                 return resourceMan;
             }
         }
-        
+
         /// <summary>
         ///   Overrides the current thread's CurrentUICulture property for all
         ///   resource lookups using this strongly typed resource class.

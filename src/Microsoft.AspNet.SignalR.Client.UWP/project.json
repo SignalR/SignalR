@@ -1,7 +1,7 @@
 ﻿{
   "dependencies": {
     "Microsoft.NETCore.UniversalWindowsPlatform": "5.0.0",
-    "Newtonsoft.Json": "7.0.1"
+    "Newtonsoft.Json": "6.0.4"
   },
   "frameworks": {
     "uap10.0": {}

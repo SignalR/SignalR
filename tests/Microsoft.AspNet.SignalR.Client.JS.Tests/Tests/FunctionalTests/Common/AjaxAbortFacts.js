@@ -1,4 +1,7 @@
-﻿QUnit.module("Transports Common - Ajax Abort Facts");
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+QUnit.module("Transports Common - Ajax Abort Facts");
 
 testUtilities.runWithTransports(["longPolling", "foreverFrame", "serverSentEvents"], function (transport) {
     QUnit.asyncTimeoutTest(transport + " transport can trigger abort on server via ajaxAbort.", testUtilities.defaultTestTimeout, function (end, assert, testName) {

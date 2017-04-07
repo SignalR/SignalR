@@ -1,4 +1,5 @@
-﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.md in the project root for license information.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.Diagnostics;
@@ -283,7 +284,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
             }
 
             var tcs = new TaskCompletionSource<object>();
-            
+
             queue.Drain().Catch(traceSource).ContinueWith(task =>
             {
                 tcs.SetResult(null);
@@ -303,12 +304,12 @@ namespace Microsoft.AspNet.SignalR.Messaging
             private readonly object _state;
 
             public readonly ScaleoutStream Stream;
-            public readonly TaskCompletionSource<object> TaskCompletionSource;
+            public readonly DispatchingTaskCompletionSource<object> TaskCompletionSource;
 
             public SendContext(ScaleoutStream stream, Func<object, Task> send, object state)
             {
                 Stream = stream;
-                TaskCompletionSource = new TaskCompletionSource<object>();
+                TaskCompletionSource = new DispatchingTaskCompletionSource<object>();
                 _send = send;
                 _state = state;
             }
