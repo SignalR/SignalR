@@ -13,6 +13,9 @@ namespace Microsoft.AspNet.SignalR.Client
 {
     public class HeartbeatMonitor : IDisposable
     {
+        // Used to ensure that there are no Beats after Dispose is called
+        private readonly object _timerLock = new object();
+
 #if !NETFX_CORE
         // Timer to determine when to notify the user and reconnect if required
         private Timer _timer;
@@ -79,8 +82,14 @@ namespace Microsoft.AspNet.SignalR.Client
 #endif
         private void Beat()
         {
-            TimeSpan timeElapsed = DateTime.UtcNow - _connection.LastMessageAt;
-            Beat(timeElapsed);
+            lock (_timerLock)
+            {
+                if (_timer == null)
+                    return;
+
+                TimeSpan timeElapsed = DateTime.UtcNow - _connection.LastMessageAt;
+                Beat(timeElapsed);
+            }
         }
 
         /// <summary>
@@ -156,14 +165,15 @@ namespace Microsoft.AspNet.SignalR.Client
             {
                 if (_timer != null)
                 {
+                    lock (_timerLock)
+                    {
 #if !NETFX_CORE
-
-                    _timer.Dispose();
-                    _timer = null;
+                        _timer.Dispose();
 #else
-                    _timer.Cancel();
-                    _timer = null;
+                        _timer.Cancel();
 #endif
+                        _timer = null;
+                    }
                 }
 
             }
