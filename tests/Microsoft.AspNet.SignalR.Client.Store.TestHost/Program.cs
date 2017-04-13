@@ -6,7 +6,7 @@ using System.Threading;
 using Microsoft.Owin.Hosting;
 using Owin;
 
-namespace Microsoft.AspNet.SignalR.Client.Store.TestHost
+namespace Microsoft.AspNet.SignalR.Client.UWP.TestHost
 {
     // Used for running End-to-End tests for Store WebSockets transport.
     public class Program
@@ -16,7 +16,7 @@ namespace Microsoft.AspNet.SignalR.Client.Store.TestHost
             const string url = "http://localhost:42424";
             using (WebApp.Start(url))
             {
-                Console.WriteLine("SignalR host for E2E Store Client tests running on {0}", url);
+                Console.WriteLine("SignalR host for E2E UWP Client tests running on {0}", url);
                 Thread.Sleep(args.Length > 0 ? int.Parse(args[0]) : Timeout.Infinite);
             }
         }

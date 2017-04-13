@@ -52,10 +52,16 @@ namespace Microsoft.AspNet.SignalR.Configuration
 
         /// <summary>
         /// Gets or sets a <see cref="TimeSpan"/> representing tell the client to wait before restablishing a
-        /// long poll connection after data is sent from the server. 
+        /// long poll connection after data is sent from the server.
         /// The default value is 0.
         /// </summary>
         [SuppressMessage("Microsoft.Naming", "CA1720:IdentifiersShouldNotContainTypeNames", MessageId = "long", Justification = "Longpolling is a well known term")]
         TimeSpan LongPollDelay { get; set; }
+
+        /// <summary>
+        /// Gets or sets the maximum number of scaleout mappings per scaleout stream stored on the server.
+        /// The default value is 65535
+        /// </summary>
+        int MaxScaleoutMappingsPerStream { get; set; }
     }
 }

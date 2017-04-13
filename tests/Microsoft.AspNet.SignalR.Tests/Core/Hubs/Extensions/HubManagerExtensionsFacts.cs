@@ -28,11 +28,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Core
             HubDescriptor hub = null,
                           actualDescriptor = hubManager.GetHub(TestHubName);
 
-            Assert.DoesNotThrow(() =>
-            {
-                hub = hubManager.EnsureHub(TestHubName);
-            });
-
+            hub = hubManager.EnsureHub(TestHubName);
             Assert.Equal(hub, actualDescriptor);
         }
     }

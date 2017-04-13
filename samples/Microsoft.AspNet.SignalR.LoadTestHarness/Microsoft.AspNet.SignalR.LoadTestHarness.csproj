@@ -26,7 +26,7 @@
     <IISExpressAnonymousAuthentication />
     <IISExpressWindowsAuthentication />
     <IISExpressUseClassicPipelineMode />
-    <TargetFrameworkProfile />
+    <UseGlobalApplicationHostFile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -173,9 +173,6 @@
     <None Include="wcat\wcat.bat" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="..\..\src\Microsoft.AspNet.SignalR.Core\TaskAsyncHelper.cs">
-      <Link>TaskAsyncHelper.cs</Link>
-    </Compile>
     <Compile Include="..\Microsoft.AspNet.SignalR.Samples\Hubs\RealtimeBroadcast\HighFrequencyTimer.cs">
       <Link>HighFrequencyTimer.cs</Link>
     </Compile>
@@ -240,7 +237,7 @@
     </VisualStudio>
   </ProjectExtensions>
   <Import Project="$(SolutionDir)\.nuget\NuGet.targets" />
-  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it.
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">
   </Target>

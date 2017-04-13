@@ -189,6 +189,9 @@
   <data name="Error_KeepAliveMustBeNoMoreThanAThirdOfTheDisconnectTimeout" xml:space="preserve">
     <value>KeepAlive value must be no more than a third of the DisconnectTimeout.</value>
   </data>
+  <data name="Error_MaxScaleoutMappingsPerStreamMustBeNonNegative">
+    <value>The value of the MaxScaleoutMappingsPerStream property must be greater or equal to zero.</value>
+  </data>
   <data name="Error_MethodCouldNotBeResolved" xml:space="preserve">
     <value>'{0}' method could not be resolved. No method found with that name.</value>
   </data>

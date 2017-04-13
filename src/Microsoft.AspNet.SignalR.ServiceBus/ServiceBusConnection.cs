@@ -54,7 +54,7 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
             }
 
             _backoffTime = configuration.BackoffTime;
-            _idleSubscriptionTimeout = configuration.IdleSubscriptionTimeout;    
+            _idleSubscriptionTimeout = configuration.IdleSubscriptionTimeout;
             _configuration = configuration;
         }
 

@@ -36,3 +36,7 @@ tests/Microsoft.AspNet.SignalR.Client.Store.Tests/AppPackages/
 /Microsoft.AspNet.SignalR.sln.ide
 /.vs/
 project.lock.json
+src/Microsoft.AspNet.SignalR.Client.NetStandard/Microsoft.AspNet.SignalR.Client.NetStandard.nuget.targets
+tests/Microsoft.AspNet.SignalR.Client.UWP.Tests/AppPackages/
+tests/Microsoft.AspNet.SignalR.Client.UWP.Tests/Microsoft.AspNet.SignalR.Client.UWP.Tests.nuget.props
+tests/Microsoft.AspNet.SignalR.Client.UWP.Tests/Microsoft.AspNet.SignalR.Client.UWP.Tests.nuget.targets

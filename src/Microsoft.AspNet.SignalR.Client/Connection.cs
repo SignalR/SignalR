@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -19,7 +19,7 @@ using Microsoft.AspNet.SignalR.Client.Transports;
 using Microsoft.AspNet.SignalR.Infrastructure;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-#if (NET4 || NET45)
+#if (NET4 || NET45 || NETSTANDARD)
 using System.Security.Cryptography.X509Certificates;
 #endif
 
@@ -70,7 +70,7 @@ namespace Microsoft.AspNet.SignalR.Client
 
         private Task _lastQueuedReceiveTask;
 
-        private TaskCompletionSource<object> _startTcs;
+        private DispatchingTaskCompletionSource<object> _startTcs;
 
         // Used to synchronize state changes
         private readonly object _stateLock = new object();
@@ -78,7 +78,7 @@ namespace Microsoft.AspNet.SignalR.Client
         // Used to synchronize starting and stopping specifically
         private readonly object _startLock = new object();
 
-        // Used to ensure we don't write to the Trace TextWriter from multiple threads simultaneously 
+        // Used to ensure we don't write to the Trace TextWriter from multiple threads simultaneously
         private readonly object _traceLock = new object();
 
         private DateTime _lastMessageAt;
@@ -89,7 +89,7 @@ namespace Microsoft.AspNet.SignalR.Client
         //The json serializer for the connections
         private JsonSerializer _jsonSerializer = new JsonSerializer();
 
-#if (NET4 || NET45)
+#if (NET4 || NET45 || NETSTANDARD)
         private readonly X509CertificateCollection _certCollection = new X509CertificateCollection();
 #endif
 
@@ -274,7 +274,7 @@ namespace Microsoft.AspNet.SignalR.Client
             }
         }
 
-#if NET4 || NET45
+#if NET4 || NET45 || NETSTANDARD
         X509CertificateCollection IConnection.Certificates
         {
             get
@@ -456,7 +456,7 @@ namespace Microsoft.AspNet.SignalR.Client
                 }
 
                 _disconnectCts = new CancellationTokenSource();
-                _startTcs = new TaskCompletionSource<object>();
+                _startTcs = new DispatchingTaskCompletionSource<object>();
                 _receiveQueueMonitor = new TaskQueueMonitor(this, DeadlockErrorTimeout);
                 _receiveQueue = new TaskQueue(_startTcs.Task, _receiveQueueMonitor);
                 _lastQueuedReceiveTask = TaskAsyncHelper.Empty;
@@ -744,7 +744,7 @@ namespace Microsoft.AspNet.SignalR.Client
             return Send(this.JsonSerializeObject(value));
         }
 
-#if (NET4 || NET45)
+#if (NET4 || NET45 || NETSTANDARD)
         /// <summary>
         /// Adds a client certificate to the request
         /// </summary>
@@ -920,6 +920,8 @@ namespace Microsoft.AspNet.SignalR.Client
             request.UserAgent = CreateUserAgentString("SignalR.Client.WinUAP");
 #elif WINDOWS_APP
             request.UserAgent = CreateUserAgentString("SignalR.Client.Win8UniversalApp");
+#elif NETSTANDARD
+            request.UserAgent = CreateUserAgentString("SignalR.Client.NetStandard");
 #elif NET45
             request.UserAgent = CreateUserAgentString("SignalR.Client.NET45");
 #else
@@ -934,13 +936,15 @@ namespace Microsoft.AspNet.SignalR.Client
             if (_assemblyVersion == null)
             {
 #if NETFX_CORE
-                _assemblyVersion = new Version("2.2.1");
+                _assemblyVersion = new Version("2.2.2");
+#elif NETSTANDARD
+                _assemblyVersion = new AssemblyName(typeof(Resources).GetTypeInfo().Assembly.FullName).Version;
 #else
                 _assemblyVersion = new AssemblyName(typeof(Connection).Assembly.FullName).Version;
 #endif
             }
 
-#if NETFX_CORE || PORTABLE
+#if NETFX_CORE || PORTABLE || NETSTANDARD
             return String.Format(CultureInfo.InvariantCulture, "{0}/{1} ({2})", client, _assemblyVersion, "Unknown OS");
 #else
             return String.Format(CultureInfo.InvariantCulture, "{0}/{1} ({2})", client, _assemblyVersion, Environment.OSVersion);
@@ -987,14 +991,14 @@ namespace Microsoft.AspNet.SignalR.Client
         /// </summary>
         private class DebugTextWriter : TextWriter
         {
-#if NETFX_CORE || PORTABLE
+#if NETFX_CORE || PORTABLE || NETSTANDARD
             private readonly StringBuilder _buffer;
 #endif
 
             public DebugTextWriter()
                 : base(CultureInfo.InvariantCulture)
             {
-#if NETFX_CORE || PORTABLE
+#if NETFX_CORE || PORTABLE || NETSTANDARD
                 _buffer = new StringBuilder();
 #endif
             }
@@ -1004,7 +1008,7 @@ namespace Microsoft.AspNet.SignalR.Client
                 Debug.WriteLine(value);
             }
 
-#if NETFX_CORE || PORTABLE
+#if NETFX_CORE || PORTABLE || NETSTANDARD
             public override void Write(char value)
             {
                 lock (_buffer)
@@ -1026,7 +1030,7 @@ namespace Microsoft.AspNet.SignalR.Client
                 get { return Encoding.UTF8; }
             }
 
-#if NETFX_CORE || PORTABLE
+#if NETFX_CORE || PORTABLE || NETSTANDARD
             public override void Flush()
             {
                 Debug.WriteLine(_buffer.ToString());

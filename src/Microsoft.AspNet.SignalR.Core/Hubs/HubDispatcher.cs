@@ -192,7 +192,7 @@ namespace Microsoft.AspNet.SignalR.Hubs
         {
             // TODO: Make adding parameters here pluggable? IValueProvider? ;)
             HubInvocationProgress progress = GetProgressInstance(methodDescriptor, value => SendProgressUpdate(hub.Context.ConnectionId, tracker, value, hubRequest), Trace);
-            
+
             Task<object> piplineInvocation;
             try
             {
@@ -303,7 +303,7 @@ namespace Microsoft.AspNet.SignalR.Hubs
         [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "A faulted task is returned.")]
         internal static Task<object> Incoming(IHubIncomingInvokerContext context)
         {
-            var tcs = new TaskCompletionSource<object>();
+            var tcs = new DispatchingTaskCompletionSource<object>();
 
             try
             {
@@ -395,8 +395,8 @@ namespace Microsoft.AspNet.SignalR.Hubs
             var signals = _hubs.SelectMany(info =>
             {
                 var items = new List<string>
-                { 
-                    PrefixHelper.GetHubName(info.Name), 
+                {
+                    PrefixHelper.GetHubName(info.Name),
                     PrefixHelper.GetHubConnectionId(info.CreateQualifiedName(connectionId)),
                 };
 
@@ -407,8 +407,8 @@ namespace Microsoft.AspNet.SignalR.Hubs
 
                 return items;
             })
-            .Concat(new[] 
-            { 
+            .Concat(new[]
+            {
                 PrefixHelper.GetConnectionId(connectionId)
             });
 
@@ -426,7 +426,7 @@ namespace Microsoft.AspNet.SignalR.Hubs
                 return TaskAsyncHelper.Empty;
             }
 
-            var tcs = new TaskCompletionSource<object>();
+            var tcs = new DispatchingTaskCompletionSource<object>();
             Task.Factory.ContinueWhenAll(operations, tasks =>
             {
                 DisposeHubs(hubs);
@@ -544,10 +544,13 @@ namespace Microsoft.AspNet.SignalR.Hubs
                 }
             }
 
+            Trace.TraceVerbose("Sending hub invocation result to connection {0} using transport {1}", Transport.ConnectionId, Transport.GetType().Name);
+
             return Transport.Send(hubResult);
         }
 
-        private static void ContinueWith<T>(Task<T> task, TaskCompletionSource<object> tcs)
+        // This method is being used to buld a callback with reflection
+        private static void ContinueWith<T>(Task<T> task, DispatchingTaskCompletionSource<object> tcs)
         {
             if (task.IsCompleted)
             {
@@ -560,7 +563,7 @@ namespace Microsoft.AspNet.SignalR.Hubs
             }
         }
 
-        private static void ContinueSync<T>(Task<T> task, TaskCompletionSource<object> tcs)
+        private static void ContinueSync<T>(Task<T> task, DispatchingTaskCompletionSource<object> tcs)
         {
             if (task.IsFaulted)
             {
@@ -576,7 +579,7 @@ namespace Microsoft.AspNet.SignalR.Hubs
             }
         }
 
-        private static void ContinueAsync<T>(Task<T> task, TaskCompletionSource<object> tcs)
+        private static void ContinueAsync<T>(Task<T> task, DispatchingTaskCompletionSource<object> tcs)
         {
             task.ContinueWithPreservedCulture(t =>
             {

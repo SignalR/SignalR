@@ -15,7 +15,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
     public class ScaleoutStreamFacts
     {
         [Fact]
-        public void SendBeforeOpenDoesNotThrowWhenQueuingBehaviorInitialOnly()
+        public async Task SendBeforeOpenDoesNotThrowWhenQueuingBehaviorInitialOnly()
         {
             var perfCounters = new Microsoft.AspNet.SignalR.Infrastructure.PerformanceCounterManager();
             var stream = new ScaleoutStream(new TraceSource("Queue"), "0", QueuingBehavior.InitialOnly, 1000, perfCounters);
@@ -24,7 +24,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
 
             stream.Open();
 
-            Assert.DoesNotThrow(() => sendTask.Wait());
+            await sendTask.OrTimeout();
         }
 
         [Fact]
@@ -32,7 +32,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
         {
             var perfCounters = new Microsoft.AspNet.SignalR.Infrastructure.PerformanceCounterManager();
             var stream = new ScaleoutStream(new TraceSource("Queue"), "0", QueuingBehavior.InitialOnly, 1000, perfCounters);
-            
+
             int x = 0;
 
             stream.Send(_ =>
@@ -52,7 +52,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
             stream.Open();
 
             task.Wait();
-            
+
             Assert.Equal(2, x);
         }
 
@@ -67,7 +67,8 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
             queueLengthCounter.Setup(c => c.Increment()).Callback(() => counterIncrementCount++);
             perfCounters.DefaultValue = DefaultValue.Mock;
             perfCounters.SetReturnsDefault(new NoOpPerformanceCounter());
-            perfCounters.SetupAllProperties();
+            perfCounters.SetupGet(p => p.ScaleoutStreamCountOpen).Returns(Mock.Of<IPerformanceCounter>());
+            perfCounters.SetupGet(p => p.ScaleoutStreamCountBuffering).Returns(Mock.Of<IPerformanceCounter>());
             perfCounters.Setup(pc => pc.ScaleoutSendQueueLength).Returns(queueLengthCounter.Object);
 
             var stream = new ScaleoutStream(new TraceSource("Queue"), "0", queuingBehavior, 1000, perfCounters.Object);
@@ -117,7 +118,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
         }
 
         [Fact]
-        public void ErrorOnSendThrowsNextTime()
+        public async Task ErrorOnSendThrowsNextTime()
         {
             var perfCounters = new Microsoft.AspNet.SignalR.Infrastructure.PerformanceCounterManager();
             var stream = new ScaleoutStream(new TraceSource("Queue"), "0", QueuingBehavior.Always, 1000, perfCounters);
@@ -129,12 +130,11 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
             },
             null);
 
-            Assert.Throws<AggregateException>(() => task.Wait());
-            Assert.Throws<InvalidOperationException>(() => stream.Send(_ => TaskAsyncHelper.Empty, null));
+            await Assert.ThrowsAsync<InvalidOperationException>(() => task);
+            await Assert.ThrowsAsync<InvalidOperationException>(() => stream.Send(_ => TaskAsyncHelper.Empty, null));
         }
 
-
-        [Fact(Timeout = 10000)]
+        [Fact]
         public void OpenAfterErrorRunsQueue()
         {
             int x = 0;
@@ -159,7 +159,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
             },
             null);
 
-            task.Wait();
+            Assert.True(task.Wait(10000));
 
             Assert.Equal(2, x);
         }
@@ -259,15 +259,15 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
             Assert.Equal(2, x);
         }
         [Fact]
-        public void SendAfterCloseThenOpenRemainsClosed()
+        public async Task SendAfterCloseThenOpenRemainsClosed()
         {
             var perfCounters = new Microsoft.AspNet.SignalR.Infrastructure.PerformanceCounterManager();
             var stream = new ScaleoutStream(new TraceSource("Queue"), "0", QueuingBehavior.Always, 1000, perfCounters);
             stream.Open();
-            stream.Send(_ => Task.Delay(50), null);
+            var ignore = stream.Send(_ => Task.Delay(50), null);
             stream.Close();
             stream.Open();
-            Assert.Throws<InvalidOperationException>(() => stream.Send(_ => TaskAsyncHelper.Empty, null));
+            await Assert.ThrowsAsync<InvalidOperationException>(() => stream.Send(_ => TaskAsyncHelper.Empty, null));
         }
 
         [Fact]
@@ -288,7 +288,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
             Assert.Equal(1, x);
         }
 
-        [Fact(Timeout = 10000)]
+        [Fact]
         public void InitialToClosed()
         {
             var perfCounters = new Microsoft.AspNet.SignalR.Infrastructure.PerformanceCounterManager();
@@ -297,23 +297,23 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
         }
 
         [Fact]
-        public void OpenAfterClosedEnqueueThrows()
+        public async Task OpenAfterClosedEnqueueThrows()
         {
             var perfCounters = new Microsoft.AspNet.SignalR.Infrastructure.PerformanceCounterManager();
             var stream = new ScaleoutStream(new TraceSource("Queue"), "0", QueuingBehavior.Always, 1000, perfCounters);
             stream.Close();
             stream.Open();
-            Assert.Throws<InvalidOperationException>(() => stream.Send(_ => TaskAsyncHelper.Empty, null));
+            await Assert.ThrowsAsync<InvalidOperationException>(() => stream.Send(_ => TaskAsyncHelper.Empty, null));
         }
 
         [Fact]
-        public void BufferAfterClosedEnqueueThrows()
+        public async Task BufferAfterClosedEnqueueThrows()
         {
             var perfCounters = new Microsoft.AspNet.SignalR.Infrastructure.PerformanceCounterManager();
             var stream = new ScaleoutStream(new TraceSource("Queue"), "0", QueuingBehavior.Always, 1000, perfCounters);
             stream.Close();
             stream.SetError(new Exception());
-            Assert.Throws<Exception>(() => stream.Send(_ => TaskAsyncHelper.Empty, null));
+            await Assert.ThrowsAsync<Exception>(() => stream.Send(_ => TaskAsyncHelper.Empty, null));
         }
     }
 }

@@ -29,6 +29,9 @@
         <dependency id="Newtonsoft.Json" version="6.0.4" />
         <dependency id="Microsoft.Net.Http" version="2.2.28" />
       </group>
+      <group targetFramework="netstandard1.3">
+        <dependency id="Newtonsoft.Json" version="9.0.1" />
+      </group>
     </dependencies>
   </metadata>
   <files>
@@ -42,5 +45,7 @@
     <file src="portable-win81+wpa81\Microsoft.AspNet.SignalR.Client.xml" target="lib\portable-win81+wpa81" />
     <file src="netcore50\Microsoft.AspNet.SignalR.Client.dll" target="lib\netcore50" />
     <file src="netcore50\Microsoft.AspNet.SignalR.Client.Xml" target="lib\netcore50" />
+    <file src="NetStandard\Microsoft.AspNet.SignalR.Client.dll" target="lib\netstandard1.3" />
+    <file src="NetStandard\Microsoft.AspNet.SignalR.Client.xml" target="lib\netstandard1.3" />
   </files>
 </package>

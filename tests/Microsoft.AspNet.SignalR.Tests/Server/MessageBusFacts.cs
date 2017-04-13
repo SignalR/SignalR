@@ -63,7 +63,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
             }
         }
 
-        [Fact(Timeout = 5000)]
+        [Fact]
         public void SubscriptionWithCancelledTaskCanBeDisposed()
         {
             var dr = new DefaultDependencyResolver();
@@ -89,7 +89,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
 
                 bus.Publish("me", "key", "hello");
 
-                wh.Wait();
+                Assert.True(wh.Wait(5000));
 
                 subscription.Dispose();
             }

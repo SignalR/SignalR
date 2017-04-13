@@ -63,7 +63,8 @@ QUnit.test("IFrame is created outside body.", function () {
     var frame = $("body")[0].nextSibling;
     QUnit.equal(frame && frame.tagName, 'IFRAME');
 
-    if (frame) {
-        frame.parentNode.removeChild(frame);
-    };
+    $.connection.transports.foreverFrame.stop(connection);
+
+    // verify the frame was removed when the transport was stopped
+    QUnit.isTrue($("body")[0].nextSibling === null);
 });

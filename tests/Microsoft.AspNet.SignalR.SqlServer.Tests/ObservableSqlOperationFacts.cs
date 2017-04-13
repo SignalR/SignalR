@@ -19,7 +19,7 @@ namespace Microsoft.AspNet.SignalR.Tests.SqlServer
     {
         private static readonly List<Tuple<int, int>> _defaultRetryDelays = new List<Tuple<int, int>> { new Tuple<int, int>(0, 1) };
 
-        [Theory(Timeout = 10000)]
+        [Theory]
         [InlineData(true)]
         [InlineData(false)]
         public void UseSqlNotificationsIfAvailable(bool supportSqlNotifications)
@@ -51,14 +51,14 @@ namespace Microsoft.AspNet.SignalR.Tests.SqlServer
 
             // Act
             ThreadPool.QueueUserWorkItem(_ => operation.ExecuteReaderWithUpdates((record, o) => { }));
-            mre.Wait();
+            Assert.True(mre.Wait(10000));
             operation.Dispose();
 
             // Assert
             Assert.Equal(supportSqlNotifications, sqlDependencyAdded);
         }
 
-        [Theory(Timeout = 10000)]
+        [Theory]
         [InlineData(1, null, null)]
         [InlineData(5, null, null)]
         [InlineData(10, null, null)]
@@ -99,14 +99,14 @@ namespace Microsoft.AspNet.SignalR.Tests.SqlServer
 
             // Act
             ThreadPool.QueueUserWorkItem(_ => operation.ExecuteReaderWithUpdates((record, o) => { }));
-            mre.Wait();
+            Assert.True(mre.Wait(10000));
             operation.Dispose();
 
             // Assert
             Assert.Equal(retryLoopTotal, retryLoopCount);
         }
 
-        [Fact(Timeout = 10000)]
+        [Fact]
         public void CallsOnErrorOnException()
         {
             // Arrange
@@ -126,7 +126,7 @@ namespace Microsoft.AspNet.SignalR.Tests.SqlServer
 
             // Act
             ThreadPool.QueueUserWorkItem(_ => operation.ExecuteReaderWithUpdates((record, o) => { }));
-            mre.Wait();
+            Assert.True(mre.Wait(10000));
             operation.Dispose();
 
             // Assert
@@ -159,7 +159,7 @@ namespace Microsoft.AspNet.SignalR.Tests.SqlServer
             operation.Dispose();
         }
 
-        [Fact(Timeout=5000)]
+        [Fact]
         public void ExecuteReaderSetsNotificationStateCorrectlyWhenRecordsReceivedWhileSettingUpSqlDependency()
         {
             // Arrange
@@ -191,7 +191,7 @@ namespace Microsoft.AspNet.SignalR.Tests.SqlServer
             // Act
             ThreadPool.QueueUserWorkItem(_ => operation.ExecuteReaderWithUpdates((__, ___) => { }));
 
-            mre.Wait();
+            Assert.True(mre.Wait(5000));
 
             Assert.True(stateOnLoopRestart.HasValue);
             Assert.Equal(ObservableDbOperation.NotificationState.ProcessingUpdates, stateOnLoopRestart.Value);
@@ -199,7 +199,7 @@ namespace Microsoft.AspNet.SignalR.Tests.SqlServer
             operation.Dispose();
         }
 
-        [Fact(Timeout = 5000)]
+        [Fact]
         public void ExecuteReaderSetsNotificationStateCorrectlyWhenNotificationReceivedBeforeChangingStateToAwaitingNotification()
         {
             // Arrange
@@ -240,7 +240,7 @@ namespace Microsoft.AspNet.SignalR.Tests.SqlServer
             // Act
             ThreadPool.QueueUserWorkItem(_ => operation.ExecuteReaderWithUpdates((__, ___) => { }));
 
-            mre.Wait();
+            Assert.True(mre.Wait(5000));
 
             Assert.True(stateOnLoopRestart.HasValue);
             Assert.Equal(ObservableDbOperation.NotificationState.ProcessingUpdates, stateOnLoopRestart.Value);

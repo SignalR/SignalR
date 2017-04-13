@@ -171,6 +171,7 @@ namespace Microsoft.AspNet.SignalR.Client.Tests
         public void HubCallbackClearedOnFailedInvocation()
         {
             var connection = new Mock<HubConnection>("http://foo");
+            connection.CallBase = true;
             var tcs = new TaskCompletionSource<object>();
 
             tcs.TrySetCanceled();
@@ -187,8 +188,9 @@ namespace Microsoft.AspNet.SignalR.Client.Tests
             Assert.Equal(connection.Object._callbacks.Count, 0);
         }
 
-        [Fact(Timeout = 5000)]
-        public void FailedHubCallbackDueToReconnectFollowedByInvoke()
+
+        [Fact]
+        public async Task FailedHubCallbackDueToReconnectFollowedByInvoke()
         {
             // Arrange
             var testTcs = new TaskCompletionSource<object>();
@@ -229,15 +231,15 @@ namespace Microsoft.AspNet.SignalR.Client.Tests
             var proxy = new HubProxy(connection, "test");
 
             // Act
-            connection.Start(transport.Object).Wait();
-            var crashTask = proxy.Invoke("crash")
-                .ContinueWith(t => proxy.Invoke("test"),
+            await connection.Start(transport.Object);
+            var crashTask = proxy.Invoke("crash");
+            var ignore = crashTask.ContinueWith(t => proxy.Invoke("test"),
                     TaskContinuationOptions.ExecuteSynchronously); // We need to ensure this executes sync so we're on the same stack
 
             // Assert
-            Assert.Throws(typeof(AggregateException), () => crashTask.Wait());
-            Assert.DoesNotThrow(() => testTcs.Task.Wait());
-        }
+            await Assert.ThrowsAnyAsync<InvalidOperationException>(async () => await crashTask.OrTimeout());
+            await testTcs.Task.OrTimeout();
+         }
 
         private class NullInvokeTest
         {

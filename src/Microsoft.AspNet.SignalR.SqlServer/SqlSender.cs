@@ -47,7 +47,7 @@ namespace Microsoft.AspNet.SignalR.SqlServer
             parameter.ParameterName = "Payload";
             parameter.DbType = DbType.Binary;
             parameter.Value = SqlPayload.ToBytes(messages);
-            
+
             var operation = new DbOperation(_connectionString, _insertDml, _trace, parameter);
 
             return operation.ExecuteNonQueryAsync();

@@ -212,8 +212,8 @@
                 }
 
                 // Ensure the iframe is where we left it
-                if (connection.frame.parentNode === window.document.body) {
-                    window.document.body.removeChild(connection.frame);
+                if (connection.frame.parentNode === window.document.documentElement) {
+                    window.document.documentElement.removeChild(connection.frame);
                 }
 
                 delete transportLogic.foreverFrame.connections[connection.frameId];

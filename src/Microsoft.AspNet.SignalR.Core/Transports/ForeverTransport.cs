@@ -5,6 +5,7 @@ using System;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
+using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR.Hosting;
 using Microsoft.AspNet.SignalR.Infrastructure;
@@ -316,9 +317,28 @@ namespace Microsoft.AspNet.SignalR.Transports
                 writer.Flush();
 
                 context.Transport.Context.Response.Write(writer.Buffer);
+
+                context.Transport.TraceOutgoingMessage(writer.Buffer);
             }
 
             return TaskAsyncHelper.Empty;
+        }
+
+        internal void TraceOutgoingMessage(ArraySegment<byte> message)
+        {
+            if (Trace.Switch.ShouldTrace(TraceEventType.Verbose))
+            {
+                var decodedMessage = Encoding.UTF8.GetString(message.Array, message.Offset, message.Count);
+
+                // don't log keep alive messages
+                if (decodedMessage == "{}")
+                {
+                    return;
+                }
+
+                Trace.TraceVerbose("Sending outgoing message. Connection id: {0}, transport: {1}, message: {2}",
+                    ConnectionId, GetType().Name, decodedMessage);
+            }
         }
 
         private class ForeverTransportContext

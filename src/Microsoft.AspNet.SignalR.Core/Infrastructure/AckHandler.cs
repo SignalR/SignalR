@@ -100,12 +100,12 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
 
         private class AckInfo
         {
-            public TaskCompletionSource<object> Tcs { get; private set; }
+            public DispatchingTaskCompletionSource<object> Tcs { get; private set; }
             public DateTime Created { get; private set; }
 
             public AckInfo()
             {
-                Tcs = new TaskCompletionSource<object>();
+                Tcs = new DispatchingTaskCompletionSource<object>();
                 Created = DateTime.UtcNow;
             }
         }

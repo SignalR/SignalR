@@ -253,6 +253,9 @@
     <Compile Include="..\Microsoft.AspNet.SignalR.Client\ObservableConnection.cs">
       <Link>ObservableConnection.cs</Link>
     </Compile>
+    <Compile Include="..\Microsoft.AspNet.SignalR.Core\Infrastructure\DispatchingTaskCompletionSource.cs">
+      <Link>Infrastructure\DispatchingTaskCompletionSource.cs</Link>
+    </Compile>
     <Compile Include="Resources.Designer.cs" />
     <Compile Include="..\Microsoft.AspNet.SignalR.Client\StateChange.cs">
       <Link>StateChange.cs</Link>

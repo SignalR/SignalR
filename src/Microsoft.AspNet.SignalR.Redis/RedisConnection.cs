@@ -17,7 +17,13 @@ namespace Microsoft.AspNet.SignalR.Redis
 
         public async Task ConnectAsync(string connectionString, TraceSource trace)
         {
-            _connection = await ConnectionMultiplexer.ConnectAsync(connectionString);
+            _connection = await ConnectionMultiplexer.ConnectAsync(connectionString, new TraceTextWriter("ConnectionMultiplexer: ", trace));
+            if (!_connection.IsConnected)
+            {
+                _connection.Dispose();
+                _connection = null;
+                throw new InvalidOperationException("Failed to connect to Redis");
+            }
 
             _connection.ConnectionFailed += OnConnectionFailed;
             _connection.ConnectionRestored += OnConnectionRestored;
@@ -31,6 +37,7 @@ namespace Microsoft.AspNet.SignalR.Redis
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1026:DefaultParametersShouldNotBeUsed")]
         public void Close(string key, bool allowCommandsToComplete = true)
         {
+            _trace.TraceInformation("Closing key: " + key);
             if (_redisSubscriber != null)
             {
                 _redisSubscriber.Unsubscribe(key);
@@ -46,6 +53,7 @@ namespace Microsoft.AspNet.SignalR.Redis
 
         public async Task SubscribeAsync(string key, Action<int, RedisMessage> onMessage)
         {
+            _trace.TraceInformation("Subscribing to key: " + key);
             await _redisSubscriber.SubscribeAsync(key, (channel, data) =>
             {
                 var message = RedisMessage.FromBytes(data, _trace);
@@ -91,8 +99,8 @@ namespace Microsoft.AspNet.SignalR.Redis
                 }
 
                 var redisResult = await _connection.GetDatabase(database).ScriptEvaluateAsync(
-                   @"local newvalue = redis.call('GET', KEYS[1])
-                     if not newvalue or newvalue < ARGV[1] then
+                   @"local newvalue = tonumber(redis.call('GET', KEYS[1]))
+                     if not newvalue or tonumber(newvalue) < tonumber(ARGV[1]) then
                          return redis.call('SET', KEYS[1], ARGV[1])
                      else
                          return nil
@@ -119,18 +127,21 @@ namespace Microsoft.AspNet.SignalR.Redis
 
         private void OnConnectionFailed(object sender, ConnectionFailedEventArgs args)
         {
+            _trace.TraceWarning("Connection failed. Reason: " + args.FailureType.ToString() + " Exception: " + args.Exception.ToString());
             var handler = ConnectionFailed;
             handler(args.Exception);
         }
 
         private void OnConnectionRestored(object sender, ConnectionFailedEventArgs args)
         {
+            _trace.TraceInformation("Connection restored");
             var handler = ConnectionRestored;
             handler(args.Exception);
         }
 
         private void OnError(object sender, RedisErrorEventArgs args)
         {
+            _trace.TraceWarning("Redis Error: " + args.Message);
             var handler = ErrorMessage;
             handler(new InvalidOperationException(args.Message));
         }

@@ -83,6 +83,8 @@ namespace Microsoft.AspNet.SignalR.Transports
                 writer.Flush();
 
                 context.Transport.Context.Response.Write(writer.Buffer);
+
+                context.Transport.TraceOutgoingMessage(writer.Buffer);
             }
 
             return context.Transport.Context.Response.Flush();

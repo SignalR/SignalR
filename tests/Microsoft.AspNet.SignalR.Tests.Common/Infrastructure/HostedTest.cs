@@ -165,11 +165,11 @@ namespace Microsoft.AspNet.SignalR.Tests.Common.Infrastructure
                 var content = string.Format("UserName={0}&Password={1}", user, password);
                 var response = httpClient.PostAsync(host.Url + "/cookieauth/Account/Login", new StringContent(content, Encoding.UTF8, "application/x-www-form-urlencoded")).Result;
             }
-            
+
             var connection = new Client.Connection(host.Url + "/cookieauth" + path, query);
             connection.TraceWriter = host.ClientTraceOutput ?? connection.TraceWriter;
             connection.CookieContainer = handler.CookieContainer;
-            
+
             return connection;
         }
 

@@ -9,6 +9,7 @@ using Microsoft.AspNet.SignalR.Client;
 using Microsoft.AspNet.SignalR.Client.Hubs;
 using Microsoft.AspNet.SignalR.Client.Transports;
 using Microsoft.AspNet.SignalR.FunctionalTests;
+using Microsoft.AspNet.SignalR.Infrastructure;
 using Microsoft.AspNet.SignalR.Tests.Common;
 using Microsoft.AspNet.SignalR.Tests.Common.Infrastructure;
 using Microsoft.AspNet.SignalR.Tests.Infrastructure;
@@ -55,24 +56,25 @@ namespace Microsoft.AspNet.SignalR.Tests
             }
         }
 
-        [Fact(Timeout = 10000)]
-        public void WebSocketTransportDoesntHangIfConnectReturnsCancelledTask()
+        [Fact]
+        public async Task WebSocketTransportDoesntHangIfConnectReturnsCancelledTask()
         {
-            RunWebSocketTransportWithConnectTask(() =>
+            await RunWebSocketTransportWithConnectTask(() =>
             {
                 var tcs = new TaskCompletionSource<object>();
                 tcs.SetCanceled();
                 return tcs.Task;
-            });
+            }).OrTimeout(10000);
         }
 
-        [Fact(Timeout = 10000)]
-        public void WebSocketTransportDoesntHangIfConnectReturnsFaultedTask()
+        [Fact]
+        public async Task WebSocketTransportDoesntHangIfConnectReturnsFaultedTask()
         {
-            RunWebSocketTransportWithConnectTask(() => TaskAsyncHelper.FromError(new Exception()));
+            await RunWebSocketTransportWithConnectTask(
+                () => TaskAsyncHelper.FromError(new InvalidOperationException())).OrTimeout(10000);
         }
 
-        public void RunWebSocketTransportWithConnectTask(Func<Task> taskReturn)
+        public async Task RunWebSocketTransportWithConnectTask(Func<Task> taskReturn)
         {
             using (var host = CreateHost(HostType.IISExpress))
             {
@@ -86,7 +88,8 @@ namespace Microsoft.AspNet.SignalR.Tests
 
                 using (hubConnection)
                 {
-                    Assert.Throws<AggregateException>(() => hubConnection.Start(transport.Object).Wait());
+                    await Assert.ThrowsAsync<InvalidOperationException>(
+                        async () => await hubConnection.Start(transport.Object));
                 }
             }
         }
@@ -653,7 +656,7 @@ namespace Microsoft.AspNet.SignalR.Tests
             }
         }
 
-        [Theory(Timeout = 10000)]
+        [Theory]
         [InlineData(HostType.IISExpress, TransportType.Websockets)]
         [InlineData(HostType.IISExpress, TransportType.ServerSentEvents)]
         [InlineData(HostType.IISExpress, TransportType.LongPolling)]
@@ -668,14 +671,14 @@ namespace Microsoft.AspNet.SignalR.Tests
                 {
                     var proxy = hubConnection.CreateHubProxy("EchoHub");
 
-                    await hubConnection.Start(host.Transport);
+                    await hubConnection.Start(host.Transport).OrTimeout();
 
-                    await proxy.Invoke("EchoCallback", "message");
+                    await proxy.Invoke("EchoCallback", "message").OrTimeout();
                 }
             }
         }
 
-        [Theory(Timeout = 10000)]
+        [Theory]
         [InlineData(HostType.IISExpress, TransportType.Websockets)]
         [InlineData(HostType.IISExpress, TransportType.ServerSentEvents)]
         [InlineData(HostType.IISExpress, TransportType.LongPolling)]
@@ -695,11 +698,11 @@ namespace Microsoft.AspNet.SignalR.Tests
                         hubConnection.Stop();
                     });
 
-                    await hubConnection.Start(host.Transport);
+                    await hubConnection.Start(host.Transport).OrTimeout();
 
                     try
                     {
-                        await proxy.Invoke("EchoAndDelayCallback", "message");
+                        await proxy.Invoke("EchoAndDelayCallback", "message").OrTimeout();
                         Assert.True(false, "The hub method invocation should fail.");
                     }
                     catch (InvalidOperationException)
@@ -707,6 +710,44 @@ namespace Microsoft.AspNet.SignalR.Tests
                         // This should throw as the invocation result will not be received due to the connection stopping
                         Assert.True(true);
                     }
+                }
+            }
+        }
+
+        [Theory]
+        [InlineData(HostType.HttpListener, TransportType.Websockets)]
+        public async Task NoDeadlockWhenBlockingAfterInvokingProxyMethod(HostType hostType, TransportType transportType)
+        {
+            using (var host = CreateHost(hostType, transportType))
+            {
+                host.Initialize();
+                HubConnection hubConnection = CreateHubConnection(host);
+                ManualResetEventSlim mre = new ManualResetEventSlim();
+
+                using (hubConnection)
+                {
+                    var proxy = hubConnection.CreateHubProxy("EchoHub");
+
+                    var called = false;
+                    proxy.On<string>("echo", message =>
+                    {
+                        if (!called)
+                        {
+                            called = true;
+                            proxy.Invoke("EchoCallback", "message");
+                        }
+                        else
+                        {
+                            mre.Set();
+                        }
+                    });
+
+                    await hubConnection.Start(host.Transport);
+                    await proxy.Invoke("EchoCallback", "message");
+
+                    Assert.True(mre.Wait(5000));
+
+                    hubConnection.Stop();
                 }
             }
         }

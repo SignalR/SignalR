@@ -20,7 +20,7 @@ namespace Microsoft.AspNet.SignalR.LoadTestHarness
             {
                 Connection.Broadcast(data);
             }
-            return TaskAsyncHelper.Empty;
+            return Task.FromResult<object>(null);
         }
     }
 

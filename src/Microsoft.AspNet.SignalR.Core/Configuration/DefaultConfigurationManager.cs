@@ -14,12 +14,15 @@ namespace Microsoft.AspNet.SignalR.Configuration
         // if _minimumKeepAlivesPerDisconnectTimeout != 3, update the ArguementOutOfRanceExceptionMessage below
         private const int _minimumKeepAlivesPerDisconnectTimeout = 3;
 
+        internal const int DefaultMaxScaleoutMappingsPerStream = 65535;
+
         // if _minimumDisconnectTimeout != 6 seconds, update the ArguementOutOfRanceExceptionMessage below
         private static readonly TimeSpan _minimumDisconnectTimeout = TimeSpan.FromTicks(_minimumKeepAlive.Ticks * _minimumKeepAlivesPerDisconnectTimeout);
 
         private bool _keepAliveConfigured;
         private TimeSpan? _keepAlive;
         private TimeSpan _disconnectTimeout;
+        private int _maxScaleoutMappingPerStream;
 
         public DefaultConfigurationManager()
         {
@@ -29,6 +32,7 @@ namespace Microsoft.AspNet.SignalR.Configuration
             MaxIncomingWebSocketMessageSize = 64 * 1024; // 64 KB
             TransportConnectTimeout = TimeSpan.FromSeconds(5);
             LongPollDelay = TimeSpan.Zero;
+            MaxScaleoutMappingsPerStream = DefaultMaxScaleoutMappingsPerStream;
         }
 
         // TODO: Should we guard against negative TimeSpans here like everywhere else?
@@ -60,7 +64,7 @@ namespace Microsoft.AspNet.SignalR.Configuration
                 _keepAlive = TimeSpan.FromTicks(_disconnectTimeout.Ticks / _minimumKeepAlivesPerDisconnectTimeout);
             }
         }
-        
+
         public TimeSpan? KeepAlive
         {
             get
@@ -106,6 +110,23 @@ namespace Microsoft.AspNet.SignalR.Configuration
         {
             get;
             set;
+        }
+
+        public int MaxScaleoutMappingsPerStream
+        {
+            get
+            {
+                return _maxScaleoutMappingPerStream;
+            }
+            set
+            {
+                if (value < 0)
+                {
+                    throw new ArgumentOutOfRangeException(nameof(value), Resources.Error_MaxScaleoutMappingsPerStreamMustBeNonNegative);
+                }
+
+                _maxScaleoutMappingPerStream = value;
+            }
         }
     }
 }

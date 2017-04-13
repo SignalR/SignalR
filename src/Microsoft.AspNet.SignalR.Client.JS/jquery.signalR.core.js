@@ -1,6 +1,6 @@
 /*global window:false */
 /*!
- * ASP.NET SignalR JavaScript Library v2.2.1-pre
+ * ASP.NET SignalR JavaScript Library v2.2.2-pre
  * http://signalr.net/
  *
  * Copyright (c) .NET Foundation. All rights reserved.
@@ -950,6 +950,9 @@
 
             // Clear out our message buffer
             connection._.connectingMessageBuffer.clear();
+            
+            // Clean up this event
+            $(connection).unbind(events.onStart);
 
             // Trigger the disconnect event
             changeState(connection, connection.state, signalR.connectionState.disconnected);

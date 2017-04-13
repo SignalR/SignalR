@@ -15,7 +15,6 @@
     <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\..\</SolutionDir>
     <RestorePackages>true</RestorePackages>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
-    <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -106,6 +105,7 @@
     <Compile Include="ConnectionMessage.cs" />
     <Compile Include="Infrastructure\DataProtectionProviderProtectedData.cs" />
     <Compile Include="Infrastructure\DefaultProtectedData.cs" />
+    <Compile Include="Infrastructure\DispatchingTaskCompletionSource.cs" />
     <Compile Include="Infrastructure\IMemoryPool.cs" />
     <Compile Include="Infrastructure\MemoryPool.cs" />
     <Compile Include="Infrastructure\MemoryPoolTextWriter.cs" />
@@ -248,6 +248,11 @@
     <Compile Include="Owin\WebSockets\WebSocketHandler.cs" />
     <Compile Include="Owin\WebSockets\WebSocketMessage.cs" />
     <Compile Include="Owin\WebSockets\WebSocketMessageReader.cs" />
+    <Compile Include="Resources.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
     <Compile Include="TaskAwaiterHelper.cs" />
     <Compile Include="Tracing\ITraceManager.cs" />
     <Compile Include="DependencyResolverExtensions.cs" />
@@ -274,11 +279,6 @@
     <Compile Include="GroupManager.cs" />
     <Compile Include="Infrastructure\AckSubscriber.cs" />
     <Compile Include="Messaging\Command.cs" />
-    <Compile Include="Resources.Designer.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>Resources.resx</DependentUpon>
-    </Compile>
     <Compile Include="Transports\ForeverFrameTransport.cs" />
     <Compile Include="Transports\ForeverTransport.cs" />
     <Compile Include="Configuration\IConfigurationManager.cs" />
@@ -308,8 +308,8 @@
   <ItemGroup>
     <EmbeddedResource Include="Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
-      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
       <SubType>Designer</SubType>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
     <EmbeddedResource Include="Scripts\hubs.js" />
   </ItemGroup>
@@ -322,9 +322,9 @@
   <Import Project="$(SolutionDir).nuget\NuGet.targets" Condition="HasTrailingSlash('$(SolutionDir)')" />
   <Target Name="AfterBuild">
   </Target>
-  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it.
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">
-  </Target>  
+  </Target>
   -->
 </Project>

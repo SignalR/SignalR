@@ -5,6 +5,7 @@ using System;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR.Client.Transports;
+using Microsoft.AspNet.SignalR.Infrastructure;
 
 namespace Microsoft.AspNet.SignalR.Client.Http
 {
@@ -20,7 +21,7 @@ namespace Microsoft.AspNet.SignalR.Client.Http
             var stream = response.GetStream();
             var reader = new AsyncStreamReader(stream);
             var result = new StringBuilder();
-            var resultTcs = new TaskCompletionSource<string>();
+            var resultTcs = new DispatchingTaskCompletionSource<string>();
 
             reader.Data = buffer =>
             {

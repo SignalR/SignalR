@@ -26,7 +26,7 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
 
         private readonly ServiceBusConnection _connection;
         private readonly string[] _topics;
-        
+
         public ServiceBusMessageBus(IDependencyResolver resolver, ServiceBusScaleoutConfiguration configuration)
             : base(resolver, configuration)
         {

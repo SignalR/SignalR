@@ -1111,7 +1111,18 @@ namespace Microsoft.AspNet.SignalR.Tests
                         testGuidInvocations++;
                         if (testGuidInvocations < 2)
                         {
-                            hub.Invoke("TestGuid").ContinueWithNotComplete(tcs);
+                            hub.Invoke("TestGuid").ContinueWithPreservedCulture(t =>
+                                {
+                                    if (t.IsFaulted)
+                                    {
+                                        tcs.SetUnwrappedException(t.Exception);
+                                    }
+                                    else if (t.IsCanceled)
+                                    {
+                                        tcs.SetCanceled();
+                                    }
+                                },
+                                TaskContinuationOptions.NotOnRanToCompletion);
                         }
                         else
                         {

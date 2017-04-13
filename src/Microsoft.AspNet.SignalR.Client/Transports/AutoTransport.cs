@@ -7,6 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR.Client.Http;
 using Microsoft.AspNet.SignalR.Client.Infrastructure;
+using Microsoft.AspNet.SignalR.Infrastructure;
 
 namespace Microsoft.AspNet.SignalR.Client.Transports
 {
@@ -91,7 +92,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
 
         public Task Start(IConnection connection, string connectionData, CancellationToken disconnectToken)
         {
-            var tcs = new TaskCompletionSource<object>();
+            var tcs = new DispatchingTaskCompletionSource<object>();
 
             // Resolve the transport
             ResolveTransport(connection, connectionData, disconnectToken, tcs, _startIndex);
@@ -99,7 +100,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
             return tcs.Task;
         }
 
-        private void ResolveTransport(IConnection connection, string data, CancellationToken disconnectToken, TaskCompletionSource<object> tcs, int index)
+        private void ResolveTransport(IConnection connection, string data, CancellationToken disconnectToken, DispatchingTaskCompletionSource<object> tcs, int index)
         {
             // Pick the current transport
             IClientTransport transport = _transports[index];
