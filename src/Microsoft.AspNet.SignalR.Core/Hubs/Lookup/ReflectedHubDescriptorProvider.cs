@@ -87,9 +87,7 @@ namespace Microsoft.AspNet.SignalR.Hubs
             try
             {
                 return typeof(IHub).IsAssignableFrom(type) &&
-                       !type.IsAbstract &&
-                       (type.Attributes.HasFlag(TypeAttributes.Public) ||
-                        type.Attributes.HasFlag(TypeAttributes.NestedPublic));
+                       !type.IsAbstract;
             }
             catch
             {
