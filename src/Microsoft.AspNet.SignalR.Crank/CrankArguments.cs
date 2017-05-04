@@ -68,28 +68,28 @@ namespace Microsoft.AspNet.SignalR.Crank
         [CommandLineParameter(Command = "SkipPerformanceCounters", Required = false, Default = false, Description = "Skip performance counter connection. Performance counters are not available on Azure WebApps.")]
         public bool SkipPerformanceCounters { get; set; }
 
-        [CommandLineParameter(Command = "UseADAuthentication", Required = false, Default = false, Description = "Enable Azure Active Directory Authentication for the SignalR endpoint.")]
+        [CommandLineParameter(Command = "UseADAuthentication", Required = false, Default = false, Description = "(ADAuthentication) Enable Azure Active Directory Authentication for the SignalR endpoint.")]
         public bool UseAadAwareConnectionFactory { get; set; }
 
-        [CommandLineParameter(Command = "ADInstance", Required = false, Default = "https://login.windows.net/{0}", Description = "The Active Directory instance URL. The default value is suitable for Azure Active Directory.")]
+        [CommandLineParameter(Command = "ADInstance", Required = false, Default = "https://login.windows.net/{0}", Description = "(ADAuthentication) The Active Directory instance URL. The default value is suitable for Azure Active Directory.")]
         public string AadInstance { get; set; }
 
-        [CommandLineParameter(Command = "ADTenant", Required = false, Description = "The name of the tenant, e.g. 'example.onmicrosoft.com'.")]
+        [CommandLineParameter(Command = "ADTenant", Required = false, Description = "(ADAuthentication) The name of the tenant, e.g. 'example.onmicrosoft.com'.")]
         public string Tenant { get; set; }
 
-        [CommandLineParameter(Command = "ADClientId", Required = false, Description = "The client id of the application registration for this app.")]
+        [CommandLineParameter(Command = "ADClientId", Required = false, Description = "(ADAuthentication) The client id of the application registration for this app.")]
         public string ClientId { get; set; }
 
-        [CommandLineParameter(Command = "ADRedirectUri", Required = false, Description = "The redirect URI provided during application registration.")]
+        [CommandLineParameter(Command = "ADRedirectUri", Required = false, Description = "(ADAuthentication) The redirect URI provided during application registration.")]
         public string RedirectUri { get; set; }
 
-        [CommandLineParameter(Command = "ADResourceId", Required = false, Description = "The ID of the resource to be accessed, e.g. the client id of another registered application.")]
+        [CommandLineParameter(Command = "ADResourceId", Required = false, Description = "(ADAuthentication) The ID of the resource to be accessed, e.g. the client id of another registered application.")]
         public string ResourceId { get; set; }
 
-        [CommandLineParameter(Command = "ADUsername", Required = false, Description = "The username to log in with. If not given, interactive login will be used. MSA or MFA accounts require interactive login.")]
+        [CommandLineParameter(Command = "ADUsername", Required = false, Description = "(ADAuthentication) The username to log in with. If not given, interactive login will be used. MSA or MFA accounts require interactive login.")]
         public string Username { get; set; }
 
-        [CommandLineParameter(Command = "ADPassword", Required = false, Description = "The password belonging to the username. If not given, interactive login will be used. MSA or MFA accounts require interactive login.")]
+        [CommandLineParameter(Command = "ADPassword", Required = false, Description = "(ADAuthentication) The password belonging to the username. If not given, interactive login will be used. MSA or MFA accounts require interactive login.")]
         public string Password { get; set; }
 
         public string Controller
