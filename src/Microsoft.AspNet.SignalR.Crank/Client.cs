@@ -68,13 +68,13 @@ namespace Microsoft.AspNet.SignalR.Crank
 
             if (Arguments.UseAadAwareConnectionFactory)
             {
-                Factory = new AzureActiveDirectoryAwareConnectionFactory();
                 Console.WriteLine("Using Azure Active Directory Aware connection factory...");
+                Factory = new AzureActiveDirectoryAwareConnectionFactory();
             }
             else
             {
-                Factory = new DefaultConnectionFactory();
                 Console.WriteLine("Using default connection factory...");
+                Factory = new DefaultConnectionFactory();
             }
         }
 
