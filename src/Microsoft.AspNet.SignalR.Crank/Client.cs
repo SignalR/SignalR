@@ -21,7 +21,7 @@ namespace Microsoft.AspNet.SignalR.Crank
         private static HubConnection ControllerConnection;
         private static IHubProxy ControllerProxy;
         private static ControllerEvents TestPhase = ControllerEvents.None;
-	    private static IConnectionFactory Factory;
+        private static IConnectionFactory Factory;
 
         public static void Main()
         {
@@ -30,7 +30,7 @@ namespace Microsoft.AspNet.SignalR.Crank
             ThreadPool.SetMinThreads(Arguments.Connections, 2);
             TaskScheduler.UnobservedTaskException += OnUnobservedTaskException;
 
-	        ComposeConnectionFactory();
+            ComposeConnectionFactory();
 
             if (Arguments.IsController)
             {
@@ -40,38 +40,45 @@ namespace Microsoft.AspNet.SignalR.Crank
             Run().Wait();
         }
 
-		private static void ComposeConnectionFactory()
-		{
-			try
-			{
-				using (var catalog = new DirectoryCatalog(AppDomain.CurrentDomain.BaseDirectory))
-				using (var container = new CompositionContainer(catalog))
-				{
-					var export = container.GetExportedValueOrDefault<IConnectionFactory>();
-					if (export != null)
-					{
-						Factory = export;
-						Console.WriteLine("Using {0}", Factory.GetType());
-					}
-				}
-			}
-			catch (ImportCardinalityMismatchException)
-			{
-				Console.WriteLine("More than one IConnectionFactory import was found.");
-			}
-			catch (Exception e)
-			{
-				Console.WriteLine(e);
-			}
+        private static void ComposeConnectionFactory()
+        {
+            try
+            {
+                using (var catalog = new DirectoryCatalog(AppDomain.CurrentDomain.BaseDirectory))
+                using (var container = new CompositionContainer(catalog))
+                {
+                    var export = container.GetExportedValueOrDefault<IConnectionFactory>();
+                    if (export != null)
+                    {
+                        Factory = export;
+                        Console.WriteLine("Using {0}", Factory.GetType());
+                    }
+                }
+            }
+            catch (ImportCardinalityMismatchException)
+            {
+                Console.WriteLine("More than one IConnectionFactory import was found.");
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+            }
 
-			if (Factory == null)
-			{
-				Factory = new DefaultConnectionFactory();
-				Console.WriteLine("Using default connection factory...");
-			}
-		}
+            if (Factory != null) return;
 
-	    private static async Task Run()
+            if (Arguments.UseAadAwareConnectionFactory)
+            {
+                Factory = new AzureActiveDirectoryAwareConnectionFactory();
+                Console.WriteLine("Using Azure Active Directory Aware connection factory...");
+            }
+            else
+            {
+                Factory = new DefaultConnectionFactory();
+                Console.WriteLine("Using default connection factory...");
+            }
+        }
+
+        private static async Task Run()
         {
             var remoteController = !Arguments.IsController || (Arguments.NumClients > 1);
 
@@ -287,7 +294,7 @@ namespace Microsoft.AspNet.SignalR.Crank
 
         private static Connection CreateConnection()
         {
-	        return Factory.CreateConnection(Arguments.Url);
+            return Factory.CreateConnection(Arguments.Url);
         }
     }
 }
