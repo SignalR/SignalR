@@ -79,7 +79,8 @@
                         reconnecting = !connect,
                         polling = !raiseReconnect,
                         url = transportLogic.getUrl(instance, that.name, reconnecting, polling, true /* use Post for longPolling */),
-                        postData = {};
+                        postData = {},
+                        xhrFields = {};
 
                     if (instance.messageId) {
                         postData.messageId = instance.messageId;
@@ -93,14 +94,19 @@
                     if (isDisconnecting(instance) === true) {
                         return;
                     }
-
-                    connection.log("Opening long polling request to '" + url + "'.");
-                    instance.pollXhr = transportLogic.ajax(connection, {
-                        xhrFields: {
+                    
+                    //IE6 fails if you set the onprogress event
+                    if (typeof signalR._.ieVersion == "undefined" || signalR._.ieVersion > 6) {
+                        xhrFields = {
                             onprogress: function () {
                                 transportLogic.markLastMessage(connection);
                             }
-                        },
+                        }
+                    }
+
+                    connection.log("Opening long polling request to '" + url + "'.");
+                    instance.pollXhr = transportLogic.ajax(connection, {
+                        xhrFields: xhrFields,
                         url: url,
                         type: "POST",
                         contentType: signalR._.defaultContentType,
