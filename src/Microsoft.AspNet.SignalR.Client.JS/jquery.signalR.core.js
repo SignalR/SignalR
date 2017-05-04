@@ -86,7 +86,7 @@
         },
 
         changeState = function (connection, expectedState, newState) {
-            if (expectedState === connection.state) {
+            if (connection && expectedState === connection.state) {
                 connection.state = newState;
 
                 $(connection).triggerHandler(events.onStateChanged, [{ oldState: expectedState, newState: newState }]);
