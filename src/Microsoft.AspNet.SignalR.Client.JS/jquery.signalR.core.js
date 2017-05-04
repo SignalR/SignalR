@@ -498,9 +498,10 @@
             } else {
                 connection.protocol = parser.protocol;
                 connection.host = parser.host;
+                connection.path = parser.pathname || '';
             }
 
-            connection.baseUrl = connection.protocol + "//" + connection.host;
+            connection.baseUrl = connection.protocol + "//" + connection.host + connection.path;
 
             // Set the websocket protocol
             connection.wsProtocol = connection.protocol === "https:" ? "wss://" : "ws://";
