@@ -54,7 +54,14 @@ namespace Microsoft.AspNet.SignalR.Crank
         internal static void Start(CrankArguments arguments)
         {
             ControllerHub.Arguments = arguments;
-            PerformanceCounters = new PerformanceCounters(new Uri(arguments.Url).Host, arguments.SignalRInstance);
+            if (!arguments.SkipPerformanceCounters)
+            {
+                PerformanceCounters = new PerformanceCounters(new Uri(arguments.Url).Host, arguments.SignalRInstance);
+            }
+            else
+            {
+                Console.WriteLine("Performance counter setup skipped. Values for server available MB and server tcp connections will be -1.");
+            }
 
             ThreadPool.QueueUserWorkItem(_ => Run());
         }
@@ -89,7 +96,7 @@ namespace Microsoft.AspNet.SignalR.Crank
                 AppHost.Dispose();
             }
 
-            FlushLog(force:true);
+            FlushLog(force: true);
         }
 
         private static void RunConnect()
@@ -126,7 +133,7 @@ namespace Microsoft.AspNet.SignalR.Crank
         private static void RunSend()
         {
             var timeout = TestTimer.Elapsed.Add(TimeSpan.FromSeconds(Arguments.SendTimeout));
-            
+
             BlockWhilePhase(ControllerEvents.Send, breakCondition: () =>
             {
                 return TestTimer.Elapsed >= timeout;
@@ -202,7 +209,7 @@ namespace Microsoft.AspNet.SignalR.Crank
         private static bool WaitForClientsToConnect()
         {
             Console.WriteLine("Waiting on Clients...");
-            
+
             int attempts = 0;
 
             while (ClientsConnected < Arguments.NumClients)
@@ -221,7 +228,7 @@ namespace Microsoft.AspNet.SignalR.Crank
 
         private static int GetExpectedSampleCount()
         {
-            return PerformanceCounters.SignalRCountersAvailable ? 1 : Arguments.NumClients;
+            return PerformanceCounters?.SignalRCountersAvailable ?? true ? 1 : Arguments.NumClients;
         }
 
         private static void WaitForLastSamples()
@@ -272,9 +279,9 @@ namespace Microsoft.AspNet.SignalR.Crank
 
         private static void SignalSample(TimeSpan timestamp)
         {
-            Samples.Add(new ConnectionsSample(Enum.GetName(typeof(ControllerEvents), TestPhase), timestamp, PerformanceCounters.ServerAvailableMBytes, PerformanceCounters.ServerTcpConnectionsEst));
+            Samples.Add(new ConnectionsSample(Enum.GetName(typeof(ControllerEvents), TestPhase), timestamp, PerformanceCounters?.ServerAvailableMBytes ?? -1, PerformanceCounters?.ServerTcpConnectionsEst ?? -1));
 
-            if (PerformanceCounters.SignalRCountersAvailable)
+            if (PerformanceCounters?.SignalRCountersAvailable ?? false)
             {
                 ControllerHub.MarkInternal(Samples.Count - 1, new int[] {
                     PerformanceCounters.SignalRConnectionsCurrent,

@@ -65,6 +65,9 @@ namespace Microsoft.AspNet.SignalR.Crank
         [CommandLineParameter(Command = "SignalRInstance", Required = false, Description = "Instance name for SignalR counters on the server. Defaults to using client connection states.")]
         public string SignalRInstance { get; set; }
 
+        [CommandLineParameter(Command = "SkipPerformanceCounters", Required = false, Default = false, Description = "Skip performance counter connection. Performance counters are not available on Azure WebApps.")]
+        public bool SkipPerformanceCounters { get; set; }
+
         [CommandLineParameter(Command = "UseADAuthentication", Required = false, Default = false, Description = "Enable Azure Active Directory Authentication for the SignalR endpoint.")]
         public bool UseAadAwareConnectionFactory { get; set; }
 
