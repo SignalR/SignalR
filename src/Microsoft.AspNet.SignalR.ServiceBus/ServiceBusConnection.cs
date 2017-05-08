@@ -9,6 +9,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using Microsoft.ServiceBus;
 using Microsoft.ServiceBus.Messaging;
+using Microsoft.AspNet.SignalR.ServiceBus.Infrastructure;
 
 namespace Microsoft.AspNet.SignalR.ServiceBus
 {
