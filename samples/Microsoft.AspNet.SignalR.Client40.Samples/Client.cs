@@ -24,7 +24,7 @@ namespace Microsoft.AspNet.SignalR.Client40.Samples
         {
             try
             {
-                RunHubConnectionAPI(url);
+                RunLockStepDemo(url);
             }
             catch (Exception exception)
             {
@@ -57,6 +57,31 @@ namespace Microsoft.AspNet.SignalR.Client40.Samples
             hubProxy.Invoke("DisplayMessageGroup", "CommonClientGroup", "Hello Group Members! (caller should not see this message)").Wait();
 
             hubProxy.Invoke("DisplayMessageCaller", "Hello Caller again!").Wait();
+        }
+
+        private void RunLockStepDemo(string url)
+        {
+            var hubConnection = new HubConnection(url);
+
+            var hubProxy = hubConnection.CreateHubProxy("demo");
+            hubProxy.On<int>("invoke", (i) =>
+            {
+                var task = hubProxy.Invoke("PlainTask");
+                // See Microsoft.AspNet.SignalR.Client/HubProxyExtensions.cs:417
+                //     without the `new Task(action).Start();` the `task.Wait();` call
+                //     below never returns.
+                // Justification: 
+                //     sending calls back synchronously is desirable in some situations,
+                //     and should not create a dead-lock in any case.           
+                task.Wait();
+                Console.WriteLine("Completed synchronous call-back");
+            });
+
+            hubConnection.Start().Wait();
+            hubConnection.TraceWriter.WriteLine("transport.Name={0}", hubConnection.Transport.Name);
+
+            Console.WriteLine("Starting calls...");
+            hubProxy.Invoke("multipleCalls").Wait();
         }
 
         private void RunDemo(string url)
