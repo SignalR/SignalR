@@ -2,9 +2,10 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
 using Microsoft.AspNet.SignalR.Messaging;
-using StackExchange.Redis;
 
 namespace Microsoft.AspNet.SignalR
 {
@@ -15,6 +16,11 @@ namespace Microsoft.AspNet.SignalR
     {
         public RedisScaleoutConfiguration(string server, int port, string password, string eventKey)
             : this(CreateConnectionString(server, port, password), eventKey)
+        {
+        }
+
+        public RedisScaleoutConfiguration(IEnumerable<RedisEndPoint> endPoints, string password, string eventKey)
+    : this(CreateConnectionString(endPoints, password), eventKey)
         {
         }
 
@@ -59,6 +65,12 @@ namespace Microsoft.AspNet.SignalR
         private static string CreateConnectionString(string server, int port, string password)
         {
             return string.Format(CultureInfo.CurrentCulture, "{0}:{1}, password={2}, abortConnect=false", server, port, password);
+        }
+
+        private static string CreateConnectionString(IEnumerable<RedisEndPoint> endPoints, string password)
+        {
+            var endPointList = string.Join(",", endPoints.Select(x => x.IpAddress + ":" + x.Port));
+            return string.Format(CultureInfo.CurrentCulture, "{0}, password={1}, abortConnect=false", endPointList, password);
         }
     }
 }

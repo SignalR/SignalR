@@ -2,6 +2,8 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections;
+using System.Collections.Generic;
 using Microsoft.AspNet.SignalR.Messaging;
 using Microsoft.AspNet.SignalR.Redis;
 using StackExchange.Redis;
@@ -22,6 +24,21 @@ namespace Microsoft.AspNet.SignalR
         public static IDependencyResolver UseRedis(this IDependencyResolver resolver, string server, int port, string password, string eventKey)
         {
             var configuration = new RedisScaleoutConfiguration(server, port, password, eventKey);
+
+            return UseRedis(resolver, configuration);
+        }
+
+        /// <summary>
+        /// Use Redis as the messaging backplane for scaling out of ASP.NET SignalR applications in a web farm.
+        /// </summary>
+        /// <param name="resolver">The dependency resolver.</param>
+        /// <param name="endPointList">The Redis server host list.</param>
+        /// <param name="password">The Redis server password.</param>
+        /// <param name="eventKey">The Redis event key to use.</param>
+        /// <returns>The dependency resolver.</returns>
+        public static IDependencyResolver UseRedis(this IDependencyResolver resolver, IEnumerable<RedisEndPoint> endPointList, string password, string eventKey)
+        {
+            var configuration = new RedisScaleoutConfiguration(endPointList, password, eventKey);
 
             return UseRedis(resolver, configuration);
         }
