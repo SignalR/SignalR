@@ -93,6 +93,14 @@
                             connection.log("Unclean disconnect from websocket: " + (event.reason || "[no reason given]."));
                         } else {
                             connection.log("Websocket closed.");
+
+                            if (!reconnecting) {
+                                if (onFailed) {
+                                    onFailed();
+                                }
+
+                                return;
+                            }
                         }
 
                         if (!onFailed || !onFailed(error)) {
