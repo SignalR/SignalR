@@ -5,7 +5,9 @@ window.sessionStorage.clear();
 
 (function ($, window) {
     var ios = !!navigator.userAgent.match(/iPod|iPhone|iPad/),
+        windows = !!navigator.userAgent.match(/Windows NT/),
         rfcWebSockets = !!window.WebSocket,
+        windowsVersion,
         iosVersion;
 
     function wrapConnectionStart(connection, end, assert) {
@@ -16,6 +18,13 @@ window.sessionStorage.clear();
                 assert.ok(false, "Failed to initiate signalr connection: " + window.JSON.stringify(reason));
                 end();
             });
+        }
+    }
+
+    if (windows && rfcWebSockets) {
+        windowsVersion = navigator.userAgent.match(/Windows NT (\d+[.]\d+)/);
+        if (windowsVersion && windowsVersion.length > 0) {
+            rfcWebSockets = parseFloat(windowsVersion[1]) > 6.1;
         }
     }
 
