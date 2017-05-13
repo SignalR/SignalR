@@ -124,13 +124,13 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
         /// <summary>
         /// Gets the performance counter representing the number of messages received by connections (server to client) per second.
         /// </summary>
-        [PerformanceCounter(Name = "Connection Messages Received/Sec", Description = "The number of messages received by connections (server to client) per second.", CounterType = PerformanceCounterType.RateOfCountsPerSecond32)]
+        [PerformanceCounter(Name = "Connection Messages Received per sec", Description = "The number of messages received by connections (server to client) per second.", CounterType = PerformanceCounterType.RateOfCountsPerSecond32)]
         public IPerformanceCounter ConnectionMessagesReceivedPerSec { get; private set; }
 
         /// <summary>
         /// Gets the performance counter representing the number of messages sent by connections (client to server) per second.
         /// </summary>
-        [PerformanceCounter(Name = "Connection Messages Sent/Sec", Description = "The number of messages sent by connections (client to server) per second.", CounterType = PerformanceCounterType.RateOfCountsPerSecond32)]
+        [PerformanceCounter(Name = "Connection Messages Sent per sec", Description = "The number of messages sent by connections (client to server) per second.", CounterType = PerformanceCounterType.RateOfCountsPerSecond32)]
         public IPerformanceCounter ConnectionMessagesSentPerSec { get; private set; }
 
         /// <summary>
@@ -142,13 +142,13 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
         /// <summary>
         /// Gets the performance counter representing the number of messages received by a subscribers per second.
         /// </summary>
-        [PerformanceCounter(Name = "Message Bus Messages Received/Sec", Description = "The number of messages received by subscribers per second.", CounterType = PerformanceCounterType.RateOfCountsPerSecond32)]
+        [PerformanceCounter(Name = "Message Bus Messages Received per sec", Description = "The number of messages received by subscribers per second.", CounterType = PerformanceCounterType.RateOfCountsPerSecond32)]
         public IPerformanceCounter MessageBusMessagesReceivedPerSec { get; private set; }
 
         /// <summary>
         /// Gets the performance counter representing the number of messages received by the scaleout message bus per second.
         /// </summary>
-        [PerformanceCounter(Name = "Scaleout Message Bus Messages Received/Sec", Description = "The number of messages received by the scaleout message bus per second.", CounterType = PerformanceCounterType.RateOfCountsPerSecond32)]
+        [PerformanceCounter(Name = "Scaleout Message Bus Messages Receivedper sec", Description = "The number of messages received by the scaleout message bus per second.", CounterType = PerformanceCounterType.RateOfCountsPerSecond32)]
         public IPerformanceCounter ScaleoutMessageBusMessagesReceivedPerSec { get; private set; }
 
 
@@ -161,7 +161,7 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
         /// <summary>
         /// Gets the performance counter representing the number of messages published to the message bus per second.
         /// </summary>
-        [PerformanceCounter(Name = "Message Bus Messages Published/Sec", Description = "The number of messages published to the message bus per second.", CounterType = PerformanceCounterType.RateOfCountsPerSecond32)]
+        [PerformanceCounter(Name = "Message Bus Messages Published per sec", Description = "The number of messages published to the message bus per second.", CounterType = PerformanceCounterType.RateOfCountsPerSecond32)]
         public IPerformanceCounter MessageBusMessagesPublishedPerSec { get; private set; }
 
         /// <summary>
@@ -179,7 +179,7 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
         /// <summary>
         /// Gets the performance counter representing the number of new subscribers to the message bus per second.
         /// </summary>
-        [PerformanceCounter(Name = "Message Bus Subscribers/Sec", Description = "The number of new subscribers to the message bus per second.", CounterType = PerformanceCounterType.RateOfCountsPerSecond32)]
+        [PerformanceCounter(Name = "Message Bus Subscribers per sec", Description = "The number of new subscribers to the message bus per second.", CounterType = PerformanceCounterType.RateOfCountsPerSecond32)]
         public IPerformanceCounter MessageBusSubscribersPerSec { get; private set; }
 
         /// <summary>
@@ -209,7 +209,7 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
         /// <summary>
         /// Gets the performance counter representing the number of all errors processed per second.
         /// </summary>
-        [PerformanceCounter(Name = "Errors: All/Sec", Description = "The number of all errors processed per second.", CounterType = PerformanceCounterType.RateOfCountsPerSecond32)]
+        [PerformanceCounter(Name = "Errors: All per sec", Description = "The number of all errors processed per second.", CounterType = PerformanceCounterType.RateOfCountsPerSecond32)]
         public IPerformanceCounter ErrorsAllPerSec { get; private set; }
 
         /// <summary>
@@ -221,7 +221,7 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
         /// <summary>
         /// Gets the performance counter representing the number of hub resolution errors per second.
         /// </summary>
-        [PerformanceCounter(Name = "Errors: Hub Resolution/Sec", Description = "The number of hub resolution errors per second.", CounterType = PerformanceCounterType.RateOfCountsPerSecond32)]
+        [PerformanceCounter(Name = "Errors: Hub Resolution per sec", Description = "The number of hub resolution errors per second.", CounterType = PerformanceCounterType.RateOfCountsPerSecond32)]
         public IPerformanceCounter ErrorsHubResolutionPerSec { get; private set; }
 
         /// <summary>
@@ -233,7 +233,7 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
         /// <summary>
         /// Gets the performance counter representing the number of hub invocation errors per second.
         /// </summary>
-        [PerformanceCounter(Name = "Errors: Hub Invocation/Sec", Description = "The number of hub invocation errors per second.", CounterType = PerformanceCounterType.RateOfCountsPerSecond32)]
+        [PerformanceCounter(Name = "Errors: Hub Invocation per sec", Description = "The number of hub invocation errors per second.", CounterType = PerformanceCounterType.RateOfCountsPerSecond32)]
         public IPerformanceCounter ErrorsHubInvocationPerSec { get; private set; }
 
         /// <summary>
@@ -245,7 +245,7 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
         /// <summary>
         /// Gets the performance counter representing the number of transport errors per second.
         /// </summary>
-        [PerformanceCounter(Name = "Errors: Transport/Sec", Description = "The number of transport errors per second.", CounterType = PerformanceCounterType.RateOfCountsPerSecond32)]
+        [PerformanceCounter(Name = "Errors: Transport per sec", Description = "The number of transport errors per second.", CounterType = PerformanceCounterType.RateOfCountsPerSecond32)]
         public IPerformanceCounter ErrorsTransportPerSec { get; private set; }
 
 
@@ -276,7 +276,7 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
         /// <summary>
         /// Gets the performance counter representing the number of scaleout errors per second.
         /// </summary>
-        [PerformanceCounter(Name = "Scaleout Errors/Sec", Description = "The number of scaleout errors per second.", CounterType = PerformanceCounterType.RateOfCountsPerSecond32)]
+        [PerformanceCounter(Name = "Scaleout Errors per sec", Description = "The number of scaleout errors per second.", CounterType = PerformanceCounterType.RateOfCountsPerSecond32)]
         public IPerformanceCounter ScaleoutErrorsPerSec { get; private set; }
 
         /// <summary>
