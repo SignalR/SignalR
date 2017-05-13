@@ -158,6 +158,9 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
                     _trace.TraceInformation("Creation of a new subscription {0} for topic {1} threw an MessagingEntityAlreadyExistsException.", subscriptionName, topicName);
                 }
 
+                // Open the stream
+                connectionContext.OpenStream(topicIndex);
+
                 // Create a receiver to get messages
                 string subscriptionEntityPath = SubscriptionClient.FormatSubscriptionPath(topicName, subscriptionName);
                 MessageReceiver receiver = _factory.CreateMessageReceiver(subscriptionEntityPath, ReceiveMode.ReceiveAndDelete);
