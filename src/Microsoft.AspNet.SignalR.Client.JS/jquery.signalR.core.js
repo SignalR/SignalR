@@ -958,6 +958,10 @@
             changeState(connection, connection.state, signalR.connectionState.disconnected);
             $(connection).triggerHandler(events.onDisconnect);
 
+            // Trigger the disconnect event
+            changeState(connection, connection.state, signalR.connectionState.disconnected);
+            $(connection).triggerHandler(events.onDisconnect);
+
             return connection;
         },
 
