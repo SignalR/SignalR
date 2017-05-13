@@ -1,0 +1,32 @@
+%YAML 1.2
+---
+name: SignalR
+id: signalr
+publisher: Microsoft
+license: License.md
+icons: 
+  - icons/signalr_128x128.png
+  - icons/signalr_512x512.png
+publisher-url: http://asp.net/signalr
+libraries: 
+  ios:
+    - lib/ios/Microsoft.AspNet.SignalR.Client.dll
+    - lib/ios/Newtonsoft.Json.dll
+    - lib/ios/System.Net.Http.Extensions.dll
+  android:
+    - lib/android/Microsoft.AspNet.SignalR.Client.dll
+    - lib/android/Newtonsoft.Json.dll
+    - lib/android/System.Net.Http.Extensions.dll
+  wp8:
+    - lib/wp8/Microsoft.AspNet.SignalR.Client.dll
+summary: Incredibly simple real-time web for .NET.
+details: Details.md
+getting-started: GettingStarted.md
+version: 2.0.2
+samples: 
+  iOS Sample.  Demonstrates how to use SignalR Client in an iOS app: samples/iOS/Microsoft.AspNet.SignalR.Client.iOS.Samples.sln
+  Android Sample.  Demonstrates how to use SignalR Client in an Android app: samples/Android/Microsoft.AspNet.SignalR.Client.Android.Samples.sln
+  WP8 Sample.  Demonstrates how to use SignalR Client in a Windows Phone 8 app: samples/WP8/Microsoft.AspNet.SignalR.Client.WP8.Samples.sln
+no_build: true
+skip_docs: true
+...

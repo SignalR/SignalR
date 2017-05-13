@@ -13,9 +13,7 @@
 		<integer>1</integer>
 	</array>
 	<key>CFBundleDisplayName</key>
-	<string>SignalR Demo</string>
-	<key>CFBundleIdentifier</key>
-	<string>com.microsoft.signalr.sample</string>
+	<string>SignalR Sample</string>
 	<key>CFBundleVersion</key>
 	<string>1.0</string>
 	<key>MinimumOSVersion</key>
@@ -24,5 +22,7 @@
 	<string></string>
 	<key>CFBundleShortVersionString</key>
 	<string>1.0</string>
+	<key>CFBundleIdentifier</key>
+	<string>com.microsoft.aspnet.signalr.sample</string>
 </dict>
 </plist>
