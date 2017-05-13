@@ -87,7 +87,8 @@ namespace Microsoft.AspNet.SignalR.SqlServer
 
                 try
                 {
-                    _lastPayloadId = (long?)lastPayloadIdOperation.ExecuteScalar();
+                    var lastPayloadId = (long?)lastPayloadIdOperation.ExecuteScalar();
+                    _lastPayloadId = lastPayloadId.HasValue ? lastPayloadId : 0;
                     Queried();
 
                     _trace.TraceVerbose("{0}SqlReceiver started, initial payload id={1}", _tracePrefix, _lastPayloadId);
