@@ -106,6 +106,19 @@ namespace Microsoft.AspNet.SignalR.ServiceBus
             }
         }
 
+        private void TraceMessages(IList<Message> messages, string messageType)
+        {
+            if (!_trace.Switch.ShouldTrace(TraceEventType.Verbose))
+            {
+                return;
+            }
+
+            foreach (Message message in messages)
+            {
+                _trace.TraceVerbose("{0} {1} bytes over Service Bus: {2}", messageType, message.Value.Array.Length, message.GetString());
+            }
+        }
+
         protected override void Dispose(bool disposing)
         {
             base.Dispose(disposing);
