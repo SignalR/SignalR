@@ -60,10 +60,20 @@
             // Letting current running context finish before building the websocket.
             // This way we can patch every function that was set.
             setTimeout(function () {
-                if (webSocketInit === undefined) {
-                    ws = new savedWebSocket(url);
-                } else {
-                    ws = new savedWebSocket(url, webSocketInit);
+                // Retry if SecurityError is thrown in IE 10 up to 10 times
+                // http://stackoverflow.com/questions/15114279/websocket-on-ie10-giving-a-securityerror
+                for (var i = 0; i < 10 && !ws; i++) {
+                    try {
+                        if (webSocketInit === undefined) {
+                            ws = new savedWebSocket(url);
+                        } else {
+                            ws = new savedWebSocket(url, webSocketInit);
+                        }
+                    } catch (e) {
+                        if (e.toString() !== "SecurityError") {
+                            throw e;
+                        }
+                    }
                 }
 
                 ws.onopen = function () {
