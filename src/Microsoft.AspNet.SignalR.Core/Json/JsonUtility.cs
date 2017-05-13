@@ -25,6 +25,11 @@ namespace Microsoft.AspNet.SignalR.Json
         private static readonly string[] _jsKeywords = new[] { "break", "do", "instanceof", "typeof", "case", "else", "new", "var", "catch", "finally", "return", "void", "continue", "for", "switch", "while", "debugger", "function", "this", "with", "default", "if", "throw", "delete", "in", "try", "class", "enum", "extends", "super", "const", "export", "import", "implements", "let", "private", "public", "yield", "interface", "package", "protected", "static", "NaN", "undefined", "Infinity" };
 
         /// <summary>
+        /// A hanldler to enable the user to configure your own <see cref="T:Newtonsoft.Json.JsonSerializerSettings"/>
+        /// </summary>
+        private static Func<JsonSerializerSettings> _createSerializerSettingsHandler = null;
+
+        /// <summary>
         /// Converts the specified name to camel case.
         /// </summary>
         /// <param name="name">The name to convert.</param>
@@ -67,12 +72,45 @@ namespace Microsoft.AspNet.SignalR.Json
         }
 
         /// <summary>
+        /// Set the handler that creates a new <see cref="T:Newtonsoft.Json.JsonSerializerSettings"/>
+        /// </summary>
+        /// <param name="handler"></param>
+        /// <returns>The <see cref="T:Newtonsoft.Json.JsonSerializerSettings"/> to be used by the CreateDefaultSerializer() and the CreateSerializerSettings()</returns>
+        public static void SetCreateSerializerSettingsHandler(Func<JsonSerializerSettings> handler)
+        {
+            _createSerializerSettingsHandler = handler;
+        }
+
+        /// <summary>
         /// Creates a default <see cref="T:Newtonsoft.Json.JsonSerializerSettings"/> instance.
         /// </summary>
         /// <returns>The newly created <see cref="T:Newtonsoft.Json.JsonSerializerSettings"/>.</returns>
-        public static JsonSerializerSettings CreateDefaultSerializerSettings()
+        private static JsonSerializerSettings CreateDefaultSerializerSettings()
         {
-            return new JsonSerializerSettings() { MaxDepth = DefaultMaxDepth };
+            return new JsonSerializerSettings()
+            {
+                MaxDepth = DefaultMaxDepth,
+                Culture = CultureInfo.CurrentCulture
+            };
+        }
+
+        /// <summary>
+        /// Try call the handler informed in the method SetSerializerSettingsHandler, if none was informed, create a default JsonSerializerSettings
+        /// </summary>
+        /// <returns>The newly created <see cref="T:Newtonsoft.Json.JsonSerializerSettings"/>.</returns>
+        public static JsonSerializerSettings CreateSerializerSettings()
+        {
+            JsonSerializerSettings settings;
+
+            if (_createSerializerSettingsHandler == null)
+                settings = CreateDefaultSerializerSettings();
+            else
+            {
+                settings = _createSerializerSettingsHandler();
+                settings.MaxDepth = DefaultMaxDepth;
+            }
+
+            return settings;
         }
 
         /// <summary>
@@ -90,7 +128,7 @@ namespace Microsoft.AspNet.SignalR.Json
             {
                 return false;
             }
-
+             
             var identifiers = callback.Split('.');
 
             // Check each identifier to ensure it's a valid JS identifier
