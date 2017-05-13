@@ -65,7 +65,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
 
             Identity = identity;
             _callback = callback;
-            EventKeys = eventKeys;
+            EventKeys = new List<string>(eventKeys);
             MaxMessages = maxMessages;
             _counters = counters;
             _callbackState = state;
