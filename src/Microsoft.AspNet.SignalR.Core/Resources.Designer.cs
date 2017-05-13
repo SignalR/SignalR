@@ -509,7 +509,27 @@ namespace Microsoft.AspNet.SignalR {
                 return ResourceManager.GetString("Error_WebSocketsNotSupported", resourceCulture);
             }
         }
-        
+
+        /// <summary>
+        ///   Looks up a localized string similar to Cannot get method info of lambdaexpression..
+        /// </summary>
+        internal static string Error_CannotGetMethodInfoFromLambdaExpression
+        {
+            get {
+                return ResourceManager.GetString("Error_CannotGetMethodInfoFromLambdaExpression", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to The invocation must be a methodcall..
+        /// </summary>
+        internal static string Error_InvocationMustBeAMethodCall
+        {
+            get {
+                return ResourceManager.GetString("Error_InvocationMustBeAMethodCall", resourceCulture);
+            }
+        }
+
         /// <summary>
         ///   Looks up a localized string similar to Forbidden: JSONP is disabled..
         /// </summary>

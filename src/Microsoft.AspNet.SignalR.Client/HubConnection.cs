@@ -193,6 +193,21 @@ namespace Microsoft.AspNet.SignalR.Client
             return hubProxy;
         }
 
+        /// <summary>
+        /// Creates an <see cref="ITypedHubProxy{TServerHub,TClient}"/> for the hub with the specified name.
+        /// </summary>
+        /// <typeparam name="TServerHub">The interface of the server hub.</typeparam>
+        /// <typeparam name="TClient">The client interface.</typeparam>
+        /// <param name="hubName">The name of the hub.</param>
+        /// <returns>A <see cref="ITypedHubProxy{TServerHub,TClient}"/></returns>
+        public ITypedHubProxy<TServerHub, TClient> CreateTypedHubProxy<TServerHub, TClient>(string hubName)
+            where TServerHub : class
+            where TClient : class 
+        {
+            IHubProxy hubProxy = CreateHubProxy(hubName);
+            return new TypedHubProxy<TServerHub, TClient>(hubProxy);
+        }
+
         string IHubConnection.RegisterCallback(Action<HubResult> callback)
         {
             lock (_callbacks)
