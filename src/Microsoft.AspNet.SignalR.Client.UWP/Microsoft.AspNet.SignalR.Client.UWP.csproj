@@ -256,6 +256,9 @@
     <Compile Include="..\Microsoft.AspNet.SignalR.Core\Infrastructure\DispatchingTaskCompletionSource.cs">
       <Link>Infrastructure\DispatchingTaskCompletionSource.cs</Link>
     </Compile>
+    <Compile Include="Http\FoundationHttpClient.cs" />
+    <Compile Include="Http\FoundationHttpRequestMessageWrapper.cs" />
+    <Compile Include="Http\FoundationHttpResponseMessageWrapper.cs" />
     <Compile Include="Resources.Designer.cs" />
     <Compile Include="..\Microsoft.AspNet.SignalR.Client\StateChange.cs">
       <Link>StateChange.cs</Link>

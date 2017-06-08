@@ -127,6 +127,15 @@ namespace Microsoft.AspNet.SignalR.Client {
                 return ResourceManager.GetString("Error_DataCannotBeSentDuringWebSocketReconnect", resourceCulture);
             }
         }
+
+        /// <summary>
+        ///   Looks up a localized string similar to IConnection member {0} is not supported by IHttpClient implementation..
+        /// </summary>
+        internal static string Error_IConnectionMemberNotSupported {
+            get {
+                return ResourceManager.GetString("Error_IConnectionMemberNotSupported", resourceCulture);
+            }
+        }
         
         /// <summary>
         ///   Looks up a localized string similar to You are using a version of the client that isn&apos;t compatible with the server. Client version {0}, server version {1}..
