@@ -64,26 +64,8 @@ namespace Microsoft.AspNet.SignalR.Client.Http
 
             InitializeFilter(_httpFilter, _connection);
 
-            _longRunningClient = new HttpClient(_httpFilter);
-            _shortRunningClient = new HttpClient(_httpFilter);
-        }
-
-        protected virtual void InitializeFilter(HttpBaseProtocolFilter filter, IConnection connection)
-        {
-            if (connection.Proxy != null)
-            {
-                throw new NotSupportedException(string.Format(Resources.Error_IConnectionMemberNotSupported, nameof(connection.Proxy)));
-            }
-
-            if (connection.Credentials != null)
-            {
-                throw new NotSupportedException(string.Format(Resources.Error_IConnectionMemberNotSupported, nameof(connection.Credentials)));
-            }
-
-            if (connection.CookieContainer != null)
-            {
-                throw new NotSupportedException(string.Format(Resources.Error_IConnectionMemberNotSupported, nameof(connection.CookieContainer)));
-            }
+            _longRunningClient = CreateHttpClient(_httpFilter);
+            _shortRunningClient = CreateHttpClient(_httpFilter);
         }
 
         /// <summary>
@@ -158,6 +140,29 @@ namespace Microsoft.AspNet.SignalR.Client.Http
             responseDisposer.Set(responseMessage);
 
             return new FoundationHttpResponseMessageWrapper(responseMessage);
+        }
+
+        protected virtual HttpClient CreateHttpClient(HttpBaseProtocolFilter filter)
+        {
+            return new HttpClient(filter);
+        }
+
+        protected virtual void InitializeFilter(HttpBaseProtocolFilter filter, IConnection connection)
+        {
+            if (connection.Proxy != null)
+            {
+                throw new NotSupportedException(string.Format(Resources.Error_IConnectionMemberNotSupported, nameof(connection.Proxy)));
+            }
+
+            if (connection.Credentials != null)
+            {
+                throw new NotSupportedException(string.Format(Resources.Error_IConnectionMemberNotSupported, nameof(connection.Credentials)));
+            }
+
+            if (connection.CookieContainer != null)
+            {
+                throw new NotSupportedException(string.Format(Resources.Error_IConnectionMemberNotSupported, nameof(connection.CookieContainer)));
+            }
         }
 
         /// <summary>
