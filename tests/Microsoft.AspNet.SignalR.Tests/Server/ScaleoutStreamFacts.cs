@@ -315,5 +315,18 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
             stream.SetError(new Exception());
             await Assert.ThrowsAsync<Exception>(() => stream.Send(_ => TaskAsyncHelper.Empty, null));
         }
+
+        [Fact]
+        public async Task ScaleoutStreamShouldNotDeadlockIfQueuedTaskThrows()
+        {
+            var perfCounters = new Microsoft.AspNet.SignalR.Infrastructure.PerformanceCounterManager();
+            var stream = new ScaleoutStream(new TraceSource("Queue"), "0", QueuingBehavior.InitialOnly, 1000, perfCounters);
+            var t1 = stream.Send(state => TaskAsyncHelper.FromError(new InvalidOperationException("Send failed")), null);
+            stream.Open();
+            var t2 = stream.Send(state => TaskAsyncHelper.Empty, null);
+
+            await Task.WhenAll(t1, t2).OrTimeout();
+
+        }
     }
 }
