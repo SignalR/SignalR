@@ -106,35 +106,49 @@ namespace Microsoft.AspNet.SignalR.Hubs
             }
             catch (ReflectionTypeLoadException ex)
             {
-                _trace.TraceWarning("Some of the classes from assembly \"{0}\" could Not be loaded when searching for Hubs. [{1}]\r\n" +
-                                    "Original exception type: {2}\r\n" +
-                                    "Original exception message: {3}\r\n",
-                                    a.FullName,
-                                    a.Location,
-                                    ex.GetType().Name,
-                                    ex.Message);
-
-                if (ex.LoaderExceptions != null)
+                try
                 {
-                    _trace.TraceWarning("Loader exceptions messages: ");
+                    _trace.TraceWarning("Some of the classes from assembly \"{0}\" could Not be loaded when searching for Hubs. [{1}]\r\n" +
+                                        "Original exception type: {2}\r\n" +
+                                        "Original exception message: {3}\r\n",
+                                        a.FullName,
+                                        a.Location,
+                                        ex.GetType().Name,
+                                        ex.Message);
 
-                    foreach (var exception in ex.LoaderExceptions)
+                    if (ex.LoaderExceptions != null)
                     {
-                        _trace.TraceWarning("{0}\r\n", exception);
+                        _trace.TraceWarning("Loader exceptions messages: ");
+
+                        foreach (var exception in ex.LoaderExceptions)
+                        {
+                            _trace.TraceWarning("{0}\r\n", exception);
+                        }
                     }
+                }
+                catch (Exception)
+                {                   
                 }
 
                 return ex.Types.Where(t => t != null);
+
             }
             catch (Exception ex)
             {
-                _trace.TraceWarning("None of the classes from assembly \"{0}\" could be loaded when searching for Hubs. [{1}]\r\n" +
+                try
+                {
+                    _trace.TraceWarning("None of the classes from assembly \"{0}\" could be loaded when searching for Hubs. [{1}]\r\n" +
                                     "Original exception type: {2}\r\n" +
                                     "Original exception message: {3}\r\n",
                                     a.FullName,
                                     a.Location,
                                     ex.GetType().Name,
                                     ex.Message);
+
+                }
+                catch (Exception)
+                {
+                }
 
                 return Enumerable.Empty<Type>();
             }
