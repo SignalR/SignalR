@@ -4,7 +4,6 @@
 using System;
 using Microsoft.AspNet.SignalR.Messaging;
 using Microsoft.AspNet.SignalR.Redis;
-using StackExchange.Redis;
 
 namespace Microsoft.AspNet.SignalR
 {
@@ -38,6 +37,42 @@ namespace Microsoft.AspNet.SignalR
             resolver.Register(typeof(IMessageBus), () => bus.Value);
 
             return resolver;
+        }
+
+        /// <summary>
+        /// Use Redis with several instances as the messaging backplane for scaling out of ASP.NET SignalR applications in a web farm.
+        /// </summary>
+        /// <param name="resolver">The dependency resolver</param>
+        /// <param name="configuration">The Redis scale-out configuration options.</param> 
+        /// <returns>The dependency resolver.</returns>
+        public static IDependencyResolver UseRedisMultiInstance(this IDependencyResolver resolver, RedisScaleoutConfiguration configuration)
+        {
+            var connections = new IRedisConnection[configuration.ConnectionStrings.Length];
+
+            for (int i = 0; i < connections.Length; i++)
+            {
+                connections[i] = new RedisConnection();
+            }
+
+            var bus = new Lazy<IMessageBus>(() => new MultiInstanceRedisMessageBus(resolver, configuration, connections));
+
+            resolver.Register(typeof(IMessageBus), () => bus.Value);
+
+            return resolver;
+        }
+
+        /// <summary>
+        /// Use Redis with several instances as the messaging backplane for scaling out of ASP.NET SignalR applications in a web farm.
+        /// </summary>
+        /// <param name="resolver">The dependency resolver</param>
+        /// <param name="endPoints">The Redis end-points</param> 
+        /// <param name="eventKey">The Redis event key to use.</param>
+        /// <returns>The dependency resolver.</returns>
+        public static IDependencyResolver UseRedisMultiInstance(this IDependencyResolver resolver, RedisEndPoint[] endPoints, string eventKey)
+        {
+            var configuration = new RedisScaleoutConfiguration(endPoints, eventKey);
+
+            return UseRedisMultiInstance(resolver, configuration);
         }
     }
 }

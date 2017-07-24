@@ -1,7 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
-
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
@@ -9,13 +6,14 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR.Messaging;
 using Microsoft.AspNet.SignalR.Tracing;
+using System.Linq;
 
 namespace Microsoft.AspNet.SignalR.Redis
 {
     /// <summary>
-    /// Uses Redis pub-sub to scale-out SignalR applications in web farms.
+    /// Uses Redis pub-sub instances to scale-out SignalR applications in web farms.
     /// </summary>
-    public class RedisMessageBus : ScaleoutMessageBus
+    public class MultiInstanceRedisMessageBus : ScaleoutMessageBus
     {
         private const int DefaultBufferSize = 1000;
 
@@ -24,19 +22,21 @@ namespace Microsoft.AspNet.SignalR.Redis
         private readonly TraceSource _trace;
         private readonly ITraceManager _traceManager;
 
-        private IRedisConnection _connection;
-        private string _connectionString;
+        private IRedisConnection[] _connections;
+        private string[] _connectionStrings;
         private int _state;
         private readonly object _callbackLock = new object();
         private readonly SemaphoreSlim _redisConnectionEventLock = new SemaphoreSlim(1, 1);
 
-        public RedisMessageBus(IDependencyResolver resolver, RedisScaleoutConfiguration configuration, IRedisConnection connection)
-            : this(resolver, configuration, connection, true)
+        private readonly Random _rnd = new Random();
+
+        public MultiInstanceRedisMessageBus(IDependencyResolver resolver, RedisScaleoutConfiguration configuration, IRedisConnection[] connections)
+            : this(resolver, configuration, connections, true)
         {
         }
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1804:RemoveUnusedLocals", MessageId = "ignore")]
-        internal RedisMessageBus(IDependencyResolver resolver, RedisScaleoutConfiguration configuration, IRedisConnection connection, bool connectAutomatically)
+        internal MultiInstanceRedisMessageBus(IDependencyResolver resolver, RedisScaleoutConfiguration configuration, IRedisConnection[] connections, bool connectAutomatically)
             : base(resolver, configuration)
         {
             if (configuration == null)
@@ -44,9 +44,9 @@ namespace Microsoft.AspNet.SignalR.Redis
                 throw new ArgumentNullException("configuration");
             }
 
-            _connection = connection;
+            _connections = connections;
 
-            _connectionString = configuration.ConnectionStrings[0];
+            _connectionStrings = configuration.ConnectionStrings.ToArray();
             _db = configuration.Database;
             _key = configuration.EventKey;
 
@@ -77,7 +77,7 @@ namespace Microsoft.AspNet.SignalR.Redis
 
         protected override Task Send(int streamIndex, IList<Message> messages)
         {
-            return _connection.ScriptEvaluateAsync(
+            return GetRandomInstanceConnection().ScriptEvaluateAsync(
                 _db,
                 @"local newId = redis.call('INCR', KEYS[1])
                   local payload = newId .. ' ' .. ARGV[1]
@@ -120,9 +120,12 @@ namespace Microsoft.AspNet.SignalR.Redis
         {
             _trace.TraceInformation("Shutdown()");
 
-            if (_connection != null)
+            if (_connections != null)
             {
-                _connection.Close(_key, allowCommandsToComplete: false);
+                foreach (var connection in _connections)
+                {
+                    connection.Close(_key, allowCommandsToComplete: false);
+                }
             }
 
             Interlocked.Exchange(ref _state, State.Disposed);
@@ -190,7 +193,8 @@ namespace Microsoft.AspNet.SignalR.Redis
                     return;
                 }
 
-                await _connection.RestoreLatestValueForKey(_db, _key);
+                foreach(var connection in _connections)
+                    await connection.RestoreLatestValueForKey(_db, _key);
 
                 _trace.TraceInformation("Connection restored");
 
@@ -249,26 +253,38 @@ namespace Microsoft.AspNet.SignalR.Redis
 
         private async Task ConnectToRedisAsync()
         {
-            if (_connection != null)
+            if (_connections != null)
             {
-                _connection.ConnectionFailed -= OnConnectionFailed;
-                _connection.ErrorMessage -= OnConnectionError;
-                _connection.ConnectionRestored -= OnConnectionRestored;
+                foreach (var connection in _connections)
+                {
+                    connection.ConnectionFailed -= OnConnectionFailed;
+                    connection.ErrorMessage -= OnConnectionError;
+                    connection.ConnectionRestored -= OnConnectionRestored;
+                }
             }
 
             _trace.TraceInformation("Connecting...");
 
-            await _connection.ConnectAsync(_connectionString, _traceManager["SignalR." + nameof(RedisConnection)]);
+            for (int i = 0; i < _connections.Length; i++)
+            {
+                await _connections[i].ConnectAsync(_connectionStrings[i], _traceManager["SignalR." + nameof(RedisConnection)]);
+            }
 
             _trace.TraceInformation("Connection opened");
-
-            _connection.ConnectionFailed += OnConnectionFailed;
-            _connection.ErrorMessage += OnConnectionError;
-            _connection.ConnectionRestored += OnConnectionRestored;
-
-            await _connection.SubscribeAsync(_key, OnMessage);
+            foreach (var connection in _connections)
+            {
+                connection.ConnectionFailed += OnConnectionFailed;
+                connection.ErrorMessage += OnConnectionError;
+                connection.ConnectionRestored += OnConnectionRestored;
+                await connection.SubscribeAsync(_key, OnMessage);
+            }
 
             _trace.TraceVerbose("Subscribed to event " + _key);
+        }
+
+        private IRedisConnection GetRandomInstanceConnection()
+        {
+            return _connections[_rnd.Next(0, _connections.Length)];
         }
 
         private void OnMessage(int streamIndex, RedisMessage message)
