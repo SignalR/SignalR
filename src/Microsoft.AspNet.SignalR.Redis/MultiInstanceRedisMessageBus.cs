@@ -77,44 +77,14 @@ namespace Microsoft.AspNet.SignalR.Redis
 
         protected override Task Send(int streamIndex, IList<Message> messages)
         {
-            return Task.Run(() =>
-            {
-                var commands = messages.Where(m => m.IsCommand).ToList();
-                var publicatedMessages = messages.Where(m => !m.IsCommand).ToList();
-
-                if (commands.Any()) // if there are commands -> distribute them to all connected instances
-                {
-                    Task[] tasks = new Task[_connections.Length];
-                    for (int i = 0; i < _connections.Length; i++)
-                    {
-                        tasks[i] = _connections[i].ScriptEvaluateAsync(
-                            _db,
-                            @"local newId = redis.call('INCR', KEYS[1])
-                            local payload = newId .. ' ' .. ARGV[1]
-                            redis.call('PUBLISH', KEYS[1], payload)
-                            return {newId, ARGV[1], payload}",
-                            _key,
-                            RedisMessage.ToBytes(commands));
-                    }
-                    Task.WaitAll(tasks);
-                }
-
-                if (publicatedMessages.Any()) // if there are published messages -> send them to the randon instance
-                {
-                    GetRandomInstanceConnection().ScriptEvaluateAsync(
-                                _db,
-                                @"local newId = redis.call('INCR', KEYS[1])
-                            local payload = newId .. ' ' .. ARGV[1]
-                            redis.call('PUBLISH', KEYS[1], payload)
-                            return {newId, ARGV[1], payload}",
-                                _key,
-                                RedisMessage.ToBytes(publicatedMessages)).Wait();
-                }
-            });
-
-
-
-
+            return GetRandomInstanceConnection().ScriptEvaluateAsync(
+                _db,
+                @"local newId = redis.call('INCR', KEYS[1])
+                  local payload = newId .. ' ' .. ARGV[1]
+                  redis.call('PUBLISH', KEYS[1], payload)
+                  return {newId, ARGV[1], payload}",
+                _key,
+                RedisMessage.ToBytes(messages));
         }
 
         protected override void Dispose(bool disposing)
@@ -223,7 +193,7 @@ namespace Microsoft.AspNet.SignalR.Redis
                     return;
                 }
 
-                foreach (var connection in _connections)
+                foreach(var connection in _connections)
                     await connection.RestoreLatestValueForKey(_db, _key);
 
                 _trace.TraceInformation("Connection restored");
