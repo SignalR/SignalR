@@ -5,6 +5,10 @@ using System;
 using System.Globalization;
 using Microsoft.AspNet.SignalR.Messaging;
 using StackExchange.Redis;
+using System.Collections;
+using System.Collections.Generic;
+using Microsoft.AspNet.SignalR.Redis;
+using System.Linq;
 
 namespace Microsoft.AspNet.SignalR
 {
@@ -13,11 +17,23 @@ namespace Microsoft.AspNet.SignalR
     /// </summary>
     public class RedisScaleoutConfiguration : ScaleoutConfiguration
     {
+        /// <summary>
+        /// Constructor for single redis instance mode
+        /// </summary>
+        /// <param name="server"></param>
+        /// <param name="port"></param>
+        /// <param name="password"></param>
+        /// <param name="eventKey"></param>
         public RedisScaleoutConfiguration(string server, int port, string password, string eventKey)
             : this(CreateConnectionString(server, port, password), eventKey)
         {
         }
 
+        /// <summary>
+        /// Constructor for single redis instance mode
+        /// </summary>
+        /// <param name="connectionString"></param>
+        /// <param name="eventKey"></param>
         public RedisScaleoutConfiguration(string connectionString, string eventKey)
         {
             if (connectionString == null)
@@ -30,7 +46,7 @@ namespace Microsoft.AspNet.SignalR
                 throw new ArgumentNullException("eventKey");
             }
 
-            ConnectionString = connectionString;
+            ConnectionStrings = new string[] { connectionString };
             if (connectionString.Length > 0)
             {
                 var options = ConfigurationOptions.Parse(connectionString);
@@ -40,10 +56,43 @@ namespace Microsoft.AspNet.SignalR
         }
 
         /// <summary>
-        /// The connection string that needs to be passed to ConnectionMultiplexer
+        /// Constructor for multi redis instance mode
+        /// </summary>
+        /// <param name="connectionStrings"></param>
+        /// <param name="eventKey"></param>
+        public RedisScaleoutConfiguration(string[] connectionStrings, string eventKey)
+        {
+            if (connectionStrings == null)
+            {
+                throw new ArgumentNullException("connectionString");
+            }
+
+            if (eventKey == null)
+            {
+                throw new ArgumentNullException("eventKey");
+            }
+
+            ConnectionStrings = connectionStrings;
+
+            EventKey = eventKey;
+        }
+
+        /// <summary>
+        /// Constructor for multi redis instance mode
+        /// </summary>
+        /// <param name="endPoints"></param>
+        /// <param name="eventKey"></param>
+        public RedisScaleoutConfiguration(RedisEndPoint[] endPoints, string eventKey)
+            : this(CreateConnectionStrings(endPoints), eventKey)
+        {
+        }
+
+
+        /// <summary>
+        /// The connection strings that needs to be passed to ConnectionMultiplexer
         /// Should be of the form server:port
         /// </summary>
-        internal string ConnectionString { get; private set; }
+        internal string[] ConnectionStrings { get; private set; }
 
         /// <summary>
         /// The Redis database instance to use.
@@ -59,6 +108,11 @@ namespace Microsoft.AspNet.SignalR
         private static string CreateConnectionString(string server, int port, string password)
         {
             return string.Format(CultureInfo.CurrentCulture, "{0}:{1}, password={2}, abortConnect=false", server, port, password);
+        }
+
+        private static string[] CreateConnectionStrings(RedisEndPoint[] endPoints)
+        {
+            return endPoints.Select(e=> string.Format(CultureInfo.CurrentCulture, "{0}:{1}, password={2}, abortConnect=false", e.IpAddress, e.Port, e.Password)).ToArray();
         }
     }
 }
