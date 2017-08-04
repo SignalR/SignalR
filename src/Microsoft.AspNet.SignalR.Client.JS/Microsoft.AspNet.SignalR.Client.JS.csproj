@@ -47,11 +47,9 @@
     <Content Include="packages.config" />
     <Content Include="jquery.signalR.transports.longPolling.js" />
     <Content Include="build.ps1" />
-    <None Include="Scripts\jquery-1.6.4-vsdoc.js" />
-    <Content Include="Scripts\jquery-1.6.4.js" />
-    <Content Include="Scripts\jquery-1.6.4.min.js">
-      <DependentUpon>jquery-1.6.4.js</DependentUpon>
-    </Content>
+    <None Include="Scripts\jquery-1.7.2.intellisense.js" />
+    <Content Include="Scripts\jquery-1.7.2.js" />
+    <Content Include="Scripts\jquery-1.7.2.min.js" />
     <Content Include="Web.config" />
   </ItemGroup>
   <ItemGroup>
@@ -99,7 +97,7 @@
   </Target>
   -->
   <Target Name="AfterBuild">
-     <Exec Command="powershell -NoProfile -ExecutionPolicy Bypass .\build.ps1 $(OutputPath)" 
+     <Exec Command="powershell -NoProfile -ExecutionPolicy Bypass .\build.ps1 $(OutputPath)"
            WorkingDirectory="$(ProjectDir)"
            Condition=" '$(OS)' == 'Windows_NT'" />
   </Target>

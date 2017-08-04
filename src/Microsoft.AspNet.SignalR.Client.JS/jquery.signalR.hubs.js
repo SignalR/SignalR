@@ -111,7 +111,7 @@
                 callback.apply(that, data);
             };
 
-            $(that).bind(makeEventName(eventName), callbackMap[eventName][callback]);
+            $(that).on(makeEventName(eventName), callbackMap[eventName][callback]);
 
             return that;
         },
@@ -133,7 +133,7 @@
             if (callbackSpace) {
                 // Only unbind if there's an event bound with eventName and a callback with the specified callback
                 if (callbackSpace[callback]) {
-                    $(that).unbind(makeEventName(eventName), callbackSpace[callback]);
+                    $(that).off(makeEventName(eventName), callbackSpace[callback]);
 
                     // Remove the callback from the callback map
                     delete callbackSpace[callback];
@@ -143,7 +143,7 @@
                         delete callbackMap[eventName];
                     }
                 } else if (!callback) { // Check if we're removing the whole event and we didn't error because of an invalid callback
-                    $(that).unbind(makeEventName(eventName));
+                    $(that).off(makeEventName(eventName));
 
                     delete callbackMap[eventName];
                 }
