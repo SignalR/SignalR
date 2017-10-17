@@ -35,7 +35,7 @@ namespace Microsoft.AspNet.SignalR.Crank
         [CommandLineParameter(Command = "Connections", Required = false, Default = 100000, Description = "(Connect phase) Number of connections to open. Default: 100000")]
         public int Connections { get; set; }
 
-        [CommandLineParameter(Command = "ConnectTimeout", Required = false, Default = 300, Description = "(Connect phase) Timeout in milliseconds. Default: 300 ms")]
+        [CommandLineParameter(Command = "ConnectTimeout", Required = false, Default = 300, Description = "(Connect phase) Timeout in seconds. Default: 300")]
         public int ConnectTimeout { get; set; }
 
         [CommandLineParameter(Command = "MinServerMBytes", Required = false, Default = 500, Description = "(Connect phase) Minimum server available MBytes to reach. Default: 500 MB")]
@@ -47,7 +47,7 @@ namespace Microsoft.AspNet.SignalR.Crank
         [CommandLineParameter(Command = "SendInterval", Required = false, Default = 500, Description = "(Send phase) Time in milliseconds between sends. Default: 500 ms")]
         public int SendInterval { get; set; }
 
-        [CommandLineParameter(Command = "SendTimeout", Required = false, Default = 300, Description = "(Send phase) Timeout in milliseconds. Default: 300 ms")]
+        [CommandLineParameter(Command = "SendTimeout", Required = false, Default = 300, Description = "(Send phase) Timeout in seconds. Default: 300")]
         public int SendTimeout { get; set; }
 
         [CommandLineParameter(Command = "ControllerUrl", Required = false, Description = "Url where one client will host a controller hub. Default: no controller (single client)")]
