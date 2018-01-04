@@ -324,7 +324,7 @@ namespace Microsoft.AspNet.SignalR.Redis
 
             public static string GetStateName(int number)
             {
-                if (number < 0 || number > StateNames.Length)
+                if (number < 0 || number >= StateNames.Length)
                 {
                     return $"UnknownState({number})";
                 }
