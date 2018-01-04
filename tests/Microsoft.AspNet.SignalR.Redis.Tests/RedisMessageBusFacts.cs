@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -54,7 +54,8 @@ namespace Microsoft.AspNet.SignalR.Redis.Tests
             var redisConnection = GetMockRedisConnection();
 
             var redisMessageBus = new Mock<RedisMessageBus>(GetDependencyResolver(), new RedisScaleoutConfiguration(String.Empty, String.Empty),
-                redisConnection.Object, false) { CallBase = true };
+                redisConnection.Object, false)
+            { CallBase = true };
 
             redisMessageBus.Setup(m => m.OpenStream(It.IsAny<int>())).Callback(() =>
             {
@@ -121,6 +122,63 @@ namespace Microsoft.AspNet.SignalR.Redis.Tests
         {
             var configuration = new RedisScaleoutConfiguration("localhost,defaultDatabase=5", String.Empty);
             Assert.Equal(configuration.Database, 5);
+        }
+
+        [Fact]
+        public async Task ConnectionRestoredWhileConnectionStarting()
+        {
+            var redisConnection = new Mock<IRedisConnection>();
+
+            // Used to hold SubscribeAsync until we want to release it
+            var subscribeTcs = new TaskCompletionSource<object>();
+
+            // Used to signal back to the test code that we're in SubscribeAsync
+            var atSubscribeTcs = new TaskCompletionSource<object>();
+
+            // Used to signal end of connection restoration
+            var connectionRestoredTcs = new TaskCompletionSource<object>();
+
+            // Set up the connection to block SubscribeAsync
+            // (which happens after the events are bound but before the state is updated)
+            // until we say so.
+            redisConnection
+                .Setup(c => c.SubscribeAsync(It.IsAny<string>(), It.IsAny<Action<int, RedisMessage>>()))
+                .Returns<string, Action<int, RedisMessage>>((_, __) =>
+                {
+                    atSubscribeTcs.SetResult(null);
+                    return subscribeTcs.Task;
+                });
+
+            // ConnectAsync can proceed immediately though.
+            redisConnection
+                .Setup(c => c.ConnectAsync(It.IsAny<string>(), It.IsAny<TraceSource>()))
+                .Returns(Task.FromResult(0));
+
+            // Use a Mock with CallBase because we need to hook OpenStream to figure out when we're finished with Reconnect
+            var redisMessageBus = new Mock<RedisMessageBus>(GetDependencyResolver(), new RedisScaleoutConfiguration(String.Empty, String.Empty),
+                redisConnection.Object, false)
+            {
+                CallBase = true
+            };
+
+            redisMessageBus.Setup(m => m.OpenStream(It.IsAny<int>()))
+                .Callback(() => connectionRestoredTcs.SetResult(null));
+
+            // Connect but don't wait on it yet
+            var connectionTask = redisMessageBus.Object.ConnectWithRetry();
+
+            // Wait to hit SubscribeAsync
+            await atSubscribeTcs.Task;
+
+            // Now fire Connection Restored
+            redisConnection.Raise(connection => connection.ConnectionRestored += null, new Exception());
+
+            // Now allow the connection task to finish and wait for it
+            subscribeTcs.SetResult(null);
+            await connectionTask;
+
+            // We should be up and running without problems
+            Assert.Equal(RedisMessageBus.State.Connected, redisMessageBus.Object.ConnectionState);
         }
 
         private Mock<IRedisConnection> GetMockRedisConnection()

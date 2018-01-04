@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -134,7 +134,10 @@ namespace Microsoft.AspNet.SignalR.Redis
 
         private void OnConnectionRestored(object sender, ConnectionFailedEventArgs args)
         {
-            _trace.TraceInformation("Connection restored");
+            if (_trace.Switch.ShouldTrace(TraceEventType.Information))
+            {
+                _trace.TraceInformation("Connection restored. Reason: " + args.FailureType.ToString() + " Exception: " + (args.Exception?.ToString() ?? "<none>"));
+            }
             var handler = ConnectionRestored;
             handler(args.Exception);
         }

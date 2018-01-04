@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 14
-VisualStudioVersion = 14.0.25420.1
+# Visual Studio 15
+VisualStudioVersion = 15.0.27205.2004
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNet.SignalR.Core", "src\Microsoft.AspNet.SignalR.Core\Microsoft.AspNet.SignalR.Core.csproj", "{1B9A82C4-BCA1-4834-A33E-226F17BE070B}"
 EndProject
@@ -782,5 +782,8 @@ Global
 		{F0697521-4A41-4A2A-BA64-D9A97CAA62A1} = {505538C3-B34D-4B43-BDE6-C6E974AB03A6}
 		{C281927C-2082-4E2A-A1DB-9CD7225F5CED} = {505538C3-B34D-4B43-BDE6-C6E974AB03A6}
 		{953E3B0C-32B1-4BAC-9CF2-6B816ECA0708} = {505538C3-B34D-4B43-BDE6-C6E974AB03A6}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {33365335-C782-4B65-BCC8-671278F31EF8}
 	EndGlobalSection
 EndGlobal

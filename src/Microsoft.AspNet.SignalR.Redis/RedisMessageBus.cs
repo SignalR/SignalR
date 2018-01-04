@@ -1,10 +1,11 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR.Messaging;
@@ -135,6 +136,7 @@ namespace Microsoft.AspNet.SignalR.Redis
             // We could try being more granular but ignoring the subsequent event should suffice.
             try
             {
+                _trace.TraceVerbose($"{nameof(OnConnectionFailed)}: Acquiring Redis Connection Event Lock");
                 _redisConnectionEventLock.Wait();
             }
             catch (ObjectDisposedException)
@@ -158,6 +160,7 @@ namespace Microsoft.AspNet.SignalR.Redis
             }
             finally
             {
+                _trace.TraceVerbose($"{nameof(ConnectWithRetry)}: Releasing Redis Connection Event Lock");
                 _redisConnectionEventLock.Release();
             }
         }
@@ -175,7 +178,8 @@ namespace Microsoft.AspNet.SignalR.Redis
             // We could try being more granular but ignoring the subsequent event should suffice.
             try
             {
-                _redisConnectionEventLock.Wait();
+                _trace.TraceVerbose($"{nameof(OnConnectionRestored)}: Acquiring Redis Connection Event Lock");
+                await _redisConnectionEventLock.WaitAsync();
             }
             catch (ObjectDisposedException)
             {
@@ -200,50 +204,70 @@ namespace Microsoft.AspNet.SignalR.Redis
             }
             finally
             {
+                _trace.TraceVerbose($"{nameof(ConnectWithRetry)}: Releasing Redis Connection Event Lock");
                 _redisConnectionEventLock.Release();
             }
         }
 
         internal async Task ConnectWithRetry()
         {
-            while (true)
+            try
             {
-                try
+                _trace.TraceVerbose($"{nameof(ConnectWithRetry)}: Acquiring Redis Connection Event Lock");
+                await _redisConnectionEventLock.WaitAsync();
+            }
+            catch (ObjectDisposedException)
+            {
+                return;
+            }
+
+            try
+            {
+                while (true)
                 {
-                    await ConnectToRedisAsync();
-
-                    var oldState = Interlocked.CompareExchange(ref _state,
-                                               State.Connected,
-                                               State.Closed);
-
-                    if (oldState == State.Closed)
+                    try
                     {
-                        _trace.TraceInformation("Opening stream.");
-                        OpenStream(0);
+                        await ConnectToRedisAsync();
+
+                        var oldState = Interlocked.CompareExchange(ref _state,
+                                                   State.Connected,
+                                                   State.Closed);
+
+                        if (oldState == State.Closed)
+                        {
+                            _trace.TraceInformation("Opening stream.");
+                            OpenStream(0);
+                        }
+                        else
+                        {
+                            var message = $"Unexpected state. Expected state to be {nameof(State.Closed)} but it was {State.GetStateName(oldState)}";
+                            Debug.Assert(oldState == State.Disposing, message);
+                            _trace.TraceError(message);
+
+                            Shutdown();
+                        }
+
+                        break;
                     }
-                    else
+                    catch (Exception ex)
                     {
-                        Debug.Assert(oldState == State.Disposing, "unexpected state");
-                        _trace.TraceError("Unexpected state.");
+                        _trace.TraceError("Error connecting to Redis - " + ex.GetBaseException());
+                    }
 
+                    if (_state == State.Disposing)
+                    {
+                        _trace.TraceInformation("MessageBus is disposing.");
                         Shutdown();
+                        break;
                     }
 
-                    break;
+                    await Task.Delay(ReconnectDelay);
                 }
-                catch (Exception ex)
-                {
-                    _trace.TraceError("Error connecting to Redis - " + ex.GetBaseException());
-                }
-
-                if (_state == State.Disposing)
-                {
-                    _trace.TraceInformation("MessageBus is disposing.");
-                    Shutdown();
-                    break;
-                }
-
-                await Task.Delay(ReconnectDelay);
+            }
+            finally
+            {
+                _trace.TraceVerbose($"{nameof(ConnectWithRetry)}: Releasing Redis Connection Event Lock");
+                _redisConnectionEventLock.Release();
             }
         }
 
@@ -282,12 +306,30 @@ namespace Microsoft.AspNet.SignalR.Redis
         }
 
         // Internal for testing purposes
+        // Can't use an enum because we want to Interlocked.Exchange it.
         internal static class State
         {
+            private static readonly string[] StateNames = new[]
+            {
+                nameof(Closed),
+                nameof(Connected),
+                nameof(Disposing),
+                nameof(Disposed)
+            };
+
             public const int Closed = 0;
             public const int Connected = 1;
             public const int Disposing = 2;
             public const int Disposed = 3;
+
+            public static string GetStateName(int number)
+            {
+                if (number < 0 || number > StateNames.Length)
+                {
+                    return $"UnknownState({number})";
+                }
+                return StateNames[number];
+            }
         }
     }
 }
