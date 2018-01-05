@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
@@ -136,7 +137,7 @@ namespace Microsoft.AspNet.SignalR.Redis
             // We could try being more granular but ignoring the subsequent event should suffice.
             try
             {
-                _trace.TraceVerbose($"{nameof(OnConnectionFailed)}: Acquiring Redis Connection Event Lock");
+                _trace.TraceVerbose(nameof(OnConnectionFailed) + ": Acquiring Redis Connection Event Lock");
                 _redisConnectionEventLock.Wait();
             }
             catch (ObjectDisposedException)
@@ -160,7 +161,7 @@ namespace Microsoft.AspNet.SignalR.Redis
             }
             finally
             {
-                _trace.TraceVerbose($"{nameof(ConnectWithRetry)}: Releasing Redis Connection Event Lock");
+                _trace.TraceVerbose(nameof(ConnectWithRetry) + ": Releasing Redis Connection Event Lock");
                 _redisConnectionEventLock.Release();
             }
         }
@@ -178,7 +179,7 @@ namespace Microsoft.AspNet.SignalR.Redis
             // We could try being more granular but ignoring the subsequent event should suffice.
             try
             {
-                _trace.TraceVerbose($"{nameof(OnConnectionRestored)}: Acquiring Redis Connection Event Lock");
+                _trace.TraceVerbose(nameof(OnConnectionRestored) + ": Acquiring Redis Connection Event Lock");
                 await _redisConnectionEventLock.WaitAsync();
             }
             catch (ObjectDisposedException)
@@ -204,7 +205,7 @@ namespace Microsoft.AspNet.SignalR.Redis
             }
             finally
             {
-                _trace.TraceVerbose($"{nameof(ConnectWithRetry)}: Releasing Redis Connection Event Lock");
+                _trace.TraceVerbose(nameof(ConnectWithRetry) + ": Releasing Redis Connection Event Lock");
                 _redisConnectionEventLock.Release();
             }
         }
@@ -326,7 +327,7 @@ namespace Microsoft.AspNet.SignalR.Redis
             {
                 if (number < 0 || number >= StateNames.Length)
                 {
-                    return $"UnknownState({number})";
+                    return string.Format(CultureInfo.InvariantCulture, "UnknownState({0})", number);
                 }
                 return StateNames[number];
             }
