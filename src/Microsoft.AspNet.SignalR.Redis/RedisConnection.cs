@@ -127,7 +127,7 @@ namespace Microsoft.AspNet.SignalR.Redis
 
         private void OnConnectionFailed(object sender, ConnectionFailedEventArgs args)
         {
-            _trace.TraceWarning("Connection failed. Reason: " + args.FailureType.ToString() + " Exception: " + args.Exception.ToString());
+            _trace.TraceWarning(args.ConnectionType.ToString() + " Connection failed. Reason: " + args.FailureType.ToString() + " Exception: " + args.Exception.ToString());
             var handler = ConnectionFailed;
             handler(args.Exception);
         }
@@ -136,7 +136,7 @@ namespace Microsoft.AspNet.SignalR.Redis
         {
             if (_trace.Switch.ShouldTrace(TraceEventType.Information))
             {
-                _trace.TraceInformation("Connection restored. Reason: " + args.FailureType.ToString() + " Exception: " + (args.Exception?.ToString() ?? "<none>"));
+                _trace.TraceInformation(args.ConnectionType.ToString() + " Connection restored. Reason: " + args.FailureType.ToString() + " Exception: " + (args.Exception?.ToString() ?? "<none>"));
             }
             var handler = ConnectionRestored;
             handler(args.Exception);

@@ -4,9 +4,6 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
-using System.Globalization;
-using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR.Messaging;
@@ -28,9 +25,18 @@ namespace Microsoft.AspNet.SignalR.Redis
 
         private IRedisConnection _connection;
         private string _connectionString;
-        private int _state;
         private readonly object _callbackLock = new object();
-        private readonly SemaphoreSlim _redisConnectionEventLock = new SemaphoreSlim(1, 1);
+
+        private int _state = State.Initial;
+
+        internal static class State
+        {
+            public const int Initial = 0;
+            public const int Connecting = 1;
+            public const int Connected = 2;
+            public const int Disposing = 3;
+            public const int Disposed = 4;
+        }
 
         public RedisMessageBus(IDependencyResolver resolver, RedisScaleoutConfiguration configuration, IRedisConnection connection)
             : this(resolver, configuration, connection, true)
@@ -47,6 +53,9 @@ namespace Microsoft.AspNet.SignalR.Redis
             }
 
             _connection = connection;
+            _connection.ConnectionFailed += OnConnectionFailed;
+            _connection.ConnectionRestored += OnConnectionRestored;
+            _connection.ErrorMessage += OnConnectionError;
 
             _connectionString = configuration.ConnectionString;
             _db = configuration.Database;
@@ -69,9 +78,6 @@ namespace Microsoft.AspNet.SignalR.Redis
 
         public TimeSpan ReconnectDelay { get; set; }
 
-        // For testing purposes only
-        internal int ConnectionState { get { return _state; } }
-
         public virtual void OpenStream(int streamIndex)
         {
             Open(streamIndex);
@@ -91,28 +97,17 @@ namespace Microsoft.AspNet.SignalR.Redis
 
         protected override void Dispose(bool disposing)
         {
+            if (Interlocked.CompareExchange(ref _disposed, 1, 0) != 0)
+            {
+                // Already disposed!
+                _trace.TraceVerbose(nameof(RedisMessageBus) + " was disposed more than once!");
+                return;
+            }
+
             _trace.TraceInformation(nameof(RedisMessageBus) + " is being disposed");
             if (disposing)
             {
-                var oldState = Interlocked.Exchange(ref _state, State.Disposing);
-
-                switch (oldState)
-                {
-                    case State.Connected:
-                        Shutdown();
-                        break;
-                    case State.Closed:
-                    case State.Disposing:
-                        // No-op
-                        break;
-                    case State.Disposed:
-                        Interlocked.Exchange(ref _state, State.Disposed);
-                        break;
-                    default:
-                        break;
-                }
-
-                _redisConnectionEventLock.Dispose();
+                Shutdown();
             }
 
             base.Dispose(disposing);
@@ -126,44 +121,13 @@ namespace Microsoft.AspNet.SignalR.Redis
             {
                 _connection.Close(_key, allowCommandsToComplete: false);
             }
-
-            Interlocked.Exchange(ref _state, State.Disposed);
         }
 
         private void OnConnectionFailed(Exception ex)
         {
-            // StackExchange Redis will raise this event twice when a connection fails -
-            // once for ConnectionType.Interactive and once for ConnectionType.Subscription.
-            // We could try being more granular but ignoring the subsequent event should suffice.
-            try
-            {
-                _trace.TraceVerbose(nameof(OnConnectionFailed) + ": Acquiring Redis Connection Event Lock");
-                _redisConnectionEventLock.Wait();
-            }
-            catch (ObjectDisposedException)
-            {
-                return;
-            }
+            string errorMessage = (ex != null) ? ex.Message : Resources.Error_RedisConnectionClosed;
 
-            try
-            {
-                if (_state == State.Closed)
-                {
-                    _trace.TraceVerbose("Duplicate ConnectionFailed event - ignoring");
-                    return;
-                }
-
-                string errorMessage = (ex != null) ? ex.Message : Resources.Error_RedisConnectionClosed;
-
-                _trace.TraceInformation("OnConnectionFailed - " + errorMessage);
-
-                Interlocked.Exchange(ref _state, State.Closed);
-            }
-            finally
-            {
-                _trace.TraceVerbose(nameof(ConnectWithRetry) + ": Releasing Redis Connection Event Lock");
-                _redisConnectionEventLock.Release();
-            }
+            _trace.TraceInformation("OnConnectionFailed - " + errorMessage);
         }
 
         private void OnConnectionError(Exception ex)
@@ -174,122 +138,56 @@ namespace Microsoft.AspNet.SignalR.Redis
 
         private async void OnConnectionRestored(Exception ex)
         {
-            // StackExchange Redis will raise this event twice when a connection is restored -
-            // once for ConnectionType.Interactive and once for ConnectionType.Subscription.
-            // We could try being more granular but ignoring the subsequent event should suffice.
-            try
-            {
-                _trace.TraceVerbose(nameof(OnConnectionRestored) + ": Acquiring Redis Connection Event Lock");
-                await _redisConnectionEventLock.WaitAsync();
-            }
-            catch (ObjectDisposedException)
-            {
-                return;
-            }
+            await _connection.RestoreLatestValueForKey(_db, _key);
 
-            try
-            {
-                if (_state == State.Connected)
-                {
-                    _trace.TraceVerbose("Duplicate ConnectionRestored event - ignoring");
-                    return;
-                }
+            _trace.TraceInformation("Connection restored");
 
-                await _connection.RestoreLatestValueForKey(_db, _key);
-
-                _trace.TraceInformation("Connection restored");
-
-                Interlocked.Exchange(ref _state, State.Connected);
-
-                OpenStream(0);
-            }
-            finally
-            {
-                _trace.TraceVerbose(nameof(ConnectWithRetry) + ": Releasing Redis Connection Event Lock");
-                _redisConnectionEventLock.Release();
-            }
+            OpenStream(0);
         }
 
         internal async Task ConnectWithRetry()
         {
-            try
+            while (true)
             {
-                _trace.TraceVerbose($"{nameof(ConnectWithRetry)}: Acquiring Redis Connection Event Lock");
-                await _redisConnectionEventLock.WaitAsync();
-            }
-            catch (ObjectDisposedException)
-            {
-                return;
-            }
-
-            try
-            {
-                while (true)
+                try
                 {
-                    try
-                    {
-                        await ConnectToRedisAsync();
+                    await ConnectToRedisAsync();
 
-                        var oldState = Interlocked.CompareExchange(ref _state,
-                                                   State.Connected,
-                                                   State.Closed);
+                    _trace.TraceInformation("Opening stream.");
+                    OpenStream(0);
 
-                        if (oldState == State.Closed)
-                        {
-                            _trace.TraceInformation("Opening stream.");
-                            OpenStream(0);
-                        }
-                        else
-                        {
-                            var message = $"Unexpected state. Expected state to be {nameof(State.Closed)} but it was {State.GetStateName(oldState)}";
-                            Debug.Assert(oldState == State.Disposing, message);
-                            _trace.TraceError(message);
-
-                            Shutdown();
-                        }
-
-                        break;
-                    }
-                    catch (Exception ex)
-                    {
-                        _trace.TraceError("Error connecting to Redis - " + ex.GetBaseException());
-                    }
-
-                    if (_state == State.Disposing)
-                    {
-                        _trace.TraceInformation("MessageBus is disposing.");
-                        Shutdown();
-                        break;
-                    }
-
-                    await Task.Delay(ReconnectDelay);
+                    break;
                 }
-            }
-            finally
-            {
-                _trace.TraceVerbose($"{nameof(ConnectWithRetry)}: Releasing Redis Connection Event Lock");
-                _redisConnectionEventLock.Release();
+                catch (Exception ex)
+                {
+                    _trace.TraceError("Error connecting to Redis - " + ex.GetBaseException());
+                }
+
+                await Task.Delay(ReconnectDelay);
             }
         }
 
         private async Task ConnectToRedisAsync()
         {
-            if (_connection != null)
-            {
-                _connection.ConnectionFailed -= OnConnectionFailed;
-                _connection.ErrorMessage -= OnConnectionError;
-                _connection.ConnectionRestored -= OnConnectionRestored;
-            }
-
             _trace.TraceInformation("Connecting...");
 
-            await _connection.ConnectAsync(_connectionString, _traceManager["SignalR." + nameof(RedisConnection)]);
+            // We need to hold the dispose lock during this in order to ensure that ConnectAsync completes fully without Dispose getting in the way
+            try
+            {
+                await _disposeLock.WaitAsync();
+                await _connection.ConnectAsync(_connectionString, _traceManager["SignalR." + nameof(RedisConnection)]);
+            }
+            catch (ObjectDisposedException)
+            {
+                // Save to return, we're disposed
+                return;
+            }
+            finally
+            {
+                _disposeLock.Release();
+            }
 
             _trace.TraceInformation("Connection opened");
-
-            _connection.ConnectionFailed += OnConnectionFailed;
-            _connection.ErrorMessage += OnConnectionError;
-            _connection.ConnectionRestored += OnConnectionRestored;
 
             await _connection.SubscribeAsync(_key, OnMessage);
 
@@ -303,33 +201,6 @@ namespace Microsoft.AspNet.SignalR.Redis
             lock (_callbackLock)
             {
                 OnReceived(streamIndex, message.Id, message.ScaleoutMessage);
-            }
-        }
-
-        // Internal for testing purposes
-        // Can't use an enum because we want to Interlocked.Exchange it.
-        internal static class State
-        {
-            private static readonly string[] StateNames = new[]
-            {
-                nameof(Closed),
-                nameof(Connected),
-                nameof(Disposing),
-                nameof(Disposed)
-            };
-
-            public const int Closed = 0;
-            public const int Connected = 1;
-            public const int Disposing = 2;
-            public const int Disposed = 3;
-
-            public static string GetStateName(int number)
-            {
-                if (number < 0 || number >= StateNames.Length)
-                {
-                    return string.Format(CultureInfo.InvariantCulture, "UnknownState({0})", number);
-                }
-                return StateNames[number];
             }
         }
     }

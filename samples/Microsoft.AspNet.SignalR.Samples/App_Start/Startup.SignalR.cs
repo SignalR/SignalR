@@ -18,7 +18,7 @@ namespace Microsoft.AspNet.SignalR.Samples
             //var config = new RedisScaleoutConfiguration("127.0.0.1", 6379, "", "SignalRSamples");
             //config.RetryOnError = true;
             //dependencyResolver.UseRedis(config);
-            //dependencyResolver.UseRedis("127.0.0.1", 6379, "", "SignalRSamples");
+            dependencyResolver.UseRedis("127.0.0.1", 6379, "", "SignalRSamples");
 
             // Uncomment the following line to enable scale-out using service bus
             //dependencyResolver.UseServiceBus("connection string", "Microsoft.AspNet.SignalR.Samples");
