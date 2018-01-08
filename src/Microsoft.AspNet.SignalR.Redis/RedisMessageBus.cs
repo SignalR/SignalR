@@ -27,17 +27,6 @@ namespace Microsoft.AspNet.SignalR.Redis
         private string _connectionString;
         private readonly object _callbackLock = new object();
 
-        private int _state = State.Initial;
-
-        internal static class State
-        {
-            public const int Initial = 0;
-            public const int Connecting = 1;
-            public const int Connected = 2;
-            public const int Disposing = 3;
-            public const int Disposed = 4;
-        }
-
         public RedisMessageBus(IDependencyResolver resolver, RedisScaleoutConfiguration configuration, IRedisConnection connection)
             : this(resolver, configuration, connection, true)
         {
@@ -97,13 +86,6 @@ namespace Microsoft.AspNet.SignalR.Redis
 
         protected override void Dispose(bool disposing)
         {
-            if (Interlocked.CompareExchange(ref _disposed, 1, 0) != 0)
-            {
-                // Already disposed!
-                _trace.TraceVerbose(nameof(RedisMessageBus) + " was disposed more than once!");
-                return;
-            }
-
             _trace.TraceInformation(nameof(RedisMessageBus) + " is being disposed");
             if (disposing)
             {
@@ -172,20 +154,7 @@ namespace Microsoft.AspNet.SignalR.Redis
             _trace.TraceInformation("Connecting...");
 
             // We need to hold the dispose lock during this in order to ensure that ConnectAsync completes fully without Dispose getting in the way
-            try
-            {
-                await _disposeLock.WaitAsync();
-                await _connection.ConnectAsync(_connectionString, _traceManager["SignalR." + nameof(RedisConnection)]);
-            }
-            catch (ObjectDisposedException)
-            {
-                // Save to return, we're disposed
-                return;
-            }
-            finally
-            {
-                _disposeLock.Release();
-            }
+            await _connection.ConnectAsync(_connectionString, _traceManager["SignalR." + nameof(RedisConnection)]);
 
             _trace.TraceInformation("Connection opened");
 
