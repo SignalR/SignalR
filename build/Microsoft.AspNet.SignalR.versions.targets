@@ -16,6 +16,7 @@
         <KatanaVersion>2.1.0</KatanaVersion>
 
         <!-- Ensure that we come up with a new version every 65535 years -->
-        <VersionStartYear>2012</VersionStartYear>
+        <!-- This started as 2012, but in 2018 we had to update it because it's been 6 years! -->
+        <VersionStartYear>2018</VersionStartYear>
     </PropertyGroup>
 </Project>
