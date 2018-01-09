@@ -1,12 +1,11 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
-using System.Diagnostics;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR.Tracing;
 using Moq;
+using System;
+using System.Diagnostics;
+using System.Threading.Tasks;
 using Xunit;
 
 namespace Microsoft.AspNet.SignalR.Redis.Tests
@@ -17,8 +16,9 @@ namespace Microsoft.AspNet.SignalR.Redis.Tests
         public async void ConnectRetriesOnError()
         {
             int invokationCount = 0;
-            var wh = new ManualResetEventSlim();
             var redisConnection = GetMockRedisConnection();
+
+            var connectRetryTcs = new TaskCompletionSource<object>();
 
             var tcs = new TaskCompletionSource<object>();
             tcs.TrySetCanceled();
@@ -27,7 +27,7 @@ namespace Microsoft.AspNet.SignalR.Redis.Tests
             {
                 if (++invokationCount == 2)
                 {
-                    wh.Set();
+                    connectRetryTcs.SetResult(null);
                     return Task.FromResult(0);
                 }
                 else
@@ -36,32 +36,32 @@ namespace Microsoft.AspNet.SignalR.Redis.Tests
                 }
             });
 
-            var redisMessageBus = new RedisMessageBus(GetDependencyResolver(), new RedisScaleoutConfiguration(String.Empty, String.Empty),
-            redisConnection.Object, false);
+            var redisMessageBus = GetMockRedisMessageBus(redisConnection);
 
-            await redisMessageBus.ConnectWithRetry();
+            await redisMessageBus.Object.ConnectWithRetry();
+            await connectRetryTcs.Task.OrTimeout();
 
-            Assert.True(wh.Wait(TimeSpan.FromSeconds(5)));
-            Assert.Equal(RedisMessageBus.State.Connected, redisMessageBus.ConnectionState);
+            // Verify that the stream was opened.
+            redisMessageBus.Verify(b => b.OpenStream(0));
         }
 
         [Fact]
         public async Task OpenCalledOnConnectionRestored()
         {
             int openInvoked = 0;
-            var wh = new ManualResetEventSlim();
+
+            var tcs = new TaskCompletionSource<object>();
 
             var redisConnection = GetMockRedisConnection();
 
-            var redisMessageBus = new Mock<RedisMessageBus>(GetDependencyResolver(), new RedisScaleoutConfiguration(String.Empty, String.Empty),
-                redisConnection.Object, false) { CallBase = true };
+            var redisMessageBus = GetMockRedisMessageBus(redisConnection);
 
             redisMessageBus.Setup(m => m.OpenStream(It.IsAny<int>())).Callback(() =>
             {
                 // Open would be called twice - once when connection starts and once when it is restored
                 if (++openInvoked == 2)
                 {
-                    wh.Set();
+                    tcs.SetResult(null);
                 }
             });
 
@@ -71,25 +71,7 @@ namespace Microsoft.AspNet.SignalR.Redis.Tests
             redisConnection.Raise(mock => mock.ConnectionFailed += null, new Exception());
             redisConnection.Raise(mock => mock.ConnectionRestored += null, new Exception());
 
-            Assert.True(wh.Wait(TimeSpan.FromSeconds(5)));
-        }
-
-        [Fact]
-        public async void ConnectionFailedChangesStateToClosed()
-        {
-            var redisConnection = GetMockRedisConnection();
-
-            var redisMessageBus = new RedisMessageBus(GetDependencyResolver(),
-                new RedisScaleoutConfiguration(String.Empty, String.Empty),
-                redisConnection.Object, false);
-
-            await redisMessageBus.ConnectWithRetry();
-
-            Assert.Equal(RedisMessageBus.State.Connected, redisMessageBus.ConnectionState);
-
-            redisConnection.Raise(mock => mock.ConnectionFailed += null, new Exception("Test exception"));
-
-            Assert.Equal(RedisMessageBus.State.Closed, redisMessageBus.ConnectionState);
+            await tcs.Task.OrTimeout();
         }
 
         [Fact]
@@ -123,6 +105,56 @@ namespace Microsoft.AspNet.SignalR.Redis.Tests
             Assert.Equal(configuration.Database, 5);
         }
 
+        [Fact]
+        public async Task ConnectionRestoredWhileConnectionStarting()
+        {
+            var redisConnection = new Mock<IRedisConnection>();
+
+            // Used to hold SubscribeAsync until we want to release it
+            var subscribeTcs = new TaskCompletionSource<object>();
+
+            // Used to signal back to the test code that we're in SubscribeAsync
+            var atSubscribeTcs = new TaskCompletionSource<object>();
+
+            // Used to signal end of connection restoration
+            var connectionRestoredTcs = new TaskCompletionSource<object>();
+
+            // Set up the connection to block SubscribeAsync
+            // (which happens after the events are bound but before the state is updated)
+            // until we say so.
+            redisConnection
+                .Setup(c => c.SubscribeAsync(It.IsAny<string>(), It.IsAny<Action<int, RedisMessage>>()))
+                .Returns<string, Action<int, RedisMessage>>((_, __) =>
+                {
+                    atSubscribeTcs.SetResult(null);
+                    return subscribeTcs.Task;
+                });
+
+            // ConnectAsync can proceed immediately though.
+            redisConnection
+                .Setup(c => c.ConnectAsync(It.IsAny<string>(), It.IsAny<TraceSource>()))
+                .Returns(Task.FromResult(0));
+
+            // Use a Mock with CallBase because we need to hook OpenStream to figure out when we're finished with Reconnect
+            var redisMessageBus = GetMockRedisMessageBus(redisConnection);
+
+            // Connect but don't wait on it yet
+            var connectionTask = redisMessageBus.Object.ConnectWithRetry();
+
+            // Wait to hit SubscribeAsync
+            await atSubscribeTcs.Task;
+
+            // Now fire Connection Restored
+            redisConnection.Raise(connection => connection.ConnectionRestored += null, new Exception());
+
+            // Now allow the connection task to finish and wait for it
+            subscribeTcs.SetResult(null);
+            await connectionTask.OrTimeout();
+
+            // Make sure OpenStream got called
+            redisMessageBus.Verify(m => m.OpenStream(0));
+        }
+
         private Mock<IRedisConnection> GetMockRedisConnection()
         {
             var redisConnection = new Mock<IRedisConnection>();
@@ -142,6 +174,19 @@ namespace Microsoft.AspNet.SignalR.Redis.Tests
             var traceManager = new TraceManager();
             dr.Register(typeof(ITraceManager), () => traceManager);
             return dr;
+        }
+
+        // We use a callbase mock because we want to check that OpenStream is called.
+        private Mock<RedisMessageBus> GetMockRedisMessageBus(Mock<IRedisConnection> redisConnection)
+        {
+            return new Mock<RedisMessageBus>(
+                GetDependencyResolver(),
+                new RedisScaleoutConfiguration(String.Empty, String.Empty),
+                redisConnection.Object,
+                false)
+            {
+                CallBase = true
+            };
         }
     }
 }

@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -10,45 +10,79 @@ namespace Microsoft.AspNet.SignalR.Redis
 {
     public class RedisConnection : IRedisConnection
     {
-        private StackExchange.Redis.ISubscriber _redisSubscriber;
+        private ISubscriber _redisSubscriber;
         private ConnectionMultiplexer _connection;
         private TraceSource _trace;
         private ulong _latestMessageId;
 
+        private object _shutdownLock = new object();
+        private bool _disposed = false;
+
         public async Task ConnectAsync(string connectionString, TraceSource trace)
         {
-            _connection = await ConnectionMultiplexer.ConnectAsync(connectionString, new TraceTextWriter("ConnectionMultiplexer: ", trace));
-            if (!_connection.IsConnected)
+            if(_disposed)
             {
-                _connection.Dispose();
-                _connection = null;
-                throw new InvalidOperationException("Failed to connect to Redis");
+                throw new ObjectDisposedException(nameof(RedisConnection));
             }
 
-            _connection.ConnectionFailed += OnConnectionFailed;
-            _connection.ConnectionRestored += OnConnectionRestored;
-            _connection.ErrorMessage += OnError;
+            var connection = await ConnectionMultiplexer.ConnectAsync(connectionString, new TraceTextWriter("ConnectionMultiplexer: ", trace));
 
-            _trace = trace;
+            lock (_shutdownLock)
+            {
+                if (_disposed)
+                {
+                    _trace.TraceVerbose("Connection closed during connect");
 
-            _redisSubscriber = _connection.GetSubscriber();
+                    // Nothing to do here, just clean up the connection we created, since we've been closed mid-connection
+                    connection.Dispose();
+                    return;
+                }
+                else
+                {
+                    // We weren't disposed during the connection, so initialize it.
+                    _connection = connection;
+                    if (!_connection.IsConnected)
+                    {
+                        _connection.Dispose();
+                        _connection = null;
+                        throw new InvalidOperationException("Failed to connect to Redis");
+                    }
+
+                    _connection.ConnectionFailed += OnConnectionFailed;
+                    _connection.ConnectionRestored += OnConnectionRestored;
+                    _connection.ErrorMessage += OnError;
+
+                    _trace = trace;
+
+                    _redisSubscriber = _connection.GetSubscriber();
+                }
+            }
         }
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1026:DefaultParametersShouldNotBeUsed")]
         public void Close(string key, bool allowCommandsToComplete = true)
         {
-            _trace.TraceInformation("Closing key: " + key);
-            if (_redisSubscriber != null)
+            lock (_shutdownLock)
             {
-                _redisSubscriber.Unsubscribe(key);
-            }
+                if(_disposed)
+                {
+                    return;
+                }
 
-            if (_connection != null)
-            {
-                _connection.Close(allowCommandsToComplete);
-            }
+                _trace.TraceInformation("Closing key: " + key);
+                if (_redisSubscriber != null)
+                {
+                    _redisSubscriber.Unsubscribe(key);
+                }
 
-            _connection.Dispose();
+                if (_connection != null)
+                {
+                    _connection.Close(allowCommandsToComplete);
+                }
+
+                _connection.Dispose();
+                _disposed = true;
+            }
         }
 
         public async Task SubscribeAsync(string key, Action<int, RedisMessage> onMessage)
@@ -66,9 +100,20 @@ namespace Microsoft.AspNet.SignalR.Redis
 
         public void Dispose()
         {
-            if (_connection != null)
+            lock (_shutdownLock)
             {
-                _connection.Dispose();
+                if (_disposed)
+                {
+                    return;
+                }
+
+                if (_connection != null)
+                {
+                    _trace.TraceVerbose("Disposing connection");
+                    _connection.Dispose();
+                }
+
+                _disposed = true;
             }
         }
 
@@ -127,14 +172,17 @@ namespace Microsoft.AspNet.SignalR.Redis
 
         private void OnConnectionFailed(object sender, ConnectionFailedEventArgs args)
         {
-            _trace.TraceWarning("Connection failed. Reason: " + args.FailureType.ToString() + " Exception: " + args.Exception.ToString());
+            _trace.TraceWarning(args.ConnectionType.ToString() + " Connection failed. Reason: " + args.FailureType.ToString() + " Exception: " + args.Exception.ToString());
             var handler = ConnectionFailed;
             handler(args.Exception);
         }
 
         private void OnConnectionRestored(object sender, ConnectionFailedEventArgs args)
         {
-            _trace.TraceInformation("Connection restored");
+            if (_trace.Switch.ShouldTrace(TraceEventType.Information))
+            {
+                _trace.TraceInformation(args.ConnectionType.ToString() + " Connection restored. Reason: " + args.FailureType.ToString() + " Exception: " + (args.Exception?.ToString() ?? "<none>"));
+            }
             var handler = ConnectionRestored;
             handler(args.Exception);
         }

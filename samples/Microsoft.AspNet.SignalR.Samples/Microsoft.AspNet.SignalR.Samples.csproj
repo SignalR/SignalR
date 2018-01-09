@@ -20,7 +20,10 @@
     <IISExpressUseClassicPipelineMode />
     <ProductVersion>10.0.0</ProductVersion>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
-    <SilverlightApplicationList>{3DCD7F29-E221-45B6-8C0C-881D931946E9}|..\Microsoft.AspNet.SignalR.Client.Silverlight.Samples\Microsoft.AspNet.SignalR.Client.Silverlight.Samples.csproj|ClientBin|False</SilverlightApplicationList>
+    <SilverlightApplicationList>
+    </SilverlightApplicationList>
+    <Use64BitIISExpress />
+    <UseGlobalApplicationHostFile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>True</DebugSymbols>
@@ -95,7 +98,6 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="clientaccesspolicy.xml" />
-    <Content Include="ClientBin\Microsoft.AspNet.SignalR.Client.Silverlight.Samples.xap" />
     <Content Include="Content\bg-body.jpg" />
     <Content Include="Content\bg.jpg" />
     <Content Include="Content\bootstrap-responsive.css" />

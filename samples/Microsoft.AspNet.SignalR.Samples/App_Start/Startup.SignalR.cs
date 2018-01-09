@@ -1,9 +1,9 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System.Configuration;
 using System.Diagnostics;
 using Microsoft.AspNet.SignalR.Hubs;
-using Microsoft.AspNet.SignalR.Redis;
 
 namespace Microsoft.AspNet.SignalR.Samples
 {
@@ -18,7 +18,12 @@ namespace Microsoft.AspNet.SignalR.Samples
             //var config = new RedisScaleoutConfiguration("127.0.0.1", 6379, "", "SignalRSamples");
             //config.RetryOnError = true;
             //dependencyResolver.UseRedis(config);
-            //dependencyResolver.UseRedis("127.0.0.1", 6379, "", "SignalRSamples");
+
+            var redisConnection = ConfigurationManager.AppSettings["redis:connectionString"];
+            if (!string.IsNullOrEmpty(redisConnection))
+            {
+                dependencyResolver.UseRedis(new RedisScaleoutConfiguration(redisConnection, "SignalRSamples"));
+            }
 
             // Uncomment the following line to enable scale-out using service bus
             //dependencyResolver.UseServiceBus("connection string", "Microsoft.AspNet.SignalR.Samples");

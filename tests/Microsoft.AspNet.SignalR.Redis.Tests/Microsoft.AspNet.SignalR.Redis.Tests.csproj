@@ -67,6 +67,7 @@
   <ItemGroup>
     <Compile Include="RedisMessageBusFacts.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="TimeoutTaskExtensions.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
