@@ -7,6 +7,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR.Infrastructure;
+using System.Runtime.ExceptionServices;
 
 namespace Microsoft.AspNet.SignalR.Messaging
 {
@@ -16,7 +17,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
         private static Task _initializeDrainTask;
         private TaskQueue _queue;
         private StreamState _state;
-        private Exception _error;
+        private ExceptionDispatchInfo _error;
 
         private readonly int _size;
         private readonly QueuingBehavior _queueBehavior;
@@ -86,7 +87,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
             {
                 if (_error != null)
                 {
-                    throw _error;
+                    _error.Throw();
                 }
 
                 // If the queue is closed then stop sending
@@ -134,7 +135,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
 
                 Buffer();
 
-                _error = error;
+                _error = ExceptionDispatchInfo.Capture(error);
             }
         }
 
