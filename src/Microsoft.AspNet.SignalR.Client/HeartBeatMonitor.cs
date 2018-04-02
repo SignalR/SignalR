@@ -15,7 +15,9 @@ namespace Microsoft.AspNet.SignalR.Client
     {
 #if !NETFX_CORE
         // Timer to determine when to notify the user and reconnect if required
-        private Timer _timer;
+        private Thread _timer;
+        private bool _timerRunning;
+        private ManualResetEvent _stopSignal;
 #else
         private ThreadPoolTimer _timer;
 #endif
@@ -59,7 +61,10 @@ namespace Microsoft.AspNet.SignalR.Client
 
             ClearFlags();
 #if !NETFX_CORE
-            _timer = new Timer(_ => Beat(), state: null, dueTime: _beatInterval, period: _beatInterval);
+            _timerRunning = true;
+            _stopSignal = new ManualResetEvent(false);
+            _timer = new Thread(TimerThread);
+            _timer.Start();
 #else
             _timer = ThreadPoolTimer.CreatePeriodicTimer((timer) => Beat(), period: _beatInterval);
 #endif
@@ -99,7 +104,9 @@ namespace Microsoft.AspNet.SignalR.Client
 
         private void CheckKeepAlive(TimeSpan timeElapsed)
         {
-            lock (_connectionStateLock)
+            if (!Monitor.TryEnter(_connectionStateLock))
+                return;
+            try
             {
                 if (_connection.State == ConnectionState.Connected)
                 {
@@ -129,8 +136,27 @@ namespace Microsoft.AspNet.SignalR.Client
                     }
                 }
             }
+            finally
+            {
+                Monitor.Exit(_connectionStateLock);
+            }
         }
 
+#if !NETFX_CORE
+        void TimerThread()
+        {
+            while (_timerRunning)
+            {
+                _stopSignal.WaitOne(_beatInterval);
+                if (!_timerRunning) break;
+                try
+                {
+                    Beat();
+                }
+                catch { /**/ }
+            }
+        }
+#endif
         //virtual for testing
         internal virtual void Reconnected()
         {
@@ -157,8 +183,8 @@ namespace Microsoft.AspNet.SignalR.Client
                 if (_timer != null)
                 {
 #if !NETFX_CORE
-
-                    _timer.Dispose();
+                    _timerRunning = false;
+                    _stopSignal.Set();
                     _timer = null;
 #else
                     _timer.Cancel();
