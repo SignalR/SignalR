@@ -53,7 +53,7 @@ namespace Owin
         {
             if (configuration == null)
             {
-                throw new ArgumentNullException("configuration");
+                throw new ArgumentNullException(nameof(configuration));
             }
 
             return builder.Map(path, subApp => subApp.RunSignalR(configuration));
@@ -118,7 +118,7 @@ namespace Owin
         {
             if (configuration == null)
             {
-                throw new ArgumentNullException("configuration");
+                throw new ArgumentNullException(nameof(configuration));
             }
 
             return builder.Map(path, subApp => subApp.RunSignalR(connectionType, configuration));
