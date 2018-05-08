@@ -15,9 +15,8 @@ namespace Microsoft.AspNet.SignalR.Samples
             //dependencyResolver.UseSqlServer(System.Configuration.ConfigurationManager.ConnectionStrings["SignalRSamples"].ConnectionString);
 
             // Uncomment the following line to enable scale-out using Redis
-            //var config = new RedisScaleoutConfiguration("127.0.0.1", 6379, "", "SignalRSamples");
-            //config.RetryOnError = true;
-            //dependencyResolver.UseRedis(config);
+            var config = new RedisScaleoutConfiguration("127.0.0.1", 6379, "", "SignalRSamples");
+            dependencyResolver.UseRedis(config);
 
             var redisConnection = ConfigurationManager.AppSettings["redis:connectionString"];
             if (!string.IsNullOrEmpty(redisConnection))
