@@ -77,12 +77,6 @@ namespace Microsoft.AspNet.SignalR.Redis
 
         protected override Task Send(int streamIndex, IList<Message> messages)
         {
-            string GetMessageContent(Message message)
-            {
-                var content = Encoding.UTF8.GetString(message.Value.Array, message.Value.Offset, message.Value.Count);
-                return $"Key:{message.Key},ID:{message.MappingId},Content:{content}";
-            }
-
             async Task WaitForAndTraceResult(Task<RedisResult> task)
             {
                 var result = await task;
@@ -92,8 +86,7 @@ namespace Microsoft.AspNet.SignalR.Redis
 
             if (_trace.Switch.ShouldTrace(TraceEventType.Verbose))
             {
-                var messageContent = "[" + string.Join(";", messages.Select(m => GetMessageContent(m))) + "]";
-                _trace.TraceEvent(TraceEventType.Verbose, 0, "Publishing message: {0}", messageContent);
+                _trace.TraceEvent(TraceEventType.Verbose, 0, "Publishing message");
             }
 
             var execTask = _connection.ScriptEvaluateAsync(
