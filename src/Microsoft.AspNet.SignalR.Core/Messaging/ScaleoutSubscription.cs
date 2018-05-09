@@ -157,7 +157,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
                 // Try to find a local mapping for this payload
                 var enumerator = new CachedStreamEnumerator(store.GetEnumerator(cursor.Id),
                                                             streamIndex);
-                _trace.TraceEvent(TraceEventType.Verbose, 0, $"Enumerating Mappings for Stream {streamIndex}. Cursor: {cursor.Id} ({cursor.Key}), MaxMapping: {store.MaxMapping}.");
+                _trace.TraceEvent(TraceEventType.Verbose, 0, $"Enumerating Mappings for Stream {streamIndex}. Cursor: {cursor.Id} ({cursor.Key}), MaxMapping: {store.MaxMapping.Id} (created {store.MaxMapping.ServerCreationTime}).");
 
                 enumerators.Add(enumerator);
             }
@@ -195,6 +195,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
                     }
                     else
                     {
+                        _trace.TraceEvent(TraceEventType.Verbose, 0, $"No more mappings found");
                         enumerators.RemoveAt(i);
                     }
                 }
