@@ -77,12 +77,12 @@ namespace Microsoft.AspNet.SignalR.Redis
 
         protected override Task Send(int streamIndex, IList<Message> messages)
         {
-            async Task WaitForAndTraceResult(Task<RedisResult> task)
+            Func<Task<RedisResult>, Task> waitForAndTraceResult = async (Task<RedisResult> task) =>
             {
                 var result = await task;
                 var values = (RedisValue[]) result;
                 _trace.TraceEvent(TraceEventType.Verbose, 0, $"Published message with key: {(int)values[0]}");
-            }
+            };
 
             if (_trace.Switch.ShouldTrace(TraceEventType.Verbose))
             {
@@ -99,9 +99,10 @@ namespace Microsoft.AspNet.SignalR.Redis
                 RedisMessage.ToBytes(messages));
 
             // Sketchy AF, but we know that our RedisConnection returns the Task<RedisResult> as the Task, so we can downcast
-            if (_trace.Switch.ShouldTrace(TraceEventType.Verbose) && execTask is Task<RedisResult> resultTask)
+            if (_trace.Switch.ShouldTrace(TraceEventType.Verbose) && execTask is Task<RedisResult>)
             {
-                return WaitForAndTraceResult(resultTask);
+                var resultTask = (Task<RedisResult>)execTask;
+                return waitForAndTraceResult(resultTask);
             }
 
             return execTask;
