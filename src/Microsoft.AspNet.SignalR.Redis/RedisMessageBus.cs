@@ -4,10 +4,13 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR.Messaging;
 using Microsoft.AspNet.SignalR.Tracing;
+using StackExchange.Redis;
 
 namespace Microsoft.AspNet.SignalR.Redis
 {
@@ -74,7 +77,19 @@ namespace Microsoft.AspNet.SignalR.Redis
 
         protected override Task Send(int streamIndex, IList<Message> messages)
         {
-            return _connection.ScriptEvaluateAsync(
+            async Task WaitForAndTraceResult(Task<RedisResult> task)
+            {
+                var result = await task;
+                var values = (RedisValue[]) result;
+                _trace.TraceEvent(TraceEventType.Verbose, 0, $"Published message with key: {(int)values[0]}");
+            }
+
+            if (_trace.Switch.ShouldTrace(TraceEventType.Verbose))
+            {
+                _trace.TraceEvent(TraceEventType.Verbose, 0, "Publishing message");
+            }
+
+            var execTask = _connection.ScriptEvaluateAsync(
                 _db,
                 @"local newId = redis.call('INCR', KEYS[1])
                   local payload = newId .. ' ' .. ARGV[1]
@@ -82,6 +97,14 @@ namespace Microsoft.AspNet.SignalR.Redis
                   return {newId, ARGV[1], payload}",
                 _key,
                 RedisMessage.ToBytes(messages));
+
+            // Sketchy AF, but we know that our RedisConnection returns the Task<RedisResult> as the Task, so we can downcast
+            if (_trace.Switch.ShouldTrace(TraceEventType.Verbose) && execTask is Task<RedisResult> resultTask)
+            {
+                return WaitForAndTraceResult(resultTask);
+            }
+
+            return execTask;
         }
 
         protected override void Dispose(bool disposing)
