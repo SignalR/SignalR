@@ -110,12 +110,12 @@ namespace Microsoft.AspNet.SignalR.Messaging
                 // anything we already processed
                 if (nextCursor == null || mapping.Id > nextCursor)
                 {
-                    ulong mappingId = ExtractMessages(streamIndex, mapping, items, ref totalCount);
+                    ExtractMessages(streamIndex, mapping, items, ref totalCount);
 
                     // Update the cursor id
-                    nextCursors[streamIndex] = mappingId;
+                    nextCursors[streamIndex] = mapping.Id;
                     _trace.TraceVerbose("Updated cursor for mapping id {0} stream idx {1} to {2} [{3}]",
-                        mapping.Id, streamIndex, mappingId, Identity);
+                        mapping.Id, streamIndex, mapping.Id, Identity);
                 }
             }
 
@@ -224,9 +224,11 @@ namespace Microsoft.AspNet.SignalR.Messaging
                     {
                         LocalEventKeyInfo info = mapping.LocalKeyInfo[j];
 
-                        if (info.MessageStore != null && info.Key.Equals(eventKey, StringComparison.OrdinalIgnoreCase))
+                        // Capture info.MessageStore because it could be GC'd while we're working with it.
+                        var messageStore = info.MessageStore;
+                        if (messageStore != null && info.Key.Equals(eventKey, StringComparison.OrdinalIgnoreCase))
                         {
-                            MessageStoreResult<Message> storeResult = info.MessageStore.GetMessages(info.Id, 1);
+                            MessageStoreResult<Message> storeResult = messageStore.GetMessages(info.Id, 1);
 
                             if (storeResult.Messages.Count > 0)
                             {
@@ -246,6 +248,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
                                     // means we missed messages. Use the new mappingId.
                                     if (message.MappingId > mapping.Id)
                                     {
+                                        _trace.TraceEvent(TraceEventType.Verbose, 0, $"Extracted additional messages, updating cursor to new Mapping ID: {message.MappingId}");
                                         return message.MappingId;
                                     }
                                 }
