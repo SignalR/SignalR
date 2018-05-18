@@ -147,6 +147,8 @@ namespace Microsoft.AspNet.SignalR.Messaging
         {
             var enumerators = new List<CachedStreamEnumerator>();
 
+            var singleStream = _streams.Count == 1;
+
             for (var streamIndex = 0; streamIndex < _streams.Count; ++streamIndex)
             {
                 // Get the mapping for this stream
@@ -157,11 +159,13 @@ namespace Microsoft.AspNet.SignalR.Messaging
                 // Try to find a local mapping for this payload
                 var enumerator = new CachedStreamEnumerator(store.GetEnumerator(cursor.Id),
                                                             streamIndex);
-                _trace.TraceEvent(TraceEventType.Verbose, 0, $"Enumerating Mappings for Stream {streamIndex}. Cursor: {cursor.Id} ({cursor.Key}), MaxMapping: {store.MaxMapping.Id} (created {store.MaxMapping.ServerCreationTime}).");
+                _trace.TraceEvent(TraceEventType.Verbose, 0, $"Enumerating Mappings (connection ID: {Identity}) for Stream {streamIndex}. Cursor: {cursor.Id} ({cursor.Key}).");
 
                 enumerators.Add(enumerator);
             }
 
+            var counter = 0;
+            ulong? lastMapping = null;
             while (enumerators.Count > 0)
             {
                 ScaleoutMapping minMapping = null;
@@ -169,6 +173,8 @@ namespace Microsoft.AspNet.SignalR.Messaging
 
                 for (int i = enumerators.Count - 1; i >= 0; i--)
                 {
+                    counter += 1;
+
                     CachedStreamEnumerator enumerator = enumerators[i];
 
                     ScaleoutMapping mapping;
@@ -176,26 +182,12 @@ namespace Microsoft.AspNet.SignalR.Messaging
                     {
                         if (minMapping == null || mapping.ServerCreationTime < minMapping.ServerCreationTime)
                         {
-                            if (minMapping == null)
-                            {
-                                _trace.TraceEvent(TraceEventType.Verbose, 0, $"First mapping scanned: {mapping.Id} (created {mapping.ServerCreationTime:O})");
-                            }
-                            else
-                            {
-                                _trace.TraceEvent(TraceEventType.Verbose, 0, $"Mapping {mapping.Id} (created {mapping.ServerCreationTime:O}) replacing {minMapping.Id} (created {minMapping.ServerCreationTime:O}) as new minMapping.");
-                            }
-
                             minMapping = mapping;
                             minEnumerator = enumerator;
-                        }
-                        else
-                        {
-                            _trace.TraceEvent(TraceEventType.Verbose, 0, $"Discarding mapping {mapping.Id}, creation time {mapping.ServerCreationTime:O} is after current minimum {minMapping.ServerCreationTime:O}");
                         }
                     }
                     else
                     {
-                        _trace.TraceEvent(TraceEventType.Verbose, 0, $"No more mappings found");
                         enumerators.RemoveAt(i);
                     }
                 }
@@ -203,10 +195,19 @@ namespace Microsoft.AspNet.SignalR.Messaging
                 if (minMapping != null)
                 {
                     minEnumerator.ClearCachedValue();
-                    _trace.TraceEvent(TraceEventType.Verbose, 0, $"Yielding minimum mapping: {minMapping.Id} (created: {minMapping.ServerCreationTime:O})");
+
+                    // This log is only really viable for Redis, where there's only a single stream.
+                    if (singleStream && lastMapping.HasValue && minMapping.Id < lastMapping.Value)
+                    {
+                        _trace.TraceEvent(TraceEventType.Error, 0, $"Mapping regression occurred (connection ID: {Identity}). The next mapping {minMapping.Id} was less than the previous mapping {lastMapping.Value}");
+                    }
+                    lastMapping = minMapping.Id;
+
                     yield return Tuple.Create(minMapping, minEnumerator.StreamIndex);
                 }
             }
+
+            _trace.TraceEvent(TraceEventType.Verbose, 0, $"End of mappings (connection ID: {Identity}). Total mappings processed: {counter}");
         }
 
         private ulong ExtractMessages(int streamIndex, ScaleoutMapping mapping, IList<ArraySegment<Message>> items, ref int totalCount)
@@ -223,9 +224,11 @@ namespace Microsoft.AspNet.SignalR.Messaging
                     {
                         LocalEventKeyInfo info = mapping.LocalKeyInfo[j];
 
-                        if (info.MessageStore != null && info.Key.Equals(eventKey, StringComparison.OrdinalIgnoreCase))
+                        // Capture info.MessageStore because it could be GC'd while we're working with it.
+                        var messageStore = info.MessageStore;
+                        if (messageStore != null && info.Key.Equals(eventKey, StringComparison.OrdinalIgnoreCase))
                         {
-                            MessageStoreResult<Message> storeResult = info.MessageStore.GetMessages(info.Id, 1);
+                            MessageStoreResult<Message> storeResult = messageStore.GetMessages(info.Id, 1);
 
                             if (storeResult.Messages.Count > 0)
                             {
@@ -245,6 +248,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
                                     // means we missed messages. Use the new mappingId.
                                     if (message.MappingId > mapping.Id)
                                     {
+                                        _trace.TraceEvent(TraceEventType.Verbose, 0, $"Extracted additional messages, updating cursor to new Mapping ID: {message.MappingId}");
                                         return message.MappingId;
                                     }
                                 }
