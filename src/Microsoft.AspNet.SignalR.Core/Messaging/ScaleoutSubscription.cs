@@ -110,12 +110,12 @@ namespace Microsoft.AspNet.SignalR.Messaging
                 // anything we already processed
                 if (nextCursor == null || mapping.Id > nextCursor)
                 {
-                    ExtractMessages(streamIndex, mapping, items, ref totalCount);
+                    ulong mappingId = ExtractMessages(streamIndex, mapping, items, ref totalCount);
 
                     // Update the cursor id
-                    nextCursors[streamIndex] = mapping.Id;
+                    nextCursors[streamIndex] = mappingId;
                     _trace.TraceVerbose("Updated cursor for mapping id {0} stream idx {1} to {2} [{3}]",
-                        mapping.Id, streamIndex, mapping.Id, Identity);
+                        mapping.Id, streamIndex, mappingId, Identity);
                 }
             }
 
