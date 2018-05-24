@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using Microsoft.AspNet.SignalR.Infrastructure;
@@ -164,7 +165,9 @@ namespace Microsoft.AspNet.SignalR.Messaging
                         if (overwrite)
                         {
                             _minMessageId = (long)(existingFragment.MaxId + 1);
-                            _minMappingId = existingFragment.MaxId;
+
+                            Debug.Assert(existingFragment.MaxValue.HasValue, "The fragment being overwritten should be full!");
+                            _minMappingId = existingFragment.MaxValue.Value;
                         }
                         else if (idxIntoFragmentsArray == 0)
                         {
