@@ -1,4 +1,4 @@
-// Copyright (c) .NET Foundation. All rights reserved.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -7,7 +7,6 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.IO;
-using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR.Infrastructure;
 using Microsoft.AspNet.SignalR.Tracing;
@@ -157,7 +156,6 @@ namespace Microsoft.AspNet.SignalR.Messaging
                 // Try to find a local mapping for this payload
                 var enumerator = new CachedStreamEnumerator(store.GetEnumerator(cursor.Id),
                                                             streamIndex);
-                _trace.TraceEvent(TraceEventType.Verbose, 0, $"Enumerating Mappings for Stream {streamIndex}. Cursor: {cursor.Id} ({cursor.Key}), MaxMapping: {store.MaxMapping.Id} (created {store.MaxMapping.ServerCreationTime}).");
 
                 enumerators.Add(enumerator);
             }
@@ -176,26 +174,12 @@ namespace Microsoft.AspNet.SignalR.Messaging
                     {
                         if (minMapping == null || mapping.ServerCreationTime < minMapping.ServerCreationTime)
                         {
-                            if (minMapping == null)
-                            {
-                                _trace.TraceEvent(TraceEventType.Verbose, 0, $"First mapping scanned: {mapping.Id} (created {mapping.ServerCreationTime:O})");
-                            }
-                            else
-                            {
-                                _trace.TraceEvent(TraceEventType.Verbose, 0, $"Mapping {mapping.Id} (created {mapping.ServerCreationTime:O}) replacing {minMapping.Id} (created {minMapping.ServerCreationTime:O}) as new minMapping.");
-                            }
-
                             minMapping = mapping;
                             minEnumerator = enumerator;
-                        }
-                        else
-                        {
-                            _trace.TraceEvent(TraceEventType.Verbose, 0, $"Discarding mapping {mapping.Id}, creation time {mapping.ServerCreationTime:O} is after current minimum {minMapping.ServerCreationTime:O}");
                         }
                     }
                     else
                     {
-                        _trace.TraceEvent(TraceEventType.Verbose, 0, $"No more mappings found");
                         enumerators.RemoveAt(i);
                     }
                 }
@@ -203,7 +187,6 @@ namespace Microsoft.AspNet.SignalR.Messaging
                 if (minMapping != null)
                 {
                     minEnumerator.ClearCachedValue();
-                    _trace.TraceEvent(TraceEventType.Verbose, 0, $"Yielding minimum mapping: {minMapping.Id} (created: {minMapping.ServerCreationTime:O})");
                     yield return Tuple.Create(minMapping, minEnumerator.StreamIndex);
                 }
             }
