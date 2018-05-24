@@ -4,6 +4,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
 using Microsoft.AspNet.SignalR.Configuration;
 
 namespace Microsoft.AspNet.SignalR.Messaging
@@ -41,25 +42,27 @@ namespace Microsoft.AspNet.SignalR.Messaging
             }
         }
 
-        public IEnumerator<ScaleoutMapping> GetEnumerator(ulong id)
+        public IEnumerator<ScaleoutMapping> GetEnumerator(ulong id, TraceSource tracer = null)
         {
             MessageStoreResult<ScaleoutMapping> result = _store.GetMessagesByMappingId(id);
 
-            return new ScaleoutStoreEnumerator(_store, result);
+            return new ScaleoutStoreEnumerator(_store, result, tracer);
         }
 
         private struct ScaleoutStoreEnumerator : IEnumerator<ScaleoutMapping>, IEnumerator
         {
             private readonly WeakReference _storeReference;
+            private readonly TraceSource _tracer;
             private MessageStoreResult<ScaleoutMapping> _result;
             private int _offset;
             private int _length;
             private ulong _nextId;
 
-            public ScaleoutStoreEnumerator(ScaleoutStore store, MessageStoreResult<ScaleoutMapping> result)
+            public ScaleoutStoreEnumerator(ScaleoutStore store, MessageStoreResult<ScaleoutMapping> result, TraceSource tracer = null)
                 : this()
             {
                 _storeReference = new WeakReference(store);
+                _tracer = tracer;
                 Initialize(result);
             }
 
@@ -92,6 +95,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
 
                 if (!_result.HasMoreData)
                 {
+                    _tracer?.TraceInformation("No more fragments.");
                     return false;
                 }
 
@@ -100,6 +104,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
 
                 if (store == null)
                 {
+                    _tracer?.TraceInformation("Store was garbage collected.");
                     return false;
                 }
 
@@ -123,6 +128,12 @@ namespace Microsoft.AspNet.SignalR.Messaging
                 _offset = _result.Messages.Offset - 1;
                 _length = _result.Messages.Offset + _result.Messages.Count;
                 _nextId = _result.FirstMessageId + (ulong)_result.Messages.Count;
+
+                if (_tracer != null)
+                {
+                    var firstMapping = _result.Messages.Array[_result.Messages.Offset]?.Id;
+                    _tracer.TraceInformation($"Enumerating fragment starting with mapping ID {firstMapping?.ToString() ?? "<null>"}");
+                }
             }
         }
     }

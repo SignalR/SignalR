@@ -205,7 +205,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
                 }
 
                 // Try to find a local mapping for this payload
-                var enumerator = new CachedStreamEnumerator(store.GetEnumerator(cursor.Id),
+                var enumerator = new CachedStreamEnumerator(store.GetEnumerator(cursor.Id, _tstatEventKey != null ? _trace: null),
                                                             streamIndex);
 
                 enumerators.Add(enumerator);
@@ -213,6 +213,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
 
             var counter = 0;
             ulong? lastMapping = null;
+            var first = true;
             while (enumerators.Count > 0)
             {
                 ScaleoutMapping minMapping = null;
@@ -250,8 +251,18 @@ namespace Microsoft.AspNet.SignalR.Messaging
                     }
                     lastMapping = minMapping.Id;
 
+                    if(first && _tstatEventKey != null)
+                    {
+                        _trace.TraceInformation($"First mapping for TSTAT {_tstatEventKey}: {minMapping.Id}");
+                        first = false;
+                    }
                     yield return Tuple.Create(minMapping, minEnumerator.StreamIndex);
                 }
+            }
+
+            if (_tstatEventKey != null)
+            {
+                _trace.TraceInformation($"Last mapping for TSTAT {_tstatEventKey}: {lastMapping?.ToString() ?? "<null>"}");
             }
         }
 
