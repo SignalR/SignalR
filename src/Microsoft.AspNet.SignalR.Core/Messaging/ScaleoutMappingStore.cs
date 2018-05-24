@@ -129,10 +129,17 @@ namespace Microsoft.AspNet.SignalR.Messaging
                 _length = _result.Messages.Offset + _result.Messages.Count;
                 _nextId = _result.FirstMessageId + (ulong)_result.Messages.Count;
 
-                if (_tracer != null)
+                if (_tracer != null && _result.Messages.Array != null && (_offset + 1) < _length)
                 {
-                    var firstMapping = _result.Messages.Array[_result.Messages.Offset]?.Id;
-                    _tracer.TraceInformation($"Enumerating fragment starting with mapping ID {firstMapping?.ToString() ?? "<null>"}");
+                    try
+                    {
+                        var firstMapping = _result.Messages.Array?[_result.Messages.Offset]?.Id;
+                        _tracer.TraceInformation($"Enumerating fragment starting with mapping ID {firstMapping?.ToString() ?? "<null>"}");
+                    }
+                    catch (IndexOutOfRangeException)
+                    {
+                        _tracer.TraceInformation($"Offset {_result.Messages.Offset} out of bounds of array: 0 -> {_result.Messages.Array.Length}");
+                    }
                 }
             }
         }
