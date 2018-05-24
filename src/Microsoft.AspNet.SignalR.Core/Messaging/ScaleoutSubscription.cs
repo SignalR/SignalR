@@ -8,6 +8,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR.Infrastructure;
 using Microsoft.AspNet.SignalR.Tracing;
@@ -21,6 +22,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
         private readonly IList<ScaleoutMappingStore> _streams;
         private readonly List<Cursor> _cursors;
         private readonly TraceSource _trace;
+        private readonly string _tstatEventKey;
 
         public ScaleoutSubscription(string identity,
                                     IList<string> eventKeys,
@@ -78,6 +80,14 @@ namespace Microsoft.AspNet.SignalR.Messaging
 
             _cursors = cursors;
             _trace = traceManager["SignalR." + typeof(ScaleoutSubscription).Name];
+
+            // Check if this subscription is for the event key we care about
+            _tstatEventKey = eventKeys.FirstOrDefault(s => s.Equals("hu-SentinelCloudHub.TSTATK12343"));
+
+            if (_tstatEventKey != null)
+            {
+                _trace.TraceInformation($"TSTAT Subscription initialized: {_tstatEventKey}");
+            }
         }
 
         public override void WriteCursor(TextWriter textWriter)
@@ -89,6 +99,11 @@ namespace Microsoft.AspNet.SignalR.Messaging
         [SuppressMessage("Microsoft.Design", "CA1062:Validate arguments of public methods", MessageId = "0", Justification = "It is called from the base class")]
         protected override void PerformWork(IList<ArraySegment<Message>> items, out int totalCount, out object state)
         {
+            if (_tstatEventKey != null)
+            {
+                PerformWorkForTStat();
+            }
+
             // The list of cursors represent (streamid, payloadid)
             var nextCursors = new ulong?[_cursors.Count];
             totalCount = 0;
@@ -96,13 +111,17 @@ namespace Microsoft.AspNet.SignalR.Messaging
             // Get the enumerator so that we can extract messages for this subscription
             IEnumerator<Tuple<ScaleoutMapping, int>> enumerator = GetMappings().GetEnumerator();
 
+            ulong? startMapping = null;
+            ScaleoutMapping mapping = null;
             while (totalCount < MaxMessages && enumerator.MoveNext())
             {
-                ScaleoutMapping mapping = enumerator.Current.Item1;
+                mapping = enumerator.Current.Item1;
                 int streamIndex = enumerator.Current.Item2;
 
-                _trace.TraceVerbose("Extracting message for scaleout mapping: {0}, stream index {1}, [{2}]",
-                    mapping.Id, streamIndex, Identity);
+                if (startMapping == null)
+                {
+                    startMapping = mapping.Id;
+                }
 
                 ulong? nextCursor = nextCursors[streamIndex];
 
@@ -110,16 +129,40 @@ namespace Microsoft.AspNet.SignalR.Messaging
                 // anything we already processed
                 if (nextCursor == null || mapping.Id > nextCursor)
                 {
+                    var oldCount = totalCount;
                     ulong mappingId = ExtractMessages(streamIndex, mapping, items, ref totalCount);
+
+                    if (_tstatEventKey != null)
+                    {
+                        var extracted = totalCount - oldCount;
+                        if (extracted > 0)
+                        {
+                            _trace.TraceInformation($"Extracted {extracted} messages from mapping {mapping.Id}. Next cursor: {mappingId}.");
+                        }
+                    }
 
                     // Update the cursor id
                     nextCursors[streamIndex] = mappingId;
-                    _trace.TraceVerbose("Updated cursor for mapping id {0} stream idx {1} to {2} [{3}]",
-                        mapping.Id, streamIndex, mappingId, Identity);
+                }
+                else
+                {
+                    _trace.TraceInformation($"Mapping ID {mapping.Id} is behind cursor {nextCursor.Value}.");
                 }
             }
 
+            if (_tstatEventKey != null)
+            {
+                _trace.TraceInformation($"Extracted {totalCount} messages from mappings {startMapping?.ToString() ?? "<null>"} to {mapping?.Id.ToString() ?? "<null>"}");
+            }
+
             state = nextCursors;
+        }
+
+        // Used for WinDBG breakpoint hax.
+        [System.Runtime.CompilerServices.MethodImpl(MethodImplOptions.NoInlining)]
+        private void PerformWorkForTStat()
+        {
+            _trace.TraceInformation($"Processing TSTAT: {_tstatEventKey}");
         }
 
         protected override void BeforeInvoke(object state)
@@ -156,10 +199,14 @@ namespace Microsoft.AspNet.SignalR.Messaging
 
                 Cursor cursor = _cursors[streamIndex];
 
+                if (_tstatEventKey != null)
+                {
+                    _trace.TraceInformation($"TSTAT {_tstatEventKey} Subscription cursor value: {cursor.Id} {cursor.Key}");
+                }
+
                 // Try to find a local mapping for this payload
                 var enumerator = new CachedStreamEnumerator(store.GetEnumerator(cursor.Id),
                                                             streamIndex);
-                _trace.TraceEvent(TraceEventType.Verbose, 0, $"Enumerating Mappings (connection ID: {Identity}) for Stream {streamIndex}. Cursor: {cursor.Id} ({cursor.Key}).");
 
                 enumerators.Add(enumerator);
             }
@@ -206,8 +253,6 @@ namespace Microsoft.AspNet.SignalR.Messaging
                     yield return Tuple.Create(minMapping, minEnumerator.StreamIndex);
                 }
             }
-
-            _trace.TraceEvent(TraceEventType.Verbose, 0, $"End of mappings (connection ID: {Identity}). Total mappings processed: {counter}");
         }
 
         private ulong ExtractMessages(int streamIndex, ScaleoutMapping mapping, IList<ArraySegment<Message>> items, ref int totalCount)
@@ -224,10 +269,16 @@ namespace Microsoft.AspNet.SignalR.Messaging
                     {
                         LocalEventKeyInfo info = mapping.LocalKeyInfo[j];
 
+                        var isTstatStore = string.Equals(info.Key, _tstatEventKey);
+
                         // Capture info.MessageStore because it could be GC'd while we're working with it.
                         var messageStore = info.MessageStore;
                         if (messageStore != null && info.Key.Equals(eventKey, StringComparison.OrdinalIgnoreCase))
                         {
+                            if (isTstatStore)
+                            {
+                                _trace.TraceInformation($"Processing MessageStore for {info.Key}. Count: {messageStore.GetMessageCount()}.");
+                            }
                             MessageStoreResult<Message> storeResult = messageStore.GetMessages(info.Id, 1);
 
                             if (storeResult.Messages.Count > 0)
@@ -263,6 +314,10 @@ namespace Microsoft.AspNet.SignalR.Messaging
                                             mapping.Id, info.Key, info.Id, message.StreamIndex, streamIndex);
                                 }
                             }
+                        }
+                        else if(messageStore == null && isTstatStore)
+                        {
+                            _trace.TraceInformation($"MessageStore {info.Key} was garbage collected!");
                         }
                     }
                 }

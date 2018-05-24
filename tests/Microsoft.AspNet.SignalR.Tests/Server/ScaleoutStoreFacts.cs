@@ -1,7 +1,8 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.AspNet.SignalR.Messaging;
@@ -285,6 +286,26 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
             var result = store.GetMessagesByMappingId(2);
             Assert.Equal(0ul, result.FirstMessageId);
             Assert.Equal(0, result.Messages.Count);
+        }
+
+        private class EnumerableWrapper<T> : IEnumerable<T>
+        {
+            private readonly IEnumerator<T> _e;
+
+            public EnumerableWrapper(IEnumerator<T> e)
+            {
+                _e = e;
+            }
+
+            public IEnumerator<T> GetEnumerator()
+            {
+                return _e;
+            }
+
+            IEnumerator IEnumerable.GetEnumerator()
+            {
+                return _e;
+            }
         }
     }
 }

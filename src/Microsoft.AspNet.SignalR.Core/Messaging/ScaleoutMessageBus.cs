@@ -174,6 +174,13 @@ namespace Microsoft.AspNet.SignalR.Messaging
             Counters.ScaleoutMessageBusMessagesReceivedPerSec.IncrementBy(scaleoutMessage.Messages.Count);
 
             _trace.TraceInformation("OnReceived({0}, {1}, {2})", streamIndex, id, scaleoutMessage.Messages.Count);
+
+            var tstatKey = scaleoutMessage.Messages.FirstOrDefault(m => m.Key.Contains("TSTATK12343"))?.Key;
+            if (tstatKey != null)
+            {
+                _trace.TraceInformation($"TSTAT Message received for: {tstatKey}");
+            }
+
             TraceScaleoutMessages(id, scaleoutMessage);
 
             var localMapping = new LocalEventKeyInfo[scaleoutMessage.Messages.Count];

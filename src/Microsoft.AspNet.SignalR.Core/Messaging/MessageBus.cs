@@ -152,7 +152,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
             if (Topics.TryGetValue(message.Key, out topic))
             {
                 topic.Store.Add(message);
-                ScheduleTopic(topic);
+                ScheduleTopic(topic, message.Key.Contains("TSTATK12343"));
             }
 
             Counters.MessageBusMessagesPublishedTotal.Increment();
@@ -258,11 +258,11 @@ namespace Microsoft.AspNet.SignalR.Messaging
             Topic topic;
             if (Topics.TryGetValue(eventKey, out topic))
             {
-                ScheduleTopic(topic);
+                ScheduleTopic(topic, eventKey.Contains("TSTATK12343"));
             }
         }
 
-        private void ScheduleTopic(Topic topic)
+        private void ScheduleTopic(Topic topic, bool isTstat)
         {
             try
             {
@@ -270,9 +270,20 @@ namespace Microsoft.AspNet.SignalR.Messaging
 
                 for (int i = 0; i < topic.Subscriptions.Count; i++)
                 {
+                    if (isTstat)
+                    {
+                        _trace.TraceInformation($"Running subscription {i} for TSTAT");
+                    }
+
                     ISubscription subscription = topic.Subscriptions[i];
                     _broker.Schedule(subscription);
                 }
+
+                if (isTstat)
+                {
+                    _trace.TraceInformation($"End of subscriptions for TSTAT");
+                }
+
             }
             finally
             {
@@ -405,8 +416,6 @@ namespace Microsoft.AspNet.SignalR.Messaging
 
         private void DestroyTopicCore(string key, Topic topic)
         {
-            _trace.TraceEvent(TraceEventType.Verbose, 0, $"Destroying topic: {key}");
-
             Topics.TryRemove(key);
             _stringMinifier.RemoveUnminified(key);
 
