@@ -1,4 +1,4 @@
-// Copyright (c) .NET Foundation. All rights reserved.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -287,8 +287,6 @@ namespace Microsoft.AspNet.SignalR.Messaging
         /// <returns>A <see cref="Topic"/> for the specified key.</returns>
         protected virtual Topic CreateTopic(string key)
         {
-            _trace.TraceEvent(TraceEventType.Verbose, 0, $"Creating topic: {key}");
-
             // REVIEW: This can be called multiple times, should we guard against it?
             Counters.MessageBusTopicsCurrent.Increment();
 
@@ -405,8 +403,6 @@ namespace Microsoft.AspNet.SignalR.Messaging
 
         private void DestroyTopicCore(string key, Topic topic)
         {
-            _trace.TraceEvent(TraceEventType.Verbose, 0, $"Destroying topic: {key}");
-
             Topics.TryRemove(key);
             _stringMinifier.RemoveUnminified(key);
 

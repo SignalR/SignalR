@@ -1,4 +1,4 @@
-// Copyright (c) .NET Foundation. All rights reserved.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -7,7 +7,6 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.IO;
-using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR.Infrastructure;
 using Microsoft.AspNet.SignalR.Tracing;
@@ -159,7 +158,6 @@ namespace Microsoft.AspNet.SignalR.Messaging
                 // Try to find a local mapping for this payload
                 var enumerator = new CachedStreamEnumerator(store.GetEnumerator(cursor.Id),
                                                             streamIndex);
-                _trace.TraceEvent(TraceEventType.Verbose, 0, $"Enumerating Mappings (connection ID: {Identity}) for Stream {streamIndex}. Cursor: {cursor.Id} ({cursor.Key}).");
 
                 enumerators.Add(enumerator);
             }
@@ -195,14 +193,6 @@ namespace Microsoft.AspNet.SignalR.Messaging
                 if (minMapping != null)
                 {
                     minEnumerator.ClearCachedValue();
-
-                    // This log is only really viable for Redis, where there's only a single stream.
-                    if (singleStream && lastMapping.HasValue && minMapping.Id < lastMapping.Value)
-                    {
-                        _trace.TraceEvent(TraceEventType.Error, 0, $"Mapping regression occurred (connection ID: {Identity}). The next mapping {minMapping.Id} was less than the previous mapping {lastMapping.Value}");
-                    }
-                    lastMapping = minMapping.Id;
-
                     yield return Tuple.Create(minMapping, minEnumerator.StreamIndex);
                 }
             }
