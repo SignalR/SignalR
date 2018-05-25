@@ -100,9 +100,6 @@ namespace Microsoft.AspNet.SignalR.Messaging
                 ScaleoutMapping mapping = enumerator.Current.Item1;
                 int streamIndex = enumerator.Current.Item2;
 
-                _trace.TraceVerbose("Extracting message for scaleout mapping: {0}, stream index {1}, [{2}]",
-                    mapping.Id, streamIndex, Identity);
-
                 ulong? nextCursor = nextCursors[streamIndex];
 
                 // Only keep going with this stream if the cursor we're looking at is bigger than
@@ -113,8 +110,6 @@ namespace Microsoft.AspNet.SignalR.Messaging
 
                     // Update the cursor id
                     nextCursors[streamIndex] = mappingId;
-                    _trace.TraceVerbose("Updated cursor for mapping id {0} stream idx {1} to {2} [{3}]",
-                        mapping.Id, streamIndex, mappingId, Identity);
                 }
             }
 
