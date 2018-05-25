@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -11,6 +11,8 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
 {
     public class ScaleoutStoreFacts
     {
+        private static readonly ulong MappingIdBase = 100000;
+
         [Fact]
         public void BinarySearchNoOverwriteSuccess()
         {
@@ -18,11 +20,11 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
 
             for (int i = 0; i < 5; i++)
             {
-                store.Add(new ScaleoutMapping((ulong)i, new ScaleoutMessage()));
+                store.Add(new ScaleoutMapping(((ulong)i + MappingIdBase), new ScaleoutMessage()));
             }
 
             ScaleoutStore.Fragment fragment;
-            bool result = store.TryGetFragmentFromMappingId(0, out fragment);
+            bool result = store.TryGetFragmentFromMappingId(MappingIdBase, out fragment);
 
             Assert.True(result);
         }
@@ -34,11 +36,11 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
 
             for (int i = 0; i < 5; i++)
             {
-                store.Add(new ScaleoutMapping((ulong)i, new ScaleoutMessage()));
+                store.Add(new ScaleoutMapping(((ulong)i + MappingIdBase), new ScaleoutMessage()));
             }
 
             ScaleoutStore.Fragment fragment;
-            bool result = store.TryGetFragmentFromMappingId(20, out fragment);
+            bool result = store.TryGetFragmentFromMappingId(MappingIdBase + 20, out fragment);
 
             Assert.False(result);
         }
@@ -50,11 +52,11 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
 
             for (int i = 1; i <= 5; i++)
             {
-                store.Add(new ScaleoutMapping((ulong)i, new ScaleoutMessage()));
+                store.Add(new ScaleoutMapping(((ulong)i + MappingIdBase), new ScaleoutMessage()));
             }
 
             ScaleoutStore.Fragment fragment;
-            bool result = store.TryGetFragmentFromMappingId(0, out fragment);
+            bool result = store.TryGetFragmentFromMappingId(MappingIdBase, out fragment);
 
             Assert.False(result);
         }
@@ -69,13 +71,13 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
             {
                 for (int j = 0; j < store.FragmentCount; j++)
                 {
-                    store.Add(new ScaleoutMapping((ulong)id, new ScaleoutMessage()));
+                    store.Add(new ScaleoutMapping(((ulong)id + MappingIdBase), new ScaleoutMessage()));
                     id++;
                 }
             }
 
             ScaleoutStore.Fragment fragment;
-            bool result = store.TryGetFragmentFromMappingId(10, out fragment);
+            bool result = store.TryGetFragmentFromMappingId(MappingIdBase + 10, out fragment);
 
             Assert.True(result);
         }
@@ -90,13 +92,13 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
             {
                 for (int j = 0; j < store.FragmentCount; j++)
                 {
-                    store.Add(new ScaleoutMapping((ulong)id, new ScaleoutMessage()));
+                    store.Add(new ScaleoutMapping(((ulong)id + MappingIdBase), new ScaleoutMessage()));
                     id++;
                 }
             }
 
             ScaleoutStore.Fragment fragment;
-            bool result = store.TryGetFragmentFromMappingId(0, out fragment);
+            bool result = store.TryGetFragmentFromMappingId(MappingIdBase, out fragment);
 
             Assert.False(result);
         }
@@ -111,13 +113,13 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
             {
                 for (int j = 0; j < store.FragmentCount; j++)
                 {
-                    store.Add(new ScaleoutMapping((ulong)id, new ScaleoutMessage()));
+                    store.Add(new ScaleoutMapping(((ulong)id + MappingIdBase), new ScaleoutMessage()));
                     id++;
                 }
             }
 
             ScaleoutStore.Fragment fragment;
-            bool result = store.TryGetFragmentFromMappingId(100, out fragment);
+            bool result = store.TryGetFragmentFromMappingId(MappingIdBase + 100, out fragment);
 
             Assert.False(result);
         }
@@ -157,12 +159,12 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
                 for (int j = 0; j < store.FragmentCount; j++)
                 {
                     var message = new ScaleoutMessage();
-                    store.Add(new ScaleoutMapping((ulong)id, message));
+                    store.Add(new ScaleoutMapping(((ulong)id + MappingIdBase), message));
                     id++;
                 }
             }
 
-            Assert.Equal((ulong)store.FragmentSize - 1, store.MinMappingId);
+            Assert.Equal(((ulong)store.FragmentSize - 1) + MappingIdBase, store.MinMappingId);
         }
 
         [Fact]
@@ -173,10 +175,10 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
             for (int i = 10; i < 15; i++)
             {
                 var message = new ScaleoutMessage();
-                store.Add(new ScaleoutMapping((ulong)i, message));
+                store.Add(new ScaleoutMapping(((ulong)i + MappingIdBase), message));
             }
 
-            var result = store.GetMessagesByMappingId(16);
+            var result = store.GetMessagesByMappingId(MappingIdBase + 16);
             Assert.Equal(0, result.Messages.Count);
         }
 
@@ -188,10 +190,10 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
             for (int i = 0; i < 5; i++)
             {
                 var message = new ScaleoutMessage();
-                store.Add(new ScaleoutMapping((ulong)i, message));
+                store.Add(new ScaleoutMapping(((ulong)i + MappingIdBase), message));
             }
 
-            var result = store.GetMessagesByMappingId(6);
+            var result = store.GetMessagesByMappingId(MappingIdBase + 6);
             Assert.Equal(0, result.Messages.Count);
         }
 
@@ -203,13 +205,31 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
             for (int i = 5; i < 10; i++)
             {
                 var message = new ScaleoutMessage();
-                store.Add(new ScaleoutMapping((ulong)i, message));
+                store.Add(new ScaleoutMapping(((ulong)i + MappingIdBase), message));
             }
 
-            var result = store.GetMessagesByMappingId(4);
+            var result = store.GetMessagesByMappingId(MappingIdBase + 4);
             Assert.Equal(0ul, result.FirstMessageId);
-            Assert.Equal(5ul, store.MinMappingId);
+            Assert.Equal(5ul + MappingIdBase, store.MinMappingId);
             Assert.Equal(5, result.Messages.Count);
+        }
+
+        [Fact]
+        public void GettingMessagesWithCursorLowerThanMinReturnsAllEvenAfterMultipleOverwrites()
+        {
+            var store = new ScaleoutStore(10);
+
+            for (int i = 0; i < 100; i++)
+            {
+                var message = new ScaleoutMessage();
+                store.Add(new ScaleoutMapping(((ulong)i + MappingIdBase), message));
+            }
+
+            var result = store.GetMessagesByMappingId(MappingIdBase + 62);
+            Assert.Equal(64ul, result.FirstMessageId);
+            Assert.Equal(63ul + MappingIdBase, store.MinMappingId);
+            Assert.Equal(8, result.Messages.Count);
+            Assert.True(result.HasMoreData);
         }
 
         [Fact]
@@ -246,10 +266,10 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
             var message = new ScaleoutMessage();
             foreach (var v in values)
             {
-                store.Add(new ScaleoutMapping((ulong)v, message));
+                store.Add(new ScaleoutMapping((ulong)v + MappingIdBase, message));
             }
 
-            var result = store.GetMessagesByMappingId(targetId);
+            var result = store.GetMessagesByMappingId(MappingIdBase + targetId);
             Assert.Equal(firstId, result.FirstMessageId);
             Assert.Equal(count, result.Messages.Count);
         }
@@ -280,9 +300,9 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
             var store = new ScaleoutStore(10);
 
             var message = new ScaleoutMessage();
-            store.Add(new ScaleoutMapping((ulong)1, message));
+            store.Add(new ScaleoutMapping((ulong)1 + MappingIdBase, message));
 
-            var result = store.GetMessagesByMappingId(2);
+            var result = store.GetMessagesByMappingId(2 + MappingIdBase);
             Assert.Equal(0ul, result.FirstMessageId);
             Assert.Equal(0, result.Messages.Count);
         }
