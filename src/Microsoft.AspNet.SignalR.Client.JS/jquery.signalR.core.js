@@ -1,6 +1,6 @@
 /*global window:false */
 /*!
- * ASP.NET SignalR JavaScript Library v2.2.3
+ * ASP.NET SignalR JavaScript Library v2.3.0-preview1
  * http://signalr.net/
  *
  * Copyright (c) .NET Foundation. All rights reserved.

@@ -26,6 +26,7 @@ namespace Microsoft.AspNet.SignalR.Redis
         private IRedisConnection _connection;
         private string _connectionString;
         private readonly object _callbackLock = new object();
+        private ulong? lastId = null;
 
         public RedisMessageBus(IDependencyResolver resolver, RedisScaleoutConfiguration configuration, IRedisConnection connection)
             : this(resolver, configuration, connection, true)
@@ -169,6 +170,11 @@ namespace Microsoft.AspNet.SignalR.Redis
             // to preserve order on the subscription)
             lock (_callbackLock)
             {
+                if (lastId.HasValue && message.Id < lastId.Value)
+                {
+                    _trace.TraceEvent(TraceEventType.Error, 0, $"ID regression occurred. The next message ID {message.Id} was less than the previous message {lastId.Value}");
+                }
+                lastId = message.Id;
                 OnReceived(streamIndex, message.Id, message.ScaleoutMessage);
             }
         }

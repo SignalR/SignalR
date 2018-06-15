@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -100,9 +100,6 @@ namespace Microsoft.AspNet.SignalR.Messaging
                 ScaleoutMapping mapping = enumerator.Current.Item1;
                 int streamIndex = enumerator.Current.Item2;
 
-                _trace.TraceVerbose("Extracting message for scaleout mapping: {0}, stream index {1}, [{2}]",
-                    mapping.Id, streamIndex, Identity);
-
                 ulong? nextCursor = nextCursors[streamIndex];
 
                 // Only keep going with this stream if the cursor we're looking at is bigger than
@@ -113,8 +110,6 @@ namespace Microsoft.AspNet.SignalR.Messaging
 
                     // Update the cursor id
                     nextCursors[streamIndex] = mappingId;
-                    _trace.TraceVerbose("Updated cursor for mapping id {0} stream idx {1} to {2} [{3}]",
-                        mapping.Id, streamIndex, mappingId, Identity);
                 }
             }
 
@@ -146,6 +141,8 @@ namespace Microsoft.AspNet.SignalR.Messaging
         {
             var enumerators = new List<CachedStreamEnumerator>();
 
+            var singleStream = _streams.Count == 1;
+
             for (var streamIndex = 0; streamIndex < _streams.Count; ++streamIndex)
             {
                 // Get the mapping for this stream
@@ -160,6 +157,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
                 enumerators.Add(enumerator);
             }
 
+            var counter = 0;
             while (enumerators.Count > 0)
             {
                 ScaleoutMapping minMapping = null;
@@ -167,6 +165,8 @@ namespace Microsoft.AspNet.SignalR.Messaging
 
                 for (int i = enumerators.Count - 1; i >= 0; i--)
                 {
+                    counter += 1;
+
                     CachedStreamEnumerator enumerator = enumerators[i];
 
                     ScaleoutMapping mapping;
@@ -190,6 +190,8 @@ namespace Microsoft.AspNet.SignalR.Messaging
                     yield return Tuple.Create(minMapping, minEnumerator.StreamIndex);
                 }
             }
+
+            _trace.TraceEvent(TraceEventType.Verbose, 0, $"End of mappings (connection ID: {Identity}). Total mappings processed: {counter}");
         }
 
         private ulong ExtractMessages(int streamIndex, ScaleoutMapping mapping, IList<ArraySegment<Message>> items, ref int totalCount)
@@ -206,9 +208,11 @@ namespace Microsoft.AspNet.SignalR.Messaging
                     {
                         LocalEventKeyInfo info = mapping.LocalKeyInfo[j];
 
-                        if (info.MessageStore != null && info.Key.Equals(eventKey, StringComparison.OrdinalIgnoreCase))
+                        // Capture info.MessageStore because it could be GC'd while we're working with it.
+                        var messageStore = info.MessageStore;
+                        if (messageStore != null && info.Key.Equals(eventKey, StringComparison.OrdinalIgnoreCase))
                         {
-                            MessageStoreResult<Message> storeResult = info.MessageStore.GetMessages(info.Id, 1);
+                            MessageStoreResult<Message> storeResult = messageStore.GetMessages(info.Id, 1);
 
                             if (storeResult.Messages.Count > 0)
                             {
@@ -228,6 +232,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
                                     // means we missed messages. Use the new mappingId.
                                     if (message.MappingId > mapping.Id)
                                     {
+                                        _trace.TraceEvent(TraceEventType.Verbose, 0, $"Extracted additional messages, updating cursor to new Mapping ID: {message.MappingId}");
                                         return message.MappingId;
                                     }
                                 }
