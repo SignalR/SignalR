@@ -470,7 +470,7 @@
                 connection._.deferredStartHandler = function () {
                     connection.start(options, callback);
                 };
-                _pageWindow.bind("load", connection._.deferredStartHandler);
+                _pageWindow.on("load", connection._.deferredStartHandler);
 
                 return deferred.promise();
             }
@@ -549,7 +549,7 @@
 
             connection.ajaxDataType = config.jsonp ? "jsonp" : "text";
 
-            $(connection).bind(events.onStart, function (e, data) {
+            $(connection).on(events.onStart, function (e, data) {
                 if ($.type(callback) === "function") {
                     callback.call(connection);
                 }
@@ -622,7 +622,7 @@
                         $(connection).triggerHandler(events.onStart);
 
                         // wire the stop handler for when the user leaves the page
-                        _pageWindow.bind("unload", function () {
+                        _pageWindow.on("unload", function () {
                             connection.log("Window unloading, stopping the connection.");
 
                             connection.stop(asyncAbort);
@@ -631,7 +631,7 @@
                         if (isFirefox11OrGreater) {
                             // Firefox does not fire cross-domain XHRs in the normal unload handler on tab close.
                             // #2400
-                            _pageWindow.bind("beforeunload", function () {
+                            _pageWindow.on("beforeunload", function () {
                                 // If connection.stop() runs runs in beforeunload and fails, it will also fail
                                 // in unload unless connection.stop() runs after a timeout.
                                 window.setTimeout(function () {
@@ -763,7 +763,7 @@
             /// <param name="callback" type="Function">A callback function to execute before the connection is fully instantiated.</param>
             /// <returns type="signalR" />
             var connection = this;
-            $(connection).bind(events.onStarting, function (e, data) {
+            $(connection).on(events.onStarting, function (e, data) {
                 callback.call(connection);
             });
             return connection;
@@ -795,7 +795,7 @@
             /// <param name="callback" type="Function">A callback function to execute when any data is received on the connection</param>
             /// <returns type="signalR" />
             var connection = this;
-            $(connection).bind(events.onReceived, function (e, data) {
+            $(connection).on(events.onReceived, function (e, data) {
                 callback.call(connection, data);
             });
             return connection;
@@ -806,7 +806,7 @@
             /// <param name="callback" type="Function">A callback function to execute when the connection state changes</param>
             /// <returns type="signalR" />
             var connection = this;
-            $(connection).bind(events.onStateChanged, function (e, data) {
+            $(connection).on(events.onStateChanged, function (e, data) {
                 callback.call(connection, data);
             });
             return connection;
@@ -817,7 +817,7 @@
             /// <param name="callback" type="Function">A callback function to execute when an error occurs on the connection</param>
             /// <returns type="signalR" />
             var connection = this;
-            $(connection).bind(events.onError, function (e, errorData, sendData) {
+            $(connection).on(events.onError, function (e, errorData, sendData) {
                 connection.lastError = errorData;
                 // In practice 'errorData' is the SignalR built error object.
                 // In practice 'sendData' is undefined for all error events except those triggered by
@@ -832,7 +832,7 @@
             /// <param name="callback" type="Function">A callback function to execute when the connection is broken</param>
             /// <returns type="signalR" />
             var connection = this;
-            $(connection).bind(events.onDisconnect, function (e, data) {
+            $(connection).on(events.onDisconnect, function (e, data) {
                 callback.call(connection);
             });
             return connection;
@@ -843,7 +843,7 @@
             /// <param name="callback" type="Function">A callback function to execute when the connection is slow</param>
             /// <returns type="signalR" />
             var connection = this;
-            $(connection).bind(events.onConnectionSlow, function (e, data) {
+            $(connection).on(events.onConnectionSlow, function (e, data) {
                 callback.call(connection);
             });
 
@@ -855,7 +855,7 @@
             /// <param name="callback" type="Function">A callback function to execute when the connection enters a reconnecting state</param>
             /// <returns type="signalR" />
             var connection = this;
-            $(connection).bind(events.onReconnecting, function (e, data) {
+            $(connection).on(events.onReconnecting, function (e, data) {
                 callback.call(connection);
             });
             return connection;
@@ -866,7 +866,7 @@
             /// <param name="callback" type="Function">A callback function to execute when the connection is restored</param>
             /// <returns type="signalR" />
             var connection = this;
-            $(connection).bind(events.onReconnect, function (e, data) {
+            $(connection).on(events.onReconnect, function (e, data) {
                 callback.call(connection);
             });
             return connection;
@@ -884,7 +884,7 @@
             // Verify that we've bound a load event.
             if (connection._.deferredStartHandler) {
                 // Unbind the event.
-                _pageWindow.unbind("load", connection._.deferredStartHandler);
+                _pageWindow.off("load", connection._.deferredStartHandler);
             }
 
             // Always clean up private non-timeout based state.
@@ -952,7 +952,7 @@
             connection._.connectingMessageBuffer.clear();
             
             // Clean up this event
-            $(connection).unbind(events.onStart);
+            $(connection).off(events.onStart);
 
             // Trigger the disconnect event
             changeState(connection, connection.state, signalR.connectionState.disconnected);
