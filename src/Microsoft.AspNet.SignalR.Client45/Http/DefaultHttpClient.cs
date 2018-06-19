@@ -33,7 +33,7 @@ namespace Microsoft.AspNet.SignalR.Client.Http
 
             _longRunningClient = new HttpClient(CreateHandler());
 
-            // Disabling the Http Client timeout 
+            // Disabling the Http Client timeout
             _longRunningClient.Timeout = TimeSpan.FromMilliseconds(-1.0);
 
             _shortRunningClient = new HttpClient(CreateHandler());
@@ -121,6 +121,8 @@ namespace Microsoft.AspNet.SignalR.Client.Http
                 requestMessage.Content = new ByteArrayContent(HttpHelper.ProcessPostData(postData));
             }
 
+            requestMessage.Content.Headers.Add("Content-Type", "application/x-www-form-urlencoded");
+
             var request = new HttpRequestMessageWrapper(requestMessage, () =>
             {
                 cts.Cancel();
@@ -131,7 +133,7 @@ namespace Microsoft.AspNet.SignalR.Client.Http
 
             HttpClient httpClient = GetHttpClient(isLongRunning);
 
-            return httpClient.SendAsync(requestMessage, HttpCompletionOption.ResponseHeadersRead, cts.Token)                
+            return httpClient.SendAsync(requestMessage, HttpCompletionOption.ResponseHeadersRead, cts.Token)
                 .Then(responseMessage =>
                 {
                     if (responseMessage.IsSuccessStatusCode)
