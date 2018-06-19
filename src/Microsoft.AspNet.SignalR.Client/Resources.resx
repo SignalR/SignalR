@@ -186,4 +186,7 @@
   <data name="Error_PossibleDeadlockDetected" xml:space="preserve">
     <value>Possible deadlock detected. A callback registered with "HubProxy.On" or "Connection.Received" has been executing for at least {0} seconds.</value>
   </data>
+  <data name="Error_IConnectionMemberNotSupported" xml:space="preserve">
+    <value>IConnection member {0} is not supported by IHttpClient implementation.</value>
+  </data>
 </root>
