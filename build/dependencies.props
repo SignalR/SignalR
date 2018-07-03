@@ -1,0 +1,34 @@
+﻿<Project>
+  <PropertyGroup Label="Package Versions: Auto">
+    <CastleCorePackageVersion>4.0.0</CastleCorePackageVersion>
+    <CmdLinePackageVersion>1.0.7.509</CmdLinePackageVersion>
+    <MicrosoftNETTestSdkPackageVersion>15.8.0</MicrosoftNETTestSdkPackageVersion>
+    <MicrosoftOwinCorsPackageVersion>2.1.0</MicrosoftOwinCorsPackageVersion>
+    <MicrosoftOwinDiagnosticsPackageVersion>2.1.0</MicrosoftOwinDiagnosticsPackageVersion>
+    <MicrosoftOwinHostHttpListenerPackageVersion>2.1.0</MicrosoftOwinHostHttpListenerPackageVersion>
+    <MicrosoftOwinHostingPackageVersion>2.1.0</MicrosoftOwinHostingPackageVersion>
+    <MicrosoftOwinHostSystemWebPackageVersion>2.1.0</MicrosoftOwinHostSystemWebPackageVersion>
+    <MicrosoftOwinPackageVersion>2.1.0</MicrosoftOwinPackageVersion>
+    <MicrosoftOwinSecurityCookiesPackageVersion>2.1.0</MicrosoftOwinSecurityCookiesPackageVersion>
+    <MicrosoftOwinSecurityPackageVersion>2.1.0</MicrosoftOwinSecurityPackageVersion>
+    <MicrosoftOwinTestingPackageVersion>2.1.0</MicrosoftOwinTestingPackageVersion>
+    <MicrosoftWindowsAzureConfigurationManagerPackageVersion>2.0.0.0</MicrosoftWindowsAzureConfigurationManagerPackageVersion>
+    <MoqPackageVersion>4.7.8</MoqPackageVersion>
+    <NewtonsoftJsonPackageVersion>11.0.2</NewtonsoftJsonPackageVersion>
+    <OwinPackageVersion>1.0</OwinPackageVersion>
+    <StackExchangeRedisStrongNamePackageVersion>1.1.608</StackExchangeRedisStrongNamePackageVersion>
+    <SystemRuntimeInteropServicesRuntimeInformationPackageVersion>4.0.0</SystemRuntimeInteropServicesRuntimeInformationPackageVersion>
+    <WindowsAzureServiceBusPackageVersion>2.1.2.0</WindowsAzureServiceBusPackageVersion>
+    <XunitAbstractionsPackageVersion>2.0.2</XunitAbstractionsPackageVersion>
+    <XunitAssertPackageVersion>2.4.0</XunitAssertPackageVersion>
+    <XunitExtensibilityCorePackageVersion>2.4.0</XunitExtensibilityCorePackageVersion>
+    <XunitExtensibilityExecutionPackageVersion>2.4.0</XunitExtensibilityExecutionPackageVersion>
+    <XunitPackageVersion>2.4.0</XunitPackageVersion>
+    <XunitRunnerVisualstudioPackageVersion>2.4.0</XunitRunnerVisualstudioPackageVersion>
+  </PropertyGroup>
+
+  <PropertyGroup Label="Package Versions: Pinned">
+    <Release_NewtonsoftJsonPackageVersion>6.0.4</Release_NewtonsoftJsonPackageVersion>
+    <ServiceBus3_WindowsAzureServiceBusPackageVersion>3.4.5</ServiceBus3_WindowsAzureServiceBusPackageVersion>
+  </PropertyGroup>
+</Project>

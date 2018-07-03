@@ -17,7 +17,7 @@ $files =
 Write-Host "Running JSHint..." -ForegroundColor Yellow
 foreach ($file in $files) {
     Write-Host "$file... " -NoNewline
-    $output = "build-output.txt"
+    $output = Join-Path $outputPath "build-output.txt"
     & "cscript.exe" ..\..\tools\jshint\env\wsh.js "$file" > $output
     if (Select-String $output -SimpleMatch -Pattern "[$file]" -Quiet) {
         Write-Host

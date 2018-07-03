@@ -1,0 +1,10 @@
+<Project>
+    <PropertyGroup>
+        <PrepareDependsOn>DisableStrongNameVerification;$(PrepareDependsOn)</PrepareDependsOn>
+    </PropertyGroup>
+    <Target Name="DisableStrongNameVerification" Condition="'$(CI)' == 'true'">
+        <Message Text="Disabling Strong Name Verification for *,31bf3856ad364e35" />
+        <Exec Command="&quot;$(MSBuildProgramFiles32)\Microsoft SDKs\Windows\v10.0A\bin\NETFX 4.6.1 Tools\x64\sn.exe&quot; -Vr *,31bf3856ad364e35" />
+        <Exec Command="&quot;$(MSBuildProgramFiles32)\Microsoft SDKs\Windows\v10.0A\bin\NETFX 4.6.1 Tools\sn.exe&quot; -Vr *,31bf3856ad364e35" />
+    </Target>
+</Project>

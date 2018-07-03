@@ -1,0 +1,9 @@
+<Project>
+  <Import Project="..\Directory.Build.targets" Condition="Exists('..\Directory.Build.targets')" />
+
+  <ItemGroup>
+    <Content Include="$(MSBuildThisFileDirectory)\xunit.runner.json" Link="xunit.runner.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+</Project>

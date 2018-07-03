@@ -1,13 +1,19 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Net;
-#if !NET4
+
+#if NETSTANDARD2_0 || NET45
 using System.Net.Http;
+#elif NET40
+// Not needed
+#else 
+#error Unsupported target framework.
 #endif
+
 using Microsoft.AspNet.SignalR.Infrastructure;
 
 namespace Microsoft.AspNet.SignalR.Client
@@ -31,16 +37,18 @@ namespace Microsoft.AspNet.SignalR.Client
             {
                 error = GetWebExceptionError(ex);
             }
-#if !NET4
+#if NET45 || NETSTANDARD2_0
             else
             {
                 error = GetHttpClientException(ex);
             }
-#else
+#elif NET40
             else
             {
                 error = new SignalRError(ex);
             }
+#else
+#error Unsupported framework.
 #endif
             return error;
         }
@@ -79,7 +87,7 @@ namespace Microsoft.AspNet.SignalR.Client
             return error;
         }
 
-#if !NET4
+#if NET45 || NETSTANDARD2_0
         [SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope", Justification = "The IDisposable object is the return value.")]
         private static SignalRError GetHttpClientException(Exception ex)
         {
@@ -100,6 +108,10 @@ namespace Microsoft.AspNet.SignalR.Client
 
             return error;
         }
+#elif NET40
+        // Not supported on this framework.
+#else
+#error Unsupported framework.
 #endif
 
         [SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope", Justification = "The return value of this private method is disposed in GetError.")]

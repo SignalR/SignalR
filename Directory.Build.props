@@ -1,0 +1,56 @@
+<Project>
+  <Import
+    Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), AspNetCoreSettings.props))\AspNetCoreSettings.props"
+    Condition=" '$(CI)' != 'true' AND '$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), AspNetCoreSettings.props))' != '' " />
+
+  <Import Project="version.props" />
+  <Import Project="build\dependencies.props" />
+  <Import Project="build\sources.props" />
+
+  <PropertyGroup>
+    <!-- Work around https://github.com/aspnet/BuildTools/issues/725 -->
+    <_ReferencesInternalAspNetCoreSdk>false</_ReferencesInternalAspNetCoreSdk>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <CodeAnalysisRuleSet>$(MSBuildThisFileDirectory)build\Microsoft.AspNet.SignalR.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <!-- Assembly/NuSpec attributes -->
+    <Company>.NET Foundation</Company>
+    <Copyright>© Copyright (c) .NET Foundation. All rights reserved.</Copyright>
+    <Product>Microsoft ASP.NET SignalR</Product>
+    <RepositoryUrl>https://github.com/SignalR/SignalR</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <RepositoryRoot>$(MSBuildThisFileDirectory)</RepositoryRoot>
+    <AssemblyOriginatorKeyFile>$(MSBuildThisFileDirectory)build\35MSSharedLib1024.snk</AssemblyOriginatorKeyFile>
+
+    <!-- The key doesn't have the private part with it, so we DelaySign when building for CI -->
+    <DelaySign Condition="'$(CI)' == 'true'">true</DelaySign>
+    <SignAssembly Condition="'$(CI)' == 'true'">true</SignAssembly>
+    <DefineConstants Condition="'$(CI)' == 'true' And '$(DefineConstants)' != ''">$(DefineConstants);SIGNED</DefineConstants>
+    <DefineConstants Condition="'$(CI)' == 'true' And '$(DefineConstants)' == ''">SIGNED</DefineConstants>
+
+    <AssemblySigningCertName>Microsoft</AssemblySigningCertName>
+    <PackageSigningCertName>MicrosoftNuGet</PackageSigningCertName>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <LangVersion>latest</LangVersion>
+    <DefaultTestFrameworks>net461</DefaultTestFrameworks>
+    <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">15.0</VisualStudioVersion>
+
+    <!-- Disable warning about SemVer 2.0 versions -->
+    <NoWarn>NU5105</NoWarn>
+  </PropertyGroup>
+
+  <!-- Locating Visual Studio -->
+  <PropertyGroup Condition="'$(VsInstallRoot)' == ''">
+    <_Vs2017InstallDir>$(MSBuildProgramFiles32)\Microsoft Visual Studio\2017\Enterprise\</_Vs2017InstallDir>
+
+    <VsInstallRoot Condition="'$(VsInstallRoot)' == '' And '$(VSINSTALLDIR)' != '' And Exists('$(VSINSTALLDIR)')">$(VSINSTALLDIR)</VsInstallRoot>
+    <VsInstallRoot Condition="'$(VsInstallRoot)' == '' And Exists('$(_VstsVsInstallDir)')">$(_Vs2017InstallDir)</VsInstallRoot>
+
+    <!-- Use ProgramFiles32 instead of MSBuildExtensionsPath so we can be built with dotnet.exe -->
+    <WAPToolsPath Condition="'$(WAPToolsPath)' == ''">$(VsInstallRoot)\MSBuild\Microsoft\VisualStudio\v$(VisualStudioVersion)</WAPToolsPath>
+  </PropertyGroup>
+</Project>
