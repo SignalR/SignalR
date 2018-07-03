@@ -1,6 +1,5 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
-extern alias StoreClient;
 
 using Microsoft.AspNet.SignalR.Client.Transports;
 using System;
@@ -8,7 +7,6 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
-using StoreClientResources = StoreClient::Microsoft.AspNet.SignalR.Client.ResourcesStore;
 
 namespace Microsoft.AspNet.SignalR.Client.Store.Tests
 {
@@ -133,7 +131,7 @@ namespace Microsoft.AspNet.SignalR.Client.Store.Tests
                         stateChange.NewState == ConnectionState.Reconnecting)
                     {
                         // Reverting quick timeout
-                        ((IConnection) hubConnection).KeepAliveData = new KeepAliveData(
+                        ((IConnection)hubConnection).KeepAliveData = new KeepAliveData(
                             timeoutWarning: TimeSpan.FromSeconds(30),
                             timeout: TimeSpan.FromSeconds(20),
                             checkInterval: TimeSpan.FromSeconds(2));
@@ -154,7 +152,7 @@ namespace Microsoft.AspNet.SignalR.Client.Store.Tests
                 await hubConnection.Start(new WebSocketTransport { ReconnectDelay = new TimeSpan(0, 0, 0, 500) });
 
                 // Setting the values such that a timeout happens almost instantly
-                ((IConnection) hubConnection).KeepAliveData = new KeepAliveData(
+                ((IConnection)hubConnection).KeepAliveData = new KeepAliveData(
                     timeoutWarning: TimeSpan.FromSeconds(10),
                     timeout: TimeSpan.FromSeconds(0.5),
                     checkInterval: TimeSpan.FromSeconds(1)
@@ -211,7 +209,7 @@ namespace Microsoft.AspNet.SignalR.Client.Store.Tests
                 var exception = await Assert.ThrowsAsync<InvalidOperationException>(async () => await sendTask);
 
                 Assert.Equal(
-                    StoreClientResources.GetResourceString("Error_DataCannotBeSentDuringWebSocketReconnect"),
+                    Resources.Error_DataCannotBeSentDuringWebSocketReconnect,
                     exception.Message);
 
                 Assert.Same(exception, reportedException);

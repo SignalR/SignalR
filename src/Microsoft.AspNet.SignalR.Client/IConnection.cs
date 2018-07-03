@@ -11,9 +11,6 @@ using Microsoft.AspNet.SignalR.Client.Http;
 using Microsoft.AspNet.SignalR.Client.Transports;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-#if (NET4 || NET45 || NETSTANDARD)
-using System.Security.Cryptography.X509Certificates;
-#endif
 
 namespace Microsoft.AspNet.SignalR.Client
 {

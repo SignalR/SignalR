@@ -20,7 +20,6 @@ using Microsoft.AspNet.SignalR.Client.Transports;
 using Microsoft.AspNet.SignalR.Infrastructure;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-using System.Security.Cryptography.X509Certificates;
 
 namespace Microsoft.AspNet.SignalR.Client
 {
@@ -591,7 +590,7 @@ namespace Microsoft.AspNet.SignalR.Client
         public void Stop(Exception error, TimeSpan timeout)
         {
             OnError(error);
-            Stop(timeout);            
+            Stop(timeout);
         }
 
         /// <summary>
@@ -835,7 +834,7 @@ namespace Microsoft.AspNet.SignalR.Client
             // the server during negotiation.
             // If the client tries to reconnect for longer the server will likely have deleted its ConnectionId
             // topic along with the contained disconnect message.
-            _disconnectTimeoutOperation = 
+            _disconnectTimeoutOperation =
                 SetTimeout(
                     _disconnectTimeout,
                     () =>
