@@ -1,7 +1,33 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netstandard2.0</TargetFramework>
+    <TargetFrameworks>net40;net45;netstandard2.0</TargetFrameworks>
+    <DefineConstants>$(DefineConstants);CLIENT</DefineConstants>
   </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="..\Microsoft.AspNet.SignalR.Core\Infrastructure\CancellationTokenExtensions.cs" Link="Infrastructure\CancellationTokenExtensions.cs" />
+    <Compile Include="..\Microsoft.AspNet.SignalR.Core\Infrastructure\DispatchingTaskCompletionSource.cs" Link="Infrastructure\DispatchingTaskCompletionSource.cs" />
+    <Compile Include="..\Microsoft.AspNet.SignalR.Core\Infrastructure\DisposableAction.cs" Link="Infrastructure\DisposableAction.cs" />
+    <Compile Include="..\Microsoft.AspNet.SignalR.Core\Infrastructure\Disposer.cs" Link="Infrastructure\Disposer.cs" />
+    <Compile Include="..\Microsoft.AspNet.SignalR.Core\Infrastructure\ExceptionsExtensions.cs" Link="Infrastructure\ExceptionsExtensions.cs" />
+    <Compile Include="..\Microsoft.AspNet.SignalR.Core\Infrastructure\MonoUtility.cs" Link="Infrastructure\MonoUtility.cs" />
+    <Compile Include="..\Microsoft.AspNet.SignalR.Core\Infrastructure\TaskQueue.cs" Link="Infrastructure\TaskQueue.cs" />
+    <Compile Include="..\Microsoft.AspNet.SignalR.Core\Owin\Infrastructure\ByteBuffer.cs" Link="Infrastructure\ByteBuffer.cs" />
+    <Compile Include="..\Microsoft.AspNet.SignalR.Core\Owin\WebSockets\WebSocketHandler.cs" Link="Transports\WebSockets\WebSocketHandler.cs" />
+    <Compile Include="..\Microsoft.AspNet.SignalR.Core\Owin\WebSockets\WebSocketMessage.cs" Link="Transports\WebSockets\WebSocketMessage.cs" />
+    <Compile Include="..\Microsoft.AspNet.SignalR.Core\Owin\WebSockets\WebSocketMessageReader.cs" Link="Transports\WebSockets\WebSocketMessageReader.cs" />
+    <Compile Include="..\Microsoft.AspNet.SignalR.Core\TaskAsyncHelper.cs" Link="Infrastructure\TaskAsyncHelper.cs" />
+    <Compile Include="..\Microsoft.AspNet.SignalR.Core\TaskAwaiterHelper.cs" Link="Infrastructure\TaskAwaiterHelper.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Newtonsoft.Json" Version="11.0.2" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(TargetFramework)' == 'net45'">
+      <Reference Include="System.Net.Http" />
+      <Reference Include="System.Net.Http.WebRequest" />
+  </ItemGroup>
 
 </Project>

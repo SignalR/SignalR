@@ -1,5 +1,7 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+#if NET45 || NETSTANDARD2_0
 
 using System;
 #if !NETFX_CORE && !PORTABLE
@@ -9,10 +11,12 @@ using System.Net.Http;
 
 namespace Microsoft.AspNet.SignalR.Client.Http
 {
-#if !NETFX_CORE && !PORTABLE && !__ANDROID__ && !IOS && !NETSTANDARD
+#if NET45
     public class DefaultHttpHandler : WebRequestHandler
-#else
+#elif NETSTANDARD2_0
     public class DefaultHttpHandler : HttpClientHandler
+#else
+#error Unsupported target framework.
 #endif
     {
         private readonly IConnection _connection;
@@ -59,3 +63,10 @@ namespace Microsoft.AspNet.SignalR.Client.Http
         }
     }
 }
+
+#elif NET40
+// Not required on this framework.
+#else 
+#error Unsupported target framework.
+#endif
+

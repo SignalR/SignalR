@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -12,9 +12,15 @@ using System.Linq;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
-#if !SERVER
+
+#if SERVER
+// Nothing to import.
+#elif CLIENT
 using Microsoft.AspNet.SignalR.Client;
+#else
+#error Included in unexpected project
 #endif
+
 using Microsoft.AspNet.SignalR.Infrastructure;
 
 namespace Microsoft.AspNet.SignalR
@@ -983,7 +989,6 @@ namespace Microsoft.AspNet.SignalR
         }
 
 
-#if !NETFX_CORE && !NETSTANDARD
         internal struct CulturePair
         {
             public CultureInfo Culture;
@@ -1035,40 +1040,24 @@ namespace Microsoft.AspNet.SignalR
         {
             RunWithPreservedCulture(preservedCulture, f => f(), action);
         }
-#endif
 
         internal static Task ContinueWithPreservedCulture(this Task task, Action<Task> continuationAction, TaskContinuationOptions continuationOptions)
         {
-#if NETFX_CORE || NETSTANDARD
-            // The Thread class is not available on WinRT
-            return task.ContinueWith(continuationAction, continuationOptions);
-#else
             var preservedCulture = SaveCulture();
             return task.ContinueWith(t => RunWithPreservedCulture(preservedCulture, continuationAction, t), continuationOptions);
-#endif
         }
 
         internal static Task ContinueWithPreservedCulture<T>(this Task<T> task, Action<Task<T>> continuationAction, TaskContinuationOptions continuationOptions)
         {
-#if NETFX_CORE || NETSTANDARD
-            // The Thread class is not available on WinRT
-            return task.ContinueWith(continuationAction, continuationOptions);
-#else
             var preservedCulture = SaveCulture();
             return task.ContinueWith(t => RunWithPreservedCulture(preservedCulture, continuationAction, t), continuationOptions);
-#endif
         }
 
         [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode", Justification = "This is a shared file")]
         internal static Task<TResult> ContinueWithPreservedCulture<T, TResult>(this Task<T> task, Func<Task<T>, TResult> continuationAction, TaskContinuationOptions continuationOptions)
         {
-#if NETFX_CORE || NETSTANDARD
-            // The Thread class is not available on WinRT
-            return task.ContinueWith(continuationAction, continuationOptions);
-#else
             var preservedCulture = SaveCulture();
             return task.ContinueWith(t => RunWithPreservedCulture(preservedCulture, continuationAction, t), continuationOptions);
-#endif
         }
 
         internal static Task ContinueWithPreservedCulture(this Task task, Action<Task> continuationAction)
@@ -1358,20 +1347,19 @@ namespace Microsoft.AspNet.SignalR
         [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode", Justification = "This is a shared file")]
         public static void Dispatch(Action action)
         {
-#if PORTABLE
-            ThreadPool.QueueUserWorkItem(_ =>
-#elif NETFX_CORE || NETSTANDARD
-            Task.Run(() =>
-#else
+#if NET40
             ThreadPool.UnsafeQueueUserWorkItem(_ =>
-#endif
             {
                 action();
-            }
-#if !(NETFX_CORE || NETSTANDARD)
-, state: null
+            }, state: null);
+#elif NET45 || NETSTANDARD2_0
+            Task.Run(() =>
+            {
+                action();
+            });
+#else
+#error Unsupported target framework.
 #endif
-);
         }
     }
 }

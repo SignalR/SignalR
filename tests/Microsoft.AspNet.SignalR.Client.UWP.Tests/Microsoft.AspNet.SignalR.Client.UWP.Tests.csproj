@@ -136,13 +136,6 @@
     <Content Include="Assets\Wide310x150Logo.scale-200.png" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\src\Microsoft.AspNet.SignalR.Client.UWP\Microsoft.AspNet.SignalR.Client.UWP.csproj">
-      <Project>{aaae1a6a-3a7e-4ee2-9624-3907fd1cdc1a}</Project>
-      <Name>Microsoft.AspNet.SignalR.Client.UWP</Name>
-      <Aliases>global,StoreClient</Aliases>
-    </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
     <Service Include="{82A7F48D-3B50-4B1E-B82E-3ADA8210C358}" />
   </ItemGroup>
   <PropertyGroup Condition=" '$(VisualStudioVersion)' == '' or '$(VisualStudioVersion)' &lt; '14.0' ">

@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 #if CLIENT_NET45 || CLIENT_NET4 || PORTABLE || NETFX_CORE || NETSTANDARD
@@ -10,8 +10,12 @@ using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using System.Threading.Tasks;
 
-#if CLIENT
+#if SERVER
+// Nothing to import.
+#elif CLIENT
 using Microsoft.AspNet.SignalR.Client.Infrastructure;
+#else
+#error Included in unexpected project
 #endif
 
 namespace Microsoft.AspNet.SignalR.Infrastructure
