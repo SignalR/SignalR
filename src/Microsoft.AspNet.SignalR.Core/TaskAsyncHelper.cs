@@ -1352,7 +1352,7 @@ namespace Microsoft.AspNet.SignalR
             {
                 action();
             }, state: null);
-#elif NET45 || NETSTANDARD2_0
+#elif NET45 || NETSTANDARD2_0 || SERVER
             Task.Run(() =>
             {
                 action();

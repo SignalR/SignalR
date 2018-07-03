@@ -91,6 +91,10 @@
     <Compile Include="Client\TransportFacts.cs" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\src\Microsoft.AspNet.SignalR.Client\Microsoft.AspNet.SignalR.Client.csproj">
+      <Project>{eb46b9c6-ee37-48f9-835e-e49580e40e0a}</Project>
+      <Name>Microsoft.AspNet.SignalR.Client</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Microsoft.AspNet.SignalR.Tests.Common\Microsoft.AspNet.SignalR.Tests.Common.csproj">
       <Project>{f18a8896-10bd-469e-9aa1-aebacef4d7b7}</Project>
       <Name>Microsoft.AspNet.SignalR.Tests.Common</Name>

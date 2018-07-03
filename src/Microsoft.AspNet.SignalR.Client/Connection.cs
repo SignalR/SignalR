@@ -10,6 +10,7 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Reflection;
+using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -19,9 +20,7 @@ using Microsoft.AspNet.SignalR.Client.Transports;
 using Microsoft.AspNet.SignalR.Infrastructure;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-#if (NET4 || NET45 || NETSTANDARD)
 using System.Security.Cryptography.X509Certificates;
-#endif
 
 namespace Microsoft.AspNet.SignalR.Client
 {
@@ -89,9 +88,7 @@ namespace Microsoft.AspNet.SignalR.Client
         //The json serializer for the connections
         private JsonSerializer _jsonSerializer = new JsonSerializer();
 
-#if (NET4 || NET45 || NETSTANDARD)
         private readonly X509CertificateCollection _certCollection = new X509CertificateCollection();
-#endif
 
         // Keeps track of when the last keep alive from the server was received
         // internal virtual to allow mocking
@@ -274,7 +271,6 @@ namespace Microsoft.AspNet.SignalR.Client
             }
         }
 
-#if NET4 || NET45 || NETSTANDARD
         X509CertificateCollection IConnection.Certificates
         {
             get
@@ -282,7 +278,6 @@ namespace Microsoft.AspNet.SignalR.Client
                 return _certCollection;
             }
         }
-#endif
 
         public TraceLevels TraceLevel { get; set; }
 
@@ -338,12 +333,10 @@ namespace Microsoft.AspNet.SignalR.Client
         /// </summary>
         public IDictionary<string, string> Headers { get; private set; }
 
-#if !PORTABLE
         /// <summary>
         /// Gets of sets proxy information for the connection.
         /// </summary>
         public IWebProxy Proxy { get; set; }
-#endif
 
         /// <summary>
         /// Gets the url for the connection.
@@ -696,10 +689,9 @@ namespace Microsoft.AspNet.SignalR.Client
                     MessageId = null;
                     _connectionData = null;
 
-#if NETFX_CORE || PORTABLE
                     // Clear the buffer
                     _traceWriter.Flush();
-#endif
+
                     // TODO: Do we want to trigger Closed if we are connecting?
                     OnClosed();
                 }
@@ -744,7 +736,6 @@ namespace Microsoft.AspNet.SignalR.Client
             return Send(this.JsonSerializeObject(value));
         }
 
-#if (NET4 || NET45 || NETSTANDARD)
         /// <summary>
         /// Adds a client certificate to the request
         /// </summary>
@@ -761,7 +752,6 @@ namespace Microsoft.AspNet.SignalR.Client
                 _certCollection.Add(certificate);
             }
         }
-#endif
 
         public void Trace(TraceLevels level, string format, params object[] args)
         {
@@ -855,10 +845,8 @@ namespace Microsoft.AspNet.SignalR.Client
                         Disconnect();
                     });
 
-#if NETFX_CORE || PORTABLE
             // Clear the buffer
             _traceWriter.Flush();
-#endif
 
             if (Reconnecting != null)
             {
@@ -914,19 +902,7 @@ namespace Microsoft.AspNet.SignalR.Client
         [SuppressMessage("Microsoft.Design", "CA1062:Validate arguments of public methods", MessageId = "0", Justification = "This is called by the transport layer")]
         void IConnection.PrepareRequest(IRequest request)
         {
-#if PORTABLE
-            // Cannot set user agent for Portable because SL does not support it.
-#elif NETFX_CORE
-            request.UserAgent = CreateUserAgentString("SignalR.Client.WinUAP");
-#elif WINDOWS_APP
-            request.UserAgent = CreateUserAgentString("SignalR.Client.Win8UniversalApp");
-#elif NETSTANDARD
             request.UserAgent = CreateUserAgentString("SignalR.Client.NetStandard");
-#elif NET45
-            request.UserAgent = CreateUserAgentString("SignalR.Client.NET45");
-#else
-            request.UserAgent = CreateUserAgentString("SignalR.Client.NET4");
-#endif
             request.SetRequestHeaders(Headers);
         }
 
@@ -935,39 +911,20 @@ namespace Microsoft.AspNet.SignalR.Client
         {
             if (_assemblyVersion == null)
             {
-#if NETFX_CORE
-                _assemblyVersion = new Version("2.3.0");
-#elif NETSTANDARD
+#if NETSTANDARD2_0
                 _assemblyVersion = new AssemblyName(typeof(Resources).GetTypeInfo().Assembly.FullName).Version;
 #else
                 _assemblyVersion = new AssemblyName(typeof(Connection).Assembly.FullName).Version;
 #endif
             }
 
-#if NETFX_CORE || PORTABLE || NETSTANDARD
-            return String.Format(CultureInfo.InvariantCulture, "{0}/{1} ({2})", client, _assemblyVersion, "Unknown OS");
-#else
             return String.Format(CultureInfo.InvariantCulture, "{0}/{1} ({2})", client, _assemblyVersion, Environment.OSVersion);
-#endif
         }
 
         [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "The Version constructor can throw exceptions of many different types. Failure is indicated by returning false.")]
         private static bool TryParseVersion(string versionString, out Version version)
         {
-#if PORTABLE
-            try
-            {
-                version = new Version(versionString);
-                return true;
-            }
-            catch
-            {
-                version = null;
-                return false;
-            }
-#else
             return Version.TryParse(versionString, out version);
-#endif
         }
 
         private static string CreateQueryString(IDictionary<string, string> queryString)
@@ -991,16 +948,12 @@ namespace Microsoft.AspNet.SignalR.Client
         /// </summary>
         private class DebugTextWriter : TextWriter
         {
-#if NETFX_CORE || PORTABLE || NETSTANDARD
             private readonly StringBuilder _buffer;
-#endif
 
             public DebugTextWriter()
                 : base(CultureInfo.InvariantCulture)
             {
-#if NETFX_CORE || PORTABLE || NETSTANDARD
                 _buffer = new StringBuilder();
-#endif
             }
 
             public override void WriteLine(string value)
@@ -1008,7 +961,6 @@ namespace Microsoft.AspNet.SignalR.Client
                 Debug.WriteLine(value);
             }
 
-#if NETFX_CORE || PORTABLE || NETSTANDARD
             public override void Write(char value)
             {
                 lock (_buffer)
@@ -1023,20 +975,17 @@ namespace Microsoft.AspNet.SignalR.Client
                     }
                 }
             }
-#endif
 
             public override Encoding Encoding
             {
                 get { return Encoding.UTF8; }
             }
 
-#if NETFX_CORE || PORTABLE || NETSTANDARD
             public override void Flush()
             {
                 Debug.WriteLine(_buffer.ToString());
                 _buffer.Clear();
             }
-#endif
         }
 
         /// <summary>

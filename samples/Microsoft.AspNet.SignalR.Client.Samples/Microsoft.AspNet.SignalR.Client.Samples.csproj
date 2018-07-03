@@ -59,6 +59,12 @@
   <ItemGroup>
     <None Include="App.config" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\Microsoft.AspNet.SignalR.Client\Microsoft.AspNet.SignalR.Client.csproj">
+      <Project>{eb46b9c6-ee37-48f9-835e-e49580e40e0a}</Project>
+      <Name>Microsoft.AspNet.SignalR.Client</Name>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="$(SolutionDir)\.nuget\NuGet.targets" Condition="!HasTrailingSlash('$(SolutionDir)')" />
   <Import Project="$(SolutionDir).nuget\NuGet.targets" Condition="HasTrailingSlash('$(SolutionDir)')" />
