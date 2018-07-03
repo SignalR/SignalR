@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<RuleSet Name="New Rule Set" Description=" " ToolsVersion="11.0">
+<RuleSet Name="New Rule Set" Description=" " ToolsVersion="15.0">
   <Rules AnalyzerId="Microsoft.Analyzers.ManagedCodeAnalysis" RuleNamespace="Microsoft.Rules.Managed">
     <Rule Id="CA1000" Action="Error" />
     <Rule Id="CA1001" Action="Error" />
@@ -223,5 +223,53 @@
     <Rule Id="CA2242" Action="Error" />
     <Rule Id="CA2243" Action="Error" />
     <Rule Id="CA5122" Action="Error" />
+  </Rules>
+  <Rules AnalyzerId="xunit.analyzers" RuleNamespace="xunit.analyzers">
+    <Rule Id="xUnit1000" Action="None" />
+    <Rule Id="xUnit1001" Action="None" />
+    <Rule Id="xUnit1002" Action="None" />
+    <Rule Id="xUnit1003" Action="None" />
+    <Rule Id="xUnit1004" Action="None" />
+    <Rule Id="xUnit1005" Action="None" />
+    <Rule Id="xUnit1006" Action="None" />
+    <Rule Id="xUnit1007" Action="None" />
+    <Rule Id="xUnit1008" Action="None" />
+    <Rule Id="xUnit1009" Action="None" />
+    <Rule Id="xUnit1010" Action="None" />
+    <Rule Id="xUnit1011" Action="None" />
+    <Rule Id="xUnit1012" Action="None" />
+    <Rule Id="xUnit1013" Action="None" />
+    <Rule Id="xUnit1014" Action="None" />
+    <Rule Id="xUnit1015" Action="None" />
+    <Rule Id="xUnit1016" Action="None" />
+    <Rule Id="xUnit1017" Action="None" />
+    <Rule Id="xUnit1018" Action="None" />
+    <Rule Id="xUnit1019" Action="None" />
+    <Rule Id="xUnit1020" Action="None" />
+    <Rule Id="xUnit1021" Action="None" />
+    <Rule Id="xUnit1022" Action="None" />
+    <Rule Id="xUnit1023" Action="None" />
+    <Rule Id="xUnit1024" Action="None" />
+    <Rule Id="xUnit1025" Action="None" />
+    <Rule Id="xUnit1026" Action="None" />
+    <Rule Id="xUnit2000" Action="None" />
+    <Rule Id="xUnit2001" Action="None" />
+    <Rule Id="xUnit2002" Action="None" />
+    <Rule Id="xUnit2003" Action="None" />
+    <Rule Id="xUnit2004" Action="None" />
+    <Rule Id="xUnit2005" Action="None" />
+    <Rule Id="xUnit2006" Action="None" />
+    <Rule Id="xUnit2007" Action="None" />
+    <Rule Id="xUnit2008" Action="None" />
+    <Rule Id="xUnit2009" Action="None" />
+    <Rule Id="xUnit2010" Action="None" />
+    <Rule Id="xUnit2011" Action="None" />
+    <Rule Id="xUnit2012" Action="None" />
+    <Rule Id="xUnit2013" Action="None" />
+    <Rule Id="xUnit2014" Action="None" />
+    <Rule Id="xUnit2015" Action="None" />
+    <Rule Id="xUnit2016" Action="None" />
+    <Rule Id="xUnit2017" Action="None" />
+    <Rule Id="xUnit2018" Action="None" />
   </Rules>
 </RuleSet>

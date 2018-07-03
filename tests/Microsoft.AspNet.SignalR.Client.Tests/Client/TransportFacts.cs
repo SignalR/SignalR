@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -236,7 +236,6 @@ namespace Microsoft.AspNet.SignalR.Client.Tests
         [InlineData(WebSocketState.Closed)]
         [InlineData(WebSocketState.CloseReceived)]
         [InlineData(WebSocketState.CloseSent)]
-        [InlineData(WebSocketState.Connecting)]
         [InlineData(WebSocketState.Connecting)]
         public void WebSocketSendReturnsAFaultedTaskWhenNotConnected(WebSocketState state)
         {

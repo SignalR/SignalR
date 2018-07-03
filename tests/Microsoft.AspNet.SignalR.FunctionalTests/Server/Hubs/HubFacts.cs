@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -327,7 +327,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                 var connection2 = CreateAuthHubConnection(host, "user1", "password");
                 var connection3 = CreateAuthHubConnection(host, "user1", "password");
                 var connection4 = CreateAuthHubConnection(host, "user2", "password");
-                
+
                 var wh1 = new AsyncManualResetEvent();
                 var wh2 = new AsyncManualResetEvent();
                 var wh3 = new AsyncManualResetEvent();
@@ -385,7 +385,7 @@ namespace Microsoft.AspNet.SignalR.Tests
 
                 var hub1 = connection1.CreateHubProxy("AuthenticatedEchoHub");
                 var hub2 = connection2.CreateHubProxy("AuthenticatedEchoHub");
-                hub1.On<string>("SendUserOnConnected", (user) => 
+                hub1.On<string>("SendUserOnConnected", (user) =>
                 {
                     if (++connected >= 2)
                     {
@@ -404,10 +404,10 @@ namespace Microsoft.AspNet.SignalR.Tests
                 {
                     using (connection2)
                     {
-                            await connection1.Start();
-                            await connection2.Start(new Microsoft.AspNet.SignalR.Client.Transports.WebSocketTransport());
+                        await connection1.Start();
+                        await connection2.Start(new Microsoft.AspNet.SignalR.Client.Transports.WebSocketTransport());
 
-                            Assert.True(await wh1.WaitAsync(TimeSpan.FromSeconds(5)));
+                        Assert.True(await wh1.WaitAsync(TimeSpan.FromSeconds(5)));
                     }
 
                     Assert.True(await wh2.WaitAsync(TimeSpan.FromSeconds(5)));
@@ -965,7 +965,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                     await connection.Start(host.Transport);
 
                     var expectedErrorMessage = "'UnsupportedOverload' method could not be resolved. Potential candidates are: \n" +
-                                               "UnsupportedOverload(x:String):Void\n" + 
+                                               "UnsupportedOverload(x:String):Void\n" +
                                                "UnsupportedOverload(x:Int32):Void";
 
                     TestUtilities.AssertAggregateException<InvalidOperationException>(() => hub.InvokeWithTimeout("UnsupportedOverload", 13177), expectedErrorMessage);
@@ -2092,16 +2092,10 @@ namespace Microsoft.AspNet.SignalR.Tests
         }
 
         [Theory]
-        [InlineData(TransportType.LongPolling, MessageBusType.Default)]
-        [InlineData(TransportType.LongPolling, MessageBusType.Fake)]
-        [InlineData(TransportType.LongPolling, MessageBusType.FakeMultiStream)]
-        [InlineData(TransportType.ServerSentEvents, MessageBusType.Default)]
-        [InlineData(TransportType.ServerSentEvents, MessageBusType.Fake)]
-        [InlineData(TransportType.ServerSentEvents, MessageBusType.FakeMultiStream)]
-        [InlineData(TransportType.Websockets, MessageBusType.Default)]
-        [InlineData(TransportType.Websockets, MessageBusType.Fake)]
-        [InlineData(TransportType.Websockets, MessageBusType.FakeMultiStream)]
-        public async Task CanChangeExceptionsInHubPipelineModuleOnIncomingError(TransportType transportType, MessageBusType messageBusType)
+        [InlineData(TransportType.LongPolling)]
+        [InlineData(TransportType.ServerSentEvents)]
+        [InlineData(TransportType.Websockets)]
+        public async Task CanChangeExceptionsInHubPipelineModuleOnIncomingError(TransportType transportType)
         {
             var supressErrorModule = new WrapErrorModule();
             using (var host = new MemoryHost())
@@ -2120,7 +2114,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                 {
                     var hub = connection.CreateHubProxy("demo");
 
-                    await connection.Start(host);
+                    await connection.Start(CreateTransport(transportType, host));
 
                     try
                     {

@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -187,8 +187,6 @@ namespace Microsoft.AspNet.SignalR.Tests
         [InlineData(@"s-,,|", "s-")]
         [InlineData(@"d-,|,", "d-")]
         [InlineData(@"s-,|,", "s-")]
-        [InlineData(@"d-,,|", "d-")]
-        [InlineData(@"s-,,|", "s-")]
         [InlineData(@"d-A|", "d-")]
         [InlineData(@"s-A|", "s-")]
         [InlineData(@"d-A||", "d-")]
@@ -203,20 +201,14 @@ namespace Microsoft.AspNet.SignalR.Tests
         [InlineData(@"s-A,,|", "s-")]
         [InlineData(@"d-A,|,", "d-")]
         [InlineData(@"s-A,|,", "s-")]
-        [InlineData(@"d-A,,|", "d-")]
-        [InlineData(@"s-A,,|", "s-")]
         [InlineData(@"d-A|A2", "d-")]
         [InlineData(@"s-A|A2", "s-")]
         [InlineData(@"d-A|A", "d-")]
         [InlineData(@"s-A|A", "s-")]
         [InlineData(@"d-A|A2,", "d-")]
         [InlineData(@"s-A|A2,", "s-")]
-        [InlineData(@"d-A|A2|", "d-")]
-        [InlineData(@"s-A|A2|", "s-")]
         [InlineData(@"d-", "d-")]
         [InlineData(@"s-", "s-")]
-        [InlineData(@"d-,|,", "d-")]
-        [InlineData(@"s-,|,", "s-")]
         [InlineData(@"d-test", "d-")]
         [InlineData(@"s-test", "s-")]
         [InlineData(@"d-test,", "d-")]
@@ -231,8 +223,6 @@ namespace Microsoft.AspNet.SignalR.Tests
         [InlineData(@"s-test,test2,,,,test3,A", "s-")]
         [InlineData(@"d-test,test2,test,A", "d-")]
         [InlineData(@"s-test,test2,test,A", "s-")]
-        [InlineData(@"d-test,A|", "d-")]
-        [InlineData(@"s-test,A|", "s-")]
         [InlineData(@"d-test,A|random text", "d-")]
         [InlineData(@"s-test,A|random text", "s-")]
         [InlineData(@"d-test,A|test,B", "d-")]
