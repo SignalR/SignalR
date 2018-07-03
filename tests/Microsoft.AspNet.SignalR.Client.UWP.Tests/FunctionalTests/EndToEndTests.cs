@@ -10,7 +10,7 @@ using Xunit;
 
 namespace Microsoft.AspNet.SignalR.Client.Store.Tests
 {
-    // To run these tests you need to start Microsoft.AspNet.SignalR.Client.Store.TestHost first
+    // To run these tests you need to start Microsoft.AspNet.SignalR.Client.UWP.TestHost first
     public class EndToEndTests
     {
         private const string HubUrl = "http://localhost:42424";

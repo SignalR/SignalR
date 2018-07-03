@@ -397,18 +397,6 @@
       <Project>{1B9A82C4-BCA1-4834-A33E-226F17BE070B}</Project>
       <Name>Microsoft.AspNet.SignalR.Core</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\src\Microsoft.AspNet.SignalR.Redis\Microsoft.AspNet.SignalR.Redis.csproj">
-      <Project>{fd48578f-e825-47ea-a846-9764e01f523a}</Project>
-      <Name>Microsoft.AspNet.SignalR.Redis</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\src\Microsoft.AspNet.SignalR.ServiceBus\Microsoft.AspNet.SignalR.ServiceBus.csproj">
-      <Project>{3da5e69c-ba4c-4ec1-9fde-688a1bc34b17}</Project>
-      <Name>Microsoft.AspNet.SignalR.ServiceBus</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\src\Microsoft.AspNet.SignalR.SqlServer\Microsoft.AspNet.SignalR.SqlServer.csproj">
-      <Project>{efcf27ec-cb9b-4f3a-91be-154b8ab5b5e0}</Project>
-      <Name>Microsoft.AspNet.SignalR.SqlServer</Name>
-    </ProjectReference>
     <ProjectReference Include="..\Microsoft.AspNet.SignalR.Samples.VB\Microsoft.AspNet.SignalR.Samples.VB.vbproj">
       <Project>{44ffd296-2fc1-4159-80ac-4f6c8ae9887c}</Project>
       <Name>Microsoft.AspNet.SignalR.Samples.VB</Name>
