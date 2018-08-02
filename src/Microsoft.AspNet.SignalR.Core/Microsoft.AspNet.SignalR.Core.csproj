@@ -3,6 +3,7 @@
   <PropertyGroup>
     <DefineConstants>$(DefineConstants);PERFCOUNTERS;SERVER</DefineConstants>
     <Description>Async signaling library for .NET to help build real-time, multi-user interactive web applications.</Description>
+    <RootNamespace>Microsoft.AspNet.SignalR</RootNamespace>
     <TargetFramework>net45</TargetFramework>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>

@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.27110.0
 MinimumVisualStudioVersion = 15.0.26730.03
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNet.SignalR.Core", "src\Microsoft.AspNet.SignalR.Core\Microsoft.AspNet.SignalR.Core.csproj", "{1B9A82C4-BCA1-4834-A33E-226F17BE070B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNet.SignalR.Core", "src\Microsoft.AspNet.SignalR.Core\Microsoft.AspNet.SignalR.Core.csproj", "{1B9A82C4-BCA1-4834-A33E-226F17BE070B}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNet.SignalR.Client", "src\Microsoft.AspNet.SignalR.Client\Microsoft.AspNet.SignalR.Client.csproj", "{EB46B9C6-EE37-48F9-835E-E49580E40E0A}"
 EndProject
@@ -21,7 +21,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "build", "build", "{1E4BA77C
 		Build\Microsoft.AspNet.SignalR.versions.targets = Build\Microsoft.AspNet.SignalR.versions.targets
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNet.SignalR.Stress", "src\Microsoft.AspNet.SignalR.Stress\Microsoft.AspNet.SignalR.Stress.csproj", "{758D93C8-7985-4F55-82DA-8BA5198CF4EF}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNet.SignalR.Stress", "src\Microsoft.AspNet.SignalR.Stress\Microsoft.AspNet.SignalR.Stress.csproj", "{758D93C8-7985-4F55-82DA-8BA5198CF4EF}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{505538C3-B34D-4B43-BDE6-C6E974AB03A6}"
 EndProject
@@ -38,23 +38,23 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".nuget", ".nuget", "{08B794
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNet.SignalR.Client.JS.Tests", "tests\Microsoft.AspNet.SignalR.Client.JS.Tests\Microsoft.AspNet.SignalR.Client.JS.Tests.csproj", "{E965290E-278C-4B4D-8AE4-404976433BC3}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNet.SignalR.Redis", "src\Microsoft.AspNet.SignalR.Redis\Microsoft.AspNet.SignalR.Redis.csproj", "{FD48578F-E825-47EA-A846-9764E01F523A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNet.SignalR.Redis", "src\Microsoft.AspNet.SignalR.Redis\Microsoft.AspNet.SignalR.Redis.csproj", "{FD48578F-E825-47EA-A846-9764E01F523A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNet.SignalR.SqlServer", "src\Microsoft.AspNet.SignalR.SqlServer\Microsoft.AspNet.SignalR.SqlServer.csproj", "{EFCF27EC-CB9B-4F3A-91BE-154B8AB5B5E0}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNet.SignalR.SqlServer", "src\Microsoft.AspNet.SignalR.SqlServer\Microsoft.AspNet.SignalR.SqlServer.csproj", "{EFCF27EC-CB9B-4F3A-91BE-154B8AB5B5E0}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNet.SignalR.ServiceBus", "src\Microsoft.AspNet.SignalR.ServiceBus\Microsoft.AspNet.SignalR.ServiceBus.csproj", "{3DA5E69C-BA4C-4EC1-9FDE-688A1BC34B17}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNet.SignalR.ServiceBus", "src\Microsoft.AspNet.SignalR.ServiceBus\Microsoft.AspNet.SignalR.ServiceBus.csproj", "{3DA5E69C-BA4C-4EC1-9FDE-688A1BC34B17}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNet.SignalR.LoadTestHarness", "samples\Microsoft.AspNet.SignalR.LoadTestHarness\Microsoft.AspNet.SignalR.LoadTestHarness.csproj", "{B94E0027-2664-4DAC-BA32-7AA12BFCEE10}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNet.SignalR.Utils", "src\Microsoft.AspNet.SignalR.Utils\Microsoft.AspNet.SignalR.Utils.csproj", "{990B347D-F5BF-4F94-9967-D98D24ACEA43}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNet.SignalR.Utils", "src\Microsoft.AspNet.SignalR.Utils\Microsoft.AspNet.SignalR.Utils.csproj", "{990B347D-F5BF-4F94-9967-D98D24ACEA43}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNet.SignalR.Crank", "src\Microsoft.AspNet.SignalR.Crank\Microsoft.AspNet.SignalR.Crank.csproj", "{2E0CF0DC-E6E4-4928-ABA3-E3300CEEAE91}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNet.SignalR.Crank", "src\Microsoft.AspNet.SignalR.Crank\Microsoft.AspNet.SignalR.Crank.csproj", "{2E0CF0DC-E6E4-4928-ABA3-E3300CEEAE91}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNet.SignalR.Tests.Common", "tests\Microsoft.AspNet.SignalR.Tests.Common\Microsoft.AspNet.SignalR.Tests.Common.csproj", "{F18A8896-10BD-469E-9AA1-AEBACEF4D7B7}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNet.SignalR.SqlServer.Tests", "tests\Microsoft.AspNet.SignalR.SqlServer.Tests\Microsoft.AspNet.SignalR.SqlServer.Tests.csproj", "{0A4487F1-9374-4E7B-957F-99647319C540}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNet.SignalR.StressServer", "src\Microsoft.AspNet.SignalR.StressServer\Microsoft.AspNet.SignalR.StressServer.csproj", "{9AC65ED5-48C2-4C5C-8498-DC340B313FDF}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNet.SignalR.StressServer", "src\Microsoft.AspNet.SignalR.StressServer\Microsoft.AspNet.SignalR.StressServer.csproj", "{9AC65ED5-48C2-4C5C-8498-DC340B313FDF}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNet.SignalR.Samples", "samples\Microsoft.AspNet.SignalR.Samples\Microsoft.AspNet.SignalR.Samples.csproj", "{1EA34A62-E03E-45CF-A9C9-82D2DA0FCD82}"
 	ProjectSection(ProjectDependencies) = postProject
@@ -69,13 +69,13 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNet.SignalR.Te
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNet.SignalR.Client.Tests", "tests\Microsoft.AspNet.SignalR.Client.Tests\Microsoft.AspNet.SignalR.Client.Tests.csproj", "{8B9D292A-0F2D-444D-9A61-2D96A0E7041E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNet.SignalR.SystemWeb", "src\Microsoft.AspNet.SignalR.SystemWeb\Microsoft.AspNet.SignalR.SystemWeb.csproj", "{21407043-7991-4123-B264-4D43B97B61B7}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNet.SignalR.SystemWeb", "src\Microsoft.AspNet.SignalR.SystemWeb\Microsoft.AspNet.SignalR.SystemWeb.csproj", "{21407043-7991-4123-B264-4D43B97B61B7}"
 EndProject
 Project("{F184B08F-C81C-45F6-A57F-5ABD9991F28F}") = "Microsoft.AspNet.SignalR.Samples.VB", "samples\Microsoft.AspNet.SignalR.Samples.VB\Microsoft.AspNet.SignalR.Samples.VB.vbproj", "{44FFD296-2FC1-4159-80AC-4F6C8AE9887C}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNet.SignalR.Redis.Tests", "tests\Microsoft.AspNet.SignalR.Redis.Tests\Microsoft.AspNet.SignalR.Redis.Tests.csproj", "{C281927C-2082-4E2A-A1DB-9CD7225F5CED}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNet.SignalR.ServiceBus3", "src\Microsoft.AspNet.SignalR.ServiceBus3\Microsoft.AspNet.SignalR.ServiceBus3.csproj", "{FCCF5D11-3A6E-42B2-8F69-CBD67C07BDED}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNet.SignalR.ServiceBus3", "src\Microsoft.AspNet.SignalR.ServiceBus3\Microsoft.AspNet.SignalR.ServiceBus3.csproj", "{FCCF5D11-3A6E-42B2-8F69-CBD67C07BDED}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{F5CA2D9B-6E0B-4C67-A581-10BE3F03CD1D}"
 EndProject
@@ -123,20 +123,26 @@ Global
 		{EB46B9C6-EE37-48F9-835E-E49580E40E0A}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{EB46B9C6-EE37-48F9-835E-E49580E40E0A}.Release|x64.ActiveCfg = Release|Any CPU
 		{EB46B9C6-EE37-48F9-835E-E49580E40E0A}.Release|x86.ActiveCfg = Release|Any CPU
-		{758D93C8-7985-4F55-82DA-8BA5198CF4EF}.Debug|Any CPU.ActiveCfg = Debug|x86
-		{758D93C8-7985-4F55-82DA-8BA5198CF4EF}.Debug|ARM.ActiveCfg = Debug|x86
-		{758D93C8-7985-4F55-82DA-8BA5198CF4EF}.Debug|Mixed Platforms.ActiveCfg = Debug|x86
-		{758D93C8-7985-4F55-82DA-8BA5198CF4EF}.Debug|Mixed Platforms.Build.0 = Debug|x86
-		{758D93C8-7985-4F55-82DA-8BA5198CF4EF}.Debug|x64.ActiveCfg = Debug|x86
-		{758D93C8-7985-4F55-82DA-8BA5198CF4EF}.Debug|x86.ActiveCfg = Debug|x86
-		{758D93C8-7985-4F55-82DA-8BA5198CF4EF}.Debug|x86.Build.0 = Debug|x86
-		{758D93C8-7985-4F55-82DA-8BA5198CF4EF}.Release|Any CPU.ActiveCfg = Release|x86
-		{758D93C8-7985-4F55-82DA-8BA5198CF4EF}.Release|ARM.ActiveCfg = Release|x86
-		{758D93C8-7985-4F55-82DA-8BA5198CF4EF}.Release|Mixed Platforms.ActiveCfg = Release|x86
-		{758D93C8-7985-4F55-82DA-8BA5198CF4EF}.Release|Mixed Platforms.Build.0 = Release|x86
-		{758D93C8-7985-4F55-82DA-8BA5198CF4EF}.Release|x64.ActiveCfg = Release|x86
-		{758D93C8-7985-4F55-82DA-8BA5198CF4EF}.Release|x86.ActiveCfg = Release|x86
-		{758D93C8-7985-4F55-82DA-8BA5198CF4EF}.Release|x86.Build.0 = Release|x86
+		{758D93C8-7985-4F55-82DA-8BA5198CF4EF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{758D93C8-7985-4F55-82DA-8BA5198CF4EF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{758D93C8-7985-4F55-82DA-8BA5198CF4EF}.Debug|ARM.ActiveCfg = Debug|Any CPU
+		{758D93C8-7985-4F55-82DA-8BA5198CF4EF}.Debug|ARM.Build.0 = Debug|Any CPU
+		{758D93C8-7985-4F55-82DA-8BA5198CF4EF}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{758D93C8-7985-4F55-82DA-8BA5198CF4EF}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{758D93C8-7985-4F55-82DA-8BA5198CF4EF}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{758D93C8-7985-4F55-82DA-8BA5198CF4EF}.Debug|x64.Build.0 = Debug|Any CPU
+		{758D93C8-7985-4F55-82DA-8BA5198CF4EF}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{758D93C8-7985-4F55-82DA-8BA5198CF4EF}.Debug|x86.Build.0 = Debug|Any CPU
+		{758D93C8-7985-4F55-82DA-8BA5198CF4EF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{758D93C8-7985-4F55-82DA-8BA5198CF4EF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{758D93C8-7985-4F55-82DA-8BA5198CF4EF}.Release|ARM.ActiveCfg = Release|Any CPU
+		{758D93C8-7985-4F55-82DA-8BA5198CF4EF}.Release|ARM.Build.0 = Release|Any CPU
+		{758D93C8-7985-4F55-82DA-8BA5198CF4EF}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{758D93C8-7985-4F55-82DA-8BA5198CF4EF}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{758D93C8-7985-4F55-82DA-8BA5198CF4EF}.Release|x64.ActiveCfg = Release|Any CPU
+		{758D93C8-7985-4F55-82DA-8BA5198CF4EF}.Release|x64.Build.0 = Release|Any CPU
+		{758D93C8-7985-4F55-82DA-8BA5198CF4EF}.Release|x86.ActiveCfg = Release|Any CPU
+		{758D93C8-7985-4F55-82DA-8BA5198CF4EF}.Release|x86.Build.0 = Release|Any CPU
 		{E0223FDC-0982-4D80-B6C2-BFAA6C6748C5}.Debug|Any CPU.ActiveCfg = Debug|x86
 		{E0223FDC-0982-4D80-B6C2-BFAA6C6748C5}.Debug|ARM.ActiveCfg = Debug|x86
 		{E0223FDC-0982-4D80-B6C2-BFAA6C6748C5}.Debug|Mixed Platforms.ActiveCfg = Debug|x86
