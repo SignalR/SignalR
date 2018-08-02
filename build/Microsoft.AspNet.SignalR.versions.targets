@@ -1,22 +1,7 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
     <PropertyGroup>
-        <MajorVersion>2</MajorVersion>
-        <MinorVersion>3</MinorVersion>
-        <PatchVersion>0</PatchVersion>
-
-        <!-- Change this to set the build quality of the project. Use values like "alpha", "beta", "rc1", "rtm", etc. -->
-        <!-- These values are used in SemVer, so make sure to always increase these alphabetically. -->
-        <!-- For non-nightly RTM builds, we don't set the build quality. -->
-        <BuildQuality Condition="'$(Nightly)' == 'true'">rtm</BuildQuality>
-        <ScaleoutBuildQuality Condition="'$(Nightly)' == 'true'">pre</ScaleoutBuildQuality>
-        <KatanaBuildQuality Condition="'$(Nightly)' == 'true'">rtw</KatanaBuildQuality>
-        
-        <!-- Katana version -->
-        <KatanaVersion>2.1.0</KatanaVersion>
-
-        <!-- Ensure that we come up with a new version every 65535 years -->
-        <!-- This started as 2012, but in 2018 we had to update it because it's been 6 years! -->
-        <VersionStartYear>2018</VersionStartYear>
+        <Version>2.4.0</Version>
+        <VersionSuffix>alpha1</VersionSuffix>
     </PropertyGroup>
 </Project>
