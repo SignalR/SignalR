@@ -18,6 +18,7 @@ using Xunit.Extensions;
 using IClientRequest = Microsoft.AspNet.SignalR.Client.Http.IRequest;
 using IClientResponse = Microsoft.AspNet.SignalR.Client.Http.IResponse;
 using IHttpClient = Microsoft.AspNet.SignalR.Client.Http.IHttpClient;
+using PerformanceCounterManager = Microsoft.AspNet.SignalR.Infrastructure.PerformanceCounterManager;
 
 namespace Microsoft.AspNet.SignalR.FunctionalTests.Server.Connections
 {
@@ -28,7 +29,7 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Server.Connections
         {
             // Each node shares the same bus but are independent servers
             const int nodeCount = 3;
-            var counters = new Infrastructure.PerformanceCounterManager();
+            var counters = new PerformanceCounterManager();
             var configurationManager = new DefaultConfigurationManager();
             configurationManager.DisconnectTimeout = TimeSpan.FromSeconds(6);
 
@@ -83,7 +84,7 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Server.Connections
             // https://github.com/SignalR/SignalR/issues/3337
             // Each node shares the same bus but are independent servers
             const int nodeCount = 2;
-            var counters = new Infrastructure.PerformanceCounterManager();
+            var counters = new PerformanceCounterManager();
             var configurationManager = new DefaultConfigurationManager();
 
             // Ensure /send and /connect requests get handled by different servers
@@ -145,7 +146,7 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Server.Connections
         {
             // https://github.com/SignalR/SignalR/issues/3337
             // Each node shares the same bus but are independent servers
-            var counters = new Infrastructure.PerformanceCounterManager();
+            var counters = new PerformanceCounterManager();
             var configurationManager = new DefaultConfigurationManager();
 
             using (EnableDisposableTracing())
