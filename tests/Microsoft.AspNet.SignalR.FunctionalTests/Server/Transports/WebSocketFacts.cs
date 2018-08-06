@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -13,7 +13,7 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Server.Transports
 {
     public class WebSocketFacts : HostedTest
     {
-        [Theory]
+        [Theory(Skip = "Disabled IIS Express tests because they fail to initialize")]
         [InlineData("GetStuff")]
         [InlineData("GetCircular")]
         public async Task ReturningUnserializableObjectsForcesImmediateReconnectWithWebSockets(string method)

@@ -1,0 +1,5 @@
+<Project>
+    <PropertyGroup>
+        <DefaultTestFrameworks>net461</DefaultTestFrameworks>
+    </PropertyGroup>
+</Project>

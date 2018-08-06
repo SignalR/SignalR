@@ -1,13 +1,13 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>net452</TargetFramework>
+    <TargetFrameworks>$(DefaultTestFrameworks)</TargetFrameworks>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Castle.Core" Version="4.0.0" />
     <PackageReference Include="Microsoft.Owin.Host.HttpListener" Version="2.1.0" />
     <PackageReference Include="Microsoft.Owin.Host.SystemWeb" Version="2.1.0" />
-    <PackageReference Include="Microsoft.Web.Administration" Version="7.0.0" />
+    <PackageReference Include="Microsoft.Web.Administration" Version="11.1.0" />
     <PackageReference Include="Moq" Version="4.7.8" />
     <PackageReference Include="Newtonsoft.Json" Version="11.0.2" />
     <PackageReference Include="System.Runtime.InteropServices.RuntimeInformation" Version="4.0.0" />
