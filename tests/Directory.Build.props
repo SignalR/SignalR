@@ -1,5 +1,5 @@
 <Project>
     <PropertyGroup>
-        <DefaultTestFrameworks>net461</DefaultTestFrameworks>
+        <DefaultTestFrameworks>net452</DefaultTestFrameworks>
     </PropertyGroup>
 </Project>

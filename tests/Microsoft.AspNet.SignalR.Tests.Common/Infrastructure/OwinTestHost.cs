@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -23,7 +23,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Common.Infrastructure
         {
             for (var i = 0; i < 10; i++)
             {
-                var url = string.Format("http://localhost:{0}/", Random.Next(8000, 9000));
+                var url = string.Format("http://localhost:{0}/", Random.Next(5000, 10000));
                 if (ProbeUrl(url))
                 {
                     return url;

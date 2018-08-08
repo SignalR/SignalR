@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -44,10 +44,11 @@ namespace Microsoft.AspNet.SignalR.Tests.Common.Infrastructure
             switch (hostType)
             {
                 case HostType.IISExpress:
-                    host = new IISExpressTestHost(testName);
-                    host.TransportFactory = () => CreateTransport(transportType);
-                    host.Transport = host.TransportFactory();
-                    break;
+                    throw new NotSupportedException("IIS Express testing is disabled.");
+                    //host = new IISExpressTestHost(testName);
+                    //host.TransportFactory = () => CreateTransport(transportType);
+                    //host.Transport = host.TransportFactory();
+                    //break;
                 case HostType.External:
                     host = new ExternalTestHost(url);
                     host.TransportFactory = () => CreateTransport(transportType);

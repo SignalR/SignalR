@@ -17,7 +17,7 @@ namespace Microsoft.AspNet.SignalR.Tests
     public class WebSocketFacts : HostedTest
     {
         [Theory]
-        [InlineData(HostType.IISExpress, TransportType.Websockets, Skip = "Disabled IIS Express tests because they fail to initialize")]
+        //[InlineData(HostType.IISExpress, TransportType.Websockets, Skip = "Disabled IIS Express tests because they fail to initialize")]
         [InlineData(HostType.HttpListener, TransportType.Websockets)]
         public async Task ClientCanReceiveMessagesOver64KBViaWebSockets(HostType hostType, TransportType transportType)
         {
@@ -41,7 +41,7 @@ namespace Microsoft.AspNet.SignalR.Tests
         }
 
         [Theory]
-        [InlineData(HostType.IISExpress, TransportType.Websockets, Skip = "Disabled IIS Express tests because they fail to initialize")]
+        //[InlineData(HostType.IISExpress, TransportType.Websockets, Skip = "Disabled IIS Express tests because they fail to initialize")]
         [InlineData(HostType.HttpListener, TransportType.Websockets)]
         public async Task ServerCannotReceiveMessagesOver64KBViaWebSockets(HostType hostType, TransportType transportType)
         {
@@ -66,7 +66,7 @@ namespace Microsoft.AspNet.SignalR.Tests
         }
 
         [Theory]
-        [InlineData(HostType.IISExpress, TransportType.Websockets, Skip = "Disabled IIS Express tests because they fail to initialize")]
+        //[InlineData(HostType.IISExpress, TransportType.Websockets, Skip = "Disabled IIS Express tests because they fail to initialize")]
         [InlineData(HostType.HttpListener, TransportType.Websockets)]
         public void MaxIncomingWebSocketMessageSizeCanBeDisabled(HostType hostType, TransportType transportType)
         {
@@ -92,7 +92,7 @@ namespace Microsoft.AspNet.SignalR.Tests
         }
 
         [Theory]
-        [InlineData(HostType.IISExpress, TransportType.Websockets, Skip = "Disabled IIS Express tests because they fail to initialize")]
+        //[InlineData(HostType.IISExpress, TransportType.Websockets, Skip = "Disabled IIS Express tests because they fail to initialize")]
         [InlineData(HostType.HttpListener, TransportType.Websockets)]
         public void MaxIncomingWebSocketMessageSizeCanBeIncreased(HostType hostType, TransportType transportType)
         {
@@ -118,7 +118,7 @@ namespace Microsoft.AspNet.SignalR.Tests
         }
 
         [Theory]
-        [InlineData(HostType.IISExpress, TransportType.Websockets, Skip = "Disabled IIS Express tests because they fail to initialize")]
+        //[InlineData(HostType.IISExpress, TransportType.Websockets, Skip = "Disabled IIS Express tests because they fail to initialize")]
         [InlineData(HostType.HttpListener, TransportType.Websockets)]
         public void MaxIncomingWebSocketMessageSizeCanBeReduced(HostType hostType, TransportType transportType)
         {
@@ -144,7 +144,7 @@ namespace Microsoft.AspNet.SignalR.Tests
         }
 
         [Theory]
-        [InlineData(HostType.IISExpress, TransportType.Websockets, Skip = "Disabled IIS Express tests because they fail to initialize")]
+        //[InlineData(HostType.IISExpress, TransportType.Websockets, Skip = "Disabled IIS Express tests because they fail to initialize")]
         [InlineData(HostType.HttpListener, TransportType.Websockets)]
         public async Task SendingDuringWebSocketReconnectFails(HostType hostType, TransportType transportType)
         {

@@ -13,12 +13,12 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Server.Transports
 {
     public class WebSocketFacts : HostedTest
     {
-        [Theory(Skip = "Disabled IIS Express tests because they fail to initialize")]
+        [Theory]
         [InlineData("GetStuff")]
         [InlineData("GetCircular")]
         public async Task ReturningUnserializableObjectsForcesImmediateReconnectWithWebSockets(string method)
         {
-            using (var host = CreateHost(HostType.IISExpress, TransportType.Websockets))
+            using (var host = CreateHost(HostType.HttpListener, TransportType.Websockets))
             {
                 host.Initialize();
 

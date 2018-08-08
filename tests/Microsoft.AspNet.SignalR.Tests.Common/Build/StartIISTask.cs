@@ -17,37 +17,38 @@ namespace Microsoft.AspNet.SignalR.Tests.Common
 
         public override bool Execute()
         {
-            try
-            {
-                ITestHost myHost = new IISExpressTestHost(HostLocation[0].ToString(), "js");
+            throw new NotSupportedException("IIS Express testing is disabled.");
+            //try
+            //{
+            //    ITestHost myHost = new IISExpressTestHost(HostLocation[0].ToString(), "js");
 
-                myHost.Initialize();
-            }
-            catch (WebException ex)
-            {
-                var response = ex.Response;
-                if (response == null)
-                {
-                    Log.LogError(ex.ToString());
-                    throw;
-                }
+            //    myHost.Initialize();
+            //}
+            //catch (WebException ex)
+            //{
+            //    var response = ex.Response;
+            //    if (response == null)
+            //    {
+            //        Log.LogError(ex.ToString());
+            //        throw;
+            //    }
 
-                using (response)
-                {
-                    using (var sr = new StreamReader(response.GetResponseStream()))
-                    {
-                        Log.LogError(sr.ReadToEnd());
-                        throw;
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                Log.LogError(ex.ToString());
-                throw;
-            }
+            //    using (response)
+            //    {
+            //        using (var sr = new StreamReader(response.GetResponseStream()))
+            //        {
+            //            Log.LogError(sr.ReadToEnd());
+            //            throw;
+            //        }
+            //    }
+            //}
+            //catch (Exception ex)
+            //{
+            //    Log.LogError(ex.ToString());
+            //    throw;
+            //}
 
-            return true;
+            //return true;
         }
     }
 }

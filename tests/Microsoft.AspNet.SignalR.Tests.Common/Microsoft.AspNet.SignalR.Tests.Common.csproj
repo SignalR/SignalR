@@ -14,7 +14,6 @@
     <PackageReference Include="xunit.assert" Version="2.3.1" />
     <PackageReference Include="xunit.extensibility.core" Version="2.3.1" />
     <PackageReference Include="xunit.extensibility.execution" Version="2.3.1" />
-    <PackageReference Include="Microsoft.Web.Administration" Version="11.1.0" />
 
     <Reference Include="Microsoft.Build.Framework" />
     <Reference Include="Microsoft.Build.Utilities.v4.0" />

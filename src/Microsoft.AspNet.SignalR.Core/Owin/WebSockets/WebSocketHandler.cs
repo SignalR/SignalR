@@ -214,7 +214,7 @@ namespace Microsoft.AspNet.SignalR.WebSockets
 
             try
             {
-#if CLIENT_NET45
+#if CLIENT
                 var webSocketState = GetWebSocketState(WebSocket);
                 if (webSocketState == WebSocketState.Closed ||
                     webSocketState == WebSocketState.Aborted)
@@ -230,7 +230,7 @@ namespace Microsoft.AspNet.SignalR.WebSockets
             }
             finally
             {
-#if CLIENT_NET45
+#if CLIENT
                 WebSocket.Dispose();
 #endif
                 OnClose();
