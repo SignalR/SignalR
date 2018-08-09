@@ -1,6 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
+    <IsPackable>false</IsPackable>
     <OutputType>Exe</OutputType>
     <AssemblyName>crank</AssemblyName>
     <Description>Load testing tool for SignalR</Description>

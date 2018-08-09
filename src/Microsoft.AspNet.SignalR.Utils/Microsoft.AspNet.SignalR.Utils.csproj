@@ -1,6 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
+    <IsPackable>false</IsPackable>
     <DefineConstants>$(DefineConstants);UTILS;NET4</DefineConstants>
     <OutputType>Exe</OutputType>
     <AssemblyName>signalr</AssemblyName>
