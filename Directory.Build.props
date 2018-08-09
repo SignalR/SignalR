@@ -13,6 +13,10 @@
   </PropertyGroup>
 
   <PropertyGroup>
+    <CodeAnalysisRuleSet>$(MSBuildThisFileDirectory)build\Microsoft.AspNet.SignalR.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
+
+  <PropertyGroup>
     <!-- Assembly/NuSpec attributes -->
     <Company>.NET Foundation</Company>
     <Copyright>© Copyright (c) .NET Foundation. All rights reserved.</Copyright>
@@ -20,11 +24,15 @@
     <RepositoryUrl>https://github.com/SignalR/SignalR</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <RepositoryRoot>$(MSBuildThisFileDirectory)</RepositoryRoot>
-    <AssemblyOriginatorKeyFile>$(MSBuildThisFileDirectory)build\Key.snk</AssemblyOriginatorKeyFile>
+    <AssemblyOriginatorKeyFile>$(MSBuildThisFileDirectory)build\35MSSharedLib1024.snk</AssemblyOriginatorKeyFile>
+
+    <!-- The key doesn't have the private part with it, so PublicSign when building locally and DelaySign when building for CI -->
+    <PublicSign Condition="'$(CI)' != 'true'">true</PublicSign>
+    <DelaySign Condition="'$(CI)' == 'true'">true</DelaySign>
+
     <SignAssembly>true</SignAssembly>
     <AssemblySigningCertName>Microsoft</AssemblySigningCertName>
     <PackageSigningCertName>MicrosoftNuGet</PackageSigningCertName>
-    <PublicSign Condition="'$(OS)' != 'Windows_NT'">true</PublicSign>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <LangVersion>latest</LangVersion>
     <DefaultTestFrameworks>net452</DefaultTestFrameworks>

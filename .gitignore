@@ -41,3 +41,6 @@ tests/Microsoft.AspNet.SignalR.Client.UWP.Tests/AppPackages/
 tests/Microsoft.AspNet.SignalR.Client.UWP.Tests/Microsoft.AspNet.SignalR.Client.UWP.Tests.nuget.props
 tests/Microsoft.AspNet.SignalR.Client.UWP.Tests/Microsoft.AspNet.SignalR.Client.UWP.Tests.nuget.targets
 *.binlog
+
+# Being paranoid right now
+*.snk

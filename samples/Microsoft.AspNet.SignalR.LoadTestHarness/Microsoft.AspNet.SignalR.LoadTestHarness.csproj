@@ -15,7 +15,6 @@
     <AssemblyName>Microsoft.AspNet.SignalR.LoadTestHarness</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <UseIISExpress>true</UseIISExpress>
-    <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\</SolutionDir>
     <RestorePackages>true</RestorePackages>
     <FileUpgradeFlags>
     </FileUpgradeFlags>
@@ -203,8 +202,10 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\src\Microsoft.AspNet.SignalR.Core\Microsoft.AspNet.SignalR.Core.csproj" />
-    <ProjectReference Include="..\..\src\Microsoft.AspNet.SignalR.Client.JS\Microsoft.AspNet.SignalR.Client.JS.csproj" />
     <ProjectReference Include="..\..\src\Microsoft.AspNet.SignalR.StressServer\Microsoft.AspNet.SignalR.StressServer.csproj" />
+
+    <!-- Order-only dependencies -->
+    <ProjectReference Include="..\..\src\Microsoft.AspNet.SignalR.Client.JS\Microsoft.AspNet.SignalR.Client.JS.csproj" ReferenceOutputAssembly="false" />
   </ItemGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>
@@ -234,33 +235,10 @@
     </VisualStudio>
   </ProjectExtensions>
   <Import Project="..\..\.nuget\NuGet.targets" />
-  <!-- To modify your build process, add your task inside one of the targets below and uncomment it.
-       Other similar extension points exist, see Microsoft.Common.targets.
-  <Target Name="BeforeBuild">
-  </Target>
-  <Target Name="AfterBuild">
-  </Target>
-  -->
   <Target Name="BeforeBuild">
     <Copy Condition="'$(ArtifactsDir)' == '' And '$(OS)' == 'Windows_NT'" SourceFiles="..\..\src\Microsoft.AspNet.SignalR.Client.JS\bin\$(Configuration)\netstandard1.0\jquery.signalR.js" DestinationFiles="Scripts\jquery.signalR.js" />
     <Copy Condition="'$(ArtifactsDir)' != '' And '$(OS)' == 'Windows_NT'" SourceFiles="$(ArtifactsDir)\Microsoft.AspNet.SignalR.Client.JS\jquery.signalR.js" DestinationFiles="Scripts\jquery.signalR.js" />
     <Copy Condition="'$(ArtifactsDir)' == '' And '$(OS)' == 'Windows_NT'" SourceFiles="..\..\src\Microsoft.AspNet.SignalR.Client.JS\bin\$(Configuration)\netstandard1.0\jquery.signalR.min.js" DestinationFiles="Scripts\jquery.signalR.min.js" />
     <Copy Condition="'$(ArtifactsDir)' != '' And '$(OS)' == 'Windows_NT'" SourceFiles="$(ArtifactsDir)\Microsoft.AspNet.SignalR.Client.JS\jquery.signalR.min.js" DestinationFiles="Scripts\jquery.signalR.min.js" />
   </Target>
-  <!--<Target Name="RestoreSignalR" BeforeTargets="RestorePackages">
-    <PropertyGroup>
-      <SignalRRepoPath>$(SolutionDir)..\SignalR\</SignalRRepoPath>
-      <_SignalRPackagePath>$(SignalRRepoPath)\artifacts\$(Configuration)</_SignalRPackagePath>
-      <SignalRPackagePath>$([System.IO.Path]::GetFullPath('$(_SignalRPackagePath)'))</SignalRPackagePath>
-      <SignalRInstallCommand>"$(NuGetExePath)" install SignalR -source "$(SignalRPackagePath);https://go.microsoft.com/fwlink/?LinkID=230477" -o "$(PackagesDir)"</SignalRInstallCommand>
-    </PropertyGroup>
-    <Message Text="Restoring SignalR package from local source $(SignalRPackagePath)" />
-    <ItemGroup>
-      <SignalRPackageFiles Include="$(PackagesDir)\SignalR.*\**\*" />
-    </ItemGroup>
-    <Message Text="Deleting current SignalR package $(SignalRPackageFiles)" />
-    <Delete Files="@(SignalRPackageFiles)" />
-    <Message Text="Running $(SignalRInstallCommand)" />
-    <Exec Command="$(SignalRInstallCommand)" Condition="Exists('$(SignalRPackagePath)')" />
-  </Target>-->
 </Project>
