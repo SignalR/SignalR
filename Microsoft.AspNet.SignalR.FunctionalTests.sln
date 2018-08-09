@@ -11,12 +11,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "build", "build", "{1E4BA77C
 	ProjectSection(SolutionItems) = preProject
 		Build\Build.proj = Build\Build.proj
 		build\Build.tasks = build\Build.tasks
-		src\Common\CodeAnalysisDictionary.xml = src\Common\CodeAnalysisDictionary.xml
-		src\Common\GlobalSuppressions.cs = src\Common\GlobalSuppressions.cs
 		build\Microsoft.AspNet.SignalR.OpenCover.targets = build\Microsoft.AspNet.SignalR.OpenCover.targets
 		build\Microsoft.AspNet.SignalR.OpenCover.xunit = build\Microsoft.AspNet.SignalR.OpenCover.xunit
-		src\Common\Microsoft.AspNet.SignalR.ruleset = src\Common\Microsoft.AspNet.SignalR.ruleset
-		src\Common\Microsoft.AspNet.SignalR.targets = src\Common\Microsoft.AspNet.SignalR.targets
 		build\Microsoft.AspNet.SignalR.UnitTests.OpenCover.xunit = build\Microsoft.AspNet.SignalR.UnitTests.OpenCover.xunit
 		Build\Microsoft.AspNet.SignalR.versions.targets = Build\Microsoft.AspNet.SignalR.versions.targets
 	EndProjectSection

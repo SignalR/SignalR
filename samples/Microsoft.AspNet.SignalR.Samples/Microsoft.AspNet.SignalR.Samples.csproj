@@ -239,9 +239,6 @@
     </Content>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="..\..\src\Common\CommonVersionInfo.cs">
-      <Link>Properties\CommonVersionInfo.cs</Link>
-    </Compile>
     <Compile Include="..\..\tests\Microsoft.AspNet.SignalR.Tests.Common\Connections\AuthenticatedEchoConnection.cs">
       <Link>Connections\AuthenticatedEchoConnection.cs</Link>
     </Compile>
