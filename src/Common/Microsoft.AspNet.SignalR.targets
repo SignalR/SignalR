@@ -43,6 +43,4 @@
     <ItemGroup>
         <CodeAnalysisDictionary Include="$(MSBuildThisFileDirectory)CodeAnalysisDictionary.xml" />
     </ItemGroup>
-
-    <Import Project="$(MSBuildThisFileDirectory)../../build/Microsoft.AspNet.SignalR.versions.targets"/>
 </Project>

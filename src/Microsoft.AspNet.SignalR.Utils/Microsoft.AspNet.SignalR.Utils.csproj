@@ -32,5 +32,4 @@
       <Link>Infrastructure\PerformanceCounterWrapper.cs</Link>
     </Compile>
   </ItemGroup>
-  <Import Project="..\Common\Microsoft.AspNet.SignalR.targets" />
 </Project>

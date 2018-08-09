@@ -22,12 +22,12 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Newtonsoft.Json" Version="6.0.4" />
+    <PackageReference Include="Newtonsoft.Json" Version="6.0.4" NoWarn="NU1701" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(TargetFramework)' == 'net45'">
-      <Reference Include="System.Net.Http" />
-      <Reference Include="System.Net.Http.WebRequest" />
+    <Reference Include="System.Net.Http" />
+    <Reference Include="System.Net.Http.WebRequest" />
   </ItemGroup>
 
 </Project>

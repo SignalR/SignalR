@@ -30,5 +30,4 @@
     <ProjectReference Include="..\Microsoft.AspNet.SignalR.Client\Microsoft.AspNet.SignalR.Client.csproj" />
     <ProjectReference Include="..\Microsoft.AspNet.SignalR.Core\Microsoft.AspNet.SignalR.Core.csproj" />
   </ItemGroup>
-  <Import Project="..\Common\Microsoft.AspNet.SignalR.targets" />
 </Project>

@@ -23,5 +23,4 @@
   <ItemGroup>
     <EmbeddedResource Include="Scripts\hubs.js" />
   </ItemGroup>
-  <Import Project="..\Common\Microsoft.AspNet.SignalR.targets" />
 </Project>

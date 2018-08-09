@@ -65,5 +65,4 @@
       <SubType>Designer</SubType>
     </None>
   </ItemGroup>
-  <Import Project="..\Common\Microsoft.AspNet.SignalR.targets" />
 </Project>
