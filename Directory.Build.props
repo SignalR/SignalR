@@ -35,6 +35,6 @@
     <PackageSigningCertName>MicrosoftNuGet</PackageSigningCertName>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <LangVersion>latest</LangVersion>
-    <DefaultTestFrameworks>net452</DefaultTestFrameworks>
+    <DefaultTestFrameworks>net461</DefaultTestFrameworks>
   </PropertyGroup>
 </Project>

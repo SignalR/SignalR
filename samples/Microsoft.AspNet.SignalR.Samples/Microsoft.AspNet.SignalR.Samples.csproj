@@ -239,7 +239,7 @@
     </Content>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="..\..\tests\Microsoft.AspNet.SignalR.Tests.Common\Connections\AuthenticatedEchoConnection.cs">
+    <Compile Include="..\..\test\Microsoft.AspNet.SignalR.Tests.Common\Connections\AuthenticatedEchoConnection.cs">
       <Link>Connections\AuthenticatedEchoConnection.cs</Link>
     </Compile>
     <Compile Include="App_Start\BackgroundThread.cs" />

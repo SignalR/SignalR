@@ -19,10 +19,10 @@
     <StackExchangeRedisStrongNamePackageVersion>1.1.608</StackExchangeRedisStrongNamePackageVersion>
     <SystemRuntimeInteropServicesRuntimeInformationPackageVersion>4.0.0</SystemRuntimeInteropServicesRuntimeInformationPackageVersion>
     <WindowsAzureServiceBusPackageVersion>2.1.2.0</WindowsAzureServiceBusPackageVersion>
-    <XunitAbstractionsPackageVersion>2.0.1</XunitAbstractionsPackageVersion>
-    <XunitAssertPackageVersion>2.3.1</XunitAssertPackageVersion>
-    <XunitExtensibilityCorePackageVersion>2.3.1</XunitExtensibilityCorePackageVersion>
-    <XunitExtensibilityExecutionPackageVersion>2.3.1</XunitExtensibilityExecutionPackageVersion>
+    <XunitAbstractionsPackageVersion>2.0.2</XunitAbstractionsPackageVersion>
+    <XunitAssertPackageVersion>2.4.0</XunitAssertPackageVersion>
+    <XunitExtensibilityCorePackageVersion>2.4.0</XunitExtensibilityCorePackageVersion>
+    <XunitExtensibilityExecutionPackageVersion>2.4.0</XunitExtensibilityExecutionPackageVersion>
     <XunitPackageVersion>2.4.0</XunitPackageVersion>
     <XunitRunnerVisualstudioPackageVersion>2.4.0</XunitRunnerVisualstudioPackageVersion>
   </PropertyGroup>
