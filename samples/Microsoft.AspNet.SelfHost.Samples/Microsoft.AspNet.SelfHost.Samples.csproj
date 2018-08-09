@@ -5,12 +5,12 @@
     <DefineConstants>$(DefineConstants);SELFHOST</DefineConstants>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="Microsoft.Owin" Version="2.1.0" />
-    <PackageReference Include="Microsoft.Owin.Cors" Version="2.1.0" />
-    <PackageReference Include="Microsoft.Owin.Diagnostics" Version="2.1.0" />
-    <PackageReference Include="Microsoft.Owin.Host.HttpListener" Version="2.1.0" />
-    <PackageReference Include="Microsoft.Owin.Hosting" Version="2.1.0" />
-    <PackageReference Include="Newtonsoft.Json" Version="6.0.4" />
+    <PackageReference Include="Microsoft.Owin" Version="$(MicrosoftOwinPackageVersion)" />
+    <PackageReference Include="Microsoft.Owin.Cors" Version="$(MicrosoftOwinCorsPackageVersion)" />
+    <PackageReference Include="Microsoft.Owin.Diagnostics" Version="$(MicrosoftOwinDiagnosticsPackageVersion)" />
+    <PackageReference Include="Microsoft.Owin.Host.HttpListener" Version="$(MicrosoftOwinHostHttpListenerPackageVersion)" />
+    <PackageReference Include="Microsoft.Owin.Hosting" Version="$(MicrosoftOwinHostingPackageVersion)" />
+    <PackageReference Include="Newtonsoft.Json" Version="$(Release_NewtonsoftJsonPackageVersion)" />
 
     <Reference Include="System" />
     <Reference Include="System.Core" />

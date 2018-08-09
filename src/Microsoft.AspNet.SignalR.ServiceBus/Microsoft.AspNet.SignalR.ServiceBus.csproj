@@ -6,8 +6,8 @@
     <TargetFramework>net45</TargetFramework>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="WindowsAzure.ServiceBus" Version="2.1.2.0" />
-    <PackageReference Include="Microsoft.WindowsAzure.ConfigurationManager" Version="2.0.0.0" />
+    <PackageReference Include="WindowsAzure.ServiceBus" Version="$(WindowsAzureServiceBusPackageVersion)" />
+    <PackageReference Include="Microsoft.WindowsAzure.ConfigurationManager" Version="$(MicrosoftWindowsAzureConfigurationManagerPackageVersion)" />
     <Reference Include="System" />
     <Reference Include="System.Configuration" />
     <Reference Include="System.Core" />

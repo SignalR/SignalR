@@ -6,7 +6,7 @@
     <TargetFramework>net45</TargetFramework>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="WindowsAzure.ServiceBus" Version="3.4.5" />
+    <PackageReference Include="WindowsAzure.ServiceBus" Version="$(ServiceBus3_WindowsAzureServiceBusPackageVersion)" />
     <Reference Include="System" />
     <Reference Include="System.Configuration" />
     <Reference Include="System.Core" />

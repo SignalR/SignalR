@@ -20,9 +20,9 @@
     </When>
   </Choose>
   <ItemGroup>
-    <PackageReference Include="CmdLine" Version="1.0.7.509" />
-    <PackageReference Include="Newtonsoft.Json" Version="11.0.2" />
-    <PackageReference Include="Owin" Version="1.0" />
+    <PackageReference Include="CmdLine" Version="$(CmdLinePackageVersion)" />
+    <PackageReference Include="Newtonsoft.Json" Version="$(NewtonsoftJsonPackageVersion)" />
+    <PackageReference Include="Owin" Version="$(OwinPackageVersion)" />
     <Reference Include="System" />
     <Reference Include="System.ComponentModel.Composition" />
     <Reference Include="System.Core" />

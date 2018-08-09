@@ -4,15 +4,15 @@
     <TargetFrameworks>$(DefaultTestFrameworks)</TargetFrameworks>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="Castle.Core" Version="4.0.0" />
-    <PackageReference Include="Microsoft.Owin.Host.HttpListener" Version="2.1.0" />
-    <PackageReference Include="Microsoft.Owin.Host.SystemWeb" Version="2.1.0" />
-    <PackageReference Include="Moq" Version="4.7.8" />
-    <PackageReference Include="Newtonsoft.Json" Version="11.0.2" />
-    <PackageReference Include="System.Runtime.InteropServices.RuntimeInformation" Version="4.0.0" />
-    <PackageReference Include="xunit" Version="2.4.0" />
-    <PackageReference Include="xunit.runner.visualstudio" Version="2.4.0" />
-    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="15.8.0" />
+    <PackageReference Include="Castle.Core" Version="$(CastleCorePackageVersion)" />
+    <PackageReference Include="Microsoft.Owin.Host.HttpListener" Version="$(MicrosoftOwinHostHttpListenerPackageVersion)" />
+    <PackageReference Include="Microsoft.Owin.Host.SystemWeb" Version="$(MicrosoftOwinHostSystemWebPackageVersion)" />
+    <PackageReference Include="Moq" Version="$(MoqPackageVersion)" />
+    <PackageReference Include="Newtonsoft.Json" Version="$(NewtonsoftJsonPackageVersion)" />
+    <PackageReference Include="System.Runtime.InteropServices.RuntimeInformation" Version="$(SystemRuntimeInteropServicesRuntimeInformationPackageVersion)" />
+    <PackageReference Include="xunit" Version="$(XunitPackageVersion)" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="$(XunitRunnerVisualstudioPackageVersion)" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="$(MicrosoftNETTestSdkPackageVersion)" />
 
     <Reference Include="System" />
     <Reference Include="System.ComponentModel.Composition" />
@@ -47,5 +47,4 @@
     <ProjectReference Include="..\..\src\Microsoft.AspNet.SignalR.Client\Microsoft.AspNet.SignalR.Client.csproj" />
     <ProjectReference Include="..\..\src\Microsoft.AspNet.SignalR.Core\Microsoft.AspNet.SignalR.Core.csproj" />
   </ItemGroup>
-  <Import Project="..\..\src\Common\Microsoft.AspNet.SignalR.targets" />
 </Project>

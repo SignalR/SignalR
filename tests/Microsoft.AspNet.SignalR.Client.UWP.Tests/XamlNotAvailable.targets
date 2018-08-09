@@ -1,0 +1,6 @@
+<Project>
+    <Target Name="Build">
+        <Error Text="Unable to build UWP project because tools are not available" Condition="'$(CI)' == 'true' And '$(OS)' == 'Windows_NT'" />
+        <Message Text="Skipping project because UWP tools are not available" Condition="'$(CI)' != 'true' Or '$(OS)' != 'Windows_NT'" Importance="high" />
+    </Target>
+</Project>
