@@ -142,7 +142,7 @@ namespace Microsoft.AspNet.SignalR.Client.Infrastructure
         }
 
         [Fact]
-        public void InitTaskThrowsStartFailedExceptionIfStartRequestReturnsIncorrectResult()
+        public async Task InitTaskThrowsStartFailedExceptionIfStartRequestReturnsIncorrectResult()
         {
             var mockTransportHelper = new Mock<TransportHelper>();
             var mockConnection = new Mock<IConnection>();
@@ -164,9 +164,7 @@ namespace Microsoft.AspNet.SignalR.Client.Infrastructure
 
             initHandler.InitReceived();
 
-            Assert.IsType<StartException>(
-                Assert.Throws<AggregateException>(
-                    () => Assert.True(initHandler.Task.Wait(TimeSpan.FromSeconds(1)))).InnerException);
+            await Assert.ThrowsAsync<StartException>(() => initHandler.Task);
 
             Assert.True(onFailureInvoked);
         }

@@ -76,7 +76,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNet.SignalR.Se
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{F5CA2D9B-6E0B-4C67-A581-10BE3F03CD1D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNet.SignalR.Client.JS", "src\Microsoft.AspNet.SignalR.Client.JS\Microsoft.AspNet.SignalR.Client.JS.csproj", "{69771AF9-1BEE-48E6-98BC-78864231E239}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNet.SignalR.JS", "src\Microsoft.AspNet.SignalR.JS\Microsoft.AspNet.SignalR.JS.csproj", "{69771AF9-1BEE-48E6-98BC-78864231E239}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
