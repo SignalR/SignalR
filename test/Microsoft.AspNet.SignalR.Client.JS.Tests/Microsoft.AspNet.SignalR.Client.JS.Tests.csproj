@@ -162,7 +162,7 @@
     <ProjectReference Include="..\..\src\Microsoft.AspNet.SignalR.Core\Microsoft.AspNet.SignalR.Core.csproj" />
 
     <!-- Order-only dependencies -->
-    <ProjectReference Include="..\..\src\Microsoft.AspNet.SignalR.Client.JS\Microsoft.AspNet.SignalR.Client.JS.csproj" ReferenceOutputAssembly="false" />
+    <ProjectReference Include="..\..\src\Microsoft.AspNet.SignalR.JS\Microsoft.AspNet.SignalR.JS.csproj" ReferenceOutputAssembly="false" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <Import Project="$(WAPToolsPath)\WebApplications\Microsoft.WebApplication.targets" Condition="'$(VSToolsPath)' != ''" />

@@ -394,7 +394,7 @@
     <ProjectReference Include="..\Microsoft.AspNet.SignalR.Samples.VB\Microsoft.AspNet.SignalR.Samples.VB.vbproj" />
 
     <!-- Order-only dependencies -->
-    <ProjectReference Include="..\..\src\Microsoft.AspNet.SignalR.Client.JS\Microsoft.AspNet.SignalR.Client.JS.csproj" ReferenceOutputAssembly="false" />
+    <ProjectReference Include="..\..\src\Microsoft.AspNet.SignalR.JS\Microsoft.AspNet.SignalR.JS.csproj" ReferenceOutputAssembly="false" />
     <ProjectReference Include="..\..\src\Microsoft.AspNet.SignalR.Utils\Microsoft.AspNet.SignalR.Utils.csproj" ReferenceOutputAssembly="false" />
   </ItemGroup>
   <ItemGroup>
@@ -431,8 +431,8 @@
     </PostBuildEvent>
   </PropertyGroup>
   <Target Name="CopyJs" AfterTargets="Build">
-    <Copy SourceFiles="..\..\src\Microsoft.AspNet.SignalR.Client.JS\bin\$(Configuration)\netstandard1.0\jquery.signalR.js" DestinationFiles="Scripts\jquery.signalR.js" />
-    <Copy SourceFiles="..\..\src\Microsoft.AspNet.SignalR.Client.JS\bin\$(Configuration)\netstandard1.0\jquery.signalR.min.js" DestinationFiles="Scripts\jquery.signalR.min.js" />
+    <Copy SourceFiles="..\..\src\Microsoft.AspNet.SignalR.JS\bin\$(Configuration)\netstandard1.0\jquery.signalR.js" DestinationFiles="Scripts\jquery.signalR.js" />
+    <Copy SourceFiles="..\..\src\Microsoft.AspNet.SignalR.JS\bin\$(Configuration)\netstandard1.0\jquery.signalR.min.js" DestinationFiles="Scripts\jquery.signalR.min.js" />
   </Target>
   <Target Name="AfterBuild">
     <Message Text="> &quot;$(MSBuildThisFileDirectory)..\..\src\Microsoft.AspNet.SignalR.Utils\bin\$(Configuration)\net40\signalr.exe&quot; ghp /o:&quot;$(MSBuildThisFileDirectory)Scripts\hubs.js&quot;" Importance="high" />
