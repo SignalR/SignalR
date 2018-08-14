@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -30,7 +30,7 @@ namespace Microsoft.AspNet.SignalR.Stress
             Assembly.Load("Microsoft.AspNet.SignalR.StressServer");
         }
 
-        public static IDisposable StressGroups(int max = 100)
+        public static async Task<IDisposable> StressGroups(int max = 100)
         {
             var host = new MemoryHost();
             host.Configure(app =>
@@ -77,11 +77,7 @@ namespace Microsoft.AspNet.SignalR.Stress
                     proxy.Invoke("Send", "foo", i).Wait();
                 }
 
-                if (!countDown.Wait(TimeSpan.FromSeconds(10)))
-                {
-                    Console.WriteLine("Didn't receive " + max + " messages. Got " + (max - countDown.Count) + " missed " + String.Join(",", countDown.Left.Select(i => i.ToString())));
-                    Debugger.Break();
-                }
+                await countDown.WaitAsync().OrTimeout();
             }
             finally
             {
