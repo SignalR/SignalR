@@ -11,8 +11,8 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.Owin.Security" Version="$(MicrosoftOwinSecurityPackageVersion)" />
     <PackageReference Include="Newtonsoft.Json" Version="$(Release_NewtonsoftJsonPackageVersion)" />
-    <Reference Include="System" />
-    <Reference Include="System.Core" />
+  </ItemGroup>
+  <ItemGroup>
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Security" />
   </ItemGroup>

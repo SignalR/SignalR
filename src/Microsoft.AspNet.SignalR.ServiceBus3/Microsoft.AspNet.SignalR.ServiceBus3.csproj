@@ -8,15 +8,9 @@
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="WindowsAzure.ServiceBus" Version="$(ServiceBus3_WindowsAzureServiceBusPackageVersion)" />
-    <Reference Include="System" />
+  </ItemGroup>
+  <ItemGroup>
     <Reference Include="System.Configuration" />
-    <Reference Include="System.Core" />
-    <Reference Include="System.Runtime.Serialization" />
-    <Reference Include="System.ServiceModel" />
-    <Reference Include="System.Xml.Linq" />
-    <Reference Include="Microsoft.CSharp" />
-    <Reference Include="System.Data" />
-    <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="..\Microsoft.AspNet.SignalR.Core\Infrastructure\DisposableAction.cs">

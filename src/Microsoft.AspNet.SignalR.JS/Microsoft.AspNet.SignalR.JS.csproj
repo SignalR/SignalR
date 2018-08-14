@@ -10,6 +10,11 @@
     <!-- Suppress the DLL from the package -->
     <IncludeBuildOutput>false</IncludeBuildOutput>
   </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="jQuery" Version="1.6.4" />
+  </ItemGroup>
+
   <ItemGroup>
     <JSCompile Include="jquery.signalr.*.js" />
   </ItemGroup>
