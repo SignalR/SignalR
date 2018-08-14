@@ -1,10 +1,9 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading;
+using System.Threading.Tasks;
 
 namespace Microsoft.AspNet.SignalR.Tests.Infrastructure
 {
@@ -12,7 +11,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Infrastructure
     {
         private HashSet<T> _items;
         private HashSet<T> _seen;
-        private ManualResetEventSlim _wh = new ManualResetEventSlim(false);
+        private TaskCompletionSource<object> _wh = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
 
         public CountDownRange(IEnumerable<T> range)
         {
@@ -61,7 +60,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Infrastructure
                 {
                     if (_items.Count == 0)
                     {
-                        _wh.Set();
+                        _wh.TrySetResult(null);
                     }
 
                     _seen.Add(item);
@@ -73,9 +72,6 @@ namespace Microsoft.AspNet.SignalR.Tests.Infrastructure
             return false;
         }
 
-        public bool Wait(TimeSpan timeout)
-        {
-            return _wh.Wait(timeout);
-        }
+        public Task WaitAsync() => _wh.Task;
     }
 }

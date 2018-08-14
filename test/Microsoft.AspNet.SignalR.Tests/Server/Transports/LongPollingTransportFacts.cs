@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -34,7 +34,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Server.Transports
         }
 
         [Fact]
-        public void EmptyPathDoesntTriggerReconnects()
+        public async Task EmptyPathDoesntTriggerReconnects()
         {
             // Arrange
             var transport = TestLongPollingTransport.Create(requestPath: "/");
@@ -55,10 +55,10 @@ namespace Microsoft.AspNet.SignalR.Tests.Server.Transports
             };
 
             // Act
-            transport.ProcessRequest(CreateMockTransportConnection());
+            _ = transport.ProcessRequest(CreateMockTransportConnection());
 
             // Assert
-            Assert.True(transport.ConnectTask.Wait(TimeSpan.FromSeconds(2)), "ConnectTask task not tripped");
+            await transport.ConnectTask.OrTimeout();
             Assert.False(connected, "The Connected event should not be raised");
             Assert.False(reconnected, "The Reconnected event should not be raised");
         }

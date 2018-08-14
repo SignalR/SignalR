@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -350,7 +350,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
         }
 
         [Fact]
-        public void SubscriptionWithExistingCursor()
+        public async Task SubscriptionWithExistingCursor()
         {
             var dr = new DefaultDependencyResolver();
             var passThroughMinfier = new PassThroughStringMinifier();
@@ -366,10 +366,10 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
                 bus.Subscribe(subscriberFactory(), null, (result, state) => TaskAsyncHelper.True, 10, null)
                    .Dispose();
 
-                bus.Publish("test", "key", "1").Wait();
-                bus.Publish("test", "key", "2").Wait();
-                bus.Publish("test", "key", "3").Wait();
-                bus.Publish("test", "key", "4").Wait();
+                await bus.Publish("test", "key", "1");
+                await bus.Publish("test", "key", "2");
+                await bus.Publish("test", "key", "3");
+                await bus.Publish("test", "key", "4");
 
                 try
                 {
@@ -385,9 +385,9 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
 
                     }, 10, null);
 
-                    bus.Publish("test", "key", "5");
+                    await bus.Publish("test", "key", "5");
 
-                    Assert.True(cd.Wait(TimeSpan.FromSeconds(5)));
+                    await cd.WaitAsync().OrTimeout();
                 }
                 finally
                 {
@@ -400,7 +400,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
         }
 
         [Fact]
-        public void SubscriptionWithMultipleExistingCursors()
+        public async Task SubscriptionWithMultipleExistingCursors()
         {
             var dr = new DefaultDependencyResolver();
             var passThroughMinfier = new PassThroughStringMinifier();
@@ -419,12 +419,12 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
                     .Dispose();
 
                 // This simulates a reconnect
-                bus.Publish("test", "key", "1").Wait();
-                bus.Publish("test", "key", "2").Wait();
-                bus.Publish("test", "key", "3").Wait();
-                bus.Publish("test", "key", "4").Wait();
-                bus.Publish("test", "key2", "1").Wait();
-                bus.Publish("test", "key2", "2").Wait();
+                await bus.Publish("test", "key", "1");
+                await bus.Publish("test", "key", "2");
+                await bus.Publish("test", "key", "3");
+                await bus.Publish("test", "key", "4");
+                await bus.Publish("test", "key2", "1");
+                await bus.Publish("test", "key2", "2");
 
                 try
                 {
@@ -447,11 +447,11 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
 
                     }, 10, null);
 
-                    bus.Publish("test", "key", "5");
-                    bus.Publish("test", "key2", "10");
+                    await bus.Publish("test", "key", "5");
+                    await bus.Publish("test", "key2", "10");
 
-                    Assert.True(cdKey.Wait(TimeSpan.FromSeconds(5)));
-                    Assert.True(cdKey2.Wait(TimeSpan.FromSeconds(5)));
+                    await cdKey.WaitAsync().OrTimeout();
+                    await cdKey2.WaitAsync().OrTimeout();
                 }
                 finally
                 {
@@ -548,7 +548,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
         }
 
         [Fact]
-        public void AddingEventAndSendingMessages()
+        public async Task AddingEventAndSendingMessages()
         {
             var dr = new DefaultDependencyResolver();
             using (var bus = new MessageBus(dr))
@@ -577,10 +577,10 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
                     for (int i = 0; i < max; i++)
                     {
                         subscriber.AddEvent("b");
-                        bus.Publish("test", "b", i.ToString()).Wait();
+                        await bus.Publish("test", "b", i.ToString());
                     }
 
-                    Assert.True(cd.Wait(TimeSpan.FromSeconds(10)));
+                    await cd.WaitAsync().OrTimeout();
                 }
                 finally
                 {

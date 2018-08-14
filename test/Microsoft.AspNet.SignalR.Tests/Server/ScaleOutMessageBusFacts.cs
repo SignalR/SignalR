@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -7,6 +7,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR.Configuration;
+using Microsoft.AspNet.SignalR.Infrastructure;
 using Microsoft.AspNet.SignalR.Messaging;
 using Microsoft.AspNet.SignalR.Tests.Infrastructure;
 using Xunit;
@@ -71,7 +72,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
         }
 
         [Fact]
-        public void SubscriptionWithExistingCursor()
+        public async Task SubscriptionWithExistingCursor()
         {
             var dr = new DefaultDependencyResolver();
             using (var bus = new TestScaleoutBus(dr, streams: 2))
@@ -111,7 +112,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
 
                     bus.Publish(0, 2, new[] { new Message("test", "key", "5") });
 
-                    Assert.True(cd.Wait(TimeSpan.FromSeconds(10)));
+                    await cd.WaitAsync().OrTimeout();
                 }
                 finally
                 {
