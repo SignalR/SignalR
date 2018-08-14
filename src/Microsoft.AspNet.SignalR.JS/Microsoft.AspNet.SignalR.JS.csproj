@@ -4,6 +4,9 @@
     <Title>Microsoft ASP.NET SignalR JavaScript Client</Title>
     <Description>JavaScript client for ASP.NET SignalR.</Description>
 
+    <NuspecFile>$(MSBuildThisFileDirectory)$(MSBuildProjectName).nuspec</NuspecFile>
+    <NuspecProperties>PackageVersion=$(VersionPrefix)-$(VersionSuffix);Configuration=$(Configuration)</NuspecProperties>
+
     <!-- This is just a placeholder project for some JavaScript build tools, but we need a TFM to make MSBuild happy -->
     <TargetFramework>netstandard1.0</TargetFramework>
 

@@ -3,17 +3,10 @@
   <PropertyGroup>
     <Title>Microsoft ASP.NET SignalR SQL Server Messaging Backplane</Title>
     <Description>SQL Server messaging backplane for scaling out of ASP.NET SignalR applications in a web-farm.</Description>
+    <PackageTags>Microsoft AspNet SignalR AspNetSignalR SqlServer</PackageTags>
     <DefineConstants>$(DefineConstants);SERVER</DefineConstants>
     <TargetFramework>net45</TargetFramework>
   </PropertyGroup>
-  <ItemGroup>
-    <Reference Include="System" />
-    <Reference Include="System.Core" />
-    <Reference Include="Microsoft.CSharp" />
-    <Reference Include="System.Data" />
-    <Reference Include="System.Data.Linq" />
-    <Reference Include="System.XML" />
-  </ItemGroup>
   <ItemGroup>
     <Compile Include="..\Microsoft.AspNet.SignalR.Core\TaskAsyncHelper.cs">
       <Link>TaskAsyncHelper.cs</Link>

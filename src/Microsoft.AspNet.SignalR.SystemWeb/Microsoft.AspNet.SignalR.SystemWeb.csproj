@@ -3,6 +3,7 @@
   <PropertyGroup>
     <Title>Microsoft ASP.NET SignalR System.Web</Title>
     <Description>Incredibly simple real-time web for .NET. Components for using ASP.NET SignalR in applications hosted on System.Web.</Description>
+    <PackageTags>Microsoft AspNet SignalR AspNetSignalR SystemWeb</PackageTags>
     <TargetFramework>net45</TargetFramework>
   </PropertyGroup>
   <ItemGroup>

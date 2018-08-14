@@ -3,6 +3,7 @@
   <PropertyGroup>
     <Title>Microsoft ASP.NET SignalR Core Components</Title>
     <Description>Async signaling library for .NET to help build real-time, multi-user interactive web applications.</Description>
+    <PackageTags>Microsoft AspNet SignalR AspNetSignalR Core</PackageTags>
     <DefineConstants>$(DefineConstants);PERFCOUNTERS;SERVER</DefineConstants>
     <RootNamespace>Microsoft.AspNet.SignalR</RootNamespace>
     <TargetFramework>net45</TargetFramework>

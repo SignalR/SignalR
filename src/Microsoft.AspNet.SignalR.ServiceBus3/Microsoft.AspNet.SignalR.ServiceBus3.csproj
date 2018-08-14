@@ -3,6 +3,7 @@
   <PropertyGroup>
     <Title>Microsoft ASP.NET SignalR Service Bus v3 Messaging Backplane</Title>
     <Description>Service Bus v3 messaging backplane for scaling out of ASP.NET SignalR applications in a web-farm.</Description>
+    <PackageTags>Microsoft AspNet SignalR AspNetSignalR ServiceBus</PackageTags>
     <DefineConstants>$(DefineConstants);SERVER</DefineConstants>
     <TargetFramework>net45</TargetFramework>
   </PropertyGroup>

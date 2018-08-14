@@ -3,6 +3,7 @@
   <PropertyGroup>
     <Title>Microsoft ASP.NET SignalR Redis Messaging Backplane</Title>
     <Description>Redis messaging backplane for scaling out of ASP.NET SignalR applications in a web-farm.</Description>
+    <PackageTags>Microsoft AspNet SignalR AspNetSignalR Redis</PackageTags>
     <DefineConstants>$(DefineConstants);SERVER</DefineConstants>
     <TargetFramework>net45</TargetFramework>
   </PropertyGroup>
