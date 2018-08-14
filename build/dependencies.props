@@ -2,6 +2,7 @@
   <PropertyGroup Label="Package Versions: Auto">
     <CastleCorePackageVersion>4.0.0</CastleCorePackageVersion>
     <CmdLinePackageVersion>1.0.7.509</CmdLinePackageVersion>
+    <jQueryPackageVersion>1.6.4</jQueryPackageVersion>
     <MicrosoftNETTestSdkPackageVersion>15.8.0</MicrosoftNETTestSdkPackageVersion>
     <MicrosoftOwinCorsPackageVersion>2.1.0</MicrosoftOwinCorsPackageVersion>
     <MicrosoftOwinDiagnosticsPackageVersion>2.1.0</MicrosoftOwinDiagnosticsPackageVersion>

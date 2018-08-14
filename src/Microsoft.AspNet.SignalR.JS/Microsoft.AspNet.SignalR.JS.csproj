@@ -12,7 +12,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="jQuery" Version="1.6.4" />
+    <PackageReference Include="jQuery" Version="$(jQueryPackageVersion)" />
   </ItemGroup>
 
   <ItemGroup>
