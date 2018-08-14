@@ -1,7 +1,8 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <Description>Components to host an ASP.NET SignalR server as part of an ASP.NET application running on System.Web.dll</Description>
+    <Title>Microsoft ASP.NET SignalR System.Web</Title>
+    <Description>Incredibly simple real-time web for .NET. Components for using ASP.NET SignalR in applications hosted on System.Web.</Description>
     <TargetFramework>net45</TargetFramework>
   </PropertyGroup>
   <ItemGroup>

@@ -1,6 +1,9 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
+    <Title>Microsoft ASP.NET SignalR .NET Client</Title>
+    <Description>.NET client for ASP.NET SignalR.</Description>
+    <PackageTags>Microsoft AspNet SignalR AspNetSignalR Client</PackageTags>
     <TargetFrameworks>net40;net45;netstandard2.0</TargetFrameworks>
     <DefineConstants>$(DefineConstants);CLIENT</DefineConstants>
   </PropertyGroup>

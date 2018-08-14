@@ -18,9 +18,13 @@
 
   <PropertyGroup>
     <!-- Assembly/NuSpec attributes -->
-    <Company>.NET Foundation</Company>
-    <Copyright>© Copyright (c) .NET Foundation. All rights reserved.</Copyright>
+    <Company>Microsoft</Company>
+    <Authors>Microsoft</Authors>
+    <Copyright>© Copyright (c) Microsoft Corporation. All rights reserved.</Copyright>
     <Product>Microsoft ASP.NET SignalR</Product>
+    <PackageLicenseUrl>http://www.microsoft.com/web/webpi/eula/net_library_eula_ENU.htm</PackageLicenseUrl>
+    <PackageProjectUrl>http://www.asp.net/signalr</PackageProjectUrl>
+    <PackageReleaseNotes>https://github.com/SignalR/SignalR/releases</PackageReleaseNotes>
     <RepositoryUrl>https://github.com/SignalR/SignalR</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <RepositoryRoot>$(MSBuildThisFileDirectory)</RepositoryRoot>

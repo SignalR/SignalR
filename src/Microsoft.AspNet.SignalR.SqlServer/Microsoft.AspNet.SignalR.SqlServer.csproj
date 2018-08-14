@@ -1,8 +1,9 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
+    <Title>Microsoft ASP.NET SignalR SQL Server Messaging Backplane</Title>
+    <Description>SQL Server messaging backplane for scaling out of ASP.NET SignalR applications in a web-farm.</Description>
     <DefineConstants>$(DefineConstants);SERVER</DefineConstants>
-    <Description>Assembly containing components for scaling-out SignalR applications using SQL Server.</Description>
     <TargetFramework>net45</TargetFramework>
   </PropertyGroup>
   <ItemGroup>

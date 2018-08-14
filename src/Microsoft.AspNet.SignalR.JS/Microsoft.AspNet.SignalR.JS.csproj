@@ -1,6 +1,9 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
+    <Title>Microsoft ASP.NET SignalR JavaScript Client</Title>
+    <Description>JavaScript client for ASP.NET SignalR.</Description>
+
     <!-- This is just a placeholder project for some JavaScript build tools, but we need a TFM to make MSBuild happy -->
     <TargetFramework>netstandard1.0</TargetFramework>
 

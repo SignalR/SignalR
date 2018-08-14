@@ -14,13 +14,3 @@ phases:
 - template: .vsts-pipelines/templates/phases/default-build.yml@buildtools
   parameters:
     agentOs: Windows
-    buildArgs: /p:VSTestVerboseOutput=true
-    afterBuild:
-    - task: PublishBuildArtifacts@1
-      displayName: Upload build logs
-      condition: and(always(), eq(variables['system.pullrequest.isfork'], false))
-      inputs:
-        pathtoPublish: 'artifacts/logs/'
-        artifactName: logs-$(AgentOsName)-$(BuildConfiguration)
-        artifactType: Container
-
