@@ -988,7 +988,8 @@ namespace Microsoft.AspNet.SignalR
             return tcs.Task;
         }
 
-
+        // Not supported in .NET Standard 1.3, but also not used.
+#if !NETSTANDARD1_3
         internal struct CulturePair
         {
             public CultureInfo Culture;
@@ -1040,24 +1041,46 @@ namespace Microsoft.AspNet.SignalR
         {
             RunWithPreservedCulture(preservedCulture, f => f(), action);
         }
+#endif
 
         internal static Task ContinueWithPreservedCulture(this Task task, Action<Task> continuationAction, TaskContinuationOptions continuationOptions)
         {
+#if NETSTANDARD1_3
+            // The Thread class is not available on .NET Standard 1.3
+            return task.ContinueWith(continuationAction, continuationOptions);
+#elif NETSTANDARD2_0 || NET40 || NET45 || NET461
             var preservedCulture = SaveCulture();
             return task.ContinueWith(t => RunWithPreservedCulture(preservedCulture, continuationAction, t), continuationOptions);
+#else
+#error Unsupported framework.
+#endif
         }
 
         internal static Task ContinueWithPreservedCulture<T>(this Task<T> task, Action<Task<T>> continuationAction, TaskContinuationOptions continuationOptions)
         {
+#if NETSTANDARD1_3
+            // The Thread class is not available on .NET Standard 1.3
+            return task.ContinueWith(continuationAction, continuationOptions);
+#elif NETSTANDARD2_0 || NET40 || NET45 || NET461
             var preservedCulture = SaveCulture();
             return task.ContinueWith(t => RunWithPreservedCulture(preservedCulture, continuationAction, t), continuationOptions);
+#else
+#error Unsupported framework.
+#endif
         }
 
         [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode", Justification = "This is a shared file")]
         internal static Task<TResult> ContinueWithPreservedCulture<T, TResult>(this Task<T> task, Func<Task<T>, TResult> continuationAction, TaskContinuationOptions continuationOptions)
         {
+#if NETSTANDARD1_3
+            // The Thread class is not available on .NET Standard 1.3
+            return task.ContinueWith(continuationAction, continuationOptions);
+#elif NETSTANDARD2_0 || NET40 || NET45 || NET461
             var preservedCulture = SaveCulture();
             return task.ContinueWith(t => RunWithPreservedCulture(preservedCulture, continuationAction, t), continuationOptions);
+#else
+#error Unsupported framework.
+#endif
         }
 
         internal static Task ContinueWithPreservedCulture(this Task task, Action<Task> continuationAction)
@@ -1352,7 +1375,7 @@ namespace Microsoft.AspNet.SignalR
             {
                 action();
             }, state: null);
-#elif NET45 || NETSTANDARD2_0 || SERVER
+#elif NET45 || NETSTANDARD || SERVER
             Task.Run(() =>
             {
                 action();

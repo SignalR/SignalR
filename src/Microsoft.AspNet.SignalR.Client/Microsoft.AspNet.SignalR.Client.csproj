@@ -4,7 +4,7 @@
     <Title>Microsoft ASP.NET SignalR .NET Client</Title>
     <Description>.NET client for ASP.NET SignalR.</Description>
     <PackageTags>Microsoft AspNet SignalR AspNetSignalR Client</PackageTags>
-    <TargetFrameworks>net40;net45;netstandard2.0</TargetFrameworks>
+    <TargetFrameworks>net40;net45;netstandard1.3;netstandard2.0</TargetFrameworks>
     <DefineConstants>$(DefineConstants);CLIENT</DefineConstants>
   </PropertyGroup>
 
@@ -24,13 +24,22 @@
     <Compile Include="..\Microsoft.AspNet.SignalR.Core\TaskAwaiterHelper.cs" Link="Infrastructure\TaskAwaiterHelper.cs" />
   </ItemGroup>
 
-  <ItemGroup>
-    <PackageReference Include="Newtonsoft.Json" Version="$(Release_NewtonsoftJsonPackageVersion)" NoWarn="NU1701" />
+  <ItemGroup Condition="'$(TargetFramework)' == 'net40'">
+    <PackageReference Include="Newtonsoft.Json" Version="$(Release_NewtonsoftJsonPackageVersion)" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(TargetFramework)' == 'net45'">
+    <PackageReference Include="Newtonsoft.Json" Version="$(Release_NewtonsoftJsonPackageVersion)" />
     <Reference Include="System.Net.Http" />
     <Reference Include="System.Net.Http.WebRequest" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(TargetFramework)' == 'netstandard1.3'">
+    <PackageReference Include="Newtonsoft.Json" Version="$(ReleaseNetStandard_NewtonsoftJsonPackageVersion)" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.0'">
+    <PackageReference Include="Newtonsoft.Json" Version="$(ReleaseNetStandard_NewtonsoftJsonPackageVersion)" />
   </ItemGroup>
 
 </Project>

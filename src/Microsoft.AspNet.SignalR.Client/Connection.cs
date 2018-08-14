@@ -910,14 +910,22 @@ namespace Microsoft.AspNet.SignalR.Client
         {
             if (_assemblyVersion == null)
             {
-#if NETSTANDARD2_0
+#if NETSTANDARD
                 _assemblyVersion = new AssemblyName(typeof(Resources).GetTypeInfo().Assembly.FullName).Version;
-#else
+#elif NET40 || NET45
                 _assemblyVersion = new AssemblyName(typeof(Connection).Assembly.FullName).Version;
+#else 
+#error Unsupported target framework.
 #endif
             }
 
+#if NETSTANDARD1_3
+            return String.Format(CultureInfo.InvariantCulture, "{0}/{1} (Unknown OS)", client, _assemblyVersion);
+#elif NETSTANDARD2_0 || NET40 || NET45
             return String.Format(CultureInfo.InvariantCulture, "{0}/{1} ({2})", client, _assemblyVersion, Environment.OSVersion);
+#else
+#error Unsupported target framework.
+#endif
         }
 
         [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "The Version constructor can throw exceptions of many different types. Failure is indicated by returning false.")]

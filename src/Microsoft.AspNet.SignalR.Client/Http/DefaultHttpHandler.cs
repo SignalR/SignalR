@@ -1,7 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-#if NET45 || NETSTANDARD2_0
+#if NET45 || NETSTANDARD
 
 using System;
 #if !NETFX_CORE && !PORTABLE
@@ -13,7 +13,7 @@ namespace Microsoft.AspNet.SignalR.Client.Http
 {
 #if NET45
     public class DefaultHttpHandler : WebRequestHandler
-#elif NETSTANDARD2_0
+#elif NETSTANDARD
     public class DefaultHttpHandler : HttpClientHandler
 #else
 #error Unsupported target framework.
@@ -38,7 +38,7 @@ namespace Microsoft.AspNet.SignalR.Client.Http
             {
                 PreAuthenticate = true;
             }
-#elif NET45 || NETSTANDARD
+#elif NET45 || NETSTANDARD || NETSTANDARD1_3
             PreAuthenticate = true;
 #endif
 

@@ -25,8 +25,8 @@ namespace Microsoft.AspNet.SignalR.WebSockets
     }
 }
 
-#elif NET40
-// Not required on this framework.
+#elif NET40 || NETSTANDARD1_3
+// Not supported on this framework.
 #else 
 #error Unsupported target framework.
 #endif

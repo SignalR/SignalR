@@ -1,12 +1,14 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+#if NETSTANDARD2_0 || NET40 || NET45
+
 using System;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Net;
 
-#if NETSTANDARD2_0 || NET45
+#if NETSTANDARD || NET45
 using System.Net.Http;
 #elif NET40
 // Not needed
@@ -37,7 +39,7 @@ namespace Microsoft.AspNet.SignalR.Client
             {
                 error = GetWebExceptionError(ex);
             }
-#if NET45 || NETSTANDARD2_0
+#if NET45 || NETSTANDARD
             else
             {
                 error = GetHttpClientException(ex);
@@ -87,7 +89,7 @@ namespace Microsoft.AspNet.SignalR.Client
             return error;
         }
 
-#if NET45 || NETSTANDARD2_0
+#if NET45 || NETSTANDARD
         [SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope", Justification = "The IDisposable object is the return value.")]
         private static SignalRError GetHttpClientException(Exception ex)
         {
@@ -133,3 +135,9 @@ namespace Microsoft.AspNet.SignalR.Client
 
     }
 }
+
+#elif NETSTANDARD1_3
+// Not needed
+#else 
+#error Unsupported target framework.
+#endif

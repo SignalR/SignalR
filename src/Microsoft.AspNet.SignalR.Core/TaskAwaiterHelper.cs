@@ -127,7 +127,7 @@ namespace Microsoft.AspNet.SignalR
     }
 }
 
-#elif NET40
+#elif NET40 || NETSTANDARD1_3
 // Not required on this framework.
 #else 
 #error Unsupported target framework.

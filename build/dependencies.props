@@ -29,7 +29,10 @@
   </PropertyGroup>
 
   <PropertyGroup Label="Package Versions: Pinned">
+    <!-- The released packages currently use 6.0.4 of JSON.NET, except for the netstandard build which uses 9.0.1 -->
     <Release_NewtonsoftJsonPackageVersion>6.0.4</Release_NewtonsoftJsonPackageVersion>
+    <ReleaseNetStandard_NewtonsoftJsonPackageVersion>9.0.1</ReleaseNetStandard_NewtonsoftJsonPackageVersion>
+
     <ServiceBus3_WindowsAzureServiceBusPackageVersion>3.4.5</ServiceBus3_WindowsAzureServiceBusPackageVersion>
   </PropertyGroup>
 </Project>
