@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <Title>Microsoft ASP.NET SignalR</Title>
+    <Description>Incredibly simple real-time web for .NET. This package pulls in the server components and JavaScript client required to use SignalR in an ASP.NET application.</Description>
+    <PackageTags>Microsoft AspNet SignalR AspNetSignalR websockets real-time realtime comet HTTP streaming</PackageTags>
+    <TargetFrameworks>net45</TargetFrameworks>
+
+    <IncludeBuildOutput>false</IncludeBuildOutput>
+    <DefineConstants>$(DefineConstants);CLIENT</DefineConstants>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Microsoft.AspNet.SignalR.JS\Microsoft.AspNet.SignalR.JS.csproj" />
+    <ProjectReference Include="..\Microsoft.AspNet.SignalR.SystemWeb\Microsoft.AspNet.SignalR.SystemWeb.csproj" />
+  </ItemGroup>
+
+</Project>
