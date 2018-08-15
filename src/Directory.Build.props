@@ -3,6 +3,7 @@
 
   <PropertyGroup>
     <Servicable>true</Servicable>
+    <EnableApiCheck>false</EnableApiCheck>
   </PropertyGroup>
 
   <ItemGroup>

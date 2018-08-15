@@ -14,23 +14,14 @@
     <Reference Include="Microsoft.CSharp" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="..\Microsoft.AspNet.SignalR.Core\Infrastructure\IPerformanceCounter.cs">
-      <Link>Infrastructure\IPerformanceCounter.cs</Link>
-    </Compile>
-    <Compile Include="..\Microsoft.AspNet.SignalR.Core\Infrastructure\IPerformanceCounterManager.cs">
-      <Link>Infrastructure\IPerformanceCounterManager.cs</Link>
-    </Compile>
-    <Compile Include="..\Microsoft.AspNet.SignalR.Core\Infrastructure\NoOpPerformanceCounter.cs">
-      <Link>Infrastructure\NoOpPerformanceCounter.cs</Link>
-    </Compile>
-    <Compile Include="..\Microsoft.AspNet.SignalR.Core\Infrastructure\PerformanceCounterAttribute.cs">
-      <Link>Infrastructure\PerformanceCounterAttribute.cs</Link>
-    </Compile>
-    <Compile Include="..\Microsoft.AspNet.SignalR.Core\Infrastructure\PerformanceCounterManager.cs">
-      <Link>Infrastructure\PerformanceCounterManager.cs</Link>
-    </Compile>
-    <Compile Include="..\Microsoft.AspNet.SignalR.Core\Infrastructure\PerformanceCounterWrapper.cs">
-      <Link>Infrastructure\PerformanceCounterWrapper.cs</Link>
-    </Compile>
+    <Compile Include="..\Microsoft.AspNet.SignalR.Core\Infrastructure\IPerformanceCounter.cs" Link="Infrastructure\IPerformanceCounter.cs" />
+    <Compile Include="..\Microsoft.AspNet.SignalR.Core\Infrastructure\IPerformanceCounterManager.cs" Link="Infrastructure\IPerformanceCounterManager.cs" />
+    <Compile Include="..\Microsoft.AspNet.SignalR.Core\Infrastructure\NoOpPerformanceCounter.cs" Link="Infrastructure\NoOpPerformanceCounter.cs" />
+    <Compile Include="..\Microsoft.AspNet.SignalR.Core\Infrastructure\PerformanceCounterAttribute.cs" Link="Infrastructure\PerformanceCounterAttribute.cs" />
+    <Compile Include="..\Microsoft.AspNet.SignalR.Core\Infrastructure\PerformanceCounterManager.cs" Link="Infrastructure\PerformanceCounterManager.cs" />
+    <Compile Include="..\Microsoft.AspNet.SignalR.Core\Infrastructure\PerformanceCounterWrapper.cs" Link="Infrastructure\PerformanceCounterWrapper.cs" />
+
+    <!-- Only used in .NET 4.0, but it's got #if defs so it doesn't need to be conditional -->
+    <Compile Include="..\Common\AssemblyMetadataAttribute.cs" Link="AssemblyMetadataAttribute.cs" />
   </ItemGroup>
 </Project>
