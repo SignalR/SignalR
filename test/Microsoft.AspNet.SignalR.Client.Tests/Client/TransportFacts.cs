@@ -232,18 +232,18 @@ namespace Microsoft.AspNet.SignalR.Client.Tests
         }
 
         [Theory]
-        [InlineData(WebSocketState.Aborted)]
-        [InlineData(WebSocketState.Closed)]
-        [InlineData(WebSocketState.CloseReceived)]
-        [InlineData(WebSocketState.CloseSent)]
-        [InlineData(WebSocketState.Connecting)]
-        public void WebSocketSendReturnsAFaultedTaskWhenNotConnected(WebSocketState state)
+        [InlineData(InternalWebSocketState.Aborted)]
+        [InlineData(InternalWebSocketState.Closed)]
+        [InlineData(InternalWebSocketState.CloseReceived)]
+        [InlineData(InternalWebSocketState.CloseSent)]
+        [InlineData(InternalWebSocketState.Connecting)]
+        public void WebSocketSendReturnsAFaultedTaskWhenNotConnected(InternalWebSocketState state)
         {
             var mockConnection = new Mock<Client.IConnection>(MockBehavior.Strict);
             var mockWebSocket = new Mock<WebSocket>(MockBehavior.Strict);
             var mockWebSocketHandler = new Mock<ClientWebSocketHandler>();
 
-            mockWebSocket.SetupGet(ws => ws.State).Returns(state);
+            mockWebSocket.SetupGet(ws => ws.State).Returns((WebSocketState)state);
             mockConnection.Setup(c => c.OnError(It.IsAny<InvalidOperationException>()));
             mockWebSocketHandler.Object.WebSocket = mockWebSocket.Object;
 
@@ -264,6 +264,18 @@ namespace Microsoft.AspNet.SignalR.Client.Tests
             Assert.True(new WebSocketTransport().SupportsKeepAlive);
             Assert.True(new ServerSentEventsTransport().SupportsKeepAlive);
             Assert.False(new LongPollingTransport().SupportsKeepAlive);
+        }
+
+        // Copy of WebSocketState because Xunit refuses to serialize WebSocketState because it's in a framework assembly
+        public enum InternalWebSocketState
+        {
+            None = WebSocketState.None,
+            Connecting = WebSocketState.Connecting,
+            Open = WebSocketState.Open,
+            CloseSent = WebSocketState.CloseSent,
+            CloseReceived = WebSocketState.CloseReceived,
+            Closed = WebSocketState.Closed,
+            Aborted = WebSocketState.Aborted
         }
     }
 }

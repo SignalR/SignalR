@@ -1375,7 +1375,7 @@ namespace Microsoft.AspNet.SignalR
             {
                 action();
             }, state: null);
-#elif NET45 || NETSTANDARD || SERVER
+#elif NET45 || NETSTANDARD1_3 || NETSTANDARD2_0 || NET461 // Stress uses this component and builds on net461
             Task.Run(() =>
             {
                 action();

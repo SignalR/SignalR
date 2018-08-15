@@ -1,14 +1,12 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-#if NETSTANDARD2_0 || NET40 || NET45
-
 using System;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Net;
 
-#if NETSTANDARD || NET45
+#if NETSTANDARD1_3 || NETSTANDARD2_0 || NET45
 using System.Net.Http;
 #elif NET40
 // Not needed
@@ -30,31 +28,35 @@ namespace Microsoft.AspNet.SignalR.Client
         [SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope", Justification = "The IDisposable object is the return value.")]
         public static SignalRError GetError(this Exception ex)
         {
+            // PORT: This logic was simplified when unifying the build across all frameworks
             ex = ex.Unwrap();
-            SignalRError error;
 
-            var clientException = ex as WebException;
-
-            if (clientException != null)
+#if NET40
+            if (ex is WebException webEx)
             {
-                error = GetWebExceptionError(ex);
+                return GetWebExceptionError(webEx);
             }
-#if NET45 || NETSTANDARD
-            else
-            {
-                error = GetHttpClientException(ex);
-            }
-#elif NET40
-            else
-            {
-                error = new SignalRError(ex);
-            }
+#elif NET45 || NETSTANDARD1_3 || NETSTANDARD2_0
+// Not supported on this framework
 #else
 #error Unsupported framework.
 #endif
-            return error;
+
+#if NET45 || NETSTANDARD1_3 || NETSTANDARD2_0
+            if(ex is HttpClientException httpClientEx)
+            {
+                return GetHttpClientException(httpClientEx);
+            }
+#elif NET40
+// Not supported on this framework
+#else
+#error Unsupported framework.
+#endif
+
+            return new SignalRError(ex);
         }
 
+#if NET40
         [SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope", Justification = "The IDisposable object is the return value.")]
         private static SignalRError GetWebExceptionError(Exception ex)
         {
@@ -88,8 +90,13 @@ namespace Microsoft.AspNet.SignalR.Client
 
             return error;
         }
+#elif NET45 || NETSTANDARD1_3 || NETSTANDARD2_0
+// Not supported on this framework
+#else
+#error Unsupported framework.
+#endif
 
-#if NET45 || NETSTANDARD
+#if NET45 || NETSTANDARD1_3 || NETSTANDARD2_0
         [SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope", Justification = "The IDisposable object is the return value.")]
         private static SignalRError GetHttpClientException(Exception ex)
         {
@@ -135,9 +142,3 @@ namespace Microsoft.AspNet.SignalR.Client
 
     }
 }
-
-#elif NETSTANDARD1_3
-// Not needed
-#else 
-#error Unsupported target framework.
-#endif

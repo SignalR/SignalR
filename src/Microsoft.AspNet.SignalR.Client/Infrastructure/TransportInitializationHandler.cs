@@ -146,10 +146,12 @@ namespace Microsoft.AspNet.SignalR.Client.Infrastructure
 
         private static void Dispatch(Action callback)
         {
-#if NETFX_CORE || NETSTANDARD
+#if NET45 || NETSTANDARD1_3 || NETSTANDARD2_0
             Task.Run(() =>
-#else
+#elif NET40
             ThreadPool.QueueUserWorkItem(_ =>
+#else
+#error Unsupported framework.
 #endif
             callback());
         }

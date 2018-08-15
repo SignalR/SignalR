@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -8,7 +8,6 @@ using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR.WebSockets;
 using Moq;
 using Xunit;
-using Xunit.Extensions;
 
 namespace Microsoft.AspNet.SignalR.Tests.Owin
 {
@@ -73,15 +72,15 @@ namespace Microsoft.AspNet.SignalR.Tests.Owin
         }
 
         [Theory]
-        [InlineData(WebSocketState.Closed)]
-        [InlineData(WebSocketState.CloseSent)]
-        [InlineData(WebSocketState.Aborted)]
-        public async Task CloseNoopsIfInTerminalState(WebSocketState state)
+        [InlineData(InternalWebSocketState.Closed)]
+        [InlineData(InternalWebSocketState.CloseSent)]
+        [InlineData(InternalWebSocketState.Aborted)]
+        public async Task CloseNoopsIfInTerminalState(InternalWebSocketState state)
         {
             var webSocket = new Mock<WebSocket>();
-            var webSocketHandler = new Mock<WebSocketHandler>(64 * 1024) {CallBase = true};
+            var webSocketHandler = new Mock<WebSocketHandler>(64 * 1024) { CallBase = true };
 
-            webSocket.Setup(m => m.State).Returns(state);
+            webSocket.Setup(m => m.State).Returns((WebSocketState)state);
             webSocketHandler.Object.WebSocket = webSocket.Object;
 
             await webSocketHandler.Object.CloseAsync();
@@ -90,17 +89,17 @@ namespace Microsoft.AspNet.SignalR.Tests.Owin
         }
 
         [Theory]
-        [InlineData(WebSocketState.Closed)]
-        [InlineData(WebSocketState.CloseSent)]
-        [InlineData(WebSocketState.CloseReceived)]
-        [InlineData(WebSocketState.Aborted)]
-        [InlineData(WebSocketState.Connecting)]
-        public async Task SendNoopsIfNotOpen(WebSocketState state)
+        [InlineData(InternalWebSocketState.Closed)]
+        [InlineData(InternalWebSocketState.CloseSent)]
+        [InlineData(InternalWebSocketState.CloseReceived)]
+        [InlineData(InternalWebSocketState.Aborted)]
+        [InlineData(InternalWebSocketState.Connecting)]
+        public async Task SendNoopsIfNotOpen(InternalWebSocketState state)
         {
             var webSocket = new Mock<WebSocket>();
-            var webSocketHandler = new Mock<WebSocketHandler>(64 * 1024) { CallBase = true};
+            var webSocketHandler = new Mock<WebSocketHandler>(64 * 1024) { CallBase = true };
 
-            webSocket.Setup(m => m.State).Returns(state);
+            webSocket.Setup(m => m.State).Returns((WebSocketState)state);
             webSocketHandler.Object.WebSocket = webSocket.Object;
 
             await webSocketHandler.Object.SendAsync("Hello");
@@ -137,6 +136,18 @@ namespace Microsoft.AspNet.SignalR.Tests.Owin
             afterWebSocket.Verify(m => m.State, Times.Never());
             afterWebSocket.Verify(m => m.SendAsync(It.IsAny<ArraySegment<byte>>(), WebSocketMessageType.Text, true, CancellationToken.None), Times.Never());
             afterWebSocket.Verify(m => m.CloseOutputAsync(WebSocketCloseStatus.NormalClosure, "", CancellationToken.None), Times.Never());
+        }
+
+        // Copy of WebSocketState because Xunit refuses to serialize WebSocketState because it's in a framework assembly
+        public enum InternalWebSocketState
+        {
+            None = WebSocketState.None,
+            Connecting = WebSocketState.Connecting,
+            Open = WebSocketState.Open,
+            CloseSent = WebSocketState.CloseSent,
+            CloseReceived = WebSocketState.CloseReceived,
+            Closed = WebSocketState.Closed,
+            Aborted = WebSocketState.Aborted
         }
     }
 }

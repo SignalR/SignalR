@@ -47,10 +47,10 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
                 return token.Register(callback, state);
             };
 
-#if NETFX_CORE || PORTABLE || NETSTANDARD
+            // PORT: The code is defensive enough that we could just remove the #ifs here.
+#if NETSTANDARD1_3 || NETSTANDARD2_0
             return fallback;
-#else
-
+#elif NET40 || NET45
             MethodInfo methodInfo = null;
 
             try
@@ -85,6 +85,8 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
                 // If this fails for whatever reason just fallback to normal register
                 return fallback;
             }
+#else
+#error Unsupported framework.
 #endif
         }
 

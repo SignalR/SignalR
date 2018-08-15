@@ -1,7 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-#if NET40 || NET45 || NETSTANDARD2_0
+#if NET40
 
 using System;
 using System.IO;
@@ -39,7 +39,7 @@ namespace Microsoft.AspNet.SignalR.Client.Http
     }
 }
 
-#elif NETSTANDARD1_3
+#elif NETSTANDARD1_3 || NET45 || NETSTANDARD2_0
 // Not supported on this framework.
 #else 
 #error Unsupported target framework.

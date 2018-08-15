@@ -101,7 +101,7 @@ namespace Microsoft.AspNet.SignalR.Client.Http
     }
 }
 
-#elif NET45 || NETSTANDARD
+#elif NET45 || NETSTANDARD1_3 || NETSTANDARD2_0
 // See Http/DefaultHttpClient.cs
 #else 
 #error Unsupported target framework.
