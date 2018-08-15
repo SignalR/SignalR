@@ -77,7 +77,7 @@ namespace Microsoft.AspNet.SignalR.Client.Http
 
             // Write the post data to the request stream
             return request.GetHttpRequestStreamAsync()
-                .Then(stream => stream.WriteAsync(buffer).Then(() => stream.Dispose()))
+                .Then(stream => stream.WriteAsync(buffer, 0, buffer.Length).Then(() => stream.Dispose()))
                 .Then(() => request.GetHttpResponseAsync());
         }
 #endif

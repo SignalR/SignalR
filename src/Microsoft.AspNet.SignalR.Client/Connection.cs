@@ -903,7 +903,7 @@ namespace Microsoft.AspNet.SignalR.Client
         [SuppressMessage("Microsoft.Design", "CA1062:Validate arguments of public methods", MessageId = "0", Justification = "This is called by the transport layer")]
         void IConnection.PrepareRequest(IRequest request)
         {
-            // PORT: Previously, this string differed based on the platform the app was running on (NET4, etc.). Now it will always be NetStadnard.
+            // PORT: Previously, this string differed based on the platform the app was running on (NET4, NET45,, etc.). Now it will always be NetStadnard.
             request.UserAgent = CreateUserAgentString("SignalR.Client.NetStandard");
             request.SetRequestHeaders(Headers);
         }
