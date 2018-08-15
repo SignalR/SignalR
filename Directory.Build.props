@@ -15,6 +15,7 @@
     <RepositoryUrl>https://github.com/SignalR/SignalR</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <RepositoryRoot>$(MSBuildThisFileDirectory)</RepositoryRoot>
+    <AssemblyOriginatorKeyFile>$(MSBuildThisFileDirectory)build\35MSSharedLib1024.snk</AssemblyOriginatorKeyFile>
 
     <!-- The key doesn't have the private part with it, so we DelaySign when building for CI -->
     <DelaySign Condition="'$(CI)' == 'true'">true</DelaySign>
@@ -44,7 +45,6 @@
       <PackageLicenseUrl>http://www.microsoft.com/web/webpi/eula/net_library_eula_ENU.htm</PackageLicenseUrl>
       <PackageProjectUrl>http://www.asp.net/signalr</PackageProjectUrl>
       <PackageReleaseNotes>https://github.com/SignalR/SignalR/releases</PackageReleaseNotes>
-      <AssemblyOriginatorKeyFile>$(MSBuildThisFileDirectory)build\35MSSharedLib1024.snk</AssemblyOriginatorKeyFile>
     </PropertyGroup>
   </Target>
 
