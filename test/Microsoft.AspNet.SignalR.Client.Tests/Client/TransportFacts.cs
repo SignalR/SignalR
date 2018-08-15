@@ -137,11 +137,14 @@ namespace Microsoft.AspNet.SignalR.Client.Tests
 
             await onErrorWh.Task.OrTimeout();
 
+            // If the test is running on a slower machine or with a lot of other parallel threads,
+            // it could take longer than 2 seconds, which means the transport will poll again and get the error
+            // multiple times, so we use Times.AtLeastOnce to make the test more resiliant.
             mockLongPollingTransport
                 .Verify(
                     t => t.OnError(It.IsAny<IConnection>(),
                             It.Is<OperationCanceledException>(e => string.Equals(e.Message, Resources.Error_TaskCancelledException))),
-                    Times.Once());
+                    Times.AtLeastOnce());
         }
 
         [Fact]
