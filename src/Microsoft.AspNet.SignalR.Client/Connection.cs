@@ -689,6 +689,7 @@ namespace Microsoft.AspNet.SignalR.Client
                     _connectionData = null;
 
                     // Clear the buffer
+                    // PORT: In 2.3.0 this was only present in the UWP and PCL versions.
                     _traceWriter.Flush();
 
                     // TODO: Do we want to trigger Closed if we are connecting?
@@ -845,6 +846,7 @@ namespace Microsoft.AspNet.SignalR.Client
                     });
 
             // Clear the buffer
+            // PORT: In 2.3.0 this was only present in the UWP and PCL versions.
             _traceWriter.Flush();
 
             if (Reconnecting != null)
@@ -901,6 +903,7 @@ namespace Microsoft.AspNet.SignalR.Client
         [SuppressMessage("Microsoft.Design", "CA1062:Validate arguments of public methods", MessageId = "0", Justification = "This is called by the transport layer")]
         void IConnection.PrepareRequest(IRequest request)
         {
+            // PORT: Previously, this string differed based on the platform the app was running on (NET4, etc.). Now it will always be NetStadnard.
             request.UserAgent = CreateUserAgentString("SignalR.Client.NetStandard");
             request.SetRequestHeaders(Headers);
         }
@@ -968,6 +971,7 @@ namespace Microsoft.AspNet.SignalR.Client
                 Debug.WriteLine(value);
             }
 
+            // PORT: This logic, and the associated _buffer field and Flush method, were only in the .NET Standard build in 2.3.0
             public override void Write(char value)
             {
                 lock (_buffer)

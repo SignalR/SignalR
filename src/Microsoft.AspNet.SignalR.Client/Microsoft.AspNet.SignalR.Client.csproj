@@ -22,6 +22,9 @@
     <Compile Include="..\Microsoft.AspNet.SignalR.Core\Owin\WebSockets\WebSocketMessageReader.cs" Link="Transports\WebSockets\WebSocketMessageReader.cs" />
     <Compile Include="..\Microsoft.AspNet.SignalR.Core\TaskAsyncHelper.cs" Link="Infrastructure\TaskAsyncHelper.cs" />
     <Compile Include="..\Microsoft.AspNet.SignalR.Core\TaskAwaiterHelper.cs" Link="Infrastructure\TaskAwaiterHelper.cs" />
+
+    <!-- Only used in .NET 4.0, but it's got #if defs so it doesn't need to be conditional -->
+    <Compile Include="..\Common\AssemblyMetadataAttribute.cs" Link="AssemblyMetadataAttribute.cs" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(TargetFramework)' == 'net40'">

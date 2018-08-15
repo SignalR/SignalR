@@ -78,12 +78,10 @@ namespace Microsoft.AspNet.SignalR.Client.Http
         /// <param name="req">Request object</param>
         private void PrepareClientRequest(HttpWebRequestWrapper req)
         {
-#if NET4
             if (_connection.Certificates != null)
             {
                 req.AddClientCerts(_connection.Certificates);
             }
-#endif
 
             if (_connection.CookieContainer != null)
             {

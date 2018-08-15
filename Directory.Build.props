@@ -8,11 +8,6 @@
   <Import Project="build\sources.props" />
 
   <PropertyGroup>
-    <!-- Work around https://github.com/aspnet/BuildTools/issues/725 -->
-    <_ReferencesInternalAspNetCoreSdk>false</_ReferencesInternalAspNetCoreSdk>
-  </PropertyGroup>
-
-  <PropertyGroup>
     <CodeAnalysisRuleSet>$(MSBuildThisFileDirectory)build\Microsoft.AspNet.SignalR.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
 

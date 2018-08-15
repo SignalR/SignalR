@@ -2,6 +2,7 @@
   <PropertyGroup Label="Package Versions: Auto">
     <CastleCorePackageVersion>4.0.0</CastleCorePackageVersion>
     <CmdLinePackageVersion>1.0.7.509</CmdLinePackageVersion>
+    <InternalAspNetCoreSdkPackageVersion>3.0.0-alpha1-20180810.1</InternalAspNetCoreSdkPackageVersion>
     <jQueryPackageVersion>1.6.4</jQueryPackageVersion>
     <MicrosoftNETTestSdkPackageVersion>15.8.0</MicrosoftNETTestSdkPackageVersion>
     <MicrosoftOwinCorsPackageVersion>2.1.0</MicrosoftOwinCorsPackageVersion>
