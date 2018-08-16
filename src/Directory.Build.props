@@ -4,6 +4,10 @@
   <PropertyGroup>
     <Servicable>true</Servicable>
     <EnableApiCheck>false</EnableApiCheck>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+
+    <!-- Suppress missing documentation warnings -->
+    <NoWarn>$(NoWarn);CS1591</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
