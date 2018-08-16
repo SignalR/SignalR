@@ -1,6 +1,8 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+#if NET45 || NETSTANDARD1_3 || NETSTANDARD2_0
+
 using System;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
@@ -36,10 +38,8 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
             }
             else
             {
-#if !PORTABLE && !NETFX_CORE
                 // Set has been called multiple times, fail
                 Debug.Fail("Multiple calls to Disposer.Set(IDisposable) without calling Disposer.Dispose()");
-#endif
             }
         }
 
@@ -61,3 +61,9 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
         }
     }
 }
+
+#elif NET40
+// Not used in this framework.
+#else 
+#error Unsupported target framework.
+#endif

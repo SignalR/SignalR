@@ -1,0 +1,43 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <Title>Microsoft ASP.NET SignalR JavaScript Client</Title>
+    <Description>JavaScript client for ASP.NET SignalR.</Description>
+
+    <NuspecFile>$(MSBuildThisFileDirectory)$(MSBuildProjectName).nuspec</NuspecFile>
+    <NuspecProperties>PackageVersion=$(VersionPrefix)-$(VersionSuffix);Configuration=$(Configuration)</NuspecProperties>
+
+    <!-- This is just a placeholder project for some JavaScript build tools, but we need a TFM to make MSBuild happy -->
+    <TargetFramework>netstandard1.0</TargetFramework>
+
+    <!-- Suppress the DLL from the package -->
+    <IncludeBuildOutput>false</IncludeBuildOutput>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="jQuery" Version="$(jQueryPackageVersion)" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <JSCompile Include="jquery.signalr.*.js" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <GeneratedJavaScript Include="$(OutDir)jquery.signalR.js" />
+    <GeneratedJavaScript Include="$(OutDir)jquery.signalR.min.js" />
+  </ItemGroup>
+
+  <Target Name="CompileJs" BeforeTargets="Build" Inputs="@(JSCompile)" Outputs="@(GeneratedJavaScript)">
+    <Exec Command="powershell -NoProfile -ExecutionPolicy Bypass .\build.ps1 $(OutputPath)" 
+          WorkingDirectory="$(ProjectDir)"
+          Condition=" '$(OS)' == 'Windows_NT'" />
+
+    <!-- Include in NuGet package -->
+    <ItemGroup>
+      <None Include="@(GeneratedJavaScript)">
+        <Pack>true</Pack>
+        <PackagePath>content/Scripts</PackagePath>
+      </None>
+    </ItemGroup>
+  </Target>
+</Project>

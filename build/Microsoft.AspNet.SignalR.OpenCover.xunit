@@ -1,9 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<xunit>
-  <assemblies>
-    <!-- NOTE: OpenCover requires shadow-copy to be false -->
-    <assembly filename="Microsoft.AspNet.SignalR.Tests\Microsoft.AspNet.SignalR.Tests.dll" shadow-copy="false" />
-    <assembly filename="Microsoft.AspNet.SignalR.Client.Tests\Microsoft.AspNet.SignalR.Client.Tests.dll" shadow-copy="false" />
-    <assembly filename="Microsoft.AspNet.SignalR.FunctionalTests\bin\Microsoft.AspNet.SignalR.FunctionalTests.dll" shadow-copy="false" />
-  </assemblies>
-</xunit>

@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <DefineConstants>$(DefineConstants);NET45</DefineConstants>
+    <TargetFrameworks>$(DefaultTestFrameworks)</TargetFrameworks>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Owin.Cors" Version="$(MicrosoftOwinCorsPackageVersion)" />
+    <PackageReference Include="Microsoft.Owin.Hosting" Version="$(MicrosoftOwinHostingPackageVersion)" />
+    <PackageReference Include="Microsoft.Owin.Security.Cookies" Version="$(MicrosoftOwinSecurityCookiesPackageVersion)" />
+    <PackageReference Include="Microsoft.Owin.Testing" Version="$(MicrosoftOwinTestingPackageVersion)" />
+    <PackageReference Include="Newtonsoft.Json" Version="$(Release_NewtonsoftJsonPackageVersion)" />
+    <PackageReference Include="xunit.abstractions" Version="$(XunitAbstractionsPackageVersion)" />
+    <PackageReference Include="xunit.assert" Version="$(XunitAssertPackageVersion)" />
+    <PackageReference Include="xunit.extensibility.core" Version="$(XunitExtensibilityCorePackageVersion)" />
+    <PackageReference Include="xunit.extensibility.execution" Version="$(XunitExtensibilityExecutionPackageVersion)" />
+
+    <Reference Include="Microsoft.Build.Framework" />
+    <Reference Include="Microsoft.Build.Utilities.v4.0" />
+    <Reference Include="System" />
+    <Reference Include="System.ComponentModel.DataAnnotations" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="System.Data.Entity" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Net.Http" />
+    <Reference Include="System.Net.Http.WebRequest" />
+    <Reference Include="System.Web" />
+    <Reference Include="System.Configuration" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Management" />
+    <Reference Include="System.Web.ApplicationServices" />
+    <Reference Include="System.Web.DynamicData" />
+    <Reference Include="System.Web.Entity" />
+    <Reference Include="System.Web.Extensions" />
+    <Reference Include="System.Xml" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="Microsoft.CSharp" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="..\..\samples\Microsoft.AspNet.SignalR.Samples\Hubs\Auth\AdminAuthHub.cs">
+      <Link>Hubs\AdminAuthHub.cs</Link>
+    </Compile>
+    <Compile Include="..\..\samples\Microsoft.AspNet.SignalR.Samples\Hubs\Auth\AuthHub.cs">
+      <Link>Hubs\AuthHub.cs</Link>
+    </Compile>
+    <Compile Include="..\..\samples\Microsoft.AspNet.SignalR.Samples\Hubs\Auth\AuthorizeClaimsAttribute.cs">
+      <Link>Hubs\AuthorizeClaimsAttribute.cs</Link>
+    </Compile>
+    <Compile Include="..\..\samples\Microsoft.AspNet.SignalR.Samples\Hubs\Auth\HeaderAuthHub.cs">
+      <Link>Hubs\HeaderAuthHub.cs</Link>
+    </Compile>
+    <Compile Include="..\..\samples\Microsoft.AspNet.SignalR.Samples\Hubs\Auth\IncomingAuthHub.cs">
+      <Link>Hubs\IncomingAuthHub.cs</Link>
+    </Compile>
+    <Compile Include="..\..\samples\Microsoft.AspNet.SignalR.Samples\Hubs\Auth\InheritAuthHub.cs">
+      <Link>Hubs\InheritAuthHub.cs</Link>
+    </Compile>
+    <Compile Include="..\..\samples\Microsoft.AspNet.SignalR.Samples\Hubs\Auth\InvokeAuthHub.cs">
+      <Link>Hubs\InvokeAuthHub.cs</Link>
+    </Compile>
+    <Compile Include="..\..\samples\Microsoft.AspNet.SignalR.Samples\Hubs\Auth\NoAuthHub.cs">
+      <Link>Hubs\NoAuthHub.cs</Link>
+    </Compile>
+    <Compile Include="..\..\samples\Microsoft.AspNet.SignalR.Samples\Hubs\Auth\UserAndRoleAuthHub.cs">
+      <Link>Hubs\UserAndRoleAuthHub.cs</Link>
+    </Compile>
+    <Compile Include="..\..\samples\Microsoft.AspNet.SignalR.Samples\Hubs\ConnectDisconnect\Status.cs">
+      <Link>Hubs\Status.cs</Link>
+    </Compile>
+    <Compile Include="..\..\samples\Microsoft.AspNet.SignalR.Samples\Hubs\DemoHub\DemoHub.cs">
+      <Link>Hubs\DemoHub.cs</Link>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\Microsoft.AspNet.SignalR.Core\Microsoft.AspNet.SignalR.Core.csproj" PrivateAssets="All" />
+    <ProjectReference Include="..\..\src\Microsoft.AspNet.SignalR.Client\Microsoft.AspNet.SignalR.Client.csproj" PrivateAssets="All" />
+    <ProjectReference Include="..\..\src\Microsoft.AspNet.SignalR.StressServer\Microsoft.AspNet.SignalR.StressServer.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Infrastructure\IIS\site.web.config" />
+  </ItemGroup>
+</Project>

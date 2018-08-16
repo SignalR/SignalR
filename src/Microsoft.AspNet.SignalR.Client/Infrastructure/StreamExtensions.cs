@@ -1,6 +1,8 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+#if NET40
+
 using System;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
@@ -11,26 +13,16 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
     internal static class StreamExtensions
     {
         [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "Exceptions are flowed back to the caller.")]
-        public static Task<int> ReadAsync(this Stream stream, byte[] buffer)
+        public static Task<int> ReadAsync(this Stream stream, byte[] buffer, int offset, int length)
         {
-#if NETFX_CORE || NET45 || NETSTANDARD
-            return stream.ReadAsync(buffer, 0, buffer.Length);
-#else
-            return FromAsync(cb => stream.BeginRead(buffer, 0, buffer.Length, cb, null), ar => stream.EndRead(ar));
-#endif
+            return FromAsync(cb => stream.BeginRead(buffer, offset, length, cb, null), ar => stream.EndRead(ar));
         }
 
         [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode", Justification = "This is a shared class.")]
-        public static Task WriteAsync(this Stream stream, byte[] buffer)
+        public static Task WriteAsync(this Stream stream, byte[] buffer, int offset, int length)
         {
-#if NETFX_CORE || NET45 || NETSTANDARD
-            return stream.WriteAsync(buffer, 0, buffer.Length);
-#else
-            return FromAsync(cb => stream.BeginWrite(buffer, 0, buffer.Length, cb, null), WrapEndWrite(stream));
-#endif
+            return FromAsync(cb => stream.BeginWrite(buffer, offset, length, cb, null), WrapEndWrite(stream));
         }
-
-#if !(NETFX_CORE || NET45 || NETSTANDARD)
 
         [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode", Justification = "This is a shared class.")]
         private static Func<IAsyncResult, object> WrapEndWrite(Stream stream)
@@ -85,6 +77,10 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
                 tcs.TrySetException(ex);
             }
         }
-#endif
     }
 }
+#elif NET45 || NETSTANDARD1_3 || NETSTANDARD2_0
+// Not needed on this framework
+#else
+#error Unsupported framework.
+#endif

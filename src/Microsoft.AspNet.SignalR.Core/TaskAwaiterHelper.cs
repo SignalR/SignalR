@@ -1,5 +1,7 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+#if NET45 || NETSTANDARD2_0 || SERVER
 
 using System;
 using System.Runtime.CompilerServices;
@@ -124,3 +126,10 @@ namespace Microsoft.AspNet.SignalR
         }
     }
 }
+
+#elif NET40 || NETSTANDARD1_3
+// Not required on this framework.
+#else 
+#error Unsupported target framework.
+#endif
+

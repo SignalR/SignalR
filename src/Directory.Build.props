@@ -1,0 +1,16 @@
+<Project>
+  <Import Project="..\Directory.Build.props" Condition="Exists('..\Directory.Build.props')" />
+
+  <PropertyGroup>
+    <Servicable>true</Servicable>
+    <EnableApiCheck>false</EnableApiCheck>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+
+    <!-- Suppress missing documentation warnings -->
+    <NoWarn>$(NoWarn);CS1591</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Internal.AspNetCore.Sdk" PrivateAssets="All" Version="$(InternalAspNetCoreSdkPackageVersion)" />
+  </ItemGroup>
+</Project>

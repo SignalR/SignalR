@@ -12,7 +12,6 @@
     <RootNamespace>Microsoft.AspNet.SignalR.Samples</RootNamespace>
     <AssemblyName>Microsoft.AspNet.SignalR.Samples</AssemblyName>
     <UseIISExpress>true</UseIISExpress>
-    <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\..\</SolutionDir>
     <RestorePackages>true</RestorePackages>
     <IISExpressSSLPort />
     <IISExpressAnonymousAuthentication />
@@ -50,7 +49,6 @@
     <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Microsoft.CSharp" />
     <Reference Include="Microsoft.Owin, Version=3.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\packages\Microsoft.Owin.3.0.0\lib\net45\Microsoft.Owin.dll</HintPath>
@@ -78,6 +76,12 @@
     <Reference Include="Owin">
       <HintPath>..\..\packages\Owin.1.0\lib\net40\Owin.dll</HintPath>
     </Reference>
+    <Reference Include="System.Web.Cors, Version=5.2.2.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\packages\Microsoft.AspNet.Cors.5.2.2\lib\net45\System.Web.Cors.dll</HintPath>
+    </Reference>
+
+    <Reference Include="Microsoft.CSharp" />
     <Reference Include="System" />
     <Reference Include="System.ComponentModel.DataAnnotations" />
     <Reference Include="System.Data" />
@@ -86,10 +90,6 @@
     <Reference Include="System.Web" />
     <Reference Include="System.Configuration" />
     <Reference Include="System.Web.ApplicationServices" />
-    <Reference Include="System.Web.Cors, Version=5.2.2.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\packages\Microsoft.AspNet.Cors.5.2.2\lib\net45\System.Web.Cors.dll</HintPath>
-    </Reference>
     <Reference Include="System.Web.DynamicData" />
     <Reference Include="System.Web.Entity" />
     <Reference Include="System.Web.Extensions" />
@@ -239,10 +239,7 @@
     </Content>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="..\..\src\Common\CommonVersionInfo.cs">
-      <Link>Properties\CommonVersionInfo.cs</Link>
-    </Compile>
-    <Compile Include="..\..\tests\Microsoft.AspNet.SignalR.Tests.Common\Connections\AuthenticatedEchoConnection.cs">
+    <Compile Include="..\..\test\Microsoft.AspNet.SignalR.Tests.Common\Connections\AuthenticatedEchoConnection.cs">
       <Link>Connections\AuthenticatedEchoConnection.cs</Link>
     </Compile>
     <Compile Include="App_Start\BackgroundThread.cs" />
@@ -393,39 +390,19 @@
   </ItemGroup>
   <ItemGroup />
   <ItemGroup>
-    <ProjectReference Include="..\..\src\Microsoft.AspNet.SignalR.Core\Microsoft.AspNet.SignalR.Core.csproj">
-      <Project>{1B9A82C4-BCA1-4834-A33E-226F17BE070B}</Project>
-      <Name>Microsoft.AspNet.SignalR.Core</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\src\Microsoft.AspNet.SignalR.Redis\Microsoft.AspNet.SignalR.Redis.csproj">
-      <Project>{fd48578f-e825-47ea-a846-9764e01f523a}</Project>
-      <Name>Microsoft.AspNet.SignalR.Redis</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\src\Microsoft.AspNet.SignalR.ServiceBus\Microsoft.AspNet.SignalR.ServiceBus.csproj">
-      <Project>{3da5e69c-ba4c-4ec1-9fde-688a1bc34b17}</Project>
-      <Name>Microsoft.AspNet.SignalR.ServiceBus</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\src\Microsoft.AspNet.SignalR.SqlServer\Microsoft.AspNet.SignalR.SqlServer.csproj">
-      <Project>{efcf27ec-cb9b-4f3a-91be-154b8ab5b5e0}</Project>
-      <Name>Microsoft.AspNet.SignalR.SqlServer</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Microsoft.AspNet.SignalR.Samples.VB\Microsoft.AspNet.SignalR.Samples.VB.vbproj">
-      <Project>{44ffd296-2fc1-4159-80ac-4f6c8ae9887c}</Project>
-      <Name>Microsoft.AspNet.SignalR.Samples.VB</Name>
-    </ProjectReference>
+    <ProjectReference Include="..\..\src\Microsoft.AspNet.SignalR.Core\Microsoft.AspNet.SignalR.Core.csproj" />
+    <ProjectReference Include="..\Microsoft.AspNet.SignalR.Samples.VB\Microsoft.AspNet.SignalR.Samples.VB.vbproj" />
+
+    <!-- Order-only dependencies -->
+    <ProjectReference Include="..\..\src\Microsoft.AspNet.SignalR.JS\Microsoft.AspNet.SignalR.JS.csproj" ReferenceOutputAssembly="false" />
+    <ProjectReference Include="..\..\src\Microsoft.AspNet.SignalR.Utils\Microsoft.AspNet.SignalR.Utils.csproj" ReferenceOutputAssembly="false" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="SignalR.Master" />
   </ItemGroup>
-  <PropertyGroup Condition=" '$(OS)' == 'Windows_NT'">
-    <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>
-    <VSToolsPath Condition="'$(VSToolsPath)' == ''">$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)</VSToolsPath>
-  </PropertyGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
-  <Import Project="$(VSToolsPath)\WebApplications\Microsoft.WebApplication.targets" Condition="'$(VSToolsPath)' != ''" />
-  <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v10.0\WebApplications\Microsoft.WebApplication.targets" Condition="false" />
-  <Import Project="$(SolutionDir)\.nuget\NuGet.targets" />
-  <Import Project="$(MSBuildExtensionsPath)\Microsoft\VisualStudio\v10.0\WebApplications\Microsoft.WebApplication.targets" Condition="false" />
+  <Import Project="$(WAPToolsPath)\WebApplications\Microsoft.WebApplication.targets" Condition="'$(VSToolsPath)' != ''" />
+  <Import Project="..\..\.nuget\NuGet.targets" />
   <ProjectExtensions>
     <VisualStudio>
       <FlavorProperties GUID="{349C5851-65DF-11DA-9384-00065B846F21}">
@@ -453,19 +430,12 @@
     <PostBuildEvent>
     </PostBuildEvent>
   </PropertyGroup>
-  <!-- To modify your build process, add your task inside one of the targets below and uncomment it.
-       Other similar extension points exist, see Microsoft.Common.targets.
-  <Target Name="AfterBuild">
-  </Target>
-  -->
-  <Target Name="BeforeBuild">
-    <Copy Condition="'$(ArtifactsDir)' == '' And '$(OS)' == 'Windows_NT'" SourceFiles="$(SolutionDir)src\Microsoft.AspNet.SignalR.Client.JS\bin\jquery.signalR.js" DestinationFiles="Scripts\jquery.signalR.js" />
-    <Copy Condition="'$(ArtifactsDir)' != '' And '$(OS)' == 'Windows_NT'" SourceFiles="$(ArtifactsDir)\Microsoft.AspNet.SignalR.Client.JS\jquery.signalR.js" DestinationFiles="Scripts\jquery.signalR.js" />
-    <Copy Condition="'$(ArtifactsDir)' == '' And '$(OS)' == 'Windows_NT'" SourceFiles="$(SolutionDir)src\Microsoft.AspNet.SignalR.Client.JS\bin\jquery.signalR.min.js" DestinationFiles="Scripts\jquery.signalR.min.js" />
-    <Copy Condition="'$(ArtifactsDir)' != '' And '$(OS)' == 'Windows_NT'" SourceFiles="$(ArtifactsDir)\Microsoft.AspNet.SignalR.Client.JS\jquery.signalR.min.js" DestinationFiles="Scripts\jquery.signalR.min.js" />
+  <Target Name="CopyJs" AfterTargets="Build">
+    <Copy SourceFiles="..\..\src\Microsoft.AspNet.SignalR.JS\bin\$(Configuration)\netstandard1.0\jquery.signalR.js" DestinationFiles="Scripts\jquery.signalR.js" />
+    <Copy SourceFiles="..\..\src\Microsoft.AspNet.SignalR.JS\bin\$(Configuration)\netstandard1.0\jquery.signalR.min.js" DestinationFiles="Scripts\jquery.signalR.min.js" />
   </Target>
   <Target Name="AfterBuild">
-    <Exec Condition="'$(ArtifactsDir)' == '' AND '$(OS)' == 'Windows_NT' AND $(KeyFile) == ''" Command="&quot;$(SolutionDir)src\Microsoft.AspNet.SignalR.Utils\bin\$(Configuration)\signalr.exe&quot; ghp /o:&quot;$(SolutionDir)samples\Microsoft.AspNet.SignalR.Samples\Scripts\hubs.js&quot;" WorkingDirectory="$(OutputPath)" />
-    <Exec Condition="'$(ArtifactsDir)' != '' AND '$(OS)' == 'Windows_NT' AND $(KeyFile) == ''" Command="&quot;$(ArtifactsDir)\Microsoft.AspNet.SignalR.Utils\signalr.exe&quot; ghp /o:&quot;$(SolutionDir)samples\Microsoft.AspNet.SignalR.Samples\Scripts\hubs.js&quot;" WorkingDirectory="$(OutputPath)" />
+    <Message Text="> &quot;$(MSBuildThisFileDirectory)..\..\src\Microsoft.AspNet.SignalR.Utils\bin\$(Configuration)\net40\signalr.exe&quot; ghp /o:&quot;$(MSBuildThisFileDirectory)Scripts\hubs.js&quot;" Importance="high" />
+    <Exec Command="&quot;$(MSBuildThisFileDirectory)..\..\src\Microsoft.AspNet.SignalR.Utils\bin\$(Configuration)\net40\signalr.exe&quot; ghp /o:&quot;$(MSBuildThisFileDirectory)Scripts\hubs.js&quot;" WorkingDirectory="$(OutputPath)" />
   </Target>
 </Project>

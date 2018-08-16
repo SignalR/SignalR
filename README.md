@@ -1,5 +1,7 @@
 # ASP.NET SignalR 
 
+**IMPORTANT**: This repository hosts code and project management for ASP.NET SignalR, for use in .NET Framework applications using System.Web or Katana. If you are looking for information on ASP.NET Core SignalR, see the https://github.com/aspnet/SignalR repository.
+
 ASP.NET SignalR is a library for ASP.NET developers that makes it incredibly simple to add real-time web functionality to your applications. What is "real-time web" functionality? It's the ability to have your server-side code push content to the connected clients as it happens, in real-time.
 
 ## What can it be used for?
@@ -33,12 +35,8 @@ git clone git@github.com:SignalR/SignalR.git (or https if you use https)
 ### Windows
 After cloning the repository, run `build.cmd`.
 
-**NOTE:** Opening the solution requires VS 2015.
-
-### Mono
-After cloning the repository, run `make`.
-
-Open Microsoft.AspNet.SignalR.Mono.sln to do development.
+**NOTE:** Opening the solution requires VS 2017.
 
 ## Questions?
-The SignalR team hangs out in the [signalr](http://jabbr.net/#/rooms/signalr) room at on [JabbR](http://jabbr.net/).
+* Ask on StackOverflow with the tag [signalr](https://stackoverflow.com/questions/tagged/signalr)
+* Post an issue in the [Issue Tracker](https://github.com/SignalR/SignalR/issues)

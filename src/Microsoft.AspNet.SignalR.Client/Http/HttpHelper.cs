@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -15,8 +15,7 @@ namespace Microsoft.AspNet.SignalR.Client.Http
 {
     internal static class HttpHelper
     {
-#if CLIENT_NET4
-
+#if NET40
         [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "Exceptions are flowed back to the caller.")]
         public static Task<HttpWebResponse> GetHttpResponseAsync(this HttpWebRequest request)
         {
@@ -78,7 +77,7 @@ namespace Microsoft.AspNet.SignalR.Client.Http
 
             // Write the post data to the request stream
             return request.GetHttpRequestStreamAsync()
-                .Then(stream => stream.WriteAsync(buffer).Then(() => stream.Dispose()))
+                .Then(stream => stream.WriteAsync(buffer, 0, buffer.Length).Then(() => stream.Dispose()))
                 .Then(() => request.GetHttpResponseAsync());
         }
 #endif

@@ -40,10 +40,12 @@ namespace Microsoft.AspNet.SignalR.Client {
         internal static global::System.Resources.ResourceManager ResourceManager {
             get {
                 if (object.ReferenceEquals(resourceMan, null)) {
-#if NETFX_CORE || NETSTANDARD
+#if NETSTANDARD1_3 || NETSTANDARD2_0
                     var assembly = typeof(Resources).GetTypeInfo().Assembly;
-#else
+#elif NET40 || NET45
                     var assembly = typeof(Resources).Assembly;
+#else
+#error Unsupported framework.
 #endif
                     global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("Microsoft.AspNet.SignalR.Client.Resources", assembly); resourceMan = temp;
                 }

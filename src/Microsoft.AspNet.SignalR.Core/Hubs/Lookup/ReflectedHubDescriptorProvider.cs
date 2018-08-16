@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -110,7 +110,7 @@ namespace Microsoft.AspNet.SignalR.Hubs
                                     "Original exception type: {2}\r\n" +
                                     "Original exception message: {3}\r\n",
                                     a.FullName,
-                                    a.Location,
+                                    a.IsDynamic ? "<<dynamic>>" : a.Location,
                                     ex.GetType().Name,
                                     ex.Message);
 
@@ -132,7 +132,7 @@ namespace Microsoft.AspNet.SignalR.Hubs
                                     "Original exception type: {2}\r\n" +
                                     "Original exception message: {3}\r\n",
                                     a.FullName,
-                                    a.Location,
+                                    a.IsDynamic ? "<<dynamic>>" : a.Location,
                                     ex.GetType().Name,
                                     ex.Message);
 

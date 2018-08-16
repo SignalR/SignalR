@@ -5,8 +5,12 @@ using System;
 
 namespace Microsoft.AspNet.SignalR.Client.Infrastructure
 {
-#if NET4 || NET45
+#if NET40 || NET45 || NETSTANDARD2_0
     [Serializable]
+#elif NETSTANDARD1_3
+// Not supported on this framework.
+#else 
+#error Unsupported target framework.
 #endif
     public class SlowCallbackException : Exception
     {
@@ -14,11 +18,15 @@ namespace Microsoft.AspNet.SignalR.Client.Infrastructure
         public SlowCallbackException(string message) : base(message) { }
         public SlowCallbackException(string message, Exception inner) : base(message, inner) { }
 
-#if NET4 || NET45
+#if NET40 || NET45 || NETSTANDARD2_0
         protected SlowCallbackException(
           System.Runtime.Serialization.SerializationInfo info,
           System.Runtime.Serialization.StreamingContext context)
             : base(info, context) { }
+#elif NETSTANDARD1_3
+// Not supported on this framework.
+#else 
+#error Unsupported target framework.
 #endif
     }
 }

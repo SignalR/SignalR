@@ -95,7 +95,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
             {
                 if (Processing && _readBuffer != null)
                 {
-                    readTask = _stream.ReadAsync(_readBuffer);
+                    readTask = _stream.ReadAsync(_readBuffer, 0, _readBuffer.Length);
                 }
                 else
                 {

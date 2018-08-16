@@ -1,5 +1,7 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+#if NET45 || NETSTANDARD2_0
 
 using System;
 using System.Diagnostics;
@@ -212,7 +214,7 @@ namespace Microsoft.AspNet.SignalR.WebSockets
 
             try
             {
-#if CLIENT_NET45
+#if CLIENT
                 var webSocketState = GetWebSocketState(WebSocket);
                 if (webSocketState == WebSocketState.Closed ||
                     webSocketState == WebSocketState.Aborted)
@@ -228,7 +230,7 @@ namespace Microsoft.AspNet.SignalR.WebSockets
             }
             finally
             {
-#if CLIENT_NET45
+#if CLIENT
                 WebSocket.Dispose();
 #endif
                 OnClose();
@@ -321,3 +323,10 @@ namespace Microsoft.AspNet.SignalR.WebSockets
         }
     }
 }
+
+#elif NET40 || NETSTANDARD1_3
+// Not supported on this framework.
+#else 
+#error Unsupported target framework.
+#endif
+
