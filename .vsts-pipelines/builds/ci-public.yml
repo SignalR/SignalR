@@ -1,5 +1,6 @@
 trigger:
-- vsts/*
+- dev
+- release/*
 
 # See https://github.com/aspnet/BuildTools
 resources:
