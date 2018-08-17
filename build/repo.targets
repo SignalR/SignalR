@@ -7,4 +7,48 @@
         <Exec Command="&quot;$(MSBuildProgramFiles32)\Microsoft SDKs\Windows\v10.0A\bin\NETFX 4.6.1 Tools\x64\sn.exe&quot; -Vr *,31bf3856ad364e35" />
         <Exec Command="&quot;$(MSBuildProgramFiles32)\Microsoft SDKs\Windows\v10.0A\bin\NETFX 4.6.1 Tools\sn.exe&quot; -Vr *,31bf3856ad364e35" />
     </Target>
+
+    <Target Name="ComputeLocalizedPackages" Condition="'$(Localize)' == 'true'">
+        <ItemGroup>
+            <!-- Specify the locale here so that an item is generated for each locale -->
+            <LocalizedPackage Include="Microsoft.AspNet.SignalR.Client" Locale="%(TranslationLanguage.PackageLocaleName)" />
+            <LocalizedPackage Include="Microsoft.AspNet.SignalR" Locale="%(TranslationLanguage.PackageLocaleName)" />
+            <LocalizedPackage Include="Microsoft.AspNet.SignalR.Core" Locale="%(TranslationLanguage.PackageLocaleName)" />
+            <LocalizedPackage Include="Microsoft.AspNet.SignalR.Redis" Locale="%(TranslationLanguage.PackageLocaleName)" />
+            <LocalizedPackage Include="Microsoft.AspNet.SignalR.ServiceBus" Locale="%(TranslationLanguage.PackageLocaleName)" />
+            <LocalizedPackage Include="Microsoft.AspNet.SignalR.ServiceBus3" Locale="%(TranslationLanguage.PackageLocaleName)" />
+            <LocalizedPackage Include="Microsoft.AspNet.SignalR.SqlServer" Locale="%(TranslationLanguage.PackageLocaleName)" />
+            <LocalizedPackage Include="Microsoft.AspNet.SignalR.SystemWeb" Locale="%(TranslationLanguage.PackageLocaleName)" />
+        </ItemGroup>
+        
+        <ItemGroup>
+            <!-- Copy items across and fill in common details -->
+            <SatellitePackage Include="%(LocalizedPackage.Identity).%(LocalizedPackage.Locale)">
+                <PackageId>%(LocalizedPackage.Identity)</PackageId>
+                <ProjectRoot>$(RepositoryRoot)src\%(LocalizedPackage.Identity)</ProjectRoot>
+                <Locale>%(LocalizedPackage.Locale)</Locale>
+            </SatellitePackage>
+        </ItemGroup>
+    </Target>
+
+    <PropertyGroup>
+        <PackageDependsOn>$(PackageDependsOn);PackSatellitePackages</PackageDependsOn>
+    </PropertyGroup>
+    <Target Name="PackSatellitePackages" Condition="'$(Localize)' == 'true'" DependsOnTargets="ComputeLocalizedPackages">
+        <PropertyGroup>
+            <_ConstantProperties>Configuration=$(Configuration)</_ConstantProperties>
+            <_ConstantProperties>$(ConstantProperties);PackageVersion=$(PackageVersion)</_ConstantProperties>
+            <_ConstantProperties>$(ConstantProperties);LicenseUrl=http://example.com</_ConstantProperties>
+        </PropertyGroup>
+
+        <!-- We have to restore first -->
+        <MSBuild 
+            Projects="$(RepositoryRoot)build\loc\SatellitePackage.csproj" 
+            Targets="Restore" />
+
+        <MSBuild 
+            Projects="$(RepositoryRoot)build\loc\SatellitePackage.csproj" 
+            Targets="Pack"
+            Properties="ProjectRoot=%(SatellitePackage.ProjectRoot);PackageId=%(SatellitePackage.PackageId);Locale=%(SatellitePackage.Locale);PackageOutputPath=$(BuildDir)satellite\%(SatellitePackage.Locale)\;$(_ConstantProperties)" />
+    </Target>
 </Project>

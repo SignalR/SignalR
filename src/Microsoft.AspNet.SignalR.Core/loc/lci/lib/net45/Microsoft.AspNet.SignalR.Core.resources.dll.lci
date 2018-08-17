@@ -1,0 +1,381 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<LCX SchemaVersion="6.0" Name="C:\BuildAgent\work\728f0cedc2305d54\TFS\bin\Signed\Release-Candidate\package-src\Net45\Microsoft.AspNet.SignalR.Core.dll" PsrId="211" FileType="1" SrcCul="en-US" Desc="Commenting file created by LCXAdmin. For more information, please visit http://localizability/longhorn/LcxAdmin.asp" xmlns="http://schemas.microsoft.com/locstudio/2006/6/lcx">
+  <OwnedComments>
+    <Cmt Name="LcxAdmin" />
+  </OwnedComments>
+  <Item ItemId=";HTML" ItemType="0" PsrId="22" Leaf="true">
+    <Disp Icon="Expand" Expand="true" Disp="true" LocTbl="false" />
+  </Item>
+  <Item ItemId=";Managed Resources" ItemType="0" PsrId="211" Leaf="true">
+    <Disp Icon="Expand" Expand="true" Disp="true" LocTbl="false" />
+  </Item>
+  <Item ItemId=";Microsoft.AspNet.SignalR.Resources.resources" ItemType="0" PsrId="211" Leaf="false">
+    <Disp Icon="Str" Expand="true" Disp="true" LocTbl="false" Path=" \ ;Managed Resources \ 0 \ 0" />
+    <Item ItemId=";Strings" ItemType="0" PsrId="211" Leaf="false">
+      <Disp Icon="Str" LocTbl="false" />
+      <Item ItemId=";DynamicComment_CallsMethodOnServerSideDeferredPromise" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[            /// <summary>Calls the {0} method on the server-side {1} hub.&#10;Returns a jQuery.Deferred() promise.</summary>]]></Val>
+        </Str>
+        <Disp Icon="Str" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+        </Cmts>
+      </Item>
+      <Item ItemId=";DynamicComment_ServerSideTypeIs" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[            /// <param name=\"{0}\" type=\"{1}\">Server side type is {2}</param>]]></Val>
+        </Str>
+        <Disp Icon="Str" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+        </Cmts>
+      </Item>
+      <Item ItemId=";Error_ConnectionIdIncorrectFormat" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[The ConnectionId is in the incorrect format.]]></Val>
+        </Str>
+        <Disp Icon="Str" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked="ConnectionId"}]]></Cmt>
+        </Cmts>
+      </Item>
+      <Item ItemId=";Error_ConnectionNotInitialized" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[The PersistentConnection is not initialized.]]></Val>
+        </Str>
+        <Disp Icon="Str" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked="PersistentConnection"}]]></Cmt>
+        </Cmts>
+      </Item>
+      <Item ItemId=";Error_DisconnectTimeoutCannotBeConfiguredAfterKeepAlive" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[DisconnectTimeout cannot be configured after the KeepAlive.]]></Val>
+        </Str>
+        <Disp Icon="Str" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked="DisconnectTimeout"} {Locked="KeepAlive"}]]></Cmt>
+        </Cmts>
+      </Item>
+      <Item ItemId=";Error_DisconnectTimeoutMustBeAtLeastSixSeconds" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[DisconnectTimeout must be at least six seconds.]]></Val>
+        </Str>
+        <Disp Icon="Str" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked="DisconnectTimeout"}]]></Cmt>
+        </Cmts>
+      </Item>
+      <Item ItemId=";Error_DoNotReadRequireOutgoing" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Do not read RequireOutgoing. Use protected _requireOutgoing instead.]]></Val>
+        </Str>
+        <Disp Icon="Str" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked="RequireOutgoing", "protected _requireOutgoing"} property references]]></Cmt>
+        </Cmts>
+      </Item>
+      <Item ItemId=";Error_ExceptionContextCanOnlyBeModifiedOnce" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[The ExceptionContext has already been modified once and cannot be modified again.]]></Val>
+        </Str>
+        <Disp Icon="Str" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked="ExceptionContext"}]]></Cmt>
+        </Cmts>
+      </Item>
+      <Item ItemId=";Error_HubCouldNotBeResolved" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA['{0}' Hub could not be resolved.]]></Val>
+        </Str>
+        <Disp Icon="Str" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked="Hub"}]]></Cmt>
+        </Cmts>
+      </Item>
+      <Item ItemId=";Error_HubInvocationFailed" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[There was an error invoking Hub method '{0}.{1}'.]]></Val>
+        </Str>
+        <Disp Icon="Str" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked="Hub"}]]></Cmt>
+        </Cmts>
+      </Item>
+      <Item ItemId=";Error_InvalidForeverFrameId" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[The supplied frameId is in the incorrect format.]]></Val>
+        </Str>
+        <Disp Icon="Str" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked="frameId"}]]></Cmt>
+        </Cmts>
+      </Item>
+      <Item ItemId=";Error_IsNotA" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA['{0}' is not a {1}.]]></Val>
+        </Str>
+        <Disp Icon="Str" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[The placeholders will both contain type names and is used to report errors when a new type is not derived from specific base type]]></Cmt>
+        </Cmts>
+      </Item>
+      <Item ItemId=";Error_JavaScriptProxyDisabled" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[SignalR: JavaScript Hub proxy generation has been disabled.]]></Val>
+        </Str>
+        <Disp Icon="Str" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked="SignalR", "JavaScript", "Hub"}]]></Cmt>
+        </Cmts>
+      </Item>
+      <Item ItemId=";Error_KeepAliveMustBeGreaterThanTwoSeconds" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[KeepAlive value must be greater than two seconds.]]></Val>
+        </Str>
+        <Disp Icon="Str" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked="KeepAlive"}]]></Cmt>
+        </Cmts>
+      </Item>
+      <Item ItemId=";Error_KeepAliveMustBeNoMoreThanAThirdOfTheDisconnectTimeout" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[KeepAlive value must be no more than a third of the DisconnectTimeout.]]></Val>
+        </Str>
+        <Disp Icon="Str" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked="KeepAlive","DisconnectTimeout"}]]></Cmt>
+        </Cmts>
+      </Item>
+      <Item ItemId=";Error_MethodLevelOutgoingAuthorization" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Outgoing authorization can only be required for an entire Hub, not a specific method.]]></Val>
+        </Str>
+        <Disp Icon="Str" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked="Hub"}]]></Cmt>
+        </Cmts>
+      </Item>
+      <Item ItemId=";Error_MultipleActivatorsAreaRegisteredCallGetServices" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Multiple activators for type {0} are registered. Please call GetServices instead.]]></Val>
+        </Str>
+        <Disp Icon="Str" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked="GetServices"} Method name]]></Cmt>
+        </Cmts>
+      </Item>
+      <Item ItemId=";Error_StateExceededMaximumLength" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[State has exceeded the maximum length of 4096 bytes.]]></Val>
+        </Str>
+        <Disp Icon="Str" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked="State"} State is a property name]]></Cmt>
+        </Cmts>
+      </Item>
+      <Item ItemId=";Error_TypeMustBeInterface" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[The type T, '{0}', passed to Hub<T> must be an interface.]]></Val>
+        </Str>
+        <Disp Icon="Str" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked="Hub<T>"}]]></Cmt>
+        </Cmts>
+      </Item>
+      <Item ItemId=";Error_UnableToAddModulePiplineAlreadyInvoked" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Unable to add module. The HubPipeline has already been invoked.]]></Val>
+        </Str>
+        <Disp Icon="Str" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked="HubPipeline"} Method name]]></Cmt>
+        </Cmts>
+      </Item>
+      <Item ItemId=";Error_UnrecognizedUserIdentity" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Unrecognized user identity.  The user identity cannot change during an active SignalR connection.]]></Val>
+        </Str>
+        <Disp Icon="Str" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked="SignalR"}]]></Cmt>
+        </Cmts>
+      </Item>
+      <Item ItemId=";Error_UsingHubInstanceNotCreatedUnsupported" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Using a Hub instance not created by the HubPipeline is unsupported.]]></Val>
+        </Str>
+        <Disp Icon="Str" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked="Hub", "HubPipeline"}]]></Cmt>
+        </Cmts>
+      </Item>
+      <Item ItemId=";Error_WebSocketsNotSupported" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[WebSockets is not supported.]]></Val>
+        </Str>
+        <Disp Icon="Str" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked="WebSockets"}]]></Cmt>
+        </Cmts>
+      </Item>
+      <Item ItemId=";Forbidden_JSONPDisabled" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Forbidden: JSONP is disabled.]]></Val>
+        </Str>
+        <Disp Icon="Str" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked="JSONP"}]]></Cmt>
+        </Cmts>
+      </Item>
+    </Item>
+  </Item>
+  <Item ItemId=";Microsoft.AspNet.SignalR.Scripts.hubs.js" ItemType="0" PsrId="22" Leaf="false">
+    <Disp Icon="Expand" Expand="true" Disp="true" LocTbl="false" Path=" \ ;HTML \ 0 \ 0" />
+    <Item ItemId=";HTML Comments" ItemType="0" PsrId="22" Leaf="false">
+      <Disp Icon="Str" Disp="true" LocTbl="false" />
+      <Item ItemId="0;09ff4f7ec0eaea78d1c0b8b24ce91c20" ItemType="24;Comment" PsrId="22" InstFlg="true" Leaf="true">
+        <Str Cat="Comment">
+          <Val><![CDATA[ Unsubscribe all hub proxies when we "disconnect".  This is to ensure that we do not re-add functional call backs.]]></Val>
+        </Str>
+        <Disp Icon="Str" Order="13" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+        </Cmts>
+      </Item>
+      <Item ItemId="0;12ad18be42d6398a56381bf1b642803b" ItemType="24;Comment" PsrId="22" InstFlg="true" Leaf="true">
+        <Str Cat="Comment">
+          <Val><![CDATA[ We want to unsubscribe from the hub events]]></Val>
+        </Str>
+        <Disp Icon="Str" Order="8" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+        </Cmts>
+      </Item>
+      <Item ItemId="0;37c788a1f888e058a385b376b6de89bf" ItemType="24;Comment" PsrId="22" InstFlg="true" Leaf="true">
+        <Str Cat="Comment">
+          <Val><![CDATA[ <reference path="jquery.signalR.js" />]]></Val>
+        </Str>
+        <Disp Icon="Str" Order="3" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+        </Cmts>
+      </Item>
+      <Item ItemId="0;3a0ffc834786550d3d3c5b290ef67ca6" ItemType="24;Comment" PsrId="22" InstFlg="true" Leaf="true">
+        <Str Cat="Comment">
+          <Val><![CDATA[ Loop through all members on the hub and find client hub functions to subscribe/unsubscribe]]></Val>
+        </Str>
+        <Disp Icon="Str" Order="9" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+        </Cmts>
+      </Item>
+      <Item ItemId="0;44ce4b22f0dfd4a22aec0bf4e655554c" ItemType="24;Comment" PsrId="22" InstFlg="true" Leaf="true">
+        <Str Cat="Comment">
+          <Val><![CDATA[ We want to subscribe to the hub events]]></Val>
+        </Str>
+        <Disp Icon="Str" Order="7" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+        </Cmts>
+      </Item>
+      <Item ItemId="0;4b166203726ce169669b94d3318a7ea1" ItemType="24;Comment" PsrId="22" InstFlg="true" Leaf="true">
+        <Str Cat="Comment">
+          <Val><![CDATA[ <reference path="..\..\SignalR.Client.JS\Scripts\jquery-1.6.4.js" />]]></Val>
+        </Str>
+        <Disp Icon="Str" Order="2" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+        </Cmts>
+      </Item>
+      <Item ItemId="0;55883dfaaa7c7655a949de280e4c68b0" ItemType="24;Comment" PsrId="22" InstFlg="true" Leaf="true">
+        <Str Cat="Comment">
+          <Val><![CDATA[ Not a client hub function]]></Val>
+        </Str>
+        <Disp Icon="Str" Order="10" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+        </Cmts>
+      </Item>
+      <Item ItemId="0;72c8575b2aa964704e43e645aaa9619c" ItemType="24;Comment" PsrId="22" InstFlg="true" Leaf="true">
+        <Str Cat="Comment">
+          <Val><![CDATA[ Register the hub proxies as subscribed]]></Val>
+        </Str>
+        <Disp Icon="Str" Order="11" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+        </Cmts>
+      </Item>
+      <Item ItemId="0;907731ba25e0649559c44b2c7399011a" ItemType="24;Comment" PsrId="22" InstFlg="true" Leaf="true">
+        <Str Cat="Comment">
+          <Val><![CDATA[ Not a client hub]]></Val>
+        </Str>
+        <Disp Icon="Str" Order="6" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+        </Cmts>
+      </Item>
+      <Item ItemId="0;9b5bb19aefb678fdfb2cf6d1355c7873" ItemType="24;Comment" PsrId="22" InstFlg="true" Leaf="true">
+        <Str Cat="Comment">
+          <Val><![CDATA[ <param name="$" type="jQuery" />]]></Val>
+        </Str>
+        <Disp Icon="Str" Order="4" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+        </Cmts>
+      </Item>
+      <Item ItemId="0;a6b8355c4d7613aedb58e9a6d5c41225" ItemType="24;Comment" PsrId="22" InstFlg="true" Leaf="true">
+        <Str Cat="Comment">
+          <Val><![CDATA[hubs]]></Val>
+        </Str>
+        <Disp Icon="Str" Order="15" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+        </Cmts>
+      </Item>
+      <Item ItemId="0;a7648c71401e48670b0969aa1cd61003" ItemType="24;Comment" PsrId="22" InstFlg="true" Leaf="true">
+        <Str Cat="Comment">
+          <Val><![CDATA[ Call the client hub method]]></Val>
+        </Str>
+        <Disp Icon="Str" Order="5" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+        </Cmts>
+      </Item>
+      <Item ItemId="0;f6def39ac62303430e0afe554eff751a" ItemType="24;Comment" PsrId="22" InstFlg="true" Leaf="true">
+        <Str Cat="Comment">
+          <Val><![CDATA[ (instance, shouldSubscribe)]]></Val>
+        </Str>
+        <Disp Icon="Str" Order="12" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+        </Cmts>
+      </Item>
+      <Item ItemId="1;f6def39ac62303430e0afe554eff751a" ItemType="24;Comment" PsrId="22" InstFlg="true" Leaf="true">
+        <Str Cat="Comment">
+          <Val><![CDATA[ (instance, shouldSubscribe)]]></Val>
+        </Str>
+        <Disp Icon="Str" Order="14" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+        </Cmts>
+      </Item>
+    </Item>
+  </Item>
+  <Item ItemId=";Version" ItemType="0" PsrId="211" Leaf="false">
+    <Disp Icon="Ver" Disp="true" LocTbl="false" Path=" \ ;Version \ 8 \ 0" />
+    <Item ItemId=";Comments" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+      <Str Cat="Text">
+        <Val><![CDATA[Async signaling library for .NET to help build real-time, multi-user interactive web applications.]]></Val>
+      </Str>
+      <Disp Icon="Str" />
+      <Cmts>
+        <Cmt Name="LcxAdmin"><![CDATA[{Locked="NET"} Product name]]></Cmt>
+      </Cmts>
+    </Item>
+  </Item>
+  <Item ItemId=";Version" ItemType="8" PsrId="211" Leaf="true">
+    <Disp Icon="Expand" Expand="true" Disp="true" LocTbl="false" />
+  </Item>
+</LCX>

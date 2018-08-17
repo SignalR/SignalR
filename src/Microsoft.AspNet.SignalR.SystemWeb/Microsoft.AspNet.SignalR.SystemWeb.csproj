@@ -4,7 +4,9 @@
     <Title>Microsoft ASP.NET SignalR System.Web</Title>
     <Description>Incredibly simple real-time web for .NET. Components for using ASP.NET SignalR in applications hosted on System.Web.</Description>
     <PackageTags>Microsoft AspNet SignalR AspNetSignalR SystemWeb</PackageTags>
-    <TargetFramework>net45</TargetFramework>
+
+    <!-- For the loc stuff to work right now, this needs to do the outer build/inner build phases even though it's only one TFM, so leave this as the plural TargetFrameworks -->
+    <TargetFrameworks>net45</TargetFrameworks>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.Owin.Host.SystemWeb" Version="$(MicrosoftOwinHostSystemWebPackageVersion)" />

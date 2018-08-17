@@ -1,0 +1,23 @@
+﻿<?xml version="1.0"?>
+<package>
+    <metadata>
+        <id>Microsoft.AspNet.SignalR.$Locale$</id>
+        <title>Microsoft ASP.NET SignalR {Language} Resources</title>
+        <summary>{Language} resources for the Microsoft.AspNet.SignalR package</summary>
+        <version>$PackageVersion$</version>
+        <authors>Microsoft</authors>
+        <owners>Microsoft</owners>
+        <licenseUrl>$LicenseUrl$</licenseUrl>
+        <copyright>© Copyright (c) Microsoft Corporation. All rights reserved.</copyright>
+        <projectUrl>http://www.asp.net/signalR</projectUrl>
+        <requireLicenseAcceptance>true</requireLicenseAcceptance>
+        <description>This is a meta-package for the {Language} satellite assemblies for ASP.NET SignalR.</description>
+        <language>$Locale$</language>
+        <tags>Microsoft AspNet SignalR AspNetSignalR websockets real-time realtime comet HTTP streaming</tags>
+        <dependencies>
+            <dependency id="Microsoft.AspNet.SignalR.JS" version="$PackageVersion$" />
+            <dependency id="Microsoft.AspNet.SignalR.SystemWeb.en-US" version="$PackageVersion$" />
+        </dependencies>
+    </metadata>
+    <files></files>
+</package>

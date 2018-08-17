@@ -1,3 +1,4 @@
 <Project>
   <Import Project="..\Directory.Build.targets" Condition="Exists('..\Directory.Build.targets')" />
+  <Import Project="$(RepositoryRoot)build\loc\LocalizeDlls.targets" Condition="'$(Localize)' == 'true'" />
 </Project>

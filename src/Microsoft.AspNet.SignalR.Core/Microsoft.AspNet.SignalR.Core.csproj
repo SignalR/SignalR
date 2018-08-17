@@ -6,8 +6,10 @@
     <PackageTags>Microsoft AspNet SignalR AspNetSignalR Core</PackageTags>
     <DefineConstants>$(DefineConstants);PERFCOUNTERS;SERVER</DefineConstants>
     <RootNamespace>Microsoft.AspNet.SignalR</RootNamespace>
-    <TargetFramework>net45</TargetFramework>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+
+    <!-- For the loc stuff to work right now, this needs to do the outer build/inner build phases even though it's only one TFM, so leave this as the plural TargetFrameworks -->
+    <TargetFrameworks>net45</TargetFrameworks>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.Owin.Security" Version="$(MicrosoftOwinSecurityPackageVersion)" />

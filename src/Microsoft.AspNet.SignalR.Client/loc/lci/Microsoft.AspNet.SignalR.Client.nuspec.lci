@@ -1,0 +1,42 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<LCX SchemaVersion="6.0" Name="C:\dd2\SignalR\Main\src\localizedpackages\Microsoft.AspNet.SignalR.Client.nuspec" PsrId="210" FileType="1" SrcCul="en-US" Desc="Commenting file created by LCXAdmin. For more information, please visit http://localizability/longhorn/LcxAdmin.asp" xmlns="http://schemas.microsoft.com/locstudio/2006/6/lcx">
+  <OwnedComments>
+    <Cmt Name="LcxAdmin" />
+  </OwnedComments>
+  <Item ItemId=";&lt;description&gt;" ItemType="0" PsrId="210" Leaf="false">
+    <Disp Icon="Str" Disp="true" LocTbl="false" />
+    <Item ItemId="0;a740c635491bb4634ff3288bf64fed22" ItemType="42;XML:Text" PsrId="210" Leaf="true">
+      <Str Cat="AppData">
+        <Val><![CDATA[This package contains the {Language} satellite assemblies for ASP.NET SignalR Core.]]></Val>
+      </Str>
+      <Disp Icon="Str" Order="5" />
+      <Cmts>
+        <Cmt Name="LcxAdmin"><![CDATA[{Locked="ASP.NET SignalR Core"} Please translate the Language placeholder to the native language name, eg for DE, it should read Deutsch]]></Cmt>
+      </Cmts>
+    </Item>
+  </Item>
+  <Item ItemId=";&lt;summary&gt;" ItemType="0" PsrId="210" Leaf="false">
+    <Disp Icon="Str" Disp="true" LocTbl="false" />
+    <Item ItemId="0;abe3e435eb2105ad1f0ff452e49cfbf3" ItemType="42;XML:Text" PsrId="210" InstFlg="true" Leaf="true">
+      <Str Cat="AppData">
+        <Val><![CDATA[{Language} resources for the Microsoft.AspNet.SignalR.Client package]]></Val>
+      </Str>
+      <Disp Icon="Str" Order="3" />
+      <Cmts>
+        <Cmt Name="LcxAdmin"><![CDATA[{Locked="Microsoft.AspNet.SignalR.Client"} Please translate the Language placeholder to the native language name, eg for DE, it should read Deutsch]]></Cmt>
+      </Cmts>
+    </Item>
+  </Item>
+  <Item ItemId=";&lt;title&gt;" ItemType="0" PsrId="210" Leaf="false">
+    <Disp Icon="Str" Disp="true" LocTbl="false" />
+    <Item ItemId="0;056d7db10240d7060e823d7232e0c4cc" ItemType="42;XML:Text" PsrId="210" InstFlg="true" Leaf="true">
+      <Str Cat="AppData">
+        <Val><![CDATA[Microsoft ASP.NET SignalR Client {Language} Resources]]></Val>
+      </Str>
+      <Disp Icon="Str" Order="1" />
+      <Cmts>
+        <Cmt Name="LcxAdmin"><![CDATA[Please translate the Language placeholder to the native language name, eg for DE, it should read Deutsch {Locked="Microsoft ASP.NET SignalR Client"}]]></Cmt>
+      </Cmts>
+    </Item>
+  </Item>
+</LCX>

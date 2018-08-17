@@ -1,0 +1,69 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<LCX SchemaVersion="6.0" Name="C:\BuildAgent\work\fb6d1ece28b46ab7\Tooling\src\localizedpackages\Microsoft.AspNet.SignalR.ServiceBus.nuspec" PsrId="210" FileType="1" SrcCul="en-US" TgtCul="es-ES" xmlns="http://schemas.microsoft.com/locstudio/2006/6/lcx">
+  <Props>
+    <Str Name="CustomName1" Val="Custom 1" />
+    <Str Name="CustomName2" Val="Custom 2" />
+    <Str Name="CustomName3" Val="Custom 3" />
+    <Str Name="CustomName4" Val="Custom 4" />
+    <Str Name="CustomName5" Val="Custom 5" />
+    <Str Name="CustomName6" Val="IQA" />
+  </Props>
+  <OwnedComments>
+    <Cmt Name="Dev" />
+    <Cmt Name="LcxAdmin" />
+    <Cmt Name="Note" />
+    <Cmt Name="Rccx" />
+  </OwnedComments>
+  <Settings Name="@vsLocTools@\lsconfig\WTE_nuspec.lsconfig" Type="Config" />
+  <Item ItemId=";&lt;description&gt;" ItemType="0" PsrId="210" Leaf="false">
+    <Disp Icon="Str" Disp="true" LocTbl="false" />
+    <Modified By="translator" DateTime="2012-12-11T10:45:24Z" />
+    <Item ItemId="0;2d5ac91221bf76c449afd87a3609afc0" ItemType="42;XML:Text" PsrId="210" InstFlg="true" Leaf="true">
+      <Str Cat="AppData">
+        <Val><![CDATA[This package contains the {Language} satellite assemblies for ASP.NET SignalR ServiceBus.]]></Val>
+        <Tgt Cat="AppData" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+          <Val><![CDATA[Este paquete contiene los ensamblados satélite de español para ASP.NET SignalR ServiceBus.]]></Val>
+        </Tgt>
+      </Str>
+      <Disp Icon="Str" Order="5" />
+      <Modified By="translator" DateTime="2013-01-14T13:09:56Z" />
+      <Cmts>
+        <Cmt Name="LcxAdmin"><![CDATA[{Locked="ASP.NET SignalR ServiceBus"} Please translate the Language placeholder to the native language name, eg for DE, it should read Deutsch]]></Cmt>
+      </Cmts>
+    </Item>
+  </Item>
+  <Item ItemId=";&lt;summary&gt;" ItemType="0" PsrId="210" Leaf="false">
+    <Disp Icon="Str" Disp="true" LocTbl="false" />
+    <Modified By="translator" DateTime="2012-12-11T10:45:24Z" />
+    <Item ItemId="0;70e9aff1b9e8bf10b672ac71bca29b29" ItemType="42;XML:Text" PsrId="210" InstFlg="true" Leaf="true">
+      <Str Cat="AppData">
+        <Val><![CDATA[{Language} resources for the Microsoft.AspNet.SignalR.ServiceBus package]]></Val>
+        <Tgt Cat="AppData" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+          <Val><![CDATA[Recursos en español para el paquete Microsoft.AspNet.SignalR.ServiceBus]]></Val>
+        </Tgt>
+      </Str>
+      <Disp Icon="Str" Order="3" />
+      <Modified By="translator" DateTime="2012-12-11T10:56:45Z" />
+      <Cmts>
+        <Cmt Name="LcxAdmin"><![CDATA[{Locked="Microsoft.AspNet.SignalR.ServiceBus"}]]></Cmt>
+      </Cmts>
+    </Item>
+  </Item>
+  <Item ItemId=";&lt;title&gt;" ItemType="0" PsrId="210" Leaf="false">
+    <Disp Icon="Str" Disp="true" LocTbl="false" />
+    <Modified By="translator" DateTime="2012-12-11T10:45:24Z" />
+    <Item ItemId="0;6e185d80f922846927f5ad409c8130e0" ItemType="42;XML:Text" PsrId="210" InstFlg="true" Leaf="true">
+      <Str Cat="AppData">
+        <Val><![CDATA[Microsoft ASP.NET SignalR ServiceBus Libraries {Language} Resources]]></Val>
+        <Tgt Cat="AppData" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+          <Val><![CDATA[Recursos en español para Microsoft ASP.NET SignalR ServiceBus Libraries]]></Val>
+        </Tgt>
+      </Str>
+      <Disp Icon="Str" Order="1" />
+      <Modified By="translator" DateTime="2012-12-11T10:56:45Z" />
+      <Cmts>
+        <Cmt Name="LcxAdmin"><![CDATA[{Locked="Microsoft ASP.NET SignalR ServiceBus Libraries"} Please translate the Language placeholder to the native language name, eg for DE, it should read Deutsch]]></Cmt>
+      </Cmts>
+    </Item>
+  </Item>
+</LCX>
