@@ -36,13 +36,16 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
                 });
 
             var exception = new Exception("test exception");
+            var waitForException = new TaskCompletionSource<object>();
             mockHttpClient
                 .Setup(c => c.Get(It.IsAny<string>(), It.IsAny<Action<IRequest>>(), It.IsAny<bool>()))
-                .Returns<string, Action<IRequest>, bool>((url, prepareRequest, isLongRunning) =>
+                .Returns<string, Action<IRequest>, bool>(async (url, prepareRequest, isLongRunning) =>
                 {
                     mockFailingTransport.Object.TransportFailed(exception);
 
-                    return Task.FromResult(Mock.Of<IResponse>());
+                    await waitForException.Task;
+
+                    return Mock.Of<IResponse>();
                 });
 
             var mockTransport = new Mock<IClientTransport>();
@@ -54,6 +57,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
 
             var startException = await Assert.ThrowsAsync<StartException>(
                 async () => await autoTransport.Start(mockConnection.Object, string.Empty, CancellationToken.None));
+            waitForException.TrySetResult(null);
 
             Assert.Same(exception, startException.InnerException);
 

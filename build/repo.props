@@ -1,12 +1,28 @@
 <Project>
     <Import Project="$(RepositoryRoot)build\loc\Localization.props" Condition="'$(Localize)' == 'true'" />
 
+    <!-- Properties to make KoreBuild more like dotnet/arcade. -->
+    <PropertyGroup>
+        <BuildDir>$(ArtifactsDir)$(Configuration)\packages\</BuildDir>
+        <SkipArtifactVerification>true</SkipArtifactVerification>
+        <GenerateSignRequest>false</GenerateSignRequest>
+    </PropertyGroup>
+
     <PropertyGroup>
         <SkipArtifactVerification>true</SkipArtifactVerification>
+
+        <!-- Flow these properties down to the solution build -->
+        <SolutionProperties Condition="'$(DelaySign)' != ''">$(SolutionProperties);DelaySign=$(DelaySign)</SolutionProperties>
+        <SolutionProperties Condition="'$(SignAssembly)' != ''">$(SolutionProperties);SignAssembly=$(SignAssembly)</SolutionProperties>
     </PropertyGroup>
 
     <ItemGroup>
         <!-- UWP tests don't work in KoreBuild -->
         <ExcludeFromTest Include="$(RepositoryRoot)test\Microsoft.AspNet.SignalR.Client.UWP.Tests\Microsoft.AspNet.SignalR.Client.UWP.Tests.csproj" />
+
+        <!-- Don't pack non-shipping utilities -->
+        <ExcludeFromPack Include="$(RepositoryRoot)src\Microsoft.AspNet.SignalR.Crank\Microsoft.AspNet.SignalR.Crank.csproj" />
+        <ExcludeFromPack Include="$(RepositoryRoot)src\Microsoft.AspNet.SignalR.Stress\Microsoft.AspNet.SignalR.Stress.csproj" />
+        <ExcludeFromPack Include="$(RepositoryRoot)src\Microsoft.AspNet.SignalR.StressServer\Microsoft.AspNet.SignalR.StressServer.csproj" />
     </ItemGroup>
 </Project>

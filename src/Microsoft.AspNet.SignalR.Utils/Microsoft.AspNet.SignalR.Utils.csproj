@@ -2,15 +2,17 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <IsPackable>true</IsPackable>
+
+    <!-- The default name is based on the assembly name, but previous versions used the project name here, so we override -->
     <PackageId>Microsoft.AspNet.SignalR.Utils</PackageId>
-    <NuspecFile>$(MSBuildThisFileDirectory)$(MSBuildProjectName).nuspec</NuspecFile>
-    <NuspecProperties>PackageVersion=$(VersionPrefix)-$(VersionSuffix);Configuration=$(Configuration)</NuspecProperties>
 
     <DefineConstants>$(DefineConstants);UTILS;NET4</DefineConstants>
     <OutputType>Exe</OutputType>
     <AssemblyName>signalr</AssemblyName>
     <Description>Command line utilities for ASP.NET SignalR.</Description>
     <TargetFramework>net40</TargetFramework>
+
+    <BuildOutputTargetFolder>tools</BuildOutputTargetFolder>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />

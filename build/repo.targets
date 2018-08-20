@@ -49,7 +49,13 @@
         <MSBuild 
             Projects="$(RepositoryRoot)build\loc\SatellitePackage.csproj" 
             Targets="Pack"
-            Properties="ProjectRoot=%(SatellitePackage.ProjectRoot);PackageId=%(SatellitePackage.PackageId);Locale=%(SatellitePackage.Locale);PackageOutputPath=$(BuildDir)satellite\%(SatellitePackage.Locale)\;$(_ConstantProperties)" />
+            Properties="PackageId=%(SatellitePackage.PackageId);Locale=%(SatellitePackage.Locale);$(_ConstantProperties)" />
+    </Target>
+        
+    <Target Name="CodeSign" AfterTargets="Package" DependsOnTargets="GetToolsets" Condition=" '$(OS)' == 'Windows_NT' ">
+        <MSBuild Projects="$(MSBuildThisFileDirectory)sign.proj"
+                Targets="Restore;CodeSign"
+                Properties="VisualStudioMSBuildx86Path=$(VisualStudioMSBuildx86Path);Configuration=$(Configuration);ArtifactsDir=$(ArtifactsDir);Localize=$(Localize)" />
     </Target>
 
     

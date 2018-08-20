@@ -1,17 +1,11 @@
 trigger:
-- dev
+- master
 - release/*
-
-# See https://github.com/aspnet/BuildTools
-resources:
-  repositories:
-  - repository: buildtools
-    type: github
-    endpoint: DotNet-Bot GitHub Connection
-    name: aspnet/BuildTools
-    ref: refs/heads/master
+- vsts/*
 
 phases:
-- template: .vsts-pipelines/templates/phases/default-build.yml@buildtools
+- template: ../templates/signalr-build.yml
   parameters:
-    agentOs: Windows
+    queueName: Hosted VS2017
+    variables:
+      SkipCodeSign: true

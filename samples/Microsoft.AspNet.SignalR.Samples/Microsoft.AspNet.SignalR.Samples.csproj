@@ -431,11 +431,11 @@
     </PostBuildEvent>
   </PropertyGroup>
   <Target Name="CopyJs" AfterTargets="Build">
-    <Copy SourceFiles="..\..\src\Microsoft.AspNet.SignalR.JS\bin\$(Configuration)\netstandard1.0\jquery.signalR.js" DestinationFiles="Scripts\jquery.signalR.js" />
-    <Copy SourceFiles="..\..\src\Microsoft.AspNet.SignalR.JS\bin\$(Configuration)\netstandard1.0\jquery.signalR.min.js" DestinationFiles="Scripts\jquery.signalR.min.js" />
+    <Copy SourceFiles="$(ArtifactsBinDir)\Microsoft.AspNet.SignalR.JS\netstandard1.0\jquery.signalR.js" DestinationFiles="Scripts\jquery.signalR.js" />
+    <Copy SourceFiles="$(ArtifactsBinDir)\Microsoft.AspNet.SignalR.JS\netstandard1.0\jquery.signalR.min.js" DestinationFiles="Scripts\jquery.signalR.min.js" />
   </Target>
   <Target Name="AfterBuild">
-    <Message Text="> &quot;$(MSBuildThisFileDirectory)..\..\src\Microsoft.AspNet.SignalR.Utils\bin\$(Configuration)\net40\signalr.exe&quot; ghp /o:&quot;$(MSBuildThisFileDirectory)Scripts\hubs.js&quot;" Importance="high" />
-    <Exec Command="&quot;$(MSBuildThisFileDirectory)..\..\src\Microsoft.AspNet.SignalR.Utils\bin\$(Configuration)\net40\signalr.exe&quot; ghp /o:&quot;$(MSBuildThisFileDirectory)Scripts\hubs.js&quot;" WorkingDirectory="$(OutputPath)" />
+    <Message Text="> &quot;$(ArtifactsBinDir)\Microsoft.AspNet.SignalR.Utils\net40\signalr.exe&quot; ghp /o:&quot;$(MSBuildThisFileDirectory)Scripts\hubs.js&quot;" Importance="high" />
+    <Exec Command="&quot;$(ArtifactsBinDir)\Microsoft.AspNet.SignalR.Utils\net40\signalr.exe&quot; ghp /o:&quot;$(MSBuildThisFileDirectory)Scripts\hubs.js&quot;" WorkingDirectory="$(OutputPath)" />
   </Target>
 </Project>

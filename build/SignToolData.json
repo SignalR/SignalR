@@ -1,0 +1,29 @@
+{
+  "sign": [
+    {
+      "certificate": "Microsoft",
+      "strongName": "MsSharedLib72",
+      "values": [
+        "bin/Microsoft.AspNet.SignalR.Client/net40/Microsoft.AspNet.SignalR.Client.dll",
+        "bin/Microsoft.AspNet.SignalR.Client/net45/Microsoft.AspNet.SignalR.Client.dll",
+        "bin/Microsoft.AspNet.SignalR.Client/netstandard1.3/Microsoft.AspNet.SignalR.Client.dll",
+        "bin/Microsoft.AspNet.SignalR.Client/netstandard2.0/Microsoft.AspNet.SignalR.Client.dll",
+        "bin/Microsoft.AspNet.SignalR.Core/net45/Microsoft.AspNet.SignalR.Core.dll",
+        "bin/Microsoft.AspNet.SignalR.Redis/net45/Microsoft.AspNet.SignalR.Redis.dll",
+        "bin/Microsoft.AspNet.SignalR.ServiceBus/net45/Microsoft.AspNet.SignalR.ServiceBus.dll",
+        "bin/Microsoft.AspNet.SignalR.ServiceBus3/net45/Microsoft.AspNet.SignalR.ServiceBus3.dll",
+        "bin/Microsoft.AspNet.SignalR.SqlServer/net45/Microsoft.AspNet.SignalR.SqlServer.dll",
+        "bin/Microsoft.AspNet.SignalR.SystemWeb/net45/Microsoft.AspNet.SignalR.SystemWeb.dll",
+        "bin/Microsoft.AspNet.SignalR.Utils/net40/signalr.exe"
+      ]
+    },
+    {
+      "certificate": "NuGet",
+      "strongName": null,
+      "values": [
+        "packages/*.nupkg"
+      ]
+    }
+  ],
+  "exclude": []
+}

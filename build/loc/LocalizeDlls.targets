@@ -11,8 +11,8 @@
           <Language>%(TranslationLanguage.Identity)</Language>
           <LclFile>$(LocRoot)\lcl\%(TranslationLanguage.Identity)\$(PackageId).nuspec.lcl</LclFile>
           <LciFile>$(LocRoot)\lci\$(PackageId).nuspec.lci</LciFile>
-          <LcxOutput>$(MSBuildProjectDirectory)\$(OutputPath)%(TranslationLanguage.PackageLocaleName)\$(PackageId).%(TranslationLanguage.PackageLocaleName).nuspec.lcx</LcxOutput>
-          <OutputPath>$(MSBuildProjectDirectory)\$(OutputPath)%(TranslationLanguage.PackageLocaleName)\$(PackageId).%(TranslationLanguage.PackageLocaleName).nuspec</OutputPath>
+          <LcxOutput>$(OutputPath)%(TranslationLanguage.PackageLocaleName)\$(PackageId).%(TranslationLanguage.PackageLocaleName).nuspec.lcx</LcxOutput>
+          <OutputPath>$(OutputPath)%(TranslationLanguage.PackageLocaleName)\$(PackageId).%(TranslationLanguage.PackageLocaleName).nuspec</OutputPath>
 
           <!-- REVIEW: These are based on what the MSBuild task specified -->
           <LSBuildExtraArgs>/s $(LocToolsPath)\default.lss</LSBuildExtraArgs>

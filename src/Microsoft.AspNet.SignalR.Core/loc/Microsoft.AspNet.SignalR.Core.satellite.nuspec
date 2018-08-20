@@ -19,7 +19,7 @@
         </dependencies>
     </metadata>
     <files>
-        <file src="$BaseDirectory$\bin\$Configuration$\net45\$Locale$\Microsoft.AspNet.SignalR.Core.resources.dll" target="lib\net45\$Locale$" />
+        <file src="net45\$Locale$\Microsoft.AspNet.SignalR.Core.resources.dll" target="lib\net45\$Locale$" />
         <!-- <file src="Intellisense\Microsoft.AspNet.SignalR.Core.xml" target="lib\net45\en-US" /> -->
     </files>
 </package>

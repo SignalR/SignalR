@@ -18,10 +18,11 @@
     <AssemblyOriginatorKeyFile>$(MSBuildThisFileDirectory)build\35MSSharedLib1024.snk</AssemblyOriginatorKeyFile>
 
     <!-- The key doesn't have the private part with it, so we DelaySign when building for CI -->
-    <DelaySign Condition="'$(CI)' == 'true'">true</DelaySign>
-    <SignAssembly Condition="'$(CI)' == 'true'">true</SignAssembly>
-    <DefineConstants Condition="'$(CI)' == 'true' And '$(DefineConstants)' != ''">$(DefineConstants);SIGNED</DefineConstants>
-    <DefineConstants Condition="'$(CI)' == 'true' And '$(DefineConstants)' == ''">SIGNED</DefineConstants>
+    <DelaySign Condition="'$(CI)' == 'true' And '$(DelaySign)' == ''">true</DelaySign>
+    <SignAssembly Condition="'$(CI)' == 'true' And '$(SignAssembly)' == ''">true</SignAssembly>
+
+    <DefineConstants Condition="'$(SignAssembly)' == 'true' And '$(DefineConstants)' != ''">$(DefineConstants);SIGNED</DefineConstants>
+    <DefineConstants Condition="'$(SignAssembly)' == 'true'">SIGNED</DefineConstants>
 
     <AssemblySigningCertName>Microsoft</AssemblySigningCertName>
     <PackageSigningCertName>MicrosoftNuGet</PackageSigningCertName>
@@ -32,21 +33,27 @@
 
     <!-- Disable warning about SemVer 2.0 versions -->
     <NoWarn>NU5105</NoWarn>
+
+    <!-- These values don't change between official and unofficial builds -->
+    <Product>Microsoft ASP.NET SignalR</Product>
+    <PackageProjectUrl>http://www.asp.net/signalr</PackageProjectUrl>
+    <PackageReleaseNotes>https://github.com/SignalR/SignalR/releases</PackageReleaseNotes>
+    <Authors>Microsoft</Authors>
   </PropertyGroup>
 
-  <!-- Work around https://github.com/aspnet/BuildTools/issues/737 -->
-  <Target Name="OverrideAssemblyAttributes" BeforeTargets="Build">
-    <PropertyGroup>
-      <!-- Assembly/NuSpec attributes -->
-      <Company>Microsoft</Company>
-      <Authors>Microsoft</Authors>
-      <Copyright>© Copyright (c) Microsoft Corporation. All rights reserved.</Copyright>
-      <Product>Microsoft ASP.NET SignalR</Product>
-      <PackageLicenseUrl>http://www.microsoft.com/web/webpi/eula/net_library_eula_ENU.htm</PackageLicenseUrl>
-      <PackageProjectUrl>http://www.asp.net/signalr</PackageProjectUrl>
-      <PackageReleaseNotes>https://github.com/SignalR/SignalR/releases</PackageReleaseNotes>
-    </PropertyGroup>
-  </Target>
+  <PropertyGroup Condition="'$(OfficialBuild)' == 'true'">
+    <!-- Assembly/NuSpec attributes -->
+    <Company>Microsoft</Company>
+    <Copyright>© Copyright (c) Microsoft Corporation. All rights reserved.</Copyright>
+    <PackageLicenseUrl>http://www.microsoft.com/web/webpi/eula/net_library_eula_ENU.htm</PackageLicenseUrl>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(OfficialBuild)' != 'true'">
+    <!-- Assembly/NuSpec attributes -->
+    <Company>.NET Foundation</Company>
+    <Copyright>© Copyright (c) .NET Foundation. All rights reserved.</Copyright>
+    <PackageLicenseUrl>https://raw.github.com/SignalR/SignalR/master/LICENSE.txt</PackageLicenseUrl>
+  </PropertyGroup>
 
   <!-- Locating Visual Studio -->
   <PropertyGroup Condition="'$(VsInstallRoot)' == ''">
@@ -58,4 +65,6 @@
     <!-- Use ProgramFiles32 instead of MSBuildExtensionsPath so we can be built with dotnet.exe -->
     <WAPToolsPath Condition="'$(WAPToolsPath)' == ''">$(VsInstallRoot)\MSBuild\Microsoft\VisualStudio\v$(VisualStudioVersion)</WAPToolsPath>
   </PropertyGroup>
+
+  <Import Project="build\arcade.props" />
 </Project>
