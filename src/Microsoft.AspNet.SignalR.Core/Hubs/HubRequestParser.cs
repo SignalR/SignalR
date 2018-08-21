@@ -25,7 +25,7 @@ namespace Microsoft.AspNet.SignalR.Hubs
             request.Method = deserializedData.Method;
             request.Id = deserializedData.Id;
             request.State = GetState(deserializedData);
-            request.ParameterValues = (deserializedData.Args != null) ? deserializedData.Args.Select(value => new JRawValue(value)).ToArray() : _emptyArgs;
+            request.ParameterValues = (deserializedData.Args != null) ? deserializedData.Args.Select(value => new JRawValue(value, serializer)).ToArray() : _emptyArgs;
 
             return request;
         }

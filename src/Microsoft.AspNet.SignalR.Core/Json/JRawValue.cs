@@ -14,10 +14,12 @@ namespace Microsoft.AspNet.SignalR.Json
     internal class JRawValue : IJsonValue
     {
         private readonly string _value;
+        private readonly JsonSerializer _serializer;
 
-        public JRawValue(JRaw value)
+        public JRawValue(JRaw value, JsonSerializer serializer)
         {
             _value = value.ToString();
+            _serializer = serializer;
         }
 
         public object ConvertTo(Type type)
@@ -25,8 +27,7 @@ namespace Microsoft.AspNet.SignalR.Json
             // A non generic implementation of ToObject<T> on JToken
             using (var jsonReader = new StringReader(_value))
             {
-                var serializer = JsonUtility.CreateDefaultSerializer();
-                return serializer.Deserialize(jsonReader, type);
+                return _serializer.Deserialize(jsonReader, type);
             }
         }
 
