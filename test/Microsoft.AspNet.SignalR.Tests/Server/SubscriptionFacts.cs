@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR.Infrastructure;
 using Microsoft.AspNet.SignalR.Messaging;
@@ -25,17 +26,14 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
                 return tcs.Task;
             };
 
-            var subscription = new Mock<TestSubscription>("TestSub", new[] { "a" }, callback, 1)
-            {
-                CallBase = true
-            };
+            var subscription = new TestSubscription("TestSub", new[] { "a" }, callback, 1);
 
-            using (subscription.Object)
+            using (subscription)
             {
                 Task task = null;
                 TestUtilities.AssertUnwrappedException<TaskCanceledException>(() =>
                 {
-                    task = subscription.Object.Work();
+                    task = subscription.Work();
                     task.Wait();
                 });
 
@@ -48,20 +46,17 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
         {
             Func<MessageResult, object, Task<bool>> callback = async (result, state) =>
             {
-                await Task.Delay(500);
+                await Task.Yield();
                 var tcs = new TaskCompletionSource<bool>();
                 tcs.SetCanceled();
                 return await tcs.Task;
             };
 
-            var subscription = new Mock<TestSubscription>("TestSub", new[] { "a" }, callback, 1)
-            {
-                CallBase = true
-            };
+            var subscription = new TestSubscription("TestSub", new[] { "a" }, callback, 1);
 
-            using (subscription.Object)
+            using (subscription)
             {
-                Task task = subscription.Object.Work();
+                Task task = subscription.Work();
 
                 await Assert.ThrowsAsync<TaskCanceledException>(() => task.OrTimeout());
                 Assert.True(task.IsCanceled);
@@ -77,17 +72,14 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
                 return false;
             };
 
-            var subscription = new Mock<TestSubscription>("TestSub", new[] { "a" }, callback, 1)
-            {
-                CallBase = true
-            };
+            var subscription = new TestSubscription("TestSub", new[] { "a" }, callback, 1);
 
-            using (subscription.Object)
+            using (subscription)
             {
                 Task task = null;
                 TestUtilities.AssertUnwrappedException<Exception>(() =>
                 {
-                    task = subscription.Object.Work();
+                    task = subscription.Work();
                     task.Wait();
                 });
 
@@ -105,14 +97,11 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
                 return false;
             };
 
-            var subscription = new Mock<TestSubscription>("TestSub", new[] { "a" }, callback, 1)
-            {
-                CallBase = true
-            };
+            var subscription = new TestSubscription("TestSub", new[] { "a" }, callback, 1);
 
-            using (subscription.Object)
+            using (subscription)
             {
-                Task task = subscription.Object.Work();
+                Task task = subscription.Work();
                 await Assert.ThrowsAsync<Exception>(() => task.OrTimeout());
                 Assert.True(task.IsFaulted);
             }
@@ -126,14 +115,11 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
                 return TaskAsyncHelper.False;
             };
 
-            var subscription = new Mock<TestSubscription>("TestSub", new[] { "a" }, callback, 0)
-            {
-                CallBase = true
-            };
+            var subscription = new TestSubscription("TestSub", new[] { "a" }, callback, 0);
 
-            using (subscription.Object)
+            using (subscription)
             {
-                await subscription.Object.Work().OrTimeout();
+                await subscription.Work().OrTimeout();
             }
         }
 
@@ -145,18 +131,15 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
                 return TaskAsyncHelper.False;
             };
 
-            var subscription = new Mock<TestSubscription>("TestSub", new[] { "a" }, callback, 1)
-            {
-                CallBase = true
-            };
+            var subscription = new TestSubscription("TestSub", new[] { "a" }, callback, 1);
 
             var disposableMock = new Mock<IDisposable>();
-            subscription.Object.Disposable = disposableMock.Object;
+            subscription.Disposable = disposableMock.Object;
             disposableMock.Setup(m => m.Dispose()).Verifiable();
 
-            using (subscription.Object)
+            using (subscription)
             {
-                Task task = subscription.Object.Work();
+                var task = subscription.Work();
                 Assert.True(task.IsCompleted);
                 await task.OrTimeout();
                 disposableMock.Verify(m => m.Dispose(), Times.Once());

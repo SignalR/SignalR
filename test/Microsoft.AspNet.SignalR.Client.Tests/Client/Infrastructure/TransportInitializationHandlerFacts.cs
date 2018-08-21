@@ -7,6 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR.Client.Http;
 using Microsoft.AspNet.SignalR.Client.Transports;
+using Microsoft.AspNet.SignalR.Infrastructure;
 using Moq;
 using Newtonsoft.Json;
 using Xunit;
@@ -16,22 +17,22 @@ namespace Microsoft.AspNet.SignalR.Client.Infrastructure
     public class TransportInitializationHandlerFacts
     {
         [Fact]
-        public void StartRequestNotCalledIfTransportAlreadyFailed()
+        public async Task StartRequestNotCalledIfTransportAlreadyFailed()
         {
             var mockConnection = new Mock<IConnection>();
             mockConnection.Setup(c => c.TotalTransportConnectTimeout).Returns(TimeSpan.FromSeconds(1));
 
             var mockTransportHelper = new Mock<TransportHelper>();
-            var failureInvokedMre = new ManualResetEvent(false);
+            var failureInvokedTcs = new TaskCompletionSource<object>();
 
             var initHandler = new TransportInitializationHandler(Mock.Of<IHttpClient>(), mockConnection.Object,
                 string.Empty, "fakeTransport", CancellationToken.None, mockTransportHelper.Object);
 
-            initHandler.OnFailure += () => failureInvokedMre.Set();
+            initHandler.OnFailure += () => failureInvokedTcs.TrySetResult(null);
 
             initHandler.Fail();
 
-            Assert.True(failureInvokedMre.WaitOne(1000));
+            await failureInvokedTcs.Task.OrTimeout();
 
             initHandler.InitReceived();
 
@@ -41,7 +42,7 @@ namespace Microsoft.AspNet.SignalR.Client.Infrastructure
         }
 
         [Fact]
-        public void InitTaskIsFailedIfFailureOccursAfterStartRequestStarted()
+        public async Task InitTaskIsFailedIfFailureOccursAfterStartRequestStarted()
         {
             var mockTransportHelper = new Mock<TransportHelper>();
             var mockConnection = new Mock<IConnection>();
@@ -68,11 +69,8 @@ namespace Microsoft.AspNet.SignalR.Client.Infrastructure
 
             initHandler.InitReceived();
 
-            Exception startException =
-                Assert.Throws<AggregateException>(
-                    () => Assert.True(initHandler.Task.Wait(TimeSpan.FromSeconds(1)))).InnerException;
+            var startException = await Assert.ThrowsAsync<StartException>(() => initHandler.Task);
 
-            Assert.IsType<StartException>(startException);
             Assert.Same(exception, startException.InnerException);
 
             Assert.True(onFailureInvoked);
@@ -197,7 +195,7 @@ namespace Microsoft.AspNet.SignalR.Client.Infrastructure
         }
 
         [Fact]
-        public void FailInvokedIfDisconnectTokenTripped()
+        public async Task FailInvokedIfDisconnectTokenTripped()
         {
             var mockTransportHelper = new Mock<TransportHelper>();
             var mockConnection = new Mock<IConnection>();
@@ -213,13 +211,10 @@ namespace Microsoft.AspNet.SignalR.Client.Infrastructure
 
             cancellationTokenSource.Cancel();
 
-            Exception exception =
-                Assert.Throws<AggregateException>(
-                    () => initHandler.Task.Wait(TimeSpan.FromSeconds(1))).InnerException;
+            var exception = await Assert.ThrowsAsync<OperationCanceledException>(() => initHandler.Task);
 
-            Assert.IsType<OperationCanceledException>(exception);
             Assert.Equal(Resources.Error_ConnectionCancelled, exception.Message);
-            Assert.Equal(cancellationTokenSource.Token, ((OperationCanceledException)exception).CancellationToken);
+            Assert.Equal(cancellationTokenSource.Token, exception.CancellationToken);
 
             Assert.True(onFailureInvoked);
         }
