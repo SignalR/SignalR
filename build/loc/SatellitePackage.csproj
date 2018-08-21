@@ -1,0 +1,21 @@
+<Project Sdk="Microsoft.NET.Sdk">
+    <!-- Dummy Project for Packing Satellite Packages -->
+    <PropertyGroup>
+        <TargetFramework>netstandard2.0</TargetFramework>
+        <BaseOutputPath>$(ProjectRoot)\obj\satellite\$(Locale)\bin</BaseOutputPath>
+        <BaseIntermediatePath>$(ProjectRoot)\obj\satellite\$(Locale)\obj</BaseIntermediatePath>
+        <NoBuild>true</NoBuild>
+        <IncludeBuildOutput>false</IncludeBuildOutput>
+        <NuspecFile>$(ProjectRoot)\bin\$(Configuration)\$(Locale)\$(PackageId).$(Locale).nuspec</NuspecFile>
+    </PropertyGroup>
+
+    <!-- Set these later, when PackageVersion is available -->
+    <PropertyGroup>
+        <GenerateNuspecDependsOn>$(GenerateNuspecDependsOn);SetNuspecProperties</GenerateNuspecDependsOn>
+    </PropertyGroup>
+    <Target Name="SetNuspecProperties">
+        <PropertyGroup>
+            <NuspecProperties>BaseDirectory=$(ProjectRoot);Locale=$(Locale);PackageVersion=$(PackageVersion);Configuration=$(Configuration);LicenseUrl=$(LicenseUrl)</NuspecProperties>
+        </PropertyGroup>
+    </Target>
+</Project>

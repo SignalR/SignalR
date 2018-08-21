@@ -1,0 +1,39 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<LCX SchemaVersion="6.0" Name="C:\dd2\SignalR\Main\bin\Dev\Release\package-src\Net45\Microsoft.AspNet.SignalR.Redis.dll" PsrId="211" FileType="1" SrcCul="en-US" Desc="Commenting file created by LCXAdmin. For more information, please visit http://localizability/longhorn/LcxAdmin.asp" xmlns="http://schemas.microsoft.com/locstudio/2006/6/lcx">
+  <OwnedComments>
+    <Cmt Name="LcxAdmin" />
+  </OwnedComments>
+  <Item ItemId=";Managed Resources" ItemType="0" PsrId="211" Leaf="true">
+    <Disp Icon="Expand" Expand="true" Disp="true" LocTbl="false" />
+  </Item>
+  <Item ItemId=";Microsoft.AspNet.SignalR.Redis.Resources.resources" ItemType="0" PsrId="211" Leaf="false">
+    <Disp Icon="Str" Expand="true" Disp="true" LocTbl="false" Path=" \ ;Managed Resources \ 0 \ 0" />
+    <Item ItemId=";Strings" ItemType="0" PsrId="211" Leaf="false">
+      <Disp Icon="Str" LocTbl="false" />
+      <Item ItemId=";Error_EndOfStreamRedis" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Encountered an error while reading a message sent over Redis.]]></Val>
+        </Str>
+        <Disp Icon="Str" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked="Redis"}]]></Cmt>
+        </Cmts>
+      </Item>
+    </Item>
+  </Item>
+  <Item ItemId=";Version" ItemType="0" PsrId="211" Leaf="false">
+    <Disp Icon="Ver" Disp="true" LocTbl="false" Path=" \ ;Version \ 8 \ 0" />
+    <Item ItemId=";Comments" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+      <Str Cat="Text">
+        <Val><![CDATA[Redis message bus for SignalR]]></Val>
+      </Str>
+      <Disp Icon="Str" />
+      <Cmts>
+        <Cmt Name="LcxAdmin"><![CDATA[{Locked="Redis", "SignalR"} Product names]]></Cmt>
+      </Cmts>
+    </Item>
+  </Item>
+  <Item ItemId=";Version" ItemType="8" PsrId="211" Leaf="true">
+    <Disp Icon="Expand" Expand="true" Disp="true" LocTbl="false" />
+  </Item>
+</LCX>

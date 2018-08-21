@@ -1,0 +1,694 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<LCX SchemaVersion="6.0" Name="C:\BuildAgent\work\14921690362a1b4c\Tooling\bin\Signed\Dev\package-src\Net45\Microsoft.AspNet.SignalR.Core.dll" PsrId="211" FileType="1" SrcCul="en-US" TgtCul="ja-JP" xmlns="http://schemas.microsoft.com/locstudio/2006/6/lcx">
+  <Props>
+    <Str Name="CustomName1" Val="Custom 1" />
+    <Str Name="CustomName2" Val="Custom 2" />
+    <Str Name="CustomName3" Val="Custom 3" />
+    <Str Name="CustomName4" Val="Custom 4" />
+    <Str Name="CustomName5" Val="Custom 5" />
+    <Str Name="CustomName6" Val="IQA" />
+  </Props>
+  <OwnedComments>
+    <Cmt Name="Dev" />
+    <Cmt Name="DUIData" />
+    <Cmt Name="GoldMine" />
+    <Cmt Name="Goldmine8" />
+    <Cmt Name="LcxAdmin" />
+    <Cmt Name="Loc" />
+    <Cmt Name="ManifestData" />
+    <Cmt Name="Mnemonic" />
+    <Cmt Name="Note" />
+    <Cmt Name="Rccx" />
+    <Cmt Name="UIType" />
+    <Cmt Name="UTSData" />
+    <Cmt Name="UTSUI" />
+    <Cmt Name="zLocLevel" />
+  </OwnedComments>
+  <Settings Name="@vsLocTools@\lsconfig\MVC_Core.lsconfig" Type="Config" />
+  <Item ItemId=";HTML" ItemType="0" PsrId="22" Leaf="true">
+    <Disp Icon="Expand" Expand="true" Disp="true" LocTbl="false" />
+  </Item>
+  <Item ItemId=";Managed Resources" ItemType="0" PsrId="211" Leaf="true">
+    <Disp Icon="Expand" Expand="true" Disp="true" LocTbl="false" />
+  </Item>
+  <Item ItemId=";Microsoft.AspNet.SignalR.Resources.resources" ItemType="0" PsrId="211" Leaf="false">
+    <Disp Icon="Str" Expand="true" Disp="true" LocTbl="false" Path=" \ ;Managed Resources \ 0 \ 0" />
+    <Item ItemId=";Strings" ItemType="0" PsrId="211" Leaf="false">
+      <Disp Icon="Str" LocTbl="false" />
+      <Item ItemId=";DynamicComment_CallsMethodOnServerSideDeferredPromise" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text" UsrLk="true">
+          <Val><![CDATA[            /// <summary>Calls the {0} method on the server-side {1} hub.&#10;Returns a jQuery.Deferred() promise.</summary>]]></Val>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";DynamicComment_ServerSideTypeIs" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text" UsrLk="true">
+          <Val><![CDATA[            /// <param name=\"{0}\" type=\"{1}\">Server side type is {2}</param>]]></Val>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";Error_AmbiguousMessage" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Ambiguous message. Unable to send to both '{0}' and '{1}'.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[メッセージがあいまいです。 '{0}' および '{1}' に送信できません。]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";Error_ArgumentNullOrEmpty" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Argument cannot be null or empty]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[引数を null または空にすることはできません]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";Error_BufferSizeOutOfRange" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[The buffer size '{0}' is out of range.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[バッファー サイズ '{0}' は範囲外です。]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";Error_CallerNotAuthorizedToInvokeMethodOn" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Caller is not authorized to invoke the {0} method on {1}.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[呼び出し側に {1} で {0} メソッドを呼び出す権限はありません。]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";Error_ConnectionIdIncorrectFormat" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[The ConnectionId is in the incorrect format.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New">
+            <Val><![CDATA[ConnectionId の形式が正しくありません。]]></Val>
+          </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[The connection id is in the incorrect format.]]></Val>
+          </Prev>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";Error_ConnectionNotInitialized" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[The PersistentConnection is not initialized.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[PersistentConnection が初期化されていません。]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";Error_DisconnectTimeoutCannotBeConfiguredAfterKeepAlive" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[DisconnectTimeout cannot be configured after the KeepAlive.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[KeepAlive の後に DisconnectTimeout 構成することはできません。]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";Error_DisconnectTimeoutMustBeAtLeastSixSeconds" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[DisconnectTimeout must be at least six seconds.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[DisconnectTimeout は 6 秒以上にする必要があります。]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";Error_DoNotReadRequireOutgoing" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Do not read RequireOutgoing. Use protected _requireOutgoing instead.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[RequireOutgoing を読み取らないでください。代わりに protected _requireOutgoing を使用してください。]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";Error_DuplicateHubNames" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Two Hubs must not share the same name. '{0}' and '{1}' both share the name '{2}'.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[2 つのハブが同じ名前を共有することはできません。'{0}' と '{1}' は名前 '{2}' を共有しています。]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";Error_DuplicateHubNamesInConnectionData" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Duplicate Hub names found.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[重複するハブ名が見つかりました。]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";Error_DuplicatePayloadsForStream" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Duplicate payload id detected for stream '{0}'.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[ストリーム '{0}' の重複するペイロード ID が検出されました。]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";Error_ExceptionContextCanOnlyBeModifiedOnce" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[The ExceptionContext has already been modified once and cannot be modified again.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[ExceptionContext は既に 1 度変更されているので、再度変更することができません。]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";Error_HubCouldNotBeResolved" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA['{0}' Hub could not be resolved.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA['{0}' Hub を解決できませんでした。]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";Error_HubInvocationFailed" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[There was an error invoking Hub method '{0}.{1}'.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[Hub メソッド '{0}.{1}' の呼び出し中にエラーが発生しました。]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";Error_HubProgressOnlyReportableBeforeMethodReturns" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[You cannot report progress on a hub method invocation that has already completed.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[既に完了しているハブ メソッド呼び出しについての進行状況はレポートできません。]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";Error_InvalidCursorFormat" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Invalid cursor.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[カーソルが無効です。]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";Error_InvalidForeverFrameId" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[The supplied frameId is in the incorrect format.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[指定した frameId の形式が正しくありません。]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";Error_IsNotA" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA['{0}' is not a {1}.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA['{0}' は {1} ではありません。]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";Error_JavaScriptProxyDisabled" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[SignalR: JavaScript Hub proxy generation has been disabled.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[SignalR: JavaScript Hub プロキシ生成は無効にされています。]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";Error_KeepAliveMustBeGreaterThanTwoSeconds" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[KeepAlive value must be greater than two seconds.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New">
+            <Val><![CDATA[KeepAlive 値は 2 秒より長くする必要があります。]]></Val>
+          </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Keep Alive value must be greater than two seconds.]]></Val>
+          </Prev>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";Error_KeepAliveMustBeNoMoreThanAThirdOfTheDisconnectTimeout" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[KeepAlive value must be no more than a third of the DisconnectTimeout.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New">
+            <Val><![CDATA[KeepAlive 値は DisconnectTimeout の 3 分の 1 以下にする必要があります。]]></Val>
+          </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Keep Alive value must be no more than a third of the DisconnectTimeout.]]></Val>
+          </Prev>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";Error_MaxScaleoutMappingsPerStreamMustBeNonNegative" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[The value of the MaxScaleoutMappingsPerStream property must be greater or equal to zero.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[MaxScaleoutMappingsPerStream プロパティの値はゼロ以上でなければなりません。]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";Error_MethodCouldNotBeResolved" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA['{0}' method could not be resolved. No method found with that name.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New">
+            <Val><![CDATA['{0}' メソッドを解決できませんでした。指定された名前のメソッドが見つかりませんでした。]]></Val>
+          </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA['{0}' method could not be resolved.]]></Val>
+          </Prev>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";Error_MethodCouldNotBeResolvedCandidates" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA['{0}' method could not be resolved. Potential candidates are: {1}]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA['{0}' メソッドを解決できませんでした。{1} の可能性があります]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";Error_MethodLevelOutgoingAuthorization" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Outgoing authorization can only be required for an entire Hub, not a specific method.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[発信の承認は、特定のメソッドではなく、Hub 全体に対してのみ必要にすることができます。]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";Error_MethodMustNotTakeOutParameter" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[The '{0}' parameter of '{1}.{2}' must not be an out parameter.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA['{1}.{2}' の '{0}' パラメーターは out パラメーターではありません。]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";Error_MethodMustNotTakeRefParameter" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[The '{0}' parameter of '{1}.{2}' must not be a ref parameter.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA['{1}.{2}' の '{0}' パラメーターは ref パラメーターではありません。]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";Error_MethodMustReturnVoidOrTask" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[The return type of '{0}.{1}' must be void or Task.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA['{0}.{1}' の戻り値の型は、void または Task でなければなりません。]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";Error_MultipleActivatorsAreaRegisteredCallGetServices" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Multiple activators for type {0} are registered. Please call GetServices instead.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[型 {0} に対して複数のアクティベーターが登録されています。代わりに GetServices を呼び出してください。]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";Error_NoConfiguration" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[A configuration object must be specified.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[構成オブジェクトを指定する必要があります。]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";Error_NoDependencyResolver" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[A dependency resolver must be specified.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[依存関係リゾルバーを指定する必要があります。]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";Error_NotWebSocketRequest" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Not a valid web socket request.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[有効な Web ソケット リクエストではありません。]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";Error_ParseObjectFailed" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Unexpected end when reading object.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[オブジェクトの読み取り中の予期しない終了です。]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";Error_ProtocolErrorMissingConnectionToken" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Protocol error: Missing connection token.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[プロトコル エラー: 接続トークンが見つかりません。]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";Error_ProtocolErrorUnknownTransport" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Protocol error: Unknown transport.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[プロトコル エラー: 不明なトランスポートです。]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";Error_ScaleoutQueuingConfig" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Scaleout queuing is enabled but maximum queue size is 0]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[スケールアウト キューイングが有効になっていますが、最大キュー サイズが 0 です]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";Error_StateExceededMaximumLength" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[State has exceeded the maximum length of 4096 bytes.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[State が 4096 バイトという最大長を超えました。]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";Error_StreamClosed" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[The stream has been closed.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[ストリームは終了されています。]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";Error_StreamNotOpen" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[The stream is not open.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[ストリームが開かれていません。]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";Error_TaskQueueFull" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[The queue is full.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[キューがいっぱいです。]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";Error_TypeMustBeInterface" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[The type T, '{0}', passed to Hub<T> must be an interface.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[Hub<T> に渡される型 T '{0}' は、インターフェイスでなければなりません。]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";Error_TypeMustNotContainEvents" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[The interface '{0}' must not contain any events.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[インターフェイス '{0}' はイベントを含むことはできません。]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";Error_TypeMustNotContainProperties" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[The interface '{0}' must not contain any properties.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[インターフェイス '{0}' はプロパティを含むことはできません。]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";Error_UnableToAddModulePiplineAlreadyInvoked" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Unable to add module. The HubPipeline has already been invoked.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[モジュールを追加できません。HubPipeline は既に呼び出されています。]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";Error_UnrecognizedUserIdentity" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Unrecognized user identity.  The user identity cannot change during an active SignalR connection.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[認識されないユーザー ID です。アクティブな SignalR 接続中はユーザー ID を変更できません。]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";Error_UsingHubInstanceNotCreatedUnsupported" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Using a Hub instance not created by the HubPipeline is unsupported.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[HubPipeline により作成されていない Hub インスタンスの使用はサポートされていません。]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";Error_WebSocketsNotSupported" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[WebSockets is not supported.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[WebSockets はサポートされません。]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";Forbidden_JSONPDisabled" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Forbidden: JSONP is disabled.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[禁止:  JSONP が無効です。]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+    </Item>
+  </Item>
+  <Item ItemId=";Microsoft.AspNet.SignalR.Scripts.hubs.js" ItemType="0" PsrId="22" Leaf="false">
+    <Disp Icon="Expand" Expand="true" Disp="true" LocTbl="false" Path=" \ ;HTML \ 0 \ 0" />
+    <Item ItemId=";HTML Comments" ItemType="0" PsrId="22" Leaf="false">
+      <Disp Icon="Str" Disp="true" LocTbl="false" />
+      <Item ItemId="0;09ff4f7ec0eaea78d1c0b8b24ce91c20" ItemType="24;Comment" PsrId="22" InstFlg="true" Leaf="true">
+        <Str Cat="Comment" UsrLk="true">
+          <Val><![CDATA[ Unsubscribe all hub proxies when we "disconnect".  This is to ensure that we do not re-add functional call backs.]]></Val>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId="0;12ad18be42d6398a56381bf1b642803b" ItemType="24;Comment" PsrId="22" InstFlg="true" Leaf="true">
+        <Str Cat="Comment" UsrLk="true">
+          <Val><![CDATA[ We want to unsubscribe from the hub events]]></Val>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId="0;37c788a1f888e058a385b376b6de89bf" ItemType="24;Comment" PsrId="22" InstFlg="true" Leaf="true">
+        <Str Cat="Comment" UsrLk="true">
+          <Val><![CDATA[ <reference path="jquery.signalR.js" />]]></Val>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId="0;3a0ffc834786550d3d3c5b290ef67ca6" ItemType="24;Comment" PsrId="22" InstFlg="true" Leaf="true">
+        <Str Cat="Comment" UsrLk="true">
+          <Val><![CDATA[ Loop through all members on the hub and find client hub functions to subscribe/unsubscribe]]></Val>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId="0;44ce4b22f0dfd4a22aec0bf4e655554c" ItemType="24;Comment" PsrId="22" InstFlg="true" Leaf="true">
+        <Str Cat="Comment" UsrLk="true">
+          <Val><![CDATA[ We want to subscribe to the hub events]]></Val>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId="0;4b166203726ce169669b94d3318a7ea1" ItemType="24;Comment" PsrId="22" InstFlg="true" Leaf="true">
+        <Str Cat="Comment" UsrLk="true">
+          <Val><![CDATA[ <reference path="..\..\SignalR.Client.JS\Scripts\jquery-1.6.4.js" />]]></Val>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId="0;55883dfaaa7c7655a949de280e4c68b0" ItemType="24;Comment" PsrId="22" InstFlg="true" Leaf="true">
+        <Str Cat="Comment" UsrLk="true">
+          <Val><![CDATA[ Not a client hub function]]></Val>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId="0;72c8575b2aa964704e43e645aaa9619c" ItemType="24;Comment" PsrId="22" InstFlg="true" Leaf="true">
+        <Str Cat="Comment" UsrLk="true">
+          <Val><![CDATA[ Register the hub proxies as subscribed]]></Val>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId="0;907731ba25e0649559c44b2c7399011a" ItemType="24;Comment" PsrId="22" InstFlg="true" Leaf="true">
+        <Str Cat="Comment" UsrLk="true">
+          <Val><![CDATA[ Not a client hub]]></Val>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId="0;9b5bb19aefb678fdfb2cf6d1355c7873" ItemType="24;Comment" PsrId="22" InstFlg="true" Leaf="true">
+        <Str Cat="Comment" UsrLk="true">
+          <Val><![CDATA[ <param name="$" type="jQuery" />]]></Val>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId="0;a6b8355c4d7613aedb58e9a6d5c41225" ItemType="24;Comment" PsrId="22" InstFlg="true" Leaf="true">
+        <Str Cat="Comment" UsrLk="true">
+          <Val><![CDATA[hubs]]></Val>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId="0;a7648c71401e48670b0969aa1cd61003" ItemType="24;Comment" PsrId="22" InstFlg="true" Leaf="true">
+        <Str Cat="Comment" UsrLk="true">
+          <Val><![CDATA[ Call the client hub method]]></Val>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId="0;b2dee090cff629a2870d75fa6ede0733" ItemType="24;Comment" PsrId="22" Leaf="true">
+        <Str Cat="Comment">
+          <Val><![CDATA[!]A; * ASP.NET SignalR JavaScript Library v2.2.2]A; * http://signalr.net/]A; *]A; * Copyright (c) .NET Foundation. All rights reserved.]A; * Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.]A; *]A; ]]></Val>
+          <Tgt Cat="Comment" Stat="Loc" Orig="New">
+            <Val><![CDATA[!]A; * ASP.NET SignalR JavaScript Library v2.2.2]A; * http://signalr.net/]A; *]A; * Copyright (c) .NET Foundation. All rights reserved.]A; * Apache ライセンス、バージョン 2.0 でライセンスされています。ライセンス情報については、プロジェクト ルートにある License.txt をご覧ください。]A; *]A; ]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId="0;f6def39ac62303430e0afe554eff751a" ItemType="24;Comment" PsrId="22" InstFlg="true" Leaf="true">
+        <Str Cat="Comment" UsrLk="true">
+          <Val><![CDATA[ (instance, shouldSubscribe)]]></Val>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId="1;f6def39ac62303430e0afe554eff751a" ItemType="24;Comment" PsrId="22" InstFlg="true" Leaf="true">
+        <Str Cat="Comment" UsrLk="true">
+          <Val><![CDATA[ (instance, shouldSubscribe)]]></Val>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+    </Item>
+  </Item>
+  <Item ItemId=";Version" ItemType="0" PsrId="211" Leaf="false">
+    <Disp Icon="Ver" Disp="true" LocTbl="false" Path=" \ ;Version \ 8 \ 0" />
+    <Item ItemId=";AssemblyVersion" ItemType="0" PsrId="211" Leaf="true">
+      <Str Cat="Text" DevLk="true">
+        <Val><![CDATA[2.2.2.0]]></Val>
+      </Str>
+      <Disp Icon="Str" />
+    </Item>
+    <Item ItemId=";Comments" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+      <Str Cat="Text">
+        <Val><![CDATA[Async signaling library for .NET to help build real-time, multi-user interactive web applications.]]></Val>
+        <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+          <Val><![CDATA[リアルタイム、マルチユーザーの対話型 Web アプリケーションの構築を支援する、.NET 用の非同期シグナリング ライブラリ。]]></Val>
+        </Tgt>
+      </Str>
+      <Disp Icon="Str" />
+    </Item>
+    <Item ItemId=";CompanyName" ItemType="0" PsrId="211" Leaf="true">
+      <Str Cat="Text">
+        <Val><![CDATA[.NET Foundation]]></Val>
+        <Tgt Cat="Text" Stat="Loc" Orig="Auto" Confidence="100">
+          <Val><![CDATA[.NET Foundation]]></Val>
+        </Tgt>
+        <Prev Cat="Text">
+          <Val><![CDATA[Microsoft Corporation]]></Val>
+        </Prev>
+      </Str>
+      <Disp Icon="Str" />
+    </Item>
+    <Item ItemId=";FileDescription" ItemType="0" PsrId="211" Leaf="true">
+      <Str Cat="Text">
+        <Val><![CDATA[Microsoft.AspNet.SignalR.Core (a450dde134295ee5a574a121fede353cb26c0b2e)]]></Val>
+        <Tgt Cat="Text" Stat="Loc" Orig="New">
+          <Val><![CDATA[Microsoft.AspNet.SignalR.Core (a450dde134295ee5a574a121fede353cb26c0b2e)]]></Val>
+        </Tgt>
+        <Prev Cat="Text">
+          <Val><![CDATA[Microsoft.AspNet.SignalR.Core (b053c6878d25b8f50e1cf84fff8f24c325700801)]]></Val>
+        </Prev>
+      </Str>
+      <Disp Icon="Str" />
+    </Item>
+    <Item ItemId=";FileVersion" ItemType="0" PsrId="211" Leaf="true">
+      <Str Cat="Text" DevLk="true">
+        <Val><![CDATA[2.2.60718.1246]]></Val>
+      </Str>
+      <Disp Icon="Str" />
+    </Item>
+    <Item ItemId=";InternalName" ItemType="0" PsrId="211" Leaf="true">
+      <Str Cat="Text" DevLk="true">
+        <Val><![CDATA[Microsoft.AspNet.SignalR.Core.dll]]></Val>
+      </Str>
+      <Disp Icon="Str" />
+    </Item>
+    <Item ItemId=";LegalCopyright" ItemType="0" PsrId="211" Leaf="true">
+      <Str Cat="Text">
+        <Val><![CDATA[© Copyright (c) .NET Foundation. All rights reserved.]]></Val>
+        <Tgt Cat="Text" Stat="Loc" Orig="New">
+          <Val><![CDATA[© Copyright (c) .NET Foundation. All rights reserved.]]></Val>
+        </Tgt>
+        <Prev Cat="Text">
+          <Val><![CDATA[© Microsoft Corporation All rights reserved.]]></Val>
+        </Prev>
+      </Str>
+      <Disp Icon="Str" />
+    </Item>
+    <Item ItemId=";OriginalFilename" ItemType="0" PsrId="211" Leaf="true">
+      <Str Cat="Text" DevLk="true">
+        <Val><![CDATA[Microsoft.AspNet.SignalR.Core.dll]]></Val>
+      </Str>
+      <Disp Icon="Str" />
+    </Item>
+    <Item ItemId=";ProductName" ItemType="0" PsrId="211" Leaf="true">
+      <Str Cat="Text">
+        <Val><![CDATA[Microsoft ASP.NET SignalR]]></Val>
+        <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+          <Val><![CDATA[Microsoft ASP.NET SignalR]]></Val>
+        </Tgt>
+      </Str>
+      <Disp Icon="Str" />
+    </Item>
+    <Item ItemId=";ProductVersion" ItemType="0" PsrId="211" Leaf="true">
+      <Str Cat="Text" DevLk="true">
+        <Val><![CDATA[2.2.2]]></Val>
+      </Str>
+      <Disp Icon="Str" />
+    </Item>
+  </Item>
+  <Item ItemId=";Version" ItemType="8" PsrId="211" Leaf="true">
+    <Disp Icon="Expand" Expand="true" Disp="true" LocTbl="false" />
+  </Item>
+</LCX>

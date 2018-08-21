@@ -1,0 +1,56 @@
+<Project>
+  <ItemGroup>
+    <TranslationLanguage Include="CHS">
+      <LocaleName>zh-CN</LocaleName>
+      <PackageLocaleName>zh-Hans</PackageLocaleName>
+    </TranslationLanguage>
+    <TranslationLanguage Include="CHT">
+      <LocaleName>zh-TW</LocaleName>
+      <PackageLocaleName>zh-Hant</PackageLocaleName>
+    </TranslationLanguage>
+    <TranslationLanguage Include="CSY">
+      <LocaleName>cs-CZ</LocaleName>
+      <PackageLocaleName>cs</PackageLocaleName>
+    </TranslationLanguage>
+    <TranslationLanguage Include="DEU">
+      <LocaleName>de-DE</LocaleName>
+      <PackageLocaleName>de</PackageLocaleName>
+    </TranslationLanguage>
+    <TranslationLanguage Include="ESN">
+      <LocaleName>es-ES</LocaleName>
+      <PackageLocaleName>es</PackageLocaleName>
+    </TranslationLanguage>
+    <TranslationLanguage Include="FRA">
+      <LocaleName>fr-FR</LocaleName>
+      <PackageLocaleName>fr</PackageLocaleName>
+    </TranslationLanguage>
+    <TranslationLanguage Include="ITA">
+      <LocaleName>it-IT</LocaleName>
+      <PackageLocaleName>it</PackageLocaleName>
+    </TranslationLanguage>
+    <TranslationLanguage Include="JPN">
+      <LocaleName>ja-JP</LocaleName>
+      <PackageLocaleName>ja</PackageLocaleName>
+    </TranslationLanguage>
+    <TranslationLanguage Include="KOR">
+      <LocaleName>ko-KR</LocaleName>
+      <PackageLocaleName>ko</PackageLocaleName>
+    </TranslationLanguage>
+    <TranslationLanguage Include="PLK">
+      <LocaleName>pl-PL</LocaleName>
+      <PackageLocaleName>pl</PackageLocaleName>
+    </TranslationLanguage>
+    <TranslationLanguage Include="PTB">
+      <LocaleName>pt-BR</LocaleName>
+      <PackageLocaleName>pt-br</PackageLocaleName>
+    </TranslationLanguage>
+    <TranslationLanguage Include="RUS">
+      <LocaleName>ru-RU</LocaleName>
+      <PackageLocaleName>ru</PackageLocaleName>
+    </TranslationLanguage>
+    <TranslationLanguage Include="TRK">
+      <LocaleName>tr-TR</LocaleName>
+      <PackageLocaleName>tr</PackageLocaleName>
+    </TranslationLanguage>
+  </ItemGroup>
+</Project>

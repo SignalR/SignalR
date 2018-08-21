@@ -1,0 +1,69 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<LCX SchemaVersion="6.0" Name="C:\BuildAgent\work\fb6d1ece28b46ab7\Tooling\src\localizedpackages\Microsoft.AspNet.SignalR.Client.nuspec" PsrId="210" FileType="1" SrcCul="en-US" TgtCul="zh-CN" xmlns="http://schemas.microsoft.com/locstudio/2006/6/lcx">
+  <Props>
+    <Str Name="CustomName1" Val="Custom 1" />
+    <Str Name="CustomName2" Val="Custom 2" />
+    <Str Name="CustomName3" Val="Custom 3" />
+    <Str Name="CustomName4" Val="Custom 4" />
+    <Str Name="CustomName5" Val="Custom 5" />
+    <Str Name="CustomName6" Val="IQA" />
+  </Props>
+  <OwnedComments>
+    <Cmt Name="Dev" />
+    <Cmt Name="LcxAdmin" />
+    <Cmt Name="Note" />
+    <Cmt Name="Rccx" />
+  </OwnedComments>
+  <Settings Name="@vsLocTools@\lsconfig\WTE_nuspec.lsconfig" Type="Config" />
+  <Item ItemId=";&lt;description&gt;" ItemType="0" PsrId="210" Leaf="false">
+    <Disp Icon="Str" Disp="true" LocTbl="false" />
+    <Modified By="translator" DateTime="2012-12-12T07:49:50Z" />
+    <Item ItemId="0;a740c635491bb4634ff3288bf64fed22" ItemType="42;XML:Text" PsrId="210" InstFlg="true" Leaf="true">
+      <Str Cat="AppData">
+        <Val><![CDATA[This package contains the {Language} satellite assemblies for ASP.NET SignalR Core.]]></Val>
+        <Tgt Cat="AppData" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+          <Val><![CDATA[此程序包包含适用于 ASP.NET SignalR Core 的简体中文附属程序集。]]></Val>
+        </Tgt>
+      </Str>
+      <Disp Icon="Str" Order="5" />
+      <Modified By="translator" DateTime="2013-01-15T10:23:53Z" />
+      <Cmts>
+        <Cmt Name="LcxAdmin"><![CDATA[{Locked="ASP.NET SignalR Core"} Please translate the Language placeholder to the native language name, eg for DE, it should read Deutsch]]></Cmt>
+      </Cmts>
+    </Item>
+  </Item>
+  <Item ItemId=";&lt;summary&gt;" ItemType="0" PsrId="210" Leaf="false">
+    <Disp Icon="Str" Disp="true" LocTbl="false" />
+    <Modified By="translator" DateTime="2012-12-12T07:49:50Z" />
+    <Item ItemId="0;abe3e435eb2105ad1f0ff452e49cfbf3" ItemType="42;XML:Text" PsrId="210" InstFlg="true" Leaf="true">
+      <Str Cat="AppData">
+        <Val><![CDATA[{Language} resources for the Microsoft.AspNet.SignalR.Client package]]></Val>
+        <Tgt Cat="AppData" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+          <Val><![CDATA[适用于 Microsoft.AspNet.SignalR.Client 程序包的简体中文资源]]></Val>
+        </Tgt>
+      </Str>
+      <Disp Icon="Str" Order="3" />
+      <Modified By="translator" DateTime="2012-12-13T04:44:44Z" />
+      <Cmts>
+        <Cmt Name="LcxAdmin"><![CDATA[{Locked="Microsoft.AspNet.SignalR.Client"} Please translate the Language placeholder to the native language name, eg for DE, it should read Deutsch]]></Cmt>
+      </Cmts>
+    </Item>
+  </Item>
+  <Item ItemId=";&lt;title&gt;" ItemType="0" PsrId="210" Leaf="false">
+    <Disp Icon="Str" Disp="true" LocTbl="false" />
+    <Modified By="translator" DateTime="2012-12-12T07:49:50Z" />
+    <Item ItemId="0;056d7db10240d7060e823d7232e0c4cc" ItemType="42;XML:Text" PsrId="210" InstFlg="true" Leaf="true">
+      <Str Cat="AppData">
+        <Val><![CDATA[Microsoft ASP.NET SignalR Client {Language} Resources]]></Val>
+        <Tgt Cat="AppData" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+          <Val><![CDATA[Microsoft ASP.NET SignalR Client 简体中文资源]]></Val>
+        </Tgt>
+      </Str>
+      <Disp Icon="Str" Order="1" />
+      <Modified By="translator" DateTime="2012-12-13T04:44:44Z" />
+      <Cmts>
+        <Cmt Name="LcxAdmin"><![CDATA[Please translate the Language placeholder to the native language name, eg for DE, it should read Deutsch {Locked="Microsoft ASP.NET SignalR Client"}]]></Cmt>
+      </Cmts>
+    </Item>
+  </Item>
+</LCX>

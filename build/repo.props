@@ -1,4 +1,6 @@
 <Project>
+    <Import Project="$(RepositoryRoot)build\loc\Localization.props" Condition="'$(Localize)' == 'true'" />
+
     <ItemGroup>
         <!-- Functional Tests are long and UWP tests don't work in KoreBuild -->
         <ExcludeFromTest Include="$(RepositoryRoot)test\Microsoft.AspNet.SignalR.FunctionalTests\Microsoft.AspNet.SignalR.FunctionalTests.csproj" />

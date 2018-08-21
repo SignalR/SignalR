@@ -1,0 +1,327 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<LCX SchemaVersion="6.0" Name="C:\BuildAgent\work\14921690362a1b4c\Tooling\bin\Dev\Release\Net45\Microsoft.AspNet.SignalR.Client.dll" PsrId="211" FileType="1" SrcCul="en-US" TgtCul="fr-FR" xmlns="http://schemas.microsoft.com/locstudio/2006/6/lcx">
+  <Props>
+    <Str Name="CustomName1" Val="Custom 1" />
+    <Str Name="CustomName2" Val="Custom 2" />
+    <Str Name="CustomName3" Val="Custom 3" />
+    <Str Name="CustomName4" Val="Custom 4" />
+    <Str Name="CustomName5" Val="Custom 5" />
+    <Str Name="CustomName6" Val="IQA" />
+  </Props>
+  <OwnedComments>
+    <Cmt Name="Dev" />
+    <Cmt Name="LcxAdmin" />
+    <Cmt Name="Note" />
+    <Cmt Name="Rccx" />
+  </OwnedComments>
+  <Settings Name="@vsLocTools@\lsconfig\MVC_Core.lsconfig" Type="Config" />
+  <Item ItemId=";Managed Resources" ItemType="0" PsrId="211" Leaf="true">
+    <Disp Icon="Expand" Expand="true" Disp="true" LocTbl="false" />
+  </Item>
+  <Item ItemId=";Microsoft.AspNet.SignalR.Client.Resources.resources" ItemType="0" PsrId="211" Leaf="false">
+    <Disp Icon="Str" Expand="true" Disp="true" LocTbl="false" Path=" \ ;Managed Resources \ 0 \ 0" />
+    <Item ItemId=";Strings" ItemType="0" PsrId="211" Leaf="false">
+      <Disp Icon="Str" LocTbl="false" />
+      <Item ItemId=";Error_CertsCanOnlyBeAddedWhenDisconnected" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Client Certificates cannot be added after the connection has started.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[Les certificats clients ne peuvent pas être ajoutés après le démarrage de la connexion.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";Error_ClientCallbackArgumentTypeMismatch" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[A client callback for event {0} with {1} argument(s) was found, however an error occurred because {2}]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="Auto" AutoAppr="N/A" Confidence="100">
+            <Val><![CDATA[Un rappel client pour l’événement {0} avec {1} argument(s) a été trouvé. Une erreur s’est toutefois produite, car {2}]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";Error_ClientCallbackInvalidNumberOfArguments" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[A client callback for event {0} with {1} argument(s) could not be found]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="Auto" AutoAppr="N/A" Confidence="100">
+            <Val><![CDATA[Un rappel client pour l’événement {0} avec {1} argument(s) est introuvable]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";Error_ConnectionCancelled" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[The connection was stopped before it could be started.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[La connexion a été arrêtée avant d’être démarrée.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";Error_ConnectionHasNotBeenEstablished" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[The connection has not been established.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[La connexion n’a pas été établie.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";Error_DataCannotBeSentConnectionDisconnected" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Data cannot be sent because the connection is in the disconnected state. Call start before sending any data.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New">
+            <Val><![CDATA[Les données ne peuvent être envoyées car l'état de la connexion est : déconnecté. Un appel de démarrage est requis avant tout envoi de données.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";Error_DataCannotBeSentDuringWebSocketReconnect" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Data cannot be sent because the WebSocket connection is reconnecting.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[Impossible d'envoyer des données car la connexion WebSocket est en train de se connecter.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";Error_IncompatibleProtocolVersion" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[You are using a version of the client that isn't compatible with the server. Client version {0}, server version {1}.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New">
+            <Val><![CDATA[Vous utilisez une version du client qui n’est pas compatible avec le serveur. Version du client {0}, version du serveur {1}.]]></Val>
+          </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Incompatible protocol version.]]></Val>
+          </Prev>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";Error_InvalidUriScheme" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Uri scheme '{0}' is not valid. The only valid uri schemes are 'http' and 'https'.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[Le schéma d'URI « {0} » n'est pas valide. Les seuls schémas d'URI valides sont « http » et « https ».]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";Error_PossibleDeadlockDetected" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Possible deadlock detected. A callback registered with "HubProxy.On" or "Connection.Received" has been executing for at least {0} seconds.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[Blocage possible détecté. Un rappel inscrit avec « HubProxy.On » ou « Connection.Received » s'exécute depuis au moins {0} seconde(s).]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";Error_ProcessResponseBeforeStart" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[The ProcessResponse method cannot be called before the transport is started.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[La méthode ProcessResponse ne peut pas être appelée avant le démarrage du transport.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";Error_ProxiesCannotBeAddedConnectionStarted" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[A HubProxy cannot be added after the connection has been started.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[Impossible d’ajouter un HubProxy après le démarrage de la connexion.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";Error_ReconnectTimeout" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Couldn't reconnect within the configured timeout of {0}, disconnecting.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[Impossible de se reconnecter avant la fin du délai d’expiration configuré {0}, déconnexion.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";Error_ReconnectWindowTimeout" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[The client has been inactive since {0} and it has exceeded the inactivity timeout of {1}. Stopping the connection.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[Le client est inactif depuis {0} et il a dépassé le délai d'inactivité imparti {1}. Arrêt de la connexion.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";Error_ServerNegotiationFailed" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Server negotiation failed.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="Auto" AutoAppr="N/A" Confidence="100">
+            <Val><![CDATA[La négociation du serveur a échoué.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";Error_StartFailed" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Error during start request. Stopping the connection.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[Erreur lors de la demande de démarrage. Arrêt de la connexion.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";Error_TaskCancelledException" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Request failed - task cancelled.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="Auto" AutoAppr="N/A" Confidence="100">
+            <Val><![CDATA[Échec de la requête. La tâche a été annulée.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";Error_TransportCannotBeReused" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[The transport instance passed to the Negotiate method has already been used. Use a new transport instance each time you start a new connection.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[L'instance de transport passée à la méthode Negotiate a déjà été utilisée. Utilisez une nouvelle instance de transport chaque fois que vous démarrez une nouvelle connexion.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";Error_TransportFailedToConnect" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Transport failed trying to connect.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="Auto" AutoAppr="N/A" Confidence="100">
+            <Val><![CDATA[Échec de la tentative de connexion par le transport.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";Error_TransportTimedOutTryingToConnect" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Transport timed out trying to connect]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="Copied" AutoAppr="N/A">
+            <Val><![CDATA[Le transport a expiré lors de la tentative de connexion]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";Error_UrlCantContainQueryStringDirectly" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Url cannot contain query string directly. Pass query string values in using available overload.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[L’Url ne peut pas contenir de chaîne de requête directement. Transmettez les valeurs de chaîne de requête à l’aide de la surcharge disponible.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";Message_ConnectionClosed" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Connection was disconnected before invocation result was received.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[La connexion a été déconnectée avant la réception du résultat de l’invocation.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";Message_Reconnecting" ItemType="0" PsrId="211" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Connection started reconnecting before invocation result was received.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+            <Val><![CDATA[La connexion a commencé à se reconnecter avant la réception du résultat de l’invocation.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+    </Item>
+  </Item>
+  <Item ItemId=";Version" ItemType="0" PsrId="211" Leaf="false">
+    <Disp Icon="Ver" Disp="true" LocTbl="false" Path=" \ ;Version \ 8 \ 0" />
+    <Item ItemId=";AssemblyVersion" ItemType="0" PsrId="211" Leaf="true">
+      <Str Cat="Text" DevLk="true">
+        <Val><![CDATA[2.2.2.0]]></Val>
+      </Str>
+      <Disp Icon="Str" />
+    </Item>
+    <Item ItemId=";Comments" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+      <Str Cat="Text">
+        <Val><![CDATA[.NET client for SignalR]]></Val>
+        <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="Auto" AutoAppr="N/A" Confidence="100">
+          <Val><![CDATA[Client .NET pour SignalR]]></Val>
+        </Tgt>
+      </Str>
+      <Disp Icon="Str" />
+    </Item>
+    <Item ItemId=";CompanyName" ItemType="0" PsrId="211" Leaf="true">
+      <Str Cat="Text">
+        <Val><![CDATA[.NET Foundation]]></Val>
+        <Tgt Cat="Text" Stat="Loc" Orig="New">
+          <Val><![CDATA[.NET Foundation]]></Val>
+        </Tgt>
+        <Prev Cat="Text">
+          <Val><![CDATA[Microsoft Corporation]]></Val>
+        </Prev>
+      </Str>
+      <Disp Icon="Str" />
+    </Item>
+    <Item ItemId=";FileDescription" ItemType="0" PsrId="211" Leaf="true">
+      <Str Cat="Text">
+        <Val><![CDATA[Microsoft.AspNet.SignalR.Client45 (a450dde134295ee5a574a121fede353cb26c0b2e)]]></Val>
+        <Tgt Cat="Text" Stat="Loc" Orig="New">
+          <Val><![CDATA[Microsoft.AspNet.SignalR.Client45 (a450dde134295ee5a574a121fede353cb26c0b2e)]]></Val>
+        </Tgt>
+        <Prev Cat="Text">
+          <Val><![CDATA[Microsoft.AspNet.SignalR.Client45 (d4db20da24b6f18169798e84991cd7caa44af1cd)]]></Val>
+        </Prev>
+      </Str>
+      <Disp Icon="Str" />
+    </Item>
+    <Item ItemId=";FileVersion" ItemType="0" PsrId="211" Leaf="true">
+      <Str Cat="Text" DevLk="true">
+        <Val><![CDATA[2.2.60505.1172]]></Val>
+      </Str>
+      <Disp Icon="Str" />
+    </Item>
+    <Item ItemId=";InternalName" ItemType="0" PsrId="211" Leaf="true">
+      <Str Cat="Text" DevLk="true">
+        <Val><![CDATA[Microsoft.AspNet.SignalR.Client.dll]]></Val>
+      </Str>
+      <Disp Icon="Str" />
+    </Item>
+    <Item ItemId=";LegalCopyright" ItemType="0" PsrId="211" Leaf="true">
+      <Str Cat="Text">
+        <Val><![CDATA[© Copyright (c) .NET Foundation. All rights reserved.]]></Val>
+        <Tgt Cat="Text" Stat="Loc" Orig="Auto" Confidence="100">
+          <Val><![CDATA[© Copyright (c) .NET Foundation. Tous droits réservés.]]></Val>
+        </Tgt>
+        <Prev Cat="Text">
+          <Val><![CDATA[© Microsoft Corporation All rights reserved.]]></Val>
+        </Prev>
+      </Str>
+      <Disp Icon="Str" />
+    </Item>
+    <Item ItemId=";OriginalFilename" ItemType="0" PsrId="211" Leaf="true">
+      <Str Cat="Text" DevLk="true">
+        <Val><![CDATA[Microsoft.AspNet.SignalR.Client.dll]]></Val>
+      </Str>
+      <Disp Icon="Str" />
+    </Item>
+    <Item ItemId=";ProductName" ItemType="0" PsrId="211" Leaf="true">
+      <Str Cat="Text">
+        <Val><![CDATA[Microsoft ASP.NET SignalR]]></Val>
+        <Tgt Cat="Text" Stat="Loc" Appr="PreApproved" Orig="New" AutoAppr="N/A">
+          <Val><![CDATA[Microsoft ASP.NET SignalR]]></Val>
+        </Tgt>
+      </Str>
+      <Disp Icon="Str" />
+    </Item>
+    <Item ItemId=";ProductVersion" ItemType="0" PsrId="211" Leaf="true">
+      <Str Cat="Text" DevLk="true">
+        <Val><![CDATA[2.2.2]]></Val>
+      </Str>
+      <Disp Icon="Str" />
+    </Item>
+  </Item>
+  <Item ItemId=";Version" ItemType="8" PsrId="211" Leaf="true">
+    <Disp Icon="Expand" Expand="true" Disp="true" LocTbl="false" />
+  </Item>
+</LCX>

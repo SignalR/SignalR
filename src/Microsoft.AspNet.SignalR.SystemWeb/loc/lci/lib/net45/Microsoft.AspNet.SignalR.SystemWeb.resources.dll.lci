@@ -1,0 +1,21 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<LCX SchemaVersion="6.0" Name="C:\dd2\SignalR\Main\bin\Dev\Release\package-src\Net45\Microsoft.AspNet.SignalR.SystemWeb.dll" PsrId="211" FileType="1" SrcCul="en-US" Desc="Commenting file created by LCXAdmin. For more information, please visit http://localizability/longhorn/LcxAdmin.asp" xmlns="http://schemas.microsoft.com/locstudio/2006/6/lcx">
+  <OwnedComments>
+    <Cmt Name="LcxAdmin" />
+  </OwnedComments>
+  <Item ItemId=";Version" ItemType="0" PsrId="211" Leaf="false">
+    <Disp Icon="Ver" Disp="true" LocTbl="false" Path=" \ ;Version \ 8 \ 0" />
+    <Item ItemId=";Comments" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+      <Str Cat="Text">
+        <Val><![CDATA[SystemWeb component for SignalR]]></Val>
+      </Str>
+      <Disp Icon="Str" />
+      <Cmts>
+        <Cmt Name="LcxAdmin"><![CDATA[{Locked="SignalR"}]]></Cmt>
+      </Cmts>
+    </Item>
+  </Item>
+  <Item ItemId=";Version" ItemType="8" PsrId="211" Leaf="true">
+    <Disp Icon="Expand" Expand="true" Disp="true" LocTbl="false" />
+  </Item>
+</LCX>

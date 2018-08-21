@@ -1,0 +1,27 @@
+﻿<?xml version="1.0"?>
+<package>
+    <metadata>
+        <id>Microsoft.AspNet.SignalR.Client.$Locale$</id>
+        <title>Microsoft ASP.NET SignalR Client {Language} Resources</title>
+        <summary>{Language} resources for the Microsoft.AspNet.SignalR.Client package</summary>
+        <version>$PackageVersion$</version>
+        <authors>Microsoft</authors>
+        <owners>Microsoft</owners>
+        <licenseUrl>$LicenseUrl$</licenseUrl>
+        <copyright>© Copyright (c) Microsoft Corporation. All rights reserved.</copyright>
+        <projectUrl>http://www.asp.net/signalR</projectUrl>
+        <requireLicenseAcceptance>true</requireLicenseAcceptance>
+        <description>This package contains the {Language} satellite assemblies for ASP.NET SignalR Core.</description>
+        <language>$Locale$</language>
+        <tags>Microsoft AspNet SignalR AspNetSignalR Client</tags>
+        <dependencies>
+            <dependency id="Microsoft.AspNet.SignalR.Client" version="[$PackageVersion$]" />
+        </dependencies>
+    </metadata>
+    <files>
+        <file src="$BaseDirectory$\bin\$Configuration$\net40\$Locale$\Microsoft.AspNet.SignalR.Client.resources.dll" target="lib\net40\$Locale$" />
+        <file src="$BaseDirectory$\bin\$Configuration$\net45\$Locale$\Microsoft.AspNet.SignalR.Client.resources.dll" target="lib\net45\$Locale$" />
+        <file src="$BaseDirectory$\bin\$Configuration$\netstandard1.3\$Locale$\Microsoft.AspNet.SignalR.Client.resources.dll" target="lib\netstandard1.3\$Locale$" />
+        <!-- <file src="Intellisense\Microsoft.AspNet.SignalR.Client.xml" target="lib\net45\en-US" /> -->
+    </files>
+</package>

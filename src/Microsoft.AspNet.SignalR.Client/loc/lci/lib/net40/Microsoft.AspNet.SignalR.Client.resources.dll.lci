@@ -1,0 +1,42 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<LCX SchemaVersion="6.0" Name="C:\BuildAgent\work\728f0cedc2305d54\TFS\bin\Signed\Release\package-src\Net40\Microsoft.AspNet.SignalR.Client.dll" PsrId="211" FileType="1" SrcCul="en-US" Desc="Commenting file created by LCXAdmin. For more information, please visit http://localizability/longhorn/LcxAdmin.asp" xmlns="http://schemas.microsoft.com/locstudio/2006/6/lcx">
+  <OwnedComments>
+    <Cmt Name="LcxAdmin" />
+  </OwnedComments>
+  <Item ItemId=";Managed Resources" ItemType="0" PsrId="211" Leaf="true">
+    <Disp Icon="Expand" Expand="true" Disp="true" LocTbl="false" />
+  </Item>
+  <Item ItemId=";Microsoft.AspNet.SignalR.Client.Resources.resources" ItemType="0" PsrId="211" Leaf="false">
+    <Disp Icon="Str" Expand="true" Disp="true" LocTbl="false" Path=" \ ;Managed Resources \ 0 \ 0" />
+    <Item ItemId=";Strings" ItemType="0" PsrId="211" Leaf="false">
+      <Disp Icon="Str" LocTbl="false" />
+      <Item ItemId=";Error_PossibleDeadlockDetected" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Possible deadlock detected. A callback registered with "HubProxy.On" or "Connection.Received" has been executing for at least {0} seconds.]]></Val>
+        </Str>
+        <Disp Icon="Str" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked="HubProxy.On"} {Locked="Connection.Received"}]]></Cmt>
+        </Cmts>
+      </Item>
+      <Item ItemId=";Error_ProcessResponseBeforeStart" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[The ProcessResponse method cannot be called before the transport is started.]]></Val>
+        </Str>
+        <Disp Icon="Str" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked="ProcessResponse"}]]></Cmt>
+        </Cmts>
+      </Item>
+      <Item ItemId=";Error_ProxiesCannotBeAddedConnectionStarted" ItemType="0" PsrId="211" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[A HubProxy cannot be added after the connection has been started.]]></Val>
+        </Str>
+        <Disp Icon="Str" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked="HubProxy"} type name]]></Cmt>
+        </Cmts>
+      </Item>
+    </Item>
+  </Item>
+</LCX>

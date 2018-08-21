@@ -1,5 +1,6 @@
 <Project>
   <Import Project="..\Directory.Build.props" Condition="Exists('..\Directory.Build.props')" />
+  <Import Project="$(RepositoryRoot)build\loc\Localization.props" Condition="'$(Localize)' == 'true'" />
 
   <PropertyGroup>
     <Servicable>true</Servicable>

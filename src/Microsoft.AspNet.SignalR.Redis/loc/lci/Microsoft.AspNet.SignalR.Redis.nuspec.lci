@@ -1,0 +1,42 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<LCX SchemaVersion="6.0" Name="C:\dd2\SignalR\Main\src\localizedpackages\Microsoft.AspNet.SignalR.Redis.nuspec" PsrId="210" FileType="1" SrcCul="en-US" Desc="Commenting file created by LCXAdmin. For more information, please visit http://localizability/longhorn/LcxAdmin.asp" xmlns="http://schemas.microsoft.com/locstudio/2006/6/lcx">
+  <OwnedComments>
+    <Cmt Name="LcxAdmin" />
+  </OwnedComments>
+  <Item ItemId=";&lt;description&gt;" ItemType="0" PsrId="210" Leaf="false">
+    <Disp Icon="Str" Disp="true" LocTbl="false" />
+    <Item ItemId="0;c9bd8d46832679f422263306a65cfd2c" ItemType="42;XML:Text" PsrId="210" Leaf="true">
+      <Str Cat="AppData">
+        <Val><![CDATA[This package contains the {Language} satellite assemblies for ASP.NET SignalR Redis.]]></Val>
+      </Str>
+      <Disp Icon="Str" Order="5" />
+      <Cmts>
+        <Cmt Name="LcxAdmin"><![CDATA[{Locked="ASP.NET SignalR Redis"} Please translate the Language placeholder to the native language name, eg for DE, it should read Deutsch]]></Cmt>
+      </Cmts>
+    </Item>
+  </Item>
+  <Item ItemId=";&lt;summary&gt;" ItemType="0" PsrId="210" Leaf="false">
+    <Disp Icon="Str" Disp="true" LocTbl="false" />
+    <Item ItemId="0;ec314e8f5cbbec061cf8f52beebd6594" ItemType="42;XML:Text" PsrId="210" InstFlg="true" Leaf="true">
+      <Str Cat="AppData">
+        <Val><![CDATA[{Language} resources for the Microsoft.AspNet.SignalR.Redis package]]></Val>
+      </Str>
+      <Disp Icon="Str" Order="3" />
+      <Cmts>
+        <Cmt Name="LcxAdmin"><![CDATA[{Locked="Microsoft.AspNet.SignalR.Redis"} Please translate the Language placeholder to the native language name, eg for DE, it should read Deutsch]]></Cmt>
+      </Cmts>
+    </Item>
+  </Item>
+  <Item ItemId=";&lt;title&gt;" ItemType="0" PsrId="210" Leaf="false">
+    <Disp Icon="Str" Disp="true" LocTbl="false" />
+    <Item ItemId="0;cbc181a0a28eef4ad810f5912fdc879c" ItemType="42;XML:Text" PsrId="210" InstFlg="true" Leaf="true">
+      <Str Cat="AppData">
+        <Val><![CDATA[Microsoft ASP.NET SignalR Redis {Language} Resources]]></Val>
+      </Str>
+      <Disp Icon="Str" Order="1" />
+      <Cmts>
+        <Cmt Name="LcxAdmin"><![CDATA[{Locked="Microsoft ASP.NET SignalR Redis"} Please translate the Language placeholder to the native language name, eg for DE, it should read Deutsch]]></Cmt>
+      </Cmts>
+    </Item>
+  </Item>
+</LCX>

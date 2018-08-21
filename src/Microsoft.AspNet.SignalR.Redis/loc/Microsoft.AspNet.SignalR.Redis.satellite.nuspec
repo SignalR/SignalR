@@ -1,0 +1,25 @@
+﻿<?xml version="1.0"?>
+<package>
+    <metadata>
+        <id>Microsoft.AspNet.SignalR.Redis.$Locale$</id>
+        <title>Microsoft ASP.NET SignalR Redis {Language} Resources</title>
+        <summary>{Language} resources for the Microsoft.AspNet.SignalR.Redis package</summary>
+        <version>$PackageVersion$</version>
+        <authors>Microsoft</authors>
+        <owners>Microsoft</owners>
+        <licenseUrl>$LicenseUrl$</licenseUrl>
+        <copyright>© Copyright (c) Microsoft Corporation. All rights reserved.</copyright>
+        <projectUrl>http://www.asp.net/signalR</projectUrl>
+        <requireLicenseAcceptance>true</requireLicenseAcceptance>
+        <description>This package contains the {Language} satellite assemblies for ASP.NET SignalR Redis.</description>
+        <language>$Locale$</language>
+        <tags>Microsoft AspNet SignalR AspNetSignalR Redis</tags>
+        <dependencies>
+            <dependency id="Microsoft.AspNet.SignalR.Redis" version="[$PackageVersion$]" />
+        </dependencies>
+    </metadata>
+    <files>
+        <file src="$BaseDirectory$\bin\$Configuration$\net45\$Locale$\Microsoft.AspNet.SignalR.Redis.resources.dll" target="lib\net45\$Locale$" />
+        <!-- <file src="Intellisense\Microsoft.AspNet.SignalR.Redis.xml" target="lib\net45\en-US" /> -->
+    </files>
+</package>
