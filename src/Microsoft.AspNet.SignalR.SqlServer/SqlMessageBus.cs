@@ -11,6 +11,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR.Messaging;
 using Microsoft.AspNet.SignalR.Tracing;
+using System.Security.Principal;
 
 namespace Microsoft.AspNet.SignalR.SqlServer
 {
@@ -57,7 +58,15 @@ namespace Microsoft.AspNet.SignalR.SqlServer
             var traceManager = resolver.Resolve<ITraceManager>();
             _trace = traceManager["SignalR." + typeof(SqlMessageBus).Name];
 
-            ThreadPool.QueueUserWorkItem(Initialize);
+            if (configuration.UseImpersonation)
+            {
+                var identity = WindowsIdentity.GetCurrent();
+                ThreadPool.QueueUserWorkItem(Initialize, identity);
+            }
+            else
+            {
+                ThreadPool.QueueUserWorkItem(Initialize);
+            }
         }
 
         protected override int StreamCount
@@ -89,6 +98,12 @@ namespace Microsoft.AspNet.SignalR.SqlServer
          SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "On a background thread and we report exceptions asynchronously")]
         private void Initialize(object state)
         {
+            WindowsImpersonationContext context = null;
+            if (state != null && state is WindowsIdentity)
+            {
+                context = ((WindowsIdentity)state).Impersonate();
+            }
+
             // NOTE: Called from a ThreadPool thread
             _trace.TraceInformation("SQL message bus initializing, TableCount={0}", _configuration.TableCount);
 
@@ -120,7 +135,7 @@ namespace Microsoft.AspNet.SignalR.SqlServer
                 var streamIndex = i;
                 var tableName = String.Format(CultureInfo.InvariantCulture, "{0}_{1}", _tableNamePrefix, streamIndex);
 
-                var stream = new SqlStream(streamIndex, _connectionString, tableName, _trace, _dbProviderFactory);
+                var stream = new SqlStream(streamIndex, _connectionString, tableName, _trace, _dbProviderFactory, _configuration);
                 stream.Queried += () => Open(streamIndex);
                 stream.Faulted += (ex) => OnError(streamIndex, ex);
                 stream.Received += (id, messages) => OnReceived(streamIndex, id, messages);
@@ -128,6 +143,11 @@ namespace Microsoft.AspNet.SignalR.SqlServer
                 _streams.Add(stream);
 
                 StartReceiving(streamIndex);
+            }
+
+            if (context != null)
+            {
+                context.Undo();
             }
         }
 

@@ -13,7 +13,7 @@ namespace Microsoft.AspNet.SignalR
     {
         private int _tableCount = 1;
 
-        public SqlScaleoutConfiguration(string connectionString)
+        public SqlScaleoutConfiguration(string connectionString, bool useImpersonation = false)
         {
             if (String.IsNullOrEmpty(connectionString))
             {
@@ -21,12 +21,18 @@ namespace Microsoft.AspNet.SignalR
             }
 
             ConnectionString = connectionString;
+            UseImpersonation = useImpersonation;
         }
 
         /// <summary>
         /// The SQL Server connection string to use.
         /// </summary>
         public string ConnectionString { get; private set; }
+
+        /// <summary>
+        /// If set to true, the SQL Server Scaleout will use impersonation in threads.
+        /// </summary>
+        public bool UseImpersonation {get; private set; }
 
         /// <summary>
         /// The number of tables to store messages in. Using more tables reduces lock contention and may increase throughput.
