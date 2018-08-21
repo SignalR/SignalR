@@ -46,7 +46,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
         {
             Func<MessageResult, object, Task<bool>> callback = async (result, state) =>
             {
-                await Task.Delay(500);
+                await Task.Yield();
                 var tcs = new TaskCompletionSource<bool>();
                 tcs.SetCanceled();
                 return await tcs.Task;
