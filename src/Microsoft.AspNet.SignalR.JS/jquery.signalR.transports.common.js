@@ -202,6 +202,7 @@
 
                 xhr = transportLogic.ajax(connection, {
                     url: url,
+                    headers: connection.accessToken ? { "Authorization": "Bearer " + connection.accessToken } : {},
                     success: function (result) {
                         var data;
 
@@ -345,6 +346,13 @@
             url += "?" + qs;
             url = transportLogic.prepareQueryString(connection, url);
 
+            // With sse or ws, access_token in request header is not supported
+            if (connection.transport && connection.accessToken) {
+                if (connection.transport.name === "serverSentEvents" || connection.transport.name === "webSockets") {
+                    url += "&access_token=" + window.encodeURIComponent(connection.accessToken);
+                }
+            }
+
             if (!ajaxPost) {
                 url += "&tid=" + Math.floor(Math.random() * 11);
             }
@@ -389,6 +397,7 @@
                 url: url,
                 type: connection.ajaxDataType === "jsonp" ? "GET" : "POST",
                 contentType: signalR._.defaultContentType,
+                headers: connection.accessToken ? { "Authorization": "Bearer " + connection.accessToken } : {},
                 data: {
                     data: payload
                 },
@@ -437,7 +446,8 @@
                 url: url,
                 async: async,
                 timeout: 1000,
-                type: "POST"
+                type: "POST",
+                headers: connection.accessToken ? { "Authorization": "Bearer " + connection.accessToken } : {}
             });
 
             connection.log("Fired ajax abort async = " + async + ".");
@@ -459,6 +469,7 @@
 
             connection._.startRequest = transportLogic.ajax(connection, {
                 url: getAjaxUrl(connection, "/start"),
+                headers: connection.accessToken ? { "Authorization": "Bearer " + connection.accessToken } : {},
                 success: function (result, statusText, xhr) {
                     var data;
 
