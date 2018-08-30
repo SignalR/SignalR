@@ -1,0 +1,17 @@
+{
+  "name": "Microsoft.AspNet.SignalR.Client.JS.Tests",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "karma": "^3.0.0",
+    "karma-chrome-launcher": "^2.2.0",
+    "karma-qunit": "^2.1.0"
+  }
+}

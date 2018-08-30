@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>QUnit Tests</title>
+    <link rel="stylesheet" href="Styles/qunit-1.12.0.css">
+</head>
+<body>
+        <!-- #HEADER# -->
+        <div id="qunit"></div>
+        <div id="qunit-fixture"></div>
+        <script>
+            (function () {
+                // Use a custom function since IE 8 doesn't define Array.prototype.indexOf
+                function inArray (arr, obj) {
+                    for (var i = 0; i < arr.length; i++) {
+                        if (arr[i] === obj) {
+                            return true;
+                        }
+                    }
+                    return false;
+                }
+
+                function queryString(variable) {
+                    var query = window.location.search.substring(1),
+                        vars = query.split('&'),
+                        pair, i;
+
+                    if (!query || !vars || vars.length === 0) {
+                        return;
+                    }
+
+                    for (i = 0; i < vars.length; i++) {
+                        pair = vars[i].split('=');
+                        if (decodeURIComponent(pair[0]) === variable) {
+                            return decodeURIComponent(pair[1]);
+                        }
+                    }
+                }
+
+                // Dynamically write out the jQuery script tag using version from querystring
+                // if it's defined, otherwise default to minimum supported version.
+                var scriptTagHtml = '<script src="Scripts/jquery-{ver}.js"><\/script>',
+                    jQueryVersion = queryString('jquery') || '1.6.4';
+
+                if (!inArray(['1.6.4', '1.7.2', '1.8.3', '1.9.1', '2.0.0', '3.0.0'], jQueryVersion)) {
+                    throw new Error(jQueryVersion + ' is not a supported jQuery version.');
+                } else {
+                    document.write(scriptTagHtml.replace('{ver}', jQueryVersion));
+                }
+            })();
+        </script>
+        <script src="Scripts/qunit-1.12.0.js"></script>
+        <script src="Scripts/qunit.extensions.js"></script>
+        <script src="Scripts/jquery.signalR.js"></script>
+        <script type='text/javascript' src='signalr/js' data-cover></script>
+        <script src="Scripts/jquery.network.mock.js"></script>
+        <script src="Build/test.config.js"></script>
+        <script src="Scripts/test.utilities.js"></script>
+        <script src="Build/disableCrossDomain.js"></script>
+
+        <!-- The Test list will be dynamically injected here in the real page. -->
+        <!-- #TESTLIST# -->
+</body>
+</html>
