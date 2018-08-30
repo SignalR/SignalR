@@ -1,0 +1,6 @@
+{
+    "include": [
+        "wwwroot/js/**/*.js",
+        "wwwroot/Tests/**/*.js"
+    ]
+}

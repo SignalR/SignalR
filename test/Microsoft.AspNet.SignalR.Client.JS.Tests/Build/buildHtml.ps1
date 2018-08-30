@@ -16,7 +16,7 @@ $Content = [IO.File]::ReadAllText((Convert-Path $InputTemplate))
 
 # Trim whitespace because the placeholder is already indented and followed by a newline.
 $Content = $Content.Replace("<!-- #TESTLIST# -->", $Builder.ToString().Trim())
-$Content = $Content.Replace("<!-- #HEADER# -->", "This file was auto-generated at $([DateTime]::Now.ToString("O"))")
+$Content = $Content.Replace("<!-- #HEADER# -->", "<!-- This file was auto-generated at $([DateTime]::Now.ToString("O")) -->")
 
 $dir = Split-Path -Parent $OutputFile
 $file = Split-Path -Leaf $OutputFile

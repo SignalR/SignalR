@@ -9,12 +9,11 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNet.SignalR.Cl
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "build", "build", "{1E4BA77C-4977-40AA-B297-3A2CB9990ABF}"
 	ProjectSection(SolutionItems) = preProject
-		Build\Build.proj = Build\Build.proj
-		build\Build.tasks = build\Build.tasks
-		build\Microsoft.AspNet.SignalR.OpenCover.targets = build\Microsoft.AspNet.SignalR.OpenCover.targets
-		build\Microsoft.AspNet.SignalR.OpenCover.xunit = build\Microsoft.AspNet.SignalR.OpenCover.xunit
-		build\Microsoft.AspNet.SignalR.UnitTests.OpenCover.xunit = build\Microsoft.AspNet.SignalR.UnitTests.OpenCover.xunit
-		Build\Microsoft.AspNet.SignalR.versions.targets = Build\Microsoft.AspNet.SignalR.versions.targets
+		build\dependencies.props = build\dependencies.props
+		build\Microsoft.AspNet.SignalR.ruleset = build\Microsoft.AspNet.SignalR.ruleset
+		build\repo.props = build\repo.props
+		build\repo.targets = build\repo.targets
+		build\sources.props = build\sources.props
 	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNet.SignalR.Stress", "src\Microsoft.AspNet.SignalR.Stress\Microsoft.AspNet.SignalR.Stress.csproj", "{758D93C8-7985-4F55-82DA-8BA5198CF4EF}"

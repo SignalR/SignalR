@@ -1,4 +1,4 @@
-﻿(function ($, window) {
+(function ($, window) {
     var QUnitTest = QUnit.test,
         QUnitModule = QUnit.module,
         functionalFlag = "Functional",
@@ -30,7 +30,7 @@
 
     QUnit.isNotSet = function (actual, message) {
         return QUnit.equal(typeof (actual), "undefined", message);
-    };    
+    };
 
     QUnit.theory = function (name, data, test) {
         /// <param name="name" type="String">The name of the test.</param>
@@ -81,7 +81,7 @@
                     hasFinished = false,
                     failOnTimeout = true,
                     assert = {
-                        expectTimeout: function() {
+                        expectTimeout: function () {
                             failOnTimeout = false;
                         },
                         comment: function (message) {
@@ -195,7 +195,7 @@
             if (arguments[0].indexOf(buildFlag(functionalFlag)) < 0) {
                 arguments[0] += buildFlag(unitFlag);
             }
-            
+
             QUnitTest.apply(this, arguments);
         }
     }
