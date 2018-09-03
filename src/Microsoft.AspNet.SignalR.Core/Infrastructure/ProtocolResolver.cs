@@ -13,7 +13,7 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
         private readonly Version _minimumDelayedStartVersion = new Version(1, 4);
 
         public ProtocolResolver() :
-            this(new Version(1, 2), new Version(1, 5))
+            this(new Version(1, 2), new Version(2, 0))
         {
         }
 
