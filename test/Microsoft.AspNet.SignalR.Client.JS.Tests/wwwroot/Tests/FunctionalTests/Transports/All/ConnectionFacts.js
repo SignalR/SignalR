@@ -200,17 +200,14 @@ testUtilities.runWithAllTransports(function (transport) {
         connection.start(transportSettings).done(function () {
             // Test disconnected
             connection.stop();
-
-            setTimeout(function () {
-                connection.start(transportSettings).done(function () {
-                    // Delay the network disconnect so that transports can be 100% conneted with disconnect is triggered
-                    setTimeout(function () {
-                        // Cause a reconnect
-                        $.network.disconnect();
-                        $.network.connect();
-                    }, 250);
-                });
-            }, 0);
+            connection.start(transportSettings).done(function () {
+                // Delay the network disconnect so that transports can be 100% conneted with disconnect is triggered
+                setTimeout(function () {
+                    // Cause a reconnect
+                    $.network.disconnect();
+                    $.network.connect();
+                }, 250);
+            });
         });
 
         // Cleanup
@@ -234,13 +231,8 @@ testUtilities.runWithAllTransports(function (transport) {
 
         connection.disconnected(function () {
             assert.comment("Disconnected fired.");
-
-            // Let callstack finish
-            setTimeout(function () {
-                end();
-            }, 0);
-
             assert.ok(onErrorFiredForTimeout);
+            end();
         });
 
         connection.start({ transport: transport }).done(function () {
@@ -294,30 +286,6 @@ testUtilities.runWithAllTransports(function (transport) {
         };
     });
 
-    QUnit.asyncTimeoutTest(transport + ": Start deferred triggers immediately after start.", testUtilities.defaultTestTimeout, function (end, assert, testName) {
-        var connection = testUtilities.createHubConnection(end, assert, testName, undefined, false);
-
-        connection.start({ transport: transport }).done(function () {
-            var triggeredOnNextStack = false;
-
-            connection.start().done(function () {
-                triggeredOnNextStack = true;
-            });
-
-            // Start a new timeout to run to be the NEXT stack.  A resolved deferred should
-            // create a new stack and this should be run after that.
-            setTimeout(function () {
-                assert.isTrue(triggeredOnNextStack, "Start deferred triggered instantly.");
-                end();
-            }, 0);
-        });
-
-        // Cleanup
-        return function () {
-            connection.stop();
-        };
-    });
-
     QUnit.asyncTimeoutTest(transport + ": Start can be called multiple times.", testUtilities.defaultTestTimeout, function (end, assert, testName) {
         var startCount = 3,
             connection = testUtilities.createHubConnection(end, assert, testName, undefined, false),
@@ -328,7 +296,9 @@ testUtilities.runWithAllTransports(function (transport) {
                 if (++connectionsStarted) {
                     assert.comment("All connections started functions triggered successfully.");
                     assert.equal(connection.state, $.signalR.connectionState.connected, "Connection connected");
-                    end();
+                    if(connectionsStarted === startCount) {
+                        end();
+                    }
                 }
             });
         }

@@ -37,6 +37,7 @@ testUtilities.runWithAllTransports(function (transport) {
                 $.signalR.transports._logic.pingServer(connection).done(function () {
                     // Successful ping
                     assert.ok(true, "Successful ping with " + transport);
+                    end();
                 }).fail(function () {
                     assert.ok(false, "Failed to ping server with " + transport);
                     end();
@@ -58,8 +59,6 @@ testUtilities.runWithAllTransports(function (transport) {
             if (url.indexOf("/ping") >= 0) {
                 // Verify that the query string parameter on the connection is passed via the ajax request
                 assert.ok(url.indexOf(expectedQs) >= 0, "Query string parameters were passed in ping server");
-                // Let the ajax request finish out
-                setTimeout(end, 0);
             }
 
             // Persist the request through to the original ajax request

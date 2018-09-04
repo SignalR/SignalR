@@ -21,15 +21,13 @@ QUnit.module("Core - Negotiate Facts");
             if (url.indexOf("/negotiate") >= 0) {
                 // Verify that the query string parameter on the connection is passed via the ajax request
                 assert.ok(url.indexOf(expectedQs) >= 0, "Query string parameters were passed in negotiate");
-                // Let the ajax request finish out
-                setTimeout(end, 0);
             }
 
             // Persist the request through to the original ajax request
             return savedAjax.call(this, url, settings);
         };
 
-        connection.start({ transport: transport });
+        connection.start({ transport: transport }).then(end);
 
         return savedAjax;
     },
@@ -82,15 +80,13 @@ QUnit.module("Core - Negotiate Facts");
                 if (url.indexOf("/negotiate") >= 0) {
                     // Verify that the query string parameter on the connection is passed via the ajax request
                     assert.ok(url.indexOf("clientProtocol=" + connection.clientProtocol) >= 0, "Client protocol passed in negotiate request");
-                    // Let the ajax request finish out
-                    setTimeout(end, 0);
                 }
 
                 // Persist the request through to the original ajax request
                 return savedAjax.call(this, url, settings);
             };
 
-            connection.start({ transport: transport });
+            connection.start({ transport: transport }).then(end);
 
             return function () {
                 $.ajax = savedAjax;

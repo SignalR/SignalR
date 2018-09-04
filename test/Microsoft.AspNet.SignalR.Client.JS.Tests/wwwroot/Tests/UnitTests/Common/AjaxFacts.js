@@ -3,23 +3,23 @@
 
 QUnit.module("Transports Common - Ajax Abort Facts");
 
-QUnit.test("No transport specified should result in noop behavior for ajaxAbort.", function () {
+QUnit.test("No transport specified should result in noop behavior for ajaxAbort.", function (assert) {
     var connection = testUtilities.createHubConnection(),
         failed = false;
 
     connection.log = function () {
-        QUnit.ok(false, "ajaxAbort did not noop with an unspecified transport on the connection object.");
+        assert.ok(false, "ajaxAbort did not noop with an unspecified transport on the connection object.");
         failed = true;
     };
 
     $.signalR.transports._logic.ajaxAbort(connection);
 
     if (!failed) {
-        QUnit.ok(true, "ajaxAbort noop'd, success!");
+        assert.ok(true, "ajaxAbort noop'd, success!");
     }
 });
 
-QUnit.test("Asynchronous flag defaults and is used correctly in ajaxAbort", function () {
+QUnit.test("Asynchronous flag defaults and is used correctly in ajaxAbort", function (assert) {
     var connection = testUtilities.createHubConnection(),
         failed = false,
         // Saved current jquery ajax function so we can replace it once we've finished
@@ -30,10 +30,10 @@ QUnit.test("Asynchronous flag defaults and is used correctly in ajaxAbort", func
 
     $.ajax = function (obj) {
         if (obj.async === expectedAsync) {
-            QUnit.ok(true, "Correct async value passed, expected: " + expectedAsync);
+            assert.ok(true, "Correct async value passed, expected: " + expectedAsync);
         }
         else {
-            QUnit.ok(false, "Incorrect async value passed, expected: " + expectedAsync);
+            assert.ok(false, "Incorrect async value passed, expected: " + expectedAsync);
         }
     };
 

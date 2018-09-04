@@ -6,7 +6,7 @@
 
 QUnit.module("Common Transport Facts");
 
-QUnit.test("Validate ensureReconnectingState functionality.", function () {
+QUnit.test("Validate ensureReconnectingState functionality.", function (assert) {
     var connection = testUtilities.createHubConnection(),
         reconnectingCalled = false,
         stateChangedCalled = false;
@@ -16,8 +16,8 @@ QUnit.test("Validate ensureReconnectingState functionality.", function () {
     });
 
     connection.stateChanged(function (state) {
-        QUnit.equal(state.oldState, $.signalR.connectionState.connected, "State changed called with connected as the old state.");
-        QUnit.equal(state.newState, $.signalR.connectionState.reconnecting, "State changed called with reconnecting as the new state.");
+        assert.equal(state.oldState, $.signalR.connectionState.connected, "State changed called with connected as the old state.");
+        assert.equal(state.newState, $.signalR.connectionState.reconnecting, "State changed called with reconnecting as the new state.");
         stateChangedCalled = true;
     });
 
@@ -25,52 +25,52 @@ QUnit.test("Validate ensureReconnectingState functionality.", function () {
 
     $.signalR.transports._logic.ensureReconnectingState(connection);
 
-    QUnit.ok(reconnectingCalled, "Reconnecting event handler was called.");
-    QUnit.ok(stateChangedCalled, "StateChanged event handler was called.");
-    QUnit.equal(connection.state, $.signalR.connectionState.reconnecting, "Connection state is reconnecting.");
+    assert.ok(reconnectingCalled, "Reconnecting event handler was called.");
+    assert.ok(stateChangedCalled, "StateChanged event handler was called.");
+    assert.equal(connection.state, $.signalR.connectionState.reconnecting, "Connection state is reconnecting.");
 });
 
-QUnit.test("Send stringify undefined", function () {
+QUnit.test("Send stringify undefined", function (assert) {
     var signalr = $.connection,
         con = $.connection("test");
 
     var result = signalr.transports._logic.stringifySend(con, undefined);
 
-    QUnit.equal(result, undefined, "Undefined value was not treated correctly.");
+    assert.equal(result, undefined, "Undefined value was not treated correctly.");
 });
 
-QUnit.test("Send stringify null", function () {
+QUnit.test("Send stringify null", function (assert) {
     var signalr = $.connection,
         con = $.connection("test");
 
     var result = signalr.transports._logic.stringifySend(con, null);
 
-    QUnit.equal(result, null, "null value was not treated correctly.");
+    assert.equal(result, null, "null value was not treated correctly.");
 });
 
-QUnit.test("Send stringify doesn't encode a string", function () {
+QUnit.test("Send stringify doesn't encode a string", function (assert) {
     var signalr = $.connection,
         con = $.connection("test");
     
     var result = signalr.transports._logic.stringifySend(con, "test");
 
-    QUnit.equal(result, "test", "Raw string value was not treated correctly.");
+    assert.equal(result, "test", "Raw string value was not treated correctly.");
 });
 
-QUnit.test("Send stringify encodes an object", function () {
+QUnit.test("Send stringify encodes an object", function (assert) {
     var signalr = $.connection,
         con = $.connection("test");
 
     var result = signalr.transports._logic.stringifySend(con, { test: "test" });
 
-    QUnit.equal(result, "{\"test\":\"test\"}", "Object value was not JSON encoded correctly.");
+    assert.equal(result, "{\"test\":\"test\"}", "Object value was not JSON encoded correctly.");
 });
 
-QUnit.test("Send stringify encodes an array", function () {
+QUnit.test("Send stringify encodes an array", function (assert) {
     var signalr = $.connection,
         con = $.connection("test");
 
     var result = signalr.transports._logic.stringifySend(con, [ "test" ]);
 
-    QUnit.equal(result, "[\"test\"]", "Array value was not JSON encoded correctly.");
+    assert.equal(result, "[\"test\"]", "Array value was not JSON encoded correctly.");
 });

@@ -29,7 +29,7 @@ QUnit.module("Transports Common - InitHandler Facts");
         };
     }
 
-    QUnit.test("Transport cannot trigger start request after it has already failed.", function () {
+    QUnit.test("Transport cannot trigger start request after it has already failed.", function (assert) {
         // Arrange
         var fakeConnection = buildFakeConnection(),
             fakeTransport = buildFakeTransport(),
@@ -55,18 +55,18 @@ QUnit.module("Transports Common - InitHandler Facts");
         fakeTransport.onSuccess();
 
         // Assert
-        QUnit.isTrue(onFailedResult, "Transport should stop. onFailed called during initialization.");
-        QUnit.isTrue(initOnFallbackCalled, "Transport failure triggered fallback.");
-        QUnit.isFalse(initOnSuccessCalled, "Initialization did not complete.");
-        QUnit.isFalse(ajaxStartCalled, "Transport failure prevented start request.");
-        QUnit.isTrue(fakeTransport.stopCalled, "Transport failure caused the transport to be stopped.");
-        QUnit.isFalse(fakeConnection.stopCalled, "Transport failure did not cause the connection to be stopped.");
+        assert.isTrue(onFailedResult, "Transport should stop. onFailed called during initialization.");
+        assert.isTrue(initOnFallbackCalled, "Transport failure triggered fallback.");
+        assert.isFalse(initOnSuccessCalled, "Initialization did not complete.");
+        assert.isFalse(ajaxStartCalled, "Transport failure prevented start request.");
+        assert.isTrue(fakeTransport.stopCalled, "Transport failure caused the transport to be stopped.");
+        assert.isFalse(fakeConnection.stopCalled, "Transport failure did not cause the connection to be stopped.");
 
         // Cleanup
         $.signalR.transports._logic.ajaxStart = savedAjaxStart;
     });
 
-    QUnit.test("Transport failure during start request forces the connection to stop.", function () {
+    QUnit.test("Transport failure during start request forces the connection to stop.", function (assert) {
         // Arrange
         var fakeConnection = buildFakeConnection(),
             fakeTransport = buildFakeTransport(),
@@ -92,17 +92,17 @@ QUnit.module("Transports Common - InitHandler Facts");
         onFailedResult = fakeTransport.onFailed();
 
         // Assert
-        QUnit.isTrue(onFailedResult, "Transport should stop. onFailed called during initialization.");
-        QUnit.isFalse(initOnFallbackCalled, "Transport failure did not trigger fallback.");
-        QUnit.isFalse(initOnSuccessCalled, "Initialization did not complete.");
-        QUnit.isTrue(ajaxStartCalled, "Transport success triggered start request.");
-        QUnit.isTrue(fakeConnection.stopCalled, "Transport failure caused the connection to be stopped.");
+        assert.isTrue(onFailedResult, "Transport should stop. onFailed called during initialization.");
+        assert.isFalse(initOnFallbackCalled, "Transport failure did not trigger fallback.");
+        assert.isFalse(initOnSuccessCalled, "Initialization did not complete.");
+        assert.isTrue(ajaxStartCalled, "Transport success triggered start request.");
+        assert.isTrue(fakeConnection.stopCalled, "Transport failure caused the connection to be stopped.");
 
         // Cleanup
         $.signalR.transports._logic.ajaxStart = savedAjaxStart;
     });
 
-    QUnit.test("Transport failure after successful start request has no effect.", function () {
+    QUnit.test("Transport failure after successful start request has no effect.", function (assert) {
         // Arrange
         var fakeConnection = buildFakeConnection(),
             fakeTransport = buildFakeTransport(),
@@ -127,17 +127,17 @@ QUnit.module("Transports Common - InitHandler Facts");
         onFailedResult = fakeTransport.onFailed();
 
         // Assert
-        QUnit.isFalse(onFailedResult, "Transport should reconnect. onFailed called after initialization.");
-        QUnit.isFalse(initOnFallbackCalled, "Transport failure did not trigger fallback.");
-        QUnit.isTrue(initOnSuccessCalled, "Initialization completed.");
-        QUnit.isFalse(fakeTransport.stopCalled, "Transport failure did not cause the transport to be stopped.");
-        QUnit.isFalse(fakeConnection.stopCalled, "Transport failure did not cause the connection to be stopped.");
+        assert.isFalse(onFailedResult, "Transport should reconnect. onFailed called after initialization.");
+        assert.isFalse(initOnFallbackCalled, "Transport failure did not trigger fallback.");
+        assert.isTrue(initOnSuccessCalled, "Initialization completed.");
+        assert.isFalse(fakeTransport.stopCalled, "Transport failure did not cause the transport to be stopped.");
+        assert.isFalse(fakeConnection.stopCalled, "Transport failure did not cause the connection to be stopped.");
 
         // Cleanup
         $.signalR.transports._logic.ajaxStart = savedAjaxStart;
     });
 
-    QUnit.test("Transport failure or success after connection stop has no effect.", function () {
+    QUnit.test("Transport failure or success after connection stop has no effect.", function (assert) {
         // Arrange
         var fakeConnection = buildFakeConnection(),
             fakeTransport = buildFakeTransport(),
@@ -164,18 +164,18 @@ QUnit.module("Transports Common - InitHandler Facts");
         onFailedResult = fakeTransport.onFailed();
 
         // Assert
-        QUnit.isTrue(onFailedResult, "Transport should stop. onFailed called after connection stopped.");
-        QUnit.isFalse(initOnFallbackCalled, "Transport failure did not trigger fallback.");
-        QUnit.isFalse(initOnSuccessCalled, "Initialization did not complete.");
-        QUnit.isFalse(ajaxStartCalled, "Transport success did not trigger start request.");
-        QUnit.isFalse(fakeConnection.stopCalled, "Transport failure did not cause the transport to be stopped.");
-        QUnit.isFalse(fakeConnection.stopCalled, "Transport failure did not cause the connection to be stopped.");
+        assert.isTrue(onFailedResult, "Transport should stop. onFailed called after connection stopped.");
+        assert.isFalse(initOnFallbackCalled, "Transport failure did not trigger fallback.");
+        assert.isFalse(initOnSuccessCalled, "Initialization did not complete.");
+        assert.isFalse(ajaxStartCalled, "Transport success did not trigger start request.");
+        assert.isFalse(fakeConnection.stopCalled, "Transport failure did not cause the transport to be stopped.");
+        assert.isFalse(fakeConnection.stopCalled, "Transport failure did not cause the connection to be stopped.");
 
         // Cleanup
         $.signalR.transports._logic.ajaxStart = savedAjaxStart;
     });
 
-    QUnit.test("A single transport cannot trigger multiple fallbacks.", function () {
+    QUnit.test("A single transport cannot trigger multiple fallbacks.", function (assert) {
         // Arrange
         var fakeConnection = buildFakeConnection(),
             fakeTransport = buildFakeTransport(),
@@ -193,13 +193,13 @@ QUnit.module("Transports Common - InitHandler Facts");
         transportShouldStop = fakeTransport.onFailed() && transportShouldStop;
 
         // Assert
-        QUnit.isTrue(transportShouldStop, "Transport should stop. onFailed was called during initialization each time.");
-        QUnit.equal(initOnFallbackCount, 1, "Multiple transport failures triggered fallback exactly once.");
-        QUnit.isTrue(fakeTransport.stopCalled, "Transport failure caused the transport to be stopped");
-        QUnit.isFalse(fakeConnection.stopCalled, "Transport failure did not cause the connection to be stopped.");
+        assert.isTrue(transportShouldStop, "Transport should stop. onFailed was called during initialization each time.");
+        assert.equal(initOnFallbackCount, 1, "Multiple transport failures triggered fallback exactly once.");
+        assert.isTrue(fakeTransport.stopCalled, "Transport failure caused the transport to be stopped");
+        assert.isFalse(fakeConnection.stopCalled, "Transport failure did not cause the connection to be stopped.");
     });
 
-    QUnit.test("Multiple transports can trigger multiple fallbacks.", function () {
+    QUnit.test("Multiple transports can trigger multiple fallbacks.", function (assert) {
         // Arrange
         var fakeConnection = buildFakeConnection(),
             fakeTransport1 = buildFakeTransport(),
@@ -227,11 +227,11 @@ QUnit.module("Transports Common - InitHandler Facts");
         transportShouldStop = fakeTransport2.onFailed() && transportShouldStop;
 
         // Assert
-        QUnit.isTrue(transportShouldStop, "Transports should stop. onFailed was called during initialization each time.");
-        QUnit.isTrue(fakeTransport1.stopCalled, "Transport failure caused the first transport to be stopped");
-        QUnit.isTrue(fakeTransport2.stopCalled, "Transport failure caused the second transport to be stopped");
-        QUnit.equal(initOnFallbackCount, 2, "Each transport triggered fallback once.");
-        QUnit.isFalse(fakeConnection.stopCalled, "Transport failure did not cause the connection to be stopped.");
+        assert.isTrue(transportShouldStop, "Transports should stop. onFailed was called during initialization each time.");
+        assert.isTrue(fakeTransport1.stopCalled, "Transport failure caused the first transport to be stopped");
+        assert.isTrue(fakeTransport2.stopCalled, "Transport failure caused the second transport to be stopped");
+        assert.equal(initOnFallbackCount, 2, "Each transport triggered fallback once.");
+        assert.isFalse(fakeConnection.stopCalled, "Transport failure did not cause the connection to be stopped.");
     });
 
     QUnit.asyncTimeoutTest("Transport timeout can stop transport and trigger fallback.", testUtilities.defaultTestTimeout, function (end, assert) {

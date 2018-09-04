@@ -3,7 +3,7 @@
 
 QUnit.module("Transports Common - Url Facts");
 
-QUnit.test("getUrl handles groupsToken correctly.", function () {
+QUnit.test("getUrl handles groupsToken correctly.", function (assert) {
     var connection = testUtilities.createHubConnection(),
         expectedResult = "&groupsToken=%24%26%2B%2C%2F%3A%3B%3D%3F%40%20%22%3C%3E%23%25%7B%7D%7C%5E%5B%5D%60",
         url;
@@ -15,11 +15,11 @@ QUnit.test("getUrl handles groupsToken correctly.", function () {
         var transport = this.toString();
 
         url = $.signalR.transports._logic.getUrl(connection, transport, true);
-        QUnit.ok(url.indexOf(expectedResult) >= 0, expectedResult + " was represented in the Url for " + transport);
+        assert.ok(url.indexOf(expectedResult) >= 0, expectedResult + " was represented in the Url for " + transport);
     });
 });
 
-QUnit.test("getUrl handles baseUrl correctly", function () {
+QUnit.test("getUrl handles baseUrl correctly", function (assert) {
     var connection = testUtilities.createHubConnection(),
         url;
 
@@ -32,14 +32,14 @@ QUnit.test("getUrl handles baseUrl correctly", function () {
         }
 
         url = $.signalR.transports._logic.getUrl(connection, transport, true);
-        QUnit.ok(url.indexOf("__HELLO__") >= 0, connection.baseUrl + " was represented in the Url for " + transport);
+        assert.ok(url.indexOf("__HELLO__") >= 0, connection.baseUrl + " was represented in the Url for " + transport);
     });
 
     url = $.signalR.transports._logic.getUrl(connection, "webSockets", true);
-    QUnit.ok(url.indexOf("__HELLO__") < 0, connection.baseUrl + " was not represented in the Url for webSockets");
+    assert.ok(url.indexOf("__HELLO__") < 0, connection.baseUrl + " was not represented in the Url for webSockets");
 });
 
-QUnit.test("getUrl handles appRelativeUrl correctly", function () {
+QUnit.test("getUrl handles appRelativeUrl correctly", function (assert) {
     var connection = testUtilities.createHubConnection(),
         url,
         expectedResult;
@@ -55,15 +55,15 @@ QUnit.test("getUrl handles appRelativeUrl correctly", function () {
         }
 
         url = $.signalR.transports._logic.getUrl(connection, transport, true);
-        QUnit.ok(url.indexOf(expectedResult) >= 0, expectedResult + " was represented in the Url for " + transport);
+        assert.ok(url.indexOf(expectedResult) >= 0, expectedResult + " was represented in the Url for " + transport);
     });
 
     url = $.signalR.transports._logic.getUrl(connection, "webSockets", true);
-    QUnit.ok(url.indexOf(expectedResult) < 0, expectedResult + " was not represented in the Url for webSockets");
-    QUnit.ok(url.indexOf(connection.appRelativeUrl) >= 0, connection.appRelativeUrl + " was represented in the Url for webSockets");
+    assert.ok(url.indexOf(expectedResult) < 0, expectedResult + " was not represented in the Url for webSockets");
+    assert.ok(url.indexOf(connection.appRelativeUrl) >= 0, connection.appRelativeUrl + " was represented in the Url for webSockets");
 });
 
-QUnit.test("getUrl handles transport correctly", function () {
+QUnit.test("getUrl handles transport correctly", function (assert) {
     var connection = testUtilities.createHubConnection(),
         url;
 
@@ -74,11 +74,11 @@ QUnit.test("getUrl handles transport correctly", function () {
             expectedResult = "transport=" + transport;
 
         url = $.signalR.transports._logic.getUrl(connection, transport, true);
-        QUnit.ok(url.indexOf(expectedResult) >= 0, expectedResult + " was represented in the Url for " + transport);
+        assert.ok(url.indexOf(expectedResult) >= 0, expectedResult + " was represented in the Url for " + transport);
     });
 });
 
-QUnit.test("getUrl handles token correctly", function () {
+QUnit.test("getUrl handles token correctly", function (assert) {
     var connection = testUtilities.createHubConnection(),
         expectedResult = "&connectionToken=%24%26%2B%2C%2F%3A%3B%3D%3F%40%20%22%3C%3E%23%25%7B%7D%7C%5E%5B%5D%60",
         url;
@@ -90,11 +90,11 @@ QUnit.test("getUrl handles token correctly", function () {
         var transport = this.toString();
 
         url = $.signalR.transports._logic.getUrl(connection, transport, true);
-        QUnit.ok(url.indexOf(expectedResult) >= 0, expectedResult + " was represented in the Url for " + transport);
+        assert.ok(url.indexOf(expectedResult) >= 0, expectedResult + " was represented in the Url for " + transport);
     });
 });
 
-QUnit.test("getUrl handles data correctly", function () {
+QUnit.test("getUrl handles data correctly", function (assert) {
     var connection = testUtilities.createHubConnection(),
         expectedResult = "&connectionData=%24%26%2B%2C%2F%3A%3B%3D%3F%40%20%22%3C%3E%23%25%7B%7D%7C%5E%5B%5D%60",
         url;
@@ -106,11 +106,11 @@ QUnit.test("getUrl handles data correctly", function () {
         var transport = this.toString();
 
         url = $.signalR.transports._logic.getUrl(connection, transport, true);
-        QUnit.ok(url.indexOf(expectedResult) >= 0, expectedResult + " was represented in the Url for " + transport);
+        assert.ok(url.indexOf(expectedResult) >= 0, expectedResult + " was represented in the Url for " + transport);
     });
 });
 
-QUnit.test("getUrl handles messageId correctly", function () {
+QUnit.test("getUrl handles messageId correctly", function (assert) {
     var connection = testUtilities.createHubConnection(),
         expectedResult = "&messageId=%24%26%2B%2C%2F%3A%3B%3D%3F%40%20%22%3C%3E%23%25%7B%7D%7C%5E%5B%5D%60",
         url;
@@ -122,11 +122,11 @@ QUnit.test("getUrl handles messageId correctly", function () {
         var transport = this.toString();
 
         url = $.signalR.transports._logic.getUrl(connection, transport, true);
-        QUnit.ok(url.indexOf(expectedResult) >= 0, expectedResult + " was represented in the Url for " + transport);
+        assert.ok(url.indexOf(expectedResult) >= 0, expectedResult + " was represented in the Url for " + transport);
     });
 });
 
-QUnit.test("getUrl handles appendReconnectUrl parameter correctly", function () {
+QUnit.test("getUrl handles appendReconnectUrl parameter correctly", function (assert) {
     var connection = testUtilities.createHubConnection(),
         expectedResult = "/reconnect",
         url;
@@ -135,11 +135,11 @@ QUnit.test("getUrl handles appendReconnectUrl parameter correctly", function () 
         var transport = this.toString();
 
         url = $.signalR.transports._logic.getUrl(connection, transport, true, false);
-        QUnit.ok(url.indexOf(expectedResult) >= 0, expectedResult + " was represented in the Url for " + transport);
+        assert.ok(url.indexOf(expectedResult) >= 0, expectedResult + " was represented in the Url for " + transport);
     });
 });
 
-QUnit.test("getUrl handles reconnecting parameter correctly", function () {
+QUnit.test("getUrl handles reconnecting parameter correctly", function (assert) {
     var connection = testUtilities.createHubConnection(),
         expectedResult = "/connect",
         url;
@@ -148,11 +148,11 @@ QUnit.test("getUrl handles reconnecting parameter correctly", function () {
         var transport = this.toString();
 
         url = $.signalR.transports._logic.getUrl(connection, transport, false);
-        QUnit.ok(url.indexOf(expectedResult) >= 0, expectedResult + " was represented in the Url for " + transport);
+        assert.ok(url.indexOf(expectedResult) >= 0, expectedResult + " was represented in the Url for " + transport);
     });
 });
 
-QUnit.test("getUrl appends tid correctly", function () {
+QUnit.test("getUrl appends tid correctly", function (assert) {
     var connection = testUtilities.createHubConnection(),
         url;
 
@@ -160,11 +160,11 @@ QUnit.test("getUrl appends tid correctly", function () {
         var transport = this.toString();
 
         url = $.signalR.transports._logic.getUrl(connection, transport, false);
-        QUnit.ok(url.match(/&tid=\d+$/g), "The tid was correctly represented at the end of the Url for " + transport);
+        assert.ok(url.match(/&tid=\d+$/g), "The tid was correctly represented at the end of the Url for " + transport);
     });
 });
 
-QUnit.test("getUrl structures URL correctly", function () {
+QUnit.test("getUrl structures URL correctly", function (assert) {
     var connection = testUtilities.createHubConnection(),
         url,
         expectedResult,
@@ -182,31 +182,31 @@ QUnit.test("getUrl structures URL correctly", function () {
         }
 
         url = $.signalR.transports._logic.getUrl(connection, transport, false);
-        QUnit.ok(url.indexOf(expectedResult) === 0, expectedResult + " was at the front of the Url for " + transport);
+        assert.ok(url.indexOf(expectedResult) === 0, expectedResult + " was at the front of the Url for " + transport);
 
         expectedResult = connection.baseUrl + connection.appRelativeUrl + "/reconnect";
         url = $.signalR.transports._logic.getUrl(connection, transport, true, false);
-        QUnit.ok(url.indexOf(expectedResult) === 0, expectedResult + " was at the front of the Url for " + transport);
+        assert.ok(url.indexOf(expectedResult) === 0, expectedResult + " was at the front of the Url for " + transport);
     });
 
     expectedResult = connection.appRelativeUrl + "/connect";
     url = $.signalR.transports._logic.getUrl(connection, transport, false);
-    QUnit.ok(url.indexOf(expectedResult) === 0, expectedResult + " was at the front of the Url for " + transport);
+    assert.ok(url.indexOf(expectedResult) === 0, expectedResult + " was at the front of the Url for " + transport);
 
     expectedResult = connection.appRelativeUrl + "/reconnect";
     url = $.signalR.transports._logic.getUrl(connection, transport, true, false);
-    QUnit.ok(url.indexOf(expectedResult) === 0, expectedResult + " was at the front of the Url for " + transport);
+    assert.ok(url.indexOf(expectedResult) === 0, expectedResult + " was at the front of the Url for " + transport);
 });
 
-QUnit.test("addQs handles qs correctly", function () {
+QUnit.test("addQs handles qs correctly", function (assert) {
     var connection = testUtilities.createHubConnection(),
         url = "foo",
         encodeThis = '$&+,/:;=?@ "<>#%{}|\^[]`';
 
-    QUnit.equal($.signalR.transports._logic.addQs(url, connection.qs), url, "The url does not change if there is no connection.qs property.");
+    assert.equal($.signalR.transports._logic.addQs(url, connection.qs), url, "The url does not change if there is no connection.qs property.");
 
     connection.qs = "bar"
-    QUnit.equal($.signalR.transports._logic.addQs(url, connection.qs), "foo?bar", "When connection.qs is a string it is appended to the url.");
+    assert.equal($.signalR.transports._logic.addQs(url, connection.qs), "foo?bar", "When connection.qs is a string it is appended to the url.");
 
     connection.qs = {
         one: 1,
@@ -218,38 +218,38 @@ QUnit.test("addQs handles qs correctly", function () {
     var jqueryMajorVersion = jQuery.fn.jquery.split('.')[0];
 
     if (jqueryMajorVersion >= 3) {
-        QUnit.equal($.signalR.transports._logic.addQs(url, connection.qs), "foo?one=1&three%5B%5D=1&three%5B%5D=2&three%5B%5D=3&goodluck=%24%26%2B%2C%2F%3A%3B%3D%3F%40%20%22%3C%3E%23%25%7B%7D%7C%5E%5B%5D%60", "When connection.qs is an object it is appended to the url as a string based parameter list.");
+        assert.equal($.signalR.transports._logic.addQs(url, connection.qs), "foo?one=1&three%5B%5D=1&three%5B%5D=2&three%5B%5D=3&goodluck=%24%26%2B%2C%2F%3A%3B%3D%3F%40%20%22%3C%3E%23%25%7B%7D%7C%5E%5B%5D%60", "When connection.qs is an object it is appended to the url as a string based parameter list.");
     }
     else {
-        QUnit.equal($.signalR.transports._logic.addQs(url, connection.qs), "foo?one=1&three%5B%5D=1&three%5B%5D=2&three%5B%5D=3&goodluck=%24%26%2B%2C%2F%3A%3B%3D%3F%40+%22%3C%3E%23%25%7B%7D%7C%5E%5B%5D%60", "When connection.qs is an object it is appended to the url as a string based parameter list.");
+        assert.equal($.signalR.transports._logic.addQs(url, connection.qs), "foo?one=1&three%5B%5D=1&three%5B%5D=2&three%5B%5D=3&goodluck=%24%26%2B%2C%2F%3A%3B%3D%3F%40+%22%3C%3E%23%25%7B%7D%7C%5E%5B%5D%60", "When connection.qs is an object it is appended to the url as a string based parameter list.");
     }
 
     connection.qs = "?bar"
-    QUnit.equal($.signalR.transports._logic.addQs(url, connection.qs), "foo?bar", "When connection.qs is a string and has a question mark in front it does not change.");
+    assert.equal($.signalR.transports._logic.addQs(url, connection.qs), "foo?bar", "When connection.qs is a string and has a question mark in front it does not change.");
 
     connection.qs = "&bar"
-    QUnit.equal($.signalR.transports._logic.addQs(url, connection.qs), "foo&bar", "When connection.qs is a string and has an ampersand in front it does not change.");
+    assert.equal($.signalR.transports._logic.addQs(url, connection.qs), "foo&bar", "When connection.qs is a string and has an ampersand in front it does not change.");
 
     // This test will pass when #1568 is fixed.
     if (false) {
         connection.qs = "&bar=" + encodeThis;
 
         if (jqueryMajorVersion >= 3) {
-            QUnit.equal($.signalR.transports._logic.addQs(url, connection.qs), "foo&bar=&goodluck=%24%26%2B%2C%2F%3A%3B%3D%3F%40%20%22%3C%3E%23%25%7B%7D%7C%5E%5B%5D%60", "When connection.qs is a string the connection.qs characters are encoded.");
+            assert.equal($.signalR.transports._logic.addQs(url, connection.qs), "foo&bar=&goodluck=%24%26%2B%2C%2F%3A%3B%3D%3F%40%20%22%3C%3E%23%25%7B%7D%7C%5E%5B%5D%60", "When connection.qs is a string the connection.qs characters are encoded.");
 
         }
         else {
-            QUnit.equal($.signalR.transports._logic.addQs(url, connection.qs), "foo&bar=&goodluck=%24%26%2B%2C%2F%3A%3B%3D%3F%40+%22%3C%3E%23%25%7B%7D%7C%5E%5B%5D%60", "When connection.qs is a string the connection.qs characters are encoded.");
+            assert.equal($.signalR.transports._logic.addQs(url, connection.qs), "foo&bar=&goodluck=%24%26%2B%2C%2F%3A%3B%3D%3F%40+%22%3C%3E%23%25%7B%7D%7C%5E%5B%5D%60", "When connection.qs is a string the connection.qs characters are encoded.");
         }
     }
 
     connection.qs = 1337;
-    QUnit.throws(function () {
+    assert.throws(function () {
         $.signalR.transports._logic.addQs(url, connection.qs);
     }, "When connection.qs is an integer addQs throws.");
 
     connection.qs = true;
-    QUnit.throws(function () {
+    assert.throws(function () {
         $.signalR.transports._logic.addQs(url, connection.qs);
     }, "When connection.qs is a bool addQs throws.");
 });

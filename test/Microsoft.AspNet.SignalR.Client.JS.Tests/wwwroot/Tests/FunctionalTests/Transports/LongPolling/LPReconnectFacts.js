@@ -49,31 +49,24 @@ QUnit.asyncTimeoutTest("Connection start mid-reconnect does not cause double con
         assert.comment("Connected");
 
         $.network.disconnect();
+        $.network.connect();
 
-        setTimeout(function () {
-            $.network.connect();
+        connection.stop();
+        connection.start(transport).done(function () {
+            setTimeout(function () {
+                $.ajax = function () {
+                    assert.fail("Ajax called when we weren't expecting.");
 
-            connection.stop();
-            connection.start(transport).done(function () {
+                    // Persist the request through to the original ajax request
+                    return savedAjax.apply(this, arguments);
+                };
+
                 setTimeout(function () {
-                    $.ajax = function () {
-                        // Let ajax request finish
-                        setTimeout(function () {
-                            assert.fail("Ajax called when we weren't expecting.");
-                            end();
-                        }, 0);
-
-                        // Persist the request through to the original ajax request
-                        return savedAjax.apply(this, arguments);
-                    };
-
-                    setTimeout(function () {
-                        assert.comment("No ajax requests were triggered.");
-                        end();
-                    }, $.signalR.transports.longPolling.reconnectDelay + 1500);
-                }, 500);
-            });
-        }, 0);
+                    assert.comment("No ajax requests were triggered.");
+                    end();
+                }, $.signalR.transports.longPolling.reconnectDelay + 1500);
+            }, 500);
+        });
 
     });
 

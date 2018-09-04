@@ -54,6 +54,8 @@
     </Target>
 
     <ItemGroup>
+      <NpmModuleFile Include="node_modules/qunit/qunit/qunit.js" Module="qunit" />
+      <NpmModuleFile Include="node_modules/qunit/qunit/qunit.css" Module="qunit" />
       <NpmModuleFile Include="node_modules/jquery/dist/jquery.js" Module="jquery" />
       <NpmModuleFile Include="node_modules/jquery/dist/jquery.min.js" Module="jquery" />
     </ItemGroup>

@@ -55,9 +55,9 @@ QUnit.asyncTimeoutTest("Clears reconnectAttemptTimeout on stop", testUtilities.d
 
     connection.reconnecting(function () {
         assert.comment("Started reconnecting");
-
+        
         // Wait for $.signalR.transports.serverSentEvents.start to finish
-        window.setTimeout(function () {
+        setTimeout(function() {
             assert.isSet(connection._.reconnectAttemptTimeoutHandle, "The reconnectAttemptTimeoutHandle is set.");
             connection.stop();
             assert.isNotSet(connection._.reconnectAttemptTimeoutHandle, "The reconnectAttemptTimeoutHandle has been cleared on connection stop.");

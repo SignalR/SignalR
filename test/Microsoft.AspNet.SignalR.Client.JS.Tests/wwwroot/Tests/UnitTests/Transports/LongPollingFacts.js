@@ -6,17 +6,17 @@
 
 QUnit.module("Long Polling Facts");
 
-QUnit.test("Availability", function () {
+QUnit.test("Availability", function (assert) {
     var con = $.connection;
-    QUnit.ok(con.transports.longPolling, "Verifies Long Polling transport exists.");
+    assert.ok(con.transports.longPolling, "Verifies Long Polling transport exists.");
 });
 
-QUnit.test("Named Correctly", function () {
+QUnit.test("Named Correctly", function (assert) {
     var con = $.connection;
-    QUnit.equal(con.transports.longPolling.name, "longPolling", "Verifies Long Polling is named correctly.");
+    assert.equal(con.transports.longPolling.name, "longPolling", "Verifies Long Polling is named correctly.");
 });
 
-QUnit.test("Does not support keep alives", function () {
+QUnit.test("Does not support keep alives", function (assert) {
     var con = $.connection;
-    QUnit.isFalse(con.transports.longPolling.supportsKeepAlive(con));
+    assert.isFalse(con.transports.longPolling.supportsKeepAlive(con));
 });

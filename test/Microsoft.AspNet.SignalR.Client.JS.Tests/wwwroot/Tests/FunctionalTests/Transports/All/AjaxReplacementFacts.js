@@ -20,6 +20,7 @@ testUtilities.runWithTransports(["serverSentEvents", "foreverFrame", "longPollin
         connection.start({ transport: transport }).done(function () {
             $.signalR.ajaxDefaults = customAjaxDefaults;
 
+            var sent = $.Deferred();
             $.ajax = function (url, settings) {
                 if (!settings) {
                     settings = url;
@@ -30,10 +31,7 @@ testUtilities.runWithTransports(["serverSentEvents", "foreverFrame", "longPollin
                     assert.deepEqual(settings[property], customAjaxDefaults[property], property + " was correctly persisted to ajax send requests.");
                 }
 
-                // Let the stack unwind
-                setTimeout(function () {
-                    end();
-                }, 0);
+                end();
             };
 
             connection.send("hello");
@@ -73,10 +71,7 @@ testUtilities.runWithTransports(["serverSentEvents", "foreverFrame", "longPollin
                 assert.notDeepEqual(settings.async, customAjaxDefaults.async, "async was not persisted to ajax abort requests.");
                 assert.deepEqual(settings.processData, customAjaxDefaults.processData, "processData was correctly persisted to ajax abort requests.");
 
-                // Let the stack unwind
-                setTimeout(function () {
-                    end();
-                }, 0);
+                end();
             };
 
             connection.stop();
@@ -86,7 +81,6 @@ testUtilities.runWithTransports(["serverSentEvents", "foreverFrame", "longPollin
         return function () {
             $.ajax = savedAjax;
             $.signalR.ajaxDefaults = savedAjaxDefaults;
-            connection.stop();
         };
     });
 

@@ -3,7 +3,7 @@
 
 QUnit.module("Transports Common - Process Messages Facts");
 
-QUnit.test("tryInitialize is triggered on an initialize message.", function () {
+QUnit.test("tryInitialize is triggered on an initialize message.", function (assert) {
     var connection = testUtilities.createConnection(),
         tryInitializeTriggered = false,
         tryInitialize = $.signalR.transports._logic.tryInitialize;
@@ -21,13 +21,13 @@ QUnit.test("tryInitialize is triggered on an initialize message.", function () {
             S: 1
         });
 
-        QUnit.isTrue(tryInitializeTriggered, "tryInitialize was triggered from initialize message");
+        assert.isTrue(tryInitializeTriggered, "tryInitialize was triggered from initialize message");
     } finally {
         $.signalR.transports._logic.tryInitialize = tryInitialize;
     }
 });
 
-QUnit.test("tryInitialize will not try to invoke undefined callback", function () {
+QUnit.test("tryInitialize will not try to invoke undefined callback", function (assert) {
     var connection = testUtilities.createConnection();
 
     // processMessages accepts an optional third parameter onInitialized.
@@ -40,10 +40,10 @@ QUnit.test("tryInitialize will not try to invoke undefined callback", function (
         S: 1
     });
 
-    QUnit.comment("tryInitialize did not throw.");
+    assert.comment("tryInitialize did not throw.");
 });
 
-QUnit.test("Updates keep alive data on any message retrieval.", function () {
+QUnit.test("Updates keep alive data on any message retrieval.", function (assert) {
     var connection = testUtilities.createConnection(),
         response = {
             C: 1234,
@@ -66,15 +66,15 @@ QUnit.test("Updates keep alive data on any message retrieval.", function () {
 
     // No message, should noop but still update time stamp
     $.signalR.transports._logic.processMessages(connection);
-    QUnit.ok(connection._.lastMessageAt !== lastMessageTimeStamp, "Sent null data, the last message time (" + connection._.lastMessageAt + ") should be different than " + lastMessageTimeStamp);
+    assert.ok(connection._.lastMessageAt !== lastMessageTimeStamp, "Sent null data, the last message time (" + connection._.lastMessageAt + ") should be different than " + lastMessageTimeStamp);
 
     // Subtract 1 so there's at least a 1 millisecond time difference
     lastMessageTimeStamp = connection._.lastMessageAt - 1;
     $.signalR.transports._logic.processMessages(connection, response);
-    QUnit.ok(connection._.lastMessageAt !== lastMessageTimeStamp, "Sent valid data, the last message time (" + connection._.lastMessageAt + ") should be different than " + lastMessageTimeStamp);
+    assert.ok(connection._.lastMessageAt !== lastMessageTimeStamp, "Sent valid data, the last message time (" + connection._.lastMessageAt + ") should be different than " + lastMessageTimeStamp);
 });
 
-QUnit.test("Noop's on keep alive", function () {
+QUnit.test("Noop's on keep alive", function (assert) {
     var connection = testUtilities.createConnection(),
         savedMaximizePersistentResponse = $.signalR.transports._logic.maximizePersistentResponse,
         failed = false;
@@ -82,20 +82,20 @@ QUnit.test("Noop's on keep alive", function () {
     connection.transport = "foo";
 
     $.signalR.transports._logic.maximizePersistentResponse = function () {
-        QUnit.ok(false, "Tried to maximize a message on keep alive.");
+        assert.ok(false, "Tried to maximize a message on keep alive.");
         failed = true;
     };
 
     $.signalR.transports._logic.processMessages(connection);
 
     if (!failed) {
-        QUnit.ok(true, "Noop'd on null data (equivalent to keep alive).");
+        assert.ok(true, "Noop'd on null data (equivalent to keep alive).");
     }
 
     $.signalR.transports._logic.maximizePersistentResponse = savedMaximizePersistentResponse;
 });
 
-QUnit.test("Updates group on message retrieval.", function () {
+QUnit.test("Updates group on message retrieval.", function (assert) {
     var connection = testUtilities.createConnection(),
         response = {
             C: 1234,
@@ -113,15 +113,15 @@ QUnit.test("Updates group on message retrieval.", function () {
     };
 
     $.signalR.transports._logic.processMessages(connection, response);
-    QUnit.ok(updateGroupsCount === 1, "Update groups is called with generic message.");
+    assert.ok(updateGroupsCount === 1, "Update groups is called with generic message.");
 
     $.signalR.transports._logic.processMessages(connection);
-    QUnit.ok(updateGroupsCount === 1, "Update groups is not called when we have a keep alive.");
+    assert.ok(updateGroupsCount === 1, "Update groups is not called when we have a keep alive.");
 
     $.signalR.transports._logic.updateGroups = savedUpdateGroups;
 });
 
-QUnit.test("Triggers received handler for each message.", function () {
+QUnit.test("Triggers received handler for each message.", function (assert) {
     var connection = testUtilities.createHubConnection(),
         demo = connection.createHubProxies().demo,
         response = {
@@ -140,10 +140,10 @@ QUnit.test("Triggers received handler for each message.", function () {
     });
 
     $.signalR.transports._logic.processMessages(connection, response);
-    QUnit.ok(accruedValue === 1337, "Received handler is called for each message in queue.");
+    assert.ok(accruedValue === 1337, "Received handler is called for each message in queue.");
 });
 
-QUnit.test("Message ID is set on connection ID when set.", function () {
+QUnit.test("Message ID is set on connection ID when set.", function (assert) {
     var connection = testUtilities.createConnection(),
         response = {
             M: false,
@@ -155,14 +155,14 @@ QUnit.test("Message ID is set on connection ID when set.", function () {
 
     // No message ID set
     $.signalR.transports._logic.processMessages(connection, response);
-    QUnit.isNotSet(connection.messageId, "No message Id is set if there is no message Id in the message.");
+    assert.isNotSet(connection.messageId, "No message Id is set if there is no message Id in the message.");
 
     response.C = 1234;
     $.signalR.transports._logic.processMessages(connection, response);
-    QUnit.ok(connection.messageId === 1234, "The connection's messageId property is set when a message contains a messageId");
+    assert.ok(connection.messageId === 1234, "The connection's messageId property is set when a message contains a messageId");
 });
 
-QUnit.test("Exceptions thrown in onReceived handlers on not captured.", function () {
+QUnit.test("Exceptions thrown in onReceived handlers on not captured.", function (assert) {
     var connection = testUtilities.createConnection(),
         hubConnection = testUtilities.createHubConnection(),
         demo = hubConnection.createHubProxies().demo,
@@ -187,17 +187,17 @@ QUnit.test("Exceptions thrown in onReceived handlers on not captured.", function
 
     try {
         $.signalR.transports._logic.processMessages(connection, response);
-        QUnit.ok(false, "Error in onReceived handlers shouldn't be caught");
+        assert.ok(false, "Error in onReceived handlers shouldn't be caught");
     } catch (e) {
-        QUnit.equal(e, error);
+        assert.equal(e, error);
     }
 
     $(hubConnection).triggerHandler($.signalR.events.onStarting);
 
     try {
         $.signalR.transports._logic.processMessages(hubConnection, response);
-        QUnit.ok(false, "Error in onReceived handlers shouldn't be caught");
+        assert.ok(false, "Error in onReceived handlers shouldn't be caught");
     } catch (e) {
-        QUnit.equal(e, hubError);
+        assert.equal(e, hubError);
     }
 });

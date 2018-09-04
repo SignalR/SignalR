@@ -27,9 +27,7 @@ QUnit.asyncTimeoutTest("Transport as object is not supported.", testUtilities.de
         assert.comment(ex);        
     }
 
-    window.setTimeout(function () {
-        end();
-    }, 0);
+    end();
 
     // Cleanup
     return function () {

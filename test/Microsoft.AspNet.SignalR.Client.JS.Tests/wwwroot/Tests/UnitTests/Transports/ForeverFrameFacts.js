@@ -6,18 +6,18 @@
 
 QUnit.module("Forever Frame Facts");
 
-QUnit.test("Availability", function () {
+QUnit.test("Availability", function (assert) {
     var con = $.connection;
-    QUnit.ok(con.transports.foreverFrame, "Verifies Forever Frame transport exists.");
-    QUnit.isSet($.signalR.transports._logic.foreverFrame, "Verifies ForeverFrame maintenance object exists on the common transports object.");
+    assert.ok(con.transports.foreverFrame, "Verifies Forever Frame transport exists.");
+    assert.isSet($.signalR.transports._logic.foreverFrame, "Verifies ForeverFrame maintenance object exists on the common transports object.");
 });
 
-QUnit.test("Named Correctly", function () {
+QUnit.test("Named Correctly", function (assert) {
     var con = $.connection;
-    QUnit.equal(con.transports.foreverFrame.name, "foreverFrame", "Verifies Forever Frame is named correctly.");
+    assert.equal(con.transports.foreverFrame.name, "foreverFrame", "Verifies Forever Frame is named correctly.");
 });
 
-QUnit.test("Messages are run through connection JSON parser if set.", function () {
+QUnit.test("Messages are run through connection JSON parser if set.", function (assert) {
     var called = false,
         connection = $.connection("");
 
@@ -33,10 +33,10 @@ QUnit.test("Messages are run through connection JSON parser if set.", function (
 
     $.connection.transports.foreverFrame.receive(connection, { "test": 1 });
 
-    QUnit.isTrue(called, "Forever Frame uses JSON parser if configured for the connection.");
+    assert.isTrue(called, "Forever Frame uses JSON parser if configured for the connection.");
 });
 
-QUnit.test("Messages are not run through connection JSON parser if it's not set.", function () {
+QUnit.test("Messages are not run through connection JSON parser if it's not set.", function (assert) {
     var responseType,
         connection = $.connection("");
 
@@ -46,13 +46,13 @@ QUnit.test("Messages are not run through connection JSON parser if it's not set.
 
     $.connection.transports.foreverFrame.receive(connection, { "test": 1 });
 
-    QUnit.equal(responseType, "object", "Forever Frame does not use JSON parser if it's not configured for the connection.");
+    assert.equal(responseType, "object", "Forever Frame does not use JSON parser if it's not configured for the connection.");
 });
 
-QUnit.test("IFrame is created outside body.", function () {
+QUnit.test("IFrame is created outside body.", function (assert) {
 
     if (window.EventSource) {
-        QUnit.ok(true, "test skipped - Forever Frame is not supported browsers with SSE support.");
+        assert.ok(true, "test skipped - Forever Frame is not supported browsers with SSE support.");
         return;
     }
 
@@ -61,10 +61,10 @@ QUnit.test("IFrame is created outside body.", function () {
     $.connection.transports.foreverFrame.start(connection);
 
     var frame = $("body")[0].nextSibling;
-    QUnit.equal(frame && frame.tagName, 'IFRAME');
+    assert.equal(frame && frame.tagName, 'IFRAME');
 
     $.connection.transports.foreverFrame.stop(connection);
 
     // verify the frame was removed when the transport was stopped
-    QUnit.isTrue($("body")[0].nextSibling === null);
+    assert.isTrue($("body")[0].nextSibling === null);
 });

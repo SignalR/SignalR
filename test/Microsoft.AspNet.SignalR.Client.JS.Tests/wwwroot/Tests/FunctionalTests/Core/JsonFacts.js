@@ -60,10 +60,12 @@ QUnit.module("Core - connection.json Facts");
                     throwCount++;
                     assert.ok(true, "Connection throws when no valid json is found.");
                     if (numStarts === connections.length) {
-                        window.setTimeout(function () {
-                            end();
-                        }, 0);
+                        end();
+                        return false;
                     }
+                }
+                finally {
+                    connection.stop();
                 }
 
                 assert.equal(throwCount, numStarts, "Connection threw exception on start.");

@@ -26,7 +26,7 @@ testUtilities.runWithAllTransports(function (transport) {
                 setTimeout(function () {
                     assert.equal(callCount, 2, "Hub methods added are called only once (one for .on and one for dynamic method).");
                     end();
-                }, 2000);
+                }, 200);
             });
         });
 
@@ -83,7 +83,7 @@ testUtilities.runWithAllTransports(function (transport) {
             setTimeout(function () {
                 assert.ok(true, "Handler was not called, success!");
                 end();
-            }, 2000);
+            }, 200);
         });
 
         // Cleanup
@@ -116,7 +116,7 @@ testUtilities.runWithAllTransports(function (transport) {
             setTimeout(function () {
                 assert.ok(true, "Handler was not called, success!");
                 end();
-            }, 2000);
+            }, 200);
         });
 
         // Cleanup
@@ -150,7 +150,7 @@ testUtilities.runWithAllTransports(function (transport) {
             setTimeout(function () {
                 assert.ok(true, "Handler was not called, success!");
                 end();
-            }, 2000);
+            }, 200);
         });
 
         // Cleanup
@@ -190,7 +190,7 @@ testUtilities.runWithAllTransports(function (transport) {
             setTimeout(function () {
                 assert.ok(true, "Handler was not called, success!");
                 end();
-            }, 2000);
+            }, 200);
         });
 
         // Cleanup
@@ -221,7 +221,7 @@ testUtilities.runWithAllTransports(function (transport) {
                         setTimeout(function () {
                             echoHub.off("echo");
                             deferred.resolve();
-                        }, 1000);
+                        }, 100);
                     }
                 };
 

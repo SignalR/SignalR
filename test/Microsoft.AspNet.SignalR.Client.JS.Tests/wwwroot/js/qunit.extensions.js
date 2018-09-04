@@ -8,28 +8,28 @@
         },
         runModule = true;
 
-    QUnit.comment = function (message) {
-        return QUnit.ok(true, message);
+    QUnit.assert.comment = function (message) {
+        return this.ok(true, message);
     };
 
-    QUnit.fail = function (message) {
-        return QUnit.ok(false, message);
+    QUnit.assert.fail = function (message) {
+        return this.ok(false, message);
     };
 
-    QUnit.isTrue = function (result, message) {
-        return QUnit.ok(result === true, message);
+    QUnit.assert.isTrue = function (result, message) {
+        return this.ok(result === true, message);
     };
 
-    QUnit.isFalse = function (result, message) {
-        return QUnit.ok(result === false, message);
+    QUnit.assert.isFalse = function (result, message) {
+        return this.ok(result === false, message);
     };
 
-    QUnit.isSet = function (actual, message) {
-        return QUnit.notEqual(typeof (actual), "undefined", message);
+    QUnit.assert.isSet = function (actual, message) {
+        return this.notEqual(typeof (actual), "undefined", message);
     };
 
-    QUnit.isNotSet = function (actual, message) {
-        return QUnit.equal(typeof (actual), "undefined", message);
+    QUnit.assert.isNotSet = function (actual, message) {
+        return this.equal(typeof (actual), "undefined", message);
     };
 
     QUnit.theory = function (name, data, test) {
@@ -75,94 +75,98 @@
             // Append the functional flag to the end of the name
             name += buildFlag(functionalFlag);
 
-            QUnit.asyncTest(name, function () {
+            QUnit.test(name, function (assert) {
                 var timeoutId,
                     testCleanup,
                     hasFinished = false,
-                    failOnTimeout = true,
-                    assert = {
-                        expectTimeout: function () {
-                            failOnTimeout = false;
-                        },
-                        comment: function (message) {
-                            if (!hasFinished) {
-                                QUnit.comment(message);
-                            }
-                        },
-                        fail: function (message) {
-                            if (!hasFinished) {
-                                QUnit.fail(message);
-                            }
-                        },
-                        isTrue: function (result, message) {
-                            if (!hasFinished) {
-                                QUnit.isTrue(result, message);
-                            }
-                        },
-                        isFalse: function (result, message) {
-                            if (!hasFinished) {
-                                QUnit.isFalse(result, message);
-                            }
-                        },
-                        deepEqual: function (actual, expected, message) {
-                            if (!hasFinished) {
-                                QUnit.deepEqual(actual, expected, message);
-                            }
-                        },
-                        equal: function (actual, expected, message) {
-                            if (!hasFinished) {
-                                QUnit.equal(actual, expected, message);
-                            }
-                        },
-                        notDeepEqual: function (actual, expected, message) {
-                            if (!hasFinished) {
-                                QUnit.notDeepEqual(actual, expected, message);
-                            }
-                        },
-                        notEqual: function (actual, expected, message) {
-                            if (!hasFinished) {
-                                QUnit.notEqual(actual, expected, message);
-                            }
-                        },
-                        notStrictEqual: function (actual, expected, message) {
-                            if (!hasFinished) {
-                                QUnit.notStrictEqual(actual, expected, message);
-                            }
-                        },
-                        ok: function (state, message) {
-                            if (!hasFinished) {
-                                QUnit.ok(state, message);
-                            }
-                        },
-                        strictEqual: function (actual, expected, message) {
-                            if (!hasFinished) {
-                                QUnit.strictEqual(actual, expected, message);
-                            }
-                        },
-                        throws: function (block, expected, message) {
-                            if (!hasFinished) {
-                                QUnit.throws(block, expected, message);
-                            }
-                        },
-                        isSet: function (actual, message) {
-                            if (!hasFinished) {
-                                QUnit.isSet(actual, message);
-                            }
-                        },
-                        isNotSet: function (actual, message) {
-                            if (!hasFinished) {
-                                QUnit.isNotSet(actual, message);
-                            }
-                        }
-                    };
+                    failOnTimeout = true;
+                //     assert = {
+                //         expectTimeout: function () {
+                //             failOnTimeout = false;
+                //         },
+                //         comment: function (message) {
+                //             if (!hasFinished) {
+                //                 QUnit.comment(message);
+                //             }
+                //         },
+                //         fail: function (message) {
+                //             if (!hasFinished) {
+                //                 QUnit.fail(message);
+                //             }
+                //         },
+                //         isTrue: function (result, message) {
+                //             if (!hasFinished) {
+                //                 QUnit.isTrue(result, message);
+                //             }
+                //         },
+                //         isFalse: function (result, message) {
+                //             if (!hasFinished) {
+                //                 QUnit.isFalse(result, message);
+                //             }
+                //         },
+                //         deepEqual: function (actual, expected, message) {
+                //             if (!hasFinished) {
+                //                 QUnit.deepEqual(actual, expected, message);
+                //             }
+                //         },
+                //         equal: function (actual, expected, message) {
+                //             if (!hasFinished) {
+                //                 QUnit.equal(actual, expected, message);
+                //             }
+                //         },
+                //         notDeepEqual: function (actual, expected, message) {
+                //             if (!hasFinished) {
+                //                 QUnit.notDeepEqual(actual, expected, message);
+                //             }
+                //         },
+                //         notEqual: function (actual, expected, message) {
+                //             if (!hasFinished) {
+                //                 QUnit.notEqual(actual, expected, message);
+                //             }
+                //         },
+                //         notStrictEqual: function (actual, expected, message) {
+                //             if (!hasFinished) {
+                //                 QUnit.notStrictEqual(actual, expected, message);
+                //             }
+                //         },
+                //         ok: function (state, message) {
+                //             if (!hasFinished) {
+                //                 QUnit.ok(state, message);
+                //             }
+                //         },
+                //         strictEqual: function (actual, expected, message) {
+                //             if (!hasFinished) {
+                //                 QUnit.strictEqual(actual, expected, message);
+                //             }
+                //         },
+                //         throws: function (block, expected, message) {
+                //             if (!hasFinished) {
+                //                 QUnit.throws(block, expected, message);
+                //             }
+                //         },
+                //         isSet: function (actual, message) {
+                //             if (!hasFinished) {
+                //                 QUnit.isSet(actual, message);
+                //             }
+                //         },
+                //         isNotSet: function (actual, message) {
+                //             if (!hasFinished) {
+                //                 QUnit.isNotSet(actual, message);
+                //             }
+                //         }
+                //     };
+
+                var done = assert.async();
 
                 function end() {
                     if (!hasFinished) {
                         clearTimeout(timeoutId);
                         failOnTimeout = true;
                         hasFinished = true;
-                        testCleanup();
-                        QUnit.start();
+                        done();
+                        if (testCleanup) {
+                            testCleanup();
+                        }
                     }
                 }
 

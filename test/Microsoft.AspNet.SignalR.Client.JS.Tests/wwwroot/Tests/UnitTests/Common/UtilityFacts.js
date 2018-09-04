@@ -25,7 +25,7 @@ QUnit.module("Common - Utility Facts");
 })
 
 
-QUnit.test("markActive stops connection if called after extended period of time.", function () {
+QUnit.test("markActive stops connection if called after extended period of time.", function (assert) {
     var connection = testUtilities.createConnection(),
         stopCalled = false;
 
@@ -38,5 +38,5 @@ QUnit.test("markActive stops connection if called after extended period of time.
 
     $.signalR.transports._logic.markActive(connection);
 
-    QUnit.equal(stopCalled, true, "Stop was called.");
+    assert.equal(stopCalled, true, "Stop was called.");
 });

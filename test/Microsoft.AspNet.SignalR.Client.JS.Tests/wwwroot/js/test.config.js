@@ -1,10 +1,25 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-(function ($, window) {    
-    // These values are updated via the csproj based on configuration values passed into its build
-    window.document.testUrl = /*URL*/'auto'/*URL*/;
-    window.document.commandLineTest = /*CMDLineTest*/false/*CMDLineTest*/;
+(function ($, window) {
+    // If we're being run in Karma
+    if (window.__karma__) {
+        // Try to set the testUrl based on the args
+        const args = window.__karma__.config.args;
+
+        for (let i = 0; i < args.length; i += 1) {
+            switch (args[i]) {
+                case "--server":
+                    i += 1;
+                    window.document.testUrl = args[i];
+                    break;
+            }
+        }
+    }
+
+    if (!window.document.testUrl) {
+        window.document.testUrl = 'auto';
+    }
 
     function failConnection() {
         $("iframe").each(function () {
