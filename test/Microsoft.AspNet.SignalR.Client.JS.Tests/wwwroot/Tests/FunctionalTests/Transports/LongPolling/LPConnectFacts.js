@@ -102,8 +102,7 @@ QUnit.asyncTimeoutTest("Starting and stopping repeatedly doesn't result in multi
     };
 });
 
-// TODO: Investigate why these tests don't work in phantom.js. Seems like jsonp is borked in phantom
-QUnit.module("JSONP Facts", testUtilities.transports.longPolling.enabled && !window.document.commandLineTest);
+QUnit.module("JSONP Facts", testUtilities.transports.longPolling.enabled);
 
 QUnit.asyncTimeoutTest("JSONP requests are blocked by default in Hubs.", testUtilities.defaultTestTimeout, function (end, assert, testName) {
     var connection = testUtilities.createHubConnection(end, assert, testName, undefined, false),

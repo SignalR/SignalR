@@ -15,7 +15,9 @@
     "jquery": "^3.3.1",
     "karma": "^3.0.0",
     "karma-chrome-launcher": "^2.2.0",
+    "karma-junit-reporter": "^1.2.0",
     "karma-qunit": "^2.1.0",
+    "karma-summary-reporter": "^1.5.1",
     "qunit": "^2.6.2"
   }
 }

@@ -16,10 +16,34 @@
             }
         }
     }
+    else {
+        function getParameterByName(name, url) {
+            if (!url) {
+                url = window.location.href;
+            }
+            name = name.replace(/[\[\]]/g, "\\$&");
+            var regex = new RegExp("[?&]" + name + "(=([^&#]*)|&|#|$)"),
+                results = regex.exec(url);
+            if (!results) return null;
+            if (!results[2]) return '';
+            return decodeURIComponent(results[2].replace(/\+/g, " "));
+        }
 
+        // Check the URL
+        window.document.testUrl = getParameterByName("testUrl");
+    }
+
+    if (window.document.testUrl && !window.document.testUrl.endsWith("/")) {
+        window.document.testUrl += "/";
+    }
+
+    var signalRUrl = "signalr/js";
     if (!window.document.testUrl) {
         window.document.testUrl = 'auto';
+    } else {
+        signalRUrl = window.document.testUrl + "signalr/js";
     }
+    document.write("<script src=\"" + signalRUrl + "\" crossorigin=\"anonymous\"></script>");
 
     function failConnection() {
         $("iframe").each(function () {
