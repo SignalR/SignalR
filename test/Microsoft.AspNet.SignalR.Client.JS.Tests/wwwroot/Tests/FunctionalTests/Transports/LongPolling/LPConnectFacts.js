@@ -102,116 +102,122 @@ QUnit.asyncTimeoutTest("Starting and stopping repeatedly doesn't result in multi
     };
 });
 
-QUnit.module("JSONP Facts", testUtilities.transports.longPolling.enabled);
+QUnit.module("JSONP Facts");
 
-QUnit.asyncTimeoutTest("JSONP requests are blocked by default in Hubs.", testUtilities.defaultTestTimeout, function (end, assert, testName) {
-    var connection = testUtilities.createHubConnection(end, assert, testName, undefined, false),
-        options = { transport: "longPolling", jsonp: true };
-
-
-    connection.start(options)
-              .done(function () {
-                  assert.fail("JSONP connection was established successfully");
-                  end();
-              })
-              .fail(function () {
-                  assert.comment("JSONP connection failed");
-                  end();
-              });
+if(!window.document.jsonpTestsEnabled) {
+    QUnit.test("JSONP Tests Skipped", function(assert) {
+        assert.comment("Skipped due to configuration");
+    });
+} else {
+    QUnit.asyncTimeoutTest("JSONP requests are blocked by default in Hubs.", testUtilities.defaultTestTimeout, function (end, assert, testName) {
+        var connection = testUtilities.createHubConnection(end, assert, testName, undefined, false),
+            options = { transport: "longPolling", jsonp: true };
 
 
-    // Cleanup
-    return function () {
-        connection.stop();
-    };
-});
+        connection.start(options)
+                .done(function () {
+                    assert.fail("JSONP connection was established successfully");
+                    end();
+                })
+                .fail(function () {
+                    assert.comment("JSONP connection failed");
+                    end();
+                });
 
 
-QUnit.asyncTimeoutTest("JSONP requests are blocked by default in PersistentConnections.", testUtilities.defaultTestTimeout, function (end, assert, testName) {
-    var connection = testUtilities.createConnection('/echo', end, assert, testName, false),
-        options = { transport: "longPolling", jsonp: true };
+        // Cleanup
+        return function () {
+            connection.stop();
+        };
+    });
 
 
-    connection.start(options)
-              .done(function () {
-                  assert.fail("JSONP connection was established successfully");
-                  end();
-              })
-              .fail(function () {
-                  assert.comment("JSONP connection failed");
-                  end();
-              });
+    QUnit.asyncTimeoutTest("JSONP requests are blocked by default in PersistentConnections.", testUtilities.defaultTestTimeout, function (end, assert, testName) {
+        var connection = testUtilities.createConnection('/echo', end, assert, testName, false),
+            options = { transport: "longPolling", jsonp: true };
 
 
-    // Cleanup
-    return function () {
-        connection.stop();
-    };
-});
-
-QUnit.asyncTimeoutTest("JSONP requests worked when enabled in Hubs.", testUtilities.defaultTestTimeout, function (end, assert, testName) {
-    var connection = testUtilities.createHubConnection(end, assert, testName, 'jsonp/signalr', false),
-        options = { transport: "longPolling", jsonp: true };
-
-
-    connection.start(options)
-              .done(function () {
-                  assert.comment("JSONP connection was established successfully");
-                  end();
-              })
-              .fail(function () {
-                  assert.fail("JSONP connection failed");
-                  end();
-              });
+        connection.start(options)
+                .done(function () {
+                    assert.fail("JSONP connection was established successfully");
+                    end();
+                })
+                .fail(function () {
+                    assert.comment("JSONP connection failed");
+                    end();
+                });
 
 
-    // Cleanup
-    return function () {
-        connection.stop();
-    };
-});
+        // Cleanup
+        return function () {
+            connection.stop();
+        };
+    });
 
-QUnit.asyncTimeoutTest("JSONP requests worked when enabled in PersistentConnections.", testUtilities.defaultTestTimeout, function (end, assert, testName) {
-    var connection = testUtilities.createConnection('jsonp/echo', end, assert, testName, false),
-        options = { transport: "longPolling", jsonp: true };
-
-    connection.start(options)
-              .done(function () {
-                  assert.comment("JSONP connection was established successfully");
-                  end();
-              })
-              .fail(function () {
-                  assert.fail("JSONP connection failed");
-                  end();
-              });
+    QUnit.asyncTimeoutTest("JSONP requests worked when enabled in Hubs.", testUtilities.defaultTestTimeout, function (end, assert, testName) {
+        var connection = testUtilities.createHubConnection(end, assert, testName, 'jsonp/signalr', false),
+            options = { transport: "longPolling", jsonp: true };
 
 
-    // Cleanup
-    return function () {
-        connection.stop();
-    };
-});
+        connection.start(options)
+                .done(function () {
+                    assert.comment("JSONP connection was established successfully");
+                    end();
+                })
+                .fail(function () {
+                    assert.fail("JSONP connection failed");
+                    end();
+                });
 
-QUnit.asyncTimeoutTest("Hub methods can be invoked using JSONP.", testUtilities.defaultTestTimeout, function (end, assert, testName) {
-    var connection = testUtilities.createHubConnection(end, assert, testName, 'jsonp/signalr'),
-        demo = connection.createHubProxies().demo,
-        options = { transport: "longPolling", jsonp: true };
 
-    connection.start(options)
-              .done(function () {
-                  assert.comment("JSONP connection was established successfully");
+        // Cleanup
+        return function () {
+            connection.stop();
+        };
+    });
 
-                  demo.server.overload().done(function () {
-                      assert.comment("Successfully invoked demo.server.overload()");
-                      end();
-                  }).fail(function () {
-                      assert.fail("Invoking demo.server.overload() failed");
-                      end();
-                  });
-              });
+    QUnit.asyncTimeoutTest("JSONP requests worked when enabled in PersistentConnections.", testUtilities.defaultTestTimeout, function (end, assert, testName) {
+        var connection = testUtilities.createConnection('jsonp/echo', end, assert, testName, false),
+            options = { transport: "longPolling", jsonp: true };
 
-    // Cleanup
-    return function () {
-        connection.stop();
-    };
-});
+        connection.start(options)
+                .done(function () {
+                    assert.comment("JSONP connection was established successfully");
+                    end();
+                })
+                .fail(function () {
+                    assert.fail("JSONP connection failed");
+                    end();
+                });
+
+
+        // Cleanup
+        return function () {
+            connection.stop();
+        };
+    });
+
+    QUnit.asyncTimeoutTest("Hub methods can be invoked using JSONP.", testUtilities.defaultTestTimeout, function (end, assert, testName) {
+        var connection = testUtilities.createHubConnection(end, assert, testName, 'jsonp/signalr'),
+            demo = connection.createHubProxies().demo,
+            options = { transport: "longPolling", jsonp: true };
+
+        connection.start(options)
+                .done(function () {
+                    assert.comment("JSONP connection was established successfully");
+
+                    demo.server.overload().done(function () {
+                        assert.comment("Successfully invoked demo.server.overload()");
+                        end();
+                    }).fail(function () {
+                        assert.fail("Invoking demo.server.overload() failed");
+                        end();
+                    });
+                });
+
+        // Cleanup
+        return function () {
+            connection.stop();
+        };
+    });
+}

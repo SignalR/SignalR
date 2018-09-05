@@ -2,6 +2,25 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 (function ($, window) {
+    function getParameterByName(name, url) {
+        if (!url) {
+            url = window.location.href;
+        }
+        name = name.replace(/[\[\]]/g, "\\$&");
+        var regex = new RegExp("[?&]" + name + "(=([^&#]*)|&|#|$)"),
+            results = regex.exec(url);
+        if (!results) return null;
+        if (!results[2]) return '';
+        return decodeURIComponent(results[2].replace(/\+/g, " "));
+    }
+
+    // Disable JSONP tests. When they are active, we have to install a global onerror to suppress global failures
+    // because JSONP aborts trigger global failures :(
+    window.document.jsonpTestsEnabled = false;
+    if(getParameterByName("jsonpEnabled") === "true") {
+        window.document.jsonpTestsEnabled = true;
+    }
+
     // If we're being run in Karma
     if (window.__karma__) {
         // Try to set the testUrl based on the args
@@ -17,18 +36,6 @@
         }
     }
     else {
-        function getParameterByName(name, url) {
-            if (!url) {
-                url = window.location.href;
-            }
-            name = name.replace(/[\[\]]/g, "\\$&");
-            var regex = new RegExp("[?&]" + name + "(=([^&#]*)|&|#|$)"),
-                results = regex.exec(url);
-            if (!results) return null;
-            if (!results[2]) return '';
-            return decodeURIComponent(results[2].replace(/\+/g, " "));
-        }
-
         // Check the URL
         window.document.testUrl = getParameterByName("testUrl");
     }
