@@ -409,12 +409,11 @@
 
         state: signalR.connectionState.disconnected,
 
-        // This represents the version of the protocol that will be requested by this client.
-        // Even though we support version 2.0, we always request 1.4 so that we work with older servers that don't
-        // support redirection responses.
-        clientProtocol: "1.4",
+        clientProtocol: "2.0",
 
-        // This is the list of protocols we support from the server. Used to validate the ProtocolVersion response value.
+        // We want to support older servers since the 2.0 change is to support redirection results, which isn't
+        // really breaking in the protocol. So if a user updates their client to 2.0 protocol version there's
+        // no reason they can't still connect to a 1.4 server.
         supportedProtocols: [ "1.4", "2.0" ],
 
         reconnectDelay: 2000,
@@ -728,7 +727,8 @@
                             return;
                         }
 
-                        if (res.ProtocolVersion == "2.0") {
+                        // Check for a redirect response (which must have a ProtocolVersion of 2.0)
+                        if (res.ProtocolVersion == "2.0" && res.RedirectUrl) {
                             if (redirects === MAX_REDIRECTS) {
                                 onFailed(signalR._.error(resources.errorRedirectionExceedsLimit, null /* error */), connection);
                                 return;

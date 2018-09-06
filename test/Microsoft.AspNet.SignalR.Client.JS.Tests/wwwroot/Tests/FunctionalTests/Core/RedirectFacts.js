@@ -29,7 +29,7 @@ QUnit.asyncTimeoutTest("Simulated old client fails when redirect result provided
         proxies = connection.createHubProxies(),
         hub = proxies.redirectTestHub;
 
-    connection.clientVersion = "1.4";
+    connection.clientProtocol = "1.4";
     connection.supportedProtocols = ["1.4"];
 
     connection.start().done(function () {
