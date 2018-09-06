@@ -409,7 +409,13 @@
 
         state: signalR.connectionState.disconnected,
 
-        clientProtocol: "2.0",
+        // This represents the version of the protocol that will be requested by this client.
+        // Even though we support version 2.0, we always request 1.4 so that we work with older servers that don't
+        // support redirection responses.
+        clientProtocol: "1.4",
+
+        // This is the list of protocols we support from the server. Used to validate the ProtocolVersion response value.
+        supportedProtocols: [ "1.4", "2.0" ],
 
         reconnectDelay: 2000,
 
@@ -714,7 +720,7 @@
                             return;
                         }
 
-                        if (!res.ProtocolVersion || res.ProtocolVersion !== connection.clientProtocol) {
+                        if (!res.ProtocolVersion || (connection.supportedProtocols.indexOf(res.ProtocolVersion) === -1)) {
                             protocolError = signalR._.error(signalR._.format(resources.protocolIncompatible, connection.clientProtocol, res.ProtocolVersion));
                             $(connection).triggerHandler(events.onError, [protocolError]);
                             deferred.reject(protocolError);
@@ -722,7 +728,7 @@
                             return;
                         }
 
-                        if (res.RedirectUrl) {
+                        if (res.ProtocolVersion == "2.0") {
                             if (redirects === MAX_REDIRECTS) {
                                 onFailed(signalR._.error(resources.errorRedirectionExceedsLimit, null /* error */), connection);
                                 return;

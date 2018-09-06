@@ -24,6 +24,23 @@ QUnit.asyncTimeoutTest("Can connect to endpoint which produces a redirect respon
     });
 });
 
+QUnit.asyncTimeoutTest("Simulated old client fails when redirect result provided", testUtilities.defaultTestTimeout, function(end, assert, testName) {
+    var connection = testUtilities.createHubConnection(end, assert, testName, "/redirect-loop", false),
+        proxies = connection.createHubProxies(),
+        hub = proxies.redirectTestHub;
+
+    connection.clientVersion = "1.4";
+    connection.supportedProtocols = ["1.4"];
+
+    connection.start().done(function () {
+        assert.fail("Connection should fail!");
+        end();
+    }).fail(function (e) {
+        assert.equal(e.message, "You are using a version of the client that isn't compatible with the server. Client version 1.4, server version 2.0.", "Connection failed due to negotiate redirection limit");
+        end();
+    });
+});
+
 QUnit.asyncTimeoutTest("Limits redirects", testUtilities.defaultTestTimeout, function(end, assert, testName) {
     var connection = testUtilities.createHubConnection(end, assert, testName, "/redirect-loop", false),
         proxies = connection.createHubProxies(),
@@ -34,6 +51,20 @@ QUnit.asyncTimeoutTest("Limits redirects", testUtilities.defaultTestTimeout, fun
         end();
     }).fail(function (e) {
         assert.equal(e.source.message, "Negotiate redirection limit exceeded.", "Connection failed due to negotiate redirection limit");
+        end();
+    });
+});
+
+QUnit.asyncTimeoutTest("Does not follow redirect url if ProtocolVersion is not 2.0", testUtilities.defaultTestTimeout, function(end, assert, testName) {
+    var connection = testUtilities.createHubConnection(end, assert, testName, "/redirect-old-proto", false),
+        proxies = connection.createHubProxies(),
+        hub = proxies.redirectTestHub;
+
+    connection.start().done(function () {
+        assert.fail("Connection should fail!");
+        end();
+    }).fail(function (e) {
+        assert.equal(e.message, "No transport could be initialized successfully. Try specifying a different transport or none at all for auto initialization.", "Connection ignored RedirectUrl on old ProtocolVersion response");
         end();
     });
 });

@@ -56,6 +56,9 @@ namespace Microsoft.AspNet.SignalR.Client.JS.Tests
             AppBuilderUseExtensions.Use(app, CreateRedirector("/redirect-loop", "/redirect-loop2"));
             AppBuilderUseExtensions.Use(app, CreateRedirector("/redirect-loop2", "/redirect-loop"));
 
+            // Wrong protocol version
+            AppBuilderUseExtensions.Use(app, CreateRedirector("/redirect-old-proto", "/signalr", protocolVersion: "1.4"));
+
             app.UseFileServer(new FileServerOptions()
             {
                 EnableDefaultFiles = true,
@@ -63,7 +66,7 @@ namespace Microsoft.AspNet.SignalR.Client.JS.Tests
             });
         }
 
-        private static Func<IOwinContext, Func<Task>, Task> CreateRedirector(string sourcePath, string targetPath)
+        private static Func<IOwinContext, Func<Task>, Task> CreateRedirector(string sourcePath, string targetPath, string protocolVersion = null)
         {
             return (context, next) =>
             {
@@ -76,7 +79,10 @@ namespace Microsoft.AspNet.SignalR.Client.JS.Tests
                     {
                         writer.WriteStartObject();
                         writer.WritePropertyName("ProtocolVersion");
-                        writer.WriteValue("2.0");
+
+                        // Redirect results are always protocol 2.0, even if the client requested a different protocol.
+                        writer.WriteValue(protocolVersion ?? "2.0");
+
                         writer.WritePropertyName("RedirectUrl");
                         writer.WriteValue($"{context.Request.Scheme}://{context.Request.Host.Value}{targetPath}");
                         writer.WritePropertyName("AccessToken");
