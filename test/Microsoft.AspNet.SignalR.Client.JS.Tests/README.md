@@ -14,6 +14,8 @@ Server started, press Ctrl-C to shut down.
 
 Open a web browser to that URL to run the tests.
 
+The tests can be directed to a different SignalR server using the `testUrl` query string parameter, so if you want to test the JavaScript client against a server running at `http://localhost:1234` you can use the URL `http://localhost:8989/?testUrl=http://localhost:1234`
+
 ## Running Automatically
 
 Coming soon.
