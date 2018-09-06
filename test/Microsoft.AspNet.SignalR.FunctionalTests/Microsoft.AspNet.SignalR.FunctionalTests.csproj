@@ -1,7 +1,8 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFrameworks>$(DefaultTestFrameworks)</TargetFrameworks>
+    <IncludeDefaultXunitConfig>false</IncludeDefaultXunitConfig>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Castle.Core" Version="$(CastleCorePackageVersion)" />
@@ -37,9 +38,6 @@
     <None Include="config\redirection.config">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <Content Include="xunit.runner.json">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Microsoft.AspNet.SignalR.Tests.Common\Microsoft.AspNet.SignalR.Tests.Common.csproj" />

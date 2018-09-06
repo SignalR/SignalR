@@ -20,11 +20,11 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Server.Hubs
         //[InlineData(HostType.IISExpress, TransportType.ServerSentEvents, MessageBusType.Default, Skip = "Disabled IIS Express tests because they fail to initialize")]
         //[InlineData(HostType.IISExpress, TransportType.LongPolling, MessageBusType.Default, Skip = "Disabled IIS Express tests because they fail to initialize")]
         [InlineData(HostType.HttpListener, TransportType.Websockets, MessageBusType.Default)]
-        [InlineData(HostType.HttpListener, TransportType.ServerSentEvents, MessageBusType.Default)]
-        [InlineData(HostType.HttpListener, TransportType.LongPolling, MessageBusType.Default)]
+        //[InlineData(HostType.HttpListener, TransportType.ServerSentEvents, MessageBusType.Default)]
+        //[InlineData(HostType.HttpListener, TransportType.LongPolling, MessageBusType.Default)]
         [InlineData(HostType.HttpListener, TransportType.Websockets, MessageBusType.FakeMultiStream)]
-        [InlineData(HostType.HttpListener, TransportType.ServerSentEvents, MessageBusType.FakeMultiStream)]
-        [InlineData(HostType.HttpListener, TransportType.LongPolling, MessageBusType.FakeMultiStream)]
+        //[InlineData(HostType.HttpListener, TransportType.ServerSentEvents, MessageBusType.FakeMultiStream)]
+        //[InlineData(HostType.HttpListener, TransportType.LongPolling, MessageBusType.FakeMultiStream)]
         public async Task HubProgressIsReportedSuccessfully(HostType hostType, TransportType transportType, MessageBusType messageBusType)
         {
             using (var host = CreateHost(hostType, transportType))
@@ -52,12 +52,12 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Server.Hubs
         //[InlineData(HostType.IISExpress, TransportType.Websockets, MessageBusType.Default, Skip = "Disabled IIS Express tests because they fail to initialize")]
         //[InlineData(HostType.IISExpress, TransportType.ServerSentEvents, MessageBusType.Default, Skip = "Disabled IIS Express tests because they fail to initialize")]
         //[InlineData(HostType.IISExpress, TransportType.LongPolling, MessageBusType.Default, Skip = "Disabled IIS Express tests because they fail to initialize")]
-        [InlineData(HostType.HttpListener, TransportType.Websockets, MessageBusType.Default)]
+        //[InlineData(HostType.HttpListener, TransportType.Websockets, MessageBusType.Default)]
         [InlineData(HostType.HttpListener, TransportType.ServerSentEvents, MessageBusType.Default)]
-        [InlineData(HostType.HttpListener, TransportType.LongPolling, MessageBusType.Default)]
-        [InlineData(HostType.HttpListener, TransportType.Websockets, MessageBusType.FakeMultiStream)]
+        //[InlineData(HostType.HttpListener, TransportType.LongPolling, MessageBusType.Default)]
+        //[InlineData(HostType.HttpListener, TransportType.Websockets, MessageBusType.FakeMultiStream)]
         [InlineData(HostType.HttpListener, TransportType.ServerSentEvents, MessageBusType.FakeMultiStream)]
-        [InlineData(HostType.HttpListener, TransportType.LongPolling, MessageBusType.FakeMultiStream)]
+        //[InlineData(HostType.HttpListener, TransportType.LongPolling, MessageBusType.FakeMultiStream)]
         public async Task HubProgressThrowsInvalidOperationExceptionIfAttemptToReportProgressAfterMethodReturn(HostType hostType, TransportType transportType, MessageBusType messageBusType)
         {
             using (var host = CreateHost(hostType, transportType))
@@ -82,11 +82,11 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Server.Hubs
         //[InlineData(HostType.IISExpress, TransportType.Websockets, MessageBusType.Default, Skip = "Disabled IIS Express tests because they fail to initialize")]
         //[InlineData(HostType.IISExpress, TransportType.ServerSentEvents, MessageBusType.Default, Skip = "Disabled IIS Express tests because they fail to initialize")]
         //[InlineData(HostType.IISExpress, TransportType.LongPolling, MessageBusType.Default, Skip = "Disabled IIS Express tests because they fail to initialize")]
-        [InlineData(HostType.HttpListener, TransportType.Websockets, MessageBusType.Default)]
-        [InlineData(HostType.HttpListener, TransportType.ServerSentEvents, MessageBusType.Default)]
+        //[InlineData(HostType.HttpListener, TransportType.Websockets, MessageBusType.Default)]
+        //[InlineData(HostType.HttpListener, TransportType.ServerSentEvents, MessageBusType.Default)]
         [InlineData(HostType.HttpListener, TransportType.LongPolling, MessageBusType.Default)]
-        [InlineData(HostType.HttpListener, TransportType.Websockets, MessageBusType.FakeMultiStream)]
-        [InlineData(HostType.HttpListener, TransportType.ServerSentEvents, MessageBusType.FakeMultiStream)]
+        //[InlineData(HostType.HttpListener, TransportType.Websockets, MessageBusType.FakeMultiStream)]
+        //[InlineData(HostType.HttpListener, TransportType.ServerSentEvents, MessageBusType.FakeMultiStream)]
         [InlineData(HostType.HttpListener, TransportType.LongPolling, MessageBusType.FakeMultiStream)]
         public async Task HubProgressReportsProgressForInt(HostType hostType, TransportType transportType, MessageBusType messageBusType)
         {
@@ -111,11 +111,11 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Server.Hubs
         //[InlineData(HostType.IISExpress, TransportType.ServerSentEvents, MessageBusType.Default, Skip = "Disabled IIS Express tests because they fail to initialize")]
         //[InlineData(HostType.IISExpress, TransportType.LongPolling, MessageBusType.Default, Skip = "Disabled IIS Express tests because they fail to initialize")]
         [InlineData(HostType.HttpListener, TransportType.Websockets, MessageBusType.Default)]
-        [InlineData(HostType.HttpListener, TransportType.ServerSentEvents, MessageBusType.Default)]
-        [InlineData(HostType.HttpListener, TransportType.LongPolling, MessageBusType.Default)]
+        //[InlineData(HostType.HttpListener, TransportType.ServerSentEvents, MessageBusType.Default)]
+        //[InlineData(HostType.HttpListener, TransportType.LongPolling, MessageBusType.Default)]
         [InlineData(HostType.HttpListener, TransportType.Websockets, MessageBusType.FakeMultiStream)]
-        [InlineData(HostType.HttpListener, TransportType.ServerSentEvents, MessageBusType.FakeMultiStream)]
-        [InlineData(HostType.HttpListener, TransportType.LongPolling, MessageBusType.FakeMultiStream)]
+        //[InlineData(HostType.HttpListener, TransportType.ServerSentEvents, MessageBusType.FakeMultiStream)]
+        //[InlineData(HostType.HttpListener, TransportType.LongPolling, MessageBusType.FakeMultiStream)]
         public async Task HubProgressReportsProgressForString(HostType hostType, TransportType transportType, MessageBusType messageBusType)
         {
             using (var host = CreateHost(hostType, transportType))
@@ -138,12 +138,12 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Server.Hubs
         //[InlineData(HostType.IISExpress, TransportType.Websockets, MessageBusType.Default, Skip = "Disabled IIS Express tests because they fail to initialize")]
         //[InlineData(HostType.IISExpress, TransportType.ServerSentEvents, MessageBusType.Default, Skip = "Disabled IIS Express tests because they fail to initialize")]
         //[InlineData(HostType.IISExpress, TransportType.LongPolling, MessageBusType.Default, Skip = "Disabled IIS Express tests because they fail to initialize")]
-        [InlineData(HostType.HttpListener, TransportType.Websockets, MessageBusType.Default)]
+        //[InlineData(HostType.HttpListener, TransportType.Websockets, MessageBusType.Default)]
         [InlineData(HostType.HttpListener, TransportType.ServerSentEvents, MessageBusType.Default)]
-        [InlineData(HostType.HttpListener, TransportType.LongPolling, MessageBusType.Default)]
-        [InlineData(HostType.HttpListener, TransportType.Websockets, MessageBusType.FakeMultiStream)]
+        //[InlineData(HostType.HttpListener, TransportType.LongPolling, MessageBusType.Default)]
+        //[InlineData(HostType.HttpListener, TransportType.Websockets, MessageBusType.FakeMultiStream)]
         [InlineData(HostType.HttpListener, TransportType.ServerSentEvents, MessageBusType.FakeMultiStream)]
-        [InlineData(HostType.HttpListener, TransportType.LongPolling, MessageBusType.FakeMultiStream)]
+        //[InlineData(HostType.HttpListener, TransportType.LongPolling, MessageBusType.FakeMultiStream)]
         public async Task HubProgressReportsProgressForCustomType(HostType hostType, TransportType transportType, MessageBusType messageBusType)
         {
             using (var host = CreateHost(hostType, transportType))
@@ -170,11 +170,11 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Server.Hubs
         //[InlineData(HostType.IISExpress, TransportType.Websockets, MessageBusType.Default, Skip = "Disabled IIS Express tests because they fail to initialize")]
         //[InlineData(HostType.IISExpress, TransportType.ServerSentEvents, MessageBusType.Default, Skip = "Disabled IIS Express tests because they fail to initialize")]
         //[InlineData(HostType.IISExpress, TransportType.LongPolling, MessageBusType.Default, Skip = "Disabled IIS Express tests because they fail to initialize")]
-        [InlineData(HostType.HttpListener, TransportType.Websockets, MessageBusType.Default)]
-        [InlineData(HostType.HttpListener, TransportType.ServerSentEvents, MessageBusType.Default)]
+        //[InlineData(HostType.HttpListener, TransportType.Websockets, MessageBusType.Default)]
+        //[InlineData(HostType.HttpListener, TransportType.ServerSentEvents, MessageBusType.Default)]
         [InlineData(HostType.HttpListener, TransportType.LongPolling, MessageBusType.Default)]
-        [InlineData(HostType.HttpListener, TransportType.Websockets, MessageBusType.FakeMultiStream)]
-        [InlineData(HostType.HttpListener, TransportType.ServerSentEvents, MessageBusType.FakeMultiStream)]
+        //[InlineData(HostType.HttpListener, TransportType.Websockets, MessageBusType.FakeMultiStream)]
+        //[InlineData(HostType.HttpListener, TransportType.ServerSentEvents, MessageBusType.FakeMultiStream)]
         [InlineData(HostType.HttpListener, TransportType.LongPolling, MessageBusType.FakeMultiStream)]
         public async Task HubProgressReportsProgressForDynamic(HostType hostType, TransportType transportType, MessageBusType messageBusType)
         {

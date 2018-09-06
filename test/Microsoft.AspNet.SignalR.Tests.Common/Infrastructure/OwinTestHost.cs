@@ -64,7 +64,8 @@ namespace Microsoft.AspNet.SignalR.Tests.Common.Infrastructure
                                         int? transportConnectTimeout = 5,
                                         int? maxIncomingWebSocketMessageSize = 64 * 1024,
                                         bool enableAutoRejoiningGroups = false,
-                                        MessageBusType messageBusType = MessageBusType.Default)
+                                        MessageBusType messageBusType = MessageBusType.Default,
+                                        bool ignoreMinimumSettings = false)
         {
             base.Initialize(keepAlive,
                             connectionTimeout,
@@ -72,7 +73,8 @@ namespace Microsoft.AspNet.SignalR.Tests.Common.Infrastructure
                             transportConnectTimeout,
                             maxIncomingWebSocketMessageSize,
                             enableAutoRejoiningGroups,
-                            messageBusType);
+                            messageBusType,
+                            ignoreMinimumSettings);
 
             _server = WebApp.Start(Url, app =>
             {

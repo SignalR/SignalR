@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -31,7 +31,8 @@ namespace Microsoft.AspNet.SignalR.Tests.Common.Infrastructure
                         int? transportConnectTimeout = 5,
                         int? maxIncomingWebSocketMessageSize = 64 * 1024, // Default 64 KB
                         bool enableAutoRejoiningGroups = false,
-                        MessageBusType messageBusType = MessageBusType.Default);
+                        MessageBusType messageBusType = MessageBusType.Default,
+                        bool ignoreMinimumSettings = false);
 
         Task Get(string uri);
 

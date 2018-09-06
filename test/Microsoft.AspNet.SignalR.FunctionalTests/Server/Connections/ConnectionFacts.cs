@@ -197,20 +197,12 @@ namespace Microsoft.AspNet.SignalR.Client.Tests
 
             [Theory]
             [InlineData(HostType.Memory, TransportType.ServerSentEvents, MessageBusType.Default)]
-            [InlineData(HostType.Memory, TransportType.ServerSentEvents, MessageBusType.Fake)]
-            [InlineData(HostType.Memory, TransportType.ServerSentEvents, MessageBusType.FakeMultiStream)]
-            [InlineData(HostType.Memory, TransportType.LongPolling, MessageBusType.Default)]
-            [InlineData(HostType.Memory, TransportType.LongPolling, MessageBusType.Fake)]
-            [InlineData(HostType.Memory, TransportType.LongPolling, MessageBusType.FakeMultiStream)]
-            [InlineData(HostType.Memory, TransportType.Auto, MessageBusType.Default)]
-            //[InlineData(HostType.IISExpress, TransportType.Websockets, MessageBusType.Default, Skip = "Disabled IIS Express tests because they fail to initialize")]
-            //[InlineData(HostType.IISExpress, TransportType.ServerSentEvents, MessageBusType.Default, Skip = "Disabled IIS Express tests because they fail to initialize")]
-            //[InlineData(HostType.IISExpress, TransportType.LongPolling, MessageBusType.Default, Skip = "Disabled IIS Express tests because they fail to initialize")]
-            //[InlineData(HostType.IISExpress, TransportType.Auto, MessageBusType.Default, Skip = "Disabled IIS Express tests because they fail to initialize")]
-            [InlineData(HostType.HttpListener, TransportType.Websockets, MessageBusType.Default)]
-            [InlineData(HostType.HttpListener, TransportType.ServerSentEvents, MessageBusType.Default)]
-            [InlineData(HostType.HttpListener, TransportType.LongPolling, MessageBusType.Default)]
-            [InlineData(HostType.HttpListener, TransportType.Auto, MessageBusType.Default)]
+            //[InlineData(HostType.Memory, TransportType.LongPolling, MessageBusType.Default)]
+            //[InlineData(HostType.Memory, TransportType.Auto, MessageBusType.Default)]
+            //[InlineData(HostType.HttpListener, TransportType.Websockets, MessageBusType.Default)]
+            //[InlineData(HostType.HttpListener, TransportType.ServerSentEvents, MessageBusType.Default)]
+            //[InlineData(HostType.HttpListener, TransportType.LongPolling, MessageBusType.Default)]
+            //[InlineData(HostType.HttpListener, TransportType.Auto, MessageBusType.Default)]
             public void ThrownWebExceptionShouldBeUnwrapped(HostType hostType, TransportType transportType, MessageBusType messageBusType)
             {
                 using (var host = CreateHost(hostType, transportType))
@@ -424,11 +416,6 @@ namespace Microsoft.AspNet.SignalR.Client.Tests
             }
 
             [Theory]
-            //[InlineData(HostType.IISExpress, TransportType.Websockets, Skip = "Disabled IIS Express tests because they fail to initialize")]
-            //[InlineData(HostType.IISExpress, TransportType.ServerSentEvents, Skip = "Disabled IIS Express tests because they fail to initialize")]
-            //[InlineData(HostType.IISExpress, TransportType.LongPolling, Skip = "Disabled IIS Express tests because they fail to initialize")]
-            [InlineData(HostType.HttpListener, TransportType.Websockets)]
-            [InlineData(HostType.HttpListener, TransportType.ServerSentEvents)]
             [InlineData(HostType.HttpListener, TransportType.LongPolling)]
             public async Task StoppingDoesntRaiseErrorEvent(HostType hostType, TransportType transportType)
             {
@@ -453,15 +440,8 @@ namespace Microsoft.AspNet.SignalR.Client.Tests
 
             [Theory]
             [InlineData(HostType.Memory, TransportType.ServerSentEvents, MessageBusType.Default)]
-            [InlineData(HostType.Memory, TransportType.ServerSentEvents, MessageBusType.Fake)]
-            [InlineData(HostType.Memory, TransportType.ServerSentEvents, MessageBusType.FakeMultiStream)]
-            [InlineData(HostType.Memory, TransportType.LongPolling, MessageBusType.Default)]
-            [InlineData(HostType.Memory, TransportType.LongPolling, MessageBusType.Fake)]
-            [InlineData(HostType.Memory, TransportType.LongPolling, MessageBusType.FakeMultiStream)]
-            //[InlineData(HostType.IISExpress, TransportType.ServerSentEvents, MessageBusType.Default, Skip = "Disabled IIS Express tests because they fail to initialize")]
-            //[InlineData(HostType.IISExpress, TransportType.Websockets, MessageBusType.Default, Skip = "Disabled IIS Express tests because they fail to initialize")]
-            //[InlineData(HostType.IISExpress, TransportType.LongPolling, MessageBusType.Default, Skip = "Disabled IIS Express tests because they fail to initialize")]
-            [InlineData(HostType.HttpListener, TransportType.ServerSentEvents, MessageBusType.Default)]
+            //[InlineData(HostType.Memory, TransportType.LongPolling, MessageBusType.Default)]
+            //[InlineData(HostType.HttpListener, TransportType.ServerSentEvents, MessageBusType.Default)]
             [InlineData(HostType.HttpListener, TransportType.Websockets, MessageBusType.Default)]
             [InlineData(HostType.HttpListener, TransportType.LongPolling, MessageBusType.Default)]
             public async Task ManuallyRestartedClientMaintainsConsistentState(HostType hostType, TransportType transportType, MessageBusType messageBusType)
@@ -494,15 +474,8 @@ namespace Microsoft.AspNet.SignalR.Client.Tests
             
             [Theory]
             [InlineData(HostType.Memory, TransportType.ServerSentEvents, MessageBusType.Default)]
-            [InlineData(HostType.Memory, TransportType.ServerSentEvents, MessageBusType.Fake)]
-            [InlineData(HostType.Memory, TransportType.ServerSentEvents, MessageBusType.FakeMultiStream)]
-            [InlineData(HostType.Memory, TransportType.LongPolling, MessageBusType.Default)]
-            [InlineData(HostType.Memory, TransportType.LongPolling, MessageBusType.Fake)]
-            [InlineData(HostType.Memory, TransportType.LongPolling, MessageBusType.FakeMultiStream)]
-            //[InlineData(HostType.IISExpress, TransportType.ServerSentEvents, MessageBusType.Default, Skip = "Disabled IIS Express tests because they fail to initialize")]
-            //[InlineData(HostType.IISExpress, TransportType.Websockets, MessageBusType.Default, Skip = "Disabled IIS Express tests because they fail to initialize")]
-            //[InlineData(HostType.IISExpress, TransportType.LongPolling, MessageBusType.Default, Skip = "Disabled IIS Express tests because they fail to initialize")]
-            [InlineData(HostType.HttpListener, TransportType.ServerSentEvents, MessageBusType.Default)]
+            //[InlineData(HostType.Memory, TransportType.LongPolling, MessageBusType.Default)]
+            //[InlineData(HostType.HttpListener, TransportType.ServerSentEvents, MessageBusType.Default)]
             [InlineData(HostType.HttpListener, TransportType.Websockets, MessageBusType.Default)]
             [InlineData(HostType.HttpListener, TransportType.LongPolling, MessageBusType.Default)]
             public async Task AwaitingOnStartAndThenStoppingDoesntHang(HostType hostType, TransportType transportType, MessageBusType messageBusType)
@@ -523,15 +496,8 @@ namespace Microsoft.AspNet.SignalR.Client.Tests
 
             [Theory]
             [InlineData(HostType.Memory, TransportType.ServerSentEvents, MessageBusType.Default)]
-            [InlineData(HostType.Memory, TransportType.ServerSentEvents, MessageBusType.Fake)]
-            [InlineData(HostType.Memory, TransportType.ServerSentEvents, MessageBusType.FakeMultiStream)]
-            [InlineData(HostType.Memory, TransportType.LongPolling, MessageBusType.Default)]
-            [InlineData(HostType.Memory, TransportType.LongPolling, MessageBusType.Fake)]
-            [InlineData(HostType.Memory, TransportType.LongPolling, MessageBusType.FakeMultiStream)]
-            //[InlineData(HostType.IISExpress, TransportType.ServerSentEvents, MessageBusType.Default, Skip = "Disabled IIS Express tests because they fail to initialize")]
-            //[InlineData(HostType.IISExpress, TransportType.Websockets, MessageBusType.Default, Skip = "Disabled IIS Express tests because they fail to initialize")]
-            //[InlineData(HostType.IISExpress, TransportType.LongPolling, MessageBusType.Default, Skip = "Disabled IIS Express tests because they fail to initialize")]
-            [InlineData(HostType.HttpListener, TransportType.ServerSentEvents, MessageBusType.Default)]
+            //[InlineData(HostType.Memory, TransportType.LongPolling, MessageBusType.Default)]
+            //[InlineData(HostType.HttpListener, TransportType.ServerSentEvents, MessageBusType.Default)]
             [InlineData(HostType.HttpListener, TransportType.Websockets, MessageBusType.Default)]
             [InlineData(HostType.HttpListener, TransportType.LongPolling, MessageBusType.Default)]
             public async Task AwaitingOnFailedStartAndThenStoppingDoesntHang(HostType hostType, TransportType transportType, MessageBusType messageBusType)
@@ -557,26 +523,15 @@ namespace Microsoft.AspNet.SignalR.Client.Tests
                     Assert.True(false, "An exception should have been thrown.");
                 }
             }
-            
+
 
             [Theory]
-            [InlineData(HostType.Memory, TransportType.ServerSentEvents, MessageBusType.Default)]
-            [InlineData(HostType.Memory, TransportType.ServerSentEvents, MessageBusType.Fake)]
-            [InlineData(HostType.Memory, TransportType.ServerSentEvents, MessageBusType.FakeMultiStream)]
             [InlineData(HostType.Memory, TransportType.LongPolling, MessageBusType.Default)]
-            [InlineData(HostType.Memory, TransportType.LongPolling, MessageBusType.Fake)]
-            [InlineData(HostType.Memory, TransportType.LongPolling, MessageBusType.FakeMultiStream)]
-            //[InlineData(HostType.IISExpress, TransportType.Websockets, MessageBusType.Default, Skip = "Disabled IIS Express tests because they fail to initialize")]
-            //[InlineData(HostType.IISExpress, TransportType.ServerSentEvents, MessageBusType.Default, Skip = "Disabled IIS Express tests because they fail to initialize")]
-            //[InlineData(HostType.IISExpress, TransportType.LongPolling, MessageBusType.Default, Skip = "Disabled IIS Express tests because they fail to initialize")]
-            [InlineData(HostType.HttpListener, TransportType.Websockets, MessageBusType.Default)]
-            [InlineData(HostType.HttpListener, TransportType.ServerSentEvents, MessageBusType.Default)]
-            [InlineData(HostType.HttpListener, TransportType.LongPolling, MessageBusType.Default)]
-            public async Task ClientStopsReconnectingAfterDisconnectTimeout(HostType hostType, TransportType transportType, MessageBusType messageBusType)
+            private async Task ClientStopsReconnectingAfterDisconnectTimeout(HostType hostType, TransportType transportType, MessageBusType messageBusType)
             {
                 using (var host = CreateHost(hostType, transportType))
                 {
-                    host.Initialize(disconnectTimeout: 6, messageBusType: messageBusType);
+                    host.Initialize(disconnectTimeout: 1, messageBusType: messageBusType, ignoreMinimumSettings: true);
                     var connection = CreateHubConnection(host);
 
                     using (connection)
@@ -606,18 +561,7 @@ namespace Microsoft.AspNet.SignalR.Client.Tests
             }
 
             [Theory]
-            [InlineData(HostType.Memory, TransportType.ServerSentEvents, MessageBusType.Default)]
-            [InlineData(HostType.Memory, TransportType.ServerSentEvents, MessageBusType.Fake)]
-            [InlineData(HostType.Memory, TransportType.ServerSentEvents, MessageBusType.FakeMultiStream)]
             [InlineData(HostType.Memory, TransportType.LongPolling, MessageBusType.Default)]
-            [InlineData(HostType.Memory, TransportType.LongPolling, MessageBusType.Fake)]
-            [InlineData(HostType.Memory, TransportType.LongPolling, MessageBusType.FakeMultiStream)]
-            //[InlineData(HostType.IISExpress, TransportType.ServerSentEvents, MessageBusType.Default, Skip = "Disabled IIS Express tests because they fail to initialize")]
-            //[InlineData(HostType.IISExpress, TransportType.Websockets, MessageBusType.Default, Skip = "Disabled IIS Express tests because they fail to initialize")]
-            //[InlineData(HostType.IISExpress, TransportType.LongPolling, MessageBusType.Default, Skip = "Disabled IIS Express tests because they fail to initialize")]
-            [InlineData(HostType.HttpListener, TransportType.ServerSentEvents, MessageBusType.Default)]
-            [InlineData(HostType.HttpListener, TransportType.Websockets, MessageBusType.Default)]
-            [InlineData(HostType.HttpListener, TransportType.LongPolling, MessageBusType.Default)]
             public async Task ClientStaysReconnectedAfterDisconnectTimeout(HostType hostType, TransportType transportType, MessageBusType messageBusType)
             {
                 using (var host = CreateHost(hostType, transportType))
@@ -652,7 +596,7 @@ namespace Microsoft.AspNet.SignalR.Client.Tests
                         Assert.True(await reconnectingWh.WaitAsync(TimeSpan.FromSeconds(30)));
                         Assert.True(await reconnectedWh.WaitAsync(TimeSpan.FromSeconds(30)));
 
-                        await Task.Delay(TimeSpan.FromSeconds(15));
+                        await Task.Delay(TimeSpan.FromSeconds(8));
                         Assert.NotEqual(ConnectionState.Disconnected, connection.State);
                     }
                 }
@@ -660,12 +604,7 @@ namespace Microsoft.AspNet.SignalR.Client.Tests
 
             [Theory]
             [InlineData(HostType.Memory, TransportType.ServerSentEvents, MessageBusType.Default)]
-            [InlineData(HostType.Memory, TransportType.ServerSentEvents, MessageBusType.Fake)]
-            [InlineData(HostType.Memory, TransportType.ServerSentEvents, MessageBusType.FakeMultiStream)]
             [InlineData(HostType.Memory, TransportType.LongPolling, MessageBusType.Default)]
-            [InlineData(HostType.Memory, TransportType.LongPolling, MessageBusType.Fake)]
-            [InlineData(HostType.Memory, TransportType.LongPolling, MessageBusType.FakeMultiStream)]
-            //[InlineData(HostType.IISExpress, TransportType.Websockets, MessageBusType.Default, Skip = "Disabled IIS Express tests because they fail to initialize")]
             [InlineData(HostType.HttpListener, TransportType.Websockets, MessageBusType.Default)]
             public async Task ConnectionErrorCapturesExceptionsThrownInReceived(HostType hostType, TransportType transportType, MessageBusType messageBusType)
             {

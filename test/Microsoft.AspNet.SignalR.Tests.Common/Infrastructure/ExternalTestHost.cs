@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -39,12 +39,13 @@ namespace Microsoft.AspNet.SignalR.Tests.Common.Infrastructure
         public Func<Client.Transports.IClientTransport> TransportFactory { get; set; }
 
         public void Initialize(int? keepAlive = -1,
-                               int? connectionTimeout = 110,                               
+                               int? connectionTimeout = 110,
                                int? disconnectTimeout = 30,
                                int? transportConnectTimeout = 5,
                                int? maxIncomingWebSocketMessageSize = 64 * 1024,
                                bool enableAutoRejoiningGroups = false,
-                               MessageBusType type = MessageBusType.Default)
+                               MessageBusType type = MessageBusType.Default,
+                               bool ignoreMinimumSettings = false)
         {
             // nothing to initialize since it is external! 
         }
