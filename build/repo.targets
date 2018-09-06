@@ -51,4 +51,22 @@
             Targets="Pack"
             Properties="ProjectRoot=%(SatellitePackage.ProjectRoot);PackageId=%(SatellitePackage.PackageId);Locale=%(SatellitePackage.Locale);PackageOutputPath=$(BuildDir)satellite\%(SatellitePackage.Locale)\;$(_ConstantProperties)" />
     </Target>
+
+    
+    <PropertyGroup>
+        <RestoreDependsOn>$(RestoreDependsOn);RestoreNpm</RestoreDependsOn>
+    </PropertyGroup>
+    <Target Name="RestoreNpm" Condition="'$(PreflightRestore)' != 'True'">
+        <Message Text="Restoring NPM modules" Importance="high" />
+        <Exec Command="npm install --no-optional" WorkingDirectory="$(RepositoryRoot)test/Microsoft.AspNet.SignalR.Client.JS.Tests" />
+    </Target>
+
+    <PropertyGroup>
+        <TestDependsOn>$(TestDependsOn);RunBrowserTests</TestDependsOn>
+    </PropertyGroup>
+
+    <Target Name="RunBrowserTests">
+        <Message Text="Running JavaScript client Browser tests" Importance="high" />
+        <Exec Command="npm test -- --configuration $(Configuration)" WorkingDirectory="$(RepositoryRoot)test/Microsoft.AspNet.SignalR.Client.JS.Tests" IgnoreStandardErrorWarningFormat="true" />
+    </Target>
 </Project>

@@ -1,4 +1,4 @@
-﻿<Project>
+<Project>
   <PropertyGroup Label="Package Versions: Auto">
     <CastleCorePackageVersion>4.0.0</CastleCorePackageVersion>
     <CmdLinePackageVersion>1.0.7.509</CmdLinePackageVersion>
@@ -14,6 +14,7 @@
     <MicrosoftOwinSecurityCookiesPackageVersion>2.1.0</MicrosoftOwinSecurityCookiesPackageVersion>
     <MicrosoftOwinSecurityPackageVersion>2.1.0</MicrosoftOwinSecurityPackageVersion>
     <MicrosoftOwinSelfHostPackageVersion>2.1.0</MicrosoftOwinSelfHostPackageVersion>
+    <MicrosoftOwinStaticFilesPackageVersion>2.1.0</MicrosoftOwinStaticFilesPackageVersion>
     <MicrosoftOwinTestingPackageVersion>2.1.0</MicrosoftOwinTestingPackageVersion>
     <MicrosoftWindowsAzureConfigurationManagerPackageVersion>2.0.0.0</MicrosoftWindowsAzureConfigurationManagerPackageVersion>
     <MoqPackageVersion>4.7.8</MoqPackageVersion>

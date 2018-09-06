@@ -437,7 +437,8 @@
                 url: url,
                 async: async,
                 timeout: 1000,
-                type: "POST"
+                type: "POST",
+                dataType: "text" // We don't want to use JSONP here even when JSONP is enabled
             });
 
             connection.log("Fired ajax abort async = " + async + ".");
