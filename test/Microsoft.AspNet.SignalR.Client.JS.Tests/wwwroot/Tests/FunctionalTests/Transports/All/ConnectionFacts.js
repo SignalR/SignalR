@@ -170,8 +170,14 @@ testUtilities.runWithAllTransports(function (transport) {
             }
 
             // Check if it's the ping request;
-            if (url.indexOf("/ping") === -1 && (url.indexOf("connectionData=") === -1 || url.toLowerCase().indexOf("connectiondataverifierhub") === -1)) {
-                connectionDataVerifierHub.client.fail();
+            if (url.indexOf("/ping") === -1) {
+                if (url.indexOf("connectionData=") === -1 || url.toLowerCase().indexOf("connectiondataverifierhub") === -1) {
+                    assert.fail("Request did not contain connection data: " + url);
+                    end();
+                }
+                else {
+                    assert.comment("Request contained query string: " + url);
+                }
             }
 
             // Persist the request through to the original ajax request
@@ -188,8 +194,8 @@ testUtilities.runWithAllTransports(function (transport) {
             });
         };
 
-        connectionDataVerifierHub.client.fail = function () {
-            assert.fail("Query string did not contain connection data.");
+        connectionDataVerifierHub.client.fail = function (url) {
+            assert.fail("Server did not receive connectionData in URL: " + url);
             end();
         };
 
@@ -257,7 +263,7 @@ testUtilities.runWithAllTransports(function (transport) {
     QUnit.asyncTimeoutTest(transport + ": Reconnect exceeding the reconnect window results in the connection disconnecting.", testUtilities.defaultTestTimeout * 2, function (end, assert, testName) {
         var connection = testUtilities.createHubConnection(end, assert, testName, undefined, false),
             handle;
-       
+
         connection.reconnecting(function () {
             assert.comment("Reconnecting fired.");
             connection.reconnectWindow = 500;
@@ -296,7 +302,7 @@ testUtilities.runWithAllTransports(function (transport) {
                 if (++connectionsStarted) {
                     assert.comment("All connections started functions triggered successfully.");
                     assert.equal(connection.state, $.signalR.connectionState.connected, "Connection connected");
-                    if(connectionsStarted === startCount) {
+                    if (connectionsStarted === startCount) {
                         end();
                     }
                 }
