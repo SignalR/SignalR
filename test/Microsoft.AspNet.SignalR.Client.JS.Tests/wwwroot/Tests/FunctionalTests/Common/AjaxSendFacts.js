@@ -1,7 +1,7 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-QUnit.module("Transports Common - Ajax Send Facts");
+QUnit.module("Transports Common - Ajax Send Functional Tests");
 
 testUtilities.runWithTransports(["longPolling", "foreverFrame", "serverSentEvents"], function (transport) {
     QUnit.asyncTimeoutTest(transport + " transport can trigger method on server via ajaxSend.", testUtilities.defaultTestTimeout, function (end, assert, testName) {

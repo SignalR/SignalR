@@ -44,17 +44,22 @@ function waitForExit(p: child_process.ChildProcess): Promise<void> {
     });
 }
 
+function runKarma(config: any): Promise<karma.TestResults> {
+    return new Promise((resolve, reject) => {
+        const server = new karma.Server(config);
+        server.on("run_complete", (browsers, results) => {
+            resolve(results);
+        });
+        server.start();
+    });
+}
+
 let server: child_process.ChildProcess;
-let karma: child_process.ChildProcess;
 process.on("exit", (code) => {
     // On-exit logic.
     if(server) {
         console.log("Terminating server process");
         server.kill();
-    }
-    if(karma) {
-        console.log("Terminating karma process");
-        karma.kill();
     }
 });
 
@@ -70,6 +75,10 @@ for (let i = 2; i < process.argv.length; i += 1) {
         case "-v":
         case "--verbose":
             _debug.enable("signalr-functional-tests:*");
+            break;
+        case "--all-browsers":
+            console.log("including non-headless browsers");
+            process.env.SIGNALR_TEST_ALL_BROWSERS = "true";
             break;
     }
 }
@@ -100,7 +109,7 @@ for (let i = 2; i < process.argv.length; i += 1) {
     }
 
     // Spawn the server process
-    debug(`starting ${exePath} to listen at ${serverUrl}...`);
+    console.log(`starting ${exePath} to listen at ${serverUrl}...`);
     server = child_process.spawn(exePath, ["--url", serverUrl]);
 
     // Loop trying to request the status endpoint
@@ -118,11 +127,11 @@ for (let i = 2; i < process.argv.length; i += 1) {
         return 1;
     }
 
-    debug("server is ready, launching karma");
+    console.log("server is ready, launching karma");
 
-    const karmaPath = path.resolve(__dirname, "node_modules", "karma", "bin", "karma");
-    karma = child_process.spawn(process.execPath, [ karmaPath, "start", "--single-run" ]);
+    config.singleRun = true;
+    let results = await runKarma(config);
 
-    return 0;
+    return results.exitCode;
 
 })().then(code => process.exit(code));

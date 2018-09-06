@@ -1,7 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-QUnit.module("Fallback Facts");
+QUnit.module("Fallback Functional Tests");
 
 QUnit.asyncTimeoutTest("Default transports fall back and connect.", testUtilities.defaultTestTimeout, function (end, assert, testName) {
     var connection = testUtilities.createHubConnection(end, assert, testName);
@@ -116,7 +116,7 @@ QUnit.asyncTimeoutTest("Client does not fall back if the start request hangs.", 
     };
 });
 
-QUnit.module("Fallback Facts", testUtilities.transports.webSockets.enabled);
+QUnit.module("Fallback Functional Tests", testUtilities.transports.webSockets.enabled);
 
 QUnit.asyncTimeoutTest("WebSockets fall back to next transport.", testUtilities.defaultTestTimeout, function (end, assert, testName) {
     var connection = testUtilities.createHubConnection(end, assert, testName);
@@ -136,7 +136,7 @@ QUnit.asyncTimeoutTest("WebSockets fall back to next transport.", testUtilities.
     };
 });
 
-QUnit.module("Fallback Facts", testUtilities.transports.webSockets.enabled && $.signalR._.ieVersion >= 10);
+QUnit.module("Fallback Functional Tests", testUtilities.transports.webSockets.enabled && $.signalR._.ieVersion >= 10);
 
 QUnit.asyncTimeoutTest("WebSockets fall back to next transport when connection limit exceeded.", testUtilities.defaultTestTimeout * 3, function (end, assert, testName) {
     var connections = [],
@@ -217,7 +217,7 @@ QUnit.asyncTimeoutTest("OnConnected fires once when WebSockets falls back", test
     };
 });
 
-QUnit.module("Fallback Facts", !window.document.commandLineTest);
+QUnit.module("Fallback Functional Tests", !window.document.commandLineTest);
 
 // 1 test timeout per transport
 QUnit.asyncTimeoutTest("Connection times out when initialize not received.", testUtilities.defaultTestTimeout * 4, function (end, assert, testName) {

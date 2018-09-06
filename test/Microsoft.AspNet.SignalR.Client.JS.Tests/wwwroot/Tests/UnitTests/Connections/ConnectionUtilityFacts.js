@@ -16,7 +16,7 @@ QUnit.test("Is Cross Domain functions properly", function (assert) {
             host: "localhost"
         },
         relativeProtocolUrlIsCrossDomain = function (url) {
-            var connection = testUtilities.createConnection(url, function () { }, QUnit, "", false),
+            var connection = $.connection(url),
                 threw = false,
                 isCrossDomain = null,
                 savedIsCrossDomain = connection.isCrossDomain;

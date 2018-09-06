@@ -126,7 +126,7 @@ window.sessionStorage.clear();
 
             wrapStart = typeof wrapStart === "undefined" ? true : false;
 
-            if (window.document.testUrl !== 'auto') {
+            if (window.document.testUrl !== 'auto' && (!url || !url.startsWith("http"))) {
                 url = window.document.testUrl + url;
             }
 

@@ -12,7 +12,7 @@ var buildStatusCodeConnection = function (alterWhen, statusCode, end, assert, te
     return connection;
 };
 
-QUnit.module("Connection Facts");
+QUnit.module("Connection Functional Tests");
 
 testUtilities.runWithAllTransports(function (transport) {
 
@@ -546,7 +546,7 @@ testUtilities.runWithAllTransports(function (transport) {
 
 });
 
-QUnit.module("Connection Facts", !window.document.commandLineTest);
+QUnit.module("Connection Functional Tests", !window.document.commandLineTest);
 
 // Replacing window.onerror will not capture uncaught errors originating from inside an iframe
 testUtilities.runWithTransports(["longPolling", "serverSentEvents", "webSockets"], function (transport) {
