@@ -1,0 +1,62 @@
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+QUnit.module("Redirect Functional Tests");
+
+QUnit.asyncTimeoutTest("Can connect to endpoint which produces a redirect response", testUtilities.defaultTestTimeout, function(end, assert, testName) {
+    var connection = testUtilities.createHubConnection(end, assert, testName, "/redirect"),
+        proxies = connection.createHubProxies(),
+        hub = proxies.redirectTestHub;
+
+    connection.start().done(function () {
+        assert.comment("Connection succeeded");
+
+        hub.server.echoReturn("Test Message").then((response) => {
+            assert.equal(response, "Test Message", "Successfully called a server method");
+            end();
+        }).fail(function () {
+            assert.fail("Invocation failed!");
+            end();
+        });
+    }).fail(function () {
+        assert.fail("Connection failed!");
+        end();
+    });
+});
+
+QUnit.asyncTimeoutTest("Limits redirects", testUtilities.defaultTestTimeout, function(end, assert, testName) {
+    var connection = testUtilities.createHubConnection(end, assert, testName, "/redirect-loop", false),
+        proxies = connection.createHubProxies(),
+        hub = proxies.redirectTestHub;
+
+    connection.start().done(function () {
+        assert.fail("Connection should fail!");
+        end();
+    }).fail(function (e) {
+        assert.equal(e.source.message, "Negotiate redirection limit exceeded.", "Connection failed due to negotiate redirection limit");
+        end();
+    });
+});
+
+testUtilities.runWithAllTransports(function (transport) {
+    QUnit.asyncTimeoutTest(transport + " transport forwards access token provided by redirect response", testUtilities.defaultTestTimeout, function (end, assert, testName) {
+        var connection = testUtilities.createHubConnection(end, assert, testName, "/redirect"),
+            proxies = connection.createHubProxies(),
+            hub = proxies.redirectTestHub;
+
+        connection.start({ transport: transport }).done(function () {
+            assert.comment("Connection succeeded");
+
+            hub.server.getAccessToken().then((header) => {
+                assert.equal(header, "TestToken", "Successfully authenticated");
+                end();
+            }).fail(function () {
+                assert.fail("Invocation failed!");
+                end();
+            });
+        }).fail(function () {
+            assert.fail("Connection failed!");
+            end();
+        });
+    });
+});
