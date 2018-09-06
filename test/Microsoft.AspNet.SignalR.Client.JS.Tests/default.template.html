@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>SignalR JavaScript Functional Tests</title>
+    <link rel="stylesheet" href="lib/qunit/qunit.css">
+</head>
+<body>
+        <!-- #HEADER# -->
+        <div id="qunit"></div>
+        <div id="qunit-fixture"></div>
+        <script src="js/boot.js"></script>
+        <script src="lib/jquery/jquery.js"></script>
+        <script src="lib/qunit/qunit.js"></script>
+        <script src="lib/networkmock/jquery.network.mock.js"></script>
+        <script src="lib/signalr/jquery.signalR.js"></script>
+
+        <!-- signalr/js will be auto-injected by the test.config.js file -->
+
+        <script src="js/qunit.extensions.js"></script>
+        <script src="js/test.config.js"></script>
+        <script src="js/test.utilities.js"></script>
+
+        <!-- The Test list will be dynamically injected here in the real page. -->
+        <!-- #TESTLIST# -->
+</body>
+</html>

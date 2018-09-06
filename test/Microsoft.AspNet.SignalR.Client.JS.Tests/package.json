@@ -1,0 +1,32 @@
+{
+  "name": "Microsoft.AspNet.SignalR.Client.JS.Tests",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "ts-node --project ./tsconfig.json run-tests.ts"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@types/jquery": "^3.3.6",
+    "@types/karma": "^1.7.6",
+    "@types/node": "^10.9.4",
+    "@types/signalr": "^2.2.35",
+    "debug": "^3.1.0",
+    "jquery": "^3.3.1",
+    "karma": "^3.0.0",
+    "karma-chrome-launcher": "^2.2.0",
+    "karma-edge-launcher": "^0.4.2",
+    "karma-firefox-launcher": "^1.1.0",
+    "karma-ie-launcher": "^1.0.0",
+    "karma-junit-reporter": "^1.2.0",
+    "karma-qunit": "^2.1.0",
+    "karma-safari-launcher": "^1.0.0",
+    "karma-summary-reporter": "^1.5.1",
+    "qunit": "^2.6.2",
+    "ts-node": "^7.0.1",
+    "typescript": "^3.0.3"
+  }
+}

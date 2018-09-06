@@ -106,6 +106,7 @@
                         contentType: signalR._.defaultContentType,
                         data: postData,
                         timeout: connection._.pollTimeout,
+                        headers: connection.accessToken ? { "Authorization": "Bearer " + connection.accessToken } : {},
                         success: function (result) {
                             var minData,
                                 delay = 0,
