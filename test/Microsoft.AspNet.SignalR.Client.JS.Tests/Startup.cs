@@ -78,7 +78,7 @@ namespace Microsoft.AspNet.SignalR.Client.JS.Tests
                         writer.WritePropertyName("ProtocolVersion");
                         writer.WriteValue("2.0");
                         writer.WritePropertyName("RedirectUrl");
-                        writer.WriteValue($"{context.Request.Scheme}://{context.Request.Host.Value}/{targetPath}");
+                        writer.WriteValue($"{context.Request.Scheme}://{context.Request.Host.Value}{targetPath}");
                         writer.WritePropertyName("AccessToken");
                         writer.WriteValue("TestToken");
                         writer.WriteEndObject();
