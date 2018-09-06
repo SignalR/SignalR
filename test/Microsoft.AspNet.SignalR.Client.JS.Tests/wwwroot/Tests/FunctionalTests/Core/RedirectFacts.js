@@ -36,7 +36,7 @@ QUnit.asyncTimeoutTest("Simulated old client fails when redirect result provided
         assert.fail("Connection should fail!");
         end();
     }).fail(function (e) {
-        assert.equal(e.message, "You are using a version of the client that isn't compatible with the server. Client version 1.4, server version 2.0.", "Connection failed due to negotiate redirection limit");
+        assert.equal(e.message, "You are using a version of the client that isn't compatible with the server. Client version 1.4, server version 2.0.", "Connection failed due to expected ProtocolVersion mismatch.");
         end();
     });
 });
@@ -50,7 +50,7 @@ QUnit.asyncTimeoutTest("Limits redirects", testUtilities.defaultTestTimeout, fun
         assert.fail("Connection should fail!");
         end();
     }).fail(function (e) {
-        assert.equal(e.source.message, "Negotiate redirection limit exceeded.", "Connection failed due to negotiate redirection limit");
+        assert.equal(e.source.message, "Negotiate redirection limit exceeded.", "Connection failed due to negotiate redirection limit.");
         end();
     });
 });
@@ -64,7 +64,7 @@ QUnit.asyncTimeoutTest("Does not follow redirect url if ProtocolVersion is not 2
         assert.fail("Connection should fail!");
         end();
     }).fail(function (e) {
-        assert.equal(e.message, "No transport could be initialized successfully. Try specifying a different transport or none at all for auto initialization.", "Connection ignored RedirectUrl on old ProtocolVersion response");
+        assert.equal(e.message, "No transport could be initialized successfully. Try specifying a different transport or none at all for auto initialization.", "Connection ignored RedirectUrl on old ProtocolVersion response.");
         end();
     });
 });
