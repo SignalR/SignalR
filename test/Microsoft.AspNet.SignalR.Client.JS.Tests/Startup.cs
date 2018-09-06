@@ -70,12 +70,12 @@ namespace Microsoft.AspNet.SignalR.Client.JS.Tests
         {
             return (context, next) =>
             {
-                if(context.Request.Path.StartsWithSegments(new PathString(sourcePath)))
+                if (context.Request.Path.StartsWithSegments(new PathString(sourcePath)))
                 {
                     // Send a redirect response
                     context.Response.StatusCode = 200;
                     context.Response.ContentType = "application/json";
-                    using(var writer = new JsonTextWriter(new StreamWriter(context.Response.Body)))
+                    using (var writer = new JsonTextWriter(new StreamWriter(context.Response.Body)))
                     {
                         writer.WriteStartObject();
                         writer.WritePropertyName("ProtocolVersion");

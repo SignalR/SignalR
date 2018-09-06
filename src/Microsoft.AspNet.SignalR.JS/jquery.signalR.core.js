@@ -728,7 +728,7 @@
                         }
 
                         // Check for a redirect response (which must have a ProtocolVersion of 2.0)
-                        if (res.ProtocolVersion == "2.0" && res.RedirectUrl) {
+                        if (res.ProtocolVersion === "2.0" && res.RedirectUrl) {
                             if (redirects === MAX_REDIRECTS) {
                                 onFailed(signalR._.error(resources.errorRedirectionExceedsLimit, null /* error */), connection);
                                 return;
