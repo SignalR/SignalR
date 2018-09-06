@@ -3,6 +3,7 @@ using System.IO;
 using System.Threading.Tasks;
 using System.Web.Cors;
 using Microsoft.AspNet.SignalR.Tests.Common;
+using Microsoft.Owin;
 using Microsoft.Owin.Cors;
 using Microsoft.Owin.FileSystems;
 using Microsoft.Owin.StaticFiles;
@@ -31,10 +32,17 @@ namespace Microsoft.AspNet.SignalR.Client.JS.Tests
                 }
             });
 
-            // We want faster tests!
-            GlobalHost.Configuration.ConnectionTimeout = TimeSpan.FromSeconds(110);
-            GlobalHost.Configuration.DisconnectTimeout = TimeSpan.FromSeconds(30);
             Initializer.ConfigureRoutes(app, GlobalHost.DependencyResolver);
+
+            app.Use((context, next) =>
+            {
+                if (context.Request.Path.StartsWithSegments(new PathString("/status")))
+                {
+                    context.Response.StatusCode = 200;
+                    return Task.CompletedTask;
+                }
+                return next();
+            });
 
             app.UseFileServer(new FileServerOptions()
             {
