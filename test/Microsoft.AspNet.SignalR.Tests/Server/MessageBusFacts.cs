@@ -387,7 +387,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
 
                     await bus.Publish("test", "key", "5");
 
-                    await cd.WaitAsync().OrTimeout(TimeSpan.FromSeconds(10));
+                    await cd.WaitAsync().OrTimeout();
                 }
                 finally
                 {

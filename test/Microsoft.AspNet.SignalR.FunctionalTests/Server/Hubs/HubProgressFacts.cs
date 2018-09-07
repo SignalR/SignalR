@@ -2,7 +2,8 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Channels;
 using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR.Client;
 using Microsoft.AspNet.SignalR.Tests.Common.Infrastructure;
@@ -30,25 +31,44 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Server.Hubs
 
                 var hubConnection = CreateHubConnection(host);
                 var proxy = hubConnection.CreateHubProxy("progress");
-                var progressUpdates = new List<int>();
+                var progressUpdates = Channel.CreateUnbounded<int>();
                 var jobName = "test";
 
                 using (hubConnection)
                 {
                     await hubConnection.Start(host.Transport);
 
-                    var result = await proxy.Invoke<string, int>("DoLongRunningJob", progress => progressUpdates.Add(progress), jobName);
+                    var resultTask = proxy.Invoke<string, int>(
+                        "DoLongRunningJob",
+                        progress => Assert.True(progressUpdates.Writer.TryWrite(progress), "Channel should be unbounded!"),
+                        jobName);
 
-                    await Task.Delay(1000);
+                    // Give up after 30 seconds
+                    var cts = new CancellationTokenSource();
+                    cts.CancelAfter(TimeSpan.FromSeconds(30));
 
-                    // Identify how far we got to make error messages nice
-                    for (var i = 0; i <= 10; i++)
+                    var updatesSeen = 0;
+                    try
                     {
-                        Assert.True(i < progressUpdates.Count, $"Missing expected progress update: {i * 10}");
-                        Assert.Equal(i * 10, progressUpdates[i]);
+                        while (updatesSeen < 10 && await progressUpdates.Reader.WaitToReadAsync(cts.Token))
+                        {
+                            while (updatesSeen < 10 && progressUpdates.Reader.TryRead(out var item))
+                            {
+                                var expected = updatesSeen * 10;
+                                Assert.True(item == expected, $"Progress record {updatesSeen} was expected to be {expected} but was {item}");
+                                updatesSeen += 1;
+                            }
+                        }
+                    }
+                    catch (OperationCanceledException)
+                    {
+                        Assert.True(false, "Timed out while waiting for all progress items to arrive");
                     }
 
-                    Assert.Equal(String.Format("{0} done!", jobName), result);
+                    Assert.Equal(10, updatesSeen);
+
+                    // Wait for the invoke to complete (it should be done already...)
+                    await resultTask.OrTimeout();
                 }
             }
         }

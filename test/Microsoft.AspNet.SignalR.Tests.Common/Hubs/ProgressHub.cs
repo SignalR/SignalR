@@ -10,14 +10,12 @@ namespace Microsoft.AspNet.SignalR.Tests.Common.Hubs
     [HubName("progress")]
     public class ProgressHub : Hub
     {
-        public async Task<string> DoLongRunningJob(string jobName, IProgress<int> progress)
+        public string DoLongRunningJob(string jobName, IProgress<int> progress)
         {
             for (int i = 0; i <= 100; i += 10)
             {
                 progress.Report(i);
             }
-
-            await Task.Delay(250);
 
             return String.Format("{0} done!", jobName);
         }

@@ -22,6 +22,7 @@
     <OwinPackageVersion>1.0</OwinPackageVersion>
     <StackExchangeRedisStrongNamePackageVersion>1.1.608</StackExchangeRedisStrongNamePackageVersion>
     <SystemRuntimeInteropServicesRuntimeInformationPackageVersion>4.0.0</SystemRuntimeInteropServicesRuntimeInformationPackageVersion>
+    <SystemThreadingChannelsPackageVersion>4.5.0</SystemThreadingChannelsPackageVersion>
     <WindowsAzureServiceBusPackageVersion>2.1.0</WindowsAzureServiceBusPackageVersion>
     <XunitAbstractionsPackageVersion>2.0.2</XunitAbstractionsPackageVersion>
     <XunitAssertPackageVersion>2.4.0</XunitAssertPackageVersion>
