@@ -35,9 +35,6 @@ namespace Microsoft.AspNet.SignalR.Configuration
             MaxScaleoutMappingsPerStream = DefaultMaxScaleoutMappingsPerStream;
         }
 
-        // Used for testing
-        internal bool IgnoreMinimumSettings { get; set; }
-
         // TODO: Should we guard against negative TimeSpans here like everywhere else?
         public TimeSpan ConnectionTimeout
         {
@@ -53,7 +50,7 @@ namespace Microsoft.AspNet.SignalR.Configuration
             }
             set
             {
-                if (value < _minimumDisconnectTimeout && !IgnoreMinimumSettings)
+                if (value < _minimumDisconnectTimeout)
                 {
                     throw new ArgumentOutOfRangeException("value", Resources.Error_DisconnectTimeoutMustBeAtLeastSixSeconds);
                 }
@@ -76,7 +73,7 @@ namespace Microsoft.AspNet.SignalR.Configuration
             }
             set
             {
-                if (value < _minimumKeepAlive && !IgnoreMinimumSettings)
+                if (value < _minimumKeepAlive)
                 {
                     throw new ArgumentOutOfRangeException("value", Resources.Error_KeepAliveMustBeGreaterThanTwoSeconds);
                 }

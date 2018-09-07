@@ -529,7 +529,7 @@ namespace Microsoft.AspNet.SignalR.Client.Tests
             {
                 using (var host = CreateHost(hostType, transportType))
                 {
-                    host.Initialize(disconnectTimeout: 1, messageBusType: messageBusType, ignoreMinimumSettings: true);
+                    host.Initialize(disconnectTimeout: 6, messageBusType: messageBusType);
                     var connection = CreateHubConnection(host);
 
                     using (connection)

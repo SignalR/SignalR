@@ -74,8 +74,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Common.Infrastructure
                                        int? transportConnectTimeout = 5,
                                        int? maxIncomingWebSocketMessageSize = 64 * 1024,
                                        bool enableAutoRejoiningGroups = false,
-                                       MessageBusType type = MessageBusType.Default,
-                                       bool ignoreMinimumSettings = false)
+                                       MessageBusType type = MessageBusType.Default)
         {
             Resolver = Resolver ?? new DefaultDependencyResolver();
 
@@ -89,10 +88,6 @@ namespace Microsoft.AspNet.SignalR.Tests.Common.Infrastructure
             }
 
             var configuration = Resolver.Resolve<IConfigurationManager>();
-            if(ignoreMinimumSettings && configuration is DefaultConfigurationManager defaultConfigurationManager)
-            {
-                defaultConfigurationManager.IgnoreMinimumSettings = true;
-            }
 
             if (connectionTimeout != null)
             {

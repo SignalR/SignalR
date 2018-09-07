@@ -31,8 +31,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Common.Infrastructure
                         int? transportConnectTimeout = 5,
                         int? maxIncomingWebSocketMessageSize = 64 * 1024, // Default 64 KB
                         bool enableAutoRejoiningGroups = false,
-                        MessageBusType messageBusType = MessageBusType.Default,
-                        bool ignoreMinimumSettings = false);
+                        MessageBusType messageBusType = MessageBusType.Default);
 
         Task Get(string uri);
 
