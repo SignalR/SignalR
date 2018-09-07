@@ -104,8 +104,8 @@ module.exports = function (config) {
       outputFile: "Microsoft.AspNet.SignalR.Client.JS.Tests.junit.xml"
     },
 
-    // browsers,
-    browsers: ["Chrome"],
+    browsers,
+    // browsers: ["Chrome"],
 
     customLaunchers: {
       ChromeHeadlessNoSandbox: {
