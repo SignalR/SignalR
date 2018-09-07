@@ -370,11 +370,6 @@
         if (!connection._subscribedToHubs) {
             connection._subscribedToHubs = true;
             connection.starting(function () {
-                if(!this._registeredHubProxies) {
-                    this.log("ERROR: Hub Proxies not yet registered!");
-                    this._hubProxiesWereNotRegistered = true;
-                    throw new Error("Hub Proxies not yet registered!");
-                }
                 // Set the connection's data object with all the hub proxies with active subscriptions.
                 // These proxies will receive notifications from the server.
                 var subscribedHubs = [];

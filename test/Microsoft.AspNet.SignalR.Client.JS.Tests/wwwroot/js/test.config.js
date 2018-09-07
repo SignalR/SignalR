@@ -21,8 +21,11 @@
         window.document.jsonpTestsEnabled = true;
     }
 
-    // If we're being run in Karma
-    if (window.__karma__) {
+    // Try to get the testUrl from the query string
+    window.document.testUrl = getParameterByName("testUrl");
+
+    // If we're being run in Karma, try the karma args
+    if (!window.document.testUrl && window.__karma__) {
         // Try to set the testUrl based on the args
         const args = window.__karma__.config.args;
 
@@ -35,11 +38,8 @@
             }
         }
     }
-    else {
-        // Check the URL
-        window.document.testUrl = getParameterByName("testUrl");
-    }
 
+    // Normalize the URL, if present
     if (window.document.testUrl && !window.document.testUrl.endsWith("/")) {
         window.document.testUrl += "/";
     }
