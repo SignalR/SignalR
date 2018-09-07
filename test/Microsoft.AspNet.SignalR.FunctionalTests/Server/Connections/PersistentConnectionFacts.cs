@@ -711,13 +711,11 @@ namespace Microsoft.AspNet.SignalR.Tests
                     host.Initialize(messageBusType: messageBusType);
 
                     var connection = CreateConnection(host, "/preserialize");
-                    var tcs = new TaskCompletionSource<string>();
-                    var mre = new AsyncManualResetEvent();
+                    var tcs = new TaskCompletionSource<string>(TaskCreationOptions.RunContinuationsAsynchronously);
 
                     connection.Received += json =>
                     {
                         tcs.TrySetResult(json);
-                        mre.Set();
                     };
 
                     using (connection)
@@ -726,8 +724,7 @@ namespace Microsoft.AspNet.SignalR.Tests
 
                         connection.SendWithTimeout(new { preserialized = true });
 
-                        Assert.True(await mre.WaitAsync(TimeSpan.FromSeconds(5)));
-                        var json = JObject.Parse(tcs.Task.Result);
+                        var json = JObject.Parse(await tcs.Task.OrTimeout());
                         Assert.True((bool)json["preserialized"]);
                     }
                 }
