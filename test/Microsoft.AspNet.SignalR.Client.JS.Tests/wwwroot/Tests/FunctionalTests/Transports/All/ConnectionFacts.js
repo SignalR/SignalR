@@ -204,6 +204,7 @@ testUtilities.runWithAllTransports(function (transport) {
         });
 
         connection.start(transportSettings).done(function () {
+            assert.isNotSet(connection._hubProxiesWereNotRegistered);
             // Test disconnected
             connection.stop();
             connection.start(transportSettings).done(function () {

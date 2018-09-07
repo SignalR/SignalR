@@ -70,6 +70,9 @@
             // (instance, shouldSubscribe)
             registerHubProxies(proxies, true);
 
+            // REVIEW: Temporary for debugging.
+            this._registeredHubProxies = true;
+
             this._registerSubscribedHubs();
         }).disconnected(function () {
             // Unsubscribe all hub proxies when we "disconnect".  This is to ensure that we do not re-add functional call backs.
