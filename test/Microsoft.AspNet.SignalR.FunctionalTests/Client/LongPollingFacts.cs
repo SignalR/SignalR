@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -8,7 +8,9 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR.Client.Http;
+using Microsoft.AspNet.SignalR.Client.Infrastructure;
 using Microsoft.AspNet.SignalR.Client.Transports;
+using Microsoft.AspNet.SignalR.Infrastructure;
 using Moq;
 using Newtonsoft.Json;
 using Xunit;
@@ -46,7 +48,7 @@ namespace Microsoft.AspNet.SignalR.Tests
 
                     return Task.FromResult(CreateResponse(responseMessage));
                 });
-                
+
             var longPollingTransport = new LongPollingTransport(mockHttpClient.Object);
 
             Assert.True(
@@ -55,7 +57,7 @@ namespace Microsoft.AspNet.SignalR.Tests
 
             // wait for the first polling request
             Assert.True(pollingWh.WaitOne(TimeSpan.FromSeconds(2)));
-            
+
             // stop polling loop
             disconnectCts.Cancel();
 
@@ -71,16 +73,16 @@ namespace Microsoft.AspNet.SignalR.Tests
         }
 
         [Fact]
-        public void LongPollingDoesNotPollAfterTransportIsBeingStoppedMidRequest()
+        public async Task LongPollingDoesNotPollAfterTransportIsBeingStoppedMidRequest()
         {
             var disconnectCts = new CancellationTokenSource();
 
             var mockConnection = new Mock<Client.IConnection>();
             mockConnection.SetupGet(c => c.JsonSerializer).Returns(JsonSerializer.CreateDefault());
-            mockConnection.Setup(c => c.TotalTransportConnectTimeout).Returns(TimeSpan.FromSeconds(5));
+            mockConnection.Setup(c => c.TotalTransportConnectTimeout).Returns(TimeSpan.FromSeconds(10));
             mockConnection.SetupProperty(c => c.MessageId);
 
-            var pollingWh = new ManualResetEvent(false);
+            var pollingTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
 
             var mockHttpClient = CreateFakeHttpClient(
                 (url, request, postData, isLongRunning) =>
@@ -92,7 +94,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                     }
                     else if (url.Contains("poll?"))
                     {
-                        pollingWh.Set();
+                        pollingTcs.TrySetResult(null);
 
                         // stop polling loop
                         disconnectCts.Cancel();
@@ -103,15 +105,20 @@ namespace Microsoft.AspNet.SignalR.Tests
 
             var longPollingTransport = new LongPollingTransport(mockHttpClient.Object);
 
-            Assert.True(
-                longPollingTransport.Start(mockConnection.Object, string.Empty, disconnectCts.Token)
-                    .Wait(TimeSpan.FromSeconds(15)));
+            try
+            {
+                await longPollingTransport.Start(mockConnection.Object, string.Empty, disconnectCts.Token)
+                    .OrTimeout(TimeSpan.FromSeconds(15));
+            }
+            catch (StartException stex) when (stex.InnerException is OperationCanceledException)
+            {
+                // An OCE is expected sometimes, depending on a race condition.
+            }
 
-            // wait for the first polling request
-            Assert.True(pollingWh.WaitOne(TimeSpan.FromSeconds(2)));
+            await pollingTcs.Task.OrTimeout(TimeSpan.FromSeconds(2));
 
             // give it some time to make sure a new poll was not setup after verification
-            Thread.Sleep(1000);
+            await Task.Delay(1000);
 
             mockHttpClient
                 .Verify(c => c.Post(It.Is<string>(url => url.StartsWith("poll?")), It.IsAny<Action<Client.Http.IRequest>>(),

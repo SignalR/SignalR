@@ -10,6 +10,7 @@ using Microsoft.AspNet.SignalR.Client;
 using Microsoft.AspNet.SignalR.Client.Infrastructure;
 using Microsoft.AspNet.SignalR.Client.Transports;
 using Microsoft.AspNet.SignalR.Hosting.Memory;
+using Microsoft.AspNet.SignalR.Infrastructure;
 using Microsoft.AspNet.SignalR.Tests.Common;
 using Microsoft.AspNet.SignalR.Tests.Common.Infrastructure;
 using Microsoft.Owin;
@@ -22,6 +23,7 @@ using Xunit.Extensions;
 namespace Microsoft.AspNet.SignalR.Tests
 {
     using AppFunc = Func<IDictionary<string, object>, Task>;
+    using Connection = Client.Connection;
 
     public class ConnectionFacts : HostedTest
     {
@@ -444,7 +446,6 @@ namespace Microsoft.AspNet.SignalR.Tests
             {
                 // Arrange
                 var tcs = new TaskCompletionSource<bool>();
-                var mre = new AsyncManualResetEvent();
                 var receivedMessage = false;
 
                 host.Initialize(keepAlive: null,
@@ -459,15 +460,13 @@ namespace Microsoft.AspNet.SignalR.Tests
                         {
                             tcs.TrySetResult(reconnectEndsPath == "True");
                             receivedMessage = true;
-                            mre.Set();
                         }
                     };
 
                     await connection.Start(host.Transport);
 
                     // Wait for reconnect
-                    Assert.True(await mre.WaitAsync(TimeSpan.FromSeconds(10)));
-                    Assert.True(tcs.Task.Result);
+                    Assert.True(await tcs.Task.OrTimeout());
                 }
             }
         }

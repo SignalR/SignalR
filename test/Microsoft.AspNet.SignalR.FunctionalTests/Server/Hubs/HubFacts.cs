@@ -1759,8 +1759,8 @@ namespace Microsoft.AspNet.SignalR.Tests
                 using (connection1)
                 using (connection2)
                 {
-                    var wh1 = new AsyncManualResetEvent(initialState: false);
-                    var wh2 = new AsyncManualResetEvent(initialState: false);
+                    var tcs1 = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+                    var tcs2 = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
 
                     var hub1 = connection1.CreateHubProxy("SendToSome");
                     var hub2 = connection2.CreateHubProxy("SendToSome");
@@ -1768,16 +1768,16 @@ namespace Microsoft.AspNet.SignalR.Tests
                     await connection1.Start(host.TransportFactory());
                     await connection2.Start(host.TransportFactory());
 
-                    hub1.On("send", wh1.Set);
-                    hub2.On("send", wh2.Set);
+                    hub1.On("send", () => tcs1.TrySetResult(null));
+                    hub2.On("send", () => tcs2.TrySetResult(null));
 
-                    hub1.InvokeWithTimeout("JoinGroup", "group");
-                    hub2.InvokeWithTimeout("JoinGroup", "group");
+                    await hub1.Invoke("JoinGroup", "group").OrTimeout();
+                    await hub2.Invoke("JoinGroup", "group").OrTimeout();
 
-                    hub1.InvokeWithTimeout("AllInGroupButCaller", "group");
+                    await hub1.Invoke("AllInGroupButCaller", "group").OrTimeout();
 
-                    Assert.False(await wh1.WaitAsync(TimeSpan.FromSeconds(10)));
-                    Assert.True(await wh2.WaitAsync(TimeSpan.FromSeconds(5)));
+                    await tcs2.Task.OrTimeout(TimeSpan.FromSeconds(10));
+                    Assert.False(tcs1.Task.IsCompleted);
                 }
             }
         }
@@ -2007,8 +2007,8 @@ namespace Microsoft.AspNet.SignalR.Tests
                 using (connection1)
                 using (connection2)
                 {
-                    var wh1 = new AsyncManualResetEvent(initialState: false);
-                    var wh2 = new AsyncManualResetEvent(initialState: false);
+                    var tcs1 = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+                    var tcs2 = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
 
                     var hub1 = connection1.CreateHubProxy("SendToSome");
                     var hub2 = connection2.CreateHubProxy("SendToSome");
@@ -2016,16 +2016,16 @@ namespace Microsoft.AspNet.SignalR.Tests
                     await connection1.Start(host.TransportFactory());
                     await connection2.Start(host.TransportFactory());
 
-                    hub1.On("send", wh1.Set);
-                    hub2.On("send", wh2.Set);
+                    hub1.On("send", () => tcs1.TrySetResult(null));
+                    hub2.On("send", () => tcs2.TrySetResult(null));
 
-                    hub1.InvokeWithTimeout("JoinGroup", "group1");
-                    hub2.InvokeWithTimeout("JoinGroup", "group2");
+                    await hub1.Invoke("JoinGroup", "group1").OrTimeout();
+                    await hub2.Invoke("JoinGroup", "group2").OrTimeout();
 
-                    hub1.InvokeWithTimeout("AllInGroupsButCaller", new List<string> { "group1", "group2" });
+                    await hub1.Invoke("AllInGroupsButCaller", new List<string> { "group1", "group2" }).OrTimeout();
 
-                    Assert.False(await wh1.WaitAsync(TimeSpan.FromSeconds(10)));
-                    Assert.True(await wh2.WaitAsync(TimeSpan.FromSeconds(5)));
+                    await tcs2.Task.OrTimeout();
+                    Assert.False(tcs1.Task.IsCompleted);
                 }
             }
         }
@@ -2058,21 +2058,21 @@ namespace Microsoft.AspNet.SignalR.Tests
 
                     await connection.Start(host.Transport);
 
-                    hub.InvokeWithTimeout("Join", "Foo");
+                    await hub.Invoke("Join", "Foo").OrTimeout();
 
                     await Task.Delay(100);
 
-                    hub.InvokeWithTimeout("Send", "Foo", "1");
+                    await hub.Invoke("Send", "Foo", "1").OrTimeout();
 
                     await Task.Delay(100);
 
-                    hub.InvokeWithTimeout("Leave", "Foo");
+                    await hub.Invoke("Leave", "Foo").OrTimeout();
 
                     await Task.Delay(100);
 
                     for (var i = 0; i < 10; i++)
                     {
-                        hub.InvokeWithTimeout("Send", "Foo", "2");
+                        await hub.Invoke("Send", "Foo", "2").OrTimeout();
                     }
 
                     Assert.Equal(1, list.Count);

@@ -3,13 +3,10 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR.Client;
 using Microsoft.AspNet.SignalR.Tests.Common.Infrastructure;
 using Xunit;
-using Xunit.Extensions;
 
 namespace Microsoft.AspNet.SignalR.FunctionalTests.Server.Hubs
 {
@@ -22,7 +19,7 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Server.Hubs
         [InlineData(HostType.HttpListener, TransportType.Websockets, MessageBusType.Default)]
         //[InlineData(HostType.HttpListener, TransportType.ServerSentEvents, MessageBusType.Default)]
         //[InlineData(HostType.HttpListener, TransportType.LongPolling, MessageBusType.Default)]
-        [InlineData(HostType.HttpListener, TransportType.Websockets, MessageBusType.FakeMultiStream)]
+        //[InlineData(HostType.HttpListener, TransportType.Websockets, MessageBusType.FakeMultiStream)]
         //[InlineData(HostType.HttpListener, TransportType.ServerSentEvents, MessageBusType.FakeMultiStream)]
         //[InlineData(HostType.HttpListener, TransportType.LongPolling, MessageBusType.FakeMultiStream)]
         public async Task HubProgressIsReportedSuccessfully(HostType hostType, TransportType transportType, MessageBusType messageBusType)
@@ -31,18 +28,26 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Server.Hubs
             {
                 host.Initialize(messageBusType: messageBusType);
 
-                HubConnection hubConnection = CreateHubConnection(host);
-                IHubProxy proxy = hubConnection.CreateHubProxy("progress");
+                var hubConnection = CreateHubConnection(host);
+                var proxy = hubConnection.CreateHubProxy("progress");
                 var progressUpdates = new List<int>();
                 var jobName = "test";
 
                 using (hubConnection)
-                {    
+                {
                     await hubConnection.Start(host.Transport);
 
                     var result = await proxy.Invoke<string, int>("DoLongRunningJob", progress => progressUpdates.Add(progress), jobName);
 
-                    Assert.Equal(new[] { 0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100 }, progressUpdates);
+                    await Task.Delay(1000);
+
+                    // Identify how far we got to make error messages nice
+                    for (var i = 0; i <= 10; i++)
+                    {
+                        Assert.True(i < progressUpdates.Count, $"Missing expected progress update: {i * 10}");
+                        Assert.Equal(i * 10, progressUpdates[i]);
+                    }
+
                     Assert.Equal(String.Format("{0} done!", jobName), result);
                 }
             }
@@ -64,9 +69,9 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Server.Hubs
             {
                 host.Initialize(messageBusType: messageBusType);
 
-                HubConnection hubConnection = CreateHubConnection(host);
-                IHubProxy proxy = hubConnection.CreateHubProxy("progress");
-                
+                var hubConnection = CreateHubConnection(host);
+                var proxy = hubConnection.CreateHubProxy("progress");
+
                 proxy.On<bool>("sendProgressAfterMethodReturnResult", result => Assert.True(result));
 
                 using (hubConnection)
@@ -94,8 +99,8 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Server.Hubs
             {
                 host.Initialize(messageBusType: messageBusType);
 
-                HubConnection hubConnection = CreateHubConnection(host);
-                IHubProxy proxy = hubConnection.CreateHubProxy("progress");
+                var hubConnection = CreateHubConnection(host);
+                var proxy = hubConnection.CreateHubProxy("progress");
 
                 using (hubConnection)
                 {
@@ -122,8 +127,8 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Server.Hubs
             {
                 host.Initialize(messageBusType: messageBusType);
 
-                HubConnection hubConnection = CreateHubConnection(host);
-                IHubProxy proxy = hubConnection.CreateHubProxy("progress");
+                var hubConnection = CreateHubConnection(host);
+                var proxy = hubConnection.CreateHubProxy("progress");
 
                 using (hubConnection)
                 {
@@ -150,8 +155,8 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Server.Hubs
             {
                 host.Initialize(messageBusType: messageBusType);
 
-                HubConnection hubConnection = CreateHubConnection(host);
-                IHubProxy proxy = hubConnection.CreateHubProxy("progress");
+                var hubConnection = CreateHubConnection(host);
+                var proxy = hubConnection.CreateHubProxy("progress");
 
                 using (hubConnection)
                 {
@@ -182,8 +187,8 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Server.Hubs
             {
                 host.Initialize(messageBusType: messageBusType);
 
-                HubConnection hubConnection = CreateHubConnection(host);
-                IHubProxy proxy = hubConnection.CreateHubProxy("progress");
+                var hubConnection = CreateHubConnection(host);
+                var proxy = hubConnection.CreateHubProxy("progress");
 
                 using (hubConnection)
                 {

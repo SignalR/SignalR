@@ -13,6 +13,7 @@ using Microsoft.AspNet.SignalR.Client.Http;
 using Microsoft.AspNet.SignalR.Client.Transports;
 using Microsoft.AspNet.SignalR.Configuration;
 using Microsoft.AspNet.SignalR.Hosting.Memory;
+using Microsoft.AspNet.SignalR.Infrastructure;
 using Microsoft.AspNet.SignalR.Messaging;
 using Microsoft.AspNet.SignalR.Tests.Common;
 using Microsoft.AspNet.SignalR.Tests.Common.Infrastructure;
@@ -321,7 +322,6 @@ namespace Microsoft.AspNet.SignalR.Client.Tests
                     });
 
                     var tcs = new TaskCompletionSource<string>();
-                    var mre = new AsyncManualResetEvent();
                     var connection = new Connection("http://foo/echo2");
 
                     using (connection)
@@ -329,14 +329,13 @@ namespace Microsoft.AspNet.SignalR.Client.Tests
                         connection.Received += data =>
                         {
                             tcs.TrySetResult(data);
-                            mre.Set();
                         };
 
                         await connection.Start(host);
                         var ignore = connection.Send("");
 
-                        Assert.True(await mre.WaitAsync(TimeSpan.FromSeconds(5)));
-                        Assert.Equal("MyConnection2", tcs.Task.Result);
+                        var dataReceived = await tcs.Task.OrTimeout();
+                        Assert.Equal("MyConnection2", dataReceived);
                     }
                 }
             }
@@ -516,7 +515,6 @@ namespace Microsoft.AspNet.SignalR.Client.Tests
                     catch
                     {
                         badConnection.Stop();
-                        Assert.True(DateTime.UtcNow - startTime < TimeSpan.FromSeconds(10));
                         return;
                     }
 

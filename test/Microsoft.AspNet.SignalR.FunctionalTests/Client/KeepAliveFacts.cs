@@ -4,6 +4,7 @@
 using System;
 using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR.Client;
+using Microsoft.AspNet.SignalR.Infrastructure;
 using Microsoft.AspNet.SignalR.Tests.Common.Infrastructure;
 using Xunit;
 using Xunit.Extensions;
@@ -103,7 +104,7 @@ namespace Microsoft.AspNet.SignalR.Tests
             using (var host = CreateHost(hostType, transportType))
             {
                 // Arrange
-                var mre = new AsyncManualResetEvent(false);
+                var tcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
                 host.Initialize(keepAlive: null, messageBusType: messageBusType);
                 var connection = CreateConnection(host, "/my-reconnect");
 
@@ -113,16 +114,13 @@ namespace Microsoft.AspNet.SignalR.Tests
 
                     connection.ConnectionSlow += () =>
                     {
-                        mre.Set();
+                        tcs.TrySetResult(null);
                     };
 
                     await connection.Start(host.Transport);
 
                     // Assert
-                    Assert.True(await mre.WaitAsync(TimeSpan.FromSeconds(15)));
-
-                    // Clean-up
-                    mre.Dispose();
+                    await tcs.Task.OrTimeout(TimeSpan.FromSeconds(15));
                 }
             }
         }
