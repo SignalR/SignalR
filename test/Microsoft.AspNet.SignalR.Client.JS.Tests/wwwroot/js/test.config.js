@@ -119,4 +119,11 @@
     $.signalR.transports.foreverFrame.networkLoss = failConnection;
     $.network.mask.create($.signalR.transports.foreverFrame, ["networkLoss"], ["receive"]);
     $.network.mask.subscribe($.signalR.transports.foreverFrame, "started", failConnection);
+
+    QUnit.testStart(function(details) {
+        console.log("***** STARTING TEST [" + details.module + "/" + details.name + "] *****")
+    });
+    QUnit.testDone(function(details) {
+        console.log("***** FINISHED TEST [" + details.module + "/" + details.name + "] *****")
+    });
 })($, window);

@@ -1,7 +1,8 @@
 import * as path from "path";
-import * as fs from "fs";
+import * as _fs from "fs";
 import * as child_process from "child_process";
 import * as http from "http";
+import { promisify } from "util";
 
 import * as karma from "karma";
 import * as _debug from "debug";
@@ -9,6 +10,14 @@ import * as _debug from "debug";
 const debug = _debug("signalr-functional-tests:run");
 
 const MAX_ATTEMPTS = 10;
+const ARTIFACTS_DIR = path.resolve(__dirname, "..", "..", "artifacts");
+const LOGS_DIR = path.resolve(ARTIFACTS_DIR, "logs");
+
+// Promisify things from fs we want to use.
+const fs = {
+    exists: promisify(_fs.exists),
+    mkdir: promisify(_fs.mkdir),
+};
 
 function getArg(list: string[], name: string): string {
     for (let i = 0; i < list.length; i += 1) {
@@ -88,7 +97,7 @@ for (let i = 2; i < process.argv.length; i += 1) {
     // Check for the executable
     const exePath = path.resolve(__dirname, "bin", configuration, "net461", "Microsoft.AspNet.SignalR.Client.JS.Tests.exe");
 
-    if (!fs.existsSync(exePath)) {
+    if (!await fs.exists(exePath)) {
         console.error("Server executable does not exist. Has it been built yet?");
         return 1;
     }
@@ -126,6 +135,13 @@ for (let i = 2; i < process.argv.length; i += 1) {
         console.error("Server failed to respond after 10 attempts to check status");
         return 1;
     }
+    if (!await fs.exists(ARTIFACTS_DIR)) {
+        await fs.mkdir(ARTIFACTS_DIR);
+    }
+    if (!await fs.exists(LOGS_DIR)) {
+        await fs.mkdir(LOGS_DIR);
+    }
+    config.browserConsoleLogOptions.path = path.resolve(LOGS_DIR, `browserlogs.console.${new Date().toISOString().replace(/:|\./g, "-")}.log`)
 
     console.log("server is ready, launching karma");
 
