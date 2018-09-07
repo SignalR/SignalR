@@ -29,14 +29,14 @@ QUnit.asyncTimeoutTest("Simulated old client fails when redirect result provided
         proxies = connection.createHubProxies(),
         hub = proxies.redirectTestHub;
 
-    connection.clientProtocol = "1.4";
-    connection.supportedProtocols = ["1.4"];
+    connection.clientProtocol = "1.5";
+    connection.supportedProtocols = ["1.5"];
 
     connection.start().done(function () {
         assert.fail("Connection should fail!");
         end();
     }).fail(function (e) {
-        assert.equal(e.message, "You are using a version of the client that isn't compatible with the server. Client version 1.4, server version 2.0.", "Connection failed due to expected ProtocolVersion mismatch.");
+        assert.equal(e.message, "You are using a version of the client that isn't compatible with the server. Client version 1.5, server version 2.0.", "Connection failed due to expected ProtocolVersion mismatch.");
         end();
     });
 });

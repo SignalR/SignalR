@@ -57,7 +57,7 @@ namespace Microsoft.AspNet.SignalR.Client.JS.Tests
             AppBuilderUseExtensions.Use(app, CreateRedirector("/redirect-loop2", "/redirect-loop"));
 
             // Wrong protocol version
-            AppBuilderUseExtensions.Use(app, CreateRedirector("/redirect-old-proto", "/signalr", protocolVersion: "1.4"));
+            AppBuilderUseExtensions.Use(app, CreateRedirector("/redirect-old-proto", "/signalr", protocolVersion: "1.5"));
 
             app.UseFileServer(new FileServerOptions()
             {
