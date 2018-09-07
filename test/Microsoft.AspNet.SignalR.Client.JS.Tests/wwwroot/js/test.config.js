@@ -50,7 +50,36 @@
     } else {
         signalRUrl = window.document.testUrl + "signalr/js";
     }
-    document.write("<script src=\"" + signalRUrl + "\" crossorigin=\"anonymous\"></script>");
+    
+    var scriptTag = document.createElement("script");
+    scriptTag.src = signalRUrl;
+    scriptTag.crossOrigin = "anonymous";
+    document.body.appendChild(scriptTag);
+
+    // Disable auto-start. We need to wait until signalr/js has loaded before we can run the tests
+    QUnit.config.autostart = false;
+    window.addEventListener("load", function () {
+        // If the hub proxies have loaded, 'proxies' will be set and we're ready to go
+        if ($.connection.hub.proxies) {
+            console.log("proxies are loaded, starting tests!");
+            QUnit.start();
+        }
+        else {
+            console.log("waiting for proxies to load...");
+            // Start an interval timer
+            var intervalHandle;
+            intervalHandle = setInterval(function () {
+                if ($.connection.hub.proxies) {
+                    console.log("proxies are loaded, starting tests!");
+                    QUnit.start();
+                    clearInterval(intervalHandle);
+                }
+                else {
+                    console.log("waiting for proxies to load...");
+                }
+            }, 500);
+        }
+    });
 
     function failConnection() {
         $("iframe").each(function () {
@@ -90,5 +119,4 @@
     $.signalR.transports.foreverFrame.networkLoss = failConnection;
     $.network.mask.create($.signalR.transports.foreverFrame, ["networkLoss"], ["receive"]);
     $.network.mask.subscribe($.signalR.transports.foreverFrame, "started", failConnection);
-
 })($, window);
