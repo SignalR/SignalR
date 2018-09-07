@@ -413,8 +413,8 @@
 
         // We want to support older servers since the 2.0 change is to support redirection results, which isn't
         // really breaking in the protocol. So if a user updates their client to 2.0 protocol version there's
-        // no reason they can't still connect to a 1.4 server.
-        supportedProtocols: [ "1.4", "2.0" ],
+        // no reason they can't still connect to a 1.5 server.
+        supportedProtocols: [ "1.5", "2.0" ],
 
         reconnectDelay: 2000,
 
