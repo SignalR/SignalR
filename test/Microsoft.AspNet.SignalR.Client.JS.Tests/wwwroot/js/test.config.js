@@ -120,6 +120,25 @@
     $.network.mask.create($.signalR.transports.foreverFrame, ["networkLoss"], ["receive"]);
     $.network.mask.subscribe($.signalR.transports.foreverFrame, "started", failConnection);
 
+    // In Karma, make sure the test name is in the log message so we can split things up.
+    if(window.__karma__) {
+        ["debug", "log", "error", "warn", "info"].forEach(function (method) {
+            var savedVersion = console[method];
+            console[method] = function() {
+                var args = Array.prototype.slice.call(arguments);
+                if(QUnit.config.current) {
+                    args[0] = 
+                        QUnit.config.current.module.name +
+                        "/" +
+                        QUnit.config.current.testName +
+                        "||" + 
+                        args[0]
+                }
+                savedVersion.apply(console, args);
+            }
+        });
+    }
+
     QUnit.testStart(function(details) {
         console.log("***** STARTING TEST [" + details.module + "/" + details.name + "] *****")
     });

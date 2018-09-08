@@ -89,5 +89,9 @@ testUtilities.runWithAllTransports(function (transport) {
             assert.fail("Connection failed!");
             end();
         });
+
+        return function() {
+            connection.stop();
+        };
     });
 });

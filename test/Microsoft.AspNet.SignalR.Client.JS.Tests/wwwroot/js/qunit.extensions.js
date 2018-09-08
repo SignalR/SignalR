@@ -88,10 +88,10 @@
                         clearTimeout(timeoutId);
                         failOnTimeout = true;
                         hasFinished = true;
-                        done();
                         if (testCleanup) {
                             testCleanup();
                         }
+                        done();
                     }
                 }
 
