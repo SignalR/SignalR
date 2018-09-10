@@ -31,6 +31,10 @@ namespace Microsoft.AspNet.SignalR.Client
     {
         internal static readonly TimeSpan DefaultAbortTimeout = TimeSpan.FromSeconds(30);
 
+        private static readonly Version MinimumSupportedVersion = new Version(1, 4);
+        private static readonly Version MaximumSupportedVersion = new Version(2, 0);
+        private static readonly int MaxRedirects = 100;
+
         private static Version _assemblyVersion;
 
         private IClientTransport _transport;
@@ -185,7 +189,7 @@ namespace Microsoft.AspNet.SignalR.Client
             DeadlockErrorTimeout = TimeSpan.FromSeconds(10);
 
             // Current client protocol
-            Protocol = new Version(1, 4);
+            Protocol = new Version(2, 0);
         }
 
         /// <summary>
@@ -469,39 +473,80 @@ namespace Microsoft.AspNet.SignalR.Client
         [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "The exception is flowed back to the caller via the tcs.")]
         private Task Negotiate(IClientTransport transport)
         {
+            // Captured and used by StartNegotiation to track attempts
+            var negotiationAttempts = 0;
+
+            Task CompleteNegotiation(NegotiationResponse negotiationResponse)
+            {
+                ConnectionId = negotiationResponse.ConnectionId;
+                ConnectionToken = negotiationResponse.ConnectionToken;
+                _disconnectTimeout = TimeSpan.FromSeconds(negotiationResponse.DisconnectTimeout);
+                _totalTransportConnectTimeout = TransportConnectTimeout + TimeSpan.FromSeconds(negotiationResponse.TransportConnectTimeout);
+
+                // Default the beat interval to be 5 seconds in case keep alive is disabled.
+                var beatInterval = TimeSpan.FromSeconds(5);
+
+                // If we have a keep alive
+                if (negotiationResponse.KeepAliveTimeout != null)
+                {
+                    _keepAliveData = new KeepAliveData(TimeSpan.FromSeconds(negotiationResponse.KeepAliveTimeout.Value));
+                    _reconnectWindow = _disconnectTimeout + _keepAliveData.Timeout;
+
+                    beatInterval = _keepAliveData.CheckInterval;
+                }
+                else
+                {
+                    _reconnectWindow = _disconnectTimeout;
+                }
+
+                Monitor = new HeartbeatMonitor(this, _stateLock, beatInterval);
+
+                return StartTransport();
+            }
+
+            Task StartNegotiation()
+            {
+                return transport.Negotiate(this, _connectionData)
+                                .Then(negotiationResponse =>
+                                {
+                                    VerifyProtocolVersion(negotiationResponse.ProtocolVersion);
+
+                                    if (negotiationResponse.ProtocolVersion.Equals("2.0") && !string.IsNullOrEmpty(negotiationResponse.RedirectUrl))
+                                    {
+                                        // Ensure the URL ends with a trailing slash.
+                                        if (!negotiationResponse.RedirectUrl.EndsWith("/"))
+                                        {
+                                            negotiationResponse.RedirectUrl += "/";
+                                        }
+
+                                        // Update the URL based on the redirect response and restart the negotiation
+                                        Url = negotiationResponse.RedirectUrl;
+
+                                        if (!string.IsNullOrEmpty(negotiationResponse.AccessToken))
+                                        {
+                                            // This will stomp on the current Authorization header, but that's by design.
+                                            // If the server specified a token, that is expected to overrule the token the client is currently using.
+                                            Headers["Authorization"] = $"Bearer {negotiationResponse.AccessToken}";
+                                        }
+
+                                        negotiationAttempts += 1;
+                                        if (negotiationAttempts >= MaxRedirects)
+                                        {
+                                            throw new InvalidOperationException(Resources.Error_NegotiationLimitExceeded);
+                                        }
+                                        return StartNegotiation();
+                                    }
+                                    else
+                                    {
+                                        return CompleteNegotiation(negotiationResponse);
+                                    }
+                                })
+                                .ContinueWithNotComplete(() => Disconnect());
+            }
+
             _connectionData = OnSending();
 
-            return transport.Negotiate(this, _connectionData)
-                            .Then(negotiationResponse =>
-                            {
-                                VerifyProtocolVersion(negotiationResponse.ProtocolVersion);
-
-                                ConnectionId = negotiationResponse.ConnectionId;
-                                ConnectionToken = negotiationResponse.ConnectionToken;
-                                _disconnectTimeout = TimeSpan.FromSeconds(negotiationResponse.DisconnectTimeout);
-                                _totalTransportConnectTimeout = TransportConnectTimeout + TimeSpan.FromSeconds(negotiationResponse.TransportConnectTimeout);
-
-                                // Default the beat interval to be 5 seconds in case keep alive is disabled.
-                                var beatInterval = TimeSpan.FromSeconds(5);
-
-                                // If we have a keep alive
-                                if (negotiationResponse.KeepAliveTimeout != null)
-                                {
-                                    _keepAliveData = new KeepAliveData(TimeSpan.FromSeconds(negotiationResponse.KeepAliveTimeout.Value));
-                                    _reconnectWindow = _disconnectTimeout + _keepAliveData.Timeout;
-
-                                    beatInterval = _keepAliveData.CheckInterval;
-                                }
-                                else
-                                {
-                                    _reconnectWindow = _disconnectTimeout;
-                                }
-
-                                Monitor = new HeartbeatMonitor(this, _stateLock, beatInterval);
-
-                                return StartTransport();
-                            })
-                            .ContinueWithNotComplete(() => Disconnect());
+            return StartNegotiation();
         }
 
         private Task StartTransport()
@@ -555,11 +600,11 @@ namespace Microsoft.AspNet.SignalR.Client
 
             if (String.IsNullOrEmpty(versionString) ||
                 !TryParseVersion(versionString, out version) ||
-                version != Protocol)
+                version < MinimumSupportedVersion || version > MaximumSupportedVersion)
             {
                 throw new InvalidOperationException(String.Format(CultureInfo.CurrentCulture,
                                                                   Resources.Error_IncompatibleProtocolVersion,
-                                                                  Protocol,
+                                                                  MinimumSupportedVersion,
                                                                   versionString ?? "null"));
             }
         }

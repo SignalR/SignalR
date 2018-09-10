@@ -186,4 +186,7 @@
   <data name="Error_PossibleDeadlockDetected" xml:space="preserve">
     <value>Possible deadlock detected. A callback registered with "HubProxy.On" or "Connection.Received" has been executing for at least {0} seconds.</value>
   </data>
+  <data name="Error_NegotiationLimitExceeded" xml:space="preserve">
+    <value>Negotiate redirection limit exceeded.</value>
+  </data>
 </root>
