@@ -33,7 +33,7 @@ namespace Microsoft.AspNet.SignalR.Tests
 
                     await connection.Start(host.Transport);
 
-                    var result = await hub.Invoke<string>("ReturnLargePayload").OrTimeout();
+                    var result = await hub.Invoke<string>("ReturnLargePayload").OrTimeout(TimeSpan.FromSeconds(30));
 
                     Assert.Equal(new string('a', 64 * 1024), result);
                 }

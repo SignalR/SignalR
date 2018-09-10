@@ -335,7 +335,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Common
                                 // if it is a subsequent poll
                                 startReceived.WaitOne(3000);
                                 // give the start request some additional head start
-                                await Task.Delay(500);
+                                await Task.Delay(100);
                                 //subsequent long polling request should not break immediately
                                 startReceived.Reset();
                                 context.Response.StatusCode = 500;

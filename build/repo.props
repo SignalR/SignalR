@@ -6,8 +6,7 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <!-- Functional Tests are long and UWP tests don't work in KoreBuild -->
-        <ExcludeFromTest Include="$(RepositoryRoot)test\Microsoft.AspNet.SignalR.FunctionalTests\Microsoft.AspNet.SignalR.FunctionalTests.csproj" />
+        <!-- UWP tests don't work in KoreBuild -->
         <ExcludeFromTest Include="$(RepositoryRoot)test\Microsoft.AspNet.SignalR.Client.UWP.Tests\Microsoft.AspNet.SignalR.Client.UWP.Tests.csproj" />
     </ItemGroup>
 </Project>

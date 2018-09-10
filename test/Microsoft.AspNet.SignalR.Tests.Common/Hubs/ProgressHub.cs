@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -10,14 +10,12 @@ namespace Microsoft.AspNet.SignalR.Tests.Common.Hubs
     [HubName("progress")]
     public class ProgressHub : Hub
     {
-        public async Task<string> DoLongRunningJob(string jobName, IProgress<int> progress)
+        public string DoLongRunningJob(string jobName, IProgress<int> progress)
         {
             for (int i = 0; i <= 100; i += 10)
             {
                 progress.Report(i);
             }
-
-            await Task.Delay(100);
 
             return String.Format("{0} done!", jobName);
         }

@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -96,6 +96,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Common.Infrastructure
             var query = new Dictionary<string, string>();
             query["test"] = testName;
             var connection = new HubConnection(url, query);
+            connection.TransportConnectTimeout = TimeSpan.FromSeconds(10); // Adds 10 seconds to the server's connect timeout (5 seconds) for a total of 15 seconds.
             connection.TraceWriter = HostedTestFactory.CreateClientTraceWriter(testName);
             return connection;
         }
@@ -106,6 +107,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Common.Infrastructure
             var query = new Dictionary<string, string>();
             query["test"] = testName;
             var connection = new Connection(url, query);
+            connection.TransportConnectTimeout = TimeSpan.FromSeconds(10); // Adds 10 seconds to the server's connect timeout (5 seconds) for a total of 15 seconds.
             connection.TraceWriter = HostedTestFactory.CreateClientTraceWriter(testName);
             return connection;
         }
@@ -116,6 +118,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Common.Infrastructure
             query["test"] = GetTestName() + "." + Interlocked.Increment(ref _id);
             SetHostData(host, query);
             var connection = new HubConnection(host.Url + path, query, useDefaultUrl);
+            connection.TransportConnectTimeout = TimeSpan.FromSeconds(10); // Adds 10 seconds to the server's connect timeout (5 seconds) for a total of 15 seconds.
             connection.TraceWriter = host.ClientTraceOutput ?? connection.TraceWriter;
             return connection;
         }
@@ -137,6 +140,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Common.Infrastructure
             }
 
             var connection = new HubConnection(host.Url + path, query, useDefaultUrl);
+            connection.TransportConnectTimeout = TimeSpan.FromSeconds(10); // Adds 10 seconds to the server's connect timeout (5 seconds) for a total of 15 seconds.
             connection.TraceWriter = host.ClientTraceOutput ?? connection.TraceWriter;
             connection.CookieContainer = handler.CookieContainer;
             return connection;
@@ -148,6 +152,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Common.Infrastructure
             query["test"] = GetTestName() + "." + Interlocked.Increment(ref _id);
             SetHostData(host, query);
             var connection = new Client.Connection(host.Url + path, query);
+            connection.TransportConnectTimeout = TimeSpan.FromSeconds(10); // Adds 10 seconds to the server's connect timeout (5 seconds) for a total of 15 seconds.
             connection.TraceWriter = host.ClientTraceOutput ?? connection.TraceWriter;
             return connection;
         }
@@ -167,6 +172,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Common.Infrastructure
             }
 
             var connection = new Client.Connection(host.Url + "/cookieauth" + path, query);
+            connection.TransportConnectTimeout = TimeSpan.FromSeconds(10); // Adds 10 seconds to the server's connect timeout (5 seconds) for a total of 15 seconds.
             connection.TraceWriter = host.ClientTraceOutput ?? connection.TraceWriter;
             connection.CookieContainer = handler.CookieContainer;
 

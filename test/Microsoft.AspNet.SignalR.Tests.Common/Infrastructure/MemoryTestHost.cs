@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
@@ -33,7 +33,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Common.Infrastructure
                                         bool enableAutoRejoiningGroups = false,
                                         MessageBusType messageBusType = MessageBusType.Default)
         {
-            base.Initialize(keepAlive, 
+            base.Initialize(keepAlive,
                             connectionTimeout,
                             disconnectTimeout,
                             transportConnectTimeout,

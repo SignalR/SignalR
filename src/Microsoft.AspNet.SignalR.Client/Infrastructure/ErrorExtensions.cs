@@ -31,12 +31,12 @@ namespace Microsoft.AspNet.SignalR.Client
             // PORT: This logic was simplified when unifying the build across all frameworks
             ex = ex.Unwrap();
 
-#if NET40
+#if NET40 || NET45
             if (ex is WebException webEx)
             {
                 return GetWebExceptionError(webEx);
             }
-#elif NET45 || NETSTANDARD1_3 || NETSTANDARD2_0
+#elif NETSTANDARD1_3 || NETSTANDARD2_0
 // Not supported on this framework
 #else
 #error Unsupported framework.
@@ -56,7 +56,7 @@ namespace Microsoft.AspNet.SignalR.Client
             return new SignalRError(ex);
         }
 
-#if NET40
+#if NET40 || NET45
         [SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope", Justification = "The IDisposable object is the return value.")]
         private static SignalRError GetWebExceptionError(Exception ex)
         {
@@ -90,7 +90,7 @@ namespace Microsoft.AspNet.SignalR.Client
 
             return error;
         }
-#elif NET45 || NETSTANDARD1_3 || NETSTANDARD2_0
+#elif NETSTANDARD1_3 || NETSTANDARD2_0
 // Not supported on this framework
 #else
 #error Unsupported framework.

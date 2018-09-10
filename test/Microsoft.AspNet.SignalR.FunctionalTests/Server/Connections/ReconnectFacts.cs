@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR.Client;
 using Microsoft.AspNet.SignalR.Client.Transports;
 using Microsoft.AspNet.SignalR.Hosting.Memory;
+using Microsoft.AspNet.SignalR.Infrastructure;
 using Microsoft.AspNet.SignalR.Tests.Common;
 using Microsoft.AspNet.SignalR.Tests.Common.Infrastructure;
 using Owin;
@@ -21,8 +22,8 @@ namespace Microsoft.AspNet.SignalR.Tests
     {
         [Theory]
         [InlineData(TransportType.LongPolling, MessageBusType.Default)]
-        [InlineData(TransportType.LongPolling, MessageBusType.Fake)]
-        [InlineData(TransportType.LongPolling, MessageBusType.FakeMultiStream)]
+        //[InlineData(TransportType.LongPolling, MessageBusType.Fake)]
+        //[InlineData(TransportType.LongPolling, MessageBusType.FakeMultiStream)]
         public async Task ReconnectFiresAfterHostShutdown(TransportType transportType, MessageBusType messageBusType)
         {
             var serverStarts = 0;
@@ -48,27 +49,27 @@ namespace Microsoft.AspNet.SignalR.Tests
                 using (var connection = CreateConnection("http://foo/endpoint"))
                 {
                     var transport = CreateTransport(transportType, host);
-                    var pollEvent = new AsyncManualResetEvent();
-                    var reconnectedEvent = new AsyncManualResetEvent();
+                    var pollEvent = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+                    var reconnectedEvent = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
 
                     host.OnPoll = () =>
                     {
-                        pollEvent.Set();
+                        pollEvent.TrySetResult(null);
                     };
 
                     connection.Reconnected += () =>
                     {
-                        reconnectedEvent.Set();
+                        reconnectedEvent.TrySetResult(null);
                     };
 
                     await connection.Start(transport);
 
                     // Wait for the /poll before restarting the server
-                    Assert.True(await pollEvent.WaitAsync(TimeSpan.FromSeconds(15)), "Timed out waiting for poll request");
+                    await pollEvent.Task.OrTimeout(TimeSpan.FromSeconds(15));
 
                     host.Restart();
 
-                    Assert.True(await reconnectedEvent.WaitAsync(TimeSpan.FromSeconds(15)), "Timed out waiting for client side reconnect");
+                    await reconnectedEvent.Task.OrTimeout(TimeSpan.FromSeconds(15));
 
                     Assert.Equal(2, serverStarts);
                     Assert.Equal(1, serverReconnects);
