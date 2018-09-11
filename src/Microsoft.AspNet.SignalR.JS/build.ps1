@@ -29,11 +29,11 @@ foreach ($file in $files) {
 }
 
 # Combine all files into jquery.signalR.js
-if (!(Test-Path -path "bin")) {
-    New-Item "bin" -Type Directory | Out-Null
+if (!(Test-Path -path "$outputPath")) {
+    New-Item "$outputPath" -Type Directory | Out-Null
 }
 
-Write-Host "Building bin\jquery.signalR.js... " -NoNewline -ForegroundColor Yellow
+Write-Host "Building $outputPath\jquery.signalR.js... " -NoNewline -ForegroundColor Yellow
 $filePath = "$outputPath\jquery.signalR.js"
 Remove-Item $filePath -Force -ErrorAction SilentlyContinue
 foreach ($file in $files) {
@@ -43,7 +43,7 @@ foreach ($file in $files) {
 Write-Host "done" -ForegroundColor Green
 
 # Minify to jquery.signalR.min.js
-Write-Host "Building bin\jquery.signalR.min.js... " -NoNewline -ForegroundColor Yellow
+Write-Host "Building $outputPath\jquery.signalR.min.js... " -NoNewline -ForegroundColor Yellow
 & "..\..\tools\ajaxmin\AjaxMinifier.exe" $outputPath\jquery.signalR.js -out $outputPath\jquery.signalR.min.js -term -clobber > $output
 (Get-Content $output)[6] | Write-Host -ForegroundColor Green
 

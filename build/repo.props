@@ -9,8 +9,6 @@
     </PropertyGroup>
 
     <PropertyGroup>
-        <SkipArtifactVerification>true</SkipArtifactVerification>
-
         <!-- Flow these properties down to the solution build -->
         <SolutionProperties Condition="'$(DelaySign)' != ''">$(SolutionProperties);DelaySign=$(DelaySign)</SolutionProperties>
         <SolutionProperties Condition="'$(SignAssembly)' != ''">$(SolutionProperties);SignAssembly=$(SignAssembly)</SolutionProperties>

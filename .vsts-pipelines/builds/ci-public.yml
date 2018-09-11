@@ -9,3 +9,4 @@ phases:
     queueName: Hosted VS2017
     variables:
       SkipCodeSign: true
+      Localize: true
