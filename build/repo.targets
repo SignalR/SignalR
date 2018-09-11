@@ -60,11 +60,22 @@
 
     
     <PropertyGroup>
-        <RestoreDependsOn>$(RestoreDependsOn);RestoreNpm</RestoreDependsOn>
+        <RestoreDependsOn>$(RestoreDependsOn);RestoreNpm;LocateMicroBuild</RestoreDependsOn>
     </PropertyGroup>
     <Target Name="RestoreNpm" Condition="'$(PreflightRestore)' != 'True'">
         <Message Text="Restoring NPM modules" Importance="high" />
         <Exec Command="npm install --no-optional" WorkingDirectory="$(RepositoryRoot)test/Microsoft.AspNet.SignalR.Client.JS.Tests" />
+    </Target>
+    <Target Name="LocateMicroBuild">
+        <!-- Manually find MicroBuild plugins because MicroBuild.Core doesn't work in dotnet.exe -->
+        <PropertyGroup>
+            <MicroBuildSentinelFile>packages\MicroBuild.Core.Sentinel.1.0.0\sentinel.txt</MicroBuildSentinelFile>
+            <MicroBuildPluginDirectory>$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), $(MicroBuildSentinelFile)))</MicroBuildPluginDirectory>
+            <MicroBuildPluginDirectory Condition="'$(MicroBuildPluginDirectory)' != ''">$(MicroBuildPluginDirectory)\packages</MicroBuildPluginDirectory>
+            <MicroBuildPluginDirectory Condition="'$(MicroBuildOverridePluginDirectory)' != ''">$(MicroBuildOverridePluginDirectory)</MicroBuildPluginDirectory>
+        </PropertyGroup>
+        <Message Text="MicroBuild not present. Skipping Localization and Signing." Importance="high" Condition="'$(MicroBuildPluginDirectory)' == ''" />
+        <Message Text="MicroBuild found at '$(MicroBuildPluginDirectory)'." Importance="high" Condition="'$(MicroBuildPluginDirectory)' != ''" />
     </Target>
 
     <PropertyGroup>

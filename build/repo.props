@@ -10,6 +10,14 @@
         <GenerateSignRequest>false</GenerateSignRequest>
     </PropertyGroup>
 
+    <!-- Manually find MicroBuild plugins because MicroBuild.Core doesn't work in dotnet.exe -->
+    <PropertyGroup>
+        <MicroBuildSentinelFile>packages\MicroBuild.Core.Sentinel.1.0.0\sentinel.txt</MicroBuildSentinelFile>
+        <MicroBuildPluginDirectory>$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), $(MicroBuildSentinelFile)))</MicroBuildPluginDirectory>
+        <MicroBuildPluginDirectory Condition="'$(MicroBuildPluginDirectory)' != ''">$(MicroBuildPluginDirectory)\packages</MicroBuildPluginDirectory>
+        <MicroBuildPluginDirectory Condition="'$(MicroBuildOverridePluginDirectory)' != ''">$(MicroBuildOverridePluginDirectory)</MicroBuildPluginDirectory>
+    </PropertyGroup>
+
     <PropertyGroup>
         <!-- Flow these properties down to the solution build -->
         <SolutionProperties Condition="'$(DelaySign)' != ''">$(SolutionProperties);DelaySign=$(DelaySign)</SolutionProperties>

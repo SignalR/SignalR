@@ -17,6 +17,8 @@ phases:
       displayName: 'Run compliance check'
       inputs:
         targetType: F
+    - task: ms-vseng.MicroBuildTasks.a0262b21-fb8f-46f8-bb9a-60ed560d4a87.MicroBuildLocalizationPlugin@1
+      displayName: 'Install Localization Plugin'
     - task: ms-vseng.MicroBuildTasks.30666190-6959-11e5-9f96-f56098202fef.MicroBuildSigningPlugin@1
       displayName: Install CodeSigning plugin
       inputs:
