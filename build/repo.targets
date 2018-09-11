@@ -73,6 +73,6 @@
 
     <Target Name="RunBrowserTests">
         <Message Text="Running JavaScript client Browser tests" Importance="high" />
-        <Exec Command="npm test -- --configuration $(Configuration)" WorkingDirectory="$(RepositoryRoot)test/Microsoft.AspNet.SignalR.Client.JS.Tests" IgnoreStandardErrorWarningFormat="true" />
+        <Exec Command="npm test -- --server-path &quot;$(ArtifactsBinDir)\Microsoft.AspNet.SignalR.Client.JS.Tests\net461\Microsoft.AspNet.SignalR.Client.JS.Tests.exe&quot;" WorkingDirectory="$(RepositoryRoot)test/Microsoft.AspNet.SignalR.Client.JS.Tests" IgnoreStandardErrorWarningFormat="true" />
     </Target>
 </Project>

@@ -17,8 +17,8 @@
         <ProjectReference Include="..\..\src\Microsoft.AspNet.SignalR.JS\Microsoft.AspNet.SignalR.JS.csproj" ReferenceOutputAssembly="false" />
     </ItemGroup>
   <Target Name="CopyJs" AfterTargets="Build">
-    <Copy SourceFiles="$(ArtifactsBinDir)\Microsoft.AspNet.SignalR.JS\netstandard1.0\jquery.signalR.js" DestinationFiles="Scripts\jquery.signalR.js" />
-    <Copy SourceFiles="$(ArtifactsBinDir)\Microsoft.AspNet.SignalR.JS\netstandard1.0\jquery.signalR.min.js" DestinationFiles="Scripts\jquery.signalR.min.js" />
+    <Copy SourceFiles="$(ArtifactsBinDir)\Microsoft.AspNet.SignalR.JS\netstandard1.0\jquery.signalR.js" DestinationFiles="wwwroot/lib/signalr/jquery.signalR.js" />
+    <Copy SourceFiles="$(ArtifactsBinDir)\Microsoft.AspNet.SignalR.JS\netstandard1.0\jquery.signalR.min.js" DestinationFiles="wwwroot/lib/signalr/jquery.signalR.min.js" />
   </Target>
 
     <Target Name="CalculateNetworkMockInputs">

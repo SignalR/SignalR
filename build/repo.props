@@ -1,6 +1,8 @@
 <Project>
     <Import Project="$(RepositoryRoot)build\loc\Localization.props" Condition="'$(Localize)' == 'true'" />
 
+    <Import Project="$(MSBuildThisFileDirectory)\arcade.props" />
+
     <!-- Properties to make KoreBuild more like dotnet/arcade. -->
     <PropertyGroup>
         <BuildDir>$(ArtifactsDir)$(Configuration)\packages\</BuildDir>
