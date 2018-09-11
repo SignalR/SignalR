@@ -11,7 +11,7 @@ QUnit.asyncTimeoutTest("Can connect to endpoint which produces a redirect respon
     connection.start().done(function () {
         assert.comment("Connection succeeded");
 
-        hub.server.echoReturn("Test Message").then((response) => {
+        hub.server.echoReturn("Test Message").then(function (response) {
             assert.equal(response, "Test Message", "Successfully called a server method");
             end();
         }).fail(function () {
@@ -78,7 +78,7 @@ testUtilities.runWithAllTransports(function (transport) {
         connection.start({ transport: transport }).done(function () {
             assert.comment("Connection succeeded");
 
-            hub.server.getAccessToken().then((header) => {
+            hub.server.getAccessToken().then(function (header) {
                 assert.equal(header, "TestToken", "Successfully authenticated");
                 end();
             }).fail(function () {

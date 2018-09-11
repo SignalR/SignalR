@@ -16,7 +16,7 @@ QUnit.module("Common - Utility Facts");
     { userAgent: "This is not a user agent string", expect: 0 },
     { userAgent: "Firefox/24.0", expect: 24 },
     { userAgent: "Firefox/24.0 ", expect: 24 }
-].forEach((data) => {
+].forEach(function (data) {
     QUnit.test("firefoxMajorVersion parses user agent '" + data.userAgent + "' to version '" + data.expect + "'", function (assert) {
         var actual = $.signalR._.firefoxMajorVersion(data.userAgent);
 

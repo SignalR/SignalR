@@ -55,7 +55,7 @@ QUnit.test("connection.json is unique on different objects when custom", functio
 
 QUnit.test("connection.withCredentials defaults to false for same-domain", function (assert) {
     // Set up a fake URL that is not cross-domain
-    var url = `${window.location.protocol}//${window.location.host}/`;
+    var url = window.location.protocol + "//" + window.location.host;
     var connection = testUtilities.createConnection(url, function () { }, assert, "", false);
 
     connection.start();
