@@ -88,7 +88,10 @@ module.exports = function (config) {
 
     // Tell the app the URL of the SignalR server. If this causes problems, we can do the auto-detect trick that we use in aspnet/SignalR
     client: {
-      args: ["--server", "http://localhost:8989"]
+      args: ["--server", "http://localhost:8989"],
+      qunit: {
+        autostart: false,
+      },
     },
 
     reporters: [
@@ -102,6 +105,8 @@ module.exports = function (config) {
     },
 
     browsers,
+    // browsers: ["Chrome"],
+
     customLaunchers: {
       ChromeHeadlessNoSandbox: {
         base: 'ChromeHeadless',

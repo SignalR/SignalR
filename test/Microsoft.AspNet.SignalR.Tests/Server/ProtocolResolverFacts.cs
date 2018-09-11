@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -21,6 +21,8 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
         [InlineData("1.0", "1.5", "1.9", "1.5")]
         [InlineData("1.0", "1.1", "1.0.5", "1.0.5")]
         [InlineData("1.0", "1.1", "", "1.0")]
+        [InlineData("1.2", "2.0", "1.4", "1.4")]
+        [InlineData("1.2", "1.4", "2.0", "1.4")]
         public void ProtocolResolvesCorrectly(string minProtocol, string maxProtocol, string clientProtocol, string expectedProtocol)
         {
             var request = new Mock<IRequest>();

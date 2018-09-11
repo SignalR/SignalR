@@ -32,7 +32,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Common.Hubs
         {
             if (Context.Request.QueryString["connectionData"] == null || !Context.Request.QueryString["connectionData"].ToLower().Contains("connectiondataverifierhub"))
             {
-                Clients.Caller.fail();
+                Clients.Caller.fail(Context.Request.Url.ToString());
 
                 return false;
             }

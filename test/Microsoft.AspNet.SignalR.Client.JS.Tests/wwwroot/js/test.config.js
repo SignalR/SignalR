@@ -21,8 +21,11 @@
         window.document.jsonpTestsEnabled = true;
     }
 
-    // If we're being run in Karma
-    if (window.__karma__) {
+    // Try to get the testUrl from the query string
+    window.document.testUrl = getParameterByName("testUrl");
+
+    // If we're being run in Karma, try the karma args
+    if (!window.document.testUrl && window.__karma__) {
         // Try to set the testUrl based on the args
         const args = window.__karma__.config.args;
 
@@ -35,11 +38,8 @@
             }
         }
     }
-    else {
-        // Check the URL
-        window.document.testUrl = getParameterByName("testUrl");
-    }
 
+    // Normalize the URL, if present
     if (window.document.testUrl && !window.document.testUrl.endsWith("/")) {
         window.document.testUrl += "/";
     }
@@ -50,7 +50,36 @@
     } else {
         signalRUrl = window.document.testUrl + "signalr/js";
     }
-    document.write("<script src=\"" + signalRUrl + "\" crossorigin=\"anonymous\"></script>");
+    
+    var scriptTag = document.createElement("script");
+    scriptTag.src = signalRUrl;
+    scriptTag.crossOrigin = "anonymous";
+    document.body.appendChild(scriptTag);
+
+    // Disable auto-start. We need to wait until signalr/js has loaded before we can run the tests
+    QUnit.config.autostart = false;
+    window.addEventListener("load", function () {
+        // If the hub proxies have loaded, 'proxies' will be set and we're ready to go
+        if ($.connection.hub.proxies) {
+            console.log("proxies are loaded, starting tests!");
+            QUnit.start();
+        }
+        else {
+            console.log("waiting for proxies to load...");
+            // Start an interval timer
+            var intervalHandle;
+            intervalHandle = setInterval(function () {
+                if ($.connection.hub.proxies) {
+                    console.log("proxies are loaded, starting tests!");
+                    QUnit.start();
+                    clearInterval(intervalHandle);
+                }
+                else {
+                    console.log("waiting for proxies to load...");
+                }
+            }, 500);
+        }
+    });
 
     function failConnection() {
         $("iframe").each(function () {
@@ -91,4 +120,29 @@
     $.network.mask.create($.signalR.transports.foreverFrame, ["networkLoss"], ["receive"]);
     $.network.mask.subscribe($.signalR.transports.foreverFrame, "started", failConnection);
 
+    // In Karma, make sure the test name is in the log message so we can split things up.
+    if(window.__karma__) {
+        ["debug", "log", "error", "warn", "info"].forEach(function (method) {
+            var savedVersion = console[method];
+            console[method] = function() {
+                var args = Array.prototype.slice.call(arguments);
+                if(QUnit.config.current) {
+                    args[0] = 
+                        QUnit.config.current.module.name +
+                        "/" +
+                        QUnit.config.current.testName +
+                        "||" + 
+                        args[0]
+                }
+                savedVersion.apply(console, args);
+            }
+        });
+    }
+
+    QUnit.testStart(function(details) {
+        console.log("***** STARTING TEST [" + details.module + "/" + details.name + "] *****")
+    });
+    QUnit.testDone(function(details) {
+        console.log("***** FINISHED TEST [" + details.module + "/" + details.name + "] *****")
+    });
 })($, window);

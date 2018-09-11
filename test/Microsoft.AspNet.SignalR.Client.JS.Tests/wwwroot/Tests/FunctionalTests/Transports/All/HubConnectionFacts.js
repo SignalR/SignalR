@@ -1,10 +1,10 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 QUnit.module("Hub Connection Functional Tests");
 
 testUtilities.runWithAllTransports(function (transport) {
-    QUnit.asyncTimeoutTest(transport + " transport an connect.", testUtilities.defaultTestTimeout, function (end, assert, testName) {
+    QUnit.asyncTimeoutTest(transport + " transport can connect.", testUtilities.defaultTestTimeout, function (end, assert, testName) {
         var connection = testUtilities.createHubConnection(end, assert, testName);
 
         connection.start({ transport: transport }).done(function () {

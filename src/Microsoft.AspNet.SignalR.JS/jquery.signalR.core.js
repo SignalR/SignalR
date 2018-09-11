@@ -411,6 +411,11 @@
 
         clientProtocol: "2.0",
 
+        // We want to support older servers since the 2.0 change is to support redirection results, which isn't
+        // really breaking in the protocol. So if a user updates their client to 2.0 protocol version there's
+        // no reason they can't still connect to a 1.5 server.
+        supportedProtocols: [ "1.5", "2.0" ],
+
         reconnectDelay: 2000,
 
         transportConnectTimeout: 0,
@@ -714,7 +719,7 @@
                             return;
                         }
 
-                        if (!res.ProtocolVersion || res.ProtocolVersion !== connection.clientProtocol) {
+                        if (!res.ProtocolVersion || (connection.supportedProtocols.indexOf(res.ProtocolVersion) === -1)) {
                             protocolError = signalR._.error(signalR._.format(resources.protocolIncompatible, connection.clientProtocol, res.ProtocolVersion));
                             $(connection).triggerHandler(events.onError, [protocolError]);
                             deferred.reject(protocolError);
@@ -722,7 +727,8 @@
                             return;
                         }
 
-                        if (res.RedirectUrl) {
+                        // Check for a redirect response (which must have a ProtocolVersion of 2.0)
+                        if (res.ProtocolVersion === "2.0" && res.RedirectUrl) {
                             if (redirects === MAX_REDIRECTS) {
                                 onFailed(signalR._.error(resources.errorRedirectionExceedsLimit, null /* error */), connection);
                                 return;

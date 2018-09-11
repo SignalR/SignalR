@@ -1362,12 +1362,12 @@ namespace Microsoft.AspNet.SignalR.Tests
                     await connection.Start(host.Transport);
 
                     var user = new User { Name = "tester" };
-                    proxy.InvokeWithTimeout("login", user);
+                    await proxy.Invoke("login", user).OrTimeout();
 
                     for (var i = 0; i < max; i++)
                     {
                         user.Index = i;
-                        proxy.InvokeWithTimeout("joinRoom", user);
+                        await proxy.Invoke("joinRoom", user).OrTimeout();
                     }
 
                     // Force Reconnect
@@ -1376,7 +1376,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                     for (var i = max; i < 2 * max; i++)
                     {
                         user.Index = i;
-                        proxy.InvokeWithTimeout("joinRoom", user);
+                        await proxy.Invoke("joinRoom", user).OrTimeout();
                     }
 
                     try
