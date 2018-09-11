@@ -6,7 +6,7 @@ trigger:
 phases:
 - template: ../templates/signalr-build.yml
   parameters:
-    queueName: VSEng-MicroBuildVS2017
+    queueName: DotNetCore-Windows
     variables:
       SignType: test
       TeamName: AspNetCore
