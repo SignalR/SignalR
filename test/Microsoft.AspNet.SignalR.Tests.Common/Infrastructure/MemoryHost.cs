@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -16,20 +16,29 @@ namespace Microsoft.AspNet.SignalR.Hosting.Memory
     {
         private static int instanceId;
         private TestServer _host;
-        
-        public string InstanceName { get; set; }        
+
+        public static readonly string InstanceNameKey = $"{typeof(MemoryHost).FullName}.{nameof(InstanceName)}";
+
+        public string InstanceName { get; set; }
 
         public MemoryHost()
         {
             var id = Interlocked.Increment(ref instanceId);
-            InstanceName = Process.GetCurrentProcess().ProcessName + id;            
+            InstanceName = Process.GetCurrentProcess().ProcessName + id;
         }
 
         public void Configure(Action<IAppBuilder> startup)
         {
-            _host = TestServer.Create(app => 
+            _host = TestServer.Create(app =>
             {
                 app.Properties[OwinConstants.HostAppNameKey] = InstanceName;
+
+                // Add the memory host instance id to the Owin Environment so others can use it if necessary
+                app.Use((context, next) =>
+                {
+                    context.Environment.Add(MemoryHost.InstanceNameKey, InstanceName);
+                    return next();
+                });
 
                 app.Use(async (context, next) =>
                 {
@@ -41,7 +50,7 @@ namespace Microsoft.AspNet.SignalR.Hosting.Memory
                     }
 
                     await next();
-                });                
+                });
 
                 startup(app);
             });
@@ -57,6 +66,6 @@ namespace Microsoft.AspNet.SignalR.Hosting.Memory
         public void Dispose()
         {
             _host.Dispose();
-        }        
+        }
     }
 }

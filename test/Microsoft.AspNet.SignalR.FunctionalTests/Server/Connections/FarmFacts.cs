@@ -1,9 +1,11 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Threading;
+using System.Threading.Channels;
 using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR.Client;
 using Microsoft.AspNet.SignalR.Configuration;
@@ -14,7 +16,6 @@ using Microsoft.AspNet.SignalR.Tests.Common.Infrastructure;
 using Microsoft.AspNet.SignalR.Tracing;
 using Owin;
 using Xunit;
-using Xunit.Extensions;
 using IClientRequest = Microsoft.AspNet.SignalR.Client.Http.IRequest;
 using IClientResponse = Microsoft.AspNet.SignalR.Client.Http.IResponse;
 using IHttpClient = Microsoft.AspNet.SignalR.Client.Http.IHttpClient;
@@ -38,14 +39,14 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Server.Connections
             using (var loadBalancer = new LoadBalancer(nodeCount))
             {
                 var broadcasters = new List<IConnection>();
-                var disconnectCounter = new DisconnectCounter();
+                var disconnectCounter = Channel.CreateUnbounded<DisconnectData>();
                 loadBalancer.Configure(app =>
                 {
                     var resolver = new DefaultDependencyResolver();
 
                     resolver.Register(typeof(IMessageBus), () => bus);
                     resolver.Register(typeof(IConfigurationManager), () => configurationManager);
-                    resolver.Register(typeof(FarmConnection), () => new FarmConnection(disconnectCounter));
+                    resolver.Register(typeof(FarmConnection), () => new FarmConnection(disconnectCounter.Writer));
 
                     var connectionManager = resolver.Resolve<IConnectionManager>();
                     broadcasters.Add(connectionManager.GetConnectionContext<FarmConnection>().Connection);
@@ -69,10 +70,28 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Server.Connections
 
                 ((Client.IConnection)connection).Disconnect();
 
-                await Task.Delay(TimeSpan.FromTicks(TimeSpan.FromSeconds(5).Ticks * nodeCount));
+                // Give up after 30 seconds
+                var cts = new CancellationTokenSource();
+                cts.CancelAfter(TimeSpan.FromSeconds(30));
 
-                Assert.Equal(0, disconnectCounter.CleanDisconnectCount);
-                Assert.Equal(3, disconnectCounter.UncleanDisconnectCount);
+                // We can get duplicate OnDisconnected calls, and that's a known by-design issue.
+                var instancesDisconnected = new HashSet<string>();
+                while (await disconnectCounter.Reader.WaitToReadAsync(cts.Token))
+                {
+                    while (!cts.IsCancellationRequested && disconnectCounter.Reader.TryRead(out var disconnect))
+                    {
+                        Assert.False(disconnect.StopCalled, "Disconnect should not have been due to stop being called.");
+                        instancesDisconnected.Add(disconnect.InstanceName);
+                        if (instancesDisconnected.Count == 3)
+                        {
+                            // We're done, all three instances disconneted
+                            return;
+                        }
+                    }
+                }
+
+                // If we get here it means the cts was cancelled which means we timed out
+                cts.Token.ThrowIfCancellationRequested();
             }
         }
 
@@ -270,31 +289,31 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Server.Connections
             }
         }
 
-        private class DisconnectCounter
+        private class DisconnectData
         {
-            public int CleanDisconnectCount { get; set; }
-            public int UncleanDisconnectCount { get; set; }
+            public bool StopCalled { get; }
+            public string InstanceName { get; }
+
+            public DisconnectData(bool stopCalled, string instanceName)
+            {
+                StopCalled = stopCalled;
+                InstanceName = instanceName;
+            }
         }
 
         private class FarmConnection : PersistentConnection
         {
-            private readonly DisconnectCounter _disconnectCounter;
+            private readonly ChannelWriter<DisconnectData> _disconnectCounter;
 
-            public FarmConnection(DisconnectCounter disconnectCounter)
+            public FarmConnection(ChannelWriter<DisconnectData> disconnectCounter)
             {
                 _disconnectCounter = disconnectCounter;
             }
 
             protected override Task OnDisconnected(IRequest request, string connectionId, bool stopCalled)
             {
-                if (stopCalled)
-                {
-                    _disconnectCounter.CleanDisconnectCount++;
-                }
-                else
-                {
-                    _disconnectCounter.UncleanDisconnectCount++;
-                }
+                var data = new DisconnectData(stopCalled, request.Environment.Get<string>(MemoryHost.InstanceNameKey));
+                Assert.True(_disconnectCounter.TryWrite(data), "Disconnect counter channel should be unbounded!");
 
                 return base.OnDisconnected(request, connectionId, stopCalled);
             }
