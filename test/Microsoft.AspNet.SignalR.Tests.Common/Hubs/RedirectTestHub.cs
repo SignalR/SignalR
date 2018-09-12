@@ -13,7 +13,10 @@ namespace Microsoft.AspNet.SignalR.Tests.Common.Hubs
             if (string.IsNullOrEmpty(token))
             {
                 var header = Context.Request.Headers["Authorization"];
-                return header.Substring(7); // Strip "Bearer " off the front
+                if (!string.IsNullOrEmpty(header) && header.StartsWith("Bearer "))
+                {
+                    return header.Substring(7); // Strip "Bearer " off the front
+                }
             }
             return token;
         }

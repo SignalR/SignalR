@@ -20,6 +20,7 @@ using Microsoft.AspNet.SignalR.Tests.Common.Handlers;
 using Microsoft.Owin;
 using Microsoft.Owin.Cors;
 using Microsoft.Owin.Security.Cookies;
+using Newtonsoft.Json;
 using Owin;
 
 [assembly: PreApplicationStartMethod(typeof(Initializer), "Start")]
@@ -367,6 +368,52 @@ namespace Microsoft.AspNet.SignalR.Tests.Common
             {
                 map.MapSignalR();
             });
+
+            // Redirectors:
+
+            // Valid redirect chain
+            // Overload detection doesn't like it when we use this as an extension method
+            // We *intentionally* use paths that do NOT end in a trailing '/' in some places as the client needs to support both
+            AppBuilderUseExtensions.Use(app, CreateRedirector("/redirect", "/redirect2"));
+            AppBuilderUseExtensions.Use(app, CreateRedirector("/redirect2", "/redirect3/"));
+            AppBuilderUseExtensions.Use(app, CreateRedirector("/redirect3", "/redirect4"));
+            AppBuilderUseExtensions.Use(app, CreateRedirector("/redirect4", "/signalr/"));
+
+            // Looping redirect chain
+            AppBuilderUseExtensions.Use(app, CreateRedirector("/redirect-loop", "/redirect-loop2"));
+            AppBuilderUseExtensions.Use(app, CreateRedirector("/redirect-loop2", "/redirect-loop"));
+
+            // Wrong protocol version
+            AppBuilderUseExtensions.Use(app, CreateRedirector("/redirect-old-proto", "/signalr", protocolVersion: "1.5"));
+        }
+
+        private static Func<IOwinContext, Func<Task>, Task> CreateRedirector(string sourcePath, string targetPath, string protocolVersion = null)
+        {
+            return (context, next) =>
+            {
+                if (context.Request.Path.StartsWithSegments(new PathString(sourcePath)))
+                {
+                    // Send a redirect response
+                    context.Response.StatusCode = 200;
+                    context.Response.ContentType = "application/json";
+                    using (var writer = new JsonTextWriter(new StreamWriter(context.Response.Body)))
+                    {
+                        writer.WriteStartObject();
+                        writer.WritePropertyName("ProtocolVersion");
+
+                        // Redirect results are always protocol 2.0, even if the client requested a different protocol.
+                        writer.WriteValue(protocolVersion ?? "2.0");
+
+                        writer.WritePropertyName("RedirectUrl");
+                        writer.WriteValue($"{context.Request.Scheme}://{context.Request.Host.Value}{targetPath}");
+                        writer.WritePropertyName("AccessToken");
+                        writer.WriteValue("TestToken");
+                        writer.WriteEndObject();
+                    }
+                    return Task.CompletedTask;
+                }
+                return next();
+            };
         }
     }
 }

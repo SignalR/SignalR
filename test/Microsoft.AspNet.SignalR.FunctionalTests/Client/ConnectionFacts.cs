@@ -10,7 +10,6 @@ using Microsoft.AspNet.SignalR.Client;
 using Microsoft.AspNet.SignalR.Client.Infrastructure;
 using Microsoft.AspNet.SignalR.Client.Transports;
 using Microsoft.AspNet.SignalR.Hosting.Memory;
-using Microsoft.AspNet.SignalR.Infrastructure;
 using Microsoft.AspNet.SignalR.Tests.Common;
 using Microsoft.AspNet.SignalR.Tests.Common.Infrastructure;
 using Microsoft.Owin;
@@ -18,7 +17,6 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Owin;
 using Xunit;
-using Xunit.Extensions;
 
 namespace Microsoft.AspNet.SignalR.Tests
 {
@@ -99,7 +97,7 @@ namespace Microsoft.AspNet.SignalR.Tests
 
                     SetReconnectDelay(host.Transport, TimeSpan.FromSeconds(15));
 
-                    connection.Start(host.Transport).Wait();                    
+                    connection.Start(host.Transport).Wait();
 
                     // Without this the connection start and reconnect can race with eachother resulting in a deadlock.
                     Thread.Sleep(TimeSpan.FromSeconds(3));
@@ -284,34 +282,6 @@ namespace Microsoft.AspNet.SignalR.Tests
 
                     Assert.True(wh.Wait(TimeSpan.FromSeconds(10)));
                     Assert.IsType<SlowCallbackException>(ex);
-                }
-            }
-        }
-
-        [Theory]
-        [InlineData("1337.0", HostType.Memory, TransportType.LongPolling, MessageBusType.Default)]
-        public async Task ConnectionFailsToStartWithInvalidOldProtocol(string protocolVersion, HostType hostType, TransportType transportType, MessageBusType messageBusType)
-        {
-            using (var host = CreateHost(hostType, transportType))
-            {
-                host.Initialize(messageBusType: messageBusType);
-                var connection = CreateConnection(host, "/signalr");
-                Boolean faulted = false;
-
-                connection.Protocol = new Version(protocolVersion);
-
-                using (connection)
-                {
-                    try
-                    {
-                        await connection.Start(host.Transport);
-                    }
-                    catch
-                    {
-                        faulted = true;
-                    }
-
-                    Assert.True(faulted);
                 }
             }
         }
