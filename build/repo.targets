@@ -73,6 +73,7 @@
             <MicroBuildPluginDirectory>$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), $(MicroBuildSentinelFile)))</MicroBuildPluginDirectory>
             <MicroBuildPluginDirectory Condition="'$(MicroBuildPluginDirectory)' != ''">$(MicroBuildPluginDirectory)\packages</MicroBuildPluginDirectory>
             <MicroBuildPluginDirectory Condition="'$(MicroBuildOverridePluginDirectory)' != ''">$(MicroBuildOverridePluginDirectory)</MicroBuildPluginDirectory>
+            <SolutionProperties Condition="'$(MicroBuildPluginDirectory)' != ''">$(SolutionProperties);MicroBuildPluginDirectory=$(MicroBuildPluginDirectory)</SolutionProperties>
         </PropertyGroup>
         <Message Text="MicroBuild not present. Skipping Localization and Signing." Importance="high" Condition="'$(MicroBuildPluginDirectory)' == ''" />
         <Message Text="MicroBuild found at '$(MicroBuildPluginDirectory)'." Importance="high" Condition="'$(MicroBuildPluginDirectory)' != ''" />
