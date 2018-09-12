@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 
@@ -69,6 +69,14 @@
         iframeClearThreshold: 50,
 
         start: function (connection, onSuccess, onFailed) {
+            if (connection.accessToken) {
+                if (onFailed) {
+                    connection.log("Forever Frame does not support connections that require a Bearer token to connect, such as the Azure SignalR Service.");
+                    onFailed();
+                }
+                return;
+            }
+
             var that = this,
                 frameId = (transportLogic.foreverFrame.count += 1),
                 url,
