@@ -460,15 +460,15 @@ namespace Microsoft.AspNet.SignalR.Tests
 
                     using (var connection = CreateConnection(host, "/my-reconnect"))
                     {
-                        var reconnectingWh = new ManualResetEvent(false);
+                        var reconnectingWh = new TaskCompletionSource<object>();
 
-                        connection.Reconnecting += () => reconnectingWh.Set();
+                        connection.Reconnecting += () => reconnectingWh.TrySetResult(null);
 
                         await connection.Start(host.Transport);
 
                         host.Shutdown();
 
-                        Assert.True(await Task.Run(() => reconnectingWh.WaitOne(TimeSpan.FromSeconds(5))));
+                        await reconnectingWh.Task.OrTimeout();
                     }
                 }
             }
