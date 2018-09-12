@@ -188,7 +188,7 @@ namespace Microsoft.AspNet.SignalR.Client
             DeadlockErrorTimeout = TimeSpan.FromSeconds(10);
 
             // Current client protocol
-            Protocol = new Version(2, 0);
+            Protocol = new Version(1, 4);
         }
 
         /// <summary>
