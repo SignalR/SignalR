@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.IO;
+using System.Security.Claims;
 using System.Threading.Tasks;
 using System.Web.Cors;
 using Microsoft.AspNet.SignalR.Tests.Common;
@@ -15,6 +16,8 @@ namespace Microsoft.AspNet.SignalR.Client.JS.Tests
 {
     public class Startup
     {
+        // Super hacky settings!
+        public static string AzureSignalRConnectionString = null;
         public void Configuration(IAppBuilder app)
         {
             var corsPolicy = new CorsPolicy()
@@ -25,6 +28,20 @@ namespace Microsoft.AspNet.SignalR.Client.JS.Tests
                 SupportsCredentials = true,
             };
 
+            // Work around https://github.com/Azure/azure-signalr/issues/203
+            app.Use((context, next) =>
+            {
+                context.Request.User = new ClaimsPrincipal(
+                    new ClaimsIdentity(
+                        new Claim[]
+                        {
+                            new Claim(ClaimTypes.Name, string.Empty)
+                        }));
+                return next();
+            });
+
+            app.UseErrorPage();
+
             // Enable CORS so Karma works
             app.UseCors(new CorsOptions()
             {
@@ -34,7 +51,7 @@ namespace Microsoft.AspNet.SignalR.Client.JS.Tests
                 }
             });
 
-            Initializer.ConfigureRoutes(app, GlobalHost.DependencyResolver);
+            Initializer.ConfigureRoutes(app, GlobalHost.DependencyResolver, AzureSignalRConnectionString);
 
             app.Use((context, next) =>
             {
@@ -46,10 +63,25 @@ namespace Microsoft.AspNet.SignalR.Client.JS.Tests
                 return next();
             });
 
+            app.Use(async (context, next) =>
+            {
+                if (context.Request.Path.StartsWithSegments(new PathString("/js/server-info.js")))
+                {
+                    // Inject server settings in to the javascript
+                    context.Response.StatusCode = 200;
+                    context.Response.ContentType = "application/javascript";
+                    await context.Response.WriteAsync($"window._server = {{ azureSignalR: {(string.IsNullOrEmpty(AzureSignalRConnectionString) ? "false" : "true")} }}");
+                }
+                else
+                {
+                    await next();
+                }
+            });
+
             app.UseFileServer(new FileServerOptions()
             {
                 EnableDefaultFiles = true,
-                FileSystem = new PhysicalFileSystem(Path.Combine(Directory.GetCurrentDirectory(), "wwwroot"))
+                FileSystem = new PhysicalFileSystem(Path.Combine(Directory.GetCurrentDirectory(), "wwwroot")),
             });
         }
     }

@@ -1,14 +1,14 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-QUnit.module("Core - connection.json Functional Tests");
+testUtilities.skipOnAzureModule("Core - connection.json Functional Tests");
 
 (function ($, window) {
     testUtilities.runWithAllTransports(function (transport) {
 
         QUnit.asyncTimeoutTest(transport + " transport uses custom JSON object.", testUtilities.defaultTestTimeout, function (end, assert, testName) {
             var connections = [testUtilities.createConnection("signalr", end, assert, testName),
-                               testUtilities.createHubConnection(end, assert, testName)],
+            testUtilities.createHubConnection(end, assert, testName)],
                 numStarts = 0;
 
             $.each(connections, function (_, connection) {
@@ -44,7 +44,7 @@ QUnit.module("Core - connection.json Functional Tests");
         // This is not a unit test because in the case that it fails it could run async
         QUnit.asyncTimeoutTest(transport + ": connection throws if no valid json parser found.", testUtilities.defaultTestTimeout, function (end, assert, testName) {
             var connections = [testUtilities.createConnection("signalr", end, assert, testName),
-                               testUtilities.createHubConnection(end, assert, testName)],
+            testUtilities.createHubConnection(end, assert, testName)],
                 throwCount = 0,
                 numStarts = 0;
 

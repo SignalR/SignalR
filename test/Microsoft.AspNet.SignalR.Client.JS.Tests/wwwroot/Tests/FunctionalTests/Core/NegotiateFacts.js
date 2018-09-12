@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 QUnit.module("Core - Negotiate Functional Tests");
@@ -31,16 +31,16 @@ QUnit.module("Core - Negotiate Functional Tests");
 
         return savedAjax;
     },
-    testInvalidProtocol = function (connection, transport, end, assert, protocol) {
-        connection.clientProtocol = protocol;
+        testInvalidProtocol = function (connection, transport, end, assert, protocol) {
+            connection.clientProtocol = protocol;
 
-        connection.start({ transport: transport }).done(function () {
-            assert.ok(false, "Transport started successfully.");
-        }).fail(function () {
-            assert.comment("Transport failed to start with incorrect protocol.");
-            end();
-        });
-    };
+            connection.start({ transport: transport }).done(function () {
+                assert.ok(false, "Transport started successfully.");
+            }).fail(function () {
+                assert.comment("Transport failed to start with incorrect protocol.");
+                end();
+            });
+        };
 
     testUtilities.runWithAllTransports(function (transport) {
         QUnit.asyncTimeoutTest(transport + " transport negotiate passes query string variables for hub connections.", testUtilities.defaultTestTimeout, function (end, assert, testName) {
@@ -114,7 +114,7 @@ QUnit.module("Core - Negotiate Functional Tests");
             };
         });
 
-        QUnit.asyncTimeoutTest(transport + ": connection uses client set transportConnectTimeout.", testUtilities.defaultTestTimeout, function (end, assert, testName) {
+        QUnit.skipIf(window._server.azureSignalR).asyncTimeoutTest(transport + ": connection uses client set transportConnectTimeout.", testUtilities.defaultTestTimeout, function (end, assert, testName) {
             var connection = testUtilities.createConnection("signalr", end, assert, testName, false),
                 newTimeout = 4000;
 

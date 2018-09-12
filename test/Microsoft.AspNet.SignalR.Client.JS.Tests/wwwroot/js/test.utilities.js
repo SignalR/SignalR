@@ -1,4 +1,4 @@
-﻿var testUtilities;
+var testUtilities;
 
 // Clear session storage so QUnit does not try to re-run failed tests first.
 window.sessionStorage.clear();
@@ -27,6 +27,14 @@ window.sessionStorage.clear();
     }
 
     testUtilities = {
+        // Define a module that should be skipped on Azure SignalR
+        skipOnAzureModule: function (name) {
+            if (window._server.azureSignalR) {
+                QUnit.module.skip(name);
+            } else {
+                QUnit.module(name);
+            }
+        },
         transports: {
             longPolling: {
                 enabled: true
@@ -78,7 +86,7 @@ window.sessionStorage.clear();
                         executeWithArgs(d, fn);
                     });
                     break;
-                
+
                 default:
                     fn(data);
                     break;

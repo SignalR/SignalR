@@ -1,7 +1,7 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-QUnit.module("Long Polling Functional Tests", testUtilities.transports.longPolling.enabled && !window.document.commandLineTest);
+testUtilities.skipOnAzureModule("Long Polling Functional Tests", testUtilities.transports.longPolling.enabled && !window.document.commandLineTest);
 
 QUnit.asyncTimeoutTest("Stopping then starting LongPolling connection in error handler does not cause multiple connections.", testUtilities.defaultTestTimeout * 4, function (end, assert, testName) {
     var connection = testUtilities.createHubConnection(end, assert, testName, undefined, false),
@@ -54,7 +54,7 @@ QUnit.asyncTimeoutTest("Stopping then starting LongPolling connection in error h
     };
 });
 
-QUnit.module("Long Polling Functional Tests", testUtilities.transports.longPolling.enabled);
+testUtilities.skipOnAzureModule("Long Polling Functional Tests", testUtilities.transports.longPolling.enabled);
 
 QUnit.asyncTimeoutTest("Starting and stopping repeatedly doesn't result in multiple active ajax requests.", testUtilities.defaultTestTimeout * 3, function (end, assert, testName) {
     var connection = testUtilities.createHubConnection(end, assert, testName, undefined, false),
@@ -102,10 +102,10 @@ QUnit.asyncTimeoutTest("Starting and stopping repeatedly doesn't result in multi
     };
 });
 
-QUnit.module("JSONP Functional Tests");
+testUtilities.skipOnAzureModule("JSONP Functional Tests");
 
-if(!window.document.jsonpTestsEnabled) {
-    QUnit.test("JSONP Tests Skipped", function(assert) {
+if (!window.document.jsonpTestsEnabled) {
+    QUnit.test("JSONP Tests Skipped", function (assert) {
         assert.comment("Skipped due to configuration");
     });
 } else {
@@ -115,14 +115,14 @@ if(!window.document.jsonpTestsEnabled) {
 
 
         connection.start(options)
-                .done(function () {
-                    assert.fail("JSONP connection was established successfully");
-                    end();
-                })
-                .fail(function () {
-                    assert.comment("JSONP connection failed");
-                    end();
-                });
+            .done(function () {
+                assert.fail("JSONP connection was established successfully");
+                end();
+            })
+            .fail(function () {
+                assert.comment("JSONP connection failed");
+                end();
+            });
 
 
         // Cleanup
@@ -138,14 +138,14 @@ if(!window.document.jsonpTestsEnabled) {
 
 
         connection.start(options)
-                .done(function () {
-                    assert.fail("JSONP connection was established successfully");
-                    end();
-                })
-                .fail(function () {
-                    assert.comment("JSONP connection failed");
-                    end();
-                });
+            .done(function () {
+                assert.fail("JSONP connection was established successfully");
+                end();
+            })
+            .fail(function () {
+                assert.comment("JSONP connection failed");
+                end();
+            });
 
 
         // Cleanup
@@ -160,14 +160,14 @@ if(!window.document.jsonpTestsEnabled) {
 
 
         connection.start(options)
-                .done(function () {
-                    assert.comment("JSONP connection was established successfully");
-                    end();
-                })
-                .fail(function () {
-                    assert.fail("JSONP connection failed");
-                    end();
-                });
+            .done(function () {
+                assert.comment("JSONP connection was established successfully");
+                end();
+            })
+            .fail(function () {
+                assert.fail("JSONP connection failed");
+                end();
+            });
 
 
         // Cleanup
@@ -181,14 +181,14 @@ if(!window.document.jsonpTestsEnabled) {
             options = { transport: "longPolling", jsonp: true };
 
         connection.start(options)
-                .done(function () {
-                    assert.comment("JSONP connection was established successfully");
-                    end();
-                })
-                .fail(function () {
-                    assert.fail("JSONP connection failed");
-                    end();
-                });
+            .done(function () {
+                assert.comment("JSONP connection was established successfully");
+                end();
+            })
+            .fail(function () {
+                assert.fail("JSONP connection failed");
+                end();
+            });
 
 
         // Cleanup
@@ -203,17 +203,17 @@ if(!window.document.jsonpTestsEnabled) {
             options = { transport: "longPolling", jsonp: true };
 
         connection.start(options)
-                .done(function () {
-                    assert.comment("JSONP connection was established successfully");
+            .done(function () {
+                assert.comment("JSONP connection was established successfully");
 
-                    demo.server.overload().done(function () {
-                        assert.comment("Successfully invoked demo.server.overload()");
-                        end();
-                    }).fail(function () {
-                        assert.fail("Invoking demo.server.overload() failed");
-                        end();
-                    });
+                demo.server.overload().done(function () {
+                    assert.comment("Successfully invoked demo.server.overload()");
+                    end();
+                }).fail(function () {
+                    assert.fail("Invoking demo.server.overload() failed");
+                    end();
                 });
+            });
 
         // Cleanup
         return function () {

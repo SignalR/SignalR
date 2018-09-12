@@ -39,7 +39,8 @@
         noConnectionTransport: "Connection is in an invalid state, there is no transport active.",
         webSocketsInvalidState: "The Web Socket transport is in an invalid state, transitioning into reconnecting.",
         reconnectTimeout: "Couldn't reconnect within the configured timeout of {0} ms, disconnecting.",
-        reconnectWindowTimeout: "The client has been inactive since {0} and it has exceeded the inactivity timeout of {1} ms. Stopping the connection."
+        reconnectWindowTimeout: "The client has been inactive since {0} and it has exceeded the inactivity timeout of {1} ms. Stopping the connection.",
+        jsonpNotSupportedWithAccessToken: "The JSONP protocol does not support connections that require a Bearer token to connect, such as the Azure SignalR Service."
     };
 
     if (typeof ($) !== "function") {
@@ -103,7 +104,7 @@
 
         supportsKeepAlive = function (connection) {
             return connection._.keepAliveData.activated &&
-                   connection.transport.supportsKeepAlive(connection);
+                connection.transport.supportsKeepAlive(connection);
         },
 
         configureStopReconnectingTimeout = function (connection) {
@@ -414,7 +415,7 @@
         // We want to support older servers since the 2.0 change is to support redirection results, which isn't
         // really breaking in the protocol. So if a user updates their client to 2.0 protocol version there's
         // no reason they can't still connect to a 1.5 server.
-        supportedProtocols: [ "1.5", "2.0" ],
+        supportedProtocols: ["1.5", "2.0"],
 
         reconnectDelay: 2000,
 
@@ -468,6 +469,29 @@
                         connection.url = window.location.protocol + connection.url;
                         connection.log("Protocol relative URL detected, normalizing it to '" + connection.url + "'.");
                     }
+
+                    if (connection.isCrossDomain(connection.url)) {
+                        connection.log("Auto detected cross domain url.");
+
+                        if (config.transport === "auto") {
+                            // Cross-domain does not support foreverFrame
+                            config.transport = ["webSockets", "serverSentEvents", "longPolling"];
+                        }
+
+                        if (typeof connection.withCredentials === "undefined") {
+                            connection.withCredentials = true;
+                        }
+
+                        // Determine if jsonp is the only choice for negotiation, ajaxSend and ajaxAbort.
+                        // i.e. if the browser doesn't supports CORS
+                        // If it is, ignore any preference to the contrary, and switch to jsonp.
+                        if (!$.support.cors) {
+                            connection.ajaxDataType = "jsonp";
+                            connection.log("Using jsonp because this browser doesn't support CORS.");
+                        }
+
+                        connection.contentType = signalR._.defaultContentType;
+                    }
                 };
 
             connection.lastError = null;
@@ -514,8 +538,8 @@
             if (connection.state === signalR.connectionState.connecting) {
                 return deferred.promise();
             } else if (changeState(connection,
-                            signalR.connectionState.disconnected,
-                            signalR.connectionState.connecting) === false) {
+                signalR.connectionState.disconnected,
+                signalR.connectionState.connecting) === false) {
                 // We're not connecting so try and transition into connecting.
                 // If we fail to transition then we're either in connected or reconnecting.
 
@@ -525,8 +549,6 @@
 
             configureStopReconnectingTimeout(connection);
 
-            setConnectionUrl(connection, connection.url);
-
             // If jsonp with no/auto transport is specified, then set the transport to long polling
             // since that is the only transport for which jsonp really makes sense.
             // Some developers might actually choose to specify jsonp for same origin requests
@@ -535,33 +557,12 @@
                 config.transport = "longPolling";
             }
 
-            if (this.isCrossDomain(connection.url)) {
-                connection.log("Auto detected cross domain url.");
-
-                if (config.transport === "auto") {
-                    // TODO: Support XDM with foreverFrame
-                    config.transport = ["webSockets", "serverSentEvents", "longPolling"];
-                }
-
-                if (typeof (config.withCredentials) === "undefined") {
-                    config.withCredentials = true;
-                }
-
-                // Determine if jsonp is the only choice for negotiation, ajaxSend and ajaxAbort.
-                // i.e. if the browser doesn't supports CORS
-                // If it is, ignore any preference to the contrary, and switch to jsonp.
-                if (!config.jsonp) {
-                    config.jsonp = !$.support.cors;
-
-                    if (config.jsonp) {
-                        connection.log("Using jsonp because this browser doesn't support CORS.");
-                    }
-                }
-
-                connection.contentType = signalR._.defaultContentType;
-            }
-
             connection.withCredentials = config.withCredentials;
+
+            setConnectionUrl(connection, connection.url);
+
+            // Save the original url so that we can reset it when we stop and restart the connection
+            connection._originalUrl = connection.url;
 
             connection.ajaxDataType = config.jsonp ? "jsonp" : "text";
 
@@ -627,8 +628,8 @@
                         signalR._.configurePingInterval(connection);
 
                         if (!changeState(connection,
-                                            signalR.connectionState.connecting,
-                                            signalR.connectionState.connected)) {
+                            signalR.connectionState.connecting,
+                            signalR.connectionState.connected)) {
                             connection.log("WARNING! The connection was not in the connecting state.");
                         }
 
@@ -730,13 +731,25 @@
                         // Check for a redirect response (which must have a ProtocolVersion of 2.0)
                         if (res.ProtocolVersion === "2.0" && res.RedirectUrl) {
                             if (redirects === MAX_REDIRECTS) {
-                                onFailed(signalR._.error(resources.errorRedirectionExceedsLimit, null /* error */), connection);
+                                onFailed(signalR._.error(resources.errorRedirectionExceedsLimit), connection);
                                 return;
+                            }
+
+                            if (config.transport === "auto") {
+                                // Redirected connections do not support foreverFrame
+                                config.transport = ["webSockets", "serverSentEvents", "longPolling"];
                             }
 
                             connection.log("Received redirect to: " + res.RedirectUrl);
                             connection.accessToken = res.AccessToken;
+
                             setConnectionUrl(connection, res.RedirectUrl);
+
+                            if (connection.ajaxDataType === "jsonp" && connection.accessToken) {
+                                onFailed(signalR._.error(resources.jsonpNotSupportedWithAccessToken), connection);
+                                return;
+                            }
+
                             redirects++;
                             negotiate(connection, callback);
                         } else {
@@ -996,9 +1009,13 @@
 
             // Clear out our message buffer
             connection._.connectingMessageBuffer.clear();
-            
+
             // Clean up this event
             $(connection).unbind(events.onStart);
+
+            // Reset the URL and clear the access token
+            delete connection.accessToken;
+            connection.url = connection._originalUrl;
 
             // Trigger the disconnect event
             changeState(connection, connection.state, signalR.connectionState.disconnected);

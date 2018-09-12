@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 (function ($, window) {
@@ -7,7 +7,7 @@
             url = window.location.href;
         }
         name = name.replace(/[\[\]]/g, "\\$&");
-        var regex = new RegExp("[?&]" + name + "(=([^&#]*)|&|#|$)"),
+        var regex = new RegExp("[?&]" + name + "(=([^&#]*)|&|#|$)", "i"),
             results = regex.exec(url);
         if (!results) return null;
         if (!results[2]) return '';
@@ -17,7 +17,7 @@
     // Disable JSONP tests. When they are active, we have to install a global onerror to suppress global failures
     // because JSONP aborts trigger global failures :(
     window.document.jsonpTestsEnabled = false;
-    if(getParameterByName("jsonpEnabled") === "true") {
+    if (getParameterByName("jsonpEnabled") === "true") {
         window.document.jsonpTestsEnabled = true;
     }
 
@@ -50,7 +50,7 @@
     } else {
         signalRUrl = window.document.testUrl + "signalr/js";
     }
-    
+
     var scriptTag = document.createElement("script");
     scriptTag.src = signalRUrl;
     scriptTag.crossOrigin = "anonymous";
@@ -58,28 +58,30 @@
 
     // Disable auto-start. We need to wait until signalr/js has loaded before we can run the tests
     QUnit.config.autostart = false;
-    window.addEventListener("load", function () {
-        // If the hub proxies have loaded, 'proxies' will be set and we're ready to go
-        if ($.connection.hub.proxies) {
-            console.log("proxies are loaded, starting tests!");
-            QUnit.start();
-        }
-        else {
-            console.log("waiting for proxies to load...");
-            // Start an interval timer
-            var intervalHandle;
-            intervalHandle = setInterval(function () {
-                if ($.connection.hub.proxies) {
-                    console.log("proxies are loaded, starting tests!");
-                    QUnit.start();
-                    clearInterval(intervalHandle);
-                }
-                else {
-                    console.log("waiting for proxies to load...");
-                }
-            }, 500);
-        }
-    });
+    if (getParameterByName("autostart") !== "false") {
+        window.addEventListener("load", function () {
+            // If the hub proxies have loaded, 'proxies' will be set and we're ready to go
+            if ($.connection.hub.proxies) {
+                console.log("proxies are loaded, starting tests!");
+                QUnit.start();
+            }
+            else {
+                console.log("waiting for proxies to load...");
+                // Start an interval timer
+                var intervalHandle;
+                intervalHandle = setInterval(function () {
+                    if ($.connection.hub.proxies) {
+                        console.log("proxies are loaded, starting tests!");
+                        QUnit.start();
+                        clearInterval(intervalHandle);
+                    }
+                    else {
+                        console.log("waiting for proxies to load...");
+                    }
+                }, 500);
+            }
+        });
+    }
 
     function failConnection() {
         $("iframe").each(function () {
@@ -121,17 +123,17 @@
     $.network.mask.subscribe($.signalR.transports.foreverFrame, "started", failConnection);
 
     // In Karma, make sure the test name is in the log message so we can split things up.
-    if(window.__karma__) {
+    if (window.__karma__) {
         ["debug", "log", "error", "warn", "info"].forEach(function (method) {
             var savedVersion = console[method];
-            console[method] = function() {
+            console[method] = function () {
                 var args = Array.prototype.slice.call(arguments);
-                if(QUnit.config.current) {
-                    args[0] = 
+                if (QUnit.config.current) {
+                    args[0] =
                         QUnit.config.current.module.name +
                         "/" +
                         QUnit.config.current.testName +
-                        "||" + 
+                        "||" +
                         args[0]
                 }
                 savedVersion.apply(console, args);
@@ -139,10 +141,10 @@
         });
     }
 
-    QUnit.testStart(function(details) {
+    QUnit.testStart(function (details) {
         console.log("***** STARTING TEST [" + details.module + "/" + details.name + "] *****")
     });
-    QUnit.testDone(function(details) {
+    QUnit.testDone(function (details) {
         console.log("***** FINISHED TEST [" + details.module + "/" + details.name + "] *****")
     });
 })($, window);

@@ -1,7 +1,7 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-QUnit.module("Fallback Functional Tests");
+testUtilities.skipOnAzureModule("Fallback Functional Tests");
 
 QUnit.asyncTimeoutTest("Default transports fall back and are able to send data.", testUtilities.defaultTestTimeout, function (end, assert, testName) {
     var connection = testUtilities.createHubConnection(end, assert, testName),

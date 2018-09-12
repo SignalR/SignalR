@@ -109,6 +109,22 @@
         }
     };
 
+    QUnit.skipIf = function (condition) {
+        if (!condition) {
+            return {
+                test: function () { QUnit.test.apply(this, Array.prototype.slice.call(arguments)) },
+                asyncTest: function () { QUnit.asyncTest.apply(this, Array.prototype.slice.call(arguments)) },
+                asyncTimeoutTest: function () { QUnit.asyncTimeoutTest.apply(this, Array.prototype.slice.call(arguments)) },
+            }
+        } else {
+            return {
+                test: function () { },
+                asyncTest: function () { },
+                asyncTimeoutTest: function () { },
+            }
+        }
+    }
+
     QUnit.skip = {
         test: function () { },
         asyncTest: function () { },
@@ -127,15 +143,5 @@
 
             QUnitTest.apply(this, arguments);
         }
-    }
-
-    // Overwriting the original module to never use the lifecycle parameter and instead take in a run bool
-    QUnit.module = function (name, run) {
-        if (run !== false) {
-            run = true;
-        }
-
-        runModule = run;
-        QUnitModule.call(this, name);
     }
 })($, window);

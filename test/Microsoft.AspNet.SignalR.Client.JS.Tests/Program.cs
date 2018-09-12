@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Diagnostics;
 using System.Threading.Tasks;
 using Microsoft.Owin.Hosting;
 
@@ -11,6 +12,8 @@ namespace Microsoft.AspNet.SignalR.Client.JS.Tests
     {
         public static async Task<int> Main(string[] args)
         {
+            Console.WriteLine($"Process ID: {Process.GetCurrentProcess().Id}");
+
             var startOptions = new StartOptions();
 
             for (var i = 0; i < args.Length; i++)
@@ -27,6 +30,12 @@ namespace Microsoft.AspNet.SignalR.Client.JS.Tests
                             return 1;
                         }
                         startOptions.Urls.Add(uri.ToString());
+                        break;
+                    case "--azure-signalr":
+                        i += 1;
+                        // Hacky settings :)
+                        Startup.AzureSignalRConnectionString = args[i];
+                        Console.WriteLine("Using Azure SignalR");
                         break;
                     default:
                         Console.Error.WriteLine($"Unknown option: {args[i]}");
@@ -59,7 +68,7 @@ namespace Microsoft.AspNet.SignalR.Client.JS.Tests
             {
                 using (WebApp.Start<Startup>(startOptions))
                 {
-                    foreach(var url in startOptions.Urls)
+                    foreach (var url in startOptions.Urls)
                     {
                         Console.WriteLine($"Now listening on {url}");
                     }

@@ -48,6 +48,8 @@ testUtilities.runWithAllTransports(function (transport) {
 
             connection.stop();
 
+            assert.comment("restarting connection");
+
             // Because of #1529
             setTimeout(function () {
                 run("hello2", connection).done(function () {

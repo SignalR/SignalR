@@ -1,7 +1,7 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-QUnit.module("WebSockets Functional Tests", testUtilities.transports.webSockets.enabled);
+testUtilities.skipOnAzureModule("WebSockets Functional Tests", testUtilities.transports.webSockets.enabled);
 
 QUnit.asyncTimeoutTest("WebSocket invalid state sends trigger connection error.", testUtilities.defaultTestTimeout, function (end, assert, testName) {
     var connection = testUtilities.createConnection("signalr", end, assert, testName),

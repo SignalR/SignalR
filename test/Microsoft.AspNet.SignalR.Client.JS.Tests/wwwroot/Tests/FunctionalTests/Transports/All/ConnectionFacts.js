@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 var buildStatusCodeConnection = function (alterWhen, statusCode, end, assert, testName, wrapStart) {
@@ -12,7 +12,7 @@ var buildStatusCodeConnection = function (alterWhen, statusCode, end, assert, te
     return connection;
 };
 
-QUnit.module("Connection Functional Tests");
+testUtilities.skipOnAzureModule("Connection Functional Tests");
 
 testUtilities.runWithAllTransports(function (transport) {
 
@@ -552,7 +552,7 @@ testUtilities.runWithAllTransports(function (transport) {
 
 });
 
-QUnit.module("Connection Functional Tests", !window.document.commandLineTest);
+testUtilities.skipOnAzureModule("Connection Functional Tests", !window.document.commandLineTest);
 
 // Replacing window.onerror will not capture uncaught errors originating from inside an iframe
 testUtilities.runWithTransports(["longPolling", "serverSentEvents", "webSockets"], function (transport) {

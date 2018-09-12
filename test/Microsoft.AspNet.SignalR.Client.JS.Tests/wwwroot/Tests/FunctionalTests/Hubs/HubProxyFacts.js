@@ -1,7 +1,7 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-QUnit.module("Hub Proxy Functional Tests");
+testUtilities.skipOnAzureModule("Hub Proxy Functional Tests");
 
 testUtilities.runWithAllTransports(function (transport) {
     QUnit.asyncTimeoutTest(transport + " transport unable to create invalid hub", testUtilities.defaultTestTimeout, function (end, assert, testName) {
@@ -65,7 +65,7 @@ testUtilities.runWithAllTransports(function (transport) {
             assert.isNotSet(connection._.invocationCallbacks["0"], "Callback list should be empty before invocation.");
 
             var invokePromise = demo.server.overload(100);
-            
+
             assert.isSet(connection._.invocationCallbacks["0"], "Callback should be in the callback list.");
 
             invokePromise.done(function (result) {
@@ -193,7 +193,7 @@ testUtilities.runWithAllTransports(function (transport) {
     });
 });
 
-QUnit.module("Hub Proxy Functional Tests", !window.document.commandLineTest);
+testUtilities.skipOnAzureModule("Hub Proxy Functional Tests", !window.document.commandLineTest);
 
 // Replacing window.onerror will not capture uncaught errors originating from inside an iframe
 testUtilities.runWithTransports(["longPolling", "serverSentEvents", "webSockets"], function (transport) {

@@ -3,13 +3,15 @@
   <PropertyGroup>
     <DefineConstants>$(DefineConstants);NET45</DefineConstants>
     <TargetFrameworks>$(DefaultTestFrameworks)</TargetFrameworks>
+    <AutoGenerateBindingRedirects>True</AutoGenerateBindingRedirects>
   </PropertyGroup>
   <ItemGroup>
+    <PackageReference Include="Microsoft.Azure.SignalR.AspNet" Version="1.0.0-preview1-aspnet-0001" />
     <PackageReference Include="Microsoft.Owin.Cors" Version="$(MicrosoftOwinCorsPackageVersion)" />
     <PackageReference Include="Microsoft.Owin.Hosting" Version="$(MicrosoftOwinHostingPackageVersion)" />
     <PackageReference Include="Microsoft.Owin.Security.Cookies" Version="$(MicrosoftOwinSecurityCookiesPackageVersion)" />
     <PackageReference Include="Microsoft.Owin.Testing" Version="$(MicrosoftOwinTestingPackageVersion)" />
-    <PackageReference Include="Newtonsoft.Json" Version="$(Release_NewtonsoftJsonPackageVersion)" />
+    <PackageReference Include="Newtonsoft.Json" Version="11.0.2" />
     <PackageReference Include="xunit.abstractions" Version="$(XunitAbstractionsPackageVersion)" />
     <PackageReference Include="xunit.assert" Version="$(XunitAssertPackageVersion)" />
     <PackageReference Include="xunit.extensibility.core" Version="$(XunitExtensibilityCorePackageVersion)" />
