@@ -287,34 +287,6 @@ namespace Microsoft.AspNet.SignalR.Tests
         }
 
         [Theory]
-        [InlineData("1337.0", HostType.Memory, TransportType.LongPolling, MessageBusType.Default)]
-        public async Task ConnectionFailsToStartWithInvalidOldProtocol(string protocolVersion, HostType hostType, TransportType transportType, MessageBusType messageBusType)
-        {
-            using (var host = CreateHost(hostType, transportType))
-            {
-                host.Initialize(messageBusType: messageBusType);
-                var connection = CreateConnection(host, "/signalr");
-                Boolean faulted = false;
-
-                connection.Protocol = new Version(protocolVersion);
-
-                using (connection)
-                {
-                    try
-                    {
-                        await connection.Start(host.Transport);
-                    }
-                    catch
-                    {
-                        faulted = true;
-                    }
-
-                    Assert.True(faulted);
-                }
-            }
-        }
-
-        [Theory]
         [InlineData(HostType.Memory, TransportType.LongPolling, MessageBusType.Default)]
         //[InlineData(HostType.Memory, TransportType.ServerSentEvents, MessageBusType.Default)]
         //[InlineData(HostType.Memory, TransportType.ServerSentEvents, MessageBusType.Fake)]
