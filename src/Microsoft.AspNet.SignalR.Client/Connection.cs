@@ -31,6 +31,7 @@ namespace Microsoft.AspNet.SignalR.Client
     {
         internal static readonly TimeSpan DefaultAbortTimeout = TimeSpan.FromSeconds(30);
 
+        private static readonly Version MinimumSupportedVersion = new Version(1, 4);
         private static readonly Version MaximumSupportedVersion = new Version(2, 0);
         private static readonly int MaxRedirects = 100;
 
@@ -188,7 +189,7 @@ namespace Microsoft.AspNet.SignalR.Client
             DeadlockErrorTimeout = TimeSpan.FromSeconds(10);
 
             // Current client protocol
-            Protocol = new Version(1, 4);
+            Protocol = new Version(2, 0);
         }
 
         /// <summary>
@@ -599,7 +600,7 @@ namespace Microsoft.AspNet.SignalR.Client
 
             if (String.IsNullOrEmpty(versionString) ||
                 !TryParseVersion(versionString, out version) ||
-                version < Protocol || version > MaximumSupportedVersion)
+                version < MinimumSupportedVersion || version > MaximumSupportedVersion)
             {
                 throw new InvalidOperationException(String.Format(CultureInfo.CurrentCulture,
                                                                   Resources.Error_IncompatibleProtocolVersion,
