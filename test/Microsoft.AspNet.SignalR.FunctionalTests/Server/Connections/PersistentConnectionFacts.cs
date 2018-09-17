@@ -11,7 +11,10 @@ using Microsoft.AspNet.SignalR.Hosting.Memory;
 using Microsoft.AspNet.SignalR.Infrastructure;
 using Microsoft.AspNet.SignalR.Tests.Common;
 using Microsoft.AspNet.SignalR.Tests.Common.Infrastructure;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using Owin;
+using Xunit;
 
 namespace Microsoft.AspNet.SignalR.Tests
 {
@@ -36,11 +39,11 @@ namespace Microsoft.AspNet.SignalR.Tests
                         config.Resolver.Register(typeof(IProtectedData), () => new EmptyProtectedData());
                     });
 
-                    string id = Guid.NewGuid().ToString("d");
+                    var id = Guid.NewGuid().ToString("d");
 
                     var tasks = new List<Task>();
 
-                    for (int i = 0; i < 1000; i++)
+                    for (var i = 0; i < 1000; i++)
                     {
                         tasks.Add(ProcessRequest(host, "serverSentEvents", id));
                     }
@@ -70,11 +73,11 @@ namespace Microsoft.AspNet.SignalR.Tests
                         config.Resolver.Register(typeof(IProtectedData), () => new EmptyProtectedData());
                     });
 
-                    string id = Guid.NewGuid().ToString("d");
+                    var id = Guid.NewGuid().ToString("d");
 
                     var tasks = new List<Task>();
 
-                    for (int i = 0; i < 1000; i++)
+                    for (var i = 0; i < 1000; i++)
                     {
                         tasks.Add(ProcessRequest(host, "longPolling", id));
                     }
@@ -540,7 +543,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                     // Leave the group
                     connection.SendWithTimeout(new { type = 2, group = "test" });
 
-                    for (int i = 0; i < 10; i++)
+                    for (var i = 0; i < 10; i++)
                     {
                         // Send a message
                         connection.SendWithTimeout(new { type = 3, group = "test", message = "goodbye to group test" });
