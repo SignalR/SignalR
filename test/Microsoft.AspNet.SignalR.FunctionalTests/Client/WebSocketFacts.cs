@@ -68,7 +68,7 @@ namespace Microsoft.AspNet.SignalR.Tests
         [Theory]
         //[InlineData(HostType.IISExpress, TransportType.Websockets, Skip = "Disabled IIS Express tests because they fail to initialize")]
         [InlineData(HostType.HttpListener, TransportType.Websockets)]
-        public void MaxIncomingWebSocketMessageSizeCanBeDisabled(HostType hostType, TransportType transportType)
+        public async Task MaxIncomingWebSocketMessageSizeCanBeDisabled(HostType hostType, TransportType transportType)
         {
             using (var host = CreateHost(hostType, transportType))
             {
@@ -81,10 +81,10 @@ namespace Microsoft.AspNet.SignalR.Tests
                 {
                     var hub = connection.CreateHubProxy("EchoHub");
 
-                    connection.Start(host.Transport).Wait();
+                    await connection.Start(host.Transport).OrTimeout();
 
                     var payload = new string('a', 64 * 1024);
-                    var result = hub.InvokeWithTimeout<string>("EchoReturn", payload);
+                    var result = await hub.Invoke<string>("EchoReturn", payload).OrTimeout();
 
                     Assert.Equal(payload, result);
                 }

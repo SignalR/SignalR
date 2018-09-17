@@ -2,11 +2,10 @@
     <!-- Dummy Project for Packing Satellite Packages -->
     <PropertyGroup>
         <TargetFramework>netstandard2.0</TargetFramework>
-        <BaseOutputPath>$(ProjectRoot)\obj\satellite\$(Locale)\bin</BaseOutputPath>
-        <BaseIntermediatePath>$(ProjectRoot)\obj\satellite\$(Locale)\obj</BaseIntermediatePath>
         <NoBuild>true</NoBuild>
         <IncludeBuildOutput>false</IncludeBuildOutput>
-        <NuspecFile>$(ProjectRoot)\bin\$(Configuration)\$(Locale)\$(PackageId).$(Locale).nuspec</NuspecFile>
+        <NuspecFile>$(ArtifactsBinDir)\$(PackageId)\$(Locale)\$(PackageId).$(Locale).nuspec</NuspecFile>
+        <NuspecBasePath>$(ArtifactsBinDir)\$(PackageId)\</NuspecBasePath>
     </PropertyGroup>
 
     <!-- Set these later, when PackageVersion is available -->
@@ -15,7 +14,8 @@
     </PropertyGroup>
     <Target Name="SetNuspecProperties">
         <PropertyGroup>
-            <NuspecProperties>BaseDirectory=$(ProjectRoot);Locale=$(Locale);PackageVersion=$(PackageVersion);Configuration=$(Configuration);LicenseUrl=$(LicenseUrl)</NuspecProperties>
+            <NuspecProperties>Locale=$(Locale);PackageVersion=$(PackageVersion);Configuration=$(Configuration);LicenseUrl=$(LicenseUrl)</NuspecProperties>
+            <PackageOutputPath>$(PackageOutputPath)\satellite\$(Locale)</PackageOutputPath>
         </PropertyGroup>
     </Target>
 </Project>

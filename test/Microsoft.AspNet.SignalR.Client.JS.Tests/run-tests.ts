@@ -107,9 +107,14 @@ process.on("exit", (code) => {
 
 // Parse arguments
 let configuration = "Debug";
+let serverPath = path.join(__dirname, "..", "..", "artifacts", configuration, "bin", "Microsoft.AspNet.SignalR.Client.JS.Tests", "net461", "Microsoft.AspNet.SignalR.Client.JS.Tests.exe");
 
 for (let i = 2; i < process.argv.length; i += 1) {
     switch (process.argv[i]) {
+        case "--server-path":
+            i += 1;
+            serverPath = process.argv[i];
+            break;
         case "--configuration":
             i += 1;
             configuration = process.argv[i];
@@ -128,10 +133,10 @@ for (let i = 2; i < process.argv.length; i += 1) {
 (async function main(): Promise<number> {
 
     // Check for the executable
-    const exePath = path.resolve(__dirname, "bin", configuration, "net461", "Microsoft.AspNet.SignalR.Client.JS.Tests.exe");
+    const exePath = path.resolve(serverPath);
 
     if (!await fs.exists(exePath)) {
-        console.error("Server executable does not exist. Has it been built yet?");
+        console.error(`Server executable does not exist at '${exePath}'. Has it been built yet?`);
         return 1;
     }
 

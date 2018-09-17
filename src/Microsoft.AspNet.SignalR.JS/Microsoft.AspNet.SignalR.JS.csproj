@@ -4,11 +4,12 @@
     <Title>Microsoft ASP.NET SignalR JavaScript Client</Title>
     <Description>JavaScript client for ASP.NET SignalR.</Description>
 
-    <NuspecFile>$(MSBuildThisFileDirectory)$(MSBuildProjectName).nuspec</NuspecFile>
-    <NuspecProperties>PackageVersion=$(VersionPrefix)-$(VersionSuffix);Configuration=$(Configuration)</NuspecProperties>
-
     <!-- This is just a placeholder project for some JavaScript build tools, but we need a TFM to make MSBuild happy -->
-    <TargetFramework>netstandard1.0</TargetFramework>
+    <TargetFrameworks>netstandard1.0</TargetFrameworks>
+
+    <NuspecFile>$(MSBuildThisFileDirectory)$(MSBuildProjectName).nuspec</NuspecFile>
+    <NuspecProperties>PackageVersion=$(VersionPrefix)-$(VersionSuffix);Configuration=$(Configuration);OutputPath=$(OutputPath)</NuspecProperties>
+    <NuspecBasePath>$(OutputPath)</NuspecBasePath>
 
     <!-- Suppress the DLL from the package -->
     <IncludeBuildOutput>false</IncludeBuildOutput>
@@ -31,13 +32,5 @@
     <Exec Command="powershell -NoProfile -ExecutionPolicy Bypass .\build.ps1 $(OutputPath)" 
           WorkingDirectory="$(ProjectDir)"
           Condition=" '$(OS)' == 'Windows_NT'" />
-
-    <!-- Include in NuGet package -->
-    <ItemGroup>
-      <None Include="@(GeneratedJavaScript)">
-        <Pack>true</Pack>
-        <PackagePath>content/Scripts</PackagePath>
-      </None>
-    </ItemGroup>
   </Target>
 </Project>

@@ -5,10 +5,8 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR.Configuration;
-using Microsoft.AspNet.SignalR.FunctionalTests;
 using Microsoft.AspNet.SignalR.Hosting.Memory;
 using Microsoft.AspNet.SignalR.Infrastructure;
 using Microsoft.AspNet.SignalR.Tests.Common;
@@ -17,8 +15,6 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Owin;
 using Xunit;
-using Xunit.Extensions;
-using Microsoft.AspNet.SignalR.Client;
 
 namespace Microsoft.AspNet.SignalR.Tests
 {
@@ -43,11 +39,11 @@ namespace Microsoft.AspNet.SignalR.Tests
                         config.Resolver.Register(typeof(IProtectedData), () => new EmptyProtectedData());
                     });
 
-                    string id = Guid.NewGuid().ToString("d");
+                    var id = Guid.NewGuid().ToString("d");
 
                     var tasks = new List<Task>();
 
-                    for (int i = 0; i < 1000; i++)
+                    for (var i = 0; i < 1000; i++)
                     {
                         tasks.Add(ProcessRequest(host, "serverSentEvents", id));
                     }
@@ -77,11 +73,11 @@ namespace Microsoft.AspNet.SignalR.Tests
                         config.Resolver.Register(typeof(IProtectedData), () => new EmptyProtectedData());
                     });
 
-                    string id = Guid.NewGuid().ToString("d");
+                    var id = Guid.NewGuid().ToString("d");
 
                     var tasks = new List<Task>();
 
-                    for (int i = 0; i < 1000; i++)
+                    for (var i = 0; i < 1000; i++)
                     {
                         tasks.Add(ProcessRequest(host, "longPolling", id));
                     }
@@ -174,7 +170,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                     }
                 }
             }
-            
+
             [Fact]
             public async Task SendToGroupFromOutsideOfConnection()
             {
@@ -206,7 +202,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                             wh1.Set();
                         };
 
-                        await connectionContext.Groups.Add(connection1.ConnectionId, "Foo");                        
+                        await connectionContext.Groups.Add(connection1.ConnectionId, "Foo");
                         await connectionContext.Groups.Send("Foo", "yay");
                         Assert.True(await wh1.WaitAsync(TimeSpan.FromSeconds(10)));
                     }
@@ -460,15 +456,15 @@ namespace Microsoft.AspNet.SignalR.Tests
 
                     using (var connection = CreateConnection(host, "/my-reconnect"))
                     {
-                        var reconnectingWh = new ManualResetEvent(false);
+                        var reconnectingWh = new TaskCompletionSource<object>();
 
-                        connection.Reconnecting += () => reconnectingWh.Set();
+                        connection.Reconnecting += () => reconnectingWh.TrySetResult(null);
 
                         await connection.Start(host.Transport);
 
                         host.Shutdown();
 
-                        Assert.True(await Task.Run(() => reconnectingWh.WaitOne(TimeSpan.FromSeconds(5))));
+                        await reconnectingWh.Task.OrTimeout();
                     }
                 }
             }
@@ -547,7 +543,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                     // Leave the group
                     connection.SendWithTimeout(new { type = 2, group = "test" });
 
-                    for (int i = 0; i < 10; i++)
+                    for (var i = 0; i < 10; i++)
                     {
                         // Send a message
                         connection.SendWithTimeout(new { type = 3, group = "test", message = "goodbye to group test" });

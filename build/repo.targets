@@ -49,16 +49,34 @@
         <MSBuild 
             Projects="$(RepositoryRoot)build\loc\SatellitePackage.csproj" 
             Targets="Pack"
-            Properties="ProjectRoot=%(SatellitePackage.ProjectRoot);PackageId=%(SatellitePackage.PackageId);Locale=%(SatellitePackage.Locale);PackageOutputPath=$(BuildDir)satellite\%(SatellitePackage.Locale)\;$(_ConstantProperties)" />
+            Properties="PackageId=%(SatellitePackage.PackageId);Locale=%(SatellitePackage.Locale);$(_ConstantProperties)" />
+    </Target>
+        
+    <Target Name="CodeSign" AfterTargets="Package" DependsOnTargets="GetToolsets" Condition=" '$(OS)' == 'Windows_NT' ">
+        <MSBuild Projects="$(MSBuildThisFileDirectory)sign.proj"
+                Targets="Restore;CodeSign"
+                Properties="VisualStudioMSBuildx86Path=$(VisualStudioMSBuildx86Path);Configuration=$(Configuration);ArtifactsDir=$(ArtifactsDir);Localize=$(Localize)" />
     </Target>
 
     
     <PropertyGroup>
-        <RestoreDependsOn>$(RestoreDependsOn);RestoreNpm</RestoreDependsOn>
+        <RestoreDependsOn>$(RestoreDependsOn);RestoreNpm;LocateMicroBuild</RestoreDependsOn>
     </PropertyGroup>
     <Target Name="RestoreNpm" Condition="'$(PreflightRestore)' != 'True'">
         <Message Text="Restoring NPM modules" Importance="high" />
         <Exec Command="npm install --no-optional" WorkingDirectory="$(RepositoryRoot)test/Microsoft.AspNet.SignalR.Client.JS.Tests" />
+    </Target>
+    <Target Name="LocateMicroBuild">
+        <!-- Manually find MicroBuild plugins because MicroBuild.Core doesn't work in dotnet.exe -->
+        <PropertyGroup>
+            <MicroBuildSentinelFile>packages\MicroBuild.Core.Sentinel.1.0.0\sentinel.txt</MicroBuildSentinelFile>
+            <MicroBuildPluginDirectory>$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), $(MicroBuildSentinelFile)))</MicroBuildPluginDirectory>
+            <MicroBuildPluginDirectory Condition="'$(MicroBuildPluginDirectory)' != ''">$(MicroBuildPluginDirectory)\packages</MicroBuildPluginDirectory>
+            <MicroBuildPluginDirectory Condition="'$(MicroBuildOverridePluginDirectory)' != ''">$(MicroBuildOverridePluginDirectory)</MicroBuildPluginDirectory>
+            <SolutionProperties Condition="'$(MicroBuildPluginDirectory)' != ''">$(SolutionProperties);MicroBuildPluginDirectory=$(MicroBuildPluginDirectory)</SolutionProperties>
+        </PropertyGroup>
+        <Message Text="MicroBuild not present. Skipping Localization and Signing." Importance="high" Condition="'$(MicroBuildPluginDirectory)' == ''" />
+        <Message Text="MicroBuild found at '$(MicroBuildPluginDirectory)'." Importance="high" Condition="'$(MicroBuildPluginDirectory)' != ''" />
     </Target>
 
     <PropertyGroup>
@@ -67,6 +85,6 @@
 
     <Target Name="RunBrowserTests">
         <Message Text="Running JavaScript client Browser tests" Importance="high" />
-        <Exec Command="npm test -- --configuration $(Configuration)" WorkingDirectory="$(RepositoryRoot)test/Microsoft.AspNet.SignalR.Client.JS.Tests" IgnoreStandardErrorWarningFormat="true" />
+        <Exec Command="npm test -- --server-path &quot;$(ArtifactsBinDir)\Microsoft.AspNet.SignalR.Client.JS.Tests\net461\Microsoft.AspNet.SignalR.Client.JS.Tests.exe&quot;" WorkingDirectory="$(RepositoryRoot)test/Microsoft.AspNet.SignalR.Client.JS.Tests" IgnoreStandardErrorWarningFormat="true" />
     </Target>
 </Project>

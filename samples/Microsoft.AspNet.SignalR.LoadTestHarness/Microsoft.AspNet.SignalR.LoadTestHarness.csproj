@@ -227,7 +227,7 @@
   </ProjectExtensions>
   <Import Project="..\..\.nuget\NuGet.targets" />
   <Target Name="CopyJs" AfterTargets="Build">
-    <Copy SourceFiles="..\..\src\Microsoft.AspNet.SignalR.JS\bin\$(Configuration)\netstandard1.0\jquery.signalR.js" DestinationFiles="Scripts\jquery.signalR.js" />
-    <Copy SourceFiles="..\..\src\Microsoft.AspNet.SignalR.JS\bin\$(Configuration)\netstandard1.0\jquery.signalR.min.js" DestinationFiles="Scripts\jquery.signalR.min.js" />
+    <Copy SourceFiles="$(ArtifactsBinDir)\Microsoft.AspNet.SignalR.JS\netstandard1.0\jquery.signalR.js" DestinationFiles="Scripts\jquery.signalR.js" />
+    <Copy SourceFiles="$(ArtifactsBinDir)\Microsoft.AspNet.SignalR.JS\netstandard1.0\jquery.signalR.min.js" DestinationFiles="Scripts\jquery.signalR.min.js" />
   </Target>
 </Project>
