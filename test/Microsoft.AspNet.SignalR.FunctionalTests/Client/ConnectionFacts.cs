@@ -38,7 +38,7 @@ namespace Microsoft.AspNet.SignalR.Tests
         //[InlineData(HostType.HttpListener, TransportType.LongPolling, MessageBusType.Default)]
         //[InlineData(HostType.HttpListener, TransportType.ServerSentEvents, MessageBusType.Default)]
         //[InlineData(HostType.HttpListener, TransportType.Websockets, MessageBusType.Default)]
-        public void MarkActiveStopsConnectionIfCalledAfterExtendedPeriod(HostType hostType, TransportType transportType, MessageBusType messageBusType)
+        public async Task MarkActiveStopsConnectionIfCalledAfterExtendedPeriod(HostType hostType, TransportType transportType, MessageBusType messageBusType)
         {
             using (var host = CreateHost(hostType, transportType))
             {
@@ -47,19 +47,19 @@ namespace Microsoft.AspNet.SignalR.Tests
 
                 using (connection)
                 {
-                    var disconnectWh = new ManualResetEventSlim();
+                    var disconnectWh = new TaskCompletionSource<object>();
 
                     connection.Closed += () =>
                     {
-                        disconnectWh.Set();
+                        disconnectWh.TrySetResult(null);
                     };
 
-                    connection.Start(host.Transport).Wait();
+                    await connection.Start(host.Transport).OrTimeout();
 
                     // The MarkActive interval should check the reconnect window. Since this is short it should force the connection to disconnect.
                     ((Client.IConnection)connection).ReconnectWindow = TimeSpan.FromSeconds(1);
 
-                    Assert.True(disconnectWh.Wait(TimeSpan.FromSeconds(15)), "Closed never fired");
+                    await disconnectWh.Task.OrTimeout(TimeSpan.FromSeconds(15));
                 }
             }
         }
@@ -77,7 +77,7 @@ namespace Microsoft.AspNet.SignalR.Tests
         //[InlineData(HostType.IISExpress, TransportType.Websockets, MessageBusType.Default)]
         //[InlineData(HostType.HttpListener, TransportType.LongPolling, MessageBusType.Default)]
         //[InlineData(HostType.HttpListener, TransportType.ServerSentEvents, MessageBusType.Default)]
-        public void ReconnectExceedingReconnectWindowDisconnectsWithFastBeatInterval(HostType hostType, TransportType transportType, MessageBusType messageBusType)
+        public async Task ReconnectExceedingReconnectWindowDisconnectsWithFastBeatInterval(HostType hostType, TransportType transportType, MessageBusType messageBusType)
         {
             // Test cannot be async because if we do host.ShutDown() after an await the connection stops.
 
@@ -88,26 +88,26 @@ namespace Microsoft.AspNet.SignalR.Tests
 
                 using (connection)
                 {
-                    var disconnectWh = new ManualResetEventSlim();
+                    var disconnectWh = new TaskCompletionSource<object>();
 
                     connection.Closed += () =>
                     {
-                        disconnectWh.Set();
+                        disconnectWh.TrySetResult(null);
                     };
 
                     SetReconnectDelay(host.Transport, TimeSpan.FromSeconds(15));
 
-                    connection.Start(host.Transport).Wait();
+                    await connection.Start(host.Transport).OrTimeout();
 
                     // Without this the connection start and reconnect can race with eachother resulting in a deadlock.
-                    Thread.Sleep(TimeSpan.FromSeconds(3));
+                    await Task.Delay(TimeSpan.FromSeconds(3));
 
                     // Set reconnect window to zero so the second we attempt to reconnect we can ensure that the reconnect window is verified.
                     ((Client.IConnection)connection).ReconnectWindow = TimeSpan.FromSeconds(0);
 
                     host.Shutdown();
 
-                    Assert.True(disconnectWh.Wait(TimeSpan.FromSeconds(15)), "Closed never fired");
+                    await disconnectWh.Task.OrTimeout(TimeSpan.FromSeconds(15));
                 }
             }
         }
@@ -125,7 +125,7 @@ namespace Microsoft.AspNet.SignalR.Tests
         //[InlineData(HostType.HttpListener, TransportType.LongPolling, MessageBusType.Default)]
         //[InlineData(HostType.HttpListener, TransportType.ServerSentEvents, MessageBusType.Default)]
         //[InlineData(HostType.HttpListener, TransportType.Websockets, MessageBusType.Default)]
-        public void ReconnectExceedingReconnectWindowDisconnects(HostType hostType, TransportType transportType, MessageBusType messageBusType)
+        public async Task ReconnectExceedingReconnectWindowDisconnects(HostType hostType, TransportType transportType, MessageBusType messageBusType)
         {
             // Test cannot be async because if we do host.ShutDown() after an await the connection stops.
 
@@ -136,29 +136,29 @@ namespace Microsoft.AspNet.SignalR.Tests
 
                 using (connection)
                 {
-                    var reconnectWh = new ManualResetEventSlim();
-                    var disconnectWh = new ManualResetEventSlim();
+                    var reconnectWh = new TaskCompletionSource<object>();
+                    var disconnectWh = new TaskCompletionSource<object>();
 
                     connection.Reconnecting += () =>
                     {
                         ((Client.IConnection)connection).ReconnectWindow = TimeSpan.FromMilliseconds(500);
-                        reconnectWh.Set();
+                        reconnectWh.TrySetResult(null);
                     };
 
                     connection.Closed += () =>
                     {
-                        disconnectWh.Set();
+                        disconnectWh.TrySetResult(null);
                     };
 
-                    connection.Start(host.Transport).Wait();
+                    await connection.Start(host.Transport);
 
                     // Without this the connection start and reconnect can race with eachother resulting in a deadlock.
                     Thread.Sleep(TimeSpan.FromSeconds(3));
 
                     host.Shutdown();
 
-                    Assert.True(reconnectWh.Wait(TimeSpan.FromSeconds(15)), "Reconnect never fired");
-                    Assert.True(disconnectWh.Wait(TimeSpan.FromSeconds(15)), "Closed never fired");
+                    await reconnectWh.Task.OrTimeout(TimeSpan.FromSeconds(15));
+                    await disconnectWh.Task.OrTimeout(TimeSpan.FromSeconds(15));
                 }
             }
         }
@@ -264,15 +264,12 @@ namespace Microsoft.AspNet.SignalR.Tests
 
                 using (var connection = CreateConnection(host, "/echo"))
                 {
-                    var wh = new ManualResetEventSlim();
-                    Exception ex = null;
+                    var wh = new TaskCompletionSource<object>();
 
                     connection.DeadlockErrorTimeout = TimeSpan.FromSeconds(1);
-                    connection.Received += _ => wh.Wait(TimeSpan.FromSeconds(5));
                     connection.Error += error =>
                     {
-                        ex = error;
-                        wh.Set();
+                        wh.TrySetResult(error);
                     };
 
                     await connection.Start();
@@ -280,8 +277,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                     // Ensure the received callback is actually called
                     await connection.Send("");
 
-                    Assert.True(wh.Wait(TimeSpan.FromSeconds(10)));
-                    Assert.IsType<SlowCallbackException>(ex);
+                    Assert.IsType<SlowCallbackException>(await wh.Task.OrTimeout(TimeSpan.FromSeconds(10)));
                 }
             }
         }
@@ -379,7 +375,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                 // Arrange
                 host.Initialize();
                 var connection = CreateConnection(host, "/examine-request");
-                var mre = new AsyncManualResetEvent();
+                var mre = new TaskCompletionSource<object>();
 
                 using (connection)
                 {
@@ -388,7 +384,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                         JObject headers = JsonConvert.DeserializeObject<JObject>(arg);
                         Assert.Equal("test-header", (string)headers["testHeader"]);
 
-                        mre.Set();
+                        mre.TrySetResult(null);
                     };
 
                     await connection.Start(host.Transport);
@@ -397,7 +393,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                     var ignore = connection.Send("message");
 
                     // Assert
-                    Assert.True(await mre.WaitAsync(TimeSpan.FromSeconds(10)));
+                    await mre.Task.OrTimeout(TimeSpan.FromSeconds(10));
                 }
 
             }

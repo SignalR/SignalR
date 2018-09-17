@@ -2,20 +2,15 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR.Client;
-using Microsoft.AspNet.SignalR.Client.Hubs;
 using Microsoft.AspNet.SignalR.Client.Transports;
-using Microsoft.AspNet.SignalR.FunctionalTests;
-using Microsoft.AspNet.SignalR.Infrastructure;
 using Microsoft.AspNet.SignalR.Tests.Common;
 using Microsoft.AspNet.SignalR.Tests.Common.Infrastructure;
 using Microsoft.AspNet.SignalR.Tests.Infrastructure;
 using Moq;
 using Xunit;
-using Xunit.Extensions;
 
 namespace Microsoft.AspNet.SignalR.Tests
 {
@@ -30,28 +25,19 @@ namespace Microsoft.AspNet.SignalR.Tests
         //[InlineData(HostType.HttpListener, TransportType.LongPolling, MessageBusType.Default)]
         public async Task TransportTimesOutIfNoInitMessage(HostType hostType, TransportType transportType, MessageBusType messageBusType)
         {
-            var mre = new AsyncManualResetEvent();
+            var mre = new TaskCompletionSource<object>();
 
             using (var host = CreateHost(hostType, transportType))
             {
                 host.Initialize(transportConnectTimeout: 1, messageBusType: messageBusType);
 
-                HubConnection hubConnection = CreateHubConnection(host, "/no-init");
+                var hubConnection = CreateHubConnection(host, "/no-init");
 
-                IHubProxy proxy = hubConnection.CreateHubProxy("DelayedOnConnectedHub");
+                var proxy = hubConnection.CreateHubProxy("DelayedOnConnectedHub");
 
                 using (hubConnection)
                 {
-                    try
-                    {
-                        await hubConnection.Start(host.Transport);
-                    }
-                    catch
-                    {
-                        mre.Set();
-                    }
-
-                    Assert.True(await mre.WaitAsync(TimeSpan.FromSeconds(10)));
+                    await Assert.ThrowsAsync<HttpClientException>(() => hubConnection.Start(host.Transport)).OrTimeout(TimeSpan.FromSeconds(10));
                 }
             }
         }
@@ -80,8 +66,8 @@ namespace Microsoft.AspNet.SignalR.Tests
             {
                 host.Initialize();
 
-                HubConnection hubConnection = CreateHubConnection(host);
-                IHubProxy proxy = hubConnection.CreateHubProxy("EchoHub");
+                var hubConnection = CreateHubConnection(host);
+                var proxy = hubConnection.CreateHubProxy("EchoHub");
 
                 var transport = new Mock<WebSocketTransport>() { CallBase = true };
                 transport.Setup(m => m.PerformConnect()).Returns(taskReturn());
@@ -97,30 +83,25 @@ namespace Microsoft.AspNet.SignalR.Tests
         [Theory]
         //[InlineData(HostType.IISExpress, TransportType.Auto, MessageBusType.Default, Skip = "Disabled IIS Express tests because they fail to initialize")]
         [InlineData(HostType.HttpListener, TransportType.Auto, MessageBusType.Default)]
-        public void ConnectionFailsStartOnMultipleTransportTimeouts(HostType hostType, TransportType transportType, MessageBusType messageBusType)
+        public async Task ConnectionFailsStartOnMultipleTransportTimeouts(HostType hostType, TransportType transportType, MessageBusType messageBusType)
         {
-            var mre = new ManualResetEventSlim();
+            var mre = new TaskCompletionSource<object>();
 
             using (var host = CreateHost(hostType, transportType))
             {
                 host.Initialize(transportConnectTimeout: 1, messageBusType: messageBusType);
 
-                HubConnection hubConnection = CreateHubConnection(host, "/no-init");
-                IHubProxy proxy = hubConnection.CreateHubProxy("DelayedOnConnectedHub");
+                var hubConnection = CreateHubConnection(host, "/no-init");
+                var proxy = hubConnection.CreateHubProxy("DelayedOnConnectedHub");
 
                 using (hubConnection)
                 {
-                    hubConnection.Start(host.Transport).Catch(ex =>
-                    {
-                        mre.Set();
-                    },
-                    traceSource: null);
+                    await Assert.ThrowsAsync<HttpClientException>(() => hubConnection.Start(host.Transport));
 
                     var transport = hubConnection.Transport;
 
                     // Should take 1-2s per transport timeout
-                    Assert.True(mre.Wait(TimeSpan.FromSeconds(15)));
-                    Assert.True(String.IsNullOrEmpty(transport.Name));
+                    Assert.Null(transport);
                 }
             }
         }
@@ -144,9 +125,9 @@ namespace Microsoft.AspNet.SignalR.Tests
             {
                 host.Initialize(messageBusType: messageBusType);
 
-                HubConnection hubConnection = CreateHubConnection(host);
+                var hubConnection = CreateHubConnection(host);
                 // Does nothing on OnConnected so we shouldn't get any user generated messages
-                IHubProxy proxy = hubConnection.CreateHubProxy("EchoHub");
+                var proxy = hubConnection.CreateHubProxy("EchoHub");
 
                 using (hubConnection)
                 {
@@ -173,7 +154,7 @@ namespace Microsoft.AspNet.SignalR.Tests
         [InlineData(HostType.HttpListener, TransportType.Websockets, MessageBusType.Default)]
         //[InlineData(HostType.HttpListener, TransportType.ServerSentEvents, MessageBusType.Default)]
         //[InlineData(HostType.HttpListener, TransportType.LongPolling, MessageBusType.Default)]
-        public void TransportsQueueIncomingMessagesCorrectly(HostType hostType, TransportType transportType, MessageBusType messageBusType)
+        public async Task TransportsQueueIncomingMessagesCorrectly(HostType hostType, TransportType transportType, MessageBusType messageBusType)
         {
             using (var host = CreateHost(hostType, transportType))
             {
@@ -186,7 +167,7 @@ namespace Microsoft.AspNet.SignalR.Tests
 
                 using (hubConnection)
                 {
-                    var wh = new ManualResetEvent(false);
+                    var wh = new TaskCompletionSource<object>();
 
                     proxy.On<int>("bufferMe", (val) =>
                     {
@@ -200,9 +181,9 @@ namespace Microsoft.AspNet.SignalR.Tests
                     {
                         Assert.Equal(2, bufferMeCalls);
 
-                        wh.Set();
+                        wh.TrySetResult(null);
                     });
-                    
+
                     hubConnection.Start(host.Transport).Wait();
 
                     // The calls should be complete once the start task returns
@@ -210,7 +191,7 @@ namespace Microsoft.AspNet.SignalR.Tests
 
                     proxy.Invoke("Ping").Wait();
 
-                    Assert.True(wh.WaitOne(TimeSpan.FromSeconds(10)));
+                    await wh.Task.OrTimeout(TimeSpan.FromSeconds(10));
                 }
             }
         }
@@ -234,19 +215,19 @@ namespace Microsoft.AspNet.SignalR.Tests
             {
                 host.Initialize(messageBusType: messageBusType);
 
-                HubConnection hubConnection = CreateHubConnection(host);
-                IHubProxy proxy = hubConnection.CreateHubProxy("GroupJoiningHub");
-                int pingCount = 0;
+                var hubConnection = CreateHubConnection(host);
+                var proxy = hubConnection.CreateHubProxy("GroupJoiningHub");
+                var pingCount = 0;
 
                 using (hubConnection)
                 {
-                    var wh = new ManualResetEvent(false);
+                    var wh = new TaskCompletionSource<object>();
 
                     proxy.On("ping", () =>
                     {
                         if (++pingCount == 2)
                         {
-                            wh.Set();
+                            wh.TrySetResult(null);
                         }
 
                         Assert.True(pingCount <= 2);
@@ -256,7 +237,7 @@ namespace Microsoft.AspNet.SignalR.Tests
 
                     var ignore = proxy.Invoke("PingGroup").Catch();
 
-                    Assert.True(wh.WaitOne(TimeSpan.FromSeconds(10)));
+                    await wh.Task.OrTimeout(TimeSpan.FromSeconds(10));
                 }
             }
         }
@@ -280,24 +261,24 @@ namespace Microsoft.AspNet.SignalR.Tests
             {
                 host.Initialize(messageBusType: messageBusType);
 
-                HubConnection hubConnection = CreateHubConnection(host);
-                IHubProxy proxy = hubConnection.CreateHubProxy("ChatHub");
+                var hubConnection = CreateHubConnection(host);
+                var proxy = hubConnection.CreateHubProxy("ChatHub");
 
                 using (hubConnection)
                 {
-                    var wh = new ManualResetEvent(false);
+                    var wh = new TaskCompletionSource<object>();
 
                     proxy.On("addMessage", data =>
                     {
                         Assert.Equal("hello", data);
-                        wh.Set();
+                        wh.TrySetResult(null);
                     });
 
                     await hubConnection.Start(host.Transport);
 
-                    proxy.InvokeWithTimeout("Send", "hello");
+                    await proxy.Invoke("Send", "hello").OrTimeout();
 
-                    Assert.True(wh.WaitOne(TimeSpan.FromSeconds(10)));
+                    await wh.Task.OrTimeout(TimeSpan.FromSeconds(10));
                 }
             }
         }
@@ -315,24 +296,24 @@ namespace Microsoft.AspNet.SignalR.Tests
             {
                 host.Initialize(messageBusType: messageBusType);
 
-                HubConnection hubConnection = CreateHubConnection(host);
+                var hubConnection = CreateHubConnection(host);
 
                 using (hubConnection)
                 {
-                    IHubProxy proxy = hubConnection.CreateHubProxy("chatHub");
-                    var wh = new ManualResetEvent(false);
+                    var proxy = hubConnection.CreateHubProxy("chatHub");
+                    var wh = new TaskCompletionSource<object>();
 
                     proxy.On("addMessage", data =>
                     {
                         Assert.Equal("hello", data);
-                        wh.Set();
+                        wh.TrySetResult(null);
                     });
 
                     await hubConnection.Start(host.Transport);
 
-                    proxy.InvokeWithTimeout("Send", "hello");
+                    await proxy.Invoke("Send", "hello").OrTimeout();
 
-                    Assert.True(wh.WaitOne(TimeSpan.FromSeconds(10)));
+                    await wh.Task.OrTimeout(TimeSpan.FromSeconds(10));
                 }
             }
         }
@@ -350,14 +331,14 @@ namespace Microsoft.AspNet.SignalR.Tests
             {
                 host.Initialize(messageBusType: messageBusType);
 
-                HubConnection hubConnection = CreateHubConnection(host);
+                var hubConnection = CreateHubConnection(host);
 
                 using (hubConnection)
                 {
-                    IHubProxy proxy = hubConnection.CreateHubProxy("MyHub2");
+                    var proxy = hubConnection.CreateHubProxy("MyHub2");
 
                     await hubConnection.Start(host.Transport);
-                    var ex = Assert.Throws<AggregateException>(() => proxy.InvokeWithTimeout("Send", "hello"));
+                    await Assert.ThrowsAnyAsync<Exception>(() => proxy.Invoke("Send", "hello").OrTimeout());
                 }
             }
         }
@@ -375,9 +356,8 @@ namespace Microsoft.AspNet.SignalR.Tests
         {
             using (var host = CreateHost(hostType, transportType))
             {
-                var wh = new AsyncManualResetEvent();
-                Exception thrown = new Exception(),
-                          caught = null;
+                var wh = new TaskCompletionSource<Exception>();
+                var thrown = new Exception();
 
                 host.Initialize(messageBusType: messageBusType);
 
@@ -394,15 +374,13 @@ namespace Microsoft.AspNet.SignalR.Tests
 
                     connection.Error += e =>
                     {
-                        caught = e;
-                        wh.Set();
+                        wh.TrySetResult(e);
                     };
 
                     await connection.Start(host.Transport);
                     var ignore = proxy.Invoke("Send", "").Catch();
 
-                    Assert.True(await wh.WaitAsync(TimeSpan.FromSeconds(5)));
-                    Assert.Equal(thrown, caught);
+                    Assert.Equal(thrown, await wh.Task.OrTimeout());
                 }
             }
         }
@@ -426,11 +404,11 @@ namespace Microsoft.AspNet.SignalR.Tests
             {
                 host.Initialize(messageBusType: messageBusType);
 
-                HubConnection hubConnection = CreateHubConnection(host);
+                var hubConnection = CreateHubConnection(host);
 
                 using (hubConnection)
                 {
-                    IHubProxy proxy = hubConnection.CreateHubProxy("ExamineHeadersHub");
+                    var proxy = hubConnection.CreateHubProxy("ExamineHeadersHub");
                     var tcs = new TaskCompletionSource<object>();
 
                     proxy.On("sendHeader", headers =>
@@ -476,24 +454,24 @@ namespace Microsoft.AspNet.SignalR.Tests
             {
                 // Arrange
                 host.Initialize(messageBusType: messageBusType);
-                HubConnection hubConnection = CreateHubConnection(host);
-                var mre = new AsyncManualResetEvent();
+                var hubConnection = CreateHubConnection(host);
+                var mre = new TaskCompletionSource<object>();
 
                 using (hubConnection)
                 {
-                    IHubProxy proxy = hubConnection.CreateHubProxy("ExamineHeadersHub");
+                    var proxy = hubConnection.CreateHubProxy("ExamineHeadersHub");
 
                     proxy.On("sendHeader", headers =>
                     {
                         Assert.Equal("test-header", (string)headers.testHeader);
-                        mre.Set();
+                        mre.TrySetResult(null);
                     });
 
                     await hubConnection.Start(host.Transport);
 
                     hubConnection.Headers.Add("test-header", "test-header");
                     var ignore = proxy.Invoke("Send").Catch();
-                    Assert.True(await mre.WaitAsync(TimeSpan.FromSeconds(5)));
+                    await mre.Task.OrTimeout();
                 }
             }
         }
@@ -512,28 +490,25 @@ namespace Microsoft.AspNet.SignalR.Tests
             using (var host = CreateHost(hostType, transportType))
             {
                 host.Initialize();
-                HubConnection hubConnection = CreateHubConnection(host);
+                var hubConnection = CreateHubConnection(host);
                 var tcs = new TaskCompletionSource<Exception>();
-                var mre = new AsyncManualResetEvent();
 
                 hubConnection.Error += (ex) =>
                 {
-                    tcs.TrySetResult(ex);
-                    mre.Set();
+                    tcs.TrySetException(ex);
                 };
 
                 using (hubConnection)
                 {
-                    IHubProxy proxy = hubConnection.CreateHubProxy("ClientCallbackHub");
+                    var proxy = hubConnection.CreateHubProxy("ClientCallbackHub");
 
                     proxy.On<string, string>("twoArgsMethod", (arg1, arg2) => { });
 
-                    await hubConnection.Start(host.Transport);
-                    await proxy.Invoke("SendOneArgument");
+                    await hubConnection.Start(host.Transport).OrTimeout();
+                    await proxy.Invoke("SendOneArgument").OrTimeout();
 
-                    Assert.True(await mre.WaitAsync(TimeSpan.FromSeconds(5)));
-                    Assert.IsType(typeof(InvalidOperationException), tcs.Task.Result);
-                    Assert.Equal(((InvalidOperationException)tcs.Task.Result).Message, "A client callback for event twoArgsMethod with 1 argument(s) could not be found");
+                    var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => tcs.Task);
+                    Assert.Equal(ex.Message, "A client callback for event twoArgsMethod with 1 argument(s) could not be found");
                 }
             }
         }
@@ -552,26 +527,26 @@ namespace Microsoft.AspNet.SignalR.Tests
             using (var host = CreateHost(hostType, transportType))
             {
                 host.Initialize();
-                HubConnection hubConnection = CreateHubConnection(host);
-                var mre = new AsyncManualResetEvent();
-                var wh = new AsyncManualResetEvent();
+                var hubConnection = CreateHubConnection(host);
+                var mre = new TaskCompletionSource<object>();
+                var wh = new TaskCompletionSource<object>();
 
                 hubConnection.Error += (ex) =>
                 {
-                    wh.Set();
+                    wh.TrySetResult(null);
                 };
 
                 using (hubConnection)
                 {
-                    IHubProxy proxy = hubConnection.CreateHubProxy("ClientCallbackHub");
+                    var proxy = hubConnection.CreateHubProxy("ClientCallbackHub");
 
-                    proxy.On("twoArgsMethod", () => { mre.Set(); });
+                    proxy.On("twoArgsMethod", () => { mre.TrySetResult(null); });
 
                     await hubConnection.Start(host.Transport);
                     await proxy.Invoke("SendOneArgument");
 
-                    Assert.True(await mre.WaitAsync(TimeSpan.FromSeconds(5)));
-                    Assert.False(await wh.WaitAsync(TimeSpan.FromSeconds(5)));
+                    await mre.Task.OrTimeout();
+                    Assert.False(wh.Task.IsCompleted);
                 }
             }
         }
@@ -590,28 +565,25 @@ namespace Microsoft.AspNet.SignalR.Tests
             using (var host = CreateHost(hostType, transportType))
             {
                 host.Initialize();
-                HubConnection hubConnection = CreateHubConnection(host);
+                var hubConnection = CreateHubConnection(host);
                 var tcs = new TaskCompletionSource<Exception>();
-                var mre = new AsyncManualResetEvent();
 
                 hubConnection.Error += (ex) =>
                 {
                     tcs.TrySetResult(ex);
-                    mre.Set();
                 };
 
                 using (hubConnection)
                 {
-                    IHubProxy proxy = hubConnection.CreateHubProxy("ClientCallbackHub");
+                    var proxy = hubConnection.CreateHubProxy("ClientCallbackHub");
 
                     proxy.On<int>("foo", args => { });
 
                     await hubConnection.Start(host.Transport);
                     await proxy.Invoke("SendArgumentsTypeMismatch");
 
-                    Assert.True(await mre.WaitAsync(TimeSpan.FromSeconds(5)));
-                    Assert.IsType(typeof(InvalidOperationException), tcs.Task.Result);
-                    Assert.Equal(((InvalidOperationException)tcs.Task.Result).Message, "A client callback for event foo with 1 argument(s) was found, however an error occurred because Could not convert string to integer: arg1. Path ''.");
+                    var thrown = Assert.IsType<InvalidOperationException>(await tcs.Task.OrTimeout());
+                    Assert.Equal(thrown.Message, "A client callback for event foo with 1 argument(s) was found, however an error occurred because Could not convert string to integer: arg1. Path ''.");
                 }
             }
         }
@@ -628,20 +600,20 @@ namespace Microsoft.AspNet.SignalR.Tests
             using (var host = CreateHost(hostType, transportType))
             {
                 host.Initialize();
-                HubConnection hubConnection = CreateHubConnection(host);
-                var mre = new AsyncManualResetEvent();
+                var hubConnection = CreateHubConnection(host);
+                var mre = new TaskCompletionSource<object>();
 
                 using (hubConnection)
                 {
-                    IHubProxy proxy = hubConnection.CreateHubProxy("EchoHub");
-                    int callbackInvokedCount = 0;
+                    var proxy = hubConnection.CreateHubProxy("EchoHub");
+                    var callbackInvokedCount = 0;
 
                     proxy.On<string>("echo", message =>
                     {
                         callbackInvokedCount++;
                         if (callbackInvokedCount == 4)
                         {
-                            mre.Set();
+                            mre.TrySetResult(null);
                         }
                         else
                         {
@@ -651,7 +623,7 @@ namespace Microsoft.AspNet.SignalR.Tests
 
                     await hubConnection.Start(host.Transport);
                     var ignore = proxy.Invoke("EchoCallback", "message").Catch();
-                    Assert.True(await mre.WaitAsync(TimeSpan.FromSeconds(10)));
+                    await mre.Task.OrTimeout(TimeSpan.FromSeconds(10));
                 }
             }
         }
@@ -665,7 +637,7 @@ namespace Microsoft.AspNet.SignalR.Tests
             using (var host = CreateHost(hostType, transportType))
             {
                 host.Initialize();
-                HubConnection hubConnection = CreateHubConnection(host);
+                var hubConnection = CreateHubConnection(host);
 
                 using (hubConnection)
                 {
@@ -687,7 +659,7 @@ namespace Microsoft.AspNet.SignalR.Tests
             using (var host = CreateHost(hostType, transportType))
             {
                 host.Initialize();
-                HubConnection hubConnection = CreateHubConnection(host);
+                var hubConnection = CreateHubConnection(host);
 
                 using (hubConnection)
                 {
@@ -721,8 +693,8 @@ namespace Microsoft.AspNet.SignalR.Tests
             using (var host = CreateHost(hostType, transportType))
             {
                 host.Initialize();
-                HubConnection hubConnection = CreateHubConnection(host);
-                ManualResetEventSlim mre = new ManualResetEventSlim();
+                var hubConnection = CreateHubConnection(host);
+                var mre = new TaskCompletionSource<object>();
 
                 using (hubConnection)
                 {
@@ -738,14 +710,14 @@ namespace Microsoft.AspNet.SignalR.Tests
                         }
                         else
                         {
-                            mre.Set();
+                            mre.TrySetResult(null);
                         }
                     });
 
-                    await hubConnection.Start(host.Transport);
-                    await proxy.Invoke("EchoCallback", "message");
+                    await hubConnection.Start(host.Transport).OrTimeout();
+                    await proxy.Invoke("EchoCallback", "message").OrTimeout();
 
-                    Assert.True(mre.Wait(5000));
+                    await mre.Task.OrTimeout();
 
                     hubConnection.Stop();
                 }

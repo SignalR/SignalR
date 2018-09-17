@@ -94,7 +94,7 @@ namespace Microsoft.AspNet.SignalR.Tests
         [Theory]
         //[InlineData(HostType.IISExpress, TransportType.Websockets, Skip = "Disabled IIS Express tests because they fail to initialize")]
         [InlineData(HostType.HttpListener, TransportType.Websockets)]
-        public void MaxIncomingWebSocketMessageSizeCanBeIncreased(HostType hostType, TransportType transportType)
+        public async Task MaxIncomingWebSocketMessageSizeCanBeIncreased(HostType hostType, TransportType transportType)
         {
             using (var host = CreateHost(hostType, transportType))
             {
@@ -107,10 +107,10 @@ namespace Microsoft.AspNet.SignalR.Tests
                 {
                     var hub = connection.CreateHubProxy("EchoHub");
 
-                    connection.Start(host.Transport).Wait();
+                    await connection.Start(host.Transport);
 
                     var payload = new string('a', 64 * 1024);
-                    var result = hub.InvokeWithTimeout<string>("EchoReturn", payload);
+                    var result = await hub.Invoke<string>("EchoReturn", payload).OrTimeout();
 
                     Assert.Equal(payload, result);
                 }
@@ -120,7 +120,7 @@ namespace Microsoft.AspNet.SignalR.Tests
         [Theory]
         //[InlineData(HostType.IISExpress, TransportType.Websockets, Skip = "Disabled IIS Express tests because they fail to initialize")]
         [InlineData(HostType.HttpListener, TransportType.Websockets)]
-        public void MaxIncomingWebSocketMessageSizeCanBeReduced(HostType hostType, TransportType transportType)
+        public async Task MaxIncomingWebSocketMessageSizeCanBeReduced(HostType hostType, TransportType transportType)
         {
             using (var host = CreateHost(hostType, transportType))
             {
@@ -133,12 +133,9 @@ namespace Microsoft.AspNet.SignalR.Tests
                 {
                     var hub = connection.CreateHubProxy("EchoHub");
 
-                    connection.Start(host.Transport).Wait();
+                    await connection.Start(host.Transport);
 
-                    TestUtilities.AssertUnwrappedException<InvalidOperationException>(() =>
-                    {
-                        hub.Invoke<string>("EchoReturn", new string('a', 8 * 1024)).Wait();
-                    });
+                    await Assert.ThrowsAsync<InvalidOperationException>(() => hub.Invoke<string>("EchoReturn", new string('a', 8 * 1024)).OrTimeout());
                 }
             }
         }
@@ -148,8 +145,8 @@ namespace Microsoft.AspNet.SignalR.Tests
         [InlineData(HostType.HttpListener, TransportType.Websockets)]
         public async Task SendingDuringWebSocketReconnectFails(HostType hostType, TransportType transportType)
         {
-            var wh1 = new ManualResetEventSlim();
-            var wh2 = new ManualResetEventSlim();
+            var wh1 = new TaskCompletionSource<object>();
+            var wh2 = new TaskCompletionSource<object>();
 
             using (var host = CreateHost(hostType, transportType))
             {
@@ -170,7 +167,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                         } 
                         catch (InvalidOperationException)
                         {
-                            wh1.Set();
+                            wh1.TrySetResult(null);
                         }
 
                         try
@@ -179,14 +176,14 @@ namespace Microsoft.AspNet.SignalR.Tests
                         }
                         catch (InvalidOperationException)
                         {
-                            wh2.Set();
+                            wh2.TrySetResult(null);
                         }
                     };
 
                     await connection.Start(host.Transport);
 
-                    Assert.True(wh1.Wait(TimeSpan.FromSeconds(10)));
-                    Assert.True(wh2.Wait(TimeSpan.FromSeconds(10)));
+                    await wh1.Task.OrTimeout(TimeSpan.FromSeconds(10));
+                    await wh2.Task.OrTimeout(TimeSpan.FromSeconds(10));
                 }
             }
         }

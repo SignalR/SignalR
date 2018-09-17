@@ -3,12 +3,10 @@
 
 using System;
 using System.Text;
-using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR.Client.Transports.ServerSentEvents;
 using Microsoft.AspNet.SignalR.Hosting.Memory;
 using Microsoft.AspNet.SignalR.Infrastructure;
-using Microsoft.AspNet.SignalR.Tests.Common;
 using Microsoft.AspNet.SignalR.Tests.Common.Infrastructure;
 using Newtonsoft.Json;
 using Owin;
@@ -86,7 +84,7 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Server.Hubs
         }
 
         [Fact]
-        public void ConnectionIdsCantBeUsedAsGroups()
+        public async Task ConnectionIdsCantBeUsedAsGroups()
         {
             using (var host = new MemoryHost())
             {
@@ -118,43 +116,30 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Server.Hubs
 
                     connection.Start(host).Wait();
 
-                    var tcs = new TaskCompletionSource<object>();
                     EventSourceStreamReader reader = null;
 
-                    Task.Run(async () =>
+                    await Task.Run(async () =>
                     {
-                        try
-                        {
-                            string url = GetUrl(protectedData, connection);
-                            var response = await host.Get(url, r => { }, isLongRunning: true);
-                            reader = new EventSourceStreamReader(connection, response.GetStream());
+                        var url = GetUrl(protectedData, connection);
+                        var response = await host.Get(url, r => { }, isLongRunning: true);
+                        reader = new EventSourceStreamReader(connection, response.GetStream());
 
-                            reader.Message = sseEvent =>
+                        reader.Message = sseEvent =>
+                        {
+                            if (sseEvent.EventType == EventType.Data &&
+                                sseEvent.Data != "initialized" &&
+                                sseEvent.Data != "{}")
                             {
-                                if (sseEvent.EventType == EventType.Data &&
-                                    sseEvent.Data != "initialized" &&
-                                    sseEvent.Data != "{}")
-                                {
-                                    spyTcs.TrySetResult(sseEvent.Data);
-                                }
-                            };
+                                spyTcs.TrySetResult(sseEvent.Data);
+                            }
+                        };
 
-                            reader.Start();
-                            tcs.TrySetResult(null);
-                        }
-                        catch (Exception ex)
-                        {
-                            tcs.TrySetException(ex);
-                        }
+                        reader.Start();
                     });
 
-                    tcs.Task.Wait();
+                    await connection.Send("STUFFF").OrTimeout();
 
-                    connection.SendWithTimeout("STUFFF");
-
-                    Assert.True(connectionTcs.Task.Wait(TimeSpan.FromSeconds(5)));
-                    Assert.Equal("STUFFF", connectionTcs.Task.Result);
-                    Assert.False(spyTcs.Task.Wait(TimeSpan.FromSeconds(5)));
+                    Assert.Equal("STUFFF", await connectionTcs.Task.OrTimeout());
                 }
             }
         }
@@ -162,7 +147,7 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Server.Hubs
         private string GetUrl(IProtectedData protectedData, Client.Connection connection)
         {
             // Generate a valid token
-            string groupsToken = protectedData.Protect(JsonConvert.SerializeObject(new[] { connection.ConnectionToken }), Purposes.Groups);
+            var groupsToken = protectedData.Protect(JsonConvert.SerializeObject(new[] { connection.ConnectionToken }), Purposes.Groups);
 
             return GetUrl(protectedData, connection, groupsToken);
         }
@@ -170,7 +155,7 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Server.Hubs
         private string GetUrl(IProtectedData protectedData, Client.Connection connection, string groupsToken)
         {
             // Generate a valid token
-            string connectionToken = protectedData.Protect(Guid.NewGuid().ToString("d") + ':', Purposes.ConnectionToken);
+            var connectionToken = protectedData.Protect(Guid.NewGuid().ToString("d") + ':', Purposes.ConnectionToken);
 
             return GetUrl(protectedData, connection, connectionToken, groupsToken);
         }

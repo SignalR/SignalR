@@ -74,13 +74,8 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Server.Hubs
 
                     await connection.Start(host.TransportFactory());
 
-                    var ex = Assert.Throws<AggregateException>(() => hub.InvokeWithTimeout("Echo", "arbitrary message"));
-                    Assert.Equal(1, ex.InnerExceptions.Count);
-                    Assert.IsType<InvalidOperationException>(ex.InnerExceptions[0]);
-
-                    ex = Assert.Throws<AggregateException>(() => hub.InvokeWithTimeout("Ping"));
-                    Assert.Equal(1, ex.InnerExceptions.Count);
-                    Assert.IsType<InvalidOperationException>(ex.InnerExceptions[0]);
+                    await Assert.ThrowsAsync<InvalidOperationException>(() => hub.Invoke("Echo", "arbitrary message").OrTimeout());
+                    await Assert.ThrowsAsync<InvalidOperationException>(() => hub.Invoke("Ping").OrTimeout());
                 }
             }
         }

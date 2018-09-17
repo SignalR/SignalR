@@ -26,7 +26,7 @@ namespace Microsoft.AspNet.SignalR.Tests
             using (var host = CreateHost(hostType, transportType))
             {
                 // Arrange
-                var mre = new AsyncManualResetEvent(false);
+                var mre = new TaskCompletionSource<object>();
                 host.Initialize(keepAlive: null, messageBusType: messageBusType);
                 var connection = CreateConnection(host, "/my-reconnect");
 
@@ -36,15 +36,12 @@ namespace Microsoft.AspNet.SignalR.Tests
 
                     connection.Reconnected += () =>
                     {
-                        mre.Set();
+                        mre.TrySetResult(null);
                     };
 
                     await connection.Start(host.Transport);
 
-                    Assert.True(await mre.WaitAsync(TimeSpan.FromSeconds(10)));
-
-                    // Clean-up
-                    mre.Dispose();
+                    await mre.Task.OrTimeout(TimeSpan.FromSeconds(10));
                 }
             }
         }

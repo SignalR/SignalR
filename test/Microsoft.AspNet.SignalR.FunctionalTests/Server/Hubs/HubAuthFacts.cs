@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -42,16 +42,16 @@ namespace Microsoft.AspNet.SignalR.Tests
                 using (connection)
                 {
                     var hub = connection.CreateHubProxy("NoAuthHub");
-                    var wh = new ManualResetEvent(false);
+                    var wh = new TaskCompletionSource<object>();
                     hub.On<string, string, object>("joined", (id, time, authInfo) =>
                     {
                         Assert.NotNull(id);
-                        wh.Set();
+                        wh.TrySetResult(null);
                     });
 
                     await connection.Start(host);
 
-                    Assert.True(wh.WaitOne(TimeSpan.FromSeconds(3)));
+                    await wh.Task.OrTimeout();
                 }
             }
         }
@@ -78,16 +78,16 @@ namespace Microsoft.AspNet.SignalR.Tests
                 using (connection)
                 {
                     var hub = connection.CreateHubProxy("NoAuthHub");
-                    var wh = new ManualResetEvent(false);
+                    var wh = new TaskCompletionSource<object>();
                     hub.On<string, string, object>("joined", (id, time, authInfo) =>
                     {
                         Assert.NotNull(id);
-                        wh.Set();
+                        wh.TrySetResult(null);
                     });
 
                     await connection.Start(host);
 
-                    Assert.True(wh.WaitOne(TimeSpan.FromSeconds(3)));
+                    await wh.Task.OrTimeout();
                 }
             }
         }
@@ -114,18 +114,18 @@ namespace Microsoft.AspNet.SignalR.Tests
                 using (connection)
                 {
                     var hub = connection.CreateHubProxy("NoAuthHub");
-                    var wh = new ManualResetEvent(false);
+                    var wh = new TaskCompletionSource<object>();
                     hub.On<string, string>("invoked", (id, time) =>
                     {
                         Assert.NotNull(id);
-                        wh.Set();
+                        wh.TrySetResult(null);
                     });
 
                     await connection.Start(host);
 
-                    hub.InvokeWithTimeout("InvokedFromClient");
+                    await hub.Invoke("InvokedFromClient").OrTimeout();
 
-                    Assert.True(wh.WaitOne(TimeSpan.FromSeconds(3)));
+                    await wh.Task.OrTimeout();
                 }
             }
         }
@@ -151,18 +151,18 @@ namespace Microsoft.AspNet.SignalR.Tests
                 using (connection)
                 {
                     var hub = connection.CreateHubProxy("NoAuthHub");
-                    var wh = new ManualResetEvent(false);
+                    var wh = new TaskCompletionSource<object>();
                     hub.On<string, string>("invoked", (id, time) =>
                     {
                         Assert.NotNull(id);
-                        wh.Set();
+                        wh.TrySetResult(null);
                     });
 
                     await connection.Start(host);
 
-                    hub.InvokeWithTimeout("InvokedFromClient");
+                    await hub.Invoke("InvokedFromClient").OrTimeout();
 
-                    Assert.True(wh.WaitOne(TimeSpan.FromSeconds(3)));
+                    await wh.Task.OrTimeout();
                 }
             }
         }
@@ -190,14 +190,8 @@ namespace Microsoft.AspNet.SignalR.Tests
                 using (connection)
                 {
                     var hub = connection.CreateHubProxy("NoAuthHub");
-                    var wh = new ManualResetEvent(false);
-                    hub.On<string, string, object>("joined", (id, time, authInfo) =>
-                    {
-                        Assert.NotNull(id);
-                        wh.Set();
-                    });
 
-                    Assert.Throws<AggregateException>(() => connection.Start(host).Wait());
+                    Assert.ThrowsAnyAsync<Exception>(() => connection.Start(host).OrTimeout());
                 }
             }
         }
@@ -225,22 +219,22 @@ namespace Microsoft.AspNet.SignalR.Tests
                 using (connection)
                 {
                     var hub = connection.CreateHubProxy("NoAuthHub");
-                    var wh = new ManualResetEvent(false);
+                    var wh = new TaskCompletionSource<object>();
                     hub.On<string, string, object>("joined", (id, time, authInfo) =>
                     {
                         Assert.NotNull(id);
-                        wh.Set();
+                        wh.TrySetResult(null);
                     });
 
                     await connection.Start(host);
 
-                    Assert.True(wh.WaitOne(TimeSpan.FromSeconds(3)));
+                    await wh.Task.OrTimeout();
                 }
             }
         }
 
         [Fact]
-        public void UnauthenticatedUserCannotInvokeMethodsWhenAuthenticationRequiredGlobally()
+        public async Task UnauthenticatedUserCannotInvokeMethodsWhenAuthenticationRequiredGlobally()
         {
             using (var host = new MemoryHost())
             {
@@ -262,14 +256,8 @@ namespace Microsoft.AspNet.SignalR.Tests
                 using (connection)
                 {
                     var hub = connection.CreateHubProxy("NoAuthHub");
-                    var wh = new ManualResetEvent(false);
-                    hub.On<string, string>("invoked", (id, time) =>
-                    {
-                        Assert.NotNull(id);
-                        wh.Set();
-                    });
 
-                    Assert.Throws<AggregateException>(() => connection.Start(host).Wait());
+                    await Assert.ThrowsAnyAsync<Exception>(() => connection.Start(host).OrTimeout());
                 }
             }
         }
@@ -297,24 +285,24 @@ namespace Microsoft.AspNet.SignalR.Tests
                 using (connection)
                 {
                     var hub = connection.CreateHubProxy("NoAuthHub");
-                    var wh = new ManualResetEvent(false);
+                    var wh = new TaskCompletionSource<object>();
                     hub.On<string, string>("invoked", (id, time) =>
                     {
                         Assert.NotNull(id);
-                        wh.Set();
+                        wh.TrySetResult(null);
                     });
 
                     await connection.Start(host);
 
-                    hub.InvokeWithTimeout("InvokedFromClient");
+                    await hub.Invoke("InvokedFromClient").OrTimeout();
 
-                    Assert.True(wh.WaitOne(TimeSpan.FromSeconds(3)));
+                    await wh.Task.OrTimeout();
                 }
             }
         }
 
         [Fact]
-        public void UnauthenticatedUserCannotReceiveHubMessagesFromAuthorizedHubs()
+        public async Task UnauthenticatedUserCannotReceiveHubMessagesFromAuthorizedHubs()
         {
             using (var host = new MemoryHost())
             {
@@ -334,14 +322,8 @@ namespace Microsoft.AspNet.SignalR.Tests
                 using (connection)
                 {
                     var hub = connection.CreateHubProxy("AuthHub");
-                    var wh = new ManualResetEvent(false);
-                    hub.On<string, string, object>("joined", (id, time, authInfo) =>
-                    {
-                        Assert.NotNull(id);
-                        wh.Set();
-                    });
 
-                    Assert.Throws<AggregateException>(() => connection.Start(host).Wait());
+                    await Assert.ThrowsAnyAsync<Exception>(() => connection.Start(host).OrTimeout());
                 }
             }
         }
@@ -444,7 +426,7 @@ namespace Microsoft.AspNet.SignalR.Tests
 
                     await connection.Start(host);
 
-                    hub.InvokeWithTimeout("InvokedFromClient");
+                    await hub.Invoke("InvokedFromClient").OrTimeout();
 
                     Assert.True(wh.WaitOne(TimeSpan.FromSeconds(3)));
                 }
@@ -581,7 +563,7 @@ namespace Microsoft.AspNet.SignalR.Tests
 
                     await connection.Start(host);
 
-                    hub.InvokeWithTimeout("InvokedFromClient");
+                    await hub.Invoke("InvokedFromClient").OrTimeout();
 
                     Assert.True(wh.WaitOne(TimeSpan.FromSeconds(3)));
                 }
@@ -785,7 +767,7 @@ namespace Microsoft.AspNet.SignalR.Tests
 
                     await connection.Start(host);
 
-                    hub.InvokeWithTimeout("InvokedFromClient");
+                    await hub.Invoke("InvokedFromClient").OrTimeout();
 
                     Assert.True(wh.WaitOne(TimeSpan.FromSeconds(3)));
                 }
@@ -923,7 +905,7 @@ namespace Microsoft.AspNet.SignalR.Tests
 
                     await connection.Start(host);
 
-                    hub.InvokeWithTimeout("InvokedFromClient");
+                    await hub.Invoke("InvokedFromClient").OrTimeout();
 
                     Assert.True(wh.WaitOne(TimeSpan.FromSeconds(3)));
                 }
@@ -986,18 +968,10 @@ namespace Microsoft.AspNet.SignalR.Tests
                 using (connection)
                 {
                     var hub = connection.CreateHubProxy("IncomingAuthHub");
-                    var wh = new ManualResetEvent(false);
-                    hub.On<string, string>("invoked", (id, time) =>
-                    {
-                        Assert.NotNull(id);
-                        wh.Set();
-                    });
 
                     await connection.Start(host);
 
-                    Assert.Throws<AggregateException>(() => hub.InvokeWithTimeout("InvokedFromClient"));
-
-                    Assert.False(wh.WaitOne(TimeSpan.FromSeconds(3)));
+                    await Assert.ThrowsAnyAsync<Exception>(() => hub.Invoke("InvokedFromClient").OrTimeout());
                 }
             }
         }
@@ -1067,7 +1041,7 @@ namespace Microsoft.AspNet.SignalR.Tests
 
                     await connection.Start(host);
 
-                    hub.InvokeWithTimeout("InvokedFromClient");
+                    await hub.Invoke("InvokedFromClient").OrTimeout();
 
                     Assert.True(wh.WaitOne(TimeSpan.FromSeconds(3)));
                 }
@@ -1095,18 +1069,10 @@ namespace Microsoft.AspNet.SignalR.Tests
                 using (connection)
                 {
                     var hub = connection.CreateHubProxy("InvokeAuthHub");
-                    var wh = new ManualResetEvent(false);
-                    hub.On<string, string>("invoked", (id, time) =>
-                    {
-                        Assert.NotNull(id);
-                        wh.Set();
-                    });
 
                     await connection.Start(host);
 
-                    Assert.Throws<AggregateException>(() => hub.InvokeWithTimeout("InvokedFromClient"));
-
-                    Assert.False(wh.WaitOne(TimeSpan.FromSeconds(3)));
+                    await Assert.ThrowsAnyAsync<Exception>(() => hub.Invoke("InvokedFromClient").OrTimeout());
                 }
             }
         }
@@ -1132,18 +1098,10 @@ namespace Microsoft.AspNet.SignalR.Tests
                 using (connection)
                 {
                     var hub = connection.CreateHubProxy("InvokeAuthHub");
-                    var wh = new ManualResetEvent(false);
-                    hub.On<string, string>("invoked", (id, time) =>
-                    {
-                        Assert.NotNull(id);
-                        wh.Set();
-                    });
 
                     await connection.Start(host);
 
-                    Assert.Throws<AggregateException>(() => hub.InvokeWithTimeout("InvokedFromClient"));
-
-                    Assert.False(wh.WaitOne(TimeSpan.FromSeconds(3)));
+                    await Assert.ThrowsAnyAsync<Exception>(() => hub.Invoke("InvokedFromClient").OrTimeout());
                 }
             }
         }
@@ -1178,7 +1136,7 @@ namespace Microsoft.AspNet.SignalR.Tests
 
                     await connection.Start(host);
 
-                    hub.InvokeWithTimeout("InvokedFromClient");
+                    await hub.Invoke("InvokedFromClient").OrTimeout();
 
                     Assert.True(wh.WaitOne(TimeSpan.FromSeconds(3)));
                 }

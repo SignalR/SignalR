@@ -1,3 +1,6 @@
+# This sets the build number
+name: $(Date:yyyyMMdd)$(Rev:-rr)
+
 trigger:
 - master
 - release/*

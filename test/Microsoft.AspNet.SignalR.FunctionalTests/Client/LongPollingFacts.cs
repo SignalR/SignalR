@@ -20,7 +20,7 @@ namespace Microsoft.AspNet.SignalR.Tests
     public class LongPollingFacts
     {
         [Fact]
-        public void LongPollingDoesNotPollAfterClose()
+        public async Task LongPollingDoesNotPollAfterClose()
         {
             var disconnectCts = new CancellationTokenSource();
 
@@ -30,7 +30,7 @@ namespace Microsoft.AspNet.SignalR.Tests
             mockConnection.SetupProperty(c => c.MessageId);
 
             var pollTaskCompletionSource = new TaskCompletionSource<IResponse>();
-            var pollingWh = new ManualResetEvent(false);
+            var pollingWh = new TaskCompletionSource<object>();
 
             var mockHttpClient = CreateFakeHttpClient(
                 (url, request, postData, isLongRunning) =>
@@ -42,7 +42,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                     }
                     else if (url.Contains("poll?"))
                     {
-                        pollingWh.Set();
+                        pollingWh.TrySetResult(null);
                         return pollTaskCompletionSource.Task;
                     }
 
@@ -51,12 +51,12 @@ namespace Microsoft.AspNet.SignalR.Tests
 
             var longPollingTransport = new LongPollingTransport(mockHttpClient.Object);
 
-            Assert.True(
+            await
                 longPollingTransport.Start(mockConnection.Object, string.Empty, disconnectCts.Token)
-                    .Wait(TimeSpan.FromSeconds(15)));
+                    .OrTimeout(TimeSpan.FromSeconds(15));
 
             // wait for the first polling request
-            Assert.True(pollingWh.WaitOne(TimeSpan.FromSeconds(2)));
+            await pollingWh.Task.OrTimeout();
 
             // stop polling loop
             disconnectCts.Cancel();
@@ -65,7 +65,7 @@ namespace Microsoft.AspNet.SignalR.Tests
             pollTaskCompletionSource.SetResult(CreateResponse(string.Empty));
 
             // give it some time to make sure a new poll was not setup after verification
-            Thread.Sleep(1000);
+            await Task.Delay(1000);
 
             mockHttpClient
                 .Verify(c => c.Post(It.Is<string>(url => url.StartsWith("poll?")), It.IsAny<Action<Client.Http.IRequest>>(),
