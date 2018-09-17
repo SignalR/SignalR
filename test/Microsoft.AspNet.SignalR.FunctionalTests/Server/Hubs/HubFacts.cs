@@ -1432,14 +1432,14 @@ namespace Microsoft.AspNet.SignalR.Tests
                     await connection.Start(host);
 
                     var user = new User { Name = "tester" };
-                    proxy.InvokeWithTimeout("login", user);
-                    proxy2.InvokeWithTimeout("login", user);
+                    await proxy.Invoke("login", user).OrTimeout();
+                    await proxy2.Invoke("login", user).OrTimeout();
 
                     // Force Reconnect
                     await Task.Delay(TimeSpan.FromSeconds(3));
 
-                    proxy.InvokeWithTimeout("joinRoom", user);
-                    proxy2.InvokeWithTimeout("joinRoom", user);
+                    await proxy.Invoke("joinRoom", user).OrTimeout();
+                    await proxy2.Invoke("joinRoom", user).OrTimeout();
 
                     await Task.Delay(TimeSpan.FromSeconds(3));
 
