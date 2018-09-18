@@ -277,10 +277,15 @@
                 return;
             }
 
-            // We have to handle progress updates first in order to ensure old clients that receive
-            // progress updates enter the return value branch and then no-op when they can't find
-            // the callback in the map (because the minData.I value will not be a valid callback ID)
-            if (typeof (minData.P) !== "undefined") {
+            // Errors take priority over everything
+            if(typeof (minData.E) !== "undefined") {
+                connection.log("Received an error message from the server: " + minData.E);
+                $(connection).triggerHandler(signalR.events.onError, [signalR._.error(minData.E, /* source */ "ServerError")]);
+                connection.stop(/* async */ false, /* notifyServer */ false);
+            } else if (typeof (minData.P) !== "undefined") {
+                // We have to handle progress updates first in order to ensure old clients that receive
+                // progress updates enter the return value branch and then no-op when they can't find
+                // the callback in the map (because the minData.I value will not be a valid callback ID)
                 // Process progress notification
                 dataCallbackId = minData.P.I.toString();
                 callback = connection._.invocationCallbacks[dataCallbackId];

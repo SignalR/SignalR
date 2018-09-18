@@ -9,6 +9,11 @@ window.sessionStorage.clear();
         iosVersion;
 
     function wrapConnectionStart(connection, end, assert) {
+        connection.error(function(err) {
+            assert.ok(false, "An error occurred during the connection: " + err.toString());
+            end();
+        });
+
         var savedConnectionStart = connection.start;
 
         connection.start = function () {

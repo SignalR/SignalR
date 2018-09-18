@@ -117,14 +117,7 @@
                     }
 
                     if (data) {
-                        // data.M is PersistentResponse.Messages
-                        if ($.isEmptyObject(data) || data.M) {
-                            transportLogic.processMessages(connection, data, onSuccess);
-                        } else {
-                            // For websockets we need to trigger onReceived
-                            // for callbacks to outgoing hub calls.
-                            transportLogic.triggerReceived(connection, data);
-                        }
+                        transportLogic.triggerReceived(connection, data);
                     }
                 };
             }

@@ -28,18 +28,6 @@ namespace Microsoft.AspNet.SignalR.Client.JS.Tests
                 SupportsCredentials = true,
             };
 
-            // Work around https://github.com/Azure/azure-signalr/issues/203
-            app.Use((context, next) =>
-            {
-                context.Request.User = new ClaimsPrincipal(
-                    new ClaimsIdentity(
-                        new Claim[]
-                        {
-                            new Claim(ClaimTypes.Name, string.Empty)
-                        }));
-                return next();
-            });
-
             app.UseErrorPage();
 
             // Enable CORS so Karma works

@@ -146,7 +146,7 @@ QUnit.test("Triggers received handler for each message.", function (assert) {
 QUnit.test("Message ID is set on connection ID when set.", function (assert) {
     var connection = testUtilities.createConnection(),
         response = {
-            M: false,
+            M: [{ H: "demo", M: "foo", A: [], S: { value: 555 } }],
             L: 1337,
             G: "foo"
         };

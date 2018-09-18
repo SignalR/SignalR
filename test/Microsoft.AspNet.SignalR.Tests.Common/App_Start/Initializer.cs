@@ -446,34 +446,5 @@ namespace Microsoft.AspNet.SignalR.Tests.Common
                 return next();
             };
         }
-
-        private static Func<IOwinContext, Func<Task>, Task> CreateRedirector(string sourcePath, string targetPath, string protocolVersion = null)
-        {
-            return (context, next) =>
-            {
-                if (context.Request.Path.StartsWithSegments(new PathString(sourcePath)))
-                {
-                    // Send a redirect response
-                    context.Response.StatusCode = 200;
-                    context.Response.ContentType = "application/json";
-                    using (var writer = new JsonTextWriter(new StreamWriter(context.Response.Body)))
-                    {
-                        writer.WriteStartObject();
-                        writer.WritePropertyName("ProtocolVersion");
-
-                        // Redirect results are always protocol 2.0, even if the client requested a different protocol.
-                        writer.WriteValue(protocolVersion ?? "2.0");
-
-                        writer.WritePropertyName("RedirectUrl");
-                        writer.WriteValue($"{context.Request.Scheme}://{context.Request.Host.Value}{targetPath}");
-                        writer.WritePropertyName("AccessToken");
-                        writer.WriteValue("TestToken");
-                        writer.WriteEndObject();
-                    }
-                    return Task.CompletedTask;
-                }
-                return next();
-            };
-        }
     }
 }
