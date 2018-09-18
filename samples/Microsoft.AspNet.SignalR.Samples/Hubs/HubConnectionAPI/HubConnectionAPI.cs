@@ -59,7 +59,7 @@ namespace Microsoft.AspNet.SignalR.Hosting.AspNet.Samples.Hubs.HubConnectionAPI
             Clients.OthersInGroup(groupName).displayMessage("Clients.OthersInGroup: " + message + " from" + Context.ConnectionId);
         }
 
-        public override Task OnConnected()
+        public override Task OnConnectedAsync()
         {
             return Clients.All.displayMessage(Context.ConnectionId + " OnConnected");
         }

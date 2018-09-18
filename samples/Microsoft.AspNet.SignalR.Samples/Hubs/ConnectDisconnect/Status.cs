@@ -16,7 +16,7 @@ namespace Microsoft.AspNet.SignalR.Samples.Hubs.ConnectDisconnect
             return Clients.All.leave(Context.ConnectionId, DateTime.Now.ToString());
         }
 
-        public override Task OnConnected()
+        public override Task OnConnectedAsync()
         {
             return Clients.All.joined(Context.ConnectionId, DateTime.Now.ToString());
         }

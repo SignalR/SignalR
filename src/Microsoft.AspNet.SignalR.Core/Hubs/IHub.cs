@@ -27,7 +27,7 @@ namespace Microsoft.AspNet.SignalR.Hubs
         /// <summary>
         /// Called when a new connection is made to the <see cref="IHub"/>.
         /// </summary>
-        Task OnConnected();
+        Task OnConnectedAsync();
 
         /// <summary>
         /// Called when a connection reconnects to the <see cref="IHub"/> after a timeout.

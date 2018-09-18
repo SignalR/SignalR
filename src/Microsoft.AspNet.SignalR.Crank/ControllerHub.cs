@@ -27,10 +27,10 @@ namespace Microsoft.AspNet.SignalR.Crank
         private static Stopwatch TestTimer;
         private static IHubContext HubContext;
 
-        public override Task OnConnected()
+        public override Task OnConnectedAsync()
         {
             ClientsConnected++;
-            return base.OnConnected();
+            return base.OnConnectedAsync();
         }
 
         public override Task OnDisconnected(bool stopCalled)

@@ -17,7 +17,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Common.Hubs
             return PrintEnvironment("GetItems", Context.Request);
         }
 
-        public override Task OnConnected()
+        public override Task OnConnectedAsync()
         {
             return PrintEnvironment("OnConnected", Context.Request);
         }

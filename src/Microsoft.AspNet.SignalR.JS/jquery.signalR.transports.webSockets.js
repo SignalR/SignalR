@@ -117,7 +117,7 @@
                     }
 
                     if (data) {
-                        transportLogic.triggerReceived(connection, data);
+                        transportLogic.processMessages(connection, data, onSuccess);
                     }
                 };
             }

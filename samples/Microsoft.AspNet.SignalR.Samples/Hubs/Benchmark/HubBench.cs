@@ -35,7 +35,7 @@ namespace Microsoft.AspNet.SignalR.Samples.Hubs.Benchmark
             Clients.All.doneAll(start, clientCalls, Connections, Context.ConnectionId).Wait();
         }
 
-        public override Task OnConnected()
+        public override Task OnConnectedAsync()
         {
             Interlocked.Increment(ref HubBench.Connections);
             return null;

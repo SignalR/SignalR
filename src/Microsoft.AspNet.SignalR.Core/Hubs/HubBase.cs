@@ -55,7 +55,7 @@ namespace Microsoft.AspNet.SignalR.Hubs
         /// Called when the connection connects to this hub instance.
         /// </summary>
         /// <returns>A <see cref="Task"/></returns>
-        public virtual Task OnConnected()
+        public virtual Task OnConnectedAsync()
         {
             return TaskAsyncHelper.Empty;
         }

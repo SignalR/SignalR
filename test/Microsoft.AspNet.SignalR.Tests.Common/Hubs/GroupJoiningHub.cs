@@ -8,16 +8,17 @@ namespace Microsoft.AspNet.SignalR.Tests.Common.Hubs
 {
     public class GroupJoiningHub : Hub
     {
-        public override Task OnConnected()
+        public override async Task OnConnectedAsync()
         {
-            Groups.Add(Context.ConnectionId, Context.ConnectionId).Wait();
-
-            return PingGroup();
+            await Groups.Add(Context.ConnectionId, Context.ConnectionId);
+            // Add this delay to fix the race?
+            //await Task.Delay(1000);
+            await PingGroup();
         }
 
-        public Task PingGroup()
+        public async Task PingGroup()
         {
-            return Clients.Group(Context.ConnectionId).ping();
+            await Clients.Group(Context.ConnectionId).ping();
         }
     }
 }

@@ -16,7 +16,7 @@ namespace Microsoft.AspNet.SignalR.Samples.Hubs.Auth
             return Clients.All.left(Context.ConnectionId, DateTime.Now.ToString());
         }
 
-        public override Task OnConnected()
+        public override Task OnConnectedAsync()
         {
             return Clients.All.joined(Context.ConnectionId, DateTime.Now.ToString(), AuthInfo());
         }

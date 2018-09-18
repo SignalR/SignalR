@@ -8,12 +8,7 @@ window.sessionStorage.clear();
         rfcWebSockets = !!window.WebSocket,
         iosVersion;
 
-    function wrapConnectionStart(connection, end, assert) {
-        connection.error(function(err) {
-            assert.ok(false, "An error occurred during the connection: " + err.toString());
-            end();
-        });
-
+    function wrapConnectionStart(connection, end, assert, ignoreErrors) {
         var savedConnectionStart = connection.start;
 
         connection.start = function () {
@@ -113,44 +108,45 @@ window.sessionStorage.clear();
 
             return defaultTestTimeout;
         })(),
-        createHubConnection: function (end, assert, testName, url, wrapStart) {
+        // A newer version of createHubConnection and createConnection
+        createTestConnection: function(testName, end, assert, options) {
+            options = options || {};
+
             var connection,
                 qs = (testName ? "test=" + window.encodeURIComponent(testName) : "");
 
-            wrapStart = typeof wrapStart === "undefined" ? true : false;
-
-            url = url ? url : 'signalr';
-            if (window.document.testUrl !== 'auto') {
-                url = window.document.testUrl + url;
-            }
-
-            connection = $.hubConnection(url, { useDefaultPath: false, qs: qs })
-            connection.logging = true;
-
-            if (wrapStart) {
-                wrapConnectionStart(connection, end, assert);
-            }
-
-            return connection;
-        },
-        createConnection: function (url, end, assert, testName, wrapStart) {
-            var connection,
-                qs = (testName ? "test=" + window.encodeURIComponent(testName) : "");
-
-            wrapStart = typeof wrapStart === "undefined" ? true : false;
+            options.wrapStart = typeof options.wrapStart === "undefined" ? true : options.wrapStart;
+            options.ignoreErrors = typeof options.ignoreErrors === "undefined" ? false : true;
+            options.url = options.url ? options.url : "signalr";
+            options.hub = typeof options.hub === "undefined" ? true : options.hub;
 
             if (window.document.testUrl !== 'auto' && (!url || !url.startsWith("http"))) {
                 url = window.document.testUrl + url;
             }
 
-            connection = $.connection(url, qs);
+            connection = options.hub ?
+                $.hubConnection(options.url, { useDefaultPath: false, qs: qs }) :
+                $.connection(options.url, qs);
             connection.logging = true;
 
-            if (wrapStart) {
-                wrapConnectionStart(connection, end, assert);
+            if(!options.ignoreErrors) {
+                connection.error(function(err) {
+                    assert.ok(false, "An error occurred during the connection: " + err.toString());
+                    end();
+                });
+            }
+
+            if(options.wrapStart) {
+                wrapConnectionStart(connection, end, assert, options.ignoreErrors);
             }
 
             return connection;
+        },
+        createHubConnection: function (end, assert, testName, url, wrapStart) {
+            return testUtilities.createTestConnection(testName, end, assert, { url: url, wrapStart: wrapStart, hub: true });
+        },
+        createConnection: function (url, end, assert, testName, wrapStart) {
+            return testUtilities.createTestConnection(testName, end, assert, { url: url, wrapStart: wrapStart });
         }
     };
 

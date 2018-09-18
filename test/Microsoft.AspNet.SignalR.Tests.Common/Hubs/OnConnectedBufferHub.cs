@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -9,14 +9,14 @@ namespace Microsoft.AspNet.SignalR.Tests.Common.Hubs
 {
     public class OnConnectedBufferHub : Hub
     {
-        public override Task OnConnected()
+        public override async Task OnConnectedAsync()
         {
-            Clients.Caller.bufferMe(0);
-            Clients.Caller.bufferMe(1);
+            await Clients.Caller.bufferMe(0);
+            await Clients.Caller.bufferMe(1);
 
-            Thread.Sleep(TimeSpan.FromSeconds(2));
+            await Task.Delay(TimeSpan.FromSeconds(5));
 
-            return base.OnConnected();
+            await base.OnConnectedAsync();
         }
 
         public void Ping()

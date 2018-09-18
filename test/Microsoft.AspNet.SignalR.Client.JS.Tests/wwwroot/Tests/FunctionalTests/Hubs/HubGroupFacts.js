@@ -33,7 +33,7 @@ testUtilities.runWithAllTransports(function (transport) {
     });
 
     QUnit.asyncTimeoutTest(transport + ": Hub Rejoin Group after reconnect.", testUtilities.defaultTestTimeout * 2, function (end, assert, testName) {
-        var connection = testUtilities.createHubConnection(end, assert, testName),
+        var connection = testUtilities.createTestConnection(testName, end, assert, { hub: true, ignoreErrors: true }),
             groupChat = connection.createHubProxies().groupChat,
             readyToEnd = false;
 

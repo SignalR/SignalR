@@ -12,7 +12,7 @@ namespace Microsoft.AspNet.SignalR.Hosting.AspNet.Samples.Hubs.Test
     {
         private static TraceSource _trace = GlobalHost.DependencyResolver.Resolve<ITraceManager>()["SignalR.ScaleoutMessageBus"];
 
-        public override Task OnConnected()
+        public override Task OnConnectedAsync()
         {
             _trace.TraceVerbose(typeof(StressHub).Name + ".OnConnected");
             return Clients.All.clientConnected(new NodeEvent(Context.ConnectionId));

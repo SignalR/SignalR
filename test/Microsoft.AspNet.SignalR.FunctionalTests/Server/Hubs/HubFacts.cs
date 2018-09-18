@@ -1510,7 +1510,7 @@ namespace Microsoft.AspNet.SignalR.Tests
         public async Task ReturningNullFromConnectAndDisconnectAccepted()
         {
             var mockHub = new Mock<SomeHub>() { CallBase = true };
-            mockHub.Setup(h => h.OnConnected()).Returns<Task>(null).Verifiable();
+            mockHub.Setup(h => h.OnConnectedAsync()).Returns<Task>(null).Verifiable();
             mockHub.Setup(h => h.OnDisconnected(true)).Returns<Task>(null).Verifiable();
 
             using (var host = new MemoryHost())

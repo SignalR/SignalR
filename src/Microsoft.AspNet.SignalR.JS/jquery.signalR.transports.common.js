@@ -534,30 +534,31 @@
         processMessages: function (connection, minData, onInitialized) {
             var data;
 
+            if(minData && minData.I) {
+                // This is a response to a message the client sent
+                transportLogic.triggerReceived(connection, minData);
+                return;
+            }
+
             // Update the last message time stamp
             transportLogic.markLastMessage(connection);
 
             if (minData) {
-                if(minData.M) {
-                    // This is a message send directly to the client
-                    data = transportLogic.maximizePersistentResponse(minData);
+                // This is a message send directly to the client
+                data = transportLogic.maximizePersistentResponse(minData);
 
-                    transportLogic.updateGroups(connection, data.GroupsToken);
+                transportLogic.updateGroups(connection, data.GroupsToken);
 
-                    if (data.MessageId) {
-                        connection.messageId = data.MessageId;
-                    }
+                if (data.MessageId) {
+                    connection.messageId = data.MessageId;
+                }
 
-                    if (data.Messages) {
-                        $.each(data.Messages, function (index, message) {
-                            transportLogic.triggerReceived(connection, message);
-                        });
+                if (data.Messages) {
+                    $.each(data.Messages, function (index, message) {
+                        transportLogic.triggerReceived(connection, message);
+                    });
 
-                        transportLogic.tryInitialize(connection, data, onInitialized);
-                    }
-                } else {
-                    // This is a response to a message the client sent
-                    transportLogic.triggerReceived(connection, minData);
+                    transportLogic.tryInitialize(connection, data, onInitialized);
                 }
             }
         },

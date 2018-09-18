@@ -196,12 +196,12 @@ namespace Microsoft.AspNet.SignalR.Hubs
         
         /// <summary>
         /// This method is called before the connect components of any modules added later to the <see cref="IHubPipeline"/> are
-        /// executed. If this returns false, then those later-added modules and the <see cref="IHub.OnConnected"/> method will
+        /// executed. If this returns false, then those later-added modules and the <see cref="IHub.OnConnectedAsync"/> method will
         /// not be run.
         /// </summary>
         /// <param name="hub">The hub the client has connected to.</param>
         /// <returns>
-        /// true, if the connect components of later added modules and the <see cref="IHub.OnConnected"/> method should be executed;
+        /// true, if the connect components of later added modules and the <see cref="IHub.OnConnectedAsync"/> method should be executed;
         /// false, otherwise.
         /// </returns>
         protected virtual bool OnBeforeConnect(IHub hub)
@@ -211,7 +211,7 @@ namespace Microsoft.AspNet.SignalR.Hubs
 
         /// <summary>
         /// This method is called after the connect components of any modules added later to the <see cref="IHubPipeline"/> are
-        /// executed and after <see cref="IHub.OnConnected"/> is executed, if at all.
+        /// executed and after <see cref="IHub.OnConnectedAsync"/> is executed, if at all.
         /// </summary>
         /// <param name="hub">The hub the client has connected to.</param>
         protected virtual void OnAfterConnect(IHub hub)

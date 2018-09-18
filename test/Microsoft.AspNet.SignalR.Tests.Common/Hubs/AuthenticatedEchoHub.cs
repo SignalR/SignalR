@@ -12,7 +12,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Common.Hubs
     [Authorize]
     public class AuthenticatedEchoHub : EchoHub
     {
-        public override Task OnConnected()
+        public override Task OnConnectedAsync()
         {
             return Clients.All.SendUserOnConnected(Context.User.Identity.Name);            
         }

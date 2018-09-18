@@ -47,7 +47,7 @@ namespace Microsoft.AspNet.SignalR.StressServer.Hubs
             return base.OnDisconnected(stopCalled);
         }
 
-        public override Task OnConnected()
+        public override Task OnConnectedAsync()
         {
             lock (syncLock)
             {
@@ -56,7 +56,7 @@ namespace Microsoft.AspNet.SignalR.StressServer.Hubs
 
             Groups.Add(Context.ConnectionId, "Groups_" + Context.ConnectionId);
 
-            return base.OnConnected();
+            return base.OnConnectedAsync();
         }
     }
 }

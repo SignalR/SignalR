@@ -235,7 +235,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                 return null;
             }
 
-            public override Task OnConnected()
+            public override Task OnConnectedAsync()
             {
                 _connectWh.Set();
 

@@ -328,7 +328,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                 }
             }
 
-            public System.Threading.Tasks.Task OnConnected()
+            public System.Threading.Tasks.Task OnConnectedAsync()
             {
                 throw new NotImplementedException();
             }
@@ -351,9 +351,9 @@ namespace Microsoft.AspNet.SignalR.Tests
 
         private class HubWithOverrides : Hub
         {
-            public override System.Threading.Tasks.Task OnConnected()
+            public override System.Threading.Tasks.Task OnConnectedAsync()
             {
-                return base.OnConnected();
+                return base.OnConnectedAsync();
             }
 
             public override System.Threading.Tasks.Task OnDisconnected(bool stopCalled)

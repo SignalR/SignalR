@@ -287,7 +287,7 @@ namespace Microsoft.AspNet.SignalR.Hubs
 
         internal static Task Connect(IHub hub)
         {
-            return hub.OnConnected();
+            return hub.OnConnectedAsync();
         }
 
         internal static Task Reconnect(IHub hub)
