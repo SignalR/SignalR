@@ -138,7 +138,14 @@
             // The QUnit test suite utilizes the generic test method for async tests so a name may already
             // be tagged.
             if (arguments[0].indexOf(buildFlag(functionalFlag)) < 0) {
+                if(!window._config.runUnit) {
+                    // Don't define the test at all
+                    return;
+                }
                 arguments[0] += buildFlag(unitFlag);
+            } else if(!window._config.runFunctional) {
+                // Don't define the test at all
+                return;
             }
 
             QUnitTest.apply(this, arguments);

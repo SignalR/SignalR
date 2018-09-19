@@ -114,6 +114,11 @@ window.sessionStorage.clear();
         })(),
         // A newer version of createHubConnection and createConnection
         createTestConnection: function (testName, end, assert, options) {
+            if(typeof testName === "object") {
+                options = testName;
+                testName = undefined;
+            }
+
             options = options || {};
 
             var connection,

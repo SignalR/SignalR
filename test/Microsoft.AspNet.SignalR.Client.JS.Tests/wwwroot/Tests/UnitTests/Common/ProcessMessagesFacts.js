@@ -201,3 +201,36 @@ QUnit.test("Exceptions thrown in onReceived handlers on not captured.", function
         assert.equal(e, hubError);
     }
 });
+
+QUnit.test("Does not trigger global error handler on Invocation error.", function (assert) {
+    var connection = testUtilities.createTestConnection({ hub: true, ignoreErrors: true }),
+        response = {
+            I: 0,
+            E: "Uh oh!"
+        };
+
+    connection.transport = {};
+
+    connection.error(function (data) {
+        assert.ok(false, "Global error handler should not have been triggered");
+    });
+
+    $.signalR.transports._logic.processMessages(connection, response);
+    assert.comment("processMessages completed");
+});
+
+QUnit.test("Triggers error handler on error message.", function (assert) {
+    var connection = testUtilities.createTestConnection({ ignoreErrors: true }),
+        response = {
+            E: "Uh oh!"
+        };
+
+    connection.transport = {};
+
+    connection.error(function (data) {
+        assert.equal(data.message, "Uh oh!", "Error is yielded as global failure.");
+        assert.equal(connection.state, $.signalR.connectionState.disconnected, "Connection should have been disconnected.");
+    });
+
+    $.signalR.transports._logic.processMessages(connection, response);
+});

@@ -299,11 +299,6 @@
                     // Invoke the callback
                     callback.method.call(callback.scope, minData);
                 }
-            } else if(typeof (minData.E) !== "undefined") {
-                // An "E" with no "I" means a global error
-                connection.log("Received an error message from the server: " + minData.E);
-                $(connection).triggerHandler(signalR.events.onError, [signalR._.error(minData.E, /* source */ "ServerError")]);
-                connection.stop(/* async */ false, /* notifyServer */ false);
             } else {
                 data = this._maximizeClientHubInvocation(minData);
 

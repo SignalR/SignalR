@@ -367,7 +367,8 @@
                 Initialized: typeof (minPersistentResponse.S) !== "undefined" ? true : false,
                 ShouldReconnect: typeof (minPersistentResponse.T) !== "undefined" ? true : false,
                 LongPollDelay: minPersistentResponse.L,
-                GroupsToken: minPersistentResponse.G
+                GroupsToken: minPersistentResponse.G,
+                Error: minPersistentResponse.E
             };
         },
 
@@ -534,7 +535,7 @@
         processMessages: function (connection, minData, onInitialized) {
             var data;
 
-            if(minData && minData.I) {
+            if(minData && (typeof minData.I !== "undefined")) {
                 // This is a response to a message the client sent
                 transportLogic.triggerReceived(connection, minData);
                 return;
@@ -546,6 +547,13 @@
             if (minData) {
                 // This is a message send directly to the client
                 data = transportLogic.maximizePersistentResponse(minData);
+
+                if(data.Error) {
+                    // This is a global error, stop the connection.
+                    connection.log("Received an error message from the server: " + minData.E);
+                    $(connection).triggerHandler(signalR.events.onError, [signalR._.error(minData.E, /* source */ "ServerError")]);
+                    connection.stop(/* async */ false, /* notifyServer */ false);
+                }
 
                 transportLogic.updateGroups(connection, data.GroupsToken);
 

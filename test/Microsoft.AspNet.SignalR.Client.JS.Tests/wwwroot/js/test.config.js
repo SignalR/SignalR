@@ -56,6 +56,13 @@
     scriptTag.crossOrigin = "anonymous";
     document.body.appendChild(scriptTag);
 
+    var runUnit = getParameterByName("runUnit") !== "false";
+    var runFunctional = getParameterByName("runFunctional") !== "false";
+    window._config = {
+        runUnit: runUnit,
+        runFunctional: runFunctional
+    };
+
     // Disable auto-start. We need to wait until signalr/js has loaded before we can run the tests
     QUnit.config.autostart = false;
     if (getParameterByName("autostart") !== "false") {
