@@ -1,10 +1,9 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.AspNet.SignalR.Hubs;
 
 namespace Microsoft.AspNet.SignalR.Samples.Hubs.Benchmark
 {
@@ -35,7 +34,7 @@ namespace Microsoft.AspNet.SignalR.Samples.Hubs.Benchmark
             Clients.All.doneAll(start, clientCalls, Connections, Context.ConnectionId).Wait();
         }
 
-        public override Task OnConnectedAsync()
+        public override Task OnConnected()
         {
             Interlocked.Increment(ref HubBench.Connections);
             return null;

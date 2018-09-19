@@ -1,4 +1,4 @@
-﻿' SignalR
+' SignalR
 Imports Microsoft.AspNet.SignalR
 Imports Microsoft.AspNet.SignalR.Hubs
 
@@ -6,13 +6,13 @@ Imports Microsoft.AspNet.SignalR.Hubs
 Public Class VBDemoHub
     Inherits Hub
 
-    Public Overrides Function OnConnectedAsync() As Task
+    Public Overrides Function OnConnected() As Task
         Clients.CallerState.message = "Why?"
 
         ' Invoke a method on the client so the updated state is also sent
         Clients.Caller.anyMethodNameWillDo()
 
-        Return MyBase.OnConnectedAsync()
+        Return MyBase.OnConnected()
     End Function
 
     Public Function ReadStateValue()

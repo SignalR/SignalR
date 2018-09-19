@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -12,7 +12,7 @@ namespace Microsoft.AspNet.SignalR.Hosting.AspNet.Samples.Hubs.Test
     {
         private static TraceSource _trace = GlobalHost.DependencyResolver.Resolve<ITraceManager>()["SignalR.ScaleoutMessageBus"];
 
-        public override Task OnConnectedAsync()
+        public override Task OnConnected()
         {
             _trace.TraceVerbose(typeof(StressHub).Name + ".OnConnected");
             return Clients.All.clientConnected(new NodeEvent(Context.ConnectionId));
@@ -36,7 +36,7 @@ namespace Microsoft.AspNet.SignalR.Hosting.AspNet.Samples.Hubs.Test
         }
 
         public void EchoToGroup(string groupName, int message)
-        {            
+        {
             Clients.Group(groupName).receivedGroup(new NodeEvent(message));
             Clients.Caller.receivedCaller(new NodeEvent(message));
         }

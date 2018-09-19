@@ -1,10 +1,9 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.Threading.Tasks;
 using System.Web;
-using Microsoft.AspNet.SignalR.Hubs;
 
 
 namespace Microsoft.AspNet.SignalR.Samples.Hubs.Auth
@@ -16,7 +15,7 @@ namespace Microsoft.AspNet.SignalR.Samples.Hubs.Auth
             return Clients.All.left(Context.ConnectionId, DateTime.Now.ToString());
         }
 
-        public override Task OnConnectedAsync()
+        public override Task OnConnected()
         {
             return Clients.All.joined(Context.ConnectionId, DateTime.Now.ToString(), AuthInfo());
         }

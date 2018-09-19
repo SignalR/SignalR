@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -328,7 +328,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                 }
             }
 
-            public System.Threading.Tasks.Task OnConnectedAsync()
+            public System.Threading.Tasks.Task OnConnected()
             {
                 throw new NotImplementedException();
             }
@@ -351,9 +351,9 @@ namespace Microsoft.AspNet.SignalR.Tests
 
         private class HubWithOverrides : Hub
         {
-            public override System.Threading.Tasks.Task OnConnectedAsync()
+            public override System.Threading.Tasks.Task OnConnected()
             {
-                return base.OnConnectedAsync();
+                return base.OnConnected();
             }
 
             public override System.Threading.Tasks.Task OnDisconnected(bool stopCalled)

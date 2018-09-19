@@ -7,11 +7,11 @@ namespace Microsoft.AspNet.SignalR.Tests.Common.Hubs
 {
     public class ConnectionDataVerifierHub : Hub
     {
-        public override Task OnConnectedAsync()
+        public override Task OnConnected()
         {
             ValidConnectionData();
 
-            return base.OnConnectedAsync();
+            return base.OnConnected();
         }
 
         public override Task OnReconnected()

@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -15,10 +15,10 @@ namespace Microsoft.AspNet.SignalR.Hosting.AspNet.Samples.Hubs.Test
         private static ConcurrentDictionary<string, string> _groups = new ConcurrentDictionary<string, string>();
         private static TraceSource _trace = GlobalHost.DependencyResolver.Resolve<ITraceManager>()["SignalR.ScaleoutMessageBus"];
 
-        public override Task OnConnectedAsync()
+        public override Task OnConnected()
         {
             _trace.TraceVerbose(typeof(TestHub).Name + ".OnConnected");
-            _connections.TryAdd(Context.ConnectionId, string.Empty);            
+            _connections.TryAdd(Context.ConnectionId, string.Empty);
             Clients.Caller.connectionsAll(new NodeEvent(_connections.Keys));
             Clients.Caller.groupsAll(new NodeEvent(_groups.Keys));
             return Clients.Others.clientConnected(new NodeEvent(Context.ConnectionId));
