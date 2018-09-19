@@ -11,7 +11,7 @@ phases:
   parameters:
     queueName: DotNetCore-Windows
     variables:
-      SignType: test
+      SignType: real
       TeamName: AspNetCore
       OfficialBuild: true
       Localize: true

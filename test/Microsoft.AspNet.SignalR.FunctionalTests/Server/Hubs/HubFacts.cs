@@ -1301,7 +1301,7 @@ namespace Microsoft.AspNet.SignalR.Tests
             }
         }
 
-        [Theory]
+        [Theory(Skip = "Flaky on CI")]
         [InlineData(HostType.Memory, TransportType.ServerSentEvents, MessageBusType.Default)]
         //[InlineData(HostType.Memory, TransportType.ServerSentEvents, MessageBusType.Fake)]
         //[InlineData(HostType.Memory, TransportType.ServerSentEvents, MessageBusType.FakeMultiStream)]
