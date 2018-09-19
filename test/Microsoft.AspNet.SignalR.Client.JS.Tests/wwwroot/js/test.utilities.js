@@ -129,8 +129,8 @@ window.sessionStorage.clear();
             options.url = options.url ? options.url : "signalr";
             options.hub = typeof options.hub === "undefined" ? false : options.hub;
 
-            if (window.document.testUrl !== 'auto' && (!url || !url.startsWith("http"))) {
-                url = window.document.testUrl + url;
+            if (window.document.testUrl !== 'auto' && !options.url.startsWith("http")) {
+                options.url = window.document.testUrl + options.url;
             }
 
             connection = options.hub ?
