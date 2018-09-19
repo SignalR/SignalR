@@ -20,6 +20,9 @@
     <!-- The key doesn't have the private part with it, so we DelaySign when building for CI -->
     <DelaySign Condition="'$(CI)' == 'true' And '$(DelaySign)' == ''">true</DelaySign>
     <SignAssembly Condition="'$(CI)' == 'true' And '$(SignAssembly)' == ''">true</SignAssembly>
+    <!-- Uncomment the below lines when running JS functional tests against Azure SignalR -->
+    <!-- <DelaySign>true</DelaySign>
+    <SignAssembly>true</SignAssembly> -->
     <DefineConstants Condition="'$(SignAssembly)' == 'true' And '$(DefineConstants)' != ''">$(DefineConstants);SIGNED</DefineConstants>
     <DefineConstants Condition="'$(SignAssembly)' == 'true' And '$(DefineConstants)' == ''">SIGNED</DefineConstants>
 
