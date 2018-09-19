@@ -5,6 +5,11 @@
         <TargetFramework>net461</TargetFramework>
     </PropertyGroup>
     <ItemGroup>
+      <Compile Remove="obj\**" />
+      <EmbeddedResource Remove="obj\**" />
+      <None Remove="obj\**" />
+    </ItemGroup>
+    <ItemGroup>
         <PackageReference Include="Microsoft.Owin.Cors" Version="$(MicrosoftOwinCorsPackageVersion)" />
         <PackageReference Include="Microsoft.Owin.SelfHost" Version="$(MicrosoftOwinSelfHostPackageVersion)" />
         <PackageReference Include="Microsoft.Owin.StaticFiles" Version="$(MicrosoftOwinStaticFilesPackageVersion)" />

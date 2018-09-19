@@ -1,10 +1,10 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-QUnit.module("WebSockets Functional Tests", testUtilities.transports.webSockets.enabled);
+testUtilities.module("WebSockets Functional Tests", testUtilities.transports.webSockets.enabled, !window._server.azureSignalR);
 
 QUnit.asyncTimeoutTest("WebSocket invalid state sends trigger connection error.", testUtilities.defaultTestTimeout, function (end, assert, testName) {
-    var connection = testUtilities.createConnection("signalr", end, assert, testName),
+    var connection = testUtilities.createTestConnection(testName, end, assert, { ignoreErrors: true }),
         customErrorText = "Ouch!";
 
     connection.error(function (error) {
@@ -34,7 +34,7 @@ QUnit.asyncTimeoutTest("WebSocket invalid state sends trigger connection error."
 });
 
 QUnit.asyncTimeoutTest("Hub invocations fail when the WebSocket in in an invalid state.", testUtilities.defaultTestTimeout, function (end, assert, testName) {
-    var connection = testUtilities.createHubConnection(end, assert, testName),
+    var connection = testUtilities.createTestConnection(testName, end, assert, { hub: true, ignoreErrors: true }),
         demo = connection.createHubProxies().demo,
         customErrorText = "Ouch!";
 

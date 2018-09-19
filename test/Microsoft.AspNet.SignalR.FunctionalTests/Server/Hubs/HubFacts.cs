@@ -1960,8 +1960,8 @@ namespace Microsoft.AspNet.SignalR.Tests
                     await connection1.Start(host.TransportFactory());
                     await connection2.Start(host.TransportFactory());
 
-                    hub1.On("send", () =>wh1.TrySetResult(null));
-                    hub2.On("send", () =>wh2.TrySetResult(null));
+                    hub1.On("send", () => wh1.TrySetResult(null));
+                    hub2.On("send", () => wh2.TrySetResult(null));
 
                     await hub1.Invoke("JoinGroup", "group1").OrTimeout();
                     await hub2.Invoke("JoinGroup", "group2").OrTimeout();

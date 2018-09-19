@@ -1,7 +1,7 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-QUnit.module("Hub Group Functional Tests");
+testUtilities.module("Hub Group Functional Tests");
 
 testUtilities.runWithAllTransports(function (transport) {
     // Reduce chance of conflicts with multiple simultaneous tests
@@ -33,7 +33,7 @@ testUtilities.runWithAllTransports(function (transport) {
     });
 
     QUnit.asyncTimeoutTest(transport + ": Hub Rejoin Group after reconnect.", testUtilities.defaultTestTimeout * 2, function (end, assert, testName) {
-        var connection = testUtilities.createHubConnection(end, assert, testName),
+        var connection = testUtilities.createTestConnection(testName, end, assert, { hub: true, ignoreErrors: true }),
             groupChat = connection.createHubProxies().groupChat,
             readyToEnd = false;
 

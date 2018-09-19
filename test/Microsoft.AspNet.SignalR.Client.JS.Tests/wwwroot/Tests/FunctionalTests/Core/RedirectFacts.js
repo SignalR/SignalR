@@ -1,10 +1,11 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-QUnit.module("Redirect Functional Tests");
+// Doesn't make sense to run these against Azure SignalR, they are already doing redirect responses!
+testUtilities.module("Redirect Functional Tests", !window._server.azureSignalR);
 
-QUnit.asyncTimeoutTest("Can connect to endpoint which produces a redirect response", testUtilities.defaultTestTimeout, function(end, assert, testName) {
-    var connection = testUtilities.createHubConnection(end, assert, testName, "/redirect"),
+QUnit.asyncTimeoutTest("Can connect to endpoint which produces a redirect response", testUtilities.defaultTestTimeout, function (end, assert, testName) {
+    var connection = testUtilities.createTestConnection(testName, end, assert, { url: "redirect", hub: true }),
         proxies = connection.createHubProxies(),
         hub = proxies.redirectTestHub;
 
@@ -24,8 +25,8 @@ QUnit.asyncTimeoutTest("Can connect to endpoint which produces a redirect respon
     });
 });
 
-QUnit.asyncTimeoutTest("Simulated old client fails when redirect result provided", testUtilities.defaultTestTimeout, function(end, assert, testName) {
-    var connection = testUtilities.createHubConnection(end, assert, testName, "/redirect-loop", false),
+QUnit.asyncTimeoutTest("Simulated old client fails when redirect result provided", testUtilities.defaultTestTimeout, function (end, assert, testName) {
+    var connection = testUtilities.createTestConnection(testName, end, assert, { url: "redirect-loop", ignoreErrors: true, hub: true, wrapStart: false }),
         proxies = connection.createHubProxies(),
         hub = proxies.redirectTestHub;
 
@@ -41,8 +42,8 @@ QUnit.asyncTimeoutTest("Simulated old client fails when redirect result provided
     });
 });
 
-QUnit.asyncTimeoutTest("Limits redirects", testUtilities.defaultTestTimeout, function(end, assert, testName) {
-    var connection = testUtilities.createHubConnection(end, assert, testName, "/redirect-loop", false),
+QUnit.asyncTimeoutTest("Limits redirects", testUtilities.defaultTestTimeout, function (end, assert, testName) {
+    var connection = testUtilities.createTestConnection(testName, end, assert, { url: "redirect-loop", ignoreErrors: true, hub: true, wrapStart: false }),
         proxies = connection.createHubProxies(),
         hub = proxies.redirectTestHub;
 
@@ -55,8 +56,8 @@ QUnit.asyncTimeoutTest("Limits redirects", testUtilities.defaultTestTimeout, fun
     });
 });
 
-QUnit.asyncTimeoutTest("Does not follow redirect url if ProtocolVersion is not 2.0", testUtilities.defaultTestTimeout, function(end, assert, testName) {
-    var connection = testUtilities.createHubConnection(end, assert, testName, "/redirect-old-proto", false),
+QUnit.asyncTimeoutTest("Does not follow redirect url if ProtocolVersion is not 2.0", testUtilities.defaultTestTimeout, function (end, assert, testName) {
+    var connection = testUtilities.createTestConnection(testName, end, assert, { url: "redirect-old-proto", ignoreErrors: true, hub: true, wrapStart: false }),
         proxies = connection.createHubProxies(),
         hub = proxies.redirectTestHub;
 
@@ -71,7 +72,7 @@ QUnit.asyncTimeoutTest("Does not follow redirect url if ProtocolVersion is not 2
 
 testUtilities.runWithAllTransports(function (transport) {
     QUnit.asyncTimeoutTest(transport + " transport forwards access token provided by redirect response", testUtilities.defaultTestTimeout, function (end, assert, testName) {
-        var connection = testUtilities.createHubConnection(end, assert, testName, "/redirect"),
+        var connection = testUtilities.createTestConnection(testName, end, assert, { url: "redirect", hub: true }),
             proxies = connection.createHubProxies(),
             hub = proxies.redirectTestHub;
 
@@ -90,7 +91,7 @@ testUtilities.runWithAllTransports(function (transport) {
             end();
         });
 
-        return function() {
+        return function () {
             connection.stop();
         };
     });

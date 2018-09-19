@@ -1,7 +1,7 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-QUnit.module("Core - Negotiate Functional Tests");
+testUtilities.module("Core - Negotiate Functional Tests");
 
 (function ($, window) {
     var negotiateTester = function (connection, transport, end, assert, testName) {
@@ -31,20 +31,20 @@ QUnit.module("Core - Negotiate Functional Tests");
 
         return savedAjax;
     },
-    testInvalidProtocol = function (connection, transport, end, assert, protocol) {
-        connection.clientProtocol = protocol;
+        testInvalidProtocol = function (connection, transport, end, assert, protocol) {
+            connection.clientProtocol = protocol;
 
-        connection.start({ transport: transport }).done(function () {
-            assert.ok(false, "Transport started successfully.");
-        }).fail(function () {
-            assert.comment("Transport failed to start with incorrect protocol.");
-            end();
-        });
-    };
+            connection.start({ transport: transport }).done(function () {
+                assert.ok(false, "Transport started successfully.");
+            }).fail(function () {
+                assert.comment("Transport failed to start with incorrect protocol.");
+                end();
+            });
+        };
 
     testUtilities.runWithAllTransports(function (transport) {
         QUnit.asyncTimeoutTest(transport + " transport negotiate passes query string variables for hub connections.", testUtilities.defaultTestTimeout, function (end, assert, testName) {
-            var connection = testUtilities.createHubConnection(end, assert, testName),
+            var connection = testUtilities.createTestConnection(testName, end, assert, { ignoreErrors: true }),
                 // Need to ensure that we have a reference to the savedAjax method so we can then reset it in end()
                 savedAjax = negotiateTester(connection, transport, end, assert, testName);
 
@@ -55,7 +55,7 @@ QUnit.module("Core - Negotiate Functional Tests");
         });
 
         QUnit.asyncTimeoutTest(transport + " transport negotiate passes query string variables for persistent connections.", testUtilities.defaultTestTimeout, function (end, assert, testName) {
-            var connection = testUtilities.createConnection("signalr", end, assert, testName),
+            var connection = testUtilities.createTestConnection(testName, end, assert, { ignoreErrors: true }),
                 // Need to ensure that we have a reference to the savedAjax method so we can then reset it in end()
                 savedAjax = negotiateTester(connection, transport, end, assert, testName);
 
@@ -66,7 +66,7 @@ QUnit.module("Core - Negotiate Functional Tests");
         });
 
         QUnit.asyncTimeoutTest(transport + " transport negotiate passes client protocol.", testUtilities.defaultTestTimeout, function (end, assert, testName) {
-            var connection = testUtilities.createConnection("signalr", end, assert, testName),
+            var connection = testUtilities.createTestConnection(testName, end, assert, { ignoreErrors: true }),
                 // Need to ensure that we have a reference to the savedAjax method so we can then reset it in end()
                 savedAjax = $.ajax;
 
@@ -95,7 +95,7 @@ QUnit.module("Core - Negotiate Functional Tests");
         });
 
         QUnit.asyncTimeoutTest(transport + ": connection fails to start with newer protocol.", testUtilities.defaultTestTimeout, function (end, assert, testName) {
-            var connection = testUtilities.createConnection("signalr", end, assert, testName, false);
+            var connection = testUtilities.createTestConnection(testName, end, assert, { wrapStart: false, ignoreErrors: true });
 
             testInvalidProtocol(connection, transport, end, assert, 1337);
 
@@ -105,7 +105,7 @@ QUnit.module("Core - Negotiate Functional Tests");
         });
 
         QUnit.asyncTimeoutTest(transport + ": connection fails to start with older protocol.", testUtilities.defaultTestTimeout, function (end, assert, testName) {
-            var connection = testUtilities.createConnection("signalr", end, assert, testName, false);
+            var connection = testUtilities.createTestConnection(testName, end, assert, { wrapStart: false, ignoreErrors: true });
 
             testInvalidProtocol(connection, transport, end, assert, .1337);
 
@@ -114,8 +114,8 @@ QUnit.module("Core - Negotiate Functional Tests");
             };
         });
 
-        QUnit.asyncTimeoutTest(transport + ": connection uses client set transportConnectTimeout.", testUtilities.defaultTestTimeout, function (end, assert, testName) {
-            var connection = testUtilities.createConnection("signalr", end, assert, testName, false),
+        QUnit.skipIf(window._server.azureSignalR).asyncTimeoutTest(transport + ": connection uses client set transportConnectTimeout.", testUtilities.defaultTestTimeout, function (end, assert, testName) {
+            var connection = testUtilities.createTestConnection(testName, end, assert, { wrapStart: false }),
                 newTimeout = 4000;
 
             assert.equal(connection.transportConnectTimeout, 0, "Transport connect timeout is 0 prior to connection start.");

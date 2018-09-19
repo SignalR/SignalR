@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -193,7 +193,7 @@ namespace Microsoft.AspNet.SignalR.Hubs
         {
             return true;
         }
-        
+
         /// <summary>
         /// This method is called before the connect components of any modules added later to the <see cref="IHubPipeline"/> are
         /// executed. If this returns false, then those later-added modules and the <see cref="IHub.OnConnected"/> method will

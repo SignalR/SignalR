@@ -3,7 +3,6 @@
 
 using System;
 using System.Configuration;
-using System.Data.Odbc;
 using System.Diagnostics;
 using System.IO;
 using System.Security.Claims;
@@ -11,7 +10,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Web;
 using System.Web.Routing;
-using Microsoft.AspNet.SignalR.Configuration;
 using Microsoft.AspNet.SignalR.Infrastructure;
 using Microsoft.AspNet.SignalR.StressServer.Connections;
 using Microsoft.AspNet.SignalR.Tests.Common;
@@ -109,7 +107,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Common
             ConfigureRoutes(app, GlobalHost.DependencyResolver);
         }
 
-        public static void ConfigureRoutes(IAppBuilder app, IDependencyResolver resolver)
+        public static void ConfigureRoutes(IAppBuilder app, IDependencyResolver resolver, string azureSignalRConnectionString = null)
         {
             var hubConfig = new HubConfiguration
             {
@@ -117,6 +115,43 @@ namespace Microsoft.AspNet.SignalR.Tests.Common
                 EnableDetailedErrors = true
             };
 
+            if (!string.IsNullOrEmpty(azureSignalRConnectionString))
+            {
+#if AZURE_SIGNALR
+                // We can't register all the other SignalR endpoints when testing with Azure SignalR.
+                app.Map("/signalr", subapp =>
+                {
+                    subapp.RunAzureSignalR(typeof(Initializer).FullName, azureSignalRConnectionString, hubConfig);
+                });
+#else
+                throw new NotSupportedException("Cannot use Azure SignalR unless the tests were built with the AzureSignalRTests MSBuild property set to 'true'.");
+#endif
+            }
+            else
+            {
+                RegisterSignalREndpoints(app, resolver, hubConfig);
+            }
+
+            // Redirectors:
+
+            // Valid redirect chain
+            // Overload detection doesn't like it when we use this as an extension method
+            // We *intentionally* use paths that do NOT end in a trailing '/' in some places as the client needs to support both
+            AppBuilderUseExtensions.Use(app, CreateRedirector("/redirect", "/redirect2"));
+            AppBuilderUseExtensions.Use(app, CreateRedirector("/redirect2", "/redirect3/"));
+            AppBuilderUseExtensions.Use(app, CreateRedirector("/redirect3", "/redirect4"));
+            AppBuilderUseExtensions.Use(app, CreateRedirector("/redirect4", "/signalr/"));
+
+            // Looping redirect chain
+            AppBuilderUseExtensions.Use(app, CreateRedirector("/redirect-loop", "/redirect-loop2"));
+            AppBuilderUseExtensions.Use(app, CreateRedirector("/redirect-loop2", "/redirect-loop"));
+
+            // Wrong protocol version
+            AppBuilderUseExtensions.Use(app, CreateRedirector("/redirect-old-proto", "/signalr", protocolVersion: "1.5"));
+        }
+
+        private static void RegisterSignalREndpoints(IAppBuilder app, IDependencyResolver resolver, HubConfiguration hubConfig)
+        {
             app.MapSignalR(hubConfig);
 
             app.MapSignalR("/signalr2/test", new HubConfiguration()

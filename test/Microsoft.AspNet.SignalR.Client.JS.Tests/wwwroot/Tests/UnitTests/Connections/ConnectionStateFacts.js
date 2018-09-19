@@ -3,7 +3,7 @@
 
 /// <reference path="..\..\..\SignalR.Client.JS\jquery.signalR.core.js" />
 
-QUnit.module("Connection State Facts");
+testUtilities.module("Connection State Facts");
 
 QUnit.test("Connection state is disconnected in disconnected callback.", function (assert) {
     var connection = testUtilities.createHubConnection(function () { }, assert, "", undefined, false),

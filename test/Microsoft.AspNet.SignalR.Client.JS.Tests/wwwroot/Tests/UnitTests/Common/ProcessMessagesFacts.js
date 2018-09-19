@@ -1,7 +1,7 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-QUnit.module("Transports Common - Process Messages Facts");
+testUtilities.module("Transports Common - Process Messages Facts");
 
 QUnit.test("tryInitialize is triggered on an initialize message.", function (assert) {
     var connection = testUtilities.createConnection(),
@@ -146,7 +146,7 @@ QUnit.test("Triggers received handler for each message.", function (assert) {
 QUnit.test("Message ID is set on connection ID when set.", function (assert) {
     var connection = testUtilities.createConnection(),
         response = {
-            M: false,
+            M: [{ H: "demo", M: "foo", A: [], S: { value: 555 } }],
             L: 1337,
             G: "foo"
         };
@@ -200,4 +200,55 @@ QUnit.test("Exceptions thrown in onReceived handlers on not captured.", function
     } catch (e) {
         assert.equal(e, hubError);
     }
+});
+
+QUnit.test("Does not trigger global error handler on Invocation error.", function (assert) {
+    var connection = testUtilities.createTestConnection({ hub: true, ignoreErrors: true }),
+        response = {
+            I: 0,
+            E: "Uh oh!"
+        };
+
+    connection.transport = {};
+
+    connection.error(function (data) {
+        assert.ok(false, "Global error handler should not have been triggered");
+    });
+
+    $.signalR.transports._logic.processMessages(connection, response);
+    assert.comment("processMessages completed");
+});
+
+QUnit.test("Triggers error handler on error message.", function (assert) {
+    var connection = testUtilities.createTestConnection({ ignoreErrors: true }),
+        response = {
+            E: "Uh oh!"
+        };
+
+    connection.transport = {};
+
+    connection.error(function (data) {
+        assert.equal(data.message, "Uh oh!", "Error is yielded as global failure.");
+        assert.equal(connection.state, $.signalR.connectionState.disconnected, "Connection should have been disconnected.");
+    });
+
+    $.signalR.transports._logic.processMessages(connection, response);
+});
+
+QUnit.test("Triggers received if message is invocation response.", function (assert) {
+    var connection = testUtilities.createTestConnection({ ignoreErrors: true }),
+        response = {
+            I: 42
+        };
+
+    connection.transport = {};
+
+    var received;
+    connection.received(function (data) {
+        received = data;
+    });
+
+    $.signalR.transports._logic.processMessages(connection, response);
+
+    assert.equal(received.I, 42, "Invocation response was dispatched to received handler");
 });

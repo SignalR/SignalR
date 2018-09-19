@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 
@@ -9,11 +9,11 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR.Client.Http;
+using Microsoft.AspNet.SignalR.Client.Infrastructure;
 using Moq;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Xunit;
-using Microsoft.AspNet.SignalR.Client.Infrastructure;
 
 namespace Microsoft.AspNet.SignalR.Client.Transports
 {
@@ -30,7 +30,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
             connection.Setup(c => c.MarkLastMessage());
 
             var transport =
-                new Mock<ClientTransportBase>(Mock.Of<IHttpClient>(), "fakeTransport") {CallBase = true}.Object;
+                new Mock<ClientTransportBase>(Mock.Of<IHttpClient>(), "fakeTransport") { CallBase = true }.Object;
 
             transport.Start(Mock.Of<IConnection>(), string.Empty, CancellationToken.None);
 
@@ -106,18 +106,18 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
         [Fact]
         public void AbortSendsAbortRequest()
         {
-            var connection = new Connection("http://fake.url/") { ConnectionToken = "connectionToken"};
-            
+            var connection = new Connection("http://fake.url/") { ConnectionToken = "connectionToken" };
+
             var mockClient = new Mock<IHttpClient>();
 
             var abortHandler = new TransportAbortHandler(mockClient.Object, "fakeTransport");
 
             mockClient
                 .Setup(m => m.Post(It.IsAny<string>(), It.IsAny<Action<IRequest>>(), It.IsAny<IDictionary<string, string>>(), It.IsAny<bool>()))
-                .Returns(() => 
+                .Returns(() =>
                 {
                     abortHandler.CompleteAbort();
-                    return Task.FromResult((IResponse)null); 
+                    return Task.FromResult((IResponse)null);
                 });
 
             var transport =
@@ -225,8 +225,28 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
             Assert.Equal(
                 Resources.Error_ProcessResponseBeforeStart,
                 Assert.Throws<InvalidOperationException>(
-                    () => new Mock<ClientTransportBase>(Mock.Of<IHttpClient>(), "fakeTransport") {CallBase = true}.Object
+                    () => new Mock<ClientTransportBase>(Mock.Of<IHttpClient>(), "fakeTransport") { CallBase = true }.Object
                             .ProcessResponse(Mock.Of<IConnection>(), "{}")).Message);
+        }
+
+        [Fact]
+        public void DisconnectsWithErrorIfServerSendsGlobalErrorMessage()
+        {
+            var ex = new Exception();
+            var connection = new Mock<IConnection>(MockBehavior.Strict);
+            connection.SetupGet(c => c.JsonSerializer).Returns(JsonSerializer.CreateDefault());
+            connection.Setup(c => c.Disconnect());
+            connection.Setup(c => c.OnError(It.Is<HubException>(h => h.Message.Equals(string.Format(Resources.Error_ErrorFromServer, "Uh oh!")))));
+            connection.Setup(c => c.MarkLastMessage());
+
+            var transport =
+                new Mock<ClientTransportBase>(Mock.Of<IHttpClient>(), "fakeTransport") { CallBase = true }.Object;
+
+            transport.Start(Mock.Of<IConnection>(), string.Empty, CancellationToken.None);
+
+            transport.ProcessResponse(connection.Object, "{ \"E\": \"Uh oh!\" }");
+
+            connection.VerifyAll();
         }
     }
 }

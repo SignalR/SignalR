@@ -1,9 +1,8 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Microsoft.AspNet.SignalR.Hubs;
 
 namespace Microsoft.AspNet.SignalR.StressServer.Hubs
 {
@@ -28,7 +27,7 @@ namespace Microsoft.AspNet.SignalR.StressServer.Hubs
     public class OnConnectedOnDisconnectedHub : Hub
     {
         private static List<string> theList = new List<string>();
-        private static object syncLock = new object();
+        private static readonly object syncLock = new object();
 
         public string Echo(string str)
         {

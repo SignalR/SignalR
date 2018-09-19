@@ -6,6 +6,7 @@
     <jQueryPackageVersion>1.6.4</jQueryPackageVersion>
     <MicroBuildCorePackageVersion>0.2.0</MicroBuildCorePackageVersion>
     <RoslynToolsSignToolPackageVersion>1.0.0-beta2-63206-01</RoslynToolsSignToolPackageVersion>
+    <MicrosoftAzureSignalRAspNetPackageVersion>1.0.0-preview1-aspnet-0002</MicrosoftAzureSignalRAspNetPackageVersion>
     <MicrosoftNETTestSdkPackageVersion>15.8.0</MicrosoftNETTestSdkPackageVersion>
     <MicrosoftOwinCorsPackageVersion>2.1.0</MicrosoftOwinCorsPackageVersion>
     <MicrosoftOwinDiagnosticsPackageVersion>2.1.0</MicrosoftOwinDiagnosticsPackageVersion>
@@ -35,10 +36,8 @@
   </PropertyGroup>
 
   <PropertyGroup Label="Package Versions: Pinned">
-    <!-- The released packages currently use 6.0.4 of JSON.NET, except for the netstandard build which uses 9.0.1 -->
     <Release_NewtonsoftJsonPackageVersion>6.0.4</Release_NewtonsoftJsonPackageVersion>
-    <ReleaseNetStandard_NewtonsoftJsonPackageVersion>9.0.1</ReleaseNetStandard_NewtonsoftJsonPackageVersion>
-
+    <ReleaseNetStandard_NewtonsoftJsonPackageVersion>9.0.1</ReleaseNetStandard_NewtonsoftJsonPackageVersion>	
     <ServiceBus3_WindowsAzureServiceBusPackageVersion>3.4.5</ServiceBus3_WindowsAzureServiceBusPackageVersion>
   </PropertyGroup>
 </Project>

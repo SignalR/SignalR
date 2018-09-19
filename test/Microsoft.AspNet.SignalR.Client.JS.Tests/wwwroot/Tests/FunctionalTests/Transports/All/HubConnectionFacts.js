@@ -1,7 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-QUnit.module("Hub Connection Functional Tests");
+testUtilities.module("Hub Connection Functional Tests");
 
 testUtilities.runWithAllTransports(function (transport) {
     QUnit.asyncTimeoutTest(transport + " transport can connect.", testUtilities.defaultTestTimeout, function (end, assert, testName) {
@@ -47,6 +47,8 @@ testUtilities.runWithAllTransports(function (transport) {
             oldConnectionToken = connection.token;
 
             connection.stop();
+
+            assert.comment("restarting connection");
 
             // Because of #1529
             setTimeout(function () {

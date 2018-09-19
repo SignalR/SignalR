@@ -1,9 +1,9 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-QUnit.module("Server Sent Events Functional Tests", testUtilities.transports.serverSentEvents.enabled);
+testUtilities.module("Server Sent Events Functional Tests", testUtilities.transports.serverSentEvents.enabled, !window._server.azureSignalR);
 
-QUnit.asyncTimeoutTest("Attempts to reconnect at the correct interval.", testUtilities.defaultTestTimeout* 2, function (end, assert, testName) {
+QUnit.asyncTimeoutTest("Attempts to reconnect at the correct interval.", testUtilities.defaultTestTimeout * 2, function (end, assert, testName) {
     var connection = testUtilities.createConnection("signalr", end, assert, testName),
         savedEventSource = window.EventSource,
         savedReconnect = $.signalR.transports.serverSentEvents.reconnect;
@@ -26,7 +26,7 @@ QUnit.asyncTimeoutTest("Attempts to reconnect at the correct interval.", testUti
         };
 
         function CustomEventSource() {
-            this.readyState = savedEventSource.CONNECTING;            
+            this.readyState = savedEventSource.CONNECTING;
 
             return savedEventSource.apply(this, arguments);
         }
@@ -55,9 +55,9 @@ QUnit.asyncTimeoutTest("Clears reconnectAttemptTimeout on stop", testUtilities.d
 
     connection.reconnecting(function () {
         assert.comment("Started reconnecting");
-        
+
         // Wait for $.signalR.transports.serverSentEvents.start to finish
-        setTimeout(function() {
+        setTimeout(function () {
             assert.isSet(connection._.reconnectAttemptTimeoutHandle, "The reconnectAttemptTimeoutHandle is set.");
             connection.stop();
             assert.isNotSet(connection._.reconnectAttemptTimeoutHandle, "The reconnectAttemptTimeoutHandle has been cleared on connection stop.");

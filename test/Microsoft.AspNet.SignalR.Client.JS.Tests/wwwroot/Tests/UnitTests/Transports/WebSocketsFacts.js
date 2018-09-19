@@ -4,7 +4,7 @@
 /// <reference path="..\..\..\SignalR.Client.JS\jquery.signalR.core.js" />
 /// <reference path="..\..\..\SignalR.Client.JS\jquery.signalR.transports.webSockets.js" />
 
-QUnit.module("WebSockets Facts");
+testUtilities.module("WebSockets Facts");
 
 QUnit.test("Availability", function (assert) {
     var con = $.connection;

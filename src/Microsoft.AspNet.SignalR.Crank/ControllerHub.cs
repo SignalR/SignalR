@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -8,7 +8,6 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.AspNet.SignalR.Hubs;
 using Microsoft.Owin.Hosting;
 using Owin;
 
@@ -22,7 +21,7 @@ namespace Microsoft.AspNet.SignalR.Crank
         private static PerformanceCounters PerformanceCounters;
         private static List<ConnectionsSample> Samples = new List<ConnectionsSample>();
         private static int NextSample = 0;
-        private static object FlushLock = new object();
+        private static readonly object FlushLock = new object();
         private static ControllerEvents TestPhase = ControllerEvents.None;
         private static Stopwatch TestTimer;
         private static IHubContext HubContext;
@@ -89,7 +88,7 @@ namespace Microsoft.AspNet.SignalR.Crank
                 AppHost.Dispose();
             }
 
-            FlushLog(force:true);
+            FlushLog(force: true);
         }
 
         private static void RunConnect()
@@ -126,7 +125,7 @@ namespace Microsoft.AspNet.SignalR.Crank
         private static void RunSend()
         {
             var timeout = TestTimer.Elapsed.Add(TimeSpan.FromSeconds(Arguments.SendTimeout));
-            
+
             BlockWhilePhase(ControllerEvents.Send, breakCondition: () =>
             {
                 return TestTimer.Elapsed >= timeout;
@@ -202,7 +201,7 @@ namespace Microsoft.AspNet.SignalR.Crank
         private static bool WaitForClientsToConnect()
         {
             Console.WriteLine("Waiting on Clients...");
-            
+
             int attempts = 0;
 
             while (ClientsConnected < Arguments.NumClients)

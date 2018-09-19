@@ -1,7 +1,7 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-QUnit.module("Hub Proxy Functional Tests");
+testUtilities.module("Hub Proxy Functional Tests");
 
 testUtilities.runWithAllTransports(function (transport) {
     QUnit.asyncTimeoutTest(transport + " transport unable to create invalid hub", testUtilities.defaultTestTimeout, function (end, assert, testName) {
@@ -24,7 +24,8 @@ testUtilities.runWithAllTransports(function (transport) {
         };
     });
 
-    QUnit.asyncTimeoutTest(transport + " transport buffers messages correctly.", testUtilities.defaultTestTimeout, function (end, assert, testName) {
+    // It's very difficult to test buffering against the service.
+    QUnit.skipIf(window._server.azureSignalR).asyncTimeoutTest(transport + " transport buffers messages correctly.", testUtilities.defaultTestTimeout, function (end, assert, testName) {
         var connection = testUtilities.createHubConnection(end, assert, testName),
             onConnectedBufferHub = connection.createHubProxies().onConnectedBufferHub,
             bufferMeCalls = 0,
@@ -65,7 +66,7 @@ testUtilities.runWithAllTransports(function (transport) {
             assert.isNotSet(connection._.invocationCallbacks["0"], "Callback list should be empty before invocation.");
 
             var invokePromise = demo.server.overload(100);
-            
+
             assert.isSet(connection._.invocationCallbacks["0"], "Callback should be in the callback list.");
 
             invokePromise.done(function (result) {
@@ -81,7 +82,7 @@ testUtilities.runWithAllTransports(function (transport) {
     });
 
     QUnit.asyncTimeoutTest(transport + " hub connection clears invocation callbacks after failed invocation.", testUtilities.defaultTestTimeout * 3, function (end, assert, testName) {
-        var connection = testUtilities.createHubConnection(end, assert, testName),
+        var connection = testUtilities.createTestConnection(testName, end, assert, { hub: true, ignoreErrors: true }),
             demo = connection.createHubProxies().demo,
             token = connection.token;
 
@@ -144,8 +145,8 @@ testUtilities.runWithAllTransports(function (transport) {
         };
     });
 
-    QUnit.asyncTimeoutTest(transport + " detailed errors are always given for hub exceptions", testUtilities.defaultTestTimeout, function (end, assert, testName) {
-        var connection = testUtilities.createHubConnection(end, assert, testName, "signalr2/test"),
+    QUnit.skipIf(window._server.azureSignalR).asyncTimeoutTest(transport + " detailed errors are always given for hub exceptions", testUtilities.defaultTestTimeout, function (end, assert, testName) {
+        var connection = testUtilities.createTestConnection(testName, end, assert, { hub: true, url: "signalr2/test", ignoreErrors: true }),
             demo = connection.createHubProxies().demo;
 
         connection.start({ transport: transport }).done(function () {
@@ -168,8 +169,8 @@ testUtilities.runWithAllTransports(function (transport) {
         };
     });
 
-    QUnit.asyncTimeoutTest(transport + " detailed errors are always given for hub exceptions without error data", testUtilities.defaultTestTimeout, function (end, assert, testName) {
-        var connection = testUtilities.createHubConnection(end, assert, testName, "signalr2/test"),
+    QUnit.skipIf(window._server.azureSignalR).asyncTimeoutTest(transport + " detailed errors are always given for hub exceptions without error data", testUtilities.defaultTestTimeout, function (end, assert, testName) {
+        var connection = testUtilities.createTestConnection(testName, end, assert, { hub: true, url: "signalr2/test", ignoreErrors: true }),
             demo = connection.createHubProxies().demo;
 
         connection.start({ transport: transport }).done(function () {
@@ -193,7 +194,7 @@ testUtilities.runWithAllTransports(function (transport) {
     });
 });
 
-QUnit.module("Hub Proxy Functional Tests", !window.document.commandLineTest);
+testUtilities.module("Hub Proxy Functional Tests", !window._server.azureSignalR);
 
 // Replacing window.onerror will not capture uncaught errors originating from inside an iframe
 testUtilities.runWithTransports(["longPolling", "serverSentEvents", "webSockets"], function (transport) {

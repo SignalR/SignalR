@@ -280,8 +280,8 @@
             // We have to handle progress updates first in order to ensure old clients that receive
             // progress updates enter the return value branch and then no-op when they can't find
             // the callback in the map (because the minData.I value will not be a valid callback ID)
+            // Process progress notification
             if (typeof (minData.P) !== "undefined") {
-                // Process progress notification
                 dataCallbackId = minData.P.I.toString();
                 callback = connection._.invocationCallbacks[dataCallbackId];
                 if (callback) {

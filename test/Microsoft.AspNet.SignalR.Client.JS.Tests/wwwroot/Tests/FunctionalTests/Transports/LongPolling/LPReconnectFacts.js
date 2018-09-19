@@ -1,10 +1,10 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-QUnit.module("Long Polling Functional Tests", testUtilities.transports.longPolling.enabled);
+testUtilities.module("Long Polling Functional Tests", testUtilities.transports.longPolling.enabled);
 
 QUnit.asyncTimeoutTest("Messages received immediately after connectivity re-establishment triggers the reconnected event.", testUtilities.defaultTestTimeout, function (end, assert, testName) {
-    var connection = testUtilities.createHubConnection(end, assert, testName),
+    var connection = testUtilities.createTestConnection(testName, end, assert, { hub: true, ignoreErrors: true }),
         transport = { transport: "longPolling" },
         demo = connection.createHubProxies().demo,
         reconnectingTriggered = false;
@@ -41,7 +41,7 @@ QUnit.asyncTimeoutTest("Messages received immediately after connectivity re-esta
 });
 
 QUnit.asyncTimeoutTest("Connection start mid-reconnect does not cause double connections.", testUtilities.defaultTestTimeout, function (end, assert, testName) {
-    var connection = testUtilities.createHubConnection(end, assert, testName),
+    var connection = testUtilities.createTestConnection(testName, end, assert, { hub: true, ignoreErrors: true }),
         transport = { transport: "longPolling" },
         savedAjax = $.ajax;
 
@@ -79,7 +79,7 @@ QUnit.asyncTimeoutTest("Connection start mid-reconnect does not cause double con
 });
 
 QUnit.asyncTimeoutTest("Can reconnect.", testUtilities.defaultTestTimeout, function (end, assert, testName) {
-    var connection = testUtilities.createHubConnection(end, assert, testName),
+    var connection = testUtilities.createTestConnection(testName, end, assert, { hub: true, ignoreErrors: true }),
         demo = connection.createHubProxies().demo;
 
     // Need to have at least one client function in order to be subscribed to a hub
@@ -113,7 +113,7 @@ QUnit.asyncTimeoutTest("Can reconnect.", testUtilities.defaultTestTimeout, funct
 });
 
 QUnit.asyncTimeoutTest("Shifts into reconnecting state.", testUtilities.defaultTestTimeout, function (end, assert, testName) {
-    var connection = testUtilities.createHubConnection(end, assert, testName),
+    var connection = testUtilities.createTestConnection(testName, end, assert, { hub: true, ignoreErrors: true }),
         demo = connection.createHubProxies().demo;
 
     // Need to have at least one client function in order to be subscribed to a hub
@@ -144,7 +144,7 @@ QUnit.asyncTimeoutTest("Shifts into reconnecting state.", testUtilities.defaultT
 });
 
 QUnit.asyncTimeoutTest("Triggers reconnecting.", testUtilities.defaultTestTimeout, function (end, assert, testName) {
-    var connection = testUtilities.createHubConnection(end, assert, testName),
+    var connection = testUtilities.createTestConnection(testName, end, assert, { hub: true, ignoreErrors: true }),
         demo = connection.createHubProxies().demo;
 
     // Need to have at least one client function in order to be subscribed to a hub
@@ -173,7 +173,7 @@ QUnit.asyncTimeoutTest("Triggers reconnecting.", testUtilities.defaultTestTimeou
 });
 
 QUnit.asyncTimeoutTest("Triggers reconnected.", testUtilities.defaultTestTimeout, function (end, assert, testName) {
-    var connection = testUtilities.createHubConnection(end, assert, testName),
+    var connection = testUtilities.createTestConnection(testName, end, assert, { hub: true, ignoreErrors: true }),
         demo = connection.createHubProxies().demo;
 
     // Need to have at least one client function in order to be subscribed to a hub
@@ -207,7 +207,7 @@ QUnit.asyncTimeoutTest("Triggers reconnected.", testUtilities.defaultTestTimeout
 });
 
 QUnit.asyncTimeoutTest("Clears stop reconnecting timeout on stop inside of stateChanged.", testUtilities.defaultTestTimeout, function (end, assert, testName) {
-    var connection = testUtilities.createHubConnection(end, assert, testName),
+    var connection = testUtilities.createTestConnection(testName, end, assert, { hub: true, ignoreErrors: true }),
         demo = connection.createHubProxies().demo,
         // Trigger disconnect timeout after X second of trying to reconnect.  This has to be a unique value because
         // we'll be using it to check if we've triggered the disconnect timeout.
@@ -299,7 +299,7 @@ QUnit.asyncTimeoutTest("Can remain connected to /signalr/js.", testUtilities.def
 
 // For #1809
 QUnit.asyncTimeoutTest("Does not reconnect infinitely if network is down", testUtilities.defaultTestTimeout * 2, function (end, assert, testName) {
-    var connection = testUtilities.createHubConnection(end, assert, testName),
+    var connection = testUtilities.createTestConnection(testName, end, assert, { hub: true, ignoreErrors: true }),
         demo = connection.createHubProxies().demo,
         reconnectingTriggered = false;
 
@@ -335,7 +335,7 @@ QUnit.asyncTimeoutTest("Does not reconnect infinitely if network is down", testU
 });
 
 QUnit.asyncTimeoutTest("Polls exceeding the ConnectionTimeout will trigger a reconnect.", testUtilities.defaultTestTimeout * 2, function (end, assert, testName) {
-    var connection = testUtilities.createConnection("echo", end, assert, testName, undefined, false),
+    var connection = testUtilities.createTestConnection(testName, end, assert, { url: "echo", wrapStart: false, ignoreErrors: true }),
         transport = { transport: "longPolling" };
 
     connection.reconnecting(function () {

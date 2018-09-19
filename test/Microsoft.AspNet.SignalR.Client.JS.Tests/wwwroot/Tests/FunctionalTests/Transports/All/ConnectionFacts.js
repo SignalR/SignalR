@@ -1,8 +1,8 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 var buildStatusCodeConnection = function (alterWhen, statusCode, end, assert, testName, wrapStart) {
-    var connection = testUtilities.createConnection("statusCodeConnection", end, assert, testName, wrapStart);
+    var connection = testUtilities.createTestConnection(testName, end, assert, { hub: true, url: "statusCodeConnection", wrapStart: wrapStart, ignoreErrors: true });
 
     connection.qs = {
         alterWhen: alterWhen,
@@ -12,13 +12,13 @@ var buildStatusCodeConnection = function (alterWhen, statusCode, end, assert, te
     return connection;
 };
 
-QUnit.module("Connection Functional Tests");
+testUtilities.module("Connection Functional Tests", !window._server.azureSignalR);
 
 testUtilities.runWithAllTransports(function (transport) {
 
     if (!window.document.commandLineTest) {
         QUnit.asyncTimeoutTest(transport + " transport can timeout when it does not receive initialize message.", testUtilities.defaultTestTimeout, function (end, assert, testName) {
-            var connection = testUtilities.createHubConnection(end, assert, testName, undefined, false),
+            var connection = testUtilities.createTestConnection(testName, end, assert, { hub: true, wrapStart: false, ignoreErrors: true }),
                 savedProcessMessages = $.signalR.transports._logic.processMessages;
 
             $.signalR.transports._logic.processMessages = function (_, minData) {
@@ -156,7 +156,7 @@ testUtilities.runWithAllTransports(function (transport) {
     });
 
     QUnit.asyncTimeoutTest(transport + ": Connection data flows with all requests to server.", testUtilities.defaultTestTimeout * 2, function (end, assert, testName) {
-        var connection = testUtilities.createHubConnection(end, assert, testName, undefined, false),
+        var connection = testUtilities.createTestConnection(testName, end, assert, { hub: true, wrapStart: false, ignoreErrors: true }),
             connectionDataVerifierHub = connection.createHubProxies().connectionDataVerifierHub,
             savedAjax = $.ajax,
             transportSettings = {
@@ -224,7 +224,7 @@ testUtilities.runWithAllTransports(function (transport) {
     });
 
     QUnit.asyncTimeoutTest(transport + ": Reconnect exceeding the reconnect window results in the connection disconnecting even with a fast beat interval.", testUtilities.defaultTestTimeout, function (end, assert, testName) {
-        var connection = testUtilities.createHubConnection(end, assert, testName, undefined, false),
+        var connection = testUtilities.createTestConnection(testName, end, assert, { hub: true, wrapStart: false, ignoreErrors: true }),
             handle,
             onErrorFiredForTimeout = false;
 
@@ -261,7 +261,7 @@ testUtilities.runWithAllTransports(function (transport) {
     });
 
     QUnit.asyncTimeoutTest(transport + ": Reconnect exceeding the reconnect window results in the connection disconnecting.", testUtilities.defaultTestTimeout * 2, function (end, assert, testName) {
-        var connection = testUtilities.createHubConnection(end, assert, testName, undefined, false),
+        var connection = testUtilities.createTestConnection(testName, end, assert, { hub: true, wrapStart: false, ignoreErrors: true }),
             handle;
 
         connection.reconnecting(function () {
@@ -552,7 +552,7 @@ testUtilities.runWithAllTransports(function (transport) {
 
 });
 
-QUnit.module("Connection Functional Tests", !window.document.commandLineTest);
+testUtilities.module("Connection Functional Tests", !window._server.azureSignalR);
 
 // Replacing window.onerror will not capture uncaught errors originating from inside an iframe
 testUtilities.runWithTransports(["longPolling", "serverSentEvents", "webSockets"], function (transport) {

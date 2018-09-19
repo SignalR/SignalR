@@ -36,7 +36,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Common.Infrastructure
 
         public static ITestHost CreateHost(HostType hostType, TransportType transportType, string testName, string url = null)
         {
-            ITestHost host =  null;
+            ITestHost host = null;
 
             string logBasePath = Path.Combine(Directory.GetCurrentDirectory(), "..");
             TraceListener traceListener = EnableTracing(testName, logBasePath);
@@ -45,10 +45,10 @@ namespace Microsoft.AspNet.SignalR.Tests.Common.Infrastructure
             {
                 case HostType.IISExpress:
                     throw new NotSupportedException("IIS Express testing is disabled.");
-                    //host = new IISExpressTestHost(testName);
-                    //host.TransportFactory = () => CreateTransport(transportType);
-                    //host.Transport = host.TransportFactory();
-                    //break;
+                //host = new IISExpressTestHost(testName);
+                //host.TransportFactory = () => CreateTransport(transportType);
+                //host.Transport = host.TransportFactory();
+                //break;
                 case HostType.External:
                     host = new ExternalTestHost(url);
                     host.TransportFactory = () => CreateTransport(transportType);

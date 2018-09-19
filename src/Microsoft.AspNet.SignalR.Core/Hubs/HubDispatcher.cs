@@ -1,8 +1,7 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
@@ -10,7 +9,6 @@ using System.Globalization;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
-using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR.Hosting;
 using Microsoft.AspNet.SignalR.Infrastructure;
@@ -202,7 +200,7 @@ namespace Microsoft.AspNet.SignalR.Hubs
                 // itself looks for overload matches based on the incoming arg values
                 if (progress != null)
                 {
-                    args = args.Concat(new [] { progress }).ToList();
+                    args = args.Concat(new[] { progress }).ToList();
                 }
 
                 var context = new HubInvokerContext(hub, tracker, methodDescriptor, args);

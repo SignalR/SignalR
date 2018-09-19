@@ -1,4 +1,4 @@
-﻿' SignalR
+' SignalR
 Imports Microsoft.AspNet.SignalR
 Imports Microsoft.AspNet.SignalR.Hubs
 

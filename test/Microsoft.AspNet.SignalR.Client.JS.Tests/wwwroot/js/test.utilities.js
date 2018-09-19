@@ -1,4 +1,4 @@
-﻿var testUtilities;
+var testUtilities;
 
 // Clear session storage so QUnit does not try to re-run failed tests first.
 window.sessionStorage.clear();
@@ -8,13 +8,17 @@ window.sessionStorage.clear();
         rfcWebSockets = !!window.WebSocket,
         iosVersion;
 
-    function wrapConnectionStart(connection, end, assert) {
+    function wrapConnectionStart(connection, end, assert, ignoreErrors) {
         var savedConnectionStart = connection.start;
 
         connection.start = function () {
             return savedConnectionStart.apply(connection, arguments).fail(function (reason) {
-                assert.ok(false, "Failed to initiate signalr connection: " + window.JSON.stringify(reason));
-                end();
+                if (assert) {
+                    assert.ok(false, "Failed to initiate signalr connection: " + window.JSON.stringify(reason));
+                }
+                if (end) {
+                    end();
+                }
             });
         }
     }
@@ -27,6 +31,14 @@ window.sessionStorage.clear();
     }
 
     testUtilities = {
+        // Define a module that should be skipped on Azure SignalR
+        module: function (name, condition) {
+            if (typeof condition === "undefined" || condition === true) {
+                QUnit.module(name);
+            } else {
+                QUnit.module.skip(name);
+            }
+        },
         transports: {
             longPolling: {
                 enabled: true
@@ -78,7 +90,7 @@ window.sessionStorage.clear();
                         executeWithArgs(d, fn);
                     });
                     break;
-                
+
                 default:
                     fn(data);
                     break;
@@ -100,44 +112,54 @@ window.sessionStorage.clear();
 
             return defaultTestTimeout;
         })(),
-        createHubConnection: function (end, assert, testName, url, wrapStart) {
+        // A newer version of createHubConnection and createConnection
+        createTestConnection: function (testName, end, assert, options) {
+            if(typeof testName === "object") {
+                options = testName;
+                testName = undefined;
+            }
+
+            options = options || {};
+
             var connection,
                 qs = (testName ? "test=" + window.encodeURIComponent(testName) : "");
 
-            wrapStart = typeof wrapStart === "undefined" ? true : false;
+            options.wrapStart = typeof options.wrapStart === "undefined" ? true : options.wrapStart;
+            options.ignoreErrors = typeof options.ignoreErrors === "undefined" ? false : true;
+            options.url = options.url ? options.url : "signalr";
+            options.hub = typeof options.hub === "undefined" ? false : options.hub;
 
-            url = url ? url : 'signalr';
-            if (window.document.testUrl !== 'auto') {
-                url = window.document.testUrl + url;
+            if (window.document.testUrl !== 'auto' && !options.url.startsWith("http")) {
+                options.url = window.document.testUrl + options.url;
             }
 
-            connection = $.hubConnection(url, { useDefaultPath: false, qs: qs })
+            connection = options.hub ?
+                $.hubConnection(options.url, { useDefaultPath: false, qs: qs }) :
+                $.connection(options.url, qs);
             connection.logging = true;
 
-            if (wrapStart) {
-                wrapConnectionStart(connection, end, assert);
+            if (!options.ignoreErrors) {
+                connection.error(function (err) {
+                    if (assert) {
+                        assert.ok(false, "An error occurred during the connection: " + err.toString());
+                    }
+                    if (end) {
+                        end();
+                    }
+                });
+            }
+
+            if (options.wrapStart) {
+                wrapConnectionStart(connection, end, assert, options.ignoreErrors);
             }
 
             return connection;
         },
+        createHubConnection: function (end, assert, testName, url, wrapStart) {
+            return testUtilities.createTestConnection(testName, end, assert, { url: url, wrapStart: wrapStart, hub: true });
+        },
         createConnection: function (url, end, assert, testName, wrapStart) {
-            var connection,
-                qs = (testName ? "test=" + window.encodeURIComponent(testName) : "");
-
-            wrapStart = typeof wrapStart === "undefined" ? true : false;
-
-            if (window.document.testUrl !== 'auto' && (!url || !url.startsWith("http"))) {
-                url = window.document.testUrl + url;
-            }
-
-            connection = $.connection(url, qs);
-            connection.logging = true;
-
-            if (wrapStart) {
-                wrapConnectionStart(connection, end, assert);
-            }
-
-            return connection;
+            return testUtilities.createTestConnection(testName, end, assert, { url: url, wrapStart: wrapStart });
         }
     };
 
