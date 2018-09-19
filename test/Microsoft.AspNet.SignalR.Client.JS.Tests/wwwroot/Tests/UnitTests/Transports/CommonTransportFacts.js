@@ -4,7 +4,7 @@
 /// <reference path="..\..\..\SignalR.Client.JS\jquery.signalR.core.js" />
 /// <reference path="..\..\..\SignalR.Client.JS\jquery.signalR.transports.foreverFrame.js" />
 
-QUnit.module("Common Transport Facts");
+testUtilities.module("Common Transport Facts");
 
 QUnit.test("Validate ensureReconnectingState functionality.", function (assert) {
     var connection = testUtilities.createHubConnection(),

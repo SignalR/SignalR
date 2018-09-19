@@ -4,7 +4,7 @@
 /// <reference path="..\..\SignalR.Client.JS\jquery.signalR.core.js" />
 /// <reference path="..\..\SignalR.Client.JS\jquery.signalR.hubs.js" />
 
-QUnit.module("SignalR Facts");
+testUtilities.module("SignalR Facts");
 
 QUnit.test("Availability", function (assert) {
     assert.ok($.signalR, "Verifies SignalR is available.");

@@ -4,7 +4,7 @@
 /// <reference path="..\..\..\SignalR.Client.JS\jquery.signalR.core.js" />
 /// <reference path="..\..\..\SignalR.Client.JS\jquery.signalR.transports.longPolling.js" />
 
-QUnit.module("Long Polling Facts");
+testUtilities.module("Long Polling Facts");
 
 QUnit.test("Availability", function (assert) {
     var con = $.connection;

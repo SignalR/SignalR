@@ -13,8 +13,12 @@ window.sessionStorage.clear();
 
         connection.start = function () {
             return savedConnectionStart.apply(connection, arguments).fail(function (reason) {
-                assert.ok(false, "Failed to initiate signalr connection: " + window.JSON.stringify(reason));
-                end();
+                if (assert) {
+                    assert.ok(false, "Failed to initiate signalr connection: " + window.JSON.stringify(reason));
+                }
+                if (end) {
+                    end();
+                }
             });
         }
     }
@@ -28,11 +32,11 @@ window.sessionStorage.clear();
 
     testUtilities = {
         // Define a module that should be skipped on Azure SignalR
-        skipOnAzureModule: function (name) {
-            if (window._server.azureSignalR) {
-                QUnit.module.skip(name);
-            } else {
+        module: function (name, condition) {
+            if (typeof condition === "undefined" || condition === true) {
                 QUnit.module(name);
+            } else {
+                QUnit.module.skip(name);
             }
         },
         transports: {
@@ -109,7 +113,7 @@ window.sessionStorage.clear();
             return defaultTestTimeout;
         })(),
         // A newer version of createHubConnection and createConnection
-        createTestConnection: function(testName, end, assert, options) {
+        createTestConnection: function (testName, end, assert, options) {
             options = options || {};
 
             var connection,
@@ -118,7 +122,7 @@ window.sessionStorage.clear();
             options.wrapStart = typeof options.wrapStart === "undefined" ? true : options.wrapStart;
             options.ignoreErrors = typeof options.ignoreErrors === "undefined" ? false : true;
             options.url = options.url ? options.url : "signalr";
-            options.hub = typeof options.hub === "undefined" ? true : options.hub;
+            options.hub = typeof options.hub === "undefined" ? false : options.hub;
 
             if (window.document.testUrl !== 'auto' && (!url || !url.startsWith("http"))) {
                 url = window.document.testUrl + url;
@@ -129,14 +133,18 @@ window.sessionStorage.clear();
                 $.connection(options.url, qs);
             connection.logging = true;
 
-            if(!options.ignoreErrors) {
-                connection.error(function(err) {
-                    assert.ok(false, "An error occurred during the connection: " + err.toString());
-                    end();
+            if (!options.ignoreErrors) {
+                connection.error(function (err) {
+                    if (assert) {
+                        assert.ok(false, "An error occurred during the connection: " + err.toString());
+                    }
+                    if (end) {
+                        end();
+                    }
                 });
             }
 
-            if(options.wrapStart) {
+            if (options.wrapStart) {
                 wrapConnectionStart(connection, end, assert, options.ignoreErrors);
             }
 

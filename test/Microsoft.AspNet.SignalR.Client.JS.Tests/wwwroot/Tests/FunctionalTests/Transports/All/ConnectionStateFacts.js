@@ -1,7 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-testUtilities.skipOnAzureModule("Connection State Functional Tests");
+testUtilities.module("Connection State Functional Tests", !window._server.azureSignalR);
 
 testUtilities.runWithAllTransports(function (transport) {
 
@@ -48,7 +48,7 @@ testUtilities.runWithAllTransports(function (transport) {
     });
 
     QUnit.asyncTimeoutTest(transport + " transport connection shifts into appropriate states.", testUtilities.defaultTestTimeout, function (end, assert, testName) {
-        var connection = testUtilities.createHubConnection(end, assert, testName),
+        var connection = testUtilities.createTestConnection(testName, end, assert, { hub: true, ignoreErrors: true }),
             demo = connection.createHubProxies().demo;
 
         // Need to have at least one client function in order to be subscribed to a hub
@@ -82,7 +82,7 @@ testUtilities.runWithAllTransports(function (transport) {
 
 
     QUnit.asyncTimeoutTest(transport + " transport connection StateChanged event is called for every state", testUtilities.defaultTestTimeout, function (end, assert, testName) {
-        var connection = testUtilities.createHubConnection(end, assert, testName),
+        var connection = testUtilities.createTestConnection(testName, end, assert, { hub: true, ignoreErrors: true }),
             demo = connection.createHubProxies().demo,
             statesSet = {};
 
@@ -119,7 +119,7 @@ testUtilities.runWithAllTransports(function (transport) {
     });
 
     QUnit.asyncTimeoutTest(transport + " transport Manually restarted client maintains consistent state.", testUtilities.defaultTestTimeout, function (end, assert, testName) {
-        var connection = testUtilities.createHubConnection(end, assert, testName),
+        var connection = testUtilities.createTestConnection(testName, end, assert, { hub: true, ignoreErrors: true }),
             demo = connection.createHubProxies().demo,
             activeTransport = { transport: transport };
 
@@ -162,7 +162,10 @@ testUtilities.runWithAllTransports(function (transport) {
     });
 
     QUnit.asyncTimeoutTest(transport + " transport appends /reconnect to reconnect requests.", testUtilities.defaultTestTimeout, function (end, assert, testName) {
-        var connections = [testUtilities.createConnection("multisend", end, assert, testName), testUtilities.createHubConnection(end, assert, testName)],
+        var connections = [
+                testUtilities.createTestConnection(testName, end, assert, { url: "multisend", ignoreErrors: true }),
+                testUtilities.createTestConnection(testName, end, assert, { hub: true, ignoreErrors: true }),
+            ],
             getUrlCalled = [false, false],
             numConnections = 2,
             numReconnects = 0,
@@ -254,7 +257,7 @@ testUtilities.runWithAllTransports(function (transport) {
         }
 
         for (i = 0; i < numConnections; i++) {
-            connections[i] = testUtilities.createHubConnection(end, assert, testName + " (connection " + i + ")");
+            connections[i] = testUtilities.createTestConnection(testName + " (connection " + i + ")", end, assert, { hub: true, ignoreErrors: true });
         }
 
         $.when.apply($,
@@ -287,7 +290,7 @@ testUtilities.runWithAllTransports(function (transport) {
     });
 
     QUnit.asyncTimeoutTest(transport + " transport will attempt to reconnect multiple times.", testUtilities.defaultTestTimeout * 4, function (end, assert, testName) {
-        var connection = testUtilities.createHubConnection(end, assert, testName),
+        var connection = testUtilities.createTestConnection(testName, end, assert, { hub: true, ignoreErrors: true }),
             reconnectAttempts = 0,
             savedGetUrl = $.connection.transports._logic.getUrl;
 
@@ -342,7 +345,7 @@ testUtilities.runWithAllTransports(function (transport) {
     });
 
     QUnit.asyncTimeoutTest(transport + " transport failing during start request stops connection.", testUtilities.defaultTestTimeout, function (end, assert, testName) {
-        var connection = testUtilities.createHubConnection(end, assert, testName, null, /*wrapStart*/ false),
+        var connection = testUtilities.createTestConnection(testName, end, assert, { hub: true, ignoreErrors: true, wrapStart: false }),
             savedAjaxStart = $.signalR.transports._logic.ajaxStart,
             savedJQueryAjax = $.ajax,
             expectedErrorMessage = $.signalR.resources.errorDuringStartRequest,

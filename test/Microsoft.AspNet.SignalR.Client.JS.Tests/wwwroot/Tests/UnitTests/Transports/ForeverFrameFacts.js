@@ -4,7 +4,7 @@
 /// <reference path="..\..\..\SignalR.Client.JS\jquery.signalR.core.js" />
 /// <reference path="..\..\..\SignalR.Client.JS\jquery.signalR.transports.foreverFrame.js" />
 
-QUnit.module("Forever Frame Facts");
+testUtilities.module("Forever Frame Facts");
 
 QUnit.test("Availability", function (assert) {
     var con = $.connection;

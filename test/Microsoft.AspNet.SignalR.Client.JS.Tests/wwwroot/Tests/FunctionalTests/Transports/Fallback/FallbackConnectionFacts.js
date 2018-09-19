@@ -1,7 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-testUtilities.skipOnAzureModule("Fallback Functional Tests");
+testUtilities.module("Fallback Functional Tests", !window._server.azureSignalR);
 
 QUnit.asyncTimeoutTest("Default transports fall back and connect.", testUtilities.defaultTestTimeout, function (end, assert, testName) {
     var connection = testUtilities.createHubConnection(end, assert, testName);
@@ -36,7 +36,7 @@ QUnit.asyncTimeoutTest("Transport as object is not supported.", testUtilities.de
 });
 
 QUnit.asyncTimeoutTest("Client forces webSockets but server does not suppport it.", testUtilities.defaultTestTimeout, function (end, assert, testName) {
-    var connection = testUtilities.createHubConnection(end, assert, testName, undefined, false),
+    var connection = testUtilities.createTestConnection(testName, end, assert, { wrapStart: false, ignoreErrors: true }),
         oldParse = connection._parseResponse;
     connection._parseResponse = function (response) {
         var result = oldParse.call(this, response);
@@ -116,7 +116,7 @@ QUnit.asyncTimeoutTest("Client does not fall back if the start request hangs.", 
     };
 });
 
-testUtilities.skipOnAzureModule("Fallback Functional Tests", testUtilities.transports.webSockets.enabled);
+testUtilities.module("Fallback Functional Tests", testUtilities.transports.webSockets.enabled && !window._server.azureSignalR);
 
 QUnit.asyncTimeoutTest("WebSockets fall back to next transport.", testUtilities.defaultTestTimeout, function (end, assert, testName) {
     var connection = testUtilities.createHubConnection(end, assert, testName);
@@ -136,7 +136,7 @@ QUnit.asyncTimeoutTest("WebSockets fall back to next transport.", testUtilities.
     };
 });
 
-testUtilities.skipOnAzureModule("Fallback Functional Tests", testUtilities.transports.webSockets.enabled && $.signalR._.ieVersion >= 10);
+testUtilities.module("Fallback Functional Tests", testUtilities.transports.webSockets.enabled && $.signalR._.ieVersion >= 10 && !window._server.azureSignalR);
 
 QUnit.asyncTimeoutTest("WebSockets fall back to next transport when connection limit exceeded.", testUtilities.defaultTestTimeout * 3, function (end, assert, testName) {
     var connections = [],
@@ -217,11 +217,11 @@ QUnit.asyncTimeoutTest("OnConnected fires once when WebSockets falls back", test
     };
 });
 
-testUtilities.skipOnAzureModule("Fallback Functional Tests", !window.document.commandLineTest);
+testUtilities.module("Fallback Functional Tests", !window._server.azureSignalR);
 
 // 1 test timeout per transport
 QUnit.asyncTimeoutTest("Connection times out when initialize not received.", testUtilities.defaultTestTimeout * 4, function (end, assert, testName) {
-    var connection = testUtilities.createHubConnection(end, assert, testName, undefined, false),
+    var connection = testUtilities.createTestConnection(testName, end, assert, { wrapStart: false, ignoreErrors: true }),
         savedProcessMessages = $.signalR.transports._logic.processMessages;
 
     $.signalR.transports._logic.processMessages = function (_, minData) {

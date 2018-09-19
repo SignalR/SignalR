@@ -1,7 +1,7 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-QUnit.module("Connection Utility Facts");
+testUtilities.module("Connection Utility Facts");
 
 QUnit.test("Is Cross Domain functions properly", function (assert) {
     var con = $.connection,

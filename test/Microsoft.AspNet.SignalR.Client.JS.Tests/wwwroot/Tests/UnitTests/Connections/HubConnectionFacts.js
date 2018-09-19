@@ -3,7 +3,7 @@
 
 /// <reference path="..\..\..\SignalR.Client.JS\jquery.signalR.hubs.js" />
 
-QUnit.module("Hub Connection Facts");
+testUtilities.module("Hub Connection Facts");
 
 QUnit.test("Default Hub Connection Parameters", function (assert) {
     var hubCon = $.hubConnection;

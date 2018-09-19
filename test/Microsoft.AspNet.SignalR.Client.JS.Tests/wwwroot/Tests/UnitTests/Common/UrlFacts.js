@@ -1,7 +1,7 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-QUnit.module("Transports Common - Url Facts");
+testUtilities.module("Transports Common - Url Facts");
 
 QUnit.test("getUrl handles groupsToken correctly.", function (assert) {
     var connection = testUtilities.createHubConnection(),

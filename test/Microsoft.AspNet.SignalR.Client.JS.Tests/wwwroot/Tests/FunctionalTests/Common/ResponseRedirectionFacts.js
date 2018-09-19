@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 var buildRedirectConnection = function (redirectWhen, end, assert, testName, wrapStart) {
-    var connection = testUtilities.createConnection("redirectionConnection", end, assert, testName, wrapStart);
+    var connection = testUtilities.createTestConnection(testName, end, assert, { url: "redirectionConnection", wrapStart: wrapStart, ignoreErrors: true });
 
     connection.qs = {
         redirectWhen: redirectWhen
@@ -11,7 +11,7 @@ var buildRedirectConnection = function (redirectWhen, end, assert, testName, wra
     return connection;
 };
 
-testUtilities.skipOnAzureModule("Response redirection Functional Tests");
+testUtilities.module("Response redirection Functional Tests", !window._server.azureSignalR);
 
 QUnit.asyncTimeoutTest("Transport connect fails on response redirection with error message.", testUtilities.defaultTestTimeout, function (end, assert, testName) {
     var connection = buildRedirectConnection("negotiate", end, assert, testName, false);

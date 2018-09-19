@@ -1,7 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-testUtilities.skipOnAzureModule("ForeverFrame Functional Tests - Transport is selected appropriately.", testUtilities.transports.foreverFrame.enabled && $.signalR._.ieVersion <= 8);
+testUtilities.module("ForeverFrame Functional Tests - Transport is selected appropriately.", testUtilities.transports.foreverFrame.enabled && $.signalR._.ieVersion <= 8 && !window._server.azureSignalR);
 
 QUnit.asyncTimeoutTest("foreverFrame transport is not selected when <= ie8 and auto transport.", testUtilities.defaultTestTimeout, function (end, assert, testName) {
     var connection = testUtilities.createHubConnection(end, assert, testName);

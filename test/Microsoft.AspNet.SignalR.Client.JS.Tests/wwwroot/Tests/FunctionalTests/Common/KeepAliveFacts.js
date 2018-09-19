@@ -1,7 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-testUtilities.skipOnAzureModule("Transports Common - Keep Alive Functional Tests", testUtilities.transports.longPolling.enabled);
+testUtilities.module("Transports Common - Keep Alive Functional Tests", !window._server.azureSignalR && testUtilities.transports.longPolling.enabled);
 
 QUnit.asyncTimeoutTest("Long polling transport does not check keep alive.", testUtilities.defaultTestTimeout, function (end, assert, testName) {
     var connection = testUtilities.createHubConnection(end, assert, testName);
@@ -17,7 +17,7 @@ QUnit.asyncTimeoutTest("Long polling transport does not check keep alive.", test
     };
 });
 
-testUtilities.skipOnAzureModule("Transports Common - Keep Alive Functional Tests");
+testUtilities.module("Transports Common - Keep Alive Functional Tests", !window._server.azureSignalR);
 
 testUtilities.runWithTransports(["foreverFrame", "serverSentEvents", "webSockets"], function (transport) {
     QUnit.asyncTimeoutTest(transport + " transport attempts to check keep alive.", testUtilities.defaultTestTimeout, function (end, assert, testName) {
@@ -36,7 +36,8 @@ testUtilities.runWithTransports(["foreverFrame", "serverSentEvents", "webSockets
     });
 });
 
-QUnit.asyncTimeoutTest("Check if alive can recover from faulty connections.", testUtilities.defaultTestTimeout, function (end, assert, testName) {
+// Flaky
+QUnit.skipIf(true).asyncTimeoutTest("Check if alive can recover from faulty connections.", testUtilities.defaultTestTimeout, function (end, assert, testName) {
     var connection = testUtilities.createHubConnection(end, assert, testName),
         savedMarkLastMessage = $.signalR.transports._logic.markLastMessage,
         failed = true;

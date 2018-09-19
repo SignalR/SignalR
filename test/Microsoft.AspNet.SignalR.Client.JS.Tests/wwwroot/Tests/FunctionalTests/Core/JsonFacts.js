@@ -1,7 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-testUtilities.skipOnAzureModule("Core - connection.json Functional Tests");
+testUtilities.module("Core - connection.json Functional Tests", !window._server.azureSignalR);
 
 (function ($, window) {
     testUtilities.runWithAllTransports(function (transport) {
@@ -83,7 +83,7 @@ testUtilities.skipOnAzureModule("Core - connection.json Functional Tests");
     testUtilities.runWithTransports(["longPolling", "serverSentEvents", "webSockets"], function (transport) {
 
         QUnit.asyncTimeoutTest(transport + ": Invalid JSON payloads triggers connection error.", testUtilities.defaultTestTimeout, function (end, assert, testName) {
-            var connection = testUtilities.createHubConnection(end, assert, testName),
+            var connection = testUtilities.createTestConnection(testName, end, assert, { hub: true, ignoreErrors: true }),
                 echoHub = connection.createHubProxies().echoHub;
 
             echoHub.client.echo = function (value) {

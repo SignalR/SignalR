@@ -1,7 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-QUnit.module("Hub Group Functional Tests");
+testUtilities.module("Hub Group Functional Tests");
 
 testUtilities.runWithAllTransports(function (transport) {
     // Reduce chance of conflicts with multiple simultaneous tests

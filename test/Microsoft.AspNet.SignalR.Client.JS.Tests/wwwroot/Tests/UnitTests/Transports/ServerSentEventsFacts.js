@@ -4,7 +4,7 @@
 /// <reference path="..\..\..\SignalR.Client.JS\jquery.signalR.core.js" />
 /// <reference path="..\..\..\SignalR.Client.JS\jquery.signalR.transports.serverSentEvents.js" />
 
-QUnit.module("Server Sent Events Facts");
+testUtilities.module("Server Sent Events Facts");
 
 QUnit.test("Availability", function (assert) {
     var con = $.connection;

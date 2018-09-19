@@ -1,7 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-testUtilities.skipOnAzureModule("Server Sent Events Functional Tests", testUtilities.transports.serverSentEvents.enabled);
+testUtilities.module("Server Sent Events Functional Tests", testUtilities.transports.serverSentEvents.enabled, !window._server.azureSignalR);
 
 QUnit.asyncTimeoutTest("Attempts to reconnect at the correct interval.", testUtilities.defaultTestTimeout * 2, function (end, assert, testName) {
     var connection = testUtilities.createConnection("signalr", end, assert, testName),

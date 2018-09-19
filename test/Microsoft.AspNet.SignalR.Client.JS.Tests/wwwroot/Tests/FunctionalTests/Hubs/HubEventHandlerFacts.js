@@ -1,7 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-QUnit.module("Hub Event Handler Functional Tests");
+testUtilities.module("Hub Event Handler Functional Tests");
 
 testUtilities.runWithAllTransports(function (transport) {
     // This test is meant for #2187 but also verifies the fix to #2190, #2160 (for all transports).

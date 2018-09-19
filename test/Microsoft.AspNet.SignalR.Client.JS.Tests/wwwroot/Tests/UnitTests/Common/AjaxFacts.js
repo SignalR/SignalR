@@ -1,7 +1,7 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-QUnit.module("Transports Common - Ajax Abort Facts");
+testUtilities.module("Transports Common - Ajax Abort Facts");
 
 QUnit.test("No transport specified should result in noop behavior for ajaxAbort.", function (assert) {
     var connection = testUtilities.createHubConnection(),
