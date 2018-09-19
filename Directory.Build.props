@@ -18,8 +18,8 @@
     <AssemblyOriginatorKeyFile>$(MSBuildThisFileDirectory)build\35MSSharedLib1024.snk</AssemblyOriginatorKeyFile>
 
     <!-- The key doesn't have the private part with it, so we DelaySign when building for CI -->
-    <DelaySign>true</DelaySign>
-    <SignAssembly>true</SignAssembly>
+    <DelaySign Condition="'$(CI)' == 'true' And '$(DelaySign)' == ''">true</DelaySign>
+    <SignAssembly Condition="'$(CI)' == 'true' And '$(SignAssembly)' == ''">true</SignAssembly>
     <DefineConstants Condition="'$(SignAssembly)' == 'true' And '$(DefineConstants)' != ''">$(DefineConstants);SIGNED</DefineConstants>
     <DefineConstants Condition="'$(SignAssembly)' == 'true' And '$(DefineConstants)' == ''">SIGNED</DefineConstants>
 
