@@ -48,6 +48,9 @@
     <StartupObject />
     <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
+  <PropertyGroup>
+    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="Microsoft.Owin, Version=3.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
@@ -80,7 +83,6 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\packages\Microsoft.AspNet.Cors.5.2.2\lib\net45\System.Web.Cors.dll</HintPath>
     </Reference>
-
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System" />
     <Reference Include="System.ComponentModel.DataAnnotations" />
@@ -392,7 +394,6 @@
   <ItemGroup>
     <ProjectReference Include="..\..\src\Microsoft.AspNet.SignalR.Core\Microsoft.AspNet.SignalR.Core.csproj" />
     <ProjectReference Include="..\Microsoft.AspNet.SignalR.Samples.VB\Microsoft.AspNet.SignalR.Samples.VB.vbproj" />
-
     <!-- Order-only dependencies -->
     <ProjectReference Include="..\..\src\Microsoft.AspNet.SignalR.JS\Microsoft.AspNet.SignalR.JS.csproj" ReferenceOutputAssembly="false" />
     <ProjectReference Include="..\..\src\Microsoft.AspNet.SignalR.Utils\Microsoft.AspNet.SignalR.Utils.csproj" ReferenceOutputAssembly="false" />
@@ -435,7 +436,7 @@
     <Copy SourceFiles="$(ArtifactsBinDir)\Microsoft.AspNet.SignalR.JS\netstandard1.0\jquery.signalR.min.js" DestinationFiles="Scripts\jquery.signalR.min.js" />
   </Target>
   <Target Name="AfterBuild">
-    <Message Text="> &quot;$(ArtifactsBinDir)\Microsoft.AspNet.SignalR.Utils\net40\signalr.exe&quot; ghp /o:&quot;$(MSBuildThisFileDirectory)Scripts\hubs.js&quot;" Importance="high" />
+    <Message Text="&gt; &quot;$(ArtifactsBinDir)\Microsoft.AspNet.SignalR.Utils\net40\signalr.exe&quot; ghp /o:&quot;$(MSBuildThisFileDirectory)Scripts\hubs.js&quot;" Importance="high" />
     <Exec Command="&quot;$(ArtifactsBinDir)\Microsoft.AspNet.SignalR.Utils\net40\signalr.exe&quot; ghp /o:&quot;$(MSBuildThisFileDirectory)Scripts\hubs.js&quot;" WorkingDirectory="$(OutputPath)" />
   </Target>
 </Project>

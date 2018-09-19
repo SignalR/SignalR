@@ -28,21 +28,21 @@
   </ItemGroup>
 
   <ItemGroup Condition="'$(TargetFramework)' == 'net40'">
-    <PackageReference Include="Newtonsoft.Json" Version="$(NewtonsoftJsonPackageVersion)" />
+    <PackageReference Include="Newtonsoft.Json" Version="$(Release_NewtonsoftJsonPackageVersion)" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(TargetFramework)' == 'net45'">
-    <PackageReference Include="Newtonsoft.Json" Version="$(NewtonsoftJsonPackageVersion)" />
+    <PackageReference Include="Newtonsoft.Json" Version="$(Release_NewtonsoftJsonPackageVersion)" />
     <Reference Include="System.Net.Http" />
     <Reference Include="System.Net.Http.WebRequest" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(TargetFramework)' == 'netstandard1.3'">
-    <PackageReference Include="Newtonsoft.Json" Version="$(NewtonsoftJsonPackageVersion)" />
+    <PackageReference Include="Newtonsoft.Json" Version="$(ReleaseNetStandard_NewtonsoftJsonPackageVersion)" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.0'">
-    <PackageReference Include="Newtonsoft.Json" Version="$(NewtonsoftJsonPackageVersion)" />
+    <PackageReference Include="Newtonsoft.Json" Version="$(ReleaseNetStandard_NewtonsoftJsonPackageVersion)" />
   </ItemGroup>
 
 </Project>

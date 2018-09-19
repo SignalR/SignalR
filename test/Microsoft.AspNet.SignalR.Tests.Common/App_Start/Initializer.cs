@@ -117,11 +117,15 @@ namespace Microsoft.AspNet.SignalR.Tests.Common
 
             if (!string.IsNullOrEmpty(azureSignalRConnectionString))
             {
+#if AZURE_SIGNALR
                 // We can't register all the other SignalR endpoints when testing with Azure SignalR.
                 app.Map("/signalr", subapp =>
                 {
                     subapp.RunAzureSignalR(typeof(Initializer).FullName, azureSignalRConnectionString, hubConfig);
                 });
+#else
+                throw new NotSupportedException("Cannot use Azure SignalR unless the tests were built with the AzureSignalRTests MSBuild property set to 'true'.");
+#endif
             }
             else
             {

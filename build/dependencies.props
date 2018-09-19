@@ -36,6 +36,8 @@
   </PropertyGroup>
 
   <PropertyGroup Label="Package Versions: Pinned">
+    <Release_NewtonsoftJsonPackageVersion>6.0.4</Release_NewtonsoftJsonPackageVersion>
+    <ReleaseNetStandard_NewtonsoftJsonPackageVersion>9.0.1</ReleaseNetStandard_NewtonsoftJsonPackageVersion>	
     <ServiceBus3_WindowsAzureServiceBusPackageVersion>3.4.5</ServiceBus3_WindowsAzureServiceBusPackageVersion>
   </PropertyGroup>
 </Project>
