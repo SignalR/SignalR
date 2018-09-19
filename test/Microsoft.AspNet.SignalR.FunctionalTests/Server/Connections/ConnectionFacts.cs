@@ -13,14 +13,12 @@ using Microsoft.AspNet.SignalR.Client.Http;
 using Microsoft.AspNet.SignalR.Client.Transports;
 using Microsoft.AspNet.SignalR.Configuration;
 using Microsoft.AspNet.SignalR.Hosting.Memory;
-using Microsoft.AspNet.SignalR.Infrastructure;
 using Microsoft.AspNet.SignalR.Messaging;
 using Microsoft.AspNet.SignalR.Tests.Common;
 using Microsoft.AspNet.SignalR.Tests.Common.Infrastructure;
 using Microsoft.Owin;
 using Owin;
 using Xunit;
-using Xunit.Extensions;
 
 namespace Microsoft.AspNet.SignalR.Client.Tests
 {
@@ -470,7 +468,7 @@ namespace Microsoft.AspNet.SignalR.Client.Tests
                     Assert.Equal(15, timesStopped);
                 }
             }
-            
+
             [Theory]
             [InlineData(HostType.Memory, TransportType.ServerSentEvents, MessageBusType.Default)]
             //[InlineData(HostType.Memory, TransportType.LongPolling, MessageBusType.Default)]
@@ -534,26 +532,26 @@ namespace Microsoft.AspNet.SignalR.Client.Tests
 
                     using (connection)
                     {
-                        var reconnectWh = new AsyncManualResetEvent();
-                        var disconnectWh = new AsyncManualResetEvent();
+                        var reconnectWh = new TaskCompletionSource<object>();
+                        var disconnectWh = new TaskCompletionSource<object>();
 
                         connection.Reconnecting += () =>
                         {
-                            reconnectWh.Set();
+                            reconnectWh.TrySetResult(null);
                             Assert.Equal(ConnectionState.Reconnecting, connection.State);
                         };
 
                         connection.Closed += () =>
                         {
-                            disconnectWh.Set();
+                            disconnectWh.TrySetResult(null);
                             Assert.Equal(ConnectionState.Disconnected, connection.State);
                         };
 
                         await connection.Start(host.Transport);
                         host.Shutdown();
 
-                        Assert.True(await reconnectWh.WaitAsync(TimeSpan.FromSeconds(25)), "Reconnect never fired");
-                        Assert.True(await disconnectWh.WaitAsync(TimeSpan.FromSeconds(25)), "Closed never fired");
+                        await reconnectWh.Task.OrTimeout(TimeSpan.FromSeconds(25));
+                        await disconnectWh.Task.OrTimeout(TimeSpan.FromSeconds(25));
                     }
                 }
             }
