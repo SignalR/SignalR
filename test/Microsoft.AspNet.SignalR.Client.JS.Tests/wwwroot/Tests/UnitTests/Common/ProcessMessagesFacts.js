@@ -234,3 +234,21 @@ QUnit.test("Triggers error handler on error message.", function (assert) {
 
     $.signalR.transports._logic.processMessages(connection, response);
 });
+
+QUnit.test("Triggers received if message is invocation response.", function (assert) {
+    var connection = testUtilities.createTestConnection({ ignoreErrors: true }),
+        response = {
+            I: 42
+        };
+
+    connection.transport = {};
+
+    var received;
+    connection.received(function (data) {
+        received = data;
+    });
+
+    $.signalR.transports._logic.processMessages(connection, response);
+
+    assert.equal(received.I, 42, "Invocation response was dispatched to received handler");
+});
