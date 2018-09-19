@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Threading.Tasks;
@@ -55,7 +55,7 @@ namespace Microsoft.AspNet.SignalR.Hubs
         /// Called when the connection connects to this hub instance.
         /// </summary>
         /// <returns>A <see cref="Task"/></returns>
-        public virtual Task OnConnectedAsync()
+        public virtual Task OnConnected()
         {
             return TaskAsyncHelper.Empty;
         }
