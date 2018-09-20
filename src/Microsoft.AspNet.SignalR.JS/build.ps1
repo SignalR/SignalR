@@ -34,8 +34,8 @@ if (!(Test-Path -path "$outputPath")) {
     New-Item "$outputPath" -Type Directory | Out-Null
 }
 
-Write-Host "Building $outputPath\jquery.signalR.js... " -NoNewline -ForegroundColor Yellow
-$filePath = "$outputPath\jquery.signalR.js"
+Write-Host "Building $outputPath\jquery.signalR-$version.js... " -NoNewline -ForegroundColor Yellow
+$filePath = "$outputPath\jquery.signalR-$version.js"
 Remove-Item $filePath -Force -ErrorAction SilentlyContinue
 
 $VersionMatcher = [regex]"^.*\$\.signalR\.version = `".*`";$"
@@ -50,8 +50,12 @@ foreach ($file in $files) {
 Write-Host "done" -ForegroundColor Green
 
 # Minify to jquery.signalR.min.js
-Write-Host "Building $outputPath\jquery.signalR.min.js... " -NoNewline -ForegroundColor Yellow
-& "..\..\tools\ajaxmin\AjaxMinifier.exe" $outputPath\jquery.signalR.js -out $outputPath\jquery.signalR.min.js -term -clobber > $output
+Write-Host "Building $outputPath\jquery.signalR-$version.min.js... " -NoNewline -ForegroundColor Yellow
+& "..\..\tools\ajaxmin\AjaxMinifier.exe" "$outputPath\jquery.signalR-$version.js" -out "$outputPath\jquery.signalR-$version.min.js" -term -clobber > $output
 (Get-Content $output)[6] | Write-Host -ForegroundColor Green
+
+# Make versionless scripts for use within the build
+Copy-Item "$outputPath\jquery.signalR-$version.js" "$outputPath\jquery.signalR.js"
+Copy-Item "$outputPath\jquery.signalR-$version.min.js" "$outputPath\jquery.signalR.min.js"
 
 Remove-Item $output -Force

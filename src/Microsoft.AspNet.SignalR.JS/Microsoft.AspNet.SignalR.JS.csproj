@@ -24,8 +24,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <GeneratedJavaScript Include="$(OutDir)jquery.signalR.js" />
-    <GeneratedJavaScript Include="$(OutDir)jquery.signalR.min.js" />
+    <GeneratedJavaScript Include="$(OutDir)jquery.signalR-$(PackageVersion).js" />
+    <GeneratedJavaScript Include="$(OutDir)jquery.signalR-$(PackageVersion).min.js" />
   </ItemGroup>
 
   <Target Name="CompileJs" BeforeTargets="Build" Inputs="@(JSCompile)" Outputs="@(GeneratedJavaScript)">

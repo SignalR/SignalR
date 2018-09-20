@@ -18,7 +18,7 @@
     </dependencies>
   </metadata>
   <files>
-    <file src="jquery.signalR.js" target="content\Scripts" />
-    <file src="jquery.signalR.min.js" target="content\Scripts" />
+    <file src="jquery.signalR-$PackageVersion$.js" target="content\Scripts" />
+    <file src="jquery.signalR-$PackageVersion$.min.js" target="content\Scripts" />
   </files>
 </package>
