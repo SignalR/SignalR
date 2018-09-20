@@ -13,9 +13,12 @@
             font-weight: bold;
         }
     </style>
+    <script src="/server-info"></script>
 </head>
 <body>
     <h1>Azure SignalR Service Sample</h1>
+    <h2 id="azureSignalRBanner" style="display: none">Using the Azure SignalR Service</h2>
+    <h2 id="localSignalRBanner" style="display: none">Using Local SignalR App</h2>
 
     <div>
         <select id="transportSelect">
@@ -51,12 +54,23 @@
     <script src="signalr/hubs"></script>
     <script>
         $(function () {
+            var name = prompt("Enter your name:");
+            if (window._server.azureSignalR) {
+                $("#azureSignalRBanner").show();
+                $("#localSignalRBanner").hide();
+            }
+            else {
+                $("#localSignalRBanner").show();
+                $("#azureSignalRBanner").hide();
+            }
+
             var connection = $.hubConnection("/signalr", { useDefaultPath: false, logging: true });
             var echoHub = connection.createHubProxy("echoHub");
 
-            echoHub.on("receive", function (message) {
-                var encodedMsg = $("<div />").text(message).html();
-                $("#messagesList").append("<li>" + encodedMsg + "</li>");
+            echoHub.on("receive", function (user, message) {
+                user = $("<div />").text(user).html();
+                message = $("<div />").text(message).html();
+                $("#messagesList").append("<li><strong>" + user + "</strong>: " + message + "</li>");
             });
             $("#connectButton").click(function () {
                 connection.start({ transport: $("#transportSelect").val() }).done(function () {
@@ -86,7 +100,7 @@
 
             $("#broadcast").submit(function (evt) {
                 evt.preventDefault();
-                echoHub.invoke("broadcast", $("#messageInput").val());
+                echoHub.invoke("broadcast", name, $("#messageInput").val());
             });
         });
     </script>
