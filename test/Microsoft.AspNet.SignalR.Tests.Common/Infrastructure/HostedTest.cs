@@ -83,11 +83,9 @@ namespace Microsoft.AspNet.SignalR.Tests.Common.Infrastructure
             }
         }
 
-        protected TextWriterTraceListener EnableTracing()
+        protected IDisposable EnableTracing()
         {
-            string testName = GetTestName() + "." + Interlocked.Increment(ref _id);
-            string logBasePath = Path.Combine(Directory.GetCurrentDirectory(), "..");
-            return HostedTestFactory.EnableTracing(testName, logBasePath);
+            return TestTraceManager.CreateTraceListener($"{GetTestName()}.{Interlocked.Increment(ref _id)}");
         }
 
         protected HubConnection CreateHubConnection(string url)

@@ -6,5 +6,5 @@
 /// <reference path="jquery.signalR.core.js" />
 (function ($, undefined) {
     // This will be modified by the build script
-    $.signalR.version = "2.4.0-dev";
+    $.signalR.version = "[!VERSION!]";
 }(window.jQuery));

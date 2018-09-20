@@ -44,7 +44,7 @@ foreach ($file in $files) {
     Add-Content -Path $filePath -Value "/* $file */"
     Get-Content -Path $file | 
         Where-Object { !$_.Contains("""use strict"";") } | 
-        ForEach-Object { $VersionMatcher.Replace($_, "    $.signalR.version = `"$version`";") } |
+        ForEach-Object { $_.Replace("[!VERSION!]", $version) } |
         Add-Content -Path $filePath
 }
 Write-Host "done" -ForegroundColor Green
