@@ -29,7 +29,10 @@ namespace Microsoft.AspNet.SignalR.Tests.Common.Infrastructure
 
         protected TracingTestHost(string logPath)
         {
-            _listener = new TextWriterTraceListener(logPath + ".transports.log");
+            if (!string.IsNullOrEmpty(logPath))
+            {
+                _listener = new TextWriterTraceListener(logPath + ".transports.log");
+            }
             Disposables = new List<IDisposable>();
             ExtraData = new Dictionary<string, string>();
         }
@@ -81,10 +84,13 @@ namespace Microsoft.AspNet.SignalR.Tests.Common.Infrastructure
             _traceManager = Resolver.Resolve<ITraceManager>();
             _traceManager.Switch.Level = SourceLevels.Verbose;
 
-            foreach (var sourceName in _traceSources)
+            if (_listener != null)
             {
-                TraceSource source = _traceManager[sourceName];
-                source.Listeners.Add(_listener);
+                foreach (var sourceName in _traceSources)
+                {
+                    TraceSource source = _traceManager[sourceName];
+                    source.Listeners.Add(_listener);
+                }
             }
 
             var configuration = Resolver.Resolve<IConfigurationManager>();
@@ -155,14 +161,17 @@ namespace Microsoft.AspNet.SignalR.Tests.Common.Infrastructure
 
         public virtual void Dispose()
         {
-            _listener.Flush();
-
-            foreach (var sourceName in _traceSources)
+            if (_listener != null)
             {
-                _traceManager[sourceName].Listeners.Remove(_listener);
-            }
+                _listener.Flush();
 
-            _listener.Dispose();
+                foreach (var sourceName in _traceSources)
+                {
+                    _traceManager[sourceName].Listeners.Remove(_listener);
+                }
+
+                _listener.Dispose();
+            }
 
             foreach (var d in Disposables)
             {

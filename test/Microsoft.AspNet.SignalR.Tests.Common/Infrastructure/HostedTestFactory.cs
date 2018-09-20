@@ -38,17 +38,12 @@ namespace Microsoft.AspNet.SignalR.Tests.Common.Infrastructure
         {
             ITestHost host = null;
 
-            string logBasePath = Path.Combine(Directory.GetCurrentDirectory(), "..");
-            TraceListener traceListener = EnableTracing(testName, logBasePath);
+            var traceDisposable = TestTraceManager.CreateTraceListener(testName + ".test.trace.log");
 
             switch (hostType)
             {
                 case HostType.IISExpress:
                     throw new NotSupportedException("IIS Express testing is disabled.");
-                //host = new IISExpressTestHost(testName);
-                //host.TransportFactory = () => CreateTransport(transportType);
-                //host.Transport = host.TransportFactory();
-                //break;
                 case HostType.External:
                     host = new ExternalTestHost(url);
                     host.TransportFactory = () => CreateTransport(transportType);
@@ -57,28 +52,26 @@ namespace Microsoft.AspNet.SignalR.Tests.Common.Infrastructure
                 case HostType.Memory:
                 default:
                     var mh = new MemoryHost();
-                    host = new MemoryTestHost(mh, Path.Combine(logBasePath, testName));
+                    host = new MemoryTestHost(mh, TestTraceManager.GetTraceFilePath(testName));
                     host.TransportFactory = () => CreateTransport(transportType, mh);
                     host.Transport = host.TransportFactory();
                     break;
                 case HostType.HttpListener:
-                    host = new OwinTestHost(Path.Combine(logBasePath, testName));
+                    host = new OwinTestHost(TestTraceManager.GetTraceFilePath(testName));
                     host.TransportFactory = () => CreateTransport(transportType);
                     host.Transport = host.TransportFactory();
                     Trace.TraceInformation("HttpListener url: {0}", host.Url);
                     break;
             }
 
-            var writer = CreateClientTraceWriter(testName);
-            host.ClientTraceOutput = writer;
+            host.Disposables.Add(traceDisposable);
 
-            if (hostType != HostType.Memory && hostType != HostType.External)
+            host.ClientTraceOutput = CreateClientTraceWriter(testName);
+
+            if (hostType != HostType.Memory && hostType != HostType.External && TestTraceManager.IsEnabled)
             {
-                string clientNetworkPath = Path.Combine(logBasePath, testName + ".client.network.log");
-                host.Disposables.Add(SystemNetLogging.Enable(clientNetworkPath));
-
-                string httpSysTracePath = Path.Combine(logBasePath, testName + ".httpSys");
-                IDisposable httpSysTracing = StartHttpSysTracing(httpSysTracePath);
+                host.Disposables.Add(SystemNetLogging.Enable(TestTraceManager.GetTraceFilePath($"{testName}.client.network.log")));
+                var httpSysTracing = StartHttpSysTracing(TestTraceManager.GetTraceFilePath($"{testName}.httpSys"));
 
                 // If tracing is enabled then turn it off on host dispose
                 if (httpSysTracing != null)
@@ -86,12 +79,6 @@ namespace Microsoft.AspNet.SignalR.Tests.Common.Infrastructure
                     host.Disposables.Add(httpSysTracing);
                 }
             }
-
-            host.Disposables.Add(new DisposableAction(() =>
-            {
-                traceListener.Close();
-                Trace.Listeners.Remove(traceListener);
-            }));
 
             EventHandler<UnobservedTaskExceptionEventArgs> handler = (sender, args) =>
             {
@@ -133,22 +120,18 @@ namespace Microsoft.AspNet.SignalR.Tests.Common.Infrastructure
             throw new NotSupportedException("Transport not supported");
         }
 
-        public static TextWriterTraceListener EnableTracing(string testName, string logBasePath)
+        public static TextWriter CreateClientTraceWriter(string testName)
         {
-            string testTracePath = Path.Combine(logBasePath, testName + ".test.trace.log");
-            var traceListener = new TextWriterTraceListener(testTracePath);
-            Trace.Listeners.Add(traceListener);
-            Trace.AutoFlush = true;
-            return traceListener;
-        }
+            if (TestTraceManager.IsEnabled)
+            {
+                var logBasePath = Path.Combine(Directory.GetCurrentDirectory(), "..");
+                var clientTracePath = TestTraceManager.GetTraceFilePath($"{testName}.client.trace.log");
+                var writer = new StreamWriter(clientTracePath);
+                writer.AutoFlush = true;
+                return writer;
+            }
 
-        public static StreamWriter CreateClientTraceWriter(string testName)
-        {
-            string logBasePath = Path.Combine(Directory.GetCurrentDirectory(), "..");
-            string clientTracePath = Path.Combine(logBasePath, testName + ".client.trace.log");
-            var writer = new StreamWriter(clientTracePath);
-            writer.AutoFlush = true;
-            return writer;
+            return TextWriter.Null;
         }
 
         private static IDisposable StartHttpSysTracing(string path)

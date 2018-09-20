@@ -29,7 +29,7 @@
   </ItemGroup>
 
   <Target Name="CompileJs" BeforeTargets="Build" Inputs="@(JSCompile)" Outputs="@(GeneratedJavaScript)">
-    <Exec Command="powershell -NoProfile -ExecutionPolicy Bypass .\build.ps1 $(OutputPath)" 
+    <Exec Command="powershell -NoProfile -ExecutionPolicy Bypass .\build.ps1 $(OutputPath) -version $(PackageVersion)" 
           WorkingDirectory="$(ProjectDir)"
           Condition=" '$(OS)' == 'Windows_NT'" />
   </Target>

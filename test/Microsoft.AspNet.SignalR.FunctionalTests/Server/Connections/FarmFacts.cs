@@ -34,7 +34,7 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Server.Connections
             var configurationManager = new DefaultConfigurationManager();
             configurationManager.DisconnectTimeout = TimeSpan.FromSeconds(6);
 
-            using (EnableDisposableTracing())
+            using (EnableTracing())
             using (var bus = new MessageBus(new StringMinifier(), new TraceManager(), counters, configurationManager, 5000))
             using (var loadBalancer = new LoadBalancer(nodeCount))
             {
@@ -109,7 +109,7 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Server.Connections
             // Ensure /send and /connect requests get handled by different servers
             Func<string, int> scheduler = url => url.Contains("/send") ? 0 : 1;
 
-            using (EnableDisposableTracing())
+            using (EnableTracing())
             using (var bus = new MessageBus(new StringMinifier(), new TraceManager(), counters, configurationManager, 5000))
             using (var loadBalancer = new LoadBalancer(nodeCount, scheduler))
             {
@@ -168,7 +168,7 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Server.Connections
             var counters = new PerformanceCounterManager();
             var configurationManager = new DefaultConfigurationManager();
 
-            using (EnableDisposableTracing())
+            using (EnableTracing())
             using (var bus = new MessageBus(new StringMinifier(), new TraceManager(), counters, configurationManager, 5000))
             using (var memoryHost = new MemoryHost())
             {
@@ -208,18 +208,6 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Server.Connections
                     Assert.True(await mre.WaitAsync(TimeSpan.FromSeconds(5)));
                 }
             }
-        }
-
-        private IDisposable EnableDisposableTracing()
-        {
-            var traceListener = EnableTracing();
-
-            return new DisposableAction(() =>
-            {
-                Trace.Listeners.Remove(traceListener);
-                traceListener.Close();
-                traceListener.Dispose();
-            });
         }
 
         private class LoadBalancer : IHttpClient, IDisposable
