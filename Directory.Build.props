@@ -38,7 +38,7 @@
 
     <!-- These values don't change between official and unofficial builds -->
     <Product>Microsoft ASP.NET SignalR</Product>
-    <PackageProjectUrl>http://www.asp.net/signalr</PackageProjectUrl>
+    <PackageProjectUrl>https://www.asp.net/signalr</PackageProjectUrl>
     <PackageReleaseNotes>https://github.com/SignalR/SignalR/releases</PackageReleaseNotes>
     <Authors>Microsoft</Authors>
   </PropertyGroup>
@@ -47,7 +47,7 @@
     <!-- Assembly/NuSpec attributes -->
     <Company>Microsoft</Company>
     <Copyright>© Copyright (c) Microsoft Corporation. All rights reserved.</Copyright>
-    <PackageLicenseUrl>http://www.microsoft.com/web/webpi/eula/net_library_eula_ENU.htm</PackageLicenseUrl>
+    <PackageLicenseUrl>https://www.microsoft.com/web/webpi/eula/net_library_eula_ENU.htm</PackageLicenseUrl>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(OfficialBuild)' != 'true'">
