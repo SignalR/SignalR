@@ -198,8 +198,8 @@ namespace Microsoft.AspNet.SignalR.Tests
             {
                 InitializeUserByQuerystring(host);
 
-                var wh1 = new AsyncManualResetEvent();
-                var wh2 = new AsyncManualResetEvent();
+                var wh1 = new TaskCompletionSource<object>();
+                var wh2 = new TaskCompletionSource<object>();
 
                 var connection1 = GetUserConnection("myUser");
                 var connection2 = GetUserConnection("myUser2");
@@ -210,16 +210,16 @@ namespace Microsoft.AspNet.SignalR.Tests
                     var proxy1 = connection1.CreateHubProxy(hubName);
                     var proxy2 = connection2.CreateHubProxy(hubName);
 
-                    proxy1.On("send", wh1.Set);
-                    proxy1.On("send", wh2.Set);
+                    proxy1.On("send", () => wh1.TrySetResult(null));
+                    proxy1.On("send", () => wh2.TrySetResult(null));
 
                     await connection1.Start(host);
                     await connection2.Start(host);
 
                     await proxy1.Invoke("SendToUsers", new List<string> { "myUser", "myUser2" });
 
-                    Assert.True(await wh1.WaitAsync(TimeSpan.FromSeconds(5)));
-                    Assert.True(await wh2.WaitAsync(TimeSpan.FromSeconds(5)));
+                    await wh1.Task.OrTimeout();
+                    await wh2.Task.OrTimeout();
                 }
             }
         }
