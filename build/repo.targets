@@ -58,7 +58,7 @@
             Properties="PackageId=%(SatellitePackage.PackageId);Locale=%(SatellitePackage.Locale);$(_ConstantProperties);PackageVersion=$(PackageVersion)" />
     </Target>
         
-    <Target Name="CodeSign" AfterTargets="Test" DependsOnTargets="GetToolsets" Condition=" '$(OS)' == 'Windows_NT' ">
+    <Target Name="CodeSign" AfterTargets="Package" DependsOnTargets="GetToolsets" Condition=" '$(OS)' == 'Windows_NT' ">
         <MSBuild Projects="$(MSBuildThisFileDirectory)sign.proj"
                 Targets="Restore;CodeSign"
                 Properties="VisualStudioMSBuildx86Path=$(VisualStudioMSBuildx86Path);Configuration=$(Configuration);ArtifactsDir=$(ArtifactsDir);Localize=$(Localize)" />

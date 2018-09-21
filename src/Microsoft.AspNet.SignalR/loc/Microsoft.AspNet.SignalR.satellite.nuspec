@@ -8,8 +8,8 @@
         <authors>$Authors$</authors>
         <owners>$Owners$</owners>
         <licenseUrl>$LicenseUrl$</licenseUrl>
-        <copyright>$Copyright$</copyright>
-        <projectUrl>$ProjectUrl$</projectUrl>
+        <copyright>$CopyrightNotice$</copyright>
+        <projectUrl>$ProjectSiteUrl$</projectUrl>
         <requireLicenseAcceptance>$RequireLicenseAcceptance$</requireLicenseAcceptance>
         <description>This is a meta-package for the {Language} satellite assemblies for ASP.NET SignalR.</description>
         <language>$Locale$</language>

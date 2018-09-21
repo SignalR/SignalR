@@ -9,8 +9,8 @@
     <owners>$Owners$</owners>
     <requireLicenseAcceptance>$RequireLicenseAcceptance$</requireLicenseAcceptance>
     <licenseUrl>$LicenseUrl$</licenseUrl>
-    <projectUrl>$ProjectUrl$</projectUrl>
-    <copyright>$Copyright$</copyright>
+    <projectUrl>$ProjectSiteUrl$</projectUrl>
+    <copyright>$CopyrightNotice$</copyright>
     <releaseNotes>$ReleaseNotes$</releaseNotes>
     <tags>Microsoft AspNet SignalR AspNetSignalR JS</tags>
     <dependencies>
