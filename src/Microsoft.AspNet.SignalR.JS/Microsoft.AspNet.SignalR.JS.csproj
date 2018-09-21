@@ -8,7 +8,7 @@
     <TargetFramework>netstandard1.0</TargetFramework>
 
     <NuspecFile>$(MSBuildThisFileDirectory)$(MSBuildProjectName).nuspec</NuspecFile>
-    <NuspecProperties>PackageVersion=$(VersionPrefix)-$(VersionSuffix);Configuration=$(Configuration);OutputPath=$(OutputPath)</NuspecProperties>
+    <NuspecProperties>PackageVersion=$(VersionPrefix)-$(VersionSuffix);Configuration=$(Configuration);LicenseUrl=$(PackageLicenseUrl);Authors=$(Authors);Owners=$(Owners);Copyright=$(Copyright);ProjectUrl=$(PackageProjectUrl);ReleaseNotes=$(PackageReleaseNotes);RequireLicenseAcceptance=$(PackageRequireLicenseAcceptance)</NuspecProperties>
     <NuspecBasePath>$(OutputPath)</NuspecBasePath>
 
     <!-- Suppress the DLL from the package -->
