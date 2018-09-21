@@ -14,7 +14,7 @@
     </PropertyGroup>
     <Target Name="SetNuspecProperties">
         <PropertyGroup>
-            <NuspecProperties>Locale=$(Locale);PackageVersion=$(PackageVersion);Configuration=$(Configuration);LicenseUrl=$(LicenseUrl);Authors=$(Authors);Owners=$(Owners);Copyright=$(Copyright);ProjectUrl=$(ProjectUrl);RequireLicenseAcceptance=$(RequireLicenseAcceptance)</NuspecProperties>
+            <NuspecProperties>Locale=$(Locale);PackageVersion=$(PackageVersion);Configuration=$(Configuration);LicenseUrl=$(PackageLicenseUrl);ReleaseNotes=$(PackageReleaseNotes);Authors=$(Authors);Owners=$(Owners);Copyright=$(Copyright);ProjectUrl=$(PackageProjectUrl);RequireLicenseAcceptance=$(PackageRequireLicenseAcceptance)</NuspecProperties>
             <PackageOutputPath>$(PackageOutputPath)\satellite\$(Locale)</PackageOutputPath>
         </PropertyGroup>
     </Target>
