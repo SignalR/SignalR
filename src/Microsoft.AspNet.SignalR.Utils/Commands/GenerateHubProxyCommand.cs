@@ -35,10 +35,6 @@ namespace Microsoft.AspNet.SignalR.Utils
 
         public override void Execute(string[] args)
         {
-            string path = null;
-            string outputPath = null;
-            string url = null;
-
             ParseArguments(args, out var url, out var path, out var outputPath, out var configFile);
 
             if (String.IsNullOrEmpty(outputPath))
@@ -53,10 +49,10 @@ namespace Microsoft.AspNet.SignalR.Utils
                 outputPath = Path.Combine(outputPath, "server.js");
             }
 
-            OutputHubs(path, url, outputPath);
+            OutputHubs(path, url, outputPath, configFile);
         }
 
-        private void OutputHubs(string path, string url, string outputPath)
+        private void OutputHubs(string path, string url, string outputPath, string configFile)
         {
             path = path ?? Directory.GetCurrentDirectory();
             url = url ?? "/signalr";
@@ -81,6 +77,7 @@ namespace Microsoft.AspNet.SignalR.Utils
             var setup = new AppDomainSetup
             {
                 ApplicationBase = tempPath,
+                ConfigurationFile = configFile,
             };
 
             var domain = AppDomain.CreateDomain("hubs", AppDomain.CurrentDomain.Evidence, setup);
@@ -131,7 +128,7 @@ namespace Microsoft.AspNet.SignalR.Utils
                         outputPath = arg.Value;
                         break;
                     case "c":
-                    case "config":
+                    case "configFile":
                         configFile = arg.Value;
                         break;
                 }
