@@ -4,14 +4,14 @@ namespace Microsoft.AspNet.SignalR.ServiceSample
 {
     public class EchoHub : Hub
     {
-        public string SayHi(string name)
+        public override Task OnConnected()
         {
-            return $"Hello, {name}!";
+            return Clients.All.receive("<system>", "User joined");
         }
 
-        public async Task Broadcast(string message)
+        public Task Broadcast(string user, string message)
         {
-            await Clients.All.receive(message);
+            return Clients.All.receive(user, message);
         }
     }
 }

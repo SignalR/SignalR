@@ -1,22 +1,43 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Threading;
+using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.AspNet.SignalR.Client.Hubs;
 
 namespace Microsoft.AspNet.SignalR.Client.Samples
 {
-    class Program
+    internal class Program
     {
-        static void Main(string[] args)
+        private static Task<int> Main(string[] args)
         {
-            var writer = Console.Out;
-            var client = new CommonClient(writer);
-            client.Run("http://localhost:40476/");
+            if (args.Length == 0)
+            {
+                PrintUsage();
+                return Task.FromResult(0);
+            }
 
-            Console.ReadKey();
+            switch (args[0])
+            {
+                case "chat":
+                    return ChatSample.SampleMain(args.Skip(1).ToArray());
+                default:
+                    PrintUsage();
+                    Console.Error.WriteLine($"Unknown subcommand: {args[0]}.");
+                    return Task.FromResult(1);
+            }
         }
+
+        private static void PrintUsage()
+        {
+            Console.WriteLine("ASP.NET SignalR Sample .NET Client");
+            Console.WriteLine();
+            Console.WriteLine($"Usage: {typeof(Program).Assembly.GetName().Name} <SAMPLE> <SAMPLE ARGS...>");
+            Console.WriteLine();
+            Console.WriteLine("Samples:");
+            Console.WriteLine("  chat - A chat sample");
+            Console.WriteLine();
+        }
+
     }
 }

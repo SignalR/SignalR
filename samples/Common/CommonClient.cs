@@ -1,7 +1,5 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
-
-#if !NET40
 
 using System;
 using System.IO;
@@ -10,7 +8,6 @@ using System.Net.Http;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.AspNet.SignalR.Client.Hubs;
 
 namespace Microsoft.AspNet.SignalR.Client.Samples
 {
@@ -56,12 +53,12 @@ namespace Microsoft.AspNet.SignalR.Client.Samples
 
             await hubProxy.Invoke("DisplayMessageCaller", "Hello Caller!");
 
-            string joinGroupResponse = await hubProxy.Invoke<string>("JoinGroup", hubConnection.ConnectionId, "CommonClientGroup");
+            var joinGroupResponse = await hubProxy.Invoke<string>("JoinGroup", hubConnection.ConnectionId, "CommonClientGroup");
             hubConnection.TraceWriter.WriteLine("joinGroupResponse={0}", joinGroupResponse);
 
             await hubProxy.Invoke("DisplayMessageGroup", "CommonClientGroup", "Hello Group Members!");
 
-            string leaveGroupResponse = await hubProxy.Invoke<string>("LeaveGroup", hubConnection.ConnectionId, "CommonClientGroup");
+            var leaveGroupResponse = await hubProxy.Invoke<string>("LeaveGroup", hubConnection.ConnectionId, "CommonClientGroup");
             hubConnection.TraceWriter.WriteLine("leaveGroupResponse={0}", leaveGroupResponse);
 
             await hubProxy.Invoke("DisplayMessageGroup", "CommonClientGroup", "Hello Group Members! (caller should not see this message)");
@@ -77,7 +74,7 @@ namespace Microsoft.AspNet.SignalR.Client.Samples
             var hubProxy = hubConnection.CreateHubProxy("demo");
             hubProxy.On<int>("invoke", (i) =>
             {
-                int n = hubProxy.GetValue<int>("index");
+                var n = hubProxy.GetValue<int>("index");
                 hubConnection.TraceWriter.WriteLine("{0} client state index -> {1}", i, n);
             });
 
@@ -95,7 +92,7 @@ namespace Microsoft.AspNet.SignalR.Client.Samples
 
         private async Task RunRawConnection(string serverUrl)
         {
-            string url = serverUrl + "raw-connection";
+            var url = serverUrl + "raw-connection";
 
             var connection = new Connection(url);
             connection.TraceWriter = _traceWriter;
@@ -110,7 +107,7 @@ namespace Microsoft.AspNet.SignalR.Client.Samples
 
         private async Task RunStreaming(string serverUrl)
         {
-            string url = serverUrl + "streaming-connection";
+            var url = serverUrl + "streaming-connection";
 
             var connection = new Connection(url);
             connection.TraceWriter = _traceWriter;
@@ -121,7 +118,7 @@ namespace Microsoft.AspNet.SignalR.Client.Samples
 
         private async Task RunAuth(string serverUrl)
         {
-            string url = serverUrl + "cookieauth";
+            var url = serverUrl + "cookieauth";
 
             var handler = new HttpClientHandler();
             handler.CookieContainer = new CookieContainer();
@@ -192,11 +189,11 @@ namespace Microsoft.AspNet.SignalR.Client.Samples
             hubConnection.TraceLevel = TraceLevels.StateChanges;
 
             var hubProxy = hubConnection.CreateHubProxy("LongRunningHub");
-            ManualResetEvent event1 = new ManualResetEvent(false);
-            ManualResetEvent event2 = new ManualResetEvent(false);
+            var event1 = new ManualResetEvent(false);
+            var event2 = new ManualResetEvent(false);
 
-            int callbacks = 1000;
-            int counter = 0;
+            var callbacks = 1000;
+            var counter = 0;
             hubProxy.On<int>("serverIsWaiting", (i) =>
             {
                 if (i % 100 == 0)
@@ -215,12 +212,12 @@ namespace Microsoft.AspNet.SignalR.Client.Samples
 
             hubConnection.TraceWriter.WriteLine("check memory size before sending longRunning");
 
-            for (int messageNumber = 1; messageNumber <= callbacks; messageNumber++)
+            for (var messageNumber = 1; messageNumber <= callbacks; messageNumber++)
             {
 #pragma warning disable 4014
                 hubProxy.Invoke("LongRunningMethod", messageNumber).ContinueWith(task =>
                 {
-                    int i = Interlocked.Increment(ref counter);
+                    var i = Interlocked.Increment(ref counter);
                     if (i % 100 == 0)
                     {
                         hubConnection.TraceWriter.WriteLine("{0} completed: {1} task.Status={2}", DateTime.Now, i, task.Status);
@@ -242,5 +239,3 @@ namespace Microsoft.AspNet.SignalR.Client.Samples
         }
     }
 }
-
-#endif
