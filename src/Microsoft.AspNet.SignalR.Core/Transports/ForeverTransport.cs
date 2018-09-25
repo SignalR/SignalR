@@ -98,6 +98,7 @@ namespace Microsoft.AspNet.SignalR.Transports
 
         protected Task ProcessRequestCore(ITransportConnection connection)
         {
+            Trace.TraceVerbose($"ProcessRequestCore(Connection: {ConnectionId})");
             Connection = connection;
 
             if (IsSendRequest)
@@ -106,6 +107,7 @@ namespace Microsoft.AspNet.SignalR.Transports
             }
             else if (IsAbortRequest)
             {
+                Trace.TraceVerbose($"ProcessAbortRequest(Connection: {ConnectionId})");
                 return Connection.Abort(ConnectionId);
             }
             else
@@ -144,6 +146,7 @@ namespace Microsoft.AspNet.SignalR.Transports
 
         protected virtual async Task ProcessSendRequest()
         {
+            Trace.TraceVerbose($"ProcessSendRequest(Connection: {ConnectionId})");
             INameValueCollection form = await Context.Request.ReadForm().PreserveCulture();
             string data = form["data"];
 
@@ -156,6 +159,7 @@ namespace Microsoft.AspNet.SignalR.Transports
         [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "Exceptions are flowed to the caller.")]
         private Task ProcessReceiveRequest(ITransportConnection connection)
         {
+            Trace.TraceVerbose($"ProcessReceiveRequest(Connection: {ConnectionId})");
             Func<Task> initialize = null;
 
             // If this transport isn't replacing an existing transport, oldConnection will be null.

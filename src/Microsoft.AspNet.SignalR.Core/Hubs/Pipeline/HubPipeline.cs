@@ -46,40 +46,48 @@ namespace Microsoft.AspNet.SignalR.Hubs
             return Pipeline.Invoke(context);
         }
 
-        public Task Connect(IHub hub)
+        public async Task Connect(IHub hub)
         {
-            _trace.TraceInformation($"Starting connect pipeline for {hub.GetType().FullName}");
-            return Pipeline.Connect(hub);
+            _trace.TraceInformation($"Starting connect pipeline for '{hub.Context.ConnectionId}' to {hub.GetType().FullName}");
+            await Pipeline.Connect(hub);
+            _trace.TraceInformation($"Completed connect pipeline for '{hub.Context.ConnectionId}' to {hub.GetType().FullName}");
         }
 
-        public Task Reconnect(IHub hub)
+        public async Task Reconnect(IHub hub)
         {
-            _trace.TraceInformation($"Starting reconnect pipeline for {hub.GetType().FullName}");
-            return Pipeline.Reconnect(hub);
+            _trace.TraceInformation($"Starting reconnect pipeline for '{hub.Context.ConnectionId}' to {hub.GetType().FullName}");
+            await Pipeline.Reconnect(hub);
+            _trace.TraceInformation($"Completed reconnect pipeline for '{hub.Context.ConnectionId}' to {hub.GetType().FullName}");
         }
 
-        public Task Disconnect(IHub hub, bool stopCalled)
+        public async Task Disconnect(IHub hub, bool stopCalled)
         {
-            _trace.TraceInformation($"Starting disconnect pipeline for {hub.GetType().FullName} (stopCalled: {stopCalled})");
-            return Pipeline.Disconnect(hub, stopCalled);
+            _trace.TraceInformation($"Starting disconnect pipeline for '{hub.Context.ConnectionId}' from {hub.GetType().FullName} (stopCalled: {stopCalled})");
+            await Pipeline.Disconnect(hub, stopCalled);
+            _trace.TraceInformation($"Completed disconnect pipeline for '{hub.Context.ConnectionId}' from {hub.GetType().FullName} (stopCalled: {stopCalled})");
         }
 
         public bool AuthorizeConnect(HubDescriptor hubDescriptor, IRequest request)
         {
             _trace.TraceInformation($"Starting authorize pipeline for {hubDescriptor.Name}");
-            return Pipeline.AuthorizeConnect(hubDescriptor, request);
+            var result = Pipeline.AuthorizeConnect(hubDescriptor, request);
+            _trace.TraceInformation($"Completed authorize pipeline for {hubDescriptor.Name}");
+            return result;
         }
 
         public IList<string> RejoiningGroups(HubDescriptor hubDescriptor, IRequest request, IList<string> groups)
         {
             _trace.TraceInformation($"Starting rejoining groups pipeline for {hubDescriptor.Name}");
-            return Pipeline.RejoiningGroups(hubDescriptor, request, groups);
+            var result = Pipeline.RejoiningGroups(hubDescriptor, request, groups);
+            _trace.TraceInformation($"Completed rejoining groups pipeline for {hubDescriptor.Name}");
+            return result;
         }
 
-        public Task Send(IHubOutgoingInvokerContext context)
+        public async Task Send(IHubOutgoingInvokerContext context)
         {
-            _trace.TraceInformation($"Starting send pipeline for {context.Invocation.Hub}.{context.Invocation.Method}");
-            return Pipeline.Send(context);
+            _trace.TraceInformation($"Starting send pipeline for {context.Invocation.Hub}.{context.Invocation.Method} (destination: {context.Signal ?? "<multiple>"})");
+            await Pipeline.Send(context);
+            _trace.TraceInformation($"Completed send pipeline for {context.Invocation.Hub}.{context.Invocation.Method} (destination: {context.Signal ?? "<multiple>"})");
         }
 
         private class ComposedPipeline

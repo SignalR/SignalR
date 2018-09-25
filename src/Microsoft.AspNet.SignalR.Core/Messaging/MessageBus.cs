@@ -222,6 +222,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
                 subscription.SetEventTopic(key, topic);
 
                 topics.Add(topic);
+                _trace.TraceInformation($"Subscribed connection {subscriber.Identity} to topic '{key}' ");
             }
 
             subscriber.EventKeyAdded += _addEvent;
@@ -294,6 +295,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
         /// <returns>A <see cref="Topic"/> for the specified key.</returns>
         protected virtual Topic CreateTopic(string key)
         {
+            _trace.TraceInformation($"Creating topic {key}");
             // REVIEW: This can be called multiple times, should we guard against it?
             Counters.MessageBusTopicsCurrent.Increment();
 

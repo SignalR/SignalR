@@ -136,6 +136,7 @@ namespace Microsoft.AspNet.SignalR.Transports
 
         private Task AcceptWebSocketRequest(Func<IWebSocket, Task> callback)
         {
+            Trace.TraceInformation($"Accepting WebSocket for connection '{ConnectionId}'");
             var accept = _context.Environment.Get<Action<IDictionary<string, object>, WebSocketFunc>>(OwinConstants.WebSocketAccept);
 
             if (accept == null)

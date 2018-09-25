@@ -256,6 +256,7 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
 
         public IDisposable Receive(string messageId, Func<PersistentResponse, object, Task<bool>> callback, int maxMessages, object state)
         {
+            Trace.TraceInformation($"Subscribing connection '{_connectionId}' to MessageBus");
             var receiveContext = new ReceiveContext(this, callback, state);
 
             return _bus.Subscribe(this,
