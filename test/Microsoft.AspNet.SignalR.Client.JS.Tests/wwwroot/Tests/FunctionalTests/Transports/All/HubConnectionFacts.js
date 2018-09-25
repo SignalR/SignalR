@@ -65,4 +65,32 @@ testUtilities.runWithAllTransports(function (transport) {
             connection.stop();
         };
     });
+
+    QUnit.asyncTimeoutTest(transport + " transport times out during start request.", testUtilities.defaultTestTimeout, function (end, assert, testName) {
+        var connection = testUtilities.createTestConnection(testName, end, assert, { hub: true, wrapStart: false }),
+            hub = connection.createHubProxies().onConnectedTimeoutHub;
+
+        hub.client.dummy = function (message) {
+            // Register a handler so that we connect to the hub and trigger OnConnected
+        };
+
+        setTimeout(function () {
+            connection.stop();
+        }, 5000);
+
+        connection.start({ transport: transport })
+            .then(function () {
+                assert.ok(false, "Connection should not have succeeded");
+                end();
+            })
+            .catch(function (ex) {
+                assert.equal("", ex);
+                end();
+            });
+
+        // Cleanup
+        return function () {
+            connection.stop();
+        };
+    });
 });
