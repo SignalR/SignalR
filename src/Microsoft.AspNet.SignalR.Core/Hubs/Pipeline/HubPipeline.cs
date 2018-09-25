@@ -1,11 +1,13 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNet.SignalR.Tracing;
 
 namespace Microsoft.AspNet.SignalR.Hubs
 {
@@ -13,11 +15,13 @@ namespace Microsoft.AspNet.SignalR.Hubs
     {
         private readonly Stack<IHubPipelineModule> _modules;
         private readonly Lazy<ComposedPipeline> _pipeline;
+        private readonly TraceSource _trace;
 
-        public HubPipeline()
+        public HubPipeline(IDependencyResolver resolver)
         {
             _modules = new Stack<IHubPipelineModule>();
             _pipeline = new Lazy<ComposedPipeline>(() => new ComposedPipeline(_modules));
+            _trace = resolver.Resolve<ITraceManager>()[$"SignalR.{nameof(HubPipeline)}"];
         }
 
         public IHubPipeline AddModule(IHubPipelineModule pipelineModule)
@@ -26,6 +30,7 @@ namespace Microsoft.AspNet.SignalR.Hubs
             {
                 throw new InvalidOperationException(String.Format(CultureInfo.CurrentCulture, Resources.Error_UnableToAddModulePiplineAlreadyInvoked));
             }
+            _trace.TraceInformation($"Adding pipeline module {pipelineModule.GetType().FullName}");
             _modules.Push(pipelineModule);
             return this;
         }
@@ -37,42 +42,48 @@ namespace Microsoft.AspNet.SignalR.Hubs
 
         public Task<object> Invoke(IHubIncomingInvokerContext context)
         {
+            _trace.TraceInformation($"Starting invoke pipeline for invocation of {context.MethodDescriptor.Hub.Name}.{context.MethodDescriptor.Name}");
             return Pipeline.Invoke(context);
         }
 
         public Task Connect(IHub hub)
         {
+            _trace.TraceInformation($"Starting connect pipeline for {hub.GetType().FullName}");
             return Pipeline.Connect(hub);
         }
 
         public Task Reconnect(IHub hub)
         {
+            _trace.TraceInformation($"Starting reconnect pipeline for {hub.GetType().FullName}");
             return Pipeline.Reconnect(hub);
         }
 
         public Task Disconnect(IHub hub, bool stopCalled)
         {
+            _trace.TraceInformation($"Starting disconnect pipeline for {hub.GetType().FullName} (stopCalled: {stopCalled})");
             return Pipeline.Disconnect(hub, stopCalled);
         }
 
         public bool AuthorizeConnect(HubDescriptor hubDescriptor, IRequest request)
         {
+            _trace.TraceInformation($"Starting authorize pipeline for {hubDescriptor.Name}");
             return Pipeline.AuthorizeConnect(hubDescriptor, request);
         }
 
         public IList<string> RejoiningGroups(HubDescriptor hubDescriptor, IRequest request, IList<string> groups)
         {
+            _trace.TraceInformation($"Starting rejoining groups pipeline for {hubDescriptor.Name}");
             return Pipeline.RejoiningGroups(hubDescriptor, request, groups);
         }
 
         public Task Send(IHubOutgoingInvokerContext context)
         {
+            _trace.TraceInformation($"Starting send pipeline for {context.Invocation.Hub}.{context.Invocation.Method}");
             return Pipeline.Send(context);
         }
 
         private class ComposedPipeline
         {
-
             public Func<IHubIncomingInvokerContext, Task<object>> Invoke;
             public Func<IHub, Task> Connect;
             public Func<IHub, Task> Reconnect;

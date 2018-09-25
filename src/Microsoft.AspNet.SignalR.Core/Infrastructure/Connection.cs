@@ -1,15 +1,12 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.IO;
 using System.Linq;
-using System.Text;
-using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR.Json;
 using Microsoft.AspNet.SignalR.Messaging;
@@ -114,6 +111,23 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
 
         public Task Send(ConnectionMessage message)
         {
+            string FormatDestination()
+            {
+                var excluded = "";
+                if (message.ExcludedSignals != null && message.ExcludedSignals.Count > 0)
+                {
+                    excluded = $" (excluding: {string.Join(",", message.ExcludedSignals)})";
+                }
+                if (message.Signals != null)
+                {
+                    return $"{string.Join(",", message.Signals)}{excluded}";
+                }
+                else
+                {
+                    return $"{message.Signal}{excluded}";
+                }
+            }
+
             if (!String.IsNullOrEmpty(message.Signal) &&
                 message.Signals != null)
             {
@@ -124,19 +138,24 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
                                   String.Join(", ", message.Signals)));
             }
 
+            if (Trace.Switch.ShouldTrace(TraceEventType.Information))
+            {
+                Trace.TraceInformation($"Sending message to {FormatDestination()}");
+            }
+
             if (message.Signals != null)
             {
                 return MultiSend(message.Signals, message.Value, message.ExcludedSignals);
             }
             else
             {
-                Message busMessage = CreateMessage(message.Signal, message.Value);
+                var busMessage = CreateMessage(message.Signal, message.Value);
 
                 busMessage.Filter = GetFilter(message.ExcludedSignals);
 
                 if (busMessage.WaitForAck)
                 {
-                    Task ackTask = _ackHandler.CreateAck(busMessage.CommandId);
+                    var ackTask = _ackHandler.CreateAck(busMessage.CommandId);
                     return _bus.Publish(busMessage).Then(task => task, ackTask);
                 }
 
@@ -153,13 +172,13 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
             }
 
             // Serialize once
-            ArraySegment<byte> messageBuffer = GetMessageBuffer(value);
-            string filter = GetFilter(excludedSignals);
+            var messageBuffer = GetMessageBuffer(value);
+            var filter = GetFilter(excludedSignals);
 
             var tasks = new Task[signals.Count];
 
             // Send the same data to each connection id
-            for (int i = 0; i < signals.Count; i++)
+            for (var i = 0; i < signals.Count; i++)
             {
                 var message = new Message(_connectionId, signals[i], messageBuffer);
 
@@ -187,7 +206,7 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
 
         private Message CreateMessage(string key, object value)
         {
-            ArraySegment<byte> messageBuffer = GetMessageBuffer(value);
+            var messageBuffer = GetMessageBuffer(value);
 
             var message = new Message(_connectionId, key, messageBuffer);
 
@@ -288,7 +307,7 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
                 return false;
             }
 
-            string[] exclude = message.Filter.Split('|');
+            var exclude = message.Filter.Split('|');
 
             return exclude.Any(signal => Identity.Equals(signal, StringComparison.OrdinalIgnoreCase) ||
                                                     _signals.Contains(signal) ||
@@ -367,7 +386,7 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
                                                    IProtectedData protectedData,
                                                    string connectionId)
         {
-            bool anyChanges = groupSet.DetectChanges();
+            var anyChanges = groupSet.DetectChanges();
 
             if (anyChanges)
             {
@@ -375,7 +394,7 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
                 IEnumerable<string> groups = groupSet.GetSnapshot();
 
                 // Remove group prefixes before any thing goes over the wire
-                string groupsString = connectionId + ':' + serializer.Stringify(PrefixHelper.RemoveGroupPrefixes(groups)); ;
+                var groupsString = connectionId + ':' + serializer.Stringify(PrefixHelper.RemoveGroupPrefixes(groups)); ;
 
                 // The groups token
                 response.GroupsToken = protectedData.Protect(groupsString, Purposes.Groups);

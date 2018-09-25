@@ -19,7 +19,6 @@ namespace Microsoft.AspNet.SignalR.Messaging
 
         private readonly IList<ScaleoutMappingStore> _streams;
         private readonly List<Cursor> _cursors;
-        private readonly TraceSource _trace;
 
         public ScaleoutSubscription(string identity,
                                     IList<string> eventKeys,
@@ -30,7 +29,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
                                     ITraceManager traceManager,
                                     IPerformanceCounterManager counters,
                                     object state)
-            : base(identity, eventKeys, callback, maxMessages, counters, state)
+            : base(identity, eventKeys, callback, maxMessages, counters, state, traceManager["SignalR." + typeof(ScaleoutSubscription).Name])
         {
             if (streams == null)
             {
@@ -76,7 +75,6 @@ namespace Microsoft.AspNet.SignalR.Messaging
             }
 
             _cursors = cursors;
-            _trace = traceManager["SignalR." + typeof(ScaleoutSubscription).Name];
         }
 
         public override void WriteCursor(TextWriter textWriter)
@@ -129,7 +127,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
                 {
                     Cursor cursor = _cursors[i];
 
-                    _trace.TraceVerbose("Setting cursor {0} value {1} to {2} [{3}]",
+                    Trace.TraceVerbose("Setting cursor {0} value {1} to {2} [{3}]",
                         i, cursor.Id, nextCursor.Value, Identity);
 
                     cursor.Id = nextCursor.Value;
@@ -191,7 +189,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
                 }
             }
 
-            _trace.TraceEvent(TraceEventType.Verbose, 0, $"End of mappings (connection ID: {Identity}). Total mappings processed: {counter}");
+            Trace.TraceEvent(TraceEventType.Verbose, 0, $"End of mappings (connection ID: {Identity}). Total mappings processed: {counter}");
         }
 
         private ulong ExtractMessages(int streamIndex, ScaleoutMapping mapping, IList<ArraySegment<Message>> items, ref int totalCount)
@@ -225,14 +223,14 @@ namespace Microsoft.AspNet.SignalR.Messaging
                                     items.Add(storeResult.Messages);
                                     totalCount += storeResult.Messages.Count;
 
-                                    _trace.TraceVerbose("Adding {0} message(s) for mapping id: {1}, event key: '{2}', event id: {3}, streamIndex: {4}",
+                                    Trace.TraceVerbose("Adding {0} message(s) for mapping id: {1}, event key: '{2}', event id: {3}, streamIndex: {4}",
                                         storeResult.Messages.Count, mapping.Id, info.Key, info.Id, streamIndex);
 
                                     // We got a mapping id bigger than what we expected which
                                     // means we missed messages. Use the new mappingId.
                                     if (message.MappingId > mapping.Id)
                                     {
-                                        _trace.TraceEvent(TraceEventType.Verbose, 0, $"Extracted additional messages, updating cursor to new Mapping ID: {message.MappingId}");
+                                        Trace.TraceEvent(TraceEventType.Verbose, 0, $"Extracted additional messages, updating cursor to new Mapping ID: {message.MappingId}");
                                         return message.MappingId;
                                     }
                                 }
@@ -242,7 +240,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
                                     // If we do nothing then we'll end up querying old cursor ids until
                                     // we eventually find a message id that matches this stream index.
 
-                                    _trace.TraceInformation(
+                                    Trace.TraceInformation(
                                         "Stream index mismatch. Mapping id: {0}, event key: '{1}', event id: {2}, message.StreamIndex: {3}, streamIndex: {4}",
                                             mapping.Id, info.Key, info.Id, message.StreamIndex, streamIndex);
                                 }

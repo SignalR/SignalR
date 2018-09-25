@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -9,6 +9,7 @@ using System.IO;
 using System.Security.Cryptography;
 using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR.Infrastructure;
+using Microsoft.AspNet.SignalR.Tracing;
 
 namespace Microsoft.AspNet.SignalR.Messaging
 {
@@ -30,8 +31,9 @@ namespace Microsoft.AspNet.SignalR.Messaging
                                    int maxMessages,
                                    IStringMinifier stringMinifier,
                                    IPerformanceCounterManager counters,
-                                   object state) :
-            base(identity, eventKeys, callback, maxMessages, counters, state)
+                                   object state,
+                                   ITraceManager traceManager) :
+            base(identity, eventKeys, callback, maxMessages, counters, state, traceManager[$"SignalR.{nameof(DefaultSubscription)}"])
         {
             _stringMinifier = stringMinifier;
 
@@ -150,11 +152,13 @@ namespace Microsoft.AspNet.SignalR.Messaging
                 }
                 for (int i = 0; i < _cursors.Count; i++)
                 {
+                    Trace.TraceInformation($"Processing cursor {_cursors[i].Id} (key: '{_cursors[i].Key}')");
                     MessageStoreResult<Message> storeResult = _cursorTopics[i].Store.GetMessages(_cursors[i].Id, MaxMessages);
                     _cursorsState[i] = storeResult.FirstMessageId + (ulong)storeResult.Messages.Count;
 
                     if (storeResult.Messages.Count > 0)
                     {
+                        Trace.TraceInformation($"Found {storeResult.Messages.Count} messages for cursor {_cursors[i].Id} (key: '{_cursors[i].Key}')");
                         items.Add(storeResult.Messages);
                         totalCount += storeResult.Messages.Count;
                     }

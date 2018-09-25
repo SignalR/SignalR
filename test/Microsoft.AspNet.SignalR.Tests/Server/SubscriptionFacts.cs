@@ -150,7 +150,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
         {
             private readonly int _itemCount;
             public TestSubscription(string identity, IList<string> eventKeys, Func<MessageResult, object, Task<bool>> callback, int itemCount)
-                : base(identity, eventKeys, callback, 10, GetCounters(), state: null)
+                : base(identity, eventKeys, callback, 10, GetCounters(), state: null, trace: null)
             {
                 _itemCount = itemCount;
             }

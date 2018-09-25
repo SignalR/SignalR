@@ -1,8 +1,9 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Threading;
@@ -36,7 +37,9 @@ namespace Microsoft.AspNet.SignalR.Messaging
 
         public IDisposable Disposable { get; set; }
 
-        protected Subscription(string identity, IList<string> eventKeys, Func<MessageResult, object, Task<bool>> callback, int maxMessages, IPerformanceCounterManager counters, object state)
+        protected TraceSource Trace { get; }
+
+        protected Subscription(string identity, IList<string> eventKeys, Func<MessageResult, object, Task<bool>> callback, int maxMessages, IPerformanceCounterManager counters, object state, TraceSource trace)
         {
             if (String.IsNullOrEmpty(identity))
             {
@@ -69,7 +72,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
             MaxMessages = maxMessages;
             _counters = counters;
             _callbackState = state;
-
+            Trace = trace ?? new TraceSource($"SignalR.{nameof(Subscription)}");
             _counters.MessageBusSubscribersTotal.Increment();
             _counters.MessageBusSubscribersCurrent.Increment();
             _counters.MessageBusSubscribersPerSec.Increment();
@@ -103,6 +106,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
 
             try
             {
+                Trace.TraceInformation($"Running subscription for {result.Messages.Count} messages");
                 return await _callback(result, _callbackState);
             }
             finally
@@ -146,6 +150,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
                 }
                 else
                 {
+                    Trace.TraceInformation("No messages to send");
                     break;
                 }
             }

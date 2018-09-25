@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -148,16 +148,22 @@ namespace Microsoft.AspNet.SignalR.Messaging
                 throw new ArgumentNullException("message");
             }
 
+            _trace.TraceInformation($"Publishing message to '{message.Key}' (filter: '{message.Filter}') (source: '{message.Source}').");
+
             Topic topic;
             if (Topics.TryGetValue(message.Key, out topic))
             {
+                _trace.TraceInformation($"Found topic for '{message.Key}'");
                 topic.Store.Add(message);
-                ScheduleTopic(topic);
+                ScheduleTopic(message.Key, topic);
+            }
+            else
+            {
+                _trace.TraceInformation($"No topic for '{message.Key}'");
             }
 
             Counters.MessageBusMessagesPublishedTotal.Increment();
             Counters.MessageBusMessagesPublishedPerSec.Increment();
-
 
             return TaskAsyncHelper.Empty;
         }
@@ -250,7 +256,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
         [SuppressMessage("Microsoft.Design", "CA1062:Validate arguments of public methods", MessageId = "0", Justification = "Called from derived class")]
         protected virtual Subscription CreateSubscription(ISubscriber subscriber, string cursor, Func<MessageResult, object, Task<bool>> callback, int messageBufferSize, object state)
         {
-            return new DefaultSubscription(subscriber.Identity, subscriber.EventKeys, Topics, cursor, callback, messageBufferSize, _stringMinifier, Counters, state);
+            return new DefaultSubscription(subscriber.Identity, subscriber.EventKeys, Topics, cursor, callback, messageBufferSize, _stringMinifier, Counters, state, _traceManager);
         }
 
         protected void ScheduleEvent(string eventKey)
@@ -258,11 +264,11 @@ namespace Microsoft.AspNet.SignalR.Messaging
             Topic topic;
             if (Topics.TryGetValue(eventKey, out topic))
             {
-                ScheduleTopic(topic);
+                ScheduleTopic(eventKey, topic);
             }
         }
 
-        private void ScheduleTopic(Topic topic)
+        private void ScheduleTopic(string name, Topic topic)
         {
             try
             {
@@ -271,6 +277,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
                 for (int i = 0; i < topic.Subscriptions.Count; i++)
                 {
                     ISubscription subscription = topic.Subscriptions[i];
+                    _trace.TraceInformation($"Scheduling topic {name}.");
                     _broker.Schedule(subscription);
                 }
             }
