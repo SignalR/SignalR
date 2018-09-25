@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -39,7 +39,7 @@ namespace Microsoft.AspNet.SignalR.Utils
             string outputPath = null;
             string url = null;
 
-            ParseArguments(args, out url, out path, out outputPath);
+            ParseArguments(args, out var url, out var path, out var outputPath, out var configFile);
 
             if (String.IsNullOrEmpty(outputPath))
             {
@@ -80,7 +80,7 @@ namespace Microsoft.AspNet.SignalR.Utils
 
             var setup = new AppDomainSetup
             {
-                ApplicationBase = tempPath
+                ApplicationBase = tempPath,
             };
 
             var domain = AppDomain.CreateDomain("hubs", AppDomain.CurrentDomain.Evidence, setup);
@@ -104,11 +104,12 @@ namespace Microsoft.AspNet.SignalR.Utils
         }
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Globalization", "CA1307:SpecifyStringComparison", MessageId = "System.String.StartsWith(System.String)", Justification = "All starts with methods are SignalR/networking terms.  Will not change via localization.")]
-        private static void ParseArguments(string[] args, out string url, out string path, out string outputPath)
+        private static void ParseArguments(string[] args, out string url, out string path, out string outputPath, out string configFile)
         {
             path = null;
             url = null;
             outputPath = null;
+            configFile = null;
 
             foreach (var a in args)
             {
@@ -128,6 +129,10 @@ namespace Microsoft.AspNet.SignalR.Utils
                         break;
                     case "o":
                         outputPath = arg.Value;
+                        break;
+                    case "c":
+                    case "config":
+                        configFile = arg.Value;
                         break;
                 }
             }
