@@ -84,8 +84,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNet.SignalR.Se
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNet.SignalR.FunctionalTests", "test\Microsoft.AspNet.SignalR.FunctionalTests\Microsoft.AspNet.SignalR.FunctionalTests.csproj", "{9F5803C1-4FA8-4619-8423-DB5CA1DCDA8B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNet.SignalR.ServiceSample", "samples\Microsoft.AspNet.SignalR.ServiceSample\Microsoft.AspNet.SignalR.ServiceSample.csproj", "{626D017B-19D0-4536-9D34-910F5C4A1FFE}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -506,26 +504,6 @@ Global
 		{9F5803C1-4FA8-4619-8423-DB5CA1DCDA8B}.Release|x64.Build.0 = Release|Any CPU
 		{9F5803C1-4FA8-4619-8423-DB5CA1DCDA8B}.Release|x86.ActiveCfg = Release|Any CPU
 		{9F5803C1-4FA8-4619-8423-DB5CA1DCDA8B}.Release|x86.Build.0 = Release|Any CPU
-		{626D017B-19D0-4536-9D34-910F5C4A1FFE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{626D017B-19D0-4536-9D34-910F5C4A1FFE}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{626D017B-19D0-4536-9D34-910F5C4A1FFE}.Debug|ARM.ActiveCfg = Debug|Any CPU
-		{626D017B-19D0-4536-9D34-910F5C4A1FFE}.Debug|ARM.Build.0 = Debug|Any CPU
-		{626D017B-19D0-4536-9D34-910F5C4A1FFE}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
-		{626D017B-19D0-4536-9D34-910F5C4A1FFE}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
-		{626D017B-19D0-4536-9D34-910F5C4A1FFE}.Debug|x64.ActiveCfg = Debug|Any CPU
-		{626D017B-19D0-4536-9D34-910F5C4A1FFE}.Debug|x64.Build.0 = Debug|Any CPU
-		{626D017B-19D0-4536-9D34-910F5C4A1FFE}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{626D017B-19D0-4536-9D34-910F5C4A1FFE}.Debug|x86.Build.0 = Debug|Any CPU
-		{626D017B-19D0-4536-9D34-910F5C4A1FFE}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{626D017B-19D0-4536-9D34-910F5C4A1FFE}.Release|Any CPU.Build.0 = Release|Any CPU
-		{626D017B-19D0-4536-9D34-910F5C4A1FFE}.Release|ARM.ActiveCfg = Release|Any CPU
-		{626D017B-19D0-4536-9D34-910F5C4A1FFE}.Release|ARM.Build.0 = Release|Any CPU
-		{626D017B-19D0-4536-9D34-910F5C4A1FFE}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
-		{626D017B-19D0-4536-9D34-910F5C4A1FFE}.Release|Mixed Platforms.Build.0 = Release|Any CPU
-		{626D017B-19D0-4536-9D34-910F5C4A1FFE}.Release|x64.ActiveCfg = Release|Any CPU
-		{626D017B-19D0-4536-9D34-910F5C4A1FFE}.Release|x64.Build.0 = Release|Any CPU
-		{626D017B-19D0-4536-9D34-910F5C4A1FFE}.Release|x86.ActiveCfg = Release|Any CPU
-		{626D017B-19D0-4536-9D34-910F5C4A1FFE}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -557,7 +535,6 @@ Global
 		{E9C3EC15-941C-4CDE-BCA2-E3806318A64D} = {F5CA2D9B-6E0B-4C67-A581-10BE3F03CD1D}
 		{4FCE0D53-223A-4F65-B0CF-4A479A386011} = {F5CA2D9B-6E0B-4C67-A581-10BE3F03CD1D}
 		{9F5803C1-4FA8-4619-8423-DB5CA1DCDA8B} = {505538C3-B34D-4B43-BDE6-C6E974AB03A6}
-		{626D017B-19D0-4536-9D34-910F5C4A1FFE} = {7E3D992A-8F37-4C5D-AD42-E052522816C5}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {490A80DA-0C90-46D9-A43F-DD7D5B0C54DB}
