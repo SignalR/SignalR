@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -14,6 +14,7 @@ using Moq.Protected;
 using Xunit;
 using Microsoft.AspNet.SignalR.Tests.Utilities;
 using System.Threading;
+using Microsoft.AspNet.SignalR.Tests.Common;
 
 namespace Microsoft.AspNet.SignalR.Tests
 {
@@ -334,6 +335,33 @@ namespace Microsoft.AspNet.SignalR.Tests
 
                 Assert.Equal(true, connection.Object.TryGetConnectionId(context, connectionId + ":::11:::::::1:1", out cid, out message, out statusCode));
                 Assert.Equal(connectionId, cid);
+            }
+
+            [Fact]
+            public void TryGetConnectionIdIsUsedToExtractConnectionIdFromToken()
+            {
+                var connection = new TokenValidatingPersistentConnection();
+                var req = new TestRequest();
+                var resp = new TestResponse();
+                req.QueryString["connectionToken"] = TokenValidatingPersistentConnection.ExpectedConnectionToken;
+
+                var resolver = new DefaultDependencyResolver();
+
+                // Initialize the connection
+                connection.Initialize(resolver);
+
+                // Run the request
+                var context = new HostContext(req, resp);
+                connection.ProcessRequest(context);
+            }
+
+            private class TokenValidatingPersistentConnection : PersistentConnection
+            {
+                public static readonly string ExpectedConnectionToken = "expectedToken";
+
+                protected internal override bool TryGetConnectionId(HostContext context, string connectionToken, out string connectionId, out string message, out int statusCode)
+                {
+                }
             }
         }
     }
