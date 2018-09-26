@@ -300,7 +300,7 @@ namespace Microsoft.AspNet.SignalR
         /// <param name="statusCode">If this method returns false, this output parameter receives an HTTP status code to report.</param>
         /// <returns>A boolean indicating if the connection token was valid.</returns>
         [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "We want to catch any exception when unprotecting data.")]
-        protected virtual bool TryGetConnectionId(HostContext context,
+        protected internal virtual bool TryGetConnectionId(HostContext context,
                                            string connectionToken,
                                            out string connectionId,
                                            out string message,
