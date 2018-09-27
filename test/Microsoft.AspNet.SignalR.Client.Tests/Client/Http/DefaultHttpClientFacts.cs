@@ -43,33 +43,85 @@ namespace Microsoft.AspNet.SignalR.Client.Http
         }
 
         [Fact]
-        public async Task ResponseIsDisposedWhenWrapperDisposed()
+        public async Task GetResponseIsDisposedWhenWrapperDisposed()
         {
             var testHandler = new TestHttpMessageHandler();
             var client = new TestHttpClient(new HttpClient(testHandler));
-            var response = new DisposeTrackingHttpResponseMessage(HttpStatusCode.OK);
+            var requestTracker = new DisposeTrackingHttpRequestMessage();
+            var response = new DisposeTrackingHttpResponseMessage(HttpStatusCode.OK)
+            {
+                RequestMessage = requestTracker,
+            };
             testHandler.OnGet("/test", (r, ct) => Task.FromResult<HttpResponseMessage>(response));
 
             var resp = await client.Get("http://example.com/test", r => { }, isLongRunning: false);
 
             Assert.False(response.Disposed);
+            Assert.False(requestTracker.Disposed);
 
             resp.Dispose();
 
             Assert.True(response.Disposed);
+            Assert.True(requestTracker.Disposed);
         }
 
         [Fact]
-        public async Task ResponseIsDisposedIfResponseIsNonSuccessful()
+        public async Task GetResponseIsDisposedIfResponseIsNonSuccessful()
         {
             var testHandler = new TestHttpMessageHandler();
             var client = new TestHttpClient(new HttpClient(testHandler));
-            var response = new DisposeTrackingHttpResponseMessage(HttpStatusCode.NotFound);
+            var requestTracker = new DisposeTrackingHttpRequestMessage();
+            var response = new DisposeTrackingHttpResponseMessage(HttpStatusCode.NotFound)
+            {
+                RequestMessage = requestTracker,
+            };
             testHandler.OnGet("/test", (r, ct) => Task.FromResult<HttpResponseMessage>(response));
 
             await Assert.ThrowsAsync<HttpClientException>(() => client.Get("http://example.com/test", r => { }, isLongRunning: false));
 
             Assert.True(response.Disposed);
+            Assert.True(requestTracker.Disposed);
+        }
+
+        [Fact]
+        public async Task PostResponseIsDisposedWhenWrapperDisposed()
+        {
+            var testHandler = new TestHttpMessageHandler();
+            var client = new TestHttpClient(new HttpClient(testHandler));
+            var requestTracker = new DisposeTrackingHttpRequestMessage();
+            var response = new DisposeTrackingHttpResponseMessage(HttpStatusCode.OK)
+            {
+                RequestMessage = requestTracker,
+            };
+            testHandler.OnPost("/test", (r, ct) => Task.FromResult<HttpResponseMessage>(response));
+
+            var resp = await client.Post("http://example.com/test", r => { }, isLongRunning: false);
+
+            Assert.False(response.Disposed);
+            Assert.False(requestTracker.Disposed);
+
+            resp.Dispose();
+
+            Assert.True(response.Disposed);
+            Assert.True(requestTracker.Disposed);
+        }
+
+        [Fact]
+        public async Task PostResponseIsDisposedIfResponseIsNonSuccessful()
+        {
+            var testHandler = new TestHttpMessageHandler();
+            var client = new TestHttpClient(new HttpClient(testHandler));
+            var requestTracker = new DisposeTrackingHttpRequestMessage();
+            var response = new DisposeTrackingHttpResponseMessage(HttpStatusCode.NotFound)
+            {
+                RequestMessage = requestTracker,
+            };
+            testHandler.OnPost("/test", (r, ct) => Task.FromResult<HttpResponseMessage>(response));
+
+            await Assert.ThrowsAsync<HttpClientException>(() => client.Post("http://example.com/test", r => { }, isLongRunning: false));
+
+            Assert.True(response.Disposed);
+            Assert.True(requestTracker.Disposed);
         }
 
         private class TestHttpClient : DefaultHttpClient
@@ -84,6 +136,21 @@ namespace Microsoft.AspNet.SignalR.Client.Http
             private protected override HttpClient GetHttpClient(bool isLongRunning)
             {
                 return _client;
+            }
+        }
+
+        private class DisposeTrackingHttpRequestMessage : HttpRequestMessage
+        {
+            public bool Disposed { get; private set; }
+
+            public DisposeTrackingHttpRequestMessage() : base()
+            {
+            }
+
+            protected override void Dispose(bool disposing)
+            {
+                Disposed = true;
+                base.Dispose(disposing);
             }
         }
 
