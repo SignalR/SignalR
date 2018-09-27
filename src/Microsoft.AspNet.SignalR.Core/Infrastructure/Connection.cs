@@ -138,9 +138,9 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
                                   String.Join(", ", message.Signals)));
             }
 
-            if (Trace?.Switch?.ShouldTrace(TraceEventType.Information) == true)
+            if (Trace != null && Trace.Switch.ShouldTrace(TraceEventType.Information))
             {
-                Trace?.TraceInformation($"Sending message to {FormatDestination()}");
+                Trace.TraceInformation($"Sending message to {FormatDestination()}");
             }
 
             if (message.Signals != null)

@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR.Configuration;
@@ -148,7 +149,11 @@ namespace Microsoft.AspNet.SignalR.Messaging
                 throw new ArgumentNullException("message");
             }
 
-            _trace.TraceInformation($"Publishing message to '{message.Key}' (filter: '{message.Filter}') (source: '{message.Source}').");
+            if (_trace.Switch.ShouldTrace(TraceEventType.Verbose))
+            {
+                var payload = Encoding.UTF8.GetString(message.Value.Array, message.Value.Offset, message.Value.Count);
+                _trace.TraceVerbose($"Publishing message '{payload}' to '{message.Key}' (filter: '{message.Filter}') (source: '{message.Source}').");
+            }
 
             Topic topic;
             if (Topics.TryGetValue(message.Key, out topic))

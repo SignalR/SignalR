@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Threading.Tasks;
 
 namespace Microsoft.AspNet.SignalR.Hubs
@@ -17,6 +18,8 @@ namespace Microsoft.AspNet.SignalR.Hubs
     /// </summary>
     public abstract class HubPipelineModule : IHubPipelineModule
     {
+        internal TraceSource Trace { get; set; }
+
         /// <summary>
         /// Wraps a function that invokes a server-side hub method. Even if a client has not been authorized to connect
         /// to a hub, it will still be authorized to invoke server-side methods on that hub unless it is prevented in
@@ -172,9 +175,31 @@ namespace Microsoft.AspNet.SignalR.Hubs
         {
             return context =>
             {
+                if (Trace != null && Trace.Switch.ShouldTrace(TraceEventType.Verbose))
+                {
+                    Trace.TraceVerbose($"{GetType().Name}/Outgoing: Invoking OnBeforeOutgoing for {context.Invocation.Hub}.{context.Invocation.Method}");
+                }
                 if (OnBeforeOutgoing(context))
                 {
-                    return send(context).OrEmpty().Then(ctx => OnAfterOutgoing(ctx), context);
+                    if (Trace != null && Trace.Switch.ShouldTrace(TraceEventType.Verbose))
+                    {
+                        Trace.TraceVerbose($"{GetType().Name}/Outgoing: Invoking send for {context.Invocation.Hub}.{context.Invocation.Method}");
+                    }
+                    return send(context).OrEmpty().Then(ctx =>
+                    {
+                        if (Trace != null && Trace.Switch.ShouldTrace(TraceEventType.Verbose))
+                        {
+                            Trace.TraceVerbose($"{GetType().Name}/Outgoing: Invoking OnAfterOutgoing for {context.Invocation.Hub}.{context.Invocation.Method}");
+                        }
+                        OnAfterOutgoing(ctx);
+                    }, context);
+                }
+                else
+                {
+                    if (Trace != null && Trace.Switch.ShouldTrace(TraceEventType.Verbose))
+                    {
+                        Trace.TraceVerbose($"{GetType().Name}/Outgoing: OnBeforeOutgoing returned false!");
+                    }
                 }
 
                 return TaskAsyncHelper.Empty;

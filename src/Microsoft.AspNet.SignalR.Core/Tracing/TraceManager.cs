@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -12,6 +12,13 @@ namespace Microsoft.AspNet.SignalR.Tracing
         private readonly ConcurrentDictionary<string, TraceSource> _sources = new ConcurrentDictionary<string, TraceSource>(StringComparer.OrdinalIgnoreCase);
         private readonly TextWriterTraceListener _hostTraceListener;
 
+        private static readonly string SwitchName = "SignalRSwitch";
+
+        /// <summary>
+        /// Gets a default trace manager that will only trace to the globally-registered listeners.
+        /// </summary>
+        public static readonly ITraceManager Default = new TraceManager();
+
         public TraceManager()
             : this(hostTraceListener: null)
         {
@@ -19,7 +26,7 @@ namespace Microsoft.AspNet.SignalR.Tracing
 
         public TraceManager(TextWriterTraceListener hostTraceListener)
         {
-            Switch = new SourceSwitch("SignalRSwitch");
+            Switch = new SourceSwitch(SwitchName);
             _hostTraceListener = hostTraceListener;
         }
 
@@ -42,7 +49,7 @@ namespace Microsoft.AspNet.SignalR.Tracing
 
             if (_hostTraceListener != null)
             {
-                if (traceSource.Listeners.Count > 0 && 
+                if (traceSource.Listeners.Count > 0 &&
                     traceSource.Listeners[0] is DefaultTraceListener)
                 {
                     traceSource.Listeners.RemoveAt(0);

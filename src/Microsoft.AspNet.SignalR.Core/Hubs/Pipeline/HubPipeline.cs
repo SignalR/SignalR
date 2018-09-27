@@ -31,6 +31,13 @@ namespace Microsoft.AspNet.SignalR.Hubs
                 throw new InvalidOperationException(String.Format(CultureInfo.CurrentCulture, Resources.Error_UnableToAddModulePiplineAlreadyInvoked));
             }
             _trace.TraceInformation($"Adding pipeline module {pipelineModule.GetType().FullName}");
+
+            // Initialize tracing, but only if the module is using our base class. Most should be
+            if(pipelineModule is HubPipelineModule hubPipelineModule)
+            {
+                hubPipelineModule.Trace = _trace;
+            }
+
             _modules.Push(pipelineModule);
             return this;
         }

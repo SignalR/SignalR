@@ -1,23 +1,31 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.Collections.Generic;
 using Microsoft.AspNet.SignalR.Infrastructure;
+using Microsoft.AspNet.SignalR.Tracing;
 
 namespace Microsoft.AspNet.SignalR.Hubs
 {
     public class HubConnectionContextBase : IHubConnectionContext<object>
     {
+        private readonly ITraceManager _traceManager;
+
         public HubConnectionContextBase()
         {
         }
 
-        public HubConnectionContextBase(IConnection connection, IHubPipelineInvoker invoker, string hubName)
+        public HubConnectionContextBase(IConnection connection, IHubPipelineInvoker invoker, string hubName) : this(connection, invoker, hubName, TraceManager.Default)
+        {
+        }
+
+        public HubConnectionContextBase(IConnection connection, IHubPipelineInvoker invoker, string hubName, ITraceManager traceManager)
         {
             Connection = connection;
             Invoker = invoker;
             HubName = hubName;
+            _traceManager = traceManager;
 
             All = AllExcept();
         }
@@ -39,7 +47,7 @@ namespace Microsoft.AspNet.SignalR.Hubs
         /// <returns>A dynamic representation of all clients except the calling client ones specified.</returns>
         public dynamic AllExcept(params string[] excludeConnectionIds)
         {
-            return new ClientProxy(Connection, Invoker, HubName, PrefixHelper.GetPrefixedConnectionIds(excludeConnectionIds));
+            return new ClientProxy(Connection, Invoker, HubName, PrefixHelper.GetPrefixedConnectionIds(excludeConnectionIds), _traceManager);
         }
 
         /// <summary>
@@ -54,10 +62,11 @@ namespace Microsoft.AspNet.SignalR.Hubs
                 throw new ArgumentException(Resources.Error_ArgumentNullOrEmpty, "connectionId");
             }
 
-            return new ConnectionIdProxy(Connection, 
-                                         Invoker, 
-                                         connectionId, 
-                                         HubName);
+            return new ConnectionIdProxy(Connection,
+                                         Invoker,
+                                         connectionId,
+                                         HubName,
+                                         _traceManager);
         }
 
         /// <summary>
@@ -77,7 +86,8 @@ namespace Microsoft.AspNet.SignalR.Hubs
                                            connectionIds,
                                            HubName,
                                            PrefixHelper.HubConnectionIdPrefix,
-                                           ListHelper<string>.Empty);
+                                           ListHelper<string>.Empty,
+                                           _traceManager);
         }
 
         /// <summary>
@@ -93,11 +103,12 @@ namespace Microsoft.AspNet.SignalR.Hubs
                 throw new ArgumentException(Resources.Error_ArgumentNullOrEmpty, "groupName");
             }
 
-            return new GroupProxy(Connection, 
-                                  Invoker, 
-                                  groupName, 
-                                  HubName, 
-                                  PrefixHelper.GetPrefixedConnectionIds(excludeConnectionIds));
+            return new GroupProxy(Connection,
+                                  Invoker,
+                                  groupName,
+                                  HubName,
+                                  PrefixHelper.GetPrefixedConnectionIds(excludeConnectionIds),
+                                  _traceManager);
         }
 
         /// <summary>
@@ -118,7 +129,8 @@ namespace Microsoft.AspNet.SignalR.Hubs
                                            groupNames,
                                            HubName,
                                            PrefixHelper.HubGroupPrefix,
-                                           PrefixHelper.GetPrefixedConnectionIds(excludeConnectionIds));
+                                           PrefixHelper.GetPrefixedConnectionIds(excludeConnectionIds),
+                                           _traceManager);
         }
 
         public dynamic User(string userId)
@@ -128,7 +140,7 @@ namespace Microsoft.AspNet.SignalR.Hubs
                 throw new ArgumentNullException("userId");
             }
 
-            return new UserProxy(Connection, Invoker, userId, HubName);
+            return new UserProxy(Connection, Invoker, userId, HubName, _traceManager);
         }
 
         public dynamic Users(IList<string> userIds)
@@ -143,7 +155,8 @@ namespace Microsoft.AspNet.SignalR.Hubs
                                            userIds,
                                            HubName,
                                            PrefixHelper.HubUserPrefix,
-                                           ListHelper<string>.Empty);
+                                           ListHelper<string>.Empty,
+                                           _traceManager);
         }
     }
 }

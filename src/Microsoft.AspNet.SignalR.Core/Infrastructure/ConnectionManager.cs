@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -22,6 +22,7 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
     {
         private readonly IDependencyResolver _resolver;
         private readonly IPerformanceCounterManager _counters;
+        private readonly ITraceManager _traceManager;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ConnectionManager"/> class.
@@ -31,6 +32,7 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
         {
             _resolver = resolver;
             _counters = _resolver.Resolve<IPerformanceCounterManager>();
+            _traceManager = _resolver.Resolve<ITraceManager>();
         }
 
         /// <summary>
@@ -89,7 +91,7 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
                 _counters.ErrorsAllTotal,
                 _counters.ErrorsAllPerSec);
 
-            return new HubContext(connection, pipelineInvoker, hubName);
+            return new HubContext(connection, pipelineInvoker, hubName, _traceManager);
         }
 
         /// <summary>
