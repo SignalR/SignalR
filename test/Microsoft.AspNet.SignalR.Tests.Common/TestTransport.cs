@@ -6,6 +6,8 @@ namespace Microsoft.AspNet.SignalR.Tests.Common
 {
     public class TestTransport : ITransport
     {
+        public int ProcessRequestCalls { get; private set; } = 0;
+
         public Func<string, Task> Received { get; set; }
 
         public Func<Task> Connected { get; set; }
@@ -25,12 +27,14 @@ namespace Microsoft.AspNet.SignalR.Tests.Common
 
         public Task ProcessRequest(ITransportConnection connection)
         {
-            throw new NotImplementedException();
+            ProcessRequestCalls += 1;
+            // Just no-op
+            return Task.CompletedTask;
         }
 
         public Task Send(object value)
         {
-            throw new NotImplementedException();
+            throw new InvalidOperationException("Reached TestTransport.Send");
         }
     }
 }

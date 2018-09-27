@@ -9,7 +9,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Common
     public class TestTransportManager : ITransportManager
     {
         public static readonly string TestTransportName = "test";
-        private Dictionary<string, Func<ITransport>> _transports;
+        private Dictionary<string, Func<ITransport>> _transports = new Dictionary<string, Func<ITransport>>();
 
         public TestTransport TestTransport { get; } = new TestTransport();
 
@@ -34,7 +34,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Common
 
         public bool SupportsTransport(string transportName)
         {
-            return _transports.Contains(transportName);
+            return _transports.ContainsKey(transportName);
         }
     }
 }

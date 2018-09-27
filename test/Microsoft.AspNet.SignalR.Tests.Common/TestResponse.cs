@@ -23,14 +23,10 @@ namespace Microsoft.AspNet.SignalR.Tests.Common
 
         public byte[] GetBody() => _body.ToArray();
 
-        public Task Flush()
-        {
-            return Task.CompletedTask;
-        }
+        public string GetBodyAsString() => Encoding.UTF8.GetString(GetBody());
 
-        public void Write(ArraySegment<byte> data)
-        {
-            _body.Write(data.Array, data.Offset, data.Count);
-        }
+        public Task Flush() => Task.CompletedTask;
+
+        public void Write(ArraySegment<byte> data) => _body.Write(data.Array, data.Offset, data.Count);
     }
 }
