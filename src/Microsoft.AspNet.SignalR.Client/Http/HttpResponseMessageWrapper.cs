@@ -31,7 +31,7 @@ namespace Microsoft.AspNet.SignalR.Client.Http
         {
             if (disposing)
             {
-                _httpResponseMessage.RequestMessage.Dispose();
+                _httpResponseMessage.RequestMessage?.Dispose();
                 _httpResponseMessage.Dispose();
             }
         }
