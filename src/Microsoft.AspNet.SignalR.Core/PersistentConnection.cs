@@ -290,8 +290,17 @@ namespace Microsoft.AspNet.SignalR
             return Transport.ProcessRequest(connection).OrEmpty().Catch(Trace, Counters.ErrorsAllTotal, Counters.ErrorsAllPerSec);
         }
 
+        /// <summary>
+        /// Validates the connection token and extracts the connection ID from it.
+        /// </summary>
+        /// <param name="context">The <see cref="HostContext" /> representing the request.</param>
+        /// <param name="connectionToken">The connection token to validate.</param>
+        /// <param name="connectionId">If this method returns true, this output parameter receives the connection ID contained within the token.</param>
+        /// <param name="message">If this method returns false, this output parameter receives an error message to report.</param>
+        /// <param name="statusCode">If this method returns false, this output parameter receives an HTTP status code to report.</param>
+        /// <returns>A boolean indicating if the connection token was valid.</returns>
         [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "We want to catch any exception when unprotecting data.")]
-        internal bool TryGetConnectionId(HostContext context,
+        protected internal virtual bool TryGetConnectionId(HostContext context,
                                            string connectionToken,
                                            out string connectionId,
                                            out string message,

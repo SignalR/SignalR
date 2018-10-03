@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -14,6 +14,9 @@ using Moq.Protected;
 using Xunit;
 using Microsoft.AspNet.SignalR.Tests.Utilities;
 using System.Threading;
+using Microsoft.AspNet.SignalR.Tests.Common;
+using Microsoft.Owin;
+using System.Threading.Tasks;
 
 namespace Microsoft.AspNet.SignalR.Tests
 {
@@ -334,6 +337,88 @@ namespace Microsoft.AspNet.SignalR.Tests
 
                 Assert.Equal(true, connection.Object.TryGetConnectionId(context, connectionId + ":::11:::::::1:1", out cid, out message, out statusCode));
                 Assert.Equal(connectionId, cid);
+            }
+
+            [Fact]
+            public async Task TryGetConnectionIdIsUsedToExtractConnectionIdFromToken()
+            {
+                var manager = new TestTransportManager();
+                var connection = new TokenValidatingPersistentConnection();
+                var req = new TestRequest();
+                var resp = new TestResponse();
+
+                req.QueryString["connectionToken"] = TokenValidatingPersistentConnection.ExpectedConnectionToken;
+                req.QueryString["transport"] = TestTransportManager.TestTransportName;
+                req.LocalPath = "/connect";
+
+                var resolver = new DefaultDependencyResolver();
+                resolver.Register(typeof(ITransportManager), () => manager);
+
+                // Initialize the connection
+                connection.Initialize(resolver);
+
+                // Run the request
+                var context = new HostContext(req, resp);
+                await connection.ProcessRequest(context);
+
+                // Check the connection ID and that the transport was called
+                Assert.Equal(TokenValidatingPersistentConnection.ExpectedConnectionId, manager.TestTransport.ConnectionId);
+                Assert.Equal(1, manager.TestTransport.ProcessRequestCalls);
+            }
+
+            [Fact]
+            public async Task TryGetConnectionIdReturningFalseCausesResponseToEndWithProvidedMessageAndStatusCode()
+            {
+                var manager = new TestTransportManager();
+                var connection = new TokenValidatingPersistentConnection();
+                var req = new TestRequest();
+                var resp = new TestResponse();
+
+                req.QueryString["connectionToken"] = "wrongToken";
+                req.QueryString["transport"] = TestTransportManager.TestTransportName;
+                req.LocalPath = "/connect";
+
+                var resolver = new DefaultDependencyResolver();
+                resolver.Register(typeof(ITransportManager), () => manager);
+
+                // Initialize the connection
+                connection.Initialize(resolver);
+
+                // Run the request
+                var context = new HostContext(req, resp);
+                await connection.ProcessRequest(context);
+
+                // Check the connection ID wasn't set and ProcessRequest wasn't called on the transport.
+                Assert.Null(manager.TestTransport.ConnectionId);
+                Assert.Equal(0, manager.TestTransport.ProcessRequestCalls);
+
+                // Check the response
+                Assert.Equal(TokenValidatingPersistentConnection.ExpectedErrorStatusCode, resp.StatusCode);
+                Assert.Equal(TokenValidatingPersistentConnection.ExpectedErrorMessage, resp.GetBodyAsString());
+            }
+
+            private class TokenValidatingPersistentConnection : PersistentConnection
+            {
+                public static readonly string ExpectedConnectionToken = "expectedToken";
+                public static readonly string ExpectedConnectionId = "expectedId";
+                public static readonly string ExpectedErrorMessage = "Token does not match expectation";
+                public static readonly int ExpectedErrorStatusCode = 418; // I'm a teapot!
+
+                protected internal override bool TryGetConnectionId(HostContext context, string connectionToken, out string connectionId, out string message, out int statusCode)
+                {
+                    if(string.Equals(connectionToken, ExpectedConnectionToken, StringComparison.Ordinal))
+                    {
+                        connectionId = ExpectedConnectionId;
+                        message = null;
+                        statusCode = 200;
+                        return true;
+                    }
+
+                    connectionId = null;
+                    message = ExpectedErrorMessage;
+                    statusCode = ExpectedErrorStatusCode;
+                    return false;
+                }
             }
         }
     }
