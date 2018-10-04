@@ -126,7 +126,7 @@ namespace Microsoft.AspNet.SignalR.Tests
         }
 
         [Fact]
-        public void InitDoesNotHaveToBeFirstMessage()
+        public async Task InitDoesNotHaveToBeFirstMessage()
         {
             var disconnectCts = new CancellationTokenSource();
 
@@ -142,16 +142,14 @@ namespace Microsoft.AspNet.SignalR.Tests
 
             var longPollingTransport = new LongPollingTransport(mockHttpClient.Object);
 
-            Assert.True(
-                longPollingTransport.Start(mockConnection.Object, string.Empty, disconnectCts.Token)
-                    .Wait(TimeSpan.FromSeconds(15)));
+            await longPollingTransport.Start(mockConnection.Object, string.Empty, disconnectCts.Token).OrTimeout(TimeSpan.FromSeconds(15));
 
             // stop polling loop
             disconnectCts.Cancel();
         }
 
         [Fact]
-        public void PollingLoopNotRestartedIfStartFails()
+        public async Task PollingLoopNotRestartedIfStartFails()
         {
             var disconnectCts = new CancellationTokenSource();
 
@@ -161,11 +159,7 @@ namespace Microsoft.AspNet.SignalR.Tests
             mockConnection.SetupProperty(c => c.MessageId);
 
             var mockHttpClient = CreateFakeHttpClient((url, request, postData, isLongRunning) =>
-            {
-                var tcs = new TaskCompletionSource<IResponse>();
-                tcs.SetException(new InvalidOperationException("Request rejected"));
-                return tcs.Task;
-            });
+                Task.FromException<IResponse>(new InvalidOperationException("Request rejected")));
 
             mockHttpClient.Setup(
                 m => m.Get(It.IsAny<string>(), It.IsAny<Action<Client.Http.IRequest>>(), It.IsAny<bool>()))
@@ -174,12 +168,12 @@ namespace Microsoft.AspNet.SignalR.Tests
 
             var longPollingTransport = new LongPollingTransport(mockHttpClient.Object);
 
-            Assert.Throws<AggregateException>(() =>
-                longPollingTransport.Start(mockConnection.Object, string.Empty, disconnectCts.Token)
-                    .Wait(TimeSpan.FromSeconds(15)));
+            await Assert.ThrowsAsync<InvalidOperationException>(() =>
+                longPollingTransport.Start(mockConnection.Object, string.Empty, disconnectCts.Token))
+                    .OrTimeout(TimeSpan.FromSeconds(15));
 
             // give it some time to settle
-            Thread.Sleep(TimeSpan.FromSeconds(1));
+            await Task.Delay(1000);
 
             mockHttpClient
                 .Verify(c => c.Post(It.Is<string>(url => url.StartsWith("poll?")), It.IsAny<Action<Client.Http.IRequest>>(),

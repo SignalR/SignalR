@@ -6,7 +6,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Security.Principal;
-using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR.Client;
 using Microsoft.AspNet.SignalR.Configuration;
@@ -70,7 +69,7 @@ namespace Microsoft.AspNet.SignalR.Tests
 
             using (var host = CreateHost(hostType, transportType))
             {
-                var mre = new ManualResetEventSlim();
+                var mre = new TaskCompletionSource<object>();
 
                 host.Initialize(messageBusType: messageBusType);
 
@@ -80,11 +79,11 @@ namespace Microsoft.AspNet.SignalR.Tests
                 {
                     var hub = connection.CreateHubProxy("VBDemo");
 
-                    hub.On("anyMethodNameWillDo", mre.Set);
+                    hub.On("anyMethodNameWillDo", () => mre.TrySetResult(null));
 
                     await connection.Start(host.Transport);
 
-                    Assert.True(mre.Wait(TimeSpan.FromSeconds(2)));
+                    await mre.Task.OrTimeout(TimeSpan.FromSeconds(2));
 
                     var originalMessage = await hub.Invoke<string>("ReadStateValue").OrTimeout();
 
@@ -162,7 +161,6 @@ namespace Microsoft.AspNet.SignalR.Tests
                 var proxy = connection.CreateHubProxy("AuthenticatedEchoHub");
 
                 var tcs = new TaskCompletionSource<string>();
-                var mre = new AsyncManualResetEvent();
 
                 using (connection)
                 {
@@ -171,15 +169,13 @@ namespace Microsoft.AspNet.SignalR.Tests
                     proxy.On<string>("echo", data =>
                     {
                         tcs.TrySetResult(data);
-                        mre.Set();
                     });
 
                     await connection.Start(host.Transport);
 
                     await proxy.Invoke("EchoCallback", "Hello World").OrTimeout();
 
-                    Assert.True(await mre.WaitAsync(TimeSpan.FromSeconds(10)));
-                    Assert.Equal("Hello World", tcs.Task.Result);
+                    Assert.Equal("Hello World", await tcs.Task.OrTimeout(TimeSpan.FromSeconds(10)));
                 }
             }
         }
@@ -252,7 +248,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                     { "name", "myuser" }
                 };
 
-                var wh = new AsyncManualResetEvent();
+                var wh = new TaskCompletionSource<object>();
 
                 using (var connection = new HubConnection("http://memoryhost", qs))
                 {
@@ -260,14 +256,14 @@ namespace Microsoft.AspNet.SignalR.Tests
 
                     proxy.On("invoke", () =>
                     {
-                        wh.Set();
+                        wh.TrySetResult(null);
                     });
 
                     await connection.Start(host);
 
                     await proxy.Invoke("SendToUser", "myuser");
 
-                    Assert.True(await wh.WaitAsync(TimeSpan.FromSeconds(5)));
+                    await wh.Task.OrTimeout();
                 }
             }
         }
@@ -293,7 +289,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                     app.MapSignalR(config);
                 });
 
-                var wh = new AsyncManualResetEvent();
+                var wh = new TaskCompletionSource<object>();
 
                 using (var connection = new HubConnection("http://memoryhost"))
                 {
@@ -301,14 +297,14 @@ namespace Microsoft.AspNet.SignalR.Tests
 
                     proxy.On("invoke", () =>
                     {
-                        wh.Set();
+                        wh.TrySetResult(null);
                     });
 
                     await connection.Start(host);
 
                     await proxy.Invoke("SendToUser", "randomUserId");
 
-                    Assert.True(await wh.WaitAsync(TimeSpan.FromSeconds(5)));
+                    await wh.Task.OrTimeout();
                 }
             }
         }
@@ -325,19 +321,19 @@ namespace Microsoft.AspNet.SignalR.Tests
                 var connection3 = CreateAuthHubConnection(host, "user1", "password");
                 var connection4 = CreateAuthHubConnection(host, "user2", "password");
 
-                var wh1 = new AsyncManualResetEvent();
-                var wh2 = new AsyncManualResetEvent();
-                var wh3 = new AsyncManualResetEvent();
-                var wh4 = new AsyncManualResetEvent();
+                var wh1 = new TaskCompletionSource<object>();
+                var wh2 = new TaskCompletionSource<object>();
+                var wh3 = new TaskCompletionSource<object>();
+                var wh4 = new TaskCompletionSource<object>();
 
                 var hub1 = connection1.CreateHubProxy("AuthenticatedEchoHub");
                 var hub2 = connection2.CreateHubProxy("AuthenticatedEchoHub");
                 var hub3 = connection3.CreateHubProxy("AuthenticatedEchoHub");
                 var hub4 = connection4.CreateHubProxy("AuthenticatedEchoHub");
-                hub1.On("echo", () => wh1.Set());
-                hub2.On("echo", () => wh2.Set());
-                hub3.On("echo", () => wh3.Set());
-                hub4.On("echo", () => wh4.Set());
+                hub1.On("echo", () => wh1.TrySetResult(null));
+                hub2.On("echo", () => wh2.TrySetResult(null));
+                hub3.On("echo", () => wh3.TrySetResult(null));
+                hub4.On("echo", () => wh4.TrySetResult(null));
 
                 using (connection1)
                 {
@@ -354,10 +350,10 @@ namespace Microsoft.AspNet.SignalR.Tests
 
                                 await hub4.Invoke("SendToUser", "user1", "message");
 
-                                Assert.True(await wh1.WaitAsync(TimeSpan.FromSeconds(5)));
-                                Assert.True(await wh2.WaitAsync(TimeSpan.FromSeconds(5)));
-                                Assert.True(await wh3.WaitAsync(TimeSpan.FromSeconds(5)));
-                                Assert.False(await wh4.WaitAsync(TimeSpan.FromSeconds(5)));
+                                await wh1.Task.OrTimeout();
+                                await wh2.Task.OrTimeout();
+                                await wh3.Task.OrTimeout();
+                                Assert.False(wh4.Task.IsCompleted);
                             }
                         }
                     }
@@ -377,8 +373,8 @@ namespace Microsoft.AspNet.SignalR.Tests
 
                 var connected = 0;
                 var disconnected = 0;
-                var wh1 = new AsyncManualResetEvent();
-                var wh2 = new AsyncManualResetEvent();
+                var wh1 = new TaskCompletionSource<object>();
+                var wh2 = new TaskCompletionSource<object>();
 
                 var hub1 = connection1.CreateHubProxy("AuthenticatedEchoHub");
                 var hub2 = connection2.CreateHubProxy("AuthenticatedEchoHub");
@@ -386,14 +382,14 @@ namespace Microsoft.AspNet.SignalR.Tests
                 {
                     if (++connected >= 2)
                     {
-                        wh1.Set();
+                        wh1.TrySetResult(null);
                     }
                 });
                 hub1.On<string>("SendUserOnDisconnected", (user) =>
                 {
                     if (++disconnected >= 1)
                     {
-                        wh2.Set();
+                        wh2.TrySetResult(null);
                     }
                 });
 
@@ -404,10 +400,10 @@ namespace Microsoft.AspNet.SignalR.Tests
                         await connection1.Start();
                         await connection2.Start(new Microsoft.AspNet.SignalR.Client.Transports.WebSocketTransport());
 
-                        Assert.True(await wh1.WaitAsync(TimeSpan.FromSeconds(5)));
+                        await wh1.Task.OrTimeout();
                     }
 
-                    Assert.True(await wh2.WaitAsync(TimeSpan.FromSeconds(5)));
+                    await wh2.Task.OrTimeout();
                 }
             }
         }
@@ -551,15 +547,8 @@ namespace Microsoft.AspNet.SignalR.Tests
                 {
                     var hub = connection.CreateHubProxy("demo");
                     await connection.Start(host.Transport);
-                    try
-                    {
-                        // Save to t to prevent compile error (we want this to run in the background).
-                        hub.Invoke("CancelledTask").Wait(TimeSpan.FromSeconds(10));
-                        Assert.True(false, "Didn't fault");
-                    }
-                    catch (AggregateException)
-                    {
-                    }
+
+                    await Assert.ThrowsAsync<InvalidOperationException>(() => hub.Invoke("CancelledTask")).OrTimeout(TimeSpan.FromSeconds(10));
                 }
             }
         }
@@ -582,14 +571,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                     var hub = connection.CreateHubProxy("demo");
                     await connection.Start(host.Transport);
 
-                    try
-                    {
-                        hub.Invoke("CancelledGenericTask").Wait(TimeSpan.FromSeconds(10));
-                        Assert.True(false, "Didn't fault");
-                    }
-                    catch (AggregateException)
-                    {
-                    }
+                    await Assert.ThrowsAsync<InvalidOperationException>(() => hub.Invoke("CancelledGenericTask")).OrTimeout(TimeSpan.FromSeconds(10));
                 }
             }
         }
@@ -911,19 +893,16 @@ namespace Microsoft.AspNet.SignalR.Tests
                 {
                     var hub = connection.CreateHubProxy("echoHub");
                     var tcs = new TaskCompletionSource<string>();
-                    var mre = new AsyncManualResetEvent();
                     hub.On<string>("echo", (data) =>
                     {
-                        tcs.SetResult(data);
-                        mre.Set();
+                        tcs.TrySetResult(data);
                     });
 
                     await connection.Start(host.Transport);
 
                     await hub.Invoke("EchoCallback", "+").OrTimeout();
 
-                    Assert.True(await mre.WaitAsync(TimeSpan.FromSeconds(10)));
-                    Assert.Equal("+", tcs.Task.Result);
+                    Assert.Equal("+", await tcs.Task.OrTimeout(TimeSpan.FromSeconds(10)));
                 }
             }
         }
@@ -1301,7 +1280,7 @@ namespace Microsoft.AspNet.SignalR.Tests
             }
         }
 
-        [Theory(Skip = "Flaky on CI")]
+        [Theory]
         [InlineData(HostType.Memory, TransportType.ServerSentEvents, MessageBusType.Default)]
         //[InlineData(HostType.Memory, TransportType.ServerSentEvents, MessageBusType.Fake)]
         //[InlineData(HostType.Memory, TransportType.ServerSentEvents, MessageBusType.FakeMultiStream)]
@@ -2196,42 +2175,32 @@ namespace Microsoft.AspNet.SignalR.Tests
 
         public class MultGroupHub : Hub
         {
-            public virtual Task Login(User user)
+            public virtual async Task Login(User user)
             {
-                return Task.Factory.StartNew(
-                    () =>
-                    {
-                        Groups.Remove(Context.ConnectionId, "foo").Wait();
-                        Groups.Add(Context.ConnectionId, "foo").Wait();
+                await Groups.Remove(Context.ConnectionId, "foo").OrTimeout();
+                await Groups.Add(Context.ConnectionId, "foo").OrTimeout();
 
-                        Groups.Remove(Context.ConnectionId, user.Name).Wait();
-                        Groups.Add(Context.ConnectionId, user.Name).Wait();
-                    });
+                await Groups.Remove(Context.ConnectionId, user.Name).OrTimeout();
+                await Groups.Add(Context.ConnectionId, user.Name).OrTimeout();
             }
 
-            public Task JoinRoom(User user)
+            public async Task JoinRoom(User user)
             {
-                return Task.Factory.StartNew(
-                    () =>
-                    {
-                        Clients.Group(user.Name).onRoomJoin(user).Wait();
-                    });
+                // De-dynamicize the Task so we can call OrTimeout.
+                Task task = Clients.Group(user.Name).onRoomJoin(user);
+                await task.OrTimeout();
             }
         }
 
         public class MultGroupHub2 : MultGroupHub
         {
-            public override Task Login(User user)
+            public override async Task Login(User user)
             {
-                return Task.Factory.StartNew(
-                    () =>
-                    {
-                        Groups.Remove(Context.ConnectionId, "foo2").Wait();
-                        Groups.Add(Context.ConnectionId, "foo2").Wait();
+                await Groups.Remove(Context.ConnectionId, "foo2").OrTimeout();
+                await Groups.Add(Context.ConnectionId, "foo2").OrTimeout();
 
-                        Groups.Remove(Context.ConnectionId, user.Name + "2").Wait();
-                        Groups.Add(Context.ConnectionId, user.Name + "2").Wait();
-                    });
+                await Groups.Remove(Context.ConnectionId, user.Name + "2").OrTimeout();
+                await Groups.Add(Context.ConnectionId, user.Name + "2").OrTimeout();
             }
         }
 

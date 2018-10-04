@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -32,17 +32,17 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Server
                 var hub = connection.CreateHubProxy("DateAsStringHub");
                 var request = new TypeWithDateAsString();
                 request.DateAsString = expected;
-                var wh = new AsyncManualResetEvent(false);
+                var wh = new TaskCompletionSource<object>();
                 hub.On<TypeWithDateAsString>("Callback", (data) =>
                 {
                     callback = data;
-                    wh.Set();
+                    wh.TrySetResult(null);
                 });
 
                 await connection.Start(host.Transport);
                 var response = await hub.Invoke<TypeWithDateAsString>("Invoke", request);
                 Assert.Equal(expected, response.DateAsString);
-                Assert.True(await wh.WaitAsync(TimeSpan.FromSeconds(10)));
+                await wh.Task.OrTimeout(TimeSpan.FromSeconds(10));
                 Assert.Equal(expected, callback.DateAsString);
             }
         }

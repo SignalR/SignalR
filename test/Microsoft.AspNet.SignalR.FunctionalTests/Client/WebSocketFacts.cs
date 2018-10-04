@@ -2,15 +2,9 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.AspNet.SignalR.Client;
-using Microsoft.AspNet.SignalR.Tests.Common;
 using Microsoft.AspNet.SignalR.Tests.Common.Infrastructure;
-using Microsoft.AspNet.SignalR.Tests.Utilities;
 using Xunit;
-using Xunit.Extensions;
-using Microsoft.AspNet.SignalR.Infrastructure;
 
 namespace Microsoft.AspNet.SignalR.Tests
 {
@@ -25,7 +19,7 @@ namespace Microsoft.AspNet.SignalR.Tests
             {
                 host.Initialize();
 
-                HubConnection connection = CreateHubConnection(host);
+                var connection = CreateHubConnection(host);
 
                 using (connection)
                 {
@@ -49,7 +43,7 @@ namespace Microsoft.AspNet.SignalR.Tests
             {
                 host.Initialize();
 
-                HubConnection connection = CreateHubConnection(host);
+                var connection = CreateHubConnection(host);
 
                 using (connection)
                 {
@@ -57,10 +51,7 @@ namespace Microsoft.AspNet.SignalR.Tests
 
                     await connection.Start(host.Transport);
 
-                    TestUtilities.AssertUnwrappedException<InvalidOperationException>(() =>
-                    {
-                        hub.Invoke<string>("EchoReturn", new string('a', 64 * 1024)).Wait();
-                    });
+                    await Assert.ThrowsAsync<InvalidOperationException>(() => hub.Invoke<string>("EchoReturn", new string('a', 64 * 1024))).OrTimeout();
                 }
             }
         }
@@ -75,7 +66,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                 // Disable max message size
                 host.Initialize(maxIncomingWebSocketMessageSize: null);
 
-                HubConnection connection = CreateHubConnection(host);
+                var connection = CreateHubConnection(host);
 
                 using (connection)
                 {
@@ -101,7 +92,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                 // Increase max message size
                 host.Initialize(maxIncomingWebSocketMessageSize: 128 * 1024);
 
-                HubConnection connection = CreateHubConnection(host);
+                var connection = CreateHubConnection(host);
 
                 using (connection)
                 {
@@ -127,7 +118,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                 // Reduce max message size
                 host.Initialize(maxIncomingWebSocketMessageSize: 8 * 1024);
 
-                HubConnection connection = CreateHubConnection(host);
+                var connection = CreateHubConnection(host);
 
                 using (connection)
                 {
@@ -155,16 +146,16 @@ namespace Microsoft.AspNet.SignalR.Tests
                                 connectionTimeout: 2,
                                 enableAutoRejoiningGroups: true);
 
-                using (HubConnection connection = CreateHubConnection(host))
+                using (var connection = CreateHubConnection(host))
                 {
                     var proxy = connection.CreateHubProxy("demo");
-                    
+
                     connection.Reconnecting += async () =>
                     {
                         try
                         {
                             await connection.Send("test");
-                        } 
+                        }
                         catch (InvalidOperationException)
                         {
                             wh1.TrySetResult(null);

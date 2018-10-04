@@ -21,7 +21,7 @@ namespace Microsoft.AspNet.SignalR.Tests
     public class DisconnectFacts : HostedTest
     {
         [Fact]
-        public void FailedWriteCompletesRequestAfterDisconnectTimeout()
+        public async Task FailedWriteCompletesRequestAfterDisconnectTimeout()
         {
             var request = new Mock<IRequest>();
             var response = new Mock<IResponse>();
@@ -53,18 +53,14 @@ namespace Microsoft.AspNet.SignalR.Tests
 
             var connectionManager = new ConnectionManager(resolver);
             var connection = connectionManager.GetConnectionCore("Foo");
-            var wh = new ManualResetEventSlim();
 
-            transport.Object.ProcessRequest(connection).ContinueWith(task =>
-            {
-                wh.Set();
-            });
+            var processRequestTask = transport.Object.ProcessRequest(connection);
 
-            connection.Broadcast("Some message");
+            await connection.Broadcast("Some message");
 
             // 6 second disconnect timeout + 5 second disconnect threshold
             // + up to 1 second for the heartbeat to check + 3 second leeway
-            Assert.True(wh.Wait(TimeSpan.FromSeconds(15)));
+            await processRequestTask.OrTimeout(TimeSpan.FromSeconds(15));
         }
 
         [Fact]
@@ -72,8 +68,8 @@ namespace Microsoft.AspNet.SignalR.Tests
         {
             using (var host = new MemoryHost())
             {
-                var connectWh = new AsyncManualResetEvent();
-                var disconnectWh = new AsyncManualResetEvent();
+                var connectWh = new TaskCompletionSource<object>();
+                var disconnectWh = new TaskCompletionSource<object>();
                 var dr = new DefaultDependencyResolver();
                 var configuration = dr.Resolve<IConfigurationManager>();
 
@@ -97,11 +93,11 @@ namespace Microsoft.AspNet.SignalR.Tests
 
                 await connection.Start(host);
 
-                Assert.True(await connectWh.WaitAsync(TimeSpan.FromSeconds(10)), "Connect never fired");
+                await connectWh.Task.OrTimeout(TimeSpan.FromSeconds(10));
 
                 connection.Stop();
 
-                Assert.True(await disconnectWh.WaitAsync(disconnectWait), "Disconnect never fired");
+                await disconnectWh.Task.OrTimeout(disconnectWait);
             }
         }
 
@@ -110,8 +106,8 @@ namespace Microsoft.AspNet.SignalR.Tests
         {
             using (var host = new MemoryHost())
             {
-                var connectWh = new AsyncManualResetEvent();
-                var disconnectWh = new AsyncManualResetEvent();
+                var connectWh = new TaskCompletionSource<object>();
+                var disconnectWh = new TaskCompletionSource<object>();
                 var dr = new DefaultDependencyResolver();
                 var configuration = dr.Resolve<IConfigurationManager>();
 
@@ -132,11 +128,11 @@ namespace Microsoft.AspNet.SignalR.Tests
 
                 await connection.Start(host);
 
-                Assert.True(await connectWh.WaitAsync(TimeSpan.FromSeconds(10)), "Connect never fired");
+                await connectWh.Task.OrTimeout(TimeSpan.FromSeconds(10));
 
                 ((Client.IConnection)connection).Disconnect();
 
-                Assert.True(await disconnectWh.WaitAsync(TimeSpan.FromSeconds(20)), "Disconnect never fired");
+                await disconnectWh.Task.OrTimeout(TimeSpan.FromSeconds(20));
             }
         }
 
@@ -148,8 +144,8 @@ namespace Microsoft.AspNet.SignalR.Tests
                 var dr = new DefaultDependencyResolver();
                 var configuration = dr.Resolve<IConfigurationManager>();
 
-                var connectWh = new AsyncManualResetEvent();
-                var disconnectWh = new AsyncManualResetEvent();
+                var connectWh = new TaskCompletionSource<object>();
+                var disconnectWh = new TaskCompletionSource<object>();
                 host.Configure(app =>
                 {
                     var config = new HubConfiguration
@@ -172,11 +168,11 @@ namespace Microsoft.AspNet.SignalR.Tests
 
                 await connection.Start(host);
 
-                Assert.True(await connectWh.WaitAsync(TimeSpan.FromSeconds(10)), "Connect never fired");
+                await connectWh.Task.OrTimeout(TimeSpan.FromSeconds(10));
 
                 connection.Stop();
 
-                Assert.True(await disconnectWh.WaitAsync(disconnectWait), "Disconnect never fired");
+                await disconnectWh.Task.OrTimeout(disconnectWait);
             }
         }
 
@@ -188,8 +184,8 @@ namespace Microsoft.AspNet.SignalR.Tests
                 var dr = new DefaultDependencyResolver();
                 var configuration = dr.Resolve<IConfigurationManager>();
 
-                var connectWh = new AsyncManualResetEvent();
-                var disconnectWh = new AsyncManualResetEvent();
+                var connectWh = new TaskCompletionSource<object>();
+                var disconnectWh = new TaskCompletionSource<object>();
                 host.Configure(app =>
                 {
                     var config = new HubConfiguration
@@ -209,20 +205,20 @@ namespace Microsoft.AspNet.SignalR.Tests
 
                 await connection.Start(host);
 
-                Assert.True(await connectWh.WaitAsync(TimeSpan.FromSeconds(10)), "Connect never fired");
+                await connectWh.Task.OrTimeout(TimeSpan.FromSeconds(10));
 
                 ((Client.IConnection)connection).Disconnect();
 
-                Assert.True(await disconnectWh.WaitAsync(TimeSpan.FromSeconds(20)), "Disconnect never fired");
+                await disconnectWh.Task.OrTimeout(TimeSpan.FromSeconds(20));
             }
         }
 
         public class MyHub : Hub
         {
-            private AsyncManualResetEvent _connectWh;
-            private AsyncManualResetEvent _disconnectWh;
+            private TaskCompletionSource<object> _connectWh;
+            private TaskCompletionSource<object> _disconnectWh;
 
-            public MyHub(AsyncManualResetEvent connectWh, AsyncManualResetEvent disconnectWh)
+            public MyHub(TaskCompletionSource<object> connectWh, TaskCompletionSource<object> disconnectWh)
             {
                 _connectWh = connectWh;
                 _disconnectWh = disconnectWh;
@@ -230,14 +226,14 @@ namespace Microsoft.AspNet.SignalR.Tests
 
             public override Task OnDisconnected(bool stopCalled)
             {
-                _disconnectWh.Set();
+                _disconnectWh.TrySetResult(null);
 
                 return null;
             }
 
             public override Task OnConnected()
             {
-                _connectWh.Set();
+                _connectWh.TrySetResult(null);
 
                 return TaskAsyncHelper.Empty;
             }
@@ -250,10 +246,10 @@ namespace Microsoft.AspNet.SignalR.Tests
 
         private class MyConnection : PersistentConnection
         {
-            private AsyncManualResetEvent _connectWh;
-            private AsyncManualResetEvent _disconnectWh;
+            private TaskCompletionSource<object> _connectWh;
+            private TaskCompletionSource<object> _disconnectWh;
 
-            public MyConnection(AsyncManualResetEvent connectWh, AsyncManualResetEvent disconnectWh)
+            public MyConnection(TaskCompletionSource<object> connectWh, TaskCompletionSource<object> disconnectWh)
             {
                 _connectWh = connectWh;
                 _disconnectWh = disconnectWh;
@@ -261,13 +257,13 @@ namespace Microsoft.AspNet.SignalR.Tests
 
             protected override Task OnConnected(IRequest request, string connectionId)
             {
-                _connectWh.Set();
+                _connectWh.TrySetResult(null);
                 return base.OnConnected(request, connectionId);
             }
 
             protected override Task OnDisconnected(IRequest request, string connectionId, bool stopCalled)
             {
-                _disconnectWh.Set();
+                _disconnectWh.TrySetResult(null);
                 return base.OnDisconnected(request, connectionId, stopCalled);
             }
         }

@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Net;
 using System.Security.Principal;
 using System.Threading;
 using System.Threading.Tasks;
@@ -349,22 +350,22 @@ namespace Microsoft.AspNet.SignalR.Tests
                 using (connection)
                 {
                     var hub = connection.CreateHubProxy("AuthHub");
-                    var wh = new ManualResetEvent(false);
+                    var wh = new TaskCompletionSource<object>();
                     hub.On<string, string, object>("joined", (id, time, authInfo) =>
                     {
                         Assert.NotNull(id);
-                        wh.Set();
+                        wh.TrySetResult(null);
                     });
 
                     await connection.Start(host);
 
-                    Assert.True(wh.WaitOne(TimeSpan.FromSeconds(3)));
+                    await wh.Task.OrTimeout(TimeSpan.FromSeconds(3));
                 }
             }
         }
 
         [Fact]
-        public void UnauthenticatedUserCannotInvokeMethodsInAuthorizedHubs()
+        public async Task UnauthenticatedUserCannotInvokeMethodsInAuthorizedHubs()
         {
             using (var host = new MemoryHost())
             {
@@ -384,14 +385,12 @@ namespace Microsoft.AspNet.SignalR.Tests
                 using (connection)
                 {
                     var hub = connection.CreateHubProxy("AuthHub");
-                    var wh = new ManualResetEvent(false);
                     hub.On<string, string>("invoked", (id, time) =>
                     {
-                        Assert.NotNull(id);
-                        wh.Set();
                     });
 
-                    Assert.Throws<AggregateException>(() => connection.Start(host).Wait());
+                    var ex = await Assert.ThrowsAsync<HttpClientException>(() => connection.Start(host)).OrTimeout();
+                    Assert.Equal(HttpStatusCode.Unauthorized, ex.Response.StatusCode);
                 }
             }
         }
@@ -417,24 +416,24 @@ namespace Microsoft.AspNet.SignalR.Tests
                 using (connection)
                 {
                     var hub = connection.CreateHubProxy("AuthHub");
-                    var wh = new ManualResetEvent(false);
+                    var wh = new TaskCompletionSource<object>();
                     hub.On<string, string>("invoked", (id, time) =>
                     {
                         Assert.NotNull(id);
-                        wh.Set();
+                        wh.TrySetResult(null);
                     });
 
                     await connection.Start(host);
 
                     await hub.Invoke("InvokedFromClient").OrTimeout();
 
-                    Assert.True(wh.WaitOne(TimeSpan.FromSeconds(3)));
+                    await wh.Task.OrTimeout(TimeSpan.FromSeconds(3));
                 }
             }
         }
 
         [Fact]
-        public void UnauthenticatedUserCannotReceiveHubMessagesFromHubsInheritingFromAuthorizedHubs()
+        public async Task UnauthenticatedUserCannotReceiveHubMessagesFromHubsInheritingFromAuthorizedHubs()
         {
             using (var host = new MemoryHost())
             {
@@ -453,14 +452,12 @@ namespace Microsoft.AspNet.SignalR.Tests
                 using (connection)
                 {
                     var hub = connection.CreateHubProxy("InheritAuthHub");
-                    var wh = new ManualResetEvent(false);
                     hub.On<string, string, object>("joined", (id, time, authInfo) =>
                     {
-                        Assert.NotNull(id);
-                        wh.Set();
                     });
 
-                    Assert.Throws<AggregateException>(() => connection.Start(host).Wait());
+                    var ex = await Assert.ThrowsAsync<HttpClientException>(() => connection.Start(host)).OrTimeout();
+                    Assert.Equal(HttpStatusCode.Unauthorized, ex.Response.StatusCode);
                 }
             }
         }
@@ -486,22 +483,22 @@ namespace Microsoft.AspNet.SignalR.Tests
                 using (connection)
                 {
                     var hub = connection.CreateHubProxy("InheritAuthHub");
-                    var wh = new ManualResetEvent(false);
+                    var wh = new TaskCompletionSource<object>();
                     hub.On<string, string, object>("joined", (id, time, authInfo) =>
                     {
                         Assert.NotNull(id);
-                        wh.Set();
+                        wh.TrySetResult(null);
                     });
 
                     await connection.Start(host);
 
-                    Assert.True(wh.WaitOne(TimeSpan.FromSeconds(3)));
+                    await wh.Task.OrTimeout(TimeSpan.FromSeconds(3));
                 }
             }
         }
 
         [Fact]
-        public void UnauthenticatedUserCannotInvokeMethodsInHubsInheritingFromAuthorizedHubs()
+        public async Task UnauthenticatedUserCannotInvokeMethodsInHubsInheritingFromAuthorizedHubs()
         {
             using (var host = new MemoryHost())
             {
@@ -521,14 +518,12 @@ namespace Microsoft.AspNet.SignalR.Tests
                 using (connection)
                 {
                     var hub = connection.CreateHubProxy("InheritAuthHub");
-                    var wh = new ManualResetEvent(false);
                     hub.On<string, string>("invoked", (id, time) =>
                     {
-                        Assert.NotNull(id);
-                        wh.Set();
                     });
 
-                    Assert.Throws<AggregateException>(() => connection.Start(host).Wait());
+                    var ex = await Assert.ThrowsAsync<HttpClientException>(() => connection.Start(host)).OrTimeout();
+                    Assert.Equal(HttpStatusCode.Unauthorized, ex.Response.StatusCode);
                 }
             }
         }
@@ -554,24 +549,24 @@ namespace Microsoft.AspNet.SignalR.Tests
                 using (connection)
                 {
                     var hub = connection.CreateHubProxy("InheritAuthHub");
-                    var wh = new ManualResetEvent(false);
+                    var wh = new TaskCompletionSource<object>();
                     hub.On<string, string>("invoked", (id, time) =>
                     {
                         Assert.NotNull(id);
-                        wh.Set();
+                        wh.TrySetResult(null);
                     });
 
                     await connection.Start(host);
 
                     await hub.Invoke("InvokedFromClient").OrTimeout();
 
-                    Assert.True(wh.WaitOne(TimeSpan.FromSeconds(3)));
+                    await wh.Task.OrTimeout(TimeSpan.FromSeconds(3));
                 }
             }
         }
 
         [Fact]
-        public void UnauthenticatedUserCannotReceiveHubMessagesFromHubsAuthorizedWithRoles()
+        public async Task UnauthenticatedUserCannotReceiveHubMessagesFromHubsAuthorizedWithRoles()
         {
             using (var host = new MemoryHost())
             {
@@ -591,20 +586,18 @@ namespace Microsoft.AspNet.SignalR.Tests
                 using (connection)
                 {
                     var hub = connection.CreateHubProxy("AdminAuthHub");
-                    var wh = new ManualResetEvent(false);
                     hub.On<string, string, object>("joined", (id, time, authInfo) =>
                     {
-                        Assert.NotNull(id);
-                        wh.Set();
                     });
 
-                    Assert.Throws<AggregateException>(() => connection.Start(host).Wait());
+                    var ex = await Assert.ThrowsAsync<HttpClientException>(() => connection.Start(host)).OrTimeout();
+                    Assert.Equal(HttpStatusCode.Unauthorized, ex.Response.StatusCode);
                 }
             }
         }
 
         [Fact]
-        public void UnauthenticatedUserCannotInvokeMethodsInHubsAuthorizedWithRoles()
+        public async Task UnauthenticatedUserCannotInvokeMethodsInHubsAuthorizedWithRoles()
         {
             using (var host = new MemoryHost())
             {
@@ -631,13 +624,14 @@ namespace Microsoft.AspNet.SignalR.Tests
                         wh.Set();
                     });
 
-                    Assert.Throws<AggregateException>(() => connection.Start(host).Wait());
+                    var ex = await Assert.ThrowsAsync<HttpClientException>(() => connection.Start(host)).OrTimeout();
+                    Assert.Equal(HttpStatusCode.Unauthorized, ex.Response.StatusCode); 
                 }
             }
         }
 
         [Fact]
-        public void UnauthorizedUserCannotReceiveHubMessagesFromHubsAuthorizedWithRoles()
+        public async Task UnauthorizedUserCannotReceiveHubMessagesFromHubsAuthorizedWithRoles()
         {
             using (var host = new MemoryHost())
             {
@@ -664,13 +658,14 @@ namespace Microsoft.AspNet.SignalR.Tests
                         wh.Set();
                     });
 
-                    Assert.Throws<AggregateException>(() => connection.Start(host).Wait());
+                    var ex = await Assert.ThrowsAsync<HttpClientException>(() => connection.Start(host)).OrTimeout();
+                    Assert.Equal(HttpStatusCode.Forbidden, ex.Response.StatusCode);
                 }
             }
         }
 
         [Fact]
-        public void UnauthorizedUserCannotInvokeMethodsInHubsAuthorizedWithRoles()
+        public async Task UnauthorizedUserCannotInvokeMethodsInHubsAuthorizedWithRoles()
         {
             using (var host = new MemoryHost())
             {
@@ -690,14 +685,12 @@ namespace Microsoft.AspNet.SignalR.Tests
                 using (connection)
                 {
                     var hub = connection.CreateHubProxy("AdminAuthHub");
-                    var wh = new ManualResetEvent(false);
                     hub.On<string, string>("invoked", (id, time) =>
                     {
-                        Assert.NotNull(id);
-                        wh.Set();
                     });
 
-                    Assert.Throws<AggregateException>(() => connection.Start(host).Wait());
+                    var ex = await Assert.ThrowsAsync<HttpClientException>(() => connection.Start(host)).OrTimeout();
+                    Assert.Equal(HttpStatusCode.Forbidden, ex.Response.StatusCode);
                 }
             }
         }
@@ -723,16 +716,16 @@ namespace Microsoft.AspNet.SignalR.Tests
                 using (connection)
                 {
                     var hub = connection.CreateHubProxy("AdminAuthHub");
-                    var wh = new ManualResetEvent(false);
+                    var wh = new TaskCompletionSource<object>();
                     hub.On<string, string, object>("joined", (id, time, authInfo) =>
                     {
                         Assert.NotNull(id);
-                        wh.Set();
+                        wh.TrySetResult(null);
                     });
 
                     await connection.Start(host);
 
-                    Assert.True(wh.WaitOne(TimeSpan.FromSeconds(3)));
+                    await wh.Task.OrTimeout(TimeSpan.FromSeconds(3));
                 }
             }
         }
@@ -758,24 +751,24 @@ namespace Microsoft.AspNet.SignalR.Tests
                 using (connection)
                 {
                     var hub = connection.CreateHubProxy("AdminAuthHub");
-                    var wh = new ManualResetEvent(false);
+                    var wh = new TaskCompletionSource<object>();
                     hub.On<string, string>("invoked", (id, time) =>
                     {
                         Assert.NotNull(id);
-                        wh.Set();
+                        wh.TrySetResult(null);
                     });
 
                     await connection.Start(host);
 
                     await hub.Invoke("InvokedFromClient").OrTimeout();
 
-                    Assert.True(wh.WaitOne(TimeSpan.FromSeconds(3)));
+                    await wh.Task.OrTimeout(TimeSpan.FromSeconds(3));
                 }
             }
         }
 
         [Fact]
-        public void UnauthorizedUserCannotReceiveHubMessagesFromHubsAuthorizedSpecifyingUserAndRole()
+        public async Task UnauthorizedUserCannotReceiveHubMessagesFromHubsAuthorizedSpecifyingUserAndRole()
         {
             using (var host = new MemoryHost())
             {
@@ -795,20 +788,18 @@ namespace Microsoft.AspNet.SignalR.Tests
                 using (connection)
                 {
                     var hub = connection.CreateHubProxy("UserAndRoleAuthHub");
-                    var wh = new ManualResetEvent(false);
                     hub.On<string, string, object>("joined", (id, time, authInfo) =>
                     {
-                        Assert.NotNull(id);
-                        wh.Set();
                     });
 
-                    Assert.Throws<AggregateException>(() => connection.Start(host).Wait());
+                    var ex = await Assert.ThrowsAsync<HttpClientException>(() => connection.Start(host)).OrTimeout();
+                    Assert.Equal(HttpStatusCode.Forbidden, ex.Response.StatusCode);
                 }
             }
         }
 
         [Fact]
-        public void UnauthorizedUserCannotInvokeMethodsInHubsAuthorizedSpecifyingUserAndRole()
+        public async Task UnauthorizedUserCannotInvokeMethodsInHubsAuthorizedSpecifyingUserAndRole()
         {
             using (var host = new MemoryHost())
             {
@@ -835,7 +826,8 @@ namespace Microsoft.AspNet.SignalR.Tests
                         wh.Set();
                     });
 
-                    Assert.Throws<AggregateException>(() => connection.Start(host).Wait());
+                    var ex = await Assert.ThrowsAsync<HttpClientException>(() => connection.Start(host)).OrTimeout();
+                    Assert.Equal(HttpStatusCode.Forbidden, ex.Response.StatusCode);
                 }
             }
         }
@@ -861,16 +853,16 @@ namespace Microsoft.AspNet.SignalR.Tests
                 using (connection)
                 {
                     var hub = connection.CreateHubProxy("UserAndRoleAuthHub");
-                    var wh = new ManualResetEvent(false);
+                    var wh = new TaskCompletionSource<object>();
                     hub.On<string, string, object>("joined", (id, time, authInfo) =>
                     {
                         Assert.NotNull(id);
-                        wh.Set();
+                        wh.TrySetResult(null);
                     });
 
                     await connection.Start(host);
 
-                    Assert.True(wh.WaitOne(TimeSpan.FromSeconds(3)));
+                    await wh.Task.OrTimeout(TimeSpan.FromSeconds(3));
                 }
             }
         }
@@ -896,18 +888,18 @@ namespace Microsoft.AspNet.SignalR.Tests
                 using (connection)
                 {
                     var hub = connection.CreateHubProxy("UserAndRoleAuthHub");
-                    var wh = new ManualResetEvent(false);
+                    var wh = new TaskCompletionSource<object>();
                     hub.On<string, string>("invoked", (id, time) =>
                     {
                         Assert.NotNull(id);
-                        wh.Set();
+                        wh.TrySetResult(null);
                     });
 
                     await connection.Start(host);
 
                     await hub.Invoke("InvokedFromClient").OrTimeout();
 
-                    Assert.True(wh.WaitOne(TimeSpan.FromSeconds(3)));
+                    await wh.Task.OrTimeout(TimeSpan.FromSeconds(3));
                 }
             }
         }
@@ -933,16 +925,16 @@ namespace Microsoft.AspNet.SignalR.Tests
                 using (connection)
                 {
                     var hub = connection.CreateHubProxy("IncomingAuthHub");
-                    var wh = new ManualResetEvent(false);
+                    var wh = new TaskCompletionSource<object>();
                     hub.On<string, string, object>("joined", (id, time, authInfo) =>
                     {
                         Assert.NotNull(id);
-                        wh.Set();
+                        wh.TrySetResult(null);
                     });
 
                     await connection.Start(host);
 
-                    Assert.True(wh.WaitOne(TimeSpan.FromSeconds(3)));
+                    await wh.Task.OrTimeout(TimeSpan.FromSeconds(3));
                 }
             }
         }
@@ -997,16 +989,16 @@ namespace Microsoft.AspNet.SignalR.Tests
                 using (connection)
                 {
                     var hub = connection.CreateHubProxy("IncomingAuthHub");
-                    var wh = new ManualResetEvent(false);
+                    var wh = new TaskCompletionSource<object>();
                     hub.On<string, string, object>("joined", (id, time, authInfo) =>
                     {
                         Assert.NotNull(id);
-                        wh.Set();
+                        wh.TrySetResult(null);
                     });
 
                     await connection.Start(host);
 
-                    Assert.True(wh.WaitOne(TimeSpan.FromSeconds(3)));
+                    await wh.Task.OrTimeout(TimeSpan.FromSeconds(3));
                 }
             }
         }
@@ -1032,18 +1024,18 @@ namespace Microsoft.AspNet.SignalR.Tests
                 using (connection)
                 {
                     var hub = connection.CreateHubProxy("IncomingAuthHub");
-                    var wh = new ManualResetEvent(false);
+                    var wh = new TaskCompletionSource<object>();
                     hub.On<string, string>("invoked", (id, time) =>
                     {
                         Assert.NotNull(id);
-                        wh.Set();
+                        wh.TrySetResult(null);
                     });
 
                     await connection.Start(host);
 
                     await hub.Invoke("InvokedFromClient").OrTimeout();
 
-                    Assert.True(wh.WaitOne(TimeSpan.FromSeconds(3)));
+                    await wh.Task.OrTimeout(TimeSpan.FromSeconds(3));
                 }
             }
         }
@@ -1127,18 +1119,18 @@ namespace Microsoft.AspNet.SignalR.Tests
                 using (connection)
                 {
                     var hub = connection.CreateHubProxy("InvokeAuthHub");
-                    var wh = new ManualResetEvent(false);
+                    var wh = new TaskCompletionSource<object>();
                     hub.On<string, string>("invoked", (id, time) =>
                     {
                         Assert.NotNull(id);
-                        wh.Set();
+                        wh.TrySetResult(null);
                     });
 
                     await connection.Start(host);
 
                     await hub.Invoke("InvokedFromClient").OrTimeout();
 
-                    Assert.True(wh.WaitOne(TimeSpan.FromSeconds(3)));
+                    await wh.Task.OrTimeout(TimeSpan.FromSeconds(3));
                 }
             }
         }

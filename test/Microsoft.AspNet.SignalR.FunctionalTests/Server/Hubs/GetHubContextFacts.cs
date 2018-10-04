@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -36,18 +36,18 @@ namespace Microsoft.AspNet.SignalR.Tests
 
                 using (connection1)
                 {
-                    var wh1 = new AsyncManualResetEvent(initialState: false);
+                    var wh1 = new TaskCompletionSource<object>();
 
                     var hub1 = connection1.CreateHubProxy("SendToSome");
 
                     await connection1.Start(host);
 
-                    hub1.On("send", wh1.Set);
+                    hub1.On("send", () => wh1.TrySetResult(null));
 
-                    hubContext.Groups.Add(connection1.ConnectionId, "Foo").Wait();
+                    await hubContext.Groups.Add(connection1.ConnectionId, "Foo");
                     hubContext.Clients.Group("Foo").send();
 
-                    Assert.True(await wh1.WaitAsync(TimeSpan.FromSeconds(10)));
+                    await wh1.Task.OrTimeout(TimeSpan.FromSeconds(10));
                 }
             }
         }
@@ -59,7 +59,7 @@ namespace Microsoft.AspNet.SignalR.Tests
             {
                 IHubContext<IBasicClient> hubContext = HubFacts.InitializeUserByQuerystring(host);
 
-                var wh = new AsyncManualResetEvent();
+                var wh = new TaskCompletionSource<object>();
 
                 using (var connection = HubFacts.GetUserConnection("myuser"))
                 {
@@ -67,11 +67,11 @@ namespace Microsoft.AspNet.SignalR.Tests
 
                     await connection.Start(host);
 
-                    hub.On("send", wh.Set);
+                    hub.On("send", () => wh.TrySetResult(null));
 
                     hubContext.Clients.User("myuser").send();
 
-                    Assert.True(await wh.WaitAsync(TimeSpan.FromSeconds(10)));
+                    await wh.Task.OrTimeout(TimeSpan.FromSeconds(10));
                 }
             }
         }
@@ -83,8 +83,8 @@ namespace Microsoft.AspNet.SignalR.Tests
             {
                 IHubContext<IBasicClient> hubContext = HubFacts.InitializeUserByQuerystring(host);
 
-                var wh1 = new AsyncManualResetEvent();
-                var wh2 = new AsyncManualResetEvent();
+                var wh1 = new TaskCompletionSource<object>();
+                var wh2 = new TaskCompletionSource<object>();
 
                 var connection1 = HubFacts.GetUserConnection("myuser");
                 var connection2 = HubFacts.GetUserConnection("myuser2");
@@ -98,13 +98,13 @@ namespace Microsoft.AspNet.SignalR.Tests
                     await connection1.Start(host);
                     await connection2.Start(host);
 
-                    proxy1.On("send", wh1.Set);
-                    proxy2.On("send", wh2.Set);
+                    proxy1.On("send", () => wh1.TrySetResult(null));
+                    proxy2.On("send", () => wh2.TrySetResult(null));
 
                     hubContext.Clients.Users(new List<string> { "myuser", "myuser2" }).send();
 
-                    Assert.True(await wh1.WaitAsync(TimeSpan.FromSeconds(10)));
-                    Assert.True(await wh2.WaitAsync(TimeSpan.FromSeconds(10)));
+                    await wh1.Task.OrTimeout(TimeSpan.FromSeconds(10));
+                    await wh2.Task.OrTimeout(TimeSpan.FromSeconds(10));
                 }
             }
         }
@@ -130,18 +130,18 @@ namespace Microsoft.AspNet.SignalR.Tests
 
                 using (connection1)
                 {
-                    var wh1 = new AsyncManualResetEvent(initialState: false);
+                    var wh1 = new TaskCompletionSource<object>();
 
                     var hub1 = connection1.CreateHubProxy("SendToSome");
 
                     await connection1.Start(host);
 
-                    hub1.On("send", () => wh1.Set());
+                    hub1.On("send", () => wh1.TrySetResult(null));
 
                     await hubContext.Groups.Add(connection1.ConnectionId, "Foo");
                     hubContext.Clients.Groups(new[] { "Foo" }).send();
 
-                    Assert.True(await wh1.WaitAsync(TimeSpan.FromSeconds(10)));
+                    await wh1.Task.OrTimeout(TimeSpan.FromSeconds(10));
                 }
             }
         }
@@ -167,17 +167,17 @@ namespace Microsoft.AspNet.SignalR.Tests
 
                 using (connection1)
                 {
-                    var wh1 = new AsyncManualResetEvent(initialState: false);
+                    var wh1 = new TaskCompletionSource<object>();
 
                     var hub1 = connection1.CreateHubProxy("SendToSome");
 
                     await connection1.Start(host);
 
-                    hub1.On("send", wh1.Set);
+                    hub1.On("send", () => wh1.TrySetResult(null));
 
                     hubContext.Clients.Client(connection1.ConnectionId).send();
 
-                    Assert.True(await wh1.WaitAsync(TimeSpan.FromSeconds(10)));
+                    await wh1.Task.OrTimeout(TimeSpan.FromSeconds(10));
                 }
             }
         }
@@ -203,17 +203,17 @@ namespace Microsoft.AspNet.SignalR.Tests
 
                 using (connection1)
                 {
-                    var wh1 = new AsyncManualResetEvent(initialState: false);
+                    var wh1 = new TaskCompletionSource<object>();
 
                     var hub1 = connection1.CreateHubProxy("SendToSome");
 
                     await connection1.Start(host);
 
-                    hub1.On("send", wh1.Set);
+                    hub1.On("send", () => wh1.TrySetResult(null));
 
                     hubContext.Clients.Clients(new[] { connection1.ConnectionId }).send();
 
-                    Assert.True(await wh1.WaitAsync(TimeSpan.FromSeconds(10)));
+                    await wh1.Task.OrTimeout(TimeSpan.FromSeconds(10));
                 }
             }
         }
@@ -241,8 +241,8 @@ namespace Microsoft.AspNet.SignalR.Tests
                 using (connection1)
                 using (connection2)
                 {
-                    var wh1 = new AsyncManualResetEvent(initialState: false);
-                    var wh2 = new AsyncManualResetEvent(initialState: false);
+                    var wh1 = new TaskCompletionSource<object>();
+                    var wh2 = new TaskCompletionSource<object>();
 
                     var hub1 = connection1.CreateHubProxy("SendToSome");
                     var hub2 = connection2.CreateHubProxy("SendToSome");
@@ -250,13 +250,13 @@ namespace Microsoft.AspNet.SignalR.Tests
                     await connection1.Start(host);
                     await connection2.Start(host);
 
-                    hub1.On("send", wh1.Set);
-                    hub2.On("send", wh2.Set);
+                    hub1.On("send", () => wh1.TrySetResult(null));
+                    hub2.On("send", () => wh2.TrySetResult(null));
 
                     hubContext.Clients.All.send();
 
-                    Assert.True(await wh1.WaitAsync(TimeSpan.FromSeconds(10)));
-                    Assert.True(await wh2.WaitAsync(TimeSpan.FromSeconds(10)));
+                    await wh1.Task.OrTimeout(TimeSpan.FromSeconds(10));
+                    await wh2.Task.OrTimeout(TimeSpan.FromSeconds(10));
                 }
             }
         }

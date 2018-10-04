@@ -184,12 +184,12 @@ namespace Microsoft.AspNet.SignalR.Tests
                         wh.TrySetResult(null);
                     });
 
-                    hubConnection.Start(host.Transport).Wait();
+                    await hubConnection.Start(host.Transport).OrTimeout();
 
                     // The calls should be complete once the start task returns
                     Assert.Equal(2, bufferMeCalls);
 
-                    proxy.Invoke("Ping").Wait();
+                    await proxy.Invoke("Ping").OrTimeout();
 
                     await wh.Task.OrTimeout(TimeSpan.FromSeconds(10));
                 }
@@ -432,7 +432,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                     await hubConnection.Start(host.Transport);
                     var ignore = proxy.Invoke("Send").Catch();
 
-                    Assert.True(tcs.Task.Wait(TimeSpan.FromSeconds(10)));
+                    await tcs.Task.OrTimeout(TimeSpan.FromSeconds(10));
                 }
             }
         }

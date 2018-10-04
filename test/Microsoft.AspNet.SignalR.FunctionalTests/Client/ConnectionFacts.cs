@@ -220,7 +220,7 @@ namespace Microsoft.AspNet.SignalR.Tests
         }
 
         //[Fact(Skip = "Disabled IIS Express tests because they fail to initialize")]
-        public void WebSocketsTransportFailsIfOnConnectedThrows()
+        public async Task WebSocketsTransportFailsIfOnConnectedThrows()
         {
             using (ITestHost host = CreateHost(HostType.IISExpress))
             {
@@ -230,7 +230,7 @@ namespace Microsoft.AspNet.SignalR.Tests
 
                 using (connection)
                 {
-                    Assert.Throws<AggregateException>(() => connection.Start(new WebSocketTransport()).Wait());
+                    await Assert.ThrowsAsync<AggregateException>(() => connection.Start(new WebSocketTransport()));
                 }
             }
         }
@@ -358,7 +358,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                     var ignore = connection.Send("Hello");
 
                     // Assert
-                    Assert.True(tcs.Task.Wait(TimeSpan.FromSeconds(10)));
+                    await tcs.Task.OrTimeout(TimeSpan.FromSeconds(10));
                 }
             }
         }
@@ -447,7 +447,7 @@ namespace Microsoft.AspNet.SignalR.Tests
         //[InlineData(HostType.HttpListener, TransportType.ServerSentEvents, MessageBusType.Default)]
         //[InlineData(HostType.HttpListener, TransportType.Websockets, MessageBusType.Default)]
         //[InlineData(HostType.HttpListener, TransportType.LongPolling, MessageBusType.Default)]
-        public void ConnectionFunctionsCorrectlyAfterCallingStartMutlipleTimes(HostType hostType, TransportType transportType, MessageBusType messageBusType)
+        public async Task ConnectionFunctionsCorrectlyAfterCallingStartMutlipleTimes(HostType hostType, TransportType transportType, MessageBusType messageBusType)
         {
             using (var host = CreateHost(hostType, transportType))
             {
@@ -458,14 +458,14 @@ namespace Microsoft.AspNet.SignalR.Tests
                     var tcs = new TaskCompletionSource<object>();
                     connection.Received += _ => tcs.TrySetResult(null);
 
-                    // We're purposely calling Start().Wait() twice here
-                    connection.Start(host.TransportFactory()).Wait();
-                    connection.Start(host.TransportFactory()).Wait();
+                    // We're purposely calling Start() twice here
+                    await connection.Start(host.TransportFactory()).OrTimeout();
+                    await connection.Start(host.TransportFactory()).OrTimeout();
 
-                    connection.Send("test").Wait();
+                    await connection.Send("test").OrTimeout();
 
                     // Wait for message to be received
-                    Assert.True(tcs.Task.Wait(TimeSpan.FromSeconds(10)));
+                    await tcs.Task.OrTimeout(TimeSpan.FromSeconds(10));
                 }
             }
         }
