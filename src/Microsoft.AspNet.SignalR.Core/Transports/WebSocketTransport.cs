@@ -93,11 +93,12 @@ namespace Microsoft.AspNet.SignalR.Transports
             },
             _socket);
         }
-
+        
         public override Task ProcessRequest(ITransportConnection connection)
         {
             if (IsAbortRequest)
             {
+                Context.Response.ContentType = "text/html";
                 return connection.Abort(ConnectionId);
             }
             else
