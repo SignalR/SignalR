@@ -39,23 +39,23 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Server.Hubs
 
                 using (connection)
                 {
-                    var inGroup = new AsyncManualResetEvent();
+                    var inGroup = new TaskCompletionSource<object>();
 
                     connection.Received += data =>
                     {
                         if (data == "group")
                         {
-                            inGroup.Set();
+                            inGroup.TrySetResult(null);
                         }
                     };
 
                     await connection.Start(host);
 
-                    await inGroup.WaitAsync(TimeSpan.FromSeconds(10));
+                    await inGroup.Task.OrTimeout(TimeSpan.FromSeconds(10));
 
                     Assert.NotNull(connection.GroupsToken);
 
-                    var spyWh = new AsyncManualResetEvent();
+                    var spyWh = new TaskCompletionSource<object>();
                     var hackerConnection = new Client.Connection(connection.Url)
                     {
                         ConnectionId = "hacker"
@@ -71,14 +71,15 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Server.Hubs
                             sseEvent.Data != "initialized" &&
                             sseEvent.Data != "{}")
                         {
-                            spyWh.Set();
+                            spyWh.TrySetResult(null);
                         }
                     };
 
                     reader.Start();
                     await connection.Send("random");
 
-                    Assert.False(await spyWh.WaitAsync(TimeSpan.FromSeconds(5)));
+                    await Task.Delay(TimeSpan.FromSeconds(5));
+                    Assert.False(spyWh.Task.IsCompleted);
                 }
             }
         }
@@ -114,7 +115,7 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Server.Hubs
                         connectionTcs.SetResult(data.Trim());
                     };
 
-                    connection.Start(host).Wait();
+                    await connection.Start(host).OrTimeout();
 
                     EventSourceStreamReader reader = null;
 

@@ -25,23 +25,23 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Server.Transports
                 using (var connection = CreateHubConnection(host))
                 {
                     var keepAlivesMissed = false;
-                    var reconnectedWh = new ManualResetEventSlim();
+                    var reconnectedWh = new TaskCompletionSource<object>();
 
                     connection.ConnectionSlow += () =>
                     {
                         keepAlivesMissed = true;
                     };
 
-                    connection.Reconnected += reconnectedWh.Set;
+                    connection.Reconnected += () => reconnectedWh.TrySetResult(null);
 
                     var hub = connection.CreateHubProxy("returnsUnserializableObjectHub");
 
                     await connection.Start(host.Transport);
 
                     // The return value of GetStuff will cause Json.NET to throw during serialization
-                    Assert.Throws<AggregateException>(() => hub.Invoke(method).Wait());
+                    await Assert.ThrowsAsync<InvalidOperationException>(() => hub.Invoke(method)).OrTimeout();
 
-                    Assert.True(reconnectedWh.Wait(TimeSpan.FromSeconds(30)));
+                    await reconnectedWh.Task.OrTimeout(TimeSpan.FromSeconds(30));
                     Assert.False(keepAlivesMissed);
                 }
             }

@@ -2,7 +2,6 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFrameworks>$(DefaultTestFrameworks)</TargetFrameworks>
-    <IncludeDefaultXunitConfig>false</IncludeDefaultXunitConfig>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Castle.Core" Version="$(CastleCorePackageVersion)" />

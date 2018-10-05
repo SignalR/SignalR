@@ -8,6 +8,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Channels;
 using System.Threading.Tasks;
+using Microsoft.AspNet.SignalR.Client;
 using Microsoft.AspNet.SignalR.Configuration;
 using Microsoft.AspNet.SignalR.Hosting.Memory;
 using Microsoft.AspNet.SignalR.Infrastructure;
@@ -25,7 +26,7 @@ namespace Microsoft.AspNet.SignalR.Tests
         public class OnConnectedAsync : HostedTest
         {
             [Fact]
-            public void ConnectionsWithTheSameConnectionIdSSECloseGracefully()
+            public async Task ConnectionsWithTheSameConnectionIdSSECloseGracefully()
             {
                 using (var host = new MemoryHost())
                 {
@@ -50,16 +51,16 @@ namespace Microsoft.AspNet.SignalR.Tests
                         tasks.Add(ProcessRequest(host, "serverSentEvents", id));
                     }
 
-                    ProcessRequest(host, "serverSentEvents", id);
+                    await ProcessRequest(host, "serverSentEvents", id);
 
-                    Task.WaitAll(tasks.ToArray());
+                    await Task.WhenAll(tasks.ToArray());
 
                     Assert.True(tasks.All(t => !t.IsFaulted));
                 }
             }
 
             [Fact]
-            public void ConnectionsWithTheSameConnectionIdLongPollingCloseGracefully()
+            public async Task ConnectionsWithTheSameConnectionIdLongPollingCloseGracefully()
             {
                 using (var host = new MemoryHost())
                 {
@@ -84,9 +85,9 @@ namespace Microsoft.AspNet.SignalR.Tests
                         tasks.Add(ProcessRequest(host, "longPolling", id));
                     }
 
-                    ProcessRequest(host, "longPolling", id);
+                    await ProcessRequest(host, "longPolling", id);
 
-                    Task.WaitAll(tasks.ToArray());
+                    await Task.WhenAll(tasks.ToArray());
 
                     Assert.True(tasks.All(t => !t.IsFaulted));
                 }
@@ -118,19 +119,19 @@ namespace Microsoft.AspNet.SignalR.Tests
 
                     using (connection1)
                     {
-                        var wh1 = new AsyncManualResetEvent(initialState: false);
+                        var wh1 = new TaskCompletionSource<object>();
 
                         await connection1.Start(host);
 
                         connection1.Received += data =>
                         {
                             Assert.Equal("yay", data);
-                            wh1.Set();
+                            wh1.TrySetResult(null);
                         };
 
                         var ignore = connectionContext.Connection.Send(connection1.ConnectionId, "yay");
 
-                        Assert.True(await wh1.WaitAsync(TimeSpan.FromSeconds(10)));
+                        await wh1.Task.OrTimeout(TimeSpan.FromSeconds(10));
                     }
                 }
             }
@@ -156,19 +157,19 @@ namespace Microsoft.AspNet.SignalR.Tests
 
                     using (connection1)
                     {
-                        var wh1 = new AsyncManualResetEvent(initialState: false);
+                        var wh1 = new TaskCompletionSource<object>();
 
                         await connection1.Start(host);
 
                         connection1.Received += data =>
                         {
                             Assert.Equal("yay", data);
-                            wh1.Set();
+                            wh1.TrySetResult(null);
                         };
 
                         var ignore = connectionContext.Connection.Send(new[] { connection1.ConnectionId }, "yay");
 
-                        Assert.True(await wh1.WaitAsync(TimeSpan.FromSeconds(10)));
+                        await wh1.Task.OrTimeout(TimeSpan.FromSeconds(10));
                     }
                 }
             }
@@ -194,19 +195,19 @@ namespace Microsoft.AspNet.SignalR.Tests
 
                     using (connection1)
                     {
-                        var wh1 = new AsyncManualResetEvent(initialState: false);
+                        var wh1 = new TaskCompletionSource<object>();
 
                         await connection1.Start(host);
 
                         connection1.Received += data =>
                         {
                             Assert.Equal("yay", data);
-                            wh1.Set();
+                            wh1.TrySetResult(null);
                         };
 
                         await connectionContext.Groups.Add(connection1.ConnectionId, "Foo");
                         await connectionContext.Groups.Send("Foo", "yay");
-                        Assert.True(await wh1.WaitAsync(TimeSpan.FromSeconds(10)));
+                        await wh1.Task.OrTimeout(TimeSpan.FromSeconds(10));
                     }
                 }
             }
@@ -232,20 +233,20 @@ namespace Microsoft.AspNet.SignalR.Tests
 
                     using (connection1)
                     {
-                        var wh1 = new AsyncManualResetEvent(initialState: false);
+                        var wh1 = new TaskCompletionSource<object>();
 
                         await connection1.Start(host);
 
                         connection1.Received += data =>
                         {
                             Assert.Equal("yay", data);
-                            wh1.Set();
+                            wh1.TrySetResult(null);
                         };
 
-                        connectionContext.Groups.Add(connection1.ConnectionId, "Foo").Wait();
+                        await connectionContext.Groups.Add(connection1.ConnectionId, "Foo");
                         var ignore = connectionContext.Groups.Send(new[] { "Foo", "Bar" }, "yay");
 
-                        Assert.True(await wh1.WaitAsync(TimeSpan.FromSeconds(10)));
+                        await wh1.Task.OrTimeout(TimeSpan.FromSeconds(10));
                     }
                 }
             }
@@ -296,18 +297,17 @@ namespace Microsoft.AspNet.SignalR.Tests
             //[InlineData(HostType.Memory, TransportType.LongPolling, MessageBusType.FakeMultiStream)]
             //[InlineData(HostType.IISExpress, TransportType.Auto, MessageBusType.Default, Skip = "Disabled IIS Express tests because they fail to initialize")]
             [InlineData(HostType.HttpListener, TransportType.Auto, MessageBusType.Default)]
-            public void UnableToConnectToProtectedConnection(HostType hostType, TransportType transportType, MessageBusType messageBusType)
+            public async Task UnableToConnectToProtectedConnection(HostType hostType, TransportType transportType, MessageBusType messageBusType)
             {
                 using (var host = CreateHost(hostType, transportType))
                 {
-                    var wh = new AsyncManualResetEvent();
                     host.Initialize(messageBusType: messageBusType);
 
                     var connection = CreateConnection(host, "/protected");
 
                     using (connection)
                     {
-                        Assert.Throws<AggregateException>(() => connection.Start(host.Transport).Wait());
+                        await Assert.ThrowsAsync<HttpClientException>(() => connection.Start(host.Transport)).OrTimeout();
                     }
                 }
             }
@@ -325,7 +325,7 @@ namespace Microsoft.AspNet.SignalR.Tests
             {
                 using (var host = CreateHost(hostType, transportType))
                 {
-                    var wh = new AsyncManualResetEvent();
+                    var wh = new TaskCompletionSource<object>();
                     host.Initialize(messageBusType: messageBusType);
 
                     var connection = CreateConnection(host, "/add-group");
@@ -335,13 +335,13 @@ namespace Microsoft.AspNet.SignalR.Tests
                         connection.Received += data =>
                         {
                             Assert.Equal("hey", data);
-                            wh.Set();
+                            wh.TrySetResult(null);
                         };
 
                         await connection.Start(host.Transport);
                         await connection.Send("").OrTimeout();
 
-                        Assert.True(await wh.WaitAsync(TimeSpan.FromSeconds(5)));
+                        await wh.Task.OrTimeout();
                     }
                 }
             }
@@ -639,19 +639,19 @@ namespace Microsoft.AspNet.SignalR.Tests
                     using (connection1)
                     using (connection2)
                     {
-                        var wh1 = new AsyncManualResetEvent(initialState: false);
-                        var wh2 = new AsyncManualResetEvent(initialState: false);
+                        var wh1 = new TaskCompletionSource<object>();
+                        var wh2 = new TaskCompletionSource<object>();
 
-                        connection1.Received += data => wh1.Set();
-                        connection2.Received += data => wh2.Set();
+                        connection1.Received += data => wh1.TrySetResult(null);
+                        connection2.Received += data => wh2.TrySetResult(null);
 
                         await connection1.Start(host.TransportFactory());
                         await connection2.Start(host.TransportFactory());
 
                         await connection1.Send("test").OrTimeout();
 
-                        Assert.False(await wh1.WaitAsync(TimeSpan.FromSeconds(5)));
-                        Assert.True(await wh2.WaitAsync(TimeSpan.FromSeconds(5)));
+                        await wh2.Task.OrTimeout();
+                        Assert.False(wh1.Task.IsCompleted);
                     }
                 }
             }
@@ -729,7 +729,7 @@ namespace Microsoft.AspNet.SignalR.Tests
 
         public class Owin : HostedTest
         {
-            [Theory(Skip = "Test is flaky")]
+            [Theory]
             //[InlineData(HostType.IISExpress, TransportType.ServerSentEvents, Skip = "Disabled IIS Express tests because they fail to initialize")]
             //[InlineData(HostType.IISExpress, TransportType.LongPolling, Skip = "Disabled IIS Express tests because they fail to initialize")]
             [InlineData(HostType.HttpListener, TransportType.ServerSentEvents)]

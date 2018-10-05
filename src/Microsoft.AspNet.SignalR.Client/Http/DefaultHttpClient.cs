@@ -87,10 +87,12 @@ namespace Microsoft.AspNet.SignalR.Client.Http
                      else
                      {
                          // Dispose the response (https://github.com/SignalR/SignalR/issues/4092)
-                         var message = responseMessage.ToString();
                          responseMessage.RequestMessage.Dispose();
                          responseMessage.Dispose();
-                         throw new HttpClientException(message);
+
+                         // None of the getters on HttpResponseMessage throw ODE, so it should be safe to give the catcher of the exception
+                         // access to the response. They may get an ODE if they try to read the body, but that's OK.
+                         throw new HttpClientException(responseMessage);
                      }
 
                      return (IResponse)new HttpResponseMessageWrapper(responseMessage);

@@ -64,7 +64,7 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Server.Connections
 
                 for (int i = 0; i < nodeCount; i++)
                 {
-                    broadcasters[i].Broadcast(String.Format("From Node {0}: {1}", i, i + 1)).Wait();
+                    await broadcasters[i].Broadcast(String.Format("From Node {0}: {1}", i, i + 1)).OrTimeout();
                     await Task.Delay(TimeSpan.FromSeconds(1));
                 }
 
@@ -127,12 +127,12 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Server.Connections
                     const string group = "group";
                     const string message = "message";
 
-                    var mre = new AsyncManualResetEvent();
+                    var mre = new TaskCompletionSource<object>();
                     proxy.On<string>("message", m =>
                     {
                         if (m == message)
                         {
-                            mre.Set();
+                            mre.TrySetResult(null);
                         }
                     });
 
@@ -155,7 +155,7 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Server.Connections
                     await proxy.Invoke("JoinGroup", group);
                     await proxy.Invoke("SendToGroup", group, message);
 
-                    Assert.True(await mre.WaitAsync(TimeSpan.FromSeconds(5)));
+                    await mre.Task.OrTimeout();
                 }
             }
         }
@@ -186,12 +186,12 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Server.Connections
                     const string group = "group";
                     const string message = "message";
 
-                    var mre = new AsyncManualResetEvent();
+                    var mre = new TaskCompletionSource<object>();
                     proxy.On<string>("message", m =>
                     {
                         if (m == message)
                         {
-                            mre.Set();
+                            mre.TrySetResult(null);
                         }
                     });
 
@@ -205,7 +205,7 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Server.Connections
                     await secondHubContext.Groups.Add(connection.ConnectionId, group);
                     await proxy.Invoke("SendToGroup", group, message);
 
-                    Assert.True(await mre.WaitAsync(TimeSpan.FromSeconds(5)));
+                    await mre.Task.OrTimeout();
                 }
             }
         }

@@ -10,6 +10,7 @@ using System.Security.Principal;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR.Client.Http;
+using Microsoft.AspNet.SignalR.Client.Infrastructure;
 using Microsoft.AspNet.SignalR.Client.Transports;
 using Microsoft.AspNet.SignalR.Configuration;
 using Microsoft.AspNet.SignalR.Hosting.Memory;
@@ -188,8 +189,7 @@ namespace Microsoft.AspNet.SignalR.Client.Tests
                             message = "testMessage"
                         });
 
-                        Assert.True(messageTcs.Task.Wait(TimeSpan.FromSeconds(10)));
-                        Assert.Equal("testMessage", messageTcs.Task.Result);
+                        Assert.Equal("testMessage", await messageTcs.Task.OrTimeout(TimeSpan.FromSeconds(10)));
                     }
                 }
             }
@@ -202,7 +202,7 @@ namespace Microsoft.AspNet.SignalR.Client.Tests
             //[InlineData(HostType.HttpListener, TransportType.ServerSentEvents, MessageBusType.Default)]
             //[InlineData(HostType.HttpListener, TransportType.LongPolling, MessageBusType.Default)]
             //[InlineData(HostType.HttpListener, TransportType.Auto, MessageBusType.Default)]
-            public void ThrownWebExceptionShouldBeUnwrapped(HostType hostType, TransportType transportType, MessageBusType messageBusType)
+            public async Task ThrownWebExceptionShouldBeUnwrapped(HostType hostType, TransportType transportType, MessageBusType messageBusType)
             {
                 using (var host = CreateHost(hostType, transportType))
                 {
@@ -211,7 +211,7 @@ namespace Microsoft.AspNet.SignalR.Client.Tests
                     var connection = CreateConnection(host, "/ErrorsAreFun");
 
                     // Expecting 404
-                    var aggEx = Assert.Throws<AggregateException>(() => connection.Start(host.Transport).Wait());
+                    var aggEx = await Assert.ThrowsAsync<StartException>(() => connection.Start(host.Transport));
 
                     connection.Stop();
 
@@ -260,45 +260,6 @@ namespace Microsoft.AspNet.SignalR.Client.Tests
                         connection.TransportConnectTimeout = newTimeout;
                         await connection.Start(host);
                         Assert.Equal(((IConnection)connection).TotalTransportConnectTimeout - defaultTransportConnectTimeout, newTimeout);
-                    }
-                }
-            }
-
-            //[Fact(Skip = "Disable IIS Express tests because they fail to initialize")]
-            public async Task FallbackToLongPollingIIS()
-            {
-                using (ITestHost host = CreateHost(HostType.IISExpress))
-                {
-                    // Reduce transportConnectionTimeout to 5 seconds
-                    host.Initialize(transportConnectTimeout: 5);
-
-                    var connection = CreateConnection(host, "/fall-back");
-
-                    using (connection)
-                    {
-                        var tcs = new TaskCompletionSource<object>();
-
-                        connection.StateChanged += change =>
-                        {
-                            if (change.NewState == ConnectionState.Reconnecting)
-                            {
-                                tcs.TrySetException(new Exception("The connection should not be reconnecting"));
-                            }
-                        };
-
-                        var client = new DefaultHttpClient();
-                        var transports = new IClientTransport[]  {
-                            new ServerSentEventsTransport(client),
-                            new LongPollingTransport(client)
-                        };
-
-                        var transport = new AutoTransport(client, transports);
-
-                        await connection.Start(transport);
-
-                        Assert.Equal(connection.Transport.Name, "longPolling");
-
-                        Assert.False(tcs.Task.Wait(TimeSpan.FromSeconds(5)));
                     }
                 }
             }
@@ -355,7 +316,6 @@ namespace Microsoft.AspNet.SignalR.Client.Tests
                     });
 
                     var tcs = new TaskCompletionSource<string>();
-                    var mre = new AsyncManualResetEvent();
                     var connection = new Connection("http://foo/echo2");
 
                     using (connection)
@@ -363,14 +323,12 @@ namespace Microsoft.AspNet.SignalR.Client.Tests
                         connection.Received += data =>
                         {
                             tcs.TrySetResult(data);
-                            mre.Set();
                         };
 
                         await connection.Start(host);
                         var ignore = connection.Send("");
 
-                        Assert.True(await mre.WaitAsync(TimeSpan.FromSeconds(10)));
-                        Assert.Equal("MyConnection2", tcs.Task.Result);
+                        Assert.Equal("MyConnection2", await tcs.Task.OrTimeout(TimeSpan.FromSeconds(10)));
                     }
                 }
             }
@@ -392,7 +350,6 @@ namespace Microsoft.AspNet.SignalR.Client.Tests
                     });
 
                     var tcs = new TaskCompletionSource<string>();
-                    var mre = new AsyncManualResetEvent();
                     var connection = new Connection("http://foo/echo");
 
                     using (connection)
@@ -400,14 +357,12 @@ namespace Microsoft.AspNet.SignalR.Client.Tests
                         connection.Received += data =>
                         {
                             tcs.TrySetResult(data);
-                            mre.Set();
                         };
 
                         await connection.Start(host);
                         var ignore = connection.Send("");
 
-                        Assert.True(await mre.WaitAsync(TimeSpan.FromSeconds(10)));
-                        Assert.Equal("MyConnection", tcs.Task.Result);
+                        Assert.Equal("MyConnection", await tcs.Task.OrTimeout(TimeSpan.FromSeconds(10)));
                     }
                 }
             }
@@ -427,11 +382,16 @@ namespace Microsoft.AspNet.SignalR.Client.Tests
                         tcs.TrySetException(ex);
                     };
 
+                    connection.Closed += () =>
+                    {
+                        tcs.TrySetResult(null);
+                    };
+
                     await connection.Start(host.Transport);
 
                     connection.Stop();
 
-                    tcs.Task.Wait(TimeSpan.FromSeconds(5));
+                    await tcs.Task.OrTimeout();
                 }
             }
 
@@ -569,18 +529,18 @@ namespace Microsoft.AspNet.SignalR.Client.Tests
 
                     using (var connection = CreateHubConnection(host, "/force-lp-reconnect"))
                     {
-                        var reconnectingWh = new AsyncManualResetEvent();
-                        var reconnectedWh = new AsyncManualResetEvent();
+                        var reconnectingWh = new TaskCompletionSource<object>();
+                        var reconnectedWh = new TaskCompletionSource<object>();
 
                         connection.Reconnecting += () =>
                         {
-                            reconnectingWh.Set();
+                            reconnectingWh.TrySetResult(null);
                             Assert.Equal(ConnectionState.Reconnecting, connection.State);
                         };
 
                         connection.Reconnected += () =>
                         {
-                            reconnectedWh.Set();
+                            reconnectedWh.TrySetResult(null);
                             Assert.Equal(ConnectionState.Connected, connection.State);
                         };
 
@@ -589,8 +549,8 @@ namespace Microsoft.AspNet.SignalR.Client.Tests
                         // Force reconnect
                         await Task.Delay(TimeSpan.FromSeconds(5));
 
-                        Assert.True(await reconnectingWh.WaitAsync(TimeSpan.FromSeconds(30)));
-                        Assert.True(await reconnectedWh.WaitAsync(TimeSpan.FromSeconds(30)));
+                        await reconnectingWh.Task.OrTimeout(TimeSpan.FromSeconds(30));
+                        await reconnectedWh.Task.OrTimeout(TimeSpan.FromSeconds(30));
 
                         await Task.Delay(TimeSpan.FromSeconds(8));
                         Assert.NotEqual(ConnectionState.Disconnected, connection.State);
@@ -607,7 +567,7 @@ namespace Microsoft.AspNet.SignalR.Client.Tests
                 using (var host = CreateHost(hostType, transportType))
                 {
                     var errorsCaught = 0;
-                    var wh = new AsyncManualResetEvent();
+                    var wh = new TaskCompletionSource<object>();
                     Exception thrown = new Exception(),
                               caught = null;
 
@@ -627,13 +587,13 @@ namespace Microsoft.AspNet.SignalR.Client.Tests
                             caught = e;
                             if (Interlocked.Increment(ref errorsCaught) == 2)
                             {
-                                wh.Set();
+                                wh.TrySetResult(null);
                             }
                         };
 
                         await connection.Start(host.Transport);
 
-                        Assert.True(await wh.WaitAsync(TimeSpan.FromSeconds(5)));
+                        await wh.Task.OrTimeout(TimeSpan.FromSeconds(5));
                         Assert.Equal(thrown, caught);
                     }
                 }
@@ -664,7 +624,7 @@ namespace Microsoft.AspNet.SignalR.Client.Tests
                     {
                         Debug.WriteLine("Transport: {0}", (object)transport.Name);
 
-                        var wh = new AsyncManualResetEvent();
+                        var wh = new TaskCompletionSource<object>();
                         Exception thrown = new InvalidOperationException(),
                                   caught = null;
 
@@ -680,13 +640,13 @@ namespace Microsoft.AspNet.SignalR.Client.Tests
                             connection.Error += e =>
                             {
                                 caught = e;
-                                wh.Set();
+                                wh.TrySetResult(null);
                             };
 
                             await connection.Start(transport);
                             var ignore = connection.Send("");
 
-                            Assert.True(await wh.WaitAsync(TimeSpan.FromSeconds(5)));
+                            await wh.Task.OrTimeout();
                             Assert.Equal(thrown, caught);
                         }
                     }

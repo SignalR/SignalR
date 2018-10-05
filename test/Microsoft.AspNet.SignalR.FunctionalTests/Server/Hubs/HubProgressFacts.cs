@@ -13,7 +13,7 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Server.Hubs
 {
     public class HubProgressFacts : HostedTest
     {
-        [Theory(Skip = "Flaky when run in parallel.")]
+        [Theory(Skip = "Flaky on CI")]
         //[InlineData(HostType.IISExpress, TransportType.Websockets, MessageBusType.Default, Skip = "Disabled IIS Express tests because they fail to initialize")]
         //[InlineData(HostType.IISExpress, TransportType.ServerSentEvents, MessageBusType.Default, Skip = "Disabled IIS Express tests because they fail to initialize")]
         //[InlineData(HostType.IISExpress, TransportType.LongPolling, MessageBusType.Default, Skip = "Disabled IIS Express tests because they fail to initialize")]
@@ -45,7 +45,7 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Server.Hubs
 
                     // Give up after 2 minutes
                     var cts = new CancellationTokenSource();
-                    cts.CancelAfter(TimeSpan.FromMinutes(2));
+                    cts.CancelAfter(TimeSpan.FromSeconds(10));
 
                     var updatesSeen = 0;
                     try
@@ -62,7 +62,7 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Server.Hubs
                     }
                     catch (OperationCanceledException)
                     {
-                        Assert.True(false, "Timed out while waiting for all progress items to arrive");
+                        Assert.True(false, $"Timed out while waiting for all progress items to arrive. Received: {updatesSeen} items.");
                     }
 
                     Assert.Equal(10, updatesSeen);

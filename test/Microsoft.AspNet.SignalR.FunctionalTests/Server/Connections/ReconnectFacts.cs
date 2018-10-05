@@ -94,16 +94,16 @@ namespace Microsoft.AspNet.SignalR.Tests
             {
                 using (var connection = CreateHubConnection("http://foo/"))
                 {
-                    var reconnectedEvent = new AsyncManualResetEvent();
-                    connection.Reconnected += reconnectedEvent.Set;
+                    var reconnectedEvent = new TaskCompletionSource<object>();
+                    connection.Reconnected += () => reconnectedEvent.TrySetResult(null);
 
                     var hubProxy = connection.CreateHubProxy("groupChat");
-                    var sendEvent = new AsyncManualResetEvent();
+                    var sendEvent = new TaskCompletionSource<object>();
                     string sendMessage = null;
                     hubProxy.On<string>("send", message =>
                     {
                         sendMessage = message;
-                        sendEvent.Set();
+                        sendEvent.TrySetResult(null);
                     });
 
                     var groupName = "group$&+,/:;=?@[]1";
@@ -117,11 +117,11 @@ namespace Microsoft.AspNet.SignalR.Tests
 
                     host.Restart();
 
-                    Assert.True(await reconnectedEvent.WaitAsync(TimeSpan.FromSeconds(15)), "Timed out waiting for client side reconnect.");
+                    await reconnectedEvent.Task.OrTimeout(TimeSpan.FromSeconds(15));
 
                     await hubProxy.Invoke("Send", groupName, groupMessage);
 
-                    Assert.True(await sendEvent.WaitAsync(TimeSpan.FromSeconds(15)), "Timed out waiting for message.");
+                    await sendEvent.Task.OrTimeout(TimeSpan.FromSeconds(15));
                     Assert.Equal(groupMessage, sendMessage);
                 }
             }

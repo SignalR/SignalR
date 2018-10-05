@@ -65,7 +65,7 @@ namespace Microsoft.AspNet.SignalR.Hosting.Memory
 
         public void Dispose()
         {
-            _host.Dispose();
+            _host?.Dispose();
         }
     }
 }
