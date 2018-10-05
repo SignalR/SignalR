@@ -10,7 +10,6 @@ using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR.Client;
 using Microsoft.AspNet.SignalR.Hosting.Memory;
 using Microsoft.AspNet.SignalR.Hubs;
-using Microsoft.AspNet.SignalR.Tests.Common;
 using Microsoft.AspNet.SignalR.Tests.Common.Infrastructure;
 using Owin;
 using Xunit;
@@ -389,7 +388,10 @@ namespace Microsoft.AspNet.SignalR.Tests
                     {
                     });
 
-                    var ex = await Assert.ThrowsAsync<HttpClientException>(() => connection.Start(host)).OrTimeout();
+                    var ex = await Assert.ThrowsAsync<HttpClientException>(() =>
+                    {
+                        return connection.Start(host);
+                    }).OrTimeout();
                     Assert.Equal(HttpStatusCode.Unauthorized, ex.Response.StatusCode);
                 }
             }
@@ -625,7 +627,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                     });
 
                     var ex = await Assert.ThrowsAsync<HttpClientException>(() => connection.Start(host)).OrTimeout();
-                    Assert.Equal(HttpStatusCode.Unauthorized, ex.Response.StatusCode); 
+                    Assert.Equal(HttpStatusCode.Unauthorized, ex.Response.StatusCode);
                 }
             }
         }
