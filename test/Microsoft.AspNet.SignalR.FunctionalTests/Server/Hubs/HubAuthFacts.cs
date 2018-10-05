@@ -388,26 +388,8 @@ namespace Microsoft.AspNet.SignalR.Tests
                     {
                     });
 
-                    var throwsTask = Assert.ThrowsAsync<HttpClientException>(() =>
-                    {
-                        var t = connection.Start(host);
-                        Assert.NotNull(t);
-                        return t;
-                    });
-                    Assert.NotNull(throwsTask);
-                    var timeoutTask = throwsTask.OrTimeout();
-                    Assert.NotNull(timeoutTask);
-
-                    var ex = await timeoutTask;
-                    if (ex.Response is null)
-                    {
-                        throw new Exception("THAT'S IT!");
-                    }
-                    else
-                    {
-                        throw new Exception($"ex.GetType().Name: {ex.GetType().Name}; ex.Message: {ex.Message}; Status: {ex.Response.StatusCode}");
-                    }
-                    //Assert.Equal(HttpStatusCode.Unauthorized, ex.Response.StatusCode);
+                    var ex = await Assert.ThrowsAsync<HttpClientException>(() => connection.Start(host)).OrTimeout();
+                    Assert.Equal(HttpStatusCode.Unauthorized, ex.Response.StatusCode);
                 }
             }
         }

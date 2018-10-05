@@ -86,11 +86,9 @@ namespace Microsoft.AspNet.SignalR.Client.Http
                      }
                      else
                      {
-                         // Dispose the response (https://github.com/SignalR/SignalR/issues/4092)
-                         var message = responseMessage.ToString();
                          responseMessage.RequestMessage.Dispose();
                          responseMessage.Dispose();
-                         throw new HttpClientException(message);
+                         throw new HttpClientException(responseMessage);
                      }
 
                      return (IResponse)new HttpResponseMessageWrapper(responseMessage);
