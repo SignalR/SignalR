@@ -399,13 +399,13 @@ namespace Microsoft.AspNet.SignalR.Tests
                     Assert.NotNull(timeoutTask);
 
                     var ex = await timeoutTask;
-                    if (ex is null)
+                    if (ex.Response is null)
                     {
-                        throw new Exception("WTF IS GOING ON?");
+                        throw new Exception("THAT'S IT!");
                     }
                     else
                     {
-                        throw new Exception($"ex.GetType().Name: {ex.GetType().Name}; ex.Message: {ex.Message}");
+                        throw new Exception($"ex.GetType().Name: {ex.GetType().Name}; ex.Message: {ex.Message}; Status: {ex.Response.StatusCode}");
                     }
                     //Assert.Equal(HttpStatusCode.Unauthorized, ex.Response.StatusCode);
                 }
