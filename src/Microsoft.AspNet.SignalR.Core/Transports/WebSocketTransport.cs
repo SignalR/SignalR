@@ -98,6 +98,7 @@ namespace Microsoft.AspNet.SignalR.Transports
         {
             if (IsAbortRequest)
             {
+                Context.Response.ContentType = "text/plain";
                 return connection.Abort(ConnectionId);
             }
             else
