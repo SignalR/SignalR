@@ -435,8 +435,8 @@
     <Copy SourceFiles="$(ArtifactsBinDir)\Microsoft.AspNet.SignalR.JS\netstandard1.0\jquery.signalR.js" DestinationFiles="Scripts\jquery.signalR.js" />
     <Copy SourceFiles="$(ArtifactsBinDir)\Microsoft.AspNet.SignalR.JS\netstandard1.0\jquery.signalR.min.js" DestinationFiles="Scripts\jquery.signalR.min.js" />
   </Target>
-  <!--<Target Name="AfterBuild">
+  <Target Name="AfterBuild">
     <Message Text="&gt; &quot;$(ArtifactsBinDir)\Microsoft.AspNet.SignalR.Utils\net40\signalr.exe&quot; ghp /o:&quot;$(MSBuildThisFileDirectory)Scripts\hubs.js&quot;" Importance="high" />
     <Exec Command="&quot;$(ArtifactsBinDir)\Microsoft.AspNet.SignalR.Utils\net40\signalr.exe&quot; ghp /o:&quot;$(MSBuildThisFileDirectory)Scripts\hubs.js&quot;" WorkingDirectory="$(OutputPath)" />
-  </Target>-->
+  </Target>
 </Project>
