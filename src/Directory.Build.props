@@ -9,6 +9,9 @@
 
     <!-- Suppress missing documentation warnings -->
     <NoWarn>$(NoWarn);CS1591</NoWarn>
+
+    <!-- Embed PDBs in NuGet Packages -->
+    <AllowedOutputExtensionsInPackageBuildOutputFolder>$(AllowedOutputExtensionsInPackageBuildOutputFolder);.pdb</AllowedOutputExtensionsInPackageBuildOutputFolder>
   </PropertyGroup>
 
   <ItemGroup>
