@@ -31,7 +31,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
             {
 #if NET45 || NETSTANDARD1_3 || NETSTANDARD2_0
                 new WebSocketTransport(httpClient),
-#elif !NET40
+#elif NET40
                 // WebSockets not supported
 #else
 #error Unsupported target framework.
