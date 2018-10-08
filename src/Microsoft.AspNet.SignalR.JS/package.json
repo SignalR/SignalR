@@ -18,9 +18,9 @@
     "author": "Microsoft",
     "license": "Apache-2.0",
     "bugs": {
-        "url": "https://github.com/signalr/bower-signalr/issues"
+        "url": "https://github.com/SignalR/SignalR/issues"
     },
-    "homepage": "https://github.com/signalr/bower-signalr#readme",
+    "homepage": "https://github.com/SignalR/SignalR",
     "dependencies": {
         "jquery": ">=1.6.4"
     },
