@@ -22,7 +22,7 @@ foreach ($file in $files) {
     & "cscript.exe" ..\..\tools\jshint\env\wsh.js "$file" > $output
     if (Select-String $output -SimpleMatch -Pattern "[$file]" -Quiet) {
         Write-Host
-        (Get-Content $output) | Select -Skip 4 | Where { !$_.Contains("""use strict"";") } | Write-Host -ForegroundColor Red
+        (Get-Content $output) | Select-Object -Skip 4 | Where { !$_.Contains("""use strict"";") } | Write-Host -ForegroundColor Red
         Remove-Item $output
         exit 1
     }
@@ -37,8 +37,6 @@ if (!(Test-Path -path "$outputPath")) {
 Write-Host "Building $outputPath\jquery.signalR-$version.js... " -NoNewline -ForegroundColor Yellow
 $filePath = "$outputPath\jquery.signalR-$version.js"
 Remove-Item $filePath -Force -ErrorAction SilentlyContinue
-
-$VersionMatcher = [regex]"^.*\$\.signalR\.version = `".*`";$"
 
 foreach ($file in $files) {
     Add-Content -Path $filePath -Value "/* $file */"
@@ -57,5 +55,13 @@ Write-Host "Building $outputPath\jquery.signalR-$version.min.js... " -NoNewline 
 # Make versionless scripts for use within the build
 Copy-Item "$outputPath\jquery.signalR-$version.js" "$outputPath\jquery.signalR.js"
 Copy-Item "$outputPath\jquery.signalR-$version.min.js" "$outputPath\jquery.signalR.min.js"
+
+# Copy additional package files
+
+Get-Content "package.json" | 
+    ForEach-Object { $_.Replace("[!VERSION!]", $version) } |
+    Set-Content -Path "$outputPath\package.json"
+Copy-Item "README.md" "$outputPath\README.md"
+Copy-Item "LICENSE.md" "$outputPath\LICENSE.md"
 
 Remove-Item $output -Force
