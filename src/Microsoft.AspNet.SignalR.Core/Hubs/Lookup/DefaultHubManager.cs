@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -27,6 +27,7 @@ namespace Microsoft.AspNet.SignalR.Hubs
             HubDescriptor descriptor = null;
             if (_hubProviders.FirstOrDefault(p => p.TryGetHub(hubName, out descriptor)) != null)
             {
+                ValidateHubDescriptor(descriptor);
                 return descriptor;
             }
 
@@ -39,10 +40,17 @@ namespace Microsoft.AspNet.SignalR.Hubs
 
             if (predicate != null)
             {
-                return hubs.Where(predicate);
+                hubs = hubs.Where(predicate);
             }
 
-            return hubs;
+            var hubsList = hubs.ToList();
+
+            foreach(var hub in hubsList)
+            {
+                ValidateHubDescriptor(hub);
+            }
+
+            return hubsList;
         }
 
         public MethodDescriptor GetHubMethod(string hubName, string method, IList<IJsonValue> parameters)
@@ -92,6 +100,14 @@ namespace Microsoft.AspNet.SignalR.Hubs
         public IEnumerable<IHub> ResolveHubs()
         {
             return GetHubs(predicate: null).Select(hub => _activator.Create(hub));
+        }
+
+        private void ValidateHubDescriptor(HubDescriptor hub)
+        {
+            if(hub.Name.Contains("."))
+            {
+                throw new InvalidOperationException(string.Format(Resources.Error_HubNameIsInvalid, hub.Name));
+            }
         }
     }
 }

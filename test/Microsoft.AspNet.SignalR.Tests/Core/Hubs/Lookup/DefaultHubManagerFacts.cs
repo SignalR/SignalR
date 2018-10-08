@@ -1,6 +1,7 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.AspNet.SignalR.Hubs;
@@ -23,13 +24,28 @@ namespace Microsoft.AspNet.SignalR.Tests.Core
         }
 
         [Fact]
-        public void GetInValidHub()
+        public void GetNonExistantHub()
         {
             var resolver = new DefaultDependencyResolver();
             var hubManager = new DefaultHubManager(resolver);
             var hubDescriptor = hubManager.GetHub("__ELLO__");
 
             Assert.Null(hubDescriptor);
+        }
+
+        [Fact]
+        public void GetInvalidHubThrows()
+        {
+            var hub = new HubDescriptor()
+            {
+                Name = "this.is.not.valid"
+            };
+            var resolver = new DefaultDependencyResolver();
+            resolver.Register(typeof(IHubDescriptorProvider), () => new TestHubDescriptorProvider(hub));
+            var hubManager = new DefaultHubManager(resolver);
+
+            var ex = Assert.Throws<InvalidOperationException>(() => hubManager.GetHub(hub.Name));
+            Assert.Equal(string.Format(Resources.Error_HubNameIsInvalid, hub.Name), ex.Message);
         }
 
         [Fact]
@@ -71,6 +87,41 @@ namespace Microsoft.AspNet.SignalR.Tests.Core
         }
 
         [Fact]
+        public void GetHubsWithInvalidHubThrows()
+        {
+            var hub = new HubDescriptor()
+            {
+                Name = "this.is.not.valid"
+            };
+            var resolver = new DefaultDependencyResolver();
+            resolver.Register(typeof(IHubDescriptorProvider), () => new TestHubDescriptorProvider(hub));
+            var hubManager = new DefaultHubManager(resolver);
+
+            var ex = Assert.Throws<InvalidOperationException>(() => hubManager.GetHubs());
+            Assert.Equal(string.Format(Resources.Error_HubNameIsInvalid, hub.Name), ex.Message);
+        }
+
+        [Fact]
+        public void GetHubsDoesNotThrowIfPredicateSkipsInvalidHub()
+        {
+            var invalidHub = new HubDescriptor()
+            {
+                Name = "this.is.not.valid"
+            };
+            var validHub = new HubDescriptor()
+            {
+                Name = "thisisvalid"
+            };
+            var resolver = new DefaultDependencyResolver();
+            resolver.Register(typeof(IHubDescriptorProvider), () => new TestHubDescriptorProvider(invalidHub, validHub));
+            var hubManager = new DefaultHubManager(resolver);
+
+            Assert.Collection(
+                hubManager.GetHubs(h => !h.Name.Contains(".")),
+                h => Assert.Equal(validHub.Name, h.Name));
+        }
+
+        [Fact]
         public void GetValidHubMethod()
         {
             var resolver = new DefaultDependencyResolver();
@@ -90,7 +141,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Core
         }
 
         [Fact]
-        public void GetInvalidHubMethod()
+        public void GetHubMethodWithIncorrectParameters()
         {
             var resolver = new DefaultDependencyResolver();
             var hubManager = new DefaultHubManager(resolver);
@@ -101,7 +152,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Core
         }
 
         [Fact]
-        public void GetHubMethodFromInvalidHub()
+        public void GetHubMethodFromNonExistantHub()
         {
             var resolver = new DefaultDependencyResolver();
             var hubManager = new DefaultHubManager(resolver);
@@ -109,6 +160,47 @@ namespace Microsoft.AspNet.SignalR.Tests.Core
             var methodDescriptor = hubManager.GetHubMethod("________________CoreTestHubWithMethod________________", "AddNumbers", new IJsonValue[] { null, null });
 
             Assert.Null(methodDescriptor);
+        }
+
+        [Fact]
+        public void GetHubMethodFromValidHubWhenInvalidHubIsRegisteredDoesNotThrow()
+        {
+            var validHub = new HubDescriptor()
+            {
+                Name = "Valid"
+            };
+            var invalidHub = new HubDescriptor()
+            {
+                Name = "this.is.not.valid"
+            };
+            var method = new MethodDescriptor()
+            {
+                Name = "Method",
+                Parameters = new List<ParameterDescriptor>()
+            };
+            var resolver = new DefaultDependencyResolver();
+            resolver.Register(typeof(IHubDescriptorProvider), () => new TestHubDescriptorProvider(validHub, invalidHub));
+            resolver.Register(typeof(IMethodDescriptorProvider), () => new TestMethodDescriptorProvider(validHub.Name, method));
+            var hubManager = new DefaultHubManager(resolver);
+
+            Assert.Same(
+                method,
+                hubManager.GetHubMethod(validHub.Name, "Method", Array.Empty<IJsonValue>()));
+        }
+
+        [Fact]
+        public void GetHubMethodFromInvalidHubThrows()
+        {
+            var hub = new HubDescriptor()
+            {
+                Name = "this.is.not.valid"
+            };
+            var resolver = new DefaultDependencyResolver();
+            resolver.Register(typeof(IHubDescriptorProvider), () => new TestHubDescriptorProvider(hub));
+            var hubManager = new DefaultHubManager(resolver);
+
+            var ex = Assert.Throws<InvalidOperationException>(() => hubManager.GetHubMethod(hub.Name, "Method", new IJsonValue[] { null, null }));
+            Assert.Equal(string.Format(Resources.Error_HubNameIsInvalid, hub.Name), ex.Message);
         }
 
         [Fact]
@@ -137,6 +229,21 @@ namespace Microsoft.AspNet.SignalR.Tests.Core
         }
 
         [Fact]
+        public void GetHubMethodsWithInvalidHubThrows()
+        {
+            var hub = new HubDescriptor()
+            {
+                Name = "this.is.not.valid"
+            };
+            var resolver = new DefaultDependencyResolver();
+            resolver.Register(typeof(IHubDescriptorProvider), () => new TestHubDescriptorProvider(hub));
+            var hubManager = new DefaultHubManager(resolver);
+
+            var ex = Assert.Throws<InvalidOperationException>(() => hubManager.GetHubMethods(hub.Name, predicate: null));
+            Assert.Equal(string.Format(Resources.Error_HubNameIsInvalid, hub.Name), ex.Message);
+        }
+
+        [Fact]
         public void GetValidHubMethodsWithInvalidPredicate()
         {
             var resolver = new DefaultDependencyResolver();
@@ -160,13 +267,28 @@ namespace Microsoft.AspNet.SignalR.Tests.Core
         }
 
         [Fact]
-        public void ResolveInvalidHub()
+        public void ResolveNonExistantHub()
         {
             var resolver = new DefaultDependencyResolver();
             var hubManager = new DefaultHubManager(resolver);
             var hubDescriptor = hubManager.ResolveHub("____CoreTestHub____");
 
             Assert.Null(hubDescriptor);
+        }
+
+        [Fact]
+        public void ResolveInvalidHubThrows()
+        {
+            var hub = new HubDescriptor()
+            {
+                Name = "this.is.not.valid"
+            };
+            var resolver = new DefaultDependencyResolver();
+            resolver.Register(typeof(IHubDescriptorProvider), () => new TestHubDescriptorProvider(hub));
+            var hubManager = new DefaultHubManager(resolver);
+
+            var ex = Assert.Throws<InvalidOperationException>(() => hubManager.ResolveHub(hub.Name));
+            Assert.Equal(string.Format(Resources.Error_HubNameIsInvalid, hub.Name), ex.Message);
         }
 
         [Fact]
