@@ -43,4 +43,12 @@ phases:
       artifactName: logs-$(BuildConfiguration)
       artifactType: Container
 
+  - task: PublishSymbols@2
+    displayName: 'Publish symbols path'
+    inputs:
+      SymbolsFolder: 'artifacts/$(BuildConfiguration)/symbols'
+      SearchPattern: '**/*.pdb'
+      SymbolServerType: FileShare
+      SymbolsPath: '$(DropShareRoot)\$(Build.SourceBranchName)\$(Build.BuildNumber)'
+
   - ${{ parameters.afterBuild }}
