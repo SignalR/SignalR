@@ -32,8 +32,14 @@
     </Target>
 
     <PropertyGroup>
-        <PackageDependsOn>$(PackageDependsOn);PackSatellitePackages</PackageDependsOn>
+        <PackageDependsOn>$(PackageDependsOn);PackSatellitePackages;PrepareSymbols</PackageDependsOn>
     </PropertyGroup>
+    <Target Name="PrepareSymbols">
+        <Exec Command="powershell -NoProfile -ExecutionPolicy Bypass -File $(MSBuildThisFileDirectory)prepare-symbols.ps1 -SourceDirectory $(ArtifactsBinDir) -OutputDirectory $(SymbolsOutputPath) -ToolsDirectory $(ArtifactsDir)tools"
+            WorkingDirectory="$(RepositoryRoot)"
+            Condition=" '$(OS)' == 'Windows_NT'" />
+    </Target>
+
     <Target Name="PackSatellitePackages" Condition="'$(Localize)' == 'true'" DependsOnTargets="ComputeLocalizedPackages">
         <PropertyGroup>
             <_ConstantProperties>Configuration=$(Configuration)</_ConstantProperties>
