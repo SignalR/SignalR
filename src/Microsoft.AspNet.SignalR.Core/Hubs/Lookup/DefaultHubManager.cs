@@ -5,7 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.AspNet.SignalR.Json;
-using Newtonsoft.Json.Linq;
 
 namespace Microsoft.AspNet.SignalR.Hubs
 {
@@ -45,7 +44,7 @@ namespace Microsoft.AspNet.SignalR.Hubs
 
             var hubsList = hubs.ToList();
 
-            foreach(var hub in hubsList)
+            foreach (var hub in hubsList)
             {
                 ValidateHubDescriptor(hub);
             }
@@ -55,7 +54,7 @@ namespace Microsoft.AspNet.SignalR.Hubs
 
         public MethodDescriptor GetHubMethod(string hubName, string method, IList<IJsonValue> parameters)
         {
-            HubDescriptor hub = GetHub(hubName);
+            var hub = GetHub(hubName);
 
             if (hub == null)
             {
@@ -73,7 +72,7 @@ namespace Microsoft.AspNet.SignalR.Hubs
 
         public IEnumerable<MethodDescriptor> GetHubMethods(string hubName, Func<MethodDescriptor, bool> predicate)
         {
-            HubDescriptor hub = GetHub(hubName);
+            var hub = GetHub(hubName);
 
             if (hub == null)
             {
@@ -93,7 +92,7 @@ namespace Microsoft.AspNet.SignalR.Hubs
 
         public IHub ResolveHub(string hubName)
         {
-            HubDescriptor hub = GetHub(hubName);
+            var hub = GetHub(hubName);
             return hub == null ? null : _activator.Create(hub);
         }
 
@@ -104,7 +103,7 @@ namespace Microsoft.AspNet.SignalR.Hubs
 
         private void ValidateHubDescriptor(HubDescriptor hub)
         {
-            if(hub.Name.Contains("."))
+            if (hub.Name.Contains("."))
             {
                 throw new InvalidOperationException(string.Format(Resources.Error_HubNameIsInvalid, hub.Name));
             }
