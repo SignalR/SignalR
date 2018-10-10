@@ -5,7 +5,7 @@
     <Description>JavaScript client for ASP.NET SignalR.</Description>
 
     <!-- This is just a placeholder project for some JavaScript build tools, but we need a TFM to make MSBuild happy -->
-    <TargetFrameworks>netstandard1.0</TargetFrameworks>
+    <TargetFramework>netstandard1.0</TargetFramework>
 
     <NuspecFile>$(MSBuildThisFileDirectory)$(MSBuildProjectName).nuspec</NuspecFile>
     <NuspecProperties>PackageVersion=$(VersionPrefix)-$(VersionSuffix);Configuration=$(Configuration);OutputPath=$(OutputPath)</NuspecProperties>
@@ -21,15 +21,29 @@
 
   <ItemGroup>
     <JSCompile Include="jquery.signalr.*.js" />
+    <JSCompile Include="package.json" />
+    <JSCompile Include="LICENSE.md" />
+    <JSCompile Include="README.md" />
   </ItemGroup>
 
   <ItemGroup>
-    <GeneratedJavaScript Include="$(OutDir)jquery.signalR-$(PackageVersion).js" />
-    <GeneratedJavaScript Include="$(OutDir)jquery.signalR-$(PackageVersion).min.js" />
+    <GeneratedJavaScript Include="$(OutputPath)jquery.signalR-$(PackageVersion).js" />
+    <GeneratedJavaScript Include="$(OutputPath)jquery.signalR-$(PackageVersion).min.js" />
+    <GeneratedJavaScript Include="$(OutputPath)jquery.signalR.min.js" />
+    <GeneratedJavaScript Include="$(OutputPath)jquery.signalR.js" />
+    <GeneratedJavaScript Include="$(OutputPath)package.json" />
+    <GeneratedJavaScript Include="$(OutputPath)LICENSE.md" />
+    <GeneratedJavaScript Include="$(OutputPath)README.md" />
   </ItemGroup>
 
   <Target Name="CompileJs" BeforeTargets="Build" Inputs="@(JSCompile)" Outputs="@(GeneratedJavaScript)">
     <Exec Command="powershell -NoProfile -ExecutionPolicy Bypass .\build.ps1 $(OutputPath) -version $(PackageVersion)" 
+          WorkingDirectory="$(ProjectDir)"
+          Condition=" '$(OS)' == 'Windows_NT'" />
+  </Target>
+
+  <Target Name="PackJs" AfterTargets="Pack">
+    <Exec Command="powershell -NoProfile -ExecutionPolicy Bypass .\pack.ps1 $(OutputPath) -packageOutputPath $(PackageOutputPath) -version $(PackageVersion)" 
           WorkingDirectory="$(ProjectDir)"
           Condition=" '$(OS)' == 'Windows_NT'" />
   </Target>
