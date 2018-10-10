@@ -1,7 +1,8 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFrameworks>net40;net461</TargetFrameworks>
+    <TargetFrameworks>net40;net461;netcoreapp2.1</TargetFrameworks>
+    <OutputType>Exe</OutputType>
   </PropertyGroup>
   <PropertyGroup Condition="'$(OS)' != 'Windows_NT'">
     <DefineConstants>$(DefineConstants);MONO</DefineConstants>
