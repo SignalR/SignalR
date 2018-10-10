@@ -49,7 +49,7 @@ phases:
       DetailedLog: true
       SearchPattern: 'artifacts\$(BuildConfiguration)\symbols\**\*.pdb'
       SymbolServerType: FileShare
-      SymbolsProduct: Removed
+      SymbolsProduct: AspNetSignalR
       SymbolsPath: '$(DropShareRoot)\$(Build.BuildNumber)'
       SymbolsArtifactName: 'symbols-$(BuildConfiguration)'
 
