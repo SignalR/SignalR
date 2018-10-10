@@ -46,11 +46,13 @@ phases:
   - task: PublishSymbols@2
     displayName: 'Publish symbols path'
     inputs:
-      DetailedLog: true
-      SearchPattern: 'artifacts\$(BuildConfiguration)\symbols\**\*.pdb'
+      SearchPattern: 'artifacts\$(BuildConfiguration)\symbols\windows\**\*.pdb'
       SymbolServerType: FileShare
       SymbolsProduct: AspNetSignalR
       SymbolsPath: '$(DropShareRoot)\$(Build.BuildNumber)'
       SymbolsArtifactName: 'symbols-$(BuildConfiguration)'
+
+      # We use SourceLink at build time, and Pdb2Pdb translates that to srcsrv at conversion time
+      IndexSources: false
 
   - ${{ parameters.afterBuild }}
