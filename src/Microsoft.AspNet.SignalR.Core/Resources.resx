@@ -168,6 +168,9 @@
   <data name="Error_HubInvocationFailed" xml:space="preserve">
     <value>There was an error invoking Hub method '{0}.{1}'.</value>
   </data>
+  <data name="Error_HubNameIsInvalid" xml:space="preserve">
+    <value>The hub name '{0}' is invalid.</value>
+  </data>
   <data name="Error_HubProgressOnlyReportableBeforeMethodReturns" xml:space="preserve">
     <value>You cannot report progress on a hub method invocation that has already completed.</value>
   </data>
@@ -189,7 +192,7 @@
   <data name="Error_KeepAliveMustBeNoMoreThanAThirdOfTheDisconnectTimeout" xml:space="preserve">
     <value>KeepAlive value must be no more than a third of the DisconnectTimeout.</value>
   </data>
-  <data name="Error_MaxScaleoutMappingsPerStreamMustBeNonNegative">
+  <data name="Error_MaxScaleoutMappingsPerStreamMustBeNonNegative" xml:space="preserve">
     <value>The value of the MaxScaleoutMappingsPerStream property must be greater or equal to zero.</value>
   </data>
   <data name="Error_MethodCouldNotBeResolved" xml:space="preserve">

@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -38,7 +38,7 @@ namespace Microsoft.AspNet.SignalR.Samples.Hubs.Chat
                 return false;
             }
 
-            ChatUser user = _users.Values.FirstOrDefault(u => u.Id == userIdCookie.Value);
+            var user = _users.Values.FirstOrDefault(u => u.Id == userIdCookie.Value);
 
             if (user != null)
             {
@@ -57,7 +57,7 @@ namespace Microsoft.AspNet.SignalR.Samples.Hubs.Chat
                     foreach (var room in rooms)
                     {
                         Clients.Group(room).leave(user);
-                        ChatRoom chatRoom = _rooms[room];
+                        var chatRoom = _rooms[room];
                         chatRoom.Users.Remove(user.Name);
                     }
                 }
@@ -112,7 +112,7 @@ namespace Microsoft.AspNet.SignalR.Samples.Hubs.Chat
                             }
 
                             // Try to get content from each url we're resolved in the query
-                            string extractedContent = "<p>" + task.Result + "</p>";
+                            var extractedContent = "<p>" + task.Result + "</p>";
 
                             // If we did get something, update the message and notify all clients
                             chatMessage.Text += extractedContent;
@@ -126,7 +126,7 @@ namespace Microsoft.AspNet.SignalR.Samples.Hubs.Chat
 
         public override Task OnDisconnected(bool stopCalled)
         {
-            ChatUser user = _users.Values.FirstOrDefault(u => u.ConnectionId == Context.ConnectionId);
+            var user = _users.Values.FirstOrDefault(u => u.ConnectionId == Context.ConnectionId);
             if (user != null)
             {
                 ChatUser ignoredUser;
@@ -139,7 +139,7 @@ namespace Microsoft.AspNet.SignalR.Samples.Hubs.Chat
                     foreach (var room in rooms)
                     {
                         Clients.Group(room).leave(user);
-                        ChatRoom chatRoom = _rooms[room];
+                        var chatRoom = _rooms[room];
                         chatRoom.Users.Remove(user.Name);
                     }
                 }
@@ -179,12 +179,12 @@ namespace Microsoft.AspNet.SignalR.Samples.Hubs.Chat
             message = message.Trim();
             if (message.StartsWith("/"))
             {
-                string[] parts = message.Substring(1).Split(' ');
-                string commandName = parts[0];
+                var parts = message.Substring(1).Split(' ');
+                var commandName = parts[0];
 
                 if (commandName.Equals("nick", StringComparison.OrdinalIgnoreCase))
                 {
-                    string newUserName = String.Join(" ", parts.Skip(1));
+                    var newUserName = String.Join(" ", parts.Skip(1));
 
                     if (String.IsNullOrEmpty(newUserName))
                     {
@@ -267,7 +267,7 @@ namespace Microsoft.AspNet.SignalR.Samples.Hubs.Chat
 
                         // Only support one room at a time for now
 
-                        string newRoom = parts[1];
+                        var newRoom = parts[1];
                         ChatRoom chatRoom;
                         // Create the room if it doesn't exist
                         if (!_rooms.TryGetValue(newRoom, out chatRoom))
@@ -315,7 +315,7 @@ namespace Microsoft.AspNet.SignalR.Samples.Hubs.Chat
                             throw new InvalidOperationException("Who are you trying send a private message to?");
                         }
 
-                        string to = parts[1];
+                        var to = parts[1];
                         if (to.Equals(name, StringComparison.OrdinalIgnoreCase))
                         {
                             throw new InvalidOperationException("You can't private message yourself!");
@@ -326,14 +326,14 @@ namespace Microsoft.AspNet.SignalR.Samples.Hubs.Chat
                             throw new InvalidOperationException(String.Format("Couldn't find any user named '{0}'.", to));
                         }
 
-                        string messageText = String.Join(" ", parts.Skip(2)).Trim();
+                        var messageText = String.Join(" ", parts.Skip(2)).Trim();
 
                         if (String.IsNullOrEmpty(messageText))
                         {
                             throw new InvalidOperationException(String.Format("What did you want to say to '{0}'.", to));
                         }
 
-                        string recipientId = _users[to].ConnectionId;
+                        var recipientId = _users[to].ConnectionId;
                         // Send a message to the sender and the sendee                        
                         Clients.Group(recipientId).sendPrivateMessage(name, to, messageText);
                         Clients.Caller.sendPrivateMessage(name, to, messageText);
@@ -431,13 +431,13 @@ namespace Microsoft.AspNet.SignalR.Samples.Hubs.Chat
             var urls = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
             message = Regex.Replace(message, urlPattern, m =>
             {
-                string httpPortion = String.Empty;
+                var httpPortion = String.Empty;
                 if (!m.Value.Contains("://"))
                 {
                     httpPortion = "http://";
                 }
 
-                string url = httpPortion + m.Value;
+                var url = httpPortion + m.Value;
 
                 urls.Add(url);
 
