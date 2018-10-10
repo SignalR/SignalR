@@ -37,6 +37,7 @@ phases:
 
     - task: PublishSymbols@2
       displayName: 'Publish symbols path'
+      condition: succeeded()
       inputs:
         SearchPattern: 'artifacts\$(BuildConfiguration)\symbols\windows\**\*.pdb'
         SymbolServerType: FileShare
