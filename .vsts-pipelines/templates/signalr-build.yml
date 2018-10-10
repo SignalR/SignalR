@@ -46,6 +46,7 @@ phases:
   - task: PublishSymbols@2
     displayName: 'Publish symbols path'
     inputs:
+      DetailedLog: true
       SymbolsFolder: 'artifacts/$(BuildConfiguration)/symbols'
       SearchPattern: '**/*.pdb'
       SymbolServerType: FileShare
