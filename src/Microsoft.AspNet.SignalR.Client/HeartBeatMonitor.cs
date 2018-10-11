@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -79,7 +79,7 @@ namespace Microsoft.AspNet.SignalR.Client
 #endif
         private void Beat()
         {
-            TimeSpan timeElapsed = DateTime.UtcNow - _connection.LastMessageAt;
+            var timeElapsed = DateTime.UtcNow - _connection.LastMessageAt;
             Beat(timeElapsed);
         }
 
@@ -99,6 +99,10 @@ namespace Microsoft.AspNet.SignalR.Client
 
         private void CheckKeepAlive(TimeSpan timeElapsed)
         {
+            // Flags used to detect what kind of follow-up action should be taken.
+            var lostConnection = false;
+            var connectionSlow = false;
+
             lock (_connectionStateLock)
             {
                 if (_connection.State == ConnectionState.Connected)
@@ -110,7 +114,9 @@ namespace Microsoft.AspNet.SignalR.Client
                             // Connection has been lost
                             _connection.Trace(TraceLevels.Events, "Connection Timed-out : Transport Lost Connection");
                             TimedOut = true;
-                            _connection.Transport.LostConnection(_connection);
+
+                            // We don't want to run the reconnection logic in the lock.
+                            lostConnection = true;
                         }
                     }
                     else if (timeElapsed >= _connection.KeepAliveData.TimeoutWarning)
@@ -120,7 +126,9 @@ namespace Microsoft.AspNet.SignalR.Client
                             // Inform user and set HasBeenWarned to true
                             _connection.Trace(TraceLevels.Events, "Connection Timeout Warning : Notifying user");
                             HasBeenWarned = true;
-                            _connection.OnConnectionSlow();
+
+                            // We don't want to run the user event "ConnectionSlow" in the lock.
+                            connectionSlow = true;
                         }
                     }
                     else
@@ -128,6 +136,16 @@ namespace Microsoft.AspNet.SignalR.Client
                         ClearFlags();
                     }
                 }
+            }
+
+            if (lostConnection)
+            {
+                _connection.Transport.LostConnection(_connection);
+            }
+
+            if (connectionSlow)
+            {
+                _connection.OnConnectionSlow();
             }
         }
 
