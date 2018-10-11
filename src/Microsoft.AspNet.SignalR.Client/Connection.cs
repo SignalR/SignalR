@@ -511,35 +511,40 @@ namespace Microsoft.AspNet.SignalR.Client
                                 {
                                     VerifyProtocolVersion(negotiationResponse.ProtocolVersion);
 
-                                    if (negotiationResponse.ProtocolVersion.Equals("2.0") && !string.IsNullOrEmpty(negotiationResponse.RedirectUrl))
+                                    if (negotiationResponse.ProtocolVersion.Equals("2.0"))
                                     {
-                                        // Ensure the URL ends with a trailing slash.
-                                        if (!negotiationResponse.RedirectUrl.EndsWith("/"))
+                                        if (!string.IsNullOrEmpty(negotiationResponse.Error))
                                         {
-                                            negotiationResponse.RedirectUrl += "/";
+                                            // REVIEW: Exception type?
+                                            throw new Exception(string.Format(Resources.Error_ErrorFromServer, negotiationResponse.Error));
                                         }
-
-                                        // Update the URL based on the redirect response and restart the negotiation
-                                        Url = negotiationResponse.RedirectUrl;
-
-                                        if (!string.IsNullOrEmpty(negotiationResponse.AccessToken))
+                                        if (!string.IsNullOrEmpty(negotiationResponse.RedirectUrl))
                                         {
-                                            // This will stomp on the current Authorization header, but that's by design.
-                                            // If the server specified a token, that is expected to overrule the token the client is currently using.
-                                            Headers["Authorization"] = $"Bearer {negotiationResponse.AccessToken}";
-                                        }
+                                            if (!negotiationResponse.RedirectUrl.EndsWith("/"))
+                                            {
+                                                negotiationResponse.RedirectUrl += "/";
+                                            }
 
-                                        negotiationAttempts += 1;
-                                        if (negotiationAttempts >= MaxRedirects)
-                                        {
-                                            throw new InvalidOperationException(Resources.Error_NegotiationLimitExceeded);
+                                            // Update the URL based on the redirect response and restart the negotiation
+                                            Url = negotiationResponse.RedirectUrl;
+
+                                            if (!string.IsNullOrEmpty(negotiationResponse.AccessToken))
+                                            {
+                                                // This will stomp on the current Authorization header, but that's by design.
+                                                // If the server specified a token, that is expected to overrule the token the client is currently using.
+                                                Headers["Authorization"] = $"Bearer {negotiationResponse.AccessToken}";
+                                            }
+
+                                            negotiationAttempts += 1;
+                                            if (negotiationAttempts >= MaxRedirects)
+                                            {
+                                                throw new InvalidOperationException(Resources.Error_NegotiationLimitExceeded);
+                                            }
+                                            return StartNegotiation();
                                         }
-                                        return StartNegotiation();
                                     }
-                                    else
-                                    {
-                                        return CompleteNegotiation(negotiationResponse);
-                                    }
+
+                                    return CompleteNegotiation(negotiationResponse);
                                 })
                                 .ContinueWithNotComplete(() => Disconnect());
             }

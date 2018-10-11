@@ -151,4 +151,22 @@ testUtilities.module("Core - Negotiate Functional Tests");
             };
         });
     });
+
+    QUnit.asyncTimeoutTest("start reports server error in negotiation response if present", testUtilities.defaultTestTimeout, function (end, assert, testName) {
+        var connection = testUtilities.createTestConnection(testName, end, assert, { wrapStart: false, ignoreErrors: true, url: "/negotiate-error" }),
+            newTimeout = 4000;
+
+        connection.start()
+            .done(function () {
+                assert.fail("connection should have failed to initialize");
+                end();
+            }).catch(function (e) {
+                assert.equal("Error message received from the server: 'Server-provided negotiate error message!'.", e.message);
+                end();
+            });
+
+        return function () {
+            connection.stop();
+        };
+    });
 })($, window);
