@@ -705,7 +705,7 @@ namespace Microsoft.AspNet.SignalR
 #else
             var tcs = new TaskCompletionSource<object>();
 
-            var timer = new Timer((state) => tcs.TrySetResult(state), null, timeOut, TimeSpan.FromMilliseconds(-1));
+            var timer = new Timer((state) => ((TaskCompletionSource<object>)state).TrySetResult(null), tcs, timeOut, TimeSpan.FromMilliseconds(-1));
             return tcs.Task.ContinueWithPreservedCulture(_ =>
             {
                 timer.Dispose();
