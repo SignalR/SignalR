@@ -3,6 +3,7 @@
 
 using System;
 using System.Threading;
+using Microsoft.AspNet.SignalR.Client.Transports;
 
 #if NETFX_CORE
 using System.Diagnostics.CodeAnalysis;
@@ -100,8 +101,8 @@ namespace Microsoft.AspNet.SignalR.Client
         private void CheckKeepAlive(TimeSpan timeElapsed)
         {
             // Flags used to detect what kind of follow-up action should be taken.
-            var lostConnection = false;
             var connectionSlow = false;
+            IClientTransport transport = null;
 
             lock (_connectionStateLock)
             {
@@ -115,8 +116,10 @@ namespace Microsoft.AspNet.SignalR.Client
                             _connection.Trace(TraceLevels.Events, "Connection Timed-out : Transport Lost Connection");
                             TimedOut = true;
 
-                            // We don't want to run the reconnection logic in the lock.
-                            lostConnection = true;
+                            // Capture the transport to call LostConnection on it after the lock ends.
+                            // We capture it locally because _connection.Transport may be re-initialized before we call LostConnection
+                            // and we don't want to call LostConnection on the re-initialized transport.
+                            transport = _connection.Transport;
                         }
                     }
                     else if (timeElapsed >= _connection.KeepAliveData.TimeoutWarning)
@@ -138,9 +141,10 @@ namespace Microsoft.AspNet.SignalR.Client
                 }
             }
 
-            if (lostConnection)
+            // If there's a non-null 'transport' value, then it means the connection timed out and we need to call LostConnection.
+            if (transport != null)
             {
-                _connection.Transport.LostConnection(_connection);
+                transport.LostConnection(_connection);
             }
 
             if (connectionSlow)
