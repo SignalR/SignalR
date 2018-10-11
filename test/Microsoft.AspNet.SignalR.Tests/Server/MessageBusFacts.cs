@@ -81,7 +81,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
 
                     await Task.Delay(50);
                     var tcs = new TaskCompletionSource<bool>();
-                    tcs.SetCanceled();
+                    tcs.TrySetCanceled();
                     wh.Set();
                     return await tcs.Task;
 

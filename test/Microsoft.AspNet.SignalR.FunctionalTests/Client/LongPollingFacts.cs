@@ -62,7 +62,7 @@ namespace Microsoft.AspNet.SignalR.Tests
             disconnectCts.Cancel();
 
             // finish polling request
-            pollTaskCompletionSource.SetResult(CreateResponse(string.Empty));
+            pollTaskCompletionSource.TrySetResult(CreateResponse(string.Empty));
 
             // give it some time to make sure a new poll was not setup after verification
             await Task.Delay(1000);

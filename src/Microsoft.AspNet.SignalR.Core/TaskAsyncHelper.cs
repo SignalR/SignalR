@@ -2,14 +2,9 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
-using System.IO;
-using System.Linq;
-using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -287,7 +282,7 @@ namespace Microsoft.AspNet.SignalR
                 }
                 else if (t.IsCanceled)
                 {
-                    tcs.SetCanceled();
+                    tcs.TrySetCanceled();
                 }
             },
             TaskContinuationOptions.NotOnRanToCompletion);
@@ -710,11 +705,7 @@ namespace Microsoft.AspNet.SignalR
 #else
             var tcs = new TaskCompletionSource<object>();
 
-            var timer = new Timer(tcs.SetResult,
-            null,
-            timeOut,
-            TimeSpan.FromMilliseconds(-1));
-
+            var timer = new Timer((state) => ((TaskCompletionSource<object>)state).TrySetResult(null), tcs, timeOut, TimeSpan.FromMilliseconds(-1));
             return tcs.Task.ContinueWithPreservedCulture(_ =>
             {
                 timer.Dispose();
@@ -926,7 +917,7 @@ namespace Microsoft.AspNet.SignalR
         public static Task<T> FromResult<T>(T value)
         {
             var tcs = new TaskCompletionSource<T>();
-            tcs.SetResult(value);
+            tcs.TrySetResult(value);
             return tcs.Task;
         }
 
@@ -940,7 +931,7 @@ namespace Microsoft.AspNet.SignalR
         internal static Task<T> FromError<T>(Exception e)
         {
             var tcs = new TaskCompletionSource<T>();
-            tcs.SetUnwrappedException<T>(e);
+            tcs.TrySetUnwrappedException<T>(e);
             return tcs.Task;
         }
 
@@ -950,11 +941,11 @@ namespace Microsoft.AspNet.SignalR
             var aggregateException = e as AggregateException;
             if (aggregateException != null)
             {
-                tcs.SetException(aggregateException.InnerExceptions);
+                tcs.TrySetException(aggregateException.InnerExceptions);
             }
             else
             {
-                tcs.SetException(e);
+                tcs.TrySetException(e);
             }
         }
 
@@ -976,7 +967,7 @@ namespace Microsoft.AspNet.SignalR
         private static Task Canceled()
         {
             var tcs = new TaskCompletionSource<object>();
-            tcs.SetCanceled();
+            tcs.TrySetCanceled();
             return tcs.Task;
         }
 
@@ -984,7 +975,7 @@ namespace Microsoft.AspNet.SignalR
         private static Task<T> Canceled<T>()
         {
             var tcs = new TaskCompletionSource<T>();
-            tcs.SetCanceled();
+            tcs.TrySetCanceled();
             return tcs.Task;
         }
 
@@ -1028,7 +1019,7 @@ namespace Microsoft.AspNet.SignalR
 
         internal static void RunWithPreservedCulture<T>(CulturePair preservedCulture, Action<T> action, T arg)
         {
-            RunWithPreservedCulture(preservedCulture, (f, state)  =>
+            RunWithPreservedCulture(preservedCulture, (f, state) =>
             {
                 f(state);
                 return (object)null;
@@ -1111,14 +1102,14 @@ namespace Microsoft.AspNet.SignalR
                 }
                 else if (t.IsCanceled)
                 {
-                    tcs.SetCanceled();
+                    tcs.TrySetCanceled();
                 }
                 else
                 {
                     try
                     {
                         successor();
-                        tcs.SetResult(null);
+                        tcs.TrySetResult(null);
                     }
                     catch (Exception ex)
                     {
@@ -1155,12 +1146,12 @@ namespace Microsoft.AspNet.SignalR
                             next(state);
                         }
 
-                        tcs.SetCanceled();
+                        tcs.TrySetCanceled();
                     }
                     else
                     {
                         next(state);
-                        tcs.SetResult(null);
+                        tcs.TrySetResult(null);
                     }
                 }
                 catch (Exception ex)
@@ -1194,7 +1185,7 @@ namespace Microsoft.AspNet.SignalR
                         try
                         {
                             successor(t.Result);
-                            tcs.SetResult(null);
+                            tcs.TrySetResult(null);
                         }
                         catch (Exception ex)
                         {
@@ -1219,14 +1210,14 @@ namespace Microsoft.AspNet.SignalR
                     }
                     else if (task.IsCanceled)
                     {
-                        tcs.SetCanceled();
+                        tcs.TrySetCanceled();
                     }
                     else
                     {
                         try
                         {
                             successor(t);
-                            tcs.SetResult(null);
+                            tcs.TrySetResult(null);
                         }
                         catch (Exception ex)
                         {
@@ -1250,13 +1241,13 @@ namespace Microsoft.AspNet.SignalR
                     }
                     else if (t.IsCanceled)
                     {
-                        tcs.SetCanceled();
+                        tcs.TrySetCanceled();
                     }
                     else
                     {
                         try
                         {
-                            tcs.SetResult(successor());
+                            tcs.TrySetResult(successor());
                         }
                         catch (Exception ex)
                         {
@@ -1280,13 +1271,13 @@ namespace Microsoft.AspNet.SignalR
                     }
                     else if (task.IsCanceled)
                     {
-                        tcs.SetCanceled();
+                        tcs.TrySetCanceled();
                     }
                     else
                     {
                         try
                         {
-                            tcs.SetResult(successor(t));
+                            tcs.TrySetResult(successor(t));
                         }
                         catch (Exception ex)
                         {

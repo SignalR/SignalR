@@ -1084,19 +1084,19 @@ namespace Microsoft.AspNet.SignalR.Tests
                                     }
                                     else if (t.IsCanceled)
                                     {
-                                        tcs.SetCanceled();
+                                        tcs.TrySetCanceled();
                                     }
                                 },
                                 TaskContinuationOptions.NotOnRanToCompletion);
                         }
                         else
                         {
-                            tcs.SetResult(null);
+                            tcs.TrySetResult(null);
                         }
                     });
 
                     connection.Error += e => tcs.SetException(e);
-                    connection.Reconnecting += () => tcs.SetCanceled();
+                    connection.Reconnecting += () => tcs.TrySetCanceled();
 
                     await connection.Start(host.Transport);
 

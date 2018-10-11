@@ -171,7 +171,7 @@ namespace Microsoft.AspNet.SignalR.Client.Tests
                          .Returns(() =>
                          {
                              var tcs = new TaskCompletionSource<NegotiationResponse>();
-                             tcs.SetCanceled();
+                             tcs.TrySetCanceled();
                              return tcs.Task;
                          });
 
@@ -221,7 +221,7 @@ namespace Microsoft.AspNet.SignalR.Client.Tests
                          .Returns(() =>
                          {
                              var tcs = new TaskCompletionSource<object>();
-                             tcs.SetCanceled();
+                             tcs.TrySetCanceled();
                              return tcs.Task;
                          });
 

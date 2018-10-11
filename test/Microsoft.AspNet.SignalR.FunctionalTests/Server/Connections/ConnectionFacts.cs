@@ -167,7 +167,7 @@ namespace Microsoft.AspNet.SignalR.Client.Tests
 
                         connection2.Received += message =>
                         {
-                            messageTcs.SetResult(message);
+                            messageTcs.TrySetResult(message);
                         };
 
                         await connection1.Start(host1);

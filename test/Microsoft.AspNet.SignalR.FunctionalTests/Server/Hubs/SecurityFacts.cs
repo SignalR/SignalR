@@ -112,7 +112,7 @@ namespace Microsoft.AspNet.SignalR.FunctionalTests.Server.Hubs
 
                     connection.Received += data =>
                     {
-                        connectionTcs.SetResult(data.Trim());
+                        connectionTcs.TrySetResult(data.Trim());
                     };
 
                     await connection.Start(host).OrTimeout();

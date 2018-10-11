@@ -165,7 +165,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Server.Transports
                 response.Setup(m => m.Flush()).Returns(TaskAsyncHelper.Empty);
                 response.SetupSet(m => m.ContentType = It.IsAny<string>()).Callback<string>(contentType =>
                 {
-                    transport._contentTypeTcs.SetResult(contentType);
+                    transport._contentTypeTcs.TrySetResult(contentType);
                 });
 
                 var hostContext = new HostContext(request.Object, response.Object);
