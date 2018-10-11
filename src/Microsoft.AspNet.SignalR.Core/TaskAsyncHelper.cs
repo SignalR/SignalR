@@ -2,14 +2,9 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
-using System.IO;
-using System.Linq;
-using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -710,11 +705,7 @@ namespace Microsoft.AspNet.SignalR
 #else
             var tcs = new TaskCompletionSource<object>();
 
-            var timer = new Timer(tcs.TrySetResult,
-            null,
-            timeOut,
-            TimeSpan.FromMilliseconds(-1));
-
+            var timer = new Timer((state) => tcs.TrySetResult(state), null, timeOut, TimeSpan.FromMilliseconds(-1));
             return tcs.Task.ContinueWithPreservedCulture(_ =>
             {
                 timer.Dispose();
@@ -1028,7 +1019,7 @@ namespace Microsoft.AspNet.SignalR
 
         internal static void RunWithPreservedCulture<T>(CulturePair preservedCulture, Action<T> action, T arg)
         {
-            RunWithPreservedCulture(preservedCulture, (f, state)  =>
+            RunWithPreservedCulture(preservedCulture, (f, state) =>
             {
                 f(state);
                 return (object)null;
