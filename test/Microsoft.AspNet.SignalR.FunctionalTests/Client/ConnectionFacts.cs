@@ -469,5 +469,27 @@ namespace Microsoft.AspNet.SignalR.Tests
                 }
             }
         }
+
+        // Negotiation is handled per-transport (even though it uses common code) so we do this for each transport to make sure we didn't miss something
+        [Theory]
+        [InlineData(HostType.Memory, TransportType.ServerSentEvents)]
+        [InlineData(HostType.Memory, TransportType.LongPolling)]
+        [InlineData(HostType.HttpListener, TransportType.Websockets)]
+        [InlineData(HostType.HttpListener, TransportType.Auto)]
+        public async Task ConnectionFailsWithHelpfulErrorWhenAttemptingToConnectToAspNetCoreApp(HostType hostType, TransportType transportType)
+        {
+            using (var host = CreateHost(hostType, transportType))
+            {
+                host.Initialize();
+
+                using (var connection = CreateConnection(host, "/aspnetcore-signalr"))
+                {
+                    var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => connection.Start(host.TransportFactory())).OrTimeout();
+                    Assert.Equal(
+                        "Detected a connection attempt to an ASP.NET SignalR Server. This client only supports connecting to an ASP.NET Core SignalR Server. See https://aka.ms/signalr-core-differences for details.",
+                        ex.Message);
+                }
+            }
+        }
     }
 }

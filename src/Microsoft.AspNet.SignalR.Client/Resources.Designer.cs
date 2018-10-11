@@ -350,5 +350,16 @@ namespace Microsoft.AspNet.SignalR.Client
                 return ResourceManager.GetString("Message_Reconnecting", resourceCulture);
             }
         }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Detected a connection attempt to an ASP.NET SignalR Server. This client only supports connecting to an ASP.NET Core SignalR Server. See https://aka.ms/signalr-core-differences for details..
+        /// </summary>
+        internal static string Error_AspNetCoreServerDetected
+        {
+            get
+            {
+                return ResourceManager.GetString("Error_AspNetCoreServerDetected", resourceCulture);
+            }
+        }
     }
 }
