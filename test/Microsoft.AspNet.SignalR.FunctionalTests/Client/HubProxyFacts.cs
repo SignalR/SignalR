@@ -48,7 +48,7 @@ namespace Microsoft.AspNet.SignalR.Tests
             await RunWebSocketTransportWithConnectTask(() =>
             {
                 var tcs = new TaskCompletionSource<object>();
-                tcs.SetCanceled();
+                tcs.TrySetCanceled();
                 return tcs.Task;
             }).OrTimeout(10000);
         }

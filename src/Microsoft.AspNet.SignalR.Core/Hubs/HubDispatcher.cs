@@ -431,15 +431,15 @@ namespace Microsoft.AspNet.SignalR.Hubs
                 var faulted = tasks.FirstOrDefault(t => t.IsFaulted);
                 if (faulted != null)
                 {
-                    tcs.SetUnwrappedException(faulted.Exception);
+                    tcs.TrySetUnwrappedException(faulted.Exception);
                 }
                 else if (tasks.Any(t => t.IsCanceled))
                 {
-                    tcs.SetCanceled();
+                    tcs.TrySetCanceled();
                 }
                 else
                 {
-                    tcs.SetResult(null);
+                    tcs.TrySetResult(null);
                 }
             });
 

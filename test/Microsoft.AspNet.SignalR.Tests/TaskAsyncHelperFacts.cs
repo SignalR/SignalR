@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -35,7 +35,7 @@ namespace Microsoft.AspNet.SignalR.Tests
             () =>
             {
                 var canceledTcs = new TaskCompletionSource<object>();
-                canceledTcs.SetCanceled();
+                canceledTcs.TrySetCanceled();
                 return canceledTcs.Task; // Sync Canceled
             },
             async () =>
@@ -68,8 +68,8 @@ namespace Microsoft.AspNet.SignalR.Tests
 
                 Action saveCulture = () =>
                 {
-                    cultureTcs.SetResult(Thread.CurrentThread.CurrentCulture);
-                    uiCultureTcs.SetResult(Thread.CurrentThread.CurrentUICulture);
+                    cultureTcs.TrySetResult(Thread.CurrentThread.CurrentCulture);
+                    uiCultureTcs.TrySetResult(Thread.CurrentThread.CurrentUICulture);
                 };
 
                 foreach (var taskGenerator in taskGenerators)

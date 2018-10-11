@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -132,7 +132,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
                     else
                     {
                         // If there's nothing else to try then just fail
-                        tcs.SetException(ex);
+                        tcs.TrySetException(ex);
                     }
                 }
                 else
@@ -141,7 +141,7 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
                     _transport = transport;
 
                     // Complete the process
-                    tcs.SetResult(null);
+                    tcs.TrySetResult(null);
                 }
 
             },

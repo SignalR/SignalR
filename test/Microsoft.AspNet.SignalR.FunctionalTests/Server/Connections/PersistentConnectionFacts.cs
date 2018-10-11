@@ -532,7 +532,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                     connection.Received += data =>
                     {
                         // Should only be called once.
-                        tcs.SetResult(data);
+                        tcs.TrySetResult(data);
                     };
 
                     await connection.Start(host.Transport);

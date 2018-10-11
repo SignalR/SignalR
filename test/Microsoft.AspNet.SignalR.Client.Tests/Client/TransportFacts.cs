@@ -96,7 +96,7 @@ namespace Microsoft.AspNet.SignalR.Client.Tests
         public async Task CancelledTaskHandledWhenStartingLongPolling()
         {
             var tcs = new TaskCompletionSource<IResponse>();
-            tcs.SetCanceled();
+            tcs.TrySetCanceled();
 
             var httpClient = new Mock<IHttpClient>();
 
@@ -120,7 +120,7 @@ namespace Microsoft.AspNet.SignalR.Client.Tests
             mockConnection.Setup(c => c.TotalTransportConnectTimeout).Returns(TimeSpan.FromSeconds(1500));
 
             var tcs = new TaskCompletionSource<IResponse>();
-            tcs.SetCanceled();
+            tcs.TrySetCanceled();
 
             var onErrorWh = new TaskCompletionSource<object>();
 
@@ -167,7 +167,7 @@ namespace Microsoft.AspNet.SignalR.Client.Tests
             var negotiationResponse = new NegotiationResponse();
             negotiationResponse.TryWebSockets = false;
 
-            tcs.SetResult(negotiationResponse);
+            tcs.TrySetResult(negotiationResponse);
 
             var autoTransport = new Mock<AutoTransport>(It.IsAny<IHttpClient>(), transports);
             autoTransport.Setup(c => c.GetNegotiateResponse(It.IsAny<Connection>(), It.IsAny<string>())).Returns(tcs.Task);

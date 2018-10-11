@@ -559,7 +559,7 @@ namespace Microsoft.AspNet.SignalR.Client
 
                                  // Now that we're connected complete the start task that the
                                  // receive queue is waiting on
-                                 _startTcs.SetResult(null);
+                                 _startTcs.TrySetResult(null);
 
                                  // Start the monitor to check for server activity
                                  _lastMessageAt = DateTime.UtcNow;

@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using Microsoft.AspNet.SignalR.Infrastructure;
@@ -169,7 +169,7 @@ namespace Microsoft.AspNet.SignalR.SqlServer
                 connection.Open();
 
                 commandFunc(command)
-                    .Then(result => tcs.SetResult(result))
+                    .Then(result => tcs.TrySetResult(result))
                     .Catch(ex => tcs.SetUnwrappedException(ex), Trace)
                     .Finally(state =>
                     {

@@ -27,7 +27,7 @@ namespace Microsoft.AspNet.SignalR.Redis.Tests
             {
                 if (++invokationCount == 2)
                 {
-                    connectRetryTcs.SetResult(null);
+                    connectRetryTcs.TrySetResult(null);
                     return Task.FromResult(0);
                 }
                 else
@@ -63,7 +63,7 @@ namespace Microsoft.AspNet.SignalR.Redis.Tests
                 // Open would be called twice - once when connection starts and once when it is restored
                 if (++openInvoked == 2)
                 {
-                    tcs.SetResult(null);
+                    tcs.TrySetResult(null);
                 }
             };
 
@@ -127,7 +127,7 @@ namespace Microsoft.AspNet.SignalR.Redis.Tests
                 .Setup(c => c.SubscribeAsync(It.IsAny<string>(), It.IsAny<Action<int, RedisMessage>>()))
                 .Returns<string, Action<int, RedisMessage>>((_, __) =>
                 {
-                    atSubscribeTcs.SetResult(null);
+                    atSubscribeTcs.TrySetResult(null);
                     return subscribeTcs.Task;
                 });
 
@@ -152,7 +152,7 @@ namespace Microsoft.AspNet.SignalR.Redis.Tests
             redisConnection.Raise(connection => connection.ConnectionRestored += null, new Exception());
 
             // Now allow the connection task to finish and wait for it
-            subscribeTcs.SetResult(null);
+            subscribeTcs.TrySetResult(null);
             await connectionTask.OrTimeout();
 
             // Make sure OpenStream got called

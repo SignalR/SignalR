@@ -22,7 +22,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
             Func<MessageResult, object, Task<bool>> callback = (result, state) =>
             {
                 var tcs = new TaskCompletionSource<bool>();
-                tcs.SetCanceled();
+                tcs.TrySetCanceled();
                 return tcs.Task;
             };
 
@@ -48,7 +48,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
             {
                 await Task.Yield();
                 var tcs = new TaskCompletionSource<bool>();
-                tcs.SetCanceled();
+                tcs.TrySetCanceled();
                 return await tcs.Task;
             };
 
