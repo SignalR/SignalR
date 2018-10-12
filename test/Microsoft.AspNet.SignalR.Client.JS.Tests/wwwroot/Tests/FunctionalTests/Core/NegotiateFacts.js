@@ -133,5 +133,22 @@ testUtilities.module("Core - Negotiate Functional Tests");
             };
         });
 
+        QUnit.asyncTimeoutTest(transport = ": connection fails to start with useful error when connecting to ASP.NET Core", testUtilities.defaultTestTimeout, function (end, assert, testName) {
+            var connection = testUtilities.createTestConnection(testName, end, assert, { wrapStart: false, url: "/aspnetcore-signalr", ignoreErrors: true });
+
+            connection.start()
+                .done(function () {
+                    assert.fail("should have failed to connect");
+                    end();
+                })
+                .catch(function (e) {
+                    assert.equal("Detected a connection attempt to an ASP.NET Core SignalR Server. This client only supports connecting to an ASP.NET SignalR Server. See https://aka.ms/signalr-core-differences for details.", e.message);
+                    end();
+                });
+
+            return function () {
+                connection.stop();
+            };
+        });
     });
 })($, window);

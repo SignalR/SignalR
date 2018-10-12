@@ -132,6 +132,30 @@ namespace Microsoft.AspNet.SignalR.Tests.Common
                 RegisterSignalREndpoints(app, resolver, hubConfig);
             }
 
+            // Simulated ASP.NET Core SignalR negotiate endpoint
+            app.Use((context, next) =>
+            {
+                if(context.Request.Path.StartsWithSegments(new PathString("/aspnetcore-signalr")))
+                {
+                    // Send an ASP.NET Core SignalR negotiate response
+                    context.Response.StatusCode = 200;
+                    context.Response.ContentType = "application/json";
+                    using (var writer = new JsonTextWriter(new StreamWriter(context.Response.Body)))
+                    {
+                        writer.WriteStartObject();
+                        writer.WritePropertyName("connectionId");
+                        writer.WriteValue("fakeConnectionId");
+                        writer.WritePropertyName("availableTransports");
+                        writer.WriteStartArray();
+                        writer.WriteEndArray();
+                        writer.WriteEndObject();
+                    }
+                    return Task.CompletedTask;
+                }
+
+                return next();
+            });
+
             // Redirectors:
 
             // Valid redirect chain
@@ -403,23 +427,6 @@ namespace Microsoft.AspNet.SignalR.Tests.Common
             {
                 map.MapSignalR();
             });
-
-            // Redirectors:
-
-            // Valid redirect chain
-            // Overload detection doesn't like it when we use this as an extension method
-            // We *intentionally* use paths that do NOT end in a trailing '/' in some places as the client needs to support both
-            AppBuilderUseExtensions.Use(app, CreateRedirector("/redirect", "/redirect2"));
-            AppBuilderUseExtensions.Use(app, CreateRedirector("/redirect2", "/redirect3/"));
-            AppBuilderUseExtensions.Use(app, CreateRedirector("/redirect3", "/redirect4"));
-            AppBuilderUseExtensions.Use(app, CreateRedirector("/redirect4", "/signalr/"));
-
-            // Looping redirect chain
-            AppBuilderUseExtensions.Use(app, CreateRedirector("/redirect-loop", "/redirect-loop2"));
-            AppBuilderUseExtensions.Use(app, CreateRedirector("/redirect-loop2", "/redirect-loop"));
-
-            // Wrong protocol version
-            AppBuilderUseExtensions.Use(app, CreateRedirector("/redirect-old-proto", "/signalr", protocolVersion: "1.5"));
         }
 
         private static Func<IOwinContext, Func<Task>, Task> CreateRedirector(string sourcePath, string targetPath, string protocolVersion = null)

@@ -192,4 +192,7 @@
   <data name="Error_ErrorFromServer" xml:space="preserve">
     <value>Error message received from the server: '{0}'.</value>
   </data>
+  <data name="Error_AspNetCoreServerDetected" xml:space="preserve">
+    <value>Detected a connection attempt to an ASP.NET Core SignalR Server. This client only supports connecting to an ASP.NET SignalR Server. See https://aka.ms/signalr-core-differences for details.</value>
+  </data>
 </root>

@@ -5,8 +5,9 @@ using System;
 using System.Globalization;
 using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR.Client.Http;
-using Newtonsoft.Json;
 using Microsoft.AspNet.SignalR.Client.Infrastructure;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace Microsoft.AspNet.SignalR.Client.Transports
 {
@@ -38,7 +39,15 @@ namespace Microsoft.AspNet.SignalR.Client.Transports
                                     throw new InvalidOperationException(String.Format(CultureInfo.CurrentCulture, Resources.Error_ServerNegotiationFailed));
                                 }
 
-                                return JsonConvert.DeserializeObject<NegotiationResponse>(raw);
+                                // We need to parse it into a JObject first so that we can check if this is an ASP.NET Core SignalR server
+                                var jobj = JObject.Parse(raw);
+                                if(jobj.Property("availableTransports") != null)
+                                {
+                                    // This is ASP.NET Core!
+                                    throw new InvalidOperationException(Resources.Error_AspNetCoreServerDetected);
+                                }
+
+                                return jobj.ToObject<NegotiationResponse>();
                             });
         }
 
