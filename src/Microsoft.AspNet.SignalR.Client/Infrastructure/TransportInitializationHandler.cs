@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -35,7 +35,7 @@ namespace Microsoft.AspNet.SignalR.Client.Infrastructure
                                               IConnection connection,
                                               string connectionData,
                                               string transport,
-                                              CancellationToken disconnectToken, 
+                                              CancellationToken disconnectToken,
                                               TransportHelper transportHelper)
         {
             if (connection == null)
@@ -56,9 +56,18 @@ namespace Microsoft.AspNet.SignalR.Client.Infrastructure
             OnFailure = () => { };
 
             // We want to fail if the disconnect token is tripped while we're waiting on initialization
-            _tokenCleanup = disconnectToken.SafeRegister(
-                _ => Fail(new OperationCanceledException(Resources.Error_ConnectionCancelled, disconnectToken)),
-                state: null);
+            try
+            {
+                _tokenCleanup = disconnectToken.SafeRegister(
+                    _ => Fail(new OperationCanceledException(Resources.Error_ConnectionCancelled, disconnectToken)),
+                    state: null);
+            }
+            catch (ObjectDisposedException)
+            {
+                // We only dispose this token after cancelling it, so consider this cancellation.
+                // The ODE is only thrown on .NET 4.5.2 and below (.NET 4.6 no longer throws ODE from CTS.Register)
+                Fail(new OperationCanceledException(Resources.Error_ConnectionCancelled, disconnectToken));
+            }
 
             TaskAsyncHelper.Delay(connection.TotalTransportConnectTimeout)
                 .Then(() =>
@@ -134,7 +143,7 @@ namespace Microsoft.AspNet.SignalR.Client.Infrastructure
                 {
                     ex = new StartException(Resources.Error_StartFailed, ex);
                 }
- 
+
                 _initializationTask.TrySetUnwrappedException(ex);
             });
 
