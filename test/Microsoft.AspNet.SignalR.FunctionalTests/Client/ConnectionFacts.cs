@@ -486,7 +486,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                 {
                     var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => connection.Start(host.TransportFactory())).OrTimeout();
                     Assert.Equal(
-                        "Detected a connection attempt to an ASP.NET SignalR Server. This client only supports connecting to an ASP.NET Core SignalR Server. See https://aka.ms/signalr-core-differences for details.",
+                        "Detected a connection attempt to an ASP.NET Core SignalR Server. This client only supports connecting to an ASP.NET SignalR Server. See https://aka.ms/signalr-core-differences for details.",
                         ex.Message);
                 }
             }

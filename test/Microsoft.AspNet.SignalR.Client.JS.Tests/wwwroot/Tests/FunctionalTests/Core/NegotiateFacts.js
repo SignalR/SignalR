@@ -142,7 +142,7 @@ testUtilities.module("Core - Negotiate Functional Tests");
                     end();
                 })
                 .catch(function (e) {
-                    assert.equal("Detected a connection attempt to an ASP.NET SignalR Server. This client only supports connecting to an ASP.NET Core SignalR Server. See https://aka.ms/signalr-core-differences for details.", e.message);
+                    assert.equal("Detected a connection attempt to an ASP.NET Core SignalR Server. This client only supports connecting to an ASP.NET SignalR Server. See https://aka.ms/signalr-core-differences for details.", e.message);
                     end();
                 });
 
