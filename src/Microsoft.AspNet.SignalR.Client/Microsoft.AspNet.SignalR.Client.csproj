@@ -38,11 +38,11 @@
   </ItemGroup>
 
   <ItemGroup Condition="'$(TargetFramework)' == 'netstandard1.3'">
-    <PackageReference Include="Newtonsoft.Json" Version="$(ReleaseNetStandard_NewtonsoftJsonPackageVersion)" />
+    <PackageReference Include="Newtonsoft.Json" Version="$(ReleaseNetStandard13_NewtonsoftJsonPackageVersion)" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.0'">
-    <PackageReference Include="Newtonsoft.Json" Version="$(ReleaseNetStandard_NewtonsoftJsonPackageVersion)" />
+    <PackageReference Include="Newtonsoft.Json" Version="$(ReleaseNetStandard20_NewtonsoftJsonPackageVersion)" />
   </ItemGroup>
 
 </Project>
