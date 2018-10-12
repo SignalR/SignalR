@@ -1,8 +1,0 @@
-{
-  "profiles": {
-    "Microsoft.AspNet.SignalR.Client.JS.Tests": {
-      "commandName": "Project",
-      "workingDirectory": "C:\\Users\\anurse\\Code\\SignalR\\SignalR\\test\\Microsoft.AspNet.SignalR.Client.JS.Tests"
-    }
-  }
-}
