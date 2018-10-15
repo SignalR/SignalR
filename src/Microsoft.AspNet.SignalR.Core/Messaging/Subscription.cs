@@ -134,6 +134,7 @@ namespace Microsoft.AspNet.SignalR.Messaging
                 {
                     var messageResult = new MessageResult(items, totalCount);
 
+                    // REVIEW: If 'Invoke' faults, we fail to dispose and leak
                     bool result = await Invoke(messageResult, (s, o) => s.BeforeInvoke(o), state);
 
                     if (!result)
