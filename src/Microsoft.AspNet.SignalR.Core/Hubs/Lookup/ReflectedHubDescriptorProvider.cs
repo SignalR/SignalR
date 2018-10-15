@@ -40,7 +40,7 @@ namespace Microsoft.AspNet.SignalR.Hubs
             return _hubs.Value.TryGetValue(hubName, out descriptor);
         }
 
-        protected IDictionary<string, HubDescriptor> BuildHubsCache()
+        protected virtual IDictionary<string, HubDescriptor> BuildHubsCache()
         {
             // Getting all IHub-implementing types that apply
             var types = _locator.Value.GetAssemblies()
