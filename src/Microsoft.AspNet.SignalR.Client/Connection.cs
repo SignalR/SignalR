@@ -515,8 +515,7 @@ namespace Microsoft.AspNet.SignalR.Client
                                     {
                                         if (!string.IsNullOrEmpty(negotiationResponse.Error))
                                         {
-                                            // REVIEW: Exception type?
-                                            throw new Exception(string.Format(Resources.Error_ErrorFromServer, negotiationResponse.Error));
+                                            throw new StartException(string.Format(Resources.Error_ErrorFromServer, negotiationResponse.Error));
                                         }
                                         if (!string.IsNullOrEmpty(negotiationResponse.RedirectUrl))
                                         {

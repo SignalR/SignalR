@@ -1,5 +1,6 @@
 using System;
 using System.Threading.Tasks;
+using Microsoft.AspNet.SignalR.Client.Infrastructure;
 using Microsoft.AspNet.SignalR.Tests.Common.Infrastructure;
 using Xunit;
 
@@ -93,7 +94,7 @@ namespace Microsoft.AspNet.SignalR.Tests
                 using (var connection = CreateHubConnection(host, path: "/negotiate-error"))
                 {
                     // Should fail to connect.
-                    var ex = await Assert.ThrowsAsync<Exception>(() => connection.Start(host.TransportFactory()));
+                    var ex = await Assert.ThrowsAsync<StartException>(() => connection.Start(host.TransportFactory()));
                     Assert.Equal("Error message received from the server: 'Server-provided negotiate error message!'.", ex.Message);
                 }
             }
