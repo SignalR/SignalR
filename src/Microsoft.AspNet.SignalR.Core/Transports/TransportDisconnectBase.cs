@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -266,7 +266,7 @@ namespace Microsoft.AspNet.SignalR.Transports
             return Abort(clean: true);
         }
 
-        private Task Abort(bool clean)
+        private async Task Abort(bool clean)
         {
             if (clean)
             {
@@ -287,16 +287,22 @@ namespace Microsoft.AspNet.SignalR.Transports
             // End the connection
             End();
 
-            var disconnectTask = Disconnected != null ? Disconnected(clean) : TaskAsyncHelper.Empty;
-
             // Ensure delegate continues to use the C# Compiler static delegate caching optimization.
-            return disconnectTask
-                .Catch((ex, state) => OnDisconnectError(ex, state), state: Trace, traceSource: Trace)
-                .Finally(state =>
-                {
-                    var counters = (IPerformanceCounterManager)state;
-                    counters.ConnectionsDisconnected.Increment();
-                }, _counters);
+            try
+            {
+                var disconnectTask = Disconnected != null ? Disconnected(clean) : TaskAsyncHelper.Empty;
+                await disconnectTask;
+            }
+            catch (Exception ex)
+            {
+                OnDisconnectError(ex, Trace);
+
+                // Suppress the exception so we continue disconnection logic.
+            }
+            finally
+            {
+                _counters.ConnectionsDisconnected.Increment();
+            }
         }
 
         public void ApplyState(TransportConnectionStates states)
@@ -399,7 +405,7 @@ namespace Microsoft.AspNet.SignalR.Transports
             return InitializeMessageId();
         }
 
-        private static void OnDisconnectError(AggregateException ex, object state)
+        private static void OnDisconnectError(Exception ex, object state)
         {
             ((TraceSource)state).TraceEvent(TraceEventType.Error, 0, "Failed to raise disconnect: " + ex.GetBaseException());
         }
