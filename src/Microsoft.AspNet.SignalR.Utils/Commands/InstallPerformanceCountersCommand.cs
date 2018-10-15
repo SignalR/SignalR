@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -30,7 +30,7 @@ namespace Microsoft.AspNet.SignalR.Utils
             get { return new[] { "ipc" }; }
         }
 
-        public override void Execute(string[] args)
+        public override int Execute(string[] args)
         {
             Info(String.Format(CultureInfo.CurrentCulture, Resources.Notify_InstallingPerformanceCounters));
 
@@ -45,7 +45,10 @@ namespace Microsoft.AspNet.SignalR.Utils
             {
                 // Probably due to not running as admin, let's just stop here
                 Warning(String.Format(CultureInfo.CurrentCulture, ex.Message + Resources.Notify_TryRunningAsAdmin));
-                return;
+
+                // NOTE: We return '0' here because we did so in previous versions of this command and it would be
+                // a breaking change to do otherwise in a minor release.
+                return 0;
             }
 
             foreach (var counter in counters)
@@ -54,6 +57,7 @@ namespace Microsoft.AspNet.SignalR.Utils
             }
 
             Success(String.Format(CultureInfo.CurrentCulture, Resources.Notify_PerformanceCountersInstalled));
+            return 0;
         }
     }
 }
