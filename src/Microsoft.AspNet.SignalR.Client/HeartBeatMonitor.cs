@@ -1,8 +1,9 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.Threading;
+using Microsoft.AspNet.SignalR.Client.Transports;
 
 #if NETFX_CORE
 using System.Diagnostics.CodeAnalysis;
@@ -79,7 +80,7 @@ namespace Microsoft.AspNet.SignalR.Client
 #endif
         private void Beat()
         {
-            TimeSpan timeElapsed = DateTime.UtcNow - _connection.LastMessageAt;
+            var timeElapsed = DateTime.UtcNow - _connection.LastMessageAt;
             Beat(timeElapsed);
         }
 
@@ -99,6 +100,10 @@ namespace Microsoft.AspNet.SignalR.Client
 
         private void CheckKeepAlive(TimeSpan timeElapsed)
         {
+            // Flags used to detect what kind of follow-up action should be taken.
+            var connectionSlow = false;
+            IClientTransport transport = null;
+
             lock (_connectionStateLock)
             {
                 if (_connection.State == ConnectionState.Connected)
@@ -110,7 +115,11 @@ namespace Microsoft.AspNet.SignalR.Client
                             // Connection has been lost
                             _connection.Trace(TraceLevels.Events, "Connection Timed-out : Transport Lost Connection");
                             TimedOut = true;
-                            _connection.Transport.LostConnection(_connection);
+
+                            // Capture the transport to call LostConnection on it after the lock ends.
+                            // We capture it locally because _connection.Transport may be re-initialized before we call LostConnection
+                            // and we don't want to call LostConnection on the re-initialized transport.
+                            transport = _connection.Transport;
                         }
                     }
                     else if (timeElapsed >= _connection.KeepAliveData.TimeoutWarning)
@@ -120,7 +129,9 @@ namespace Microsoft.AspNet.SignalR.Client
                             // Inform user and set HasBeenWarned to true
                             _connection.Trace(TraceLevels.Events, "Connection Timeout Warning : Notifying user");
                             HasBeenWarned = true;
-                            _connection.OnConnectionSlow();
+
+                            // We don't want to run the user event "ConnectionSlow" in the lock.
+                            connectionSlow = true;
                         }
                     }
                     else
@@ -128,6 +139,17 @@ namespace Microsoft.AspNet.SignalR.Client
                         ClearFlags();
                     }
                 }
+            }
+
+            // If there's a non-null 'transport' value, then it means the connection timed out and we need to call LostConnection.
+            if (transport != null)
+            {
+                transport.LostConnection(_connection);
+            }
+
+            if (connectionSlow)
+            {
+                _connection.OnConnectionSlow();
             }
         }
 
