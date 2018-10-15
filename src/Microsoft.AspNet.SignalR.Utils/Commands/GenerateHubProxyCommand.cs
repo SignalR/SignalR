@@ -95,7 +95,7 @@ namespace Microsoft.AspNet.SignalR.Utils
             }
             catch (TargetInvocationException tie) when (tie.InnerException is FileLoadException fle)
             {
-                // This is likely due to a missing config file or missing binding redirect. Print a help full message, but also the whole stack trace:
+                // Missing binding redirect :(
                 Console.Error.WriteLine(string.Format(Resources.Error_MissingBindingRedirect, fle.FileName));
                 return false;
             }
