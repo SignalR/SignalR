@@ -1,11 +1,12 @@
 using System;
 using System.Threading.Tasks;
+using Microsoft.AspNet.SignalR.Client.Infrastructure;
 using Microsoft.AspNet.SignalR.Tests.Common.Infrastructure;
 using Xunit;
 
 namespace Microsoft.AspNet.SignalR.Tests
 {
-    public class RedirectionFacts : HostedTest
+    public class NegotiateFacts : HostedTest
     {
         [Fact]
         public async Task CanConnectToEndpointWhichProducesARedirectResponse()
@@ -79,6 +80,22 @@ namespace Microsoft.AspNet.SignalR.Tests
                 {
                     // Should fail to connect.
                     await Assert.ThrowsAsync<TimeoutException>(() => connection.Start(host.TransportFactory()));
+                }
+            }
+        }
+
+        [Fact]
+        public async Task ThrowsErrorProvidedByServerIfNegotiateResponseContainsErrorMessage()
+        {
+            using (var host = CreateHost(HostType.Memory, TransportType.Auto))
+            {
+                host.Initialize();
+
+                using (var connection = CreateHubConnection(host, path: "/negotiate-error"))
+                {
+                    // Should fail to connect.
+                    var ex = await Assert.ThrowsAsync<StartException>(() => connection.Start(host.TransportFactory()));
+                    Assert.Equal("Error message received from the server: 'Server-provided negotiate error message!'.", ex.Message);
                 }
             }
         }

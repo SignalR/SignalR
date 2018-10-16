@@ -68,6 +68,10 @@
       <NpmModuleFile Include="node_modules/jquery/dist/jquery.min.js" Module="jquery" />
     </ItemGroup>
 
+    <ItemGroup>
+      <Folder Include="Properties\" />
+    </ItemGroup>
+
     <Target Name="ComputeNpmModulePaths">
       <ItemGroup>
         <_ResolvedNpmModuleFile Include="%(NpmModuleFile.FullPath)">

@@ -17,8 +17,9 @@ namespace Microsoft.AspNet.SignalR.Client
         public double? KeepAliveTimeout { get; set; }
         public double TransportConnectTimeout { get; set; }
 
-        // Protocol 2.0: Redirection
+        // Protocol 2.0: Redirection and custom Negotiation Errors
         public string RedirectUrl { get; set; }
         public string AccessToken { get; set; }
+        public string Error { get; set; }
     }
 }

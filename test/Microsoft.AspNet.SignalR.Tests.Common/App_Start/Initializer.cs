@@ -152,7 +152,28 @@ namespace Microsoft.AspNet.SignalR.Tests.Common
                     }
                     return Task.CompletedTask;
                 }
+                return next();
+            });
 
+            // Handle negotiate "Error" field
+            app.Use((context, next) =>
+            {
+                if(context.Request.Path.StartsWithSegments(new PathString("/negotiate-error")))
+                {
+                    // Send an error response
+                    context.Response.StatusCode = 200;
+                    context.Response.ContentType = "application/json";
+                    using (var writer = new JsonTextWriter(new StreamWriter(context.Response.Body)))
+                    {
+                        writer.WriteStartObject();
+                        writer.WritePropertyName("ProtocolVersion");
+                        writer.WriteValue("2.0");
+                        writer.WritePropertyName("Error");
+                        writer.WriteValue("Server-provided negotiate error message!");
+                        writer.WriteEndObject();
+                    }
+                    return Task.CompletedTask;
+                }
                 return next();
             });
 

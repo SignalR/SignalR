@@ -22,6 +22,7 @@
         errorParsingNegotiateResponse: "Error parsing negotiate response.",
         errorRedirectionExceedsLimit: "Negotiate redirection limit exceeded.",
         errorDuringStartRequest: "Error during start request. Stopping the connection.",
+        errorFromServer: "Error message received from the server: '{0}'.",
         stoppedDuringStartRequest: "The connection was stopped during the start request.",
         errorParsingStartResponse: "Error parsing start response: '{0}'. Stopping the connection.",
         invalidStartResponse: "Invalid start response: '{0}'. Stopping the connection.",
@@ -738,86 +739,95 @@
                         }
 
                         // Check for a redirect response (which must have a ProtocolVersion of 2.0)
-                        if (res.ProtocolVersion === "2.0" && res.RedirectUrl) {
-                            if (redirects === MAX_REDIRECTS) {
-                                onFailed(signalR._.error(resources.errorRedirectionExceedsLimit), connection);
+                        if (res.ProtocolVersion === "2.0") {
+                            if (res.Error) {
+                                protocolError = signalR._.error(signalR._.format(resources.errorFromServer, res.Error));
+                                $(connection).triggerHandler(events.onError, [protocolError]);
+                                deferred.reject(protocolError);
                                 return;
                             }
-
-                            if (config.transport === "auto") {
-                                // Redirected connections do not support foreverFrame
-                                config.transport = ["webSockets", "serverSentEvents", "longPolling"];
-                            }
-
-                            connection.log("Received redirect to: " + res.RedirectUrl);
-                            connection.accessToken = res.AccessToken;
-
-                            setConnectionUrl(connection, res.RedirectUrl);
-
-                            if (connection.ajaxDataType === "jsonp" && connection.accessToken) {
-                                onFailed(signalR._.error(resources.jsonpNotSupportedWithAccessToken), connection);
-                                return;
-                            }
-
-                            redirects++;
-                            negotiate(connection, callback);
-                        } else {
-                            keepAliveData = connection._.keepAliveData;
-                            connection.appRelativeUrl = res.Url;
-                            connection.id = res.ConnectionId;
-                            connection.token = res.ConnectionToken;
-                            connection.webSocketServerUrl = res.WebSocketServerUrl;
-
-                            // The long poll timeout is the ConnectionTimeout plus 10 seconds
-                            connection._.pollTimeout = res.ConnectionTimeout * 1000 + 10000; // in ms
-
-                            // Once the server has labeled the PersistentConnection as Disconnected, we should stop attempting to reconnect
-                            // after res.DisconnectTimeout seconds.
-                            connection.disconnectTimeout = res.DisconnectTimeout * 1000; // in ms
-
-                            // Add the TransportConnectTimeout from the response to the transportConnectTimeout from the client to calculate the total timeout
-                            connection._.totalTransportConnectTimeout = connection.transportConnectTimeout + res.TransportConnectTimeout * 1000;
-
-                            // If we have a keep alive
-                            if (res.KeepAliveTimeout) {
-                                // Register the keep alive data as activated
-                                keepAliveData.activated = true;
-
-                                // Timeout to designate when to force the connection into reconnecting converted to milliseconds
-                                keepAliveData.timeout = res.KeepAliveTimeout * 1000;
-
-                                // Timeout to designate when to warn the developer that the connection may be dead or is not responding.
-                                keepAliveData.timeoutWarning = keepAliveData.timeout * connection.keepAliveWarnAt;
-
-                                // Instantiate the frequency in which we check the keep alive.  It must be short in order to not miss/pick up any changes
-                                connection._.beatInterval = (keepAliveData.timeout - keepAliveData.timeoutWarning) / 3;
-                            } else {
-                                keepAliveData.activated = false;
-                            }
-
-                            connection.reconnectWindow = connection.disconnectTimeout + (keepAliveData.timeout || 0);
-
-                            $.each(signalR.transports, function (key) {
-                                if ((key.indexOf("_") === 0) || (key === "webSockets" && !res.TryWebSockets)) {
-                                    return true;
+                            else if (res.RedirectUrl) {
+                                if (redirects === MAX_REDIRECTS) {
+                                    onFailed(signalR._.error(resources.errorRedirectionExceedsLimit), connection);
+                                    return;
                                 }
-                                supportedTransports.push(key);
-                            });
 
-                            if ($.isArray(config.transport)) {
-                                $.each(config.transport, function (_, transport) {
-                                    if ($.inArray(transport, supportedTransports) >= 0) {
-                                        transports.push(transport);
-                                    }
-                                });
-                            } else if (config.transport === "auto") {
-                                transports = supportedTransports;
-                            } else if ($.inArray(config.transport, supportedTransports) >= 0) {
-                                transports.push(config.transport);
+                                if (config.transport === "auto") {
+                                    // Redirected connections do not support foreverFrame
+                                    config.transport = ["webSockets", "serverSentEvents", "longPolling"];
+                                }
+
+                                connection.log("Received redirect to: " + res.RedirectUrl);
+                                connection.accessToken = res.AccessToken;
+
+                                setConnectionUrl(connection, res.RedirectUrl);
+
+                                if (connection.ajaxDataType === "jsonp" && connection.accessToken) {
+                                    onFailed(signalR._.error(resources.jsonpNotSupportedWithAccessToken), connection);
+                                    return;
+                                }
+
+                                redirects++;
+                                negotiate(connection, callback);
+                                return;
                             }
-
-                            initialize(transports);
                         }
+
+                        keepAliveData = connection._.keepAliveData;
+                        connection.appRelativeUrl = res.Url;
+                        connection.id = res.ConnectionId;
+                        connection.token = res.ConnectionToken;
+                        connection.webSocketServerUrl = res.WebSocketServerUrl;
+
+                        // The long poll timeout is the ConnectionTimeout plus 10 seconds
+                        connection._.pollTimeout = res.ConnectionTimeout * 1000 + 10000; // in ms
+
+                        // Once the server has labeled the PersistentConnection as Disconnected, we should stop attempting to reconnect
+                        // after res.DisconnectTimeout seconds.
+                        connection.disconnectTimeout = res.DisconnectTimeout * 1000; // in ms
+
+                        // Add the TransportConnectTimeout from the response to the transportConnectTimeout from the client to calculate the total timeout
+                        connection._.totalTransportConnectTimeout = connection.transportConnectTimeout + res.TransportConnectTimeout * 1000;
+
+                        // If we have a keep alive
+                        if (res.KeepAliveTimeout) {
+                            // Register the keep alive data as activated
+                            keepAliveData.activated = true;
+
+                            // Timeout to designate when to force the connection into reconnecting converted to milliseconds
+                            keepAliveData.timeout = res.KeepAliveTimeout * 1000;
+
+                            // Timeout to designate when to warn the developer that the connection may be dead or is not responding.
+                            keepAliveData.timeoutWarning = keepAliveData.timeout * connection.keepAliveWarnAt;
+
+                            // Instantiate the frequency in which we check the keep alive.  It must be short in order to not miss/pick up any changes
+                            connection._.beatInterval = (keepAliveData.timeout - keepAliveData.timeoutWarning) / 3;
+                        } else {
+                            keepAliveData.activated = false;
+                        }
+
+                        connection.reconnectWindow = connection.disconnectTimeout + (keepAliveData.timeout || 0);
+
+                        $.each(signalR.transports, function (key) {
+                            if ((key.indexOf("_") === 0) || (key === "webSockets" && !res.TryWebSockets)) {
+                                return true;
+                            }
+                            supportedTransports.push(key);
+                        });
+
+                        if ($.isArray(config.transport)) {
+                            $.each(config.transport, function (_, transport) {
+                                if ($.inArray(transport, supportedTransports) >= 0) {
+                                    transports.push(transport);
+                                }
+                            });
+                        } else if (config.transport === "auto") {
+                            transports = supportedTransports;
+                        } else if ($.inArray(config.transport, supportedTransports) >= 0) {
+                            transports.push(config.transport);
+                        }
+
+                        initialize(transports);
                     };
 
                 return negotiate(connection, callback);
