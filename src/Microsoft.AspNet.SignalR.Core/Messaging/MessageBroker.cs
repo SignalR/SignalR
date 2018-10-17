@@ -1,9 +1,10 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.Diagnostics;
 using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR.Infrastructure;
 
 namespace Microsoft.AspNet.SignalR.Messaging
@@ -54,20 +55,21 @@ namespace Microsoft.AspNet.SignalR.Messaging
         {
             var workContext = new WorkContext(subscription, this);
 
-            ThreadPool.UnsafeQueueUserWorkItem(state =>
+            ThreadPool.UnsafeQueueUserWorkItem(Worker, workContext);
+
+            async void Worker(object state)
             {
                 var context = (WorkContext)state;
 
                 context.Broker._counters.MessageBusAllocatedWorkers.Increment();
 
-                DoWork(context);
+                await DoWork(context);
 
                 context.Broker._counters.MessageBusAllocatedWorkers.Decrement();
-            }, 
-            workContext);
+            }
         }
 
-        private static async void DoWork(WorkContext context)
+        internal static async Task DoWork(WorkContext context)
         {
             do
             {
@@ -80,6 +82,9 @@ namespace Microsoft.AspNet.SignalR.Messaging
                 catch (Exception ex)
                 {
                     context.Broker.Trace.TraceError("Failed to process work - " + ex.GetBaseException());
+
+                    // Dispose the subscription, or we might leak memory from it.
+                    (context.Subscription as IDisposable)?.Dispose();
                     break;
                 }
                 finally
@@ -103,10 +108,10 @@ namespace Microsoft.AspNet.SignalR.Messaging
             Dispose(true);
         }
 
-        private class WorkContext
+        internal class WorkContext
         {
-            public ISubscription Subscription;
-            public MessageBroker Broker;
+            public ISubscription Subscription { get; }
+            public MessageBroker Broker { get; }
 
             public WorkContext(ISubscription subscription, MessageBroker broker)
             {

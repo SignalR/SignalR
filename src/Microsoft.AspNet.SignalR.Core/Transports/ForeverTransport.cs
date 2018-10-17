@@ -280,7 +280,6 @@ namespace Microsoft.AspNet.SignalR.Transports
                 if (response.Aborted)
                 {
                     // If this was a clean disconnect raise the event.
-                    // REVIEW: If this task is faulted, we return the faulted task up to Subscription.Work
                     return Abort().Then(() => TaskAsyncHelper.False);
                 }
             }
