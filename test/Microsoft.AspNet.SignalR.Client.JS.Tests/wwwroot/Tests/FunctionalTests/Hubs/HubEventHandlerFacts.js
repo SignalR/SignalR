@@ -61,6 +61,173 @@ testUtilities.runWithAllTransports(function (transport) {
         };
     });
 
+    QUnit.asyncTimeoutTest(transport + ": Hub Event Handler gets called once for each handler.", testUtilities.defaultTestTimeout, function (end, assert, testName) {
+        var connection = testUtilities.createHubConnection(end, assert, testName),
+            echoHub = connection.createHubProxies().echoHub,
+            callCount = 0,
+            handler = function (value) {
+                callCount += 1;
+                assert.comment("call #" + callCount);
+                if(callCount == 2) {
+                    end();
+                }
+            };
+
+        echoHub.on('echo', handler);
+        echoHub.on('echo', handler);
+
+        connection.start({ transport: transport }).done(function () {
+            assert.comment("connected");
+            echoHub.server.echoCallback("hello");
+        });
+
+        // Cleanup
+        return function () {
+            connection.stop();
+        };
+    });
+
+    QUnit.asyncTimeoutTest(transport + ": Hub Event Handler can have two different handlers.", testUtilities.defaultTestTimeout, function (end, assert, testName) {
+        var connection = testUtilities.createHubConnection(end, assert, testName),
+            echoHub = connection.createHubProxies().echoHub,
+            callCount = 0,
+            commonHandler = function(value, handlerName) {
+                callCount += 1;
+                assert.comment("call #" + callCount + " from handler " + handlerName);
+                if(callCount == 2) {
+                    end();
+                }
+            },
+            handler1 = function (value) {
+                commonHandler(value, "handler1");
+            },
+            handler2 = function (value) {
+                commonHandler(value, "handler2");
+            };
+
+        echoHub.on('echo', handler1);
+        echoHub.on('echo', handler2);
+
+        connection.start({ transport: transport }).done(function () {
+            assert.comment("connected");
+            echoHub.server.echoCallback("hello");
+        });
+
+        // Cleanup
+        return function () {
+            connection.stop();
+        };
+    });
+
+    QUnit.asyncTimeoutTest(transport + ": Hub Event Handler added by registerHubProxies can be removed.", testUtilities.defaultTestTimeout, function (end, assert, testName) {
+        var connection = testUtilities.createHubConnection(end, assert, testName),
+            echoHub = connection.createHubProxies().echoHub,
+            callCount = 0,
+            handler = function(value, handlerName) {
+                callCount += 1;
+                assert.comment("call #" + callCount + " from '.on' handler");
+                if(callCount == 1) {
+                    end();
+                }
+            };
+
+        echoHub.client.echo = function() {
+            assert.fail("echo should not have been called!");
+        }
+        echoHub.on('echo', handler);
+
+        connection.start({ transport: transport }).done(function () {
+            assert.comment("connected");
+
+            // Remove the registerHubProxy handler
+            echoHub.off('echo', echoHub.client.echo);
+
+            // Call the callback, only the '.on' handler should be triggered.
+            echoHub.server.echoCallback("hello");
+
+            // Call the callback a second time. Again, only the '.on' handler should be triggered.
+            echoHub.server.echoCallback("hello");
+        });
+
+        // Cleanup
+        return function () {
+            connection.stop();
+        };
+    });
+
+    QUnit.asyncTimeoutTest(transport + ": Hub Event Handler can be removed without affecting other handlers.", testUtilities.defaultTestTimeout, function (end, assert, testName) {
+        var connection = testUtilities.createHubConnection(end, assert, testName),
+            echoHub = connection.createHubProxies().echoHub,
+            callCount = 0,
+            commonHandler = function(value, handlerName) {
+                callCount += 1;
+                assert.comment("call #" + callCount + " from handler " + handlerName);
+                if(callCount == 1) {
+                    end();
+                }
+            },
+            handler1 = function (value) {
+                commonHandler(value, "handler1");
+            },
+            handler2 = function (value) {
+                commonHandler(value, "handler2");
+            };
+
+        echoHub.on('echo', handler1);
+        echoHub.on('echo', handler2);
+
+        // Remove only handler 1
+        echoHub.off('echo', handler1);
+
+        connection.start({ transport: transport }).done(function () {
+            assert.comment("connected");
+            echoHub.server.echoCallback("hello");
+        });
+
+        // Cleanup
+        return function () {
+            connection.stop();
+        };
+    });
+
+    QUnit.asyncTimeoutTest(transport + ": Hub Event Handler using bound method can be removed without affecting other handlers.", testUtilities.defaultTestTimeout, function (end, assert, testName) {
+        var connection = testUtilities.createHubConnection(end, assert, testName),
+            echoHub = connection.createHubProxies().echoHub,
+            callCount = 0,
+            commonHandler = function(value, handlerName) {
+                callCount += 1;
+                assert.comment("call #" + callCount + " from handler " + handlerName);
+                if(callCount == 1) {
+                    end();
+                }
+            },
+            handler1 = function (value) {
+                commonHandler(value, "handler1");
+            },
+            handler2 = function (value) {
+                commonHandler(value, "handler2");
+            };
+
+        handler1 = handler1.bind(this);
+        handler2 = handler2.bind(this);
+
+        echoHub.on('echo', handler1);
+        echoHub.on('echo', handler2);
+
+        // Remove only handler 1
+        echoHub.off('echo', handler1);
+
+        connection.start({ transport: transport }).done(function () {
+            assert.comment("connected");
+            echoHub.server.echoCallback("hello");
+        });
+
+        // Cleanup
+        return function () {
+            connection.stop();
+        };
+    });
+
     QUnit.asyncTimeoutTest(transport + ": Hub Event Handler can be removed.", testUtilities.defaultTestTimeout, function (end, assert, testName) {
         var connection = testUtilities.createHubConnection(end, assert, testName),
             echoHub = connection.createHubProxies().echoHub,
@@ -75,6 +242,36 @@ testUtilities.runWithAllTransports(function (transport) {
 
         echoHub.on('echo', handler);
         echoHub.off('echo', handler);
+
+        connection.start({ transport: transport }).done(function () {
+            assert.ok(true, "Connected");
+            echoHub.server.echoCallback("hello");
+
+            setTimeout(function () {
+                assert.ok(true, "Handler was not called, success!");
+                end();
+            }, 200);
+        });
+
+        // Cleanup
+        return function () {
+            connection.stop();
+        };
+    });
+
+    QUnit.asyncTimeoutTest(transport + ": Hub Event Handler can be removed using manual callback identity.", testUtilities.defaultTestTimeout, function (end, assert, testName) {
+        var connection = testUtilities.createHubConnection(end, assert, testName),
+            echoHub = connection.createHubProxies().echoHub,
+            handler = function (value) {
+                assert.ok(false, "Failed to remove handler");
+                end();
+            },
+            identityObject = {};
+
+        // Add the handler and then remove it using a different callback but the same "identity" object
+        // It should be removed in this case.
+        echoHub.on('echo', handler, identityObject);
+        echoHub.off('echo', function() { /* dummy */ }, identityObject);
 
         connection.start({ transport: transport }).done(function () {
             assert.ok(true, "Connected");

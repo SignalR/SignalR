@@ -7,6 +7,7 @@
 (function ($, window, undefined) {
     "use strict";
 
+    var nextGuid = 0;
     var eventNamespace = ".hubProxy",
         signalR = $.signalR;
 
@@ -91,38 +92,70 @@
             return hasMembers(this._.callbackMap);
         },
 
-        on: function (eventName, callback) {
+        on: function (eventName, callback, callbackIdentity) {
             /// <summary>Wires up a callback to be invoked when a invocation request is received from the server hub.</summary>
             /// <param name="eventName" type="String">The name of the hub event to register the callback for.</param>
             /// <param name="callback" type="Function">The callback to be invoked.</param>
+            /// <param name="callbackIdentity" type="Object">An optional object to use as the "identity" for the callback when checking if the handler has already been registered. Defaults to the value of 'callback' if not provided.</param>
             var that = this,
                 callbackMap = that._.callbackMap;
+
+            // We need the third "identity" argument because the registerHubProxies call made by signalr/js wraps the user-provided callback in a custom wrapper which breaks the identity comparison.
+            // callbackIdentity allows the caller of `on` to provide a separate object to use as the "identity". `registerHubProxies` uses the original user callback as this identity object.
+            callbackIdentity = callbackIdentity || callback;
+
+            // Assign a global ID to the identity object. This tags the object so we can detect the same object when it comes back.
+            if(!callbackIdentity._signalRGuid) {
+                callbackIdentity._signalRGuid = nextGuid++;
+            }
 
             // Normalize the event name to lowercase
             eventName = eventName.toLowerCase();
 
             // If there is not an event registered for this callback yet we want to create its event space in the callback map.
-            if (!callbackMap[eventName]) {
-                callbackMap[eventName] = {};
+            var callbackSpace = callbackMap[eventName];
+            if (!callbackSpace) {
+                callbackSpace = [];
+                callbackMap[eventName] = callbackSpace;
             }
 
-            // Map the callback to our encompassed function
-            callbackMap[eventName][callback] = function (e, data) {
+            // Check if there's already a registration
+            var registration;
+            for (var i = 0; i < callbackSpace.length; i++) {
+                if (callbackSpace[i].guid === callbackIdentity._signalRGuid) {
+                    registration = callbackSpace[i];
+                }
+            }
+
+            // Create a registration if there isn't one already
+            if (!registration) {
+                registration = {
+                    guid: callbackIdentity._signalRGuid,
+                    eventHandlers: []
+                };
+                callbackMap[eventName].push(registration);
+            }
+
+            var handler = function (e, data) {
                 callback.apply(that, data);
             };
+            registration.eventHandlers.push(handler);
 
-            $(that).bind(makeEventName(eventName), callbackMap[eventName][callback]);
+            $(that).bind(makeEventName(eventName), handler);
 
             return that;
         },
 
-        off: function (eventName, callback) {
+        off: function (eventName, callback, callbackIdentity) {
             /// <summary>Removes the callback invocation request from the server hub for the given event name.</summary>
             /// <param name="eventName" type="String">The name of the hub event to unregister the callback for.</param>
-            /// <param name="callback" type="Function">The callback to be invoked.</param>
+            /// <param name="callback" type="Function">The callback to be removed.</param>
+            /// <param name="callbackIdentity" type="Object">An optional object to use as the "identity" when looking up the callback. Corresponds to the same parameter provided to 'on'. Defaults to the value of 'callback' if not provided.</param>
             var that = this,
                 callbackMap = that._.callbackMap,
                 callbackSpace;
+
+            callbackIdentity = callbackIdentity || callback;
 
             // Normalize the event name to lowercase
             eventName = eventName.toLowerCase();
@@ -131,16 +164,32 @@
 
             // Verify that there is an event space to unbind
             if (callbackSpace) {
-                // Only unbind if there's an event bound with eventName and a callback with the specified callback
-                if (callbackSpace[callback]) {
-                    $(that).unbind(makeEventName(eventName), callbackSpace[callback]);
 
-                    // Remove the callback from the callback map
-                    delete callbackSpace[callback];
+                if (callback) {
+                    // Find the callback registration
+                    var callbackRegistration;
+                    var callbackIndex;
+                    for (var i = 0; i < callbackSpace.length; i++) {
+                        if (callbackSpace[i].guid === callbackIdentity._signalRGuid) {
+                            callbackIndex = i;
+                            callbackRegistration = callbackSpace[i];
+                        }
+                    }
 
-                    // Check if there are any members left on the event, if not we need to destroy it.
-                    if (!hasMembers(callbackSpace)) {
-                        delete callbackMap[eventName];
+                    // Only unbind if there's an event bound with eventName and a callback with the specified callback
+                    if (callbackRegistration) {
+                        // Unbind all event handlers associated with the registration.
+                        for (var j = 0; j < callbackRegistration.eventHandlers.length; j++) {
+                            $(that).unbind(makeEventName(eventName), callbackRegistration.eventHandlers[j]);
+                        }
+
+                        // Remove the registration from the list
+                        callbackSpace.splice(i, 1);
+
+                        // Check if there are any registrations left, if not we need to destroy it.
+                        if (callbackSpace.length === 0) {
+                            delete callbackMap[eventName];
+                        }
                     }
                 } else if (!callback) { // Check if we're removing the whole event and we didn't error because of an invalid callback
                     $(that).unbind(makeEventName(eventName));
@@ -174,7 +223,7 @@
                         if (d.notifyWith) {
                             // Progress is only supported in jQuery 1.7+
                             d.notifyWith(that, [result.Progress.Data]);
-                        } else if(!connection._.progressjQueryVersionLogged) {
+                        } else if (!connection._.progressjQueryVersionLogged) {
                             connection.log("A hub method invocation progress update was received but the version of jQuery in use (" + $.prototype.jquery + ") does not support progress updates. Upgrade to jQuery 1.7+ to receive progress notifications.");
                             connection._.progressjQueryVersionLogged = true;
                         }
@@ -253,10 +302,10 @@
 
     hubConnection.fn.init = function (url, options) {
         var settings = {
-                qs: null,
-                logging: false,
-                useDefaultPath: true
-            },
+            qs: null,
+            logging: false,
+            useDefaultPath: true
+        },
             connection = this;
 
         $.extend(settings, options);
