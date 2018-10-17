@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -18,14 +18,14 @@ namespace Microsoft.AspNet.SignalR.Utils
             new GenerateHubProxyCommand(PrintInfo, PrintSuccess, PrintWarning, PrintError)
         };
 
-        static void Main(string[] args)
+        static int Main(string[] args)
         {
             PrintBanner();
-            
+
             if (args.Length == 0)
             {
                 PrintHelp();
-                return;
+                return 0;
             }
 
             var command = ParseCommand(args);
@@ -35,18 +35,17 @@ namespace Microsoft.AspNet.SignalR.Utils
                 // Unrecognized command
                 PrintError(String.Format(CultureInfo.CurrentCulture, Resources.Error_UnrecognizedCommand, args[0]));
                 PrintHelp();
-                Environment.Exit(1); // non-zero is all we need for error
-                return;
+                return 1;
             }
 
             try
             {
-                command.Execute(args); 
+                return command.Execute(args);
             }
             catch (Exception ex)
             {
                 ExitWithError(ex.ToString());
-                return;
+                return 1;
             }
         }
 
@@ -87,7 +86,7 @@ namespace Microsoft.AspNet.SignalR.Utils
                 Console.WriteLine(message);
             }
         }
-        
+
         private static void PrintWarning(string info)
         {
             if (!String.IsNullOrWhiteSpace(info))

@@ -174,4 +174,7 @@ For more information, visit http://go.microsoft.com/fwlink/?LinkId=275833</value
   <data name="Notify_BadImage" xml:space="preserve">
     <value>Assembly '{0}' could not be loaded because it is a bad image. http://support.microsoft.com/kb/967163</value>
   </data>
+  <data name="Error_MissingBindingRedirect" xml:space="preserve">
+    <value>Error: Failed to load assembly '{0}' referenced by the server. If your application uses a newer version of this assembly, this error is likely due to a missing or inaccurate binding redirect. If your server application has a 'Web.config' or '[AppName].exe.config' file with binding redirects in it, provide the path to that file with the '/configFile' parameter. If you have already provided a '/configFile' parameter, make sure the config file it points to has a binding redirect for '{0}' within it. See https://aka.ms/about-binding-redirects for more information on binding redirects.</value>
+  </data>
 </root>

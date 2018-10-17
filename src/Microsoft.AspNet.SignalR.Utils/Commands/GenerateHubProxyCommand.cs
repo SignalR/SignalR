@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -33,13 +33,9 @@ namespace Microsoft.AspNet.SignalR.Utils
             get { return new[] { "ghp" }; }
         }
 
-        public override void Execute(string[] args)
+        public override int Execute(string[] args)
         {
-            string path = null;
-            string outputPath = null;
-            string url = null;
-
-            ParseArguments(args, out url, out path, out outputPath);
+            ParseArguments(args, out var url, out var path, out var outputPath, out var configFile);
 
             if (String.IsNullOrEmpty(outputPath))
             {
@@ -53,10 +49,10 @@ namespace Microsoft.AspNet.SignalR.Utils
                 outputPath = Path.Combine(outputPath, "server.js");
             }
 
-            OutputHubs(path, url, outputPath);
+            return OutputHubs(path, url, outputPath, configFile) ? 0 : 1;
         }
 
-        private void OutputHubs(string path, string url, string outputPath)
+        private bool OutputHubs(string path, string url, string outputPath, string configFile)
         {
             path = path ?? Directory.GetCurrentDirectory();
             url = url ?? "/signalr";
@@ -83,13 +79,29 @@ namespace Microsoft.AspNet.SignalR.Utils
                 ApplicationBase = tempPath
             };
 
-            var domain = AppDomain.CreateDomain("hubs", AppDomain.CurrentDomain.Evidence, setup);
+            if (!string.IsNullOrEmpty(configFile))
+            {
+                setup.ConfigurationFile = configFile;
+            }
 
-            var generator = (JavaScriptGenerator)domain.CreateInstanceAndUnwrap(typeof(Program).Assembly.FullName,
-                                                                                typeof(JavaScriptGenerator).FullName);
-            var js = generator.GenerateProxy(path, url, Warning);
+            string js = null;
+            try
+            {
+                var domain = AppDomain.CreateDomain("hubs", AppDomain.CurrentDomain.Evidence, setup);
+
+                var generator = (JavaScriptGenerator)domain.CreateInstanceAndUnwrap(typeof(Program).Assembly.FullName,
+                                                                                    typeof(JavaScriptGenerator).FullName);
+                js = generator.GenerateProxy(path, url, Warning);
+            }
+            catch (TargetInvocationException tie) when (tie.InnerException is FileLoadException fle)
+            {
+                // Missing binding redirect :(
+                Console.Error.WriteLine(string.Format(Resources.Error_MissingBindingRedirect, fle.FileName));
+                return false;
+            }
 
             Generate(outputPath, js);
+            return true;
         }
 
         private static void Copy(string sourcePath, string destinationPath)
@@ -104,11 +116,12 @@ namespace Microsoft.AspNet.SignalR.Utils
         }
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Globalization", "CA1307:SpecifyStringComparison", MessageId = "System.String.StartsWith(System.String)", Justification = "All starts with methods are SignalR/networking terms.  Will not change via localization.")]
-        private static void ParseArguments(string[] args, out string url, out string path, out string outputPath)
+        private static void ParseArguments(string[] args, out string url, out string path, out string outputPath, out string configFile)
         {
             path = null;
             url = null;
             outputPath = null;
+            configFile = null;
 
             foreach (var a in args)
             {
@@ -125,6 +138,9 @@ namespace Microsoft.AspNet.SignalR.Utils
                         break;
                     case "url":
                         url = arg.Value;
+                        break;
+                    case "configFile":
+                        configFile = arg.Value;
                         break;
                     case "o":
                         outputPath = arg.Value;
@@ -163,7 +179,7 @@ namespace Microsoft.AspNet.SignalR.Utils
                     }
                     catch (BadImageFormatException e)
                     {
-                         warning(e.Message);
+                        warning(e.Message);
                     }
                 }
 
