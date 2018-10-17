@@ -276,7 +276,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Server.Transports
                                                          callback = cb;
                                                          state = st;
 
-                                                         bool result = await cb(new PersistentResponse() { Aborted = true } , st);
+                                                         bool result = await cb(new PersistentResponse() { Aborted = true }, st);
 
                                                          if (!result)
                                                          {
@@ -408,7 +408,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Server.Transports
                                                      It.IsAny<int>(),
                                                      It.IsAny<object>()))
                 .Returns<string, Func<PersistentResponse, object, Task<bool>>, int, object>(
-                    (messageId, callback, maxMessages, state) => 
+                    (messageId, callback, maxMessages, state) =>
                     {
                         callback(new PersistentResponse(), state);
                         return DisposableAction.Empty;
