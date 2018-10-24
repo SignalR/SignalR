@@ -1,8 +1,6 @@
 ## Filing issues
 
 The github issue list is for bugs, not discussions. If you have a question you want to ask you have many alternatives:
-- [The SignalR forum](http://forums.asp.net/1254.aspx/1?ASP+NET+SignalR)
-- [The JabbR chat room](https://jabbr.net/#/rooms/signalr)
 - [Stackoverflow](http://stackoverflow.com/questions/tagged/signalr)
 
 When filing issues, please use our [bug filing templates](https://gist.github.com/signalrcoreteam/5317001). The best way to get your bug fixed is to be as detailed as you can be about the problem.
@@ -52,7 +50,7 @@ The release is then merged into master and deleted and the cycle continues until
 
 ### Submitting Pull requests
 
-You will need to sign a [Contributor License Agreement](https://cla2.dotnetfoundation.org) before submitting your pull request. To complete the Contributor License Agreement (CLA), you will need to submit a request via the form and then electronically sign the Contributor License Agreement when you receive the email containing the link to the document. This needs to only be done once for any .NET Foundation OSS project.
+You will need to sign a [Contributor License Agreement](https://cla.dotnetfoundation.org/) when submitting your pull request. To complete the Contributor License Agreement (CLA), you will need to follow the instructions provided by the CLA bot when you send the pull request. This needs to only be done once for any .NET Foundation OSS project.
 
 Make sure you can build the code. Familiarize yourself with the project workflow and our coding conventions. If you don't know what a pull request is
 read this https://help.github.com/articles/using-pull-requests.
