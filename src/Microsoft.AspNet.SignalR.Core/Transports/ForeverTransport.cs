@@ -194,6 +194,7 @@ namespace Microsoft.AspNet.SignalR.Transports
             {
                 initialize = Reconnected;
                 _counters.ConnectionsReconnected.Increment();
+                _counters.ConnectionsReconnectedPerSec.Increment();
             }
 
             initialize = initialize ?? _emptyTaskFunc;
