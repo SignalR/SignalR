@@ -1,0 +1,91 @@
+<!-- Simple wrapper around LSBuild that enables easy parallelization -->
+<!-- Designed to be invoked with the <MSBuild> Task -->
+<Project>
+    <Target Name="ResolveLSBuild">
+        <ItemGroup>
+            <_LSBuildExe Include="$(MicroBuildPluginDirectory)\MicroBuild.Plugins.Localization.*\build\LSBuild\*\LSBuild.exe" />
+        </ItemGroup>
+
+        <Error Text="One of 'LSBuild' or 'MicroBuildPluginDirectory' must be provided" Condition="'$(LSBuild)' == '' And '$(MicroBuildPluginDirectory)' == ''" />
+        <Error Text="Could not find MicroBuild Plugin Directory: $(MicroBuildPluginDirectory)" Condition="'$(LSBuild)' == '' And !Exists('$(MicroBuildPluginDirectory)')" />
+
+        <PropertyGroup>
+            <LSBuild Condition="'$(LSBuild)' == ''">@(_LSBuildExe->'%(FullPath)')</LSBuild>
+            <LocToolsPath>$([System.IO.Path]::GetDirectoryName($(LSBuild)))</LocToolsPath>
+        </PropertyGroup>
+
+        <Error Text="Could not find MicroBuild Localization Plugin in $(MicroBuildPluginDirectory)" Condition="'$(MicroBuildPluginDirectory)' != '' And !Exists('$(LSBuild)')" />
+        <Error Text="Found multiple versions of the MicroBuild Localization Plugin in $(MicroBuildPluginDirectory)" Condition="'$(MicroBuildPluginDirectory)' != '' And $(LSBuild.Contains(';'))" />
+        <Error Text="Could not find LSBuild in $(LSBuild)" Condition="'$(MicroBuildPluginDirectory)' == '' And !Exists('$(LSBuild)')" />
+
+        <Message Text="Located LSBuild.exe: $(LSBuild)" />
+    </Target>
+
+    <Target Name="BuildGenerateArgs">
+        <!-- Validate required args -->
+        <Error Text="Missing required property 'TranslationInput'" Condition="'$(TranslationInput)' == ''" />
+        <Error Text="Missing required property 'OutputFile'" Condition="'$(OutputFile)' == ''" />
+        <Error Text="Missing required property 'InputFile'" Condition="'$(InputFile)' == ''" />
+
+        <ItemGroup>
+            <_SettingsFile Include="$(SettingsFiles.Replace('$', $(LocToolsPath)).Split('|'))" />
+        </ItemGroup>
+        <PropertyGroup>
+            <TranslationInput Condition="'$(TranslationInput)' != ''">$([System.IO.Path]::Combine("$(MSBuildStartupDirectory)", "$(TranslationInput)"))</TranslationInput>
+            <TranslationOutput Condition="'$(TranslationOutput)' != ''">$([System.IO.Path]::Combine("$(MSBuildStartupDirectory)", "$(TranslationOutput)"))</TranslationOutput>
+            <InputFile Condition="'$(InputFile)' != ''">$([System.IO.Path]::Combine("$(MSBuildStartupDirectory)", "$(InputFile)"))</InputFile>
+            <OutputFile Condition="'$(OutputFile)' != ''">$([System.IO.Path]::Combine("$(MSBuildStartupDirectory)", "$(OutputFile)"))</OutputFile>
+
+            <LSBuildArgs>generate</LSBuildArgs>
+            <LSBuildArgs Condition="'$(Parser)' != ''">$(LSBuildArgs) /p $(Parser)</LSBuildArgs>
+            <LSBuildArgs Condition="'$(Locale)' != ''">$(LSBuildArgs) /d $(Locale)</LSBuildArgs>
+            <LSBuildArgs Condition="'@(_SettingsFile)' != ''">$(LSBuildArgs) @(_SettingsFile->'/s &quot;%(FullPath)&quot;',' ')</LSBuildArgs>
+            <LSBuildArgs Condition="'$(IgnoreUpdatedTranslations)' == 'true'">$(LSBuildArgs) /iu</LSBuildArgs>
+            <LSBuildArgs Condition="'$(TranslationOutput)' != ''">$(LSBuildArgs) /ol &quot;$(TranslationOutput)&quot;</LSBuildArgs>
+            <LSBuildArgs Condition="'$(TranslationInput)' != ''">$(LSBuildArgs) /t &quot;$(TranslationInput)&quot;</LSBuildArgs>
+            <LSBuildArgs Condition="'$(OutputFile)' != ''">$(LSBuildArgs) /o &quot;$(OutputFile)&quot;</LSBuildArgs>
+            <LSBuildArgs Condition="'$(InputFile)' != ''">$(LSBuildArgs) &quot;$(InputFile)&quot;</LSBuildArgs>
+            <LSBuildArgs Condition="'$(LSBuildExtraArgs)' != ''">$(LSBuildArgs) $(LSBuildExtraArgs)</LSBuildArgs>
+        </PropertyGroup>
+    </Target>
+
+    <Target Name="Generate" DependsOnTargets="ResolveLSBuild;BuildGenerateArgs">
+        <Message Text="Running '$(LSBuild) $(LSBuildArgs)'" Importance="high" />
+        <Exec Command="$(LSBuild) $(LSBuildArgs)" Condition="'$(WhatIf)' != 'true'" CustomErrorRegularExpression="LSBuild : Error"/>
+    </Target>
+
+    <Target Name="LSBuildHelp" DependsOnTargets="ResolveLSBuild">
+        <Exec Command="$(LSBuild) help $(Command)" />
+    </Target>
+
+    <Target Name="Help">
+        <PropertyGroup>
+            <UsageMessage><![CDATA[
+Targets:
+* 'Help' - This help message
+* 'LSBuildHelp' - Prints help for LSBuild
+* 'Generate' - The LSBuild.exe "generate" command
+
+Properties:
+* At least one of the following must be specified:
+    * 'MicroBuildPluginDirectory' - Specify this to use MicroBuild to find LSBuild.exe.
+    * 'LSBuild' - Specify this to provide a direct path to LSBuild.exe.
+* For the 'Generate' target, the following properties can be provided:
+    * 'Parser' - Specify parser ID.
+    * 'Locale' - Specify target file language.
+    * 'SettingsFiles' - A list of settings configuration or settings files to provide. Use '|' to separate multiple items. If the settings file is included with LSBuild, use "$" as a placeholder for the LSBuild directory.
+    * 'IgnoreUpdatedTranslations' - Ignore updated translations.
+    * 'TranslationOutput' - Saves the translation file ('.lcx' extension) used to create the target to the file provided here.
+    * 'TranslationInput' - [Required] Specifies the input '.lcl' file containing translations.
+    * 'OutputFile' - [Required] Specifies the output file to generate.
+    * 'InputFile' - [Required] Specifies the input file to translate.
+    * 'LSBuildExtraArgs' - Additional args to pass to LSBuild.
+    * 'WhatIf' - Set this to true to display what would be run but not actually run LSBuild itself.
+* For the 'LSBuildHelp' target, the following properties can be provided:
+    * 'Command' - Specifies the command to get help for.
+]]>
+            </UsageMessage>
+        </PropertyGroup>
+        <Message Text="$(UsageMessage.Trim())" Importance="high" />
+    </Target>
+</Project>
