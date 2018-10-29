@@ -4,14 +4,14 @@
     <id>Microsoft.AspNet.SignalR.JS</id>
     <version>$PackageVersion$</version>
     <title>Microsoft ASP.NET SignalR JavaScript Client</title>
-    <authors>Microsoft</authors>
-    <owners>Microsoft</owners>
-    <requireLicenseAcceptance>true</requireLicenseAcceptance>
-    <licenseUrl>http://www.microsoft.com/web/webpi/eula/net_library_eula_ENU.htm</licenseUrl>
-    <projectUrl>http://www.asp.net/signalr</projectUrl>
     <description>JavaScript client for ASP.NET SignalR.</description>
-    <releaseNotes>https://github.com/SignalR/SignalR/releases</releaseNotes>
-    <copyright>© Copyright (c) Microsoft Corporation. All rights reserved.</copyright>
+    <authors>$Authors$</authors>
+    <owners>$Owners$</owners>
+    <requireLicenseAcceptance>$RequireLicenseAcceptance$</requireLicenseAcceptance>
+    <licenseUrl>$LicenseUrl$</licenseUrl>
+    <projectUrl>$ProjectSiteUrl$</projectUrl>
+    <copyright>$CopyrightNotice$</copyright>
+    <releaseNotes>$ReleaseNotes$</releaseNotes>
     <tags>Microsoft AspNet SignalR AspNetSignalR JS</tags>
     <dependencies>
       <dependency id="jQuery" version="1.6.4" />

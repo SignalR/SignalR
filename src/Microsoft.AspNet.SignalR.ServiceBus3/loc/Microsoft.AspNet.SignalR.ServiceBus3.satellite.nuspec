@@ -5,12 +5,12 @@
         <title>Microsoft ASP.NET SignalR ServiceBus3 Libraries {Language} Resources</title>
         <summary>{Language} resources for the Microsoft.AspNet.SignalR.ServiceBus3 package</summary>
         <version>$PackageVersion$</version>
-        <authors>Microsoft</authors>
-        <owners>Microsoft</owners>
+        <authors>$Authors$</authors>
+        <owners>$Owners$</owners>
         <licenseUrl>$LicenseUrl$</licenseUrl>
-        <copyright>© Copyright (c) Microsoft Corporation. All rights reserved.</copyright>
-        <projectUrl>http://www.asp.net/signalR</projectUrl>
-        <requireLicenseAcceptance>true</requireLicenseAcceptance>
+        <copyright>$CopyrightNotice$</copyright>
+        <projectUrl>$ProjectSiteUrl$</projectUrl>
+        <requireLicenseAcceptance>$RequireLicenseAcceptance$</requireLicenseAcceptance>
         <description>This package contains the {Language} satellite assemblies for ASP.NET SignalR ServiceBus3.</description>
         <language>$Locale$</language>
         <tags>Microsoft AspNet SignalR AspNetSignalR ServiceBus</tags>

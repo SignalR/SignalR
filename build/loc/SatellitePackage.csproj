@@ -14,7 +14,8 @@
     </PropertyGroup>
     <Target Name="SetNuspecProperties">
         <PropertyGroup>
-            <NuspecProperties>Locale=$(Locale);PackageVersion=$(PackageVersion);Configuration=$(Configuration);LicenseUrl=$(LicenseUrl)</NuspecProperties>
+            <!-- We use the slightly odd variable names $CopyrightNotice$ and $ProjectSiteUrl$ because the loc tools seem to have some built-in translations for the more natural $Copyright$ and $ProjectUrl$ -->
+            <NuspecProperties>Locale=$(Locale);PackageVersion=$(PackageVersion);Configuration=$(Configuration);LicenseUrl=$(PackageLicenseUrl);ReleaseNotes=$(PackageReleaseNotes);Authors=$(Authors);Owners=$(Owners);CopyrightNotice=$(Copyright);ProjectSiteUrl=$(PackageProjectUrl);RequireLicenseAcceptance=$(PackageRequireLicenseAcceptance)</NuspecProperties>
             <PackageOutputPath>$(PackageOutputPath)\satellite\$(Locale)</PackageOutputPath>
         </PropertyGroup>
     </Target>
