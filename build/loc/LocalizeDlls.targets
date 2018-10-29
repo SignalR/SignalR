@@ -17,6 +17,19 @@
           <SettingsFiles Condition="'%(TranslationLanguage.Identity)' == 'CHS' Or '%(TranslationLanguage.Identity)' == 'CHT'">%(TfmTranslate.SettingsFiles)|$\INI_For_CHx_PTx.lss</SettingsFiles>
           <SettingsFiles Condition="'%(TranslationLanguage.Identity)' == 'PTB'">%(TfmTranslate.SettingsFiles)|$\MCP_For_SpecificCulture.lss</SettingsFiles>
       </NoTfmTranslate>
+
+      <!-- Now convert all these to Items that reference lsbuild.proj for parallelization -->
+      <NoTfmTranslateProjects Include="$(MSBuildThisFileDirectory)/lsbuild.proj">
+        <AdditionalProperties>
+          MicroBuildPluginDirectory=$(MicroBuildPluginDirectory);
+          TranslationInput=%(NoTfmTranslate.TranslationInput);
+          OutputFile=%(NoTfmTranslate.OutputFile);
+          InputFile=%(NoTfmTranslate.FullPath);
+          Locale=%(NoTfmTranslate.LocaleName);
+          Parser=%(NoTfmTranslate.Parser);
+          SettingsFiles=%(NoTfmTranslate.SettingsFiles)
+        </AdditionalProperties>
+      </NoTfmTranslateProjects>
     </ItemGroup>
   </Target>
 
@@ -40,9 +53,9 @@
           TranslationInput=%(TfmTranslate.TranslationInput);
           OutputFile=%(TfmTranslate.OutputFile);
           InputFile=%(TfmTranslate.FullPath);
-          Locale=%(LocaleName);
-          Parser=%(Parser);
-          SettingsFiles=%(SettingsFiles)
+          Locale=%(TfmTranslate.LocaleName);
+          Parser=%(TfmTranslate.Parser);
+          SettingsFiles=%(TfmTranslate.SettingsFiles)
         </AdditionalProperties>
       </TfmTranslateProjects>
     </ItemGroup>
@@ -61,9 +74,7 @@
   </Target>
 
   <!-- Localize TFM-non-specific content -->
-  <Target Name="OuterLocalize" AfterTargets="Build" Condition="'$(TargetFramework)' == ''" DependsOnTargets="CalculateNoTfmLocalizationItems" Inputs="@(NoTfmTranslate)" Outputs="@(NoTfmTranslate->'%(LcxOutput)');@(NoTfmTranslate->'%(OutputPath)')">
-    <Warning Text="No translation content for '$(TargetFramework)' output" Condition="'@(NoTfmTranslate)' == ''" />
-
+  <Target Name="OuterLocalize" AfterTargets="Build" Condition="'$(TargetFramework)' == ''" DependsOnTargets="CalculateNoTfmLocalizationItems" Inputs="@(NoTfmTranslate);@(NoTfmTranslate->'%(TranslationInput)')" Outputs="@(NoTfmTranslate->'%(OutputFile)')">
     <MSBuild Projects="@(NoTfmTranslateProjects)" Targets="Generate" BuildInParallel="true" />
   </Target>
 </Project>
