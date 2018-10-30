@@ -74,7 +74,7 @@ namespace Microsoft.AspNet.SignalR.Infrastructure
         public IPerformanceCounter ConnectionsReconnected { get; private set; }
 
         /// <summary>
-        /// Gets the performance counter representing the total number of connection Reconnect events since the application was started.
+        /// Gets the performance counter representing the number of connection Reconnect events per second.
         /// </summary>
         [PerformanceCounter(Name = "Connections Reconnected/Sec", Description = "The total number of connection Reconnect events per second.", CounterType = PerformanceCounterType.RateOfCountsPerSecond32)]
         public IPerformanceCounter ConnectionsReconnectedPerSec { get; private set; }
