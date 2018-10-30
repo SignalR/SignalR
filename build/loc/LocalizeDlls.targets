@@ -5,58 +5,59 @@
     <LocRoot>$(MSBuildProjectDirectory)\loc</LocRoot>
   </PropertyGroup>
 
-  <Target Name="CalculateNoTfmLocalizationItems" DependsOnTargets="FindLocTools">
+  <Target Name="CalculateNoTfmLocalizationItems">
     <ItemGroup>
       <NoTfmTranslate Include="$(MSBuildProjectDirectory)\loc\$(PackageId).satellite.nuspec" Condition="Exists('$(MSBuildProjectDirectory)\loc\$(PackageId).satellite.nuspec')">
-          <Language>%(TranslationLanguage.Identity)</Language>
-          <LclFile>$(LocRoot)\lcl\%(TranslationLanguage.Identity)\$(PackageId).nuspec.lcl</LclFile>
-          <LciFile>$(LocRoot)\lci\$(PackageId).nuspec.lci</LciFile>
-          <LcxOutput>$(OutputPath)%(TranslationLanguage.PackageLocaleName)\$(PackageId).%(TranslationLanguage.PackageLocaleName).nuspec.lcx</LcxOutput>
-          <OutputPath>$(OutputPath)%(TranslationLanguage.PackageLocaleName)\$(PackageId).%(TranslationLanguage.PackageLocaleName).nuspec</OutputPath>
+          <LocaleName>%(TranslationLanguage.LocaleName)</LocaleName>
+          <TranslationInput>$(LocRoot)\lcl\%(TranslationLanguage.Identity)\$(PackageId).nuspec.lcl</TranslationInput>
+          <OutputFile>$(OutputPath)%(TranslationLanguage.PackageLocaleName)\$(PackageId).%(TranslationLanguage.PackageLocaleName).nuspec</OutputFile>
 
           <!-- REVIEW: These are based on what the MSBuild task specified -->
-          <LSBuildExtraArgs>/s $(LocToolsPath)\default.lss</LSBuildExtraArgs>
-          <LSBuildExtraArgs>/s $(LocToolsPath)\locxml_OfficeTools_nuspec.lss</LSBuildExtraArgs>
-          <LSBuildExtraArgs Condition="'%(TranslationLanguage.Identity)' == 'CHS' Or '%(TranslationLanguage.Identity)' == 'CHT'">%(TfmTranslate.LSBuildExtraArgs) /s $(LocToolsPath)\INI_For_CHx_PTx.lss</LSBuildExtraArgs>
-          <LSBuildExtraArgs Condition="'%(TranslationLanguage.Identity)' == 'PTB'">%(TfmTranslate.LSBuildExtraArgs) /s $(LocToolsPath)\MCP_For_SpecificCulture.lss</LSBuildExtraArgs>
-          <LocaleName>%(TranslationLanguage.LocaleName)</LocaleName>
+          <SettingsFiles>$/default.lss|$/locxml_OfficeTools_nuspec.lss</SettingsFiles>
+          <SettingsFiles Condition="'%(TranslationLanguage.Identity)' == 'CHS' Or '%(TranslationLanguage.Identity)' == 'CHT'">%(TfmTranslate.SettingsFiles)|$\INI_For_CHx_PTx.lss</SettingsFiles>
+          <SettingsFiles Condition="'%(TranslationLanguage.Identity)' == 'PTB'">%(TfmTranslate.SettingsFiles)|$\MCP_For_SpecificCulture.lss</SettingsFiles>
       </NoTfmTranslate>
+
+      <!-- Now convert all these to Items that reference lsbuild.proj for parallelization -->
+      <NoTfmTranslateProjects Include="$(MSBuildThisFileDirectory)/lsbuild.proj">
+        <AdditionalProperties>
+          MicroBuildPluginDirectory=$(MicroBuildPluginDirectory);
+          TranslationInput=%(NoTfmTranslate.TranslationInput);
+          OutputFile=%(NoTfmTranslate.OutputFile);
+          InputFile=%(NoTfmTranslate.FullPath);
+          Locale=%(NoTfmTranslate.LocaleName);
+          Parser=%(NoTfmTranslate.Parser);
+          SettingsFiles=%(NoTfmTranslate.SettingsFiles)
+        </AdditionalProperties>
+      </NoTfmTranslateProjects>
     </ItemGroup>
   </Target>
 
-  <!-- MicroBuild doesn't support .NET Core but we can borrow it's copy of LSBuild :) -->
-  <Target Name="FindLocTools">
-    <ItemGroup>
-      <_LSBuildExe Include="$(MicroBuildPluginDirectory)\MicroBuild.Plugins.Localization.*\build\LSBuild\*\LSBuild.exe" />
-    </ItemGroup>
-
-    <PropertyGroup>
-      <LSBuild>@(_LSBuildExe->'%(FullPath)')</LSBuild>
-      <LocToolsPath>$([System.IO.Path]::GetDirectoryName($(LSBuild)))</LocToolsPath>
-    </PropertyGroup>
-
-    <Error Text="Missing required MSBuild Property 'MicroBuildPluginDirectory'" Condition="'$(MicroBuildPluginDirectory)' == ''" />
-    <Error Text="Could not find MicroBuild Plugin Directory: $(MicroBuildPluginDirectory)" Condition="!Exists('$(MicroBuildPluginDirectory)')" />
-    <Error Text="Could not find MicroBuild Localization Plugin in $(MicroBuildPluginDirectory)" Condition="!Exists('$(LSBuild)')" />
-    <Error Text="Found multiple versions of the MicroBuild Localization Plugin in $(MicroBuildPluginDirectory)" Condition="$(LSBuild.Contains(';'))" />
-  </Target>
-
-  <Target Name="CalculateLocalizationItems" DependsOnTargets="FindLocTools">
+  <Target Name="CalculateLocalizationItems">
     <ItemGroup>
       <TfmTranslate Include="$(TargetDir)$(TargetFileName)" Condition="Exists('$(LocRoot)\lcl\%(TranslationLanguage.Identity)\lib\$(TargetFramework)\$(TargetName).resources.dll.lcl')">
-        <Language>%(TranslationLanguage.Identity)</Language>
-        <LclFile>$(LocRoot)\lcl\%(TranslationLanguage.Identity)\lib\$(TargetFramework)\$(TargetName).resources.dll.lcl</LclFile>
-        <LciFile>$(LocRoot)\lci\lib\$(TargetFramework)\$(TargetName).resources.dll.lci</LciFile>
-        <LcxOutput>$(TargetDir)%(TranslationLanguage.PackageLocaleName)\$(TargetName).resources.dll.lcx</LcxOutput>
-        <OutputPath>$(TargetDir)%(TranslationLanguage.PackageLocaleName)\$(TargetName).resources.dll</OutputPath>
-        <ParserArg>/p 211</ParserArg>
-
-        <!-- REVIEW: These are based on what the MSBuild task specified -->
-        <LSBuildExtraArgs>/s $(LocToolsPath)\default.lss</LSBuildExtraArgs>
-        <LSBuildExtraArgs Condition="'%(TranslationLanguage.Identity)' == 'CHS' Or '%(TranslationLanguage.Identity)' == 'CHT'">%(TfmTranslate.LSBuildExtraArgs) /s $(LocToolsPath)\INI_For_CHx_PTx.lss</LSBuildExtraArgs>
-        <LSBuildExtraArgs Condition="'%(TranslationLanguage.Identity)' == 'PTB'">%(TfmTranslate.LSBuildExtraArgs) /s $(LocToolsPath)\MCP_For_SpecificCulture.lss</LSBuildExtraArgs>
         <LocaleName>%(TranslationLanguage.LocaleName)</LocaleName>
+        <TranslationInput>$(LocRoot)\lcl\%(TranslationLanguage.Identity)\lib\$(TargetFramework)\$(TargetName).resources.dll.lcl</TranslationInput>
+        <OutputFile>$(TargetDir)%(TranslationLanguage.PackageLocaleName)\$(TargetName).resources.dll</OutputFile>
+        <Parser>211</Parser>
+
+        <SettingsFiles>$/default.lss</SettingsFiles>
+        <SettingsFiles Condition="'%(TranslationLanguage.Identity)' == 'CHS' Or '%(TranslationLanguage.Identity)' == 'CHT'">%(TfmTranslate.SettingsFiles)|$\INI_For_CHx_PTx.lss</SettingsFiles>
+        <SettingsFiles Condition="'%(TranslationLanguage.Identity)' == 'PTB'">%(TfmTranslate.SettingsFiles)|$\MCP_For_SpecificCulture.lss</SettingsFiles>
       </TfmTranslate>
+
+      <!-- Now convert all these to Items that reference lsbuild.proj for parallelization -->
+      <TfmTranslateProjects Include="$(MSBuildThisFileDirectory)/lsbuild.proj">
+        <AdditionalProperties>
+          MicroBuildPluginDirectory=$(MicroBuildPluginDirectory);
+          TranslationInput=%(TfmTranslate.TranslationInput);
+          OutputFile=%(TfmTranslate.OutputFile);
+          InputFile=%(TfmTranslate.FullPath);
+          Locale=%(TfmTranslate.LocaleName);
+          Parser=%(TfmTranslate.Parser);
+          SettingsFiles=%(TfmTranslate.SettingsFiles)
+        </AdditionalProperties>
+      </TfmTranslateProjects>
     </ItemGroup>
   </Target>
 
@@ -66,20 +67,14 @@
   </Target>
 
   <!-- Localize TFM-specific content -->
-  <Target Name="InnerLocalize" AfterTargets="CoreBuild" BeforeTargets="AfterBuild" Condition="'$(TargetFramework)' != ''" DependsOnTargets="CoreBuild;FindLocTools;CalculateLocalizationItems" Inputs="@(TfmTranslate)" Outputs="@(TfmTranslate->'%(LcxOutput)');@(TfmTranslate->'%(OutputPath)')">
+  <Target Name="InnerLocalize" AfterTargets="CoreBuild" BeforeTargets="AfterBuild" Condition="'$(TargetFramework)' != ''" DependsOnTargets="CoreBuild;CalculateLocalizationItems" Inputs="@(TfmTranslate);@(TfmTranslate->'%(TranslationInput)')" Outputs="@(TfmTranslate->'%(OutputFile)')">
     <Warning Text="No translation content for '$(TargetFramework)' output" Condition="'@(TfmTranslate)' == ''" />
 
-    <!-- REVIEW: The comment file doesn't seem to be needed ("  /c %(TfmTranslate.LciFile)") -->
-    <Exec Command="$(LSBuild) generate %(TfmTranslate.ParserArg) /d %(TfmTranslate.LocaleName) /iu %(TfmTranslate.LSBuildExtraArgs) /ol %(TfmTranslate.LcxOutput) /t %(TfmTranslate.LclFile) /o %(TfmTranslate.OutputPath) %(TfmTranslate.FullPath)"
-          CustomErrorRegularExpression="LSBuild : Error" />
+    <MSBuild Projects="@(TfmTranslateProjects)" Targets="Generate" BuildInParallel="true" />
   </Target>
 
   <!-- Localize TFM-non-specific content -->
-  <Target Name="OuterLocalize" AfterTargets="Build" Condition="'$(TargetFramework)' == ''" DependsOnTargets="CalculateNoTfmLocalizationItems;FindLocTools" Inputs="@(NoTfmTranslate)" Outputs="@(NoTfmTranslate->'%(LcxOutput)');@(NoTfmTranslate->'%(OutputPath)')">
-    <Warning Text="No translation content for '$(TargetFramework)' output" Condition="'@(NoTfmTranslate)' == ''" />
-
-    <!-- REVIEW: The comment file doesn't seem to be needed ("  /c %(NoTfmTranslate.LciFile)") -->
-    <Exec Command="$(LSBuild) generate %(NoTfmTranslate.ParserArg) /d %(NoTfmTranslate.LocaleName) /iu %(NoTfmTranslate.LSBuildExtraArgs) /ol %(NoTfmTranslate.LcxOutput) /t %(NoTfmTranslate.LclFile) /o %(NoTfmTranslate.OutputPath) %(NoTfmTranslate.FullPath)"
-          CustomErrorRegularExpression="LSBuild : Error" />
+  <Target Name="OuterLocalize" AfterTargets="Build" Condition="'$(TargetFramework)' == ''" DependsOnTargets="CalculateNoTfmLocalizationItems" Inputs="@(NoTfmTranslate);@(NoTfmTranslate->'%(TranslationInput)')" Outputs="@(NoTfmTranslate->'%(OutputFile)')">
+    <MSBuild Projects="@(NoTfmTranslateProjects)" Targets="Generate" BuildInParallel="true" />
   </Target>
 </Project>
