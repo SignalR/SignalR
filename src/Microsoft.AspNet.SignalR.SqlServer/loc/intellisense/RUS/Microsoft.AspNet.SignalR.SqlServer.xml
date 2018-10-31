@@ -1,0 +1,96 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<doc>
+  <assembly>
+    <name>Microsoft.AspNet.SignalR.SqlServer</name>
+  </assembly>
+  <members>
+    <member name="M:Microsoft.AspNet.SignalR.DependencyResolverExtensions.UseSqlServer(Microsoft.AspNet.SignalR.IDependencyResolver,Microsoft.AspNet.SignalR.SqlScaleoutConfiguration)">
+      <summary>Использует SQL Server в качестве объединительной платы сообщений для реализации масштабируемого канала сообщений.</summary>
+      <returns>Сопоставитель зависимостей.</returns>
+      <param name="resolver">Сопоставитель зависимостей.</param>
+      <param name="configuration">Сервер SQL Server для масштабируемой конфигурации.</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.DependencyResolverExtensions.UseSqlServer(Microsoft.AspNet.SignalR.IDependencyResolver,System.String)">
+      <summary>Использует SQL Server в качестве объединительной платы сообщений для реализации масштабируемого канала сообщений.</summary>
+      <returns>Сопоставитель зависимостей.</returns>
+      <param name="resolver">Сопоставитель зависимостей.</param>
+      <param name="connectionString">Строка подключения.</param>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.SqlScaleoutConfiguration">
+      <summary> Настройки для реализации масштабируемого канала сообщений SQL Server. </summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.SqlScaleoutConfiguration.#ctor(System.String)">
+      <summary>Инициализирует новый экземпляр класса <see cref="T:Microsoft.AspNet.SignalR.SqlScaleoutConfiguration" />.</summary>
+      <param name="connectionString">Используемая строка подключения SQL Server.</param>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.SqlScaleoutConfiguration.ConnectionString">
+      <summary>Получает или задает используемую строку подключения SQL Server. </summary>
+      <returns>Используемая строка подключения SQL Server.</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.SqlScaleoutConfiguration.TableCount">
+      <summary>Получает или задает количество таблиц для хранения сообщений.Использование большего числа таблиц уменьшает конфликты при блокировке и может повысить пропускную способность.Выбранное значение должно быть одинаково для всех узлов в веб-ферме.Значение по умолчанию равно 1.</summary>
+      <returns>Количество таблиц для хранения сообщений.</returns>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.SqlServer.IDbBehavior">
+      <summary>Определяет поведение команды SQL.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.SqlServer.IDbBehavior.AddSqlDependency(System.Data.IDbCommand,System.Action{System.Data.SqlClient.SqlNotificationEventArgs})">
+      <summary>Создает зависимость SQL для указанной команды SQL.</summary>
+      <param name="command">Команда SQL.</param>
+      <param name="callback">Метод, уведомляемый об изменении зависимостей.</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.SqlServer.IDbBehavior.StartSqlDependencyListener">
+      <summary>Запускает прослушиватель уведомлений о зависимостях SQL.</summary>
+      <returns>Значение true, если прослушиватель уведомлений запущен. В противном случае — значение false. </returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.SqlServer.IDbBehavior.UpdateLoopRetryDelays">
+      <summary>Получает список, задающий интервал времени между повторными попытками и их количество.</summary>
+      <returns>Список, задающий интервал времени между повторными попытками и их количество.</returns>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.SqlServer.IDbProviderFactory">
+      <summary>Представляет фабрику, связанную с поставщиком баз данных.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.SqlServer.IDbProviderFactory.CreateConnection">
+      <summary>Создает подключение для поставщика баз данных.</summary>
+      <returns>Созданное подключение.</returns>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.SqlServer.IDbProviderFactory.CreateParameter">
+      <summary>Создает параметр, связанный с поставщиком.</summary>
+      <returns>Созданный параметр.</returns>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.SqlServer.SqlMessageBus">
+      <summary>Использует таблицы сервера SQL для горизонтального масштабирования приложений SignalR на веб-фермах.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.SqlServer.SqlMessageBus.#ctor(Microsoft.AspNet.SignalR.IDependencyResolver,Microsoft.AspNet.SignalR.SqlScaleoutConfiguration)">
+      <summary> Создает новый экземпляр класса SqlMessageBus. </summary>
+      <param name="resolver">Используемый сопоставитель.</param>
+      <param name="configuration">Параметры конфигурации горизонтального масштабирования SQL.</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.SqlServer.SqlMessageBus.Dispose(System.Boolean)">
+      <summary>Освобождает неуправляемые ресурсы, используемые классом <see cref="T:Microsoft.AspNet.SignalR.SqlServer.SqlMessageBus" /> (при необходимости освобождает и управляемые ресурсы).</summary>
+      <param name="disposing">Значение true, чтобы освободить все ресурсы (управляемые и неуправляемые); значение false, чтобы освободить только неуправляемые ресурсы.</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.SqlServer.SqlMessageBus.Send(System.Int32,System.Collections.Generic.IList{Microsoft.AspNet.SignalR.Messaging.Message})"></member>
+    <member name="P:Microsoft.AspNet.SignalR.SqlServer.SqlMessageBus.StreamCount"></member>
+    <member name="T:Microsoft.AspNet.SignalR.SqlServer.SqlMessageBusException">
+      <summary>Исключение, порождаемое при сбое операции инициализации или получения канала сообщений SQL.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.SqlServer.SqlMessageBusException.#ctor(System.String)">
+      <summary>Инициализирует новый экземпляр класса <see cref="T:Microsoft.AspNet.SignalR.SqlServer.SqlMessageBusException" />.</summary>
+      <param name="message">Сообщение об ошибке с описанием исключения.</param>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.SqlServer.SqlPayload">
+      <summary>Представляет полезные данные SQL.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.SqlServer.SqlPayload.FromBytes(System.Data.IDataRecord)">
+      <summary>Представляет масштабируемое сообщение из записей данных.</summary>
+      <returns>Представленное масштабируемое сообщение.</returns>
+      <param name="record">Объект записи данных.</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.SqlServer.SqlPayload.ToBytes(System.Collections.Generic.IList{Microsoft.AspNet.SignalR.Messaging.Message})">
+      <summary>Представляет список сообщений в байтовом формате.</summary>
+      <returns>Представленные сообщения в байтовом формате.</returns>
+      <param name="messages">Список сообщений.</param>
+    </member>
+  </members>
+</doc>

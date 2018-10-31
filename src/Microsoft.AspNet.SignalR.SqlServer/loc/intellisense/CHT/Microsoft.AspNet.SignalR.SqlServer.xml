@@ -1,0 +1,96 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<doc>
+  <assembly>
+    <name>Microsoft.AspNet.SignalR.SqlServer</name>
+  </assembly>
+  <members>
+    <member name="M:Microsoft.AspNet.SignalR.DependencyResolverExtensions.UseSqlServer(Microsoft.AspNet.SignalR.IDependencyResolver,Microsoft.AspNet.SignalR.SqlScaleoutConfiguration)">
+      <summary>使用 SQL server 做為管理後擋板以將訊息匯流排實作排除在範圍以外。</summary>
+      <returns>相依性解析程式。</returns>
+      <param name="resolver">相依性解析程式。</param>
+      <param name="configuration">SQL Server 範圍外設定選項。</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.DependencyResolverExtensions.UseSqlServer(Microsoft.AspNet.SignalR.IDependencyResolver,System.String)">
+      <summary>使用 SQL server 做為管理後擋板以將訊息匯流排實作排除在範圍以外。</summary>
+      <returns>相依性解析程式。</returns>
+      <param name="resolver">相依性解析程式。</param>
+      <param name="connectionString">連接字串。</param>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.SqlScaleoutConfiguration">
+      <summary> SQL Server 範圍外訊息匯流排實作。</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.SqlScaleoutConfiguration.#ctor(System.String)">
+      <summary>初始化 <see cref="T:Microsoft.AspNet.SignalR.SqlScaleoutConfiguration" /> 類別的新執行個體。</summary>
+      <param name="connectionString">要使用的 SQL Server 連接字串。</param>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.SqlScaleoutConfiguration.ConnectionString">
+      <summary>取得或設定要使用的 SQL Server 連接字串。</summary>
+      <returns>要使用的 SQL Server 連接字串。</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.SqlScaleoutConfiguration.TableCount">
+      <summary>取得或設定要儲存訊息的表格數目。使用較多表格可能會減少鎖定連線，且可能增加輸出量。Web 陣列中的所有節點均必須一致。預設為 1。</summary>
+      <returns>要儲存訊息的表格數目。</returns>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.SqlServer.IDbBehavior">
+      <summary>定義 SQL 命令行為。</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.SqlServer.IDbBehavior.AddSqlDependency(System.Data.IDbCommand,System.Action{System.Data.SqlClient.SqlNotificationEventArgs})">
+      <summary>為指定的 SQL 命令建立 SQL 相依性。</summary>
+      <param name="command">SQL 命令。</param>
+      <param name="callback">因為變更相依性通知而通知的方法。</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.SqlServer.IDbBehavior.StartSqlDependencyListener">
+      <summary>啟動 SQL 相依性通知接聽器。</summary>
+      <returns>如果通知接聽器已啟動，則為 true，否則為 false。</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.SqlServer.IDbBehavior.UpdateLoopRetryDelays">
+      <summary>取得指定重試時間間隔和重試次數的清單。</summary>
+      <returns>指定重試時間間隔和重試次數的清單。</returns>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.SqlServer.IDbProviderFactory">
+      <summary>表示與資料庫提供者相關聯的 Factory。</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.SqlServer.IDbProviderFactory.CreateConnection">
+      <summary>建立資料庫提供者的連線。</summary>
+      <returns>建立的連線。</returns>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.SqlServer.IDbProviderFactory.CreateParameter">
+      <summary>建立與提供者相關聯的參數。</summary>
+      <returns>建立的參數。</returns>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.SqlServer.SqlMessageBus">
+      <summary>使用 SQL Server 表格將 Web 陣列中的 SignalR 應用程式處理為範圍外。</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.SqlServer.SqlMessageBus.#ctor(Microsoft.AspNet.SignalR.IDependencyResolver,Microsoft.AspNet.SignalR.SqlScaleoutConfiguration)">
+      <summary> 建立 SqlMessageBus 類別的新執行個體。</summary>
+      <param name="resolver">要使用的解析程式。</param>
+      <param name="configuration">SQL 範圍外設定選項。</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.SqlServer.SqlMessageBus.Dispose(System.Boolean)">
+      <summary>釋放 <see cref="T:Microsoft.AspNet.SignalR.SqlServer.SqlMessageBus" /> 類別所使用的 Unmanaged 資源，並選擇性地釋放 Managed 資源。</summary>
+      <param name="disposing">true 表示釋放 Managed 和 Unmanaged 資源；false 則表示只釋放 Unmanaged 資源。</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.SqlServer.SqlMessageBus.Send(System.Int32,System.Collections.Generic.IList{Microsoft.AspNet.SignalR.Messaging.Message})"></member>
+    <member name="P:Microsoft.AspNet.SignalR.SqlServer.SqlMessageBus.StreamCount"></member>
+    <member name="T:Microsoft.AspNet.SignalR.SqlServer.SqlMessageBusException">
+      <summary>在初始化期間或在 SQL 訊息匯流排的接收作業失敗時擲回的例外狀況。</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.SqlServer.SqlMessageBusException.#ctor(System.String)">
+      <summary>初始化 <see cref="T:Microsoft.AspNet.SignalR.SqlServer.SqlMessageBusException" /> 類別的新執行個體。</summary>
+      <param name="message">用以說明例外狀況的錯誤訊息。</param>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.SqlServer.SqlPayload">
+      <summary>表示 SQL 裝載。</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.SqlServer.SqlPayload.FromBytes(System.Data.IDataRecord)">
+      <summary>顯示資料記錄中的範圍外訊息。</summary>
+      <returns>顯示的範圍外訊息。</returns>
+      <param name="record">資料記錄物件。</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.SqlServer.SqlPayload.ToBytes(System.Collections.Generic.IList{Microsoft.AspNet.SignalR.Messaging.Message})">
+      <summary>以位元組顯示訊息清單。</summary>
+      <returns>以位元組顯示的訊息。</returns>
+      <param name="messages">訊息清單。</param>
+    </member>
+  </members>
+</doc>

@@ -1,0 +1,1448 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<doc>
+  <assembly>
+    <name>Microsoft.AspNet.SignalR.Client</name>
+  </assembly>
+  <members>
+    <member name="T:Microsoft.AspNet.SignalR.Client.Connection">
+      <summary>Stellt Clientverbindungen für SignalR-Dienste zur Verfügung.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Connection.#ctor(System.String)">
+      <summary>Initialisiert eine neue Instanz der <see cref="T:Microsoft.AspNet.SignalR.Client.Connection" />-Klasse.</summary>
+      <param name="url">Die URL, mit der eine Verbindung hergestellt werden soll.</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Connection.#ctor(System.String,System.Collections.Generic.IDictionary{System.String,System.String})">
+      <summary>Initialisiert eine neue Instanz der <see cref="T:Microsoft.AspNet.SignalR.Client.Connection" />-Klasse.</summary>
+      <param name="url">Die URL, mit der eine Verbindung hergestellt werden soll.</param>
+      <param name="queryString">Die Abfragezeichenfolge, die an den Server übergeben werden soll.</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Connection.#ctor(System.String,System.String)">
+      <summary>Initialisiert eine neue Instanz der <see cref="T:Microsoft.AspNet.SignalR.Client.Connection" />-Klasse.</summary>
+      <param name="url">Die URL, mit der eine Verbindung hergestellt werden soll.</param>
+      <param name="queryString">Die Abfragezeichenfolge, die an den Server übergeben werden soll.</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Connection.AddClientCertificate(System.Security.Cryptography.X509Certificates.X509Certificate)">
+      <summary>Fügt der Anforderung ein Clientzertifikat hinzu.</summary>
+      <param name="certificate">Das Clientzertifikat.</param>
+    </member>
+    <member name="E:Microsoft.AspNet.SignalR.Client.Connection.Closed">
+      <summary>Tritt auf, wenn eine Verbindung beendet wird.</summary>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Connection.ConnectionId">
+      <summary>Ruft die Verbindungs-ID für die Verbindung ab oder legt sie fest.</summary>
+      <returns>Die Verbindungs-ID für die Verbindung.</returns>
+    </member>
+    <member name="E:Microsoft.AspNet.SignalR.Client.Connection.ConnectionSlow">
+      <summary>Tritt auf, wenn für <see cref="T:Microsoft.AspNet.SignalR.Client.Connection" /> aktuell ein Timeout bevorsteht.</summary>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Connection.ConnectionToken">
+      <summary>Ruft das Verbindungstoken für die Verbindung ab oder legt es fest.</summary>
+      <returns>Das Verbindungstoken für die Verbindung.</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Connection.CookieContainer">
+      <summary>Ruft die Cookies ab, die der Verbindung zugeordnet sind, oder legt diese fest.</summary>
+      <returns>Die Cookies, die der Verbindung zugeordnet sind.</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Connection.Credentials">
+      <summary>Ruft Authentifizierungsinformationen für die Verbindung ab oder legt sie fest.</summary>
+      <returns>Die Authentifizierungsinformationen für die Verbindung.</returns>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Connection.Dispose">
+      <summary>Beenden der Verbindung, äquivalent zum Aufrufen des Verbindungsendes.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Connection.Dispose(System.Boolean)">
+      <summary>Beenden der Verbindung, äquivalent zum Aufrufen des Verbindungsendes.</summary>
+      <param name="disposing">Legen Sie den Wert auf true fest, um das Verwerfen auszuführen, false wenn keine Aktion erfolgen soll.</param>
+    </member>
+    <member name="E:Microsoft.AspNet.SignalR.Client.Connection.Error">
+      <summary>Tritt auf, wenn für die Verbindung ein Fehler aufgetreten ist.</summary>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Connection.GroupsToken">
+      <summary>Ruft das Gruppentoken für die Verbindung ab oder legt es fest.</summary>
+      <returns>Das Gruppentoken für die Verbindung.</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Connection.Headers">
+      <summary>Ruft die Header für die Anforderungen ab oder legt sie fest. </summary>
+      <returns>Die Header für die Anforderungen.</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Connection.Items">
+      <summary>Ruft ein Wörterbuch zum Speichern des Status für die Verbindung ab.</summary>
+      <returns>Ein Wörterbuch zum Speichern des Status für die Verbindung.</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Connection.JsonSerializer">
+      <summary>Ruft den von der Verbindung verwendeten Serialisierer ab oder legt ihn fest.</summary>
+      <returns>Der von der Verbindung verwendete Serialisierer.</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Connection.MessageId">
+      <summary>Ruft die letzte Nachrichten-ID für die Verbindung ab oder legt sie fest.</summary>
+      <returns>Die letzte Nachrichten-ID für die Verbindung.</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Connection.Microsoft#AspNet#SignalR#Client#IConnection#Certificates">
+      <summary>Ruft eine Auflistung ab, die X509Certificate-Objekte speichert.</summary>
+      <returns>Eine Auflistung, die X509Certificate-Objekte speichert.</returns>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Connection.Microsoft#AspNet#SignalR#Client#IConnection#ChangeState(Microsoft.AspNet.SignalR.Client.ConnectionState,Microsoft.AspNet.SignalR.Client.ConnectionState)">
+      <summary>Wird aufgerufen, wenn die Verbindung den Status ändert.</summary>
+      <returns>true, wenn die Verbindung den Status ändert, andernfalls false.</returns>
+      <param name="oldState">Der alte Status.</param>
+      <param name="newState">Der neue Zustand.</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Connection.Microsoft#AspNet#SignalR#Client#IConnection#Disconnect">
+      <summary>Beendet <see cref="T:Microsoft.AspNet.SignalR.Client.Connection" />, ohne eine Abbruchnachricht an den Server zu senden.Diese Funktion wird aufgerufen, nachdem eine Trennungsnachricht vom Server empfangen wurde.</summary>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Connection.Microsoft#AspNet#SignalR#Client#IConnection#KeepAliveData">
+      <summary>Ruft ein Objekt zum Speichern der verschiedenen Keep-Alive-Timeoutwerte ab oder legt es fest.</summary>
+      <returns>Das Objekt zum Speichern der verschiedenen Keep-Alive-Timeoutwerte.</returns>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Connection.Microsoft#AspNet#SignalR#Client#IConnection#OnConnectionSlow">
+      <summary>Wird aufgerufen, wenn für <see cref="T:Microsoft.AspNet.SignalR.Client.Connection" /> aktuell ein Timeout bevorsteht.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Connection.Microsoft#AspNet#SignalR#Client#IConnection#OnError(System.Exception)">
+      <summary>Wird aufgerufen, wenn für <see cref="T:Microsoft.AspNet.SignalR.Client.Connection" /> ein Fehler aufgetreten ist.</summary>
+      <param name="error">Der Verbindungsfehler.</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Connection.Microsoft#AspNet#SignalR#Client#IConnection#OnReceived(Newtonsoft.Json.Linq.JToken)">
+      <summary>Wird aufgerufen, wenn <see cref="T:Microsoft.AspNet.SignalR.Client.Connection" /> Daten vom Server empfangen hat.</summary>
+      <param name="message">Die empfangene Nachricht.</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Connection.Microsoft#AspNet#SignalR#Client#IConnection#OnReconnected">
+      <summary>Wird aufgerufen, wenn <see cref="T:Microsoft.AspNet.SignalR.Client.Connection" /> nach einem Timeout erfolgreich erneut eine Verbindung herstellt.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Connection.Microsoft#AspNet#SignalR#Client#IConnection#PrepareRequest(Microsoft.AspNet.SignalR.Client.Http.IRequest)">
+      <summary>Bereitet alle Anforderungen für <see cref="T:Microsoft.AspNet.SignalR.Client.Connection" /> vor.</summary>
+      <param name="request">Die Anforderung.</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Connection.Microsoft#AspNet#SignalR#Client#IConnection#UpdateLastKeepAlive">
+      <summary>Legt LastKeepAlive auf die aktuelle Uhrzeit fest.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Connection.OnClosed"></member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Connection.OnMessageReceived(Newtonsoft.Json.Linq.JToken)">
+      <summary>Wird aufgerufen, wenn <see cref="T:Microsoft.AspNet.SignalR.Client.Connection" /> eine Nachricht vom Server empfangen hat.</summary>
+      <param name="message">Die empfangene Nachricht.</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Connection.OnReconnecting"></member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Connection.OnSending">
+      <summary>Wird aufgerufen, wenn <see cref="T:Microsoft.AspNet.SignalR.Client.Connection" /> eine Warnung oder Erinnerungsbenachrichtigungen sendet.</summary>
+      <returns>
+        <see cref="T:Microsoft.AspNet.SignalR.Client.Connection" /> sendet eine Warnung oder Erinnerungsbenachrichtigungen.</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Connection.Protocol">
+      <summary>Ruft das Protokoll für die Verbindung ab oder legt es fest.</summary>
+      <returns>Das Protokoll für die Verbindung.</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Connection.Proxy">
+      <summary>Ruft die Proxyinformationen für die Verbindung ab oder legt sie fest.</summary>
+      <returns>Die Proxyinformationen für die Verbindung.</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Connection.QueryString">
+      <summary>Ruft die im Konstruktor angegebene Abfragezeichenfolge ab.</summary>
+      <returns>Die im Konstruktor angegebene Abfragezeichenfolge.</returns>
+    </member>
+    <member name="E:Microsoft.AspNet.SignalR.Client.Connection.Received">
+      <summary>Tritt auf, wenn die Verbindung Daten vom Server empfangen hat.</summary>
+    </member>
+    <member name="E:Microsoft.AspNet.SignalR.Client.Connection.Reconnected">
+      <summary>Tritt auf, wenn dieVerbindung nach einem Timeout erfolgreich erneut eine Verbindung herstellt.</summary>
+    </member>
+    <member name="E:Microsoft.AspNet.SignalR.Client.Connection.Reconnecting">
+      <summary>Tritt auf, wenn die Verbindung nach einem Fehler beginnt, erneut eine Verbindung herzustellen.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Connection.Send(System.Object)">
+      <summary>Sendet ein Objekt, das asynchron als JSON über die Verbindung serialisiert wird.</summary>
+      <returns>Ein Task, der den Sendevorgang der Daten darstellt.</returns>
+      <param name="value">Der zu serialisierende Wert.</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Connection.Send(System.String)">
+      <summary>Sendet Daten asynchron über die Verbindung.</summary>
+      <returns>Ein Task, der den Sendevorgang der Daten darstellt.</returns>
+      <param name="data">Die zu sendenden Daten.</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Connection.Start">
+      <summary>Startet die <see cref="T:Microsoft.AspNet.SignalR.Client.Connection" />.</summary>
+      <returns>Ein Task, der den Startvorgang der Verbindung darstellt.</returns>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Connection.Start(Microsoft.AspNet.SignalR.Client.Http.IHttpClient)">
+      <summary>Startet die <see cref="T:Microsoft.AspNet.SignalR.Client.Connection" />.</summary>
+      <returns>Ein Task, der den Startvorgang der Verbindung darstellt.</returns>
+      <param name="httpClient">Die HTTP-Clientverbindung.</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Connection.Start(Microsoft.AspNet.SignalR.Client.Transports.IClientTransport)">
+      <summary>Startet die <see cref="T:Microsoft.AspNet.SignalR.Client.Connection" />.</summary>
+      <returns>Ein Task, der den Startvorgang der Verbindung darstellt.</returns>
+      <param name="transport">Der zu verwendende Transport.</param>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Connection.State">
+      <summary>Ruft den aktuellen ConnectionState der Verbindung ab.</summary>
+      <returns>Der aktuelle ConnectionState der Verbindung.</returns>
+    </member>
+    <member name="E:Microsoft.AspNet.SignalR.Client.Connection.StateChanged">
+      <summary>Tritt auf, wenn sich der Verbindungsstatus ändert.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Connection.Stop">
+      <summary>Beendet <see cref="T:Microsoft.AspNet.SignalR.Client.Connection" /> und sendet eine Abbruchnachricht an den Server.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Connection.Stop(System.TimeSpan)">
+      <summary>Beendet <see cref="T:Microsoft.AspNet.SignalR.Client.Connection" /> und sendet eine Abbruchnachricht an den Server.&lt;param name="timeout"&gt;Das Timeout&lt;/param&gt;.</summary>
+      <param name="timeout">Das Verbindungstimeout.</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Connection.Trace(Microsoft.AspNet.SignalR.Client.TraceLevels,System.String,System.Object[])">
+      <summary>Führt die Ablaufverfolgung einer Verbindungsmethode aus, die durch die Parameter angegeben wird.</summary>
+      <param name="level">Die Ablaufverfolgungsstufe.</param>
+      <param name="format">Das Format.</param>
+      <param name="args">Das Argument.</param>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Connection.TraceLevel">
+      <summary>Ruft die Ablaufverfolgungsstufe für die Verbindung ab oder legt sie fest.</summary>
+      <returns>Die Ablauverfolgungsebene für die Verbindung.</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Connection.TraceWriter">
+      <summary>Ruft der Textwriter für die Ablaufverfolgung der Verbindung ab oder legt ihn fest.</summary>
+      <returns>Der Textwriter für die Ablaufverfolgung der Verbindung.</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Connection.Transport">
+      <summary>Ruft den Clienttransport für die Verbindung ab oder legt ihn fest.</summary>
+      <returns>Der Clienttransport für die Verbindung.</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Connection.TransportConnectTimeout">
+      <summary>Ruft ein TimeSpan-Objekt ab, das die Zeitspanne für eine Transportverbindung darstellt, bevor ein Timeout auftritt, bzw. legt dieses Objekt fest.</summary>
+      <returns>Ein TimeSpan-Objekt, das die Zeitspanne für eine Transportverbindung darstellt, bevor ein Timeout auftritt.</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Connection.Url">
+      <summary>Ruft die URL für die Verbindung ab oder legt sie fest.</summary>
+      <returns>Die URL für die Verbindung.</returns>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.Client.ConnectionExtensions">
+      <summary>Inhalte werden hier nicht aktualisiert. Bitte hier kein Material hinzufügen.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.ConnectionExtensions.AsObservable(Microsoft.AspNet.SignalR.Client.Connection)"></member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.ConnectionExtensions.AsObservable``1(Microsoft.AspNet.SignalR.Client.Connection)">
+      <typeparam name="T"></typeparam>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.ConnectionExtensions.AsObservable``1(Microsoft.AspNet.SignalR.Client.Connection,System.Func{System.String,``0})">
+      <typeparam name="T"></typeparam>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.ConnectionExtensions.EnsureReconnecting(Microsoft.AspNet.SignalR.Client.IConnection)"></member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.ConnectionExtensions.GetValue``1(Microsoft.AspNet.SignalR.Client.IConnection,System.String)">
+      <typeparam name="T"></typeparam>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.ConnectionExtensions.JsonDeserializeObject``1(Microsoft.AspNet.SignalR.Client.IConnection,System.String)">
+      <typeparam name="T"></typeparam>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.ConnectionExtensions.JsonSerializeObject(Microsoft.AspNet.SignalR.Client.IConnection,System.Object)"></member>
+    <member name="T:Microsoft.AspNet.SignalR.Client.ConnectionState">
+      <summary>Stellt einen Verbindungsstatus einer SignalR-Verbindung dar.</summary>
+    </member>
+    <member name="F:Microsoft.AspNet.SignalR.Client.ConnectionState.Connected">
+      <summary>Der Verbindungsstatus lautet "Verbunden".</summary>
+    </member>
+    <member name="F:Microsoft.AspNet.SignalR.Client.ConnectionState.Connecting">
+      <summary>Der Verbindungsstatus lautet "Verbindung wird hergestellt".</summary>
+    </member>
+    <member name="F:Microsoft.AspNet.SignalR.Client.ConnectionState.Disconnected">
+      <summary>Der Verbindungsstatus lautet "Getrennt".</summary>
+    </member>
+    <member name="F:Microsoft.AspNet.SignalR.Client.ConnectionState.Reconnecting">
+      <summary>Der Verbindungsstatus lautet "Verbindung wird erneut hergestellt".</summary>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.Client.ErrorExtensions">
+      <summary>Stellt eine Erweiterungsmethode für vereinfachte Fehlererkennung zur Verfügung.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.ErrorExtensions.GetError(System.Exception)">
+      <summary> Vereinfacht die Fehlererkennung durch Entpacken komplexer Ausnahmen.</summary>
+      <returns>Eine entpackte Ausnahme in Form eines SignalRError-Objekts.</returns>
+      <param name="ex">Die ausgelöste Ausnahme.</param>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.Client.HeaderDictionary">
+      <summary>Stellt eine Zuordnung einer Sammlung von Schlüsseln zu einer Sammlung von Werten für den SignalR-Client dar.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.HeaderDictionary.#ctor(Microsoft.AspNet.SignalR.Client.IConnection)">
+      <summary>Initialisiert eine neue Instanz der <see cref="T:Microsoft.AspNet.SignalR.Client.HeaderDictionary" />-Klasse.</summary>
+      <param name="connection">Die Clientverbindung.</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.HeaderDictionary.Add(System.Collections.Generic.KeyValuePair{System.String,System.String})">
+      <summary>Fügt dem Wörterbuch ein bestimmtes Element hinzu.</summary>
+      <param name="item">Das hinzuzufügende Element.</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.HeaderDictionary.Add(System.String,System.String)">
+      <summary>Fügt dem Wörterbuch ein bestimmtes Schlüssel-Wert-Paar hinzu.</summary>
+      <param name="key">Der hinzuzufügende Schlüssel.</param>
+      <param name="value">Der hinzuzufügende Wert.</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.HeaderDictionary.Clear">
+      <summary>Löscht den Inhalt des Wörterbuchs.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.HeaderDictionary.Contains(System.Collections.Generic.KeyValuePair{System.String,System.String})">
+      <summary>Gibt an, ob ein Element im Wörterbuch enthalten ist.</summary>
+      <returns>true, wenn ein Element im Wörterbuch enthalten ist, andernfalls false.</returns>
+      <param name="item">Das Element, das gesucht werden soll.</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.HeaderDictionary.ContainsKey(System.String)">
+      <summary>Gibt an, ob ein angegebener Schlüssel im Wörterbuch enthalten ist.</summary>
+      <returns>true, wenn ein angegebener Schlüssel im Wörterbuch enthalten ist, andernfalls false.</returns>
+      <param name="key">Der Schlüssel, der gesucht werden soll.</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.HeaderDictionary.CopyTo(System.Collections.Generic.KeyValuePair{System.String,System.String}[],System.Int32)">
+      <summary>Kopiert die Elemente der Schlüssel-Wert-Paare ab dem angegebenen Arrayindex in ein vorhandenes eindimensionales Array.</summary>
+      <param name="array">Das eindimensionale Array, das das Ziel der Elemente ist, die auf dem Wörterbuch kopiert werden.</param>
+      <param name="arrayIndex">Der nullbasierte Index im Array, an dem der Kopiervorgang beginnt.</param>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.HeaderDictionary.Count">
+      <summary>Ruft die Anzahl der im Wörterbuch enthaltenen Schlüssel-Wert-Paare ab.</summary>
+      <returns>Die Anzahl der im Wörterbuch enthaltenen Schlüssel-Wert-Paare.</returns>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.HeaderDictionary.GetEnumerator">
+      <summary>Gibt einen Enumerator zurück, der das Wörterbuch durchläuft.</summary>
+      <returns>Der Enumerator, der das Wörterbuch durchläuft.</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.HeaderDictionary.IsReadOnly">
+      <summary>Ruft ab, ob das Wörterbuch schreibgeschützt ist.</summary>
+      <returns>true, wenn das Wörterbuch schreibgeschützt ist, andernfalls false.</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.HeaderDictionary.Item(System.String)">
+      <summary>Ruft den Wert ab, der dem angegebenen Schlüssel zugeordnet ist, oder legt diesen fest.</summary>
+      <returns>Der Wert, der dem angegebenen Schlüssel zugeordnet ist.</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.HeaderDictionary.Keys">
+      <summary>Ruft die Auflistung der Schlüssel im Wörterbuch ab.</summary>
+      <returns>Die Auflistung der Schlüssel im Wörterbuch.</returns>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.HeaderDictionary.Remove(System.Collections.Generic.KeyValuePair{System.String,System.String})">
+      <summary>Entfernt ein bestimmtes Element des Schlüssel-Wert-Paars aus dem Wörterbuch.</summary>
+      <returns>Das Wörterbuch mit dem entfernten Element.</returns>
+      <param name="item">Das zu entfernende Element.</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.HeaderDictionary.Remove(System.String)">
+      <summary>Entfernt einen bestimmten Schlüssel aus dem Wörterbuch.</summary>
+      <returns>Das Wörterbuch mit dem entfernten Schlüssel.</returns>
+      <param name="key">Der zu entfernende Schlüssel.</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.HeaderDictionary.System#Collections#IEnumerable#GetEnumerator">
+      <summary>Gibt einen Enumerator zurück, der eine Auflistung durchläuft.</summary>
+      <returns>Der Enumerator, der eine Auflistung durchläuft.</returns>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.HeaderDictionary.TryGetValue(System.String,System.String@)">
+      <summary>Ruft den Wert ab, der dem angegebenen Schlüssel zugeordnet ist.</summary>
+      <returns>true, wenn das Wörterbuch ein Element mit dem angegebenen Schlüssel enthält, andernfalls false.</returns>
+      <param name="key">Der Schlüssel des abzurufenden Werts.</param>
+      <param name="value">Bei Rückgabe dieser Methode enthält sie den dem angegebenen Schlüssel zugeordneten Wert, wenn der Schlüssel gefunden wurde, andernfalls enthält sie den Standardwert für den Typ des Wertparameters.</param>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.HeaderDictionary.Values">
+      <summary>Ruft die Auflistung der Werte im Wörterbuch ab.</summary>
+      <returns>Die Auflistung der Werte im Wörterbuch.</returns>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.Client.HeartbeatMonitor">
+      <summary>Stellt den HeartbeatMonitor für die Antwort vom Server dar, der die Taktung fortsetzt, wenn eine Antwort erfolgreich war.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.HeartbeatMonitor.#ctor(Microsoft.AspNet.SignalR.Client.IConnection,System.Object)">
+      <summary>Initialisiert eine neue Instanz der <see cref="T:Microsoft.AspNet.SignalR.Client.HeartbeatMonitor" />-Klasse.</summary>
+      <param name="connection">Die Schnittstellenverbindung.</param>
+      <param name="connectionStateLock">Die Verbindungsstatussperre.</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.HeartbeatMonitor.Beat(System.TimeSpan)">
+      <summary>Logik zum Ermitteln, ob der Benutzer benachrichtigt oder versucht werden soll, erneut eine Verbindung herzustellen.</summary>
+      <param name="timeElapsed">Die verstrichene Zeit.</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.HeartbeatMonitor.Dispose">
+      <summary>Gibt alle von der aktuellen Instanz der Klasse <see cref="T:Microsoft.AspNet.SignalR.Client.HeartbeatMonitor" /> verwendeten Ressourcen frei.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.HeartbeatMonitor.Dispose(System.Boolean)">
+      <summary>Gibt die von der <see cref="T:Microsoft.AspNet.SignalR.Client.HeartbeatMonitor" />-Klasse verwendeten nicht verwalteten Ressourcen und optional auch die verwalteten Ressourcen frei.</summary>
+      <param name="disposing">true, um sowohl verwaltete als auch nicht verwaltete Ressourcen freizugeben. false, um ausschließlich nicht verwaltete Ressourcen freizugeben.</param>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.HeartbeatMonitor.HasBeenWarned">
+      <summary>Ruft einen Wert ab, der angibt, ob <see cref="T:Microsoft.AspNet.SignalR.Client.HeartbeatMonitor" /> gewarnt wurde, oder legt diesen Wert fest.</summary>
+      <returns>true, wenn <see cref="T:Microsoft.AspNet.SignalR.Client.HeartbeatMonitor" /> gewarnt wurde, andernfalls false.</returns>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.HeartbeatMonitor.Start">
+      <summary>Aktualisiert LastKeepAlive und startet den Timer.</summary>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.HeartbeatMonitor.TimedOut">
+      <summary>Ruft einen Wert ab, der angibt, ob für <see cref="T:Microsoft.AspNet.SignalR.Client.HeartbeatMonitor" /> ein Timeout aufgetreten ist, oder legt diesen Wert fest.</summary>
+      <returns>true, wenn für <see cref="T:Microsoft.AspNet.SignalR.Client.HeartbeatMonitor" /> ein Timeout aufgetreten ist, andernfalls false.</returns>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.Client.HttpClientException">
+      <summary>Die Ausnahme, die ausgelöst wird, wenn der HTTP-Client eine Verbindung herstellt.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.HttpClientException.#ctor">
+      <summary>Initialisiert eine neue Instanz der <see cref="T:Microsoft.AspNet.SignalR.Client.HttpClientException" />-Klasse.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.HttpClientException.#ctor(System.Net.Http.HttpResponseMessage)">
+      <summary>Initialisiert eine neue Instanz der <see cref="T:Microsoft.AspNet.SignalR.Client.HttpClientException" />-Klasse.</summary>
+      <param name="responseMessage">Die Antwortnachricht.</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.HttpClientException.#ctor(System.String)">
+      <summary>Initialisiert eine neue Instanz der <see cref="T:Microsoft.AspNet.SignalR.Client.HttpClientException" />-Klasse.</summary>
+      <param name="message">Die Fehlermeldung.</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.HttpClientException.#ctor(System.String,System.Exception)">
+      <summary>Initialisiert eine neue Instanz der <see cref="T:Microsoft.AspNet.SignalR.Client.HttpClientException" />-Klasse.</summary>
+      <param name="message">Die Fehlermeldung.</param>
+      <param name="ex">Die Ausnahme.</param>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.HttpClientException.Response">
+      <summary>Ruft die Antwort ab, die diesem Client zugeordnet ist, oder legt sie fest.</summary>
+      <returns>Die diesem Client zugeordnete Antwort.</returns>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.Client.HubConnection">
+      <summary>Ein <see cref="T:Microsoft.AspNet.SignalR.Client.Connection" />-Objekt für die Interaktion mit Hubs.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.HubConnection.#ctor(System.String)">
+      <summary>Initialisiert eine neue Instanz der <see cref="T:Microsoft.AspNet.SignalR.Client.HubConnection" />-Klasse.</summary>
+      <param name="url">Die URL, mit der eine Verbindung hergestellt werden soll.</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.HubConnection.#ctor(System.String,System.Boolean)">
+      <summary>Initialisiert eine neue Instanz der <see cref="T:Microsoft.AspNet.SignalR.Client.HubConnection" />-Klasse.</summary>
+      <param name="url">Die URL, mit der eine Verbindung hergestellt werden soll.</param>
+      <param name="useDefaultUrl">Bestimmt, ob der /signalr-Standardpfad an die angegebene URL angefügt werden soll.</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.HubConnection.#ctor(System.String,System.Collections.Generic.IDictionary{System.String,System.String})">
+      <summary>Initialisiert eine neue Instanz der <see cref="T:Microsoft.AspNet.SignalR.Client.HubConnection" />-Klasse.</summary>
+      <param name="url">Die URL, mit der eine Verbindung hergestellt werden soll.</param>
+      <param name="queryString">Die Abfragezeichenfolge, die an den Server übergeben werden soll.</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.HubConnection.#ctor(System.String,System.Collections.Generic.IDictionary{System.String,System.String},System.Boolean)">
+      <summary>Initialisiert eine neue Instanz der <see cref="T:Microsoft.AspNet.SignalR.Client.HubConnection" />-Klasse.</summary>
+      <param name="url">Die URL, mit der eine Verbindung hergestellt werden soll.</param>
+      <param name="queryString">Die Abfragezeichenfolge, die an den Server übergeben werden soll.</param>
+      <param name="useDefaultUrl">Bestimmt, ob der /signalr-Standardpfad an die angegebene URL angefügt werden soll.</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.HubConnection.#ctor(System.String,System.String)">
+      <summary>Initialisiert eine neue Instanz der <see cref="T:Microsoft.AspNet.SignalR.Client.HubConnection" />-Klasse.</summary>
+      <param name="url">Die URL, mit der eine Verbindung hergestellt werden soll.</param>
+      <param name="queryString">Die Abfragezeichenfolge, die an den Server übergeben werden soll.</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.HubConnection.#ctor(System.String,System.String,System.Boolean)">
+      <summary>Initialisiert eine neue Instanz der <see cref="T:Microsoft.AspNet.SignalR.Client.HubConnection" />-Klasse.</summary>
+      <param name="url">Die URL, mit der eine Verbindung hergestellt werden soll.</param>
+      <param name="queryString">Die Abfragezeichenfolge, die an den Server übergeben werden soll.</param>
+      <param name="useDefaultUrl">Bestimmt, ob der /signalr-Standardpfad an die angegebene URL angefügt werden soll.</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.HubConnection.CreateHubProxy(System.String)">
+      <summary>Erstellt ein <see cref="T:Microsoft.AspNet.SignalR.Client.IHubProxy" />-Objekt für den Hub mit dem angegebenen Namen.</summary>
+      <returns>Ein <see cref="T:Microsoft.AspNet.SignalR.Client.IHubProxy" />-Objekt.</returns>
+      <param name="hubName">Der Name des Hubs.</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.HubConnection.Microsoft#AspNet#SignalR#Client#Hubs#IHubConnection#RegisterCallback(System.Action{Microsoft.AspNet.SignalR.Client.Hubs.HubResult})"></member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.HubConnection.Microsoft#AspNet#SignalR#Client#Hubs#IHubConnection#RemoveCallback(System.String)"></member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.HubConnection.OnClosed"></member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.HubConnection.OnMessageReceived(Newtonsoft.Json.Linq.JToken)"></member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.HubConnection.OnReconnecting"></member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.HubConnection.OnSending"></member>
+    <member name="T:Microsoft.AspNet.SignalR.Client.HubException"></member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.HubException.#ctor"></member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.HubException.#ctor(System.String)"></member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.HubException.#ctor(System.String,System.Object)"></member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.HubException.ErrorData"></member>
+    <member name="T:Microsoft.AspNet.SignalR.Client.HubProxyExtensions">
+      <summary>Erweiterunger für <see cref="T:Microsoft.AspNet.SignalR.Client.IHubProxy" />.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.HubProxyExtensions.GetValue``1(Microsoft.AspNet.SignalR.Client.IHubProxy,System.String)">
+      <summary>Ruft den Wert einer Statusvariablen ab.</summary>
+      <returns>Der Wert der Statusvariablen.</returns>
+      <param name="proxy">Das <see cref="T:Microsoft.AspNet.SignalR.Client.IHubProxy" />-Objekt.</param>
+      <param name="name">Der Name der Statusvariablen.</param>
+      <typeparam name="T">Der Typ der Statusvariablen.</typeparam>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.HubProxyExtensions.Observe(Microsoft.AspNet.SignalR.Client.IHubProxy,System.String)">
+      <summary>Registriert ein <see cref="T:Microsoft.AspNet.SignalR.Client.IHubProxy" />-Ereignis als <see cref="T:IObservable{T}" />.</summary>
+      <returns>Ein <see cref="T:IObservable{object[]}" />-Objekt.</returns>
+      <param name="proxy">Das <see cref="T:Microsoft.AspNet.SignalR.Client.IHubProxy" />-Objekt.</param>
+      <param name="eventName">Der Name des Ereignisses.</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.HubProxyExtensions.On(Microsoft.AspNet.SignalR.Client.IHubProxy,System.String,System.Action)">
+      <summary>Führt die Registrierung für ein Ereignis mit dem angegebenen Namen und Rückruf aus.</summary>
+      <returns>Ein <see cref="T:System.IDisposable" />-Objekt, das dieses Abonnement darstellt.</returns>
+      <param name="proxy">Das <see cref="T:Microsoft.AspNet.SignalR.Client.IHubProxy" />-Objekt.</param>
+      <param name="eventName">Der Name des Ereignisses.</param>
+      <param name="onData">Der Rückruf.</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.HubProxyExtensions.On(Microsoft.AspNet.SignalR.Client.IHubProxy,System.String,System.Action{System.Object})">
+      <summary>Führt die Registrierung für ein Ereignis mit dem angegebenen Namen und Rückruf aus.</summary>
+      <returns>Ein <see cref="T:System.IDisposable" />-Objekt, das dieses Abonnement darstellt.</returns>
+      <param name="proxy">Das <see cref="T:Microsoft.AspNet.SignalR.Client.IHubProxy" />-Objekt.</param>
+      <param name="eventName">Der Name des Ereignisses.</param>
+      <param name="onData">Der Rückruf.</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.HubProxyExtensions.On``1(Microsoft.AspNet.SignalR.Client.IHubProxy,System.String,System.Action{``0})">
+      <summary>Führt die Registrierung für ein Ereignis mit dem angegebenen Namen und Rückruf aus.</summary>
+      <returns>Ein <see cref="T:System.IDisposable" />-Objekt, das dieses Abonnement darstellt.</returns>
+      <param name="proxy">Das <see cref="T:Microsoft.AspNet.SignalR.Client.IHubProxy" />-Objekt.</param>
+      <param name="eventName">Der Name des Ereignisses.</param>
+      <param name="onData">Der Rückruf.</param>
+      <typeparam name="T"></typeparam>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.HubProxyExtensions.On``2(Microsoft.AspNet.SignalR.Client.IHubProxy,System.String,System.Action{``0,``1})">
+      <summary>Führt die Registrierung für ein Ereignis mit dem angegebenen Namen und Rückruf aus.</summary>
+      <returns>Ein <see cref="T:System.IDisposable" />-Objekt, das dieses Abonnement darstellt.</returns>
+      <param name="proxy">Das <see cref="T:Microsoft.AspNet.SignalR.Client.IHubProxy" />-Objekt.</param>
+      <param name="eventName">Der Name des Ereignisses.</param>
+      <param name="onData">Der Rückruf.</param>
+      <typeparam name="T1"></typeparam>
+      <typeparam name="T2"></typeparam>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.HubProxyExtensions.On``3(Microsoft.AspNet.SignalR.Client.IHubProxy,System.String,System.Action{``0,``1,``2})">
+      <summary>Führt die Registrierung für ein Ereignis mit dem angegebenen Namen und Rückruf aus.</summary>
+      <returns>Ein <see cref="T:System.IDisposable" />-Objekt, das dieses Abonnement darstellt.</returns>
+      <param name="proxy">Das <see cref="T:Microsoft.AspNet.SignalR.Client.IHubProxy" />-Objekt.</param>
+      <param name="eventName">Der Name des Ereignisses.</param>
+      <param name="onData">Der Rückruf.</param>
+      <typeparam name="T1"></typeparam>
+      <typeparam name="T2"></typeparam>
+      <typeparam name="T3"></typeparam>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.HubProxyExtensions.On``4(Microsoft.AspNet.SignalR.Client.IHubProxy,System.String,System.Action{``0,``1,``2,``3})">
+      <summary>Führt die Registrierung für ein Ereignis mit dem angegebenen Namen und Rückruf aus.</summary>
+      <returns>Ein <see cref="T:System.IDisposable" />-Objekt, das dieses Abonnement darstellt.</returns>
+      <param name="proxy">Das <see cref="T:Microsoft.AspNet.SignalR.Client.IHubProxy" />-Objekt.</param>
+      <param name="eventName">Der Name des Ereignisses.</param>
+      <param name="onData">Der Rückruf.</param>
+      <typeparam name="T1"></typeparam>
+      <typeparam name="T2"></typeparam>
+      <typeparam name="T3"></typeparam>
+      <typeparam name="T4"></typeparam>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.HubProxyExtensions.On``5(Microsoft.AspNet.SignalR.Client.IHubProxy,System.String,System.Action{``0,``1,``2,``3,``4})">
+      <summary>Führt die Registrierung für ein Ereignis mit dem angegebenen Namen und Rückruf aus.</summary>
+      <returns>Ein <see cref="T:System.IDisposable" />-Objekt, das dieses Abonnement darstellt.</returns>
+      <param name="proxy">Das <see cref="T:Microsoft.AspNet.SignalR.Client.IHubProxy" />-Objekt.</param>
+      <param name="eventName">Der Name des Ereignisses.</param>
+      <param name="onData">Der Rückruf.</param>
+      <typeparam name="T1"></typeparam>
+      <typeparam name="T2"></typeparam>
+      <typeparam name="T3"></typeparam>
+      <typeparam name="T4"></typeparam>
+      <typeparam name="T5"></typeparam>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.HubProxyExtensions.On``6(Microsoft.AspNet.SignalR.Client.IHubProxy,System.String,System.Action{``0,``1,``2,``3,``4,``5})">
+      <summary>Führt die Registrierung für ein Ereignis mit dem angegebenen Namen und Rückruf aus.</summary>
+      <returns>Ein <see cref="T:System.IDisposable" />-Objekt, das dieses Abonnement darstellt.</returns>
+      <param name="proxy">Das <see cref="T:Microsoft.AspNet.SignalR.Client.IHubProxy" />-Objekt.</param>
+      <param name="eventName">Der Name des Ereignisses.</param>
+      <param name="onData">Der Rückruf.</param>
+      <typeparam name="T1"></typeparam>
+      <typeparam name="T2"></typeparam>
+      <typeparam name="T3"></typeparam>
+      <typeparam name="T4"></typeparam>
+      <typeparam name="T5"></typeparam>
+      <typeparam name="T6"></typeparam>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.HubProxyExtensions.On``7(Microsoft.AspNet.SignalR.Client.IHubProxy,System.String,System.Action{``0,``1,``2,``3,``4,``5,``6})">
+      <summary>Führt die Registrierung für ein Ereignis mit dem angegebenen Namen und Rückruf aus.</summary>
+      <returns>Ein <see cref="T:System.IDisposable" />-Objekt, das dieses Abonnement darstellt.</returns>
+      <param name="proxy">Das <see cref="T:Microsoft.AspNet.SignalR.Client.IHubProxy" />-Objekt.</param>
+      <param name="eventName">Der Name des Ereignisses.</param>
+      <param name="onData">Der Rückruf.</param>
+      <typeparam name="T1"></typeparam>
+      <typeparam name="T2"></typeparam>
+      <typeparam name="T3"></typeparam>
+      <typeparam name="T4"></typeparam>
+      <typeparam name="T5"></typeparam>
+      <typeparam name="T6"></typeparam>
+      <typeparam name="T7"></typeparam>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.Client.IConnection">
+      <summary>Inhalte werden hier nicht aktualisiert. Bitte hier kein Material hinzufügen.</summary>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.IConnection.Certificates">
+      <summary>Ruft die Zertifikate von X509CertificateCollection für <see cref="T:Microsoft.AspNet.SignalR.Client.IConnection" /> ab.</summary>
+      <returns>Die Zertifikate von X509CertificateCollection für <see cref="T:Microsoft.AspNet.SignalR.Client.IConnection" />.</returns>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.IConnection.ChangeState(Microsoft.AspNet.SignalR.Client.ConnectionState,Microsoft.AspNet.SignalR.Client.ConnectionState)">
+      <summary>Wird aufgerufen, wenn <see cref="T:Microsoft.AspNet.SignalR.Client.IConnection" /> den Status ändert.</summary>
+      <returns>true, wenn die <see cref="T:Microsoft.AspNet.SignalR.Client.IConnection" /> den Status ändert, andernfalls false.</returns>
+      <param name="oldState">Der alte Status.</param>
+      <param name="newState">Der neue Zustand.</param>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.IConnection.ConnectionId">
+      <summary>Ruft die Verbindungs-ID für <see cref="T:Microsoft.AspNet.SignalR.Client.IConnection" /> ab.</summary>
+      <returns>Die Verbindungs-ID für <see cref="T:Microsoft.AspNet.SignalR.Client.IConnection" />.</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.IConnection.ConnectionToken">
+      <summary>Ruft das Verbindungstoken für <see cref="T:Microsoft.AspNet.SignalR.Client.IConnection" /> ab bzw. legt es fest.</summary>
+      <returns>Das Verbindungstoken für <see cref="T:Microsoft.AspNet.SignalR.Client.IConnection" />.</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.IConnection.CookieContainer">
+      <summary>Ruft die Cookies ab, die <see cref="T:Microsoft.AspNet.SignalR.Client.IConnection" /> zugeordnet sind, oder legt diese fest.</summary>
+      <returns>Die Cookies, die <see cref="T:Microsoft.AspNet.SignalR.Client.IConnection" /> zugeordnet sind.</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.IConnection.Credentials">
+      <summary>Ruft Authentifizierungsinformationen für <see cref="T:Microsoft.AspNet.SignalR.Client.IConnection" /> ab oder legt sie fest.</summary>
+      <returns>Die Authentifizierungsinformationen für <see cref="T:Microsoft.AspNet.SignalR.Client.IConnection" />.</returns>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.IConnection.Disconnect">
+      <summary>Beendet <see cref="T:Microsoft.AspNet.SignalR.Client.IConnection" />, ohne eine Abbruchnachricht an den Server zu senden.Diese Funktion wird aufgerufen, nachdem eine Trennungsnachricht vom Server empfangen wurde.</summary>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.IConnection.GroupsToken">
+      <summary>Ruft das Gruppentoken für <see cref="T:Microsoft.AspNet.SignalR.Client.IConnection" /> ab oder legt es fest.</summary>
+      <returns>Das Gruppentoken für <see cref="T:Microsoft.AspNet.SignalR.Client.IConnection" />.</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.IConnection.Headers">
+      <summary>Ruft die Header für die Anforderungen ab.</summary>
+      <returns>Die Header für die Anforderungen.</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.IConnection.Items">
+      <summary>Ruft ein Wörterbuch zum Speichern des Status für <see cref="T:Microsoft.AspNet.SignalR.Client.IConnection" /> ab.</summary>
+      <returns>Ein Wörterbuch zum Speichern des Status für <see cref="T:Microsoft.AspNet.SignalR.Client.IConnection" />.</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.IConnection.JsonSerializer">
+      <summary>Ruft den von <see cref="T:Microsoft.AspNet.SignalR.Client.IConnection" /> verwendeten Serialisierer ab.</summary>
+      <returns>Der von <see cref="T:Microsoft.AspNet.SignalR.Client.IConnection" /> verwendete Serialisierer.</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.IConnection.KeepAliveData">
+      <summary>Ruft das Objekt zum Erhalten von Daten für <see cref="T:Microsoft.AspNet.SignalR.Client.IConnection" /> ab oder legt es fest.</summary>
+      <returns>Das Objekt zum Erhalten von Daten für <see cref="T:Microsoft.AspNet.SignalR.Client.IConnection" />.</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.IConnection.MessageId">
+      <summary>Ruft die letzte Nachrichten-ID für <see cref="T:Microsoft.AspNet.SignalR.Client.IConnection" /> ab oder legt sie fest.</summary>
+      <returns>Die letzte Nachrichten-ID für <see cref="T:Microsoft.AspNet.SignalR.Client.IConnection" />.</returns>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.IConnection.OnConnectionSlow">
+      <summary>Wird aufgerufen, wenn für <see cref="T:Microsoft.AspNet.SignalR.Client.IConnection" /> aktuell ein Timeout bevorsteht.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.IConnection.OnError(System.Exception)">
+      <summary>Wird aufgerufen, wenn für <see cref="T:Microsoft.AspNet.SignalR.Client.IConnection" /> ein Fehler aufgetreten ist.</summary>
+      <param name="ex">Der Ausnahmefehler.</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.IConnection.OnReceived(Newtonsoft.Json.Linq.JToken)">
+      <summary>Wird aufgerufen, wenn <see cref="T:Microsoft.AspNet.SignalR.Client.IConnection" /> Daten vom Server empfangen hat.</summary>
+      <param name="data">Die empfangenen Daten.</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.IConnection.OnReconnected">
+      <summary>Wird aufgerufen, wenn <see cref="T:Microsoft.AspNet.SignalR.Client.IConnection" /> nach einem Timeout erfolgreich erneut eine Verbindung herstellt.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.IConnection.OnReconnecting">
+      <summary>Wird aufgerufen, wenn das <see cref="T:Microsoft.AspNet.SignalR.Client.IConnection" />-Objekt nach einem Fehler beginnt, erneut eine Verbindung herzustellen.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.IConnection.PrepareRequest(Microsoft.AspNet.SignalR.Client.Http.IRequest)">
+      <summary>Bereitet alle Anforderungen für <see cref="T:Microsoft.AspNet.SignalR.Client.IConnection" /> vor.</summary>
+      <param name="request">Die Anforderung.</param>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.IConnection.Protocol">
+      <summary>Ruft das Protokoll für <see cref="T:Microsoft.AspNet.SignalR.Client.IConnection" /> ab oder legt es fest.</summary>
+      <returns>Das Protokoll für <see cref="T:Microsoft.AspNet.SignalR.Client.IConnection" />.</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.IConnection.Proxy">
+      <summary>Ruft die Proxyinformationen für <see cref="T:Microsoft.AspNet.SignalR.Client.IConnection" /> ab oder legt sie fest.</summary>
+      <returns>Die Proxyinformationen für <see cref="T:Microsoft.AspNet.SignalR.Client.IConnection" />.</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.IConnection.QueryString">
+      <summary>Ruft die im Konstruktor angegebene Abfragezeichenfolge ab.</summary>
+      <returns>Die im Konstruktor angegebene Abfragezeichenfolge.</returns>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.IConnection.Send(System.String)">
+      <summary>Sendet Daten asynchron über <see cref="T:Microsoft.AspNet.SignalR.Client.IConnection" />.</summary>
+      <returns>Ein Task, der den Sendevorgang der Daten darstellt.</returns>
+      <param name="data">Die zu sendenden Daten.</param>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.IConnection.State">
+      <summary>Ruft den aktuellen ConnectionState von <see cref="T:Microsoft.AspNet.SignalR.Client.IConnection" /> ab.</summary>
+      <returns>Der aktuelle ConnectionState von <see cref="T:Microsoft.AspNet.SignalR.Client.IConnection" />.</returns>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.IConnection.Stop">
+      <summary>Beendet <see cref="T:Microsoft.AspNet.SignalR.Client.IConnection" /> und sendet eine Abbruchnachricht an den Server.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.IConnection.Trace(Microsoft.AspNet.SignalR.Client.TraceLevels,System.String,System.Object[])">
+      <summary>Führt die Ablaufverfolgung einer <see cref="T:Microsoft.AspNet.SignalR.Client.IConnection" />-Methode aus, die durch die Parameter angegeben wird.</summary>
+      <param name="level">Die Ablaufverfolgungsstufe.</param>
+      <param name="format">Das Format.</param>
+      <param name="args">Das Argument.</param>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.IConnection.Transport">
+      <summary>Ruft den Clienttransport für <see cref="T:Microsoft.AspNet.SignalR.Client.IConnection" /> ab.</summary>
+      <returns>Der Clienttransport für <see cref="T:Microsoft.AspNet.SignalR.Client.IConnection" />.</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.IConnection.TransportConnectTimeout">
+      <summary>Ruft ein TimeSpan-Objekt ab, das die Zeitspanne für eine Transportverbindung darstellt, bevor ein Timeout auftritt, bzw. legt dieses Objekt fest.</summary>
+      <returns>Ein TimeSpan-Objekt, das die Zeitspanne für eine Transportverbindung darstellt, bevor ein Timeout auftritt.</returns>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.IConnection.UpdateLastKeepAlive">
+      <summary>Aktualisiert das Objekt zum Speichern der verschiedenen Keep-Alive-Timeoutwerte.</summary>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.IConnection.Url">
+      <summary>Ruft die URL für <see cref="T:Microsoft.AspNet.SignalR.Client.IConnection" /> ab.</summary>
+      <returns>Die URL für <see cref="T:Microsoft.AspNet.SignalR.Client.IConnection" />.</returns>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.Client.IHubProxy">
+      <summary>Ein clientseitiger Proxy für einen serverseitigen Hub.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.IHubProxy.Invoke``1(System.String,System.Object[])">
+      <summary>Führt eine Methode auf dem serverseitigen Hub asynchron aus.</summary>
+      <returns>Ein Task, der den Abschluss des Aufrufs darstellt.</returns>
+      <param name="method">Der Name der Methode.</param>
+      <param name="args">Die Argumente.</param>
+      <typeparam name="T">Der Typ des vom Hub zurückgegebenen Ergebnisses.</typeparam>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.IHubProxy.Invoke(System.String,System.Object[])">
+      <summary>Führt eine Methode auf dem serverseitigen Hub asynchron aus.</summary>
+      <returns>Ein Task, der den Abschluss des Aufrufs darstellt.</returns>
+      <param name="method">Der Name der Methode.</param>
+      <param name="args">Die Argumente.</param>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.IHubProxy.Item(System.String)">
+      <summary>Ruft den Status des Hubs ab bzw. legt diesen fest.</summary>
+      <returns>Der Wert des Felds.</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.IHubProxy.JsonSerializer">
+      <summary>Ruft den von der Verbindung verwendeten Serialisierer ab.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.IHubProxy.Subscribe(System.String)">
+      <summary>Registriert ein Ereignis für den Hub.</summary>
+      <returns>Ein <see cref="T:Microsoft.AspNet.SignalR.Client.Hubs.Subscription" />-Objekt.</returns>
+      <param name="eventName">Der Name des Ereignisses.</param>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.Client.KeepAliveData">
+      <summary>Stellt die Klasse zum Speichern aller Keep-Alive-Eigenschaften dar.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.KeepAliveData.#ctor(System.DateTime,System.TimeSpan,System.TimeSpan,System.TimeSpan)">
+      <summary>Initialisiert eine neue Instanz der <see cref="T:Microsoft.AspNet.SignalR.Client.KeepAliveData" />-Klasse.</summary>
+      <param name="lastKeepAlive">Die letzten Keep-Alive-Eigenschaften.</param>
+      <param name="timeout">Die Timeouteigenschaft.</param>
+      <param name="timeoutWarning">Die Timeoutwarnung.</param>
+      <param name="checkInterval">Überprüft das Intervall.</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.KeepAliveData.#ctor(System.TimeSpan)">
+      <summary>Initialisiert eine neue Instanz der <see cref="T:Microsoft.AspNet.SignalR.Client.KeepAliveData" />-Klasse.</summary>
+      <param name="timeout">Die Timeouteigenschaft.</param>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.KeepAliveData.CheckInterval">
+      <summary>Ruft die Zeitspanne ab, in der die Intervalleigenschaft überprüft wird, oder legt sie fest.</summary>
+      <returns>Die Zeitspanne, in der die Intervalleigenschaft überprüft wird.</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.KeepAliveData.LastKeepAlive">
+      <summary>Ruft das DateTime-Objekt zum Speichern der letzten Keep-Alive-Eigenschaften ab oder legt es fest.</summary>
+      <returns>Das DateTime-Objekt zum Speichern der letzten Keep-Alive-Eigenschaften.</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.KeepAliveData.Timeout">
+      <summary>Ruft das Timeout von <see cref="T:Microsoft.AspNet.SignalR.Client.KeepAliveData" /> ab oder legt es fest.</summary>
+      <returns>Das Timeout von <see cref="T:Microsoft.AspNet.SignalR.Client.KeepAliveData" />.</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.KeepAliveData.TimeoutWarning">
+      <summary>Ruft die Timeoutwarnung von <see cref="T:Microsoft.AspNet.SignalR.Client.KeepAliveData" /> ab oder legt sie fest.</summary>
+      <returns>Die Timeoutwarnung von <see cref="T:Microsoft.AspNet.SignalR.Client.KeepAliveData" />.</returns>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.Client.NegotiationResponse">
+      <summary>Stellt die Verbindungseigenschaften für die Aushandlungsantwort zur Verfügung.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.NegotiationResponse.#ctor">
+      <summary>Initialisiert eine neue Instanz der <see cref="T:Microsoft.AspNet.SignalR.Client.NegotiationResponse" />-Klasse.</summary>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.NegotiationResponse.ConnectionId">
+      <summary>Ruft die Verbindungs-ID für die Aushandlungsantwort ab oder legt sie fest.</summary>
+      <returns>Die Verbindungs-ID für die Aushandlungsantwort.</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.NegotiationResponse.ConnectionToken">
+      <summary>Ruft das Verbindungstoken für die Aushandlungsantwort ab oder legt es fest.</summary>
+      <returns>Das Verbindungstoken für die Aushandlungsantwort.</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.NegotiationResponse.DisconnectTimeout">
+      <summary>Ruft die Trennungstimeouteigenschaft für die Aushandlungsantwort ab oder legt sie fest.</summary>
+      <returns>Die Trennungstimeouteigenschaft für die Aushandlungsantwort.</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.NegotiationResponse.KeepAliveTimeout">
+      <summary>Ruft das Keep-Alive-Timeout für die Aushandlungsantwort ab oder legt es fest.</summary>
+      <returns>Das Keep-Alive-Timeout für die Aushandlungsantwort.</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.NegotiationResponse.ProtocolVersion">
+      <summary>Ruft die Protokollversion für die Aushandlungsantwort ab oder legt sie fest.</summary>
+      <returns>Die Protokollversion für die Aushandlungsantwort.</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.NegotiationResponse.TransportConnectTimeout">
+      <summary>Ruft das Transportverbindungstimeout für die Aushandlungsantwort ab oder legt es fest.</summary>
+      <returns>Das Transportverbindungstimeout für die Aushandlungsantwort.</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.NegotiationResponse.TryWebSockets">
+      <summary>Ruft einen Wert ab, der angibt, ob die Aushandlungsantwort versucht, Websockets zu verwenden, oder legt diesen Wert fest.</summary>
+      <returns>true, wenn die Aushandlungsantwort versucht, Websockets zu verwenden, andernfalls false.</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.NegotiationResponse.Url">
+      <summary>Ruft die URL für die Aushandlungsantwort ab oder legt sie fest.</summary>
+      <returns>Die URL für die Aushandlungsantwort.</returns>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.Client.ObservableConnection`1">
+      <summary>Stellt die Datenverbindung dar, die die Clientverbindung für SignalR-Dienste bereitstellt.</summary>
+      <typeparam name="T">Der Typ der Elemente in der Verbindung.</typeparam>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.ObservableConnection`1.#ctor(Microsoft.AspNet.SignalR.Client.Connection,System.Func{System.String,`0})">
+      <summary>Initialisiert eine neue Instanz der <see cref="T:Microsoft.AspNet.SignalR.Client.ObservableConnection`1" />-Klasse.</summary>
+      <param name="connection">Die Clientverbindungen.</param>
+      <param name="convert">Die zu konvertierende Funktionszeichenfolge.</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.ObservableConnection`1.Subscribe(System.IObserver{`0})">
+      <summary>Abonniert eine beobachtbare Verbindung für die SignalR-Dienste.</summary>
+      <returns>Eine beobachtbare Verbindung für die SignalR-Dienste.</returns>
+      <param name="observer">Die Beobachterbenachrichtigungen.</param>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.Client.SignalRError">
+      <summary>Stellt Fehler dar, die vom SignalR-Client ausgelöst werden. </summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.SignalRError.#ctor(System.Exception)">
+      <summary>Initialisiert eine neue Instanz der <see cref="T:Microsoft.AspNet.SignalR.Client.SignalRError" />-Klasse mit der angegebenen Ausnahme.</summary>
+      <param name="exception">Die zu entpackende Ausnahme.</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.SignalRError.Dispose">
+      <summary>Gibt die von der aktuellen Instanz der Klasse <see cref="T:Microsoft.AspNet.SignalR.Client.SignalRError" /> verwendeten Ressourcen frei.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.SignalRError.Dispose(System.Boolean)">
+      <summary>Gibt die von der aktuellen Instanz der Klasse <see cref="T:Microsoft.AspNet.SignalR.DefaultDependencyResolver" /> verwendeten nicht verwalteten Ressourcen und optional auch die verwalteten Ressourcen frei.</summary>
+      <param name="disposing">true, um sowohl verwaltete als auch nicht verwaltete Ressourcen freizugeben. false, um ausschließlich nicht verwaltete Ressourcen freizugeben.</param>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.SignalRError.Exception">
+      <summary>Ruft die zugrunde liegende Ausnahme ohne Wrapper ab oder legt sie fest. </summary>
+      <returns>Die entpackte zugrunde liegende Ausnahme.</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.SignalRError.ResponseBody">
+      <summary>Ruft den Antworttext des Fehlers ab, wenn es sich um eine WebException handelt und die Antwort lesbar ist, oder legt ihn fest.</summary>
+      <returns>Der Antworttext des Fehlers.</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.SignalRError.StatusCode">
+      <summary>Ruft den Statuscode des Fehlers ab (wenn es sich um eine WebException handelt) oder legt ihn fest.</summary>
+      <returns>Der Statuscode des Fehlers.</returns>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.SignalRError.ToString">
+      <summary>Gibt die Zeichenfolgendarstellung dieses SignalR-Fehlers zurück.</summary>
+      <returns>Die Zeichenfolgendarstellung dieses SignalR-Fehlers.</returns>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.Client.StateChange">
+      <summary>Stellt eine Änderung des Verbindungsstatus dar.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.StateChange.#ctor(Microsoft.AspNet.SignalR.Client.ConnectionState,Microsoft.AspNet.SignalR.Client.ConnectionState)">
+      <summary>Erstellt eine neue Instanz von <see cref="T:Microsoft.AspNet.SignalR.Client.StateChange" />.</summary>
+      <param name="oldState">Der alte Status der Verbindung.</param>
+      <param name="newState">Der neue Status der Verbindung.</param>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.StateChange.NewState">
+      <summary>Ruft den neuen Status der Verbindung ab.</summary>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.StateChange.OldState">
+      <summary>Ruft den alten Status der Verbindung ab.</summary>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.Client.TraceLevels">
+      <summary>Zählt die Ablaufverfolgungsstufe auf, die dem SignalR-Client zugeordnet ist.</summary>
+    </member>
+    <member name="F:Microsoft.AspNet.SignalR.Client.TraceLevels.All">
+      <summary>Führt Ablaufverfolgung für alle zugeordneten Objekt aus.</summary>
+    </member>
+    <member name="F:Microsoft.AspNet.SignalR.Client.TraceLevels.Events">
+      <summary>Führt Ablaufverfolgung für alle Ereignisse aus.</summary>
+    </member>
+    <member name="F:Microsoft.AspNet.SignalR.Client.TraceLevels.Messages">
+      <summary>Führt Ablaufverfolgung für alle Nachrichten aus.</summary>
+    </member>
+    <member name="F:Microsoft.AspNet.SignalR.Client.TraceLevels.None">
+      <summary>Führt keinerlei Ablaufverfolgung aus.</summary>
+    </member>
+    <member name="F:Microsoft.AspNet.SignalR.Client.TraceLevels.StateChanges">
+      <summary>Führt Ablaufverfolgung für alle Statusänderungen aus.</summary>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.Client.Http.DefaultHttpClient">
+      <summary>Die <see cref="T:Microsoft.AspNet.SignalR.Client.Http.IHttpClient" />-Standardimplementierung.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Http.DefaultHttpClient.#ctor">
+      <summary>Initialisiert eine neue Instanz der <see cref="T:Microsoft.AspNet.SignalR.Client.Http.DefaultHttpClient" />-Klasse.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Http.DefaultHttpClient.Get(System.String,System.Action{Microsoft.AspNet.SignalR.Client.Http.IRequest},System.Boolean)">
+      <summary>Führt eine asynchrone HTTP GET-Anforderung für die angegebene URL aus.</summary>
+      <returns>Eine &lt;siehe cref="T:Task{IResponse}" /&gt;.</returns>
+      <param name="url">Die URL, an die die Anforderung gesendet werden soll.</param>
+      <param name="prepareRequest">Ein Rückruf, der die Anforderung mit Standardwerten initialisiert.</param>
+      <param name="isLongRunning">Gibt an, ob die Anforderung eine lange Ausführungszeit besitzt.</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Http.DefaultHttpClient.Initialize(Microsoft.AspNet.SignalR.Client.IConnection)">
+      <summary>Initialisiert die HTTP-Clients.</summary>
+      <param name="connection">Die aktuelle HTTP-Verbindung.</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Http.DefaultHttpClient.Post(System.String,System.Action{Microsoft.AspNet.SignalR.Client.Http.IRequest},System.Collections.Generic.IDictionary{System.String,System.String},System.Boolean)">
+      <summary>Führt eine asynchrone HTTP POST-Anforderung für die angegebene URL aus.</summary>
+      <returns>Eine &lt;siehe cref="T:Task{IResponse}" /&gt;.</returns>
+      <param name="url">Die URL, an die die Anforderung gesendet werden soll.</param>
+      <param name="prepareRequest">Ein Rückruf, der die Anforderung mit Standardwerten initialisiert.</param>
+      <param name="postData">Die URL-codierten Formulardaten.</param>
+      <param name="isLongRunning">Gibt an, ob die Anforderung eine lange Ausführungszeit besitzt.</param>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.Client.Http.DefaultHttpHandler">
+      <summary>Stellt den HTTP-Standardhandler des Clients dar.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Http.DefaultHttpHandler.#ctor(Microsoft.AspNet.SignalR.Client.IConnection)">
+      <summary>Initialisiert eine neue Instanz der <see cref="T:Microsoft.AspNet.SignalR.Client.Http.DefaultHttpHandler" />-Klasse.</summary>
+      <param name="connection">Die Standardverbindung.</param>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.Client.Http.HttpRequestMessageWrapper">
+      <summary>Stellt den Wrapper der HTTP-Anforderungsnachricht zur Verfügung.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Http.HttpRequestMessageWrapper.#ctor(System.Net.Http.HttpRequestMessage,System.Action)">
+      <summary>Initialisiert eine neue Instanz der <see cref="T:Microsoft.AspNet.SignalR.Client.Http.HttpRequestMessageWrapper" />-Klasse.</summary>
+      <param name="httpRequestMessage">Die HTTP-Anforderungsnachricht.</param>
+      <param name="cancel">Bricht die Anforderungsnachricht ab.</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Http.HttpRequestMessageWrapper.Abort">
+      <summary>Bricht die aktuelle HTTP-Anforderungsnachricht ab.</summary>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Http.HttpRequestMessageWrapper.Accept">
+      <summary>Ruft die HTTP-Eigenschaft zum Akzeptieren der Anforderungsnachricht ab oder legt sie fest.</summary>
+      <returns>Die HTTP-Eigenschaft der Anforderungsnachricht.</returns>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Http.HttpRequestMessageWrapper.SetRequestHeaders(System.Collections.Generic.IDictionary{System.String,System.String})">
+      <summary>Legt die Anforderungsheader von <see cref="T:Microsoft.AspNet.SignalR.Client.Http.HttpRequestMessageWrapper" /> fest.</summary>
+      <param name="headers">Die Anforderungsheader.</param>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Http.HttpRequestMessageWrapper.UserAgent">
+      <summary>Ruft den Benutzer-Agent von <see cref="T:Microsoft.AspNet.SignalR.Client.Http.HttpRequestMessageWrapper" /> ab oder legt ihn fest.</summary>
+      <returns>Der Benutzer-Agent von <see cref="T:Microsoft.AspNet.SignalR.Client.Http.HttpRequestMessageWrapper" />.</returns>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.Client.Http.HttpResponseMessageWrapper">
+      <summary>Stellt eine Containerklasse für <see cref="T:System.Net.Http.HttpResponseMessage" /> dar.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Http.HttpResponseMessageWrapper.#ctor(System.Net.Http.HttpResponseMessage)">
+      <summary>Initialisiert eine neue Instanz der <see cref="T:Microsoft.AspNet.SignalR.Client.Http.HttpResponseMessageWrapper" />-Klasse.</summary>
+      <param name="httpResponseMessage">Die Antwortnachricht für diesen HTTP-Client.</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Http.HttpResponseMessageWrapper.Dispose">
+      <summary>Gibt alle von der aktuellen Instanz von <see cref="T:Microsoft.AspNet.SignalR.Client.Http.HttpResponseMessageWrapper" /> verwendeten Ressourcen frei.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Http.HttpResponseMessageWrapper.Dispose(System.Boolean)">
+      <summary>Gibt die von der <see cref="T:Microsoft.AspNet.SignalR.Client.Http.HttpResponseMessageWrapper" />-Klasse verwendeten nicht verwalteten Ressourcen und optional auch die verwalteten Ressourcen frei.</summary>
+      <param name="disposing">true, um sowohl verwaltete als auch nicht verwaltete Ressourcen freizugeben. false, um ausschließlich nicht verwaltete Ressourcen freizugeben.</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Http.HttpResponseMessageWrapper.GetStream">
+      <summary>Ruft eine neue schreibgeschützte Kopie des Datenstroms ab, die dieser Nachricht zugeordnet ist.</summary>
+      <returns>Eine neue schreibgeschützte Kopie des Datenstroms, die dieser Nachricht zugeordnet ist.</returns>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Http.HttpResponseMessageWrapper.ReadAsString">
+      <summary>Liest die Antwortnachricht als Zeichenfolge.</summary>
+      <returns>Eine Zeichenfolge, die die Antwortnachricht darstellt.</returns>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.Client.Http.IHttpClient">
+      <summary>Der Client, der HTTP-Anforderungen ausführen kann.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Http.IHttpClient.Get(System.String,System.Action{Microsoft.AspNet.SignalR.Client.Http.IRequest},System.Boolean)">
+      <summary>Führt eine asynchrone HTTP GET-Anforderung für die angegebene URL aus.</summary>
+      <returns>Eine &lt;siehe cref="T:Task{IResponse}" /&gt;.</returns>
+      <param name="url">Die URL, an die die Anforderung gesendet werden soll.</param>
+      <param name="prepareRequest">Ein Rückruf, der die Anforderung mit Standardwerten initialisiert.</param>
+      <param name="isLongRunning">Gibt an, ob die Anforderung eine lange Ausführungszeit besitzt.</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Http.IHttpClient.Initialize(Microsoft.AspNet.SignalR.Client.IConnection)">
+      <summary>Initialisiert die HTTP-Clients.</summary>
+      <param name="connection">Die Verbindung.</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Http.IHttpClient.Post(System.String,System.Action{Microsoft.AspNet.SignalR.Client.Http.IRequest},System.Collections.Generic.IDictionary{System.String,System.String},System.Boolean)">
+      <summary>Führt eine asynchrone HTTP POST-Anforderung für die angegebene URL aus.</summary>
+      <returns>Eine &lt;siehe cref="T:Task{IResponse}" /&gt;.</returns>
+      <param name="url">Die URL, an die die Anforderung gesendet werden soll.</param>
+      <param name="prepareRequest">Ein Rückruf, der die Anforderung mit Standardwerten initialisiert.</param>
+      <param name="postData">Die URL-codierten Formulardaten.</param>
+      <param name="isLongRunning">Gibt an, ob die Anforderung eine lange Ausführungszeit besitzt.</param>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.Client.Http.IHttpClientExtensions">
+      <summary>Inhalte werden hier nicht aktualisiert. Bitte hier kein Material hinzufügen.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Http.IHttpClientExtensions.Post(Microsoft.AspNet.SignalR.Client.Http.IHttpClient,System.String,System.Action{Microsoft.AspNet.SignalR.Client.Http.IRequest},System.Boolean)">
+      <summary>Führt eine asynchrone HTTP POST-Anforderung für die angegebene URL aus.</summary>
+      <returns>Die asynchrone HTTP POST-Anforderung für die angegebene URL.</returns>
+      <param name="client">Der Client, der HTTP-Anforderungen ausführen kann.</param>
+      <param name="url">Die URL, an die die Anforderung gesendet werden soll.</param>
+      <param name="prepareRequest">Ein Rückruf, der die Anforderung mit Standardwerten initialisiert.</param>
+      <param name="isLongRunning">Gibt an, ob die POST-Anforderung eine lange Ausführungszeit besitzt.</param>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.Client.Http.IRequest">
+      <summary>Stellt die HTTP-Anforderung dar.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Http.IRequest.Abort"></member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Http.IRequest.Accept"></member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Http.IRequest.SetRequestHeaders(System.Collections.Generic.IDictionary{System.String,System.String})">
+      <summary>Legt die Anforderungsheader fest.</summary>
+      <param name="headers">Die Anforderungsheader.</param>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Http.IRequest.UserAgent"></member>
+    <member name="T:Microsoft.AspNet.SignalR.Client.Http.IResponse">
+      <summary>Stellt die HTTP-Antwort dar. </summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Http.IResponse.GetStream">
+      <summary>Ruft den Datenstrom ab, der den Antworttext darstellt. </summary>
+      <returns>Der Datenstrom, der den Antworttext darstellt.</returns>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.Client.Http.IResponseExtensions">
+      <summary>Provides method that is used to read the response object.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Http.IResponseExtensions.ReadAsString(Microsoft.AspNet.SignalR.Client.Http.IResponse)">
+      <summary>Reads the response object and returns the content as string.</summary>
+      <returns>A task that represents the read operation.</returns>
+      <param name="response">The response object to read.</param>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.Client.Hubs.HubInvocation">
+      <summary>Stellt den Hubaufruf des Clients dar.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Hubs.HubInvocation.#ctor">
+      <summary>Initialisiert eine neue Instanz der <see cref="T:Microsoft.AspNet.SignalR.Client.Hubs.HubInvocation" />-Klasse.</summary>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Hubs.HubInvocation.Args">
+      <summary>Ruft die Argumentliste ab, mit der die Clienthubmethode aufgerufen wird, oder legt sie fest.</summary>
+      <returns>Die Argumentliste, mit der die Clienthubmethode aufgerufen wird.</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Hubs.HubInvocation.CallbackId">
+      <summary>Ruft den Rückrufbezeichner der Hubaufrufeigenschaft ab oder legt ihn fest.</summary>
+      <returns>Der Rückrufbezeichner der Hubaufrufeigenschaft.</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Hubs.HubInvocation.Hub">
+      <summary>Ruft den Namen des Hubs ab, zu dem die aufgerufene Methode gehört, oder legt ihn fest.</summary>
+      <returns>Der Name des Hubs, zu dem die aufgerufene Methode gehört.</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Hubs.HubInvocation.Method">
+      <summary>Ruft den Namen der aufzurufenden Clienthubmethode ab oder legt ihn fest.</summary>
+      <returns>Der Name der aufzurufenden Clienthubmethode.</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Hubs.HubInvocation.State">
+      <summary>Ruft einen Schlüsselwertspeicher ab, der den Hubstatus auf dem Server darstellt, der sich seit dem letzten Senden des Hubstatus an den Client geändert hat, oder legt ihn fest.</summary>
+      <returns>Ein Schlüsselwertspeicher, der den Hubstatus auf dem Server darstellt, der sich seit dem letzten Senden des Hubstatus an den Client geändert hat.</returns>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.Client.Hubs.HubProxy">
+      <summary>Inhalte werden hier nicht aktualisiert. Bitte hier kein Material hinzufügen.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Hubs.HubProxy.#ctor(Microsoft.AspNet.SignalR.Client.Hubs.IHubConnection,System.String)">
+      <summary>Initialisiert eine neue Instanz der <see cref="T:Microsoft.AspNet.SignalR.Client.Hubs.HubProxy" />-Klasse.</summary>
+      <param name="connection">Die Hubverbindung.</param>
+      <param name="hubName">Der Name des Hubs.</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Hubs.HubProxy.Invoke(System.String,System.Object[])">
+      <summary>Ruft die Methode und das Argument mit den angegebenen Parametern auf.</summary>
+      <returns>Gibt <see cref="T:System.Threading.Tasks.Task" /> zurück.</returns>
+      <param name="method">Die Methode.</param>
+      <param name="args">Das Argument.</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Hubs.HubProxy.Invoke``1(System.String,System.Object[])">
+      <summary>Ruft die Methode und das Argument mit den angegebenen Parametern auf.</summary>
+      <returns>Gibt <see cref="T:System.Threading.Tasks.Task`1" /> zurück.</returns>
+      <param name="method">Die Methode.</param>
+      <param name="args">Das Argument.</param>
+      <typeparam name="T">Der Typ.</typeparam>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Hubs.HubProxy.InvokeEvent(System.String,System.Collections.Generic.IList{Newtonsoft.Json.Linq.JToken})">
+      <summary>Ruft das Ereignis mit den angegebenen Parametern auf.</summary>
+      <param name="eventName">Der Ereignisname.</param>
+      <param name="args">Die Auflistung der Argumentenliste.</param>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Hubs.HubProxy.Item(System.String)">
+      <summary>Ruft ein Element für die HubProxy-Klasse ab bzw. legt es fest.</summary>
+      <returns>Eine Element für die HubProxy-Klasse.</returns>
+      <param name="name">Der Zeichenfolgenname.</param>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Hubs.HubProxy.JsonSerializer">
+      <summary>Ruft den JSON-Serialisierer für die HubProxy-Klasse ab.</summary>
+      <returns>Der JSON-Serialisierer für die HubProxy-Klasse.</returns>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Hubs.HubProxy.Subscribe(System.String)">
+      <summary>Stellt die zu abonnierende HubProxy-Klasse bereit.</summary>
+      <returns>Die zu abonnierende HubProxy-Klasse.</returns>
+      <param name="eventName">Der Ereignisname.</param>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.Client.Hubs.HubRegistrationData">
+      <summary>Stellt Hubregistrierungsdaten dar.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Hubs.HubRegistrationData.#ctor">
+      <summary>Initialisiert eine neue Instanz der <see cref="T:Microsoft.AspNet.SignalR.Client.Hubs.HubRegistrationData" />-Klasse.</summary>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Hubs.HubRegistrationData.Name">
+      <summary>Ruft den Namen der Daten ab oder legt ihn fest.</summary>
+      <returns>Der Name der Daten.</returns>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.Client.Hubs.HubResult">
+      <summary>Stellt das Ergebnis eines Hubaufrufs dar.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Hubs.HubResult.#ctor">
+      <summary>Initialisiert eine neue Instanz der <see cref="T:Microsoft.AspNet.SignalR.Client.Hubs.HubResult" />-Klasse.</summary>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Hubs.HubResult.Error">
+      <summary>Ruft die Fehlermeldung ab, die vom Hubaufruf zurückgegeben wird, oder legt sie fest.</summary>
+      <returns>Die Fehlermeldung, die vom Hubaufruf zurückgegeben wird.</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Hubs.HubResult.ErrorData">
+      <summary>Zusätzliche Fehlerdaten.</summary>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Hubs.HubResult.Id">
+      <summary>Ruft den Rückrufbezeichner ab oder legt ihn fest.</summary>
+      <returns>Der Rückrufbezeichner.</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Hubs.HubResult.IsHubException">
+      <summary>Gibt an, ob der Fehler eine <see cref="T:Microsoft.AspNet.SignalR.Client.HubException" /> ist.</summary>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Hubs.HubResult.Result">
+      <summary>Ruft den Rückgabewert des Hubs ab oder legt ihn fest.</summary>
+      <returns>Der Rückgabewert des Hubs.</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Hubs.HubResult.State">
+      <summary>Ruft den Aufruferstatus von diesem Hub ab oder legt ihn fest.</summary>
+      <returns>Gibt den Aufruferstatus für diesen Hub zurück.</returns>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.Client.Hubs.Hubservable">
+      <summary>Stellt eine <see cref="T:System.IObservable{object[]}" />-Implementierung eines Hubereignisses dar.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Hubs.Hubservable.#ctor(Microsoft.AspNet.SignalR.Client.IHubProxy,System.String)"></member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Hubs.Hubservable.Subscribe(System.IObserver{System.Collections.Generic.IList{Newtonsoft.Json.Linq.JToken}})">
+      <summary>Registriert den angegebenen Beobachter für das Hubereignis.</summary>
+      <returns>Das <see cref="T:System.IDisposable" />-Objekt, das das empfangene Ereignis eines Abonnements darstellt.</returns>
+      <param name="observer">Die zu registrierende Beobachter.</param>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.Client.Hubs.IHubConnection">
+      <summary>Stellt eine Hubverbindung dar.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Hubs.IHubConnection.RegisterCallback(System.Action{Microsoft.AspNet.SignalR.Client.Hubs.HubResult})">
+      <summary>Registriert eine Rückruffunktion für die Hubverbindung.</summary>
+      <returns>Die ID-Zeichenfolge des Rückrufs.</returns>
+      <param name="callback">Die zu registrierende Rückruffunktion.</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Hubs.IHubConnection.RemoveCallback(System.String)"></member>
+    <member name="T:Microsoft.AspNet.SignalR.Client.Hubs.Subscription">
+      <summary>Stellt ein Abonnement einer Hubmethode dar.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Hubs.Subscription.#ctor">
+      <summary>Initialisiert eine neue Instanz der <see cref="T:Microsoft.AspNet.SignalR.Client.Hubs.Subscription" />-Klasse.</summary>
+    </member>
+    <member name="E:Microsoft.AspNet.SignalR.Client.Hubs.Subscription.Received">
+      <summary>Tritt auf, wenn das Abonnement empfangen wurde.</summary>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.Client.Infrastructure.TransportAbortHandler"></member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Infrastructure.TransportAbortHandler.#ctor(Microsoft.AspNet.SignalR.Client.Http.IHttpClient,System.String)"></member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Infrastructure.TransportAbortHandler.Abort(Microsoft.AspNet.SignalR.Client.IConnection,System.TimeSpan,System.String)"></member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Infrastructure.TransportAbortHandler.CompleteAbort"></member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Infrastructure.TransportAbortHandler.Dispose"></member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Infrastructure.TransportAbortHandler.TryCompleteAbort"></member>
+    <member name="T:Microsoft.AspNet.SignalR.Client.Infrastructure.TransportInitializationHandler">
+      <summary>Stellt das Objekt dar, das die Transportinitialisierung verarbeitet.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Infrastructure.TransportInitializationHandler.#ctor(System.TimeSpan,System.Threading.CancellationToken)">
+      <summary>Initialisiert eine neue Instanz der <see cref="T:Microsoft.AspNet.SignalR.Client.Infrastructure.TransportInitializationHandler" />-Klasse.</summary>
+      <param name="failureTimeout">Die Zeit, nach der der Initialisierungsvorgang als fehlerhaft betrachtet wird.</param>
+      <param name="disconnectToken">Das Trennungstoken.</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Infrastructure.TransportInitializationHandler.Fail"></member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Infrastructure.TransportInitializationHandler.Fail(System.Exception)"></member>
+    <member name="E:Microsoft.AspNet.SignalR.Client.Infrastructure.TransportInitializationHandler.OnFailure">
+      <summary>Tritt bei einem Fehler der Initialisierung des Transports auf.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Infrastructure.TransportInitializationHandler.Success">
+      <summary>Gibt den Erfolg der Initialisierung des Transports an.</summary>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Infrastructure.TransportInitializationHandler.Task">
+      <summary>Ruft die Aufgaben ab, die der Initialisierung des Transports zugeordnet sind, oder legt diese fest.</summary>
+      <returns>Die Aufgaben, die der Initialisierung des Transports zugeordnet sind.</returns>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.Client.Transports.AsyncStreamReader">
+      <summary>Represents an asynchronous stream reader.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.AsyncStreamReader.#ctor(System.IO.Stream)">
+      <summary>Initializes a new instance of the <see cref="T:Microsoft.AspNet.SignalR.Client.Transports.AsyncStreamReader" /> class. </summary>
+      <param name="stream">The stream to read asynchronously payloads from.</param>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Transports.AsyncStreamReader.BufferLock">
+      <summary>Gets the object that is used to lock the buffer.</summary>
+      <returns>The object that is used to lock the buffer.</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Transports.AsyncStreamReader.Closed">
+      <summary>Gets or sets the method to invoke when the reader is closed while in the Processing state. </summary>
+      <returns>The method to invoke when the reader is closed while in the Processing state.</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Transports.AsyncStreamReader.Data">
+      <summary>Gets or sets the method to invoke when there is a message to be received in the stream. </summary>
+      <returns>The method to invoke when there is a message to be received in the stream.</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Transports.AsyncStreamReader.Opened">
+      <summary>Gets or sets the method to invoke when the stream is open. </summary>
+      <returns>The method to invoke when the stream is open.</returns>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.AsyncStreamReader.Start">
+      <summary> Starts the reader. </summary>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.Client.Transports.AutoTransport">
+      <summary>Inhalte werden hier nicht aktualisiert. Bitte hier kein Material hinzufügen.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.AutoTransport.#ctor(Microsoft.AspNet.SignalR.Client.Http.IHttpClient)">
+      <summary>Initialisiert eine neue Instanz der <see cref="T:Microsoft.AspNet.SignalR.Client.Transports.AutoTransport" />-Klasse.</summary>
+      <param name="httpClient">Der Client, der HTTP-Anforderungen ausführen kann.</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.AutoTransport.#ctor(Microsoft.AspNet.SignalR.Client.Http.IHttpClient,System.Collections.Generic.IList{Microsoft.AspNet.SignalR.Client.Transports.IClientTransport})">
+      <summary>Initialisiert eine neue Instanz der <see cref="T:Microsoft.AspNet.SignalR.Client.Transports.AutoTransport" />-Klasse.</summary>
+      <param name="httpClient">Der Client, der HTTP-Anforderungen ausführen kann.</param>
+      <param name="transports">Der Client, der HTTP-Transporte ausführen kann.</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.AutoTransport.Abort(Microsoft.AspNet.SignalR.Client.IConnection,System.TimeSpan,System.String)"></member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.AutoTransport.Dispose">
+      <summary>Gibt alle von der aktuellen Instanz der Klasse <see cref="T:Microsoft.AspNet.SignalR.Client.Transports.AutoTransport" /> verwendeten Ressourcen frei.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.AutoTransport.Dispose(System.Boolean)">
+      <summary>Gibt die von der <see cref="T:Microsoft.AspNet.SignalR.Client.Transports.AutoTransport" />-Klasse verwendeten nicht verwalteten Ressourcen und optional auch die verwalteten Ressourcen frei.</summary>
+      <param name="disposing">true, um sowohl verwaltete als auch nicht verwaltete Ressourcen freizugeben. false, um ausschließlich nicht verwaltete Ressourcen freizugeben.</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.AutoTransport.GetNegotiateResponse(Microsoft.AspNet.SignalR.Client.IConnection,System.String)"></member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.AutoTransport.LostConnection(Microsoft.AspNet.SignalR.Client.IConnection)">
+      <summary>Verliert die Transportverbindung für die Clientdienste.</summary>
+      <param name="connection">Die Transportverbindung.</param>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Transports.AutoTransport.Name">
+      <summary>Ruft den Namen des <see cref="T:Microsoft.AspNet.SignalR.Client.Transports.AutoTransport" />-Objekts ab.</summary>
+      <returns>Ruft den Namen des <see cref="T:Microsoft.AspNet.SignalR.Client.Transports.AutoTransport" />-Objekts ab.</returns>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.AutoTransport.Negotiate(Microsoft.AspNet.SignalR.Client.IConnection,System.String)"></member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.AutoTransport.Send(Microsoft.AspNet.SignalR.Client.IConnection,System.String,System.String)"></member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.AutoTransport.Start(Microsoft.AspNet.SignalR.Client.IConnection,System.String,System.Threading.CancellationToken)">
+      <summary>Startet die automatische Transportverbindung.</summary>
+      <returns>Die zu startende automatische Transportverbindung.</returns>
+      <param name="connection">Die Transportverbindung.</param>
+      <param name="disconnectToken">Das Trennungstoken.</param>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Transports.AutoTransport.SupportsKeepAlive">
+      <summary>Ruft einen Wert ab, der angibt, ob der aktive Transport Keep-Alive unterstützt.</summary>
+      <returns>true, wenn der aktive Transport Keep-Alive unterstützt, andernfalls false.</returns>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.Client.Transports.HttpBasedTransport">
+      <summary>Inhalte werden hier nicht aktualisiert. Bitte hier kein Material hinzufügen.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.HttpBasedTransport.#ctor(Microsoft.AspNet.SignalR.Client.Http.IHttpClient,System.String)"></member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.HttpBasedTransport.Abort(Microsoft.AspNet.SignalR.Client.IConnection,System.TimeSpan,System.String)"></member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Transports.HttpBasedTransport.AbortHandler"></member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.HttpBasedTransport.Dispose">
+      <summary>Gibt die von der aktuellen Instanz der Klasse <see cref="T:Microsoft.AspNet.SignalR.Client.Transports.HttpBasedTransport" /> verwendeten Ressourcen frei.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.HttpBasedTransport.Dispose(System.Boolean)">
+      <summary>Gibt die von der <see cref="T:Microsoft.AspNet.SignalR.Client.Transports.HttpBasedTransport" />-Klasse verwendeten nicht verwalteten Ressourcen und optional auch die verwalteten Ressourcen, die diesem Objekt zugeordnet sind. frei.</summary>
+      <param name="disposing">True, um sowohl verwaltete als auch nicht verwaltete Ressourcen freizugeben. False, um ausschließlich nicht verwaltete Ressourcen freizugeben.</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.HttpBasedTransport.GetReceiveQueryString(Microsoft.AspNet.SignalR.Client.IConnection,System.String)"></member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Transports.HttpBasedTransport.HttpClient"></member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.HttpBasedTransport.LostConnection(Microsoft.AspNet.SignalR.Client.IConnection)">
+      <summary>Verliert die Verbindung des Clienttransports.</summary>
+      <param name="connection">Die Clientverbindung.</param>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Transports.HttpBasedTransport.Name"></member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.HttpBasedTransport.Negotiate(Microsoft.AspNet.SignalR.Client.IConnection,System.String)"></member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.HttpBasedTransport.OnStart(Microsoft.AspNet.SignalR.Client.IConnection,System.String,System.Threading.CancellationToken,Microsoft.AspNet.SignalR.Client.Infrastructure.TransportInitializationHandler)"></member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.HttpBasedTransport.Send(Microsoft.AspNet.SignalR.Client.IConnection,System.String,System.String)"></member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.HttpBasedTransport.Start(Microsoft.AspNet.SignalR.Client.IConnection,System.String,System.Threading.CancellationToken)"></member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Transports.HttpBasedTransport.SupportsKeepAlive">
+      <summary>Ruft einen Wert ab, der angibt, ob der Clienttransport Keep-Alive unterstützt.</summary>
+      <returns>true, wenn der Clienttransport Keep-Alive unterstützt, andernfalls false.</returns>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.Client.Transports.IClientTransport">
+      <summary>Inhalte werden hier nicht aktualisiert. Bitte hier kein Material hinzufügen.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.IClientTransport.Abort(Microsoft.AspNet.SignalR.Client.IConnection,System.TimeSpan,System.String)"></member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.IClientTransport.LostConnection(Microsoft.AspNet.SignalR.Client.IConnection)">
+      <summary>Verliert die Verbindung des Clienttransports.</summary>
+      <param name="connection">Die Clientverbindung.</param>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Transports.IClientTransport.Name">
+      <summary>Ruft den Namen des <see cref="T:Microsoft.AspNet.SignalR.Client.Transports.IClientTransport" />-Objekts ab.</summary>
+      <returns>Der Name des <see cref="T:Microsoft.AspNet.SignalR.Client.Transports.IClientTransport" />-Objekts.</returns>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.IClientTransport.Negotiate(Microsoft.AspNet.SignalR.Client.IConnection,System.String)"></member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.IClientTransport.Send(Microsoft.AspNet.SignalR.Client.IConnection,System.String,System.String)"></member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.IClientTransport.Start(Microsoft.AspNet.SignalR.Client.IConnection,System.String,System.Threading.CancellationToken)">
+      <summary>Startet die Clienttransportverbindung.</summary>
+      <returns>Die zu startende Clienttransportverbindung.</returns>
+      <param name="connection">Die Clientverbindung.</param>
+      <param name="disconnectToken">Das Trennungtoken.</param>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Transports.IClientTransport.SupportsKeepAlive">
+      <summary>Ruft einen Wert ab, der angibt, ob der Clienttransport Keep-Alive unterstützt.</summary>
+      <returns>true, wenn der Clienttransport Keep-Alive unterstützt, andernfalls false.</returns>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.Client.Transports.LongPollingTransport">
+      <summary>Inhalte werden hier nicht aktualisiert. Bitte hier kein Material hinzufügen.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.LongPollingTransport.#ctor">
+      <summary>Initialisiert eine neue Instanz der <see cref="T:Microsoft.AspNet.SignalR.Client.Transports.LongPollingTransport" />-Klasse.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.LongPollingTransport.#ctor(Microsoft.AspNet.SignalR.Client.Http.IHttpClient)">
+      <summary>Initialisiert eine neue Instanz der <see cref="T:Microsoft.AspNet.SignalR.Client.Transports.LongPollingTransport" />-Klasse.</summary>
+      <param name="httpClient">Der HTTP-Client.</param>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Transports.LongPollingTransport.ErrorDelay">
+      <summary>Ruft den Zeitpunkt ab, der den Verzögerungsfehler darstellt, bzw. legt ihn fest.</summary>
+      <returns>Der Zeitpunkt, der den Verzögerungsfehler darstellt.</returns>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.LongPollingTransport.LostConnection(Microsoft.AspNet.SignalR.Client.IConnection)"></member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.LongPollingTransport.OnStart(Microsoft.AspNet.SignalR.Client.IConnection,System.String,System.Threading.CancellationToken,Microsoft.AspNet.SignalR.Client.Infrastructure.TransportInitializationHandler)"></member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Transports.LongPollingTransport.ReconnectDelay">
+      <summary>Ruft den Zeitpunkt ab, der die Verzögerung bei der erneuten Verbindung des Transports darstellt, bzw. legt ihn fest.</summary>
+      <returns>Der Zeitpunkt, der die Verzögerung bei der erneuten Verbindung des Transports darstellt.</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Transports.LongPollingTransport.SupportsKeepAlive">
+      <summary> Gibt an, ob der Transport Keep-Alive unterstützt. </summary>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.Client.Transports.PollingRequestHandler">
+      <summary>Represents a polling request handler.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.PollingRequestHandler.#ctor(Microsoft.AspNet.SignalR.Client.Http.IHttpClient)">
+      <summary>Initializes a new instance of the <see cref="T:Microsoft.AspNet.SignalR.Client.Transports.PollingRequestHandler" /> class.</summary>
+      <param name="httpClient">The HTTP client to poll.</param>
+    </member>
+    <member name="E:Microsoft.AspNet.SignalR.Client.Transports.PollingRequestHandler.OnAbort">
+      <summary>Occurs when the current poll request was aborted, passing in the soon to be aborted request. </summary>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Transports.PollingRequestHandler.OnAfterPoll">
+      <summary>Gets or sets a function that triggers before a new polling request is attempted.   Passes in an exception if the Poll errored, null otherwise. Expects the return as a task in order to allow modification of timing for subsequent polls.</summary>
+      <returns>A function that triggers before a new polling request is attempted.</returns>
+    </member>
+    <member name="E:Microsoft.AspNet.SignalR.Client.Transports.PollingRequestHandler.OnError">
+      <summary>Occurs and passes the exception when the poll errors. </summary>
+    </member>
+    <member name="E:Microsoft.AspNet.SignalR.Client.Transports.PollingRequestHandler.OnMessage">
+      <summary> Sends the string based message to the callback. </summary>
+    </member>
+    <member name="E:Microsoft.AspNet.SignalR.Client.Transports.PollingRequestHandler.OnPolling">
+      <summary> Occurs when the polling request is in flight. </summary>
+    </member>
+    <member name="E:Microsoft.AspNet.SignalR.Client.Transports.PollingRequestHandler.PrepareRequest">
+      <summary> Allows modification of the IRequest parameter before using it in a poll.</summary>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Transports.PollingRequestHandler.ResolveUrl">
+      <summary>Gets or sets a function used to generate the URL that is posted to for the poll. </summary>
+      <returns>A function used to generate the URL that is posted to for the poll.</returns>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.PollingRequestHandler.Start">
+      <summary> Starts the polling request handler. </summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.PollingRequestHandler.Stop">
+      <summary> Fully stops the polling request handler. </summary>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.Client.Transports.ServerSentEventsTransport">
+      <summary>Inhalte werden hier nicht aktualisiert. Bitte hier kein Material hinzufügen.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.ServerSentEventsTransport.#ctor">
+      <summary>Initialisiert eine neue Instanz der <see cref="T:Microsoft.AspNet.SignalR.Client.Transports.ServerSentEventsTransport" />-Klasse.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.ServerSentEventsTransport.#ctor(Microsoft.AspNet.SignalR.Client.Http.IHttpClient)">
+      <summary>Initialisiert eine neue Instanz der <see cref="T:Microsoft.AspNet.SignalR.Client.Transports.ServerSentEventsTransport" />-Klasse.</summary>
+      <param name="httpClient">Der Client.</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.ServerSentEventsTransport.LostConnection(Microsoft.AspNet.SignalR.Client.IConnection)">
+      <summary>Tritt auf, wenn die Verbindung zum Server getrennt wurde.</summary>
+      <param name="connection">Die Verbindung.</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.ServerSentEventsTransport.OnStart(Microsoft.AspNet.SignalR.Client.IConnection,System.String,System.Threading.CancellationToken,Microsoft.AspNet.SignalR.Client.Infrastructure.TransportInitializationHandler)"></member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.ServerSentEventsTransport.OpenConnection(Microsoft.AspNet.SignalR.Client.IConnection,System.Action{System.Exception})"></member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Transports.ServerSentEventsTransport.ReconnectDelay">
+      <summary>Gibt die Zeitspanne an, die der Server nach einem Verbindungstimeout wartet, bevor die Verbindung erneut hergestellt wird.</summary>
+      <returns>Die Zeitspanne, die der Server nach einem Verbindungstimeout wartet, bevor die Verbindung erneut hergestellt wird.</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Transports.ServerSentEventsTransport.SupportsKeepAlive">
+      <summary>Gibt an, ob der Transport Keep-Alive unterstützt.</summary>
+      <returns>True, wenn der Transport Keep-Alive unterstützt, andernfalls False.</returns>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.Client.Transports.TransportHelper">
+      <summary>Inhalte werden hier nicht aktualisiert. Bitte hier kein Material hinzufügen.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.TransportHelper.AppendCustomQueryString(Microsoft.AspNet.SignalR.Client.IConnection,System.String)">
+      <summary>Stellt das Zeichen ‘?’ oder ‘&amp;’ voran, wenn dieses in der benutzerdefinierten Abfragezeichenfolge nicht vorhanden ist.</summary>
+      <returns>Die geänderte benutzerdefinierte Abfragezeichenfolge.</returns>
+      <param name="connection">Die Clientverbindung.</param>
+      <param name="baseUrl">Die Basis-URL.</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.TransportHelper.GetNegotiationResponse(Microsoft.AspNet.SignalR.Client.Http.IHttpClient,Microsoft.AspNet.SignalR.Client.IConnection,System.String)"></member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.TransportHelper.GetReceiveQueryString(Microsoft.AspNet.SignalR.Client.IConnection,System.String,System.String)"></member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.TransportHelper.ProcessResponse(Microsoft.AspNet.SignalR.Client.IConnection,System.String,System.Boolean@,System.Boolean@)"></member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.TransportHelper.ProcessResponse(Microsoft.AspNet.SignalR.Client.IConnection,System.String,System.Boolean@,System.Boolean@,System.Action)">
+      <summary>Verarbeitet die Antwortnachricht.</summary>
+      <param name="connection">Die Clientverbindung.</param>
+      <param name="response">Die zu verarbeitende Antwortnachricht.</param>
+      <param name="disconnected">Die Methode gibt hierin einen Wert zurück, der angibt, ob dieser Vorgang getrennt wurde.</param>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.Client.Transports.WebSocketTransport">
+      <summary>Inhalte werden hier nicht aktualisiert. Bitte hier kein Material hinzufügen.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.WebSocketTransport.#ctor"></member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.WebSocketTransport.#ctor(Microsoft.AspNet.SignalR.Client.Http.IHttpClient)"></member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.WebSocketTransport.Abort(Microsoft.AspNet.SignalR.Client.IConnection,System.TimeSpan,System.String)"></member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.WebSocketTransport.Dispose">
+      <summary>Gibt die von der aktuellen Instanz der Klasse <see cref="T:Microsoft.AspNet.SignalR.Client.Transports.WebSocketTransport" /> verwendeten Ressourcen frei.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.WebSocketTransport.Dispose(System.Boolean)">
+      <summary>Gibt die von der <see cref="T:Microsoft.AspNet.SignalR.Client.Transports.WebSocketTransport" />-Klasse verwendeten nicht verwalteten Ressourcen und optional auch die verwalteten Ressourcen, die diesem Objekt zugeordnet sind. frei.</summary>
+      <param name="disposing">True, um sowohl verwaltete als auch nicht verwaltete Ressourcen freizugeben. False, um ausschließlich nicht verwaltete Ressourcen freizugeben.</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.WebSocketTransport.LostConnection(Microsoft.AspNet.SignalR.Client.IConnection)">
+      <summary>Verliert die Verbindung des Clienttransports.</summary>
+      <param name="connection">Die Clientverbindung.</param>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Transports.WebSocketTransport.Name"></member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.WebSocketTransport.Negotiate(Microsoft.AspNet.SignalR.Client.IConnection,System.String)"></member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.WebSocketTransport.OnClose(System.Boolean)"></member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.WebSocketTransport.OnError"></member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.WebSocketTransport.OnMessage(System.String)"></member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.WebSocketTransport.OnOpen"></member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.WebSocketTransport.PerformConnect"></member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Transports.WebSocketTransport.ReconnectDelay"></member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.WebSocketTransport.Send(Microsoft.AspNet.SignalR.Client.IConnection,System.String,System.String)"></member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.WebSocketTransport.Start(Microsoft.AspNet.SignalR.Client.IConnection,System.String,System.Threading.CancellationToken)"></member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Transports.WebSocketTransport.SupportsKeepAlive">
+      <summary>Ruft einen Wert ab bzw. legt einen Wert fest, der angibt, ob der Transport Keep-Alive unterstützt.</summary>
+      <returns>True, wenn der Transport Keep-Alive unterstützt, andernfalls False.</returns>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.Client.Transports.ServerSentEvents.ChunkBuffer">
+      <summary>Inhalte werden hier nicht aktualisiert. Bitte hier kein Material hinzufügen.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.ServerSentEvents.ChunkBuffer.#ctor">
+      <summary>Initialisiert eine neue Instanz der <see cref="T:Microsoft.AspNet.SignalR.Client.Transports.ServerSentEvents.ChunkBuffer" />-Klasse.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.ServerSentEvents.ChunkBuffer.Add(System.ArraySegment{System.Byte})">
+      <summary>Fügt dem Block einen Puffer hinzu.</summary>
+      <param name="buffer">Der hinzuzufügende Puffer.</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.ServerSentEvents.ChunkBuffer.Add(System.Byte[],System.Int32)">
+      <summary>Fügt einen angegebenen Puffer hinzu.</summary>
+      <param name="buffer">Der hinzuzufügende Puffer.</param>
+      <param name="length">Die Länge des Puffers.</param>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Transports.ServerSentEvents.ChunkBuffer.HasChunks">
+      <summary>Ruft einen Wert ab, der angibt, ob der Puffer Datenabschnitte aufweist.</summary>
+      <returns>True, wenn der Puffer Datenabschnitte aufweist, andernfalls False.</returns>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.ServerSentEvents.ChunkBuffer.ReadLine">
+      <summary>Liest eine Zeile von Zeichen aus dem aktuellen Puffer und gibt die Daten als Zeichenfolge zurück.</summary>
+      <returns>Die nächste Zeile aus dem Puffer.</returns>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.Client.Transports.ServerSentEvents.EventSourceStreamReader">
+      <summary>Stellt die Ereignisquellenimplementierung für .NET bereit.Dies entspricht nicht den Spezifikationen, aber ist ausreichend, um den SignalR-Server zu unterstützen.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.ServerSentEvents.EventSourceStreamReader.#ctor(Microsoft.AspNet.SignalR.Client.IConnection,System.IO.Stream)">
+      <summary> Initialisiert eine neue Instanz der <see cref="T:Microsoft.AspNet.SignalR.Client.Transports.ServerSentEvents.EventSourceStreamReader" />-Klasse. </summary>
+      <param name="connection">Die dieser Ereignisquelle zugeordnete Verbindung.</param>
+      <param name="stream">Der Datenstrom, aus dem Ereignisquellennutzlasten gelesen werden sollen.</param>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Transports.ServerSentEvents.EventSourceStreamReader.Message"></member>
+    <member name="T:Microsoft.AspNet.SignalR.Client.Transports.ServerSentEvents.EventType">
+      <summary>Zählt die Ereignistypen auf, die den serverseitigen Ereignissen zugeordnet sind.</summary>
+    </member>
+    <member name="F:Microsoft.AspNet.SignalR.Client.Transports.ServerSentEvents.EventType.Data">
+      <summary>Die Daten des Ereignistyps.</summary>
+    </member>
+    <member name="F:Microsoft.AspNet.SignalR.Client.Transports.ServerSentEvents.EventType.Id">
+      <summary>Der ID-Ereignistyp.</summary>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.Client.Transports.ServerSentEvents.SseEvent">
+      <summary>Stellt eine statische Methode zum Analysieren der vom Server gesendeten Ereignisdaten zur Verfügung.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.ServerSentEvents.SseEvent.#ctor(Microsoft.AspNet.SignalR.Client.Transports.ServerSentEvents.EventType,System.String)">
+      <summary>Initialisiert eine neue Instanz der <see cref="T:Microsoft.AspNet.SignalR.Client.Transports.ServerSentEvents.SseEvent" />-Klasse.</summary>
+      <param name="type">Der vom Server gesendete Ereignistyp.</param>
+      <param name="data">Die vom Server gesendeten Ereignisdaten.</param>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Transports.ServerSentEvents.SseEvent.Data">
+      <summary>Ruft die vom Server gesendeten Ereignisdaten ab bzw. legt diese fest.</summary>
+      <returns>Die vom Server gesendeten Ereignisdaten.</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Transports.ServerSentEvents.SseEvent.EventType">
+      <summary>Ruft den vom Server gesendeten Ereignistyp ab bzw. legt diesen fest.</summary>
+      <returns>Der vom Server gesendete Ereignistyp.</returns>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.ServerSentEvents.SseEvent.ToString">
+      <summary>Gibt die Zeichenfolgendarstellung dieses Objekts zurück.</summary>
+      <returns>Die Zeichenfolgendarstellung dieses Objekts.</returns>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.ServerSentEvents.SseEvent.TryParse(System.String,Microsoft.AspNet.SignalR.Client.Transports.ServerSentEvents.SseEvent@)">
+      <summary>Analysiert die angegebenen Daten in ein <see cref="T:Microsoft.AspNet.SignalR.Client.Transports.ServerSentEvents.SseEvent" />-Objekt.</summary>
+      <returns>true, wenn die angegebenen Daten ein gültiges clientseitiges Serverereignis darstellen, andernfalls false.</returns>
+      <param name="line">Die Daten, deren Analyse versucht werden soll.</param>
+      <param name="sseEvent">Der Rückgabewert dieser Methode ist das SseEvent-Ergebnisobjekt.</param>
+    </member>
+  </members>
+</doc>

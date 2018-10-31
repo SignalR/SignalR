@@ -1,0 +1,99 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<doc>
+  <assembly>
+    <name>Microsoft.AspNet.SignalR.SqlServer</name>
+  </assembly>
+  <members>
+    <member name="M:Microsoft.AspNet.SignalR.DependencyResolverExtensions.UseSqlServer(Microsoft.AspNet.SignalR.IDependencyResolver,Microsoft.AspNet.SignalR.SqlScaleoutConfiguration)">
+      <summary>SQL Server を、メッセージ バス実装をスケールアウトするためのメッセージング バックプレーンとして使用します。</summary>
+      <returns>依存関係競合回避モジュール。</returns>
+      <param name="resolver">依存関係競合回避モジュール。</param>
+      <param name="configuration">構成をスケールアウトする SQL Server。</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.DependencyResolverExtensions.UseSqlServer(Microsoft.AspNet.SignalR.IDependencyResolver,System.String)">
+      <summary>SQL Server を、メッセージ バス実装をスケールアウトするためのメッセージング バックプレーンとして使用します。</summary>
+      <returns>依存関係競合回避モジュール。</returns>
+      <param name="resolver">依存関係競合回避モジュール。</param>
+      <param name="connectionString">接続文字列。</param>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.SqlScaleoutConfiguration">
+      <summary> SQL Server スケールアウト メッセージ バス実装の設定。</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.SqlScaleoutConfiguration.#ctor(System.String)">
+      <summary>
+        <see cref="T:Microsoft.AspNet.SignalR.SqlScaleoutConfiguration" /> クラスの新しいインスタンスを初期化します。</summary>
+      <param name="connectionString">使用する SQL Server 接続文字列。</param>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.SqlScaleoutConfiguration.ConnectionString">
+      <summary>使用する SQL Server 接続文字列を取得または設定します。</summary>
+      <returns>使用する SQL Server 接続文字列。</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.SqlScaleoutConfiguration.TableCount">
+      <summary>メッセージを格納するテーブルの数を取得または設定します。多くのテーブルを使用すると、ロックの競合が減り、スループットが増加する場合があります。これは Web ファームのすべてのノード間で一貫している必要があります。既定値は 1 です。</summary>
+      <returns>メッセージを格納するテーブルの数。</returns>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.SqlServer.IDbBehavior">
+      <summary>SQL コマンドの動作を定義します。</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.SqlServer.IDbBehavior.AddSqlDependency(System.Data.IDbCommand,System.Action{System.Data.SqlClient.SqlNotificationEventArgs})">
+      <summary>指定された SQL コマンドで SQL 依存関係を作成します。</summary>
+      <param name="command">SQL コマンド。</param>
+      <param name="callback">依存関係の変更について通知されるメソッド。</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.SqlServer.IDbBehavior.StartSqlDependencyListener">
+      <summary>SQL 依存関係の通知リスナーを開始します。</summary>
+      <returns>通知リスナーが開始された場合は true。それ以外の場合は false。</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.SqlServer.IDbBehavior.UpdateLoopRetryDelays">
+      <summary>再試行時間の間隔と再試行カウントを指定する一覧を取得します。</summary>
+      <returns>再試行時間の間隔と再試行カウントを指定する一覧。</returns>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.SqlServer.IDbProviderFactory">
+      <summary>データベース プロバイダーに関連付けられたファクトリを表します。</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.SqlServer.IDbProviderFactory.CreateConnection">
+      <summary>データベース プロバイダーの接続を作成します。</summary>
+      <returns>作成された接続。</returns>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.SqlServer.IDbProviderFactory.CreateParameter">
+      <summary>プロバイダーに関連付けられたパラメーターを作成します。</summary>
+      <returns>作成されたパラメーター。</returns>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.SqlServer.SqlMessageBus">
+      <summary>SQL Server テーブルを使用して Web ファームで SignalR アプリケーションをスケールアウトします。</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.SqlServer.SqlMessageBus.#ctor(Microsoft.AspNet.SignalR.IDependencyResolver,Microsoft.AspNet.SignalR.SqlScaleoutConfiguration)">
+      <summary> SqlMessageBus クラスの新しいインスタンスを作成します。</summary>
+      <param name="resolver">使用する競合回避モジュール。</param>
+      <param name="configuration">SQL スケールアウト構成オプション。</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.SqlServer.SqlMessageBus.Dispose(System.Boolean)">
+      <summary>
+        <see cref="T:Microsoft.AspNet.SignalR.SqlServer.SqlMessageBus" /> クラスによって使用されているアンマネージ リソースを解放し、オプションでマネージ リソースも解放します。</summary>
+      <param name="disposing">マネージ リソースとアンマネージ リソースの両方を解放する場合は true。アンマネージ リソースだけを解放する場合は false。</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.SqlServer.SqlMessageBus.Send(System.Int32,System.Collections.Generic.IList{Microsoft.AspNet.SignalR.Messaging.Message})"></member>
+    <member name="P:Microsoft.AspNet.SignalR.SqlServer.SqlMessageBus.StreamCount"></member>
+    <member name="T:Microsoft.AspNet.SignalR.SqlServer.SqlMessageBusException">
+      <summary>失敗した SQL Message Bus の初期化または受信操作中にスローされる例外。</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.SqlServer.SqlMessageBusException.#ctor(System.String)">
+      <summary>
+        <see cref="T:Microsoft.AspNet.SignalR.SqlServer.SqlMessageBusException" /> クラスの新しいインスタンスを初期化します。</summary>
+      <param name="message">例外を説明するエラー メッセージ。</param>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.SqlServer.SqlPayload">
+      <summary>SQL ペイロードを表します。</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.SqlServer.SqlPayload.FromBytes(System.Data.IDataRecord)">
+      <summary>データ レコードからのスケール アウト メッセージを示します。</summary>
+      <returns>示されたスケール アウト メッセージ。</returns>
+      <param name="record">データ レコード オブジェクト。</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.SqlServer.SqlPayload.ToBytes(System.Collections.Generic.IList{Microsoft.AspNet.SignalR.Messaging.Message})">
+      <summary>メッセージの一覧をバイトとして示します。</summary>
+      <returns>バイトとして示されたメッセージ。</returns>
+      <param name="messages">メッセージの一覧。</param>
+    </member>
+  </members>
+</doc>

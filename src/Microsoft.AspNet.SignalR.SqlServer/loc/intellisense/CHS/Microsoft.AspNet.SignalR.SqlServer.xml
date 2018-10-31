@@ -1,0 +1,96 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<doc>
+  <assembly>
+    <name>Microsoft.AspNet.SignalR.SqlServer</name>
+  </assembly>
+  <members>
+    <member name="M:Microsoft.AspNet.SignalR.DependencyResolverExtensions.UseSqlServer(Microsoft.AspNet.SignalR.IDependencyResolver,Microsoft.AspNet.SignalR.SqlScaleoutConfiguration)">
+      <summary>使用 SQL 服务器作为消息底板来扩展消息总线实现。</summary>
+      <returns>依赖关系解析程序。</returns>
+      <param name="resolver">依赖关系解析程序。</param>
+      <param name="configuration">要扩展配置的 SQL 服务器。</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.DependencyResolverExtensions.UseSqlServer(Microsoft.AspNet.SignalR.IDependencyResolver,System.String)">
+      <summary>使用 SQL 服务器作为消息底板来扩展消息总线实现。</summary>
+      <returns>依赖关系解析程序。</returns>
+      <param name="resolver">依赖关系解析程序。</param>
+      <param name="connectionString">连接字符串。</param>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.SqlScaleoutConfiguration">
+      <summary> SQL Server 扩展消息总线实现的设置。</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.SqlScaleoutConfiguration.#ctor(System.String)">
+      <summary>初始化 <see cref="T:Microsoft.AspNet.SignalR.SqlScaleoutConfiguration" /> 类的新实例。</summary>
+      <param name="connectionString">要使用的 SQL Server 连接字符串。</param>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.SqlScaleoutConfiguration.ConnectionString">
+      <summary>获取或设置要使用的 SQL Server 连接字符串。</summary>
+      <returns>要使用的 SQL Server 连接字符串。</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.SqlScaleoutConfiguration.TableCount">
+      <summary>获取或设置要在其中存储消息的表的数量。使用更多的表会减少锁争用，并且可以提高吞吐量。此数量必须在 Web 场中的所有节点之间一致。默认值为 1。</summary>
+      <returns>要在其中存储消息的表的数量。</returns>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.SqlServer.IDbBehavior">
+      <summary>定义 SQL 命令行为。</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.SqlServer.IDbBehavior.AddSqlDependency(System.Data.IDbCommand,System.Action{System.Data.SqlClient.SqlNotificationEventArgs})">
+      <summary>为指定的 SQL 命令创建 SQL 依赖关系。</summary>
+      <param name="command">SQL 命令。</param>
+      <param name="callback">为更改依赖关系通知而通知的方法。</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.SqlServer.IDbBehavior.StartSqlDependencyListener">
+      <summary>启动 SQL 依赖关系通知侦听器。</summary>
+      <returns>如果通知侦听器已启动，则为 true；否则为 false。</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.SqlServer.IDbBehavior.UpdateLoopRetryDelays">
+      <summary>获取指定重试时间间隔和重试计数的列表。</summary>
+      <returns>指定重试时间间隔和重试计数的列表。</returns>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.SqlServer.IDbProviderFactory">
+      <summary>表示与数据库提供程序关联的工厂。</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.SqlServer.IDbProviderFactory.CreateConnection">
+      <summary>为数据库提供程序创建连接。</summary>
+      <returns>创建的连接。</returns>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.SqlServer.IDbProviderFactory.CreateParameter">
+      <summary>创建与提供程序关联的参数。</summary>
+      <returns>创建的参数。</returns>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.SqlServer.SqlMessageBus">
+      <summary>使用 SQL Server 表来扩展 Web 场中的 SignalR 应用程序。</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.SqlServer.SqlMessageBus.#ctor(Microsoft.AspNet.SignalR.IDependencyResolver,Microsoft.AspNet.SignalR.SqlScaleoutConfiguration)">
+      <summary> 创建 SqlMessageBus 类的新实例。</summary>
+      <param name="resolver">要使用的解析程序。</param>
+      <param name="configuration">SQL 扩展配置选项。</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.SqlServer.SqlMessageBus.Dispose(System.Boolean)">
+      <summary>释放 <see cref="T:Microsoft.AspNet.SignalR.SqlServer.SqlMessageBus" /> 类使用的非托管资源并选择性地释放托管资源。</summary>
+      <param name="disposing">若为 true，则同时释放托管资源和非托管资源；若为 false，则仅释放非托管资源。</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.SqlServer.SqlMessageBus.Send(System.Int32,System.Collections.Generic.IList{Microsoft.AspNet.SignalR.Messaging.Message})"></member>
+    <member name="P:Microsoft.AspNet.SignalR.SqlServer.SqlMessageBus.StreamCount"></member>
+    <member name="T:Microsoft.AspNet.SignalR.SqlServer.SqlMessageBusException">
+      <summary>在初始化期间或 SQL 消息总线的接收操作失败时引发的异常。</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.SqlServer.SqlMessageBusException.#ctor(System.String)">
+      <summary>初始化 <see cref="T:Microsoft.AspNet.SignalR.SqlServer.SqlMessageBusException" /> 类的新实例。</summary>
+      <param name="message">描述该异常的错误消息。</param>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.SqlServer.SqlPayload">
+      <summary>表示 SQL 负载。</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.SqlServer.SqlPayload.FromBytes(System.Data.IDataRecord)">
+      <summary>呈现数据记录中的扩展消息。</summary>
+      <returns>已呈现的扩展消息。</returns>
+      <param name="record">数据记录对象。</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.SqlServer.SqlPayload.ToBytes(System.Collections.Generic.IList{Microsoft.AspNet.SignalR.Messaging.Message})">
+      <summary>以字节的形式呈现消息列表。</summary>
+      <returns>已呈现为字节的消息。</returns>
+      <param name="messages">消息列表。</param>
+    </member>
+  </members>
+</doc>

@@ -1,0 +1,121 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<doc>
+  <assembly>
+    <name>Microsoft.AspNet.SignalR.Redis</name>
+  </assembly>
+  <members>
+    <member name="T:Microsoft.AspNet.SignalR.DependencyResolverExtensions">
+      <summary>ここの内容は更新されません。ここに素材を追加しないでください。</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.DependencyResolverExtensions.UseRedis(Microsoft.AspNet.SignalR.IDependencyResolver,Microsoft.AspNet.SignalR.RedisScaleoutConfiguration)">
+      <summary>Redis を、Web ファーム内の ASP.NET SignalR アプリケーションをスケールアウトするためのメッセージング バックプレーンとして使用します。</summary>
+      <returns>依存関係競合回避モジュール。</returns>
+      <param name="resolver">依存関係競合回避モジュール。</param>
+      <param name="configuration">Redis スケールアウト構成オプション。</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.DependencyResolverExtensions.UseRedis(Microsoft.AspNet.SignalR.IDependencyResolver,System.String,System.Int32,System.String,System.String)">
+      <summary>Redis を、Web ファーム内の ASP.NET SignalR アプリケーションをスケールアウトするためのメッセージング バックプレーンとして使用します。</summary>
+      <returns>依存関係競合回避モジュール。</returns>
+      <param name="resolver">依存関係競合回避モジュール。</param>
+      <param name="server">Redis サーバーのアドレス。</param>
+      <param name="port">Redis サーバーのポート。</param>
+      <param name="password">Redis サーバーのパスワード。</param>
+      <param name="eventKey">使用する Redis イベント キー。</param>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.RedisScaleoutConfiguration">
+      <summary>Redis スケールアウト メッセージ バス実装の設定。</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.RedisScaleoutConfiguration.#ctor(System.Func{BookSleeve.RedisConnection},System.String)">
+      <summary>
+        <see cref="T:Microsoft.AspNet.SignalR.RedisScaleoutConfiguration" /> クラスの新しいインスタンスを初期化します。</summary>
+      <param name="connectionFactory">接続ファクトリ。</param>
+      <param name="eventKey">イベント キー。</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.RedisScaleoutConfiguration.#ctor(System.String,System.Int32,System.String,System.String)">
+      <summary>
+        <see cref="T:Microsoft.AspNet.SignalR.RedisScaleoutConfiguration" /> クラスの新しいインスタンスを初期化します。</summary>
+      <param name="server">サーバー。</param>
+      <param name="port">ポート。</param>
+      <param name="password">パスワード。</param>
+      <param name="eventKey">イベント キー。</param>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.RedisScaleoutConfiguration.Database">
+      <summary>使用する Redis データベース インスタンスを取得または設定します。既定値は 0 です。</summary>
+      <returns>使用する Redis データベース インスタンス。既定値は 0 です。</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.RedisScaleoutConfiguration.EventKey">
+      <summary>使用する Redis イベント キーを取得または設定します。</summary>
+      <returns>使用する Redis イベント キー。</returns>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.Redis.RedisConnectionClosedException">
+      <summary>Redis 接続が失われたときにスローされる例外。</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Redis.RedisConnectionClosedException.#ctor">
+      <summary>
+        <see cref="T:Microsoft.AspNet.SignalR.Redis.RedisConnectionClosedException" /> クラスの新しいインスタンスを初期化します。</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Redis.RedisConnectionClosedException.#ctor(System.Runtime.Serialization.SerializationInfo,System.Runtime.Serialization.StreamingContext)">
+      <summary>シリアル化された情報を使用して、<see cref="T:Microsoft.AspNet.SignalR.Redis.RedisConnectionClosedException" /> クラスの新しいインスタンスを初期化します。</summary>
+      <param name="info">例外に関するシリアル化された情報。</param>
+      <param name="context">送信元または送信先に関するコンテキスト情報。</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Redis.RedisConnectionClosedException.#ctor(System.String)">
+      <summary>エラー メッセージを使用して、<see cref="T:Microsoft.AspNet.SignalR.Redis.RedisConnectionClosedException" /> クラスの新しいインスタンスを初期化します。</summary>
+      <param name="message">例外を説明するエラー メッセージ。</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Redis.RedisConnectionClosedException.#ctor(System.String,System.Exception)">
+      <summary>エラー メッセージおよび内部例外を使用して、<see cref="T:Microsoft.AspNet.SignalR.Redis.RedisConnectionClosedException" /> クラスの新しいインスタンスを初期化します。</summary>
+      <param name="message">例外を説明するエラー メッセージ。</param>
+      <param name="inner">現在の例外の原因である内部例外。</param>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.Redis.RedisMessage">
+      <summary>Redis メッセージを表します。</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Redis.RedisMessage.#ctor">
+      <summary>
+        <see cref="T:Microsoft.AspNet.SignalR.Redis.RedisMessage" /> クラスの新しいインスタンスを初期化します。</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Redis.RedisMessage.FromBytes(System.Byte[])">
+      <summary>指定されたデータから Redis メッセージを作成します。</summary>
+      <returns>新しく作成された Redis メッセージ。</returns>
+      <param name="data">メッセージを表すデータ。</param>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Redis.RedisMessage.Id">
+      <summary>Redis メッセージ ID を取得または設定します。</summary>
+      <returns>Redis メッセージ ID。</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Redis.RedisMessage.ScaleoutMessage">
+      <summary>スケール アウトされた Redis メッセージを取得または設定します。</summary>
+      <returns>スケール アウトされた Redis メッセージ。</returns>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Redis.RedisMessage.ToBytes(System.Int64,System.Collections.Generic.IList{Microsoft.AspNet.SignalR.Messaging.Message})">
+      <summary>メッセージをバイト配列に変換します。</summary>
+      <param name="id">メッセージ ID。</param>
+      <param name="messages">変換するメッセージ。</param>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.Redis.RedisMessageBus">
+      <summary>Redis メッセージのサービス バスを表します。Redis Pub-Sub を使用して Web ファームで SignalR アプリケーションをスケールアウトします。</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Redis.RedisMessageBus.#ctor(Microsoft.AspNet.SignalR.IDependencyResolver,Microsoft.AspNet.SignalR.RedisScaleoutConfiguration)">
+      <summary>
+        <see cref="T:Microsoft.AspNet.SignalR.Redis.RedisMessageBus" /> クラスの新しいインスタンスを初期化します。</summary>
+      <param name="resolver">依存関係競合回避モジュール。</param>
+      <param name="configuration">Redis メッセージ バスの構成。</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Redis.RedisMessageBus.Dispose(System.Boolean)">
+      <summary>
+        <see cref="T:Microsoft.AspNet.SignalR.Redis.RedisMessageBus" /> クラスによって使用されているアンマネージ リソースを解放し、オプションでマネージ リソースも解放します。</summary>
+      <param name="disposing">マネージ リソースとアンマネージ リソースの両方を解放する場合は true。アンマネージ リソースだけを解放する場合は false。</param>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Redis.RedisMessageBus.ReconnectDelay">
+      <summary>再接続の試行を待機する時間を取得または設定します。</summary>
+      <returns>再接続の試行を待機する時間。</returns>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Redis.RedisMessageBus.Send(System.Int32,System.Collections.Generic.IList{Microsoft.AspNet.SignalR.Messaging.Message})">
+      <summary>指定されたエラー メッセージをサービス バスに発行します。</summary>
+      <returns>メッセージの送信操作を表すタスク。</returns>
+      <param name="streamIndex">ストリーム インデックス。</param>
+      <param name="messages">送信するメッセージ。</param>
+    </member>
+  </members>
+</doc>

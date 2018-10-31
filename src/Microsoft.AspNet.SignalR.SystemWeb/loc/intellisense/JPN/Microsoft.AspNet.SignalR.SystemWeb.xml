@@ -1,0 +1,93 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<doc>
+  <assembly>
+    <name>Microsoft.AspNet.SignalR.SystemWeb</name>
+  </assembly>
+  <members>
+    <member name="M:Microsoft.AspNet.SignalR.RequestExtensions.GetHttpContext(Microsoft.AspNet.SignalR.IRequest)">
+      <summary>環境から HttpContextBase を取得します。</summary>
+      <returns>環境からの <see cref="T:System.Web.HttpContextBase" />。</returns>
+      <param name="request">HTTP 要求。</param>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.SystemWeb.Infrastructure.BuildManagerAssemblyLocator">
+      <summary>アセンブリ ロケーターのビルド マネージャーを表します。</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.SystemWeb.Infrastructure.BuildManagerAssemblyLocator.#ctor">
+      <summary>
+        <see cref="T:Microsoft.AspNet.SignalR.SystemWeb.Infrastructure.BuildManagerAssemblyLocator" /> クラスの新しいインスタンスを初期化します。</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.SystemWeb.Infrastructure.BuildManagerAssemblyLocator.GetAssemblies">
+      <summary>ビルド マネージャーに関連付けられているアセンブリの一覧を返します。</summary>
+      <returns>ビルド マネージャーに関連付けられているアセンブリの一覧。</returns>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.SystemWeb.Infrastructure.MachineKeyProtectedData">
+      <summary>コンピューター キーに関連付けられている保護されたデータを表します。</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.SystemWeb.Infrastructure.MachineKeyProtectedData.#ctor">
+      <summary>
+        <see cref="T:Microsoft.AspNet.SignalR.SystemWeb.Infrastructure.MachineKeyProtectedData" /> クラスの新しいインスタンスを初期化します。</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.SystemWeb.Infrastructure.MachineKeyProtectedData.Protect(System.String,System.String)">
+      <summary>指定されたデータを保護します。</summary>
+      <returns>保護されているデータ。</returns>
+      <param name="data">保護するデータ。</param>
+      <param name="purpose">保護の目的。</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.SystemWeb.Infrastructure.MachineKeyProtectedData.Unprotect(System.String,System.String)">
+      <summary>保護されたデータの保護を解除します。</summary>
+      <returns>保護されていないデータ。</returns>
+      <param name="protectedValue">データの保護された値。</param>
+      <param name="purpose">保護を削除する理由。</param>
+    </member>
+    <member name="T:System.Web.Routing.SignalRRouteExtensions">
+      <summary>SignalR のルーティング拡張機能を提供します。</summary>
+    </member>
+    <member name="M:System.Web.Routing.SignalRRouteExtensions.MapConnection``1(System.Web.Routing.RouteCollection,System.String,System.String)">
+      <summary>既定の依存関係リゾルバーを使用する <see cref="T:Microsoft.AspNet.SignalR.PersistentConnection" /> を指定されたパスにマップします。</summary>
+      <returns>登録されているルート。</returns>
+      <param name="routes">ルート テーブル。</param>
+      <param name="name">ルートの名前。</param>
+      <param name="url">ルートのパス。</param>
+      <typeparam name="T">
+        <see cref="T:Microsoft.AspNet.SignalR.PersistentConnection" /> の型。</typeparam>
+    </member>
+    <member name="M:System.Web.Routing.SignalRRouteExtensions.MapConnection``1(System.Web.Routing.RouteCollection,System.String,System.String,Microsoft.AspNet.SignalR.ConnectionConfiguration)">
+      <summary>既定の依存関係リゾルバーを使用する <see cref="T:Microsoft.AspNet.SignalR.PersistentConnection" /> を指定されたパスにマップします。</summary>
+      <returns>登録されているルート。</returns>
+      <param name="routes">ルート テーブル。</param>
+      <param name="name">ルートの名前。</param>
+      <param name="url">ルートのパス。</param>
+      <param name="configuration">構成オプション。</param>
+      <typeparam name="T">
+        <see cref="T:Microsoft.AspNet.SignalR.PersistentConnection" /> の型。</typeparam>
+    </member>
+    <member name="M:System.Web.Routing.SignalRRouteExtensions.MapConnection(System.Web.Routing.RouteCollection,System.String,System.String,System.Type,Microsoft.AspNet.SignalR.ConnectionConfiguration)">
+      <summary>既定の依存関係リゾルバーを使用する <see cref="T:Microsoft.AspNet.SignalR.PersistentConnection" /> を指定されたパスにマップします。</summary>
+      <returns>登録されているルート。</returns>
+      <param name="routes">ルート テーブル。</param>
+      <param name="name">ルートの名前。</param>
+      <param name="url">ルートのパス。</param>
+      <param name="type">
+        <see cref="T:Microsoft.AspNet.SignalR.PersistentConnection" /> の型。</param>
+      <param name="configuration">構成オプション。</param>
+    </member>
+    <member name="M:System.Web.Routing.SignalRRouteExtensions.MapHubs(System.Web.Routing.RouteCollection)">
+      <summary>既定のハブ ルートを初期化します (/signalr)。</summary>
+      <returns>登録されているルート。</returns>
+      <param name="routes">ルート テーブル。</param>
+    </member>
+    <member name="M:System.Web.Routing.SignalRRouteExtensions.MapHubs(System.Web.Routing.RouteCollection,Microsoft.AspNet.SignalR.HubConfiguration)">
+      <summary>既定のハブ ルートを初期化します (/signalr)。</summary>
+      <returns>登録されているルート。</returns>
+      <param name="routes">ルート テーブル。</param>
+      <param name="configuration">構成オプション。</param>
+    </member>
+    <member name="M:System.Web.Routing.SignalRRouteExtensions.MapHubs(System.Web.Routing.RouteCollection,System.String,Microsoft.AspNet.SignalR.HubConfiguration)">
+      <summary>既定のハブ ルートを初期化します (/signalr)。</summary>
+      <returns>登録されているルート。</returns>
+      <param name="routes">ルート テーブル。</param>
+      <param name="path">ルートのパス。</param>
+      <param name="configuration">構成オプション。</param>
+    </member>
+  </members>
+</doc>

@@ -1,0 +1,88 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<doc>
+  <assembly>
+    <name>Microsoft.AspNet.SignalR.SystemWeb</name>
+  </assembly>
+  <members>
+    <member name="M:Microsoft.AspNet.SignalR.RequestExtensions.GetHttpContext(Microsoft.AspNet.SignalR.IRequest)">
+      <summary>Pobiera element HttpContextBase ze środowiska.</summary>
+      <returns>Element <see cref="T:System.Web.HttpContextBase" /> ze środowiska.</returns>
+      <param name="request">Żądanie HTTP.</param>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.SystemWeb.Infrastructure.BuildManagerAssemblyLocator">
+      <summary>Reprezentuje menedżera kompilacji dla lokalizatora zestawu.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.SystemWeb.Infrastructure.BuildManagerAssemblyLocator.#ctor">
+      <summary>Inicjuje nowe wystąpienie klasy <see cref="T:Microsoft.AspNet.SignalR.SystemWeb.Infrastructure.BuildManagerAssemblyLocator" />.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.SystemWeb.Infrastructure.BuildManagerAssemblyLocator.GetAssemblies">
+      <summary>Zwraca listę zestawów skojarzonych z menedżerem kompilacji.</summary>
+      <returns>Lista zestawów skojarzonych z menedżerem kompilacji.</returns>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.SystemWeb.Infrastructure.MachineKeyProtectedData">
+      <summary>Reprezentuje dane chronione skojarzone z kluczem aparatu.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.SystemWeb.Infrastructure.MachineKeyProtectedData.#ctor">
+      <summary>Inicjuje nowe wystąpienie klasy <see cref="T:Microsoft.AspNet.SignalR.SystemWeb.Infrastructure.MachineKeyProtectedData" />.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.SystemWeb.Infrastructure.MachineKeyProtectedData.Protect(System.String,System.String)">
+      <summary>Chroni określone dane.</summary>
+      <returns>Chronione dane.</returns>
+      <param name="data">Dane są chronione.</param>
+      <param name="purpose">Cel ochrony.</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.SystemWeb.Infrastructure.MachineKeyProtectedData.Unprotect(System.String,System.String)">
+      <summary>Wyłącza ochronę danych chronionych.</summary>
+      <returns>Dane niechronione.</returns>
+      <param name="protectedValue">Chroniona wartość danych.</param>
+      <param name="purpose">Powód usunięcia ochrony.</param>
+    </member>
+    <member name="T:System.Web.Routing.SignalRRouteExtensions">
+      <summary>Udostępnia rozszerzenia trasowania dla elementu SignalR.</summary>
+    </member>
+    <member name="M:System.Web.Routing.SignalRRouteExtensions.MapConnection``1(System.Web.Routing.RouteCollection,System.String,System.String)">
+      <summary>Mapuje element <see cref="T:Microsoft.AspNet.SignalR.PersistentConnection" /> z mechanizmem rozpoznawania zależności na określoną ścieżkę.</summary>
+      <returns>Zarejestrowana trasa.</returns>
+      <param name="routes">Tabela tras.</param>
+      <param name="name">Nazwa trasy.</param>
+      <param name="url">Ścieżka trasy.</param>
+      <typeparam name="T">Typ elementu <see cref="T:Microsoft.AspNet.SignalR.PersistentConnection" />.</typeparam>
+    </member>
+    <member name="M:System.Web.Routing.SignalRRouteExtensions.MapConnection``1(System.Web.Routing.RouteCollection,System.String,System.String,Microsoft.AspNet.SignalR.ConnectionConfiguration)">
+      <summary>Mapuje element <see cref="T:Microsoft.AspNet.SignalR.PersistentConnection" /> z mechanizmem rozpoznawania zależności na określoną ścieżkę.</summary>
+      <returns>Zarejestrowana trasa.</returns>
+      <param name="routes">Tabela tras.</param>
+      <param name="name">Nazwa trasy.</param>
+      <param name="url">Ścieżka trasy.</param>
+      <param name="configuration">Opcje konfiguracji.</param>
+      <typeparam name="T">Typ elementu <see cref="T:Microsoft.AspNet.SignalR.PersistentConnection" />.</typeparam>
+    </member>
+    <member name="M:System.Web.Routing.SignalRRouteExtensions.MapConnection(System.Web.Routing.RouteCollection,System.String,System.String,System.Type,Microsoft.AspNet.SignalR.ConnectionConfiguration)">
+      <summary>Mapuje element <see cref="T:Microsoft.AspNet.SignalR.PersistentConnection" /> z mechanizmem rozpoznawania zależności na określoną ścieżkę.</summary>
+      <returns>Zarejestrowana trasa.</returns>
+      <param name="routes">Tabela tras.</param>
+      <param name="name">Nazwa trasy.</param>
+      <param name="url">Ścieżka trasy.</param>
+      <param name="type">Typ elementu <see cref="T:Microsoft.AspNet.SignalR.PersistentConnection" />.</param>
+      <param name="configuration">Opcje konfiguracji.</param>
+    </member>
+    <member name="M:System.Web.Routing.SignalRRouteExtensions.MapHubs(System.Web.Routing.RouteCollection)">
+      <summary>Inicjuje domyślną trasę koncentratora (/signalr).</summary>
+      <returns>Zarejestrowana trasa.</returns>
+      <param name="routes">Tabela tras.</param>
+    </member>
+    <member name="M:System.Web.Routing.SignalRRouteExtensions.MapHubs(System.Web.Routing.RouteCollection,Microsoft.AspNet.SignalR.HubConfiguration)">
+      <summary>Inicjuje domyślną trasę koncentratora (/signalr).</summary>
+      <returns>Zarejestrowana trasa.</returns>
+      <param name="routes">Tabela tras.</param>
+      <param name="configuration">Opcje konfiguracji.</param>
+    </member>
+    <member name="M:System.Web.Routing.SignalRRouteExtensions.MapHubs(System.Web.Routing.RouteCollection,System.String,Microsoft.AspNet.SignalR.HubConfiguration)">
+      <summary>Inicjuje domyślną trasę koncentratora (/signalr).</summary>
+      <returns>Zarejestrowana trasa.</returns>
+      <param name="routes">Tabela tras.</param>
+      <param name="path">Ścieżka trasy.</param>
+      <param name="configuration">Opcje konfiguracji.</param>
+    </member>
+  </members>
+</doc>

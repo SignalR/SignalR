@@ -1,0 +1,115 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<doc>
+  <assembly>
+    <name>Microsoft.AspNet.SignalR.Redis</name>
+  </assembly>
+  <members>
+    <member name="T:Microsoft.AspNet.SignalR.DependencyResolverExtensions">
+      <summary>W tym miejscu nie będzie aktualizowana żadna zawartość. Nie należy tutaj dodawać materiału.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.DependencyResolverExtensions.UseRedis(Microsoft.AspNet.SignalR.IDependencyResolver,Microsoft.AspNet.SignalR.RedisScaleoutConfiguration)">
+      <summary>Używa magazynu Redis jako płyty montażowej do obsługi wiadomości do skalowania aplikacji ASP.NET SignalR w kolektywie serwerów sieci Web.</summary>
+      <returns>Mechanizm rozpoznawania zależności.</returns>
+      <param name="resolver">Mechanizm rozpoznawania zależności.</param>
+      <param name="configuration">Opcje konfiguracji skalowania magazynu Redis.</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.DependencyResolverExtensions.UseRedis(Microsoft.AspNet.SignalR.IDependencyResolver,System.String,System.Int32,System.String,System.String)">
+      <summary>Używa magazynu Redis jako płyty montażowej do obsługi wiadomości do skalowania aplikacji ASP.NET SignalR w kolektywie serwerów sieci Web.</summary>
+      <returns>Mechanizm rozpoznawania zależności.</returns>
+      <param name="resolver">Mechanizm rozpoznawania zależności.</param>
+      <param name="server">Adres serwera Redis.</param>
+      <param name="port">Port serwera Redis.</param>
+      <param name="password">Hasło serwera Redis.</param>
+      <param name="eventKey">Klucz zdarzenia Redis do użycia.</param>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.RedisScaleoutConfiguration">
+      <summary>Ustawienia dla implementacji magistrali komunikatu skalowanego w poziomie Redis</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.RedisScaleoutConfiguration.#ctor(System.Func{BookSleeve.RedisConnection},System.String)">
+      <summary>Inicjuje nowe wystąpienie klasy <see cref="T:Microsoft.AspNet.SignalR.RedisScaleoutConfiguration" />.</summary>
+      <param name="connectionFactory">Fabryka połączenia.</param>
+      <param name="eventKey">Klucz zdarzenia.</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.RedisScaleoutConfiguration.#ctor(System.String,System.Int32,System.String,System.String)">
+      <summary>Inicjuje nowe wystąpienie klasy <see cref="T:Microsoft.AspNet.SignalR.RedisScaleoutConfiguration" />.</summary>
+      <param name="server">Serwer.</param>
+      <param name="port">Port.</param>
+      <param name="password">Hasło.</param>
+      <param name="eventKey">Klucz zdarzenia.</param>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.RedisScaleoutConfiguration.Database">
+      <summary>Pobiera lub ustawia wystąpienie bazy danych Redis do użycia.Wartość domyślna wynosi 0.</summary>
+      <returns>Wystąpienie bazy danych Redis.Wartość domyślna wynosi 0.</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.RedisScaleoutConfiguration.EventKey">
+      <summary>Pobiera lub ustawia klucz zdarzenia Redis do użycia. </summary>
+      <returns>Klucz zdarzenia Redis do użycia.</returns>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.Redis.RedisConnectionClosedException">
+      <summary>Wyjątek zgłaszany w przypadku utraty połączenia Redis.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Redis.RedisConnectionClosedException.#ctor">
+      <summary>Inicjuje nowe wystąpienie klasy <see cref="T:Microsoft.AspNet.SignalR.Redis.RedisConnectionClosedException" />.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Redis.RedisConnectionClosedException.#ctor(System.Runtime.Serialization.SerializationInfo,System.Runtime.Serialization.StreamingContext)">
+      <summary>Inicjuje nowe wystąpienie klasy <see cref="T:Microsoft.AspNet.SignalR.Redis.RedisConnectionClosedException" /> z zserializowanymi informacjami.</summary>
+      <param name="info">Zserializowane informacje dotyczące wyjątku.</param>
+      <param name="context">Informacje kontekstowe dotyczące źródła lub miejsca docelowego.</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Redis.RedisConnectionClosedException.#ctor(System.String)">
+      <summary>Inicjuje nowe wystąpienie klasy <see cref="T:Microsoft.AspNet.SignalR.Redis.RedisConnectionClosedException" /> z komunikatem o błędzie.</summary>
+      <param name="message">Komunikat o błędzie opisujący wyjątek.</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Redis.RedisConnectionClosedException.#ctor(System.String,System.Exception)">
+      <summary>Inicjuje nowe wystąpienie klasy <see cref="T:Microsoft.AspNet.SignalR.Redis.RedisConnectionClosedException" /> z komunikatem o błędzie i wyjątkiem wewnętrznym.</summary>
+      <param name="message">Komunikat o błędzie opisujący wyjątek.</param>
+      <param name="inner">Wyjątek wewnętrzny będący przyczyną bieżącego wyjątku.</param>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.Redis.RedisMessage">
+      <summary>Reprezentuje komunikat Redis.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Redis.RedisMessage.#ctor">
+      <summary>Inicjuje nowe wystąpienie klasy <see cref="T:Microsoft.AspNet.SignalR.Redis.RedisMessage" />.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Redis.RedisMessage.FromBytes(System.Byte[])">
+      <summary>Tworzy komunikat Redis z określonych danych.</summary>
+      <returns>Nowo utworzony komunikat Redis.</returns>
+      <param name="data">Dane reprezentujące komunikat.</param>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Redis.RedisMessage.Id">
+      <summary>Pobiera lub ustawia identyfikator komunikatu Redis.</summary>
+      <returns>Identyfikator komunikatu Redis.</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Redis.RedisMessage.ScaleoutMessage">
+      <summary>Pobiera lub ustawia skalowany komunikat Redis.</summary>
+      <returns>Skalowany komunikat Redis.</returns>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Redis.RedisMessage.ToBytes(System.Int64,System.Collections.Generic.IList{Microsoft.AspNet.SignalR.Messaging.Message})">
+      <summary>Konwertuje komunikaty na tablicę bajtów.</summary>
+      <param name="id">Identyfikator komunikatu.</param>
+      <param name="messages">Komunikaty do skonwertowania.</param>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.Redis.RedisMessageBus">
+      <summary>Reprezentuje magistralę usługi dla komunikatu Redis.Używa elementów Redis pub-sub do skalowania aplikacji SignalR w formularzach sieci Web.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Redis.RedisMessageBus.#ctor(Microsoft.AspNet.SignalR.IDependencyResolver,Microsoft.AspNet.SignalR.RedisScaleoutConfiguration)">
+      <summary>Inicjuje nowe wystąpienie klasy <see cref="T:Microsoft.AspNet.SignalR.Redis.RedisMessageBus" />.</summary>
+      <param name="resolver">Mechanizm rozpoznawania zależności.</param>
+      <param name="configuration">Konfiguracja magistrali komunikatu Redis.</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Redis.RedisMessageBus.Dispose(System.Boolean)">
+      <summary>Zwalnia zasoby niezarządzane używane przez klasę <see cref="T:Microsoft.AspNet.SignalR.Redis.RedisMessageBus" /> i opcjonalnie zwalnia zasoby zarządzane.</summary>
+      <param name="disposing">Wartość true powoduje zwolnienie zasobów zarządzanych i niezarządzanych, a wartość false powoduje zwolnienie tylko zasobów niezarządzanych.</param>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Redis.RedisMessageBus.ReconnectDelay">
+      <summary>Pobiera lub ustawia czas do czekania na próbę ponownego połączenia.</summary>
+      <returns>Czas do czekania na próbę ponownego połączenia.</returns>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Redis.RedisMessageBus.Send(System.Int32,System.Collections.Generic.IList{Microsoft.AspNet.SignalR.Messaging.Message})">
+      <summary>Publikuje określony komunikat do magistrali usługi.</summary>
+      <returns>Zadanie reprezentujące operację wysyłania komunikatu.</returns>
+      <param name="streamIndex">Indeks strumienia.</param>
+      <param name="messages">Komunikaty do wysłania.</param>
+    </member>
+  </members>
+</doc>

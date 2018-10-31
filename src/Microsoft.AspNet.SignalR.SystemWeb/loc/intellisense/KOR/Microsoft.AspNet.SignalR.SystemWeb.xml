@@ -1,0 +1,93 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<doc>
+  <assembly>
+    <name>Microsoft.AspNet.SignalR.SystemWeb</name>
+  </assembly>
+  <members>
+    <member name="M:Microsoft.AspNet.SignalR.RequestExtensions.GetHttpContext(Microsoft.AspNet.SignalR.IRequest)">
+      <summary>환경에서 HttpContextBase를 가져옵니다.</summary>
+      <returns>환경의 <see cref="T:System.Web.HttpContextBase" />입니다.</returns>
+      <param name="request">HTTP 요청입니다.</param>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.SystemWeb.Infrastructure.BuildManagerAssemblyLocator">
+      <summary>어셈블리 로케이터에 대한 빌드 관리자를 나타냅니다.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.SystemWeb.Infrastructure.BuildManagerAssemblyLocator.#ctor">
+      <summary>
+        <see cref="T:Microsoft.AspNet.SignalR.SystemWeb.Infrastructure.BuildManagerAssemblyLocator" /> 클래스의 새 인스턴스를 초기화합니다.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.SystemWeb.Infrastructure.BuildManagerAssemblyLocator.GetAssemblies">
+      <summary>빌드 관리자와 연관된 어셈블리 목록을 반환합니다.</summary>
+      <returns>빌드 관리자와 연관된 어셈블리 목록입니다.</returns>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.SystemWeb.Infrastructure.MachineKeyProtectedData">
+      <summary>컴퓨터 키와 연관된 보호된 데이터를 나타냅니다.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.SystemWeb.Infrastructure.MachineKeyProtectedData.#ctor">
+      <summary>
+        <see cref="T:Microsoft.AspNet.SignalR.SystemWeb.Infrastructure.MachineKeyProtectedData" /> 클래스의 새 인스턴스를 초기화합니다.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.SystemWeb.Infrastructure.MachineKeyProtectedData.Protect(System.String,System.String)">
+      <summary>지정된 데이터를 보호합니다.</summary>
+      <returns>보호된 데이터입니다.</returns>
+      <param name="data">보호할 데이터입니다.</param>
+      <param name="purpose">보호 목적입니다.</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.SystemWeb.Infrastructure.MachineKeyProtectedData.Unprotect(System.String,System.String)">
+      <summary>보호된 데이터의 보호를 해제합니다.</summary>
+      <returns>보호되지 않는 데이터입니다.</returns>
+      <param name="protectedValue">보호된 데이터 값입니다.</param>
+      <param name="purpose">보호를 제거하는 이유입니다.</param>
+    </member>
+    <member name="T:System.Web.Routing.SignalRRouteExtensions">
+      <summary>SignalR에 대한 라우팅 확장을 제공합니다.</summary>
+    </member>
+    <member name="M:System.Web.Routing.SignalRRouteExtensions.MapConnection``1(System.Web.Routing.RouteCollection,System.String,System.String)">
+      <summary>기본 종속성 확인자를 사용하여 <see cref="T:Microsoft.AspNet.SignalR.PersistentConnection" />을 지정된 경로에 매핑합니다.</summary>
+      <returns>등록된 경로입니다.</returns>
+      <param name="routes">경로 테이블입니다.</param>
+      <param name="name">경로의 이름입니다.</param>
+      <param name="url">경로의 경로입니다.</param>
+      <typeparam name="T">
+        <see cref="T:Microsoft.AspNet.SignalR.PersistentConnection" />의 유형입니다.</typeparam>
+    </member>
+    <member name="M:System.Web.Routing.SignalRRouteExtensions.MapConnection``1(System.Web.Routing.RouteCollection,System.String,System.String,Microsoft.AspNet.SignalR.ConnectionConfiguration)">
+      <summary>기본 종속성 확인자를 사용하여 <see cref="T:Microsoft.AspNet.SignalR.PersistentConnection" />을 지정된 경로에 매핑합니다.</summary>
+      <returns>등록된 경로입니다.</returns>
+      <param name="routes">경로 테이블입니다.</param>
+      <param name="name">경로의 이름입니다.</param>
+      <param name="url">경로의 경로입니다.</param>
+      <param name="configuration">구성 옵션입니다.</param>
+      <typeparam name="T">
+        <see cref="T:Microsoft.AspNet.SignalR.PersistentConnection" />의 유형입니다.</typeparam>
+    </member>
+    <member name="M:System.Web.Routing.SignalRRouteExtensions.MapConnection(System.Web.Routing.RouteCollection,System.String,System.String,System.Type,Microsoft.AspNet.SignalR.ConnectionConfiguration)">
+      <summary>기본 종속성 확인자를 사용하여 <see cref="T:Microsoft.AspNet.SignalR.PersistentConnection" />을 지정된 경로에 매핑합니다.</summary>
+      <returns>등록된 경로입니다.</returns>
+      <param name="routes">경로 테이블입니다.</param>
+      <param name="name">경로의 이름입니다.</param>
+      <param name="url">경로의 경로입니다.</param>
+      <param name="type">
+        <see cref="T:Microsoft.AspNet.SignalR.PersistentConnection" />의 유형입니다.</param>
+      <param name="configuration">구성 옵션입니다.</param>
+    </member>
+    <member name="M:System.Web.Routing.SignalRRouteExtensions.MapHubs(System.Web.Routing.RouteCollection)">
+      <summary>기본 허브 경로(/signalr)를 초기화합니다.</summary>
+      <returns>등록된 경로입니다.</returns>
+      <param name="routes">경로 테이블입니다.</param>
+    </member>
+    <member name="M:System.Web.Routing.SignalRRouteExtensions.MapHubs(System.Web.Routing.RouteCollection,Microsoft.AspNet.SignalR.HubConfiguration)">
+      <summary>기본 허브 경로(/signalr)를 초기화합니다.</summary>
+      <returns>등록된 경로입니다.</returns>
+      <param name="routes">경로 테이블입니다.</param>
+      <param name="configuration">구성 옵션입니다.</param>
+    </member>
+    <member name="M:System.Web.Routing.SignalRRouteExtensions.MapHubs(System.Web.Routing.RouteCollection,System.String,Microsoft.AspNet.SignalR.HubConfiguration)">
+      <summary>기본 허브 경로(/signalr)를 초기화합니다.</summary>
+      <returns>등록된 경로입니다.</returns>
+      <param name="routes">경로 테이블입니다.</param>
+      <param name="path">경로의 경로입니다.</param>
+      <param name="configuration">구성 옵션입니다.</param>
+    </member>
+  </members>
+</doc>

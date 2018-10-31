@@ -1,0 +1,88 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<doc>
+  <assembly>
+    <name>Microsoft.AspNet.SignalR.SystemWeb</name>
+  </assembly>
+  <members>
+    <member name="M:Microsoft.AspNet.SignalR.RequestExtensions.GetHttpContext(Microsoft.AspNet.SignalR.IRequest)">
+      <summary>Ruft HttpContextBase aus der Umgebung ab.</summary>
+      <returns>Das <see cref="T:System.Web.HttpContextBase" />-Objekt aus der Umgebung.</returns>
+      <param name="request">Die HTTP-Anforderung.</param>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.SystemWeb.Infrastructure.BuildManagerAssemblyLocator">
+      <summary>Stellt einen Build-Manager für den Assemblylocator dar.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.SystemWeb.Infrastructure.BuildManagerAssemblyLocator.#ctor">
+      <summary>Initialisiert eine neue Instanz der <see cref="T:Microsoft.AspNet.SignalR.SystemWeb.Infrastructure.BuildManagerAssemblyLocator" />-Klasse.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.SystemWeb.Infrastructure.BuildManagerAssemblyLocator.GetAssemblies">
+      <summary>Gibt eine Liste von Assemblys zurück, die dem Build-Manager zugeordnet sind.</summary>
+      <returns>Die Liste der Assemblys, die dem Build-Manager zugeordnet sind.</returns>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.SystemWeb.Infrastructure.MachineKeyProtectedData">
+      <summary>Stellt die geschützten Daten dar, die dem Computerschlüssel zugeordnet sind.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.SystemWeb.Infrastructure.MachineKeyProtectedData.#ctor">
+      <summary>Initialisiert eine neue Instanz der <see cref="T:Microsoft.AspNet.SignalR.SystemWeb.Infrastructure.MachineKeyProtectedData" />-Klasse.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.SystemWeb.Infrastructure.MachineKeyProtectedData.Protect(System.String,System.String)">
+      <summary>Schützt die angegebenen Daten.</summary>
+      <returns>Die geschützten Daten.</returns>
+      <param name="data">Die zu schützenden Daten.</param>
+      <param name="purpose">Der Zweck des Schutzes.</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.SystemWeb.Infrastructure.MachineKeyProtectedData.Unprotect(System.String,System.String)">
+      <summary>Hebt den Schutz geschützter Daten auf.</summary>
+      <returns>Die ungeschützten Daten.</returns>
+      <param name="protectedValue">Der geschützte Wert der Daten.</param>
+      <param name="purpose">Der Grund für die Entfernung des Schutzes.</param>
+    </member>
+    <member name="T:System.Web.Routing.SignalRRouteExtensions">
+      <summary>Stellt Routenerweiterungen für SignalR bereit.</summary>
+    </member>
+    <member name="M:System.Web.Routing.SignalRRouteExtensions.MapConnection``1(System.Web.Routing.RouteCollection,System.String,System.String)">
+      <summary>Ordnet ein <see cref="T:Microsoft.AspNet.SignalR.PersistentConnection" />-Objekt mit dem Standard-Abhängigkeitskonfliktlöser dem angegebenen Pfad zu.</summary>
+      <returns>Die registrierte Route.</returns>
+      <param name="routes">Die Routentabelle.</param>
+      <param name="name">Der Name der Route.</param>
+      <param name="url">Der Pfad der Route.</param>
+      <typeparam name="T">Der Typ des <see cref="T:Microsoft.AspNet.SignalR.PersistentConnection" />-Objekts.</typeparam>
+    </member>
+    <member name="M:System.Web.Routing.SignalRRouteExtensions.MapConnection``1(System.Web.Routing.RouteCollection,System.String,System.String,Microsoft.AspNet.SignalR.ConnectionConfiguration)">
+      <summary>Ordnet ein <see cref="T:Microsoft.AspNet.SignalR.PersistentConnection" />-Objekt mit dem Standard-Abhängigkeitskonfliktlöser dem angegebenen Pfad zu.</summary>
+      <returns>Die registrierte Route.</returns>
+      <param name="routes">Die Routentabelle.</param>
+      <param name="name">Der Name der Route.</param>
+      <param name="url">Der Pfad der Route.</param>
+      <param name="configuration">Konfigurationsoptionen.</param>
+      <typeparam name="T">Der Typ des <see cref="T:Microsoft.AspNet.SignalR.PersistentConnection" />-Objekts.</typeparam>
+    </member>
+    <member name="M:System.Web.Routing.SignalRRouteExtensions.MapConnection(System.Web.Routing.RouteCollection,System.String,System.String,System.Type,Microsoft.AspNet.SignalR.ConnectionConfiguration)">
+      <summary>Ordnet ein <see cref="T:Microsoft.AspNet.SignalR.PersistentConnection" />-Objekt mit dem Standard-Abhängigkeitskonfliktlöser dem angegebenen Pfad zu.</summary>
+      <returns>Die registrierte Route.</returns>
+      <param name="routes">Die Routentabelle.</param>
+      <param name="name">Der Name der Route.</param>
+      <param name="url">Der Pfad der Route.</param>
+      <param name="type">Der Typ des <see cref="T:Microsoft.AspNet.SignalR.PersistentConnection" />-Objekts.</param>
+      <param name="configuration">Konfigurationsoptionen.</param>
+    </member>
+    <member name="M:System.Web.Routing.SignalRRouteExtensions.MapHubs(System.Web.Routing.RouteCollection)">
+      <summary>Initialisiert die Standardhubroute (/signalr).</summary>
+      <returns>Die registrierte Route.</returns>
+      <param name="routes">Die Routentabelle.</param>
+    </member>
+    <member name="M:System.Web.Routing.SignalRRouteExtensions.MapHubs(System.Web.Routing.RouteCollection,Microsoft.AspNet.SignalR.HubConfiguration)">
+      <summary>Initialisiert die Standardhubroute (/signalr).</summary>
+      <returns>Die registrierte Route.</returns>
+      <param name="routes">Die Routentabelle.</param>
+      <param name="configuration">Konfigurationsoptionen.</param>
+    </member>
+    <member name="M:System.Web.Routing.SignalRRouteExtensions.MapHubs(System.Web.Routing.RouteCollection,System.String,Microsoft.AspNet.SignalR.HubConfiguration)">
+      <summary>Initialisiert die Standardhubroute (/signalr).</summary>
+      <returns>Die registrierte Route.</returns>
+      <param name="routes">Die Routentabelle.</param>
+      <param name="path">Der Pfad der Route.</param>
+      <param name="configuration">Konfigurationsoptionen.</param>
+    </member>
+  </members>
+</doc>

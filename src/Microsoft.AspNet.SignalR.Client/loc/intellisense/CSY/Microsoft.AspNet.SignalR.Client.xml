@@ -1,0 +1,1447 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<doc>
+  <assembly>
+    <name>Microsoft.AspNet.SignalR.Client</name>
+  </assembly>
+  <members>
+    <member name="T:Microsoft.AspNet.SignalR.Client.Connection">
+      <summary>Poskytuje připojení klienta ke službám SignalR.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Connection.#ctor(System.String)">
+      <summary>Inicializuje novou instanci třídy <see cref="T:Microsoft.AspNet.SignalR.Client.Connection" />.</summary>
+      <param name="url">Adresa URL k připojení.</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Connection.#ctor(System.String,System.Collections.Generic.IDictionary{System.String,System.String})">
+      <summary>Inicializuje novou instanci třídy <see cref="T:Microsoft.AspNet.SignalR.Client.Connection" />.</summary>
+      <param name="url">Adresa URL k připojení.</param>
+      <param name="queryString">Data řetězce dotazu, která mají být předána serveru</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Connection.#ctor(System.String,System.String)">
+      <summary>Inicializuje novou instanci třídy <see cref="T:Microsoft.AspNet.SignalR.Client.Connection" />.</summary>
+      <param name="url">Adresa URL k připojení.</param>
+      <param name="queryString">Data řetězce dotazu, která mají být předána serveru</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Connection.AddClientCertificate(System.Security.Cryptography.X509Certificates.X509Certificate)">
+      <summary>Přidá certifikát klienta do žádosti.</summary>
+      <param name="certificate">Certifikát klienta.</param>
+    </member>
+    <member name="E:Microsoft.AspNet.SignalR.Client.Connection.Closed">
+      <summary>K tomuto dojde při zastavení připojení.</summary>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Connection.ConnectionId">
+      <summary>Získá nebo nastaví ID pro dané připojení.</summary>
+      <returns>ID připojení.</returns>
+    </member>
+    <member name="E:Microsoft.AspNet.SignalR.Client.Connection.ConnectionSlow">
+      <summary>K tomuto dojde, když se blíží konec časového limitu připojení <see cref="T:Microsoft.AspNet.SignalR.Client.Connection" />.</summary>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Connection.ConnectionToken">
+      <summary>Získá nebo nastaví token připojení pro dané připojení.</summary>
+      <returns>Token připojení.</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Connection.CookieContainer">
+      <summary>Získá nebo nastaví soubory cookie přidružené k připojení.</summary>
+      <returns>Soubory cookie přidružené k připojení.</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Connection.Credentials">
+      <summary>Získá nebo nastaví informace o ověření pro dané připojení.</summary>
+      <returns>Informace o ověřování pro připojení.</returns>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Connection.Dispose">
+      <summary>Zastavit připojení, ekvivalent volání zastavení připojení.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Connection.Dispose(System.Boolean)">
+      <summary>Zastavit připojení, ekvivalent volání zastavení připojení.</summary>
+      <param name="disposing">Hodnota true provede uvolnění, hodnota false neprovede žádnou akci.</param>
+    </member>
+    <member name="E:Microsoft.AspNet.SignalR.Client.Connection.Error">
+      <summary>K tomuto dojde, když v připojení dojde k chybě.</summary>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Connection.GroupsToken">
+      <summary>Získá nebo nastaví token skupin pro dané připojení.</summary>
+      <returns>Token skupin pro připojení.</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Connection.Headers">
+      <summary>Získá nebo nastaví hlavičku pro žádosti. </summary>
+      <returns>Hlavičky pro žádosti.</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Connection.Items">
+      <summary>Získá slovník pro ukládání stavu připojení.</summary>
+      <returns>Slovník pro ukládání stavu pro připojení.</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Connection.JsonSerializer">
+      <summary>Získá nebo nastaví serializátor používaný pro připojení.</summary>
+      <returns>Serializátor používaný pro připojení.</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Connection.MessageId">
+      <summary>Získá nebo nastaví pro připojení ID poslední zprávy.</summary>
+      <returns>ID poslední zprávy pro připojení.</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Connection.Microsoft#AspNet#SignalR#Client#IConnection#Certificates">
+      <summary>Získá kolekci pro ukládání objektů X509Certificate.</summary>
+      <returns>Kolekce pro ukládání objektů X509Certificate.</returns>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Connection.Microsoft#AspNet#SignalR#Client#IConnection#ChangeState(Microsoft.AspNet.SignalR.Client.ConnectionState,Microsoft.AspNet.SignalR.Client.ConnectionState)">
+      <summary>Voláno, když se má změnit stav připojení.</summary>
+      <returns>Hodnota true, pokud se má změnit stav připojení; jinak hodnota false.</returns>
+      <param name="oldState">Starý stav.</param>
+      <param name="newState">Nový stav.</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Connection.Microsoft#AspNet#SignalR#Client#IConnection#Disconnect">
+      <summary>Zastaví připojení <see cref="T:Microsoft.AspNet.SignalR.Client.Connection" /> a neodešle na server zprávu o zrušení.Tato funkce je volána poté, co přijmeme ze serveru zprávu o odpojení.</summary>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Connection.Microsoft#AspNet#SignalR#Client#IConnection#KeepAliveData">
+      <summary>Získá nebo nastaví objekt pro uložení různých hodnot časového limitu pro zachování připojení.</summary>
+      <returns>Objekt pro uložení různých hodnot časového limitu pro zachování připojení.</returns>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Connection.Microsoft#AspNet#SignalR#Client#IConnection#OnConnectionSlow">
+      <summary>Voláno, když se blíží konec časového limitu připojení <see cref="T:Microsoft.AspNet.SignalR.Client.Connection" />.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Connection.Microsoft#AspNet#SignalR#Client#IConnection#OnError(System.Exception)">
+      <summary>Voláno, když v připojení <see cref="T:Microsoft.AspNet.SignalR.Client.Connection" /> dojde k chybě.</summary>
+      <param name="error">Chyba připojení.</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Connection.Microsoft#AspNet#SignalR#Client#IConnection#OnReceived(Newtonsoft.Json.Linq.JToken)">
+      <summary>Voláno, když připojení <see cref="T:Microsoft.AspNet.SignalR.Client.Connection" /> přijme data ze serveru.</summary>
+      <param name="message">Přijatá zpráva.</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Connection.Microsoft#AspNet#SignalR#Client#IConnection#OnReconnected">
+      <summary>Voláno, když se připojení <see cref="T:Microsoft.AspNet.SignalR.Client.Connection" /> úspěšně obnoví po vypršení časového limitu.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Connection.Microsoft#AspNet#SignalR#Client#IConnection#PrepareRequest(Microsoft.AspNet.SignalR.Client.Http.IRequest)">
+      <summary>Připraví všechny žádosti pro připojení <see cref="T:Microsoft.AspNet.SignalR.Client.Connection" />.</summary>
+      <param name="request">Žádost</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Connection.Microsoft#AspNet#SignalR#Client#IConnection#UpdateLastKeepAlive">
+      <summary>Nastaví položku LastKeepAlive na aktuální čas.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Connection.OnClosed"></member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Connection.OnMessageReceived(Newtonsoft.Json.Linq.JToken)">
+      <summary>Voláno, když připojení <see cref="T:Microsoft.AspNet.SignalR.Client.Connection" /> přijme zprávu ze serveru.</summary>
+      <param name="message">Přijatá zpráva.</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Connection.OnReconnecting"></member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Connection.OnSending">
+      <summary>Voláno, když připojení <see cref="T:Microsoft.AspNet.SignalR.Client.Connection" /> odešle výstrahu nebo připomenutí.</summary>
+      <returns>Připojení <see cref="T:Microsoft.AspNet.SignalR.Client.Connection" /> odešle výstrahu nebo připomenutí.</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Connection.Protocol">
+      <summary>Získá nebo nastaví protokol pro připojení.</summary>
+      <returns>Protokol pro připojení.</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Connection.Proxy">
+      <summary>Získá nebo nastaví informace o proxy serveru pro připojení.</summary>
+      <returns>Informace o proxy serveru pro připojení.</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Connection.QueryString">
+      <summary>Získá řetězec dotazu zadaný v konstruktoru.</summary>
+      <returns>Řetězec dotazu zadaný v konstruktoru.</returns>
+    </member>
+    <member name="E:Microsoft.AspNet.SignalR.Client.Connection.Received">
+      <summary>K tomuto dojde, když připojení přijme data ze serveru.</summary>
+    </member>
+    <member name="E:Microsoft.AspNet.SignalR.Client.Connection.Reconnected">
+      <summary>K tomuto dojde, když se připojení úspěšně obnoví po vypršení časového limitu.</summary>
+    </member>
+    <member name="E:Microsoft.AspNet.SignalR.Client.Connection.Reconnecting">
+      <summary>K tomuto dojde, když se připojení začne znovu obnovovat po chybě.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Connection.Send(System.Object)">
+      <summary>Odešle objekt, který bude přes připojení asynchronně serializován do formátu JSON.</summary>
+      <returns>Úloha reprezentující čas odeslání dat.</returns>
+      <param name="value">Hodnota určená k serializaci.</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Connection.Send(System.String)">
+      <summary>Asynchronně odešle data přes dané připojení.</summary>
+      <returns>Úloha reprezentující čas odeslání dat.</returns>
+      <param name="data">Data, která se mají odeslat.</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Connection.Start">
+      <summary>Spustí připojení <see cref="T:Microsoft.AspNet.SignalR.Client.Connection" />.</summary>
+      <returns>Úloha reprezentující čas spuštění připojení.</returns>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Connection.Start(Microsoft.AspNet.SignalR.Client.Http.IHttpClient)">
+      <summary>Spustí připojení <see cref="T:Microsoft.AspNet.SignalR.Client.Connection" />.</summary>
+      <returns>Úloha reprezentující čas spuštění připojení.</returns>
+      <param name="httpClient">Připojení klienta HTTP.</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Connection.Start(Microsoft.AspNet.SignalR.Client.Transports.IClientTransport)">
+      <summary>Spustí připojení <see cref="T:Microsoft.AspNet.SignalR.Client.Connection" />.</summary>
+      <returns>Úloha reprezentující čas spuštění připojení.</returns>
+      <param name="transport">Přenos, který se má použít.</param>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Connection.State">
+      <summary>Získá aktuální hodnotu ConnectionState připojení.</summary>
+      <returns>Aktuální hodnota ConnectionState připojení.</returns>
+    </member>
+    <member name="E:Microsoft.AspNet.SignalR.Client.Connection.StateChanged">
+      <summary>K tomuto dojde při změně stavu připojení.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Connection.Stop">
+      <summary>Zastaví připojení <see cref="T:Microsoft.AspNet.SignalR.Client.Connection" /> a odešle na server zprávu o zrušení.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Connection.Stop(System.TimeSpan)">
+      <summary>Zastaví připojení <see cref="T:Microsoft.AspNet.SignalR.Client.Connection" /> a odešle na server zprávu o zrušení.&lt;název parametru=„časový limit“&gt;Časový limit&lt;/param&gt;.</summary>
+      <param name="timeout">Časový limit připojení.</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Connection.Trace(Microsoft.AspNet.SignalR.Client.TraceLevels,System.String,System.Object[])">
+      <summary>Trasuje metodu připojení zadanou parametry.</summary>
+      <param name="level">Úroveň trasování</param>
+      <param name="format">Formát</param>
+      <param name="args">Argument.</param>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Connection.TraceLevel">
+      <summary>Získá nebo nastaví úroveň trasování pro připojení.</summary>
+      <returns>Úroveň trasování pro připojení.</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Connection.TraceWriter">
+      <summary>Získá nebo nastaví zapisovač textu pro trasování připojení.</summary>
+      <returns>Zapisovač textu pro trasování připojení.</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Connection.Transport">
+      <summary>Získá nebo nastaví přenos klienta pro připojení.</summary>
+      <returns>Přenos klienta pro připojení.</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Connection.TransportConnectTimeout">
+      <summary>Získá nebo nastaví časový interval představující dobu, po kterou má připojení přenosu zůstat otevřeno, než vyprší časový limit.</summary>
+      <returns>Časový interval představující dobu, po kterou má připojení přenosu zůstat otevřeno, než vyprší časový limit.</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Connection.Url">
+      <summary>Získá nebo nastaví adresu URL pro připojení.</summary>
+      <returns>Adresa URL pro připojení.</returns>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.Client.ConnectionExtensions">
+      <summary>Obsah zde nebude aktualizován. Žádné materiály sem prosím nepřidávejte.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.ConnectionExtensions.AsObservable(Microsoft.AspNet.SignalR.Client.Connection)"></member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.ConnectionExtensions.AsObservable``1(Microsoft.AspNet.SignalR.Client.Connection)">
+      <typeparam name="T"></typeparam>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.ConnectionExtensions.AsObservable``1(Microsoft.AspNet.SignalR.Client.Connection,System.Func{System.String,``0})">
+      <typeparam name="T"></typeparam>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.ConnectionExtensions.EnsureReconnecting(Microsoft.AspNet.SignalR.Client.IConnection)"></member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.ConnectionExtensions.GetValue``1(Microsoft.AspNet.SignalR.Client.IConnection,System.String)">
+      <typeparam name="T"></typeparam>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.ConnectionExtensions.JsonDeserializeObject``1(Microsoft.AspNet.SignalR.Client.IConnection,System.String)">
+      <typeparam name="T"></typeparam>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.ConnectionExtensions.JsonSerializeObject(Microsoft.AspNet.SignalR.Client.IConnection,System.Object)"></member>
+    <member name="T:Microsoft.AspNet.SignalR.Client.ConnectionState">
+      <summary>Představuje stav připojení SignalR.</summary>
+    </member>
+    <member name="F:Microsoft.AspNet.SignalR.Client.ConnectionState.Connected">
+      <summary>Stav připojení: aktivní.</summary>
+    </member>
+    <member name="F:Microsoft.AspNet.SignalR.Client.ConnectionState.Connecting">
+      <summary>Stav připojení: připojování.</summary>
+    </member>
+    <member name="F:Microsoft.AspNet.SignalR.Client.ConnectionState.Disconnected">
+      <summary>Stav připojení: neaktivní.</summary>
+    </member>
+    <member name="F:Microsoft.AspNet.SignalR.Client.ConnectionState.Reconnecting">
+      <summary>Stav připojení: probíhá obnovení.</summary>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.Client.ErrorExtensions">
+      <summary>Poskytuje rozšiřující metodu pro zjednodušené rozpoznávání chyb.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.ErrorExtensions.GetError(System.Exception)">
+      <summary> Zjednodušuje rozpoznávání chyb díky rozbalení komplexních výjimek.</summary>
+      <returns>Rozbalená výjimka ve formátu SignalRError.</returns>
+      <param name="ex">Výjimka, ke které došlo.</param>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.Client.HeaderDictionary">
+      <summary>Představuje mapování ze sady klíčů do sady hodnot pro klienta SignalR.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.HeaderDictionary.#ctor(Microsoft.AspNet.SignalR.Client.IConnection)">
+      <summary>Inicializuje novou instanci třídy <see cref="T:Microsoft.AspNet.SignalR.Client.HeaderDictionary" />.</summary>
+      <param name="connection">Připojení klienta.</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.HeaderDictionary.Add(System.Collections.Generic.KeyValuePair{System.String,System.String})">
+      <summary>Přidá určitou položku do slovníku.</summary>
+      <param name="item">Položka k přidání.</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.HeaderDictionary.Add(System.String,System.String)">
+      <summary>Přidá určitou dvojici klíč/hodnota do slovníku.</summary>
+      <param name="key">Klíč k přidání.</param>
+      <param name="value">Hodnota k přidání.</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.HeaderDictionary.Clear">
+      <summary>Vymaže obsah slovníku.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.HeaderDictionary.Contains(System.Collections.Generic.KeyValuePair{System.String,System.String})">
+      <summary>Určí, zda je určitá položka obsažena ve slovníku.</summary>
+      <returns>Hodnota true, pokud je určitá položka ve slovníku; jinak hodnota false.</returns>
+      <param name="item">Položka k vyhledání.</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.HeaderDictionary.ContainsKey(System.String)">
+      <summary>Určí, zda je zadaný klíč ve slovníku.</summary>
+      <returns>Hodnota true, pokud je zadaný klíč ve slovníku; jinak hodnota false.</returns>
+      <param name="key">Klíč k vyhledání.</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.HeaderDictionary.CopyTo(System.Collections.Generic.KeyValuePair{System.String,System.String}[],System.Int32)">
+      <summary>Zkopíruje elementy dvojice klíč/hodnota do existujícího jednorozměrného pole, začne u zadaného indexu pole.</summary>
+      <param name="array">Jednorozměrné pole, které je cílem elementů zkopírovaných ze slovníku.</param>
+      <param name="arrayIndex">Index založený na nule v poli, ve kterém kopírování začíná.</param>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.HeaderDictionary.Count">
+      <summary>Získá počet dvojic klíč/hodnota obsažených ve slovníku.</summary>
+      <returns>Počet dvojic klíč/hodnota obsažených ve slovníku.</returns>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.HeaderDictionary.GetEnumerator">
+      <summary>Vrátí enumerátor, který iteruje ve slovníku.</summary>
+      <returns>Enumerátor, který iteruje v rámci slovníku.</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.HeaderDictionary.IsReadOnly">
+      <summary>Zjistí, zda je slovník jen pro čtení.</summary>
+      <returns>Hodnota true, pokud je slovník určen pouze pro čtení; jinak hodnota false.</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.HeaderDictionary.Item(System.String)">
+      <summary>Získá nebo nastaví hodnotu přidruženou k zadanému klíči.</summary>
+      <returns>Hodnota přidružená k zadanému klíči</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.HeaderDictionary.Keys">
+      <summary>Získá kolekci klíčů ve slovníku.</summary>
+      <returns>Kolekce klíčů ve slovníku.</returns>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.HeaderDictionary.Remove(System.Collections.Generic.KeyValuePair{System.String,System.String})">
+      <summary>Odebere určitou dvojici klíč/hodnota ze slovníku.</summary>
+      <returns>Slovník s odebranou položkou.</returns>
+      <param name="item">Položka k odebrání.</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.HeaderDictionary.Remove(System.String)">
+      <summary>Odebere určitý klíč ze slovníku.</summary>
+      <returns>Slovník s odebraným klíčem.</returns>
+      <param name="key">Klíč k odebrání.</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.HeaderDictionary.System#Collections#IEnumerable#GetEnumerator">
+      <summary>Vrací enumerátor procházející kolekci.</summary>
+      <returns>Enumerátor, který iteruje v rámci kolekce.</returns>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.HeaderDictionary.TryGetValue(System.String,System.String@)">
+      <summary>Získá hodnotu přidruženou k zadanému klíči.</summary>
+      <returns>Hodnota true, pokud slovník obsahuje element se zadaným klíčem, jinak hodnota false.</returns>
+      <param name="key">Klíč hodnoty, kterou chcete získat</param>
+      <param name="value">Obsahuje hodnotu přidruženou k zadanému klíči, pokud je klíč při vrácení metody nalezen; v opačném případě výchozí hodnota typu pro parametr hodnoty.</param>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.HeaderDictionary.Values">
+      <summary>Získá kolekci hodnot ve slovníku.</summary>
+      <returns>Kolekce hodnot ve slovníku.</returns>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.Client.HeartbeatMonitor">
+      <summary>Představuje monitor prezenčního signálu, který kontroluje odpověď ze serveru a zachování prezenčního signálu v případě úspěšně odeslané odpovědi.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.HeartbeatMonitor.#ctor(Microsoft.AspNet.SignalR.Client.IConnection,System.Object)">
+      <summary>Inicializuje novou instanci třídy <see cref="T:Microsoft.AspNet.SignalR.Client.HeartbeatMonitor" />.</summary>
+      <param name="connection">Připojení rozhraní.</param>
+      <param name="connectionStateLock">Stav připojení uzamčen.</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.HeartbeatMonitor.Beat(System.TimeSpan)">
+      <summary>Logika pro určení, zda je třeba upozornit uživatele nebo zopakovat pokus o připojení.</summary>
+      <param name="timeElapsed">Uplynulý čas.</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.HeartbeatMonitor.Dispose">
+      <summary>Uvolní všechny prostředky používané aktuální instancí třídy <see cref="T:Microsoft.AspNet.SignalR.Client.HeartbeatMonitor" />.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.HeartbeatMonitor.Dispose(System.Boolean)">
+      <summary>Uvolní nespravované prostředky využívané třídou <see cref="T:Microsoft.AspNet.SignalR.Client.HeartbeatMonitor" /> a volitelně také spravované prostředky.</summary>
+      <param name="disposing">Hodnota true slouží k uvolnění spravovaných i nespravovaných prostředků; hodnota false slouží k uvolnění pouze nespravovaných prostředků.</param>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.HeartbeatMonitor.HasBeenWarned">
+      <summary>Získá nebo nastaví hodnotu určující, zda byl monitor <see cref="T:Microsoft.AspNet.SignalR.Client.HeartbeatMonitor" /> upozorněn.</summary>
+      <returns>Hodnota true, pokud byl monitor <see cref="T:Microsoft.AspNet.SignalR.Client.HeartbeatMonitor" /> upozorněn; jinak hodnota false.</returns>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.HeartbeatMonitor.Start">
+      <summary>Aktualizuje hodnotu LastKeepAlive a spustí časovač.</summary>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.HeartbeatMonitor.TimedOut">
+      <summary>Získá nebo nastaví hodnotu určující, zda vypršel časový limit monitoru <see cref="T:Microsoft.AspNet.SignalR.Client.HeartbeatMonitor" />.</summary>
+      <returns>Hodnota true, pokud vypršel časový limit monitoru <see cref="T:Microsoft.AspNet.SignalR.Client.HeartbeatMonitor" />; jinak hodnota false.</returns>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.Client.HttpClientException">
+      <summary>Výjimka, ke které došlo při připojování klienta HTTP.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.HttpClientException.#ctor">
+      <summary>Inicializuje novou instanci třídy <see cref="T:Microsoft.AspNet.SignalR.Client.HttpClientException" />.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.HttpClientException.#ctor(System.Net.Http.HttpResponseMessage)">
+      <summary>Inicializuje novou instanci třídy <see cref="T:Microsoft.AspNet.SignalR.Client.HttpClientException" />.</summary>
+      <param name="responseMessage">Odpověď</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.HttpClientException.#ctor(System.String)">
+      <summary>Inicializuje novou instanci třídy <see cref="T:Microsoft.AspNet.SignalR.Client.HttpClientException" />.</summary>
+      <param name="message">Chybová zpráva</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.HttpClientException.#ctor(System.String,System.Exception)">
+      <summary>Inicializuje novou instanci třídy <see cref="T:Microsoft.AspNet.SignalR.Client.HttpClientException" />.</summary>
+      <param name="message">Chybová zpráva</param>
+      <param name="ex">Výjimka</param>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.HttpClientException.Response">
+      <summary>Získá nebo nastaví odpověď přidruženou k tomuto klientovi.</summary>
+      <returns>Odpověď přidružená k tomuto klientovi.</returns>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.Client.HubConnection">
+      <summary>Připojení <see cref="T:Microsoft.AspNet.SignalR.Client.Connection" /> pro interakci s rozbočovači.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.HubConnection.#ctor(System.String)">
+      <summary>Inicializuje novou instanci třídy <see cref="T:Microsoft.AspNet.SignalR.Client.HubConnection" />.</summary>
+      <param name="url">Adresa URL k připojení</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.HubConnection.#ctor(System.String,System.Boolean)">
+      <summary>Inicializuje novou instanci třídy <see cref="T:Microsoft.AspNet.SignalR.Client.HubConnection" />.</summary>
+      <param name="url">Adresa URL k připojení</param>
+      <param name="useDefaultUrl">Určuje, zda má být k zadané adrese URL připojena výchozí cesta /signalr.</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.HubConnection.#ctor(System.String,System.Collections.Generic.IDictionary{System.String,System.String})">
+      <summary>Inicializuje novou instanci třídy <see cref="T:Microsoft.AspNet.SignalR.Client.HubConnection" />.</summary>
+      <param name="url">Adresa URL k připojení</param>
+      <param name="queryString">Data řetězce dotazu, která mají být předána serveru</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.HubConnection.#ctor(System.String,System.Collections.Generic.IDictionary{System.String,System.String},System.Boolean)">
+      <summary>Inicializuje novou instanci třídy <see cref="T:Microsoft.AspNet.SignalR.Client.HubConnection" />.</summary>
+      <param name="url">Adresa URL k připojení</param>
+      <param name="queryString">Data řetězce dotazu, která mají být předána serveru</param>
+      <param name="useDefaultUrl">Určuje, zda má být k zadané adrese URL připojena výchozí cesta /signalr.</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.HubConnection.#ctor(System.String,System.String)">
+      <summary>Inicializuje novou instanci třídy <see cref="T:Microsoft.AspNet.SignalR.Client.HubConnection" />.</summary>
+      <param name="url">Adresa URL k připojení</param>
+      <param name="queryString">Data řetězce dotazu, která mají být předána serveru</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.HubConnection.#ctor(System.String,System.String,System.Boolean)">
+      <summary>Inicializuje novou instanci třídy <see cref="T:Microsoft.AspNet.SignalR.Client.HubConnection" />.</summary>
+      <param name="url">Adresa URL k připojení</param>
+      <param name="queryString">Data řetězce dotazu, která mají být předána serveru</param>
+      <param name="useDefaultUrl">Určuje, zda má být k zadané adrese URL připojena výchozí cesta /signalr.</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.HubConnection.CreateHubProxy(System.String)">
+      <summary>Vytvoří položku <see cref="T:Microsoft.AspNet.SignalR.Client.IHubProxy" /> pro rozbočovač se zadaným názvem.</summary>
+      <returns>Položka <see cref="T:Microsoft.AspNet.SignalR.Client.IHubProxy" />.</returns>
+      <param name="hubName">Název rozbočovače.</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.HubConnection.Microsoft#AspNet#SignalR#Client#Hubs#IHubConnection#RegisterCallback(System.Action{Microsoft.AspNet.SignalR.Client.Hubs.HubResult})"></member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.HubConnection.Microsoft#AspNet#SignalR#Client#Hubs#IHubConnection#RemoveCallback(System.String)"></member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.HubConnection.OnClosed"></member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.HubConnection.OnMessageReceived(Newtonsoft.Json.Linq.JToken)"></member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.HubConnection.OnReconnecting"></member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.HubConnection.OnSending"></member>
+    <member name="T:Microsoft.AspNet.SignalR.Client.HubException"></member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.HubException.#ctor"></member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.HubException.#ctor(System.String)"></member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.HubException.#ctor(System.String,System.Object)"></member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.HubException.ErrorData"></member>
+    <member name="T:Microsoft.AspNet.SignalR.Client.HubProxyExtensions">
+      <summary>Rozšíření <see cref="T:Microsoft.AspNet.SignalR.Client.IHubProxy" />.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.HubProxyExtensions.GetValue``1(Microsoft.AspNet.SignalR.Client.IHubProxy,System.String)">
+      <summary>Získá hodnotu proměnné stavu.</summary>
+      <returns>Hodnota proměnné stavu.</returns>
+      <param name="proxy">Objekt <see cref="T:Microsoft.AspNet.SignalR.Client.IHubProxy" /></param>
+      <param name="name">Název proměnné stavu.</param>
+      <typeparam name="T">Typ proměnné stavu.</typeparam>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.HubProxyExtensions.Observe(Microsoft.AspNet.SignalR.Client.IHubProxy,System.String)">
+      <summary>Zaregistruje událost <see cref="T:Microsoft.AspNet.SignalR.Client.IHubProxy" /> jako <see cref="T:IObservable{T}" />.</summary>
+      <returns>Objekt <see cref="T:IObservable{object[]}" />.</returns>
+      <param name="proxy">Objekt <see cref="T:Microsoft.AspNet.SignalR.Client.IHubProxy" />.</param>
+      <param name="eventName">Název události.</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.HubProxyExtensions.On(Microsoft.AspNet.SignalR.Client.IHubProxy,System.String,System.Action)">
+      <summary>Zaregistruje se pro událost se zadaným názvem a zpětným voláním.</summary>
+      <returns>Objekt <see cref="T:System.IDisposable" /> reprezentující toto přihlášení k odběru</returns>
+      <param name="proxy">Objekt <see cref="T:Microsoft.AspNet.SignalR.Client.IHubProxy" /></param>
+      <param name="eventName">Název události.</param>
+      <param name="onData">Zpětné volání</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.HubProxyExtensions.On(Microsoft.AspNet.SignalR.Client.IHubProxy,System.String,System.Action{System.Object})">
+      <summary>Zaregistruje se pro událost se zadaným názvem a zpětným voláním.</summary>
+      <returns>Objekt <see cref="T:System.IDisposable" /> reprezentující toto přihlášení k odběru</returns>
+      <param name="proxy">Objekt <see cref="T:Microsoft.AspNet.SignalR.Client.IHubProxy" /></param>
+      <param name="eventName">Název události.</param>
+      <param name="onData">Zpětné volání</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.HubProxyExtensions.On``1(Microsoft.AspNet.SignalR.Client.IHubProxy,System.String,System.Action{``0})">
+      <summary>Zaregistruje se pro událost se zadaným názvem a zpětným voláním.</summary>
+      <returns>Objekt <see cref="T:System.IDisposable" /> reprezentující toto přihlášení k odběru</returns>
+      <param name="proxy">Objekt <see cref="T:Microsoft.AspNet.SignalR.Client.IHubProxy" /></param>
+      <param name="eventName">Název události.</param>
+      <param name="onData">Zpětné volání</param>
+      <typeparam name="T"></typeparam>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.HubProxyExtensions.On``2(Microsoft.AspNet.SignalR.Client.IHubProxy,System.String,System.Action{``0,``1})">
+      <summary>Zaregistruje se pro událost se zadaným názvem a zpětným voláním.</summary>
+      <returns>Objekt <see cref="T:System.IDisposable" /> reprezentující toto přihlášení k odběru</returns>
+      <param name="proxy">Objekt <see cref="T:Microsoft.AspNet.SignalR.Client.IHubProxy" /></param>
+      <param name="eventName">Název události.</param>
+      <param name="onData">Zpětné volání</param>
+      <typeparam name="T1"></typeparam>
+      <typeparam name="T2"></typeparam>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.HubProxyExtensions.On``3(Microsoft.AspNet.SignalR.Client.IHubProxy,System.String,System.Action{``0,``1,``2})">
+      <summary>Zaregistruje se pro událost se zadaným názvem a zpětným voláním.</summary>
+      <returns>Objekt <see cref="T:System.IDisposable" /> reprezentující toto přihlášení k odběru</returns>
+      <param name="proxy">Objekt <see cref="T:Microsoft.AspNet.SignalR.Client.IHubProxy" /></param>
+      <param name="eventName">Název události.</param>
+      <param name="onData">Zpětné volání</param>
+      <typeparam name="T1"></typeparam>
+      <typeparam name="T2"></typeparam>
+      <typeparam name="T3"></typeparam>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.HubProxyExtensions.On``4(Microsoft.AspNet.SignalR.Client.IHubProxy,System.String,System.Action{``0,``1,``2,``3})">
+      <summary>Zaregistruje se pro událost se zadaným názvem a zpětným voláním.</summary>
+      <returns>Objekt <see cref="T:System.IDisposable" /> reprezentující toto přihlášení k odběru</returns>
+      <param name="proxy">Objekt <see cref="T:Microsoft.AspNet.SignalR.Client.IHubProxy" /></param>
+      <param name="eventName">Název události.</param>
+      <param name="onData">Zpětné volání</param>
+      <typeparam name="T1"></typeparam>
+      <typeparam name="T2"></typeparam>
+      <typeparam name="T3"></typeparam>
+      <typeparam name="T4"></typeparam>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.HubProxyExtensions.On``5(Microsoft.AspNet.SignalR.Client.IHubProxy,System.String,System.Action{``0,``1,``2,``3,``4})">
+      <summary>Zaregistruje se pro událost se zadaným názvem a zpětným voláním.</summary>
+      <returns>Objekt <see cref="T:System.IDisposable" /> reprezentující toto přihlášení k odběru</returns>
+      <param name="proxy">Objekt <see cref="T:Microsoft.AspNet.SignalR.Client.IHubProxy" /></param>
+      <param name="eventName">Název události.</param>
+      <param name="onData">Zpětné volání</param>
+      <typeparam name="T1"></typeparam>
+      <typeparam name="T2"></typeparam>
+      <typeparam name="T3"></typeparam>
+      <typeparam name="T4"></typeparam>
+      <typeparam name="T5"></typeparam>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.HubProxyExtensions.On``6(Microsoft.AspNet.SignalR.Client.IHubProxy,System.String,System.Action{``0,``1,``2,``3,``4,``5})">
+      <summary>Zaregistruje se pro událost se zadaným názvem a zpětným voláním.</summary>
+      <returns>Objekt <see cref="T:System.IDisposable" /> reprezentující toto přihlášení k odběru</returns>
+      <param name="proxy">Objekt <see cref="T:Microsoft.AspNet.SignalR.Client.IHubProxy" /></param>
+      <param name="eventName">Název události.</param>
+      <param name="onData">Zpětné volání</param>
+      <typeparam name="T1"></typeparam>
+      <typeparam name="T2"></typeparam>
+      <typeparam name="T3"></typeparam>
+      <typeparam name="T4"></typeparam>
+      <typeparam name="T5"></typeparam>
+      <typeparam name="T6"></typeparam>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.HubProxyExtensions.On``7(Microsoft.AspNet.SignalR.Client.IHubProxy,System.String,System.Action{``0,``1,``2,``3,``4,``5,``6})">
+      <summary>Zaregistruje se pro událost se zadaným názvem a zpětným voláním.</summary>
+      <returns>Objekt <see cref="T:System.IDisposable" /> reprezentující toto přihlášení k odběru</returns>
+      <param name="proxy">Objekt <see cref="T:Microsoft.AspNet.SignalR.Client.IHubProxy" /></param>
+      <param name="eventName">Název události.</param>
+      <param name="onData">Zpětné volání</param>
+      <typeparam name="T1"></typeparam>
+      <typeparam name="T2"></typeparam>
+      <typeparam name="T3"></typeparam>
+      <typeparam name="T4"></typeparam>
+      <typeparam name="T5"></typeparam>
+      <typeparam name="T6"></typeparam>
+      <typeparam name="T7"></typeparam>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.Client.IConnection">
+      <summary>Obsah zde nebude aktualizován. Žádné materiály sem prosím nepřidávejte.</summary>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.IConnection.Certificates">
+      <summary>Získá certifikáty položky X509CertificateCollection pro připojení <see cref="T:Microsoft.AspNet.SignalR.Client.IConnection" />.</summary>
+      <returns>Certifikáty položky X509CertificateCollection pro připojení <see cref="T:Microsoft.AspNet.SignalR.Client.IConnection" />.</returns>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.IConnection.ChangeState(Microsoft.AspNet.SignalR.Client.ConnectionState,Microsoft.AspNet.SignalR.Client.ConnectionState)">
+      <summary>Voláno, když se má změnit stav připojení <see cref="T:Microsoft.AspNet.SignalR.Client.IConnection" />.</summary>
+      <returns>Hodnota true, pokud se má změnit stav připojení <see cref="T:Microsoft.AspNet.SignalR.Client.IConnection" />; jinak hodnota false.</returns>
+      <param name="oldState">Starý stav.</param>
+      <param name="newState">Nový stav.</param>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.IConnection.ConnectionId">
+      <summary>Získá ID připojení pro připojení <see cref="T:Microsoft.AspNet.SignalR.Client.IConnection" />.</summary>
+      <returns>Id připojení pro připojení <see cref="T:Microsoft.AspNet.SignalR.Client.IConnection" /></returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.IConnection.ConnectionToken">
+      <summary>Získá nebo nastaví token připojení pro připojení <see cref="T:Microsoft.AspNet.SignalR.Client.IConnection" />.</summary>
+      <returns>Token připojení pro připojení <see cref="T:Microsoft.AspNet.SignalR.Client.IConnection" /></returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.IConnection.CookieContainer">
+      <summary>Získá nebo nastaví soubory cookie přidružené k objektu <see cref="T:Microsoft.AspNet.SignalR.Client.IConnection" />.</summary>
+      <returns>Soubory cookie přidružené k objektu <see cref="T:Microsoft.AspNet.SignalR.Client.IConnection" /></returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.IConnection.Credentials">
+      <summary>Získá nebo nastaví informace o ověřování pro připojení <see cref="T:Microsoft.AspNet.SignalR.Client.IConnection" />.</summary>
+      <returns>Informace o ověřování pro připojení <see cref="T:Microsoft.AspNet.SignalR.Client.IConnection" /></returns>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.IConnection.Disconnect">
+      <summary>Zastaví připojení <see cref="T:Microsoft.AspNet.SignalR.Client.IConnection" /> a neodešle na server zprávu o zrušení.Tato funkce je volána poté, co přijmeme ze serveru zprávu o odpojení.</summary>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.IConnection.GroupsToken">
+      <summary>Získá nebo nastaví token skupin pro připojení <see cref="T:Microsoft.AspNet.SignalR.Client.IConnection" />.</summary>
+      <returns>Token skupin pro připojení <see cref="T:Microsoft.AspNet.SignalR.Client.IConnection" /></returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.IConnection.Headers">
+      <summary>Získá hlavičku pro žádost.</summary>
+      <returns>Hlavičky pro žádosti.</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.IConnection.Items">
+      <summary>Získá slovník pro ukládání stavu pro položku <see cref="T:Microsoft.AspNet.SignalR.Client.IConnection" />.</summary>
+      <returns>Slovník pro ukládání stavu pro položku <see cref="T:Microsoft.AspNet.SignalR.Client.IConnection" /></returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.IConnection.JsonSerializer">
+      <summary>Získá serializátor používaný připojením <see cref="T:Microsoft.AspNet.SignalR.Client.IConnection" />.</summary>
+      <returns>Serializátor používaný připojením <see cref="T:Microsoft.AspNet.SignalR.Client.IConnection" /></returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.IConnection.KeepAliveData">
+      <summary>Získá nebo nastaví objekt pro zachování dat pro připojení <see cref="T:Microsoft.AspNet.SignalR.Client.IConnection" />.</summary>
+      <returns>Objekt pro zachování dat pro připojení <see cref="T:Microsoft.AspNet.SignalR.Client.IConnection" /></returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.IConnection.MessageId">
+      <summary>Získá nebo nastaví ID poslední zprávy pro připojení <see cref="T:Microsoft.AspNet.SignalR.Client.IConnection" />.</summary>
+      <returns>ID poslední zprávy pro připojení <see cref="T:Microsoft.AspNet.SignalR.Client.IConnection" /></returns>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.IConnection.OnConnectionSlow">
+      <summary>Voláno, když se blíží konec časového limitu připojení <see cref="T:Microsoft.AspNet.SignalR.Client.IConnection" />.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.IConnection.OnError(System.Exception)">
+      <summary>Voláno, když v připojení <see cref="T:Microsoft.AspNet.SignalR.Client.IConnection" /> dojde k chybě.</summary>
+      <param name="ex">Chyba výjimky.</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.IConnection.OnReceived(Newtonsoft.Json.Linq.JToken)">
+      <summary>Voláno, když připojení <see cref="T:Microsoft.AspNet.SignalR.Client.IConnection" /> přijme data ze serveru.</summary>
+      <param name="data">Data byla přijata.</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.IConnection.OnReconnected">
+      <summary>Voláno, když se připojení <see cref="T:Microsoft.AspNet.SignalR.Client.IConnection" /> úspěšně obnoví po vypršení časového limitu.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.IConnection.OnReconnecting">
+      <summary>Voláno, když se připojení <see cref="T:Microsoft.AspNet.SignalR.Client.IConnection" /> začne znovu obnovovat po chybě.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.IConnection.PrepareRequest(Microsoft.AspNet.SignalR.Client.Http.IRequest)">
+      <summary>Připraví všechny žádosti pro připojení <see cref="T:Microsoft.AspNet.SignalR.Client.IConnection" />.</summary>
+      <param name="request">Žádost</param>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.IConnection.Protocol">
+      <summary>Získá nebo nastaví protokol pro připojení <see cref="T:Microsoft.AspNet.SignalR.Client.IConnection" />.</summary>
+      <returns>Protokol pro připojení <see cref="T:Microsoft.AspNet.SignalR.Client.IConnection" /></returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.IConnection.Proxy">
+      <summary>Získá nebo nastaví informace o proxy serveru pro připojení <see cref="T:Microsoft.AspNet.SignalR.Client.IConnection" />.</summary>
+      <returns>Informace o proxy serveru pro připojení <see cref="T:Microsoft.AspNet.SignalR.Client.IConnection" />.</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.IConnection.QueryString">
+      <summary>Získá řetězec dotazu zadaný v konstruktoru.</summary>
+      <returns>Řetězec dotazu zadaný v konstruktoru.</returns>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.IConnection.Send(System.String)">
+      <summary>Asynchronně odešle data přes připojení <see cref="T:Microsoft.AspNet.SignalR.Client.IConnection" />.</summary>
+      <returns>Úloha reprezentující čas odeslání dat.</returns>
+      <param name="data">Data, která se mají odeslat.</param>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.IConnection.State">
+      <summary>Získá aktuální hodnotu ConnectionState připojení <see cref="T:Microsoft.AspNet.SignalR.Client.IConnection" />.</summary>
+      <returns>Aktuální hodnota ConnectionState připojení <see cref="T:Microsoft.AspNet.SignalR.Client.IConnection" /></returns>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.IConnection.Stop">
+      <summary>Zastaví připojení <see cref="T:Microsoft.AspNet.SignalR.Client.IConnection" /> a odešle do serveru zprávu o zrušení.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.IConnection.Trace(Microsoft.AspNet.SignalR.Client.TraceLevels,System.String,System.Object[])">
+      <summary>Trasuje metodu připojení <see cref="T:Microsoft.AspNet.SignalR.Client.IConnection" /> zadanou parametry.</summary>
+      <param name="level">Úroveň trasování</param>
+      <param name="format">Formát</param>
+      <param name="args">Argument.</param>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.IConnection.Transport">
+      <summary>Získá přenos klienta pro připojení <see cref="T:Microsoft.AspNet.SignalR.Client.IConnection" />.</summary>
+      <returns>Přenos klienta pro připojení <see cref="T:Microsoft.AspNet.SignalR.Client.IConnection" /></returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.IConnection.TransportConnectTimeout">
+      <summary>Získá nebo nastaví časový interval představující dobu, po kterou má připojení přenosu zůstat otevřeno, než vyprší časový limit.</summary>
+      <returns>Časový interval představující dobu, po kterou má připojení přenosu zůstat otevřeno, než vyprší časový limit.</returns>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.IConnection.UpdateLastKeepAlive">
+      <summary>Aktualizuje objekt pro uložení různých hodnot časového limitu pro zachování připojení.</summary>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.IConnection.Url">
+      <summary>Získá adresu URL pro připojení <see cref="T:Microsoft.AspNet.SignalR.Client.IConnection" />.</summary>
+      <returns>Adresa URL pro připojení <see cref="T:Microsoft.AspNet.SignalR.Client.IConnection" /></returns>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.Client.IHubProxy">
+      <summary>Proxy server na straně klienta pro rozbočovač na straně serveru.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.IHubProxy.Invoke``1(System.String,System.Object[])">
+      <summary>Asynchronně provede metodu v rozbočovači na straně serveru.</summary>
+      <returns>Úloha reprezentující čas vrácení volání</returns>
+      <param name="method">Název metody</param>
+      <param name="args">Argumenty</param>
+      <typeparam name="T">Typ výsledku vrácený z rozbočovače</typeparam>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.IHubProxy.Invoke(System.String,System.Object[])">
+      <summary>Asynchronně provede metodu v rozbočovači na straně serveru.</summary>
+      <returns>Úloha reprezentující čas vrácení volání</returns>
+      <param name="method">Název metody</param>
+      <param name="args">Argumenty</param>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.IHubProxy.Item(System.String)">
+      <summary>Získá nebo nastaví stav v rozbočovači.</summary>
+      <returns>Hodnota pole.</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.IHubProxy.JsonSerializer">
+      <summary>Získá serializátor používaný připojením.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.IHubProxy.Subscribe(System.String)">
+      <summary>Zaregistruje událost pro rozbočovač.</summary>
+      <returns>Úloha <see cref="T:Microsoft.AspNet.SignalR.Client.Hubs.Subscription" />.</returns>
+      <param name="eventName">Název události.</param>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.Client.KeepAliveData">
+      <summary>Představuje třídu pro ukládání všech vlastností zachování připojení.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.KeepAliveData.#ctor(System.DateTime,System.TimeSpan,System.TimeSpan,System.TimeSpan)">
+      <summary>Inicializuje novou instanci třídy <see cref="T:Microsoft.AspNet.SignalR.Client.KeepAliveData" />.</summary>
+      <param name="lastKeepAlive">Vlastnosti poslední instance zachování připojení.</param>
+      <param name="timeout">Vlastnost časového limitu.</param>
+      <param name="timeoutWarning">Upozornění na časový limit.</param>
+      <param name="checkInterval">Kontroluje interval.</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.KeepAliveData.#ctor(System.TimeSpan)">
+      <summary>Inicializuje novou instanci třídy <see cref="T:Microsoft.AspNet.SignalR.Client.KeepAliveData" />.</summary>
+      <param name="timeout">Vlastnost časového limitu.</param>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.KeepAliveData.CheckInterval">
+      <summary>Získá nebo nastaví časový interval pro kontrolu vlastnosti intervalu.</summary>
+      <returns>Časový interval pro kontrolu vlastnosti intervalu.</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.KeepAliveData.LastKeepAlive">
+      <summary>Získá nebo nastaví datum a čas k uložení vlastností poslední instance zachování připojení.</summary>
+      <returns>Datum a čas k uložení vlastností poslední instance zachování připojení.</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.KeepAliveData.Timeout">
+      <summary>Získá nebo nastaví časový limit relace <see cref="T:Microsoft.AspNet.SignalR.Client.KeepAliveData" />.</summary>
+      <returns>Časový limit relace <see cref="T:Microsoft.AspNet.SignalR.Client.KeepAliveData" />.</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.KeepAliveData.TimeoutWarning">
+      <summary>Získá nebo nastaví upozornění na časový limit relace <see cref="T:Microsoft.AspNet.SignalR.Client.KeepAliveData" />.</summary>
+      <returns>Upozornění na časový limit relace <see cref="T:Microsoft.AspNet.SignalR.Client.KeepAliveData" />.</returns>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.Client.NegotiationResponse">
+      <summary>Poskytuje vlastnosti připojení pro odpověď v rámci vyjednávání.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.NegotiationResponse.#ctor">
+      <summary>Inicializuje novou instanci třídy <see cref="T:Microsoft.AspNet.SignalR.Client.NegotiationResponse" />.</summary>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.NegotiationResponse.ConnectionId">
+      <summary>Získá nebo nastaví ID připojení pro odpověď v rámci vyjednávání.</summary>
+      <returns>ID připojení pro odpověď v rámci vyjednávání</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.NegotiationResponse.ConnectionToken">
+      <summary>Získá nebo nastaví token připojení pro odpověď v rámci vyjednávání.</summary>
+      <returns>Token připojení pro odpověď v rámci vyjednávání.</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.NegotiationResponse.DisconnectTimeout">
+      <summary>Získá nebo nastaví vlastnost časového limitu odpojení pro odpověď v rámci vyjednávání.</summary>
+      <returns>Vlastnost časového limitu odpojení pro odpověď v rámci vyjednávání.</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.NegotiationResponse.KeepAliveTimeout">
+      <summary>Získá nebo nastaví časový limit pro zachování připojení pro odpověď v rámci vyjednávání.</summary>
+      <returns>Časový limit pro zachování připojení pro odpověď v rámci vyjednávání.</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.NegotiationResponse.ProtocolVersion">
+      <summary>Získá nebo nastaví verzi protokolu pro odpověď v rámci vyjednávání.</summary>
+      <returns>Verze protokolu pro odpověď v rámci vyjednávání.</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.NegotiationResponse.TransportConnectTimeout">
+      <summary>Získá nebo nastaví časový limit připojení přenosu pro odpověď v rámci vyjednávání.</summary>
+      <returns>Časový limit připojení přenosu pro odpověď v rámci vyjednávání.</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.NegotiationResponse.TryWebSockets">
+      <summary>Získá nebo nastaví hodnotu, která určuje, zda se má odpověď v rámci vyjednávání pokoušet použít objekty WebSocket.</summary>
+      <returns>Hodnota true, pokud se bude odpověď v rámci vyjednávání pokoušet použít objekty WebSocket; jinak hodnota false.</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.NegotiationResponse.Url">
+      <summary>Získá nebo nastaví adresu URL pro odpověď v rámci vyjednávání.</summary>
+      <returns>Adresa URL pro odpověď v rámci vyjednávání</returns>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.Client.ObservableConnection`1">
+      <summary>Představuje datové připojení, které poskytuje připojení klienta pro služby SignalR.</summary>
+      <typeparam name="T">Typ elementů v připojení.</typeparam>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.ObservableConnection`1.#ctor(Microsoft.AspNet.SignalR.Client.Connection,System.Func{System.String,`0})">
+      <summary>Inicializuje novou instanci třídy <see cref="T:Microsoft.AspNet.SignalR.Client.ObservableConnection`1" />.</summary>
+      <param name="connection">Připojení klienta.</param>
+      <param name="convert">Řetězec funkce k převedení.</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.ObservableConnection`1.Subscribe(System.IObserver{`0})">
+      <summary>Získá odběr pozorovatelného připojení pro služby SignalR.</summary>
+      <returns>Pozorovatelné připojení pro služby SignalR.</returns>
+      <param name="observer">Oznámení pozorovatele.</param>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.Client.SignalRError">
+      <summary>Reprezentuje chyby, které jsou vydány klientem SignalR. </summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.SignalRError.#ctor(System.Exception)">
+      <summary>Inicializuje novou instanci třídy <see cref="T:Microsoft.AspNet.SignalR.Client.SignalRError" /> se zadanou výjimkou.</summary>
+      <param name="exception">Výjimka k rozbalení.</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.SignalRError.Dispose">
+      <summary>Uvolní prostředky používané aktuální instancí třídy <see cref="T:Microsoft.AspNet.SignalR.Client.SignalRError" />.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.SignalRError.Dispose(System.Boolean)">
+      <summary>Uvolní nespravované prostředky využívané aktuální instancí třídy <see cref="T:Microsoft.AspNet.SignalR.DefaultDependencyResolver" /> a volitelně také spravované prostředky.</summary>
+      <param name="disposing">Hodnota true slouží k uvolnění spravovaných i nespravovaných prostředků; hodnota false slouží k uvolnění pouze nespravovaných prostředků.</param>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.SignalRError.Exception">
+      <summary>Získá nebo nastaví základní nerozbalenou výjimku. </summary>
+      <returns>Základní nerozbalená výjimka.</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.SignalRError.ResponseBody">
+      <summary>Získá nebo nastaví text odpovědi o chybě, pokud se jednalo o výjimku WebException a odpověď je čitelná.</summary>
+      <returns>Text odpovědi o chybě.</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.SignalRError.StatusCode">
+      <summary>Získá nebo nastaví stavový kód chyby (pokud se jednalo o výjimku WebException).</summary>
+      <returns>Stavový kód chyby.</returns>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.SignalRError.ToString">
+      <summary>Vrátí řetězcovou reprezentaci této chyby funkce SignalR.</summary>
+      <returns>Řetězcová reprezentace této chyby funkce SignalR.</returns>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.Client.StateChange">
+      <summary>Reprezentuje změnu stavu připojení.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.StateChange.#ctor(Microsoft.AspNet.SignalR.Client.ConnectionState,Microsoft.AspNet.SignalR.Client.ConnectionState)">
+      <summary>Vytvoří novou instanci položky <see cref="T:Microsoft.AspNet.SignalR.Client.StateChange" />.</summary>
+      <param name="oldState">Starý stav připojení.</param>
+      <param name="newState">Nový stav připojení.</param>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.StateChange.NewState">
+      <summary>Získá nový stav připojení.</summary>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.StateChange.OldState">
+      <summary>Získá starý stav připojení.</summary>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.Client.TraceLevels">
+      <summary>Vytvoří výčet úrovní trasování přidružených ke klientovi SignalR.</summary>
+    </member>
+    <member name="F:Microsoft.AspNet.SignalR.Client.TraceLevels.All">
+      <summary>Trasuje všechny přidružené objekty.</summary>
+    </member>
+    <member name="F:Microsoft.AspNet.SignalR.Client.TraceLevels.Events">
+      <summary>Trasuje všechny události.</summary>
+    </member>
+    <member name="F:Microsoft.AspNet.SignalR.Client.TraceLevels.Messages">
+      <summary>Trasuje všechny zprávy.</summary>
+    </member>
+    <member name="F:Microsoft.AspNet.SignalR.Client.TraceLevels.None">
+      <summary>Netrasuje nic.</summary>
+    </member>
+    <member name="F:Microsoft.AspNet.SignalR.Client.TraceLevels.StateChanges">
+      <summary>Trasuje všechny změny stavu.</summary>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.Client.Http.DefaultHttpClient">
+      <summary>Výchozí implementace třídy <see cref="T:Microsoft.AspNet.SignalR.Client.Http.IHttpClient" />.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Http.DefaultHttpClient.#ctor">
+      <summary>Inicializuje novou instanci třídy <see cref="T:Microsoft.AspNet.SignalR.Client.Http.DefaultHttpClient" />.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Http.DefaultHttpClient.Get(System.String,System.Action{Microsoft.AspNet.SignalR.Client.Http.IRequest},System.Boolean)">
+      <summary>Zašle asynchronní požadavek HTTP GET na zadanou adresu URL.</summary>
+      <returns>A &lt;see cref="T:Task{IResponse}" /&gt;.</returns>
+      <param name="url">Adresa URL, na kterou má být odeslán požadavek.</param>
+      <param name="prepareRequest">Zpětné volání, které inicializuje požadavek s výchozími hodnotami.</param>
+      <param name="isLongRunning">Určuje, zda je žádost dlouho spuštěná.</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Http.DefaultHttpClient.Initialize(Microsoft.AspNet.SignalR.Client.IConnection)">
+      <summary>Inicializuje klienty HTTP.</summary>
+      <param name="connection">Aktuální připojení HTTP.</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Http.DefaultHttpClient.Post(System.String,System.Action{Microsoft.AspNet.SignalR.Client.Http.IRequest},System.Collections.Generic.IDictionary{System.String,System.String},System.Boolean)">
+      <summary>Zašle asynchronní požadavek HTTP POST na zadanou adresu URL.</summary>
+      <returns>A &lt;see cref="T:Task{IResponse}" /&gt;.</returns>
+      <param name="url">Adresa URL, na kterou má být odeslán požadavek.</param>
+      <param name="prepareRequest">Zpětné volání, které inicializuje požadavek s výchozími hodnotami.</param>
+      <param name="postData">Data formuláře kódovaná v řetězci URL.</param>
+      <param name="isLongRunning">Určuje, zda je žádost dlouho spuštěná.</param>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.Client.Http.DefaultHttpHandler">
+      <summary>Představuje výchozí obslužnou rutinu HTTP klienta.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Http.DefaultHttpHandler.#ctor(Microsoft.AspNet.SignalR.Client.IConnection)">
+      <summary>Inicializuje novou instanci třídy <see cref="T:Microsoft.AspNet.SignalR.Client.Http.DefaultHttpHandler" />.</summary>
+      <param name="connection">Výchozí připojení.</param>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.Client.Http.HttpRequestMessageWrapper">
+      <summary>Poskytuje obálku pro zprávu odpovědi HTTP.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Http.HttpRequestMessageWrapper.#ctor(System.Net.Http.HttpRequestMessage,System.Action)">
+      <summary>Inicializuje novou instanci třídy <see cref="T:Microsoft.AspNet.SignalR.Client.Http.HttpRequestMessageWrapper" />.</summary>
+      <param name="httpRequestMessage">Zpráva s požadavkem HTTP</param>
+      <param name="cancel">Zruší zprávu žádosti.</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Http.HttpRequestMessageWrapper.Abort">
+      <summary>Zruší aktuální zprávu žádosti HTTP.</summary>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Http.HttpRequestMessageWrapper.Accept">
+      <summary>Získá nebo nastaví vlastnost HTTP pro příjem zprávy žádosti.</summary>
+      <returns>Vlastnost HTTP pro příjem zprávy žádosti.</returns>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Http.HttpRequestMessageWrapper.SetRequestHeaders(System.Collections.Generic.IDictionary{System.String,System.String})">
+      <summary>Nastaví záhlaví žádosti obálky <see cref="T:Microsoft.AspNet.SignalR.Client.Http.HttpRequestMessageWrapper" />.</summary>
+      <param name="headers">Hlavičky žádosti.</param>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Http.HttpRequestMessageWrapper.UserAgent">
+      <summary>Získá nebo nastaví uživatelského agenta obálky <see cref="T:Microsoft.AspNet.SignalR.Client.Http.HttpRequestMessageWrapper" />.</summary>
+      <returns>Uživatelský agent obálky <see cref="T:Microsoft.AspNet.SignalR.Client.Http.HttpRequestMessageWrapper" />.</returns>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.Client.Http.HttpResponseMessageWrapper">
+      <summary>Představuje třídu kontejneru pro položku <see cref="T:System.Net.Http.HttpResponseMessage" />.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Http.HttpResponseMessageWrapper.#ctor(System.Net.Http.HttpResponseMessage)">
+      <summary>Inicializuje novou instanci třídy <see cref="T:Microsoft.AspNet.SignalR.Client.Http.HttpResponseMessageWrapper" />.</summary>
+      <param name="httpResponseMessage">Zpráva odpovědi pro tohoto klienta HTTP.</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Http.HttpResponseMessageWrapper.Dispose">
+      <summary>Uvolní všechny prostředky používané aktuální instancí třídy <see cref="T:Microsoft.AspNet.SignalR.Client.Http.HttpResponseMessageWrapper" />.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Http.HttpResponseMessageWrapper.Dispose(System.Boolean)">
+      <summary>Uvolní nespravované prostředky využívané třídou <see cref="T:Microsoft.AspNet.SignalR.Client.Http.HttpResponseMessageWrapper" /> a volitelně také spravované prostředky.</summary>
+      <param name="disposing">Hodnota true slouží k uvolnění spravovaných i nespravovaných prostředků; hodnota false slouží k uvolnění pouze nespravovaných prostředků.</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Http.HttpResponseMessageWrapper.GetStream">
+      <summary>Získá novou kopii datového proudu jen pro čtení, který je přidružený k této zprávě.</summary>
+      <returns>Nová kopie datového proudu jen pro čtení, která je přidružená k této zprávě.</returns>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Http.HttpResponseMessageWrapper.ReadAsString">
+      <summary>Přečte zprávu odpovědi jako řetězec.</summary>
+      <returns>Řetězec, který představuje zprávu odpovědi.</returns>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.Client.Http.IHttpClient">
+      <summary>Klient, který může odesílat požadavky HTTP.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Http.IHttpClient.Get(System.String,System.Action{Microsoft.AspNet.SignalR.Client.Http.IRequest},System.Boolean)">
+      <summary>Zašle asynchronní požadavek HTTP GET na zadanou adresu URL.</summary>
+      <returns>&lt;viz cref="T:Task{IResponse}" /&gt;.</returns>
+      <param name="url">Adresa URL, na kterou má být odeslán požadavek.</param>
+      <param name="prepareRequest">Zpětné volání, které inicializuje požadavek s výchozími hodnotami.</param>
+      <param name="isLongRunning">Značí, že se jedná o dlouho spuštěnou žádost.</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Http.IHttpClient.Initialize(Microsoft.AspNet.SignalR.Client.IConnection)">
+      <summary>Inicializuje klienty HTTP.</summary>
+      <param name="connection">Připojení</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Http.IHttpClient.Post(System.String,System.Action{Microsoft.AspNet.SignalR.Client.Http.IRequest},System.Collections.Generic.IDictionary{System.String,System.String},System.Boolean)">
+      <summary>Zašle asynchronní požadavek HTTP POST na zadanou adresu URL.</summary>
+      <returns>&lt;viz cref="T:Task{IResponse}" /&gt;.</returns>
+      <param name="url">Adresa URL, na kterou má být odeslán požadavek.</param>
+      <param name="prepareRequest">Zpětné volání, které inicializuje požadavek s výchozími hodnotami.</param>
+      <param name="postData">Data formuláře kódovaná v řetězci URL.</param>
+      <param name="isLongRunning">Značí, že se jedná o dlouho spuštěnou žádost.</param>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.Client.Http.IHttpClientExtensions">
+      <summary>Obsah zde nebude aktualizován. Žádné materiály sem prosím nepřidávejte.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Http.IHttpClientExtensions.Post(Microsoft.AspNet.SignalR.Client.Http.IHttpClient,System.String,System.Action{Microsoft.AspNet.SignalR.Client.Http.IRequest},System.Boolean)">
+      <summary>Zašle asynchronní požadavek HTTP POST na zadanou adresu URL.</summary>
+      <returns>Asynchronní požadavek HTTP POST na zadanou adresu URL</returns>
+      <param name="client">Klient, který může odesílat požadavky HTTP.</param>
+      <param name="url">Adresa URL, na kterou má být odeslán požadavek.</param>
+      <param name="prepareRequest">Zpětné volání, které inicializuje požadavek s výchozími hodnotami.</param>
+      <param name="isLongRunning">Určuje, zda je požadavek post dlouho spuštěný.</param>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.Client.Http.IRequest">
+      <summary>Představuje žádost HTTP.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Http.IRequest.Abort"></member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Http.IRequest.Accept"></member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Http.IRequest.SetRequestHeaders(System.Collections.Generic.IDictionary{System.String,System.String})">
+      <summary>Nastaví hlavičky žádosti.</summary>
+      <param name="headers">Hlavičky žádosti.</param>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Http.IRequest.UserAgent"></member>
+    <member name="T:Microsoft.AspNet.SignalR.Client.Http.IResponse">
+      <summary>Představuje odpověď HTTP. </summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Http.IResponse.GetStream">
+      <summary>Získá datový proud, který reprezentuje text odpovědi. </summary>
+      <returns>Datový proud, který reprezentuje text odpovědi</returns>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.Client.Http.IResponseExtensions">
+      <summary>Provides method that is used to read the response object.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Http.IResponseExtensions.ReadAsString(Microsoft.AspNet.SignalR.Client.Http.IResponse)">
+      <summary>Reads the response object and returns the content as string.</summary>
+      <returns>A task that represents the read operation.</returns>
+      <param name="response">The response object to read.</param>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.Client.Hubs.HubInvocation">
+      <summary>Představuje volání rozbočovače klienta.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Hubs.HubInvocation.#ctor">
+      <summary>Inicializuje novou instanci třídy <see cref="T:Microsoft.AspNet.SignalR.Client.Hubs.HubInvocation" />.</summary>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Hubs.HubInvocation.Args">
+      <summary>Získá nebo nastaví seznam argumentů, s nimiž bude metoda rozbočovače klienta volána.</summary>
+      <returns>Seznam argumentů, s nimiž bude metoda rozbočovače klienta volána.</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Hubs.HubInvocation.CallbackId">
+      <summary>Získá nebo nastaví identifikátor zpětného volání ve vlastnosti volání rozbočovače.</summary>
+      <returns>Identifikátor zpětného volání ve vlastnosti volání rozbočovače.</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Hubs.HubInvocation.Hub">
+      <summary>Získá nebo nastaví název rozbočovače, ke kterému volaná metoda patří.</summary>
+      <returns>Název rozbočovače, ke kterému volaná metoda patří.</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Hubs.HubInvocation.Method">
+      <summary>Získá nebo nastaví název metody rozbočovače klienta, která má být volána.</summary>
+      <returns>Název metody rozbočovače klienta, která má být volána.</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Hubs.HubInvocation.State">
+      <summary>Získá nebo nastaví úložiště dvojic klíč/hodnota představující stav rozbočovače na serveru, který se změnil od posledního odeslání stavu rozbočovače klientovi.</summary>
+      <returns>Úložiště dvojic klíč-hodnota reprezentující stav rozbočovače na serveru, který se změnil od posledního odeslání stavu rozbočovače klientovi.</returns>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.Client.Hubs.HubProxy">
+      <summary>Obsah zde nebude aktualizován. Žádné materiály sem prosím nepřidávejte.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Hubs.HubProxy.#ctor(Microsoft.AspNet.SignalR.Client.Hubs.IHubConnection,System.String)">
+      <summary>Inicializuje novou instanci třídy <see cref="T:Microsoft.AspNet.SignalR.Client.Hubs.HubProxy" />.</summary>
+      <param name="connection">Připojení rozbočovače</param>
+      <param name="hubName">Název rozbočovače.</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Hubs.HubProxy.Invoke(System.String,System.Object[])">
+      <summary>Vyvolá metodu a argument pomocí určených parametrů.</summary>
+      <returns>Vrací objekt <see cref="T:System.Threading.Tasks.Task" />.</returns>
+      <param name="method">Metoda.</param>
+      <param name="args">Argument.</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Hubs.HubProxy.Invoke``1(System.String,System.Object[])">
+      <summary>Vyvolá metodu a argument pomocí určených parametrů.</summary>
+      <returns>Vrací objekt <see cref="T:System.Threading.Tasks.Task`1" />.</returns>
+      <param name="method">Metoda.</param>
+      <param name="args">Argument.</param>
+      <typeparam name="T">Typ</typeparam>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Hubs.HubProxy.InvokeEvent(System.String,System.Collections.Generic.IList{Newtonsoft.Json.Linq.JToken})">
+      <summary>Vyvolá událost pomocí určených parametrů.</summary>
+      <param name="eventName">Název události</param>
+      <param name="args">Kolekce seznamu argumentů</param>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Hubs.HubProxy.Item(System.String)">
+      <summary>Získá nebo nastaví položku pro proxy server rozbočovače.</summary>
+      <returns>Položka pro proxy server rozbočovače</returns>
+      <param name="name">Název řetězce</param>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Hubs.HubProxy.JsonSerializer">
+      <summary>Získá serializátor JSON pro proxy server rozbočovače.</summary>
+      <returns>Serializátor JSON pro proxy server rozbočovače</returns>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Hubs.HubProxy.Subscribe(System.String)">
+      <summary>Poskytuje proxy server rozbočovače pro přihlášení k odběru.</summary>
+      <returns>Proxy server rozbočovače pro přihlášení k odběru</returns>
+      <param name="eventName">Název události</param>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.Client.Hubs.HubRegistrationData">
+      <summary>Představuje data registrace rozbočovače.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Hubs.HubRegistrationData.#ctor">
+      <summary>Inicializuje novou instanci třídy <see cref="T:Microsoft.AspNet.SignalR.Client.Hubs.HubRegistrationData" />.</summary>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Hubs.HubRegistrationData.Name">
+      <summary>Získá nebo nastaví název dat.</summary>
+      <returns>Název dat.</returns>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.Client.Hubs.HubResult">
+      <summary>Reprezentuje výsledek volání rozbočovače.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Hubs.HubResult.#ctor">
+      <summary>Inicializuje novou instanci třídy <see cref="T:Microsoft.AspNet.SignalR.Client.Hubs.HubResult" />.</summary>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Hubs.HubResult.Error">
+      <summary>Získá nebo nastaví chybovou zprávu vrácenou z volání rozbočovače.</summary>
+      <returns>Chybová zpráva vrácená z volání rozbočovače</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Hubs.HubResult.ErrorData">
+      <summary>Dodatečné údaje o chybě</summary>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Hubs.HubResult.Id">
+      <summary>Získá nebo nastaví identifikátor zpětného volání.</summary>
+      <returns>Identifikátor zpětného volání.</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Hubs.HubResult.IsHubException">
+      <summary>Určuje, zda je parametr chyby Error <see cref="T:Microsoft.AspNet.SignalR.Client.HubException" />.</summary>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Hubs.HubResult.Result">
+      <summary>Získá nebo nastaví návratovou hodnotu rozbočovače.</summary>
+      <returns>Návratová hodnota rozbočovače.</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Hubs.HubResult.State">
+      <summary>Získá nebo nastaví stav volajícího z tohoto rozbočovače.</summary>
+      <returns>Stav volajícího z tohoto rozbočovače</returns>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.Client.Hubs.Hubservable">
+      <summary>Představuje implementaci objektu <see cref="T:System.IObservable{object[]}" /> události rozbočovače.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Hubs.Hubservable.#ctor(Microsoft.AspNet.SignalR.Client.IHubProxy,System.String)"></member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Hubs.Hubservable.Subscribe(System.IObserver{System.Collections.Generic.IList{Newtonsoft.Json.Linq.JToken}})">
+      <summary>Zaregistruje zadaného pozorovatele pro událost rozbočovače.</summary>
+      <returns>Objekt <see cref="T:System.IDisposable" />, který představuje přijatou událost odběru.</returns>
+      <param name="observer">Pozorovatel k registraci.</param>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.Client.Hubs.IHubConnection">
+      <summary>Představuje připojení rozbočovače.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Hubs.IHubConnection.RegisterCallback(System.Action{Microsoft.AspNet.SignalR.Client.Hubs.HubResult})">
+      <summary>Zaregistruje funkci zpětného volání pro připojení rozbočovače.</summary>
+      <returns>Řetězec ID zpětného volání.</returns>
+      <param name="callback">Funkce zpětného volání k registraci.</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Hubs.IHubConnection.RemoveCallback(System.String)"></member>
+    <member name="T:Microsoft.AspNet.SignalR.Client.Hubs.Subscription">
+      <summary>Reprezentuje odběr metody rozbočovače.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Hubs.Subscription.#ctor">
+      <summary>Inicializuje novou instanci třídy <see cref="T:Microsoft.AspNet.SignalR.Client.Hubs.Subscription" />.</summary>
+    </member>
+    <member name="E:Microsoft.AspNet.SignalR.Client.Hubs.Subscription.Received">
+      <summary>Nastane při příjmu odběru.</summary>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.Client.Infrastructure.TransportAbortHandler"></member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Infrastructure.TransportAbortHandler.#ctor(Microsoft.AspNet.SignalR.Client.Http.IHttpClient,System.String)"></member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Infrastructure.TransportAbortHandler.Abort(Microsoft.AspNet.SignalR.Client.IConnection,System.TimeSpan,System.String)"></member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Infrastructure.TransportAbortHandler.CompleteAbort"></member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Infrastructure.TransportAbortHandler.Dispose"></member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Infrastructure.TransportAbortHandler.TryCompleteAbort"></member>
+    <member name="T:Microsoft.AspNet.SignalR.Client.Infrastructure.TransportInitializationHandler">
+      <summary>Představuje objekt, který zpracovává inicializaci přenosu.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Infrastructure.TransportInitializationHandler.#ctor(System.TimeSpan,System.Threading.CancellationToken)">
+      <summary>Inicializuje novou instanci třídy <see cref="T:Microsoft.AspNet.SignalR.Client.Infrastructure.TransportInitializationHandler" />.</summary>
+      <param name="failureTimeout">Doba potřebná pro inicializaci procesu, při které má být proces považován za neúspěšný.</param>
+      <param name="disconnectToken">Token odpojení.</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Infrastructure.TransportInitializationHandler.Fail"></member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Infrastructure.TransportInitializationHandler.Fail(System.Exception)"></member>
+    <member name="E:Microsoft.AspNet.SignalR.Client.Infrastructure.TransportInitializationHandler.OnFailure">
+      <summary>Nastane při nepúspěšné inicializaci přenosu.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Infrastructure.TransportInitializationHandler.Success">
+      <summary>Určuje, kdy je inicializace přenosu úspěšná.</summary>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Infrastructure.TransportInitializationHandler.Task">
+      <summary>Získá nebo nastaví úlohu spojenou s inicializací přenosu.</summary>
+      <returns>Úloha spojená s inicializací přenosu</returns>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.Client.Transports.AsyncStreamReader">
+      <summary>Represents an asynchronous stream reader.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.AsyncStreamReader.#ctor(System.IO.Stream)">
+      <summary>Initializes a new instance of the <see cref="T:Microsoft.AspNet.SignalR.Client.Transports.AsyncStreamReader" /> class. </summary>
+      <param name="stream">The stream to read asynchronously payloads from.</param>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Transports.AsyncStreamReader.BufferLock">
+      <summary>Gets the object that is used to lock the buffer.</summary>
+      <returns>The object that is used to lock the buffer.</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Transports.AsyncStreamReader.Closed">
+      <summary>Gets or sets the method to invoke when the reader is closed while in the Processing state. </summary>
+      <returns>The method to invoke when the reader is closed while in the Processing state.</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Transports.AsyncStreamReader.Data">
+      <summary>Gets or sets the method to invoke when there is a message to be received in the stream. </summary>
+      <returns>The method to invoke when there is a message to be received in the stream.</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Transports.AsyncStreamReader.Opened">
+      <summary>Gets or sets the method to invoke when the stream is open. </summary>
+      <returns>The method to invoke when the stream is open.</returns>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.AsyncStreamReader.Start">
+      <summary> Starts the reader. </summary>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.Client.Transports.AutoTransport">
+      <summary>Obsah zde nebude aktualizován. Žádné materiály sem prosím nepřidávejte.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.AutoTransport.#ctor(Microsoft.AspNet.SignalR.Client.Http.IHttpClient)">
+      <summary>Inicializuje novou instanci třídy <see cref="T:Microsoft.AspNet.SignalR.Client.Transports.AutoTransport" />.</summary>
+      <param name="httpClient">Klient, který může odesílat požadavky HTTP.</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.AutoTransport.#ctor(Microsoft.AspNet.SignalR.Client.Http.IHttpClient,System.Collections.Generic.IList{Microsoft.AspNet.SignalR.Client.Transports.IClientTransport})">
+      <summary>Inicializuje novou instanci třídy <see cref="T:Microsoft.AspNet.SignalR.Client.Transports.AutoTransport" />.</summary>
+      <param name="httpClient">Klient, který může odesílat požadavky HTTP.</param>
+      <param name="transports">Klient, který může provádět přenosy HTTP.</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.AutoTransport.Abort(Microsoft.AspNet.SignalR.Client.IConnection,System.TimeSpan,System.String)"></member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.AutoTransport.Dispose">
+      <summary>Uvolní všechny prostředky používané aktuální instancí třídy <see cref="T:Microsoft.AspNet.SignalR.Client.Transports.AutoTransport" />.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.AutoTransport.Dispose(System.Boolean)">
+      <summary>Uvolní nespravované prostředky využívané třídou <see cref="T:Microsoft.AspNet.SignalR.Client.Transports.AutoTransport" /> a volitelně také spravované prostředky.</summary>
+      <param name="disposing">Hodnota true slouží k uvolnění spravovaných i nespravovaných prostředků; hodnota false slouží k uvolnění pouze nespravovaných prostředků.</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.AutoTransport.GetNegotiateResponse(Microsoft.AspNet.SignalR.Client.IConnection,System.String)"></member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.AutoTransport.LostConnection(Microsoft.AspNet.SignalR.Client.IConnection)">
+      <summary>Zruší připojení přenosu pro služby klienta.</summary>
+      <param name="connection">Připojení pro přenos.</param>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Transports.AutoTransport.Name">
+      <summary>Získá název procesu <see cref="T:Microsoft.AspNet.SignalR.Client.Transports.AutoTransport" />.</summary>
+      <returns>Získá název procesu <see cref="T:Microsoft.AspNet.SignalR.Client.Transports.AutoTransport" />.</returns>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.AutoTransport.Negotiate(Microsoft.AspNet.SignalR.Client.IConnection,System.String)"></member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.AutoTransport.Send(Microsoft.AspNet.SignalR.Client.IConnection,System.String,System.String)"></member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.AutoTransport.Start(Microsoft.AspNet.SignalR.Client.IConnection,System.String,System.Threading.CancellationToken)">
+      <summary>Aktivuje připojení automatického přenosu.</summary>
+      <returns>Připojení automatického přenosu k aktivaci.</returns>
+      <param name="connection">Připojení pro přenos.</param>
+      <param name="disconnectToken">Token odpojení.</param>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Transports.AutoTransport.SupportsKeepAlive">
+      <summary>Získá hodnotu, která značí, zda aktivní přenos klienta podporuje zachování připojení.</summary>
+      <returns>Hodnota true, pokud aktivní přenos podporuje zachování připojení; jinak hodnota false.</returns>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.Client.Transports.HttpBasedTransport">
+      <summary>Obsah zde nebude aktualizován. Žádné materiály sem prosím nepřidávejte.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.HttpBasedTransport.#ctor(Microsoft.AspNet.SignalR.Client.Http.IHttpClient,System.String)"></member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.HttpBasedTransport.Abort(Microsoft.AspNet.SignalR.Client.IConnection,System.TimeSpan,System.String)"></member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Transports.HttpBasedTransport.AbortHandler"></member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.HttpBasedTransport.Dispose">
+      <summary>Uvolní prostředky používané aktuální instancí třídy <see cref="T:Microsoft.AspNet.SignalR.Client.Transports.HttpBasedTransport" />.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.HttpBasedTransport.Dispose(System.Boolean)">
+      <summary>Uvolní nespravované prostředky využívané třídou <see cref="T:Microsoft.AspNet.SignalR.Client.Transports.HttpBasedTransport" /> a volitelně také spravované prostředky přidružené tomuto objektu.</summary>
+      <param name="disposing">Hodnota true slouží k uvolnění spravovaných i nespravovaných prostředků; hodnota false slouží k uvolnění pouze nespravovaných prostředků.</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.HttpBasedTransport.GetReceiveQueryString(Microsoft.AspNet.SignalR.Client.IConnection,System.String)"></member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Transports.HttpBasedTransport.HttpClient"></member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.HttpBasedTransport.LostConnection(Microsoft.AspNet.SignalR.Client.IConnection)">
+      <summary>Zruší připojení pro přenos klienta.</summary>
+      <param name="connection">Připojení klienta.</param>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Transports.HttpBasedTransport.Name"></member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.HttpBasedTransport.Negotiate(Microsoft.AspNet.SignalR.Client.IConnection,System.String)"></member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.HttpBasedTransport.OnStart(Microsoft.AspNet.SignalR.Client.IConnection,System.String,System.Threading.CancellationToken,Microsoft.AspNet.SignalR.Client.Infrastructure.TransportInitializationHandler)"></member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.HttpBasedTransport.Send(Microsoft.AspNet.SignalR.Client.IConnection,System.String,System.String)"></member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.HttpBasedTransport.Start(Microsoft.AspNet.SignalR.Client.IConnection,System.String,System.Threading.CancellationToken)"></member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Transports.HttpBasedTransport.SupportsKeepAlive">
+      <summary>Získá hodnotu, která značí, zda přenos klienta podporuje zachování připojení.</summary>
+      <returns>Hodnota true, pokud přenos klienta podporuje zachování připojení; jinak hodnota false.</returns>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.Client.Transports.IClientTransport">
+      <summary>Obsah zde nebude aktualizován. Žádné materiály sem prosím nepřidávejte.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.IClientTransport.Abort(Microsoft.AspNet.SignalR.Client.IConnection,System.TimeSpan,System.String)"></member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.IClientTransport.LostConnection(Microsoft.AspNet.SignalR.Client.IConnection)">
+      <summary>Zruší připojení pro přenos klienta.</summary>
+      <param name="connection">Připojení klienta.</param>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Transports.IClientTransport.Name">
+      <summary>Získá název procesu <see cref="T:Microsoft.AspNet.SignalR.Client.Transports.IClientTransport" />.</summary>
+      <returns>Název procesu <see cref="T:Microsoft.AspNet.SignalR.Client.Transports.IClientTransport" />.</returns>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.IClientTransport.Negotiate(Microsoft.AspNet.SignalR.Client.IConnection,System.String)"></member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.IClientTransport.Send(Microsoft.AspNet.SignalR.Client.IConnection,System.String,System.String)"></member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.IClientTransport.Start(Microsoft.AspNet.SignalR.Client.IConnection,System.String,System.Threading.CancellationToken)">
+      <summary>Aktivuje připojení přenosu klienta.</summary>
+      <returns>Připojení přenosu klienta k aktivaci.</returns>
+      <param name="connection">Připojení klienta.</param>
+      <param name="disconnectToken">Token odpojení.</param>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Transports.IClientTransport.SupportsKeepAlive">
+      <summary>Získá hodnotu, která značí, zda přenos klienta podporuje zachování připojení.</summary>
+      <returns>Hodnota true, pokud přenos klienta podporuje zachování připojení; jinak hodnota false.</returns>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.Client.Transports.LongPollingTransport">
+      <summary>Obsah zde nebude aktualizován. Žádné materiály sem prosím nepřidávejte.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.LongPollingTransport.#ctor">
+      <summary>Inicializuje novou instanci třídy <see cref="T:Microsoft.AspNet.SignalR.Client.Transports.LongPollingTransport" />.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.LongPollingTransport.#ctor(Microsoft.AspNet.SignalR.Client.Http.IHttpClient)">
+      <summary>Inicializuje novou instanci třídy <see cref="T:Microsoft.AspNet.SignalR.Client.Transports.LongPollingTransport" />.</summary>
+      <param name="httpClient">Klient HTTP</param>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Transports.LongPollingTransport.ErrorDelay">
+      <summary>Získá nebo nastaví časový interval představující chybu zpoždění.</summary>
+      <returns>Časový interval představující chybu zpoždění</returns>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.LongPollingTransport.LostConnection(Microsoft.AspNet.SignalR.Client.IConnection)"></member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.LongPollingTransport.OnStart(Microsoft.AspNet.SignalR.Client.IConnection,System.String,System.Threading.CancellationToken,Microsoft.AspNet.SignalR.Client.Infrastructure.TransportInitializationHandler)"></member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Transports.LongPollingTransport.ReconnectDelay">
+      <summary>Získá nebo nastaví časový interval představující zpoždění opětovného připojení přenosu.</summary>
+      <returns>Časový interval představující zpoždění opětovného připojení přenosu</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Transports.LongPollingTransport.SupportsKeepAlive">
+      <summary> Značí, zda přenos podporuje zachování připojení. </summary>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.Client.Transports.PollingRequestHandler">
+      <summary>Represents a polling request handler.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.PollingRequestHandler.#ctor(Microsoft.AspNet.SignalR.Client.Http.IHttpClient)">
+      <summary>Initializes a new instance of the <see cref="T:Microsoft.AspNet.SignalR.Client.Transports.PollingRequestHandler" /> class.</summary>
+      <param name="httpClient">The HTTP client to poll.</param>
+    </member>
+    <member name="E:Microsoft.AspNet.SignalR.Client.Transports.PollingRequestHandler.OnAbort">
+      <summary>Occurs when the current poll request was aborted, passing in the soon to be aborted request. </summary>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Transports.PollingRequestHandler.OnAfterPoll">
+      <summary>Gets or sets a function that triggers before a new polling request is attempted.   Passes in an exception if the Poll errored, null otherwise. Expects the return as a task in order to allow modification of timing for subsequent polls.</summary>
+      <returns>A function that triggers before a new polling request is attempted.</returns>
+    </member>
+    <member name="E:Microsoft.AspNet.SignalR.Client.Transports.PollingRequestHandler.OnError">
+      <summary>Occurs and passes the exception when the poll errors. </summary>
+    </member>
+    <member name="E:Microsoft.AspNet.SignalR.Client.Transports.PollingRequestHandler.OnMessage">
+      <summary> Sends the string based message to the callback. </summary>
+    </member>
+    <member name="E:Microsoft.AspNet.SignalR.Client.Transports.PollingRequestHandler.OnPolling">
+      <summary> Occurs when the polling request is in flight. </summary>
+    </member>
+    <member name="E:Microsoft.AspNet.SignalR.Client.Transports.PollingRequestHandler.PrepareRequest">
+      <summary> Allows modification of the IRequest parameter before using it in a poll.</summary>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Transports.PollingRequestHandler.ResolveUrl">
+      <summary>Gets or sets a function used to generate the URL that is posted to for the poll. </summary>
+      <returns>A function used to generate the URL that is posted to for the poll.</returns>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.PollingRequestHandler.Start">
+      <summary> Starts the polling request handler. </summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.PollingRequestHandler.Stop">
+      <summary> Fully stops the polling request handler. </summary>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.Client.Transports.ServerSentEventsTransport">
+      <summary>Obsah zde nebude aktualizován. Žádné materiály sem prosím nepřidávejte.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.ServerSentEventsTransport.#ctor">
+      <summary>Inicializuje novou instanci třídy <see cref="T:Microsoft.AspNet.SignalR.Client.Transports.ServerSentEventsTransport" />.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.ServerSentEventsTransport.#ctor(Microsoft.AspNet.SignalR.Client.Http.IHttpClient)">
+      <summary>Inicializuje novou instanci třídy <see cref="T:Microsoft.AspNet.SignalR.Client.Transports.ServerSentEventsTransport" />.</summary>
+      <param name="httpClient">Klient.</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.ServerSentEventsTransport.LostConnection(Microsoft.AspNet.SignalR.Client.IConnection)">
+      <summary>Nastane, pokud server ztratí svoje připojení.</summary>
+      <param name="connection">Připojení.</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.ServerSentEventsTransport.OnStart(Microsoft.AspNet.SignalR.Client.IConnection,System.String,System.Threading.CancellationToken,Microsoft.AspNet.SignalR.Client.Infrastructure.TransportInitializationHandler)"></member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.ServerSentEventsTransport.OpenConnection(Microsoft.AspNet.SignalR.Client.IConnection,System.Action{System.Exception})"></member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Transports.ServerSentEventsTransport.ReconnectDelay">
+      <summary>Určuje dobu, po které se server znovu připojí, došlo-li k vypršení časového limitu připojení.</summary>
+      <returns>Doba, po které se server znovu připojí, došlo-li k vypršení časového limitu připojení</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Transports.ServerSentEventsTransport.SupportsKeepAlive">
+      <summary>Značí, zda přenos podporuje zachování připojení.</summary>
+      <returns>Hodnota true, pokud přenos podporuje zachování připojení; jinak hodnota false.</returns>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.Client.Transports.TransportHelper">
+      <summary>Obsah zde nebude aktualizován. Žádné materiály sem prosím nepřidávejte.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.TransportHelper.AppendCustomQueryString(Microsoft.AspNet.SignalR.Client.IConnection,System.String)">
+      <summary>Přidá znak ? nebo &amp; jako předponu vlastního řetězce dotazu, pokud ještě není součástí.</summary>
+      <returns>Upravený vlastní řetězec dotazu</returns>
+      <param name="connection">Připojení klienta.</param>
+      <param name="baseUrl">Základní adresa URL</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.TransportHelper.GetNegotiationResponse(Microsoft.AspNet.SignalR.Client.Http.IHttpClient,Microsoft.AspNet.SignalR.Client.IConnection,System.String)"></member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.TransportHelper.GetReceiveQueryString(Microsoft.AspNet.SignalR.Client.IConnection,System.String,System.String)"></member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.TransportHelper.ProcessResponse(Microsoft.AspNet.SignalR.Client.IConnection,System.String,System.Boolean@,System.Boolean@)"></member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.TransportHelper.ProcessResponse(Microsoft.AspNet.SignalR.Client.IConnection,System.String,System.Boolean@,System.Boolean@,System.Action)">
+      <summary>Zpracuje zprávu odpovědi.</summary>
+      <param name="connection">Připojení klienta.</param>
+      <param name="response">Zpráva odpovědi ke zpracování</param>
+      <param name="disconnected">Při návratu tato metoda obsahuje hodnotu, která určuje, zda byl proces odpojen.</param>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.Client.Transports.WebSocketTransport">
+      <summary>Obsah zde nebude aktualizován. Žádné materiály sem prosím nepřidávejte.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.WebSocketTransport.#ctor"></member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.WebSocketTransport.#ctor(Microsoft.AspNet.SignalR.Client.Http.IHttpClient)"></member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.WebSocketTransport.Abort(Microsoft.AspNet.SignalR.Client.IConnection,System.TimeSpan,System.String)"></member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.WebSocketTransport.Dispose">
+      <summary>Uvolní prostředky používané aktuální instancí třídy <see cref="T:Microsoft.AspNet.SignalR.Client.Transports.WebSocketTransport" />.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.WebSocketTransport.Dispose(System.Boolean)">
+      <summary>Uvolní nespravované prostředky využívané třídou <see cref="T:Microsoft.AspNet.SignalR.Client.Transports.WebSocketTransport" /> a volitelně také spravované prostředky přidružené tomuto objektu.</summary>
+      <param name="disposing">Hodnota true slouží k uvolnění spravovaných i nespravovaných prostředků; hodnota false slouží k uvolnění pouze nespravovaných prostředků.</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.WebSocketTransport.LostConnection(Microsoft.AspNet.SignalR.Client.IConnection)">
+      <summary>Zruší připojení pro přenos klienta.</summary>
+      <param name="connection">Připojení klienta.</param>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Transports.WebSocketTransport.Name"></member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.WebSocketTransport.Negotiate(Microsoft.AspNet.SignalR.Client.IConnection,System.String)"></member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.WebSocketTransport.OnClose(System.Boolean)"></member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.WebSocketTransport.OnError"></member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.WebSocketTransport.OnMessage(System.String)"></member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.WebSocketTransport.OnOpen"></member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.WebSocketTransport.PerformConnect"></member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Transports.WebSocketTransport.ReconnectDelay"></member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.WebSocketTransport.Send(Microsoft.AspNet.SignalR.Client.IConnection,System.String,System.String)"></member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.WebSocketTransport.Start(Microsoft.AspNet.SignalR.Client.IConnection,System.String,System.Threading.CancellationToken)"></member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Transports.WebSocketTransport.SupportsKeepAlive">
+      <summary>Získá nebo nastaví hodnotu, která značí, zda přenos podporuje zachování připojení.</summary>
+      <returns>Hodnota true, pokud přenos podporuje zachování připojení; jinak hodnota false.</returns>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.Client.Transports.ServerSentEvents.ChunkBuffer">
+      <summary>Obsah zde nebude aktualizován. Žádné materiály sem prosím nepřidávejte.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.ServerSentEvents.ChunkBuffer.#ctor">
+      <summary>Inicializuje novou instanci třídy <see cref="T:Microsoft.AspNet.SignalR.Client.Transports.ServerSentEvents.ChunkBuffer" />.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.ServerSentEvents.ChunkBuffer.Add(System.ArraySegment{System.Byte})">
+      <summary>Přidá vyrovnávací paměť do vyrovnávací paměti datových dávek.</summary>
+      <param name="buffer">Vyrovnávací paměť, která má být přidána</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.ServerSentEvents.ChunkBuffer.Add(System.Byte[],System.Int32)">
+      <summary>Přidá zadanou vyrovnávací paměť.</summary>
+      <param name="buffer">Vyrovnávací paměť, která má být přidána</param>
+      <param name="length">Délka vyrovnávací paměti</param>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Transports.ServerSentEvents.ChunkBuffer.HasChunks">
+      <summary>Získá hodnotu, která určuje, zda má vyrovnávací paměť datové dávky.</summary>
+      <returns>Hodnota true, pokud má vyrovnávací paměť datové dávky, jinak hodnota false.</returns>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.ServerSentEvents.ChunkBuffer.ReadLine">
+      <summary>Přečte řádek znaků z aktuální vyrovnávací paměti a vrátí data jako řetězec.</summary>
+      <returns>Další řádek z vyrovnávací paměti</returns>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.Client.Transports.ServerSentEvents.EventSourceStreamReader">
+      <summary>Poskytuje implementaci zdroje událostí pro technologii .NET.Nejedná se o specifikace, ale stačí pro podporu serveru SignalR.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.ServerSentEvents.EventSourceStreamReader.#ctor(Microsoft.AspNet.SignalR.Client.IConnection,System.IO.Stream)">
+      <summary> Inicializuje novou instanci třídy <see cref="T:Microsoft.AspNet.SignalR.Client.Transports.ServerSentEvents.EventSourceStreamReader" />. </summary>
+      <param name="connection">Připojení přidružené k tomuto zdroji událostí</param>
+      <param name="stream">Datový proud, ze kterého se mají číst datové části zdroje událostí.</param>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Transports.ServerSentEvents.EventSourceStreamReader.Message"></member>
+    <member name="T:Microsoft.AspNet.SignalR.Client.Transports.ServerSentEvents.EventType">
+      <summary>Vytvoří výčet typů událostí přidružených k událostem serveru.</summary>
+    </member>
+    <member name="F:Microsoft.AspNet.SignalR.Client.Transports.ServerSentEvents.EventType.Data">
+      <summary>Typ události dat.</summary>
+    </member>
+    <member name="F:Microsoft.AspNet.SignalR.Client.Transports.ServerSentEvents.EventType.Id">
+      <summary>Typ události ID.</summary>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.Client.Transports.ServerSentEvents.SseEvent">
+      <summary>Poskytuje statickou metodu pro analýzu dat událostí odeslaných serverem.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.ServerSentEvents.SseEvent.#ctor(Microsoft.AspNet.SignalR.Client.Transports.ServerSentEvents.EventType,System.String)">
+      <summary>Inicializuje novou instanci třídy <see cref="T:Microsoft.AspNet.SignalR.Client.Transports.ServerSentEvents.SseEvent" />.</summary>
+      <param name="type">Typ události odeslané serverem</param>
+      <param name="data">Data události odeslané serverem</param>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Transports.ServerSentEvents.SseEvent.Data">
+      <summary>Získá nebo nastaví data události odeslané serverem.</summary>
+      <returns>Data události odeslané serverem</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Client.Transports.ServerSentEvents.SseEvent.EventType">
+      <summary>Získá nebo nastaví typ události odeslané serverem.</summary>
+      <returns>Typ události odeslané serverem</returns>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.ServerSentEvents.SseEvent.ToString">
+      <summary>Vrátí řetězcovou reprezentaci tohoto objektu.</summary>
+      <returns>Řetězcová reprezentace tohoto objektu</returns>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Client.Transports.ServerSentEvents.SseEvent.TryParse(System.String,Microsoft.AspNet.SignalR.Client.Transports.ServerSentEvents.SseEvent@)">
+      <summary>Analyzuje zadaná data do objektu <see cref="T:Microsoft.AspNet.SignalR.Client.Transports.ServerSentEvents.SseEvent" />.</summary>
+      <returns>Hodnota true, pokud zadaná data představují platnou událost na straně serveru, jinak hodnota false.</returns>
+      <param name="line">Data, u nichž má dojít k pokusu o analýzu</param>
+      <param name="sseEvent">Po návratu metody obsahuje výsledný objekt SseEvent.</param>
+    </member>
+  </members>
+</doc>

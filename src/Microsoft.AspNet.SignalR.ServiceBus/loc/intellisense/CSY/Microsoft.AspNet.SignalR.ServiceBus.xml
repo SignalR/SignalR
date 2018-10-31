@@ -1,0 +1,89 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<doc>
+  <assembly>
+    <name>Microsoft.AspNet.SignalR.ServiceBus</name>
+  </assembly>
+  <members>
+    <member name="M:Microsoft.AspNet.SignalR.DependencyResolverExtensions.UseServiceBus(Microsoft.AspNet.SignalR.IDependencyResolver,Microsoft.AspNet.SignalR.ServiceBusScaleoutConfiguration)">
+      <summary>Použijte sběrnici služby jako propojovací rozhraní systému zasílání zpráv pro škálovatelnou implementaci sběrnice zpráv.</summary>
+      <returns>Překladač závislostí</returns>
+      <param name="resolver">Překladač závislostí</param>
+      <param name="configuration">Sběrnice služby pro škálovatelnou konfiguraci</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.DependencyResolverExtensions.UseServiceBus(Microsoft.AspNet.SignalR.IDependencyResolver,System.String,System.String)">
+      <summary>Použijte sběrnici služby jako propojovací rozhraní systému zasílání zpráv pro škálovatelnou implementaci sběrnice zpráv.</summary>
+      <returns>Překladač závislostí</returns>
+      <param name="resolver">Překladač závislostí</param>
+      <param name="connectionString">Připojovací řetězec</param>
+      <param name="topicPrefix">Předpona tématu</param>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.ServiceBusScaleoutConfiguration">
+      <summary>Provides settings for the Service Bus scale-out message bus implementation.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.ServiceBusScaleoutConfiguration.#ctor(System.String,System.String)">
+      <summary>Initializes a new instance of the <see cref="T:Microsoft.AspNet.SignalR.ServiceBusScaleoutConfiguration" /> class.</summary>
+      <param name="connectionString">The connection string.</param>
+      <param name="topicPrefix">The topic prefix.</param>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.ServiceBusScaleoutConfiguration.ConnectionString">
+      <summary>Gets or sets the Service Bus connection string to use.</summary>
+      <returns>The Service Bus connection string to use.</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.ServiceBusScaleoutConfiguration.TimeToLive">
+      <summary>Gets or sets the message’s time to live value. </summary>
+      <returns>The message’s time to live value.</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.ServiceBusScaleoutConfiguration.TopicCount">
+      <summary>Gets or sets the number of topics to send messages over. Defaults to 1. </summary>
+      <returns>The number of topics to send messages over.</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.ServiceBusScaleoutConfiguration.TopicPrefix">
+      <summary>Gets or sets the topic prefix to use. </summary>
+      <returns>The topic prefix to use.</returns>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.ServiceBus.ServiceBusMessage">
+      <summary>Poskytuje metody pro transformaci zpráv SignalR.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.ServiceBus.ServiceBusMessage.FromBrokeredMessage(Microsoft.ServiceBus.Messaging.BrokeredMessage)">
+      <summary>Vytvoří novou instanci třídy <see cref="T:Microsoft.AspNet.SignalR.Messaging.ScaleoutMessage" /> ze zadané zprostředkované zprávy.</summary>
+      <returns>Vytvořená instance třídy <see cref="T:Microsoft.AspNet.SignalR.Messaging.ScaleoutMessage" /></returns>
+      <param name="brokeredMessage">Zprostředkovaná zpráva</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.ServiceBus.ServiceBusMessage.ToStream(System.Collections.Generic.IList{Microsoft.AspNet.SignalR.Messaging.Message})">
+      <summary>Vytvoří základní stream pro zprávy SignalR.</summary>
+      <returns>Základní stream pro zprávy SignalR</returns>
+      <param name="messages">Zpráva SignalR</param>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.ServiceBus.ServiceBusMessageBus">
+      <summary>Používá témata sběrnice služby systému Windows Azure pro škálované aplikace SignalR ve webových farmách.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.ServiceBus.ServiceBusMessageBus.#ctor(Microsoft.AspNet.SignalR.IDependencyResolver,Microsoft.AspNet.SignalR.ServiceBusScaleoutConfiguration)">
+      <summary>Inicializuje novou instanci třídy <see cref="T:Microsoft.AspNet.SignalR.ServiceBus.ServiceBusMessageBus" />.</summary>
+      <param name="resolver">Překladač závislostí</param>
+      <param name="configuration">Konfigurace sběrnice zpráv škálování sběrnice služby</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.ServiceBus.ServiceBusMessageBus.Dispose(System.Boolean)">
+      <summary>Uvolní nespravované prostředky využívané třídou <see cref="T:Microsoft.AspNet.SignalR.ServiceBus.ServiceBusMessageBus" /> a volitelně také spravované prostředky.</summary>
+      <param name="disposing">Hodnota true slouží k uvolnění spravovaných i nespravovaných prostředků; hodnota false slouží k uvolnění pouze nespravovaných prostředků.</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.ServiceBus.ServiceBusMessageBus.Send(System.Int32,System.Collections.Generic.IList{Microsoft.AspNet.SignalR.Messaging.Message})">
+      <summary>Odešle stream zpráv pomocí sběrnice služby Windows Azure.</summary>
+      <returns>Stream zpráv, který chcete odeslat</returns>
+      <param name="streamIndex">Index streamu</param>
+      <param name="messages">Kolekce zprávy</param>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.ServiceBus.ServiceBusMessageBus.StreamCount">
+      <summary>Získá počet mediálních streamů ve sběrnici služby.</summary>
+      <returns>Počet mediálních streamů ve sběrnici služby</returns>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.ServiceBus.Infrastructure.ServiceBusTaskExtensions">
+      <summary>Představuje rozšíření úloh sběrnice služby.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.ServiceBus.Infrastructure.ServiceBusTaskExtensions.SendAsync(Microsoft.ServiceBus.Messaging.TopicClient,Microsoft.ServiceBus.Messaging.BrokeredMessage)">
+      <summary>Asynchronně odešle úlohu ze zadaného klienta.</summary>
+      <returns>Úloha odeslána.</returns>
+      <param name="client">Klient.</param>
+      <param name="message">Zpráva</param>
+    </member>
+  </members>
+</doc>

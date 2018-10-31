@@ -1,0 +1,96 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<doc>
+  <assembly>
+    <name>Microsoft.AspNet.SignalR.SqlServer</name>
+  </assembly>
+  <members>
+    <member name="M:Microsoft.AspNet.SignalR.DependencyResolverExtensions.UseSqlServer(Microsoft.AspNet.SignalR.IDependencyResolver,Microsoft.AspNet.SignalR.SqlScaleoutConfiguration)">
+      <summary>Použijte server SQL jako propojovací rozhraní systému zasílání zpráv pro škálovatelnou implementaci sběrnice zpráv.</summary>
+      <returns>Překladač závislostí</returns>
+      <param name="resolver">Překladač závislostí</param>
+      <param name="configuration">Server SQL pro škálovatelnou konfiguraci</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.DependencyResolverExtensions.UseSqlServer(Microsoft.AspNet.SignalR.IDependencyResolver,System.String)">
+      <summary>Použijte server SQL jako propojovací rozhraní systému zasílání zpráv pro škálovatelnou implementaci sběrnice zpráv.</summary>
+      <returns>Překladač závislostí</returns>
+      <param name="resolver">Překladač závislostí</param>
+      <param name="connectionString">Připojovací řetězec</param>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.SqlScaleoutConfiguration">
+      <summary> Nastavení pro škálovatelnou implementaci sběrnice zpráv systému SQL Server </summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.SqlScaleoutConfiguration.#ctor(System.String)">
+      <summary>Inicializuje novou instanci třídy <see cref="T:Microsoft.AspNet.SignalR.SqlScaleoutConfiguration" />.</summary>
+      <param name="connectionString">Připojovací řetězec systému SQL Server, který se má použít</param>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.SqlScaleoutConfiguration.ConnectionString">
+      <summary>Získá nebo nastaví připojovací řetězec systému SQL Server, který se má použít. </summary>
+      <returns>Připojovací řetězec systému SQL Server, který se má použít</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.SqlScaleoutConfiguration.TableCount">
+      <summary>Získá nebo nastaví počet tabulek, do kterých se budou ukládat zprávy.Použití většího počtu tabulek snižuje kolize zámků a může zvýšit propustnost.Je třeba dbát na konzistenci mezi všemi uzly ve webové farmě.Výchozí hodnota je 1.</summary>
+      <returns>Počet tabulek, do kterých se budou ukládat zprávy</returns>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.SqlServer.IDbBehavior">
+      <summary>Definuje chování příkazu SQL.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.SqlServer.IDbBehavior.AddSqlDependency(System.Data.IDbCommand,System.Action{System.Data.SqlClient.SqlNotificationEventArgs})">
+      <summary>Vytvoří závislost SQL pro určený příkaz SQL.</summary>
+      <param name="command">Příkaz SQL</param>
+      <param name="callback">Metoda, která obdrží oznámení v rámci oznámení o změnách závislostí</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.SqlServer.IDbBehavior.StartSqlDependencyListener">
+      <summary>Spustí naslouchací proces oznámení závislostí SQL.</summary>
+      <returns>Hodnota true, pokud je naslouchací proces oznámení spuštěn, jinak hodnota false. </returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.SqlServer.IDbBehavior.UpdateLoopRetryDelays">
+      <summary>Získá seznam, který určuje časový interval opakování a počet pokusů.</summary>
+      <returns>Seznam, který určuje časový interval opakování a počet pokusů</returns>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.SqlServer.IDbProviderFactory">
+      <summary>Představuje objekt pro vytváření přidružený k poskytovateli databáze.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.SqlServer.IDbProviderFactory.CreateConnection">
+      <summary>Vytvoří připojení k poskytovateli databáze.</summary>
+      <returns>Vytvořené připojení</returns>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.SqlServer.IDbProviderFactory.CreateParameter">
+      <summary>Vytvoří parametr spojený s poskytovatelem.</summary>
+      <returns>Vytvořený parametr</returns>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.SqlServer.SqlMessageBus">
+      <summary>Používá tabulky serveru SQL pro škálované aplikace SignalR ve webových farmách.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.SqlServer.SqlMessageBus.#ctor(Microsoft.AspNet.SignalR.IDependencyResolver,Microsoft.AspNet.SignalR.SqlScaleoutConfiguration)">
+      <summary> Vytvoří novou instanci třídy SqlMessageBus. </summary>
+      <param name="resolver">Překladač k použití.</param>
+      <param name="configuration">Možnosti škálovatelných konfigurací SQL.</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.SqlServer.SqlMessageBus.Dispose(System.Boolean)">
+      <summary>Uvolní nespravované prostředky využívané třídou <see cref="T:Microsoft.AspNet.SignalR.SqlServer.SqlMessageBus" /> a volitelně také spravované prostředky.</summary>
+      <param name="disposing">Hodnota true slouží k uvolnění spravovaných i nespravovaných prostředků; hodnota false slouží k uvolnění pouze nespravovaných prostředků.</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.SqlServer.SqlMessageBus.Send(System.Int32,System.Collections.Generic.IList{Microsoft.AspNet.SignalR.Messaging.Message})"></member>
+    <member name="P:Microsoft.AspNet.SignalR.SqlServer.SqlMessageBus.StreamCount"></member>
+    <member name="T:Microsoft.AspNet.SignalR.SqlServer.SqlMessageBusException">
+      <summary>Výjimka, ke které dojde při neúspěšné operaci inicializace nebo příjmu sběrnice zpráv SQL</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.SqlServer.SqlMessageBusException.#ctor(System.String)">
+      <summary>Inicializuje novou instanci třídy <see cref="T:Microsoft.AspNet.SignalR.SqlServer.SqlMessageBusException" />.</summary>
+      <param name="message">Chybová zpráva, která popisuje výjimku</param>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.SqlServer.SqlPayload">
+      <summary>Představuje datovou část SQL.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.SqlServer.SqlPayload.FromBytes(System.Data.IDataRecord)">
+      <summary>Představuje zprávu horizontálního škálování z datových záznamů.</summary>
+      <returns>Zobrazená zpráva horizontálního škálování</returns>
+      <param name="record">Objekt datového záznamu</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.SqlServer.SqlPayload.ToBytes(System.Collections.Generic.IList{Microsoft.AspNet.SignalR.Messaging.Message})">
+      <summary>Představuje seznam zpráv v bajtové podobě.</summary>
+      <returns>Zobrazené zprávy v bajtové podobě</returns>
+      <param name="messages">Seznam zpráv</param>
+    </member>
+  </members>
+</doc>

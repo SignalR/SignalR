@@ -1,0 +1,99 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<doc>
+  <assembly>
+    <name>Microsoft.AspNet.SignalR.SqlServer</name>
+  </assembly>
+  <members>
+    <member name="M:Microsoft.AspNet.SignalR.DependencyResolverExtensions.UseSqlServer(Microsoft.AspNet.SignalR.IDependencyResolver,Microsoft.AspNet.SignalR.SqlScaleoutConfiguration)">
+      <summary>İleti veri yolu uygulamasını genişletmek için ileti devre kartı olarak SQL Server kullanın.</summary>
+      <returns>Bağımlılık çözümleyici.</returns>
+      <param name="resolver">Bağımlılık çözümleyici.</param>
+      <param name="configuration">Yapılandırmayı genişletmek için SQL server.</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.DependencyResolverExtensions.UseSqlServer(Microsoft.AspNet.SignalR.IDependencyResolver,System.String)">
+      <summary>İleti veri yolu uygulamasını genişletmek için ileti devre kartı olarak SQL Server kullanın.</summary>
+      <returns>Bağımlılık çözümleyici.</returns>
+      <param name="resolver">Bağımlılık çözümleyici.</param>
+      <param name="connectionString">Bağlantı dizesi.</param>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.SqlScaleoutConfiguration">
+      <summary> SQL Server genişletme iletisi veri yolu uygulaması ayarları. </summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.SqlScaleoutConfiguration.#ctor(System.String)">
+      <summary>
+        <see cref="T:Microsoft.AspNet.SignalR.SqlScaleoutConfiguration" /> sınıfının yeni bir örneğini başlatır.</summary>
+      <param name="connectionString">Kullanılacak SQL Server bağlantı dizesi.</param>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.SqlScaleoutConfiguration.ConnectionString">
+      <summary>Kullanılacak SQL Server bağlantı dizesini alır veya ayarlar. </summary>
+      <returns>Kullanılacak SQL Server bağlantı dizesi.</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.SqlScaleoutConfiguration.TableCount">
+      <summary>İletilerin depolanacağı tablo sayısını alır veya ayarlar.Daha fazla tablo kullanılması, kilit çekişmesini azaltır ve üretilen işi artırabilir.Bu sayı web grubundaki tüm düğümlerde tutarlı olmalıdır.Varsayılan ayar: 1.</summary>
+      <returns>İletilerin depolanacağı tablo sayısı.</returns>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.SqlServer.IDbBehavior">
+      <summary>SQL komut davranışını tanımlar.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.SqlServer.IDbBehavior.AddSqlDependency(System.Data.IDbCommand,System.Action{System.Data.SqlClient.SqlNotificationEventArgs})">
+      <summary>Belirtilen SQL komutu için bir SQL bağımlılığı oluşturur.</summary>
+      <param name="command">SQL komutu.</param>
+      <param name="callback">Bağımlılık değiştirme bildirimleri için uyarılan yöntem.</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.SqlServer.IDbBehavior.StartSqlDependencyListener">
+      <summary>SQL bağımlılık bildirimi dinleyicisini başlatır.</summary>
+      <returns>Bildirim dinleyicisi başlatıldıysa true, aksi takdirde false. </returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.SqlServer.IDbBehavior.UpdateLoopRetryDelays">
+      <summary>Yeniden deneme zaman aralığını ve yeniden deneme sayısını belirten listeyi alır.</summary>
+      <returns>Yeniden deneme zaman aralığını ve yeniden deneme sayısını belirten liste.</returns>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.SqlServer.IDbProviderFactory">
+      <summary>Veritabanı sağlayıcısı ile ilişkili üreteci temsil eder.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.SqlServer.IDbProviderFactory.CreateConnection">
+      <summary>Veritabanı sağlayıcısı için bir bağlantı oluşturur.</summary>
+      <returns>Oluşturulan bağlantı.</returns>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.SqlServer.IDbProviderFactory.CreateParameter">
+      <summary>Sağlayıcı ile ilişkili bir parametre oluşturur.</summary>
+      <returns>Oluşturulan parametre.</returns>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.SqlServer.SqlMessageBus">
+      <summary>Web gruplarındaki SignalR uygulamalarını genişletmek için SQL Server tablolarını kullanır.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.SqlServer.SqlMessageBus.#ctor(Microsoft.AspNet.SignalR.IDependencyResolver,Microsoft.AspNet.SignalR.SqlScaleoutConfiguration)">
+      <summary> SqlMessageBus sınıfının yeni bir örneğini oluşturur. </summary>
+      <param name="resolver">Kullanılacak çözümleyici.</param>
+      <param name="configuration">SQL genişletme yapılandırma seçenekleri.</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.SqlServer.SqlMessageBus.Dispose(System.Boolean)">
+      <summary>
+        <see cref="T:Microsoft.AspNet.SignalR.SqlServer.SqlMessageBus" /> sınıfı tarafından kullanılan yönetilmeyen kaynakları serbest bırakır ve yönetilen kaynakları isteğe bağlı olarak serbest bırakır.</summary>
+      <param name="disposing">Hem yönetilen hem de yönetilmeyen kaynakları serbest bırakmak için true; yalnızca yönetilmeyen kaynakları serbest bırakmak için false.</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.SqlServer.SqlMessageBus.Send(System.Int32,System.Collections.Generic.IList{Microsoft.AspNet.SignalR.Messaging.Message})"></member>
+    <member name="P:Microsoft.AspNet.SignalR.SqlServer.SqlMessageBus.StreamCount"></member>
+    <member name="T:Microsoft.AspNet.SignalR.SqlServer.SqlMessageBusException">
+      <summary>SQL Message Bus işlemi alma veya başlatma sırasında oluşturulan özel durum.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.SqlServer.SqlMessageBusException.#ctor(System.String)">
+      <summary>
+        <see cref="T:Microsoft.AspNet.SignalR.SqlServer.SqlMessageBusException" /> sınıfının yeni bir örneğini başlatır.</summary>
+      <param name="message">Özel durumu açıklayan hata iletisi.</param>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.SqlServer.SqlPayload">
+      <summary>Bir SQL yükünü temsil eder.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.SqlServer.SqlPayload.FromBytes(System.Data.IDataRecord)">
+      <summary>Veri kayıtlarından bir genişletme iletisini temsil eder.</summary>
+      <returns>Sunulan genişletme iletisi.</returns>
+      <param name="record">Veri kaydı nesnesi.</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.SqlServer.SqlPayload.ToBytes(System.Collections.Generic.IList{Microsoft.AspNet.SignalR.Messaging.Message})">
+      <summary>İleti listesini bayt olarak sunar.</summary>
+      <returns>Bayt olarak sunulan iletiler.</returns>
+      <param name="messages">İleti listesi.</param>
+    </member>
+  </members>
+</doc>

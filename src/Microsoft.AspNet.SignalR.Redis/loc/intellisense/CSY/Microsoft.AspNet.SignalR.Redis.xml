@@ -1,0 +1,115 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<doc>
+  <assembly>
+    <name>Microsoft.AspNet.SignalR.Redis</name>
+  </assembly>
+  <members>
+    <member name="T:Microsoft.AspNet.SignalR.DependencyResolverExtensions">
+      <summary>Obsah zde nebude aktualizován. Žádné materiály sem prosím nepřidávejte.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.DependencyResolverExtensions.UseRedis(Microsoft.AspNet.SignalR.IDependencyResolver,Microsoft.AspNet.SignalR.RedisScaleoutConfiguration)">
+      <summary>Použijte Redis jako propojovací rozhraní systému zasílání zpráv pro škálování aplikací SignalR technologie ASP.NET ve webové farmě.</summary>
+      <returns>Překladač závislostí</returns>
+      <param name="resolver">Překladač závislostí</param>
+      <param name="configuration">Možnosti škálovatelných konfigurací Redis.</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.DependencyResolverExtensions.UseRedis(Microsoft.AspNet.SignalR.IDependencyResolver,System.String,System.Int32,System.String,System.String)">
+      <summary>Použijte Redis jako propojovací rozhraní systému zasílání zpráv pro škálování aplikací SignalR technologie ASP.NET ve webové farmě.</summary>
+      <returns>Překladač závislostí</returns>
+      <param name="resolver">Překladač závislostí</param>
+      <param name="server">Adresa serveru Redis.</param>
+      <param name="port">Port serveru Redis.</param>
+      <param name="password">Heslo serveru Redis.</param>
+      <param name="eventKey">Klíč události Redis určený k použití.</param>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.RedisScaleoutConfiguration">
+      <summary>Nastavení pro škálovatelnou implementaci sběrnice pro zasílání zpráv Redis.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.RedisScaleoutConfiguration.#ctor(System.Func{BookSleeve.RedisConnection},System.String)">
+      <summary>Inicializuje novou instanci třídy <see cref="T:Microsoft.AspNet.SignalR.RedisScaleoutConfiguration" />.</summary>
+      <param name="connectionFactory">Objekt factory připojení.</param>
+      <param name="eventKey">Klíč události.</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.RedisScaleoutConfiguration.#ctor(System.String,System.Int32,System.String,System.String)">
+      <summary>Inicializuje novou instanci třídy <see cref="T:Microsoft.AspNet.SignalR.RedisScaleoutConfiguration" />.</summary>
+      <param name="server">Server.</param>
+      <param name="port">Port.</param>
+      <param name="password">Heslo.</param>
+      <param name="eventKey">Klíč události.</param>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.RedisScaleoutConfiguration.Database">
+      <summary>Získá nebo nastaví instanci databáze Redis k použití.Výchozí hodnota je 0.</summary>
+      <returns>Instance databáze Redis určená k použití.Výchozí hodnota je 0.</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.RedisScaleoutConfiguration.EventKey">
+      <summary>Získá nebo nastaví klíč události Redis k použití. </summary>
+      <returns>Klíč události Redis určený k použití.</returns>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.Redis.RedisConnectionClosedException">
+      <summary>Výjimka, ke které dojde při ztrátě připojení Redis</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Redis.RedisConnectionClosedException.#ctor">
+      <summary>Inicializuje novou instanci třídy <see cref="T:Microsoft.AspNet.SignalR.Redis.RedisConnectionClosedException" />.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Redis.RedisConnectionClosedException.#ctor(System.Runtime.Serialization.SerializationInfo,System.Runtime.Serialization.StreamingContext)">
+      <summary>Inicializuje novou instanci třídy <see cref="T:Microsoft.AspNet.SignalR.Redis.RedisConnectionClosedException" /> se serializovanými informacemi.</summary>
+      <param name="info">Serializované informace o výjimce</param>
+      <param name="context">Kontextové informace o zdroji nebo cíli</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Redis.RedisConnectionClosedException.#ctor(System.String)">
+      <summary>Inicializuje novou instanci třídy <see cref="T:Microsoft.AspNet.SignalR.Redis.RedisConnectionClosedException" /> s chybovou zprávou.</summary>
+      <param name="message">Chybová zpráva, která popisuje výjimku</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Redis.RedisConnectionClosedException.#ctor(System.String,System.Exception)">
+      <summary>Inicializuje novou instanci třídy <see cref="T:Microsoft.AspNet.SignalR.Redis.RedisConnectionClosedException" /> s chybovou zprávou a vnitřní výjimkou.</summary>
+      <param name="message">Chybová zpráva, která popisuje výjimku</param>
+      <param name="inner">Vnitřní výjimka, která je příčinou aktuální výjimky</param>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.Redis.RedisMessage">
+      <summary>Představuje zprávu Redis.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Redis.RedisMessage.#ctor">
+      <summary>Inicializuje novou instanci třídy <see cref="T:Microsoft.AspNet.SignalR.Redis.RedisMessage" />.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Redis.RedisMessage.FromBytes(System.Byte[])">
+      <summary>Vytvoří zprávu Redis z určených dat.</summary>
+      <returns>Nově vytvořená zpráva Redis</returns>
+      <param name="data">Data představující zprávu</param>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Redis.RedisMessage.Id">
+      <summary>Získá nebo nastaví ID zprávy Redis.</summary>
+      <returns>ID zprávy Redis</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Redis.RedisMessage.ScaleoutMessage">
+      <summary>Získá nebo nastaví škálovanou zprávu Redis.</summary>
+      <returns>Škálovaná zpráva Redis</returns>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Redis.RedisMessage.ToBytes(System.Int64,System.Collections.Generic.IList{Microsoft.AspNet.SignalR.Messaging.Message})">
+      <summary>Převede zprávy na pole bajtů.</summary>
+      <param name="id">ID zprávy</param>
+      <param name="messages">Zprávy, které mají být převedeny</param>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.Redis.RedisMessageBus">
+      <summary>Představuje sběrnici služby pro zprávu Redis.Používá protokol pub-sub Redis pro škálované aplikace SignalR ve webových farmách.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Redis.RedisMessageBus.#ctor(Microsoft.AspNet.SignalR.IDependencyResolver,Microsoft.AspNet.SignalR.RedisScaleoutConfiguration)">
+      <summary>Inicializuje novou instanci třídy <see cref="T:Microsoft.AspNet.SignalR.Redis.RedisMessageBus" />.</summary>
+      <param name="resolver">Překladač závislostí</param>
+      <param name="configuration">Konfigurace sběrnice zpráv Redis</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Redis.RedisMessageBus.Dispose(System.Boolean)">
+      <summary>Uvolní nespravované prostředky využívané třídou <see cref="T:Microsoft.AspNet.SignalR.Redis.RedisMessageBus" /> a volitelně také spravované prostředky.</summary>
+      <param name="disposing">Hodnota true slouží k uvolnění spravovaných i nespravovaných prostředků; hodnota false slouží k uvolnění pouze nespravovaných prostředků.</param>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Redis.RedisMessageBus.ReconnectDelay">
+      <summary>Získá nebo nastaví dobu čekání na pokus o opakované připojení.</summary>
+      <returns>Doba čekání na pokus o opakované připojení</returns>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Redis.RedisMessageBus.Send(System.Int32,System.Collections.Generic.IList{Microsoft.AspNet.SignalR.Messaging.Message})">
+      <summary>Publikuje určenou zprávu na sběrnici služby.</summary>
+      <returns>Úloha, která představuje operaci odeslání zprávy</returns>
+      <param name="streamIndex">Index streamu</param>
+      <param name="messages">Zprávy, které mají být odeslány</param>
+    </member>
+  </members>
+</doc>

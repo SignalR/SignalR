@@ -1,0 +1,115 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<doc>
+  <assembly>
+    <name>Microsoft.AspNet.SignalR.Redis</name>
+  </assembly>
+  <members>
+    <member name="T:Microsoft.AspNet.SignalR.DependencyResolverExtensions">
+      <summary>Inhalte werden hier nicht aktualisiert. Bitte hier kein Material hinzufügen.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.DependencyResolverExtensions.UseRedis(Microsoft.AspNet.SignalR.IDependencyResolver,Microsoft.AspNet.SignalR.RedisScaleoutConfiguration)">
+      <summary>Verwenden Sie Redis als Messagingbackplane für das horizontale Skalieren von ASP.NET SignalR-Anwendungen in einer Webfarm.</summary>
+      <returns>Der Abhängigkeitskonfliktlöser.</returns>
+      <param name="resolver">Der Abhängigkeitskonfliktlöser.</param>
+      <param name="configuration">Die Redis-Konfigurationsoptionen für horizontales Skalieren.</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.DependencyResolverExtensions.UseRedis(Microsoft.AspNet.SignalR.IDependencyResolver,System.String,System.Int32,System.String,System.String)">
+      <summary>Verwenden Sie Redis als Messagingbackplane für das horizontale Skalieren von ASP.NET SignalR-Anwendungen in einer Webfarm.</summary>
+      <returns>Der Abhängigkeitskonfliktlöser.</returns>
+      <param name="resolver">Der Abhängigkeitskonfliktlöser.</param>
+      <param name="server">Die Redis-Serveradresse.</param>
+      <param name="port">Der Redis-Serverport.</param>
+      <param name="password">Das Redis-Serverkennwort.</param>
+      <param name="eventKey">Der zu verwendende Redis-Ereignisschlüssel.</param>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.RedisScaleoutConfiguration">
+      <summary>Einstellungen für die Redis-Nachrichtenbusimplementierung für horizontale Skalierung.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.RedisScaleoutConfiguration.#ctor(System.Func{BookSleeve.RedisConnection},System.String)">
+      <summary>Initialisiert eine neue Instanz der <see cref="T:Microsoft.AspNet.SignalR.RedisScaleoutConfiguration" />-Klasse.</summary>
+      <param name="connectionFactory">Die Verbindungsfactory.</param>
+      <param name="eventKey">Der Ereignisschlüssel.</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.RedisScaleoutConfiguration.#ctor(System.String,System.Int32,System.String,System.String)">
+      <summary>Initialisiert eine neue Instanz der <see cref="T:Microsoft.AspNet.SignalR.RedisScaleoutConfiguration" />-Klasse.</summary>
+      <param name="server">Der Server.</param>
+      <param name="port">Der Port.</param>
+      <param name="password">Das Kennwort.</param>
+      <param name="eventKey">Der Ereignisschlüssel.</param>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.RedisScaleoutConfiguration.Database">
+      <summary>Ruft die zu verwendende Redis-Datenbankinstanz ab oder legt sie fest.Der Standardwert ist 0.</summary>
+      <returns>Die zu verwendende Redis-Datenbankinstanz.Der Standardwert ist 0.</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.RedisScaleoutConfiguration.EventKey">
+      <summary>Ruft den zu verwendenden Redis-Ereignisschlüssel ab oder legt ihn fest. </summary>
+      <returns>Der zu verwendende Redis-Ereignisschlüssel.</returns>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.Redis.RedisConnectionClosedException">
+      <summary>Die Ausnahme, die ausgelöst wird, wenn die Redis-Verbindung unterbrochen wurde.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Redis.RedisConnectionClosedException.#ctor">
+      <summary>Initialisiert eine neue Instanz der <see cref="T:Microsoft.AspNet.SignalR.Redis.RedisConnectionClosedException" />-Klasse.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Redis.RedisConnectionClosedException.#ctor(System.Runtime.Serialization.SerializationInfo,System.Runtime.Serialization.StreamingContext)">
+      <summary>Initialisiert eine neue Instanz der <see cref="T:Microsoft.AspNet.SignalR.Redis.RedisConnectionClosedException" />-Klasse mit serialisierten Informationen.</summary>
+      <param name="info">Die serialisierten Informationen zur Ausnahme.</param>
+      <param name="context">Die Kontextinformationen zur Quelle oder zum Ziel.</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Redis.RedisConnectionClosedException.#ctor(System.String)">
+      <summary>Initialisiert eine neue Instanz der <see cref="T:Microsoft.AspNet.SignalR.Redis.RedisConnectionClosedException" />-Klasse mit der Fehlermeldung.</summary>
+      <param name="message">Die Fehlermeldung, die die Ausnahme beschreibt.</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Redis.RedisConnectionClosedException.#ctor(System.String,System.Exception)">
+      <summary>Initialisiert eine neue Instanz der <see cref="T:Microsoft.AspNet.SignalR.Redis.RedisConnectionClosedException" />-Klasse mit der Fehlermeldung und der internen Ausnahme.</summary>
+      <param name="message">Die Fehlermeldung, die die Ausnahme beschreibt.</param>
+      <param name="inner">Die interne Ausnahme, die die Ursache der aktuellen Ausnahme ist.</param>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.Redis.RedisMessage">
+      <summary>Stellt eine Redis-Nachricht dar.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Redis.RedisMessage.#ctor">
+      <summary>Initialisiert eine neue Instanz der <see cref="T:Microsoft.AspNet.SignalR.Redis.RedisMessage" />-Klasse.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Redis.RedisMessage.FromBytes(System.Byte[])">
+      <summary>Erstellt eine Redis-Nachricht aus den angegebenen Daten.</summary>
+      <returns>Die neu erstellte Redis-Nachricht.</returns>
+      <param name="data">Die Daten, die die Nachricht darstellen.</param>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Redis.RedisMessage.Id">
+      <summary>Ruft die Redis-Nachrichten-ID ab bzw. legt diese fest.</summary>
+      <returns>Die Redis-Nachrichten-ID.</returns>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Redis.RedisMessage.ScaleoutMessage">
+      <summary>Ruft die skalierte Redis-Nachricht ab bzw. legt sie fest.</summary>
+      <returns>Die skalierte Redis-Nachricht.</returns>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Redis.RedisMessage.ToBytes(System.Int64,System.Collections.Generic.IList{Microsoft.AspNet.SignalR.Messaging.Message})">
+      <summary>Konvertiert die Nachrichten in ein Array von Bytes.</summary>
+      <param name="id">Die Nachrichten-ID.</param>
+      <param name="messages">Die zu konvertierenden Nachrichten.</param>
+    </member>
+    <member name="T:Microsoft.AspNet.SignalR.Redis.RedisMessageBus">
+      <summary>Stellt einen Servicebus für die Redis-Nachricht dar.Verwendet Redis-Veröffentlichung/Abonnements für die horizontale Skalierung von SignalR-Anwendungen in Webfarmen.</summary>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Redis.RedisMessageBus.#ctor(Microsoft.AspNet.SignalR.IDependencyResolver,Microsoft.AspNet.SignalR.RedisScaleoutConfiguration)">
+      <summary>Initialisiert eine neue Instanz der <see cref="T:Microsoft.AspNet.SignalR.Redis.RedisMessageBus" />-Klasse.</summary>
+      <param name="resolver">Der Abhängigkeitskonfliktlöser.</param>
+      <param name="configuration">Die Redis-Nachrichtenbuskonfiguration.</param>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Redis.RedisMessageBus.Dispose(System.Boolean)">
+      <summary>Gibt die von der <see cref="T:Microsoft.AspNet.SignalR.Redis.RedisMessageBus" />-Klasse verwendeten nicht verwalteten Ressourcen und optional auch die verwalteten Ressourcen frei.</summary>
+      <param name="disposing">true, um sowohl verwaltete als auch nicht verwaltete Ressourcen freizugeben. false, um ausschließlich nicht verwaltete Ressourcen freizugeben.</param>
+    </member>
+    <member name="P:Microsoft.AspNet.SignalR.Redis.RedisMessageBus.ReconnectDelay">
+      <summary>Ruft die Zeit ab bzw. legt die Zeit fest, die auf einen erneuten Verbindungsversuch gewartet werden muss.</summary>
+      <returns>Die Zeit, die auf einen erneuten Verbindungsversuch gewartet werden muss.</returns>
+    </member>
+    <member name="M:Microsoft.AspNet.SignalR.Redis.RedisMessageBus.Send(System.Int32,System.Collections.Generic.IList{Microsoft.AspNet.SignalR.Messaging.Message})">
+      <summary>Veröffentlicht die angegebene Nachricht auf dem Servicebus.</summary>
+      <returns>Der Task, der den Sendevorgang der Nachricht darstellt.</returns>
+      <param name="streamIndex">Der Datenstromindex.</param>
+      <param name="messages">Die zu sendenden Nachrichten.</param>
+    </member>
+  </members>
+</doc>
