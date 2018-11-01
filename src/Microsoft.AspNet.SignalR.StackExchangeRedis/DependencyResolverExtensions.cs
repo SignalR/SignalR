@@ -18,7 +18,7 @@ namespace Microsoft.AspNet.SignalR
         /// <param name="password">The Redis server password.</param>
         /// <param name="eventKey">The Redis event key to use.</param>
         /// <returns>The dependency resolver.</returns>
-        public static IDependencyResolver UseRedis(this IDependencyResolver resolver, string server, int port, string password, string eventKey)
+        public static IDependencyResolver UseStackExchangeRedis(this IDependencyResolver resolver, string server, int port, string password, string eventKey)
         {
             var configuration = new RedisScaleoutConfiguration(server, port, password, eventKey);
 
