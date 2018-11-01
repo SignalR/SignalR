@@ -17,7 +17,7 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
                                             ackThreshold: TimeSpan.FromSeconds(1),
                                             ackInterval: TimeSpan.FromSeconds(1));
 
-            await ackHandler.CreateAck("foo").OrTimeout();
+            await Assert.ThrowsAsync<TaskCanceledException>(() => ackHandler.CreateAck("foo").OrTimeout());
         }
 
         [Fact]
