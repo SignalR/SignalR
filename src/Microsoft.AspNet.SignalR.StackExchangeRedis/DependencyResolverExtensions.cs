@@ -22,7 +22,7 @@ namespace Microsoft.AspNet.SignalR
         {
             var configuration = new RedisScaleoutConfiguration(server, port, password, eventKey);
 
-            return UseRedis(resolver, configuration);
+            return UseStackExchangeRedis(resolver, configuration);
         }
 
         /// <summary>
