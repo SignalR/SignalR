@@ -23,6 +23,7 @@
     <MoqPackageVersion>4.7.8</MoqPackageVersion>
     <NewtonsoftJsonPackageVersion>11.0.2</NewtonsoftJsonPackageVersion>
     <OwinPackageVersion>1.0</OwinPackageVersion>
+    <StackExchangeRedisPackageVersion>2.0.513</StackExchangeRedisPackageVersion>
     <StackExchangeRedisStrongNamePackageVersion>1.1.608</StackExchangeRedisStrongNamePackageVersion>
     <SystemRuntimeInteropServicesRuntimeInformationPackageVersion>4.0.0</SystemRuntimeInteropServicesRuntimeInformationPackageVersion>
     <SystemThreadingChannelsPackageVersion>4.5.0</SystemThreadingChannelsPackageVersion>
