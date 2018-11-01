@@ -10,6 +10,7 @@
         "bin/Microsoft.AspNet.SignalR.Client/netstandard2.0/Microsoft.AspNet.SignalR.Client.dll",
         "bin/Microsoft.AspNet.SignalR.Core/net45/Microsoft.AspNet.SignalR.Core.dll",
         "bin/Microsoft.AspNet.SignalR.Redis/net45/Microsoft.AspNet.SignalR.Redis.dll",
+        "bin/Microsoft.AspNet.SignalR.StackExchangeRedis/net461/Microsoft.AspNet.SignalR.StackExchangeRedis.dll",
         "bin/Microsoft.AspNet.SignalR.ServiceBus/net45/Microsoft.AspNet.SignalR.ServiceBus.dll",
         "bin/Microsoft.AspNet.SignalR.ServiceBus3/net45/Microsoft.AspNet.SignalR.ServiceBus3.dll",
         "bin/Microsoft.AspNet.SignalR.SqlServer/net45/Microsoft.AspNet.SignalR.SqlServer.dll",

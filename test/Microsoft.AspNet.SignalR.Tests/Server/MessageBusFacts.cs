@@ -464,13 +464,13 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
         }
 
         [Fact]
-        public void SubscriptionWithExistingCursorGetsAllMessagesAfterMessageBusRestart()
+        public async Task SubscriptionWithExistingCursorGetsAllMessagesAfterMessageBusRestart()
         {
             var dr = new DefaultDependencyResolver();
             using (var bus = new MessageBus(dr))
             {
                 var subscriber = new TestSubscriber(new[] { "key" });
-                var wh = new ManualResetEvent(false);
+                var tcs = new TaskCompletionSource<object>();
                 IDisposable subscription = null;
 
                 try
@@ -481,16 +481,16 @@ namespace Microsoft.AspNet.SignalR.Tests.Server
                         {
                             Assert.Equal("key", m.Key);
                             Assert.Equal("value", m.GetString());
-                            wh.Set();
+                            tcs.TrySetResult(null);
                         }
 
                         return TaskAsyncHelper.True;
 
                     }, 10, null);
 
-                    bus.Publish("test", "key", "value");
+                    _ = bus.Publish("test", "key", "value");
 
-                    Assert.True(wh.WaitOne(TimeSpan.FromSeconds(5)));
+                    await tcs.Task.OrTimeout();
                 }
                 finally
                 {

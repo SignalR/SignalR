@@ -1,0 +1,28 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <Title>Microsoft ASP.NET SignalR Redis Messaging Backplane</Title>
+    <Description>Redis messaging backplane for scaling out of ASP.NET SignalR applications in a web-farm.</Description>
+    <PackageTags>Microsoft AspNet SignalR AspNetSignalR Redis</PackageTags>
+    <DefineConstants>$(DefineConstants);SERVER</DefineConstants>
+
+    <!-- For the loc stuff to work right now, this needs to do the outer build/inner build phases even though it's only one TFM, so leave this as the plural TargetFrameworks -->
+    <TargetFrameworks>net461</TargetFrameworks>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="StackExchange.Redis" Version="$(StackExchangeRedisPackageVersion)" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.IO.Compression" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="..\Microsoft.AspNet.SignalR.Core\TaskAsyncHelper.cs">
+      <Link>Infrastructure\TaskAsyncHelper.cs</Link>
+    </Compile>
+    <Compile Include="..\Microsoft.AspNet.SignalR.Core\Infrastructure\DispatchingTaskCompletionSource.cs">
+      <Link>Infrastructure\DispatchingTaskCompletionSource.cs</Link>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Microsoft.AspNet.SignalR.Core\Microsoft.AspNet.SignalR.Core.csproj" />
+  </ItemGroup>
+</Project>
